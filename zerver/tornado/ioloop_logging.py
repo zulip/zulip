@@ -13,10 +13,10 @@ orig_poll_impl = select.epoll
 
 # This is used for a somewhat hacky way of passing the port number
 # into this early-initialized module.
-logging_data = {}  # type: Dict[str, str]
+logging_data: Dict[str, str] = {}
 
 class InstrumentedPollIOLoop(PollIOLoop):
-    def initialize(self, **kwargs):  # type: ignore # TODO investigate likely buggy monkey patching here
+    def initialize(self, **kwargs):  # type: ignore[no-untyped-def] # TODO investigate likely buggy monkey patching here
         super().initialize(impl=InstrumentedPoll(), **kwargs)
 
 def instrument_tornado_ioloop() -> None:
@@ -33,7 +33,7 @@ def instrument_tornado_ioloop() -> None:
 class InstrumentedPoll:
     def __init__(self) -> None:
         self._underlying = orig_poll_impl()
-        self._times = []  # type: List[Tuple[float, float]]
+        self._times: List[Tuple[float, float]] = []
         self._last_print = 0.0
 
     # Python won't let us subclass e.g. select.epoll, so instead

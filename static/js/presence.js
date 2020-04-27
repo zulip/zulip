@@ -1,8 +1,14 @@
 // This module just manages data.  See activity.js for
 // the UI of our buddy list.
 
-exports.presence_info = {};
+// The following Maps have user_id as the key.  Some of the
+// user_ids may not yet be registered in people.js.
+// See the long comment in `set_info` below for details.
 
+// In future commits we'll use raw_info to facilitate
+// handling server events and/or timeout events.
+const raw_info = new Map();
+exports.presence_info = new Map();
 
 /* Mark users as offline after 140 seconds since their last checkin,
  * Keep in sync with zerver/tornado/event_queue.py:receiver_is_idle
@@ -11,16 +17,10 @@ const OFFLINE_THRESHOLD_SECS = 140;
 
 const BIG_REALM_COUNT = 250;
 
-const MOBILE_DEVICES = ["Android", "ZulipiOS", "ios"];
-
-function is_mobile(device) {
-    return MOBILE_DEVICES.indexOf(device) !== -1;
-}
-
 exports.is_active = function (user_id) {
-    if (exports.presence_info[user_id]) {
-        const status = exports.presence_info[user_id].status;
-        if (status && status === "active") {
+    if (exports.presence_info.has(user_id)) {
+        const status = exports.presence_info.get(user_id).status;
+        if (status === "active") {
             return true;
         }
     }
@@ -31,98 +31,171 @@ exports.get_status = function (user_id) {
     if (people.is_my_user_id(user_id)) {
         return "active";
     }
-    if (user_id in exports.presence_info) {
-        return exports.presence_info[user_id].status;
+    if (exports.presence_info.has(user_id)) {
+        return exports.presence_info.get(user_id).status;
     }
     return "offline";
 };
 
 exports.get_user_ids = function () {
-    const user_ids = Object.keys(exports.presence_info).map(s => parseInt(s, 10));
-
-    return user_ids;
+    return Array.from(exports.presence_info.keys());
 };
 
-function status_from_timestamp(baseline_time, info) {
-    let status = 'offline';
-    let last_active = 0;
-    let mobileAvailable = false;
-    let nonmobileAvailable = false;
-    _.each(info, function (device_presence, device) {
-        const age = baseline_time - device_presence.timestamp;
-        if (last_active < device_presence.timestamp) {
-            last_active = device_presence.timestamp;
+exports.status_from_raw = function (raw) {
+    /*
+        Example of `raw`:
+
+        {
+            active_timestamp: 1585745133
+            idle_timestamp: 1585745091
+            server_timestamp: 1585745140
         }
-        if (is_mobile(device)) {
-            mobileAvailable = device_presence.pushable || mobileAvailable;
-        }
-        if (age < OFFLINE_THRESHOLD_SECS) {
-            switch (device_presence.status) {
-            case 'active':
-                if (is_mobile(device)) {
-                    mobileAvailable = true;
-                } else {
-                    nonmobileAvailable = true;
-                }
-                status = device_presence.status;
-                break;
-            case 'idle':
-                if (status !== 'active') {
-                    status = device_presence.status;
-                }
-                break;
-            case 'offline':
-                if (status !== 'active' && status !== 'idle') {
-                    status = device_presence.status;
-                }
-                break;
-            default:
-                blueslip.error('Unexpected status', {presence_object: device_presence, device: device}, undefined);
+    */
+    function age(timestamp) {
+        return raw.server_timestamp - (timestamp || 0);
+    }
+
+    const active_timestamp = raw.active_timestamp;
+    const idle_timestamp = raw.idle_timestamp;
+
+    /*
+        If the server sends us `active_timestamp`, this
+        means at least one client was active at this time
+        (and hasn't changed since).
+
+        As long as the timestamp is current enough, we will
+        show the user as active (even if there's a newer
+        timestamp for idle).
+    */
+    if (age(active_timestamp) < OFFLINE_THRESHOLD_SECS) {
+        return {
+            status: 'active',
+            last_active: active_timestamp,
+        };
+    }
+
+    if (age(idle_timestamp) < OFFLINE_THRESHOLD_SECS) {
+        return {
+            status: 'idle',
+            last_active: active_timestamp,
+        };
+    }
+
+    return {
+        status: 'offline',
+        last_active: active_timestamp,
+    };
+};
+
+exports.update_info_from_event = function (user_id, info, server_timestamp) {
+    /*
+        Example of `info`:
+
+        {
+            website: {
+                client: 'website',
+                pushable: false,
+                status: 'active',
+                timestamp: 1585745225
             }
         }
-    });
-    return {status: status,
-            mobile: !nonmobileAvailable && mobileAvailable,
-            last_active: last_active };
-}
 
-// For testing
-exports._status_from_timestamp = status_from_timestamp;
+        Example of `raw`:
 
-exports.set_info_for_user = function (user_id, info, server_time) {
-    const status = status_from_timestamp(server_time, info);
-    exports.presence_info[user_id] = status;
+        {
+            active_timestamp: 1585745133
+            idle_timestamp: 1585745091
+            server_timestamp: 1585745140
+        }
+    */
+    const raw = raw_info.get(user_id) || {};
+
+    raw.server_timestamp = server_timestamp;
+
+    for (const rec of Object.values(info)) {
+        if (rec.status === 'active') {
+            if (rec.timestamp > (raw.active_timestamp || 0)) {
+                raw.active_timestamp = rec.timestamp;
+            }
+        }
+
+        if (rec.status === 'idle') {
+            if (rec.timestamp > (raw.idle_timestamp || 0)) {
+                raw.idle_timestamp = rec.timestamp;
+            }
+        }
+    }
+
+    raw_info.set(user_id, raw);
+
+    const status = exports.status_from_raw(raw);
+    exports.presence_info.set(user_id, status);
 };
 
 exports.set_info = function (presences, server_timestamp) {
-    exports.presence_info = {};
-    _.each(presences, function (info, this_email) {
-        const person = people.get_by_email(this_email);
+    /*
+        Example `presences` data:
 
+        {
+            6: Object { idle_timestamp: 1585746028 },
+            7: Object { active_timestamp: 1585745774 },
+            8: Object { active_timestamp: 1585745578 }
+        }
+    */
+
+    raw_info.clear();
+    exports.presence_info.clear();
+    for (const [user_id_str, info] of Object.entries(presences)) {
+        const user_id = parseInt(user_id_str, 10);
+
+        // Note: In contrast with all other state updates received
+        // receive from the server, presence data is updated via a
+        // polling process rather than the events system
+        // (server_events_dispatch.js).
+        //
+        // This means that if we're coming back from being offline and
+        // new users were created in the meantime, we may see user IDs
+        // not yet present in people.js if server_events doesn't have
+        // current data (or we've been offline, our event queue was
+        // GC'ed, and we're about to reload).  Such user_ids being
+        // present could, in turn, create spammy downstream exceptions
+        // when rendering the buddy list.  To address this, we check
+        // if the user ID is not yet present in people.js, and if it
+        // is, we skip storing that user (we'll see them again in the
+        // next presence request in 1 minute anyway).
+        //
+        // It's important to check both suspect_offline and
+        // reload_state.is_in_progress, because races where presence
+        // returns data on users not yet received via the server_events
+        // system are common in both situations.
+        const person = people.get_by_user_id(user_id, true);
         if (person === undefined) {
             if (!(server_events.suspect_offline || reload_state.is_in_progress())) {
                 // If we're online, and we get a user who we don't
                 // know about in the presence data, throw an error.
-                blueslip.error('Unknown email in presence data: ' + this_email);
+                blueslip.error('Unknown user ID in presence data: ' + user_id);
             }
             // Either way, we deal by skipping this user and
-            // rendering everyone else, to avoid disruption.
-            return;
+            // continuing with processing everyone else.
+            continue;
         }
 
-        const user_id = person.user_id;
+        const raw = {
+            server_timestamp: server_timestamp,
+            active_timestamp: info.active_timestamp || undefined,
+            idle_timestamp: info.idle_timestamp || undefined,
+        };
 
-        if (user_id) {
-            const status = status_from_timestamp(server_timestamp,
-                                                 info);
-            exports.presence_info[user_id] = status;
-        }
-    });
+        raw_info.set(user_id, raw);
+
+        const status = exports.status_from_raw(raw);
+        exports.presence_info.set(user_id, status);
+    }
     exports.update_info_for_small_realm();
 };
 
 exports.update_info_for_small_realm = function () {
-    if (people.get_realm_count() >= BIG_REALM_COUNT) {
+    if (people.get_active_human_count() >= BIG_REALM_COUNT) {
         // For big realms, we don't want to bloat our buddy
         // lists with lots of long-time-inactive users.
         return;
@@ -130,37 +203,36 @@ exports.update_info_for_small_realm = function () {
 
     // For small realms, we create presence info for users
     // that the server didn't include in its presence update.
-    const persons = people.get_realm_persons();
+    const persons = people.get_realm_users();
 
-    _.each(persons, function (person) {
+    for (const person of persons) {
         const user_id = person.user_id;
         let status = "offline";
 
-        if (exports.presence_info[user_id]) {
+        if (exports.presence_info.has(user_id)) {
             // this is normal, we have data for active
             // users that we don't want to clobber.
-            return;
+            continue;
         }
 
         if (person.is_bot) {
             // we don't show presence for bots
-            return;
+            continue;
         }
 
         if (people.is_my_user_id(user_id)) {
             status = "active";
         }
 
-        exports.presence_info[user_id] = {
+        exports.presence_info.set(user_id, {
             status: status,
-            mobile: false,
             last_active: undefined,
-        };
-    });
+        });
+    }
 };
 
 exports.last_active_date = function (user_id) {
-    const info = exports.presence_info[user_id];
+    const info = exports.presence_info.get(user_id);
 
     if (!info || !info.last_active) {
         return;
@@ -168,6 +240,11 @@ exports.last_active_date = function (user_id) {
 
     const date = new XDate(info.last_active * 1000);
     return date;
+};
+
+exports.initialize = function (params) {
+    presence.set_info(params.presences,
+                      params.initial_servertime);
 };
 
 window.presence = exports;

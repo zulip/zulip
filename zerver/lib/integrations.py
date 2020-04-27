@@ -3,7 +3,7 @@ import os
 from typing import Dict, List, Optional, Any, Tuple
 from django.conf.urls import url
 from django.contrib.staticfiles.storage import staticfiles_storage
-from django.urls.resolvers import LocaleRegexProvider
+from django.urls.resolvers import RegexPattern
 from django.utils.module_loading import import_string
 from django.utils.translation import ugettext as _
 from zerver.lib.storage import static_path
@@ -29,7 +29,7 @@ Over time, we expect this registry to grow additional convenience
 features for writing and configuring integrations efficiently.
 """
 
-CATEGORIES = {
+CATEGORIES: Dict[str, str] = {
     'meta-integration': _('Integration frameworks'),
     'continuous-integration': _('Continuous integration'),
     'customer-support': _('Customer support'),
@@ -44,11 +44,12 @@ CATEGORIES = {
     'productivity': _('Productivity'),
     'version-control': _('Version control'),
     'bots': _('Interactive bots'),
-}  # type: Dict[str, str]
+}
 
 class Integration:
     DEFAULT_LOGO_STATIC_PATH_PNG = 'images/integrations/logos/{name}.png'
     DEFAULT_LOGO_STATIC_PATH_SVG = 'images/integrations/logos/{name}.svg'
+    DEFAULT_BOT_AVATAR_PATH = 'images/integrations/bot_avatars/{name}.png'
 
     def __init__(self, name: str, client_name: str, categories: List[str],
                  logo: Optional[str]=None, secondary_line_text: Optional[str]=None,
@@ -90,13 +91,20 @@ class Integration:
     def is_enabled(self) -> bool:
         return True
 
-    def get_logo_url(self) -> Optional[str]:
+    def get_logo_path(self) -> Optional[str]:
         logo_file_path_svg = self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=self.name)
         logo_file_path_png = self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=self.name)
         if os.path.isfile(static_path(logo_file_path_svg)):
-            return staticfiles_storage.url(logo_file_path_svg)
+            return logo_file_path_svg
         elif os.path.isfile(static_path(logo_file_path_png)):
-            return staticfiles_storage.url(logo_file_path_png)
+            return logo_file_path_png
+
+        return None
+
+    def get_logo_url(self) -> Optional[str]:
+        logo_path = self.get_logo_path()
+        if logo_path is not None:
+            return staticfiles_storage.url(logo_path)
 
         return None
 
@@ -178,8 +186,14 @@ class WebhookIntegration(Integration):
         self.doc = doc
 
     @property
-    def url_object(self) -> LocaleRegexProvider:
+    def url_object(self) -> RegexPattern:
         return url(self.url, self.function)
+
+def split_fixture_path(path: str) -> Tuple[str, str]:
+    path, fixture_name = os.path.split(path)
+    fixture_name, _ = os.path.splitext(fixture_name)
+    integration_name = os.path.split(os.path.dirname(path))[-1]
+    return integration_name, fixture_name
 
 class HubotIntegration(Integration):
     GIT_URL_TEMPLATE = "https://github.com/hubot-scripts/hubot-{}"
@@ -216,17 +230,23 @@ class EmbeddedBotIntegration(Integration):
         super().__init__(
             name, client_name, *args, **kwargs)
 
-EMBEDDED_BOTS = [
+EMBEDDED_BOTS: List[EmbeddedBotIntegration] = [
     EmbeddedBotIntegration('converter', []),
     EmbeddedBotIntegration('encrypt', []),
     EmbeddedBotIntegration('helloworld', []),
     EmbeddedBotIntegration('virtual_fs', []),
     EmbeddedBotIntegration('giphy', []),
     EmbeddedBotIntegration('followup', []),
-]  # type: List[EmbeddedBotIntegration]
+]
 
-WEBHOOK_INTEGRATIONS = [
+WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration('airbrake', ['monitoring']),
+    WebhookIntegration(
+        'alertmanager',
+        ['monitoring'],
+        display_name='Prometheus AlertManager',
+        logo='images/integrations/logos/prometheus.svg'
+    ),
     WebhookIntegration('ansibletower', ['deployment'], display_name='Ansible Tower'),
     WebhookIntegration('appfollow', ['customer-support'], display_name='AppFollow'),
     WebhookIntegration('appveyor', ['continuous-integration'], display_name='AppVeyor'),
@@ -321,7 +341,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('pivotal', ['project-management'], display_name='Pivotal Tracker'),
     WebhookIntegration('raygun', ['monitoring'], display_name="Raygun"),
     WebhookIntegration('reviewboard', ['version-control'], display_name="ReviewBoard"),
-    WebhookIntegration('semaphore', ['continuous-integration', 'deployment'], stream_name='builds'),
+    WebhookIntegration('semaphore', ['continuous-integration', 'deployment']),
     WebhookIntegration('sentry', ['monitoring']),
     WebhookIntegration('slack', ['communication']),
     WebhookIntegration('solano', ['continuous-integration'], display_name='Solano Labs'),
@@ -346,9 +366,9 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('zabbix', ['monitoring'], display_name='Zabbix'),
     WebhookIntegration('gci', ['misc'], display_name='Google Code-in',
                        stream_name='gci'),
-]  # type: List[WebhookIntegration]
+]
 
-INTEGRATIONS = {
+INTEGRATIONS: Dict[str, Integration] = {
     'asana': Integration('asana', 'asana', ['project-management'], doc='zerver/integrations/asana.md'),
     'capistrano': Integration(
         'capistrano',
@@ -440,16 +460,16 @@ INTEGRATIONS = {
                            # _ needed to get around adblock plus
                            logo='images/integrations/logos/twitte_r.svg',
                            doc='zerver/integrations/twitter.md'),
-}  # type: Dict[str, Integration]
+}
 
-BOT_INTEGRATIONS = [
+BOT_INTEGRATIONS: List[BotIntegration] = [
     BotIntegration('github_detail', ['version-control', 'bots'],
                    display_name='GitHub Detail'),
     BotIntegration('xkcd', ['bots', 'misc'], display_name='xkcd',
                    logo='images/integrations/logos/xkcd.png'),
-]  # type: List[BotIntegration]
+]
 
-HUBOT_INTEGRATIONS = [
+HUBOT_INTEGRATIONS: List[HubotIntegration] = [
     HubotIntegration('assembla', ['version-control', 'project-management'],
                      display_name='Assembla', logo_alt='Assembla'),
     HubotIntegration('bonusly', ['hr']),
@@ -468,7 +488,7 @@ HUBOT_INTEGRATIONS = [
     HubotIntegration('youtube', ['misc'], display_name='YouTube',
                      # _ needed to get around adblock plus
                      logo='images/integrations/logos/youtub_e.svg'),
-]  # type: List[HubotIntegration]
+]
 
 for hubot_integration in HUBOT_INTEGRATIONS:
     INTEGRATIONS[hubot_integration.name] = hubot_integration

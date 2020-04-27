@@ -44,7 +44,7 @@ Create default stream groups which the users can choose during sign up.
         assert realm is not None  # Should be ensured by parser
 
         streams = []
-        stream_names = set([stream.strip() for stream in options["streams"].split(",")])
+        stream_names = {stream.strip() for stream in options["streams"].split(",")}
         for stream_name in set(stream_names):
             stream = ensure_stream(realm, stream_name)
             streams.append(stream)

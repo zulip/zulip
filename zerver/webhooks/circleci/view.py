@@ -9,8 +9,8 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-CIRCLECI_TOPIC_TEMPLATE = u'{repository_name}'
-CIRCLECI_MESSAGE_TEMPLATE = u'[Build]({build_url}) triggered by {username} on {branch} branch {status}.'
+CIRCLECI_TOPIC_TEMPLATE = '{repository_name}'
+CIRCLECI_MESSAGE_TEMPLATE = '[Build]({build_url}) triggered by {username} on {branch} branch {status}.'
 
 FAILED_STATUS = 'failed'
 
@@ -40,7 +40,7 @@ def get_body(payload: Dict[str, Any]) -> str:
 def get_status(payload: Dict[str, Any]) -> str:
     status = payload['status']
     if payload['previous'] and payload['previous']['status'] == FAILED_STATUS and status == FAILED_STATUS:
-        return u'is still failing'
+        return 'is still failing'
     if status == 'success':
-        return u'succeeded'
+        return 'succeeded'
     return status

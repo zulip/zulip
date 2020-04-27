@@ -5,6 +5,7 @@ import logging
 
 from typing import Dict, Any, List
 
+from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.import_realm import (
     do_import_realm,
 )
@@ -16,7 +17,7 @@ from zerver.data_import.mattermost_user import UserHandler
 from zerver.data_import.mattermost import mattermost_data_file_to_dict, process_user, convert_user_data, \
     create_username_to_user_mapping, label_mirror_dummy_users, reset_mirror_dummy_users, \
     convert_channel_data, write_emoticon_data, get_mentioned_user_ids, check_user_in_team, \
-    build_reactions, get_name_to_codepoint_dict, do_convert_data, convert_huddle_data, \
+    build_reactions, do_convert_data, convert_huddle_data, \
     generate_huddle_name
 from zerver.data_import.sequencer import IdMapper
 from zerver.data_import.import_util import SubscriberHandler
@@ -308,7 +309,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(zerver_realm_emoji[1]["deactivated"], False)
 
         records_file = os.path.join(output_dir, "emoji", "records.json")
-        with open(records_file, "r") as f:
+        with open(records_file) as f:
             records_json = ujson.load(f)
 
         self.assertEqual(records_json[0]["file_name"], "peerdium")
@@ -437,7 +438,7 @@ class MatterMostImporter(ZulipTestCase):
         fixture_file_name = self.fixture_file_name("export.json", "mattermost_fixtures")
         mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
 
-        total_reactions = []  # type: List[Dict[str, Any]]
+        total_reactions: List[Dict[str, Any]] = []
 
         reactions = [
             {"user": "harry", "create_at": 1553165521410, "emoji_name": "tick"},
@@ -457,7 +458,6 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(zerver_realmemoji[1]["name"], "tick")
         tick_emoji_code = zerver_realmemoji[1]["id"]
 
-        name_to_codepoint = get_name_to_codepoint_dict()
         user_id_mapper = IdMapper()
         harry_id = user_id_mapper.get("harry")
         ron_id = user_id_mapper.get("ron")
@@ -467,7 +467,6 @@ class MatterMostImporter(ZulipTestCase):
             total_reactions=total_reactions,
             reactions=reactions,
             message_id=5,
-            name_to_codepoint=name_to_codepoint,
             user_id_mapper=user_id_mapper,
             zerver_realmemoji=zerver_realmemoji
         )
@@ -476,11 +475,11 @@ class MatterMostImporter(ZulipTestCase):
         world_map_emoji_code = name_to_codepoint["world_map"]
 
         self.assertEqual(len(total_reactions), 4)
-        self.assertEqual(self.get_set(total_reactions, "reaction_type"), set([Reaction.REALM_EMOJI, Reaction.UNICODE_EMOJI]))
-        self.assertEqual(self.get_set(total_reactions, "emoji_name"), set(["tick", "smile", "world_map"]))
-        self.assertEqual(self.get_set(total_reactions, "emoji_code"), set([tick_emoji_code, smile_emoji_code,
-                                                                           world_map_emoji_code]))
-        self.assertEqual(self.get_set(total_reactions, "user_profile"), set([harry_id, ron_id]))
+        self.assertEqual(self.get_set(total_reactions, "reaction_type"), {Reaction.REALM_EMOJI, Reaction.UNICODE_EMOJI})
+        self.assertEqual(self.get_set(total_reactions, "emoji_name"), {"tick", "smile", "world_map"})
+        self.assertEqual(self.get_set(total_reactions, "emoji_code"), {tick_emoji_code, smile_emoji_code,
+                                                                       world_map_emoji_code})
+        self.assertEqual(self.get_set(total_reactions, "user_profile"), {harry_id, ron_id})
         self.assertEqual(len(self.get_set(total_reactions, "id")), 4)
         self.assertEqual(len(self.get_set(total_reactions, "message")), 1)
 
@@ -514,23 +513,23 @@ class MatterMostImporter(ZulipTestCase):
 
         exported_user_ids = self.get_set(realm['zerver_userprofile'], 'id')
         exported_user_full_names = self.get_set(realm['zerver_userprofile'], 'full_name')
-        self.assertEqual(set(['Harry Potter', 'Ron Weasley', 'Severus Snape']), exported_user_full_names)
+        self.assertEqual({'Harry Potter', 'Ron Weasley', 'Severus Snape'}, exported_user_full_names)
 
         exported_user_emails = self.get_set(realm['zerver_userprofile'], 'email')
-        self.assertEqual(set(['harry@zulip.com', 'ron@zulip.com', 'snape@zulip.com']), exported_user_emails)
+        self.assertEqual({'harry@zulip.com', 'ron@zulip.com', 'snape@zulip.com'}, exported_user_emails)
 
         self.assertEqual(len(realm['zerver_stream']), 3)
         exported_stream_names = self.get_set(realm['zerver_stream'], 'name')
-        self.assertEqual(exported_stream_names, set(['Gryffindor common room', 'Gryffindor quidditch team', 'Dumbledores army']))
-        self.assertEqual(self.get_set(realm['zerver_stream'], 'realm'), set([realm['zerver_realm'][0]['id']]))
-        self.assertEqual(self.get_set(realm['zerver_stream'], 'deactivated'), set([False]))
+        self.assertEqual(exported_stream_names, {'Gryffindor common room', 'Gryffindor quidditch team', 'Dumbledores army'})
+        self.assertEqual(self.get_set(realm['zerver_stream'], 'realm'), {realm['zerver_realm'][0]['id']})
+        self.assertEqual(self.get_set(realm['zerver_stream'], 'deactivated'), {False})
 
         self.assertEqual(len(realm['zerver_defaultstream']), 0)
 
         exported_recipient_ids = self.get_set(realm['zerver_recipient'], 'id')
         self.assertEqual(len(exported_recipient_ids), 6)
         exported_recipient_types = self.get_set(realm['zerver_recipient'], 'type')
-        self.assertEqual(exported_recipient_types, set([1, 2]))
+        self.assertEqual(exported_recipient_types, {1, 2})
         exported_recipient_type_ids = self.get_set(realm['zerver_recipient'], 'type_id')
         self.assertEqual(len(exported_recipient_type_ids), 3)
 
@@ -587,23 +586,23 @@ class MatterMostImporter(ZulipTestCase):
 
         exported_user_ids = self.get_set(realm['zerver_userprofile'], 'id')
         exported_user_full_names = self.get_set(realm['zerver_userprofile'], 'full_name')
-        self.assertEqual(set(['Harry Potter', 'Ron Weasley', 'Ginny Weasley', 'Tom Riddle']), exported_user_full_names)
+        self.assertEqual({'Harry Potter', 'Ron Weasley', 'Ginny Weasley', 'Tom Riddle'}, exported_user_full_names)
 
         exported_user_emails = self.get_set(realm['zerver_userprofile'], 'email')
-        self.assertEqual(set(['harry@zulip.com', 'ron@zulip.com', 'ginny@zulip.com', 'voldemort@zulip.com']), exported_user_emails)
+        self.assertEqual({'harry@zulip.com', 'ron@zulip.com', 'ginny@zulip.com', 'voldemort@zulip.com'}, exported_user_emails)
 
         self.assertEqual(len(realm['zerver_stream']), 3)
         exported_stream_names = self.get_set(realm['zerver_stream'], 'name')
-        self.assertEqual(exported_stream_names, set(['Gryffindor common room', 'Gryffindor quidditch team', 'Dumbledores army']))
-        self.assertEqual(self.get_set(realm['zerver_stream'], 'realm'), set([realm['zerver_realm'][0]['id']]))
-        self.assertEqual(self.get_set(realm['zerver_stream'], 'deactivated'), set([False]))
+        self.assertEqual(exported_stream_names, {'Gryffindor common room', 'Gryffindor quidditch team', 'Dumbledores army'})
+        self.assertEqual(self.get_set(realm['zerver_stream'], 'realm'), {realm['zerver_realm'][0]['id']})
+        self.assertEqual(self.get_set(realm['zerver_stream'], 'deactivated'), {False})
 
         self.assertEqual(len(realm['zerver_defaultstream']), 0)
 
         exported_recipient_ids = self.get_set(realm['zerver_recipient'], 'id')
         self.assertEqual(len(exported_recipient_ids), 8)
         exported_recipient_types = self.get_set(realm['zerver_recipient'], 'type')
-        self.assertEqual(exported_recipient_types, set([1, 2, 3]))
+        self.assertEqual(exported_recipient_types, {1, 2, 3})
         exported_recipient_type_ids = self.get_set(realm['zerver_recipient'], 'type_id')
         self.assertEqual(len(exported_recipient_type_ids), 4)
 

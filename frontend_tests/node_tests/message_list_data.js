@@ -1,11 +1,9 @@
 zrequire('unread');
-zrequire('util');
 
 zrequire('Filter', 'js/filter');
 zrequire('MessageListData', 'js/message_list_data');
 
 set_global('page_params', {});
-set_global('blueslip', global.make_zblueslip());
 set_global('muting', {});
 
 global.patch_builtin('setTimeout', (f, delay) => {
@@ -22,7 +20,7 @@ function make_msg(msg_id) {
 }
 
 function make_msgs(msg_ids) {
-    return _.map(msg_ids, make_msg);
+    return msg_ids.map(make_msg);
 }
 
 function assert_contents(mld, msg_ids) {
@@ -76,7 +74,6 @@ run_test('basics', () => {
     mld.get(10).unread = false;
     assert.equal(mld.first_unread_message_id(), 15);
 
-
     mld.clear();
     assert_contents(mld, []);
     assert.equal(mld.closest_id(99), -1);
@@ -93,9 +90,9 @@ run_test('basics', () => {
     });
     assert_contents(mld, [120, 130, 140, 145]);
 
-    _.each(mld.all_messages(), (msg) => {
+    for (const msg of mld.all_messages()) {
         msg.unread = false;
-    });
+    }
 
     assert.equal(mld.first_unread_message_id(), 145);
 });
@@ -157,12 +154,12 @@ run_test('more muting', () => {
     });
 
     assert.deepEqual(
-        _.pluck(mld._all_items, 'id'),
+        mld._all_items.map(message => message.id),
         [3, 4, 7, 8]
     );
 
     assert.deepEqual(
-        _.pluck(mld.all_messages(), 'id'),
+        mld.all_messages().map(message => message.id),
         [4, 8]
     );
 
@@ -179,12 +176,12 @@ run_test('more muting', () => {
     const more_info = mld.add_messages(more_messages);
 
     assert.deepEqual(
-        _.pluck(mld._all_items, 'id'),
+        mld._all_items.map(message => message.id),
         [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     );
 
     assert.deepEqual(
-        _.pluck(mld.all_messages(), 'id'),
+        mld.all_messages().map(message => message.id),
         [2, 4, 6, 8, 10]
     );
 
@@ -209,12 +206,11 @@ run_test('errors', () => {
     });
     assert.equal(mld.get('bogus-id'), undefined);
 
-    blueslip.set_test_data('fatal', 'Bad message id');
-    mld._add_to_hash(['asdf']);
-    assert.equal(blueslip.get_test_logs('fatal').length, 1);
+    assert.throws(() => {
+        mld._add_to_hash(['asdf']);
+    }, {message: 'Bad message id'});
 
-    blueslip.set_test_data('error', 'Duplicate message added to MessageListData');
-    mld._hash[1] = 'taken';
+    blueslip.expect('error', 'Duplicate message added to MessageListData');
+    mld._hash.set(1, 'taken');
     mld._add_to_hash(make_msgs([1]));
-    assert.equal(blueslip.get_test_logs('error').length, 1);
 });

@@ -3,24 +3,17 @@
         <div class="alert stream_change_property_info"></div>
         {{#with sub}}
         <div class="stream-header">
-            {{#if invite_only}}
-            <div class="large-icon lock" style="color: {{color}}">
-                <i class="fa fa-lock" aria-hidden="true"></i>
-            </div>
-            {{else if is_web_public}}
-            <div class="large-icon" style="color: {{color}}">
-                <i class="fa fa-globe" aria-hidden="true"></i>
-            </div>
-            {{else}}
-            <div class="large-icon hash" style="color: {{color}}"></div>
-            {{/if}}
+            {{> subscription_privacy
+              invite_only=invite_only
+              is_web_public=is_web_public }}
             <div class="stream-name">
-                <span class="stream-name-editable editable-section">{{name}}</span>
+                <span title="{{name}}" class="stream-name-editable editable-section" >{{name}}</span>
                 {{#if can_change_name_description}}
                 <span class="editable" data-make-editable=".stream-name-editable"></span>
                 <span class="checkmark" data-finish-editing=".stream-name-editable">✓</span>
                 {{/if}}
             </div>
+            <div id="stream_change_property_status{{stream_id}}" class="alert-notification"></div>
             <div class="button-group">
                 {{#if is_admin}}
                 <button class="button small rounded btn-danger deactivate" type="button" name="delete_button" title="{{t 'Delete stream'}}"> <i class="fa fa-trash-o" aria-hidden="true"></i></button>
@@ -33,7 +26,7 @@
             </div>
         </div>
         <div class="stream-description">
-            <span class="stream-description-editable editable-section description rendered_markdown" data-no-description="{{t 'No description.' }}">{{{rendered_description}}}</span>
+            <span class="stream-description-editable editable-section description rendered_markdown" data-no-description="{{t 'No description.' }}">{{rendered_markdown rendered_description}}</span>
             {{#if can_change_name_description}}
             <span class="editable" data-make-editable=".stream-description-editable"></span>
             <span class="checkmark" data-finish-editing=".stream-description-editable">✓</span>
@@ -41,7 +34,8 @@
         </div>
         <div class="subscription-type">
             <div class="subscription-type-text">
-                {{> subscription_type}}
+                {{> subscription_type
+                  stream_post_policy_values=../stream_post_policy_values}}
             </div>
             <a class="change-stream-privacy" {{#unless can_change_stream_permissions}}style="display: none;"{{/unless}}>[{{t "Change" }}]</a>
         </div>
@@ -53,13 +47,12 @@
                     <li>
                         {{> stream_settings_checkbox
                           setting_name=name
-                          prefix="sub_"
-                          suffix="_setting"
-                          is_checked=value
+                          is_checked=is_checked
                           is_muted=(lookup ../sub "is_muted")
                           stream_id=(lookup ../sub "stream_id")
                           notification_setting=is_notification_setting
-                          realm_setting_disabled=(lookup ../realm_settings name)
+                          disabled_realm_setting=disabled_realm_setting
+                          is_disabled=is_disabled
                           label=label}}
                     </li>
                     {{/each}}

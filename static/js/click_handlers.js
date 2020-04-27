@@ -1,54 +1,10 @@
+const util = require("./util");
 // You won't find every click handler here, but it's a good place to start!
 
 const render_buddy_list_tooltip = require('../templates/buddy_list_tooltip.hbs');
 const render_buddy_list_tooltip_content = require('../templates/buddy_list_tooltip_content.hbs');
 
 exports.initialize = function () {
-
-    // MOUSE MOVING VS DRAGGING FOR SELECTION DATA TRACKING
-
-    const drag = (function () {
-        let start;
-        let time;
-
-        return {
-            start: function (e) {
-                start = { x: e.offsetX, y: e.offsetY };
-                time = new Date().getTime();
-            },
-
-            end: function (e) {
-                const end = { x: e.offsetX, y: e.offsetY };
-
-                let dist;
-                if (start) {
-                    // get the linear difference between two coordinates on the screen.
-                    dist = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
-                } else {
-                    // this usually happens if someone started dragging from outside of
-                    // a message and finishes their drag inside the message. The intent
-                    // in that case is clearly to select an area, not click a message;
-                    // setting dist to Infinity here will ensure that.
-                    dist = Infinity;
-                }
-
-                this.val = dist;
-                this.time = new Date().getTime() - time;
-
-                start = undefined;
-
-                return dist;
-            },
-            val: null,
-        };
-    }());
-
-    $("#main_div").on("mousedown", ".messagebox", function (e) {
-        drag.start(e);
-    });
-    $("#main_div").on("mouseup", ".messagebox", function (e) {
-        drag.end(e);
-    });
 
     // MESSAGE CLICKING
 
@@ -129,29 +85,23 @@ exports.initialize = function () {
             return;
         }
 
-        // A tricky issue here is distinguishing hasty clicks (where
-        // the mouse might still move a few pixels between mouseup and
-        // mousedown) from selecting-for-copy.  We handle this issue
-        // by treating it as a click if distance is very small
-        // (covering the long-click case), or fairly small and over a
-        // short time (covering the hasty click case).  This seems to
-        // work nearly perfectly.  Once we no longer need to support
-        // older browsers, we may be able to use the window.selection
-        // API instead.
-        if (drag.val < 5 && drag.time < 150 || drag.val < 2) {
-            const row = $(this).closest(".message_row");
-            const id = rows.id(row);
-
-            if (message_edit.is_editing(id)) {
-                // Clicks on a message being edited shouldn't trigger a reply.
-                return;
-            }
-
-            current_msg_list.select_id(id);
-            compose_actions.respond_to_message({trigger: 'message click'});
-            e.stopPropagation();
-            popovers.hide_all();
+        if (document.getSelection().type === "Range") {
+            // Drags on the message (to copy message text) shouldn't trigger a reply.
+            return;
         }
+
+        const row = $(this).closest(".message_row");
+        const id = rows.id(row);
+
+        if (message_edit.is_editing(id)) {
+            // Clicks on a message being edited shouldn't trigger a reply.
+            return;
+        }
+
+        current_msg_list.select_id(id);
+        compose_actions.respond_to_message({trigger: 'message click'});
+        e.stopPropagation();
+        popovers.hide_all();
     };
 
     // if on normal non-mobile experience, a `click` event should run the message
@@ -301,38 +251,37 @@ exports.initialize = function () {
     });
     $("body").on("click", ".topic_edit_save", function (e) {
         const recipient_row = $(this).closest(".recipient_row");
-        message_edit.show_topic_edit_spinner(recipient_row);
-        message_edit.save(recipient_row, true);
+        message_edit.save_inline_topic_edit(recipient_row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".topic_edit_cancel", function (e) {
         const recipient_row = $(this).closest(".recipient_row");
-        current_msg_list.hide_edit_topic(recipient_row);
+        message_edit.end_inline_topic_edit(recipient_row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".message_edit_save", function (e) {
         const row = $(this).closest(".message_row");
-        message_edit.save(row, false);
+        message_edit.save_message_row_edit(row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".message_edit_cancel", function (e) {
         const row = $(this).closest(".message_row");
-        message_edit.end(row);
+        message_edit.end_message_row_edit(row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".message_edit_close", function (e) {
         const row = $(this).closest(".message_row");
-        message_edit.end(row);
+        message_edit.end_message_row_edit(row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".copy_message", function (e) {
         const row = $(this).closest(".message_row");
-        message_edit.end(row);
+        message_edit.end_message_row_edit(row);
         row.find(".alert-msg").text(i18n.t("Copied!"));
         row.find(".alert-msg").css("display", "block");
         row.find(".alert-msg").delay(1000).fadeOut(300);
@@ -767,6 +716,7 @@ exports.initialize = function () {
         $("body").on("click", "[data-make-editable]", function () {
             const selector = $(this).attr("data-make-editable");
             const edit_area = $(this).parent().find(selector);
+            $(selector).removeClass("stream-name-edit-box");
             if (edit_area.attr("contenteditable") === "true") {
                 $("[data-finish-editing='" + selector + "']").hide();
                 edit_area.attr("contenteditable", false);
@@ -775,6 +725,7 @@ exports.initialize = function () {
             } else {
                 $("[data-finish-editing='" + selector + "']").show();
 
+                $(selector).addClass("stream-name-edit-box");
                 edit_area.attr("data-prev-text", edit_area.text().trim())
                     .attr("contenteditable", true);
 
@@ -790,6 +741,7 @@ exports.initialize = function () {
 
         $("body").on("click", "[data-finish-editing]", function (e) {
             const selector = $(this).attr("data-finish-editing");
+            $(selector).removeClass("stream-name-edit-box");
             if (map[selector].on_save) {
                 map[selector].on_save(e);
                 $(this).hide();

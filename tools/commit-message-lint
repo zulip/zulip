@@ -8,6 +8,12 @@
 if [ "$TRAVIS" ]; then
     # Work around https://github.com/travis-ci/travis-ci/issues/4596
     range="${TRAVIS_COMMIT_RANGE/.../..}"
+elif [[ "
+$(git remote -v)
+" =~ '
+'([^[:space:]]*)[[:space:]]*(https://github\.com/|ssh://git@github\.com/|git@github\.com:)zulip/zulip(\.git|/)?\ \(fetch\)'
+' ]]; then
+    range="${BASH_REMATCH[1]}/master..HEAD"
 else
     range="upstream/master..HEAD"
 fi

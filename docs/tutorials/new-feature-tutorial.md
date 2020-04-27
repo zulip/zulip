@@ -20,7 +20,7 @@ tests, use Django's tooling.
 Zulip's [directory structure](../overview/directory-structure.md)
 will also be helpful to review when creating a new feature. Many
 aspects of the structure will be familiar to Django developers. Visit
-[Django's documentation](https://docs.djangoproject.com/en/1.11/#index-first-steps)
+[Django's documentation](https://docs.djangoproject.com/en/2.2/#index-first-steps)
 for more information about how Django projects are typically
 organized.  And finally, the
 [message sending](../subsystems/sending-messages.md) documentation on
@@ -527,7 +527,7 @@ In frontend, we have split the `property_types` into three objects:
     like who can join the organization and whether normal users can
     create streams or upload custom emoji.
 
-Once you've determined wheter the new setting belongs, the next step
+Once you've determined whether the new setting belongs, the next step
 is to find the right subsection of that page to put the setting
 in. For example in this case of `mandatory_topics` it will lie in
 "Message feed" (`msg_feed`) subsection.

@@ -39,12 +39,11 @@ BLUE = '\x1b[34m'
 MAGENTA = '\x1b[35m'
 CYAN = '\x1b[36m'
 
-def overwrite_symlink(src, dst):
-    # type: (str, str) -> None
+def overwrite_symlink(src: str, dst: str) -> None:
     while True:
         tmp = tempfile.mktemp(
             prefix='.' + os.path.basename(dst) + '.',
-            dir=os.path.dirname(dst))  # type: ignore # https://github.com/python/typeshed/issues/3449
+            dir=os.path.dirname(dst))
         try:
             os.symlink(src, tmp)
         except FileExistsError:
@@ -56,8 +55,7 @@ def overwrite_symlink(src, dst):
         os.remove(tmp)
         raise
 
-def parse_cache_script_args(description):
-    # type: (str) -> argparse.Namespace
+def parse_cache_script_args(description: str) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=description)
 
     parser.add_argument(
@@ -88,8 +86,7 @@ def get_deploy_root() -> str:
         os.path.normpath(os.path.join(os.path.dirname(__file__), "..", ".."))
     )
 
-def get_deployment_version(extract_path):
-    # type: (str) -> str
+def get_deployment_version(extract_path: str) -> str:
     version = '0.0.0'
     for item in os.listdir(extract_path):
         item_path = os.path.join(extract_path, item)
@@ -101,14 +98,12 @@ def get_deployment_version(extract_path):
             break
     return version
 
-def is_invalid_upgrade(current_version, new_version):
-    # type: (str, str) -> bool
+def is_invalid_upgrade(current_version: str, new_version: str) -> bool:
     if new_version > '1.4.3' and current_version <= '1.3.10':
         return True
     return False
 
-def subprocess_text_output(args):
-    # type: (Sequence[str]) -> str
+def subprocess_text_output(args: Sequence[str]) -> str:
     return subprocess.check_output(args, universal_newlines=True).strip()
 
 def get_zulip_pwent() -> pwd.struct_passwd:
@@ -121,8 +116,7 @@ def get_zulip_pwent() -> pwd.struct_passwd:
     # `zulip` user as that's the correct value in production.
     return pwd.getpwnam("zulip")
 
-def su_to_zulip(save_suid=False):
-    # type: (bool) -> None
+def su_to_zulip(save_suid: bool = False) -> None:
     """Warning: su_to_zulip assumes that the zulip checkout is owned by
     the zulip user (or whatever normal user is running the Zulip
     installation).  It should never be run from the installer or other
@@ -136,14 +130,12 @@ def su_to_zulip(save_suid=False):
         os.setuid(pwent.pw_uid)
     os.environ['HOME'] = pwent.pw_dir
 
-def make_deploy_path():
-    # type: () -> str
+def make_deploy_path() -> str:
     timestamp = datetime.datetime.now().strftime(TIMESTAMP_FORMAT)
     return os.path.join(DEPLOYMENTS_DIR, timestamp)
 
 TEMPLATE_DATABASE_DIR = "test-backend/databases"
-def get_dev_uuid_var_path(create_if_missing=False):
-    # type: (bool) -> str
+def get_dev_uuid_var_path(create_if_missing: bool = False) -> str:
     zulip_path = get_deploy_root()
     uuid_path = os.path.join(os.path.realpath(os.path.dirname(zulip_path)), ".zulip-dev-uuid")
     if os.path.exists(uuid_path):
@@ -163,8 +155,7 @@ def get_dev_uuid_var_path(create_if_missing=False):
     os.makedirs(result_path, exist_ok=True)
     return result_path
 
-def get_deployment_lock(error_rerun_script):
-    # type: (str) -> None
+def get_deployment_lock(error_rerun_script: str) -> None:
     start_time = time.time()
     got_lock = False
     while time.time() - start_time < 300:
@@ -187,12 +178,10 @@ def get_deployment_lock(error_rerun_script):
               ENDC)
         sys.exit(1)
 
-def release_deployment_lock():
-    # type: () -> None
+def release_deployment_lock() -> None:
     shutil.rmtree(LOCK_DIR)
 
-def run(args, **kwargs):
-    # type: (Sequence[str], **Any) -> None
+def run(args: Sequence[str], **kwargs: Any) -> None:
     # Output what we're doing in the `set -x` style
     print("+ %s" % (" ".join(map(shlex.quote, args)),))
 
@@ -208,8 +197,7 @@ def run(args, **kwargs):
         print()
         raise
 
-def log_management_command(cmd, log_path):
-    # type: (str, str) -> None
+def log_management_command(cmd: str, log_path: str) -> None:
     log_dir = os.path.dirname(log_path)
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
@@ -223,16 +211,14 @@ def log_management_command(cmd, log_path):
 
     logger.info("Ran '%s'" % (cmd,))
 
-def get_environment():
-    # type: () -> str
+def get_environment() -> str:
     if os.path.exists(DEPLOYMENTS_DIR):
         return "prod"
     if os.environ.get("TRAVIS"):
         return "travis"
     return "dev"
 
-def get_recent_deployments(threshold_days):
-    # type: (int) -> Set[str]
+def get_recent_deployments(threshold_days: int) -> Set[str]:
     # Returns a list of deployments not older than threshold days
     # including `/root/zulip` directory if it exists.
     recent = set()
@@ -259,16 +245,14 @@ def get_recent_deployments(threshold_days):
         recent.add("/root/zulip")
     return recent
 
-def get_threshold_timestamp(threshold_days):
-    # type: (int) -> int
+def get_threshold_timestamp(threshold_days: int) -> int:
     # Given number of days, this function returns timestamp corresponding
     # to the time prior to given number of days.
     threshold = datetime.datetime.now() - datetime.timedelta(days=threshold_days)
     threshold_timestamp = int(time.mktime(threshold.utctimetuple()))
     return threshold_timestamp
 
-def get_caches_to_be_purged(caches_dir, caches_in_use, threshold_days):
-    # type: (str, Set[str], int) -> Set[str]
+def get_caches_to_be_purged(caches_dir: str, caches_in_use: Set[str], threshold_days: int) -> Set[str]:
     # Given a directory containing caches, a list of caches in use
     # and threshold days, this function return a list of caches
     # which can be purged. Remove the cache only if it is:
@@ -287,9 +271,10 @@ def get_caches_to_be_purged(caches_dir, caches_in_use, threshold_days):
             caches_to_purge.add(cache_dir)
     return caches_to_purge
 
-def purge_unused_caches(caches_dir, caches_in_use, cache_type, args):
-    # type: (str, Set[str], str, argparse.Namespace) -> None
-    all_caches = set([os.path.join(caches_dir, cache) for cache in os.listdir(caches_dir)])
+def purge_unused_caches(
+    caches_dir: str, caches_in_use: Set[str], cache_type: str, args: argparse.Namespace
+) -> None:
+    all_caches = {os.path.join(caches_dir, cache) for cache in os.listdir(caches_dir)}
     caches_to_purge = get_caches_to_be_purged(caches_dir, caches_in_use, args.threshold_days)
     caches_to_keep = all_caches - caches_to_purge
 
@@ -298,8 +283,7 @@ def purge_unused_caches(caches_dir, caches_in_use, cache_type, args):
     if args.verbose:
         print("Done!")
 
-def generate_sha1sum_emoji(zulip_path):
-    # type: (str) -> str
+def generate_sha1sum_emoji(zulip_path: str) -> str:
     ZULIP_EMOJI_DIR = os.path.join(zulip_path, 'tools', 'setup', 'emoji')
     sha = hashlib.sha1()
 
@@ -313,20 +297,33 @@ def generate_sha1sum_emoji(zulip_path):
     # Take into account the version of `emoji-datasource-google` package
     # while generating success stamp.
     PACKAGE_FILE_PATH = os.path.join(zulip_path, 'package.json')
-    with open(PACKAGE_FILE_PATH, 'r') as fp:
+    with open(PACKAGE_FILE_PATH) as fp:
         parsed_package_file = json.load(fp)
     dependency_data = parsed_package_file['dependencies']
 
     if 'emoji-datasource-google' in dependency_data:
-        emoji_datasource_version = dependency_data['emoji-datasource-google'].encode('utf-8')
+        with open(os.path.join(zulip_path, "yarn.lock")) as fp:
+            (emoji_datasource_version,) = re.findall(
+                r"^emoji-datasource-google@"
+                + re.escape(dependency_data["emoji-datasource-google"])
+                + r':\n  version "(.*)"',
+                fp.read(),
+                re.M,
+            )
     else:
-        emoji_datasource_version = b"0"
-    sha.update(emoji_datasource_version)
+        emoji_datasource_version = "0"
+    sha.update(emoji_datasource_version.encode())
 
     return sha.hexdigest()
 
-def may_be_perform_purging(dirs_to_purge, dirs_to_keep, dir_type, dry_run, verbose, no_headings):
-    # type: (Set[str], Set[str], str, bool, bool, bool) -> None
+def may_be_perform_purging(
+    dirs_to_purge: Set[str],
+    dirs_to_keep: Set[str],
+    dir_type: str,
+    dry_run: bool,
+    verbose: bool,
+    no_headings: bool,
+) -> None:
     if dry_run:
         print("Performing a dry run...")
     if not no_headings:
@@ -343,8 +340,7 @@ def may_be_perform_purging(dirs_to_purge, dirs_to_keep, dir_type, dry_run, verbo
             print("Keeping used %s: %s" % (dir_type, directory))
 
 @functools.lru_cache(None)
-def parse_os_release():
-    # type: () -> Dict[str, str]
+def parse_os_release() -> Dict[str, str]:
     """
     Example of the useful subset of the data:
     {
@@ -359,7 +355,7 @@ def parse_os_release():
     we avoid using it, as it is not available on RHEL-based platforms.
     """
     distro_info = {}  # type: Dict[str, str]
-    with open('/etc/os-release', 'r') as fp:
+    with open('/etc/os-release') as fp:
         for line in fp:
             line = line.strip()
             if not line or line.startswith('#'):
@@ -383,40 +379,73 @@ def os_families() -> Set[str]:
     distro_info = parse_os_release()
     return {distro_info["ID"], *distro_info.get("ID_LIKE", "").split()}
 
-def file_or_package_hash_updated(paths, hash_name, is_force, package_versions=[]):
-    # type: (List[str], str, bool, List[str]) -> bool
-    # Check whether the files or package_versions passed as arguments
-    # changed compared to the last execution.
+def files_and_string_digest(filenames: List[str],
+                            extra_strings: List[str]) -> str:
+    # see is_digest_obsolete for more context
     sha1sum = hashlib.sha1()
-    for path in paths:
-        with open(path, 'rb') as file_to_hash:
+    for fn in filenames:
+        with open(fn, 'rb') as file_to_hash:
             sha1sum.update(file_to_hash.read())
 
-    # The ouput of tools like build_pygments_data depends
-    # on the version of some pip packages as well.
-    for package_version in package_versions:
-        sha1sum.update(package_version.encode("utf-8"))
+    for extra_string in extra_strings:
+        sha1sum.update(extra_string.encode("utf-8"))
 
+    return sha1sum.hexdigest()
+
+def is_digest_obsolete(hash_name: str,
+                       filenames: List[str],
+                       extra_strings: List[str]=[]) -> bool:
+    '''
+    In order to determine if we need to run some
+    process, we calculate a digest of the important
+    files and strings whose respective contents
+    or values may indicate such a need.
+
+        filenames = files we should hash the contents of
+        extra_strings = strings we should hash directly
+
+    Grep for callers to see examples of how this is used.
+
+    To elaborate on extra_strings, they will typically
+    be things like:
+
+        - package versions (that we import)
+        - settings values (that we stringify with
+          json, deterministically)
+    '''
+    last_hash_path = os.path.join(get_dev_uuid_var_path(), hash_name)
+    try:
+        with open(last_hash_path) as f:
+            old_hash = f.read()
+    except FileNotFoundError:
+        # This is normal for a fresh checkout--a missing
+        # digest is an obsolete digest.
+        return True
+
+    new_hash = files_and_string_digest(filenames, extra_strings)
+
+    return new_hash != old_hash
+
+def write_new_digest(hash_name: str,
+                     filenames: List[str],
+                     extra_strings: List[str]=[]) -> None:
     hash_path = os.path.join(get_dev_uuid_var_path(), hash_name)
-    new_hash = sha1sum.hexdigest()
-    with open(hash_path, 'a+') as hash_file:
-        hash_file.seek(0)
-        last_hash = hash_file.read()
+    new_hash = files_and_string_digest(filenames, extra_strings)
+    with open(hash_path, 'w') as f:
+        f.write(new_hash)
 
-        if is_force or (new_hash != last_hash):
-            hash_file.seek(0)
-            hash_file.truncate()
-            hash_file.write(new_hash)
-            return True
-    return False
+    # Be a little verbose here--our callers ensure we
+    # only write new digests when things have changed, and
+    # making this system more transparent to developers
+    # can help them troubleshoot provisioning glitches.
+    print('New digest written to: ' + hash_path)
 
 def is_root() -> bool:
     if 'posix' in os.name and os.geteuid() == 0:
         return True
     return False
 
-def run_as_root(args, **kwargs):
-    # type: (List[str], **Any) -> None
+def run_as_root(args: List[str], **kwargs: Any) -> None:
     sudo_args = kwargs.pop('sudo_args', [])
     if not is_root():
         args = ['sudo'] + sudo_args + ['--'] + args
@@ -446,8 +475,12 @@ def assert_running_as_root(strip_lib_from_paths: bool=False) -> None:
         print("{} must be run as root.".format(script_name))
         sys.exit(1)
 
-def get_config(config_file, section, key, default_value=""):
-    # type: (configparser.RawConfigParser, str, str, str) -> str
+def get_config(
+    config_file: configparser.RawConfigParser,
+    section: str,
+    key: str,
+    default_value: str = "",
+) -> str:
     if config_file.has_option(section, key):
         return config_file.get(section, key)
     return default_value
@@ -457,8 +490,7 @@ def get_config_file() -> configparser.RawConfigParser:
     config_file.read("/etc/zulip/zulip.conf")
     return config_file
 
-def get_deploy_options(config_file):
-    # type: (configparser.RawConfigParser) -> List[str]
+def get_deploy_options(config_file: configparser.RawConfigParser) -> List[str]:
     return get_config(config_file, 'deployment', 'deploy_options', "").strip().split()
 
 def get_or_create_dev_uuid_var_path(path: str) -> str:

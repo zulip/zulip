@@ -35,9 +35,9 @@ A typical successful JSON response may look like:
 An example JSON response for when an `add` operation is requested for a topic
 that has already been muted:
 
-{generate_code_example|/users/me/subscriptions/muted_topics:patch|fixture(400_topic_already_muted)}
+{generate_code_example|/users/me/subscriptions/muted_topics:patch|fixture(400_0)}
 
 An example JSON response for when a `remove` operation is requested for a
 topic that had not been previously muted:
 
-{generate_code_example|/users/me/subscriptions/muted_topics:patch|fixture(400_topic_not_muted)}
+{generate_code_example|/users/me/subscriptions/muted_topics:patch|fixture(400_1)}

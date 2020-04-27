@@ -19,9 +19,7 @@ exports.MessageList = function (opts) {
         });
     }
 
-    _.extend(opts, {
-        collapse_messages: true,
-    });
+    opts.collapse_messages = true;
 
     const collapse_messages = opts.collapse_messages;
     const table_name = opts.table_name;
@@ -125,7 +123,7 @@ exports.MessageList.prototype = {
     },
 
     clear: function  MessageList_clear(opts) {
-        opts = _.extend({clear_selected_id: true}, opts);
+        opts = { clear_selected_id: true, ...opts };
 
         this.data.clear();
         this.view.clear_rendering_state(true);
@@ -140,18 +138,18 @@ exports.MessageList.prototype = {
     },
 
     select_id: function MessageList_select_id(id, opts) {
-        opts = _.extend({
+        opts = {
             then_scroll: false,
             target_scroll_offset: undefined,
             use_closest: false,
             empty_ok: false,
             mark_read: true,
             force_rerender: false,
-        }, opts, {
+            ...opts,
             id: id,
             msg_list: this,
             previously_selected: this.data.selected_id(),
-        });
+        };
 
         function convert_id(str_id) {
             const id = parseFloat(str_id);
@@ -293,7 +291,7 @@ exports.MessageList.prototype = {
     },
 
     append_to_view: function (messages, opts) {
-        opts = _.extend({messages_are_new: false}, opts);
+        opts = { messages_are_new: false, ...opts };
 
         this.num_appends += 1;
         const render_info = this.view.append(messages, opts.messages_are_new);
@@ -306,7 +304,7 @@ exports.MessageList.prototype = {
     },
 
     show_edit_message: function MessageList_show_edit_message(row, edit_obj) {
-        row.find(".message_edit_form").empty().append(edit_obj.form);
+        row.find(".message_edit_form").append(edit_obj.form);
         row.find(".message_content, .status-message, .message_controls").hide();
         row.find(".message_edit").css("display", "block");
         autosize(row.find(".message_edit_content"));
@@ -314,20 +312,24 @@ exports.MessageList.prototype = {
 
     hide_edit_message: function MessageList_hide_edit_message(row) {
         row.find(".message_content, .status-message, .message_controls").show();
+        row.find(".message_edit_form").empty();
         row.find(".message_edit").hide();
         row.trigger("mouseleave");
     },
 
-    show_edit_topic: function MessageList_show_edit_topic(recipient_row, form) {
-        recipient_row.find(".topic_edit_form").empty().append(form);
-        recipient_row.find('.fa-pencil').hide();
+    show_edit_topic_on_recipient_row: function (recipient_row, form) {
+        recipient_row.find(".topic_edit_form").append(form);
+        recipient_row.find('.on_hover_topic_edit').hide();
+        recipient_row.find('.edit_content_button').hide();
         recipient_row.find(".stream_topic").hide();
         recipient_row.find(".topic_edit").show();
     },
 
-    hide_edit_topic: function MessageList_hide_edit_topic(recipient_row) {
+    hide_edit_topic_on_recipient_row: function (recipient_row) {
         recipient_row.find(".stream_topic").show();
-        recipient_row.find('.fa-pencil').show();
+        recipient_row.find('.on_hover_topic_edit').show();
+        recipient_row.find('.edit_content_button').show();
+        recipient_row.find(".topic_edit_form").empty();
         recipient_row.find(".topic_edit").hide();
     },
 

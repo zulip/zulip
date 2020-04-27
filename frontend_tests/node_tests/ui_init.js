@@ -1,3 +1,5 @@
+const rewiremock = require("rewiremock/node");
+
 /*
     This test suite is designed to find errors
     in our initialization sequence.  It doesn't
@@ -18,7 +20,7 @@
     some things can happen later in a `launch` method.
 
 */
-set_global('i18n', global.stub_i18n);
+const util = zrequire('util');
 set_global('document', {
     location: {
         protocol: 'http',
@@ -29,7 +31,6 @@ set_global('csrf_token', 'whatever');
 
 set_global('$', () => {});
 set_global('resize', {});
-set_global('feature_flags', {});
 set_global('page_params', {});
 
 const ignore_modules = [
@@ -45,7 +46,6 @@ const ignore_modules = [
     'hotspots',
     'message_scroll',
     'message_viewport',
-    'night_mode',
     'panels',
     'popovers',
     'reload',
@@ -60,19 +60,20 @@ const ignore_modules = [
     'unread_ui',
 ];
 
-_.each(ignore_modules, (mod) => {
+for (const mod of ignore_modules) {
     set_global(mod, {
         initialize: () => {},
     });
-});
+}
 
-
-zrequire('util');
+emoji.emojis_by_name = new Map();
 
 util.is_mobile = () => false;
 global.stub_templates(() => 'some-html');
 ui.get_scroll_element = element => element;
 
+zrequire('alert_words');
+zrequire('hash_util');
 zrequire('echo');
 zrequire('colorspace');
 zrequire('stream_color');
@@ -87,6 +88,7 @@ zrequire('invite');
 zrequire('tab_bar');
 zrequire('narrow_state');
 zrequire('people');
+zrequire('presence');
 zrequire('search_pill_widget');
 zrequire('user_groups');
 zrequire('unread');
@@ -119,9 +121,15 @@ zrequire('top_left_corner');
 zrequire('starred_messages');
 zrequire('user_status');
 zrequire('user_status_ui');
-const ui_init = zrequire('ui_init');
 
-zrequire('settings_display');
+const ui_init = rewiremock.proxy(
+    () => zrequire("ui_init"),
+    {
+        "../../static/js/emojisets": {
+            initialize: () => {},
+        },
+    }
+);
 
 set_global('$', global.make_zjquery());
 
@@ -141,11 +149,26 @@ page_params.subscriptions = [];
 page_params.unsubscribed = [];
 page_params.never_subscribed = [];
 page_params.realm_notifications_stream_id = -1;
-page_params.unread_msgs = {};
+page_params.unread_msgs = {
+    huddles: [],
+    pms: [],
+    streams: [],
+    mentions: [],
+};
 page_params.recent_private_conversations = [];
+page_params.user_status = {};
+page_params.realm_users = [];
+page_params.realm_non_active_users = [];
+page_params.cross_realm_bots = [];
+page_params.muted_topics = [];
+page_params.realm_user_groups = [];
+page_params.realm_bots = [];
+page_params.realm_filters = [];
+page_params.starred_messages = [];
+page_params.presences = [];
 
 $('#tab_bar').append = () => {};
-$('#compose').filedrop = () => {};
+upload.setup_upload = () => {};
 
 server_events.home_view_loaded = () => true;
 
@@ -157,13 +180,17 @@ $("#private_message_recipient").typeahead = () => {};
 $("#compose-textarea").typeahead = () => {};
 $("#search_query").typeahead = () => {};
 
-
 const value_stub = $.create('value');
 const count_stub = $.create('count');
 count_stub.set_find_results('.value', value_stub);
 $(".top_left_starred_messages").set_find_results('.count', count_stub);
 
 $("#tab_list .stream").length = 0;
+
+compose.compute_show_video_chat_button = () => {};
+$("#below-compose-content .video_link").toggle = () => {};
+
+$(".narrow_description > a").hover = () => {};
 
 run_test('initialize_everything', () => {
     ui_init.initialize_everything();

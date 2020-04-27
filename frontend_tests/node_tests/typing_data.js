@@ -1,4 +1,3 @@
-zrequire("util");
 zrequire("typing_data");
 
 run_test('basics', () => {
@@ -45,7 +44,6 @@ run_test('basics', () => {
     typing_data.add_typist([20, 40, 20], 20);
     assert.deepEqual(typing_data.get_group_typists([20, 40]), [20]);
 });
-
 
 run_test('timers', () => {
     const events = {};

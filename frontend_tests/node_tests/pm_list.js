@@ -1,7 +1,5 @@
 set_global('$', global.make_zjquery());
 
-const Dict = zrequire('dict').Dict;
-
 set_global('narrow_state', {});
 set_global('resize', {
     resize_stream_filters_container: function () {},
@@ -14,16 +12,17 @@ set_global('stream_popover', {
 });
 set_global('unread', {});
 set_global('unread_ui', {});
-set_global('blueslip', global.make_zblueslip());
-set_global('popovers', {
-    hide_all: function () {},
+set_global('vdom', {
+    render: () => {
+        return 'fake-dom-for-pm-list';
+    },
 });
+set_global('pm_list_dom', {});
 
 zrequire('user_status');
 zrequire('presence');
 zrequire('buddy_data');
 zrequire('hash_util');
-set_global('Handlebars', global.make_handlebars());
 zrequire('people');
 zrequire('pm_conversations');
 zrequire('pm_list');
@@ -50,11 +49,11 @@ const bot_test = {
     is_admin: false,
     is_bot: true,
 };
-global.people.add_in_realm(alice);
-global.people.add_in_realm(bob);
-global.people.add_in_realm(me);
-global.people.add_in_realm(bot_test);
-global.people.initialize_current_user(me.user_id);
+people.add(alice);
+people.add(bob);
+people.add(me);
+people.add(bot_test);
+people.initialize_current_user(me.user_id);
 
 run_test('close', () => {
     let collapsed;
@@ -73,12 +72,11 @@ run_test('build_private_messages_list', () => {
         return 1;
     };
 
-    let template_data;
+    let pm_data;
 
-    global.stub_templates(function (template_name, data) {
-        assert.equal(template_name, 'sidebar_private_message_list');
-        template_data = data;
-    });
+    pm_list_dom.pm_ul = (data) => {
+        pm_data = data;
+    };
 
     narrow_state.filter = () => {};
     pm_list._build_private_messages_list();
@@ -97,7 +95,7 @@ run_test('build_private_messages_list', () => {
         },
     ];
 
-    assert.deepEqual(template_data, {messages: expected_data});
+    assert.deepEqual(pm_data, expected_data);
 
     global.unread.num_unread_for_person = function () {
         return 0;
@@ -105,11 +103,11 @@ run_test('build_private_messages_list', () => {
     pm_list._build_private_messages_list();
     expected_data[0].unread = 0;
     expected_data[0].is_zero = true;
-    assert.deepEqual(template_data, {messages: expected_data});
+    assert.deepEqual(pm_data, expected_data);
 
     pm_list.initialize();
     pm_list._build_private_messages_list();
-    assert.deepEqual(template_data, {messages: expected_data});
+    assert.deepEqual(pm_data, expected_data);
 });
 
 run_test('build_private_messages_list_bot', () => {
@@ -120,11 +118,12 @@ run_test('build_private_messages_list_bot', () => {
         return 1;
     };
 
-    let template_data;
-    global.stub_templates(function (template_name, data) {
-        assert.equal(template_name, 'sidebar_private_message_list');
-        template_data = data;
-    });
+    let pm_data;
+    pm_list_dom.pm_ul = (data) => {
+        pm_data = data;
+    };
+
+    narrow_state.active = () => true;
 
     pm_list._build_private_messages_list();
     const expected_data = [
@@ -152,75 +151,44 @@ run_test('build_private_messages_list_bot', () => {
         },
     ];
 
-    assert.deepEqual(template_data, {messages: expected_data});
+    assert.deepEqual(pm_data, expected_data);
 });
 
 run_test('update_dom_with_unread_counts', () => {
+    let counts;
+    let toggle_button_set;
+
     const total_value = $.create('total-value-stub');
     const total_count = $.create('total-count-stub');
     const private_li = $(".top_left_private_messages");
     private_li.set_find_results('.count', total_count);
     total_count.set_find_results('.value', total_value);
 
-    const child_value = $.create('child-value-stub');
-    const child_count = $.create('child-count-stub');
-    const child_li = $.create('child-li-stub');
-    private_li.set_find_results("li[data-user-ids-string='101,102']", child_li);
-    child_li.set_find_results('.private_message_count', child_count);
-    child_count.set_find_results('.value', child_value);
-
-    child_value.length = 1;
-    child_count.length = 1;
-
-    const pm_count = new Dict();
-    const user_ids_string = '101,102';
-    pm_count.set(user_ids_string, 7);
-
-    let counts = {
+    counts = {
         private_message_count: 10,
-        pm_count: pm_count,
     };
 
-    let toggle_button_set;
     unread_ui.set_count_toggle_button = function (elt, count) {
         toggle_button_set = true;
         assert.equal(count, 10);
     };
 
+    toggle_button_set = false;
     pm_list.update_dom_with_unread_counts(counts);
-
     assert(toggle_button_set);
-    assert.equal(child_value.text(), '7');
-    assert.equal(total_value.text(), '10');
 
-    pm_count.set(user_ids_string, 0);
     counts = {
         private_message_count: 0,
-        pm_count: pm_count,
     };
-    toggle_button_set = false;
+
     unread_ui.set_count_toggle_button = function (elt, count) {
         toggle_button_set = true;
         assert.equal(count, 0);
     };
-    pm_list.update_dom_with_unread_counts(counts);
 
-    assert(toggle_button_set);
-    assert.equal(child_value.text(), '');
-    assert.equal(total_value.text(), '');
-
-    const pm_li = pm_list.get_li_for_user_ids_string("101,102");
-    pm_li.find = function (sel) {
-        assert.equal(sel, '.private_message_count');
-        return {find: function (sel) {
-            assert.equal(sel, '.value');
-            return [];
-        }};
-    };
+    toggle_button_set = false;
     pm_list.update_dom_with_unread_counts(counts);
     assert(toggle_button_set);
-    assert.equal(child_value.text(), '');
-    assert.equal(total_value.text(), '');
 });
 
 run_test('get_active_user_ids_string', () => {
@@ -284,27 +252,34 @@ function with_fake_list(f) {
 
 run_test('expand', () => {
     with_fake_list(() => {
-        let html_inserted;
+        let html_updated;
 
-        $('#private-container').html = function (html) {
-            assert.equal(html, 'PM_LIST_CONTENTS');
-            html_inserted = true;
+        vdom.update = () => {
+            html_updated = true;
         };
+
         pm_list.expand();
 
-        assert(html_inserted);
+        assert(html_updated);
     });
 });
 
 run_test('update_private_messages', () => {
     narrow_state.active = () => true;
 
-    with_fake_list(() => {
-        let html_inserted;
+    $('#private-container').find = (sel) => {
+        assert.equal(sel, 'ul');
+    };
 
-        $('#private-container').html = function (html) {
-            assert.equal(html, 'PM_LIST_CONTENTS');
-            html_inserted = true;
+    with_fake_list(() => {
+        let html_updated;
+
+        vdom.update = (replace_content, find) => {
+            html_updated = true;
+
+            // get line coverage for simple one-liners
+            replace_content();
+            find();
         };
 
         const orig_is_all_privates = pm_list.is_all_privates;
@@ -312,7 +287,7 @@ run_test('update_private_messages', () => {
 
         pm_list.update_private_messages();
 
-        assert(html_inserted);
+        assert(html_updated);
         assert($(".top_left_private_messages").hasClass('active-filter'));
 
         pm_list.is_all_privates = orig_is_all_privates;

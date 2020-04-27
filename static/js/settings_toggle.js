@@ -34,19 +34,18 @@ exports.toggle_org_setting_collapse = function () {
     const show_more_settings_text = i18n.t("Show more");
 
     if (is_collapsed) {
-        _.each($(".collapse-org-settings"), function (elem) {
+        for (const elem of $(".collapse-org-settings")) {
             $(elem).removeClass("hide-org-settings");
-        });
+        }
 
         $("#toggle_collapse_chevron").removeClass("fa-angle-double-down");
         $("#toggle_collapse_chevron").addClass("fa-angle-double-up");
 
         $("#toggle_collapse").text(show_fewer_settings_text);
-
     } else {
-        _.each($(".collapse-org-settings"), function (elem) {
+        for (const elem of $(".collapse-org-settings")) {
             $(elem).addClass("hide-org-settings");
-        });
+        }
 
         $("#toggle_collapse_chevron").removeClass("fa-angle-double-up");
         $("#toggle_collapse_chevron").addClass("fa-angle-double-down");

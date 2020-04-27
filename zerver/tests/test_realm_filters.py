@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import re
 
 from zerver.lib.actions import do_add_realm_filter
@@ -9,8 +7,7 @@ from zerver.models import RealmFilter, get_realm
 class RealmFilterTest(ZulipTestCase):
 
     def test_list(self) -> None:
-        email = self.example_email('iago')
-        self.login(email)
+        self.login('iago')
         realm = get_realm('zulip')
         do_add_realm_filter(
             realm,
@@ -22,8 +19,7 @@ class RealmFilterTest(ZulipTestCase):
         self.assertEqual(len(result.json()["filters"]), 1)
 
     def test_create(self) -> None:
-        email = self.example_email('iago')
-        self.login(email)
+        self.login('iago')
         data = {"pattern": "", "url_format_string": "https://realm.com/my_realm_filter/%(id)s"}
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_error(result, 'This field cannot be blank.')
@@ -97,25 +93,23 @@ class RealmFilterTest(ZulipTestCase):
         self.assertIsNotNone(re.match(data['pattern'], 'zulip/zulip#123'))
 
     def test_not_realm_admin(self) -> None:
-        email = self.example_email('hamlet')
-        self.login(email)
+        self.login('hamlet')
         result = self.client_post("/json/realm/filters")
         self.assert_json_error(result, 'Must be an organization administrator')
         result = self.client_delete("/json/realm/filters/15")
         self.assert_json_error(result, 'Must be an organization administrator')
 
     def test_delete(self) -> None:
-        email = self.example_email('iago')
-        self.login(email)
+        self.login('iago')
         realm = get_realm('zulip')
         filter_id = do_add_realm_filter(
             realm,
             "#(?P<id>[123])",
             "https://realm.com/my_realm_filter/%(id)s")
         filters_count = RealmFilter.objects.count()
-        result = self.client_delete("/json/realm/filters/{0}".format(filter_id + 1))
+        result = self.client_delete("/json/realm/filters/{}".format(filter_id + 1))
         self.assert_json_error(result, 'Filter not found')
 
-        result = self.client_delete("/json/realm/filters/{0}".format(filter_id))
+        result = self.client_delete("/json/realm/filters/{}".format(filter_id))
         self.assert_json_success(result)
         self.assertEqual(RealmFilter.objects.count(), filters_count - 1)

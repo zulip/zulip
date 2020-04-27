@@ -54,10 +54,8 @@ exports.make_event_store = (selector) => {
             return handler;
         },
 
-        off: function () {
-            const event_name = arguments[0];
-
-            if (arguments.length === 1) {
+        off: function (event_name, ...args) {
+            if (args.length === 0) {
                 on_functions.delete(event_name);
                 return;
             }
@@ -69,15 +67,12 @@ exports.make_event_store = (selector) => {
             throw Error('zjquery does not support this call sequence');
         },
 
-        on: function () {
+        on: function (event_name, ...args) {
             // parameters will either be
             //    (event_name, handler) or
             //    (event_name, sel, handler)
-            const event_name = arguments[0];
-            let handler;
-
-            if (arguments.length === 2) {
-                handler = arguments[1];
+            if (args.length === 1) {
+                const [handler] = args;
                 if (on_functions.has(event_name)) {
                     console.info('\nEither the app or the test can be at fault here..');
                     console.info('(sometimes you just want to call $.clear_all_elements();)\n');
@@ -88,12 +83,11 @@ exports.make_event_store = (selector) => {
                 return;
             }
 
-            if (arguments.length !== 3) {
+            if (args.length !== 2) {
                 throw Error('wrong number of arguments passed in');
             }
 
-            const sel = arguments[1];
-            handler = arguments[2];
+            const [sel, handler] = args;
             assert.equal(typeof sel, 'string', 'String selectors expected here.');
             assert.equal(typeof handler, 'function', 'An handler function expected here.');
 
@@ -164,18 +158,6 @@ exports.make_new_elem = function (selector, opts) {
         click: function (arg) {
             event_store.generic_event('click', arg);
             return self;
-        },
-        closest: function (selector) {
-            const elem = self;
-            const search = selector.startsWith('.') || selector.startsWith('#') ? selector.substring(1) : selector;
-            if (elem.selector.indexOf(search) > -1) {
-                return elem;
-            } else if (parents_result.get(selector)) {
-                return parents_result.get(selector);
-            } else if (!elem.parent()) {
-                return [];
-            }
-            return elem.parent().closest(selector);
         },
         data: function (name, val) {
             if (val === undefined) {
@@ -279,12 +261,12 @@ exports.make_new_elem = function (selector, opts) {
             event_store.generic_event('keyup', arg);
             return self;
         },
-        off: function () {
-            event_store.off.apply(undefined, arguments);
+        off: function (...args) {
+            event_store.off(...args);
             return self;
         },
-        on: function () {
-            event_store.on.apply(undefined, arguments);
+        on: function (...args) {
+            event_store.on(...args);
             return self;
         },
         parent: function () {
@@ -347,9 +329,11 @@ exports.make_new_elem = function (selector, opts) {
         stop: function () {
             return self;
         },
-        text: function (arg) {
-            if (arg !== undefined) {
-                text = arg;
+        text: function (...args) {
+            if (args.length !== 0) {
+                if (args[0] !== undefined) {
+                    text = args[0].toString();
+                }
                 return self;
             }
             return text;
@@ -358,18 +342,18 @@ exports.make_new_elem = function (selector, opts) {
             event_store.trigger(ev);
             return self;
         },
-        val: function () {
-            if (arguments.length === 0) {
+        val: function (...args) {
+            if (args.length === 0) {
                 return value || '';
             }
-            value = arguments[0];
+            [value] = args;
             return self;
         },
-        css: function () {
-            if (arguments.length === 0) {
+        css: function (...args) {
+            if (args.length === 0) {
                 return css || {};
             }
-            css = arguments[0];
+            [css] = args;
             return self;
         },
         visible: function () {
@@ -393,22 +377,16 @@ exports.make_new_elem = function (selector, opts) {
 exports.make_zjquery = function (opts) {
     opts = opts || {};
 
-    let elems = {};
+    const elems = new Map();
 
     // Our fn structure helps us simulate extending jQuery.
     const fn = {};
-
-    function add_extensions(obj) {
-        _.each(fn, (v, k) => {
-            obj[k] = v;
-        });
-    }
 
     function new_elem(selector) {
         const elem = exports.make_new_elem(selector, {
             silent: opts.silent,
         });
-        add_extensions(elem);
+        Object.assign(elem, fn);
 
         // Create a proxy handler to detect missing stubs.
         //
@@ -465,10 +443,8 @@ exports.make_zjquery = function (opts) {
         // the element itself if it's been created with
         // zjquery.
         // This may happen in cases like $(this).
-        if (arg.selector) {
-            if (elems[arg.selector]) {
-                return arg;
-            }
+        if (arg.selector && elems.has(arg.selector)) {
+            return arg;
         }
 
         // We occasionally create stub objects that know
@@ -492,51 +468,47 @@ exports.make_zjquery = function (opts) {
         }
 
         const valid_selector =
-            '<#.'.indexOf(selector[0]) >= 0 ||
+            '<#.'.includes(selector[0]) ||
             selector === 'window-stub' ||
             selector === 'document-stub' ||
             selector === 'body' ||
             selector === 'html' ||
             selector.location ||
-            selector.indexOf('#') >= 0 ||
-            selector.indexOf('.') >= 0 ||
-            selector.indexOf('[') >= 0 && selector.indexOf(']') >= selector.indexOf('[');
+            selector.includes('#') ||
+            selector.includes('.') ||
+            selector.includes('[') && selector.indexOf(']') >= selector.indexOf('[');
 
         assert(valid_selector,
                'Invalid selector: ' + selector +
                ' Use $.create() maybe?');
 
 
-        if (elems[selector] === undefined) {
+        if (!elems.has(selector)) {
             const elem = new_elem(selector);
-            elems[selector] = elem;
+            elems.set(selector, elem);
         }
-        return elems[selector];
+        return elems.get(selector);
     };
 
     zjquery.create = function (name)  {
-        assert(!elems[name],
+        assert(!elems.has(name),
                'You already created an object with this name!!');
         const elem = new_elem(name);
-        elems[name] = elem;
-        return elems[name];
+        elems.set(name, elem);
+        return elem;
     };
 
     zjquery.stub_selector = function (selector, stub) {
-        elems[selector] = stub;
+        elems.set(selector, stub);
     };
 
     zjquery.trim = function (s) { return s; };
 
     zjquery.state = function () {
         // useful for debugging
-        let res =  _.map(elems, function (v) {
-            return v.debug();
-        });
+        let res = Array.from(elems.values(), v => v.debug());
 
-        res = _.map(res, function (v) {
-            return [v.selector, v.value, v.shown];
-        });
+        res = res.map(v => [v.selector, v.value, v.shown]);
 
         res.sort();
 
@@ -550,14 +522,10 @@ exports.make_zjquery = function (opts) {
         };
     };
 
-    zjquery.extend = function (content, container) {
-        return _.extend(content, container);
-    };
-
     zjquery.fn = fn;
 
     zjquery.clear_all_elements = function () {
-        elems = {};
+        elems.clear();
     };
 
     return zjquery;

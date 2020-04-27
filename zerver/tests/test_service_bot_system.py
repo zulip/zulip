@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import mock
 from typing import Any, Union, Mapping, Callable
 
@@ -209,7 +207,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
     def test_marshaling(self) -> None:
         storage = StateHandler(self.bot_profile)
         serializable_obj = {'foo': 'bar', 'baz': [42, 'cux']}
-        storage.put('some key', serializable_obj)  # type: ignore # Ignore for testing.
+        storage.put('some key', serializable_obj)  # type: ignore[arg-type] # Ignore for testing.
         self.assertEqual(storage.get('some key'), serializable_obj)
 
     def test_invalid_calls(self) -> None:
@@ -218,9 +216,9 @@ class TestServiceBotStateHandler(ZulipTestCase):
         storage.demarshal = lambda obj: obj
         serializable_obj = {'foo': 'bar', 'baz': [42, 'cux']}
         with self.assertRaisesMessage(StateError, "Value type is <class 'dict'>, but should be str."):
-            storage.put('some key', serializable_obj)  # type: ignore # We intend to test an invalid type.
+            storage.put('some key', serializable_obj)  # type: ignore[arg-type] # We intend to test an invalid type.
         with self.assertRaisesMessage(StateError, "Key type is <class 'dict'>, but should be str."):
-            storage.put(serializable_obj, 'some value')  # type: ignore # We intend to test an invalid type.
+            storage.put(serializable_obj, 'some value')  # type: ignore[arg-type] # We intend to test an invalid type.
 
     # Reduce maximal storage size for faster test string construction.
     @override_settings(USER_STATE_SIZE_LIMIT=100)
@@ -254,9 +252,8 @@ class TestServiceBotStateHandler(ZulipTestCase):
         self.assertTrue(storage.contains('another key'))
         self.assertRaises(StateError, lambda: storage.remove('some key'))
 
-    def test_internal_endpoint(self):
-        # type: () -> None
-        self.login(self.user_profile.email)
+    def test_internal_endpoint(self) -> None:
+        self.login_user(self.user_profile)
 
         # Store some data.
         initial_dict = {'key 1': 'value 1', 'key 2': 'value 2', 'key 3': 'value 3'}
@@ -296,7 +293,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
 
         # Assert errors on invalid requests.
         params = {
-            'keys': ["This is a list, but should be a serialized string."]  # type: ignore # Ignore 'incompatible type "str": "List[str]"; expected "str": "str"' for testing
+            'keys': ["This is a list, but should be a serialized string."]  # type: ignore[dict-item] # Ignore 'incompatible type "str": "List[str]"; expected "str": "str"' for testing
         }
         result = self.client_get('/json/bot_storage', params)
         self.assert_json_error(result, 'Argument "keys" is not valid JSON.')
@@ -431,7 +428,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             self.bot_profile.bot_type = bot_type
             self.bot_profile.save()
 
-            content = u'@**FooBot** foo bar!!!'
+            content = '@**FooBot** foo bar!!!'
             recipient = 'Denmark'
             trigger = 'mention'
             message_type = Recipient._type_names[Recipient.STREAM]
@@ -449,15 +446,15 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             mock_queue_json_publish.side_effect = check_values_passed
 
             self.send_stream_message(
-                self.user_profile.email,
+                self.user_profile,
                 'Denmark',
                 content)
             self.assertTrue(mock_queue_json_publish.called)
 
     @mock.patch('zerver.lib.actions.queue_json_publish')
     def test_no_trigger_on_stream_message_without_mention(self, mock_queue_json_publish: mock.Mock) -> None:
-        sender_email = self.user_profile.email
-        self.send_stream_message(sender_email, "Denmark")
+        sender = self.user_profile
+        self.send_stream_message(sender, "Denmark")
         self.assertFalse(mock_queue_json_publish.called)
 
     @mock.patch('zerver.lib.actions.queue_json_publish')
@@ -467,9 +464,9 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             self.bot_profile.save()
 
             self.send_stream_message(
-                self.second_bot_profile.email,
+                self.second_bot_profile,
                 'Denmark',
-                u'@**FooBot** foo bar!!!')
+                '@**FooBot** foo bar!!!')
             self.assertFalse(mock_queue_json_publish.called)
 
     @mock.patch('zerver.lib.actions.queue_json_publish')
@@ -478,8 +475,8 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             self.bot_profile.bot_type = bot_type
             self.bot_profile.save()
 
-            sender_email = self.user_profile.email
-            recipient_email = self.bot_profile.email
+            sender = self.user_profile
+            recipient = self.bot_profile
 
             def check_values_passed(queue_name: Any,
                                     trigger_event: Union[Mapping[Any, Any], Any],
@@ -487,16 +484,16 @@ class TestServiceBotEventTriggers(ZulipTestCase):
                 self.assertEqual(queue_name, expected_queue_name)
                 self.assertEqual(trigger_event["user_profile_id"], self.bot_profile.id)
                 self.assertEqual(trigger_event["trigger"], "private_message")
-                self.assertEqual(trigger_event["message"]["sender_email"], sender_email)
+                self.assertEqual(trigger_event["message"]["sender_email"], sender.email)
                 display_recipients = [
                     trigger_event["message"]["display_recipient"][0]["email"],
                     trigger_event["message"]["display_recipient"][1]["email"],
                 ]
-                self.assertTrue(sender_email in display_recipients)
-                self.assertTrue(recipient_email in display_recipients)
+                self.assertTrue(sender.email in display_recipients)
+                self.assertTrue(recipient.email in display_recipients)
             mock_queue_json_publish.side_effect = check_values_passed
 
-            self.send_personal_message(sender_email, recipient_email, 'test')
+            self.send_personal_message(sender, recipient, 'test')
             self.assertTrue(mock_queue_json_publish.called)
 
     @mock.patch('zerver.lib.actions.queue_json_publish')
@@ -505,9 +502,9 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             self.bot_profile.bot_type = bot_type
             self.bot_profile.save()
 
-            sender_email = self.second_bot_profile.email
-            recipient_email = self.bot_profile.email
-            self.send_personal_message(sender_email, recipient_email)
+            sender = self.second_bot_profile
+            recipient = self.bot_profile
+            self.send_personal_message(sender, recipient)
             self.assertFalse(mock_queue_json_publish.called)
 
     @mock.patch('zerver.lib.actions.queue_json_publish')
@@ -519,8 +516,8 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             self.second_bot_profile.bot_type = bot_type
             self.second_bot_profile.save()
 
-            sender_email = self.user_profile.email
-            recipient_emails = [self.bot_profile.email, self.second_bot_profile.email]
+            sender = self.user_profile
+            recipients = [self.bot_profile, self.second_bot_profile]
             profile_ids = [self.bot_profile.id, self.second_bot_profile.id]
 
             def check_values_passed(queue_name: Any,
@@ -530,11 +527,11 @@ class TestServiceBotEventTriggers(ZulipTestCase):
                 self.assertIn(trigger_event["user_profile_id"], profile_ids)
                 profile_ids.remove(trigger_event["user_profile_id"])
                 self.assertEqual(trigger_event["trigger"], "private_message")
-                self.assertEqual(trigger_event["message"]["sender_email"], sender_email)
-                self.assertEqual(trigger_event["message"]["type"], u'private')
+                self.assertEqual(trigger_event["message"]["sender_email"], sender.email)
+                self.assertEqual(trigger_event["message"]["type"], 'private')
             mock_queue_json_publish.side_effect = check_values_passed
 
-            self.send_huddle_message(sender_email, recipient_emails, 'test')
+            self.send_huddle_message(sender, recipients, 'test')
             self.assertEqual(mock_queue_json_publish.call_count, 2)
             mock_queue_json_publish.reset_mock()
 
@@ -544,7 +541,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             self.bot_profile.bot_type = bot_type
             self.bot_profile.save()
 
-            sender_email = self.second_bot_profile.email
-            recipient_emails = [self.user_profile.email, self.bot_profile.email]
-            self.send_huddle_message(sender_email, recipient_emails)
+            sender = self.second_bot_profile
+            recipients = [self.user_profile, self.bot_profile]
+            self.send_huddle_message(sender, recipients)
             self.assertFalse(mock_queue_json_publish.called)

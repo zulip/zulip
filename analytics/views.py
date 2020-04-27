@@ -54,12 +54,18 @@ if settings.ZILENCER_ENABLED:
         RemoteZulipServer
 else:
     from mock import Mock
-    RemoteInstallationCount = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
-    RemoteZulipServer = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
-    RemoteRealmCount = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
+    RemoteInstallationCount = Mock()  # type: ignore[misc] # https://github.com/JukkaL/mypy/issues/1188
+    RemoteZulipServer = Mock()  # type: ignore[misc] # https://github.com/JukkaL/mypy/issues/1188
+    RemoteRealmCount = Mock()  # type: ignore[misc] # https://github.com/JukkaL/mypy/issues/1188
+
+MAX_TIME_FOR_FULL_ANALYTICS_GENERATION = timedelta(days=1, minutes=30)
+
+def is_analytics_ready(realm: Realm) -> bool:
+    return (timezone_now() - realm.date_created) > MAX_TIME_FOR_FULL_ANALYTICS_GENERATION
 
 def render_stats(request: HttpRequest, data_url_suffix: str, target_name: str,
-                 for_installation: bool=False, remote: bool=False) -> HttpRequest:
+                 for_installation: bool=False, remote: bool=False,
+                 analytics_ready: bool=True) -> HttpRequest:
     page_params = dict(
         data_url_suffix=data_url_suffix,
         for_installation=for_installation,
@@ -69,7 +75,8 @@ def render_stats(request: HttpRequest, data_url_suffix: str, target_name: str,
     return render(request,
                   'analytics/stats.html',
                   context=dict(target_name=target_name,
-                               page_params=page_params))
+                               page_params=page_params,
+                               analytics_ready=analytics_ready))
 
 @zulip_login_required
 def stats(request: HttpRequest) -> HttpResponse:
@@ -78,7 +85,8 @@ def stats(request: HttpRequest) -> HttpResponse:
         # TODO: Make @zulip_login_required pass the UserProfile so we
         # can use @require_member_or_admin
         raise JsonableError(_("Not allowed for guest users"))
-    return render_stats(request, '', realm.name or realm.string_id)
+    return render_stats(request, '', realm.name or realm.string_id,
+                        analytics_ready=is_analytics_ready(realm))
 
 @require_server_admin
 @has_request_variables
@@ -88,7 +96,8 @@ def stats_for_realm(request: HttpRequest, realm_str: str) -> HttpResponse:
     except Realm.DoesNotExist:
         return HttpResponseNotFound("Realm %s does not exist" % (realm_str,))
 
-    return render_stats(request, '/realm/%s' % (realm_str,), realm.name or realm.string_id)
+    return render_stats(request, '/realm/%s' % (realm_str,), realm.name or realm.string_id,
+                        analytics_ready=is_analytics_ready(realm))
 
 @require_server_admin
 @has_request_variables
@@ -175,10 +184,10 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
             COUNT_STATS['realm_active_humans::day'],
             COUNT_STATS['active_users_audit:is_bot:day']]
         tables = [aggregate_table]
-        subgroup_to_label = {
+        subgroup_to_label: Dict[CountStat, Dict[Optional[str], str]] = {
             stats[0]: {None: '_1day'},
             stats[1]: {None: '_15day'},
-            stats[2]: {'false': 'all_time'}}  # type: Dict[CountStat, Dict[Optional[str], str]]
+            stats[2]: {'false': 'all_time'}}
         labels_sort_function = None
         include_empty_subgroups = True
     elif chart_name == 'messages_sent_over_time':
@@ -244,16 +253,17 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
         if end is None:
             end = max(last_successful_fill(stat.property) or
                       datetime.min.replace(tzinfo=timezone_utc) for stat in stats)
-        if start > end:
+
+        if start > end and (timezone_now() - start > MAX_TIME_FOR_FULL_ANALYTICS_GENERATION):
             logging.warning("User from realm %s attempted to access /stats, but the computed "
                             "start time: %s (creation of realm or installation) is later than the computed "
                             "end time: %s (last successful analytics update). Is the "
                             "analytics cron job running?" % (realm.string_id, start, end))
             raise JsonableError(_("No analytics data available. Please contact your server administrator."))
 
-    assert len(set([stat.frequency for stat in stats])) == 1
+    assert len({stat.frequency for stat in stats}) == 1
     end_times = time_range(start, end, stats[0].frequency, min_length)
-    data = {'end_times': end_times, 'frequency': stats[0].frequency}  # type: Dict[str, Any]
+    data: Dict[str, Any] = {'end_times': end_times, 'frequency': stats[0].frequency}
 
     aggregation_level = {
         InstallationCount: 'everyone',
@@ -298,7 +308,7 @@ def sort_by_totals(value_arrays: Dict[str, List[int]]) -> List[str]:
 def sort_client_labels(data: Dict[str, Dict[str, List[int]]]) -> List[str]:
     realm_order = sort_by_totals(data['everyone'])
     user_order = sort_by_totals(data['user'])
-    label_sort_values = {}  # type: Dict[str, float]
+    label_sort_values: Dict[str, float] = {}
     for i, label in enumerate(realm_order):
         label_sort_values[label] = i
     for i, label in enumerate(user_order):
@@ -342,7 +352,7 @@ def client_label_map(name: str) -> str:
     return name
 
 def rewrite_client_arrays(value_arrays: Dict[str, List[int]]) -> Dict[str, List[int]]:
-    mapped_arrays = {}  # type: Dict[str, List[int]]
+    mapped_arrays: Dict[str, List[int]] = {}
     for label, array in value_arrays.items():
         mapped_label = client_label_map(label)
         if mapped_label in mapped_arrays:
@@ -360,7 +370,7 @@ def get_time_series_by_subgroup(stat: CountStat,
                                 include_empty_subgroups: bool) -> Dict[str, List[int]]:
     queryset = table_filtered_to_id(table, key_id).filter(property=stat.property) \
                                                   .values_list('subgroup', 'end_time', 'value')
-    value_dicts = defaultdict(lambda: defaultdict(int))  # type: Dict[Optional[str], Dict[datetime, int]]
+    value_dicts: Dict[Optional[str], Dict[datetime, int]] = defaultdict(lambda: defaultdict(int))
     for subgroup, end_time, value in queryset:
         value_dicts[subgroup][end_time] = value
     value_arrays = {}
@@ -431,7 +441,7 @@ def get_realm_day_counts() -> Dict[str, Dict[str, str]]:
     rows = dictfetchall(cursor)
     cursor.close()
 
-    counts = defaultdict(dict)  # type: Dict[str, Dict[int, int]]
+    counts: Dict[str, Dict[int, int]] = defaultdict(dict)
     for row in rows:
         counts[row['string_id']][row['age']] = row['cnt']
 
@@ -575,7 +585,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     cursor.close()
 
     # Fetch all the realm administrator users
-    realm_admins = defaultdict(list)  # type: Dict[str, List[str]]
+    realm_admins: Dict[str, List[str]] = defaultdict(list)
     for up in UserProfile.objects.select_related("realm").filter(
         role=UserProfile.ROLE_REALM_ADMINISTRATOR,
         is_active=True
@@ -1014,7 +1024,7 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
 @has_request_variables
 def get_activity(request: HttpRequest) -> HttpResponse:
     duration_content, realm_minutes = user_activity_intervals()  # type: Tuple[mark_safe, Dict[str, float]]
-    counts_content = realm_summary_table(realm_minutes)  # type: str
+    counts_content: str = realm_summary_table(realm_minutes)
     data = [
         ('Counts', counts_content),
         ('Durations', duration_content),
@@ -1072,7 +1082,7 @@ def get_confirmations(types: List[int], object_ids: List[int],
 
 @require_server_admin
 def support(request: HttpRequest) -> HttpResponse:
-    context = {}  # type: Dict[str, Any]
+    context: Dict[str, Any] = {}
     if settings.BILLING_ENABLED and request.method == "POST":
         realm_id = request.POST.get("realm_id", None)
         realm = Realm.objects.get(id=realm_id)
@@ -1135,7 +1145,7 @@ def support(request: HttpRequest) -> HttpResponse:
 
         context["realms"] = realms
 
-        confirmations = []  # type: List[Dict[str, Any]]
+        confirmations: List[Dict[str, Any]] = []
 
         preregistration_users = PreregistrationUser.objects.filter(email__in=key_words)
         confirmations += get_confirmations([Confirmation.USER_REGISTRATION, Confirmation.INVITATION,
@@ -1219,7 +1229,7 @@ def get_user_activity_summary(records: List[QuerySet]) -> Dict[str, Dict[str, An
     #: We could use something like:
     # `Union[Dict[str, Dict[str, int]], Dict[str, Dict[str, datetime]]]`
     #: but that would require this long `Union` to carry on throughout inner functions.
-    summary = {}  # type: Dict[str, Dict[str, Any]]
+    summary: Dict[str, Dict[str, Any]] = {}
 
     def update(action: str, record: QuerySet) -> None:
         if action not in summary:
@@ -1430,8 +1440,8 @@ def realm_user_summary_table(all_records: List[QuerySet],
 
 @require_server_admin
 def get_realm_activity(request: HttpRequest, realm_str: str) -> HttpResponse:
-    data = []  # type: List[Tuple[str, str]]
-    all_user_records = {}  # type: Dict[str, Any]
+    data: List[Tuple[str, str]] = []
+    all_user_records: Dict[str, Any] = {}
 
     try:
         admins = Realm.objects.get(string_id=realm_str).get_human_admin_users()
@@ -1467,7 +1477,7 @@ def get_realm_activity(request: HttpRequest, realm_str: str) -> HttpResponse:
 def get_user_activity(request: HttpRequest, email: str) -> HttpResponse:
     records = get_user_activity_records_for_email(email)
 
-    data = []  # type: List[Tuple[str, str]]
+    data: List[Tuple[str, str]] = []
     user_summary = get_user_activity_summary(records)
     content = user_activity_summary_table(user_summary)
 

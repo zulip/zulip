@@ -1,7 +1,7 @@
 // Convert an sRGB value in [0, 255] to a linear intensity
 // value in [0, 1].
 //
-// http://en.wikipedia.org/wiki/SRGB#The_reverse_transformation
+// https://en.wikipedia.org/wiki/SRGB#The_reverse_transformation
 exports.sRGB_to_linear = function (v) {
     v = v / 255.0;
     if (v <= 0.04045) {
@@ -19,7 +19,7 @@ exports.rgb_luminance = function (channel) {
 // Convert luminance (photometric, CIE Y)
 // to lightness (perceptual, CIE L*)
 //
-// http://en.wikipedia.org/wiki/Lab_color_space#Forward_transformation
+// https://en.wikipedia.org/wiki/Lab_color_space#Forward_transformation
 exports.luminance_to_lightness = function (luminance) {
     let v;
     if (luminance <= 216 / 24389) {
@@ -38,9 +38,9 @@ exports.getDecimalColor = function (hexcolor) {
 };
 
 exports.getLighterColor = function (rgb, lightness) {
-    return {r: (lightness * 255 + (1 - lightness) * rgb.r).toFixed(),
-            g: (lightness * 255 + (1 - lightness) * rgb.g).toFixed(),
-            b: (lightness * 255 + (1 - lightness) * rgb.b).toFixed()};
+    return {r: Math.round(lightness * 255 + (1 - lightness) * rgb.r),
+            g: Math.round(lightness * 255 + (1 - lightness) * rgb.g),
+            b: Math.round(lightness * 255 + (1 - lightness) * rgb.b)};
 };
 
 exports.getHexColor = function (rgb) {

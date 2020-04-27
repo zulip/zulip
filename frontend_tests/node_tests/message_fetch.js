@@ -11,7 +11,6 @@ zrequire('FetchStatus', 'js/fetch_status');
 zrequire('Filter', 'js/filter');
 zrequire('MessageListData', 'js/message_list_data');
 zrequire('message_list');
-zrequire('util');
 zrequire('people');
 
 set_global('page_params', {
@@ -26,7 +25,6 @@ set_global('channel', {});
 set_global('document', 'document-stub');
 set_global('message_util', {});
 set_global('message_store', {});
-set_global('muting', {});
 set_global('narrow_state', {});
 set_global('notifications', {
     hide_or_show_history_limit_message: () => {},
@@ -45,7 +43,6 @@ const alice = {
 };
 people.add(alice);
 
-muting.is_topic_muted = function () { return false; };
 resize.resize_bottom_whitespace = noop;
 server_events.home_view_loaded = noop;
 
@@ -105,6 +102,8 @@ function config_process_results(messages) {
         messages_processed_for_bools.push(message);
     };
 
+    message_store.add_message_metadata = message => message;
+
     message_util.do_unread_count_updates = function (arg) {
         assert.deepEqual(arg, messages);
     };
@@ -130,9 +129,9 @@ function config_process_results(messages) {
 }
 
 function message_range(start, end) {
-    return _.map(_.range(start, end), function (idx) {
-        return { id: idx };
-    });
+    return _.range(start, end).map(idx => ({
+        id: idx,
+    }));
 }
 
 const initialize_data = {
@@ -273,10 +272,9 @@ run_test('initialize', () => {
     test_backfill_idle(idle_config);
 });
 
-
 function simulate_narrow() {
     const filter = {
-        predicate: function () { return true; },
+        predicate: () => () => false,
     };
 
     narrow_state.active = function () { return true; };

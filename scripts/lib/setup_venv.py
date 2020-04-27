@@ -2,7 +2,7 @@ import logging
 import os
 import shutil
 import subprocess
-from scripts.lib.zulip_tools import run, run_as_root, ENDC, WARNING
+from scripts.lib.zulip_tools import run, run_as_root, ENDC, WARNING, os_families
 from scripts.lib.hash_reqs import expand_reqs
 
 from typing import List, Optional, Tuple, Set
@@ -23,12 +23,9 @@ VENV_DEPENDENCIES = [
     "libldap2-dev",
     "libmemcached-dev",
     "python3-dev",          # Needed to install typed-ast dependency of mypy
-    "python-dev",
     "python3-pip",
-    "python-pip",
     "virtualenv",
     "python3-six",
-    "python-six",
     "libxml2-dev",          # Used for installing talon and python-xmlsec
     "libxslt1-dev",         # Used for installing talon
     "libpq-dev",            # Needed by psycopg2
@@ -44,6 +41,10 @@ VENV_DEPENDENCIES = [
     # another call to `apt install` for.
     "jq",                   # Used by scripts/lib/install-node to check yarn version
 ]
+
+# python-dev is depreciated in Focal but can be used as python2-dev.
+# So it is removed from VENV_DEPENDENCIES and added here.
+PYTHON_DEV_DEPENDENCY = "python{}-dev"
 
 COMMON_YUM_VENV_DEPENDENCIES = [
     "libffi-devel",
@@ -99,18 +100,27 @@ YUM_THUMBOR_VENV_DEPENDENCIES = [
     "gifsicle",
 ]
 
-def install_venv_deps(pip, requirements_file):
-    # type: (str, str) -> None
-    pip_requirements = os.path.join(ZULIP_PATH, "requirements", "pip.txt")
+def get_venv_dependencies(vendor: str, os_version: str) -> List[str]:
+    if vendor == 'ubuntu' and os_version == '20.04':
+        return VENV_DEPENDENCIES + [PYTHON_DEV_DEPENDENCY.format("2"), ]
+    elif "debian" in os_families():
+        return VENV_DEPENDENCIES + [PYTHON_DEV_DEPENDENCY.format(""), ]
+    elif "rhel" in os_families():
+        return REDHAT_VENV_DEPENDENCIES
+    elif "fedora" in os_families():
+        return FEDORA_VENV_DEPENDENCIES
+    else:
+        raise AssertionError("Invalid vendor")
+
+def install_venv_deps(pip: str, requirements_file: str, python2: bool) -> None:
+    pip_requirements = os.path.join(ZULIP_PATH, "requirements", "pip2.txt" if python2 else "pip.txt")
     run([pip, "install", "--force-reinstall", "--require-hashes", "--requirement", pip_requirements])
     run([pip, "install", "--no-deps", "--require-hashes", "--requirement", requirements_file])
 
-def get_index_filename(venv_path):
-    # type: (str) -> str
+def get_index_filename(venv_path: str) -> str:
     return os.path.join(venv_path, 'package_index')
 
-def get_package_names(requirements_file):
-    # type: (str) -> List[str]
+def get_package_names(requirements_file: str) -> List[str]:
     packages = expand_reqs(requirements_file)
     cleaned = []
     operators = ['~=', '==', '!=', '<', '>']
@@ -132,8 +142,7 @@ def get_package_names(requirements_file):
 
     return sorted(cleaned)
 
-def create_requirements_index_file(venv_path, requirements_file):
-    # type: (str, str) -> str
+def create_requirements_index_file(venv_path: str, requirements_file: str) -> str:
     """
     Creates a file, called package_index, in the virtual environment
     directory that contains all the PIP packages installed in the
@@ -148,17 +157,15 @@ def create_requirements_index_file(venv_path, requirements_file):
 
     return index_filename
 
-def get_venv_packages(venv_path):
-    # type: (str) -> Set[str]
+def get_venv_packages(venv_path: str) -> Set[str]:
     """
     Returns the packages installed in the virtual environment using the
     package index file.
     """
     with open(get_index_filename(venv_path)) as reader:
-        return set(p.strip() for p in reader.read().split('\n') if p.strip())
+        return {p.strip() for p in reader.read().split('\n') if p.strip()}
 
-def try_to_copy_venv(venv_path, new_packages):
-    # type: (str, Set[str]) -> bool
+def try_to_copy_venv(venv_path: str, new_packages: Set[str]) -> bool:
     """
     Tries to copy packages from an old virtual environment in the cache
     to the new virtual environment. The algorithm works as follows:
@@ -231,12 +238,12 @@ def try_to_copy_venv(venv_path, new_packages):
 
     return False
 
-def get_logfile_name(venv_path):
-    # type: (str) -> str
+def get_logfile_name(venv_path: str) -> str:
     return "{}/setup-venv.log".format(venv_path)
 
-def create_log_entry(target_log, parent, copied_packages, new_packages):
-    # type: (str, str, Set[str], Set[str]) -> None
+def create_log_entry(
+    target_log: str, parent: str, copied_packages: Set[str], new_packages: Set[str]
+) -> None:
 
     venv_path = os.path.dirname(target_log)
     with open(target_log, 'a') as writer:
@@ -251,13 +258,11 @@ def create_log_entry(target_log, parent, copied_packages, new_packages):
         writer.write("\n".join('- {}'.format(p) for p in sorted(new_packages)))
         writer.write("\n\n")
 
-def copy_parent_log(source_log, target_log):
-    # type: (str, str) -> None
+def copy_parent_log(source_log: str, target_log: str) -> None:
     if os.path.exists(source_log):
         shutil.copyfile(source_log, target_log)
 
-def do_patch_activate_script(venv_path):
-    # type: (str) -> None
+def do_patch_activate_script(venv_path: str) -> None:
     """
     Patches the bin/activate script so that the value of the environment variable VIRTUAL_ENV
     is set to venv_path during the script's execution whenever it is sourced.
@@ -265,7 +270,7 @@ def do_patch_activate_script(venv_path):
     # venv_path should be what we want to have in VIRTUAL_ENV after patching
     script_path = os.path.join(venv_path, "bin", "activate")
 
-    with open(script_path, 'r') as f:
+    with open(script_path) as f:
         lines = f.readlines()
     for i, line in enumerate(lines):
         if line.startswith('VIRTUAL_ENV='):
@@ -274,8 +279,12 @@ def do_patch_activate_script(venv_path):
     with open(script_path, 'w') as f:
         f.write("".join(lines))
 
-def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None, patch_activate_script=False):
-    # type: (Optional[str], str, Optional[List[str]], bool) -> str
+def setup_virtualenv(
+    target_venv_path: Optional[str],
+    requirements_file: str,
+    python2: bool = False,
+    patch_activate_script: bool = False,
+) -> str:
 
     # Check if a cached version already exists
     path = os.path.join(ZULIP_PATH, 'scripts', 'lib', 'hash_reqs.py')
@@ -287,7 +296,7 @@ def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None, 
         cached_venv_path = os.path.join(VENV_CACHE_PATH, sha1sum, os.path.basename(target_venv_path))
     success_stamp = os.path.join(cached_venv_path, "success-stamp")
     if not os.path.exists(success_stamp):
-        do_setup_virtualenv(cached_venv_path, requirements_file, virtualenv_args or [])
+        do_setup_virtualenv(cached_venv_path, requirements_file, python2)
         with open(success_stamp, 'w') as f:
             f.close()
 
@@ -298,15 +307,13 @@ def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None, 
             do_patch_activate_script(target_venv_path)
     return cached_venv_path
 
-def add_cert_to_pipconf():
-    # type: () -> None
+def add_cert_to_pipconf() -> None:
     conffile = os.path.expanduser("~/.pip/pip.conf")
     confdir = os.path.expanduser("~/.pip/")
     os.makedirs(confdir, exist_ok=True)
     run(["crudini", "--set", conffile, "global", "cert", os.environ["CUSTOM_CA_CERTIFICATES"]])
 
-def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
-    # type: (str, str, List[str]) -> None
+def do_setup_virtualenv(venv_path: str, requirements_file: str, python2: bool) -> None:
 
     # Setup Python virtualenv
     new_packages = set(get_package_names(requirements_file))
@@ -315,7 +322,7 @@ def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
     if not try_to_copy_venv(venv_path, new_packages):
         # Create new virtualenv.
         run_as_root(["mkdir", "-p", venv_path])
-        run_as_root(["virtualenv"] + virtualenv_args + [venv_path])
+        run_as_root(["virtualenv", "-p", "python2.7" if python2 else "python3", venv_path])
         run_as_root(["chown", "-R",
                      "{}:{}".format(os.getuid(), os.getgid()), venv_path])
         create_log_entry(get_logfile_name(venv_path), "", set(), new_packages)
@@ -330,10 +337,10 @@ def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
         add_cert_to_pipconf()
 
     try:
-        install_venv_deps(pip, requirements_file)
+        install_venv_deps(pip, requirements_file, python2)
     except subprocess.CalledProcessError:
         # Might be a failure due to network connection issues. Retrying...
         print(WARNING + "`pip install` failed; retrying..." + ENDC)
-        install_venv_deps(pip, requirements_file)
+        install_venv_deps(pip, requirements_file, python2)
 
     run_as_root(["chmod", "-R", "a+rX", venv_path])

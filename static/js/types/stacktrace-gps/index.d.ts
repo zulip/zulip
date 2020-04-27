@@ -1,11 +1,9 @@
-// https://github.com/stacktracejs/stackframe/pull/27
-/// <reference types="stackframe/stackframe" />
-
 import SourceMap from "source-map";
+import StackFrame from "stackframe";
 
 declare namespace StackTraceGPS {
     type StackTraceGPSOptions = {
-        sourceCache?: { [url: string]: string };
+        sourceCache?: { [url: string]: string | Promise<string> };
         sourceMapConsumerCache?: { [sourceMappingUrl: string]: SourceMap.SourceMapConsumer };
         offline?: boolean;
         ajax?(url: string): Promise<string>;
@@ -16,9 +14,9 @@ declare namespace StackTraceGPS {
 // eslint-disable-next-line no-redeclare
 declare class StackTraceGPS {
     constructor(options?: StackTraceGPS.StackTraceGPSOptions);
-    pinpoint(stackframe: StackFrame.StackFrame): Promise<StackFrame.StackFrame>;
-    findFunctionName(stackframe: StackFrame.StackFrame): Promise<StackFrame.StackFrame>;
-    getMappedLocation(stackframe: StackFrame.StackFrame): Promise<StackFrame.StackFrame>;
+    pinpoint(stackframe: StackFrame): Promise<StackFrame>;
+    findFunctionName(stackframe: StackFrame): Promise<StackFrame>;
+    getMappedLocation(stackframe: StackFrame): Promise<StackFrame>;
 }
 
 export = StackTraceGPS;

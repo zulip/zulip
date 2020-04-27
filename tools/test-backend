@@ -93,7 +93,6 @@ not_yet_fully_covered = {path for target in [
     'zerver/lib/parallel.py',
     'zerver/lib/profile.py',
     'zerver/lib/queue.py',
-    'zerver/lib/rate_limiter.py',
     'zerver/lib/sqlalchemy_utils.py',
     'zerver/lib/storage.py',
     'zerver/lib/stream_recipient.py',
@@ -106,6 +105,7 @@ not_yet_fully_covered = {path for target in [
     # Low priority for coverage
     'zerver/lib/ccache.py',
     'zerver/lib/generate_test_data.py',
+    'zerver/lib/server_initialization.py',
     'zerver/lib/test_fixtures.py',
     'zerver/lib/test_runner.py',
     'zerver/openapi/python_examples.py',
@@ -142,9 +142,9 @@ FAILED_TEST_PATH = 'var/last_test_failure.json'
 
 def get_failed_tests() -> List[str]:
     try:
-        with open(FAILED_TEST_PATH, 'r') as f:
+        with open(FAILED_TEST_PATH) as f:
             return ujson.load(f)
-    except IOError:
+    except OSError:
         print("var/last_test_failure.json doesn't exist; running all tests.")
         return []
 
@@ -238,9 +238,6 @@ def main() -> None:
                         action="store_true",
                         default=False,
                         help="Show detailed output")
-    parser.add_argument('--generate-fixtures', action="store_true", default=False,
-                        dest="generate_fixtures",
-                        help=("Force a call to generate-fixtures."))
     parser.add_argument('--report-slow-tests', dest='report_slow_tests',
                         action="store_true",
                         default=False,
@@ -258,6 +255,10 @@ def main() -> None:
                         action="store_true",
                         default=False,
                         help=("Include webhook tests.  By default, they are skipped for performance."))
+    parser.add_argument('--generate-stripe-fixtures', dest="generate_stripe_fixtures",
+                        action="store_true",
+                        default=False,
+                        help=("Generate Stripe test fixtures by making requests to Stripe test network"))
     parser.add_argument('args', nargs='*')
 
     options = parser.parse_args()
@@ -343,11 +344,21 @@ def main() -> None:
     if full_suite and include_webhooks:
         suites.append("zerver.webhooks")
 
+    if options.generate_stripe_fixtures:
+        if full_suite:
+            suites = [
+                "corporate.tests.test_stripe",
+            ]
+            full_suite = False
+        os.environ["GENERATE_STRIPE_FIXTURES"] = "1"
+
     assert_provisioning_status_ok(options.force)
 
     if options.coverage:
+        import atexit
         import coverage
         cov = coverage.Coverage(config_file="tools/coveragerc", concurrency='multiprocessing')
+        atexit.register(lambda: cov.erase())  # Ensure the data file gets cleaned up at the end.
         cov.start()
     if options.profile:
         import cProfile
@@ -363,7 +374,7 @@ def main() -> None:
     # files, since part of setup is importing the models for all applications in INSTALLED_APPS.
     django.setup()
 
-    update_test_databases_if_required(options.generate_fixtures)
+    update_test_databases_if_required()
 
     subprocess.check_call(['tools/webpack', '--test'])
 

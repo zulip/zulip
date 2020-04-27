@@ -17,19 +17,18 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     bulk_add_subscriptions, do_send_messages, get_subscriber_emails, do_rename_stream, \
     do_deactivate_stream, do_change_stream_invite_only, do_add_default_stream, \
     do_change_stream_description, do_get_streams, \
-    do_remove_default_stream, \
+    do_remove_default_stream, do_change_stream_post_policy, do_delete_messages, \
     do_create_default_stream_group, do_add_streams_to_default_stream_group, \
     do_remove_streams_from_default_stream_group, do_remove_default_stream_group, \
-    do_change_default_stream_group_description, do_change_default_stream_group_name, \
-    do_change_stream_announcement_only, \
-    do_delete_messages
+    do_change_default_stream_group_description, do_change_default_stream_group_name
 from zerver.lib.response import json_success, json_error
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
     check_stream_name, check_stream_name_available, filter_stream_authorization, \
     list_to_streams, access_stream_for_delete_or_update, access_default_stream_group_by_id
 from zerver.lib.topic import get_topic_history_for_stream, messages_for_topic
 from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
-    check_bool, check_variable_type, check_capped_string, check_color, check_dict_only
+    check_bool, check_variable_type, check_capped_string, check_color, check_dict_only, \
+    check_int_in
 from zerver.models import UserProfile, Stream, Realm, UserMessage, \
     get_system_bot, get_active_user
 
@@ -42,7 +41,7 @@ class PrincipalError(JsonableError):
     http_status_code = 403
 
     def __init__(self, principal: str) -> None:
-        self.principal = principal  # type: str
+        self.principal: str = principal
 
     @staticmethod
     def msg_format() -> str:
@@ -70,8 +69,8 @@ def deactivate_stream_backend(request: HttpRequest,
 @has_request_variables
 def add_default_stream(request: HttpRequest,
                        user_profile: UserProfile,
-                       stream_name: str=REQ()) -> HttpResponse:
-    (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
+                       stream_id: int=REQ(validator=check_int)) -> HttpResponse:
+    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
     do_add_default_stream(stream)
     return json_success()
 
@@ -135,9 +134,12 @@ def remove_default_stream_group(request: HttpRequest, user_profile: UserProfile,
 @has_request_variables
 def remove_default_stream(request: HttpRequest,
                           user_profile: UserProfile,
-                          stream_name: str=REQ()) -> HttpResponse:
-    (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name,
-                                                     allow_realm_admin=True)
+                          stream_id: int=REQ(validator=check_int)) -> HttpResponse:
+    (stream, recipient, sub) = access_stream_by_id(
+        user_profile,
+        stream_id,
+        allow_realm_admin=True
+    )
     do_remove_default_stream(stream)
     return json_success()
 
@@ -150,6 +152,8 @@ def update_stream_backend(
             Stream.MAX_DESCRIPTION_LENGTH), default=None),
         is_private: Optional[bool]=REQ(validator=check_bool, default=None),
         is_announcement_only: Optional[bool]=REQ(validator=check_bool, default=None),
+        stream_post_policy: Optional[int]=REQ(validator=check_int_in(
+            Stream.STREAM_POST_POLICY_TYPES), default=None),
         history_public_to_subscribers: Optional[bool]=REQ(validator=check_bool, default=None),
         new_name: Optional[str]=REQ(validator=check_string, default=None),
 ) -> HttpResponse:
@@ -171,7 +175,15 @@ def update_stream_backend(
             check_stream_name_available(user_profile.realm, new_name)
         do_rename_stream(stream, new_name, user_profile)
     if is_announcement_only is not None:
-        do_change_stream_announcement_only(stream, is_announcement_only)
+        # is_announcement_only is a legacy way to specify
+        # stream_post_policy.  We can probably just delete this code,
+        # since we're not aware of clients that used it, but we're
+        # keeping it for backwards-compatibility for now.
+        stream_post_policy = Stream.STREAM_POST_POLICY_EVERYONE
+        if is_announcement_only:
+            stream_post_policy = Stream.STREAM_POST_POLICY_ADMINS
+    if stream_post_policy is not None:
+        do_change_stream_post_policy(stream, stream_post_policy)
 
     # But we require even realm administrators to be actually
     # subscribed to make a private stream public.
@@ -203,14 +215,17 @@ def update_subscriptions_backend(
     if not add and not delete:
         return json_error(_('Nothing to do. Specify at least one of "add" or "delete".'))
 
-    method_kwarg_pairs = [
+    method_kwarg_pairs: List[FuncKwargPair] = [
         (add_subscriptions_backend, dict(streams_raw=add)),
         (remove_subscriptions_backend, dict(streams_raw=delete))
-    ]  # type: List[FuncKwargPair]
+    ]
     return compose_views(request, user_profile, method_kwarg_pairs)
 
-def compose_views(request, user_profile, method_kwarg_pairs):
-    # type: (HttpRequest, UserProfile, List[FuncKwargPair]) -> HttpResponse
+def compose_views(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    method_kwarg_pairs: "List[FuncKwargPair]",
+) -> HttpResponse:
     '''
     This takes a series of view methods from method_kwarg_pairs and calls
     them in sequence, and it smushes all the json results into a single
@@ -221,7 +236,7 @@ def compose_views(request, user_profile, method_kwarg_pairs):
     TODO: Move this a utils-like module if we end up using it more widely.
     '''
 
-    json_dict = {}  # type: Dict[str, Any]
+    json_dict: Dict[str, Any] = {}
     with transaction.atomic():
         for method, kwargs in method_kwarg_pairs:
             response = method(request, user_profile, **kwargs)
@@ -238,7 +253,7 @@ def remove_subscriptions_backend(
 ) -> HttpResponse:
 
     removing_someone_else = principals and \
-        set(principals) != set((user_profile.email,))
+        set(principals) != {user_profile.email}
 
     if removing_someone_else and not user_profile.is_realm_admin:
         # You can only unsubscribe other people from a stream if you are a realm
@@ -252,12 +267,12 @@ def remove_subscriptions_backend(
     streams, __ = list_to_streams(streams_as_dict, user_profile)
 
     if principals:
-        people_to_unsub = set(principal_to_user_profile(
-            user_profile, principal) for principal in principals)
+        people_to_unsub = {principal_to_user_profile(
+            user_profile, principal) for principal in principals}
     else:
-        people_to_unsub = set([user_profile])
+        people_to_unsub = {user_profile}
 
-    result = dict(removed=[], not_removed=[])  # type: Dict[str, List[str]]
+    result: Dict[str, List[str]] = dict(removed=[], not_removed=[])
     (removed, not_subscribed) = bulk_remove_subscriptions(people_to_unsub, streams,
                                                           request.client,
                                                           acting_user=user_profile)
@@ -296,7 +311,8 @@ def add_subscriptions_backend(
                 ])
             )),
         invite_only: bool=REQ(validator=check_bool, default=False),
-        is_announcement_only: bool=REQ(validator=check_bool, default=False),
+        stream_post_policy: int=REQ(validator=check_int_in(
+            Stream.STREAM_POST_POLICY_TYPES), default=Stream.STREAM_POST_POLICY_EVERYONE),
         history_public_to_subscribers: Optional[bool]=REQ(validator=check_bool, default=None),
         announce: bool=REQ(validator=check_bool, default=False),
         principals: List[str]=REQ(validator=check_list(check_string), default=[]),
@@ -313,13 +329,13 @@ def add_subscriptions_backend(
             # We don't allow newline characters in stream descriptions.
             stream_dict['description'] = stream_dict['description'].replace("\n", " ")
 
-        stream_dict_copy = {}  # type: Dict[str, Any]
+        stream_dict_copy: Dict[str, Any] = {}
         for field in stream_dict:
             stream_dict_copy[field] = stream_dict[field]
         # Strip the stream name here.
         stream_dict_copy['name'] = stream_dict_copy['name'].strip()
         stream_dict_copy["invite_only"] = invite_only
-        stream_dict_copy["is_announcement_only"] = is_announcement_only
+        stream_dict_copy["stream_post_policy"] = stream_post_policy
         stream_dict_copy["history_public_to_subscribers"] = history_public_to_subscribers
         stream_dicts.append(stream_dict_copy)
 
@@ -339,32 +355,32 @@ def add_subscriptions_backend(
         if user_profile.realm.is_zephyr_mirror_realm and not all(stream.invite_only for stream in streams):
             return json_error(_("You can only invite other Zephyr mirroring users to private streams."))
         if not user_profile.can_subscribe_other_users():
-            if user_profile.realm.invite_to_stream_policy == Realm.INVITE_TO_STREAM_POLICY_ADMINS:
+            if user_profile.realm.invite_to_stream_policy == Realm.POLICY_ADMINS_ONLY:
                 return json_error(_("Only administrators can modify other users' subscriptions."))
-            # Realm.INVITE_TO_STREAM_POLICY_MEMBERS only fails if the
+            # Realm.POLICY_MEMBERS_ONLY only fails if the
             # user is a guest, which happens in the decorator above.
             assert user_profile.realm.invite_to_stream_policy == \
-                Realm.INVITE_TO_STREAM_POLICY_WAITING_PERIOD
+                Realm.POLICY_FULL_MEMBERS_ONLY
             return json_error(_("Your account is too new to modify other users' subscriptions."))
-        subscribers = set(principal_to_user_profile(user_profile, principal) for principal in principals)
+        subscribers = {principal_to_user_profile(user_profile, principal) for principal in principals}
     else:
-        subscribers = set([user_profile])
+        subscribers = {user_profile}
 
     (subscribed, already_subscribed) = bulk_add_subscriptions(streams, subscribers,
                                                               acting_user=user_profile, color_map=color_map)
 
     # We can assume unique emails here for now, but we should eventually
     # convert this function to be more id-centric.
-    email_to_user_profile = dict()  # type: Dict[str, UserProfile]
+    email_to_user_profile: Dict[str, UserProfile] = dict()
 
-    result = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list))  # type: Dict[str, Any]
+    result: Dict[str, Any] = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list))
     for (subscriber, stream) in subscribed:
         result["subscribed"][subscriber.email].append(stream.name)
         email_to_user_profile[subscriber.email] = subscriber
     for (subscriber, stream) in already_subscribed:
         result["already_subscribed"][subscriber.email].append(stream.name)
 
-    bots = dict((subscriber.email, subscriber.is_bot) for subscriber in subscribers)
+    bots = {subscriber.email: subscriber.is_bot for subscriber in subscribers}
 
     newly_created_stream_names = {s.name for s in created_streams}
 
@@ -498,7 +514,7 @@ def delete_in_topic(request: HttpRequest, user_profile: UserProfile,
                     topic_name: str=REQ("topic_name")) -> HttpResponse:
     (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
 
-    messages = messages_for_topic(stream.id, topic_name)
+    messages = messages_for_topic(stream.recipient_id, topic_name)
     if not stream.is_history_public_to_subscribers():
         # Don't allow the user to delete messages that they don't have access to.
         deletable_message_ids = UserMessage.objects.filter(

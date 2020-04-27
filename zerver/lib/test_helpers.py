@@ -4,16 +4,16 @@ from typing import (
     Optional, Tuple, Union, IO, TypeVar, TYPE_CHECKING
 )
 
-from django.urls.resolvers import LocaleRegexURLResolver
+from django.urls import URLResolver
 from django.conf import settings
 from django.test import override_settings
-from django.template import loader
 from django.http import HttpResponse, HttpResponseRedirect
 from django.db.migrations.state import StateApps
 from boto.s3.connection import S3Connection
 from boto.s3.bucket import Bucket
 
 import zerver.lib.upload
+from zerver.lib.actions import do_set_realm_property
 from zerver.lib.upload import S3UploadBackend, LocalUploadBackend
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend
@@ -25,14 +25,12 @@ from zerver.worker import queue_processors
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.views.auth import get_login_data
 
-from zerver.lib.actions import (
-    get_stream_recipient,
-)
-
 from zerver.models import (
+    get_realm,
     get_stream,
     Client,
     Message,
+    Realm,
     Subscription,
     UserMessage,
     UserProfile,
@@ -78,9 +76,9 @@ def stub_event_queue_user_events(event_queue_return: Any, user_events_return: An
 @contextmanager
 def simulated_queue_client(client: Callable[..., Any]) -> Iterator[None]:
     real_SimpleQueueClient = queue_processors.SimpleQueueClient
-    queue_processors.SimpleQueueClient = client  # type: ignore # https://github.com/JukkaL/mypy/issues/1152
+    queue_processors.SimpleQueueClient = client  # type: ignore[assignment, misc] # https://github.com/JukkaL/mypy/issues/1152
     yield
-    queue_processors.SimpleQueueClient = real_SimpleQueueClient  # type: ignore # https://github.com/JukkaL/mypy/issues/1152
+    queue_processors.SimpleQueueClient = real_SimpleQueueClient  # type: ignore[misc] # https://github.com/JukkaL/mypy/issues/1152
 
 @contextmanager
 def tornado_redirected_to_list(lst: List[Mapping[str, Any]]) -> Iterator[None]:
@@ -119,7 +117,7 @@ def capture_event(event_info: EventInfo) -> Iterator[None]:
 @contextmanager
 def simulated_empty_cache() -> Generator[
         List[Tuple[str, Union[str, List[str]], str]], None, None]:
-    cache_queries = []  # type: List[Tuple[str, Union[str, List[str]], str]]
+    cache_queries: List[Tuple[str, Union[str, List[str]], str]] = []
 
     def my_cache_get(key: str, cache_name: Optional[str]=None) -> Optional[Dict[str, Any]]:
         cache_queries.append(('get', key, cache_name))
@@ -145,7 +143,7 @@ def queries_captured(include_savepoints: Optional[bool]=False) -> Generator[
     the with statement.
     '''
 
-    queries = []  # type: List[Dict[str, Union[str, bytes]]]
+    queries: List[Dict[str, Union[str, bytes]]] = []
 
     def wrapper_execute(self: TimeTrackingCursor,
                         action: Callable[[str, Iterable[Any]], None],
@@ -170,18 +168,18 @@ def queries_captured(include_savepoints: Optional[bool]=False) -> Generator[
 
     def cursor_execute(self: TimeTrackingCursor, sql: str,
                        params: Iterable[Any]=()) -> None:
-        return wrapper_execute(self, super(TimeTrackingCursor, self).execute, sql, params)  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
-    TimeTrackingCursor.execute = cursor_execute  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
+        return wrapper_execute(self, super(TimeTrackingCursor, self).execute, sql, params)
+    TimeTrackingCursor.execute = cursor_execute  # type: ignore[assignment] # https://github.com/JukkaL/mypy/issues/1167
 
     def cursor_executemany(self: TimeTrackingCursor, sql: str,
                            params: Iterable[Any]=()) -> None:
-        return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params)  # type: ignore # https://github.com/JukkaL/mypy/issues/1167 # nocoverage -- doesn't actually get used in tests
-    TimeTrackingCursor.executemany = cursor_executemany  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
+        return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params)  # nocoverage -- doesn't actually get used in tests
+    TimeTrackingCursor.executemany = cursor_executemany  # type: ignore[assignment] # https://github.com/JukkaL/mypy/issues/1167
 
     yield queries
 
-    TimeTrackingCursor.execute = old_execute  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
-    TimeTrackingCursor.executemany = old_executemany  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
+    TimeTrackingCursor.execute = old_execute  # type: ignore[assignment] # https://github.com/JukkaL/mypy/issues/1167
+    TimeTrackingCursor.executemany = old_executemany  # type: ignore[assignment] # https://github.com/JukkaL/mypy/issues/1167
 
 @contextmanager
 def stdout_suppressed() -> Iterator[IO[str]]:
@@ -191,6 +189,11 @@ def stdout_suppressed() -> Iterator[IO[str]]:
         stdout, sys.stdout = sys.stdout, devnull
         yield stdout
         sys.stdout = stdout
+
+def reset_emails_in_zulip_realm() -> None:
+    realm = get_realm('zulip')
+    do_set_realm_property(realm, 'email_address_visibility',
+                          Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
 
 def get_test_image_file(filename: str) -> IO[Any]:
     test_avatar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../tests/images'))
@@ -236,9 +239,9 @@ def most_recent_message(user_profile: UserProfile) -> Message:
 
 def get_subscription(stream_name: str, user_profile: UserProfile) -> Subscription:
     stream = get_stream(stream_name, user_profile.realm)
-    recipient = get_stream_recipient(stream.id)
+    recipient_id = stream.recipient_id
     return Subscription.objects.get(user_profile=user_profile,
-                                    recipient=recipient, active=True)
+                                    recipient_id=recipient_id, active=True)
 
 def get_user_messages(user_profile: UserProfile) -> List[Message]:
     query = UserMessage.objects. \
@@ -249,17 +252,25 @@ def get_user_messages(user_profile: UserProfile) -> List[Message]:
 
 class DummyHandler:
     def __init__(self) -> None:
-        allocate_handler_id(self)  # type: ignore # this is a testing mock
+        allocate_handler_id(self)  # type: ignore[arg-type] # this is a testing mock
 
 class POSTRequestMock:
     method = "POST"
 
     def __init__(self, post_data: Dict[str, Any], user_profile: Optional[UserProfile]) -> None:
-        self.GET = {}  # type: Dict[str, Any]
-        self.POST = post_data
+        self.GET: Dict[str, Any] = {}
+
+        # Convert any integer parameters passed into strings, even
+        # though of course the HTTP API would do so.  Ideally, we'd
+        # get rid of this abstraction entirely and just use the HTTP
+        # API directly, but while it exists, we need this code.
+        self.POST: Dict[str, str] = {}
+        for key in post_data:
+            self.POST[key] = str(post_data[key])
+
         self.user = user_profile
         self._tornado_handler = DummyHandler()
-        self._log_data = {}  # type: Dict[str, Any]
+        self._log_data: Dict[str, Any] = {}
         self.META = {'PATH_INFO': 'test'}
         self.path = ''
 
@@ -269,15 +280,14 @@ class HostRequestMock:
 
     def __init__(self, user_profile: UserProfile=None, host: str=settings.EXTERNAL_HOST) -> None:
         self.host = host
-        self.GET = {}  # type: Dict[str, Any]
-        self.POST = {}  # type: Dict[str, Any]
+        self.GET: Dict[str, Any] = {}
+        self.POST: Dict[str, Any] = {}
         self.META = {'PATH_INFO': 'test'}
         self.path = ''
         self.user = user_profile
         self.method = ''
         self.body = ''
         self.content_type = ''
-        self._email = ''
 
     def get_host(self) -> str:
         return self.host
@@ -299,7 +309,7 @@ class MockPythonResponse:
 
 
 INSTRUMENTING = os.environ.get('TEST_INSTRUMENT_URL_COVERAGE', '') == 'TRUE'
-INSTRUMENTED_CALLS = []  # type: List[Dict[str, Any]]
+INSTRUMENTED_CALLS: List[Dict[str, Any]] = []
 
 UrlFuncT = Callable[..., HttpResponse]  # TODO: make more specific
 
@@ -340,7 +350,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
         from zproject.urls import urlpatterns, v1_api_and_json_patterns
 
         # Find our untested urls.
-        pattern_cnt = collections.defaultdict(int)  # type: Dict[str, int]
+        pattern_cnt: Dict[str, int] = collections.defaultdict(int)
 
         def re_strip(r: Any) -> str:
             return str(r).lstrip('^').rstrip('$')
@@ -362,13 +372,13 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
 
         def find_pattern(pattern: Any, prefixes: List[str]) -> None:
 
-            if isinstance(pattern, type(LocaleRegexURLResolver)):
+            if isinstance(pattern, type(URLResolver)):
                 return  # nocoverage -- shouldn't actually happen
 
             if hasattr(pattern, 'url_patterns'):
                 return
 
-            canon_pattern = prefixes[0] + re_strip(pattern.regex.pattern)
+            canon_pattern = prefixes[0] + re_strip(pattern.pattern.regex.pattern)
             cnt = 0
             for call in calls:
                 if 'pattern' in call:
@@ -379,7 +389,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
                 for prefix in prefixes:
                     if url.startswith(prefix):
                         match_url = url[len(prefix):]
-                        if pattern.regex.match(match_url):
+                        if pattern.resolve(match_url):
                             if call['status_code'] in [200, 204, 301, 302]:
                                 cnt += 1
                             call['pattern'] = canon_pattern
@@ -389,7 +399,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
         find_patterns(v1_api_and_json_patterns, ['api/v1/', 'json/'])
 
         assert len(pattern_cnt) > 100
-        untested_patterns = set([p for p in pattern_cnt if pattern_cnt[p] == 0])
+        untested_patterns = {p for p in pattern_cnt if pattern_cnt[p] == 0}
 
         exempt_patterns = set([
             # We exempt some patterns that are called via Tornado.
@@ -434,36 +444,6 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             for untested_pattern in sorted(untested_patterns):
                 print("   %s" % (untested_pattern,))
             sys.exit(1)
-
-def get_all_templates() -> List[str]:
-    templates = []
-
-    relpath = os.path.relpath
-    isfile = os.path.isfile
-    path_exists = os.path.exists
-
-    def is_valid_template(p: str, n: str) -> bool:
-        return 'webhooks' not in p \
-               and not n.startswith('.') \
-               and not n.startswith('__init__') \
-               and not n.endswith('.md') \
-               and not n.endswith('.source.html') \
-               and isfile(p)
-
-    def process(template_dir: str, dirname: str, fnames: Iterable[str]) -> None:
-        for name in fnames:
-            path = os.path.join(dirname, name)
-            if is_valid_template(path, name):
-                templates.append(relpath(path, template_dir))
-
-    for engine in loader.engines.all():
-        template_dirs = [d for d in engine.template_dirs if path_exists(d)]
-        for template_dir in template_dirs:
-            template_dir = os.path.normpath(template_dir)
-            for dirpath, dirnames, fnames in os.walk(template_dir):
-                process(template_dir, dirpath, fnames)
-
-    return templates
 
 def load_subdomain_token(response: HttpResponse) -> Dict[str, Any]:
     assert isinstance(response, HttpResponseRedirect)

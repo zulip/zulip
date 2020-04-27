@@ -1,7 +1,8 @@
 # After editing this file, you MUST afterward run
 # /tools/update-locked-requirements to update requirements/dev.txt.
 # See requirements/README.md for more detail.
--r common.in
+-r pip.in
+-r prod.in
 -r docs.in
 
 # moto s3 mock
@@ -47,9 +48,6 @@ gitlint
 # Needed for visualising cprofile reports
 snakeviz
 
-# Needed to sync translations from transifex
-transifex-client<0.13.5  # Before https://github.com/transifex/transifex-client/commit/14a1a55c55fe66b1dee1fdfc4f2b1134c3c1af5d
-
 # Needed for creating digital ocean droplets
 python-digitalocean
 
@@ -60,3 +58,13 @@ pip-tools
 https://github.com/zulip/zulint/archive/aaed679f1ad38b230090eadd3870b7682500f60c.zip#egg=zulint==0.0.1
 
 -r mypy.in
+
+# These modules are built in later versions of python and will generate difference in locked files
+# if executed with python version > 3.6 so despite being dependent packages they have to be added separately.
+# built-in python > 3.7 needed by jsonschema
+importlib-metadata
+# built-in python > 3.6 needed by cfn-lint
+importlib-resources
+
+# Needed for using integration logo svg files as bot avatars
+cairosvg

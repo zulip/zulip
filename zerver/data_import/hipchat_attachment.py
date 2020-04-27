@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional
 
 class AttachmentHandler:
     def __init__(self) -> None:
-        self.info_dict = dict()  # type: Dict[str, Dict[str, Any]]
+        self.info_dict: Dict[str, Dict[str, Any]] = dict()
 
     def handle_message_data(self,
                             realm_id: int,
@@ -77,8 +77,8 @@ class AttachmentHandler:
         return content
 
     def write_info(self, output_dir: str, realm_id: int) -> None:
-        attachments = []  # type: List[Dict[str, Any]]
-        uploads_records = []  # type: List[Dict[str, Any]]
+        attachments: List[Dict[str, Any]] = []
+        uploads_records: List[Dict[str, Any]] = []
 
         def add_attachment(info: Dict[str, Any]) -> None:
             build_attachment(

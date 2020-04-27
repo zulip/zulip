@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from typing import Any, Dict, Mapping, Union
 
 import mock
@@ -15,7 +13,6 @@ from zerver.lib.test_classes import (
 )
 
 from zerver.models import (
-    get_stream_recipient,
     Subscription,
     UserPresence,
 )
@@ -43,11 +40,11 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         hamlet = self.example_user('hamlet')
         cordelia = self.example_user('cordelia')
 
-        self.login(hamlet.email)
+        self.login_user(hamlet)
 
         message_id = self.send_personal_message(
-            hamlet.email,
-            cordelia.email,
+            hamlet,
+            cordelia,
             content='no mention'
         )
 
@@ -71,12 +68,12 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         cordelia.enable_online_push_notifications = enable_online_push_notifications
         cordelia.save()
 
-        self.login(hamlet.email)
+        self.login_user(hamlet)
         self.subscribe(hamlet, 'Scotland')
         self.subscribe(cordelia, 'Scotland')
 
         message_id = self.send_stream_message(
-            hamlet.email,
+            hamlet,
             'Scotland',
             content=content,
         )
@@ -211,7 +208,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         '''
         cordelia = self.example_user('cordelia')
         stream = self.subscribe(cordelia, 'Scotland')
-        recipient = get_stream_recipient(stream.id)
+        recipient = stream.recipient
         cordelia_subscription = Subscription.objects.get(
             user_profile_id=cordelia.id,
             recipient=recipient,
@@ -271,6 +268,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         cordelia = self.example_user('cordelia')
         UserPresence.objects.create(
             user_profile_id=cordelia.id,
+            realm_id=cordelia.realm_id,
             status=UserPresence.ACTIVE,
             client=get_client('web'),
             timestamp=timezone_now(),

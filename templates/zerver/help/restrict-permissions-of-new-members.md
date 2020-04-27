@@ -16,6 +16,7 @@ Currently, the following actions support limiting access to full members.
 
 - [Creating streams](/help/configure-who-can-create-streams)
 - [Adding users to streams](/help/configure-who-can-invite-to-streams)
+- [Restricting posting to a stream](/help/stream-sending-policy)
 
 ### Set waiting period for new members
 

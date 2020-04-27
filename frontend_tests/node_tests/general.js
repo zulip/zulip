@@ -6,9 +6,9 @@
 // The most basic unit tests load up code, call functions,
 // and assert truths:
 
-zrequire('util');
-assert(!util.is_all_or_everyone_mentioned('boring text'));
-assert(util.is_all_or_everyone_mentioned('mention @**everyone**'));
+const util = zrequire('util');
+assert(!util.find_wildcard_mentions('boring text'));
+assert(util.find_wildcard_mentions('mention @**everyone**'));
 
 // Let's test with people.js next.  We'll show this technique:
 //  * get a false value
@@ -26,7 +26,7 @@ assert(!people.is_known_user_id(isaac.user_id));
 people.add(isaac);
 assert(people.is_known_user_id(isaac.user_id));
 
-// The global.people object is a very fundamental object in the
+// The `people`object is a very fundamental object in the
 // Zulip app.  You can learn a lot more about it by reading
 // the tests in people.js in the same directory as this file.
 // Let's create the current user, which some future tests will
@@ -51,9 +51,6 @@ const denmark_stream = {
     subscribed: false,
 };
 
-// We often use IIFEs (immediately invoked function expressions)
-// to make our tests more self-containted.
-
 // Some quick housekeeping:  Let's clear page_params, which is a data
 // structure that the server sends down to us when the app starts.  We
 // prefer to test with a clean slate.
@@ -61,12 +58,10 @@ const denmark_stream = {
 set_global('page_params', {});
 
 zrequire('stream_data');
-set_global('i18n', global.stub_i18n);
-zrequire('settings_display');
 
 run_test('stream_data', () => {
     assert.equal(stream_data.get_sub_by_name('Denmark'), undefined);
-    stream_data.add_sub('Denmark', denmark_stream);
+    stream_data.add_sub(denmark_stream);
     const sub = stream_data.get_sub_by_name('Denmark');
     assert.equal(sub.color, 'blue');
 });
@@ -97,22 +92,19 @@ const messages = {
 const noop = () => undefined;
 
 set_global('alert_words', {});
-set_global('blueslip', global.make_zblueslip());
 
 alert_words.process_message = noop;
 
 // We can also bring in real code:
 zrequire('recent_senders');
 zrequire('unread');
-zrequire('topic_data');
+zrequire('stream_topic_history');
 
 // And finally require the module that we will test directly:
 zrequire('message_store');
 
 run_test('message_store', () => {
-    // Our test runner automatically sets _ for us.
-    // See http://underscorejs.org/ for help on that library.
-    const in_message = _.clone(messages.isaac_to_denmark_stream);
+    const in_message = { ...messages.isaac_to_denmark_stream };
 
     assert.equal(in_message.alerted, undefined);
     message_store.set_message_booleans(in_message);
@@ -126,7 +118,7 @@ run_test('message_store', () => {
     assert.equal(message, in_message);
 
     // There are more side effects.
-    const topic_names = topic_data.get_recent_names(denmark_stream.stream_id);
+    const topic_names = stream_topic_history.get_recent_topic_names(denmark_stream.stream_id);
     assert.deepEqual(topic_names, ['copenhagen']);
 });
 
@@ -139,7 +131,7 @@ run_test('unread', () => {
 
     assert.equal(unread.num_unread_for_topic(stream_id, topic_name), 0);
 
-    const in_message = _.clone(messages.isaac_to_denmark_stream);
+    const in_message = { ...messages.isaac_to_denmark_stream };
     message_store.set_message_booleans(in_message);
 
     unread.process_loaded_messages([in_message]);
@@ -234,7 +226,6 @@ run_test('narrow_state', () => {
 
         zrequire - bring in real code
         set_global - create stubs
-        IIFE - enclose tests in their own scope
         assert.equal - verify results
 
     ------
@@ -352,7 +343,7 @@ run_test('update_user_event', () => {
     // stubbed out above.
     server_events_dispatch.dispatch_normal_event(event);
 
-    const user = people.get_person_from_user_id(bob.user_id);
+    const user = people.get_by_user_id(bob.user_id);
 
     // Verify that the code actually did its main job:
     assert.equal(user.full_name, 'The Artist Formerly Known as Bob');
@@ -459,7 +450,6 @@ run_test('insert_message', () => {
     assert.equal(inserted_message.content, 'example content');
 });
 
-
 /*
 
    The previous example starts to get us out of the data layer of
@@ -495,7 +485,6 @@ run_test('insert_message', () => {
 */
 
 set_global('channel', {});
-set_global('feature_flags', {});
 set_global('home_msg_list', {});
 set_global('message_list', {});
 set_global('message_viewport', {});
@@ -595,7 +584,7 @@ const social_stream = {
 };
 
 run_test('set_up_filter', () => {
-    stream_data.add_sub('Social', social_stream);
+    stream_data.add_sub(social_stream);
 
     const filter_terms = [
         {operator: 'stream', operand: 'Social'},
@@ -669,6 +658,11 @@ function make_topic_list_helper() {
     topic_list.active_stream_id = () => undefined;
     topic_list.get_stream_li = () => undefined;
 
+    let topic_list_cleared;
+    topic_list.clear = () => {
+        topic_list_cleared = true;
+    };
+
     let topic_list_closed;
     topic_list.close = () => {
         topic_list_closed = true;
@@ -681,6 +675,7 @@ function make_topic_list_helper() {
 
     return {
         verify_actions: () => {
+            assert(topic_list_cleared);
             assert(topic_list_closed);
             assert(topic_list_rebuilt);
         },
@@ -718,7 +713,6 @@ run_test('stream_list', () => {
     const jquery_helper = make_jquery_helper();
     const sidebar_helper = make_sidebar_helper();
     const topic_list_helper = make_topic_list_helper();
-
 
     // This is what we are testing!
     stream_list.update_streams_sidebar();

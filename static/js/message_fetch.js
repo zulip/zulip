@@ -25,8 +25,8 @@ function process_result(data, opts) {
         narrow.show_empty_narrow_message();
     }
 
-    _.each(messages, message_store.set_message_booleans);
-    messages = _.map(messages, message_store.add_message_metadata);
+    messages.forEach(message_store.set_message_booleans);
+    messages = messages.map(message_store.add_message_metadata);
 
     // In case any of the newly fetched messages are new, add them to
     // our unread data structures.  It's important that this run even
@@ -118,12 +118,12 @@ function handle_operators_supporting_id_based_api(data) {
     }
 
     data.narrow = JSON.parse(data.narrow);
-    data.narrow = _.map(data.narrow, function (filter) {
-        if (operators_supporting_ids.indexOf(filter.operator) !== -1) {
+    data.narrow = data.narrow.map(filter => {
+        if (operators_supporting_ids.includes(filter.operator)) {
             filter.operand = people.emails_strings_to_user_ids_array(filter.operand);
         }
 
-        if (operators_supporting_id.indexOf(filter.operator) !== -1) {
+        if (operators_supporting_id.includes(filter.operator)) {
             if (filter.operator === 'stream') {
                 const stream_id = stream_data.get_stream_id(filter.operand);
                 if (stream_id !== undefined) {
@@ -161,9 +161,6 @@ exports.load_messages = function (opts) {
     }
     if (opts.msg_list === home_msg_list && page_params.narrow_stream !== undefined) {
         data.narrow = JSON.stringify(page_params.narrow);
-    }
-    if (opts.use_first_unread_anchor) {
-        data.use_first_unread_anchor = true;
     }
 
     if (opts.num_before > 0) {
@@ -222,11 +219,10 @@ exports.load_messages_for_narrow = function (opts) {
     const msg_list = message_list.narrowed;
 
     exports.load_messages({
-        anchor: opts.then_select_id.toFixed(),
+        anchor: opts.anchor,
         num_before: consts.narrow_before,
         num_after: consts.narrow_after,
         msg_list: msg_list,
-        use_first_unread_anchor: opts.use_first_unread_anchor,
         pre_scroll_cont: opts.pre_scroll_cont,
         cont: function () {
             message_scroll.hide_indicators();
@@ -267,7 +263,7 @@ exports.get_frontfill_anchor = function (msg_list) {
 exports.maybe_load_older_messages = function (opts) {
     // This function gets called when you scroll to the top
     // of your window, and you want to get messages older
-    // than what the browers originally fetched.
+    // than what the browsers originally fetched.
     const msg_list = opts.msg_list;
     if (!msg_list.fetch_status.can_load_older_messages()) {
         // We may already be loading old messages or already
@@ -305,7 +301,7 @@ exports.do_backfill = function (opts) {
 exports.maybe_load_newer_messages = function (opts) {
     // This function gets called when you scroll to the top
     // of your window, and you want to get messages newer
-    // than what the browers originally fetched.
+    // than what the browsers originally fetched.
     const msg_list = opts.msg_list;
 
     if (!msg_list.fetch_status.can_load_newer_messages()) {

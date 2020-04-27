@@ -5,43 +5,64 @@ import argparse
 import glob
 import shutil
 
+from typing import List
+
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 sys.path.append(ZULIP_PATH)
-from scripts.lib.zulip_tools import run, run_as_root, OKBLUE, ENDC, \
-    get_dev_uuid_var_path, file_or_package_hash_updated
+from scripts.lib.zulip_tools import run, OKBLUE, ENDC, \
+    get_dev_uuid_var_path, is_digest_obsolete, write_new_digest
 
 from version import PROVISION_VERSION
+from pygments import __version__ as pygments_version
 
 from tools.setup.generate_zulip_bots_static_files import generate_zulip_bots_static_files
 
 VENV_PATH = "/srv/zulip-py3-venv"
-VAR_DIR_PATH = os.path.join(ZULIP_PATH, 'var')
-LOG_DIR_PATH = os.path.join(VAR_DIR_PATH, 'log')
-UPLOAD_DIR_PATH = os.path.join(VAR_DIR_PATH, 'uploads')
-TEST_UPLOAD_DIR_PATH = os.path.join(VAR_DIR_PATH, 'test_uploads')
-COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'coverage')
-NODE_TEST_COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'node-coverage')
-XUNIT_XML_TEST_RESULTS_DIR_PATH = os.path.join(VAR_DIR_PATH, 'xunit-test-results')
-
-is_travis = 'TRAVIS' in os.environ
-
-# TODO: De-duplicate this with emoji_dump.py
-EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
-if is_travis:
-    # In Travis CI, we don't have root access
-    EMOJI_CACHE_PATH = "/home/travis/zulip-emoji-cache"
-
 UUID_VAR_PATH = get_dev_uuid_var_path()
 
-def setup_shell_profile(shell_profile):
-    # type: (str) -> None
+def create_var_directories() -> None:
+    # create var/coverage, var/log, etc.
+    var_dir = os.path.join(ZULIP_PATH, 'var')
+    sub_dirs = [
+        'coverage',
+        'log',
+        'node-coverage',
+        'test_uploads',
+        'uploads',
+        'xunit-test-results',
+    ]
+    for sub_dir in sub_dirs:
+        path = os.path.join(var_dir, sub_dir)
+        os.makedirs(path, exist_ok=True)
+
+def build_pygments_data_paths() -> List[str]:
+    paths = [
+        "tools/setup/build_pygments_data",
+        "tools/setup/lang.json",
+    ]
+    return paths
+
+def compilemessages_paths() -> List[str]:
+    paths = ['zerver/management/commands/compilemessages.py']
+    paths += glob.glob('locale/*/LC_MESSAGES/*.po')
+    paths += glob.glob('locale/*/translations.json')
+    return paths
+
+def inline_email_css_paths() -> List[str]:
+    paths = [
+        "scripts/setup/inline_email_css.py",
+        "templates/zerver/emails/email.css",
+    ]
+    paths += glob.glob('templates/zerver/emails/*.source.html')
+    return paths
+
+def setup_shell_profile(shell_profile: str) -> None:
     shell_profile_path = os.path.expanduser(shell_profile)
 
-    def write_command(command):
-        # type: (str) -> None
+    def write_command(command: str) -> None:
         if os.path.exists(shell_profile_path):
-            with open(shell_profile_path, 'r') as shell_profile_file:
+            with open(shell_profile_path) as shell_profile_file:
                 lines = [line.strip() for line in shell_profile_file.readlines()]
             if command not in lines:
                 with open(shell_profile_path, 'a+') as shell_profile_file:
@@ -77,7 +98,7 @@ def setup_bash_profile() -> None:
 
         if os.path.exists(DOT_PROFILE):
             try:
-                with open(BASH_PROFILE, "r") as f:
+                with open(BASH_PROFILE) as f:
                     profile_contents = f.read()
                 if profile_contents == OLD_PROFILE_TEXT:
                     os.unlink(BASH_PROFILE)
@@ -94,6 +115,36 @@ def setup_bash_profile() -> None:
         # no existing bash profile found; claim .bash_profile
         setup_shell_profile(BASH_PROFILES[0])
 
+def need_to_run_build_pygments_data() -> bool:
+    if not os.path.exists("static/generated/pygments_data.json"):
+        return True
+
+    return is_digest_obsolete(
+        "build_pygments_data_hash",
+        build_pygments_data_paths(),
+        [pygments_version]
+    )
+
+def need_to_run_compilemessages() -> bool:
+    if not os.path.exists('locale/language_name_map.json'):
+        # User may have cleaned their git checkout.
+        print('Need to run compilemessages due to missing language_name_map.json')
+        return True
+
+    return is_digest_obsolete(
+        "last_compilemessages_hash",
+        compilemessages_paths(),
+    )
+
+def need_to_run_inline_email_css() -> bool:
+    if not os.path.exists('templates/zerver/emails/compiled/'):
+        return True
+
+    return is_digest_obsolete(
+        "last_email_source_files_hash",
+        inline_email_css_paths(),
+    )
+
 def main(options: argparse.Namespace) -> int:
     setup_bash_profile()
     setup_shell_profile('~/.zprofile')
@@ -101,64 +152,51 @@ def main(options: argparse.Namespace) -> int:
     # This needs to happen before anything that imports zproject.settings.
     run(["scripts/setup/generate_secrets.py", "--development"])
 
-    # create log directory `zulip/var/log`
-    os.makedirs(LOG_DIR_PATH, exist_ok=True)
-    # create upload directory `var/uploads`
-    os.makedirs(UPLOAD_DIR_PATH, exist_ok=True)
-    # create test upload directory `var/test_upload`
-    os.makedirs(TEST_UPLOAD_DIR_PATH, exist_ok=True)
-    # create coverage directory `var/coverage`
-    os.makedirs(COVERAGE_DIR_PATH, exist_ok=True)
-    # create linecoverage directory `var/node-coverage`
-    os.makedirs(NODE_TEST_COVERAGE_DIR_PATH, exist_ok=True)
-    # create XUnit XML test results directory`var/xunit-test-results`
-    os.makedirs(XUNIT_XML_TEST_RESULTS_DIR_PATH, exist_ok=True)
+    create_var_directories()
 
     # The `build_emoji` script requires `emoji-datasource` package
     # which we install via npm; thus this step is after installing npm
     # packages.
-    if not os.access(EMOJI_CACHE_PATH, os.W_OK):
-        run_as_root(["mkdir", "-p", EMOJI_CACHE_PATH])
-        run_as_root(["chown", "%s:%s" % (os.getuid(), os.getgid()), EMOJI_CACHE_PATH])
     run(["tools/setup/emoji/build_emoji"])
 
     # copy over static files from the zulip_bots package
     generate_zulip_bots_static_files()
 
-    build_pygments_data_paths = ["tools/setup/build_pygments_data", "tools/setup/lang.json"]
-    from pygments import __version__ as pygments_version
-    if file_or_package_hash_updated(build_pygments_data_paths, "build_pygments_data_hash", options.is_force,
-                                    [pygments_version]):
+    if options.is_force or need_to_run_build_pygments_data():
         run(["tools/setup/build_pygments_data"])
+        write_new_digest(
+            'build_pygments_data_hash',
+            build_pygments_data_paths(),
+            [pygments_version]
+        )
     else:
         print("No need to run `tools/setup/build_pygments_data`.")
 
-    update_authors_json_paths = ["tools/update-authors-json", "zerver/tests/fixtures/authors.json"]
-    if file_or_package_hash_updated(update_authors_json_paths, "update_authors_json_hash", options.is_force):
-        run(["tools/update-authors-json", "--use-fixture"])
+    if options.is_force or need_to_run_inline_email_css():
+        run(["scripts/setup/inline_email_css.py"])
+        write_new_digest(
+            "last_email_source_files_hash",
+            inline_email_css_paths(),
+        )
     else:
-        print("No need to run `tools/update-authors-json`.")
+        print("No need to run `scripts/setup/inline_email_css.py`.")
 
-    email_source_paths = ["scripts/setup/inline-email-css", "templates/zerver/emails/email.css"]
-    email_source_paths += glob.glob('templates/zerver/emails/*.source.html')
-    if file_or_package_hash_updated(email_source_paths, "last_email_source_files_hash", options.is_force):
-        run(["scripts/setup/inline-email-css"])
-    else:
-        print("No need to run `scripts/setup/inline-email-css`.")
-
-    if not options.is_production_travis:
-        # The following block is skipped for the production Travis
+    if not options.is_production_test_suite:
+        # The following block is skipped for the production test
         # suite, because that suite doesn't make use of these elements
         # of the development environment (it just uses the development
         # environment to build a release tarball).
 
-        # Need to set up Django before using template_database_status
+        # Need to set up Django before using template_status
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
         import django
         django.setup()
 
-        from zerver.lib.test_fixtures import template_database_status, run_db_migrations, \
-            destroy_leaked_test_databases
+        from zerver.lib.test_fixtures import (
+            DEV_DATABASE,
+            TEST_DATABASE,
+            destroy_leaked_test_databases,
+        )
 
         try:
             from zerver.lib.queue import SimpleQueueClient
@@ -170,39 +208,32 @@ def main(options: argparse.Namespace) -> int:
         if options.is_force or not rabbitmq_is_configured:
             run(["scripts/setup/configure-rabbitmq"])
         else:
-            print("RabbitMQ is already configured.")
+            print("No need to run `scripts/setup/configure-rabbitmq.")
 
-        migration_status_path = os.path.join(UUID_VAR_PATH, "migration_status_dev")
-        dev_template_db_status = template_database_status(
-            migration_status=migration_status_path,
-            settings="zproject.settings",
-            database_name="zulip",
-        )
+        dev_template_db_status = DEV_DATABASE.template_status()
         if options.is_force or dev_template_db_status == 'needs_rebuild':
             run(["tools/setup/postgres-init-dev-db"])
-            run(["tools/do-destroy-rebuild-database"])
+            run(["tools/rebuild-dev-database"])
         elif dev_template_db_status == 'run_migrations':
-            run_db_migrations('dev')
+            DEV_DATABASE.run_db_migrations()
         elif dev_template_db_status == 'current':
             print("No need to regenerate the dev DB.")
 
-        test_template_db_status = template_database_status()
+        test_template_db_status = TEST_DATABASE.template_status()
         if options.is_force or test_template_db_status == 'needs_rebuild':
             run(["tools/setup/postgres-init-test-db"])
-            run(["tools/do-destroy-rebuild-test-database"])
+            run(["tools/rebuild-test-database"])
         elif test_template_db_status == 'run_migrations':
-            run_db_migrations('test')
+            TEST_DATABASE.run_db_migrations()
         elif test_template_db_status == 'current':
             print("No need to regenerate the test DB.")
 
-        # Consider updating generated translations data: both `.mo`
-        # files and `language-options.json`.
-        paths = ['zerver/management/commands/compilemessages.py']
-        paths += glob.glob('locale/*/LC_MESSAGES/*.po')
-        paths += glob.glob('locale/*/translations.json')
-
-        if file_or_package_hash_updated(paths, "last_compilemessages_hash", options.is_force):
+        if options.is_force or need_to_run_compilemessages():
             run(["./manage.py", "compilemessages"])
+            write_new_digest(
+                "last_compilemessages_hash",
+                compilemessages_paths(),
+            )
         else:
             print("No need to run `manage.py compilemessages`.")
 
@@ -249,10 +280,10 @@ if __name__ == "__main__":
                         default=False,
                         help="Ignore all provisioning optimizations.")
 
-    parser.add_argument('--production-travis', action='store_true',
-                        dest='is_production_travis',
+    parser.add_argument('--production-test-suite', action='store_true',
+                        dest='is_production_test_suite',
                         default=False,
-                        help="Provision for Travis with production settings.")
+                        help="Provision for test suite with production settings.")
 
     options = parser.parse_args()
     sys.exit(main(options))

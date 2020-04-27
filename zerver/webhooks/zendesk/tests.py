@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from typing import Any, Dict, Optional
 
 from zerver.lib.test_classes import WebhookTestCase
@@ -6,7 +5,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 class ZenDeskHookTests(WebhookTestCase):
     STREAM_NAME = 'zendesk'
-    URL_TEMPLATE = u"/api/v1/external/zendesk?stream={stream}"
+    URL_TEMPLATE = "/api/v1/external/zendesk?stream={stream}"
 
     DEFAULT_TICKET_TITLE = 'User can\'t login'
     TICKET_TITLE = DEFAULT_TICKET_TITLE
@@ -26,7 +25,7 @@ class ZenDeskHookTests(WebhookTestCase):
         }
 
     def do_test(self, expected_topic: Optional[str]=None, expected_message: Optional[str]=None) -> None:
-        self.api_stream_message(self.TEST_USER_EMAIL, "", expected_topic, expected_message,
+        self.api_stream_message(self.test_user, "", expected_topic, expected_message,
                                 content_type=None)
         self.TICKET_TITLE = self.DEFAULT_TICKET_TITLE
         self.TICKET_ID = self.DEFAULT_TICKET_ID

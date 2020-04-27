@@ -23,9 +23,8 @@ if ENV == "travis":
               'hence yarn is not installed. Exiting without cleaning npm cache.')
         sys.exit(0)
 
-def get_caches_in_use(threshold_days):
-    # type: (int) -> Set[str]
-    setups_to_check = set([ZULIP_PATH, ])
+def get_caches_in_use(threshold_days: int) -> Set[str]:
+    setups_to_check = {ZULIP_PATH}
     caches_in_use = set()
 
     if ENV == "prod":

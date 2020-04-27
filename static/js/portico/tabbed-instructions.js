@@ -30,7 +30,7 @@ export function activate_correct_tab($codeSection) {
             $(this).addClass("active");
         }
 
-        if (desktop_os.indexOf(user_os) !== -1 && language === "desktop-web") {
+        if (desktop_os.includes(user_os) && language === "desktop-web") {
             $(this).addClass("active");
         }
     });
@@ -42,7 +42,7 @@ export function activate_correct_tab($codeSection) {
             $(this).addClass("active");
         }
 
-        if (desktop_os.indexOf(user_os) !== -1 && language === "desktop-web") {
+        if (desktop_os.includes(user_os) && language === "desktop-web") {
             $(this).addClass("active");
         }
     });

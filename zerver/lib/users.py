@@ -1,18 +1,21 @@
-from typing import Dict, List, Optional, Tuple, Union, cast
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 import unicodedata
+from collections import defaultdict
 
+from django.conf import settings
 from django.db.models.query import QuerySet
+from django.forms.models import model_to_dict
 from django.utils.translation import ugettext as _
 
 from zerver.lib.cache import generic_bulk_cached_fetch, user_profile_cache_key_id, \
-    user_profile_by_id_cache_key
+    user_profile_by_id_cache_key, realm_user_dict_fields
 from zerver.lib.request import JsonableError
-from zerver.lib.avatar import avatar_url
+from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.exceptions import OrganizationAdministratorRequired
 from zerver.models import UserProfile, Service, Realm, \
-    get_user_profile_by_id_in_realm, \
-    CustomProfileField
+    get_user_profile_by_id_in_realm, CustomProfileFieldValue, \
+    get_realm_user_dicts, CustomProfileField
 
 from zulip_bots.custom_exceptions import ConfigValidationError
 
@@ -166,11 +169,11 @@ def user_ids_to_users(user_ids: List[int], realm: Realm) -> List[UserProfile]:
     def fetch_users_by_id(user_ids: List[int]) -> List[UserProfile]:
         return list(UserProfile.objects.filter(id__in=user_ids).select_related())
 
-    user_profiles_by_id = generic_bulk_cached_fetch(
+    user_profiles_by_id: Dict[int, UserProfile] = generic_bulk_cached_fetch(
         cache_key_function=user_profile_by_id_cache_key,
         query_function=fetch_users_by_id,
         object_ids=user_ids
-    )  # type: Dict[int, UserProfile]
+    )
 
     found_user_ids = user_profiles_by_id.keys()
     missed_user_ids = [user_id for user_id in user_ids if user_id not in found_user_ids]
@@ -195,7 +198,8 @@ def access_bot_by_id(user_profile: UserProfile, user_id: int) -> UserProfile:
     return target
 
 def access_user_by_id(user_profile: UserProfile, user_id: int,
-                      allow_deactivated: bool=False, allow_bots: bool=False) -> UserProfile:
+                      allow_deactivated: bool=False, allow_bots: bool=False,
+                      read_only: bool=False) -> UserProfile:
     try:
         target = get_user_profile_by_id_in_realm(user_id, user_profile.realm)
     except UserProfile.DoesNotExist:
@@ -204,6 +208,9 @@ def access_user_by_id(user_profile: UserProfile, user_id: int,
         raise JsonableError(_("No such user"))
     if not target.is_active and not allow_deactivated:
         raise JsonableError(_("User is deactivated"))
+    if read_only:
+        # Administrative access is not required just to read a user.
+        return target
     if not user_profile.can_admin_user(target):
         raise JsonableError(_("Insufficient permission"))
     return target
@@ -261,15 +268,166 @@ def validate_user_custom_profile_data(realm_id: int,
         if result is not None:
             raise JsonableError(result)
 
-def compute_show_invites_and_add_streams(user_profile: UserProfile) -> Tuple[bool, bool]:
-    show_invites = True
-    show_add_streams = True
+def compute_show_invites_and_add_streams(user_profile: Optional[UserProfile]) -> Tuple[bool, bool]:
+    if user_profile is None:
+        return False, False
 
-    # Some realms only allow admins to invite users
-    if user_profile.realm.invite_by_admins_only and not user_profile.is_realm_admin:
-        show_invites = False
     if user_profile.is_guest:
-        show_invites = False
-        show_add_streams = False
+        return False, False
 
-    return (show_invites, show_add_streams)
+    if user_profile.is_realm_admin:
+        return True, True
+
+    if user_profile.realm.invite_by_admins_only:
+        return False, True
+
+    return True, True
+
+def format_user_row(realm: Realm, acting_user: UserProfile, row: Dict[str, Any],
+                    client_gravatar: bool,
+                    custom_profile_field_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """Formats a user row returned by a database fetch using
+    .values(*realm_user_dict_fields) into a dictionary representation
+    of that user for API delivery to clients.  The acting_user
+    argument is used for permissions checks.
+    """
+
+    avatar_url = get_avatar_field(user_id=row['id'],
+                                  realm_id=realm.id,
+                                  email=row['delivery_email'],
+                                  avatar_source=row['avatar_source'],
+                                  avatar_version=row['avatar_version'],
+                                  medium=False,
+                                  client_gravatar=client_gravatar,)
+
+    is_admin = row['role'] == UserProfile.ROLE_REALM_ADMINISTRATOR
+    is_guest = row['role'] == UserProfile.ROLE_GUEST
+    is_bot = row['is_bot']
+    # This format should align with get_cross_realm_dicts() and notify_created_user
+    result = dict(
+        email=row['email'],
+        user_id=row['id'],
+        avatar_url=avatar_url,
+        is_admin=is_admin,
+        is_guest=is_guest,
+        is_bot=is_bot,
+        full_name=row['full_name'],
+        timezone=row['timezone'],
+        is_active = row['is_active'],
+        date_joined = row['date_joined'].isoformat(),
+    )
+    if (realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS and
+            acting_user.is_realm_admin):
+        result['delivery_email'] = row['delivery_email']
+
+    if is_bot:
+        result["bot_type"] = row["bot_type"]
+        if row['email'] in settings.CROSS_REALM_BOT_EMAILS:
+            result['is_cross_realm_bot'] = True
+
+        # Note that bot_owner_id can be None with legacy data.
+        result['bot_owner_id'] = row['bot_owner_id']
+    elif custom_profile_field_data is not None:
+        result['profile_data'] = custom_profile_field_data
+    return result
+
+def user_profile_to_user_row(user_profile: UserProfile) -> Dict[str, Any]:
+    # What we're trying to do is simulate the user_profile having been
+    # fetched from a QuerySet using `.values(*realm_user_dict_fields)`
+    # even though we fetched UserProfile objects.  This is messier
+    # than it seems.
+    #
+    # What we'd like to do is just call model_to_dict(user,
+    # fields=realm_user_dict_fields).  The problem with this is
+    # that model_to_dict has a different convention than
+    # `.values()` in its handling of foreign keys, naming them as
+    # e.g. `bot_owner`, not `bot_owner_id`; we work around that
+    # here.
+    #
+    # This could be potentially simplified in the future by
+    # changing realm_user_dict_fields to name the bot owner with
+    # the less readable `bot_owner` (instead of `bot_owner_id`).
+    user_row = model_to_dict(user_profile,
+                             fields=realm_user_dict_fields + ['bot_owner'])
+    user_row['bot_owner_id'] = user_row['bot_owner']
+    del user_row['bot_owner']
+    return user_row
+
+def get_cross_realm_dicts() -> List[Dict[str, Any]]:
+    users = bulk_get_users(list(settings.CROSS_REALM_BOT_EMAILS), None,
+                           base_query=UserProfile.objects.filter(
+                           realm__string_id=settings.SYSTEM_BOT_REALM)).values()
+    result = []
+    for user in users:
+        # Important: We filter here, is addition to in
+        # `base_query`, because of how bulk_get_users shares its
+        # cache with other UserProfile caches.
+        if user.realm.string_id != settings.SYSTEM_BOT_REALM:  # nocoverage
+            continue
+        user_row = user_profile_to_user_row(user)
+        # Because we want to avoid clients becing exposed to the
+        # implementation detail that these bots are self-owned, we
+        # just set bot_owner_id=None.
+        user_row['bot_owner_id'] = None
+
+        result.append(format_user_row(user.realm,
+                                      acting_user=user,
+                                      row=user_row,
+                                      client_gravatar=False,
+                                      custom_profile_field_data=None))
+
+    return result
+
+def get_custom_profile_field_values(custom_profile_field_values:
+                                    List[CustomProfileFieldValue]) -> Dict[int, Dict[str, Any]]:
+    profiles_by_user_id: Dict[int, Dict[str, Any]] = defaultdict(dict)
+    for profile_field in custom_profile_field_values:
+        user_id = profile_field.user_profile_id
+        if profile_field.field.is_renderable():
+            profiles_by_user_id[user_id][profile_field.field_id] = {
+                "value": profile_field.value,
+                "rendered_value": profile_field.rendered_value
+            }
+        else:
+            profiles_by_user_id[user_id][profile_field.field_id] = {
+                "value": profile_field.value
+            }
+    return profiles_by_user_id
+
+def get_raw_user_data(realm: Realm, acting_user: UserProfile, client_gravatar: bool,
+                      target_user: Optional[UserProfile]=None,
+                      include_custom_profile_fields: bool=True) -> Dict[int, Dict[str, str]]:
+    """Fetches data about the target user(s) appropriate for sending to
+    acting_user via the standard format for the Zulip API.  If
+    target_user is None, we fetch all users in the realm.
+    """
+    profiles_by_user_id = None
+    custom_profile_field_data = None
+    # target_user is an optional parameter which is passed when user data of a specific user
+    # is required. It is 'None' otherwise.
+    if target_user is not None:
+        user_dicts = [user_profile_to_user_row(target_user)]
+    else:
+        user_dicts = get_realm_user_dicts(realm.id)
+
+    if include_custom_profile_fields:
+        base_query = CustomProfileFieldValue.objects.select_related("field")
+        # TODO: Consider optimizing this query away with caching.
+        if target_user is not None:
+            custom_profile_field_values = base_query.filter(user_profile=target_user)
+        else:
+            custom_profile_field_values = base_query.filter(field__realm_id=realm.id)
+        profiles_by_user_id = get_custom_profile_field_values(custom_profile_field_values)
+
+    result = {}
+    for row in user_dicts:
+        if profiles_by_user_id is not None:
+            custom_profile_field_data = profiles_by_user_id.get(row['id'], {})
+
+        result[row['id']] = format_user_row(realm,
+                                            acting_user = acting_user,
+                                            row=row,
+                                            client_gravatar= client_gravatar,
+                                            custom_profile_field_data = custom_profile_field_data
+                                            )
+    return result

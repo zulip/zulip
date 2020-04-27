@@ -1,4 +1,5 @@
-const stored_messages = {};
+const util = require("./util");
+const stored_messages = new Map();
 
 /*
     We keep a set of user_ids for all people
@@ -20,19 +21,30 @@ exports.user_ids = function () {
 };
 
 exports.get = function get(message_id) {
-    return stored_messages[message_id];
+    if (message_id === undefined || message_id === null) {
+        blueslip.error('message_store.get got bad value: ' + message_id);
+        return;
+    }
+
+    if (typeof message_id !== 'number') {
+        blueslip.error('message_store got non-number: ' + message_id);
+
+        // Try to solider on, assuming the caller treats message
+        // ids as strings.
+        message_id = parseFloat(message_id);
+    }
+
+    return stored_messages.get(message_id);
 };
 
 exports.each = function (f) {
-    _.each(stored_messages, function (message) {
-        f(message);
-    });
+    stored_messages.forEach(f);
 };
 
 exports.get_pm_emails = function (message) {
 
     function email(user_id) {
-        const person = people.get_person_from_user_id(user_id);
+        const person = people.get_by_user_id(user_id);
         if (!person) {
             blueslip.error('Unknown user id ' + user_id);
             return '?';
@@ -41,7 +53,7 @@ exports.get_pm_emails = function (message) {
     }
 
     const user_ids = people.pm_with_user_ids(message);
-    const emails = _.map(user_ids, email).sort();
+    const emails = user_ids.map(email).sort();
 
     return emails.join(', ');
 };
@@ -49,7 +61,7 @@ exports.get_pm_emails = function (message) {
 exports.get_pm_full_names = function (message) {
 
     function name(user_id) {
-        const person = people.get_person_from_user_id(user_id);
+        const person = people.get_by_user_id(user_id);
         if (!person) {
             blueslip.error('Unknown user id ' + user_id);
             return '?';
@@ -58,7 +70,7 @@ exports.get_pm_full_names = function (message) {
     }
 
     const user_ids = people.pm_with_user_ids(message);
-    const names = _.map(user_ids, name).sort();
+    const names = user_ids.map(name).sort();
 
     return names.join(', ');
 };
@@ -69,9 +81,9 @@ exports.process_message_for_recent_private_messages = function (message) {
         return;
     }
 
-    _.each(user_ids, function (user_id) {
+    for (const user_id of user_ids) {
         pm_conversations.set_partner(user_id);
-    });
+    }
 
     pm_conversations.recent.insert(user_ids, message.id);
 };
@@ -80,7 +92,7 @@ exports.set_message_booleans = function (message) {
     const flags = message.flags || [];
 
     function convert_flag(flag_name) {
-        return flags.indexOf(flag_name) >= 0;
+        return flags.includes(flag_name);
     }
 
     message.unread = !convert_flag('read');
@@ -117,7 +129,7 @@ exports.update_booleans = function (message, flags) {
     // we are vulnerable to race conditions, so only update flags
     // that are driven by message content.
     function convert_flag(flag_name) {
-        return flags.indexOf(flag_name) >= 0;
+        return flags.includes(flag_name);
     }
 
     message.mentioned = convert_flag('mentioned') || convert_flag('wildcard_mentioned');
@@ -126,7 +138,7 @@ exports.update_booleans = function (message, flags) {
 };
 
 exports.add_message_metadata = function (message) {
-    const cached_msg = stored_messages[message.id];
+    const cached_msg = stored_messages.get(message.id);
     if (cached_msg !== undefined) {
         // Copy the match topic and content over if they exist on
         // the new message
@@ -141,7 +153,7 @@ exports.add_message_metadata = function (message) {
     people.extract_people_from_message(message);
     people.maybe_incr_recipient_count(message);
 
-    const sender = people.get_person_from_user_id(message.sender_id);
+    const sender = people.get_by_user_id(message.sender_id);
     if (sender) {
         message.sender_full_name = sender.full_name;
         message.sender_email = sender.email;
@@ -157,9 +169,9 @@ exports.add_message_metadata = function (message) {
         message.stream = message.display_recipient;
         message.reply_to = message.sender_email;
 
-        topic_data.add_message({
+        stream_topic_history.add_message({
             stream_id: message.stream_id,
-            topic_name: util.get_message_topic(message),
+            topic_name: message.topic,
             message_id: message.id,
         });
 
@@ -178,9 +190,9 @@ exports.add_message_metadata = function (message) {
         exports.process_message_for_recent_private_messages(message);
 
         if (people.is_my_user_id(message.sender_id)) {
-            _.each(message.display_recipient, (recip) => {
+            for (const recip of message.display_recipient) {
                 message_user_ids.add(recip.id);
-            });
+            }
         }
         break;
     }
@@ -189,7 +201,7 @@ exports.add_message_metadata = function (message) {
     if (!message.reactions) {
         message.reactions = [];
     }
-    stored_messages[message.id] = message;
+    stored_messages.set(message.id, message);
     return message;
 };
 
@@ -199,12 +211,12 @@ exports.reify_message_id = function (opts) {
     if (pointer.furthest_read === old_id) {
         pointer.set_furthest_read(new_id);
     }
-    if (stored_messages[old_id]) {
-        stored_messages[new_id] = stored_messages[old_id];
-        delete stored_messages[old_id];
+    if (stored_messages.has(old_id)) {
+        stored_messages.set(new_id, stored_messages.get(old_id));
+        stored_messages.delete(old_id);
     }
 
-    _.each([message_list.all, home_msg_list, message_list.narrowed], function (msg_list) {
+    for (const msg_list of [message_list.all, home_msg_list, message_list.narrowed]) {
         if (msg_list !== undefined) {
             msg_list.change_message_id(old_id, new_id);
 
@@ -212,7 +224,7 @@ exports.reify_message_id = function (opts) {
                 msg_list.view.change_message_id(old_id, new_id);
             }
         }
-    });
+    }
 };
 
 window.message_store = exports;

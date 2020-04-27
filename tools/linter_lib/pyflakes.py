@@ -1,6 +1,3 @@
-from __future__ import print_function
-from __future__ import absolute_import
-
 import argparse
 
 from typing import List
@@ -8,11 +5,9 @@ from typing import List
 from zulint.linters import run_pyflakes
 
 
-def check_pyflakes(files, options):
-    # type: (List[str], argparse.Namespace) -> bool
+def check_pyflakes(files: List[str], options: argparse.Namespace) -> bool:
     suppress_patterns = [
         ("scripts/lib/pythonrc.py", "imported but unused"),
-        ('', "'scripts.lib.setup_path_on_import' imported but unused"),
         # Intentionally imported by zerver/lib/webhooks/common.py
         ('', "'zerver.lib.exceptions.UnexpectedWebhookEventType' imported but unused"),
 

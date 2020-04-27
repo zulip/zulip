@@ -25,7 +25,7 @@ unfortunately isn't extensible, so we can:
 We are currently doing that last thing. It turns out there we are lucky
 for once: It's simply a matter of extending two regular expressions.
 Credit for the approach goes to:
-http://stackoverflow.com/questions/2090717
+https://stackoverflow.com/questions/2090717
 
 """
 import glob
@@ -48,6 +48,8 @@ strip_whitespace_left = re.compile("\\s+(%s-\\s*(endtrans|pluralize).*?-?%s)" % 
 regexes = [r'{{#tr .*?}}([\s\S]*?){{/tr}}',  # '.' doesn't match '\n' by default
            r'{{\s*t "(.*?)"\W*}}',
            r"{{\s*t '(.*?)'\W*}}",
+           r'=\(t "(.*?)"\)(?=[^{]*}})',
+           r"=\(t '(.*?)'\)(?=[^{]*}})",
            r"i18n\.t\('([^']*?)'\)",
            r"i18n\.t\('(.*?)',\s*.*?[^,]\)",
            r'i18n\.t\("([^"]*?)"\)',
@@ -72,7 +74,7 @@ class Command(makemessages.Command):
         xgettext_options += ['--keyword={}:1,"{}"'.format(func, tag)]
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        super(Command, self).add_arguments(parser)
+        super().add_arguments(parser)
         parser.add_argument('--frontend-source', type=str,
                             default='static/templates',
                             help='Name of the Handlebars template directory')
@@ -140,7 +142,7 @@ class Command(makemessages.Command):
             template.constant_re = old_constant_re
 
     def extract_strings(self, data: str) -> List[str]:
-        translation_strings = []  # type: List[str]
+        translation_strings: List[str] = []
         for regex in frontend_compiled_regexes:
             for match in regex.findall(data):
                 match = match.strip()
@@ -158,14 +160,14 @@ class Command(makemessages.Command):
         return data
 
     def get_translation_strings(self) -> List[str]:
-        translation_strings = []  # type: List[str]
+        translation_strings: List[str] = []
         dirname = self.get_template_dir()
 
         for dirpath, dirnames, filenames in os.walk(dirname):
             for filename in [f for f in filenames if f.endswith(".hbs")]:
                 if filename.startswith('.'):
                     continue
-                with open(os.path.join(dirpath, filename), 'r') as reader:
+                with open(os.path.join(dirpath, filename)) as reader:
                     data = reader.read()
                     translation_strings.extend(self.extract_strings(data))
 
@@ -240,9 +242,9 @@ class Command(makemessages.Command):
         for locale, output_path in zip(self.get_locales(), self.get_output_paths()):
             self.stdout.write("[frontend] processing locale {}".format(locale))
             try:
-                with open(output_path, 'r') as reader:
+                with open(output_path) as reader:
                     old_strings = json.load(reader)
-            except (IOError, ValueError):
+            except (OSError, ValueError):
                 old_strings = {}
 
             new_strings = {

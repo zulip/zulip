@@ -16,7 +16,7 @@ def _default_all_public_streams(user_profile: UserProfile,
 
 def _default_narrow(user_profile: UserProfile,
                     narrow: Iterable[Sequence[str]]) -> Iterable[Sequence[str]]:
-    default_stream = user_profile.default_events_register_stream  # type: Optional[Stream]
+    default_stream: Optional[Stream] = user_profile.default_events_register_stream
     if not narrow and default_stream is not None:
         narrow = [['stream', default_stream.name]]
     return narrow
@@ -27,11 +27,17 @@ def events_register_backend(
         request: HttpRequest, user_profile: UserProfile,
         apply_markdown: bool=REQ(default=False, validator=check_bool),
         client_gravatar: bool=REQ(default=False, validator=check_bool),
+        slim_presence: bool=REQ(default=False, validator=check_bool),
         all_public_streams: Optional[bool]=REQ(default=None, validator=check_bool),
         include_subscribers: bool=REQ(default=False, validator=check_bool),
         client_capabilities: Optional[Dict[str, bool]]=REQ(validator=check_dict([
+            # This field was accidentally made required when it was added in v2.0.0-781;
+            # this was not realized until after the release of Zulip 2.1.2. (It remains
+            # required to help ensure backwards compatibility of client code.)
             ("notification_settings_null", check_bool),
-        ]), default=None, documentation_pending=True),
+        ], [
+            # Any new fields of `client_capabilities` should be optional. Add them here.
+        ]), default=None),
         event_types: Optional[Iterable[str]]=REQ(validator=check_list(check_string), default=None),
         fetch_event_types: Optional[Iterable[str]]=REQ(validator=check_list(check_string), default=None),
         narrow: NarrowT=REQ(validator=check_list(check_list(check_string, length=2)), default=[]),
@@ -44,7 +50,8 @@ def events_register_backend(
         client_capabilities = {}
     notification_settings_null = client_capabilities.get("notification_settings_null", False)
 
-    ret = do_events_register(user_profile, request.client, apply_markdown, client_gravatar,
+    ret = do_events_register(user_profile, request.client,
+                             apply_markdown, client_gravatar, slim_presence,
                              event_types, queue_lifespan_secs, all_public_streams,
                              narrow=narrow, include_subscribers=include_subscribers,
                              notification_settings_null=notification_settings_null,

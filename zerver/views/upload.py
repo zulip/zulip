@@ -6,20 +6,28 @@ from django.utils.translation import ugettext as _
 
 from zerver.lib.response import json_success, json_error
 from zerver.lib.upload import upload_message_image_from_request, get_local_file_path, \
-    get_signed_upload_url, check_upload_within_quota, INLINE_MIME_TYPES
+    get_signed_upload_url, check_upload_within_quota, INLINE_MIME_TYPES, \
+    generate_unauthed_file_access_url, get_local_file_path_id_from_token
 from zerver.models import UserProfile, validate_attachment_request
 from django.conf import settings
-from sendfile import sendfile
+from django_sendfile import sendfile
 from mimetypes import guess_type
 
-def serve_s3(request: HttpRequest, url_path: str) -> HttpResponse:
-    uri = get_signed_upload_url(url_path)
-    return redirect(uri)
+def serve_s3(request: HttpRequest, url_path: str, url_only: bool) -> HttpResponse:
+    url = get_signed_upload_url(url_path)
+    if url_only:
+        return json_success(dict(url=url))
 
-def serve_local(request: HttpRequest, path_id: str) -> HttpResponse:
+    return redirect(url)
+
+def serve_local(request: HttpRequest, path_id: str, url_only: bool) -> HttpResponse:
     local_path = get_local_file_path(path_id)
     if local_path is None:
         return HttpResponseNotFound('<p>File not found</p>')
+
+    if url_only:
+        url = generate_unauthed_file_access_url(path_id)
+        return json_success(dict(url=url))
 
     # Here we determine whether a browser should treat the file like
     # an attachment (and thus clicking a link to it should download)
@@ -48,6 +56,20 @@ def serve_local(request: HttpRequest, path_id: str) -> HttpResponse:
 
 def serve_file_backend(request: HttpRequest, user_profile: UserProfile,
                        realm_id_str: str, filename: str) -> HttpResponse:
+    return serve_file(request, user_profile, realm_id_str, filename, url_only=False)
+
+def serve_file_url_backend(request: HttpRequest, user_profile: UserProfile,
+                           realm_id_str: str, filename: str) -> HttpResponse:
+    """
+    We should return a signed, short-lived URL
+    that the client can use for native mobile download, rather than serving a redirect.
+    """
+
+    return serve_file(request, user_profile, realm_id_str, filename, url_only=True)
+
+def serve_file(request: HttpRequest, user_profile: UserProfile,
+               realm_id_str: str, filename: str,
+               url_only: bool=False) -> HttpResponse:
     path_id = "%s/%s" % (realm_id_str, filename)
     is_authorized = validate_attachment_request(user_profile, path_id)
 
@@ -56,9 +78,18 @@ def serve_file_backend(request: HttpRequest, user_profile: UserProfile,
     if not is_authorized:
         return HttpResponseForbidden(_("<p>You are not authorized to view this file.</p>"))
     if settings.LOCAL_UPLOADS_DIR is not None:
-        return serve_local(request, path_id)
+        return serve_local(request, path_id, url_only)
 
-    return serve_s3(request, path_id)
+    return serve_s3(request, path_id, url_only)
+
+def serve_local_file_unauthed(request: HttpRequest, token: str, filename: str) -> HttpResponse:
+    path_id = get_local_file_path_id_from_token(token)
+    if path_id is None:
+        return json_error(_("Invalid token"))
+    if path_id.split('/')[-1] != filename:
+        return json_error(_("Invalid filename"))
+
+    return serve_local(request, path_id, url_only=False)
 
 def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     if len(request.FILES) == 0:
@@ -67,7 +98,7 @@ def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> Http
         return json_error(_("You may only upload one file at a time"))
 
     user_file = list(request.FILES.values())[0]
-    file_size = user_file._get_size()
+    file_size = user_file.size
     if settings.MAX_FILE_UPLOAD_SIZE * 1024 * 1024 < file_size:
         return json_error(_("Uploaded file is larger than the allowed limit of %s MB") % (
             settings.MAX_FILE_UPLOAD_SIZE))

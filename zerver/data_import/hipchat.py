@@ -84,7 +84,7 @@ def untar_input_file(tar_file: str) -> str:
 def read_user_data(data_dir: str) -> List[ZerverFieldsT]:
     fn = 'users.json'
     data_file = os.path.join(data_dir, fn)
-    with open(data_file, "r") as fp:
+    with open(data_file) as fp:
         return ujson.load(fp)
 
 def convert_user_data(user_handler: UserHandler,
@@ -244,11 +244,11 @@ def convert_room_data(raw_data: List[ZerverFieldsT],
         )
 
         if invite_only:
-            users = {
+            users: Set[int] = {
                 user_id_mapper.get(key)
                 for key in in_dict['members']
                 if user_id_mapper.has(key)
-            }  # type: Set[int]
+            }
 
             if user_id_mapper.has(in_dict['owner']):
                 owner = user_id_mapper.get(in_dict['owner'])
@@ -257,7 +257,7 @@ def convert_room_data(raw_data: List[ZerverFieldsT],
             users = set()
             if api_token is not None:
                 hc = hypchat.HypChat(api_token)
-                room_data = hc.fromurl('{0}/v2/room/{1}/member'.format(hc.endpoint, in_dict['id']))
+                room_data = hc.fromurl('{}/v2/room/{}/member'.format(hc.endpoint, in_dict['id']))
 
                 for item in room_data['items']:
                     hipchat_user_id = item['id']
@@ -671,7 +671,7 @@ def process_raw_message_batch(realm_id: int,
         content = content.replace('@here', '@**all**')
         return content
 
-    mention_map = dict()  # type: Dict[int, Set[int]]
+    mention_map: Dict[int, Set[int]] = dict()
 
     zerver_message = []
 
@@ -807,7 +807,7 @@ def do_convert_data(input_tar_file: str,
 
     if api_token is None:
         if slim_mode:
-            public_stream_subscriptions = []  # type: List[ZerverFieldsT]
+            public_stream_subscriptions: List[ZerverFieldsT] = []
         else:
             public_stream_subscriptions = build_public_stream_subscriptions(
                 zerver_userprofile=normal_users,

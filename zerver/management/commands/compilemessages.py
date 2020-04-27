@@ -38,7 +38,7 @@ class Command(compilemessages.Command):
         path = join(deploy_root, 'locale', 'language_options.json')
         output_path = join(deploy_root, 'locale', 'language_name_map.json')
 
-        with open(path, 'r') as reader:
+        with open(path) as reader:
             languages = ujson.load(reader)
             lang_list = []
             for lang_info in languages['languages']:
@@ -61,7 +61,7 @@ class Command(compilemessages.Command):
 
     def get_name_from_po_file(self, po_filename: str, locale: str) -> str:
         lang_name_re = re.compile(r'"Language-Team: (.*?) \(')
-        with open(po_filename, 'r') as reader:
+        with open(po_filename) as reader:
             result = lang_name_re.search(reader.read())
             if result:
                 try:
@@ -88,7 +88,7 @@ class Command(compilemessages.Command):
         locale_path = "{}/locale".format(settings.DEPLOY_ROOT)
         output_path = "{}/language_options.json".format(locale_path)
 
-        data = {'languages': []}  # type: Dict[str, List[Dict[str, Any]]]
+        data: Dict[str, List[Dict[str, Any]]] = {'languages': []}
 
         try:
             locales = self.get_locales()
@@ -114,7 +114,7 @@ class Command(compilemessages.Command):
                 # Not a locale.
                 continue
 
-            info = {}  # type: Dict[str, Any]
+            info: Dict[str, Any] = {}
             code = to_language(locale)
             percentage = self.get_translation_percentage(locale_path, locale)
             try:

@@ -1,4 +1,3 @@
-zrequire('util');
 const rtl = zrequire('rtl');
 
 run_test('get_direction', () => {

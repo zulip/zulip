@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # See https://zulip.readthedocs.io/en/latest/subsystems/thumbnailing.html
 from django.shortcuts import redirect
 from django.utils.translation import ugettext as _

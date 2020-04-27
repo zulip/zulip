@@ -31,7 +31,7 @@ def add_deployment_metadata(report: Dict[str, Any]) -> None:
 
     version_path = os.path.join(os.path.dirname(__file__), '../version')
     if os.path.exists(version_path):
-        with open(version_path, 'r') as f:  # nocoverage
+        with open(version_path) as f:  # nocoverage
             report['zulip_version_file'] = f.read().strip()
 
 def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
@@ -86,7 +86,7 @@ class AdminNotifyHandler(logging.Handler):
         logging.Handler.__init__(self)
 
     def emit(self, record: logging.LogRecord) -> None:
-        report = {}  # type: Dict[str, Any]
+        report: Dict[str, Any] = {}
 
         # This parameter determines whether Zulip should attempt to
         # send Zulip messages containing the error report.  If there's
@@ -129,7 +129,7 @@ class AdminNotifyHandler(logging.Handler):
             report['log_lineno'] = record.lineno
 
             if hasattr(record, "request"):
-                add_request_metadata(report, record.request)  # type: ignore  # record.request is added dynamically
+                add_request_metadata(report, record.request)  # type: ignore[attr-defined]  # record.request is added dynamically
 
         except Exception:
             report['message'] = "Exception in preparing exception report!"

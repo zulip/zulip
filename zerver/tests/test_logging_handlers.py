@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import logging
 import sys
 
@@ -18,8 +16,8 @@ from zerver.lib.types import ViewFuncT
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.logging_handlers import AdminNotifyHandler
 
-captured_request = None  # type: Optional[HttpRequest]
-captured_exc_info = None  # type: Tuple[Optional[Type[BaseException]], Optional[BaseException], Optional[TracebackType]]
+captured_request: Optional[HttpRequest] = None
+captured_exc_info: Tuple[Optional[Type[BaseException]], Optional[BaseException], Optional[TracebackType]] = None
 def capture_and_throw(domain: Optional[str]=None) -> Callable[[ViewFuncT], ViewFuncT]:
     def wrapper(view_func: ViewFuncT) -> ViewFuncT:
         @wraps(view_func)
@@ -32,7 +30,7 @@ def capture_and_throw(domain: Optional[str]=None) -> Callable[[ViewFuncT], ViewF
                 global captured_exc_info
                 captured_exc_info = sys.exc_info()
                 raise e
-        return wrapped_view  # type: ignore # https://github.com/python/mypy/issues/1927
+        return wrapped_view  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
     return wrapper
 
 class AdminNotifyHandlerTest(ZulipTestCase):
@@ -74,8 +72,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         handler.emit(record)
 
     def simulate_error(self) -> logging.LogRecord:
-        email = self.example_email('hamlet')
-        self.login(email)
+        self.login('hamlet')
         with patch("zerver.decorator.rate_limit") as rate_limit_patch:
             rate_limit_patch.side_effect = capture_and_throw
             result = self.client_get("/json/users")
@@ -84,7 +81,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
 
         record = self.logger.makeRecord('name', logging.ERROR, 'function', 15,
                                         'message', {}, captured_exc_info)
-        record.request = captured_request  # type: ignore # this field is dynamically added
+        record.request = captured_request  # type: ignore[attr-defined] # this field is dynamically added
         return record
 
     def run_handler(self, record: logging.LogRecord) -> Dict[str, Any]:
@@ -129,7 +126,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertEqual(report["stack_trace"], "See /var/log/zulip/errors.log")
 
         # Check anonymous user is handled correctly
-        record.request.user = AnonymousUser()  # type: ignore # this field is dynamically added
+        record.request.user = AnonymousUser()  # type: ignore[attr-defined] # this field is dynamically added
         report = self.run_handler(record)
         self.assertIn("host", report)
         self.assertIn("user_email", report)
@@ -139,10 +136,10 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         # Now simulate a DisallowedHost exception
         def get_host_error() -> None:
             raise Exception("Get Host Failure!")
-        orig_get_host = record.request.get_host  # type: ignore # this field is dynamically added
-        record.request.get_host = get_host_error  # type: ignore # this field is dynamically added
+        orig_get_host = record.request.get_host  # type: ignore[attr-defined] # this field is dynamically added
+        record.request.get_host = get_host_error  # type: ignore[attr-defined] # this field is dynamically added
         report = self.run_handler(record)
-        record.request.get_host = orig_get_host  # type: ignore # this field is dynamically added
+        record.request.get_host = orig_get_host  # type: ignore[attr-defined] # this field is dynamically added
         self.assertIn("host", report)
         self.assertIn("user_email", report)
         self.assertIn("message", report)
@@ -151,9 +148,9 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         # Test an exception_filter exception
         with patch("zerver.logging_handlers.get_exception_reporter_filter",
                    return_value=15):
-            record.request.method = "POST"  # type: ignore # this field is dynamically added
+            record.request.method = "POST"  # type: ignore[attr-defined] # this field is dynamically added
             report = self.run_handler(record)
-            record.request.method = "GET"  # type: ignore # this field is dynamically added
+            record.request.method = "GET"  # type: ignore[attr-defined] # this field is dynamically added
         self.assertIn("host", report)
         self.assertIn("user_email", report)
         self.assertIn("message", report)
@@ -177,7 +174,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertEqual(report["stack_trace"], 'No stack trace available')
 
         # Test arbitrary exceptions from request.user
-        record.request.user = None  # type: ignore # this field is dynamically added
+        record.request.user = None  # type: ignore[attr-defined] # this field is dynamically added
         with patch("zerver.logging_handlers.traceback.print_exc"):
             report = self.run_handler(record)
         self.assertIn("host", report)
@@ -190,7 +187,7 @@ class LoggingConfigTest(TestCase):
     def all_loggers() -> Iterator[logging.Logger]:
         # There is no documented API for enumerating the loggers; but the
         # internals of `logging` haven't changed in ages, so just use them.
-        loggerDict = logging.Logger.manager.loggerDict  # type: ignore
+        loggerDict = logging.Logger.manager.loggerDict  # type: ignore[attr-defined]
         for logger in loggerDict.values():
             if not isinstance(logger, logging.Logger):
                 continue

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from django.http import HttpResponse
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.actions import do_change_stream_web_public
@@ -8,7 +7,7 @@ from zerver.models import get_realm
 
 class GlobalPublicStreamTest(ZulipTestCase):
     def test_non_existant_stream_id(self) -> None:
-        # Here we use a relatively big number as stream id assumming such an id
+        # Here we use a relatively big number as stream id assuming such an id
         # won't exist in the test DB.
         result = self.client_get("/archive/streams/100000000/topics/TopicGlobal")
         self.assert_in_success_response(["This stream does not exist."], result)
@@ -34,7 +33,7 @@ class GlobalPublicStreamTest(ZulipTestCase):
 
         def send_msg_and_get_result(msg: str) -> HttpResponse:
             self.send_stream_message(
-                self.example_email("iago"),
+                self.example_user("iago"),
                 "Test Public Archives",
                 msg,
                 'TopicGlobal'
@@ -92,7 +91,7 @@ class WebPublicTopicHistoryTest(ZulipTestCase):
         test_stream = self.make_stream('Test Public Archives')
 
         self.send_stream_message(
-            self.example_email("iago"),
+            self.example_user("iago"),
             "Test Public Archives",
             'Test Message',
             'TopicGlobal'
@@ -110,31 +109,31 @@ class WebPublicTopicHistoryTest(ZulipTestCase):
         do_change_stream_web_public(test_stream, True)
 
         self.send_stream_message(
-            self.example_email("iago"),
+            self.example_user("iago"),
             "Test Public Archives",
             'Test Message 3',
             topic_name='first_topic'
         )
         self.send_stream_message(
-            self.example_email("iago"),
+            self.example_user("iago"),
             "Test Public Archives",
             'Test Message',
             topic_name='TopicGlobal'
         )
         self.send_stream_message(
-            self.example_email("iago"),
+            self.example_user("iago"),
             "Test Public Archives",
             'Test Message 2',
             topic_name='topicglobal'
         )
         self.send_stream_message(
-            self.example_email("iago"),
+            self.example_user("iago"),
             "Test Public Archives",
             'Test Message 3',
             topic_name='second_topic'
         )
         self.send_stream_message(
-            self.example_email("iago"),
+            self.example_user("iago"),
             "Test Public Archives",
             'Test Message 4',
             topic_name='TopicGlobal'

@@ -1,12 +1,13 @@
 set_global('$', global.make_zjquery());
-set_global('i18n', global.stub_i18n);
 
-set_global('alert_words', {
-    words: ['foo', 'bar'],
-});
 set_global('channel', {});
 
+zrequire('alert_words');
 zrequire('alert_words_ui');
+
+alert_words.initialize({
+    alert_words: ['foo', 'bar'],
+});
 
 run_test('render_alert_words_ui', () => {
     const word_list = $('#alert_words_list');
@@ -19,7 +20,7 @@ run_test('render_alert_words_ui', () => {
     word_list.set_find_results('.alert-word-item', alert_word_items);
 
     global.stub_templates((name, args) => {
-        assert.equal(name, 'alert_word_settings_item');
+        assert.equal(name, 'settings/alert_word_settings_item');
         return 'stub-' + args.word;
     });
 
@@ -29,9 +30,8 @@ run_test('render_alert_words_ui', () => {
     alert_words_ui.render_alert_words_ui();
 
     assert.deepEqual(appended, [
-        'stub-foo',
         'stub-bar',
-        'stub-',
+        'stub-foo',
     ]);
     assert(new_alert_word.is_focused());
 });
@@ -41,8 +41,8 @@ run_test('add_alert_word', () => {
 
     alert_words_ui.set_up_alert_words();
 
-    const word_list = $('#alert_words_list');
-    const add_func = word_list.get_on_handler('click', '#create_alert_word_button');
+    const create_form = $('#create_alert_word_form');
+    const add_func = create_form.get_on_handler('click', '#create_alert_word_button');
 
     const new_alert_word = $('#create_alert_word_name');
     const alert_word_status = $('#alert_word_status');
@@ -87,13 +87,13 @@ run_test('add_alert_word', () => {
     // test success
     success_func();
     assert(alert_word_status.hasClass('alert-success'));
-    assert.equal(alert_word_status_text.text(), "translated: Alert word added successfully!");
+    assert.equal(alert_word_status_text.text(), "translated: Alert word \"zot\" added successfully!");
     assert(alert_word_status.visible());
 });
 
 run_test('add_alert_word_keypress', () => {
-    const word_list = $('#alert_words_list');
-    const keypress_func = word_list.get_on_handler('keypress', '#create_alert_word_name');
+    const create_form = $('#create_alert_word_form');
+    const keypress_func = create_form.get_on_handler('keypress', '#create_alert_word_name');
 
     const new_alert_word = $('#create_alert_word_name');
     new_alert_word.val('zot');

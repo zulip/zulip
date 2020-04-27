@@ -52,13 +52,22 @@ exports.reset = function () {
     meta.loaded = false;
 };
 
+function sort_author_full_name(a, b) {
+    if (a.author.full_name > b.author.full_name) {
+        return 1;
+    } else if (a.author.full_name === b.author.full_name) {
+        return 0;
+    }
+    return -1;
+}
+
 exports.populate_emoji = function (emoji_data) {
     if (!meta.loaded) {
         return;
     }
 
     const emoji_table = $('#admin_emoji_table').expectOne();
-    const emoji_list = list_render.create(emoji_table, Object.values(emoji_data), {
+    list_render.create(emoji_table, Object.values(emoji_data), {
         name: "emoji_list",
         modifier: function (item) {
             if (item.deactivated !== true) {
@@ -77,27 +86,43 @@ exports.populate_emoji = function (emoji_data) {
         filter: {
             element: emoji_table.closest(".settings-section").find(".search"),
             predicate: function (item, value) {
-                return item.name.toLowerCase().indexOf(value) >= 0;
+                return item.name.toLowerCase().includes(value);
             },
             onupdate: function () {
                 ui.reset_scrollbar(emoji_table);
             },
         },
         parent_container: $("#emoji-settings").expectOne(),
-    }).init();
-
-    emoji_list.sort("alphabetic", "name");
-
-    emoji_list.add_sort_function("author_full_name", function (a, b) {
-        if (a.author.full_name > b.author.full_name) {
-            return 1;
-        } else if (a.author.full_name === b.author.full_name) {
-            return 0;
-        }
-        return -1;
+        sort_fields: {
+            author_full_name: sort_author_full_name,
+        },
+        init_sort: ['alphabetic', 'name'],
     });
 
     loading.destroy_indicator($('#admin_page_emoji_loading_indicator'));
+};
+
+exports.build_emoji_upload_widget = function () {
+    const get_file_input = function () {
+        return $('#emoji_file_input');
+    };
+
+    const file_name_field = $('#emoji-file-name');
+    const input_error = $('#emoji_file_input_error');
+    const clear_button = $('#emoji_image_clear_button');
+    const upload_button = $('#emoji_upload_button');
+    const preview_text = $('#emoji_preview_text');
+    const preview_image = $('#emoji_preview_image');
+
+    return upload_widget.build_widget(
+        get_file_input,
+        file_name_field,
+        input_error,
+        clear_button,
+        upload_button,
+        preview_text,
+        preview_image
+    );
 };
 
 exports.set_up = function () {
@@ -125,7 +150,7 @@ exports.set_up = function () {
         });
     });
 
-    const emoji_widget = emoji.build_emoji_upload_widget();
+    const emoji_widget = exports.build_emoji_upload_widget();
 
     $(".organization form.admin-emoji-form").off('submit').on('submit', function (e) {
         e.preventDefault();
@@ -134,12 +159,14 @@ exports.set_up = function () {
         $('#admin_emoji_submit').attr('disabled', true);
         const emoji = {};
         const formData = new FormData();
-        _.each($(this).serializeArray(), function (obj) {
+
+        for (const obj of $(this).serializeArray()) {
             emoji[obj.name] = obj.value;
-        });
-        $.each($('#emoji_file_input')[0].files, function (i, file) {
+        }
+
+        for (const [i, file] of Array.prototype.entries.call($('#emoji_file_input')[0].files)) {
             formData.append('file-' + i, file);
-        });
+        }
         channel.post({
             url: "/json/realm/emoji/" + encodeURIComponent(emoji.name),
             data: formData,
@@ -159,7 +186,6 @@ exports.set_up = function () {
                 xhr.responseText = JSON.stringify({msg: errors});
                 ui_report.error(i18n.t("Failed"), xhr, emoji_status);
                 $('#admin_emoji_submit').removeAttr('disabled');
-                emoji_widget.clear();
             },
         });
     });

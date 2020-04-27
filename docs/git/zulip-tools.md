@@ -88,7 +88,7 @@ From https://github.com/zulip/zulip
 Branch review-1913 set up to track remote branch master from upstream.
 Switched to a new branch 'review-1913'
 + git reset --hard FETCH_HEAD
-HEAD is now at 99aa2bf Add provision.py fails issue in common erros
+HEAD is now at 99aa2bf Add provision.py fails issue in common errors
 + git pull --rebase
 Current branch review-1913 is up to date.
 ```

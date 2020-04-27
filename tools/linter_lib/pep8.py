@@ -1,12 +1,8 @@
-from __future__ import print_function
-from __future__ import absolute_import
-
 from zulint.linters import run_pycodestyle
 
 from typing import List
 
-def check_pep8(files):
-    # type: (List[str]) -> bool
+def check_pep8(files: List[str]) -> bool:
     ignored_rules = [
         # Each of these rules are ignored for the explained reason.
 

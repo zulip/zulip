@@ -12,10 +12,24 @@ exports.maybe_disable_widgets = function () {
     if (page_params.is_admin) {
         return;
     }
-
-    $(".organization-box [data-name='filter-settings']")
-        .find("input, button, select").attr("disabled", true);
 };
+
+function compare_by_index(a, b, i) {
+    if (a[i] > b[i]) {
+        return 1;
+    } else if (a[i] === b[i]) {
+        return 0;
+    }
+    return -1;
+}
+
+function sort_pattern(a, b) {
+    return compare_by_index(a, b, 0);
+}
+
+function sort_url(a, b) {
+    return compare_by_index(a, b, 1);
+}
 
 exports.populate_filters = function (filters_data) {
     if (!meta.loaded) {
@@ -23,7 +37,7 @@ exports.populate_filters = function (filters_data) {
     }
 
     const filters_table = $("#admin_filters_table").expectOne();
-    const filters_list = list_render.create(filters_table, filters_data, {
+    list_render.create(filters_table, filters_data, {
         name: "linkifiers_list",
         modifier: function (filter) {
             return render_admin_filter_list({
@@ -38,42 +52,20 @@ exports.populate_filters = function (filters_data) {
         filter: {
             element: filters_table.closest(".settings-section").find(".search"),
             predicate: function (item, value) {
-                return (
-                    item[0].toLowerCase().indexOf(value) >= 0 ||
-                    item[1].toLowerCase().indexOf(value) >= 0
-                );
+                return item[0].toLowerCase().includes(value) ||
+                item[1].toLowerCase().includes(value);
             },
             onupdate: function () {
                 ui.reset_scrollbar(filters_table);
             },
         },
         parent_container: $("#filter-settings").expectOne(),
-    }).init();
-
-    function compare_by_index(a, b, i) {
-        if (a[i] > b[i]) {
-            return 1;
-        } else if (a[i] === b[i]) {
-            return 0;
-        }
-        return -1;
-    }
-
-    filters_list.add_sort_function("pattern", function (a, b) {
-        return compare_by_index(a, b, 0);
+        init_sort: [sort_pattern],
+        sort_fields: {
+            pattern: sort_pattern,
+            url: sort_url,
+        },
     });
-
-    filters_list.add_sort_function("url", function (a, b) {
-        return compare_by_index(a, b, 1);
-    });
-
-    const active_col = $('.admin_filters_table th.active').expectOne();
-    filters_list.sort(
-        active_col.data('sort'),
-        undefined,
-        undefined,
-        undefined,
-        active_col.hasClass('descend'));
 
     loading.destroy_indicator($('#admin_page_filters_loading_indicator'));
 };
@@ -121,9 +113,10 @@ exports.build_page = function () {
         pattern_status.hide();
         format_status.hide();
         const filter = {};
-        _.each($(this).serializeArray(), function (obj) {
+
+        for (const obj of $(this).serializeArray()) {
             filter[obj.name] = obj.value;
-        });
+        }
 
         channel.post({
             url: "/json/realm/filters",

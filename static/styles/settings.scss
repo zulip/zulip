@@ -3,6 +3,7 @@ label {
 }
 
 label,
+h4,
 h3 {
     a {
         color: inherit;
@@ -277,6 +278,8 @@ td .button {
                 content: " \f0d8";
                 white-space: pre;
                 display: inline-block;
+                position: absolute;
+                padding-top: 3px;
                 font: normal normal normal 12px/1 FontAwesome;
                 font-size: inherit;
             }
@@ -573,8 +576,9 @@ input[type=checkbox].inline-block {
 
 .alert-word-information-box {
     position: relative;
-    padding: 10px;
-    margin: 20px auto;
+    padding: 7px;
+    margin: 2px;
+    width: 50%;
 }
 
 .green-bg {
@@ -618,7 +622,7 @@ input[type=checkbox].inline-block {
     }
 }
 
-#settings_page .alert-notification:not(:empty) {
+.alert-notification {
     display: inline-block !important;
     vertical-align: top;
     height: auto !important;
@@ -628,46 +632,71 @@ input[type=checkbox].inline-block {
     border-radius: 4px;
     margin-top: 14px;
     margin-left: 10px;
-    border: 1px solid hsl(156, 30%, 50%);
     color: hsl(156, 30%, 50%);
     padding: 3px 10px;
     font-size: 15px;
-}
 
-#settings_page .alert-notification.alert-error {
-    color: hsl(2, 46%, 68%);
-    border-color: hsl(2, 46%, 68%);
-}
+    &:not(:empty) {
+        border: 1px solid hsl(156, 30%, 50%);
+    }
 
-#settings_page .alert-notification .loading_indicator_spinner {
-    width: 13px;
-    height: 20px;
-    margin: 0;
-}
+    .alert-error {
+        color: hsl(2, 46%, 68%);
+        border-color: hsl(2, 46%, 68%);
+    }
 
-/* make the spinner green like the text and box. */
-#settings_page .alert-notification .loading_indicator_spinner svg path {
-    fill: hsl(178, 100%, 40%);
-}
+    .loading_indicator_spinner {
+        width: 13px;
+        height: 20px;
+        margin: 0;
+    }
 
-#settings_page .alert-notification .loading_indicator_text {
-    margin-top: 0px;
-    font-size: inherit;
-    vertical-align: top;
-}
+    /* make the spinner green like the text and box. */
+    .loading_indicator_spinner svg path {
+        fill: hsl(178, 100%, 40%);
+    }
 
-#settings_page .alert-notification img {
-    margin-right: 6px;
-    vertical-align: middle;
-    margin-top: -2px;
+    .loading_indicator_text {
+        margin-top: 0px;
+        font-size: inherit;
+        vertical-align: top;
+    }
+
+    img {
+        margin-right: 6px;
+        vertical-align: middle;
+        margin-top: -2px;
+    }
 }
 
 #profile-field-settings #admin-add-profile-field-status {
     margin-top: 4px;
 }
 
-#notification-settings .notification-reminder {
-    text-align: left;
+#notification-settings {
+    .notification-reminder {
+        text-align: left;
+    }
+
+    #notification-table {
+        th,
+        td {
+            text-align: center;
+            vertical-align: middle;
+            cursor: default;
+
+            .stream-privacy span.hashtag,
+            .filter-icon i {
+                padding-right: 0px;
+            }
+        }
+
+        td:first-child {
+            text-align: left;
+            font-weight: bold;
+            word-break: break-all;
+        }
+    }
 }
 
 #account-settings .custom-profile-fields-form .custom_user_field label {
@@ -684,8 +713,7 @@ input[type=checkbox].inline-block {
     border: none;
 }
 
-#realm_notifications_stream_label > button,
-#realm_signup_notifications_stream_label > button {
+.dropdown-list-widget button {
     margin: 0px 5px;
 }
 
@@ -726,15 +754,6 @@ input[type=checkbox].inline-block {
     width: 50%;
     margin: auto;
     margin-bottom: 20px;
-}
-
-.emoji_image {
-    width: 20px;
-    display: block;
-}
-
-.emoji_image img {
-    max-width: 100%;
 }
 
 .add-new-emoji-box,
@@ -1028,7 +1047,7 @@ input[type=checkbox].inline-block {
     list-style-type: none;
 }
 
-#alert_words_list li.alert-word-item:last-child {
+#alert_words_list li.alert-word-item:first-child {
     background: none;
     margin-top: 8px;
 }
@@ -1037,7 +1056,7 @@ input[type=checkbox].inline-block {
 #attachments_list .edit-attachment-buttons {
     position: absolute;
     right: 20px;
-    top: 5px;
+    top: 0px;
 }
 
 #alert_words_list .alert_word_listing .value {
@@ -1111,9 +1130,20 @@ input[type=checkbox].inline-block {
         height: 100%;
     }
 
+    #user-avatar-background {
+        content: '';
+        background-color: hsl(0, 0%, 0%);
+        height: 100%;
+        width: 100%;
+        opacity: 0.6;
+        z-index: 99;
+        position: absolute;
+        display: none;
+    }
+
     #user_avatar_delete_button {
         cursor: pointer;
-        color: hsl(236, 33%, 90%);
+        color: hsl(0, 0%, 75%);
         opacity: 0;
         font-size: 3rem;
         position: absolute;
@@ -1122,19 +1152,49 @@ input[type=checkbox].inline-block {
         z-index: 99;
     }
 
-    #user-avatar-source {
-        margin-left: 10px;
-        width: 200px;
-        height: 20px;
-        position: absolute;
-        bottom: 6px;
-        left: 0%;
-        font-size: 0.9em;
-        visibility: hidden;
+    #user_avatar_delete_button:hover {
+        color: hsl(0, 0%, 100%);
+    }
 
-        a {
-            color: hsl(0, 0%, 100%);
-        }
+    #user_avatar_delete_button:hover ~ #user_avatar_upload_button {
+        visibility: hidden;
+    }
+
+    #user_avatar_delete_button:hover ~ #user_avatar_delete {
+        visibility: visible;
+    }
+
+    #user_avatar_delete {
+        color: hsl(0, 0%, 100%);
+        font-size: 0.85rem;
+        position: absolute;
+        top: 90px;
+        right: 40px;
+        visibility: hidden;
+        z-index: 99;
+    }
+
+    #user_avatar_upload_button {
+        cursor: pointer;
+        color: hsl(0, 0%, 85%);
+        opacity: 0;
+        font-size: 0.85rem;
+        position: absolute;
+        top: 90px;
+        right: 20px;
+        z-index: 99;
+    }
+
+    #user_avatar_upload_button:hover {
+        color: hsl(0, 0%, 100%);
+    }
+
+    #user-avatar-spinner {
+        position: absolute;
+        top: 40%;
+        right: 40%;
+        z-index: 99;
+        display: none;
     }
 
     .guest-avatar::after {
@@ -1145,21 +1205,31 @@ input[type=checkbox].inline-block {
         #user-avatar-block::after {
             content: '';
             background-color: hsl(0, 0%, 0%);
-            height: 200px;
-            width: 200px;
+            height: 100%;
+            width: 100%;
             opacity: 0.6;
             z-index: 99;
             position: absolute;
+            cursor: pointer;
         }
 
         #user_avatar_delete_button {
             opacity: 1;
         }
 
-        #user-avatar-source {
-            visibility: visible;
-            z-index: 99;
+        #user_avatar_upload_button {
+            opacity: 1;
         }
+    }
+}
+
+#user-avatar-source {
+    position: absolute;
+    font-size: 1em;
+    z-index: 99;
+    a {
+        position: relative;
+        top: 10px;
     }
 }
 
@@ -1542,6 +1612,10 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     opacity: 1;
 }
 
+#settings_page .custom_user_field_value.datepicker {
+    cursor: pointer;
+}
+
 #settings_page .custom_user_field .person_picker {
     min-width: 206px;
 }
@@ -1593,13 +1667,11 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     top: 5px;
 }
 
-#id_realm_notifications_stream .dropdown-search > input[type=text],
-#id_realm_signup_notifications_stream .dropdown-search > input[type=text] {
+.dropdown-list-widget .dropdown-search > input[type=text] {
     margin: 9px;
 }
 
-#id_realm_notifications_stream .dropdown-list-body,
-#id_realm_signup_notifications_stream .dropdown-list-body {
+.dropdown-list-widget .dropdown-list-body {
     position: relative;
     height: auto;
     max-height: 200px;
@@ -1927,6 +1999,14 @@ input[type=text]#settings_search {
 
 .admin_exports_table {
     margin: 20px;
+}
+
+@media (max-width: 430px) {
+    // selects the label (inline-block)
+    // immediately following the checkbox
+    .settings-box .checkbox + .inline-block {
+        width: calc(100% - 25px);
+    }
 }
 
 @media only screen and (min-width: 700px) and (max-width: 875px) {

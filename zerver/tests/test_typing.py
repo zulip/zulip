@@ -1,113 +1,103 @@
-# -*- coding: utf-8 -*-
-
 import ujson
 from typing import Any, Mapping, List
 
-from django.conf import settings
-from django.core.exceptions import ValidationError
-
-from zerver.lib.actions import recipient_for_user_ids
-from zerver.lib.test_helpers import tornado_redirected_to_list
+from zerver.lib.test_helpers import (
+    tornado_redirected_to_list,
+    queries_captured,
+)
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
-from zerver.models import get_display_recipient, get_system_bot
+from zerver.models import (
+    Huddle,
+    get_huddle_hash,
+)
 
-class TypingNotificationOperatorTest(ZulipTestCase):
+class TypingValidateOperatorTest(ZulipTestCase):
     def test_missing_parameter(self) -> None:
         """
         Sending typing notification without op parameter fails
         """
-        sender = self.example_email("hamlet")
-        recipient = self.example_email("othello")
-        result = self.api_post(sender, '/api/v1/typing', {'to': recipient})
+        sender = self.example_user("hamlet")
+        params = dict(
+            to=ujson.dumps([sender.id]),
+        )
+        result = self.api_post(sender, '/api/v1/typing', params)
         self.assert_json_error(result, 'Missing \'op\' argument')
 
     def test_invalid_parameter(self) -> None:
         """
         Sending typing notification with invalid value for op parameter fails
         """
-        sender = self.example_email("hamlet")
-        recipient = self.example_email("othello")
-        result = self.api_post(sender, '/api/v1/typing', {'to': recipient, 'op': 'foo'})
+        sender = self.example_user("hamlet")
+        params = dict(
+            to=ujson.dumps([sender.id]),
+            op='foo'
+        )
+        result = self.api_post(sender, '/api/v1/typing', params)
         self.assert_json_error(result, 'Invalid \'op\' value (should be start or stop)')
 
-class TypingNotificationRecipientsTest(ZulipTestCase):
+class TypingValidateUsersTest(ZulipTestCase):
+    def test_empty_array(self) -> None:
+        """
+        Sending typing notification without recipient fails
+        """
+        sender = self.example_user("hamlet")
+        result = self.api_post(sender, '/api/v1/typing', {'op': 'start', 'to': '[]'})
+        self.assert_json_error(result, 'Missing parameter: \'to\' (recipient)')
+
     def test_missing_recipient(self) -> None:
         """
         Sending typing notification without recipient fails
         """
-        sender = self.example_email("hamlet")
+        sender = self.example_user("hamlet")
         result = self.api_post(sender, '/api/v1/typing', {'op': 'start'})
-        self.assert_json_error(result, 'Missing parameter: \'to\' (recipient)')
+        self.assert_json_error(result, "Missing parameter: 'to' (recipient)")
 
-    def test_invalid_recipient(self) -> None:
+    def test_argument_to_is_not_valid_json(self) -> None:
         """
         Sending typing notification to invalid recipient fails
         """
-        sender = self.example_email("hamlet")
-        invalid = 'invalid email'
+        sender = self.example_user("hamlet")
+        invalid = 'bad email'
         result = self.api_post(sender, '/api/v1/typing', {'op': 'start', 'to': invalid})
-        self.assert_json_error(result, 'Invalid email \'' + invalid + '\'')
+        self.assert_json_error(result, "Invalid email 'bad email'")
 
-    def test_single_recipient(self) -> None:
+    def test_bogus_user_id(self) -> None:
         """
-        Sending typing notification to a single recipient is successful
+        Sending typing notification to invalid recipient fails
         """
-        sender = self.example_user('hamlet')
-        recipient = self.example_user('othello')
-        expected_recipients = set([sender, recipient])
-        expected_recipient_emails = set([user.email for user in expected_recipients])
-        expected_recipient_ids = set([user.id for user in expected_recipients])
+        sender = self.example_user("hamlet")
+        invalid = '[9999999]'
+        result = self.api_post(sender, '/api/v1/typing', {'op': 'start', 'to': invalid})
+        self.assert_json_error(result, 'Invalid user ID 9999999')
 
-        events = []  # type: List[Mapping[str, Any]]
-        with tornado_redirected_to_list(events):
-            result = self.api_post(sender.email, '/api/v1/typing', {'to': recipient.email,
-                                                                    'op': 'start'})
-        self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
-
-        event = events[0]['event']
-        event_recipient_emails = set(user['email'] for user in event['recipients'])
-        event_user_ids = set(events[0]['users'])
-        event_recipient_user_ids = set(user['user_id'] for user in event['recipients'])
-
-        self.assertEqual(expected_recipient_ids, event_recipient_user_ids)
-        self.assertEqual(expected_recipient_ids, event_user_ids)
-        self.assertEqual(event['sender']['email'], sender.email)
-        self.assertEqual(event_recipient_emails, expected_recipient_emails)
-        self.assertEqual(event['type'], 'typing')
-        self.assertEqual(event['op'], 'start')
-
-    def test_single_recipient_by_user_id(self) -> None:
-        """
-        Sending typing notification to a single recipient (using user IDs)
-        is successful
-        """
+class TypingHappyPathTest(ZulipTestCase):
+    def test_start_to_single_recipient(self) -> None:
         sender = self.example_user('hamlet')
         recipient_user = self.example_user('othello')
-        expected_recipients = set([sender, recipient_user])
-        expected_recipient_emails = set([user.email for user in expected_recipients])
-        expected_recipient_ids = set([user.id for user in expected_recipients])
+        expected_recipients = {sender, recipient_user}
+        expected_recipient_emails = {user.email for user in expected_recipients}
+        expected_recipient_ids = {user.id for user in expected_recipients}
 
-        events = []  # type: List[Mapping[str, Any]]
-        with tornado_redirected_to_list(events):
-            result = self.api_post(
-                sender.email,
-                '/api/v1/typing',
-                {
-                    'to': ujson.dumps([recipient_user.id]),
-                    'op': 'start'
-                }
-            )
+        params = dict(
+            to=ujson.dumps([recipient_user.id]),
+            op='start',
+        )
+
+        events: List[Mapping[str, Any]] = []
+        with queries_captured() as queries:
+            with tornado_redirected_to_list(events):
+                result = self.api_post(sender, '/api/v1/typing', params)
 
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
+        self.assertEqual(len(queries), 4)
 
         event = events[0]['event']
-        event_recipient_emails = set(user['email'] for user in event['recipients'])
+        event_recipient_emails = {user['email'] for user in event['recipients']}
         event_user_ids = set(events[0]['users'])
-        event_recipient_user_ids = set(user['user_id'] for user in event['recipients'])
+        event_recipient_user_ids = {user['user_id'] for user in event['recipients']}
 
         self.assertEqual(expected_recipient_ids, event_recipient_user_ids)
         self.assertEqual(expected_recipient_ids, event_user_ids)
@@ -116,57 +106,39 @@ class TypingNotificationRecipientsTest(ZulipTestCase):
         self.assertEqual(event['type'], 'typing')
         self.assertEqual(event['op'], 'start')
 
-    def test_multiple_recipients(self) -> None:
-        """
-        Sending typing notification to a single recipient is successful
-        """
-        sender = self.example_user('hamlet')
-        recipient = [self.example_user('othello'), self.example_user('cordelia')]
-        expected_recipients = set(recipient) | set([sender])
-        expected_recipient_emails = set([user.email for user in expected_recipients])
-        expected_recipient_ids = set([user.id for user in expected_recipients])
-        events = []  # type: List[Mapping[str, Any]]
-        with tornado_redirected_to_list(events):
-            result = self.api_post(sender.email, '/api/v1/typing',
-                                   {'to': ujson.dumps([user.email for user in recipient]),
-                                    'op': 'start'})
-        self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
-
-        event = events[0]['event']
-        event_recipient_emails = set(user['email'] for user in event['recipients'])
-        event_user_ids = set(events[0]['users'])
-        event_recipient_user_ids = set(user['user_id'] for user in event['recipients'])
-
-        self.assertEqual(expected_recipient_ids, event_recipient_user_ids)
-        self.assertEqual(expected_recipient_ids, event_user_ids)
-        self.assertEqual(event['sender']['email'], sender.email)
-        self.assertEqual(event_recipient_emails, expected_recipient_emails)
-        self.assertEqual(event['type'], 'typing')
-        self.assertEqual(event['op'], 'start')
-
-    def test_multiple_recipients_by_user_ids(self) -> None:
-        """
-        Sending typing notification to multiple recipients (using user IDs)
-        is successful
-        """
+    def test_start_to_multiple_recipients(self) -> None:
         sender = self.example_user('hamlet')
         recipient_users = [self.example_user('othello'), self.example_user('cordelia')]
-        expected_recipients = set(recipient_users) | set([sender])
-        expected_recipient_emails = set([user.email for user in expected_recipients])
-        expected_recipient_ids = set([user.id for user in expected_recipients])
-        events = []  # type: List[Mapping[str, Any]]
-        with tornado_redirected_to_list(events):
-            result = self.api_post(sender.email, '/api/v1/typing',
-                                   {'to': ujson.dumps([user.id for user in recipient_users]),
-                                    'op': 'start'})
+        expected_recipients = set(recipient_users) | {sender}
+        expected_recipient_emails = {user.email for user in expected_recipients}
+        expected_recipient_ids = {user.id for user in expected_recipients}
+
+        huddle_hash = get_huddle_hash(list(expected_recipient_ids))
+        self.assertFalse(Huddle.objects.filter(huddle_hash=huddle_hash).exists())
+
+        events: List[Mapping[str, Any]] = []
+
+        params = dict(
+            to=ujson.dumps([user.id for user in recipient_users]),
+            op='start',
+        )
+
+        with queries_captured() as queries:
+            with tornado_redirected_to_list(events):
+                result = self.api_post(sender, '/api/v1/typing', params)
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
+        self.assertEqual(len(queries), 5)
+
+        # We should not be adding new Huddles just because
+        # a user started typing in the compose box.  Let's
+        # wait till they send an actual message.
+        self.assertFalse(Huddle.objects.filter(huddle_hash=huddle_hash).exists())
 
         event = events[0]['event']
-        event_recipient_emails = set(user['email'] for user in event['recipients'])
+        event_recipient_emails = {user['email'] for user in event['recipients']}
         event_user_ids = set(events[0]['users'])
-        event_recipient_user_ids = set(user['user_id'] for user in event['recipients'])
+        event_recipient_user_ids = {user['user_id'] for user in event['recipients']}
 
         self.assertEqual(expected_recipient_ids, event_recipient_user_ids)
         self.assertEqual(expected_recipient_ids, event_user_ids)
@@ -175,48 +147,19 @@ class TypingNotificationRecipientsTest(ZulipTestCase):
         self.assertEqual(event['type'], 'typing')
         self.assertEqual(event['op'], 'start')
 
-class TypingStartedNotificationTest(ZulipTestCase):
-    def test_send_notification_to_self_event(self) -> None:
-        """
-        Sending typing notification to yourself
-        is successful.
-        """
-        user = self.example_user('hamlet')
-        email = user.email
-        expected_recipient_emails = set([email])
-        expected_recipient_ids = set([user.id])
-        events = []  # type: List[Mapping[str, Any]]
-        with tornado_redirected_to_list(events):
-            result = self.api_post(email, '/api/v1/typing', {'to': email,
-                                                             'op': 'start'})
-        self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
-
-        event = events[0]['event']
-        event_recipient_emails = set(user['email'] for user in event['recipients'])
-        event_user_ids = set(events[0]['users'])
-        event_recipient_user_ids = set(user['user_id'] for user in event['recipients'])
-
-        self.assertEqual(expected_recipient_ids, event_recipient_user_ids)
-        self.assertEqual(expected_recipient_ids, event_user_ids)
-        self.assertEqual(event_recipient_emails, expected_recipient_emails)
-        self.assertEqual(event['sender']['email'], email)
-        self.assertEqual(event['type'], 'typing')
-        self.assertEqual(event['op'], 'start')
-
-    def test_send_notification_to_self_by_user_id_event(self) -> None:
+    def test_start_to_self(self) -> None:
         """
         Sending typing notification to yourself (using user IDs)
         is successful.
         """
         user = self.example_user('hamlet')
         email = user.email
-        expected_recipient_emails = set([email])
-        expected_recipient_ids = set([user.id])
-        events = []  # type: List[Mapping[str, Any]]
+        expected_recipient_emails = {email}
+        expected_recipient_ids = {user.id}
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.api_post(
-                email,
+                user,
                 '/api/v1/typing',
                 {
                     'to': ujson.dumps([user.id]),
@@ -227,9 +170,9 @@ class TypingStartedNotificationTest(ZulipTestCase):
         self.assertEqual(len(events), 1)
 
         event = events[0]['event']
-        event_recipient_emails = set(user['email'] for user in event['recipients'])
+        event_recipient_emails = {user['email'] for user in event['recipients']}
         event_user_ids = set(events[0]['users'])
-        event_recipient_user_ids = set(user['user_id'] for user in event['recipients'])
+        event_recipient_user_ids = {user['user_id'] for user in event['recipients']}
 
         self.assertEqual(expected_recipient_ids, event_recipient_user_ids)
         self.assertEqual(expected_recipient_ids, event_user_ids)
@@ -238,28 +181,33 @@ class TypingStartedNotificationTest(ZulipTestCase):
         self.assertEqual(event['type'], 'typing')
         self.assertEqual(event['op'], 'start')
 
-    def test_send_notification_to_another_user_event(self) -> None:
+    def test_start_to_another_user(self) -> None:
         """
         Sending typing notification to another user
         is successful.
         """
         sender = self.example_user('hamlet')
         recipient = self.example_user('othello')
-        expected_recipients = set([sender, recipient])
-        expected_recipient_emails = set([user.email for user in expected_recipients])
-        expected_recipient_ids = set([user.id for user in expected_recipients])
+        expected_recipients = {sender, recipient}
+        expected_recipient_emails = {user.email for user in expected_recipients}
+        expected_recipient_ids = {user.id for user in expected_recipients}
 
-        events = []  # type: List[Mapping[str, Any]]
+        params = dict(
+            to=ujson.dumps([recipient.id]),
+            op='start'
+        )
+
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
-            result = self.api_post(sender.email, '/api/v1/typing', {'to': recipient.email,
-                                                                    'op': 'start'})
+            result = self.api_post(sender, '/api/v1/typing', params)
+
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
 
         event = events[0]['event']
-        event_recipient_emails = set(user['email'] for user in event['recipients'])
+        event_recipient_emails = {user['email'] for user in event['recipients']}
         event_user_ids = set(events[0]['users'])
-        event_recipient_user_ids = set(user['user_id'] for user in event['recipients'])
+        event_recipient_user_ids = {user['user_id'] for user in event['recipients']}
 
         self.assertEqual(expected_recipient_ids, event_recipient_user_ids)
         self.assertEqual(expected_recipient_ids, event_user_ids)
@@ -268,28 +216,31 @@ class TypingStartedNotificationTest(ZulipTestCase):
         self.assertEqual(event['type'], 'typing')
         self.assertEqual(event['op'], 'start')
 
-class StoppedTypingNotificationTest(ZulipTestCase):
-    def test_send_notification_to_self_event(self) -> None:
+    def test_stop_to_self(self) -> None:
         """
         Sending stopped typing notification to yourself
         is successful.
         """
         user = self.example_user('hamlet')
         email = user.email
-        expected_recipient_emails = set([email])
-        expected_recipient_ids = set([user.id])
+        expected_recipient_emails = {email}
+        expected_recipient_ids = {user.id}
 
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
-            result = self.api_post(email, '/api/v1/typing', {'to': email,
-                                                             'op': 'stop'})
+            params = dict(
+                to=ujson.dumps([user.id]),
+                op='stop'
+            )
+            result = self.api_post(user, '/api/v1/typing', params)
+
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
 
         event = events[0]['event']
-        event_recipient_emails = set(user['email'] for user in event['recipients'])
+        event_recipient_emails = {user['email'] for user in event['recipients']}
         event_user_ids = set(events[0]['users'])
-        event_recipient_user_ids = set(user['user_id'] for user in event['recipients'])
+        event_recipient_user_ids = {user['user_id'] for user in event['recipients']}
 
         self.assertEqual(expected_recipient_ids, event_recipient_user_ids)
         self.assertEqual(expected_recipient_ids, event_user_ids)
@@ -298,28 +249,32 @@ class StoppedTypingNotificationTest(ZulipTestCase):
         self.assertEqual(event['type'], 'typing')
         self.assertEqual(event['op'], 'stop')
 
-    def test_send_notification_to_another_user_event(self) -> None:
+    def test_stop_to_another_user(self) -> None:
         """
         Sending stopped typing notification to another user
         is successful.
         """
         sender = self.example_user('hamlet')
         recipient = self.example_user('othello')
-        expected_recipients = set([sender, recipient])
-        expected_recipient_emails = set([user.email for user in expected_recipients])
-        expected_recipient_ids = set([user.id for user in expected_recipients])
+        expected_recipients = {sender, recipient}
+        expected_recipient_emails = {user.email for user in expected_recipients}
+        expected_recipient_ids = {user.id for user in expected_recipients}
 
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
-            result = self.api_post(sender.email, '/api/v1/typing', {'to': recipient.email,
-                                                                    'op': 'stop'})
+            params = dict(
+                to=ujson.dumps([recipient.id]),
+                op='stop'
+            )
+            result = self.api_post(sender, '/api/v1/typing', params)
+
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
 
         event = events[0]['event']
-        event_recipient_emails = set(user['email'] for user in event['recipients'])
+        event_recipient_emails = {user['email'] for user in event['recipients']}
         event_user_ids = set(events[0]['users'])
-        event_recipient_user_ids = set(user['user_id'] for user in event['recipients'])
+        event_recipient_user_ids = {user['user_id'] for user in event['recipients']}
 
         self.assertEqual(expected_recipient_ids, event_recipient_user_ids)
         self.assertEqual(expected_recipient_ids, event_user_ids)
@@ -328,26 +283,37 @@ class StoppedTypingNotificationTest(ZulipTestCase):
         self.assertEqual(event['type'], 'typing')
         self.assertEqual(event['op'], 'stop')
 
-class TypingValidationHelpersTest(ZulipTestCase):
-    def test_recipient_for_user_ids(self) -> None:
-        hamlet = self.example_user('hamlet')
+class TypingLegacyMobileSupportTest(ZulipTestCase):
+    def test_legacy_email_interface(self) -> None:
+        '''
+        We are keeping the email interface on life support
+        for a couple months until we get some of our
+        mobile users upgraded.
+        '''
+        sender = self.example_user('hamlet')
         othello = self.example_user('othello')
-        cross_realm_bot = get_system_bot(settings.WELCOME_BOT)
-        sender = self.example_user('iago')
-        recipient_user_ids = [hamlet.id, othello.id, cross_realm_bot.id]
+        cordelia = self.example_user('cordelia')
 
-        result = recipient_for_user_ids(recipient_user_ids, sender)
-        recipient = get_display_recipient(result)
-        recipient_ids = [recipient[0]['id'], recipient[1]['id'],  # type: ignore
-                         recipient[2]['id'], recipient[3]['id']]  # type: ignore
+        emails = [othello.email, cordelia.email]
 
-        expected_recipient_ids = [hamlet.id, othello.id,
-                                  sender.id, cross_realm_bot.id]
-        self.assertEqual(set(recipient_ids), set(expected_recipient_ids))
+        params = dict(
+            to=ujson.dumps(emails),
+            op='start',
+        )
 
-    def test_recipient_for_user_ids_non_existent_id(self) -> None:
-        sender = self.example_user('iago')
-        recipient_user_ids = [999]
+        events: List[Mapping[str, Any]] = []
+        with tornado_redirected_to_list(events):
+            result = self.api_post(sender, '/api/v1/typing', params)
 
-        with self.assertRaisesRegex(ValidationError, 'Invalid user ID '):
-            recipient_for_user_ids(recipient_user_ids, sender)
+        self.assert_json_success(result)
+        event = events[0]['event']
+
+        event_recipient_user_ids = {
+            user['user_id']
+            for user in event['recipients']
+        }
+
+        self.assertEqual(
+            event_recipient_user_ids,
+            {sender.id, othello.id, cordelia.id}
+        )

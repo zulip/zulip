@@ -37,7 +37,7 @@ def invite_users_backend(request: HttpRequest, user_profile: UserProfile,
 
     invitee_emails = get_invitee_emails_set(invitee_emails_raw)
 
-    streams = []  # type: List[Stream]
+    streams: List[Stream] = []
     for stream_id in stream_ids:
         try:
             (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)

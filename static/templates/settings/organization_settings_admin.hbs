@@ -15,7 +15,7 @@
                     <label for="realm_msg_edit_limit_setting" class="dropdown-title">{{t "Allow message editing" }}</label>
                     <select name="realm_msg_edit_limit_setting" id="id_realm_msg_edit_limit_setting" class="prop-element">
                         {{#each msg_edit_limit_dropdown_values}}
-                        <option value="{{@key}}">{{this.text}}</option>
+                        <option value="{{0}}">{{1.text}}</option>
                         {{/each}}
                     </select>
                     <div class="dependent-inline-block">
@@ -46,11 +46,11 @@
                     <label for="realm_msg_delete_limit_setting" class="dropdown-title">
                         {{t "Allow message deleting" }}
                         <i class="fa fa-info-circle settings-info-icon realm_allow_message_deleting_tooltip" data-toggle="tooltip"
-                          aria-hidden="true" title="{{t 'Administrators can always delete any message.' }}"/>
+                          aria-hidden="true" title="{{t 'Administrators can always delete any message.' }}"></i>
                     </label>
                     <select name="realm_msg_delete_limit_setting" id="id_realm_msg_delete_limit_setting" class="prop-element">
                         {{#each msg_delete_limit_dropdown_values}}
-                        <option value="{{@key}}">{{this.text}}</option>
+                        <option value="{{0}}">{{1.text}}</option>
                         {{/each}}
                     </select>
                     <div class="dependent-inline-block">
@@ -102,13 +102,18 @@
                 </div>
             </div>
 
-            {{> notifications_stream_settings_widget
-              notifications_type="notifications"
+            {{> dropdown_list_widget
+              setting_name="realm_notifications_stream_id"
+              list_placeholder=(t 'Filter streams')
+              reset_button_text=(t '[Disable]')
               label=admin_settings_label.realm_notifications_stream }}
 
-            {{> notifications_stream_settings_widget
-              notifications_type="signup_notifications"
-              label=admin_settings_label.realm_signup_notifications_stream }}
+            {{> dropdown_list_widget
+              setting_name="realm_signup_notifications_stream_id"
+              list_placeholder=(t 'Filter streams')
+              reset_button_text=(t '[Disable]')
+              label=admin_settings_label.realm_notifications_stream }}
+
         </div>
 
         <div id="org-user-defaults" class="org-subsection-parent">
@@ -192,6 +197,12 @@
                     </div>
                 </div>
 
+                {{> dropdown_list_widget
+                  setting_name="realm_default_code_block_language"
+                  list_placeholder=(t 'Filter languages')
+                  reset_button_text=(t '[Unset]')
+                  label=admin_settings_label.realm_default_code_block_language }}
+
                 {{> settings_checkbox
                   setting_name="realm_message_content_allowed_in_email_notifications"
                   prefix="id_"
@@ -221,7 +232,8 @@
                   setting_name="realm_inline_image_preview"
                   prefix="id_"
                   is_checked=realm_inline_image_preview
-                  label=admin_settings_label.realm_inline_image_preview}}
+                  label=admin_settings_label.realm_inline_image_preview
+                  help_link="/help/allow-image-link-previews"}}
                 {{/if}}
 
                 {{#if server_inline_url_embed_preview}}
@@ -229,7 +241,8 @@
                   setting_name="realm_inline_url_embed_preview"
                   prefix="id_"
                   is_checked=realm_inline_url_embed_preview
-                  label=admin_settings_label.realm_inline_url_embed_preview}}
+                  label=admin_settings_label.realm_inline_url_embed_preview
+                  help_link="/help/allow-image-link-previews"}}
                 {{/if}}
             </div>
         </div>

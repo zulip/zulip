@@ -1,7 +1,8 @@
 from contextlib import contextmanager
 from email.utils import parseaddr
 from fakeldap import MockLDAP
-from typing import (cast, Any, Dict, Iterable, Iterator, List, Optional,
+from typing import (cast, Any, Dict, Iterable,
+                    Iterator, List, Optional,
                     Tuple, Union, Set)
 
 from django.apps import apps
@@ -22,18 +23,19 @@ from django.utils import translation
 
 from two_factor.models import PhoneDevice
 from zerver.lib.initial_password import initial_password
-from zerver.lib.utils import is_remote_server
 from zerver.lib.users import get_api_key
 from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.webhooks.common import get_fixture_http_headers, standardize_headers
 
 from zerver.lib.actions import (
-    check_send_message, create_stream_if_needed, bulk_add_subscriptions,
+    check_send_message, bulk_add_subscriptions,
     bulk_remove_subscriptions,
     check_send_stream_message, gather_subscriptions,
-    get_default_value_for_history_public_to_subscribers,
 )
-
+from zerver.lib.streams import (
+    create_stream_if_needed,
+    get_default_value_for_history_public_to_subscribers
+)
 from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_user,
 )
@@ -49,6 +51,7 @@ from zerver.models import (
     get_client,
     get_display_recipient,
     get_user,
+    get_user_by_delivery_email,
     get_realm,
     get_system_bot,
     Client,
@@ -89,15 +92,15 @@ class UploadSerializeMixin(SerializeMixin):
             with open(cls.lockfile, 'w'):  # nocoverage - rare locking case
                 pass
 
-        super(UploadSerializeMixin, cls).setUpClass(*args, **kwargs)
+        super().setUpClass(*args, **kwargs)
 
 class ZulipTestCase(TestCase):
     # Ensure that the test system just shows us diffs
-    maxDiff = None  # type: Optional[int]
+    maxDiff: Optional[int] = None
 
     def setUp(self) -> None:
         super().setUp()
-        self.API_KEYS = {}  # type: Dict[str, str]
+        self.API_KEYS: Dict[str, str] = {}
 
     def tearDown(self) -> None:
         super().tearDown()
@@ -128,12 +131,28 @@ class ZulipTestCase(TestCase):
     DEFAULT_SUBDOMAIN = "zulip"
     TOKENIZED_NOREPLY_REGEX = settings.TOKENIZED_NOREPLY_EMAIL_ADDRESS.format(token="[a-z0-9_]{24}")
 
-    def set_http_host(self, kwargs: Dict[str, Any]) -> None:
+    def set_http_headers(self, kwargs: Dict[str, Any]) -> None:
         if 'subdomain' in kwargs:
             kwargs['HTTP_HOST'] = Realm.host_for_subdomain(kwargs['subdomain'])
             del kwargs['subdomain']
         elif 'HTTP_HOST' not in kwargs:
             kwargs['HTTP_HOST'] = Realm.host_for_subdomain(self.DEFAULT_SUBDOMAIN)
+
+        # set User-Agent
+        if 'HTTP_AUTHORIZATION' in kwargs:
+            # An API request; use mobile as the default user agent
+            default_user_agent = "ZulipMobile/26.22.145 (iOS 10.3.1)"
+        else:
+            # A webapp request; use a browser User-Agent string.
+            default_user_agent = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+                                  "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                                  "Chrome/79.0.3945.130 Safari/537.36")
+        if kwargs.get('skip_user_agent'):
+            # Provide a way to disable setting User-Agent if desired.
+            assert 'HTTP_USER_AGENT' not in kwargs
+            del kwargs['skip_user_agent']
+        elif 'HTTP_USER_AGENT' not in kwargs:
+            kwargs['HTTP_USER_AGENT'] = default_user_agent
 
     @instrument_url
     def client_patch(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
@@ -142,7 +161,7 @@ class ZulipTestCase(TestCase):
         """
         encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
-        self.set_http_host(kwargs)
+        self.set_http_headers(kwargs)
         return django_client.patch(url, encoded, **kwargs)
 
     @instrument_url
@@ -157,7 +176,7 @@ class ZulipTestCase(TestCase):
         """
         encoded = encode_multipart(BOUNDARY, info)
         django_client = self.client  # see WRAPPER_COMMENT
-        self.set_http_host(kwargs)
+        self.set_http_headers(kwargs)
         return django_client.patch(
             url,
             encoded,
@@ -168,34 +187,34 @@ class ZulipTestCase(TestCase):
     def client_put(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
         encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
-        self.set_http_host(kwargs)
+        self.set_http_headers(kwargs)
         return django_client.put(url, encoded, **kwargs)
 
     @instrument_url
     def client_delete(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
         encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
-        self.set_http_host(kwargs)
+        self.set_http_headers(kwargs)
         return django_client.delete(url, encoded, **kwargs)
 
     @instrument_url
     def client_options(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
         encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
-        self.set_http_host(kwargs)
+        self.set_http_headers(kwargs)
         return django_client.options(url, encoded, **kwargs)
 
     @instrument_url
     def client_head(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
         encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
-        self.set_http_host(kwargs)
+        self.set_http_headers(kwargs)
         return django_client.head(url, encoded, **kwargs)
 
     @instrument_url
     def client_post(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
         django_client = self.client  # see WRAPPER_COMMENT
-        self.set_http_host(kwargs)
+        self.set_http_headers(kwargs)
         return django_client.post(url, info, **kwargs)
 
     @instrument_url
@@ -215,7 +234,7 @@ class ZulipTestCase(TestCase):
     @instrument_url
     def client_get(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
         django_client = self.client  # see WRAPPER_COMMENT
-        self.set_http_host(kwargs)
+        self.set_http_headers(kwargs)
         return django_client.get(url, info, **kwargs)
 
     example_user_map = dict(
@@ -266,11 +285,11 @@ class ZulipTestCase(TestCase):
 
     def nonreg_user(self, name: str) -> UserProfile:
         email = self.nonreg_user_map[name]
-        return get_user(email, get_realm("zulip"))
+        return get_user_by_delivery_email(email, get_realm("zulip"))
 
     def example_user(self, name: str) -> UserProfile:
         email = self.example_user_map[name]
-        return get_user(email, get_realm('zulip'))
+        return get_user_by_delivery_email(email, get_realm('zulip'))
 
     def mit_user(self, name: str) -> UserProfile:
         email = self.mit_user_map[name]
@@ -292,12 +311,15 @@ class ZulipTestCase(TestCase):
     def notification_bot(self) -> UserProfile:
         return get_system_bot(settings.NOTIFICATION_BOT)
 
-    def create_test_bot(self, short_name: str, user_profile: UserProfile,
-                        assert_json_error_msg: str=None, **extras: Any) -> Optional[UserProfile]:
-        self.login(user_profile.delivery_email)
+    def create_test_bot(self, short_name: str,
+                        user_profile: UserProfile,
+                        full_name: str='Foo Bot',
+                        assert_json_error_msg: str=None,
+                        **extras: Any) -> Optional[UserProfile]:
+        self.login_user(user_profile)
         bot_info = {
             'short_name': short_name,
-            'full_name': 'Foo Bot',
+            'full_name': full_name,
         }
         bot_info.update(extras)
         result = self.client_post("/json/bots", bot_info)
@@ -320,18 +342,51 @@ class ZulipTestCase(TestCase):
         self.assertNotEqual(result.status_code, 500)
         return result
 
-    def login(self, email: str, password: Optional[str]=None, fails: bool=False,
-              realm: Optional[Realm]=None) -> HttpResponse:
-        if realm is None:
-            realm = get_realm("zulip")
-        if password is None:
-            password = initial_password(email)
-        if not fails:
-            self.assertTrue(self.client.login(username=email, password=password,
-                                              realm=realm))
-        else:
-            self.assertFalse(self.client.login(username=email, password=password,
-                                               realm=realm))
+    def login(self, name: str) -> None:
+        '''
+        Use this for really simple tests where you just need
+        to be logged in as some user, but don't need the actual
+        user object for anything else.  Try to use 'hamlet' for
+        non-admins and 'iago' for admins:
+
+            self.login('hamlet')
+
+        Try to use 'cordelia' or 'othello' as "other" users.
+        '''
+        assert '@' not in name, 'use login_by_email for email logins'
+        user = self.example_user(name)
+        self.login_user(user)
+
+    def login_by_email(self,
+                       email: str,
+                       password: str) -> None:
+        realm = get_realm("zulip")
+        self.assertTrue(
+            self.client.login(
+                username=email,
+                password=password,
+                realm=realm,
+            )
+        )
+
+    def assert_login_failure(self,
+                             email: str,
+                             password: str) -> None:
+        realm = get_realm("zulip")
+        self.assertFalse(
+            self.client.login(
+                username=email,
+                password=password,
+                realm=realm,
+            )
+        )
+
+    def login_user(self, user_profile: UserProfile) -> None:
+        email = user_profile.delivery_email
+        realm = user_profile.realm
+        password = initial_password(email)
+        self.assertTrue(self.client.login(username=email, password=password,
+                                          realm=realm))
 
     def login_2fa(self, user_profile: UserProfile) -> None:
         """
@@ -402,82 +457,100 @@ class ZulipTestCase(TestCase):
         else:
             raise AssertionError("Couldn't find a confirmation email.")
 
-    def encode_credentials(self, identifier: str, realm: str="zulip") -> str:
+    def encode_uuid(self, uuid: str) -> str:
         """
         identifier: Can be an email or a remote server uuid.
         """
-        if identifier in self.API_KEYS:
-            api_key = self.API_KEYS[identifier]
+        if uuid in self.API_KEYS:
+            api_key = self.API_KEYS[uuid]
         else:
-            if is_remote_server(identifier):
-                api_key = get_remote_server_by_uuid(identifier).api_key
-            else:
-                user = get_user(identifier, get_realm(realm))
-                api_key = get_api_key(user)
-            self.API_KEYS[identifier] = api_key
+            api_key = get_remote_server_by_uuid(uuid).api_key
+            self.API_KEYS[uuid] = api_key
 
+        return self.encode_credentials(uuid, api_key)
+
+    def encode_user(self, user: UserProfile) -> str:
+        email = user.delivery_email
+        api_key = user.api_key
+        return self.encode_credentials(email, api_key)
+
+    def encode_email(self, email: str, realm: str="zulip") -> str:
+        # TODO: use encode_user where possible
+        assert '@' in email
+        user = get_user_by_delivery_email(email, get_realm(realm))
+        api_key = get_api_key(user)
+
+        return self.encode_credentials(email, api_key)
+
+    def encode_credentials(self, identifier: str, api_key: str) -> str:
+        """
+        identifier: Can be an email or a remote server uuid.
+        """
         credentials = "%s:%s" % (identifier, api_key)
         return 'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
 
-    def api_get(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier, kwargs.get('subdomain', 'zulip'))
+    def uuid_get(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_uuid(identifier)
         return self.client_get(*args, **kwargs)
 
-    def api_post(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier, kwargs.get('subdomain', 'zulip'))
+    def uuid_post(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_uuid(identifier)
         return self.client_post(*args, **kwargs)
 
-    def api_patch(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier, kwargs.get('subdomain', 'zulip'))
+    def api_get(self, user: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_user(user)
+        return self.client_get(*args, **kwargs)
+
+    def api_post(self, user: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_user(user)
+        return self.client_post(*args, **kwargs)
+
+    def api_patch(self, user: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_user(user)
         return self.client_patch(*args, **kwargs)
 
-    def api_delete(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier, kwargs.get('subdomain', 'zulip'))
+    def api_delete(self, user: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_user(user)
         return self.client_delete(*args, **kwargs)
 
-    def get_streams(self, email: str, realm: Realm) -> List[str]:
+    def get_streams(self, user_profile: UserProfile) -> List[str]:
         """
         Helper function to get the stream names for a user
         """
-        user_profile = get_user(email, realm)
         subs = get_stream_subscriptions_for_user(user_profile).filter(
             active=True,
         )
         return [cast(str, get_display_recipient(sub.recipient)) for sub in subs]
 
-    def send_personal_message(self, from_email: str, to_email: str, content: str="test content",
-                              sender_realm: str="zulip",
+    def send_personal_message(self, from_user: UserProfile, to_user: UserProfile, content: str="test content",
                               sending_client_name: str="test suite") -> int:
-        sender = get_user(from_email, get_realm(sender_realm))
-
-        recipient_list = [to_email]
+        recipient_list = [to_user.id]
         (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
 
         return check_send_message(
-            sender, sending_client, 'private', recipient_list, None,
+            from_user, sending_client, 'private', recipient_list, None,
             content
         )
 
-    def send_huddle_message(self, from_email: str, to_emails: List[str], content: str="test content",
-                            sender_realm: str="zulip",
+    def send_huddle_message(self,
+                            from_user: UserProfile,
+                            to_users: List[UserProfile],
+                            content: str="test content",
                             sending_client_name: str="test suite") -> int:
-        sender = get_user(from_email, get_realm(sender_realm))
-
-        assert(len(to_emails) >= 2)
+        to_user_ids = [u.id for u in to_users]
+        assert(len(to_user_ids) >= 2)
 
         (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
 
         return check_send_message(
-            sender, sending_client, 'private', to_emails, None,
+            from_user, sending_client, 'private', to_user_ids, None,
             content
         )
 
-    def send_stream_message(self, sender_email: str, stream_name: str, content: str="test content",
-                            topic_name: str="test", sender_realm: str="zulip",
+    def send_stream_message(self, sender: UserProfile, stream_name: str, content: str="test content",
+                            topic_name: str="test",
                             recipient_realm: Optional[Realm]=None,
                             sending_client_name: str="test suite") -> int:
-        sender = get_user(sender_email, get_realm(sender_realm))
-
         (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
 
         return check_send_stream_message(
@@ -489,7 +562,8 @@ class ZulipTestCase(TestCase):
             realm=recipient_realm,
         )
 
-    def get_messages_response(self, anchor: int=1, num_before: int=100, num_after: int=100,
+    def get_messages_response(self, anchor: Union[int, str]=1,
+                              num_before: int=100, num_after: int=100,
                               use_first_unread_anchor: bool=False) -> Dict[str, List[Dict[str, Any]]]:
         post_params = {"anchor": anchor, "num_before": num_before,
                        "num_after": num_after,
@@ -498,7 +572,7 @@ class ZulipTestCase(TestCase):
         data = result.json()
         return data
 
-    def get_messages(self, anchor: int=1, num_before: int=100, num_after: int=100,
+    def get_messages(self, anchor: Union[str, int]=1, num_before: int=100, num_after: int=100,
                      use_first_unread_anchor: bool=False) -> List[Dict[str, Any]]:
         data = self.get_messages_response(anchor, num_before, num_after, use_first_unread_anchor)
         return data['messages']
@@ -657,13 +731,13 @@ class ZulipTestCase(TestCase):
         bulk_remove_subscriptions([user_profile], [stream], client)
 
     # Subscribe to a stream by making an API request
-    def common_subscribe_to_streams(self, email: str, streams: Iterable[str],
+    def common_subscribe_to_streams(self, user: UserProfile, streams: Iterable[str],
                                     extra_post_data: Dict[str, Any]={}, invite_only: bool=False,
                                     **kwargs: Any) -> HttpResponse:
         post_data = {'subscriptions': ujson.dumps([{"name": stream} for stream in streams]),
                      'invite_only': ujson.dumps(invite_only)}
         post_data.update(extra_post_data)
-        result = self.api_post(email, "/api/v1/users/me/subscriptions", post_data, **kwargs)
+        result = self.api_post(user, "/api/v1/users/me/subscriptions", post_data, **kwargs)
         return result
 
     def check_user_subscribed_only_to_streams(self, user_name: str,
@@ -724,7 +798,7 @@ class ZulipTestCase(TestCase):
             yield
 
     def create_default_device(self, user_profile: UserProfile,
-                              number: str="+12223334444") -> None:
+                              number: str="+12125550100") -> None:
         phone_device = PhoneDevice(user=user_profile, name='default',
                                    confirmed=True, number=number,
                                    key='abcd', method='sms')
@@ -741,7 +815,7 @@ class ZulipTestCase(TestCase):
         return output_dir
 
     def get_set(self, data: List[Dict[str, Any]], field: str) -> Set[str]:
-        values = set(r[field] for r in data)
+        values = {r[field] for r in data}
         return values
 
     def find_by_id(self, data: List[Dict[str, Any]], db_id: int) -> Dict[str, Any]:
@@ -762,11 +836,15 @@ class ZulipTestCase(TestCase):
         """
         directory = ujson.loads(self.fixture_data("directory.json", type="ldap"))
 
-        # Load binary attributes. If in "directory", an attribute as its value
-        # has a string starting with "file:", the rest of the string is assumed
-        # to be a path to the file from which binary data should be loaded,
-        # as the actual value of the attribute in ldap.
         for dn, attrs in directory.items():
+            if 'uid' in attrs:
+                # Generate a password for the ldap account:
+                attrs['userPassword'] = [self.ldap_password(attrs['uid'][0]), ]
+
+            # Load binary attributes. If in "directory", an attribute as its value
+            # has a string starting with "file:", the rest of the string is assumed
+            # to be a path to the file from which binary data should be loaded,
+            # as the actual value of the attribute in ldap.
             for attr, value in attrs.items():
                 if isinstance(value, str) and value.startswith("file:"):
                     with open(value[5:], 'rb') as f:
@@ -790,7 +868,7 @@ class ZulipTestCase(TestCase):
         if binary:
             with open(attr_value, "rb") as f:
                 # attr_value should be a path to the file with the binary data
-                data = f.read()  # type: Union[str, bytes]
+                data: Union[str, bytes] = f.read()
         else:
             data = attr_value
 
@@ -804,9 +882,8 @@ class ZulipTestCase(TestCase):
         """
         return self.example_user_ldap_username_map[username]
 
-    def ldap_password(self) -> str:
-        # Currently all ldap users have password "testing"
-        return "testing"
+    def ldap_password(self, uid: str) -> str:
+        return "{}_ldap_password".format(uid)
 
 class WebhookTestCase(ZulipTestCase):
     """
@@ -816,10 +893,10 @@ class WebhookTestCase(ZulipTestCase):
     If you create your url in uncommon way you can override build_webhook_url method
     In case that you need modify body or create it without using fixture you can also override get_body method
     """
-    STREAM_NAME = None  # type: Optional[str]
+    STREAM_NAME: Optional[str] = None
     TEST_USER_EMAIL = 'webhook-bot@zulip.com'
-    URL_TEMPLATE = None  # type: Optional[str]
-    FIXTURE_DIR_NAME = None  # type: Optional[str]
+    URL_TEMPLATE: Optional[str] = None
+    FIXTURE_DIR_NAME: Optional[str] = None
 
     @property
     def test_user(self) -> UserProfile:
@@ -829,8 +906,8 @@ class WebhookTestCase(ZulipTestCase):
         super().setUp()
         self.url = self.build_webhook_url()
 
-    def api_stream_message(self, email: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
+    def api_stream_message(self, user: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_user(user)
         return self.send_and_test_stream_message(*args, **kwargs)
 
     def send_and_test_stream_message(self, fixture_name: str, expected_topic: Optional[str]=None,
@@ -858,7 +935,8 @@ class WebhookTestCase(ZulipTestCase):
         headers = get_fixture_http_headers(self.FIXTURE_DIR_NAME, fixture_name)
         headers = standardize_headers(headers)
         kwargs.update(headers)
-        sender = kwargs.get('sender', self.test_user)
+        # The sender profile shouldn't be passed any further in kwargs, so we pop it.
+        sender = kwargs.pop('sender', self.test_user)
         msg = self.send_json_payload(sender, self.url, payload,
                                      stream_name=None, **kwargs)
         self.do_test_message(msg, expected_message)
@@ -911,14 +989,14 @@ class MigrationsTestCase(ZulipTestCase):  # nocoverage
     def app(self) -> str:
         return apps.get_containing_app_config(type(self).__module__).name
 
-    migrate_from = None  # type: Optional[str]
-    migrate_to = None  # type: Optional[str]
+    migrate_from: Optional[str] = None
+    migrate_to: Optional[str] = None
 
     def setUp(self) -> None:
         assert self.migrate_from and self.migrate_to, \
             "TestCase '{}' must define migrate_from and migrate_to properties".format(type(self).__name__)
-        migrate_from = [(self.app, self.migrate_from)]  # type: List[Tuple[str, str]]
-        migrate_to = [(self.app, self.migrate_to)]  # type: List[Tuple[str, str]]
+        migrate_from: List[Tuple[str, str]] = [(self.app, self.migrate_from)]
+        migrate_to: List[Tuple[str, str]] = [(self.app, self.migrate_to)]
         executor = MigrationExecutor(connection)
         old_apps = executor.loader.project_state(migrate_from).apps
 

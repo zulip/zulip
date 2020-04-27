@@ -1,3 +1,4 @@
+const util = require("./util");
 const render_admin_invites_list = require("../templates/admin_invites_list.hbs");
 const render_settings_revoke_invite_modal = require("../templates/settings/revoke_invite_modal.hbs");
 
@@ -14,30 +15,27 @@ function failed_listing_invites(xhr) {
     ui_report.error(i18n.t("Error listing invites"), xhr, $("#invites-field-status"));
 }
 
-exports.invited_as_values = {
-    member: {
-        value: 1,
-        description: i18n.t("Member"),
-    },
-    admin_user: {
-        value: 2,
-        description: i18n.t("Organization administrator"),
-    },
-    guest_user: {
-        value: 3,
-        description: i18n.t("Guest"),
-    },
-};
+exports.invited_as_values = new Map([
+    [1, i18n.t("Member")],
+    [2, i18n.t("Organization administrator")],
+    [3, i18n.t("Guest")],
+]);
 
 function add_invited_as_text(invites) {
-    invites.forEach(function (data) {
-        const invited_as_type = _.findKey(exports.invited_as_values, function (elem) {
-            return elem.value === data.invited_as;
-        });
-        data.invited_as_text = exports.invited_as_values[invited_as_type].description;
-    });
+    for (const data of invites) {
+        data.invited_as_text = exports.invited_as_values.get(data.invited_as);
+    }
 }
 
+function sort_invitee(a, b) {
+    // multi-invite links don't have an email field,
+    // so we set them to empty strings to let them
+    // sort to the top
+    const str1 = (a.email || '').toUpperCase();
+    const str2 = (b.email || '').toUpperCase();
+
+    return util.strcmp(str1, str2);
+}
 
 function populate_invites(invites_data) {
     if (!meta.loaded) {
@@ -48,35 +46,29 @@ function populate_invites(invites_data) {
 
     const invites_table = $("#admin_invites_table").expectOne();
 
-    const admin_invites_list = list_render.get("admin_invites_list");
-
-    if (admin_invites_list) {
-        admin_invites_list.data(invites_data.invites);
-        admin_invites_list.set_container(invites_table);
-        admin_invites_list.render();
-    } else {
-        const invites_list = list_render.create(invites_table, invites_data.invites, {
-            name: "admin_invites_list",
-            modifier: function (item) {
-                item.invited_absolute_time = timerender.absolute_time(item.invited * 1000);
-                return render_admin_invites_list({ invite: item });
+    list_render.create(invites_table, invites_data.invites, {
+        name: 'admin_invites_list',
+        modifier: function (item) {
+            item.invited_absolute_time = timerender.absolute_time(item.invited * 1000);
+            return render_admin_invites_list({ invite: item });
+        },
+        filter: {
+            element: invites_table.closest(".settings-section").find(".search"),
+            predicate: function (item, value) {
+                const referrer_email_matched = item.ref.toLowerCase().includes(value);
+                if (item.is_multiuse) {
+                    return referrer_email_matched;
+                }
+                const invitee_email_matched = item.email.toLowerCase().includes(value);
+                return referrer_email_matched || invitee_email_matched;
             },
-            filter: {
-                element: invites_table.closest(".settings-section").find(".search"),
-                predicate: function (item, value) {
-                    const referrer_email_matched = item.ref.toLowerCase().indexOf(value) >= 0;
-                    if (item.is_multiuse) {
-                        return referrer_email_matched;
-                    }
-                    const invitee_email_matched = item.email.toLowerCase().indexOf(value) >= 0;
-                    return referrer_email_matched || invitee_email_matched;
-                },
-            },
-            parent_container: $("#admin-invites-list").expectOne(),
-        }).init();
-
-        invites_list.sort("alphabetic", "email");
-    }
+        },
+        parent_container: $("#admin-invites-list").expectOne(),
+        init_sort: [sort_invitee],
+        sort_fields: {
+            invitee: sort_invitee,
+        },
+    });
 
     loading.destroy_indicator($('#admin_page_invites_loading_indicator'));
 }

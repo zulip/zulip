@@ -9,14 +9,16 @@
 import sys
 
 # We want to use a virtualenv in production, which will be in /home/zulip/deployments/current.
-# So we should add that path to sys.path and then import scripts.lib.setup_path_on_import.
+# So we should add that path to sys.path and then call setup_path.
 # But this file is also used in development, where the above path will not exist.
-# So `import scripts.lib.setup_path_on_import` will raise an ImportError.
+# So `from scripts.lib.setup_path import setup_path` will raise an ImportError.
 # In development, we just want to skip this step since we know that virtualenv will already be in use.
 # So catch the ImportError and do nothing.
 sys.path.append('/home/zulip/deployments/current')
 try:
-    import scripts.lib.setup_path_on_import
+    from scripts.lib.setup_path import setup_path
+
+    setup_path()
 except ImportError:
     pass
 
@@ -31,8 +33,7 @@ import os
 
 BATCH_SIZE = 1000
 
-def update_fts_columns(cursor):
-    # type: (psycopg2.extensions.cursor) -> int
+def update_fts_columns(cursor: psycopg2.extensions.cursor) -> int:
     cursor.execute("SELECT id, message_id FROM fts_update_log LIMIT %s;" % (
         BATCH_SIZE,))
     ids = []
@@ -50,8 +51,7 @@ def update_fts_columns(cursor):
     cursor.execute("DELETE FROM fts_update_log WHERE id = ANY(%s)", (ids,))
     return len(ids)
 
-def am_master(cursor):
-    # type: (psycopg2.extensions.cursor) -> bool
+def am_master(cursor: psycopg2.extensions.cursor) -> bool:
     cursor.execute("SELECT pg_is_in_recovery()")
     return not cursor.fetchall()[0][0]
 

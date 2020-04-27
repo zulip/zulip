@@ -1,3 +1,5 @@
+const emoji_codes = require("../generated/emoji/emoji_codes.json");
+
 function do_narrow_action(action) {
     action(current_msg_list.selected_id(), {trigger: 'hotkey'});
     return true;
@@ -101,12 +103,12 @@ const keypress_mappings = {
     107: {name: 'vim_up', message_view_only: true}, // 'k'
     110: {name: 'n_key', message_view_only: false}, // 'n'
     112: {name: 'p_key', message_view_only: false}, // 'p'
-    113: {name: 'query_streams', message_view_only: false}, // 'q'
+    113: {name: 'query_streams', message_view_only: true}, // 'q'
     114: {name: 'reply_message', message_view_only: true}, // 'r'
     115: {name: 'narrow_by_recipient', message_view_only: true}, // 's'
     117: {name: 'show_sender_info', message_view_only: true}, // 'u'
     118: {name: 'show_lightbox', message_view_only: true}, // 'v'
-    119: {name: 'query_users', message_view_only: false}, // 'w'
+    119: {name: 'query_users', message_view_only: true}, // 'w'
     120: {name: 'compose_private_message', message_view_only: true}, // 'x'
 };
 
@@ -160,30 +162,23 @@ exports.get_keypress_hotkey = function (e) {
     return keypress_mappings[e.which];
 };
 
-exports.processing_text = (function () {
-    const selector = [
-        'input:focus',
-        'select:focus',
-        'textarea:focus',
-        '#compose-send-button:focus',
-        '.editable-section:focus',
-        '.pill-container div:focus',
-    ].join(",");
+exports.processing_text = function () {
+    const $focused_elt = $(":focus");
+    return $focused_elt.is("input") ||
+        $focused_elt.is("select") ||
+        $focused_elt.is("textarea") ||
+        $focused_elt.hasClass("editable-section") ||
+        $focused_elt.parents(".pill-container").length >= 1 ||
+        $focused_elt.attr("id") === "compose-send-button";
+};
 
-    return function () {
-        return $(selector).length > 0;
-    };
-}());
-
-exports.is_editing_stream_name = function (e) {
+exports.in_content_editable_widget = function (e) {
     return $(e.target).is(".editable-section");
 };
 
 // Returns true if we handled it, false if the browser should.
 exports.process_escape_key = function (e) {
-    let row;
-
-    if (exports.is_editing_stream_name(e)) {
+    if (exports.in_content_editable_widget(e)) {
         return false;
     }
 
@@ -207,32 +202,7 @@ exports.process_escape_key = function (e) {
         return true;
     }
 
-    if (message_edit.is_editing(current_msg_list.selected_id())) {
-        // Using this definition of "row" instead of "current_msg_list.selected_row()"
-        // because it returns a more complete object.
-        // Necessary for refocusing on message list in Firefox.
-        const message_edit_inputs = $(".message_edit_content, .message_edit_topic");
-        row = message_edit_inputs.filter(":focus").closest(".message_row");
-        row.find('.message_edit_content').blur();
-        message_edit.end(row);
-        return true;
-    }
-
     if (exports.processing_text()) {
-        if ($(".message_edit_content").filter(":focus").length > 0) {
-            row = $(".message_edit_content").filter(":focus").closest(".message_row");
-            row.find('.message_edit_content').blur();
-            message_edit.end(row);
-            return true;
-        }
-
-        if ($(".message_edit_topic").filter(":focus").length > 0) {
-            row = $(".message_edit_topic").filter(":focus").closest(".message_row");
-            row.find('.message_edit_topic').blur();
-            message_edit.end(row);
-            return true;
-        }
-
         if (activity.searching()) {
             activity.escape_search();
             return true;
@@ -261,9 +231,14 @@ exports.process_escape_key = function (e) {
             return true;
         }
 
-        if (page_params.search_pills_enabled && $('#searchbox').has(':focus')) {
-            $('#searchbox .pill').blur();
-            $('#searchbox #search_query').blur();
+        if ($('#searchbox').has(':focus')) {
+            $("input:focus,textarea:focus").blur();
+            if (page_params.search_pills_enabled) {
+                $('#searchbox .pill').blur();
+                $('#searchbox #search_query').blur();
+            } else {
+                tab_bar.exit_search();
+            }
             return true;
         }
 
@@ -316,7 +291,7 @@ exports.process_enter_key = function (e) {
         return true;
     }
 
-    if (exports.is_editing_stream_name(e)) {
+    if (exports.in_content_editable_widget(e)) {
         $(e.target).parent().find(".checkmark").click();
         return false;
     }
@@ -492,6 +467,10 @@ exports.process_hotkey = function (e, hotkey) {
         return false;
     }
 
+    if (hotkey.message_view_only && gear_menu.is_open()) {
+        return false;
+    }
+
     if (overlays.settings_open()) {
         return false;
     }
@@ -516,7 +495,7 @@ exports.process_hotkey = function (e, hotkey) {
         return subs.switch_rows(event_name);
     }
 
-    if (exports.is_editing_stream_name(e)) {
+    if (exports.in_content_editable_widget(e)) {
         // We handle the enter key in process_enter_key().
         // We ignore all other keys.
         return false;
@@ -536,7 +515,7 @@ exports.process_hotkey = function (e, hotkey) {
         }
     }
 
-    if (menu_dropdown_hotkeys.indexOf(event_name) !== -1) {
+    if (menu_dropdown_hotkeys.includes(event_name)) {
         if (popovers.actions_popped()) {
             popovers.actions_menu_handle_keyboard(event_name);
             return true;

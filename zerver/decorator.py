@@ -21,14 +21,14 @@ from zerver.lib.exceptions import UnexpectedWebhookEventType
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.lib.utils import statsd, is_remote_server, has_api_key_format
+from zerver.lib.utils import statsd, has_api_key_format
 from zerver.lib.exceptions import JsonableError, ErrorCode, \
     InvalidJSONError, InvalidAPIKeyError, InvalidAPIKeyFormatError, \
     OrganizationAdministratorRequired
 from zerver.lib.types import ViewFuncT
 from zerver.lib.validator import to_non_negative_int
 
-from zerver.lib.rate_limiter import rate_limit_request_by_entity, RateLimitedUser
+from zerver.lib.rate_limiter import RateLimitedUser
 from zerver.lib.request import REQ, has_request_variables
 
 from functools import wraps
@@ -49,7 +49,7 @@ if settings.ZILENCER_ENABLED:
 else:  # nocoverage # Hack here basically to make impossible code paths compile
     from mock import Mock
     get_remote_server_by_uuid = Mock()
-    RemoteZulipServer = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
+    RemoteZulipServer = Mock()  # type: ignore[misc] # https://github.com/JukkaL/mypy/issues/1188
 
 ReturnT = TypeVar('ReturnT')
 
@@ -60,32 +60,8 @@ webhook_unexpected_events_logger = logging.getLogger("zulip.zerver.lib.webhooks.
 log_to_file(webhook_unexpected_events_logger,
             settings.WEBHOOK_UNEXPECTED_EVENTS_LOG_PATH)
 
-class _RespondAsynchronously:
-    pass
-
-# Return RespondAsynchronously from an @asynchronous view if the
-# response will be provided later by calling handler.zulip_finish(),
-# or has already been provided this way. We use this for longpolling
-# mode.
-RespondAsynchronously = _RespondAsynchronously()
-
-AsyncWrapperT = Callable[..., Union[HttpResponse, _RespondAsynchronously]]
-def asynchronous(method: Callable[..., Union[HttpResponse, _RespondAsynchronously]]) -> AsyncWrapperT:
-    # TODO: this should be the correct annotation when mypy gets fixed: type:
-    #   (Callable[[HttpRequest, base.BaseHandler, Sequence[Any], Dict[str, Any]],
-    #     Union[HttpResponse, _RespondAsynchronously]]) ->
-    #   Callable[[HttpRequest, Sequence[Any], Dict[str, Any]], Union[HttpResponse, _RespondAsynchronously]]
-    # TODO: see https://github.com/python/mypy/issues/1655
-    @wraps(method)
-    def wrapper(request: HttpRequest, *args: Any,
-                **kwargs: Any) -> Union[HttpResponse, _RespondAsynchronously]:
-        return method(request, handler=request._tornado_handler, *args, **kwargs)
-    if getattr(method, 'csrf_exempt', False):  # nocoverage # Our one @asynchronous route requires CSRF
-        wrapper.csrf_exempt = True  # type: ignore # https://github.com/JukkaL/mypy/issues/1170
-    return wrapper
-
 def cachify(method: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
-    dct = {}  # type: Dict[Tuple[Any, ...], ReturnT]
+    dct: Dict[Tuple[Any, ...], ReturnT] = {}
 
     def cache_wrapper(*args: Any) -> ReturnT:
         tup = tuple(args)
@@ -126,7 +102,7 @@ def require_post(func: ViewFuncT) -> ViewFuncT:
                             extra={'status_code': 405, 'request': request})
             return HttpResponseNotAllowed(["POST"])
         return func(request, *args, **kwargs)
-    return wrapper  # type: ignore # https://github.com/python/mypy/issues/1927
+    return wrapper  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
 
 def require_realm_admin(func: ViewFuncT) -> ViewFuncT:
     @wraps(func)
@@ -134,7 +110,7 @@ def require_realm_admin(func: ViewFuncT) -> ViewFuncT:
         if not user_profile.is_realm_admin:
             raise OrganizationAdministratorRequired()
         return func(request, user_profile, *args, **kwargs)
-    return wrapper  # type: ignore # https://github.com/python/mypy/issues/1927
+    return wrapper  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
 
 def require_billing_access(func: ViewFuncT) -> ViewFuncT:
     @wraps(func)
@@ -142,40 +118,29 @@ def require_billing_access(func: ViewFuncT) -> ViewFuncT:
         if not user_profile.is_realm_admin and not user_profile.is_billing_admin:
             raise JsonableError(_("Must be a billing administrator or an organization administrator"))
         return func(request, user_profile, *args, **kwargs)
-    return wrapper  # type: ignore # https://github.com/python/mypy/issues/1927
+    return wrapper  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
 
 from zerver.lib.user_agent import parse_user_agent
 
-def get_client_name(request: HttpRequest, is_browser_view: bool) -> str:
+def get_client_name(request: HttpRequest) -> str:
     # If the API request specified a client in the request content,
     # that has priority.  Otherwise, extract the client from the
     # User-Agent.
-    if 'client' in request.GET:
+    if 'client' in request.GET:  # nocoverage
         return request.GET['client']
     if 'client' in request.POST:
         return request.POST['client']
     if "HTTP_USER_AGENT" in request.META:
-        user_agent = parse_user_agent(request.META["HTTP_USER_AGENT"])  # type: Optional[Dict[str, str]]
+        user_agent: Optional[Dict[str, str]] = parse_user_agent(request.META["HTTP_USER_AGENT"])
     else:
         user_agent = None
     if user_agent is not None:
-        # We could check for a browser's name being "Mozilla", but
-        # e.g. Opera and MobileSafari don't set that, and it seems
-        # more robust to just key off whether it was a browser view
-        if is_browser_view and not user_agent["name"].startswith("Zulip"):
-            # Avoid changing the client string for browsers, but let
-            # the Zulip desktop and mobile apps be themselves.
-            return "website"
-        else:
-            return user_agent["name"]
-    else:
-        # In the future, we will require setting USER_AGENT, but for
-        # now we just want to tag these requests so we can review them
-        # in logs and figure out the extent of the problem
-        if is_browser_view:
-            return "website"
-        else:
-            return "Unspecified"
+        return user_agent["name"]
+
+    # In the future, we will require setting USER_AGENT, but for
+    # now we just want to tag these requests so we can review them
+    # in logs and figure out the extent of the problem
+    return "Unspecified"
 
 def process_client(request: HttpRequest, user_profile: UserProfile,
                    *, is_browser_view: bool=False,
@@ -183,7 +148,15 @@ def process_client(request: HttpRequest, user_profile: UserProfile,
                    skip_update_user_activity: bool=False,
                    query: Optional[str]=None) -> None:
     if client_name is None:
-        client_name = get_client_name(request, is_browser_view)
+        client_name = get_client_name(request)
+
+    # We could check for a browser's name being "Mozilla", but
+    # e.g. Opera and MobileSafari don't set that, and it seems
+    # more robust to just key off whether it was a browser view
+    if is_browser_view and not client_name.startswith("Zulip"):
+        # Avoid changing the client string for browsers, but let
+        # the Zulip desktop apps be themselves.
+        client_name = "website"
 
     request.client = get_client(client_name)
     if not skip_update_user_activity:
@@ -194,7 +167,7 @@ class InvalidZulipServerError(JsonableError):
     data_fields = ['role']
 
     def __init__(self, role: str) -> None:
-        self.role = role  # type: str
+        self.role: str = role
 
     @staticmethod
     def msg_format() -> str:
@@ -213,7 +186,8 @@ def validate_api_key(request: HttpRequest, role: Optional[str],
     if role is not None:
         role = role.strip()
 
-    if settings.ZILENCER_ENABLED and role is not None and is_remote_server(role):
+    # If `role` doesn't look like an email, it might be a uuid.
+    if settings.ZILENCER_ENABLED and role is not None and '@' not in role:
         try:
             remote_server = get_remote_server_by_uuid(role)
         except RemoteZulipServer.DoesNotExist:
@@ -224,7 +198,6 @@ def validate_api_key(request: HttpRequest, role: Optional[str],
         if get_subdomain(request) != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
             raise JsonableError(_("Invalid subdomain for push notifications bouncer"))
         request.user = remote_server
-        request._email = "zulip-server:" + role
         remote_server.rate_limits = ""
         # Skip updating UserActivity, since remote_server isn't actually a UserProfile object.
         process_client(request, remote_server, skip_update_user_activity=True)
@@ -235,7 +208,6 @@ def validate_api_key(request: HttpRequest, role: Optional[str],
         raise JsonableError(_("This API is not available to incoming webhook bots."))
 
     request.user = user_profile
-    request._email = user_profile.delivery_email
     process_client(request, user_profile, client_name=client_name)
 
     return user_profile
@@ -351,7 +323,7 @@ def api_key_only_webhook_view(
                                             client_name=full_webhook_client_name(webhook_client_name))
 
             if settings.RATE_LIMITING:
-                rate_limit_user(request, user_profile, domain='all')
+                rate_limit_user(request, user_profile, domain='api_by_user')
             try:
                 return view_func(request, user_profile, *args, **kwargs)
             except Exception as err:
@@ -414,7 +386,7 @@ def user_passes_test(test_func: Callable[[HttpResponse], bool], login_url: Optio
                 path = request.get_full_path()
             return redirect_to_login(
                 path, resolved_login_url, redirect_field_name)
-        return _wrapped_view  # type: ignore # https://github.com/python/mypy/issues/1927
+        return _wrapped_view  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
     return decorator
 
 def logged_in_and_active(request: HttpRequest) -> bool:
@@ -436,7 +408,7 @@ def do_login(request: HttpRequest, user_profile: UserProfile) -> None:
     and also adds helpful data needed by our server logs.
     """
     django_login(request, user_profile)
-    request._email = user_profile.delivery_email
+    request._requestor_for_logs = user_profile.format_requestor_for_logs()
     process_client(request, user_profile, is_browser_view=True)
     if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
         # Login with two factor authentication as well.
@@ -447,16 +419,15 @@ def log_view_func(view_func: ViewFuncT) -> ViewFuncT:
     def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         request._query = view_func.__name__
         return view_func(request, *args, **kwargs)
-    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
 
 def add_logging_data(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        request._email = request.user.delivery_email
         process_client(request, request.user, is_browser_view=True,
                        query=view_func.__name__)
         return rate_limit()(view_func)(request, *args, **kwargs)
-    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
 
 def human_users_only(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
@@ -464,7 +435,7 @@ def human_users_only(view_func: ViewFuncT) -> ViewFuncT:
         if request.user.is_bot:
             return json_error(_("This endpoint does not accept bot requests."))
         return view_func(request, *args, **kwargs)
-    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
 
 # Based on Django 1.8's @login_required
 def zulip_login_required(
@@ -496,7 +467,7 @@ def require_server_admin(view_func: ViewFuncT) -> ViewFuncT:
             return HttpResponseRedirect(settings.HOME_NOT_LOGGED_IN)
 
         return add_logging_data(view_func)(request, *args, **kwargs)
-    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
 
 def require_server_admin_api(view_func: ViewFuncT) -> ViewFuncT:
     @zulip_login_required
@@ -506,7 +477,7 @@ def require_server_admin_api(view_func: ViewFuncT) -> ViewFuncT:
         if not user_profile.is_staff:
             raise JsonableError(_("Must be an server administrator"))
         return view_func(request, user_profile, *args, **kwargs)
-    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
 
 def require_non_guest_user(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
@@ -515,7 +486,7 @@ def require_non_guest_user(view_func: ViewFuncT) -> ViewFuncT:
         if user_profile.is_guest:
             raise JsonableError(_("Not allowed for guest users"))
         return view_func(request, user_profile, *args, **kwargs)
-    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
 
 def require_member_or_admin(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
@@ -526,7 +497,7 @@ def require_member_or_admin(view_func: ViewFuncT) -> ViewFuncT:
         if user_profile.is_bot:
             return json_error(_("This endpoint does not accept bot requests."))
         return view_func(request, user_profile, *args, **kwargs)
-    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
 
 def require_user_group_edit_permission(view_func: ViewFuncT) -> ViewFuncT:
     @require_member_or_admin
@@ -538,7 +509,7 @@ def require_user_group_edit_permission(view_func: ViewFuncT) -> ViewFuncT:
                 not user_profile.is_realm_admin:
             raise OrganizationAdministratorRequired()
         return view_func(request, user_profile, *args, **kwargs)
-    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
 
 # This API endpoint is used only for the mobile apps.  It is part of a
 # workaround for the fact that React Native doesn't support setting
@@ -647,7 +618,7 @@ def process_as_post(view_func: ViewFuncT) -> ViewFuncT:
 
         return view_func(request, *args, **kwargs)
 
-    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
 
 def authenticate_log_and_execute_json(request: HttpRequest,
                                       view_func: ViewFuncT,
@@ -661,7 +632,7 @@ def authenticate_log_and_execute_json(request: HttpRequest,
 
     if not request.user.is_authenticated:
         if not allow_unauthenticated:
-            return json_error(_("Not logged in"), status=401)
+            return json_unauthorized()
 
         process_client(request, request.user, is_browser_view=True,
                        skip_update_user_activity=True,
@@ -676,7 +647,6 @@ def authenticate_log_and_execute_json(request: HttpRequest,
 
     process_client(request, user_profile, is_browser_view=True,
                    query=view_func.__name__)
-    request._email = user_profile.delivery_email
     return limited_view_func(request, user_profile, *args, **kwargs)
 
 # Checks if the request is a POST request and that the user is logged
@@ -689,7 +659,7 @@ def authenticated_json_post_view(view_func: ViewFuncT) -> ViewFuncT:
     def _wrapped_view_func(request: HttpRequest,
                            *args: Any, **kwargs: Any) -> HttpResponse:
         return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
-    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
 
 def authenticated_json_view(view_func: ViewFuncT, skip_rate_limiting: bool=False,
                             allow_unauthenticated: bool=False) -> ViewFuncT:
@@ -699,7 +669,7 @@ def authenticated_json_view(view_func: ViewFuncT, skip_rate_limiting: bool=False
         kwargs["skip_rate_limiting"] = skip_rate_limiting
         kwargs["allow_unauthenticated"] = allow_unauthenticated
         return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
-    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
 
 def is_local_addr(addr: str) -> bool:
     return addr in ('127.0.0.1', '::1')
@@ -739,7 +709,7 @@ def internal_notify_view(is_tornado_view: bool) -> Callable[[ViewFuncT], ViewFun
                 raise RuntimeError('Tornado notify view called with no Tornado handler')
             if not is_tornado_view and is_tornado_request:
                 raise RuntimeError('Django notify view called with Tornado handler')
-            request._email = "internal"
+            request._requestor_for_logs = "internal"
             return view_func(request, *args, **kwargs)
         return _wrapped_func_arguments
     return _wrapped_view_func
@@ -774,10 +744,9 @@ def rate_limit_user(request: HttpRequest, user: UserProfile, domain: str) -> Non
     if the user has been rate limited, otherwise returns and modifies request to contain
     the rate limit information"""
 
-    entity = RateLimitedUser(user, domain=domain)
-    rate_limit_request_by_entity(request, entity)
+    RateLimitedUser(user, domain=domain).rate_limit_request(request)
 
-def rate_limit(domain: str='all') -> Callable[[ViewFuncT], ViewFuncT]:
+def rate_limit(domain: str='api_by_user') -> Callable[[ViewFuncT], ViewFuncT]:
     """Rate-limits a view. Takes an optional 'domain' param if you wish to
     rate limit different types of API calls independently.
 
@@ -818,7 +787,7 @@ def rate_limit(domain: str='all') -> Callable[[ViewFuncT], ViewFuncT]:
             rate_limit_user(request, user, domain)
 
             return func(request, *args, **kwargs)
-        return wrapped_func  # type: ignore # https://github.com/python/mypy/issues/1927
+        return wrapped_func  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
     return wrapper
 
 def return_success_on_head_request(view_func: ViewFuncT) -> ViewFuncT:
@@ -827,7 +796,7 @@ def return_success_on_head_request(view_func: ViewFuncT) -> ViewFuncT:
         if request.method == 'HEAD':
             return json_success()
         return view_func(request, *args, **kwargs)
-    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
 
 def zulip_otp_required(view: Any=None,
                        redirect_field_name: str='next',

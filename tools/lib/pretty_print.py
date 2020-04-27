@@ -9,8 +9,7 @@ from zulint.printer import GREEN, ENDC
 
 import subprocess
 
-def pretty_print_html(html, num_spaces=4):
-    # type: (str, int) -> str
+def pretty_print_html(html: str, num_spaces: int = 4) -> str:
     # We use 1-based indexing for both rows and columns.
     tokens = tokenize(html)
     lines = html.split('\n')
@@ -18,23 +17,24 @@ def pretty_print_html(html, num_spaces=4):
     # We will keep a stack of "start" tags so that we know
     # when HTML ranges end.  Note that some start tags won't
     # be blocks from an indentation standpoint.
-    stack = []  # type: List[Dict[str, Any]]
+    stack: List[Dict[str, Any]] = []
 
     # Seed our stack with a pseudo entry to make depth calculations
     # easier.
-    info = dict(
+    info: Dict[str, Any] = dict(
         block=False,
         depth=-1,
         line=-1,
         token_kind='html_start',
         tag='html',
         extra_indent=0,
-        ignore_lines=[])  # type: Dict[str, Any]
+        ignore_lines=[],
+    )
     stack.append(info)
 
     # Our main job is to figure out offsets that we use to nudge lines
     # over by.
-    offsets = {}  # type: Dict[int, int]
+    offsets: Dict[int, int] = {}
 
     # Loop through our start/end tokens, and calculate offsets.  As
     # we proceed, we will push/pop info dictionaries on/off a stack.
@@ -191,9 +191,8 @@ def pretty_print_html(html, num_spaces=4):
     return '\n'.join(formatted_lines)
 
 
-def validate_indent_html(fn, fix):
-    # type: (str, bool) -> int
-    with open(fn, 'r') as f:
+def validate_indent_html(fn: str, fix: bool) -> int:
+    with open(fn) as f:
         html = f.read()
     phtml = pretty_print_html(html)
     if not html.split('\n') == phtml.split('\n'):

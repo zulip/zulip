@@ -57,13 +57,15 @@ how modern browsers deal with copy/paste.  Just test
 your changes carefully.
 */
 function construct_copy_div(div, start_id, end_id) {
-    const start_row = current_msg_list.get_row(start_id);
+    const copy_rows = rows.visible_range(start_id, end_id);
+
+    const start_row = copy_rows[0];
     const start_recipient_row = rows.get_message_recipient_row(start_row);
     const start_recipient_row_id = rows.id_for_recipient_row(start_recipient_row);
     let should_include_start_recipient_header = false;
-
     let last_recipient_row_id = start_recipient_row_id;
-    for (let row = start_row; rows.id(row) <= end_id; row = rows.next_visible(row)) {
+
+    for (const row of copy_rows) {
         const recipient_row_id = rows.id_for_recipient_row(rows.get_message_recipient_row(row));
         // if we found a message from another recipient,
         // it means that we have messages from several recipients,
@@ -109,9 +111,11 @@ function remove_div(div, ranges, selection) {
     window.setTimeout(function () {
         selection = window.getSelection();
         selection.removeAllRanges();
-        _.each(ranges, function (range) {
+
+        for (const range of ranges) {
             selection.addRange(range);
-        });
+        }
+
         $('#copytempdiv').remove();
     }, 0);
 }
@@ -314,8 +318,7 @@ exports.paste_handler = function (event) {
             const mdImageRegex = /^!\[.*\]\(.*\)$/;
             if (text.match(mdImageRegex)) {
                 // This block catches cases where we are pasting an
-                // image into Zulip, which should be handled by the
-                // jQuery filedrop library, not this code path.
+                // image into Zulip, which is handled by upload.js.
                 return;
             }
             event.preventDefault();

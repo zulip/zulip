@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.models import Recipient
@@ -7,15 +6,15 @@ from zerver.webhooks.zabbix.view import MISCONFIGURED_PAYLOAD_ERROR_MESSAGE
 
 class ZabbixHookTests(WebhookTestCase):
     STREAM_NAME = 'zabbix'
-    URL_TEMPLATE = u"/api/v1/external/zabbix?api_key={api_key}&stream={stream}"
+    URL_TEMPLATE = "/api/v1/external/zabbix?api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = 'zabbix'
 
     def test_zabbix_alert_message(self) -> None:
         """
         Tests if zabbix alert is handled correctly
         """
-        expected_topic = u"www.example.com"
-        expected_message = u"PROBLEM (Average) alert on [www.example.com](https://zabbix.example.com/tr_events.php?triggerid=14032&eventid=10528):\n* Zabbix agent on www.example.com is unreachable for 5 minutes\n* Agent ping is Up (1)"
+        expected_topic = "www.example.com"
+        expected_message = "PROBLEM (Average) alert on [www.example.com](https://zabbix.example.com/tr_events.php?triggerid=14032&eventid=10528):\n* Zabbix agent on www.example.com is unreachable for 5 minutes\n* Agent ping is Up (1)"
         self.send_and_test_stream_message('zabbix_alert', expected_topic, expected_message)
 
     def test_zabbix_invalid_payload_with_missing_data(self) -> None:

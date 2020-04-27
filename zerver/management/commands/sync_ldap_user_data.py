@@ -18,7 +18,7 @@ log_to_file(logger, settings.LDAP_SYNC_LOG_PATH)
 def sync_ldap_user_data(user_profiles: List[UserProfile], deactivation_protection: bool=True) -> None:
     logger.info("Starting update.")
     with transaction.atomic():
-        realms = set([u.realm.string_id for u in user_profiles])
+        realms = {u.realm.string_id for u in user_profiles}
 
         for u in user_profiles:
             # This will save the user if relevant, and will do nothing if the user

@@ -16,6 +16,7 @@ class StreamTopicTarget:
     places where we are are still using `topic_name` as
     a key into tables.
     '''
+
     def __init__(self, stream_id: int, topic_name: str) -> None:
         self.stream_id = stream_id
         self.topic_name = topic_name

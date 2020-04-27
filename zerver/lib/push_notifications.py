@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import base64
 import binascii
 import logging
@@ -39,7 +37,7 @@ if settings.ZILENCER_ENABLED:
     from zilencer.models import RemotePushDeviceToken
 else:  # nocoverage  -- Not convenient to add test for this.
     from mock import Mock
-    RemotePushDeviceToken = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
+    RemotePushDeviceToken = Mock()  # type: ignore[misc] # https://github.com/JukkaL/mypy/issues/1188
 
 DeviceToken = Union[PushDeviceToken, RemotePushDeviceToken]
 
@@ -54,7 +52,7 @@ def hex_to_b64(data: str) -> str:
 # Sending to APNs, for iOS
 #
 
-_apns_client = None  # type: Optional[APNsClient]
+_apns_client: Optional["APNsClient"] = None
 _apns_client_initialized = False
 
 def get_apns_client() -> 'Optional[APNsClient]':
@@ -276,7 +274,7 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
                                       priority=priority,
                                       data=data,
                                       retries=10)
-    except IOError as e:
+    except OSError as e:
         logger.warning(str(e))
         return
 
@@ -291,7 +289,7 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
 
     # res.canonical will contain results when there are duplicate registrations for the same
     # device. The "canonical" registration is the latest registration made by the device.
-    # Ref: http://developer.android.com/google/gcm/adv.html#canonical
+    # Ref: https://developer.android.com/google/gcm/adv.html#canonical
     if 'canonical' in res:
         for reg_id, new_reg_id in res['canonical'].items():
             if reg_id == new_reg_id:
@@ -444,7 +442,12 @@ def push_notifications_enabled() -> bool:
         # works -- e.g., that we have ever successfully sent to the bouncer --
         # but this is a good start.
         return True
-    if apns_enabled() and gcm_enabled():  # nocoverage
+    if settings.DEVELOPMENT and (apns_enabled() or gcm_enabled()):  # nocoverage
+        # Since much of the notifications logic is platform-specific, the mobile
+        # developers often work on just one platform at a time, so we should
+        # only require one to be configured.
+        return True
+    elif apns_enabled() and gcm_enabled():  # nocoverage
         # We have the needed configuration to send through APNs and GCM directly
         # (i.e., we are the bouncer, presumably.)  Again, assume it actually works.
         return True
@@ -544,7 +547,7 @@ def truncate_content(content: str) -> Tuple[str, bool]:
 
 def get_base_payload(user_profile: UserProfile) -> Dict[str, Any]:
     '''Common fields for all notification payloads.'''
-    data = {}  # type: Dict[str, Any]
+    data: Dict[str, Any] = {}
 
     # These will let the app support logging into multiple realms and servers.
     data['server'] = settings.EXTERNAL_HOST

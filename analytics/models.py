@@ -2,18 +2,19 @@ import datetime
 from typing import Optional
 
 from django.db import models
+from django.db.models import Q, UniqueConstraint
 
 from zerver.lib.timestamp import floor_to_day
 from zerver.models import Realm, Stream, UserProfile
 
 class FillState(models.Model):
-    property = models.CharField(max_length=40, unique=True)  # type: str
-    end_time = models.DateTimeField()  # type: datetime.datetime
+    property: str = models.CharField(max_length=40, unique=True)
+    end_time: datetime.datetime = models.DateTimeField()
 
     # Valid states are {DONE, STARTED}
     DONE = 1
     STARTED = 2
-    state = models.PositiveSmallIntegerField()  # type: int
+    state: int = models.PositiveSmallIntegerField()
 
     def __str__(self) -> str:
         return "<FillState: %s %s %s>" % (self.property, self.end_time, self.state)
@@ -36,10 +37,10 @@ class BaseCount(models.Model):
     # Note: When inheriting from BaseCount, you may want to rearrange
     # the order of the columns in the migration to make sure they
     # match how you'd like the table to be arranged.
-    property = models.CharField(max_length=32)  # type: str
-    subgroup = models.CharField(max_length=16, null=True)  # type: Optional[str]
-    end_time = models.DateTimeField()  # type: datetime.datetime
-    value = models.BigIntegerField()  # type: int
+    property: str = models.CharField(max_length=32)
+    subgroup: Optional[str] = models.CharField(max_length=16, null=True)
+    end_time: datetime.datetime = models.DateTimeField()
+    value: int = models.BigIntegerField()
 
     class Meta:
         abstract = True
@@ -47,7 +48,17 @@ class BaseCount(models.Model):
 class InstallationCount(BaseCount):
 
     class Meta:
-        unique_together = ("property", "subgroup", "end_time")
+        # Handles invalid duplicate InstallationCount data
+        constraints = [
+            UniqueConstraint(
+                fields=["property", "subgroup", "end_time"],
+                condition=Q(subgroup__isnull=False),
+                name='unique_installation_count'),
+            UniqueConstraint(
+                fields=["property", "end_time"],
+                condition=Q(subgroup__isnull=True),
+                name='unique_installation_count_null_subgroup')
+        ]
 
     def __str__(self) -> str:
         return "<InstallationCount: %s %s %s>" % (self.property, self.subgroup, self.value)
@@ -56,7 +67,17 @@ class RealmCount(BaseCount):
     realm = models.ForeignKey(Realm, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ("realm", "property", "subgroup", "end_time")
+        # Handles invalid duplicate RealmCount data
+        constraints = [
+            UniqueConstraint(
+                fields=["realm", "property", "subgroup", "end_time"],
+                condition=Q(subgroup__isnull=False),
+                name='unique_realm_count'),
+            UniqueConstraint(
+                fields=["realm", "property", "end_time"],
+                condition=Q(subgroup__isnull=True),
+                name='unique_realm_count_null_subgroup')
+        ]
         index_together = ["property", "end_time"]
 
     def __str__(self) -> str:
@@ -67,7 +88,17 @@ class UserCount(BaseCount):
     realm = models.ForeignKey(Realm, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ("user", "property", "subgroup", "end_time")
+        # Handles invalid duplicate UserCount data
+        constraints = [
+            UniqueConstraint(
+                fields=["user", "property", "subgroup", "end_time"],
+                condition=Q(subgroup__isnull=False),
+                name='unique_user_count'),
+            UniqueConstraint(
+                fields=["user", "property", "end_time"],
+                condition=Q(subgroup__isnull=True),
+                name='unique_user_count_null_subgroup')
+        ]
         # This index dramatically improves the performance of
         # aggregating from users to realms
         index_together = ["property", "realm", "end_time"]
@@ -80,7 +111,17 @@ class StreamCount(BaseCount):
     realm = models.ForeignKey(Realm, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ("stream", "property", "subgroup", "end_time")
+        # Handles invalid duplicate StreamCount data
+        constraints = [
+            UniqueConstraint(
+                fields=["stream", "property", "subgroup", "end_time"],
+                condition=Q(subgroup__isnull=False),
+                name='unique_stream_count'),
+            UniqueConstraint(
+                fields=["stream", "property", "end_time"],
+                condition=Q(subgroup__isnull=True),
+                name='unique_stream_count_null_subgroup')
+        ]
         # This index dramatically improves the performance of
         # aggregating from streams to realms
         index_together = ["property", "realm", "end_time"]

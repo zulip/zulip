@@ -1,8 +1,8 @@
 from argparse import ArgumentParser
 from typing import Any
 
-from zerver.lib.actions import create_stream_if_needed
 from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.streams import create_stream_if_needed
 
 
 class Command(ZulipBaseCommand):

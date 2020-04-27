@@ -198,14 +198,14 @@ def amount_string(amount: int, currency: str) -> str:
     if currency in zero_decimal_currencies:
         decimal_amount = str(amount)  # nocoverage
     else:
-        decimal_amount = '{0:.02f}'.format(float(amount) * 0.01)
+        decimal_amount = '{:.02f}'.format(float(amount) * 0.01)
 
     if currency == 'usd':  # nocoverage
         return '$' + decimal_amount
     return decimal_amount + ' {}'.format(currency.upper())
 
 def linkified_id(object_id: str, lower: bool=False) -> str:
-    names_and_urls = {
+    names_and_urls: Dict[str, Tuple[str, Optional[str]]] = {
         # Core resources
         'ch': ('Charge', 'charges'),
         'cus': ('Customer', 'customers'),
@@ -241,7 +241,7 @@ def linkified_id(object_id: str, lower: bool=False) -> str:
         'py': ('Payment', 'payments'),
 
         # Connect, Fraud, Orders, etc not implemented
-    }  # type: Dict[str, Tuple[str, Optional[str]]]
+    }
     name, url_prefix = names_and_urls[object_id.split('_')[0]]
     if lower:  # nocoverage
         name = name.lower()

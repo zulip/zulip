@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import glob
 import os
 import sys
 
@@ -17,9 +18,8 @@ VENV_CACHE_DIR = '/srv/zulip-venv-cache'
 if ENV == "travis":
     VENV_CACHE_DIR = os.path.join(os.environ["HOME"], "zulip-venv-cache")
 
-def get_caches_in_use(threshold_days):
-    # type: (int) -> Set[str]
-    setups_to_check = set([ZULIP_PATH, ])
+def get_caches_in_use(threshold_days: int) -> Set[str]:
+    setups_to_check = {ZULIP_PATH}
     caches_in_use = set()
 
     def add_current_venv_cache(venv_name: str) -> None:
@@ -40,8 +40,8 @@ def get_caches_in_use(threshold_days):
         # list its requirements subdirectory.
         if not os.path.exists(reqs_dir):
             continue
-        for filename in os.listdir(reqs_dir):
-            requirements_file = os.path.join(reqs_dir, filename)
+        requirements_files = glob.glob(os.path.join(reqs_dir, "*.txt"))
+        for requirements_file in requirements_files:
             deps = expand_reqs(requirements_file)
             hash_val = hash_deps(deps)
             caches_in_use.add(os.path.join(VENV_CACHE_DIR, hash_val))

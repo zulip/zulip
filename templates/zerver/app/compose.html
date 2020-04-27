@@ -100,9 +100,7 @@
                                     {% if max_file_upload_size > 0 %}
                                     <a class="message-control-button fa fa-paperclip notdisplayed" aria-hidden="true" id="attach_files" href="#" title="{{ _('Attach files') }}"></a>
                                     {% endif %}
-                                    {% if jitsi_server_url %}
                                     <a class="message-control-button fa fa-video-camera video_link" aria-hidden="true" href="#" title="{{ _('Add video call') }}"></a>
-                                    {% endif %}
                                     <a id="undo_markdown_preview" class="message-control-button fa fa-edit" aria-hidden="true" style="display:none;" title="{{ _('Write') }}"></a>
                                     <a id="markdown_preview" class="message-control-button fa fa-eye" aria-hidden="true" title="{{ _('Preview') }}"></a>
                                     <a class="drafts-link" href="#drafts" title="{{ _('Drafts') }} (d)">{{ _('Drafts') }}</a>

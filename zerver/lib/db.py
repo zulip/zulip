@@ -38,7 +38,7 @@ class TimeTrackingConnection(connection):
     """A psycopg2 connection class that uses TimeTrackingCursors."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        self.queries = []  # type: List[Dict[str, str]]
+        self.queries: List[Dict[str, str]] = []
         super().__init__(*args, **kwargs)
 
     def cursor(self, *args: Any, **kwargs: Any) -> TimeTrackingCursor:

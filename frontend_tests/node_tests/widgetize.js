@@ -13,10 +13,8 @@ $(document).on = noop;
 
 zrequire('widgetize');
 
-set_global('blueslip', global.make_zblueslip());
 set_global('narrow_state', {});
 set_global('current_msg_list', {});
-
 
 run_test('activate', () => {
     // Both widgetize.activate and widgetize.handle_event are tested
@@ -54,7 +52,7 @@ run_test('activate', () => {
     ];
 
     const opts = {
-        events: _.clone(events),
+        events: events.slice(),
         extra_data: '',
         message: {
             id: 2001,
@@ -96,14 +94,14 @@ run_test('activate', () => {
     is_widget_elem_inserted = false;
     is_widget_activated = false;
     is_event_handled = false;
-    assert.equal(widgetize.widget_contents[opts.message.id], undefined);
+    assert(!widgetize.widget_contents.has(opts.message.id));
 
     widgetize.activate(opts);
 
     assert(is_widget_elem_inserted);
     assert(is_widget_activated);
     assert(is_event_handled);
-    assert.equal(widgetize.widget_contents[opts.message.id], widget_elem);
+    assert.equal(widgetize.widget_contents.get(opts.message.id), widget_elem);
 
     is_widget_elem_inserted = false;
     is_widget_activated = false;
@@ -126,7 +124,7 @@ run_test('activate', () => {
     assert(!is_widget_activated);
     assert(!is_event_handled);
 
-    blueslip.set_test_data('warn', 'unknown widget_type');
+    blueslip.expect('warn', 'unknown widget_type');
     narrow_state.active = return_false;
     is_widget_elem_inserted = false;
     is_widget_activated = false;
@@ -137,9 +135,7 @@ run_test('activate', () => {
     assert(!is_widget_elem_inserted);
     assert(!is_widget_activated);
     assert(!is_event_handled);
-    assert.equal(blueslip.get_test_logs('warn').length, 1);
     assert.equal(blueslip.get_test_logs('warn')[0].more_info, 'invalid_widget');
-    blueslip.clear_test_data();
 
     /* Testing widgetize.handle_events */
     const post_activate_event = {

@@ -16,7 +16,7 @@ from typing import Optional
 logger = logging.getLogger('zulip.debug')
 
 # Interactive debugging code from
-# http://stackoverflow.com/questions/132058/showing-the-stack-trace-from-a-running-python-application
+# https://stackoverflow.com/questions/132058/showing-the-stack-trace-from-a-running-python-application
 # (that link also points to code for an interactive remote debugger
 # setup, which we might want if we move Tornado to run in a daemon
 # rather than via screen).
@@ -68,7 +68,7 @@ def tracemalloc_listen_sock(sock: socket.socket) -> None:
         sock.recv(1)
         tracemalloc_dump()
 
-listener_pid = None  # type: Optional[int]
+listener_pid: Optional[int] = None
 
 def tracemalloc_listen() -> None:
     global listener_pid

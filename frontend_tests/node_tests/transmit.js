@@ -3,17 +3,14 @@ const noop = function () {};
 set_global('$', global.make_zjquery());
 set_global('page_params', {});
 set_global('channel', {});
-set_global('navigator', {});
 set_global('reload', {});
 set_global('reload_state', {});
 set_global('sent_messages', {
     start_tracking_message: noop,
     report_server_ack: noop,
 });
-set_global('blueslip', global.make_zblueslip());
 
 zrequire('people');
-zrequire('util');
 zrequire('transmit');
 
 run_test('transmit_message_ajax', () => {
@@ -114,7 +111,7 @@ run_test('reply_message_stream', () => {
 
     page_params.user_id = 44;
     page_params.queue_id = 66;
-    sent_messages.get_new_local_id = () => 99;
+    sent_messages.get_new_local_id = () => "99";
 
     transmit.reply_message({
         message: stream_message,
@@ -124,7 +121,7 @@ run_test('reply_message_stream', () => {
     assert.deepEqual(send_message_args, {
         sender_id: 44,
         queue_id: 66,
-        local_id: 99,
+        local_id: '99',
         type: 'stream',
         to: 'social',
         content: '@**Alice** hello',
@@ -159,7 +156,7 @@ run_test('reply_message_private', () => {
 
     page_params.user_id = 155;
     page_params.queue_id = 177;
-    sent_messages.get_new_local_id = () => 199;
+    sent_messages.get_new_local_id = () => "199";
 
     transmit.reply_message({
         message: pm_message,
@@ -169,7 +166,7 @@ run_test('reply_message_private', () => {
     assert.deepEqual(send_message_args, {
         sender_id: 155,
         queue_id: 177,
-        local_id: 199,
+        local_id: '199',
         type: 'private',
         to: '["fred@example.com"]',
         content: 'hello',
@@ -181,11 +178,10 @@ run_test('reply_message_errors', () => {
         type: 'bogus',
     };
 
-    blueslip.set_test_data('error', 'unknown message type: bogus');
+    blueslip.expect('error', 'unknown message type: bogus');
 
     transmit.reply_message({
         message: bogus_message,
     });
 
-    blueslip.clear_test_data();
 });

@@ -1,10 +1,9 @@
+const util = zrequire('util');
 zrequire('pm_conversations');
-zrequire('util');
 zrequire('people');
 zrequire('message_store');
 
 const noop = function () {};
-const people = global.people;
 
 set_global('$', global.make_zjquery());
 set_global('document', 'document-stub');
@@ -13,7 +12,7 @@ set_global('alert_words', {
     process_message: noop,
 });
 
-set_global('topic_data', {
+set_global('stream_topic_history', {
     add_message: noop,
 });
 
@@ -25,8 +24,6 @@ set_global('page_params', {
     realm_allow_message_editing: true,
     is_admin: true,
 });
-
-set_global('blueslip', global.make_zblueslip());
 
 const me = {
     email: 'me@example.com',
@@ -58,23 +55,21 @@ const denise  = {
     full_name: 'Denise ',
 };
 
-people.add_in_realm(me);
-people.add_in_realm(alice);
-people.add_in_realm(bob);
-people.add_in_realm(cindy);
-people.add_in_realm(denise);
+people.add(me);
+people.add(alice);
+people.add(bob);
+people.add(cindy);
+people.add(denise);
 
-global.people.initialize_current_user(me.user_id);
+people.initialize_current_user(me.user_id);
 
 function convert_recipients(people) {
     // Display_recipient uses `id` for user_ids.
-    return _.map(people, (p) => {
-        return {
-            email: p.email,
-            id: p.user_id,
-            full_name: p.full_name,
-        };
-    });
+    return people.map(p => ({
+        email: p.email,
+        id: p.user_id,
+        full_name: p.full_name,
+    }));
 }
 
 run_test('add_message_metadata', () => {
@@ -101,7 +96,11 @@ run_test('add_message_metadata', () => {
     assert.equal(message.alerted, true);
     assert.equal(message.is_me_message, false);
 
-    const retrieved_message = message_store.get(2067);
+    let retrieved_message = message_store.get(2067);
+    assert.equal(retrieved_message, message);
+
+    blueslip.expect('error', 'message_store got non-number: 2067');
+    retrieved_message = message_store.get('2067');
     assert.equal(retrieved_message, message);
 
     // access cached previous message, and test match subject/content
@@ -186,20 +185,16 @@ run_test('errors', () => {
         display_recipient: [{id: 92714}],
     };
 
-    blueslip.set_test_data('error', 'Unknown user_id in get_person_from_user_id: 92714');
-    blueslip.set_test_data('error', 'Unknown user id 92714'); // From person.js
+    blueslip.expect('error', 'Unknown user_id in get_by_user_id: 92714', 2);
+    blueslip.expect('error', 'Unknown user id 92714', 2); // From person.js
 
     // Expect each to throw two blueslip errors
     // One from message_store.js, one from person.js
     const emails = message_store.get_pm_emails(message);
     assert.equal(emails, '?');
-    assert.equal(blueslip.get_test_logs('error').length, 2);
 
     const names = message_store.get_pm_full_names(message);
     assert.equal(names, '?');
-    assert.equal(blueslip.get_test_logs('error').length, 4);
-
-    blueslip.clear_test_data();
 
     message = {
         type: 'stream',
@@ -301,4 +296,9 @@ run_test('message_id_change', () => {
         assert.equal(msg_id.new, 402);
     });
 
+});
+
+run_test('errors', () => {
+    blueslip.expect('error', 'message_store.get got bad value: undefined');
+    message_store.get(undefined);
 });

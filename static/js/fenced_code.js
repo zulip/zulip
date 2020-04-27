@@ -20,31 +20,25 @@ let stash_func = function (text) {
     return text;
 };
 
-let escape_func = function (text) {
-    return text;
-};
-
-function wrap_code(code) {
+exports.wrap_code = function (code) {
     // Trim trailing \n until there's just one left
     // This mirrors how pygments handles code input
-    code += '\n';
-    while (code.length > 2 && code.substr(code.length - 2) === '\n\n') {
-        code = code.substring(0, code.length - 1);
-    }
-    return '<div class="codehilite"><pre><span></span>' + escape_func(code) + '</pre></div>\n';
-}
+    return '<div class="codehilite"><pre><span></span><code>' +
+        _.escape(code.replace(/^\n+|\n+$/g, '')) +
+        '\n</code></pre></div>\n';
+};
 
 function wrap_quote(text) {
     const paragraphs = text.split('\n\n');
     const quoted_paragraphs = [];
+
     // Prefix each quoted paragraph with > at the
     // beginning of each line
-    _.each(paragraphs, function (paragraph) {
+    for (const paragraph of paragraphs) {
         const lines = paragraph.split('\n');
-        quoted_paragraphs.push(_.map(
-            _.reject(lines, function (line) { return line === ''; }),
-            function (line) { return '> ' + line; }).join('\n'));
-    });
+        quoted_paragraphs.push(lines.filter(line => line !== '').map(line => '> ' + line).join('\n'));
+    }
+
     return quoted_paragraphs.join('\n\n');
 }
 
@@ -54,16 +48,12 @@ function wrap_tex(tex) {
             displayMode: true,
         });
     } catch (ex) {
-        return '<span class="tex-error">' + escape_func(tex) + '</span>';
+        return '<span class="tex-error">' + _.escape(tex) + '</span>';
     }
 }
 
 exports.set_stash_func = function (stash_handler) {
     stash_func = stash_handler;
-};
-
-exports.set_escape_func = function (escape) {
-    escape_func = escape;
 };
 
 exports.process_fenced_code = function (content) {
@@ -123,12 +113,12 @@ exports.process_fenced_code = function (content) {
                     if (line === fence) {
                         this.done();
                     } else {
-                        lines.push(util.rtrim(line));
+                        lines.push(line.trimRight());
                     }
                 },
 
                 done: function () {
-                    const text = wrap_code(lines.join('\n'));
+                    const text = exports.wrap_code(lines.join('\n'));
                     // insert safe HTML that is passed through the parsing
                     const placeholder = stash_func(text, true);
                     output_lines.push('');
@@ -166,10 +156,10 @@ exports.process_fenced_code = function (content) {
     const current_handler = default_hander();
     handler_stack.push(current_handler);
 
-    _.each(input, function (line) {
+    for (const line of input) {
         const handler = handler_stack[handler_stack.length - 1];
         handler.handle_line(line);
-    });
+    }
 
     // Clean up all trailing blocks by letting them
     // insert closing fences
@@ -183,6 +173,18 @@ exports.process_fenced_code = function (content) {
     }
 
     return output.join('\n');
+};
+
+const fence_length_re = /^ {0,3}(`{3,})/gm;
+exports.get_unused_fence = (content) => {
+    // we only return ``` fences, not ~~~.
+    let length = 3;
+    let match;
+    fence_length_re.lastIndex = 0;
+    while ((match = fence_length_re.exec(content)) !== null) {
+        length = Math.max(length, match[1].length + 1);
+    }
+    return '`'.repeat(length);
 };
 
 window.fenced_code = exports;

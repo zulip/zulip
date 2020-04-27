@@ -32,7 +32,7 @@ class TransferUploadsToS3Test(ZulipTestCase):
     def test_transfer_avatars_to_s3(self) -> None:
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
 
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         with get_test_image_file('img.png') as image_file:
             self.client_post("/json/users/me/avatar", {'file': image_file})
 
@@ -56,8 +56,8 @@ class TransferUploadsToS3Test(ZulipTestCase):
         hamlet = self.example_user('hamlet')
         othello = self.example_user('othello')
 
-        upload_message_file(u'dummy1.txt', len(b'zulip1!'), u'text/plain', b'zulip1!', hamlet)
-        upload_message_file(u'dummy2.txt', len(b'zulip2!'), u'text/plain', b'zulip2!', othello)
+        upload_message_file('dummy1.txt', len(b'zulip1!'), 'text/plain', b'zulip1!', hamlet)
+        upload_message_file('dummy2.txt', len(b'zulip2!'), 'text/plain', b'zulip2!', othello)
 
         transfer_message_files_to_s3(1)
 

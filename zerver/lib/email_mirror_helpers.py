@@ -86,7 +86,7 @@ def decode_email_address(email: str) -> Tuple[str, Dict[str, bool]]:
     msg_string = msg_string.replace('.', '+')
 
     parts = msg_string.split('+')
-    options = {}  # type: Dict[str, bool]
+    options: Dict[str, bool] = {}
     for part in parts:
         if part in optional_address_tokens:
             optional_address_tokens[part](options)

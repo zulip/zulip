@@ -70,12 +70,12 @@ def update_user_group_backend(request: HttpRequest, user_profile: UserProfile,
     if not add and not delete:
         return json_error(_('Nothing to do. Specify at least one of "add" or "delete".'))
 
-    method_kwarg_pairs = [
+    method_kwarg_pairs: List[FuncKwargPair] = [
         (add_members_to_group_backend,
          dict(user_group_id=user_group_id, members=add)),
         (remove_members_from_group_backend,
          dict(user_group_id=user_group_id, members=delete))
-    ]  # type: List[FuncKwargPair]
+    ]
     return compose_views(request, user_profile, method_kwarg_pairs)
 
 def add_members_to_group_backend(request: HttpRequest, user_profile: UserProfile,

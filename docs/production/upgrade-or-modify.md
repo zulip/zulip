@@ -69,13 +69,22 @@ fork](#making-changes).  The process is simple:
 ```
 # Upgrade to an official release
 /home/zulip/deployments/current/scripts/upgrade-zulip-from-git 1.8.1
-# Upgrade to a branch or other Git ref
+# Upgrade to a branch (or other Git ref)
+/home/zulip/deployments/current/scripts/upgrade-zulip-from-git 2.1.x
 /home/zulip/deployments/current/scripts/upgrade-zulip-from-git master
 ```
 
 Zulip will automatically fetch the relevant Git commit and upgrade to
-that version of Zulip.  Note that downgrading to an older commit
-is not generally supported ([details](#upgrading-to-master)).
+that version of Zulip.
+
+Branches with names like `2.1.x` are stable release branches,
+containing the changes planned for the next minor release
+(E.g. 2.1.5); we support these stable release branches as though they
+were a published release.
+
+The `master` branch contains changes planned for the next major
+release (E.g. 2.2.0); see our documentation on [running
+master](#upgrading-to-master) before upgrading to it.
 
 By default, this uses the main upstream Zulip server repository, but
 you can configure any other Git repository by adding a section like
@@ -177,7 +186,7 @@ custom configuration.
 ## Upgrading the operating system
 
 When you upgrade the operating system on which Zulip is installed
-(E.g. Ubuntu 16.06 Xenial to Ubuntu 18.04 Bionic), you need to take
+(E.g. Ubuntu 16.04 Xenial to Ubuntu 18.04 Bionic), you need to take
 some additional steps to update your Zulip installation, documented
 below.
 
@@ -187,18 +196,21 @@ instructions for other supported platforms.
 
 ### Upgrading from Ubuntu 16.04 Xenial to 18.04 Bionic
 
-1. First, as the Zulip user, stop the Zulip server and run the following
-to back up the system:
+1. Upgrade your server to the latest Zulip `2.1.x` release, since
+   newer releases don't support Ubuntu 16.04 Xenial.
+
+2. As the Zulip user, stop the Zulip server and run the following
+   to back up the system:
 
     ```
     supervisorctl stop all
     /home/zulip/deployments/current/manage.py backup --output=/home/zulip/release-upgrade.backup.tar.gz
     ```
 
-2. Switch to the root user and upgrade the operating system using the
-OS's standard tooling.  E.g. for Ubuntu, this means running
-`do-release-upgrade` and following the prompts until it completes
-successfully:
+3. Switch to the root user and upgrade the operating system using the
+   OS's standard tooling.  E.g. for Ubuntu, this means running
+   `do-release-upgrade` and following the prompts until it completes
+   successfully:
 
     ```
     sudo -i # Or otherwise get a root shell
@@ -211,8 +223,8 @@ successfully:
     currently installed version.  But it's not important; the next
     step will re-install Zulip's configuration in any case.
 
-3. As root, upgrade the database installation and OS configuration to
-match the new OS version:
+4. As root, upgrade the database installation and OS configuration to
+   match the new OS version:
 
     ```
     touch /usr/share/postgresql/10/pgroonga_setup.sql.applied
@@ -226,10 +238,11 @@ match the new OS version:
     systemctl restart memcached
     ```
 
-4. At this point, you are now running the version of postgres that
-comes with the new Ubuntu version.  Finally, we need to reinstall the
-current version of Zulip, which among other things will recompile
-Zulip's Python module dependencies for your new version of Python:
+5. At this point, you are now running the version of postgres that
+   comes with the new Ubuntu version.  Finally, we need to reinstall
+   the current version of Zulip, which among other things will
+   recompile Zulip's Python module dependencies for your new version
+   of Python:
 
     ```
     rm -rf /srv/zulip-venv-cache/*
@@ -244,14 +257,14 @@ working correctly.
 
 ### Upgrading from Ubuntu 14.04 Trusty to 16.04 Xenial
 
-First, make sure you upgrade your server to the latest Zulip `2.0.x`,
-since newer releases don't support Ubuntu 14.04 Trusty.
-
-1. Same as for Xenial to Bionic.
+1. Upgrade your server to the latest Zulip `2.0.x` release, since newer
+   releases don't support Ubuntu 14.04 Trusty.
 
 2. Same as for Xenial to Bionic.
 
-3. As root, upgrade the database installation and OS configuration to
+3. Same as for Xenial to Bionic.
+
+4. As root, upgrade the database installation and OS configuration to
 match the new OS version:
 
     ```
@@ -266,7 +279,41 @@ match the new OS version:
     service memcached restart
     ```
 
-4. Same as for Xenial to Bionic.
+5. Same as for Xenial to Bionic.
+
+### Upgrading from Debian Stretch to Debian Buster
+
+1. Upgrade your server to the latest Zulip `2.1.x` release, since newer
+   releases don't support Debian Stretch.
+
+2. Same as for Xenial to Bionic, above.
+
+3. Follow [Debian's instructions to upgrade the OS][debian-upgrade-os].
+
+   [debian-upgrade-os]: https://www.debian.org/releases/buster/amd64/release-notes/ch-upgrading.html
+
+   When prompted for you how to upgrade configuration
+   files for services that Zulip manages like `redis`, `postgres`,
+   `nginx`, and `memcached`, the best choice is `N` to keep the
+   currently installed version.  But it's not important; the next
+   step will re-install Zulip's configuration in any case.
+
+4. As root, upgrade the database installation and OS configuration to
+   match the new OS version:
+
+    ```
+    apt remove upstart -y
+    /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
+    pg_dropcluster 9.5 main --stop
+    systemctl stop postgresql
+    pg_upgradecluster -m upgrade 9.3 main
+    pg_dropcluster 9.3 main
+    apt remove postgresql-9.3
+    systemctl start postgresql
+    service memcached restart
+    ```
+
+5. Same as for Xenial to Bionic.
 
 ## Modifying Zulip
 
@@ -422,6 +469,12 @@ a change to their production system to help verify the fix resolves
 the issue for them.  You can expect the Zulip community to be
 responsive in debugging any problems caused by a patch we asked
 you to apply.
+
+Also, consider asking whether a small fix that is important to you can
+be added to the current stable release branch (E.g. `2.1.x`).  In
+addition to scheduling that change for Zulip's next bug fix release,
+we support changes in stable release branches as though they were
+released.
 
 ### Upgrading to master
 

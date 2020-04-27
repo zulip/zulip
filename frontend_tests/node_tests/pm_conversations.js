@@ -16,7 +16,7 @@ run_test('partners', () => {
 zrequire("people");
 
 run_test('insert_recent_private_message', () => {
-    set_global('page_params', {
+    const params = {
         recent_private_conversations: [
             {user_ids: [11, 2],
              max_message_id: 150,
@@ -28,9 +28,9 @@ run_test('insert_recent_private_message', () => {
              max_message_id: 7,
             },
         ],
-    });
+    };
     people.initialize_current_user(15);
-    pmc.recent.initialize();
+    pmc.recent.initialize(params);
 
     assert.deepEqual(pmc.recent.get(), [
         {user_ids_string: '2,11', max_message_id: 150},

@@ -1,3 +1,4 @@
+const util = zrequire('util');
 set_global('$', global.make_zjquery());
 
 zrequire('narrow_state');
@@ -7,9 +8,7 @@ zrequire('MessageListData', 'js/message_list_data');
 zrequire('unread');
 zrequire('narrow');
 zrequire('search_pill');
-zrequire('util');
 
-set_global('blueslip', {});
 set_global('channel', {});
 set_global('compose', {});
 set_global('compose_actions', {});
@@ -38,8 +37,6 @@ set_global('search_pill_widget', {
     },
 });
 
-
-const noop = () => {};
 //
 // We have strange hacks in narrow.activate to sleep 0
 // seconds.
@@ -59,7 +56,7 @@ const denmark = {
     stream_id: 1,
     is_muted: true,
 };
-stream_data.add_sub('Denmark', denmark);
+stream_data.add_sub(denmark);
 
 function test_helper() {
     let events = [];
@@ -86,8 +83,6 @@ function test_helper() {
     stub('compose', 'update_closed_compose_buttons_for_stream');
     stub('compose', 'update_closed_compose_buttons_for_private');
     stub('notifications', 'hide_history_limit_message');
-
-    blueslip.debug = noop;
 
     return {
         clear: () => {
@@ -187,8 +182,7 @@ run_test('basics', () => {
         assert.deepEqual(opts, {
             cont: opts.cont,
             pre_scroll_cont: opts.pre_scroll_cont,
-            then_select_id: 1000,
-            use_first_unread_anchor: false,
+            anchor: 1000,
         });
     };
 

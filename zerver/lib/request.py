@@ -19,8 +19,8 @@ class RequestConfusingParmsError(JsonableError):
     data_fields = ['var_name1', 'var_name2']
 
     def __init__(self, var_name1: str, var_name2: str) -> None:
-        self.var_name1 = var_name1  # type: str
-        self.var_name2 = var_name2  # type: str
+        self.var_name1: str = var_name1
+        self.var_name2: str = var_name2
 
     @staticmethod
     def msg_format() -> str:
@@ -31,7 +31,7 @@ class RequestVariableMissingError(JsonableError):
     data_fields = ['var_name']
 
     def __init__(self, var_name: str) -> None:
-        self.var_name = var_name  # type: str
+        self.var_name: str = var_name
 
     @staticmethod
     def msg_format() -> str:
@@ -42,7 +42,7 @@ class RequestVariableConversionError(JsonableError):
     data_fields = ['var_name', 'bad_value']
 
     def __init__(self, var_name: str, bad_value: Any) -> None:
-        self.var_name = var_name  # type: str
+        self.var_name: str = var_name
         self.bad_value = bad_value
 
     @staticmethod
@@ -106,7 +106,7 @@ class _REQ(Generic[ResultT]):
         """
 
         self.post_var_name = whence
-        self.func_var_name = None  # type: Optional[str]
+        self.func_var_name: Optional[str] = None
         self.converter = converter
         self.validator = validator
         self.str_validator = str_validator
@@ -237,7 +237,7 @@ def REQ(
         path_only=path_only,
     ))
 
-arguments_map = defaultdict(list)  # type: Dict[str, List[str]]
+arguments_map: Dict[str, List[str]] = defaultdict(list)
 
 # Extracts variables from the request object and passes them as
 # named function arguments.  The request object must be the first
@@ -314,16 +314,17 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
 
             default_assigned = False
 
-            post_var_name = None  # type: Optional[str]
-
-            query_params = request.GET.copy()
-            query_params.update(request.POST)
+            post_var_name: Optional[str] = None
 
             for req_var in post_var_names:
-                try:
-                    val = query_params[req_var]
-                except KeyError:
-                    continue
+                if req_var in request.POST:
+                    val = request.POST[req_var]
+                elif req_var in request.GET:
+                    val = request.GET[req_var]
+                else:
+                    # This is covered by test_REQ_aliases, but coverage.py
+                    # fails to recognize this for some reason.
+                    continue  # nocoverage
                 if post_var_name is not None:
                     assert req_var is not None
                     raise RequestConfusingParmsError(post_var_name, req_var)

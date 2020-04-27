@@ -91,4 +91,5 @@ approach shown above.
         return os.path.exists(fixture_path)
 
     def _get_fixture_as_json(self, fixture_path: str) -> str:
-        return ujson.dumps(ujson.loads(open(fixture_path).read()))
+        with open(fixture_path) as f:
+            return ujson.dumps(ujson.load(f))

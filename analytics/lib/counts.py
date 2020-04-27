@@ -285,6 +285,12 @@ def sql_data_collector(output_table: Type[BaseCount], query: str,
                        group_by: Optional[Tuple[models.Model, str]]) -> DataCollector:
     def pull_function(property: str, start_time: datetime, end_time: datetime,
                       realm: Optional[Realm] = None) -> int:
+        # The pull function type needs to accept a Realm argument
+        # because the 'minutes_active::day' CountStat uses
+        # DataCollector directly for do_pull_minutes_active, which
+        # requires the realm argument.  We ignore it here, because the
+        # realm should have been already encoded in the `query` we're
+        # passed.
         return do_pull_by_sql_query(property, start_time, end_time, query, group_by)
     return DataCollector(output_table, pull_function)
 
@@ -297,7 +303,7 @@ def do_pull_minutes_active(property: str, start_time: datetime, end_time: dateti
     ).values_list(
         'user_profile_id', 'user_profile__realm_id', 'start', 'end')
 
-    seconds_active = defaultdict(float)  # type: Dict[Tuple[int, int], float]
+    seconds_active: Dict[Tuple[int, int], float] = defaultdict(float)
     for user_id, realm_id, interval_start, interval_end in user_activity_intervals:
         if realm is None or realm.id == realm_id:
             start = max(start_time, interval_start)
@@ -575,6 +581,13 @@ def get_count_stats(realm: Optional[Realm]=None) -> Dict[str, CountStat]:
                   sql_data_collector(UserCount, check_realmauditlog_by_user_query(
                       realm), (UserProfile, 'is_bot')),
                   CountStat.DAY),
+
+        # Important note: LoggingCountStat objects aren't passed the
+        # Realm argument, because by nature they have a logging
+        # structure, not a pull-from-database structure, so there's no
+        # way to compute them for a single realm after the fact (the
+        # use case for passing a Realm argument).
+
         # Sanity check on 'active_users_audit:is_bot:day', and a archetype for future LoggingCountStats.
         # In RealmCount, 'active_users_audit:is_bot:day' should be the partial
         # sum sequence of 'active_users_log:is_bot:day', for any realm that

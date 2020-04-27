@@ -1,22 +1,18 @@
-const render_alert_word_settings_item = require('../templates/alert_word_settings_item.hbs');
+const render_alert_word_settings_item = require('../templates/settings/alert_word_settings_item.hbs');
 
 exports.render_alert_words_ui = function () {
-    const words = alert_words.words;
+    const words = alert_words.get_word_list();
+    words.sort();
     const word_list = $('#alert_words_list');
 
     word_list.find('.alert-word-item').remove();
-    _.each(words, function (alert_word) {
+
+    for (const alert_word of words) {
         const rendered_alert_word = render_alert_word_settings_item({
             word: alert_word,
-            editing: false,
         });
         word_list.append(rendered_alert_word);
-    });
-    const new_alert_word_form = render_alert_word_settings_item({
-        word: '',
-        editing: true,
-    });
-    word_list.append(new_alert_word_form);
+    }
 
     // Focus new alert word name text box.
     $('#create_alert_word_name').focus();
@@ -38,7 +34,7 @@ function add_alert_word(alert_word) {
     if (alert_word === '') {
         update_alert_word_status(i18n.t("Alert word can't be empty!"), true);
         return;
-    } else if (alert_words.words.indexOf(alert_word) !== -1) {
+    } else if (alert_words.has_alert_word(alert_word)) {
         update_alert_word_status(i18n.t("Alert word already exists!"), true);
         return;
     }
@@ -49,7 +45,9 @@ function add_alert_word(alert_word) {
         url: '/json/users/me/alert_words',
         data: {alert_words: JSON.stringify(words_to_be_added)},
         success: function () {
-            update_alert_word_status(i18n.t("Alert word added successfully!"), false);
+            const message = "Alert word \"" + words_to_be_added + "\" added successfully!";
+            update_alert_word_status(i18n.t(message), false);
+            $('#create_alert_word_name').val('');
         },
         error: function () {
             update_alert_word_status(i18n.t("Error adding alert word!"), true);
@@ -77,7 +75,7 @@ exports.set_up_alert_words = function () {
 
     exports.render_alert_words_ui();
 
-    $('#alert_words_list').on('click', '#create_alert_word_button', function () {
+    $('#create_alert_word_form').on('click', '#create_alert_word_button', function () {
         const word = $('#create_alert_word_name').val();
         add_alert_word(word);
     });
@@ -87,7 +85,7 @@ exports.set_up_alert_words = function () {
         remove_alert_word(word);
     });
 
-    $('#alert_words_list').on('keypress', '#create_alert_word_name', function (event) {
+    $('#create_alert_word_form').on('keypress', '#create_alert_word_name', function (event) {
         const key = event.which;
         // Handle enter (13) as "add".
         if (key === 13) {

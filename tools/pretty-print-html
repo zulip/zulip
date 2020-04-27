@@ -3,11 +3,10 @@ from typing import List
 from lib.pretty_print import pretty_print_html
 import sys
 
-def clean_html(filenames):
-    # type: (List[str]) -> None
+def clean_html(filenames: List[str]) -> None:
     for fn in filenames:
         print('Prettifying: %s' % (fn,))
-        with open(fn, 'r') as f:
+        with open(fn) as f:
             html = f.read()
         phtml = pretty_print_html(html)
         with open(fn, 'w') as f:

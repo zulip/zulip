@@ -13,15 +13,96 @@ from typing import List, Optional
 
 from zerver.lib.email_notifications import fix_emojis, handle_missedmessage_emails, \
     enqueue_welcome_emails, relative_to_full_url
-from zerver.lib.actions import do_change_notification_settings
+from zerver.lib.actions import do_change_notification_settings, do_change_is_admin
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.send_email import FromAddress
+from zerver.lib.send_email import FromAddress, send_custom_email
 from zerver.models import (
     get_realm,
     get_stream,
     UserProfile,
     ScheduledEmail
 )
+
+class TestCustomEmails(ZulipTestCase):
+    def test_send_custom_email_argument(self) -> None:
+        hamlet = self.example_user('hamlet')
+        email_subject = 'subject_test'
+        reply_to = 'reply_to_test'
+        from_name = "from_name_test"
+        markdown_template_path = "templates/zerver/emails/email_base_default.source.html"
+        send_custom_email([hamlet], {
+            "markdown_template_path": markdown_template_path,
+            "reply_to": reply_to,
+            "subject": email_subject,
+            "from_name": from_name
+        })
+        self.assertEqual(len(mail.outbox), 1)
+        msg = mail.outbox[0]
+        self.assertEqual(msg.subject, email_subject)
+        self.assertEqual(len(msg.reply_to), 1)
+        self.assertEqual(msg.reply_to[0], reply_to)
+        self.assertNotIn("{% block content %}", msg.body)
+
+    def test_send_custom_email_headers(self) -> None:
+        hamlet = self.example_user('hamlet')
+        markdown_template_path = "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.source.html"
+        send_custom_email([hamlet], {
+            "markdown_template_path": markdown_template_path,
+        })
+        self.assertEqual(len(mail.outbox), 1)
+        msg = mail.outbox[0]
+        self.assertEqual(msg.subject, "Test Subject")
+        self.assertFalse(msg.reply_to)
+        self.assertEqual('Test body', msg.body)
+
+    def test_send_custom_email_no_argument(self) -> None:
+        hamlet = self.example_user('hamlet')
+        from_name = "from_name_test"
+        email_subject = 'subject_test'
+        markdown_template_path = "zerver/tests/fixtures/email/custom_emails/email_base_headers_no_headers_test.source.html"
+
+        from zerver.lib.send_email import NoEmailArgumentException
+        self.assertRaises(NoEmailArgumentException, send_custom_email, [hamlet], {
+            "markdown_template_path": markdown_template_path,
+            "from_name": from_name
+        })
+
+        self.assertRaises(NoEmailArgumentException, send_custom_email, [hamlet], {
+            "markdown_template_path": markdown_template_path,
+            "subject": email_subject
+        })
+
+    def test_send_custom_email_doubled_arguments(self) -> None:
+        hamlet = self.example_user('hamlet')
+        from_name = "from_name_test"
+        email_subject = 'subject_test'
+        markdown_template_path = "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.source.html"
+
+        from zerver.lib.send_email import DoubledEmailArgumentException
+        self.assertRaises(DoubledEmailArgumentException, send_custom_email, [hamlet], {
+            "markdown_template_path": markdown_template_path,
+            "subject": email_subject,
+        })
+
+        self.assertRaises(DoubledEmailArgumentException, send_custom_email, [hamlet], {
+            "markdown_template_path": markdown_template_path,
+            "from_name": from_name,
+        })
+
+    def test_send_custom_email_admins_only(self) -> None:
+        admin_user = self.example_user('hamlet')
+        do_change_is_admin(admin_user, True)
+
+        non_admin_user = self.example_user('cordelia')
+
+        markdown_template_path = "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.source.html"
+        send_custom_email([admin_user, non_admin_user], {
+            "markdown_template_path": markdown_template_path,
+            "admins_only": True
+        })
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(admin_user.delivery_email, mail.outbox[0].to[0])
+
 
 class TestFollowupEmails(ZulipTestCase):
     def test_day1_email_context(self) -> None:
@@ -59,8 +140,9 @@ class TestFollowupEmails(ZulipTestCase):
         ldap_user_attr_map = {'full_name': 'cn', 'short_name': 'sn'}
 
         with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
-            self.login_with_return("newuser_email_as_uid@zulip.com", self.ldap_password())
-            user = UserProfile.objects.get(email="newuser_email_as_uid@zulip.com")
+            self.login_with_return("newuser_email_as_uid@zulip.com",
+                                   self.ldap_password("newuser_email_as_uid@zulip.com"))
+            user = UserProfile.objects.get(delivery_email="newuser_email_as_uid@zulip.com")
             scheduled_emails = ScheduledEmail.objects.filter(users=user)
 
             self.assertEqual(len(scheduled_emails), 2)
@@ -78,9 +160,9 @@ class TestFollowupEmails(ZulipTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
         ):
-            self.login_with_return("newuser@zulip.com", self.ldap_password())
+            self.login_with_return("newuser@zulip.com", self.ldap_password("newuser"))
 
-            user = UserProfile.objects.get(email="newuser@zulip.com")
+            user = UserProfile.objects.get(delivery_email="newuser@zulip.com")
             scheduled_emails = ScheduledEmail.objects.filter(users=user)
 
             self.assertEqual(len(scheduled_emails), 2)
@@ -98,8 +180,8 @@ class TestFollowupEmails(ZulipTestCase):
                 LDAP_EMAIL_ATTR='mail',
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
         ):
-            self.login_with_return("newuser_with_email", self.ldap_password())
-            user = UserProfile.objects.get(email="newuser_email@zulip.com")
+            self.login_with_return("newuser_with_email", self.ldap_password("newuser_with_email"))
+            user = UserProfile.objects.get(delivery_email="newuser_email@zulip.com")
             scheduled_emails = ScheduledEmail.objects.filter(users=user)
 
             self.assertEqual(len(scheduled_emails), 2)
@@ -136,7 +218,7 @@ class TestMissedMessages(ZulipTestCase):
     def _get_tokens(self) -> List[str]:
         return ['mm' + str(random.getrandbits(32)) for _ in range(30)]
 
-    def _test_cases(self, msg_id: int, body: str, email_subject: str,
+    def _test_cases(self, msg_id: int, verify_body_include: List[str], email_subject: str,
                     send_as_user: bool, verify_html_body: bool=False,
                     show_message_content: bool=True,
                     verify_body_does_not_include: Optional[List[str]]=None,
@@ -161,50 +243,60 @@ class TestMissedMessages(ZulipTestCase):
         self.assertEqual(len(msg.reply_to), 1)
         self.assertIn(msg.reply_to[0], reply_to_emails)
         if verify_html_body:
-            self.assertIn(body, self.normalize_string(msg.alternatives[0][0]))
+            for text in verify_body_include:
+                self.assertIn(text, self.normalize_string(msg.alternatives[0][0]))
         else:
-            self.assertIn(body, self.normalize_string(msg.body))
+            for text in verify_body_include:
+                self.assertIn(text, self.normalize_string(msg.body))
         if verify_body_does_not_include is not None:
             for text in verify_body_does_not_include:
                 self.assertNotIn(text, self.normalize_string(msg.body))
 
     def _realm_name_in_missed_message_email_subject(self, realm_name_in_notifications: bool) -> None:
         msg_id = self.send_personal_message(
-            self.example_email('othello'),
-            self.example_email('hamlet'),
+            self.example_user('othello'),
+            self.example_user('hamlet'),
             'Extremely personal message!',
         )
-        body = 'Extremely personal message!'
+        verify_body_include = ['Extremely personal message!']
         email_subject = 'PMs with Othello, the Moor of Venice'
 
         if realm_name_in_notifications:
             email_subject = 'PMs with Othello, the Moor of Venice [Zulip Dev]'
-        self._test_cases(msg_id, body, email_subject, False)
+        self._test_cases(msg_id, verify_body_include, email_subject, False)
 
     def _extra_context_in_missed_stream_messages_mention(self, send_as_user: bool,
                                                          show_message_content: bool=True) -> None:
         for i in range(0, 11):
-            self.send_stream_message(self.example_email('othello'), "Denmark", content=str(i))
+            self.send_stream_message(self.example_user('othello'), "Denmark", content=str(i))
         self.send_stream_message(
-            self.example_email('othello'), "Denmark",
+            self.example_user('othello'), "Denmark",
             '11', topic_name='test2')
         msg_id = self.send_stream_message(
-            self.example_email('othello'), "denmark",
+            self.example_user('othello'), "denmark",
             '@**King Hamlet**')
 
         if show_message_content:
-            body = ("Othello, the Moor of Venice: 1 2 3 4 5 6 7 8 9 10 @**King Hamlet** -- "
-                    "You are receiving this because you were mentioned in Zulip Dev.")
+            verify_body_include = [
+                "Othello, the Moor of Venice: 1 2 3 4 5 6 7 8 9 10 @**King Hamlet** -- ",
+                "You are receiving this because you were mentioned in Zulip Dev."
+            ]
             email_subject = '#Denmark > test'
-            verify_body_does_not_include = []  # type: List[str]
+            verify_body_does_not_include: List[str] = []
         else:
             # Test in case if message content in missed email message are disabled.
-            body = 'Manage email preferences: http://zulip.testserver/#settings/notifications'
+            verify_body_include = [
+                "This email does not include message content because you have disabled message ",
+                "http://zulip.testserver/help/pm-mention-alert-notifications ",
+                "View or reply in Zulip",
+                " Manage email preferences: http://zulip.testserver/#settings/notifications"
+            ]
+
             email_subject = 'New missed messages'
             verify_body_does_not_include = ['Denmark > test', 'Othello, the Moor of Venice',
                                             '1 2 3 4 5 6 7 8 9 10 @**King Hamlet**', 'private', 'group',
                                             'Reply to this email directly, or view it in Zulip']
-        self._test_cases(msg_id, body, email_subject, send_as_user,
+        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user,
                          show_message_content=show_message_content,
                          verify_body_does_not_include=verify_body_does_not_include,
                          trigger='mentioned')
@@ -212,157 +304,187 @@ class TestMissedMessages(ZulipTestCase):
     def _extra_context_in_missed_stream_messages_wildcard_mention(self, send_as_user: bool,
                                                                   show_message_content: bool=True) -> None:
         for i in range(1, 6):
-            self.send_stream_message(self.example_email('othello'), "Denmark", content=str(i))
+            self.send_stream_message(self.example_user('othello'), "Denmark", content=str(i))
         self.send_stream_message(
-            self.example_email('othello'), "Denmark",
+            self.example_user('othello'), "Denmark",
             '11', topic_name='test2')
         msg_id = self.send_stream_message(
-            self.example_email('othello'), "denmark",
+            self.example_user('othello'), "denmark",
             '@**all**')
 
         if show_message_content:
-            body = ("Othello, the Moor of Venice: 1 2 3 4 5 @**all** -- "
-                    "You are receiving this because you were mentioned in Zulip Dev.")
+            verify_body_include = [
+                "Othello, the Moor of Venice: 1 2 3 4 5 @**all** -- ",
+                "You are receiving this because you were mentioned in Zulip Dev."
+            ]
             email_subject = '#Denmark > test'
-            verify_body_does_not_include = []  # type: List[str]
+            verify_body_does_not_include: List[str] = []
         else:
             # Test in case if message content in missed email message are disabled.
-            body = 'Manage email preferences: http://zulip.testserver/#settings/notifications'
+            verify_body_include = [
+                "This email does not include message content because you have disabled message ",
+                "http://zulip.testserver/help/pm-mention-alert-notifications ",
+                "View or reply in Zulip",
+                " Manage email preferences: http://zulip.testserver/#settings/notifications"
+            ]
             email_subject = 'New missed messages'
             verify_body_does_not_include = ['Denmark > test', 'Othello, the Moor of Venice',
                                             '1 2 3 4 5 @**all**', 'private', 'group',
                                             'Reply to this email directly, or view it in Zulip']
-        self._test_cases(msg_id, body, email_subject, send_as_user,
+        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user,
                          show_message_content=show_message_content,
                          verify_body_does_not_include=verify_body_does_not_include,
                          trigger='wildcard_mentioned')
 
     def _extra_context_in_missed_stream_messages_email_notify(self, send_as_user: bool) -> None:
         for i in range(0, 11):
-            self.send_stream_message(self.example_email('othello'), "Denmark", content=str(i))
+            self.send_stream_message(self.example_user('othello'), "Denmark", content=str(i))
         self.send_stream_message(
-            self.example_email('othello'), "Denmark",
+            self.example_user('othello'), "Denmark",
             '11', topic_name='test2')
         msg_id = self.send_stream_message(
-            self.example_email('othello'), "denmark",
+            self.example_user('othello'), "denmark",
             '12')
-        body = ("Othello, the Moor of Venice: 1 2 3 4 5 6 7 8 9 10 12 -- "
-                "You are receiving this because you have email notifications enabled for this stream.")
+        verify_body_include = [
+            "Othello, the Moor of Venice: 1 2 3 4 5 6 7 8 9 10 12 -- ",
+            "You are receiving this because you have email notifications enabled for this stream."
+        ]
         email_subject = '#Denmark > test'
-        self._test_cases(msg_id, body, email_subject, send_as_user, trigger='stream_email_notify')
+        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user, trigger='stream_email_notify')
 
     def _extra_context_in_missed_stream_messages_mention_two_senders(self, send_as_user: bool) -> None:
         for i in range(0, 3):
-            self.send_stream_message(self.example_email('cordelia'), "Denmark", str(i))
+            self.send_stream_message(self.example_user('cordelia'), "Denmark", str(i))
         msg_id = self.send_stream_message(
-            self.example_email('othello'), "Denmark",
+            self.example_user('othello'), "Denmark",
             '@**King Hamlet**')
-        body = ("Cordelia Lear: 0 1 2 Othello, the Moor of Venice: @**King Hamlet** -- "
-                "You are receiving this because you were mentioned in Zulip Dev.")
+        verify_body_include = [
+            "Cordelia Lear: 0 1 2 Othello, the Moor of Venice: @**King Hamlet** -- ",
+            "You are receiving this because you were mentioned in Zulip Dev."
+        ]
         email_subject = '#Denmark > test'
-        self._test_cases(msg_id, body, email_subject, send_as_user, trigger='mentioned')
+        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user, trigger='mentioned')
 
     def _extra_context_in_personal_missed_stream_messages(self, send_as_user: bool,
-                                                          show_message_content: bool=True) -> None:
+                                                          show_message_content: bool=True,
+                                                          message_content_disabled_by_user: bool=False,
+                                                          message_content_disabled_by_realm: bool=False) -> None:
         msg_id = self.send_personal_message(
-            self.example_email('othello'),
-            self.example_email('hamlet'),
+            self.example_user('othello'),
+            self.example_user('hamlet'),
             'Extremely personal message!',
         )
 
         if show_message_content:
-            body = 'Extremely personal message!'
+            verify_body_include = ['Extremely personal message!']
             email_subject = 'PMs with Othello, the Moor of Venice'
-            verify_body_does_not_include = []  # type: List[str]
+            verify_body_does_not_include: List[str] = []
         else:
-            body = 'Manage email preferences: http://zulip.testserver/#settings/notifications'
+            if message_content_disabled_by_realm:
+                verify_body_include = [
+                    "This email does not include message content because your organization has disabled",
+                    "http://zulip.testserver/help/hide-message-content-in-emails",
+                    "View or reply in Zulip",
+                    " Manage email preferences: http://zulip.testserver/#settings/notifications"
+                ]
+            elif message_content_disabled_by_user:
+                verify_body_include = [
+                    "This email does not include message content because you have disabled message ",
+                    "http://zulip.testserver/help/pm-mention-alert-notifications ",
+                    "View or reply in Zulip",
+                    " Manage email preferences: http://zulip.testserver/#settings/notifications"
+                ]
             email_subject = 'New missed messages'
             verify_body_does_not_include = ['Othello, the Moor of Venice', 'Extremely personal message!',
                                             'mentioned', 'group', 'Reply to this email directly, or view it in Zulip']
-        self._test_cases(msg_id, body, email_subject, send_as_user,
+        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user,
                          show_message_content=show_message_content,
                          verify_body_does_not_include=verify_body_does_not_include)
 
     def _reply_to_email_in_personal_missed_stream_messages(self, send_as_user: bool) -> None:
         msg_id = self.send_personal_message(
-            self.example_email('othello'),
-            self.example_email('hamlet'),
+            self.example_user('othello'),
+            self.example_user('hamlet'),
             'Extremely personal message!',
         )
-        body = 'Reply to this email directly, or view it in Zulip'
+        verify_body_include = ['Reply to this email directly, or view it in Zulip']
         email_subject = 'PMs with Othello, the Moor of Venice'
-        self._test_cases(msg_id, body, email_subject, send_as_user)
+        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user)
 
     def _reply_warning_in_personal_missed_stream_messages(self, send_as_user: bool) -> None:
         msg_id = self.send_personal_message(
-            self.example_email('othello'),
-            self.example_email('hamlet'),
+            self.example_user('othello'),
+            self.example_user('hamlet'),
             'Extremely personal message!',
         )
-        body = 'Do not reply to this message.'
+        verify_body_include = ['Do not reply to this email.']
         email_subject = 'PMs with Othello, the Moor of Venice'
-        self._test_cases(msg_id, body, email_subject, send_as_user)
+        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user)
 
     def _extra_context_in_huddle_missed_stream_messages_two_others(self, send_as_user: bool,
                                                                    show_message_content: bool=True) -> None:
         msg_id = self.send_huddle_message(
-            self.example_email('othello'),
+            self.example_user('othello'),
             [
-                self.example_email('hamlet'),
-                self.example_email('iago'),
+                self.example_user('hamlet'),
+                self.example_user('iago'),
             ],
             'Group personal message!',
         )
 
         if show_message_content:
-            body = 'Othello, the Moor of Venice: Group personal message! -- Reply'
+            verify_body_include = ['Othello, the Moor of Venice: Group personal message! -- Reply']
             email_subject = 'Group PMs with Iago and Othello, the Moor of Venice'
-            verify_body_does_not_include = []  # type: List[str]
+            verify_body_does_not_include: List[str] = []
         else:
-            body = 'Manage email preferences: http://zulip.testserver/#settings/notifications'
+            verify_body_include = [
+                "This email does not include message content because you have disabled message ",
+                "http://zulip.testserver/help/pm-mention-alert-notifications ",
+                "View or reply in Zulip",
+                " Manage email preferences: http://zulip.testserver/#settings/notifications"
+            ]
             email_subject = 'New missed messages'
             verify_body_does_not_include = ['Iago', 'Othello, the Moor of Venice Othello, the Moor of Venice',
                                             'Group personal message!', 'mentioned',
                                             'Reply to this email directly, or view it in Zulip']
-        self._test_cases(msg_id, body, email_subject, send_as_user,
+        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user,
                          show_message_content=show_message_content,
                          verify_body_does_not_include=verify_body_does_not_include)
 
     def _extra_context_in_huddle_missed_stream_messages_three_others(self, send_as_user: bool) -> None:
         msg_id = self.send_huddle_message(
-            self.example_email('othello'),
+            self.example_user('othello'),
             [
-                self.example_email('hamlet'),
-                self.example_email('iago'),
-                self.example_email('cordelia'),
+                self.example_user('hamlet'),
+                self.example_user('iago'),
+                self.example_user('cordelia'),
             ],
             'Group personal message!',
         )
 
-        body = 'Othello, the Moor of Venice: Group personal message! -- Reply'
+        verify_body_include = ['Othello, the Moor of Venice: Group personal message! -- Reply']
         email_subject = 'Group PMs with Cordelia Lear, Iago, and Othello, the Moor of Venice'
-        self._test_cases(msg_id, body, email_subject, send_as_user)
+        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user)
 
     def _extra_context_in_huddle_missed_stream_messages_many_others(self, send_as_user: bool) -> None:
-        msg_id = self.send_huddle_message(self.example_email('othello'),
-                                          [self.example_email('hamlet'),
-                                           self.example_email('iago'),
-                                           self.example_email('cordelia'),
-                                           self.example_email('prospero')],
+        msg_id = self.send_huddle_message(self.example_user('othello'),
+                                          [self.example_user('hamlet'),
+                                           self.example_user('iago'),
+                                           self.example_user('cordelia'),
+                                           self.example_user('prospero')],
                                           'Group personal message!')
 
-        body = 'Othello, the Moor of Venice: Group personal message! -- Reply'
+        verify_body_include = ['Othello, the Moor of Venice: Group personal message! -- Reply']
         email_subject = 'Group PMs with Cordelia Lear, Iago, and 2 others'
-        self._test_cases(msg_id, body, email_subject, send_as_user)
+        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user)
 
     def _deleted_message_in_missed_stream_messages(self, send_as_user: bool) -> None:
         msg_id = self.send_stream_message(
-            self.example_email('othello'), "denmark",
+            self.example_user('othello'), "denmark",
             '@**King Hamlet** to be deleted')
 
         hamlet = self.example_user('hamlet')
-        email = self.example_email('othello')
-        self.login(email)
+        self.login('othello')
         result = self.client_patch('/json/messages/' + str(msg_id),
                                    {'message_id': msg_id, 'content': ' '})
         self.assert_json_success(result)
@@ -370,13 +492,12 @@ class TestMissedMessages(ZulipTestCase):
         self.assertEqual(len(mail.outbox), 0)
 
     def _deleted_message_in_personal_missed_stream_messages(self, send_as_user: bool) -> None:
-        msg_id = self.send_personal_message(self.example_email('othello'),
-                                            self.example_email('hamlet'),
+        msg_id = self.send_personal_message(self.example_user('othello'),
+                                            self.example_user('hamlet'),
                                             'Extremely personal message! to be deleted!')
 
         hamlet = self.example_user('hamlet')
-        email = self.example_email('othello')
-        self.login(email)
+        self.login('othello')
         result = self.client_patch('/json/messages/' + str(msg_id),
                                    {'message_id': msg_id, 'content': ' '})
         self.assert_json_success(result)
@@ -385,18 +506,17 @@ class TestMissedMessages(ZulipTestCase):
 
     def _deleted_message_in_huddle_missed_stream_messages(self, send_as_user: bool) -> None:
         msg_id = self.send_huddle_message(
-            self.example_email('othello'),
+            self.example_user('othello'),
             [
-                self.example_email('hamlet'),
-                self.example_email('iago'),
+                self.example_user('hamlet'),
+                self.example_user('iago'),
             ],
             'Group personal message!',
         )
 
         hamlet = self.example_user('hamlet')
         iago = self.example_user('iago')
-        email = self.example_email('othello')
-        self.login(email)
+        self.login('othello')
         result = self.client_patch('/json/messages/' + str(msg_id),
                                    {'message_id': msg_id, 'content': ' '})
         self.assert_json_success(result)
@@ -426,7 +546,8 @@ class TestMissedMessages(ZulipTestCase):
         mail.outbox = []
         self._extra_context_in_missed_stream_messages_wildcard_mention(False, show_message_content=False)
         mail.outbox = []
-        self._extra_context_in_personal_missed_stream_messages(False, show_message_content=False)
+        self._extra_context_in_personal_missed_stream_messages(False, show_message_content=False,
+                                                               message_content_disabled_by_user=True)
         mail.outbox = []
         self._extra_context_in_huddle_missed_stream_messages_two_others(False, show_message_content=False)
 
@@ -530,7 +651,8 @@ class TestMissedMessages(ZulipTestCase):
         # Emails don't have missed message content when message content is disabled by the user
         do_change_notification_settings(user, "message_content_in_email_notifications", False)
         mail.outbox = []
-        self._extra_context_in_personal_missed_stream_messages(False, show_message_content=False)
+        self._extra_context_in_personal_missed_stream_messages(False, show_message_content=False,
+                                                               message_content_disabled_by_user=True)
 
         # When message content is not allowed at realm level
         # Emails don't have missed message irrespective of message content setting of the user
@@ -540,56 +662,59 @@ class TestMissedMessages(ZulipTestCase):
 
         do_change_notification_settings(user, "message_content_in_email_notifications", True)
         mail.outbox = []
-        self._extra_context_in_personal_missed_stream_messages(False, show_message_content=False)
+        self._extra_context_in_personal_missed_stream_messages(False, show_message_content=False,
+                                                               message_content_disabled_by_realm=True)
 
         do_change_notification_settings(user, "message_content_in_email_notifications", False)
         mail.outbox = []
-        self._extra_context_in_personal_missed_stream_messages(False, show_message_content=False)
+        self._extra_context_in_personal_missed_stream_messages(False, show_message_content=False,
+                                                               message_content_disabled_by_user=True,
+                                                               message_content_disabled_by_realm=True)
 
     def test_realm_emoji_in_missed_message(self) -> None:
         realm = get_realm("zulip")
 
         msg_id = self.send_personal_message(
-            self.example_email('othello'), self.example_email('hamlet'),
+            self.example_user('othello'), self.example_user('hamlet'),
             'Extremely personal message with a realm emoji :green_tick:!')
         realm_emoji_id = realm.get_active_emoji()['green_tick']['id']
         realm_emoji_url = "http://zulip.testserver/user_avatars/%s/emoji/images/%s.png" % (
             realm.id, realm_emoji_id,)
-        body = '<img alt=":green_tick:" src="%s" title="green tick" style="height: 20px;">' % (realm_emoji_url,)
+        verify_body_include = ['<img alt=":green_tick:" src="%s" title="green tick" style="height: 20px;">' % (realm_emoji_url,)]
         email_subject = 'PMs with Othello, the Moor of Venice'
-        self._test_cases(msg_id, body, email_subject, send_as_user=False, verify_html_body=True)
+        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user=False, verify_html_body=True)
 
     def test_emojiset_in_missed_message(self) -> None:
         hamlet = self.example_user('hamlet')
         hamlet.emojiset = 'twitter'
         hamlet.save(update_fields=['emojiset'])
         msg_id = self.send_personal_message(
-            self.example_email('othello'), self.example_email('hamlet'),
+            self.example_user('othello'), self.example_user('hamlet'),
             'Extremely personal message with a hamburger :hamburger:!')
-        body = '<img alt=":hamburger:" src="http://zulip.testserver/static/generated/emoji/images-twitter-64/1f354.png" title="hamburger" style="height: 20px;">'
+        verify_body_include = ['<img alt=":hamburger:" src="http://zulip.testserver/static/generated/emoji/images-twitter-64/1f354.png" title="hamburger" style="height: 20px;">']
         email_subject = 'PMs with Othello, the Moor of Venice'
-        self._test_cases(msg_id, body, email_subject, send_as_user=False, verify_html_body=True)
+        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user=False, verify_html_body=True)
 
     def test_stream_link_in_missed_message(self) -> None:
         msg_id = self.send_personal_message(
-            self.example_email('othello'), self.example_email('hamlet'),
+            self.example_user('othello'), self.example_user('hamlet'),
             'Come and join us in #**Verona**.')
         stream_id = get_stream('Verona', get_realm('zulip')).id
         href = "http://zulip.testserver/#narrow/stream/{stream_id}-Verona".format(stream_id=stream_id)
-        body = '<a class="stream" data-stream-id="5" href="{href}">#Verona</a'.format(href=href)
+        verify_body_include = ['<a class="stream" data-stream-id="5" href="{href}">#Verona</a'.format(href=href)]
         email_subject = 'PMs with Othello, the Moor of Venice'
-        self._test_cases(msg_id, body, email_subject, send_as_user=False, verify_html_body=True)
+        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user=False, verify_html_body=True)
 
     def test_sender_name_in_missed_message(self) -> None:
         hamlet = self.example_user('hamlet')
-        msg_id_1 = self.send_stream_message(self.example_email('iago'),
+        msg_id_1 = self.send_stream_message(self.example_user('iago'),
                                             "Denmark",
                                             '@**King Hamlet**')
-        msg_id_2 = self.send_stream_message(self.example_email('iago'),
+        msg_id_2 = self.send_stream_message(self.example_user('iago'),
                                             "Verona",
                                             '* 1\n *2')
-        msg_id_3 = self.send_personal_message(self.example_email('iago'),
-                                              hamlet.email,
+        msg_id_3 = self.send_personal_message(self.example_user('iago'),
+                                              hamlet,
                                               'Hello')
 
         handle_missedmessage_emails(hamlet.id, [
@@ -614,11 +739,11 @@ class TestMissedMessages(ZulipTestCase):
 
     def test_multiple_missed_personal_messages(self) -> None:
         hamlet = self.example_user('hamlet')
-        msg_id_1 = self.send_personal_message(self.example_email('othello'),
-                                              hamlet.email,
+        msg_id_1 = self.send_personal_message(self.example_user('othello'),
+                                              hamlet,
                                               'Personal Message 1')
-        msg_id_2 = self.send_personal_message(self.example_email('iago'),
-                                              hamlet.email,
+        msg_id_2 = self.send_personal_message(self.example_user('iago'),
+                                              hamlet,
                                               'Personal Message 2')
 
         handle_missedmessage_emails(hamlet.id, [
@@ -633,10 +758,10 @@ class TestMissedMessages(ZulipTestCase):
 
     def test_multiple_stream_messages(self) -> None:
         hamlet = self.example_user('hamlet')
-        msg_id_1 = self.send_stream_message(self.example_email('othello'),
+        msg_id_1 = self.send_stream_message(self.example_user('othello'),
                                             "Denmark",
                                             'Message1')
-        msg_id_2 = self.send_stream_message(self.example_email('iago'),
+        msg_id_2 = self.send_stream_message(self.example_user('iago'),
                                             "Denmark",
                                             'Message2')
 
@@ -651,10 +776,10 @@ class TestMissedMessages(ZulipTestCase):
     def test_multiple_stream_messages_and_mentions(self) -> None:
         """Subject should be stream name and topic as usual."""
         hamlet = self.example_user('hamlet')
-        msg_id_1 = self.send_stream_message(self.example_email('iago'),
+        msg_id_1 = self.send_stream_message(self.example_user('iago'),
                                             "Denmark",
                                             'Regular message')
-        msg_id_2 = self.send_stream_message(self.example_email('othello'),
+        msg_id_2 = self.send_stream_message(self.example_user('othello'),
                                             "Denmark",
                                             '@**King Hamlet**')
 
@@ -676,17 +801,17 @@ class TestMissedMessages(ZulipTestCase):
         self.subscribe(user, stream_name)
         late_subscribed_user = self.example_user('hamlet')
 
-        self.send_stream_message(user.email,
+        self.send_stream_message(user,
                                  stream_name,
                                  'Before subscribing')
 
         self.subscribe(late_subscribed_user, stream_name)
 
-        self.send_stream_message(user.email,
+        self.send_stream_message(user,
                                  stream_name,
                                  "After subscribing")
 
-        mention_msg_id = self.send_stream_message(user.email,
+        mention_msg_id = self.send_stream_message(user,
                                                   stream_name,
                                                   '@**King Hamlet**')
 
@@ -704,13 +829,13 @@ class TestMissedMessages(ZulipTestCase):
     def test_stream_mentions_multiple_people(self) -> None:
         """Subject should be stream name and topic as usual."""
         hamlet = self.example_user('hamlet')
-        msg_id_1 = self.send_stream_message(self.example_email('iago'),
+        msg_id_1 = self.send_stream_message(self.example_user('iago'),
                                             "Denmark",
                                             '@**King Hamlet**')
-        msg_id_2 = self.send_stream_message(self.example_email('othello'),
+        msg_id_2 = self.send_stream_message(self.example_user('othello'),
                                             "Denmark",
                                             '@**King Hamlet**')
-        msg_id_3 = self.send_stream_message(self.example_email('cordelia'),
+        msg_id_3 = self.send_stream_message(self.example_user('cordelia'),
                                             "Denmark",
                                             'Regular message')
 
@@ -726,10 +851,10 @@ class TestMissedMessages(ZulipTestCase):
     def test_multiple_stream_messages_different_topics(self) -> None:
         """Should receive separate emails for each topic within a stream."""
         hamlet = self.example_user('hamlet')
-        msg_id_1 = self.send_stream_message(self.example_email('othello'),
+        msg_id_1 = self.send_stream_message(self.example_user('othello'),
                                             "Denmark",
                                             'Message1')
-        msg_id_2 = self.send_stream_message(self.example_email('iago'),
+        msg_id_2 = self.send_stream_message(self.example_user('iago'),
                                             "Denmark",
                                             'Message2',
                                             topic_name="test2")

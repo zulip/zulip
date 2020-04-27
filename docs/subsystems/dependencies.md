@@ -184,8 +184,8 @@ highlighting.  The system is largely managed by the code in
   amounts of disk over time.
 * **Scripts**.  Often, we want a script running in production to use
   the Zulip virtualenv.  To make that work without a lot of duplicated
-  code, we have a helpful library,
-  `scripts/lib/setup_path_on_import.py`, which on import will put the
+  code, we have a helpful function,
+  `scripts.lib.setup_path.setup_path`, which on import will put the
   currently running Python script into the Zulip virtualenv.  This is
   called by `./manage.py` to ensure that our Django code always uses
   the correct virtualenv as well.
@@ -200,29 +200,6 @@ highlighting.  The system is largely managed by the code in
 
 See the [README][requirements-readme] file in `requirements/` directory
 to learn how to upgrade a single Python package.
-
-For batches upgrades of many or all Python dependencies, we have the
-script `./tools/upgrade-python-dependencies`. This script will update
-the outdated packages one at a time, create a commit for each package
-if the backend tests pass and pushes the working branch to your GitHub
-fork. Make sure to enable [caching][caching] your GitHub credentials
-so that Git won't keep asking you for it during each push.  When a
-package cannot be upgraded due to test failures or other issues the
-error message would be stored in the file
-`var/log/python_dependency_upgrade/<package_name>`. We also maintain a
-list of packages that cannot be upgraded in
-`requirements/unupgradable.json`. The script won't attempt to upgrade
-the packages in this list.  Most of these packages requires changes in
-upstream for us to upgrade them. The remaining ones are usually
-packages that involves significant changes in our codebase.  The
-packages that are easier to upgrade by making some minor changes in
-our codebase won't make it to this list. Only issues are created for
-them in GitHub with the label `area: dependencies`. Keep in mind that
-this script would take a significant amount of time to complete.  Our
-recommended way of running this script is in a cloud VM which has
-super fast internet. You can use tmux or screen to make sure that the
-[script keeps running even if you get disconnected][stack-overflow]
-from the SSH session.
 
 [mypy-docs]: ../testing/mypy.md
 [requirements-readme]: https://github.com/zulip/zulip/blob/master/requirements/README.md#requirements
@@ -320,17 +297,8 @@ implementation of that tool.
 
 The list of languages supported by our markdown syntax highlighting
 comes from the [pygments][] package.  `tools/setup/build_pygments_data` is
-responsible for generating `static/generated/pygments_data.js` so that
+responsible for generating `static/generated/pygments_data.json` so that
 our JavaScript markdown processor has access to the supported list.
-
-### Authors data
-
-Zulip maintains data on the developers who have contributed the most to
-the current version of Zulip in the /about page.  These data are
-fetched using the GitHub API with `tools/update-authors-json`.  In
-development, it just returns some basic test data to avoid adding load
-to GitHub's APIs unnecessarily; it's primarily run as part of building
-a release tarball.
 
 ## Modifying provisioning
 
@@ -353,4 +321,4 @@ usually one needs to think about making changes in 3 places:
 [yarn]: https://yarnpkg.com/
 [npm]: https://npmjs.com/
 [iamcal]: https://github.com/iamcal/emoji-data
-[pygments]: http://pygments.org/
+[pygments]: https://pygments.org/

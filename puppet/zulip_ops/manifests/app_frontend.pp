@@ -59,4 +59,13 @@ class zulip_ops::app_frontend {
     content => zulipsecret('secrets', 'redis_password', ''),
   }
 
+  # Each server does its own fetching of contributor data, since
+  # we don't have a way to synchronize that among several servers.
+  file { '/etc/cron.d/fetch-contributor-data':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    source => 'puppet:///modules/zulip_ops/cron.d/fetch-contributor-data',
+  }
 }

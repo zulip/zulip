@@ -9,7 +9,6 @@ zrequire('server_events_dispatch');
 zrequire('server_events');
 zrequire('sent_messages');
 
-set_global('blueslip', global.make_zblueslip());
 set_global('channel', {});
 set_global('home_msg_list', {
     select_id: noop,
@@ -27,13 +26,12 @@ set_global('echo', {
     process_from_server: function (messages) {
         return messages;
     },
-    set_realm_filters: noop,
+    update_realm_filter_rules: noop,
 });
 set_global('ui_report', {
     hide_error: function () { return false; },
     show_error: function () { return false; },
 });
-
 
 server_events.home_view_loaded();
 
@@ -77,7 +75,6 @@ run_test('pointer_event', () => {
     assert.equal(global.pointer.server_furthest_read, event.pointer);
 });
 
-
 // Start blueslip tests here
 
 const setup = function () {
@@ -105,7 +102,7 @@ run_test('event_dispatch_error', () => {
         options.success(data);
     };
 
-    blueslip.set_test_data('error', 'Failed to process an event\nsubs update error');
+    blueslip.expect('error', 'Failed to process an event\nsubs update error');
 
     server_events.restart_get_events();
 
@@ -115,9 +112,7 @@ run_test('event_dispatch_error', () => {
     assert.equal(logs[0].more_info.event.op, 'update');
     assert.equal(logs[0].more_info.event.id, 1);
     assert.equal(logs[0].more_info.other, undefined);
-    blueslip.clear_test_data();
 });
-
 
 run_test('event_new_message_error', () => {
     setup();
@@ -127,14 +122,13 @@ run_test('event_new_message_error', () => {
         options.success(data);
     };
 
-    blueslip.set_test_data('error', 'Failed to insert new messages\ninsert error');
+    blueslip.expect('error', 'Failed to insert new messages\ninsert error');
 
     server_events.restart_get_events();
 
     const logs = blueslip.get_test_logs('error');
     assert.equal(logs.length, 1);
     assert.equal(logs[0].more_info, undefined);
-    blueslip.clear_test_data();
 });
 
 run_test('event_edit_message_error', () => {
@@ -143,12 +137,11 @@ run_test('event_edit_message_error', () => {
     global.channel.get = function (options) {
         options.success(data);
     };
-    blueslip.set_test_data('error', 'Failed to update messages\nupdate error');
+    blueslip.expect('error', 'Failed to update messages\nupdate error');
 
     server_events.restart_get_events();
 
     const logs = blueslip.get_test_logs('error');
     assert.equal(logs.length, 1);
     assert.equal(logs[0].more_info, undefined);
-    blueslip.clear_test_data();
 });

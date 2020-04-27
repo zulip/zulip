@@ -1,9 +1,8 @@
-set_global('blueslip', global.make_zblueslip());
 set_global('$', {});
 
 set_global('reload', {});
+zrequire('reload_state');
 zrequire('channel');
-
 
 const default_stub_xhr = 'default-stub-xhr';
 
@@ -36,7 +35,6 @@ function test_with_mock_ajax(test_params) {
     assert(ajax_called);
     check_ajax_options(ajax_options);
 }
-
 
 run_test('basics', () => {
     test_with_mock_ajax({
@@ -234,10 +232,8 @@ run_test('unexpected_403_response', () => {
         },
 
         check_ajax_options: function (options) {
-            blueslip.set_test_data('error', 'Unexpected 403 response from server');
+            blueslip.expect('error', 'Unexpected 403 response from server');
             options.simulate_error();
-            assert.equal(blueslip.get_test_logs('error').length, 1);
-            blueslip.clear_test_data();
         },
     });
 });
@@ -257,6 +253,7 @@ run_test('retry', () => {
                 f();
             });
 
+            blueslip.expect('log', 'Retrying idempotent[object Object]');
             test_with_mock_ajax({
                 run_code: function () {
                     options.simulate_success();
@@ -266,10 +263,6 @@ run_test('retry', () => {
                     assert.equal(options.data, 42);
                 },
             });
-
-            assert.equal(blueslip.get_test_logs('log').length, 1);
-            assert.equal(blueslip.get_test_logs('log')[0].message, 'Retrying idempotent[object Object]');
-            blueslip.clear_test_data();
         },
     });
 });
@@ -280,14 +273,12 @@ run_test('too_many_pending', () => {
         return xhr;
     };
 
-    blueslip.set_test_data('warn',
-                           'The length of pending_requests is over 50. ' +
-                           'Most likely they are not being correctly removed.');
+    blueslip.expect('warn',
+                    'The length of pending_requests is over 50. ' +
+                    'Most likely they are not being correctly removed.');
     _.times(50, function () {
         channel.post({});
     });
-    assert.equal(blueslip.get_test_logs('warn').length, 1);
-    blueslip.clear_test_data();
 });
 
 run_test('xhr_error_message', () => {

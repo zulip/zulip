@@ -1,4 +1,5 @@
 import logging
+from decimal import Decimal
 import stripe
 from typing import Any, Dict, cast, Optional, Union
 
@@ -22,8 +23,8 @@ from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
     MIN_INVOICED_LICENSES, DEFAULT_INVOICE_DAYS_UNTIL_DUE, \
     start_of_next_billing_cycle, renewal_amount, \
     make_end_of_cycle_updates_if_needed
-from corporate.models import Customer, CustomerPlan, \
-    get_current_plan
+from corporate.models import CustomerPlan, get_current_plan_by_customer, \
+    get_customer_by_realm, get_current_plan_by_realm
 
 billing_logger = logging.getLogger('corporate.stripe')
 
@@ -56,7 +57,7 @@ def check_upgrade_parameters(
 
 # Should only be called if the customer is being charged automatically
 def payment_method_string(stripe_customer: stripe.Customer) -> str:
-    stripe_source = stripe_customer.default_source  # type: Optional[Union[stripe.Card, stripe.Source]]
+    stripe_source: Optional[Union[stripe.Card, stripe.Source]] = stripe_customer.default_source
     # In case of e.g. an expired card
     if stripe_source is None:  # nocoverage
         return _("No payment method on file")
@@ -117,17 +118,17 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         return render(request, "404.html")
 
     user = request.user
-    customer = Customer.objects.filter(realm=user.realm).first()
-    if customer is not None and CustomerPlan.objects.filter(customer=customer).exists():
+    customer = get_customer_by_realm(user.realm)
+    if customer is not None and get_current_plan_by_customer(customer) is not None:
         return HttpResponseRedirect(reverse('corporate.views.billing_home'))
 
-    percent_off = 0
+    percent_off = Decimal(0)
     if customer is not None and customer.default_discount is not None:
         percent_off = customer.default_discount
 
     seat_count = get_latest_seat_count(user.realm)
     signed_seat_count, salt = sign_string(str(seat_count))
-    context = {
+    context: Dict[str, Any] = {
         'publishable_key': STRIPE_PUBLISHABLE_KEY,
         'email': user.delivery_email,
         'seat_count': seat_count,
@@ -142,63 +143,62 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
             'monthly_price': 800,
             'percent_off': float(percent_off),
         },
-    }  # type: Dict[str, Any]
+    }
     response = render(request, 'corporate/upgrade.html', context=context)
     return response
 
 @zulip_login_required
 def billing_home(request: HttpRequest) -> HttpResponse:
     user = request.user
-    customer = Customer.objects.filter(realm=user.realm).first()
+    customer = get_customer_by_realm(user.realm)
     if customer is None:
         return HttpResponseRedirect(reverse('corporate.views.initial_upgrade'))
     if not CustomerPlan.objects.filter(customer=customer).exists():
         return HttpResponseRedirect(reverse('corporate.views.initial_upgrade'))
 
     if not user.is_realm_admin and not user.is_billing_admin:
-        context = {'admin_access': False}  # type: Dict[str, Any]
+        context: Dict[str, Any] = {'admin_access': False}
         return render(request, 'corporate/billing.html', context=context)
-    context = {'admin_access': True}
 
-    plan_name = "Zulip Free"
-    licenses = 0
-    renewal_date = ''
-    renewal_cents = 0
-    payment_method = ''
-    charge_automatically = False
+    context = {
+        'admin_access': True,
+        'has_active_plan': False,
+    }
 
-    stripe_customer = stripe_get_customer(customer.stripe_customer_id)
-    plan = get_current_plan(customer)
+    plan = get_current_plan_by_customer(customer)
     if plan is not None:
-        plan_name = {
-            CustomerPlan.STANDARD: 'Zulip Standard',
-            CustomerPlan.PLUS: 'Zulip Plus',
-        }[plan.tier]
         now = timezone_now()
         last_ledger_entry = make_end_of_cycle_updates_if_needed(plan, now)
         if last_ledger_entry is not None:
+            plan_name = {
+                CustomerPlan.STANDARD: 'Zulip Standard',
+                CustomerPlan.PLUS: 'Zulip Plus',
+            }[plan.tier]
             licenses = last_ledger_entry.licenses
             licenses_used = get_latest_seat_count(user.realm)
             # Should do this in javascript, using the user's timezone
             renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(dt=start_of_next_billing_cycle(plan, now))
             renewal_cents = renewal_amount(plan, now)
             charge_automatically = plan.charge_automatically
+            stripe_customer = stripe_get_customer(customer.stripe_customer_id)
             if charge_automatically:
                 payment_method = payment_method_string(stripe_customer)
             else:
                 payment_method = 'Billed by invoice'
 
-    context.update({
-        'plan_name': plan_name,
-        'licenses': licenses,
-        'licenses_used': licenses_used,
-        'renewal_date': renewal_date,
-        'renewal_amount': '{:,.2f}'.format(renewal_cents / 100.),
-        'payment_method': payment_method,
-        'charge_automatically': charge_automatically,
-        'publishable_key': STRIPE_PUBLISHABLE_KEY,
-        'stripe_email': stripe_customer.email,
-    })
+            context.update({
+                'plan_name': plan_name,
+                'has_active_plan': True,
+                'licenses': licenses,
+                'licenses_used': licenses_used,
+                'renewal_date': renewal_date,
+                'renewal_amount': '{:,.2f}'.format(renewal_cents / 100.),
+                'payment_method': payment_method,
+                'charge_automatically': charge_automatically,
+                'publishable_key': STRIPE_PUBLISHABLE_KEY,
+                'stripe_email': stripe_customer.email,
+            })
+
     return render(request, 'corporate/billing.html', context=context)
 
 @require_billing_access
@@ -206,7 +206,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
 def change_plan_at_end_of_cycle(request: HttpRequest, user: UserProfile,
                                 status: int=REQ("status", validator=check_int)) -> HttpResponse:
     assert(status in [CustomerPlan.ACTIVE, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE])
-    plan = get_current_plan(Customer.objects.get(realm=user.realm))
+    plan = get_current_plan_by_realm(user.realm)
     assert(plan is not None)  # for mypy
     do_change_plan_status(plan, status)
     return json_success()

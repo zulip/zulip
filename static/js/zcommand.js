@@ -90,6 +90,50 @@ exports.enter_night_mode = function () {
     });
 };
 
+exports.enter_fluid_mode = function () {
+    exports.send({
+        command: "/fluid-width",
+        on_success: function (data) {
+            scroll_bar.set_layout_width();
+            feedback_widget.show({
+                populate: function (container) {
+                    const rendered_msg = marked(data.msg).trim();
+                    container.html(rendered_msg);
+                },
+                on_undo: function () {
+                    exports.send({
+                        command: "/fixed-width",
+                    });
+                },
+                title_text: i18n.t("Fluid width mode"),
+                undo_button_text: i18n.t("Fixed width"),
+            });
+        },
+    });
+};
+
+exports.enter_fixed_mode = function () {
+    exports.send({
+        command: "/fixed-width",
+        on_success: function (data) {
+            scroll_bar.set_layout_width();
+            feedback_widget.show({
+                populate: function (container) {
+                    const rendered_msg = marked(data.msg).trim();
+                    container.html(rendered_msg);
+                },
+                on_undo: function () {
+                    exports.send({
+                        command: "/fluid-width",
+                    });
+                },
+                title_text: i18n.t("Fixed width mode"),
+                undo_button_text: i18n.t("Fluid width"),
+            });
+        },
+    });
+};
+
 exports.process = function (message_content) {
 
     const content = message_content.trim();
@@ -111,14 +155,24 @@ exports.process = function (message_content) {
     }
 
     const day_commands = ['/day', '/light'];
-    if (day_commands.indexOf(content) >= 0) {
+    if (day_commands.includes(content)) {
         exports.enter_day_mode();
         return true;
     }
 
     const night_commands = ['/night', '/dark'];
-    if (night_commands.indexOf(content) >= 0) {
+    if (night_commands.includes(content)) {
         exports.enter_night_mode();
+        return true;
+    }
+
+    if (content === '/fluid-width') {
+        exports.enter_fluid_mode();
+        return true;
+    }
+
+    if (content === '/fixed-width') {
+        exports.enter_fixed_mode();
         return true;
     }
 

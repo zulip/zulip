@@ -81,7 +81,7 @@ class Command(BaseCommand):
             end_times = time_range(last_end_time, last_end_time, stat.frequency,
                                    len(list(fixture_data.values())[0]))
             if table == InstallationCount:
-                id_args = {}  # type: Dict[str, Any]
+                id_args: Dict[str, Any] = {}
             if table == RealmCount:
                 id_args = {'realm': realm}
             if table == UserCount:
@@ -96,13 +96,13 @@ class Command(BaseCommand):
                     for end_time, value in zip(end_times, values) if value != 0])
 
         stat = COUNT_STATS['1day_actives::day']
-        realm_data = {
+        realm_data: Mapping[Optional[str], List[int]] = {
             None: self.generate_fixture_data(stat, .08, .02, 3, .3, 6, partial_sum=True),
-        }  # type: Mapping[Optional[str], List[int]]
+        }
         insert_fixture_data(stat, realm_data, RealmCount)
-        installation_data = {
+        installation_data: Mapping[Optional[str], List[int]] = {
             None: self.generate_fixture_data(stat, .8, .2, 4, .3, 6, partial_sum=True),
-        }  # type: Mapping[Optional[str], List[int]]
+        }
         insert_fixture_data(stat, installation_data, InstallationCount)
         FillState.objects.create(property=stat.property, end_time=last_end_time,
                                  state=FillState.DONE)
@@ -132,8 +132,9 @@ class Command(BaseCommand):
                                  state=FillState.DONE)
 
         stat = COUNT_STATS['messages_sent:is_bot:hour']
-        user_data = {'false': self.generate_fixture_data(
-            stat, 2, 1, 1.5, .6, 8, holiday_rate=.1)}  # type: Mapping[Optional[str], List[int]]
+        user_data: Mapping[Optional[str], List[int]] = {
+            'false': self.generate_fixture_data(stat, 2, 1, 1.5, .6, 8, holiday_rate=.1),
+        }
         insert_fixture_data(stat, user_data, UserCount)
         realm_data = {'false': self.generate_fixture_data(stat, 35, 15, 6, .6, 4),
                       'true': self.generate_fixture_data(stat, 15, 15, 3, .4, 2)}
@@ -209,8 +210,10 @@ class Command(BaseCommand):
         realm_data = {'false': self.generate_fixture_data(stat, 30, 5, 6, .6, 4),
                       'true': self.generate_fixture_data(stat, 20, 2, 3, .2, 3)}
         insert_fixture_data(stat, realm_data, RealmCount)
-        stream_data = {'false': self.generate_fixture_data(stat, 10, 7, 5, .6, 4),
-                       'true': self.generate_fixture_data(stat, 5, 3, 2, .4, 2)}  # type: Mapping[Optional[str], List[int]]
+        stream_data: Mapping[Optional[str], List[int]] = {
+            'false': self.generate_fixture_data(stat, 10, 7, 5, .6, 4),
+            'true': self.generate_fixture_data(stat, 5, 3, 2, .4, 2),
+        }
         insert_fixture_data(stat, stream_data, StreamCount)
         FillState.objects.create(property=stat.property, end_time=last_end_time,
                                  state=FillState.DONE)

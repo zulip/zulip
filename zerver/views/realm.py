@@ -63,9 +63,9 @@ def update_realm(
         bot_creation_policy: Optional[int]=REQ(validator=check_int_in(
             Realm.BOT_CREATION_POLICY_TYPES), default=None),
         create_stream_policy: Optional[int]=REQ(validator=check_int_in(
-            Realm.CREATE_STREAM_POLICY_TYPES), default=None),
+            Realm.COMMON_POLICY_TYPES), default=None),
         invite_to_stream_policy: Optional[int]=REQ(validator=check_int_in(
-            Realm.INVITE_TO_STREAM_POLICY_TYPES), default=None),
+            Realm.COMMON_POLICY_TYPES), default=None),
         user_group_edit_policy: Optional[int]=REQ(validator=check_int_in(
             Realm.USER_GROUP_EDIT_POLICY_TYPES), default=None),
         private_message_policy: Optional[int]=REQ(validator=check_int_in(
@@ -78,6 +78,7 @@ def update_realm(
         zoom_user_id: Optional[str]=REQ(validator=check_string, default=None),
         zoom_api_key: Optional[str]=REQ(validator=check_string, default=None),
         zoom_api_secret: Optional[str]=REQ(validator=check_string, default=None),
+        default_code_block_language: Optional[str]=REQ(validator=check_string, default=None),
         digest_weekday: Optional[int]=REQ(validator=check_int_in(Realm.DIGEST_WEEKDAY_VALUES), default=None),
 ) -> HttpResponse:
     realm = user_profile.realm
@@ -93,7 +94,7 @@ def update_realm(
     if authentication_methods is not None and True not in list(authentication_methods.values()):
         return json_error(_("At least one authentication method must be enabled."))
     if (video_chat_provider is not None and
-            video_chat_provider not in set(p['id'] for p in Realm.VIDEO_CHAT_PROVIDERS.values())):
+            video_chat_provider not in {p['id'] for p in Realm.VIDEO_CHAT_PROVIDERS.values()}):
         return json_error(_("Invalid video_chat_provider {}").format(video_chat_provider))
     if video_chat_provider == Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['id']:
         try:
@@ -131,7 +132,7 @@ def update_realm(
     # further by some more advanced usage of the
     # `REQ/has_request_variables` extraction.
     req_vars = {k: v for k, v in list(locals().items()) if k in realm.property_types}
-    data = {}  # type: Dict[str, Any]
+    data: Dict[str, Any] = {}
 
     for k, v in list(req_vars.items()):
         if v is not None and getattr(realm, k) != v:
@@ -195,6 +196,13 @@ def update_realm(
             do_set_realm_signup_notifications_stream(realm, new_signup_notifications_stream,
                                                      signup_notifications_stream_id)
             data['signup_notifications_stream_id'] = signup_notifications_stream_id
+
+    if default_code_block_language is not None:
+        # Migrate '', used in the API to encode the default/None behavior of this feature.
+        if default_code_block_language == '':
+            data['default_code_block_language'] = None
+        else:
+            data['default_code_block_language'] = default_code_block_language
 
     return json_success(data)
 

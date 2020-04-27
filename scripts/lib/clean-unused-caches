@@ -7,8 +7,7 @@ sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import parse_cache_script_args
 from scripts.lib import clean_venv_cache, clean_node_cache, clean_emoji_cache
 
-def main():
-    # type: () -> None
+def main() -> None:
     args = parse_cache_script_args("This script cleans unused zulip caches.")
     os.chdir(ZULIP_PATH)
     clean_venv_cache.main(args)

@@ -1,13 +1,14 @@
+const util = require("./util");
+const pygments_data = require("../generated/pygments_data.json");
+const typeahead = require("../shared/js/typeahead");
 const render_typeahead_list_item = require('../templates/typeahead_list_item.hbs');
-const IntDict = require('./int_dict').IntDict;
+const settings_data = require("./settings_data");
 
 // Returns an array of private message recipients, removing empty elements.
 // For example, "a,,b, " => ["a", "b"]
 exports.get_cleaned_pm_recipients = function (query_string) {
     let recipients = util.extract_pm_recipients(query_string);
-    recipients = _.filter(recipients, function (elem) {
-        return elem.match(/\S/);
-    });
+    recipients = recipients.filter(elem => elem.match(/\S/));
     return recipients;
 };
 
@@ -26,13 +27,15 @@ exports.highlight_with_escaping_and_regex = function (regex, item) {
 
     const pieces = item.split(regex);
     let result = "";
-    _.each(pieces, function (piece) {
+
+    for (const piece of pieces) {
         if (piece.match(regex)) {
             result += "<strong>" + Handlebars.Utils.escapeExpression(piece) + "</strong>";
         } else {
             result += Handlebars.Utils.escapeExpression(piece);
         }
-    });
+    }
+
     return result;
 };
 
@@ -61,7 +64,7 @@ exports.render_typeahead_item = function (args) {
     return render_typeahead_list_item(args);
 };
 
-const rendered = { persons: new IntDict(), streams: new IntDict(), user_groups: new IntDict() };
+const rendered = { persons: new Map(), streams: new Map(), user_groups: new Map() };
 
 exports.render_person = function (person) {
     if (person.special_item_text) {
@@ -80,9 +83,7 @@ exports.render_person = function (person) {
             img_src: avatar_url,
             is_person: true,
         };
-        if (settings_org.show_email()) {
-            typeahead_arguments.secondary = person.email;
-        }
+        typeahead_arguments.secondary = settings_data.email_for_user_settings(person);
         html = exports.render_typeahead_item(typeahead_arguments);
         rendered.persons.set(person.user_id, html);
     }
@@ -90,7 +91,7 @@ exports.render_person = function (person) {
 };
 
 exports.clear_rendered_person = function (user_id) {
-    rendered.persons.del(user_id);
+    rendered.persons.delete(user_id);
 };
 
 exports.render_user_group = function (user_group) {
@@ -117,7 +118,7 @@ exports.render_person_or_user_group = function (item) {
 
 exports.clear_rendered_stream = function (stream_id) {
     if (rendered.streams.has(stream_id)) {
-        rendered.streams.del(stream_id);
+        rendered.streams.delete(stream_id);
     }
 };
 
@@ -147,7 +148,7 @@ exports.render_emoji = function (item) {
         is_emoji: true,
         primary: item.emoji_name.split("_").join(" "),
     };
-    if (emoji.active_realm_emojis.hasOwnProperty(item.emoji_name)) {
+    if (emoji.active_realm_emojis.has(item.emoji_name)) {
         args.img_src = item.emoji_url;
     } else {
         args.emoji_code = item.emoji_code;
@@ -155,24 +156,8 @@ exports.render_emoji = function (item) {
     return exports.render_typeahead_item(args);
 };
 
-// manipulate prefix_sort to select popular emojis first
-// This is kinda a hack and so probably not our long-term solution.
-function emoji_prefix_sort(query, objs, get_item) {
-    const prefix_sort = util.prefix_sort(query, objs, get_item);
-    const popular_emoji_matches = [];
-    const other_emoji_matches = [];
-    prefix_sort.matches.forEach(function (obj) {
-        if (emoji.frequently_used_emojis_list.indexOf(obj.emoji_code) !== -1) {
-            popular_emoji_matches.push(obj);
-        } else {
-            other_emoji_matches.push(obj);
-        }
-    });
-    return { matches: popular_emoji_matches.concat(other_emoji_matches), rest: prefix_sort.rest };
-}
-
 exports.sorter = function (query, objs, get_item) {
-    const results = util.prefix_sort(query, objs, get_item);
+    const results = typeahead.triage(query, objs, get_item);
     return results.matches.concat(results.rest);
 };
 
@@ -294,7 +279,7 @@ exports.compare_by_popularity = function (lang_a, lang_b) {
 };
 
 exports.sort_languages = function (matches, query) {
-    const results = util.prefix_sort(query, matches, function (x) { return x; });
+    const results = typeahead.triage(query, matches);
 
     // Languages that start with the query
     results.matches = results.matches.sort(exports.compare_by_popularity);
@@ -319,7 +304,6 @@ exports.sort_recipients = function (
     groups,
     max_num_items
 ) {
-
     if (!groups) {
         groups = [];
     }
@@ -333,33 +317,18 @@ exports.sort_recipients = function (
             items, current_stream, current_topic);
     }
 
-    function partition(items, get_item) {
-        /*
-            The name for util.prefix_sort is quite
-            misleading.  It really just partitions a list
-            of items into two groups--good and bad.  But
-            for the goods, it puts case-senstitive matches
-            before case-insensitive matches, otherwise preserving
-            the original sort, so it's kinda like a sort
-            if you're starting with data that's most sorted
-            the way you want it.  And then we re-sort it, but
-            maybe sort_people_for_relevance is a stable sort?
-            And do we actually care whether matches are case
-            sensitive here?  I don't know.
-        */
-
-        return util.prefix_sort(query, items, get_item);
-    }
-
-    const users_name_results = partition(
+    const users_name_results = typeahead.triage(
+        query,
         users,
         (p) => p.full_name);
 
-    const email_results = partition(
+    const email_results = typeahead.triage(
+        query,
         users_name_results.rest,
         (p) => p.email);
 
-    const groups_results = partition(
+    const groups_results = typeahead.triage(
+        query,
         groups,
         (g) => g.name);
 
@@ -386,11 +355,12 @@ exports.sort_recipients = function (
     */
 
     let items = [];
-    _.each(getters, (getter) => {
+
+    for (const getter of getters) {
         if (items.length < max_num_items) {
             items = items.concat(getter());
         }
-    });
+    }
 
     return items.slice(0, max_num_items);
 };
@@ -405,15 +375,11 @@ function slash_command_comparator(slash_command_a, slash_command_b) {
 exports.sort_slash_commands = function (matches, query) {
     // We will likely want to in the future make this sort the
     // just-`/` commands by something approximating usefulness.
-    const results = util.prefix_sort(query, matches, function (x) { return x.name; });
+    const results = typeahead.triage(
+        query, matches, (x) => x.name);
+
     results.matches = results.matches.sort(slash_command_comparator);
     results.rest = results.rest.sort(slash_command_comparator);
-    return results.matches.concat(results.rest);
-};
-
-exports.sort_emojis = function (matches, query) {
-    // TODO: sort by category in v2
-    const results = emoji_prefix_sort(query, matches, function (x) { return x.emoji_name; });
     return results.matches.concat(results.rest);
 };
 
@@ -441,7 +407,7 @@ exports.compare_by_activity = function (stream_a, stream_b) {
     if (diff !== 0) {
         return diff;
     }
-    diff = stream_b.subscribers.num_items() - stream_a.subscribers.num_items();
+    diff = stream_b.subscribers.size - stream_a.subscribers.size;
     if (diff !== 0) {
         return diff;
     }
@@ -449,9 +415,11 @@ exports.compare_by_activity = function (stream_a, stream_b) {
 };
 
 exports.sort_streams = function (matches, query) {
-    const name_results = util.prefix_sort(query, matches, function (x) { return x.name; });
-    const desc_results
-        = util.prefix_sort(query, name_results.rest, function (x) { return x.description; });
+    const name_results = typeahead.triage(
+        query, matches, (x) => x.name);
+
+    const desc_results = typeahead.triage(
+        query, name_results.rest, (x) => x.description);
 
     // Streams that start with the query.
     name_results.matches = name_results.matches.sort(exports.compare_by_activity);

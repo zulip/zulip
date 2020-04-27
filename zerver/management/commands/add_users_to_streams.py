@@ -25,7 +25,7 @@ class Command(ZulipBaseCommand):
         assert realm is not None  # Should be ensured by parser
 
         user_profiles = self.get_users(options, realm)
-        stream_names = set([stream.strip() for stream in options["streams"].split(",")])
+        stream_names = {stream.strip() for stream in options["streams"].split(",")}
 
         for stream_name in set(stream_names):
             for user_profile in user_profiles:

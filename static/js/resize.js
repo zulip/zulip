@@ -1,3 +1,4 @@
+const util = require("./util");
 const autosize = require('autosize');
 
 let narrow_window = false;
@@ -14,15 +15,16 @@ function confine_to_range(lo, val, hi) {
 
 function size_blocks(blocks, usable_height) {
     let sum_height = 0;
-    _.each(blocks, function (block) {
-        sum_height += block.real_height;
-    });
 
-    _.each(blocks, function (block) {
+    for (const block of blocks) {
+        sum_height += block.real_height;
+    }
+
+    for (const block of blocks) {
         let ratio = block.real_height / sum_height;
         ratio = confine_to_range(0.05, ratio, 0.85);
         block.max_height = confine_to_range(80, usable_height * ratio, 1.2 * block.real_height);
-    });
+    }
 }
 
 function set_user_list_heights(res, usable_height, buddy_list_wrapper, group_pms) {
@@ -261,7 +263,7 @@ exports.handler = function () {
     exports.resize_page_components();
 
     // Re-compute and display/remove [More] links to messages
-    condense.condense_and_collapse($("div.message_row"));
+    condense.condense_and_collapse($(".message_table .message_row"));
 
     // This function might run onReady (if we're in a narrow window),
     // but before we've loaded in the messages; in that case, don't

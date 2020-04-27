@@ -45,8 +45,6 @@ function update_buttons_with_focus(focused) {
         || search_query_box.val()
         || narrow_state.active()) {
         $('.search_button').prop('disabled', false);
-    } else {
-        $('.search_button').prop('disabled', true);
     }
 }
 
@@ -64,7 +62,7 @@ exports.initialize = function () {
     // (It's a bit of legacy that we have an object with only one important
     // field.  There's also a "search_string" field on each element that actually
     // just represents the key of the hash, so it's redundant.)
-    let search_object = {};
+    let search_map = new Map();
 
     search_query_box.typeahead({
         source: function (query) {
@@ -76,8 +74,8 @@ exports.initialize = function () {
             } else {
                 suggestions = search_suggestion.get_suggestions_legacy(query);
             }
-            // Update our global search_object hash
-            search_object = suggestions.lookup_table;
+            // Update our global search_map hash
+            search_map = suggestions.lookup_table;
             return suggestions.strings;
         },
         fixed: true,
@@ -85,7 +83,7 @@ exports.initialize = function () {
         helpOnEmptyStrings: true,
         naturalSearch: true,
         highlighter: function (item) {
-            const obj = search_object[item];
+            const obj = search_map.get(item);
             return obj.description;
         },
         matcher: function () {
@@ -156,7 +154,6 @@ exports.initialize = function () {
     // Some of these functions don't actually need to be exported,
     // but the code was moved here from elsewhere, and it would be
     // more work to re-order everything and make them private.
-    $('#search_exit').on('click', narrow.deactivate);
 
     search_query_box.on('focus', exports.focus_search);
     search_query_box.on('blur', function () {
@@ -176,8 +173,6 @@ exports.initialize = function () {
         // really it would be OK if they did).
 
         setTimeout(function () {
-            const search_string = narrow_state.search_string();
-            search_query_box.val(search_string);
             exports.update_button_visibility();
         }, 100);
     });
@@ -204,7 +199,8 @@ exports.initiate_search = function () {
     if (page_params.search_pills_enabled) {
         $('#search_query').focus();
     } else {
-        $('#search_query').select();
+        tab_bar.open_search_bar_and_close_narrow_description();
+        $('#search_query').typeahead('lookup').select();
     }
 };
 

@@ -14,7 +14,7 @@ sanity_check.check_venv(__file__)
 
 # TODO: Convert this to use scripts/lib/queue_workers.py
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
-successful_worker_launch = '[process_queue] 20 queue worker threads were launched\n'
+successful_worker_launch = '[process_queue] 17 queue worker threads were launched\n'
 
 def check_worker_launch(run_dev: "subprocess.Popen[str]") -> bool:
     failed = False
@@ -35,6 +35,7 @@ def check_worker_launch(run_dev: "subprocess.Popen[str]") -> bool:
     # Attempt to poll the log file for 60 sec. to see if all worker threads are launched.
     old_handler = signal.signal(signal.SIGALRM, on_timer)
     signal.setitimer(signal.ITIMER_REAL, 0.3, 0.3)
+    assert run_dev.stdout is not None
     for line in run_dev.stdout:
         log_output.append(line)
         if line.endswith(successful_worker_launch):

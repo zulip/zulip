@@ -33,82 +33,77 @@ parser.add_argument("username", help="Github username for whom you want to creat
 parser.add_argument('--tags', nargs='+', default=[])
 parser.add_argument('-f', '--recreate', dest='recreate', action="store_true", default=False)
 
-def get_config():
-    # type: () -> configparser.ConfigParser
+def get_config() -> configparser.ConfigParser:
     config = configparser.ConfigParser()
     config.read(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'conf.ini'))
     return config
 
-def user_exists(username):
-    # type: (str) -> bool
-    print("Checking to see if GitHub user {0} exists...".format(username))
-    user_api_url = "https://api.github.com/users/{0}".format(username)
+def user_exists(username: str) -> bool:
+    print("Checking to see if GitHub user {} exists...".format(username))
+    user_api_url = "https://api.github.com/users/{}".format(username)
     try:
         response = urllib.request.urlopen(user_api_url)
-        json.loads(response.read().decode())
+        json.load(response)
         print("...user exists!")
         return True
     except urllib.error.HTTPError as err:
         print(err)
-        print("Does the github user {0} exist?".format(username))
+        print("Does the github user {} exist?".format(username))
         sys.exit(1)
 
-def get_keys(username):
-    # type: (str) -> List[Dict[str, Any]]
+def get_keys(username: str) -> List[Dict[str, Any]]:
     print("Checking to see that GitHub user has available public keys...")
-    apiurl_keys = "https://api.github.com/users/{0}/keys".format(username)
+    apiurl_keys = "https://api.github.com/users/{}/keys".format(username)
     try:
         response = urllib.request.urlopen(apiurl_keys)
-        userkeys = json.loads(response.read().decode())
+        userkeys = json.load(response)
         if not userkeys:
-            print("No keys found. Has user {0} added ssh keys to their github account?".format(username))
+            print("No keys found. Has user {} added ssh keys to their github account?".format(username))
             sys.exit(1)
         print("...public keys found!")
         return userkeys
     except urllib.error.HTTPError as err:
         print(err)
-        print("Has user {0} added ssh keys to their github account?".format(username))
+        print("Has user {} added ssh keys to their github account?".format(username))
         sys.exit(1)
 
-def fork_exists(username):
-    # type: (str) -> bool
+def fork_exists(username: str) -> bool:
     print("Checking to see GitHub user has forked zulip/zulip...")
-    apiurl_fork = "https://api.github.com/repos/{0}/zulip".format(username)
+    apiurl_fork = "https://api.github.com/repos/{}/zulip".format(username)
     try:
         response = urllib.request.urlopen(apiurl_fork)
-        json.loads(response.read().decode())
+        json.load(response)
         print("...fork found!")
         return True
     except urllib.error.HTTPError as err:
         print(err)
-        print("Has user {0} forked zulip/zulip?".format(username))
+        print("Has user {} forked zulip/zulip?".format(username))
         sys.exit(1)
 
 def exit_if_droplet_exists(my_token: str, username: str, recreate: bool) -> None:
-    print("Checking to see if droplet for {0} already exists...".format(username))
+    print("Checking to see if droplet for {} already exists...".format(username))
     manager = digitalocean.Manager(token=my_token)
     my_droplets = manager.get_all_droplets()
     for droplet in my_droplets:
-        if droplet.name == "{0}.zulipdev.org".format(username):
+        if droplet.name == "{}.zulipdev.org".format(username):
             if not recreate:
-                print("Droplet for user {0} already exists. Pass --recreate if you "
+                print("Droplet for user {} already exists. Pass --recreate if you "
                       "need to recreate the droplet.".format(username))
                 sys.exit(1)
             else:
-                print("Deleting existing droplet for {0}.".format(username))
+                print("Deleting existing droplet for {}.".format(username))
                 droplet.destroy()
                 return
     print("...No droplet found...proceeding.")
 
-def set_user_data(username, userkeys):
-    # type: (str, List[Dict[str, Any]]) -> str
+def set_user_data(username: str, userkeys: List[Dict[str, Any]]) -> str:
     print("Setting cloud-config data, populated with GitHub user's public keys...")
     ssh_authorized_keys = ""
 
     # spaces here are important here - these need to be properly indented under
     # ssh_authorized_keys:
     for key in userkeys:
-        ssh_authorized_keys += "\n          - {0}".format(key['key'])
+        ssh_authorized_keys += "\n          - {}".format(key['key'])
     # print(ssh_authorized_keys)
 
     setup_repo = """\
@@ -121,11 +116,11 @@ cd /home/zulipdev/{1} && git remote add origin https://github.com/{0}/{1}.git &&
     #cloud-config
     users:
       - name: zulipdev
-        ssh_authorized_keys:{0}
+        ssh_authorized_keys:{}
     runcmd:
-      - su -c '{1}' zulipdev
+      - su -c '{}' zulipdev
       - su -c 'git clean -f' zulipdev
-      - su -c '{2}' zulipdev
+      - su -c '{}' zulipdev
       - su -c 'git clean -f' zulipdev
       - su -c 'git config --global core.editor nano' zulipdev
       - su -c 'git config --global pull.rebase true' zulipdev
@@ -137,11 +132,10 @@ cd /home/zulipdev/{1} && git remote add origin https://github.com/{0}/{1}.git &&
     print("...returning cloud-config data.")
     return cloudconf
 
-def create_droplet(my_token, template_id, username, tags, user_data):
-    # type: (str, str, str, List[str], str) -> str
+def create_droplet(my_token: str, template_id: str, username: str, tags: List[str], user_data: str) -> str:
     droplet = digitalocean.Droplet(
         token=my_token,
-        name='{0}.zulipdev.org'.format(username),
+        name='{}.zulipdev.org'.format(username),
         region='nyc3',
         image=template_id,
         size_slug='2gb',
@@ -157,7 +151,7 @@ def create_droplet(my_token, template_id, username, tags, user_data):
         actions = droplet.get_actions()
         for action in actions:
             action.load()
-            print("...[{0}]: {1}".format(action.type, action.status))
+            print("...[{}]: {}".format(action.type, action.status))
             if action.type == 'create' and action.status == 'completed':
                 incomplete = False
                 break
@@ -165,7 +159,7 @@ def create_droplet(my_token, template_id, username, tags, user_data):
             time.sleep(15)
     print("...droplet created!")
     droplet.load()
-    print("...ip address for new droplet is: {0}.".format(droplet.ip_address))
+    print("...ip address for new droplet is: {}.".format(droplet.ip_address))
     return droplet.ip_address
 
 def delete_existing_records(records: List[digitalocean.Record], record_name: str) -> None:
@@ -175,10 +169,9 @@ def delete_existing_records(records: List[digitalocean.Record], record_name: str
             record.destroy()
             count = count + 1
     if count:
-        print("Deleted {0} existing A records for {1}.zulipdev.org.".format(count, record_name))
+        print("Deleted {} existing A records for {}.zulipdev.org.".format(count, record_name))
 
-def create_dns_record(my_token, username, ip_address):
-    # type: (str, str, str) -> None
+def create_dns_record(my_token: str, username: str, ip_address: str) -> None:
     domain = digitalocean.Domain(token=my_token, name='zulipdev.org')
     domain.load()
     records = domain.get_records()
@@ -187,13 +180,12 @@ def create_dns_record(my_token, username, ip_address):
     wildcard_name = "*." + username
     delete_existing_records(records, wildcard_name)
 
-    print("Creating new A record for {0}.zulipdev.org that points to {1}.".format(username, ip_address))
+    print("Creating new A record for {}.zulipdev.org that points to {}.".format(username, ip_address))
     domain.create_new_domain_record(type='A', name=username, data=ip_address)
-    print("Creating new A record for *.{0}.zulipdev.org that points to {1}.".format(username, ip_address))
+    print("Creating new A record for *.{}.zulipdev.org that points to {}.".format(username, ip_address))
     domain.create_new_domain_record(type='A', name=wildcard_name, data=ip_address)
 
-def print_completion(username):
-    # type: (str) -> None
+def print_completion(username: str) -> None:
     print("""
 COMPLETE! Droplet for GitHub user {0} is available at {0}.zulipdev.org.
 
@@ -231,7 +223,7 @@ if __name__ == '__main__':
 
     # get command line arguments
     args = parser.parse_args()
-    print("Creating Zulip developer environment for GitHub user {0}...".format(args.username))
+    print("Creating Zulip developer environment for GitHub user {}...".format(args.username))
 
     # get config details
     config = get_config()

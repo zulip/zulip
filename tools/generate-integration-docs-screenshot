@@ -1,0 +1,147 @@
+#!/usr/bin/env python3
+"""Create or update a webhook integration screenshot using a test fixture."""
+
+# check for the venv
+from lib import sanity_check
+
+sanity_check.check_venv(__file__)
+
+import os
+import sys
+
+TOOLS_DIR = os.path.abspath(os.path.dirname(__file__))
+ROOT_DIR = os.path.dirname(TOOLS_DIR)
+
+sys.path.insert(0, ROOT_DIR)
+from scripts.lib.setup_path import setup_path
+
+setup_path()
+
+os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
+import django
+
+django.setup()
+
+import argparse
+import subprocess
+from typing import Any, Dict, Optional
+
+import requests
+import ujson
+
+from zerver.models import UserProfile, Message, get_user_by_delivery_email, get_realm
+from zerver.lib.actions import do_create_user, notify_created_bot
+from zerver.lib.upload import upload_avatar_image
+from zerver.lib.actions import do_change_avatar_fields
+from zerver.lib.integrations import WebhookIntegration, INTEGRATIONS, split_fixture_path
+from zerver.lib.webhooks.common import get_fixture_http_headers
+from tools.lib.test_script import prepare_puppeteer_run
+from zerver.lib.storage import static_path
+
+def create_integration_bot(integration: WebhookIntegration) -> UserProfile:
+    realm = get_realm('zulip')
+    owner = get_user_by_delivery_email("iago@zulip.com", realm)
+    bot_email = "{}-bot@example.com".format(integration.name)
+    bot_name = "{} Bot".format(integration.name.capitalize())
+    try:
+        bot = UserProfile.objects.get(email=bot_email)
+    except UserProfile.DoesNotExist:
+        bot = do_create_user(
+            email=bot_email,
+            password="123",
+            realm=owner.realm,
+            full_name=bot_name,
+            short_name=bot_name,
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+            bot_owner=owner,
+        )
+        notify_created_bot(bot)
+
+        bot_avatar_path = static_path(integration.DEFAULT_BOT_AVATAR_PATH.format(name=integration.name))
+        if os.path.isfile(bot_avatar_path):
+            with open(bot_avatar_path, "rb") as f:
+                upload_avatar_image(f, owner, bot)
+                do_change_avatar_fields(bot, UserProfile.AVATAR_FROM_USER)
+
+    return bot
+
+def get_integration(integration_name: str) -> WebhookIntegration:
+    integration = INTEGRATIONS[integration_name]
+    assert isinstance(integration, WebhookIntegration), "Not a WebhookIntegration"
+    return integration
+
+def get_requests_headers(integration_name: str, fixture_name: str) -> Dict[str, Any]:
+    headers = get_fixture_http_headers(integration_name, fixture_name)
+
+    def fix_name(header: str) -> str:
+        header = header if not header.startswith('HTTP_') else header[len('HTTP_'):]
+        return header.replace('_', '-')
+
+    return {fix_name(k): v for k, v in headers.items()}
+
+def webhook_json_fixture(path: str) -> str:
+    path = os.path.abspath(path)
+    if not (os.path.exists(path) and path.endswith('.json') and 'webhooks' in path):
+        raise argparse.ArgumentTypeError('Not a valid webhook JSON fixture')
+    return path
+
+def custom_headers(headers_json: str) -> Dict[str, str]:
+    if not headers_json:
+        return {}
+    try:
+        return ujson.loads(headers_json)
+    except ValueError as ve:
+        raise argparse.ArgumentTypeError(
+            'Encountered an error while attempting to parse custom headers: {}\n'
+            'Note: all strings must be enclosed within "" instead of \'\''.format(ve))
+
+def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, fixture_path: str,
+                             extra_headers: Optional[Dict[str, str]]) -> None:
+    # Delete all messages, so new message is the only one it's message group
+    Message.objects.filter(sender=bot).delete()
+
+    assert isinstance(bot.bot_owner, UserProfile)
+    url = "{}/{}?api_key={}&stream=devel".format(
+        bot.bot_owner.realm.uri, integration.url, bot.api_key
+    )
+    with open(fixture_path) as f:
+        data = ujson.load(f)
+    _, fixture_name = split_fixture_path(fixture_path)
+    headers = get_requests_headers(integration.name, fixture_name)
+    if extra_headers:
+        headers.update(extra_headers)
+    try:
+        response = requests.post(url, json=data, headers=headers)
+    except requests.exceptions.ConnectionError:
+        print('This tool needs the local dev server to be running. '
+              'Please start it using tools/run-dev.py before running this tool.')
+        sys.exit(1)
+    if response.status_code != 200:
+        print(response.json())
+        print('Failed to trigger webhook')
+        sys.exit(1)
+    print('Triggered {} webhook'.format(integration.name))
+
+def capture_last_message_screenshot(bot: UserProfile, integration: WebhookIntegration,
+                                    fixture_name: str) -> None:
+    message = Message.objects.filter(sender=bot).last()
+    if message is None:
+        print('No message found for {} integration for {}'.format(integration.name, fixture_name))
+        return
+    message_id = str(message.id)
+    screenshot_script = os.path.join(TOOLS_DIR, 'message-screenshot.js')
+    subprocess.check_call(['node', screenshot_script, integration.name, message_id])
+
+parser = argparse.ArgumentParser()
+parser.add_argument('fixture', type=webhook_json_fixture, help='Path to the fixture to use')
+parser.add_argument('-H', '--custom-headers',
+                    type=custom_headers,
+                    help='Any additional headers to be sent with the request.')
+options = parser.parse_args()
+
+prepare_puppeteer_run()
+integration_name, fixture_name = split_fixture_path(options.fixture)
+integration = get_integration(integration_name)
+bot = create_integration_bot(integration)
+send_bot_payload_message(bot, integration, options.fixture, options.custom_headers)
+capture_last_message_screenshot(bot, integration, fixture_name)

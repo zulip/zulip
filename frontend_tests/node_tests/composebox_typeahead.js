@@ -1,10 +1,7 @@
 const typeahead = zrequire('typeahead', 'shared/js/typeahead');
-set_global('i18n', global.stub_i18n);
 zrequire('compose_state');
-zrequire('ui_util');
 zrequire('pm_conversations');
 zrequire('emoji');
-zrequire('util');
 set_global('Handlebars', global.make_handlebars());
 zrequire('templates');
 zrequire('typeahead_helper');
@@ -16,6 +13,7 @@ zrequire('compose_pm_pill');
 zrequire('composebox_typeahead');
 zrequire('recent_senders');
 zrequire('settings_org');
+const settings_config = zrequire('settings_config');
 set_global('md5', function (s) {
     return 'md5-' + s;
 });
@@ -24,7 +22,7 @@ set_global('md5', function (s) {
 stream_data.update_calculated_fields = () => {};
 stream_data.set_filter_out_inactives = () => false;
 
-set_global('topic_data', {
+set_global('stream_topic_history', {
 });
 
 set_global('message_store', {
@@ -33,9 +31,6 @@ set_global('message_store', {
 
 const ct = composebox_typeahead;
 const noop = function () {};
-
-set_global('blueslip', {});
-blueslip.warn = noop;
 
 // Use a slightly larger value than what's user-facing
 // to facilitate testing different combinations of
@@ -107,7 +102,7 @@ const emoji_headphones = {
     emoji_code: '1f3a7',
 };
 
-const emojis_by_name = {
+const emojis_by_name = new Map(Object.entries({
     tada: emoji_tada,
     moneybag: emoji_moneybag,
     stadium: emoji_stadium,
@@ -118,8 +113,8 @@ const emojis_by_name = {
     thermometer: emoji_thermometer,
     heart: emoji_heart,
     headphones: emoji_headphones,
-};
-const emoji_list = _.map(emojis_by_name, function (emoji_dict) {
+}));
+const emoji_list = Array.from(emojis_by_name.values(), emoji_dict => {
     if (emoji_dict.is_realm_emoji === true) {
         return {
             emoji_name: emoji_dict.name,
@@ -148,6 +143,7 @@ const sweden_stream = {
     description: 'Cold, mountains and home decor.',
     stream_id: 1,
     subscribed: true,
+    can_access_subscribers: true,
 };
 const denmark_stream = {
     name: 'Denmark',
@@ -162,9 +158,9 @@ const netherland_stream = {
     subscribed: false,
 };
 
-stream_data.add_sub('Sweden', sweden_stream);
-stream_data.add_sub('Denmark', denmark_stream);
-stream_data.add_sub('The Netherlands', netherland_stream);
+stream_data.add_sub(sweden_stream);
+stream_data.add_sub(denmark_stream);
+stream_data.add_sub(netherland_stream);
 
 set_global('$', global.make_zjquery());
 
@@ -174,13 +170,11 @@ set_global('compose', {
     finish: noop,
 });
 
-emoji.active_realm_emojis = {};
+emoji.active_realm_emojis = new Map();
 emoji.emojis_by_name = emojis_by_name;
 emoji.emojis = emoji_list;
 
-set_global('pygments_data', {langs:
-    {python: 0, javscript: 1, html: 2, css: 3},
-});
+const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
 
 const alice = {
     email: 'alice@zulip.com',
@@ -245,17 +239,18 @@ const harry = {
     email: 'harry@zulip.com',
 };
 
-global.people.add_in_realm(alice);
-global.people.add_in_realm(hamlet);
-global.people.add_in_realm(othello);
-global.people.add_in_realm(cordelia);
-global.people.add_in_realm(lear);
-global.people.add_in_realm(twin1);
-global.people.add_in_realm(twin2);
-global.people.add_in_realm(gael);
-global.people.add_in_realm(hal);
-global.people.add_in_realm(harry);
-global.people.add(deactivated_user);
+people.add(alice);
+people.add(hamlet);
+people.add(othello);
+people.add(cordelia);
+people.add(lear);
+people.add(twin1);
+people.add(twin2);
+people.add(gael);
+people.add(hal);
+people.add(harry);
+people.add(deactivated_user);
+people.deactivate(deactivated_user);
 
 const hamletcharacters = {
     name: "hamletcharacters",
@@ -287,7 +282,7 @@ const make_emoji = function (emoji_dict) {
 };
 
 run_test('topics_seen_for', () => {
-    topic_data.get_recent_names = (stream_id) => {
+    stream_topic_history.get_recent_topic_names = (stream_id) => {
         assert.equal(stream_id, denmark_stream.stream_id);
         return ['With Twisted Metal', 'acceptance', 'civil fears'];
     };
@@ -308,11 +303,12 @@ run_test('content_typeahead_selected', () => {
     };
     let caret_called1 = false;
     let caret_called2 = false;
-    fake_this.$element.caret = function (arg1, arg2) {
-        if (arguments.length === 0) {  // .caret() used in split_at_cursor
+    fake_this.$element.caret = function (...args) {
+        if (args.length === 0) {  // .caret() used in split_at_cursor
             caret_called1 = true;
             return fake_this.query.length;
         }
+        const [arg1, arg2] = args;
         // .caret() used in setTimeout
         assert.equal(arg1, arg2);
         caret_called2 = true;
@@ -354,8 +350,6 @@ run_test('content_typeahead_selected', () => {
     actual_value = ct.content_typeahead_selected.call(fake_this, item);
     expected_value = '{ :octopus: ';
     assert.equal(actual_value, expected_value);
-
-
 
     // mention
     fake_this.completing = 'mention';
@@ -524,7 +518,7 @@ run_test('content_typeahead_selected', () => {
 });
 
 function sorted_names_from(subs) {
-    return _.pluck(subs, 'name').sort();
+    return subs.map(sub => sub.name).sort();
 }
 
 run_test('initialize', () => {
@@ -567,7 +561,7 @@ run_test('initialize', () => {
     let subject_typeahead_called = false;
     $('#stream_message_recipient_topic').typeahead = function (options) {
         const topics = ['<&>', 'even more ice', 'furniture', 'ice', 'kronor', 'more ice'];
-        topic_data.get_recent_names = (stream_id) => {
+        stream_topic_history.get_recent_topic_names = (stream_id) => {
             assert.equal(stream_id, sweden_stream.stream_id);
             return topics;
         };
@@ -627,6 +621,9 @@ run_test('initialize', () => {
         assert.deepEqual(actual_value, expected_value);
 
         subject_typeahead_called = true;
+
+        // Unset the stream name.
+        $('#stream_message_recipient_stream').val('');
     };
 
     let pm_recipient_typeahead_called = false;
@@ -638,8 +635,8 @@ run_test('initialize', () => {
 
         // This should match the users added at the beginning of this test file.
         let actual_value = options.source('');
-        let expected_value = [alice, hamlet, othello, cordelia, lear,
-                              twin1, twin2, gael, hal, harry,
+        let expected_value = [alice, cordelia, hal, gael, harry,
+                              hamlet, lear, twin1, twin2, othello,
                               hamletcharacters, backend, call_center];
         assert.deepEqual(actual_value, expected_value);
 
@@ -702,6 +699,15 @@ run_test('initialize', () => {
         assert.equal(matcher(query, othello), false);
         assert.equal(matcher(query, cordelia), false);
 
+        query = 'oth';
+        page_params.realm_email_address_visibility =
+            settings_config.email_address_visibility_values.admins_only.code;
+        page_params.is_admin = false;
+        assert.equal(matcher(query, deactivated_user), false);
+
+        page_params.is_admin = true;
+        assert.equal(matcher(query, deactivated_user), true);
+
         function sorter(query, people) {
             return typeahead_helper.sort_recipients(
                 people,
@@ -722,7 +728,7 @@ run_test('initialize', () => {
         // A literal match at the beginning of an element puts it at the top.
         query = 'co';  // Matches everything ("x@zulip.COm")
         actual_value = sorter(query, [othello, deactivated_user, cordelia]);
-        expected_value = [cordelia, othello, deactivated_user];
+        expected_value = [cordelia, deactivated_user, othello];
         assert.deepEqual(actual_value, expected_value);
 
         query = 'non-existing-user';
@@ -763,7 +769,7 @@ run_test('initialize', () => {
         assert.equal(appended_name, 'Othello, the Moor of Venice');
 
         let appended_names = [];
-        people.get_person_from_user_id = function (user_id) {
+        people.get_by_user_id = function (user_id) {
             const users = {100: hamlet, 104: lear};
             return users[user_id];
         };
@@ -810,6 +816,7 @@ run_test('initialize', () => {
             caret_called = true;
             return 7;
         };
+        fake_this.$element.closest = () => [];
         fake_this.options = options;
         let actual_value = options.source.call(fake_this, 'test #s');
         assert.deepEqual(
@@ -994,7 +1001,6 @@ run_test('initialize', () => {
     $('form#send_message_form').keydown(event);
     event.target.id = 'some_non_existing_id';
     $('form#send_message_form').keydown(event);
-
 
     // Setup jquery functions used in compose_textarea enter
     // handler.
@@ -1257,7 +1263,6 @@ run_test('begins_typeahead', () => {
     assert_typeahead_equals("hello /poll", false);
     assert_typeahead_equals("\n/pol", false);
 
-
     assert_typeahead_equals("x/", false);
     assert_typeahead_equals("```", false);
     assert_typeahead_equals("``` ", false);
@@ -1291,7 +1296,8 @@ run_test('begins_typeahead', () => {
     assert_typeahead_equals("#**Sweden>some topic** >", false); // Already completed a topic.
 
     // topic_list
-    const sweden_topics_to_show = topic_data.get_recent_names(1); //includes "more ice"
+    // includes "more ice"
+    const sweden_topics_to_show = stream_topic_history.get_recent_topic_names(1);
     assert_typeahead_equals("#**Sweden>more ice", sweden_topics_to_show);
     sweden_topics_to_show.push('totally new topic');
     assert_typeahead_equals("#**Sweden>totally new topic", sweden_topics_to_show);
@@ -1520,4 +1526,14 @@ run_test('message people', () => {
 
     results = ct.get_person_suggestions('Ha', opts);
     assert.deepEqual(results, [harry, hamletcharacters]);
+
+    message_store.user_ids = () => [hamlet.user_id, harry.user_id, hal.user_id];
+
+    results = ct.get_person_suggestions('Ha', opts);
+    assert.deepEqual(results, [harry, hamletcharacters]);
+
+    people.deactivate(harry);
+    results = ct.get_person_suggestions('Ha', opts);
+    // harry is excluded since it has been deactivated.
+    assert.deepEqual(results, [hamletcharacters, hal]);
 });

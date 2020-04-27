@@ -34,7 +34,7 @@ run_test('get_emoji_matcher', () => {
     function assert_matches(query, expected) {
         const matcher = typeahead.get_emoji_matcher(query);
         assert.deepEqual(
-            _.filter(emojis, matcher),
+            emojis.filter(matcher),
             expected
         );
     }
@@ -53,3 +53,97 @@ run_test('get_emoji_matcher', () => {
     assert_matches(
         'japanese post ', [emoji_japanese_post_office]);
 });
+
+run_test('triage', () => {
+    const alice = {name: 'alice'};
+    const Alicia = {name: 'Alicia'};
+    const steve = {name: 'steve'};
+    const Stephanie = {name: 'Stephanie'};
+
+    const names = [alice, Alicia, steve, Stephanie];
+
+    assert.deepEqual(
+        typeahead.triage('a', names, (r) => r.name),
+        {
+            matches: [alice, Alicia],
+            rest: [steve, Stephanie],
+        }
+    );
+
+    assert.deepEqual(
+        typeahead.triage('A', names, (r) => r.name),
+        {
+            matches: [Alicia, alice],
+            rest: [steve, Stephanie],
+        }
+    );
+
+    assert.deepEqual(
+        typeahead.triage('S', names, (r) => r.name),
+        {
+            matches: [Stephanie, steve],
+            rest: [alice, Alicia],
+        }
+    );
+
+    assert.deepEqual(
+        typeahead.triage('fred', names, (r) => r.name),
+        {
+            matches: [],
+            rest: [alice, Alicia, steve, Stephanie],
+        }
+    );
+});
+
+run_test('sort_emojis th', () => {
+    const thumbs_up = {
+        emoji_name: 'thumbs_up', emoji_code: '1f44d'};
+    const thumbs_down = {
+        emoji_name: 'thumbs_down'};
+    const thermometer = {
+        emoji_name: 'thermometer'};
+    const mother_nature = {
+        emoji_name: 'mother_nature'};
+
+    const emoji_list = [
+        mother_nature,
+        thermometer,
+        thumbs_down,
+        thumbs_up,
+    ];
+
+    assert.deepEqual(
+        typeahead.sort_emojis(emoji_list, 'th'),
+        [
+            thumbs_up,
+            thermometer,
+            thumbs_down,
+            mother_nature,
+        ]
+    );
+});
+
+run_test('sort_emojis sm', () => {
+    const big_smile = {
+        emoji_name: 'big_smile'};
+    const slight_smile = {
+        emoji_name: 'slight_smile', emoji_code: '1f642'};
+    const small_airplane = {
+        emoji_name: 'small_airplane'};
+
+    const emoji_list = [
+        big_smile,
+        slight_smile,
+        small_airplane,
+    ];
+
+    assert.deepEqual(
+        typeahead.sort_emojis(emoji_list, 'sm'),
+        [
+            slight_smile,
+            small_airplane,
+            big_smile,
+        ]
+    );
+});
+

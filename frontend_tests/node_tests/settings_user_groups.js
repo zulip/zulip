@@ -2,7 +2,6 @@ zrequire('user_pill');
 zrequire('settings_user_groups');
 
 set_global('$', global.make_zjquery());
-set_global('i18n', global.stub_i18n);
 set_global('confirm_dialog', {});
 
 const noop = function () {};
@@ -10,11 +9,11 @@ const noop = function () {};
 const pills = {
     pill: {},
 };
+const settings_config = zrequire('settings_config');
 
 let create_item_handler;
 
 set_global('channel', {});
-set_global('blueslip', global.make_zblueslip());
 set_global('typeahead_helper', {});
 set_global('user_groups', {
     get_user_group_from_id: noop,
@@ -113,12 +112,16 @@ run_test('populate_user_groups', () => {
         full_name: 'Bob',
     };
 
-    people.get_realm_persons = function () {
+    people.get_realm_users = function () {
         return [iago, alice, bob];
     };
 
     user_groups.get_realm_user_groups = function () {
         return [realm_user_group];
+    };
+
+    people.get_visible_email = function () {
+        return bob.email;
     };
 
     let templates_render_called = false;
@@ -138,8 +141,8 @@ run_test('populate_user_groups', () => {
         user_groups_list_append_called = true;
     };
 
-    let get_person_from_user_id_called = false;
-    people.get_person_from_user_id = function (user_id) {
+    let get_by_user_id_called = false;
+    people.get_by_user_id = function (user_id) {
         if (user_id === iago.user_id) {
             return iago;
         }
@@ -147,24 +150,24 @@ run_test('populate_user_groups', () => {
             return noop;
         }
         assert.equal(user_id, 4);
-        blueslip.set_test_data('warn', 'Undefined user in function append_user');
-        get_person_from_user_id_called = true;
+        blueslip.expect('warn', 'Undefined user in function append_user');
+        get_by_user_id_called = true;
     };
 
     settings_user_groups.can_edit = function () {
         return true;
     };
 
-    const all_pills = {};
+    const all_pills = new Map();
 
     const pill_container_stub = $('.pill-container[data-group-pills="1"]');
     pills.appendValidatedData = function (item) {
         const id = item.user_id;
-        assert.equal(all_pills[id], undefined);
-        all_pills[id] = item;
+        assert(!all_pills.has(id));
+        all_pills.set(id, item);
     };
     pills.items = function () {
-        return _.values(all_pills);
+        return Array.from(all_pills.values());
     };
 
     let text_cleared;
@@ -201,9 +204,13 @@ run_test('populate_user_groups', () => {
             query: 'ali',
         };
 
+        const fake_context_for_email = {
+            query: 'am',
+        };
+
         (function test_source() {
             const result = config.source.call(fake_context, iago);
-            const emails = _.pluck(result, 'email').sort();
+            const emails = result.map(user => user.email).sort();
             assert.deepEqual(emails, [alice.email, bob.email]);
         }());
 
@@ -214,6 +221,16 @@ run_test('populate_user_groups', () => {
             assert(!result);
 
             result = config.matcher.call(fake_context, alice);
+            assert(result);
+
+            page_params.realm_email_address_visibility =
+                settings_config.email_address_visibility_values.admins_only.code;
+            page_params.is_admin = false;
+            result = config.matcher.call(fake_context_for_email, bob);
+            assert(!result);
+
+            page_params.is_admin = true;
+            result = config.matcher.call(fake_context_for_email, bob);
             assert(result);
         }());
 
@@ -320,10 +337,8 @@ run_test('populate_user_groups', () => {
     settings_user_groups.set_up();
     assert(templates_render_called);
     assert(user_groups_list_append_called);
-    assert(get_person_from_user_id_called);
+    assert(get_by_user_id_called);
     assert(input_typeahead_called);
-    assert.equal(blueslip.get_test_logs('warn').length, 1);
-    blueslip.clear_test_data();
     test_create_item(create_item_handler);
 
     // Tests for settings_user_groups.set_up workflow.
@@ -345,7 +360,7 @@ run_test('with_external_user', () => {
     };
 
     // We return noop because these are already tested, so we skip them
-    people.get_realm_persons = function () {
+    people.get_realm_users = function () {
         return noop;
     };
 
@@ -353,7 +368,7 @@ run_test('with_external_user', () => {
         return noop;
     });
 
-    people.get_person_from_user_id = function () {
+    people.get_by_user_id = function () {
         return noop;
     };
 
@@ -641,11 +656,12 @@ run_test('on_events', () => {
         };
 
         // Any of the blur_exceptions trigger blur event.
-        _.each(blur_event_classes, function (class_name) {
+        for (const class_name of blur_event_classes) {
             const handler = $(user_group_selector).get_on_handler("blur", class_name);
             const blur_exceptions = _.without([".pill-container", ".name", ".description", ".input", ".delete"],
                                               class_name);
-            _.each(blur_exceptions, function (blur_exception) {
+
+            for (const blur_exception of blur_exceptions) {
                 api_endpoint_called = false;
                 fake_this.closest = function (class_name) {
                     if (class_name === blur_exception || class_name === user_group_selector) {
@@ -655,7 +671,7 @@ run_test('on_events', () => {
                 };
                 handler.call(fake_this, event);
                 assert(!api_endpoint_called);
-            });
+            }
 
             api_endpoint_called = false;
             fake_this.closest = function (class_name) {
@@ -682,8 +698,7 @@ run_test('on_events', () => {
             handler.call(fake_this, event);
             assert(!api_endpoint_called);
             assert(settings_user_groups_reload_called);
-        });
-
+        }
     }());
 
     (function test_update_cancel_button() {

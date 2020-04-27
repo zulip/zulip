@@ -1,5 +1,6 @@
 from functools import partial
 import random
+import sys
 
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
     Type, TypeVar, Union
@@ -8,7 +9,7 @@ from unittest.result import TestResult
 
 from django.conf import settings
 from django.db import connections, ProgrammingError
-from django.urls.resolvers import RegexURLPattern
+from django.urls.resolvers import URLPattern
 from django.test import TestCase
 from django.test import runner as django_runner
 from django.test.runner import DiscoverRunner
@@ -38,10 +39,16 @@ from scripts.lib.zulip_tools import get_dev_uuid_var_path, TEMPLATE_DATABASE_DIR
 # ensure the database IDs we select are unique for each `test-backend`
 # run.  This probably should use a locking mechanism rather than the
 # below hack, which fails 1/10000000 of the time.
-random_id_range_start = random.randint(1, 10000000) * 100
+random_id_range_start = str(random.randint(1, 10000000))
+
+def get_database_id(worker_id: Optional[int]=None) -> str:
+    if worker_id:
+        return "{}_{}".format(random_id_range_start, worker_id)
+    return random_id_range_start
+
 # The root directory for this run of the test suite.
 TEST_RUN_DIR = get_or_create_dev_uuid_var_path(
-    os.path.join('test-backend', 'run_{}'.format(random_id_range_start)))
+    os.path.join('test-backend', 'run_{}'.format(get_database_id())))
 
 _worker_id = 0  # Used to identify the worker process.
 
@@ -73,7 +80,7 @@ def get_test_method(test: TestCase) -> Callable[[], None]:
     return getattr(test, test._testMethodName)
 
 # Each tuple is delay, test_name, slowness_reason
-TEST_TIMINGS = []  # type: List[Tuple[float, str, str]]
+TEST_TIMINGS: List[Tuple[float, str, str]] = []
 
 
 def report_slow_tests() -> None:
@@ -121,12 +128,11 @@ def run_test(test: TestCase, result: TestResult) -> bool:
     bounce_key_prefix_for_testing(test_name)
     bounce_redis_key_prefix_for_testing(test_name)
 
-    if not hasattr(test, "_pre_setup"):
-        msg = "Test doesn't have _pre_setup; something is wrong."
-        error_pre_setup = (Exception, Exception(msg), None)
-        result.addError(test, error_pre_setup)
+    try:
+        test._pre_setup()
+    except Exception:
+        result.addError(test, sys.exc_info())
         return True
-    test._pre_setup()
 
     start_time = time.time()
 
@@ -145,21 +151,22 @@ class TextTestResult(runner.TextTestResult):
     This class has unpythonic function names because base class follows
     this style.
     """
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.failed_tests = []  # type: List[str]
+        self.failed_tests: List[str] = []
 
     def addInfo(self, test: TestCase, msg: str) -> None:
-        self.stream.write(msg)  # type: ignore # https://github.com/python/typeshed/issues/3139
-        self.stream.flush()  # type: ignore # https://github.com/python/typeshed/issues/3139
+        self.stream.write(msg)  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
+        self.stream.flush()  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
 
     def addInstrumentation(self, test: TestCase, data: Dict[str, Any]) -> None:
         append_instrumentation_data(data)
 
     def startTest(self, test: TestCase) -> None:
         TestResult.startTest(self, test)
-        self.stream.writeln("Running {}".format(full_test_name(test)))  # type: ignore # https://github.com/python/typeshed/issues/3139
-        self.stream.flush()  # type: ignore # https://github.com/python/typeshed/issues/3139
+        self.stream.writeln("Running {}".format(full_test_name(test)))  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
+        self.stream.flush()  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
 
     def addSuccess(self, *args: Any, **kwargs: Any) -> None:
         TestResult.addSuccess(self, *args, **kwargs)
@@ -176,16 +183,17 @@ class TextTestResult(runner.TextTestResult):
 
     def addSkip(self, test: TestCase, reason: str) -> None:
         TestResult.addSkip(self, test, reason)
-        self.stream.writeln("** Skipping {}: {}".format(  # type: ignore # https://github.com/python/typeshed/issues/3139
+        self.stream.writeln("** Skipping {}: {}".format(  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
             full_test_name(test),
             reason))
-        self.stream.flush()  # type: ignore # https://github.com/python/typeshed/issues/3139
+        self.stream.flush()  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
 
 class RemoteTestResult(django_runner.RemoteTestResult):
     """
     The class follows the unpythonic style of function names of the
     base class.
     """
+
     def addInfo(self, test: TestCase, msg: str) -> None:
         self.events.append(('addInfo', self.test_index, msg))
 
@@ -252,8 +260,8 @@ def destroy_test_databases(worker_id: Optional[int]=None) -> None:
             # argument to destroy_test_db.
             if worker_id is not None:
                 """Modified from the Django original to """
-                database_id = random_id_range_start + worker_id
-                connection.creation.destroy_test_db(number=database_id)
+                database_id = get_database_id(worker_id)
+                connection.creation.destroy_test_db(suffix=database_id)
             else:
                 connection.creation.destroy_test_db()
         except ProgrammingError:
@@ -261,11 +269,11 @@ def destroy_test_databases(worker_id: Optional[int]=None) -> None:
             pass
 
 def create_test_databases(worker_id: int) -> None:
-    database_id = random_id_range_start + worker_id
+    database_id = get_database_id(worker_id)
     for alias in connections:
         connection = connections[alias]
         connection.creation.clone_test_db(
-            number=database_id,
+            suffix=database_id,
             keepdb=True,
         )
 
@@ -304,8 +312,8 @@ def init_worker(counter: Synchronized) -> None:
     create_test_databases(_worker_id)
     initialize_worker_path(_worker_id)
 
-    def is_upload_avatar_url(url: RegexURLPattern) -> bool:
-        if url.regex.pattern == r'^user_avatars/(?P<path>.*)$':
+    def is_upload_avatar_url(url: URLPattern) -> bool:
+        if url.pattern.regex.pattern == r'^user_avatars/(?P<path>.*)$':
             return True
         return False
 
@@ -330,7 +338,7 @@ class TestSuite(unittest.TestSuite):
         """
         topLevel = False
         if getattr(result, '_testRunEntered', False) is False:
-            result._testRunEntered = topLevel = True  # type: ignore
+            result._testRunEntered = topLevel = True  # type: ignore[attr-defined]
 
         for test in self:
             # but this is correct. Taken from unittest.
@@ -340,10 +348,10 @@ class TestSuite(unittest.TestSuite):
             if isinstance(test, TestSuite):
                 test.run(result, debug=debug)
             else:
-                self._tearDownPreviousClass(test, result)  # type: ignore
-                self._handleModuleFixture(test, result)  # type: ignore
-                self._handleClassSetUp(test, result)  # type: ignore
-                result._previousTestClass = test.__class__  # type: ignore
+                self._tearDownPreviousClass(test, result)  # type: ignore[attr-defined]
+                self._handleModuleFixture(test, result)  # type: ignore[attr-defined]
+                self._handleClassSetUp(test, result)  # type: ignore[attr-defined]
+                result._previousTestClass = test.__class__  # type: ignore[attr-defined]
                 if (getattr(test.__class__, '_classSetupFailed', False) or
                         getattr(result, '_moduleSetUpFailed', False)):
                     continue
@@ -354,9 +362,9 @@ class TestSuite(unittest.TestSuite):
                     break
 
         if topLevel:
-            self._tearDownPreviousClass(None, result)  # type: ignore
-            self._handleModuleTearDown(result)  # type: ignore
-            result._testRunEntered = False  # type: ignore
+            self._tearDownPreviousClass(None, result)  # type: ignore[attr-defined]
+            self._handleModuleTearDown(result)  # type: ignore[attr-defined]
+            result._testRunEntered = False  # type: ignore[attr-defined]
         return result
 
 class TestLoader(loader.TestLoader):
@@ -372,11 +380,11 @@ class ParallelTestSuite(django_runner.ParallelTestSuite):
         # the whole idea here is to monkey-patch that so we can use
         # most of django_runner.ParallelTestSuite with our own suite
         # definitions.
-        self.subsuites = SubSuiteList(self.subsuites)  # type: ignore # Type of self.subsuites changes.
+        self.subsuites = SubSuiteList(self.subsuites)  # type: ignore[has-type] # Type of self.subsuites changes.
 
 def check_import_error(test_name: str) -> None:
     try:
-        # Directly using __import__ is not recommeded, but here it gives
+        # Directly using __import__ is not recommended, but here it gives
         # clearer traceback as compared to importlib.import_module.
         __import__(test_name)
     except ImportError as exc:
@@ -408,10 +416,10 @@ class Runner(DiscoverRunner):
 
         # `templates_rendered` holds templates which were rendered
         # in proper logical tests.
-        self.templates_rendered = set()  # type: Set[str]
+        self.templates_rendered: Set[str] = set()
         # `shallow_tested_templates` holds templates which were rendered
         # in `zerver.tests.test_templates`.
-        self.shallow_tested_templates = set()  # type: Set[str]
+        self.shallow_tested_templates: Set[str] = set()
         template_rendered.connect(self.on_template_rendered)
 
     def get_resultclass(self) -> Type[TestResult]:
@@ -439,14 +447,14 @@ class Runner(DiscoverRunner):
         # reference for cleaning them up if they leak.
         filepath = os.path.join(get_dev_uuid_var_path(),
                                 TEMPLATE_DATABASE_DIR,
-                                str(random_id_range_start))
+                                get_database_id())
         os.makedirs(os.path.dirname(filepath), exist_ok=True)
         with open(filepath, "w") as f:
             if self.parallel > 1:
                 for index in range(self.parallel):
-                    f.write(str(random_id_range_start + (index + 1)) + "\n")
+                    f.write(get_database_id(index + 1) + "\n")
             else:
-                f.write(str(random_id_range_start) + "\n")
+                f.write(get_database_id() + "\n")
 
         # Check if we are in serial mode to avoid unnecessarily making a directory.
         # We add "worker_0" in the path for consistency with parallel mode.
@@ -458,8 +466,9 @@ class Runner(DiscoverRunner):
     def teardown_test_environment(self, *args: Any, **kwargs: Any) -> Any:
         # The test environment setup clones the zulip_test_template
         # database, creating databases with names:
-        #     'zulip_test_template_<N, N + self.parallel - 1>',
-        # where N is random_id_range_start.
+        #     'zulip_test_template_N_<worker_id>',
+        # where N is `random_id_range_start`, and `worker_id` is a
+        # value between <1, self.parallel>.
         #
         # We need to delete those databases to avoid leaking disk
         # (Django is smart and calls this on SIGINT too).
@@ -472,7 +481,7 @@ class Runner(DiscoverRunner):
         # Clean up our record of which databases this process created.
         filepath = os.path.join(get_dev_uuid_var_path(),
                                 TEMPLATE_DATABASE_DIR,
-                                str(random_id_range_start))
+                                get_database_id())
         os.remove(filepath)
 
         # Clean up our test runs root directory.
@@ -568,8 +577,7 @@ def get_test_names(suite: Union[TestSuite, ParallelTestSuite]) -> List[str]:
 def get_tests_from_suite(suite: unittest.TestSuite) -> TestCase:
     for test in suite:
         if isinstance(test, TestSuite):
-            for child in get_tests_from_suite(test):
-                yield child
+            yield from get_tests_from_suite(test)
         else:
             yield test
 
@@ -592,6 +600,7 @@ class SubSuiteList(List[Tuple[Type[TestSuite], List[str]]]):
     This class allows us to avoid changing the main logic of
     ParallelTestSuite and still make it serializable.
     """
+
     def __init__(self, suites: List[TestSuite]) -> None:
         serialized_suites = [serialize_suite(s) for s in suites]
         super().__init__(serialized_suites)

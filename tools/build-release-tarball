@@ -2,18 +2,15 @@
 set -eu
 
 usage() {
-    echo "Usage: $0 <ZULIP_VERSION> [--authors-not-required]" >&2
+    echo "Usage: $0 <ZULIP_VERSION>" >&2
     exit 1
 }
 
-args="$(getopt -o '' -l 'authors-not-required,help' -n "$0" -- "$@")"
+args="$(getopt -o '' -l 'help' -n "$0" -- "$@")"
 eval "set -- $args"
 
-authors_not_required=
 while true; do
     case "$1" in
-        --authors-not-required)
-            authors_not_required=--authors-not-required; shift;;
         --) shift; break;;
         *) usage;;
     esac
@@ -92,21 +89,7 @@ rabbitmq_password = 'not_used_here'
 initial_password_salt = 'not_used_here'
 EOF
 
-# We do a bit of gymnastics to have update-prod-static.log be easily
-# visible to the user and end up in the same directory as the final
-# release tarball.
-USER_PROD_STATIC_LOGPATH="$TMPDIR/update-prod-static.log"
-BUILD_PROD_STATIC_LOGPATH="$TMPDIR/$prefix/var/log/update-prod-static.log"
-ln -nfs "$BUILD_PROD_STATIC_LOGPATH" "$USER_PROD_STATIC_LOGPATH"
-
-./tools/update-prod-static $authors_not_required || (
-    set +x
-    echo; echo -ne '\033[33mRunning update-prod-static failed. '
-    echo -e "Check $TMPDIR/update-prod-static.log for more information.\\033[0m"
-    exit 1
-)
-rm -f "$USER_PROD_STATIC_LOGPATH"
-mv "$BUILD_PROD_STATIC_LOGPATH" "$USER_PROD_STATIC_LOGPATH"
+./tools/update-prod-static
 
 # We don't need duplicate copies of emoji with hashed paths, and they would break bugdown
 find prod-static/serve/generated/emoji/images/emoji/ -regex '.*\.[0-9a-f]+\.png' -delete

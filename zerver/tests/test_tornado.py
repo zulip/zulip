@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import ujson
 from django.conf import settings
 from django.db import close_old_connections
@@ -25,7 +23,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
         super().setUp()
         signals.request_started.disconnect(close_old_connections)
         signals.request_finished.disconnect(close_old_connections)
-        self.session_cookie = None  # type: Optional[Dict[str, str]]
+        self.session_cookie: Optional[Dict[str, str]] = None
 
     def tearDown(self) -> None:
         super().tearDown()
@@ -37,7 +35,8 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
 
     def client_get(self, path: str, **kwargs: Any) -> HTTPResponse:
         self.add_session_cookie(kwargs)
-        self.set_http_host(kwargs)
+        kwargs['skip_user_agent'] = True
+        self.set_http_headers(kwargs)
         if 'HTTP_HOST' in kwargs:
             kwargs['headers']['Host'] = kwargs['HTTP_HOST']
             del kwargs['HTTP_HOST']
@@ -45,7 +44,8 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
 
     def fetch_async(self, method: str, path: str, **kwargs: Any) -> None:
         self.add_session_cookie(kwargs)
-        self.set_http_host(kwargs)
+        kwargs['skip_user_agent'] = True
+        self.set_http_headers(kwargs)
         if 'HTTP_HOST' in kwargs:
             kwargs['headers']['Host'] = kwargs['HTTP_HOST']
             del kwargs['HTTP_HOST']
@@ -57,11 +57,12 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
         )
 
     def client_get_async(self, path: str, **kwargs: Any) -> None:
-        self.set_http_host(kwargs)
+        kwargs['skip_user_agent'] = True
+        self.set_http_headers(kwargs)
         self.fetch_async('GET', path, **kwargs)
 
-    def login(self, *args: Any, **kwargs: Any) -> None:
-        super().login(*args, **kwargs)
+    def login_user(self, *args: Any, **kwargs: Any) -> None:
+        super().login_user(*args, **kwargs)
         session_cookie = settings.SESSION_COOKIE_NAME
         session_key = self.client.session.session_key
         self.session_cookie = {
@@ -78,7 +79,8 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
         kwargs['headers'] = headers
 
     def create_queue(self, **kwargs: Any) -> str:
-        response = self.client_get('/json/events?dont_block=true', subdomain="zulip")
+        response = self.client_get('/json/events?dont_block=true', subdomain="zulip",
+                                   skip_user_agent=True)
         self.assertEqual(response.code, 200)
         body = ujson.loads(response.body)
         self.assertEqual(body['events'], [])
@@ -87,13 +89,13 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
 
 class EventsTestCase(TornadoWebTestCase):
     def test_create_queue(self) -> None:
-        self.login(self.example_email('hamlet'))
+        self.login_user(self.example_user('hamlet'))
         queue_id = self.create_queue()
         self.assertIn(queue_id, event_queue.clients)
 
     def test_events_async(self) -> None:
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         event_queue_id = self.create_queue()
         data = {
             'queue_id': event_queue_id,

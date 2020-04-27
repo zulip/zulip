@@ -14,6 +14,8 @@ sanity_check.check_venv(__file__)
 import django
 import requests
 
+MAX_SERVER_WAIT = 90
+
 TOOLS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if TOOLS_DIR not in sys.path:
     sys.path.insert(0, os.path.dirname(TOOLS_DIR))
@@ -21,8 +23,7 @@ if TOOLS_DIR not in sys.path:
 from zerver.lib.test_fixtures import update_test_databases_if_required
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
 
-def set_up_django(external_host):
-    # type: (str) -> None
+def set_up_django(external_host: str) -> None:
     os.environ['EXTERNAL_HOST'] = external_host
     os.environ["TORNADO_SERVER"] = "http://127.0.0.1:9983"
     os.environ["LOCAL_UPLOADS_DIR"] = get_or_create_dev_uuid_var_path(
@@ -31,8 +32,7 @@ def set_up_django(external_host):
     django.setup()
     os.environ['PYTHONUNBUFFERED'] = 'y'
 
-def assert_server_running(server, log_file):
-    # type: (subprocess.Popen[bytes], Optional[str]) -> None
+def assert_server_running(server: "subprocess.Popen[bytes]", log_file: Optional[str]) -> None:
     """Get the exit code of the server, or None if it is still running."""
     if server.poll() is not None:
         message = 'Server died unexpectedly!'
@@ -40,12 +40,12 @@ def assert_server_running(server, log_file):
             message += '\nSee %s\n' % (log_file,)
         raise RuntimeError(message)
 
-def server_is_up(server, log_file):
-    # type: (subprocess.Popen[bytes], Optional[str]) -> bool
+def server_is_up(server: "subprocess.Popen[bytes]", log_file: Optional[str]) -> bool:
     assert_server_running(server, log_file)
     try:
         # We could get a 501 error if the reverse proxy is up but the Django app isn't.
-        return requests.get('http://127.0.0.1:9981/accounts/home').status_code == 200
+        # Note that zulipdev.com is mapped via DNS to 127.0.0.1.
+        return requests.get('http://zulipdev.com:9981/accounts/home').status_code == 200
     except Exception:
         return False
 
@@ -78,11 +78,14 @@ def test_server_running(force: bool=False, external_host: str='testserver',
         sys.stdout.write('\nWaiting for test server (may take a while)')
         if not dots:
             sys.stdout.write('\n\n')
+        t = time.time()
         while not server_is_up(server, log_file):
             if dots:
                 sys.stdout.write('.')
                 sys.stdout.flush()
-            time.sleep(0.1)
+            time.sleep(0.4)
+            if time.time() - t > MAX_SERVER_WAIT:
+                raise Exception('Timeout waiting for server')
         sys.stdout.write('\n\n--- SERVER IS UP! ---\n\n')
 
         # DO OUR ACTUAL TESTING HERE!!!

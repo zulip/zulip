@@ -3,6 +3,9 @@ exports.build_realm_icon_widget = function (upload_function) {
         return $('#realm_icon_file_input').expectOne();
     };
 
+    if (!page_params.is_admin) {
+        return;
+    }
     if (page_params.realm_icon_source === 'G') {
         $("#realm_icon_delete_button").hide();
     } else {

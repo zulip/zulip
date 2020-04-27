@@ -11,7 +11,7 @@ function update_table_stream_color(table, stream_name, color) {
 
     const stream_labels = $("#floating_recipient_bar").add(table).find(".stream_label");
 
-    _.each(stream_labels, function (label) {
+    for (const label of stream_labels) {
         const $label = $(label);
         if ($.trim($label.text()) === stream_name) {
             const messages = $label.closest(".recipient_row").children(".message_row");
@@ -21,7 +21,7 @@ function update_table_stream_color(table, stream_name, color) {
             $label.removeClass(exports.color_classes);
             $label.addClass(color_class);
         }
-    });
+    }
 }
 
 function update_stream_sidebar_swatch_color(id, color) {
@@ -51,13 +51,15 @@ const subscriptions_table_colorpicker_options = {
 };
 
 exports.set_colorpicker_color = function (colorpicker, color) {
-    colorpicker.spectrum(_.extend(subscriptions_table_colorpicker_options,
-                                  {color: color,
-                                   container: "#subscription_overlay .subscription_settings.show"}));
+    colorpicker.spectrum({
+        ...subscriptions_table_colorpicker_options,
+        color: color,
+        container: "#subscription_overlay .subscription_settings.show",
+    });
 };
 
 exports.update_stream_color = function (sub, color, opts) {
-    opts = _.defaults({}, opts, {update_historical: false});
+    opts = { update_historical: false, ...opts };
     sub.color = color;
     const stream_id = sub.stream_id;
     // The swatch in the subscription row header.

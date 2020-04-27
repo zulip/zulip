@@ -10,7 +10,7 @@ JobData = TypeVar('JobData')
 def run_parallel(job: Callable[[JobData], int],
                  data: Iterable[JobData],
                  threads: int=6) -> Iterator[Tuple[int, JobData]]:
-    pids = {}  # type: Dict[int, JobData]
+    pids: Dict[int, JobData] = {}
 
     def wait_for_one() -> Tuple[int, JobData]:
         while True:
@@ -29,7 +29,7 @@ def run_parallel(job: Callable[[JobData], int],
             except OSError as e:
                 if e.errno != errno.EBADF:
                     raise
-            sys.stdin = open("/dev/null", "r")
+            sys.stdin = open("/dev/null")
             os._exit(job(item))
 
         pids[pid] = item

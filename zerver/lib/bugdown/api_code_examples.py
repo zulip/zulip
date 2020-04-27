@@ -6,14 +6,14 @@ from django.conf import settings
 
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
-from typing import Any, Dict, Optional, List, Tuple
+from typing import Any, Dict, Optional, List, Tuple, Pattern
 import markdown
 
 import zerver.openapi.python_examples
-from zerver.lib.openapi import get_openapi_fixture, openapi_spec
+from zerver.openapi.openapi import get_openapi_fixture, openapi_spec
 
 MACRO_REGEXP = re.compile(r'\{generate_code_example(\(\s*(.+?)\s*\))*\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+)\s*\))?\}')
-CODE_EXAMPLE_REGEX = re.compile(r'\# \{code_example\|\s*(.+?)\s*\}')
+PYTHON_EXAMPLE_REGEX = re.compile(r'\# \{code_example\|\s*(.+?)\s*\}')
 
 PYTHON_CLIENT_CONFIG = """
 #!/usr/bin/env python3
@@ -59,11 +59,12 @@ def parse_language_and_options(input_str: Optional[str]) -> Tuple[str, Dict[str,
         return (language, options)
     return (language, {})
 
-def extract_python_code_example(source: List[str], snippet: List[str]) -> List[str]:
+def extract_code_example(source: List[str], snippet: List[str],
+                         example_regex: Pattern[str]) -> List[str]:
     start = -1
     end = -1
     for line in source:
-        match = CODE_EXAMPLE_REGEX.search(line)
+        match = example_regex.search(line)
         if match:
             if match.group(1) == 'start':
                 start = source.index(line)
@@ -75,10 +76,8 @@ def extract_python_code_example(source: List[str], snippet: List[str]) -> List[s
         return snippet
 
     snippet.extend(source[start + 1: end])
-    snippet.append('    print(result)')
-    snippet.append('\n')
     source = source[end + 1:]
-    return extract_python_code_example(source, snippet)
+    return extract_code_example(source, snippet, example_regex)
 
 def render_python_code_example(function: str, admin_config: Optional[bool]=False,
                                **kwargs: Any) -> List[str]:
@@ -90,7 +89,7 @@ def render_python_code_example(function: str, admin_config: Optional[bool]=False
     else:
         config = PYTHON_CLIENT_CONFIG.splitlines()
 
-    snippet = extract_python_code_example(function_source_lines, [])
+    snippet = extract_code_example(function_source_lines, [], PYTHON_EXAMPLE_REGEX)
 
     code_example = []
     code_example.append('```python')
@@ -100,6 +99,8 @@ def render_python_code_example(function: str, admin_config: Optional[bool]=False
         # Remove one level of indentation and strip newlines
         code_example.append(line[4:].rstrip())
 
+    code_example.append('    print(result)')
+    code_example.append('\n')
     code_example.append('```')
 
     return code_example
@@ -124,7 +125,14 @@ def curl_method_arguments(endpoint: str, method: str,
 
 def get_openapi_param_example_value_as_string(endpoint: str, method: str, param: Dict[str, Any],
                                               curl_argument: bool=False) -> str:
-    param_type = param["schema"]["type"]
+    if "type" in param["schema"]:
+        param_type = param["schema"]["type"]
+    else:
+        # Hack: Ideally, we'd extract a common function for handling
+        # oneOf values in types and do something with the resulting
+        # union type.  But for this logic's purpose, it's good enough
+        # to just check the first parameter.
+        param_type = param["schema"]["oneOf"][0]["type"]
     param_name = param["name"]
     if param_type in ["object", "array"]:
         example_value = param.get("example", None)
@@ -139,8 +147,8 @@ cURL example.""".format(endpoint, method, param_name)
             return "    --data-urlencode {}='{}'".format(param_name, ordered_ex_val_str)
         return ordered_ex_val_str  # nocoverage
     else:
-        example_value = param.get("example", DEFAULT_EXAMPLE[param["schema"]["type"]])
-        if type(example_value) == bool:
+        example_value = param.get("example", DEFAULT_EXAMPLE[param_type])
+        if isinstance(example_value, bool):
             example_value = str(example_value).lower()
         if param["schema"].get("format", "") == "json":
             example_value = json.dumps(example_value)
@@ -234,7 +242,7 @@ def render_curl_example(function: str, api_url: str,
     parts = function.split(":")
     endpoint = parts[0]
     method = parts[1]
-    kwargs = dict()  # type: Dict[str, Any]
+    kwargs: Dict[str, Any] = dict()
     if len(parts) > 2:
         kwargs["auth_email"] = parts[2]
     if len(parts) > 3:
@@ -244,7 +252,7 @@ def render_curl_example(function: str, api_url: str,
     kwargs["include"] = include
     return generate_curl_example(endpoint, method, **kwargs)
 
-SUPPORTED_LANGUAGES = {
+SUPPORTED_LANGUAGES: Dict[str, Any] = {
     'python': {
         'client_config': PYTHON_CLIENT_CONFIG,
         'admin_config': PYTHON_CLIENT_ADMIN_CONFIG,
@@ -253,7 +261,7 @@ SUPPORTED_LANGUAGES = {
     'curl': {
         'render': render_curl_example
     }
-}  # type: Dict[str, Any]
+}
 
 class APICodeExamplesGenerator(Extension):
     def __init__(self, api_url: Optional[str]) -> None:
@@ -271,7 +279,7 @@ class APICodeExamplesGenerator(Extension):
 
 class APICodeExamplesPreprocessor(Preprocessor):
     def __init__(self, md: markdown.Markdown, config: Dict[str, Any]) -> None:
-        super(APICodeExamplesPreprocessor, self).__init__(md)
+        super().__init__(md)
         self.api_url = config['api_url']
 
     def run(self, lines: List[str]) -> List[str]:
@@ -293,8 +301,6 @@ class APICodeExamplesPreprocessor(Preprocessor):
                     if key == 'fixture':
                         if argument:
                             text = self.render_fixture(function, name=argument)
-                        else:
-                            text = self.render_fixture(function)
                     elif key == 'example':
                         if argument == 'admin_config=True':
                             text = SUPPORTED_LANGUAGES[language]['render'](function, admin_config=True)
@@ -318,19 +324,12 @@ class APICodeExamplesPreprocessor(Preprocessor):
     def render_fixture(self, function: str, name: Optional[str]=None) -> List[str]:
         fixture = []
 
-        # We assume that if the function we're rendering starts with a slash
-        # it's a path in the endpoint and therefore it uses the new OpenAPI
-        # format.
-        if function.startswith('/'):
-            path, method = function.rsplit(':', 1)
-            fixture_dict = get_openapi_fixture(path, method, name)
-        else:
-            fixture_dict = zerver.openapi.python_examples.FIXTURES[function]
-
+        path, method = function.rsplit(':', 1)
+        fixture_dict = get_openapi_fixture(path, method, name)
         fixture_json = json.dumps(fixture_dict, indent=4, sort_keys=True,
                                   separators=(',', ': '))
 
-        fixture.append('```')
+        fixture.append('``` json')
         fixture.extend(fixture_json.splitlines())
         fixture.append('```')
 

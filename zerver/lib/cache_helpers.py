@@ -11,7 +11,7 @@ import logging
 from analytics.models import RealmCount
 from django.conf import settings
 from zerver.models import Message, UserProfile, Stream, get_stream_cache_key, \
-    Recipient, get_recipient_cache_key, Client, get_client_cache_key, \
+    Client, get_client_cache_key, \
     Huddle, huddle_hash_cache_key
 from zerver.lib.cache import \
     user_profile_by_api_key_cache_key, \
@@ -65,10 +65,6 @@ def huddle_cache_items(items_for_remote_cache: Dict[str, Tuple[Huddle]],
                        huddle: Huddle) -> None:
     items_for_remote_cache[huddle_hash_cache_key(huddle.huddle_hash)] = (huddle,)
 
-def recipient_cache_items(items_for_remote_cache: Dict[str, Tuple[Recipient]],
-                          recipient: Recipient) -> None:
-    items_for_remote_cache[get_recipient_cache_key(recipient.type, recipient.type_id)] = (recipient,)
-
 session_engine = import_module(settings.SESSION_ENGINE)
 def session_cache_items(items_for_remote_cache: Dict[str, str],
                         session: Session) -> None:
@@ -77,7 +73,7 @@ def session_cache_items(items_for_remote_cache: Dict[str, str],
         # will be no store.cache_key attribute, and in any case we
         # don't need to fill the cache, since it won't exist.
         return
-    store = session_engine.SessionStore(session_key=session.session_key)  # type: ignore # import_module
+    store = session_engine.SessionStore(session_key=session.session_key)  # type: ignore[attr-defined] # import_module
     items_for_remote_cache[store.cache_key] = store.decode(session.session_data)
 
 def get_active_realm_ids() -> List[int]:
@@ -101,10 +97,6 @@ def get_streams() -> List[Stream]:
             # have 10,000s of streams with only 1 subscriber.
             is_in_zephyr_realm=True)
 
-def get_recipients() -> List[Recipient]:
-    return Recipient.objects.select_related().filter(
-        type_id__in=get_streams().values_list("id", flat=True))  # type: ignore  # Should be QuerySet above
-
 def get_users() -> List[UserProfile]:
     return UserProfile.objects.select_related().filter(
         long_term_idle=False,
@@ -116,10 +108,9 @@ def get_users() -> List[UserProfile]:
 # doing any setup for things we're unlikely to use (without the lambda
 # wrapper the below adds an extra 3ms or so to startup time for
 # anything importing this file).
-cache_fillers = {
+cache_fillers: Dict[str, Tuple[Callable[[], List[Any]], Callable[[Dict[str, Any], Any], None], int, int]] = {
     'user': (get_users, user_cache_items, 3600*24*7, 10000),
     'client': (lambda: Client.objects.select_related().all(), client_cache_items, 3600*24*7, 10000),
-    'recipient': (get_recipients, recipient_cache_items, 3600*24*7, 10000),
     'stream': (get_streams, stream_cache_items, 3600*24*7, 10000),
     # Message cache fetching disabled until we can fix the fact that it
     # does a bunch of inefficient memcached queries as part of filling
@@ -127,12 +118,12 @@ cache_fillers = {
     #    'message': (message_fetch_objects, message_cache_items, 3600 * 24, 1000),
     'huddle': (lambda: Huddle.objects.select_related().all(), huddle_cache_items, 3600*24*7, 10000),
     'session': (lambda: Session.objects.all(), session_cache_items, 3600*24*7, 10000),
-}  # type: Dict[str, Tuple[Callable[[], List[Any]], Callable[[Dict[str, Any], Any], None], int, int]]
+}
 
 def fill_remote_cache(cache: str) -> None:
     remote_cache_time_start = get_remote_cache_time()
     remote_cache_requests_start = get_remote_cache_requests()
-    items_for_remote_cache = {}  # type: Dict[str, Any]
+    items_for_remote_cache: Dict[str, Any] = {}
     (objects, items_filler, timeout, batch_size) = cache_fillers[cache]
     count = 0
     for obj in objects():

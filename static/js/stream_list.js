@@ -1,6 +1,5 @@
 const render_stream_privacy = require('../templates/stream_privacy.hbs');
 const render_stream_sidebar_row = require('../templates/stream_sidebar_row.hbs');
-const Dict = require('./dict').Dict;
 
 let has_scrolled = false;
 
@@ -29,7 +28,7 @@ exports.update_count_in_dom = function (unread_count_elem, count) {
 exports.stream_sidebar = (function () {
     const self = {};
 
-    self.rows = new Dict(); // stream id -> row widget
+    self.rows = new Map(); // stream id -> row widget
 
     self.set_row = function (stream_id, widget) {
         self.rows.set(stream_id, widget);
@@ -50,7 +49,7 @@ exports.stream_sidebar = (function () {
         // cases like removing the last pinned stream (and removing
         // the divider).
 
-        self.rows.del(stream_id);
+        self.rows.delete(stream_id);
     };
 
     return self;
@@ -74,9 +73,9 @@ exports.create_initial_sidebar_rows = function () {
     // structures that are kept in stream_data.js.
     const subs = stream_data.subscribed_subs();
 
-    _.each(subs, function (sub) {
+    for (const sub of subs) {
         exports.create_sidebar_row(sub);
-    });
+    }
 };
 
 exports.build_stream_list = function () {
@@ -107,9 +106,10 @@ exports.build_stream_list = function () {
         elems.push(sidebar_row.get_li());
     }
 
+    topic_list.clear();
     parent.empty();
 
-    _.each(stream_groups.pinned_streams, add_sidebar_li);
+    stream_groups.pinned_streams.forEach(add_sidebar_li);
 
     const any_pinned_streams = stream_groups.pinned_streams.length > 0;
     const any_normal_streams = stream_groups.normal_streams.length > 0;
@@ -119,13 +119,13 @@ exports.build_stream_list = function () {
         elems.push('<hr class="stream-split">');
     }
 
-    _.each(stream_groups.normal_streams, add_sidebar_li);
+    stream_groups.normal_streams.forEach(add_sidebar_li);
 
     if (any_dormant_streams && any_normal_streams) {
         elems.push('<hr class="stream-split">');
     }
 
-    _.each(stream_groups.dormant_streams, add_sidebar_li);
+    stream_groups.dormant_streams.forEach(add_sidebar_li);
 
     parent.append(elems);
 };
@@ -317,29 +317,9 @@ exports.update_streams_sidebar = function () {
 
 exports.update_dom_with_unread_counts = function (counts) {
     // counts.stream_count maps streams to counts
-    counts.stream_count.each(function (count, stream_id) {
+    for (const [stream_id, count] of counts.stream_count) {
         set_stream_unread_count(stream_id, count);
-    });
-
-    // counts.topic_count maps streams to hashes of topics to counts
-    counts.topic_count.each(function (topic_hash, stream_id) {
-        // Because the topic_list data structure doesn't keep track of
-        // which topics the "more topics" unread count came from, we
-        // need to compute the correct value from scratch here.
-        let more_topics_total = 0;
-        topic_hash.each(function (count, topic) {
-            const in_more_topics = topic_list.set_count(stream_id, topic, count);
-            if (in_more_topics === true) {
-                more_topics_total += count;
-            }
-        });
-        if (topic_list.active_stream_id() === stream_id) {
-            // Update the "more topics" unread count; we communicate
-            // this to the `topic_list` library by passing `null` as
-            // the topic.
-            topic_list.set_count(stream_id, null, more_topics_total);
-        }
-    });
+    }
 };
 
 exports.rename_stream = function (sub) {
@@ -398,7 +378,7 @@ exports.get_sidebar_stream_topic_info  = function (filter) {
 };
 
 function deselect_stream_items() {
-    $("ul#stream_filters li").removeClass('active-filter active-sub-filter');
+    $("ul#stream_filters li").removeClass('active-filter');
 }
 
 exports.update_stream_sidebar_for_narrow = function (filter) {
@@ -416,11 +396,11 @@ exports.update_stream_sidebar_for_narrow = function (filter) {
     const stream_li = exports.get_stream_li(stream_id);
 
     if (!stream_li) {
-        // It should be the case then when we have a subscribed
+        // This is a sanity check.  When we narrow to a subscribed
         // stream, there will always be a stream list item
-        // corresponding to that stream in our sidebar.  We have
-        // evidence that this assumption breaks down for some users,
-        // but we are not clear why it happens.
+        // corresponding to that stream in our sidebar.  This error
+        // stopped appearing from March 2018 until at least
+        // April 2020, so if it appears again, something regressed.
         blueslip.error('No stream_li for subscribed stream ' + stream_id);
         topic_zoom.clear_topics();
         return;

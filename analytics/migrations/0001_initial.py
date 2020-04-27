@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
@@ -90,22 +89,22 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='usercount',
-            unique_together=set([('user', 'property', 'end_time', 'interval')]),
+            unique_together={('user', 'property', 'end_time', 'interval')},
         ),
         migrations.AlterUniqueTogether(
             name='streamcount',
-            unique_together=set([('stream', 'property', 'end_time', 'interval')]),
+            unique_together={('stream', 'property', 'end_time', 'interval')},
         ),
         migrations.AlterUniqueTogether(
             name='realmcount',
-            unique_together=set([('realm', 'property', 'end_time', 'interval')]),
+            unique_together={('realm', 'property', 'end_time', 'interval')},
         ),
         migrations.AlterUniqueTogether(
             name='installationcount',
-            unique_together=set([('property', 'end_time', 'interval')]),
+            unique_together={('property', 'end_time', 'interval')},
         ),
         migrations.AlterUniqueTogether(
             name='huddlecount',
-            unique_together=set([('huddle', 'property', 'end_time', 'interval')]),
+            unique_together={('huddle', 'property', 'end_time', 'interval')},
         ),
     ]

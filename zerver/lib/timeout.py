@@ -1,13 +1,12 @@
 from types import TracebackType
 from typing import Any, Callable, Optional, Tuple, Type, TypeVar
 
-import six
 import sys
 import time
 import ctypes
 import threading
 
-# Based on http://code.activestate.com/recipes/483752/
+# Based on https://code.activestate.com/recipes/483752/
 
 class TimeoutExpired(Exception):
     '''Exception raised when a function times out.'''
@@ -36,8 +35,12 @@ def timeout(timeout: float, func: Callable[..., ResultT], *args: Any, **kwargs: 
     class TimeoutThread(threading.Thread):
         def __init__(self) -> None:
             threading.Thread.__init__(self)
-            self.result = None  # type: Optional[ResultT]
-            self.exc_info = None  # type: Optional[Tuple[Optional[Type[BaseException]], Optional[BaseException], Optional[TracebackType]]]
+            self.result: Optional[ResultT] = None
+            self.exc_info: Tuple[
+                Optional[Type[BaseException]],
+                Optional[BaseException],
+                Optional[TracebackType],
+            ] = (None, None, None)
 
             # Don't block the whole program from exiting
             # if this is the only thread left.
@@ -71,7 +74,7 @@ def timeout(timeout: float, func: Callable[..., ResultT], *args: Any, **kwargs: 
 
     if thread.is_alive():
         # Gamely try to kill the thread, following the dodgy approach from
-        # http://stackoverflow.com/a/325528/90777
+        # https://stackoverflow.com/a/325528/90777
         #
         # We need to retry, because an async exception received while the
         # thread is in a system call is simply ignored.
@@ -82,9 +85,9 @@ def timeout(timeout: float, func: Callable[..., ResultT], *args: Any, **kwargs: 
                 break
         raise TimeoutExpired
 
-    if thread.exc_info:
+    if thread.exc_info[1] is not None:
         # Raise the original stack trace so our error messages are more useful.
-        # from http://stackoverflow.com/a/4785766/90777
-        six.reraise(thread.exc_info[0], thread.exc_info[1], thread.exc_info[2])
+        # from https://stackoverflow.com/a/4785766/90777
+        raise thread.exc_info[1].with_traceback(thread.exc_info[2])
     assert thread.result is not None  # assured if above did not reraise
     return thread.result

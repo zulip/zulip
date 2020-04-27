@@ -4,6 +4,8 @@ from zerver.lib.types import DisplayRecipientT
 from confirmation.models import one_click_unsubscribe_link
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import override as override_language
+from django.utils.translation import ugettext as _
 from django.contrib.auth import get_backends
 
 from zerver.decorator import statsd_increment
@@ -124,7 +126,7 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
     The messages are collapsed into per-recipient and per-sender blocks, like
     our web interface
     """
-    messages_to_render = []  # type: List[Dict[str, Any]]
+    messages_to_render: List[Dict[str, Any]] = []
 
     def sender_string(message: Message) -> str:
         if message.recipient.type in (Recipient.STREAM, Recipient.HUDDLE):
@@ -307,7 +309,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     if not user_profile.enable_offline_email_notifications:
         return
 
-    recipients = set((msg['message'].recipient_id, msg['message'].topic_name()) for msg in missed_messages)
+    recipients = {(msg['message'].recipient_id, msg['message'].topic_name()) for msg in missed_messages}
     if len(recipients) != 1:
         raise ValueError(
             'All missed_messages must have the same recipient and topic %r' %
@@ -323,7 +325,6 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         'message_count': message_count,
         'unsubscribe_link': unsubscribe_link,
         'realm_name_in_notifications': user_profile.realm_name_in_notifications,
-        'show_message_content': message_content_allowed_in_missedmessage_emails(user_profile)
     })
 
     triggers = list(message['trigger'] for message in missed_messages)
@@ -358,7 +359,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         'narrow_url': narrow_url,
     })
 
-    senders = list(set(m['message'].sender for m in missed_messages))
+    senders = list({m['message'].sender for m in missed_messages})
     if (missed_messages[0]['message'].recipient.type == Recipient.HUDDLE):
         display_recipient = get_display_recipient(missed_messages[0]['message'].recipient)
         # Make sure that this is a list of strings, not a string.
@@ -382,9 +383,9 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     elif (context['mention'] or context['stream_email_notify']):
         # Keep only the senders who actually mentioned the user
         if context['mention']:
-            senders = list(set(m['message'].sender for m in missed_messages
-                               if m['trigger'] == 'mentioned' or
-                               m['trigger'] == 'wildcard_mentioned'))
+            senders = list({m['message'].sender for m in missed_messages
+                            if m['trigger'] == 'mentioned' or
+                            m['trigger'] == 'wildcard_mentioned'})
         message = missed_messages[0]['message']
         stream = Stream.objects.only('id', 'name').get(id=message.recipient.type_id)
         stream_header = "%s > %s" % (stream.name, message.topic_name())
@@ -396,21 +397,27 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
 
     # If message content is disabled, then flush all information we pass to email.
     if not message_content_allowed_in_missedmessage_emails(user_profile):
+        realm = user_profile.realm
         context.update({
             'reply_to_zulip': False,
             'messages': [],
             'sender_str': "",
-            'realm_str': user_profile.realm.name,
+            'realm_str': realm.name,
             'huddle_display_name': "",
+            'show_message_content': False,
+            'message_content_disabled_by_user': not user_profile.message_content_in_email_notifications,
+            'message_content_disabled_by_realm': not realm.message_content_allowed_in_email_notifications,
         })
     else:
         context.update({
             'messages': build_message_list(user_profile, list(m['message'] for m in missed_messages)),
             'sender_str': ", ".join(sender.full_name for sender in senders),
             'realm_str': user_profile.realm.name,
+            'show_message_content': True,
         })
 
-    from_name = "Zulip missed messages"  # type: str
+    with override_language(user_profile.default_language):
+        from_name: str = _("Zulip missed messages")
     from_address = FromAddress.NOREPLY
     if len(senders) == 1 and settings.SEND_MISSED_MESSAGE_EMAILS_AS_USER:
         # If this setting is enabled, you can reply to the Zulip
@@ -463,7 +470,7 @@ def handle_missedmessage_emails(user_profile_id: int,
     # We bucket messages by tuples that identify similar messages.
     # For streams it's recipient_id and topic.
     # For PMs it's recipient id and sender.
-    messages_by_bucket = defaultdict(list)  # type: Dict[Tuple[int, str], List[Message]]
+    messages_by_bucket: Dict[Tuple[int, str], List[Message]] = defaultdict(list)
     for msg in messages:
         if msg.recipient.type == Recipient.PERSONAL:
             # For PM's group using (recipient, sender).
@@ -484,7 +491,7 @@ def handle_missedmessage_emails(user_profile_id: int,
             msg_list.extend(filtered_context_messages)
 
     # Sort emails by least recently-active discussion.
-    bucket_tups = []  # type: List[Tuple[Tuple[int, str], int]]
+    bucket_tups: List[Tuple[Tuple[int, str], int]] = []
     for bucket_tup, msg_list in messages_by_bucket.items():
         max_message_id = max(msg_list, key=lambda msg: msg.id).id
         bucket_tups.append((bucket_tup, max_message_id))
@@ -539,7 +546,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> Non
         from_address = settings.WELCOME_EMAIL_SENDER['email']
     else:
         from_name = None
-        from_address = FromAddress.SUPPORT
+        from_address = FromAddress.support_placeholder
 
     other_account_count = UserProfile.objects.filter(
         delivery_email__iexact=user.delivery_email).exclude(id=user.id).count()

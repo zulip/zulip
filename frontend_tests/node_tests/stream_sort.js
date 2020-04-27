@@ -1,4 +1,4 @@
-zrequire('util');
+
 zrequire('stream_data');
 zrequire('stream_sort');
 const with_overrides = global.with_overrides;
@@ -39,11 +39,11 @@ const weaving = {
     pin_to_top: false,
 };
 
-stream_data.add_sub(scalene.name, scalene);
-stream_data.add_sub(fast_tortoise.name, fast_tortoise);
-stream_data.add_sub(pneumonia.name, pneumonia);
-stream_data.add_sub(clarinet.name, clarinet);
-stream_data.add_sub(weaving.name, weaving);
+stream_data.add_sub(scalene);
+stream_data.add_sub(fast_tortoise);
+stream_data.add_sub(pneumonia);
+stream_data.add_sub(clarinet);
+stream_data.add_sub(weaving);
 
 function sort_groups(query) {
     const streams = stream_data.subscribed_streams();

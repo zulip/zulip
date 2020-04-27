@@ -1,5 +1,3 @@
-const _ = require('underscore/underscore.js');
-
 const requires = [];
 const new_globals = new Set();
 let old_globals = {};
@@ -27,11 +25,30 @@ exports.zrequire = function (name, fn) {
     return require(fn);
 };
 
+exports.clear_zulip_refs = function () {
+    /*
+        This is a big hammer to make sure
+        we are not "borrowing" a transitively
+        required module from a previous test.
+        This kind of leak can make it seems
+        like we've written the second test
+        correctly, but it will fail if we
+        run it standalone.
+    */
+    _.each(require.cache, (_, fn) => {
+        if (fn.indexOf('static/') >= 0) {
+            if (fn.indexOf('static/templates') < 0) {
+                delete require.cache[fn];
+            }
+        }
+    });
+};
+
 exports.restore = function () {
     requires.forEach(function (fn) {
         delete require.cache[require.resolve(fn)];
     });
-    _.extend(global, old_globals);
+    Object.assign(global, old_globals);
     old_globals = {};
     for (const name of new_globals) {
         delete global[name];
@@ -63,7 +80,7 @@ exports.with_overrides = function (test_function) {
         const module = parts[0];
         const func_name = parts[1];
 
-        if (!_.has(global, module)) {
+        if (!Object.prototype.hasOwnProperty.call(global, module)) {
             set_global(module, {});
         }
 
@@ -80,7 +97,7 @@ exports.with_overrides = function (test_function) {
 
     test_function(override);
 
-    _.each(clobber_callbacks, function (f) {
+    for (const f of clobber_callbacks) {
         f();
-    });
+    }
 };

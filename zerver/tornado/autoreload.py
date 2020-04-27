@@ -49,7 +49,6 @@ incorrectly.
 # Tornado would crash itself by auto-reloading into a version of the
 # code that didn't work.
 
-from __future__ import absolute_import, division, print_function
 
 import os
 import sys
@@ -77,7 +76,7 @@ _has_execv = sys.platform != 'win32'
 _watched_files = set()
 _reload_hooks = []
 _reload_attempted = False
-_io_loops = weakref.WeakKeyDictionary()  # type: ignore # upstream
+_io_loops = weakref.WeakKeyDictionary()
 needs_to_reload = False
 
 def start(io_loop=None, check_time=500):

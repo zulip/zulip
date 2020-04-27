@@ -7,17 +7,12 @@ const noop = function () {};
 set_global('Filter', noop);
 global.stub_out_jquery();
 set_global('document', null);
-set_global('blueslip', global.make_zblueslip());
 
 zrequire('FetchStatus', 'js/fetch_status');
-zrequire('util');
 zrequire('muting');
 zrequire('MessageListData', 'js/message_list_data');
 zrequire('MessageListView', 'js/message_list_view');
 const MessageList = zrequire('message_list').MessageList;
-
-set_global('i18n', global.stub_i18n);
-set_global('feature_flags', {});
 
 const with_overrides = global.with_overrides; // make lint happy
 
@@ -176,7 +171,7 @@ run_test('message_range', () => {
     assert.deepEqual(list.message_range(30, 40), [{id: 30}, {id: 40}]);
     assert.deepEqual(list.message_range(31, 39), [{id: 40}]);
     assert.deepEqual(list.message_range(31, 1000), [{id: 40}, {id: 50}, {id: 60}]);
-    blueslip.set_test_data('error', 'message_range given a start of -1');
+    blueslip.expect('error', 'message_range given a start of -1');
     assert.deepEqual(list.message_range(-1, 40), [{id: 30}, {id: 40}]);
 });
 
@@ -289,7 +284,6 @@ run_test('local_echo', () => {
     assert.equal(list.closest_id(31), 30);
     assert.equal(list.closest_id(54), 50);
     assert.equal(list.closest_id(58), 60);
-
 
     list = new MessageList({});
     list.append([

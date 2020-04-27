@@ -17,8 +17,8 @@ from zerver.lib.zcommand import process_zcommands
 from zerver.lib.actions import recipient_for_user_profiles, do_update_message_flags, \
     compute_irc_user_fullname, compute_jabber_user_fullname, \
     create_mirror_user_if_needed, check_send_message, do_update_message, \
-    extract_recipients, truncate_body, render_incoming_message, do_delete_messages, \
-    do_mark_all_as_read, do_mark_stream_messages_as_read, \
+    extract_private_recipients, render_incoming_message, do_delete_messages, \
+    do_mark_all_as_read, do_mark_stream_messages_as_read, extract_stream_indicator, \
     get_user_info_for_message_updates, check_schedule_message
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.queue import queue_json_publish
@@ -27,12 +27,13 @@ from zerver.lib.message import (
     messages_for_ids,
     render_markdown,
     get_first_visible_message_id,
+    truncate_body,
 )
 from zerver.lib.response import json_success, json_error
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import access_stream_by_id, get_public_streams_queryset, \
     can_access_stream_history_by_name, can_access_stream_history_by_id, \
-    get_stream_by_narrow_operand_access_unchecked
+    get_stream_by_narrow_operand_access_unchecked, get_stream_by_id
 from zerver.lib.timestamp import datetime_to_timestamp, convert_to_UTC
 from zerver.lib.timezone import get_timezone
 from zerver.lib.topic import (
@@ -48,7 +49,8 @@ from zerver.lib.topic_mutes import exclude_topic_mutes
 from zerver.lib.utils import statsd
 from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool, \
-    check_string_or_int_list, check_string_or_int
+    check_string_or_int_list, check_string_or_int, check_string_in, \
+    check_required_string
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import Message, UserProfile, Stream, Subscription, Client,\
     Realm, RealmDomain, Recipient, UserMessage, \
@@ -73,7 +75,7 @@ class BadNarrowOperator(JsonableError):
     data_fields = ['desc']
 
     def __init__(self, desc: str) -> None:
-        self.desc = desc  # type: str
+        self.desc: str = desc
 
     @staticmethod
     def msg_format() -> str:
@@ -541,12 +543,15 @@ def narrow_parameter(json: str) -> OptionalNarrowListT:
             # operators_supporting_id, or operators_supporting_ids array.
             operators_supporting_id = ['sender', 'group-pm-with', 'stream']
             operators_supporting_ids = ['pm-with']
+            operators_non_empty_operand = {'search'}
 
             operator = elem.get('operator', '')
             if operator in operators_supporting_id:
                 operand_validator = check_string_or_int
             elif operator in operators_supporting_ids:
                 operand_validator = check_string_or_int_list
+            elif operator in operators_non_empty_operand:
+                operand_validator = check_required_string
             else:
                 operand_validator = check_string
 
@@ -585,7 +590,7 @@ def ok_to_include_history(narrow: OptionalNarrowListT, user_profile: UserProfile
     if narrow is not None:
         for term in narrow:
             if term['operator'] == "stream" and not term.get('negated', False):
-                operand = term['operand']  # type: Union[str, int]
+                operand: Union[str, int] = term['operand']
                 if isinstance(operand, str):
                     include_history = can_access_stream_history_by_name(user_profile, operand)
                 else:
@@ -735,20 +740,6 @@ def find_first_unread_anchor(sa_conn: Any,
     if muting_conditions:
         condition = and_(condition, *muting_conditions)
 
-    # The mobile app uses narrow=[] and use_first_unread_anchor=True to
-    # determine what messages to show when you first load the app.
-    # Unfortunately, this means that if you have a years-old unread
-    # message, the mobile app could get stuck in the past.
-    #
-    # To fix this, we enforce that the "first unread anchor" must be on or
-    # after the user's current pointer location. Since the pointer
-    # location refers to the latest the user has read in the home view,
-    # we'll only apply this logic in the home view (ie, when narrow is
-    # empty).
-    if not narrow:
-        pointer_condition = inner_msg_id_col >= user_profile.pointer
-        condition = and_(condition, pointer_condition)
-
     first_unread_query = query.where(condition)
     first_unread_query = first_unread_query.order_by(inner_msg_id_col.asc()).limit(1)
     first_unread_result = list(sa_conn.execute(first_unread_query).fetchall())
@@ -764,22 +755,59 @@ def zcommand_backend(request: HttpRequest, user_profile: UserProfile,
                      command: str=REQ('command')) -> HttpResponse:
     return json_success(process_zcommands(command, user_profile))
 
+def parse_anchor_value(anchor_val: Optional[str],
+                       use_first_unread_anchor: bool) -> Optional[int]:
+    """Given the anchor and use_first_unread_anchor parameters passed by
+    the client, computes what anchor value the client requested,
+    handling backwards-compatibility and the various string-valued
+    fields.  We encode use_first_unread_anchor as anchor=None.
+    """
+    if use_first_unread_anchor:
+        # Backwards-compatibility: Before we added support for the
+        # special string-typed anchor values, clients would pass
+        # anchor=None and use_first_unread_anchor=True to indicate
+        # what is now expressed as anchor="first_unread".
+        return None
+    if anchor_val is None:
+        # Throw an exception if neither an anchor argument not
+        # use_first_unread_anchor was specified.
+        raise JsonableError(_("Missing 'anchor' argument."))
+    if anchor_val == "oldest":
+        return 0
+    if anchor_val == "newest":
+        return LARGER_THAN_MAX_MESSAGE_ID
+    if anchor_val == "first_unread":
+        return None
+    try:
+        # We don't use `.isnumeric()` to support negative numbers for
+        # anchor.  We don't recommend it in the API (if you want the
+        # very first message, use 0 or 1), but it used to be supported
+        # and was used by the webapp, so we need to continue
+        # supporting it for backwards-compatibility
+        anchor = int(anchor_val)
+        if anchor < 0:
+            return 0
+        return anchor
+    except ValueError:
+        raise JsonableError(_("Invalid anchor"))
+
 @has_request_variables
 def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
-                         anchor: Optional[int]=REQ(converter=int, default=None),
+                         anchor_val: Optional[str]=REQ(
+                             'anchor', str_validator=check_string, default=None),
                          num_before: int=REQ(converter=to_non_negative_int),
                          num_after: int=REQ(converter=to_non_negative_int),
                          narrow: OptionalNarrowListT=REQ('narrow', converter=narrow_parameter, default=None),
-                         use_first_unread_anchor: bool=REQ(validator=check_bool, default=False),
+                         use_first_unread_anchor_val: bool=REQ('use_first_unread_anchor',
+                                                               validator=check_bool, default=False),
                          client_gravatar: bool=REQ(validator=check_bool, default=False),
                          apply_markdown: bool=REQ(validator=check_bool, default=True)) -> HttpResponse:
-    if anchor is None and not use_first_unread_anchor:
-        return json_error(_("Missing 'anchor' argument (or set 'use_first_unread_anchor'=True)."))
+    anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
     if num_before + num_after > MAX_MESSAGES_PER_FETCH:
         return json_error(_("Too many messages requested (maximum %s).")
                           % (MAX_MESSAGES_PER_FETCH,))
 
-    if user_profile.realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
+    if user_profile.realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
         # If email addresses are only available to administrators,
         # clients cannot compute gravatars, so we force-set it to false.
         client_gravatar = False
@@ -828,7 +856,8 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
 
     sa_conn = get_sqlalchemy_connection()
 
-    if use_first_unread_anchor:
+    if anchor is None:
+        # The use_first_unread_anchor code path
         anchor = find_first_unread_anchor(
             sa_conn,
             user_profile,
@@ -842,7 +871,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
 
     # Set value that will be used to short circuit the after_query
     # altogether and avoid needless conditions in the before_query.
-    anchored_to_right = (anchor == LARGER_THAN_MAX_MESSAGE_ID)
+    anchored_to_right = (anchor >= LARGER_THAN_MAX_MESSAGE_ID)
     if anchored_to_right:
         num_after = 0
 
@@ -883,8 +912,8 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     # rendered message dict before returning it.  We attempt to
     # bulk-fetch rendered message dicts from remote cache using the
     # 'messages' list.
-    message_ids = []  # type: List[int]
-    user_message_flags = {}  # type: Dict[int, List[str]]
+    message_ids: List[int] = []
+    user_message_flags: Dict[int, List[str]] = {}
     if include_history:
         message_ids = [row[0] for row in rows]
 
@@ -903,7 +932,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
             user_message_flags[message_id] = UserMessage.flags_list_for_flags(flags)
             message_ids.append(message_id)
 
-    search_fields = dict()  # type: Dict[int, Dict[str, str]]
+    search_fields: Dict[int, Dict[str, str]] = dict()
     if is_search:
         for row in rows:
             message_id = row[0]
@@ -1046,8 +1075,8 @@ def post_process_limited_query(rows: List[Any],
     if anchored_to_right:
         num_after = 0
         before_rows = visible_rows[:]
-        anchor_rows = []  # type: List[Any]
-        after_rows = []  # type: List[Any]
+        anchor_rows: List[Any] = []
+        after_rows: List[Any] = []
     else:
         before_rows = [r for r in visible_rows if r[0] < anchor]
         anchor_rows = [r for r in visible_rows if r[0] == anchor]
@@ -1157,7 +1186,7 @@ def create_mirrored_message_users(request: HttpRequest, user_profile: UserProfil
         raise InvalidMirrorInput("No sender")
 
     sender_email = request.POST["sender"].strip().lower()
-    referenced_users = set([sender_email])
+    referenced_users = {sender_email}
     if request.POST['type'] == 'private':
         for email in recipients:
             referenced_users.add(email.lower())
@@ -1257,7 +1286,7 @@ def handle_deferred_message(sender: UserProfile, client: Client,
     if deliver_at_usertz.tzinfo is None:
         user_tz = get_timezone(local_tz)
         # Since mypy is not able to recognize localize and normalize as attributes of tzinfo we use ignore.
-        deliver_at_usertz = user_tz.normalize(user_tz.localize(deliver_at))  # type: ignore # Reason in comment on previous line.
+        deliver_at_usertz = user_tz.normalize(user_tz.localize(deliver_at))  # type: ignore[attr-defined] # Reason in comment on previous line.
     deliver_at = convert_to_UTC(deliver_at_usertz)
 
     if deliver_at <= timezone_now():
@@ -1272,9 +1301,7 @@ def handle_deferred_message(sender: UserProfile, client: Client,
 @has_request_variables
 def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                          message_type_name: str=REQ('type'),
-                         message_to: Union[Sequence[int], Sequence[str]]=REQ(
-                             'to', type=Union[List[int], List[str]],
-                             converter=extract_recipients, default=[]),
+                         req_to: Optional[str]=REQ('to', default=None),
                          forged_str: Optional[str]=REQ("forged",
                                                        default=None,
                                                        documentation_pending=True),
@@ -1295,6 +1322,28 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                          tz_guess: Optional[str]=REQ('tz_guess', default=None,
                                                      documentation_pending=True)
                          ) -> HttpResponse:
+
+    # If req_to is None, then we default to an
+    # empty list of recipients.
+    message_to: Union[Sequence[int], Sequence[str]] = []
+
+    if req_to is not None:
+        if message_type_name == 'stream':
+            stream_indicator = extract_stream_indicator(req_to)
+
+            # For legacy reasons check_send_message expects
+            # a list of streams, instead of a single stream.
+            #
+            # Also, mypy can't detect that a single-item
+            # list populated from a Union[int, str] is actually
+            # a Union[Sequence[int], Sequence[str]].
+            message_to = cast(
+                Union[Sequence[int], Sequence[str]],
+                [stream_indicator]
+            )
+        else:
+            message_to = extract_private_recipients(req_to)
+
     # Temporary hack: We're transitioning `forged` from accepting
     # `yes` to accepting `true` like all of our normal booleans.
     forged = forged_str is not None and forged_str in ["yes", "true"]
@@ -1326,10 +1375,9 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
         # by an API superuser for your realm and (2) being sent to a
         # mirrored stream.
         #
-        # The security checks are split between the below code
-        # (especially create_mirrored_message_users which checks the
-        # same-realm constraint) and recipient_for_emails (which
-        # checks that PMs are received by the forwarding user)
+        # The most important security checks are in
+        # `create_mirrored_message_users` below, which checks the
+        # same-realm constraint.
         if "sender" not in request.POST:
             return json_error(_("Missing sender"))
         if message_type_name != "private" and not is_super_user:
@@ -1354,6 +1402,8 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
             return json_error(_("Zephyr mirroring is not allowed in this organization"))
         sender = mirror_sender
     else:
+        if "sender" in request.POST:
+            return json_error(_("Invalid mirrored message"))
         sender = user_profile
 
     if (delivery_type == 'send_later' or delivery_type == 'remind') and defer_until is None:
@@ -1439,15 +1489,21 @@ def get_message_edit_history(request: HttpRequest, user_profile: UserProfile,
     fill_edit_history_entries(message_edit_history, message)
     return json_success({"message_history": reversed(message_edit_history)})
 
+PROPAGATE_MODE_VALUES = ["change_later", "change_one", "change_all"]
 @has_request_variables
 def update_message_backend(request: HttpRequest, user_profile: UserMessage,
                            message_id: int=REQ(converter=to_non_negative_int, path_only=True),
+                           stream_id: Optional[int]=REQ(converter=to_non_negative_int, default=None),
                            topic_name: Optional[str]=REQ_topic(),
-                           propagate_mode: Optional[str]=REQ(default="change_one"),
+                           propagate_mode: Optional[str]=REQ(
+                               default="change_one",
+                               str_validator=check_string_in(PROPAGATE_MODE_VALUES)),
                            content: Optional[str]=REQ(default=None)) -> HttpResponse:
-
     if not user_profile.realm.allow_message_editing:
         return json_error(_("Your organization has turned off message editing"))
+
+    if propagate_mode != "change_one" and topic_name is None and stream_id is None:
+        return json_error(_("Invalid propagate_mode without topic edit"))
 
     message, ignored_user_message = access_message(user_profile, message_id)
     is_no_topic_msg = (message.topic_name() == "(no topic)")
@@ -1488,17 +1544,17 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
         if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message has passed"))
 
-    if topic_name is None and content is None:
+    if topic_name is None and content is None and stream_id is None:
         return json_error(_("Nothing to change"))
     if topic_name is not None:
         topic_name = topic_name.strip()
         if topic_name == "":
             raise JsonableError(_("Topic can't be empty"))
     rendered_content = None
-    links_for_embed = set()  # type: Set[str]
-    prior_mention_user_ids = set()  # type: Set[int]
-    mention_user_ids = set()  # type: Set[int]
-    mention_data = None  # type: Optional[bugdown.MentionData]
+    links_for_embed: Set[str] = set()
+    prior_mention_user_ids: Set[int] = set()
+    mention_user_ids: Set[int] = set()
+    mention_data: Optional[bugdown.MentionData] = None
     if content is not None:
         content = content.strip()
         if content == "":
@@ -1525,8 +1581,28 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
 
         mention_user_ids = message.mentions_user_ids
 
-    number_changed = do_update_message(user_profile, message, topic_name,
-                                       propagate_mode, content, rendered_content,
+    new_stream = None
+    old_stream = None
+    number_changed = 0
+
+    if stream_id is not None:
+        if not user_profile.is_realm_admin:
+            raise JsonableError(_("You don't have permission to move this message"))
+        if content is not None:
+            raise JsonableError(_("Cannot change message content while changing stream"))
+
+        old_stream = get_stream_by_id(message.recipient.type_id)
+        new_stream = get_stream_by_id(stream_id)
+
+        if not (old_stream.is_public() and new_stream.is_public()):
+            # We'll likely decide to relax this condition in the
+            # future; it just requires more care with details like the
+            # breadcrumb messages.
+            raise JsonableError(_("Streams must be public"))
+
+    number_changed = do_update_message(user_profile, message, new_stream,
+                                       topic_name, propagate_mode,
+                                       content, rendered_content,
                                        prior_mention_user_ids,
                                        mention_user_ids, mention_data)
 

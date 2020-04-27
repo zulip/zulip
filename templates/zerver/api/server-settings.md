@@ -36,6 +36,16 @@ Fetch global settings for a Zulip server.
 * `authentication_methods`: object in which each key-value pair in the object
   indicates whether the authentication method is enabled on this server.
 * `zulip_version`: the version of Zulip running in the server.
+* `zulip_feature_level`: an integer indicatating what features are
+    available on the server. The feature level increases monotonically;
+    a value of N means the server supports all API features introduced
+    before feature level N.  This is designed to provide a simple way
+    for mobile apps to decide whether the server supports a given
+    feature or API change.
+
+    **Changes**.  New in Zulip 2.2.  We recommend using an implied value
+    of 0 for Zulip servers that do not send this field.
+
 * `push_notifications_enabled`: whether mobile/push notifications are enabled.
 * `is_incompatible`: whether the Zulip client that has sent a request to
   this endpoint is deemed incompatible with the server.

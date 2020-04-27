@@ -1,5 +1,3 @@
-const IntDict = require("./int_dict").IntDict;
-
 const render_settings_custom_user_profile_field = require("../templates/settings/custom_user_profile_field.hbs");
 const render_settings_dev_env_email_access = require('../templates/settings/dev_env_email_access.hbs');
 const render_settings_api_key_modal = require('../templates/settings/api_key_modal.hbs');
@@ -13,7 +11,7 @@ exports.update_email = function (new_email) {
 };
 
 exports.update_full_name = function (new_full_name) {
-    const full_name_field = $("#change_full_name button #full_name_value");
+    const full_name_field = $("#full_name_value");
     if (full_name_field) {
         full_name_field.text(new_full_name);
     }
@@ -77,6 +75,23 @@ exports.update_avatar_change_display = function () {
     }
 };
 
+function display_avatar_upload_complete() {
+    $('#user-avatar-background').css({display: 'none'});
+    $('#user-avatar-spinner').css({display: 'none'});
+    $('#user_avatar_upload_button').show();
+    $('#user_avatar_delete_button').show();
+
+}
+
+function display_avatar_upload_started() {
+    $("#user-avatar-source").hide();
+    $('#user-avatar-background').css({display: 'block'});
+    $('#user-avatar-spinner').css({display: 'block'});
+    $('#user_avatar_upload_button').hide();
+    $('#user_avatar_delete_button').hide();
+}
+
+
 function settings_change_error(message, xhr) {
     ui_report.error(message, xhr, $('#account-settings-status').expectOne());
 }
@@ -100,27 +115,29 @@ function update_user_custom_profile_fields(fields, method) {
     if (method === undefined) {
         blueslip.error("Undefined method in update_user_custom_profile_fields");
     }
-    _.each(fields, function (field) {
+
+    for (const field of fields) {
         update_custom_profile_field(field, method);
-    });
+    }
 }
 
 exports.append_custom_profile_fields = function (element_id, user_id) {
-    const person = people.get_person_from_user_id(user_id);
+    const person = people.get_by_user_id(user_id);
     if (person.is_bot) {
         return;
     }
     const all_custom_fields = page_params.custom_profile_fields;
     const all_field_types = page_params.custom_profile_field_types;
 
-    const all_field_template_types = {};
-    all_field_template_types[all_field_types.LONG_TEXT.id] = "text";
-    all_field_template_types[all_field_types.SHORT_TEXT.id] = "text";
-    all_field_template_types[all_field_types.CHOICE.id] = "choice";
-    all_field_template_types[all_field_types.USER.id] = "user";
-    all_field_template_types[all_field_types.DATE.id] = "date";
-    all_field_template_types[all_field_types.EXTERNAL_ACCOUNT.id] = "text";
-    all_field_template_types[all_field_types.URL.id] = "url";
+    const all_field_template_types = new Map([
+        [all_field_types.LONG_TEXT.id, "text"],
+        [all_field_types.SHORT_TEXT.id, "text"],
+        [all_field_types.CHOICE.id, "choice"],
+        [all_field_types.USER.id, "user"],
+        [all_field_types.DATE.id, "date"],
+        [all_field_types.EXTERNAL_ACCOUNT.id, "text"],
+        [all_field_types.URL.id, "url"],
+    ]);
 
     all_custom_fields.forEach(function (field) {
         let field_value = people.get_custom_profile_data(user_id, field.id);
@@ -145,7 +162,7 @@ exports.append_custom_profile_fields = function (element_id, user_id) {
 
         const html = render_settings_custom_user_profile_field({
             field: field,
-            field_type: all_field_template_types[field.type],
+            field_type: all_field_template_types.get(field.type),
             field_value: field_value,
             is_long_text_field: field.type === all_field_types.LONG_TEXT.id,
             is_user_field: field.type === all_field_types.USER.id,
@@ -178,9 +195,9 @@ exports.initialize_custom_date_type_fields = function (element_id) {
 exports.initialize_custom_user_type_fields = function (element_id, user_id, is_editable,
                                                        set_handler_on_update) {
     const field_types = page_params.custom_profile_field_types;
-    const user_pills = new IntDict();
+    const user_pills = new Map();
 
-    const person = people.get_person_from_user_id(user_id);
+    const person = people.get_by_user_id(user_id);
     if (person.is_bot) {
         return user_pills;
     }
@@ -215,7 +232,7 @@ exports.initialize_custom_user_type_fields = function (element_id, user_id, is_e
                 const field_value = JSON.parse(field_value_raw);
                 if (field_value) {
                     field_value.forEach(function (pill_user_id) {
-                        const user = people.get_person_from_user_id(pill_user_id);
+                        const user = people.get_by_user_id(pill_user_id);
                         user_pill.append_user(user, pills);
                     });
                 }
@@ -314,8 +331,12 @@ exports.set_up = function () {
         });
 
         $("#download_zuliprc").on("click", function () {
-            const data = settings_bots.generate_zuliprc_content(people.my_current_email(),
-                                                                $("#api_key_value").text());
+            const bot_object = {
+                user_id: people.my_current_user_id(),
+                email: page_params.delivery_email,
+                api_key: $("#api_key_value").text(),
+            };
+            const data = settings_bots.generate_zuliprc_content(bot_object);
             $(this).attr("href", settings_bots.encode_zuliprc_as_uri(data));
         });
     });
@@ -529,7 +550,7 @@ exports.set_up = function () {
 
     $("#show_my_user_profile_modal").on('click', function () {
         overlays.close_overlay("settings");
-        const user = people.get_person_from_user_id(people.my_current_user_id());
+        const user = people.get_by_user_id(people.my_current_user_id());
         setTimeout(function () {
             popovers.show_user_profile(user);
         }, 100);
@@ -555,15 +576,10 @@ exports.set_up = function () {
         const form_data = new FormData();
 
         form_data.append('csrfmiddlewaretoken', csrf_token);
-        jQuery.each(file_input[0].files, function (i, file) {
+        for (const [i, file] of Array.prototype.entries.call(file_input[0].files)) {
             form_data.append('file-' + i, file);
-        });
-
-        $("#user-avatar-source").hide();
-
-        const spinner = $("#upload_avatar_spinner").expectOne();
-        loading.make_indicator(spinner, {text: i18n.t('Uploading profile picture.')});
-
+        }
+        display_avatar_upload_started();
         channel.post({
             url: '/json/users/me/avatar',
             data: form_data,
@@ -571,14 +587,13 @@ exports.set_up = function () {
             processData: false,
             contentType: false,
             success: function () {
-                loading.destroy_indicator($("#upload_avatar_spinner"));
-                $("#user_avatar_delete_button").show();
+                display_avatar_upload_complete();
                 $("#user_avatar_file_input_error").hide();
                 $("#user-avatar-source").hide();
                 // Rest of the work is done via the user_events -> avatar_url event we will get
             },
             error: function (xhr) {
-                loading.destroy_indicator($("#upload_avatar_spinner"));
+                display_avatar_upload_complete();
                 if (page_params.avatar_source === 'G') {
                     $("#user-avatar-source").show();
                 }

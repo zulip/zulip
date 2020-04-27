@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
 
@@ -8,7 +7,7 @@ class SentryHookTests(WebhookTestCase):
     FIXTURE_DIR_NAME = 'sentry'
 
     def test_error_issue_message(self) -> None:
-        expected_topic = u"zulip"
+        expected_topic = "zulip"
         expected_message = """
 New [issue](https://sentry.io/zulip/zulip/issues/156699934/) (level: ERROR):
 

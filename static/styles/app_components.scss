@@ -199,7 +199,7 @@
             text-overflow: ellipsis;
             white-space: nowrap;
             overflow: hidden;
-            vertical-align: bottom; /* See http://stackoverflow.com/a/43266155/ */
+            vertical-align: bottom; /* See https://stackoverflow.com/a/43266155/ */
             padding: 3px 10px;
             background-color: hsl(0, 0%, 100%);
             cursor: pointer;
@@ -257,6 +257,10 @@
             }
         }
     }
+
+    .stream_sorter_toggle {
+        margin-left: auto;
+    }
 }
 
 /* -- unified overlay design component -- */
@@ -264,8 +268,8 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
 
@@ -274,8 +278,9 @@
 
     pointer-events: none;
     opacity: 0;
+    visibility: hidden;
 
-    transition: opacity 0.2s ease-in;
+    transition: all 0.2s ease-in;
     overflow: hidden;
 
     .overlay-content {
@@ -287,7 +292,8 @@
     &.show {
         opacity: 1;
         pointer-events: all;
-        transition-timing-function: ease-out;
+        visibility: visible;
+        transition: opacity 0.2s ease-out;
 
         .overlay-content {
             transform: translateY(0px);

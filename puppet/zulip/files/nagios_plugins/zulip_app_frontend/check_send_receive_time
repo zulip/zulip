@@ -17,7 +17,9 @@ import os
 
 sys.path.append('.')
 sys.path.append('/home/zulip/deployments/current')
-import scripts.lib.setup_path_on_import
+from scripts.lib.setup_path import setup_path
+
+setup_path()
 
 import django
 
@@ -83,8 +85,7 @@ states = {
     "UNKNOWN": 3
 }
 
-def report(state, timestamp=None, msg=None):
-    # type: (str, Any, Optional[str]) -> None
+def report(state: str, timestamp: Any = None, msg: Optional[str] = None) -> None:
     now = int(time.time())
     if msg is None:
         msg = "send time was %s" % (timestamp,)
@@ -95,14 +96,12 @@ def report(state, timestamp=None, msg=None):
     print("%s: %s" % (state, msg))
     exit(states[state])
 
-def send_zulip(sender, message):
-    # type: (zulip.Client, Dict[str, Any]) -> None
+def send_zulip(sender: zulip.Client, message: Dict[str, Any]) -> None:
     result = sender.send_message(message)
     if result["result"] != "success" and options.nagios:
         report("CRITICAL", msg="Error sending Zulip, args were: %s, %s" % (message, result))
 
-def get_zulips():
-    # type: () -> List[Dict[str, Any]]
+def get_zulips() -> List[Dict[str, Any]]:
     global queue_id, last_event_id
     res = zulip_recipient.get_events(queue_id=queue_id, last_event_id=last_event_id)
     if 'error' in res.get('result', {}):
@@ -111,7 +110,7 @@ def get_zulips():
         last_event_id = max(last_event_id, int(event['id']))
     # If we get a heartbeat event, that means we've been hanging for
     # 40s, and we should bail.
-    if 'heartbeat' in set(event['type'] for event in res['events']):
+    if 'heartbeat' in {event['type'] for event in res['events']}:
         report("CRITICAL", msg="Got heartbeat waiting for Zulip, which means get_events is hanging")
     return [event['message'] for event in res['events']]
 
@@ -156,7 +155,7 @@ send_zulip(zulip_sender, {
     "to": recipient.email,
 })
 
-msg_content = []  # type: List[str]
+msg_content: List[str] = []
 
 while msg_to_send not in msg_content:
     messages = get_zulips()

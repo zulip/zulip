@@ -96,6 +96,16 @@ exports.update_change_stream_privacy_settings = function (sub) {
     }
 };
 
+exports.update_notification_setting_checkbox = function (notification_name) {
+    const stream_row = $('#subscriptions_table .stream-row.active');
+    if (!stream_row.length) {
+        return;
+    }
+    const stream_id = stream_row.data('stream-id');
+    $(`#${notification_name}_${stream_id}`).prop("checked", stream_data.receives_notifications(
+        stream_data.maybe_get_stream_name(stream_id), notification_name));
+};
+
 exports.update_stream_row_in_settings_tab = function (sub) {
     // This function display/hide stream row in stream settings tab,
     // used to display immediate effect of add/removal subscription event.
@@ -131,7 +141,7 @@ exports.update_stream_privacy_type_icon = function (sub) {
     }
 };
 
-exports.update_stream_privacy_type_text = function (sub) {
+exports.update_stream_subscription_type_text = function (sub) {
     const stream_settings = stream_edit.settings_for_sub(sub);
     const html = render_subscription_type(sub);
     if (stream_edit.is_sub_settings_active(sub)) {
@@ -162,7 +172,7 @@ exports.update_subscribers_list = function (sub) {
     if (!sub.can_access_subscribers) {
         $(".subscriber_list_settings_container").hide();
     } else {
-        const emails = stream_edit.get_email_of_subscribers(sub.subscribers);
+        const users = stream_edit.get_users_from_subscribers(sub.subscribers);
 
         /*
             We try to find a subscribers list that is already in the
@@ -177,9 +187,8 @@ exports.update_subscribers_list = function (sub) {
         // Perform re-rendering only when the stream settings form of the corresponding
         // stream is open.
         if (subscribers_list) {
-            stream_edit.sort_but_pin_current_user_on_top(emails);
-            subscribers_list.data(emails);
-            subscribers_list.render();
+            stream_edit.sort_but_pin_current_user_on_top(users);
+            subscribers_list.replace_list_data(users);
         }
         $(".subscriber_list_settings_container").show();
     }

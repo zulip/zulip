@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from typing import Any
 
 import mock
@@ -39,14 +37,14 @@ class EmailTranslationTestCase(ZulipTestCase):
         realm.default_language = "de"
         realm.save()
         stream = get_realm_stream("Denmark", realm.id)
-        self.login(hamlet.email)
+        self.login_user(hamlet)
 
         # TODO: Uncomment and replace with translation once we have German translations for the strings
         # in confirm_new_email.txt.
         # Also remove the "nocoverage" from check_translation above.
         # check_translation("Viele Grüße", "patch", "/json/settings", {"email": "hamlets-new@zulip.com"})
         check_translation("Incrível!", "post", "/accounts/home/", {"email": "new-email@zulip.com"}, HTTP_ACCEPT_LANGUAGE="pt")
-        check_translation("Danke, dass Du", "post", '/accounts/find/', {'emails': hamlet.email})
+        check_translation("Danke, dass Du", "post", '/accounts/find/', {'emails': hamlet.delivery_email})
         check_translation("Hallo", "post", "/json/invites",  {"invitee_emails": "new-email@zulip.com",
                                                               "stream_ids": ujson.dumps([stream.id])})
 
@@ -56,7 +54,7 @@ class EmailTranslationTestCase(ZulipTestCase):
 
 class TranslationTestCase(ZulipTestCase):
     """
-    Tranlations strings should change with locale. URLs should be locale
+    Translations strings should change with locale. URLs should be locale
     aware.
     """
 
@@ -73,10 +71,10 @@ class TranslationTestCase(ZulipTestCase):
         return response
 
     def test_accept_language_header(self) -> None:
-        languages = [('en', u'Sign up'),
-                     ('de', u'Registrieren'),
-                     ('sr', u'Упишите се'),
-                     ('zh-hans', u'注册'),
+        languages = [('en', 'Sign up'),
+                     ('de', 'Registrieren'),
+                     ('sr', 'Упишите се'),
+                     ('zh-hans', '注册'),
                      ]
 
         for lang, word in languages:
@@ -85,10 +83,10 @@ class TranslationTestCase(ZulipTestCase):
             self.assert_in_response(word, response)
 
     def test_cookie(self) -> None:
-        languages = [('en', u'Sign up'),
-                     ('de', u'Registrieren'),
-                     ('sr', u'Упишите се'),
-                     ('zh-hans', u'注册'),
+        languages = [('en', 'Sign up'),
+                     ('de', 'Registrieren'),
+                     ('sr', 'Упишите се'),
+                     ('zh-hans', '注册'),
                      ]
 
         for lang, word in languages:
@@ -100,10 +98,10 @@ class TranslationTestCase(ZulipTestCase):
             self.assert_in_response(word, response)
 
     def test_i18n_urls(self) -> None:
-        languages = [('en', u'Sign up'),
-                     ('de', u'Registrieren'),
-                     ('sr', u'Упишите се'),
-                     ('zh-hans', u'注册'),
+        languages = [('en', 'Sign up'),
+                     ('de', 'Registrieren'),
+                     ('sr', 'Упишите се'),
+                     ('zh-hans', '注册'),
                      ]
 
         for lang, word in languages:
@@ -121,12 +119,11 @@ class JsonTranslationTestCase(ZulipTestCase):
         dummy_value = "this arg is bad: '{var_name}' (translated to German)"
         mock_gettext.return_value = dummy_value
 
-        email = self.example_email('hamlet')
-        self.login(email)
+        self.login('hamlet')
         result = self.client_post("/json/invites",
                                   HTTP_ACCEPT_LANGUAGE='de')
 
-        expected_error = u"this arg is bad: 'invitee_emails' (translated to German)"
+        expected_error = "this arg is bad: 'invitee_emails' (translated to German)"
         self.assert_json_error_contains(result,
                                         expected_error,
                                         status_code=400)
@@ -136,8 +133,7 @@ class JsonTranslationTestCase(ZulipTestCase):
         dummy_value = "Some other language"
         mock_gettext.return_value = dummy_value
 
-        email = self.example_email('hamlet')
-        self.login(email)
+        self.login('hamlet')
         result = self.client_get("/de/accounts/login/jwt/")
 
         self.assert_json_error_contains(result,
@@ -157,6 +153,9 @@ class FrontendRegexTestCase(TestCase):
              'english text'),
 
             ("{{t 'english text' }}, 'extra'}}",
+             'english text'),
+
+            ("{{> template var=(t 'english text') }}, 'extra'}}",
              'english text'),
 
             ('i18n.t("english text"), "extra",)',

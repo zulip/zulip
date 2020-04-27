@@ -341,7 +341,7 @@ EVENT_HANDLER_MAP = {
 
 def get_event_handler(eventkey: str) -> Callable[..., List[Dict[str, str]]]:
     # The main reason for this function existance is because of mypy
-    handler = EVENT_HANDLER_MAP.get(eventkey)  # type: Any
+    handler: Any = EVENT_HANDLER_MAP.get(eventkey)
     if handler is None:
         raise UnexpectedWebhookEventType("BitBucket Server", eventkey)
     return handler

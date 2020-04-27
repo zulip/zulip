@@ -68,14 +68,14 @@ since the main server log can be very verbose, but the main server log
 can be extremely valuable for investigating performance problems.
 
 ```
-2016-05-20 14:50:22.056 INFO [zr] 127.0.0.1       GET     302 528ms (db: 1ms/1q) (+start: 123ms) / (unauth via ?)
+2016-05-20 14:50:22.056 INFO [zr] 127.0.0.1       GET     302 528ms (db: 1ms/1q) (+start: 123ms) / (unauth@zulip via ?)
 [20/May/2016 14:50:22]"GET / HTTP/1.0" 302 0
-2016-05-20 14:50:22.272 INFO [zr] 127.0.0.1       GET     200 124ms (db: 3ms/2q) /login/ (unauth via ?)
-2016-05-20 14:50:26.333 INFO [zr] 127.0.0.1       POST    302  37ms (db: 6ms/7q) /accounts/login/local/ (unauth via ?)
+2016-05-20 14:50:22.272 INFO [zr] 127.0.0.1       GET     200 124ms (db: 3ms/2q) /login/ (unauth@zulip via ?)
+2016-05-20 14:50:26.333 INFO [zr] 127.0.0.1       POST    302  37ms (db: 6ms/7q) /accounts/login/local/ (unauth@zulip via ?)
 [20/May/2016 14:50:26]"POST /accounts/login/local/ HTTP/1.0" 302 0
-2016-05-20 14:50:26.538 INFO [zr] 127.0.0.1       POST    200  12ms (db: 1ms/2q) (+start: 53ms) /api/v1/events/internal [1463769771:0/0] (cordelia@zulip.com via internal)
-2016-05-20 14:50:26.657 INFO [zr] 127.0.0.1       POST    200  10ms (+start: 8ms) /api/v1/events/internal [1463769771:0/0] (cordelia@zulip.com via internal)
-2016-05-20 14:50:26.959 INFO [zr] 127.0.0.1       GET     200 588ms (db: 26ms/21q) / [1463769771:0] (cordelia@zulip.com via website)
+2016-05-20 14:50:26.538 INFO [zr] 127.0.0.1       POST    200  12ms (db: 1ms/2q) (+start: 53ms) /api/v1/events/internal [1463769771:0/0] (8@zulip via internal)
+2016-05-20 14:50:26.657 INFO [zr] 127.0.0.1       POST    200  10ms (+start: 8ms) /api/v1/events/internal [1463769771:0/0] (8@zulip via internal)
+2016-05-20 14:50:26.959 INFO [zr] 127.0.0.1       GET     200 588ms (db: 26ms/21q) / [1463769771:0] (8@zulip via website)
 ```
 
 The format of this output is:
@@ -121,15 +121,9 @@ new feature hard to miss.
 
 * Blueslip is implemented in `static/js/blueslip.js`.
 * In order to capture essentially any error occurring in the browser,
-blueslip does the following:
-  * Wraps every function passed into `$.ready()`, i.e., every
-  on-webapp-startup method used by Zulip.
-  * Wraps every jQuery AJAX request handler used by Zulip.
-  * Wraps every function passed into `$.on()`, i.e. all event
-  handlers declared in Zulip.
-  * Declares a default browser exception handler.
-  * Has methods for being manually triggered by Zulip JavaScript code
-    for warnings and assertion failures.
+  Blueslip listens for the `error` event on `window`, and has methods
+  for being manually triggered by Zulip JavaScript code for warnings
+  and assertion failures.
 * Blueslip keeps a log of all the notices it has received during a
   browser session, and includes them in reports to the server, so that
   one can see cases where exceptions chained together.  You can print
@@ -179,7 +173,7 @@ a new view:
 * The time when the browser was idle again after switching views
   (intended to catch issues where we generate a lot of deferred work).
 
-[django-errors]: https://docs.djangoproject.com/en/1.11/howto/error-reporting/
+[django-errors]: https://docs.djangoproject.com/en/2.2/howto/error-reporting/
 [python-logging]: https://docs.python.org/3/library/logging.html
-[django-logging]: https://docs.djangoproject.com/en/1.11/topics/logging/
+[django-logging]: https://docs.djangoproject.com/en/2.2/topics/logging/
 [sentry]: https://sentry.io

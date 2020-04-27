@@ -1,4 +1,4 @@
-zrequire('util');
+
 zrequire('unread');
 zrequire('stream_data');
 zrequire('people');
@@ -7,7 +7,6 @@ zrequire('Filter', 'js/filter');
 
 set_global('message_store', {});
 set_global('page_params', {});
-set_global('feature_flags', {});
 
 const me = {
     email: 'me@example.com',
@@ -33,7 +32,7 @@ people.add(steve);
 people.initialize_current_user(me.user_id);
 
 function assert_same_operators(result, terms) {
-    terms = _.map(terms, function (term) {
+    terms = terms.map(term => {
         // If negated flag is undefined, we explicitly
         // set it to false.
         let negated = term.negated;
@@ -73,6 +72,7 @@ run_test('basics', () => {
     assert(!filter.allow_use_first_unread_when_narrowing());
     assert(filter.includes_full_stream_history());
     assert(filter.can_apply_locally());
+    assert(!filter.is_personal_filter());
 
     operators = [
         {operator: 'stream', operand: 'foo'},
@@ -86,6 +86,7 @@ run_test('basics', () => {
     assert(!filter.contains_only_private_messages());
     assert(!filter.allow_use_first_unread_when_narrowing());
     assert(!filter.can_apply_locally());
+    assert(!filter.is_personal_filter());
     assert(filter.can_bucket_by('stream'));
     assert(filter.can_bucket_by('stream', 'topic'));
 
@@ -99,6 +100,7 @@ run_test('basics', () => {
     assert(!filter.contains_only_private_messages());
     assert(!filter.has_operator('stream'));
     assert(!filter.can_mark_messages_read());
+    assert(!filter.is_personal_filter());
 
     // Negated searches are just like positive searches for our purposes, since
     // the search logic happens on the back end and we need to have can_apply_locally()
@@ -111,6 +113,7 @@ run_test('basics', () => {
     assert(filter.has_operator('search'));
     assert(!filter.can_apply_locally());
     assert(!filter.can_mark_messages_read());
+    assert(!filter.is_personal_filter());
 
     // Similar logic applies to negated "has" searches.
     operators = [
@@ -121,6 +124,7 @@ run_test('basics', () => {
     assert(!filter.can_apply_locally());
     assert(!filter.includes_full_stream_history());
     assert(!filter.can_mark_messages_read());
+    assert(!filter.is_personal_filter());
 
     operators = [
         {operator: 'streams', operand: 'public', negated: true},
@@ -131,6 +135,7 @@ run_test('basics', () => {
     assert(!filter.can_mark_messages_read());
     assert(filter.has_negated_operand('streams', 'public'));
     assert(!filter.can_apply_locally());
+    assert(!filter.is_personal_filter());
 
     operators = [
         {operator: 'streams', operand: 'public'},
@@ -142,6 +147,7 @@ run_test('basics', () => {
     assert(!filter.has_negated_operand('streams', 'public'));
     assert(!filter.can_apply_locally());
     assert(filter.includes_full_stream_history());
+    assert(!filter.is_personal_filter());
 
     operators = [
         {operator: 'is', operand: 'private'},
@@ -151,6 +157,7 @@ run_test('basics', () => {
     assert(filter.can_mark_messages_read());
     assert(!filter.has_operator('search'));
     assert(filter.can_apply_locally());
+    assert(!filter.is_personal_filter());
 
     operators = [
         {operator: 'is', operand: 'mentioned'},
@@ -160,6 +167,17 @@ run_test('basics', () => {
     assert(filter.can_mark_messages_read());
     assert(!filter.has_operator('search'));
     assert(filter.can_apply_locally());
+    assert(filter.is_personal_filter());
+
+    operators = [
+        {operator: 'is', operand: 'starred'},
+    ];
+    filter = new Filter(operators);
+    assert(!filter.contains_only_private_messages());
+    assert(!filter.can_mark_messages_read());
+    assert(!filter.has_operator('search'));
+    assert(filter.can_apply_locally());
+    assert(filter.is_personal_filter());
 
     operators = [
         {operator: 'pm-with', operand: 'joe@example.com'},
@@ -168,6 +186,7 @@ run_test('basics', () => {
     assert(filter.contains_only_private_messages());
     assert(!filter.has_operator('search'));
     assert(filter.can_apply_locally());
+    assert(!filter.is_personal_filter());
 
     operators = [
         {operator: 'group-pm-with', operand: 'joe@example.com'},
@@ -358,6 +377,25 @@ run_test('can_mark_messages_read', () => {
     assert(!filter.can_mark_messages_read());
     filter = new Filter(in_random_negated);
     assert(!filter.can_mark_messages_read());
+
+    // test caching of term types
+    // init and stub
+    filter = new Filter(pm_with);
+    filter.stub = filter.calc_can_mark_messages_read;
+    filter.calc_can_mark_messages_read = function () {
+        this.calc_can_mark_messages_read_called = true;
+        return this.stub();
+    };
+
+    // uncached trial
+    filter.calc_can_mark_messages_read_called = false;
+    assert(filter.can_mark_messages_read());
+    assert(filter.calc_can_mark_messages_read_called);
+
+    // cached trial
+    filter.calc_can_mark_messages_read_called = false;
+    assert(filter.can_mark_messages_read());
+    assert(!filter.calc_can_mark_messages_read_called);
 });
 
 run_test('show_first_unread', () => {
@@ -386,7 +424,7 @@ run_test('show_first_unread', () => {
     assert(filter.allow_use_first_unread_when_narrowing());
 
 });
-run_test('topic_stuff', () => {
+run_test('filter_with_new_params_topic', () => {
     const operators = [
         {operator: 'stream', operand: 'foo'},
         {operator: 'topic', operand: 'old topic'},
@@ -397,10 +435,33 @@ run_test('topic_stuff', () => {
     assert(!filter.has_topic('wrong', 'old topic'));
     assert(!filter.has_topic('foo', 'wrong'));
 
-    const new_filter = filter.filter_with_new_topic('new topic');
+    const new_filter = filter.filter_with_new_params({
+        operator: 'topic',
+        operand: 'new topic',
+    });
 
     assert.deepEqual(new_filter.operands('stream'), ['foo']);
     assert.deepEqual(new_filter.operands('topic'), ['new topic']);
+});
+
+run_test('filter_with_new_params_stream', () => {
+    const operators = [
+        {operator: 'stream', operand: 'foo'},
+        {operator: 'topic', operand: 'old topic'},
+    ];
+    const filter = new Filter(operators);
+
+    assert(filter.has_topic('foo', 'old topic'));
+    assert(!filter.has_topic('wrong', 'old topic'));
+    assert(!filter.has_topic('foo', 'wrong'));
+
+    const new_filter = filter.filter_with_new_params({
+        operator: 'stream',
+        operand: 'new stream',
+    });
+
+    assert.deepEqual(new_filter.operands('stream'), ['new stream']);
+    assert.deepEqual(new_filter.operands('topic'), ['old topic']);
 });
 
 run_test('new_style_operators', () => {
@@ -506,9 +567,10 @@ run_test('canonicalizations', () => {
 });
 
 function get_predicate(operators) {
-    operators = _.map(operators, function (op) {
-        return {operator: op[0], operand: op[1]};
-    });
+    operators = operators.map(op => ({
+        operator: op[0],
+        operand: op[1],
+    }));
     return new Filter(operators).predicate();
 }
 
@@ -517,7 +579,7 @@ function make_sub(name, stream_id) {
         name: name,
         stream_id: stream_id,
     };
-    global.stream_data.add_sub(name, sub);
+    global.stream_data.add_sub(sub);
 }
 
 run_test('predicate_basics', () => {
@@ -1171,15 +1233,41 @@ run_test('term_type', () => {
         ['stream', 'stream', 'topic']
     );
 
+    assert_term_sort(
+        ['search', 'streams-public'],
+        ['streams-public', 'search']
+    );
+
     const terms = [
         {operator: 'topic', operand: 'lunch'},
         {operator: 'sender', operand: 'steve@foo.com'},
         {operator: 'stream', operand: 'Verona'},
     ];
-    const filter = new Filter(terms);
+    let filter = new Filter(terms);
     const term_types = filter.sorted_term_types();
 
     assert.deepEqual(term_types, ['stream', 'topic', 'sender']);
+
+    // test caching of term types
+    // init and stub
+    filter = new Filter(terms);
+    filter.stub = filter._build_sorted_term_types;
+    filter._build_sorted_term_types = function () {
+        this._build_sorted_term_types_called = true;
+        return this.stub();
+    };
+
+    // uncached trial
+    filter._build_sorted_term_types_called = false;
+    const built_terms = filter.sorted_term_types();
+    assert.deepEqual(built_terms, ['stream', 'topic', 'sender']);
+    assert(filter._build_sorted_term_types_called);
+
+    // cached trial
+    filter._build_sorted_term_types_called = false;
+    const cached_terms = filter.sorted_term_types();
+    assert.deepEqual(cached_terms, ['stream', 'topic', 'sender']);
+    assert(!filter._build_sorted_term_types_called);
 });
 
 run_test('first_valid_id_from', () => {
@@ -1221,6 +1309,229 @@ run_test('update_email', () => {
     assert.deepEqual(filter.operands('stream'), ['steve@foo.com']);
 });
 
+function make_private_sub(name, stream_id) {
+    const sub = {
+        name: name,
+        stream_id: stream_id,
+        invite_only: true,
+    };
+    global.stream_data.add_sub(sub);
+}
+
+run_test('navbar_helpers', () => {
+    // make sure title has names separated with correct delimiters
+    function properly_separated_names(names) {
+        return names.join(', ');
+    }
+
+    function test_redirect_url_with_search(test_case) {
+        test_case.operator.push({ operator: 'search', operand: 'fizzbuzz'});
+        const filter = new Filter(test_case.operator);
+        assert.equal(
+            filter.generate_redirect_url(),
+            test_case.redirect_url_with_search
+        );
+    }
+
+    function test_common_narrow(test_case) {
+        const filter = new Filter(test_case.operator);
+        assert.equal(filter.is_common_narrow(), test_case.is_common_narrow);
+    }
+
+    function test_get_icon(test_case) {
+        const filter = new Filter(test_case.operator);
+        assert.equal(filter.get_icon(), test_case.icon);
+    }
+
+    function test_get_title(test_case) {
+        const filter = new Filter(test_case.operator);
+        assert.deepEqual(filter.get_title(), test_case.title);
+    }
+
+    function test_helpers(test_case) {
+        // debugging tip: add a `console.log(test_case)` here
+        test_common_narrow(test_case);
+        test_get_icon(test_case);
+        test_get_title(test_case);
+        test_redirect_url_with_search(test_case);
+    }
+
+    const in_home = [{ operator: 'in', operand: 'home'}];
+    const in_all = [{ operator: 'in', operand: 'all'}];
+    const is_starred = [{ operator: 'is', operand: 'starred'}];
+    const is_private = [{ operator: 'is', operand: 'private'}];
+    const is_mentioned = [{ operator: 'is', operand: 'mentioned'}];
+    const streams_public = [{ operator: 'streams', operand: 'public'}];
+    const stream_topic_operators = [
+        { operator: 'stream', operand: 'foo' },
+        { operator: 'topic', operand: 'bar' },
+    ];
+    const stream_operator = [{ operator: 'stream', operand: 'foo'}];
+    make_private_sub('psub', '22');
+    const private_stream_operator = [{ operator: 'stream', operand: 'psub'}];
+    const pm_with = [{ operator: 'pm-with', operand: 'joe@example.com'}];
+    const group_pm = [{ operator: 'pm-with', operand: 'joe@example.com,STEVE@foo.com'}];
+    const group_pm_including_missing_person = [{ operator: 'pm-with', operand: 'joe@example.com,STEVE@foo.com,sally@doesnotexist.com'}];
+
+    const test_cases = [
+        {
+            operator: is_starred,
+            is_common_narrow: true,
+            icon: 'star',
+            title: 'translated: Starred messages',
+            redirect_url_with_search: '/#narrow/is/starred',
+        },
+        {
+            operator: in_home,
+            is_common_narrow: true,
+            icon: 'home',
+            title: 'translated: All messages',
+            redirect_url_with_search: '#',
+        },
+        {
+            operator: in_all,
+            is_common_narrow: true,
+            icon: 'home',
+            title: 'translated: All messages including muted streams',
+            redirect_url_with_search: '#',
+        },
+        {
+            operator: is_private,
+            is_common_narrow: true,
+            icon: 'envelope',
+            title: 'translated: Private messages',
+            redirect_url_with_search: '/#narrow/is/private',
+        },
+        {
+            operator: is_mentioned,
+            is_common_narrow: true,
+            icon: 'at',
+            title: 'translated: Mentions',
+            redirect_url_with_search: '/#narrow/is/mentioned',
+        },
+        {
+            operator: stream_topic_operators,
+            is_common_narrow: true,
+            icon: 'hashtag',
+            title: 'Foo',
+            redirect_url_with_search: '/#narrow/stream/42-Foo/topic/bar',
+        },
+        {
+            operator: streams_public,
+            is_common_narrow: true,
+            icon: undefined,
+            title: 'translated: Public stream messages in organization',
+            redirect_url_with_search: '/#narrow/streams/public',
+        },
+        {
+            operator: stream_operator,
+            is_common_narrow: true,
+            icon: 'hashtag',
+            title: 'Foo',
+            redirect_url_with_search: '/#narrow/stream/42-Foo',
+        },
+        {
+            operator: private_stream_operator,
+            is_common_narrow: true,
+            icon: 'lock',
+            title: 'psub',
+            redirect_url_with_search: '/#narrow/stream/22-psub',
+        },
+        {
+            operator: pm_with,
+            is_common_narrow: true,
+            icon: 'envelope',
+            title: properly_separated_names([joe.full_name]),
+            redirect_url_with_search: '/#narrow/pm-with/' + joe.user_id + '-' + joe.email.split('@')[0],
+        },
+        {
+            operator: group_pm,
+            is_common_narrow: true,
+            icon: 'envelope',
+            title: properly_separated_names([joe.full_name, steve.full_name]),
+            redirect_url_with_search: '/#narrow/pm-with/' + joe.user_id + ',' + steve.user_id + '-group',
+        },
+        {
+            operator: group_pm_including_missing_person,
+            is_common_narrow: true,
+            icon: 'envelope',
+            title: properly_separated_names([joe.full_name, steve.full_name, 'sally@doesnotexist.com']),
+            redirect_url_with_search: '/#narrow/pm-with/undefined',
+        },
+    ];
+
+    test_cases.forEach(test_case => {
+        test_helpers(test_case);
+    });
+
+    // TODO: these may be removed, based on design decisions
+    const sender_me = [{operator: 'sender', operand: 'me'}];
+    const sender_joe = [{operator: 'sender', operand: joe.email}];
+
+    const redirect_edge_cases = [
+        {
+            operator: sender_me,
+            redirect_url_with_search: '/#narrow/sender/' + me.user_id + '-' + me.email.split('@')[0],
+            is_common_narrow: false,
+        },
+        {
+            operator: sender_joe,
+            redirect_url_with_search: '/#narrow/sender/' + joe.user_id + '-' + joe.email.split('@')[0],
+            is_common_narrow: false,
+        },
+    ];
+
+    redirect_edge_cases.forEach(test_case => {
+        test_redirect_url_with_search(test_case);
+    });
+
+    // TODO: test every single one of the "ALL" redirects from the navbar behaviour table
+
+    // incomplete and weak test cases just to restore coverage of filter.js
+    const complex_operator = [
+        {operator: 'stream', operand: 'foo'},
+        {operator: 'topic', operand: 'bar'},
+        {operator: 'sender', operand: 'me'},
+    ];
+
+    const complex_operators_test_case = {
+        operator: complex_operator,
+        redirect_url: "#",
+    };
+
+    let filter = new Filter(complex_operators_test_case.operator);
+    assert.equal(
+        filter.generate_redirect_url(),
+        complex_operators_test_case.redirect_url
+    );
+    assert.equal(filter.is_common_narrow(), false);
+
+    const stream_topic_search_operator = [
+        {operator: 'stream', operand: 'foo'},
+        {operator: 'topic', operand: 'bar'},
+        {operator: 'search', operand: 'potato'},
+    ];
+
+    const stream_topic_search_operator_test_case = {
+        operator: stream_topic_search_operator,
+        title: 'Foo',
+    };
+
+    test_get_title(stream_topic_search_operator_test_case);
+
+    // this is actually wrong, but the code is currently not robust enough to throw an error here
+    // also, used as an example of triggering last return statement.
+    const default_redirect = {
+        operator: [{operator: 'stream', operand: 'foo'}],
+        redirect_url: "#",
+    };
+
+    filter = new Filter(default_redirect.operator);
+    assert.equal(
+        filter.generate_redirect_url(),
+        default_redirect.redirect_url
+    );
+});
 
 run_test('error_cases', () => {
     // This test just gives us 100% line coverage on defensive code that

@@ -30,8 +30,19 @@ def api_ansibletower_webhook(request: HttpRequest, user_profile: UserProfile,
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success()
 
+def extract_friendly_name(payload: Dict[str, Any]) -> str:
+    tentative_job_name = payload.get("friendly_name", "")
+    if not tentative_job_name:
+        url = payload["url"]
+        segments = url.split("/")
+        tentative_job_name = segments[-3]
+        if tentative_job_name == "jobs":
+            tentative_job_name = "Job"
+    return tentative_job_name
+
 def get_body(payload: Dict[str, Any]) -> str:
-    if (payload['friendly_name'] == 'Job'):
+    friendly_name = extract_friendly_name(payload)
+    if (friendly_name == 'Job'):
         hosts_list_data = payload['hosts']
         hosts_data = []
         for host in payload['hosts']:
@@ -51,7 +62,7 @@ def get_body(payload: Dict[str, Any]) -> str:
 
         return ANSIBLETOWER_JOB_MESSAGE_TEMPLATE.format(
             name=payload['name'],
-            friendly_name=payload['friendly_name'],
+            friendly_name=friendly_name,
             id=payload['id'],
             url=payload['url'],
             status=status,
@@ -67,7 +78,7 @@ def get_body(payload: Dict[str, Any]) -> str:
 
         data = {
             "name": payload['name'],
-            "friendly_name": payload['friendly_name'],
+            "friendly_name": friendly_name,
             "id": payload['id'],
             "url": payload['url'],
             "status": status

@@ -362,8 +362,8 @@ form#add_new_subscription {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     background-color: hsla(0, 0%, 8%, 0.7);
     color: hsl(0, 0%, 27%);
 }
@@ -398,6 +398,10 @@ form#add_new_subscription {
     overflow: hidden;
     max-width: 1200px;
     max-height: 1000px;
+
+    .search-container .tab-switcher .ind-tab {
+        width: auto;
+    }
 
     .subscriptions-header {
         padding: 12px;
@@ -531,12 +535,36 @@ form#add_new_subscription {
 }
 
 #search_stream_name {
-    width: 190px;
+    width: 100%;
     padding: 3px 5px;
-    margin: 2px 0px;
+    margin: 8px 0px;
+    margin-left: 10px;
+    margin-right: -15px !important;
     display: inline-block;
     border-radius: 5px;
     box-shadow: none;
+}
+
+.stream_name_search_section {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin-bottom: 0;
+    height: auto;
+    border-bottom: 1px solid hsl(0, 0%, 87%);
+}
+
+.streams-list {
+    position: relative;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    height: calc(100% - 85px);
+    width: 100%;
+}
+
+#clear_search_stream_name {
+    right: 5px !important;
 }
 
 .stream-title {
@@ -574,14 +602,6 @@ form#add_new_subscription {
     }
 }
 
-.streams-list {
-    position: relative;
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-    height: calc(100% - 45px);
-    width: 100%;
-}
-
 .stream-row {
     padding: 15px 10px 11px 10px;
     border-bottom: 1px solid hsl(0, 0%, 93%);
@@ -610,6 +630,22 @@ form#add_new_subscription {
         &.disabled {
             pointer-events: none;
             visibility: hidden;
+        }
+
+        .sub_unsub_status {
+            display: inline-block !important;
+            height: auto !important;
+            width: auto !important;
+
+            .loading_indicator_spinner {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+            }
+
+            .loading_indicator_spinner svg path {
+                fill: hsl(178, 100%, 40%);
+            }
         }
     }
 
@@ -794,11 +830,26 @@ form#add_new_subscription {
 
         .stream-name {
             display: inline-block;
+            position: relative;
             font-size: 1.5em;
             font-weight: 600;
             margin-left: -3px;
-            white-space: normal;
-            word-break: break-all;
+            padding-bottom: 5px;
+            white-space: nowrap;
+            max-width: 260px;
+
+            .stream-name-editable {
+                display: block;
+                max-width: 20ch;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                float: left;
+            }
+
+            .stream-name-edit-box {
+                text-overflow: clip;
+                border-style: groove;
+            }
         }
 
         .deactivate,
@@ -843,8 +894,6 @@ form#add_new_subscription {
         margin-top: -5px;
         margin-right: 5px;
         text-decoration: none;
-        line-height: 16px;
-        vertical-align: middle;
     }
 
     .editable-section {
@@ -945,6 +994,16 @@ form#add_new_subscription {
             display: block;
         }
     }
+
+    .alert-notification:not(:empty) {
+        margin-top: -5px;
+        margin-left: unset;
+    }
+
+    .loading_indicator_text {
+        font-weight: 400;
+        line-height: 20px;
+    }
 }
 
 ul.grey-box {
@@ -1006,18 +1065,9 @@ ul.grey-box {
             width: calc(60% - 1px);
         }
     }
-
-    #search_stream_name {
-        width: 100px;
-        margin-top: 2px;
-        margin-bottom: 0px;
-    }
 }
 
 @media (max-width: 1033px) {
-    #search_stream_name {
-        display: none;
-    }
 
     .search-container {
         text-align: center;
@@ -1030,7 +1080,7 @@ ul.grey-box {
     }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 750px) {
     .subscriptions-container {
         position: relative;
         overflow: hidden;

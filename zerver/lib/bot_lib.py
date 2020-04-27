@@ -21,17 +21,19 @@ from zulip_bots.lib import RateLimit
 def get_bot_handler(service_name: str) -> Any:
 
     # Check that this service is present in EMBEDDED_BOTS, add exception handling.
-    is_present_in_registry = any(service_name == embedded_bot_service.name for
-                                 embedded_bot_service in EMBEDDED_BOTS)
-    if not is_present_in_registry:
+    configured_service = ""
+    for embedded_bot_service in EMBEDDED_BOTS:
+        if service_name == embedded_bot_service.name:
+            configured_service = embedded_bot_service.name
+    if not configured_service:
         return None
-    bot_module_name = 'zulip_bots.bots.%s.%s' % (service_name, service_name)
-    bot_module = importlib.import_module(bot_module_name)  # type: Any
+    bot_module_name = 'zulip_bots.bots.%s.%s' % (configured_service, configured_service)
+    bot_module: Any = importlib.import_module(bot_module_name)
     return bot_module.handler_class()
 
 
 class StateHandler:
-    storage_size_limit = 10000000   # type: int # TODO: Store this in the server configuration model.
+    storage_size_limit: int = 10000000  # TODO: Store this in the server configuration model.
 
     def __init__(self, user_profile: UserProfile) -> None:
         self.user_profile = user_profile

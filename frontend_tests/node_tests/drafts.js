@@ -1,30 +1,28 @@
 set_global('$', global.make_zjquery());
-set_global('i18n', global.stub_i18n);
 
 zrequire('localstorage');
 zrequire('drafts');
 set_global('XDate', zrequire('XDate', 'xdate'));
 zrequire('timerender');
 set_global('Handlebars', global.make_handlebars());
-zrequire('util');
 zrequire('stream_color');
 zrequire('colorspace');
 
-let ls_container = {};
+const ls_container = new Map();
 const noop = function () { return; };
 
 set_global('localStorage', {
     getItem: function (key) {
-        return ls_container[key];
+        return ls_container.get(key);
     },
     setItem: function (key, val) {
-        ls_container[key] = val;
+        ls_container.set(key, val);
     },
     removeItem: function (key) {
-        delete ls_container[key];
+        ls_container.delete(key);
     },
     clear: function () {
-        ls_container = {};
+        ls_container.clear();
     },
 });
 set_global('compose', {});
@@ -34,7 +32,6 @@ set_global('stream_data', {
         return '#FFFFFF';
     },
 });
-set_global('blueslip', {});
 set_global('people', {
     // Mocking get_by_email function, here we are
     // just returning string before `@` in email
@@ -123,9 +120,9 @@ run_test('draft_model', () => {
     localStorage.clear();
     (function test_addDraft() {
         stub_timestamp(1, function () {
-            const expected = _.clone(draft_1);
+            const expected = { ...draft_1 };
             expected.updatedAt = 1;
-            const id = draft_model.addDraft(_.clone(draft_1));
+            const id = draft_model.addDraft({ ...draft_1 });
 
             assert.deepEqual(ls.get("drafts")[id], expected);
         });
@@ -135,9 +132,9 @@ run_test('draft_model', () => {
     (function test_editDraft() {
         stub_timestamp(2, function () {
             ls.set("drafts", { id1: draft_1 });
-            const expected = _.clone(draft_2);
+            const expected = { ...draft_2 };
             expected.updatedAt = 2;
-            draft_model.editDraft("id1", _.clone(draft_2));
+            draft_model.editDraft("id1", { ...draft_2 });
 
             assert.deepEqual(ls.get("drafts").id1, expected);
         });
@@ -302,7 +299,6 @@ run_test('format_drafts', () => {
         },
     ];
 
-    blueslip.error = noop;
     $('#drafts_table').append = noop;
 
     const draft_model = drafts.draft_model;

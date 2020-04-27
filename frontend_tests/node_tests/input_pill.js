@@ -1,11 +1,9 @@
 set_global('$', global.make_zjquery());
-set_global('i18n', global.stub_i18n);
 zrequire('input_pill');
 
 set_global('Handlebars', global.make_handlebars());
 zrequire('templates');
 
-set_global('blueslip', global.make_zblueslip());
 set_global('document', {});
 
 const noop = function () {};
@@ -32,7 +30,6 @@ run_test('set_up_ids', () => {
     };
 });
 
-
 function pill_html(value, data_id, img_src) {
     const has_image = img_src !== undefined;
 
@@ -52,26 +49,20 @@ function pill_html(value, data_id, img_src) {
 run_test('basics', () => {
     const config = {};
 
-    blueslip.set_test_data('error', 'Pill needs container.');
+    blueslip.expect('error', 'Pill needs container.');
     input_pill.create(config);
-    assert.equal(blueslip.get_test_logs('error').length, 1);
-    blueslip.clear_test_data();
 
     const pill_input = $.create('pill_input');
     const container = $.create('container');
     container.set_find_results('.input', pill_input);
 
-    blueslip.set_test_data('error', 'Pill needs create_item_from_text');
+    blueslip.expect('error', 'Pill needs create_item_from_text');
     config.container = container;
     input_pill.create(config);
-    assert.equal(blueslip.get_test_logs('error').length, 1);
-    blueslip.clear_test_data();
 
-    blueslip.set_test_data('error', 'Pill needs get_text_from_item');
+    blueslip.expect('error', 'Pill needs get_text_from_item');
     config.create_item_from_text = noop;
     input_pill.create(config);
-    assert.equal(blueslip.get_test_logs('error').length, 1);
-    blueslip.clear_test_data();
 
     config.get_text_from_item = noop;
     const widget = input_pill.create(config);
@@ -513,7 +504,7 @@ run_test('exit button on pill', () => {
     };
     const exit_click_handler = container.get_on_handler('click', '.exit');
 
-    exit_click_handler.apply(exit_button_stub, [e]);
+    exit_click_handler.call(exit_button_stub, e);
 
     assert(next_pill_focused);
 
@@ -548,11 +539,11 @@ run_test('misc things', () => {
         },
     };
 
-    animation_end_handler.apply(input_stub);
+    animation_end_handler.call(input_stub);
     assert(shake_class_removed);
 
     // bad data
-    blueslip.set_test_data('error', 'no display_value returned');
+    blueslip.expect('error', 'no display_value returned');
     widget.appendValidatedData('this-has-no-item-attribute');
 
     // click on container

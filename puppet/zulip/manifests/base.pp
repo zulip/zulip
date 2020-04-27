@@ -77,7 +77,6 @@ class zulip::base {
     'embedded_bots',
     'error_reports',
     'invites',
-    'missedmessage_email_senders',
     'email_senders',
     'missedmessage_emails',
     'missedmessage_mobile_notifications',
@@ -120,6 +119,7 @@ class zulip::base {
     mode   => '0644',
     owner  => 'zulip',
     group  => 'zulip',
+    links  => 'follow',
   }
   file { ['/etc/zulip/zulip.conf', '/etc/zulip/settings.py']:
     ensure  => 'file',
@@ -159,6 +159,13 @@ class zulip::base {
   }
 
   file { '/var/log/zulip/queue_error':
+    ensure => 'directory',
+    owner  => 'zulip',
+    group  => 'zulip',
+    mode   => '0640',
+  }
+
+  file { '/var/log/zulip/queue_stats':
     ensure => 'directory',
     owner  => 'zulip',
     group  => 'zulip',

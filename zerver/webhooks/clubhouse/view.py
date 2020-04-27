@@ -317,7 +317,7 @@ def get_story_update_estimate_body(payload: Dict[str, Any]) -> str:
     return STORY_ESTIMATE_TEMPLATE.format(**kwargs)
 
 def get_reference_by_id(payload: Dict[str, Any], ref_id: int) -> Dict[str, Any]:
-    ref = {}  # type: Dict[str, Any]
+    ref: Dict[str, Any] = {}
     for reference in payload['references']:
         if reference['id'] == ref_id:
             ref = reference
@@ -328,7 +328,7 @@ def get_story_create_github_entity_body(payload: Dict[str, Any],
                                         entity: str) -> str:
     action = get_action_with_primary_id(payload)
 
-    story = {}  # type: Dict[str, Any]
+    story: Dict[str, Any] = {}
     for a in payload['actions']:
         if (a['entity_type'] == 'story' and
                 a['changes'].get('workflow_state_id') is not None):
@@ -531,7 +531,7 @@ def api_clubhouse_webhook(
     if event is None:
         return json_success()
 
-    body_func = EVENT_BODY_FUNCTION_MAPPER.get(event)  # type: Any
+    body_func: Any = EVENT_BODY_FUNCTION_MAPPER.get(event)
     topic_func = get_topic_function_based_on_type(payload)
     if body_func is None or topic_func is None:
         raise UnexpectedWebhookEventType('Clubhouse', event)

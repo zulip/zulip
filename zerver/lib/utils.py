@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from typing import Any, Callable, List, Optional, Sequence, TypeVar, Iterable, Set, Tuple
 import base64
 import hashlib
@@ -172,7 +170,7 @@ def query_chunker(queries: List[Any],
             break
 
         # Do duplicate-id management here.
-        tup_ids = set([tup[0] for tup in tup_chunk])
+        tup_ids = {tup[0] for tup in tup_chunk}
         assert len(tup_ids) == len(tup_chunk)
         assert len(tup_ids.intersection(id_collector)) == 0
         id_collector.update(tup_ids)
@@ -198,11 +196,3 @@ def split_by(array: List[Any], group_size: int, filler: Any) -> List[List[Any]]:
     """
     args = [iter(array)] * group_size
     return list(map(list, zip_longest(*args, fillvalue=filler)))
-
-def is_remote_server(identifier: str) -> bool:
-    """
-    This function can be used to identify the source of API auth
-    request. We can have two types of sources, Remote Zulip Servers
-    and UserProfiles.
-    """
-    return "@" not in identifier

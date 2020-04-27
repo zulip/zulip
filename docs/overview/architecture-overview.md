@@ -41,7 +41,7 @@ Usage assumptions and concepts
 
 Zulip is a real-time team chat application meant to provide a great
 experience for a wide range of organizations, from companies to
-volunteer projects groups of friends, ranging in size from a small
+volunteer projects to groups of friends, ranging in size from a small
 team to 10,000s of users.  It has [hundreds of
 features](https://zulipchat.com/features) both larger and small, and
 supports dedicated apps for iOS, Android, Linux, Windows, and macOS,
@@ -50,7 +50,7 @@ numerous dedicated [Zulip API](https://zulipchat.com/api) clients
 (e.g. bots).
 
 A server can host multiple Zulip *realms* (organizations), each on its
-own (sub)domain.  While most deployments host only organization, some
+own (sub)domain.  While most deployments host only one organization, some
 such as zulipchat.com host thousands.  Each organization is a private
 chamber with its own users, streams, customizations, and so on. This
 means that one person might be a user of multiple Zulip realms. The
@@ -69,7 +69,7 @@ Components
 
 Zulip is primarily implemented in the
 [Django](https://www.djangoproject.com/) Python web framework.  We
-also make use of [Tornado](http://www.tornadoweb.org) for the
+also make use of [Tornado](https://www.tornadoweb.org) for the
 real-time push system.
 
 Django is the main web application server; Tornado runs the
@@ -116,7 +116,7 @@ For more details on the frontend, see our documentation on
 [the static asset pipeline](../subsystems/html-css.html#static-asset-pipeline).
 
 [Jinja2]: http://jinja.pocoo.org/
-[Handlebars]: http://handlebarsjs.com/
+[Handlebars]: https://handlebarsjs.com/
 
 ### nginx
 
@@ -178,11 +178,8 @@ detail.
 
 ### Redis
 
-Redis is used for a few very short-term data stores, such as in the
-basis of `zerver/lib/rate_limiter.py`, a per-user rate limiting scheme
-[example](http://blog.domaintools.com/2013/04/rate-limiting-with-redis/)),
-and the [email-to-Zulip
-integration](https://zulipchat.com/integrations/doc/email).
+Redis is used for a few very short-term data stores, primarily
+our rate-limiting system.
 
 Redis is configured in `zulip/puppet/zulip/files/redis` and it's a
 pretty standard configuration except for the last line, which turns off
@@ -249,7 +246,7 @@ extension is handled by `tools/postgres-init-dev-db` (invoked by
 `tools/provision`).  That file also manages setting up the
 development postgresql user.
 
-`tools/provision` also invokes `tools/do-destroy-rebuild-database`
+`tools/provision` also invokes `tools/rebuild-dev-database`
 to create the actual database with its schema.
 
 ### Thumbor and thumbnailing

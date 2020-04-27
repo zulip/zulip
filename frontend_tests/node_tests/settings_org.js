@@ -1,6 +1,4 @@
 set_global('$', global.make_zjquery());
-set_global('i18n', global.stub_i18n);
-set_global('blueslip', global.make_zblueslip());
 
 const noop = () => {};
 
@@ -8,9 +6,9 @@ let form_data;
 
 const _jQuery = {
     each: function (lst, f) {
-        _.each(lst, function (v, k) {
+        for (const [k, v] of lst.entries()) {
             f(k, v);
-        });
+        }
     },
 };
 
@@ -29,6 +27,7 @@ const _page_params = {
         { domain: 'example.com', allow_subdomains: true },
         { domain: 'example.org', allow_subdomains: false },
     ],
+    realm_authentication_methods: {},
 };
 
 const _realm_icon = {};
@@ -57,6 +56,12 @@ const _realm_logo = {
     build_realm_logo_widget: noop,
 };
 
+const _list_render = {
+    create: () => {
+        return { init: noop };
+    },
+};
+
 set_global('channel', _channel);
 set_global('csrf_token', 'token-stub');
 set_global('FormData', _FormData);
@@ -67,11 +72,15 @@ set_global('page_params', _page_params);
 set_global('realm_icon', _realm_icon);
 set_global('realm_logo', _realm_logo);
 set_global('ui_report', _ui_report);
+set_global('list_render', _list_render);
 
+const settings_config = zrequire('settings_config');
+const settings_bots = zrequire('settings_bots');
 zrequire('stream_data');
 zrequire('settings_account');
 zrequire('settings_org');
 zrequire('settings_ui');
+zrequire('settings_list_widget');
 
 run_test('unloaded', () => {
     // This test mostly gets us line coverage, and makes
@@ -189,14 +198,17 @@ function createSaveButtons(subsection) {
 
 function test_submit_settings_form(submit_form) {
     Object.assign(page_params, {
-        realm_bot_creation_policy: '2',
-        realm_email_address_visibility: '2',
+        realm_bot_creation_policy: settings_bots.bot_creation_policy_values.restricted.code,
+        realm_email_address_visibility:
+                settings_config.email_address_visibility_values.admins_only.code,
         realm_add_emoji_by_admins_only: true,
         realm_create_stream_by_admins_only: true,
         realm_waiting_period_threshold: 1,
         realm_default_language: '"es"',
-        realm_default_twenty_four_hour_time: 'false',
-        realm_invite_to_stream_policy: 2,
+        realm_default_twenty_four_hour_time: false,
+        realm_invite_to_stream_policy:
+                settings_config.invite_to_stream_policy_values.by_admins_only.code,
+        realm_create_stream_policy: settings_config.create_stream_policy_values.by_members.code,
     });
 
     global.patch_builtin('setTimeout', func => func());
@@ -223,9 +235,22 @@ function test_submit_settings_form(submit_form) {
     save_button.replace = () => {
         return `${subsection}`;
     };
-    $("#id_realm_create_stream_policy").val("by_members");
-    $("#id_realm_invite_to_stream_policy").val("by_members");
+
     $("#id_realm_waiting_period_threshold").val(10);
+
+    const invite_to_stream_policy_elem = $("#id_realm_invite_to_stream_policy");
+    invite_to_stream_policy_elem.val('1');
+    invite_to_stream_policy_elem.attr("id", 'id_realm_invite_to_stream_policy');
+    invite_to_stream_policy_elem.data = () => {
+        return "integer";
+    };
+
+    const create_stream_policy_elem = $("#id_realm_create_stream_policy");
+    create_stream_policy_elem.val('2');
+    create_stream_policy_elem.attr("id", 'id_realm_create_stream_policy');
+    create_stream_policy_elem.data = () => {
+        return "integer";
+    };
 
     const add_emoji_by_admins_only_elem = $("#id_realm_add_emoji_by_admins_only");
     add_emoji_by_admins_only_elem.val("by_anyone");
@@ -250,6 +275,8 @@ function test_submit_settings_form(submit_form) {
         bot_creation_policy_elem,
         email_address_visibility_elem,
         add_emoji_by_admins_only_elem,
+        create_stream_policy_elem,
+        invite_to_stream_policy_elem,
     ]);
 
     patched = false;
@@ -258,14 +285,12 @@ function test_submit_settings_form(submit_form) {
 
     let expected_value = {
         bot_creation_policy: '1',
-        invite_to_stream_policy: 1,
+        invite_to_stream_policy: '1',
         email_address_visibility: '1',
         add_emoji_by_admins_only: false,
-        create_stream_policy: 1,
-        waiting_period_threshold: 10,
+        create_stream_policy: '2',
     };
     assert.deepEqual(data, expected_value);
-
 
     subsection = 'user-defaults';
     ev.currentTarget = `#org-submit-${subsection}`;
@@ -301,7 +326,6 @@ function test_submit_settings_form(submit_form) {
         default_twenty_four_hour_time: 'true',
     };
     assert.deepEqual(data, expected_value);
-
 
     // Testing only once for since callback is same for all cases
     success_callback();
@@ -404,7 +428,6 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     const domain_obj = $.create('domain object');
     domain_obj.text(domain);
 
-
     const elem_obj = $.create('<elem html>');
     const parents_obj = $.create('parents object');
 
@@ -412,7 +435,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     parents_obj.set_find_results('.domain', domain_obj);
     elem_obj.prop('checked', allow);
 
-    change_allow_subdomains.apply(elem_obj, [ev]);
+    change_allow_subdomains.call(elem_obj, ev);
 
     success_callback();
     assert.equal(info.val(),
@@ -423,7 +446,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
 
     allow = false;
     elem_obj.prop('checked', allow);
-    change_allow_subdomains.apply(elem_obj, [ev]);
+    change_allow_subdomains.call(elem_obj, ev);
     success_callback();
     assert.equal(info.val(),
                  'translated: Update successful: Subdomains no longer allowed for example.com');
@@ -460,9 +483,7 @@ function test_sync_realm_settings() {
         property_elem.attr('id', 'id_realm_invalid_settings_property');
         property_elem.length = 1;
 
-        blueslip.error = error_string => {
-            assert.equal(error_string, 'Element refers to unknown property realm_invalid_settings_property');
-        };
+        blueslip.expect('error', 'Element refers to unknown property realm_invalid_settings_property');
         settings_org.sync_realm_settings('invalid_settings_property');
     }
 
@@ -478,7 +499,8 @@ function test_sync_realm_settings() {
         page_params.realm_create_stream_policy = 3;
 
         settings_org.sync_realm_settings('create_stream_policy');
-        assert.equal($("#id_realm_create_stream_policy").val(), "by_full_members");
+        assert.equal($("#id_realm_create_stream_policy").val(),
+                     settings_config.create_stream_policy_values.by_full_members.code);
     }
 
     {
@@ -493,7 +515,8 @@ function test_sync_realm_settings() {
         page_params.realm_create_stream_policy = 1;
 
         settings_org.sync_realm_settings('create_stream_policy');
-        assert.equal($("#id_realm_create_stream_policy").val(), "by_members");
+        assert.equal($("#id_realm_create_stream_policy").val(),
+                     settings_config.create_stream_policy_values.by_members.code);
     }
 
     {
@@ -508,7 +531,8 @@ function test_sync_realm_settings() {
         page_params.realm_create_stream_policy = 2;
 
         settings_org.sync_realm_settings('create_stream_policy');
-        assert.equal($("#id_realm_create_stream_policy").val(), "by_admins_only");
+        assert.equal($("#id_realm_create_stream_policy").val(),
+                     settings_config.create_stream_policy_values.by_admins_only.code);
     }
 
     {
@@ -523,7 +547,8 @@ function test_sync_realm_settings() {
         page_params.realm_invite_to_stream_policy = 3;
 
         settings_org.sync_realm_settings('invite_to_stream_policy');
-        assert.equal($("#id_realm_invite_to_stream_policy").val(), "by_full_members");
+        assert.equal($("#id_realm_invite_to_stream_policy").val(),
+                     settings_config.create_stream_policy_values.by_full_members.code);
     }
 
     {
@@ -538,7 +563,8 @@ function test_sync_realm_settings() {
         page_params.realm_invite_to_stream_policy = 1;
 
         settings_org.sync_realm_settings('invite_to_stream_policy');
-        assert.equal($("#id_realm_invite_to_stream_policy").val(), "by_members");
+        assert.equal($("#id_realm_invite_to_stream_policy").val(),
+                     settings_config.create_stream_policy_values.by_members.code);
     }
 
     {
@@ -553,7 +579,8 @@ function test_sync_realm_settings() {
         page_params.realm_invite_to_stream_policy = 2;
 
         settings_org.sync_realm_settings('invite_to_stream_policy');
-        assert.equal($("#id_realm_invite_to_stream_policy").val(), "by_admins_only");
+        assert.equal($("#id_realm_invite_to_stream_policy").val(),
+                     settings_config.create_stream_policy_values.by_admins_only.code);
     }
 
     {
@@ -566,7 +593,7 @@ function test_sync_realm_settings() {
         page_params.realm_message_content_edit_limit_seconds = 120;
 
         settings_org.sync_realm_settings('message_content_edit_limit_seconds');
-        assert.equal($("#id_realm_message_content_edit_limit_minutes").val(), 2);
+        assert.equal($("#id_realm_message_content_edit_limit_minutes").val(), "2");
     }
 
     {
@@ -601,7 +628,7 @@ function test_sync_realm_settings() {
         page_params.realm_message_content_edit_limit_seconds = 120;
 
         settings_org.sync_realm_settings('message_content_edit_limit_seconds');
-        assert.equal($("#id_realm_message_content_edit_limit_minutes").val(), 2);
+        assert.equal($("#id_realm_message_content_edit_limit_minutes").val(), "2");
     }
 
     {
@@ -684,7 +711,6 @@ function test_discard_changes_button(discard_changes) {
     message_content_edit_limit_minutes.attr('id', 'id_realm_message_content_edit_limit_minutes');
     message_content_delete_limit_minutes.attr('id', 'id_realm_message_content_delete_limit_minutes');
 
-
     const discard_button_parent = $('.org-subsection-parent');
     discard_button_parent.find = () => [
         allow_edit_history,
@@ -707,9 +733,9 @@ function test_discard_changes_button(discard_changes) {
     assert.equal(allow_edit_history.prop('checked'), true);
     assert.equal(allow_community_topic_editing.prop('checked'), true);
     assert.equal(msg_edit_limit_setting.val(), "upto_one_hour");
-    assert.equal(message_content_edit_limit_minutes.val(), 60);
+    assert.equal(message_content_edit_limit_minutes.val(), "60");
     assert.equal(msg_delete_limit_setting.val(), "upto_two_min");
-    assert.equal(message_content_delete_limit_minutes.val(), 2);
+    assert.equal(message_content_delete_limit_minutes.val(), "2");
 
     settings_org.change_save_button_state = stubbed_function;
 }
@@ -769,10 +795,15 @@ run_test('set_up', () => {
         upload_realm_icon = f;
     };
 
-    const stub_render_notifications_stream_ui = settings_org.render_notifications_stream_ui;
-    settings_org.render_notifications_stream_ui = noop;
+    const settings_list_widget_backup = settings_list_widget;
+    settings_list_widget = () => {  // eslint-disable-line no-native-reassign
+        return {
+            render: noop,
+            update: noop,
+        };
+    };
     $("#id_realm_message_content_edit_limit_minutes").set_parent($.create('<stub edit limit parent>'));
-    $("#id_realm_message_content_delete_limit_minutes").set_parent($.create('<stub delete limti parent>'));
+    $("#id_realm_message_content_delete_limit_minutes").set_parent($.create('<stub delete limit parent>'));
     $("#message_content_in_email_notifications_label").set_parent($.create('<stub in-content setting checkbox>'));
     $("#enable_digest_emails_label").set_parent($.create('<stub digest setting checkbox>'));
     $("#id_realm_digest_weekday").set_parent($.create('<stub digest weekday setting dropdown>'));
@@ -807,14 +838,114 @@ run_test('set_up', () => {
     test_parse_time_limit();
     test_discard_changes_button(discard_changes);
 
-    settings_org.render_notifications_stream_ui = stub_render_notifications_stream_ui;
+    settings_list_widget = settings_list_widget_backup;  // eslint-disable-line no-native-reassign
+});
+
+run_test('test get_organization_settings_options', () => {
+    const sorted_option_values = settings_org.get_organization_settings_options();
+    const sorted_create_stream_policy_values = sorted_option_values.create_stream_policy_values;
+    const expected_create_stream_policy_values = [
+        {
+            key: 'by_admins_only',
+            order: 1,
+            code: 2,
+            description: i18n.t("Admins"),
+        },
+        {
+            key: 'by_full_members',
+            order: 2,
+            code: 3,
+            description: i18n.t("Admins and full members"),
+        },
+        {
+            key: 'by_members',
+            order: 3,
+            code: 1,
+            description: i18n.t("Admins and members"),
+        },
+    ];
+    assert.deepEqual(sorted_create_stream_policy_values, expected_create_stream_policy_values);
+});
+
+run_test('test get_sorted_options_list', () => {
+    const option_values_1 = {
+        by_admins_only: {
+            order: 3,
+            code: 2,
+            description: i18n.t("Admins"),
+        },
+        by_members: {
+            order: 2,
+            code: 1,
+            description: i18n.t("Admins and members"),
+        },
+        by_full_members: {
+            order: 1,
+            code: 3,
+            description: i18n.t("Admins and full members"),
+        },
+    };
+    let expected_option_values = [
+        {
+            key: 'by_full_members',
+            order: 1,
+            code: 3,
+            description: i18n.t("Admins and full members"),
+        },
+        {
+            key: 'by_members',
+            order: 2,
+            code: 1,
+            description: i18n.t("Admins and members"),
+        },
+        {
+            key: 'by_admins_only',
+            order: 3,
+            code: 2,
+            description: i18n.t("Admins"),
+        },
+    ];
+    assert.deepEqual(settings_org.get_sorted_options_list(option_values_1), expected_option_values);
+
+    const option_values_2 = {
+        by_admins_only: {
+            code: 1,
+            description: i18n.t("Admins"),
+        },
+        by_members: {
+            code: 2,
+            description: i18n.t("Admins and members"),
+        },
+        by_full_members: {
+            code: 3,
+            description: i18n.t("Admins and full members"),
+        },
+    };
+    expected_option_values = [
+        {
+            key: 'by_admins_only',
+            code: 1,
+            description: i18n.t("Admins"),
+        },
+        {
+            key: 'by_full_members',
+            code: 3,
+            description: i18n.t("Admins and full members"),
+        },
+        {
+            key: 'by_members',
+            code: 2,
+            description: i18n.t("Admins and members"),
+        },
+    ];
+    assert.deepEqual(settings_org.get_sorted_options_list(option_values_2), expected_option_values);
 });
 
 run_test('misc', () => {
     page_params.is_admin = false;
 
     const stub_notification_disable_parent = $.create('<stub notification_disable parent');
-    stub_notification_disable_parent.set_find_results('.notification-disable',
+    stub_notification_disable_parent.set_find_results('.dropdown_list_reset_button',
                                                       $.create('<disable link>'));
 
     page_params.realm_name_changes_disabled = false;
@@ -882,7 +1013,30 @@ run_test('misc', () => {
     settings_account.update_email_change_display();
     assert.equal($("#change_email .button").attr('disabled'), false);
 
-    let elem = $('#realm_notifications_stream_name');
+    stream_data.get_streams_for_settings_page = () => {
+        const arr = [];
+        arr.push({name: "some_stream", stream_id: 75});
+        arr.push({name: "some_stream", stream_id: 42});
+        return arr;
+    };
+
+    // Set stubs for settings_list_widget:
+    const widget_settings = ['realm_notifications_stream_id',
+                             'realm_signup_notifications_stream_id',
+                             'realm_default_code_block_language'];
+    const dropdown_list_parent = $.create(`<list parent>`);
+    dropdown_list_parent.set_find_results('.dropdown_list_reset_button', $.create('<disable button>'));
+    widget_settings.forEach(name => {
+        const elem = $.create(`#${name}_widget #${name}_name`);
+        elem.closest = () => {
+            return dropdown_list_parent;
+        };
+    });
+
+    settings_org.init_dropdown_widgets();
+
+    let setting_name = 'realm_notifications_stream_id';
+    let elem = $(`#${setting_name}_widget #${setting_name}_name`);
     elem.closest = function () {
         return stub_notification_disable_parent;
     };
@@ -890,16 +1044,17 @@ run_test('misc', () => {
         assert.equal(stream_id, 42);
         return { name: 'some_stream' };
     };
-    settings_org.render_notifications_stream_ui(42, "notifications");
+    settings_org.notifications_stream_widget.render(42);
     assert.equal(elem.text(), '#some_stream');
     assert(!elem.hasClass('text-warning'));
 
     stream_data.get_sub_by_id = noop;
-    settings_org.render_notifications_stream_ui(undefined, "notifications");
+    settings_org.notifications_stream_widget.render(undefined);
     assert.equal(elem.text(), 'translated: Disabled');
     assert(elem.hasClass('text-warning'));
 
-    elem = $('#realm_signup_notifications_stream_name');
+    setting_name = 'realm_signup_notifications_stream_id';
+    elem = $(`#${setting_name}_widget #${setting_name}_name`);
     elem.closest = function () {
         return stub_notification_disable_parent;
     };
@@ -907,12 +1062,12 @@ run_test('misc', () => {
         assert.equal(stream_id, 75);
         return { name: 'some_stream' };
     };
-    settings_org.render_notifications_stream_ui(75, "signup_notifications");
+    settings_org.signup_notifications_stream_widget.render(75);
     assert.equal(elem.text(), '#some_stream');
     assert(!elem.hasClass('text-warning'));
 
     stream_data.get_sub_by_id = noop;
-    settings_org.render_notifications_stream_ui(undefined, "signup_notifications");
+    settings_org.signup_notifications_stream_widget.render(undefined);
     assert.equal(elem.text(), 'translated: Disabled');
     assert(elem.hasClass('text-warning'));
 

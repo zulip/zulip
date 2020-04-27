@@ -1,14 +1,19 @@
 from typing import Optional, Tuple, Any
 
+from datetime import timedelta
+
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core.files import File
+from django.core.signing import TimestampSigner, BadSignature
 from django.http import HttpRequest
+from django.urls import reverse
 from jinja2 import Markup as mark_safe
 import unicodedata
 
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.exceptions import JsonableError, ErrorCode
+from zerver.lib.utils import generate_random_token
 
 from boto.s3.bucket import Bucket
 from boto.s3.key import Key
@@ -19,10 +24,9 @@ from zerver.models import get_user_profile_by_id
 from zerver.models import Attachment
 from zerver.models import Realm, RealmEmoji, UserProfile, Message
 
-from zerver.lib.utils import generate_random_token
-
 import urllib
 import base64
+import binascii
 import os
 import re
 from PIL import Image, ImageOps, ExifTags
@@ -43,6 +47,11 @@ DEFAULT_EMOJI_SIZE = 64
 # network cost of very large emoji images.
 MAX_EMOJI_GIF_SIZE = 128
 MAX_EMOJI_GIF_FILE_SIZE_BYTES = 128 * 1024 * 1024  # 128 kb
+
+# Duration that the signed upload URLs that we redirect to when
+# accessing uploaded files are available for clients to fetch before
+# they expire.
+SIGNED_UPLOAD_URL_DURATION = 60
 
 INLINE_MIME_TYPES = [
     "application/pdf",
@@ -94,7 +103,7 @@ def random_name(bytes: int=60) -> str:
 class BadImageError(JsonableError):
     code = ErrorCode.BAD_IMAGE
 
-name_to_tag_num = dict((name, num) for num, name in ExifTags.TAGS.items())
+name_to_tag_num = {name: num for num, name in ExifTags.TAGS.items()}
 
 # https://stackoverflow.com/a/6218425
 def exif_rotate(image: Image) -> Image:
@@ -121,7 +130,7 @@ def resize_avatar(image_data: bytes, size: int=DEFAULT_AVATAR_SIZE) -> bytes:
         im = Image.open(io.BytesIO(image_data))
         im = exif_rotate(im)
         im = ImageOps.fit(im, (size, size), Image.ANTIALIAS)
-    except IOError:
+    except OSError:
         raise BadImageError(_("Could not decode image; did you upload an image file?"))
     except DecompressionBombError:
         raise BadImageError(_("Image size exceeds limit."))
@@ -136,7 +145,7 @@ def resize_logo(image_data: bytes) -> bytes:
         im = Image.open(io.BytesIO(image_data))
         im = exif_rotate(im)
         im.thumbnail((8*DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE), Image.ANTIALIAS)
-    except IOError:
+    except OSError:
         raise BadImageError(_("Could not decode image; did you upload an image file?"))
     except DecompressionBombError:
         raise BadImageError(_("Image size exceeds limit."))
@@ -188,7 +197,7 @@ def resize_emoji(image_data: bytes, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
             out = io.BytesIO()
             im.save(out, format=image_format)
             return out.getvalue()
-    except IOError:
+    except OSError:
         raise BadImageError(_("Could not decode image; did you upload an image file?"))
     except DecompressionBombError:
         raise BadImageError(_("Image size exceeds limit."))
@@ -255,13 +264,15 @@ class ZulipUploadBackend:
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
         raise NotImplementedError()
 
+    def realm_avatar_and_logo_path(self, realm: Realm) -> str:
+        raise NotImplementedError()
 
 ### S3
 
 def get_bucket(conn: S3Connection, bucket_name: str) -> Bucket:
     # Calling get_bucket() with validate=True can apparently lead
     # to expensive S3 bills:
-    #    http://www.appneta.com/blog/s3-list-get-bucket-default/
+    #    https://www.appneta.com/blog/s3-list-get-bucket-default/
     # The benefits of validation aren't completely clear to us, and
     # we want to save on our bills, so we set the validate flag to False.
     # (We think setting validate to True would cause us to fail faster
@@ -321,11 +332,12 @@ def get_file_info(request: HttpRequest, user_file: File) -> Tuple[str, int, Opti
 
 def get_signed_upload_url(path: str) -> str:
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-    return conn.generate_url(15, 'GET', bucket=settings.S3_AUTH_UPLOADS_BUCKET, key=path)
+    return conn.generate_url(SIGNED_UPLOAD_URL_DURATION, 'GET',
+                             bucket=settings.S3_AUTH_UPLOADS_BUCKET, key=path)
 
 def get_realm_for_filename(path: str) -> Optional[int]:
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-    key = get_bucket(conn, settings.S3_AUTH_UPLOADS_BUCKET).get_key(path)  # type: Optional[Key]
+    key: Optional[Key] = get_bucket(conn, settings.S3_AUTH_UPLOADS_BUCKET).get_key(path)
     if key is None:
         # This happens if the key does not exist.
         return None
@@ -339,7 +351,7 @@ class S3UploadBackend(ZulipUploadBackend):
         bucket = get_bucket(self.connection, bucket_name)
 
         # check if file exists
-        key = bucket.get_key(path_id)  # type: Optional[Key]
+        key: Optional[Key] = bucket.get_key(path_id)
         if key is not None:
             bucket.delete_key(key)
             return True
@@ -456,10 +468,13 @@ class S3UploadBackend(ZulipUploadBackend):
         # export_path has a leading /
         return "https://%s.s3.amazonaws.com%s" % (bucket, export_path)
 
+    def realm_avatar_and_logo_path(self, realm: Realm) -> str:
+        return os.path.join(str(realm.id), 'realm')
+
     def upload_realm_icon_image(self, icon_file: File, user_profile: UserProfile) -> None:
         content_type = guess_type(icon_file.name)[0]
         bucket_name = settings.S3_AVATAR_BUCKET
-        s3_file_name = os.path.join(str(user_profile.realm.id), 'realm', 'icon')
+        s3_file_name = os.path.join(self.realm_avatar_and_logo_path(user_profile.realm), 'icon')
 
         image_data = icon_file.read()
         upload_image_to_s3(
@@ -495,7 +510,7 @@ class S3UploadBackend(ZulipUploadBackend):
             basename = 'night_logo'
         else:
             basename = 'logo'
-        s3_file_name = os.path.join(str(user_profile.realm.id), 'realm', basename)
+        s3_file_name = os.path.join(self.realm_avatar_and_logo_path(user_profile.realm), basename)
 
         image_data = logo_file.read()
         upload_image_to_s3(
@@ -650,6 +665,25 @@ def get_local_file_path(path_id: str) -> Optional[str]:
     else:
         return None
 
+LOCAL_FILE_ACCESS_TOKEN_SALT = "local_file_"
+
+def generate_unauthed_file_access_url(path_id: str) -> str:
+    signed_data = TimestampSigner(salt=LOCAL_FILE_ACCESS_TOKEN_SALT).sign(path_id)
+    token = base64.b16encode(signed_data.encode('utf-8')).decode('utf-8')
+
+    filename = path_id.split('/')[-1]
+    return reverse('zerver.views.upload.serve_local_file_unauthed', args=[token, filename])
+
+def get_local_file_path_id_from_token(token: str) -> Optional[str]:
+    signer = TimestampSigner(salt=LOCAL_FILE_ACCESS_TOKEN_SALT)
+    try:
+        signed_data = base64.b16decode(token).decode('utf-8')
+        path_id = signer.unsign(signed_data, max_age=timedelta(seconds=60))
+    except (BadSignature, binascii.Error):
+        return None
+
+    return path_id
+
 class LocalUploadBackend(ZulipUploadBackend):
     def upload_message_file(self, uploaded_file_name: str, uploaded_file_size: int,
                             content_type: Optional[str], file_data: bytes,
@@ -706,9 +740,11 @@ class LocalUploadBackend(ZulipUploadBackend):
         image_data = read_local_file('avatars', source_file_path + '.original')
         self.write_avatar_images(target_file_path, image_data)
 
-    def upload_realm_icon_image(self, icon_file: File, user_profile: UserProfile) -> None:
-        upload_path = os.path.join('avatars', str(user_profile.realm.id), 'realm')
+    def realm_avatar_and_logo_path(self, realm: Realm) -> str:
+        return os.path.join('avatars', str(realm.id), 'realm')
 
+    def upload_realm_icon_image(self, icon_file: File, user_profile: UserProfile) -> None:
+        upload_path = self.realm_avatar_and_logo_path(user_profile.realm)
         image_data = icon_file.read()
         write_local_file(
             upload_path,
@@ -724,7 +760,7 @@ class LocalUploadBackend(ZulipUploadBackend):
 
     def upload_realm_logo_image(self, logo_file: File, user_profile: UserProfile,
                                 night: bool) -> None:
-        upload_path = os.path.join('avatars', str(user_profile.realm.id), 'realm')
+        upload_path = self.realm_avatar_and_logo_path(user_profile.realm)
         if night:
             original_file = 'night_logo.original'
             resized_file = 'night_logo.png'
@@ -824,7 +860,7 @@ class LocalUploadBackend(ZulipUploadBackend):
 
 # Common and wrappers
 if settings.LOCAL_UPLOADS_DIR is not None:
-    upload_backend = LocalUploadBackend()  # type: ZulipUploadBackend
+    upload_backend: ZulipUploadBackend = LocalUploadBackend()
 else:
     upload_backend = S3UploadBackend()  # nocoverage
 

@@ -36,9 +36,7 @@
                     </a>
                 </label>
                 <select name="demote_inactive_streams" id="demote_inactive_streams">
-                    {{#each demote_inactive_streams_values}}
-                    <option value='{{ this.code }}'>{{ this.description }}</option>
-                    {{/each}}
+                    {{> dropdown_options_widget option_values=demote_inactive_streams_values}}
                 </select>
             </div>
         </div>

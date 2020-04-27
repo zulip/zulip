@@ -1,4 +1,5 @@
 from typing import Dict, List, Optional, Set, Tuple
+from typing_extensions import TypedDict
 from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
 
 from zerver.lib.cache import cache_with_key, display_recipient_cache_key, generic_bulk_cached_fetch, \
@@ -12,6 +13,11 @@ display_recipient_fields = [
     "short_name",
     "is_mirror_dummy",
 ]
+
+TinyStreamResult = TypedDict('TinyStreamResult', {
+    'id': int,
+    'name': str,
+})
 
 @cache_with_key(lambda *args: display_recipient_cache_key(args[0]),
                 timeout=3600*24*7)
@@ -68,31 +74,31 @@ def bulk_fetch_display_recipients(recipient_tuples: Set[Tuple[int, int, int]]
         for recipient in recipient_tuples
     }
 
-    stream_recipients = set(
+    stream_recipients = {
         recipient for recipient in recipient_tuples if recipient[1] == Recipient.STREAM
-    )
+    }
     personal_and_huddle_recipients = recipient_tuples - stream_recipients
 
-    def stream_query_function(recipient_ids: List[int]) -> List[Stream]:
+    def stream_query_function(recipient_ids: List[int]) -> List[TinyStreamResult]:
         stream_ids = [
             recipient_id_to_type_pair_dict[recipient_id][1] for recipient_id in recipient_ids
         ]
-        return Stream.objects.filter(id__in=stream_ids)
+        return Stream.objects.filter(id__in=stream_ids).values('name', 'id')
 
-    def stream_id_fetcher(stream: Stream) -> int:
-        return type_pair_to_recipient_id_dict[(Recipient.STREAM, stream.id)]
+    def stream_id_fetcher(stream: TinyStreamResult) -> int:
+        return type_pair_to_recipient_id_dict[(Recipient.STREAM, stream['id'])]
 
-    def stream_cache_transformer(stream: Stream) -> str:
-        return stream.name
+    def stream_cache_transformer(stream: TinyStreamResult) -> str:
+        return stream['name']
 
     # ItemT = Stream, CacheItemT = str (name), ObjKT = int (recipient_id)
-    stream_display_recipients = generic_bulk_cached_fetch(
+    stream_display_recipients: Dict[int, str] = generic_bulk_cached_fetch(
         cache_key_function=display_recipient_cache_key,
         query_function=stream_query_function,
         object_ids=[recipient[0] for recipient in stream_recipients],
         id_fetcher=stream_id_fetcher,
         cache_transformer=stream_cache_transformer,
-    )  # type: Dict[int, str]
+    )
 
     # Now we have to create display_recipients for personal and huddle messages.
     # We do this via generic_bulk_cached_fetch, supplying apprioprate functions to it.
@@ -115,8 +121,8 @@ def bulk_fetch_display_recipients(recipient_tuples: Set[Tuple[int, int, int]]
         ) for recipient_id in recipient_ids]
 
         # Find all user ids whose UserProfiles we will need to fetch:
-        user_ids_to_fetch = set()  # type: Set[int]
-        huddle_user_ids = {}  # type: Dict[int, List[int]]
+        user_ids_to_fetch: Set[int] = set()
+        huddle_user_ids: Dict[int, List[int]] = {}
         huddle_user_ids = bulk_get_huddle_user_ids([recipient for recipient in recipients
                                                     if recipient.type == Recipient.HUDDLE])
         for recipient in recipients:
@@ -126,10 +132,10 @@ def bulk_fetch_display_recipients(recipient_tuples: Set[Tuple[int, int, int]]
                 user_ids_to_fetch = user_ids_to_fetch.union(huddle_user_ids[recipient.id])
 
         # Fetch the needed UserProfiles:
-        user_profiles = bulk_get_user_profile_by_id(list(user_ids_to_fetch))  # type: Dict[int, UserDisplayRecipient]
+        user_profiles: Dict[int, UserDisplayRecipient] = bulk_get_user_profile_by_id(list(user_ids_to_fetch))
 
         # Build the return value:
-        result = []  # type: List[Tuple[int, List[UserDisplayRecipient]]]
+        result: List[Tuple[int, List[UserDisplayRecipient]]] = []
         for recipient in recipients:
             if recipient.type == Recipient.PERSONAL:
                 result.append((recipient.id, [user_profiles[recipient.type_id]]))

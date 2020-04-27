@@ -3,7 +3,12 @@
 server {
     listen 80;
     listen [::]:80;
-    return 301 https://$host$request_uri;
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+
+    include /etc/nginx/zulip-include/certbot;
 }
 <% end -%>
 
@@ -24,7 +29,7 @@ server {
 
 <% if @no_serve_uploads == '' -%>
     location /user_avatars {
-        add_header X-Content-Type-Options nosniff;
+        include /etc/nginx/zulip-include/headers;
         add_header Content-Security-Policy "default-src 'none' img-src 'self'";
         include /etc/nginx/zulip-include/uploads.types;
         alias /home/zulip/uploads/avatars;

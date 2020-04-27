@@ -1,14 +1,15 @@
-// How to determine the direction of a paragraph (P1-P3): http://www.unicode.org/reports/tr9/tr9-35.html#The_Paragraph_Level
-// Embedding level: http://www.unicode.org/reports/tr9/tr9-35.html#BD2
-// How to find the matching PDI for an isolation initiator: http://www.unicode.org/reports/tr9/tr9-35.html#BD9
-// Bidirectional character types: http://www.unicode.org/reports/tr9/tr9-35.html#Table_Bidirectional_Character_Types
+const util = require("./util");
+// How to determine the direction of a paragraph (P1-P3): https://www.unicode.org/reports/tr9/tr9-35.html#The_Paragraph_Level
+// Embedding level: https://www.unicode.org/reports/tr9/tr9-35.html#BD2
+// How to find the matching PDI for an isolation initiator: https://www.unicode.org/reports/tr9/tr9-35.html#BD9
+// Bidirectional character types: https://www.unicode.org/reports/tr9/tr9-35.html#Table_Bidirectional_Character_Types
 
-// Ranges data is extracted from: http://www.unicode.org/Public/9.0.0/ucd/extracted/DerivedBidiClass.txt
+// Ranges data is extracted from: https://www.unicode.org/Public/9.0.0/ucd/extracted/DerivedBidiClass.txt
 // References:
-// http://www.unicode.org/reports/tr44/tr44-18.html#UnicodeData.txt
-// http://www.unicode.org/reports/tr44/tr44-18.html#Extracted_Properties_Table
-// http://www.unicode.org/Public/9.0.0/ucd/UnicodeData.txt
-// http://www.unicode.org/Public/9.0.0/ucd/extracted/DerivedBidiClass.txt
+// https://www.unicode.org/reports/tr44/tr44-18.html#UnicodeData.txt
+// https://www.unicode.org/reports/tr44/tr44-18.html#Extracted_Properties_Table
+// https://www.unicode.org/Public/9.0.0/ucd/UnicodeData.txt
+// https://www.unicode.org/Public/9.0.0/ucd/extracted/DerivedBidiClass.txt
 
 
 /**
@@ -65,10 +66,10 @@ const lr_ranges = convert_from_raw(digits, 2, '0$0}151u1<1<1|1|2222282u2w2!2#7Q7
  * @returns {'I' | 'PDI' | 'R' | 'L' | 'Other'}
  */
 function get_bidi_class(ch) {
-    if (i_chars.indexOf(ch) !== -1) {
+    if (i_chars.includes(ch)) {
         return 'I'; // LRI, RLI, FSI
     }
-    if (pdi_chars.indexOf(ch) !== -1) {
+    if (pdi_chars.includes(ch)) {
         return 'PDI';
     }
     let i = util.lower_bound(rl_ranges, ch);

@@ -3,7 +3,6 @@ set_global('$', global.make_zjquery());
 set_global('loading', {});
 set_global('Sortable', {create: () => {}});
 
-
 const SHORT_TEXT_ID = 1;
 const CHOICE_ID = 3;
 const EXTERNAL_ACCOUNT_ID = 7;
@@ -129,8 +128,8 @@ run_test('populate_profile_fields', () => {
                 hint: 'lunch',
                 type: CHOICE_NAME,
                 choices: [
-                    {order: 0, value: 0, text: 'lunch'},
-                    {order: 1, value: 1, text: 'dinner'},
+                    {order: 0, value: '0', text: 'lunch'},
+                    {order: 1, value: '1', text: 'dinner'},
                 ],
                 is_choice_field: true,
                 is_external_account_field: false,

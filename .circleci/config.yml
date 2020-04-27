@@ -21,7 +21,7 @@ aliases:
   - &restore_cache_requirements
     restore_cache:
       keys:
-      - v1-venv-base.{{ .Environment.CIRCLE_JOB }}-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
+      - v1-venv-base.{{ .Environment.CIRCLE_JOB }}-{{ checksum "requirements/thumbor-dev.txt" }}-{{ checksum "requirements/dev.txt" }}
 
   - &install_dependencies
     run:
@@ -56,8 +56,16 @@ aliases:
     save_cache:
       paths:
         - /srv/zulip-venv-cache
-      key: v1-venv-base.{{ .Environment.CIRCLE_JOB }}-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
+      key: v1-venv-base.{{ .Environment.CIRCLE_JOB }}-{{ checksum "requirements/thumbor-dev.txt" }}-{{ checksum "requirements/dev.txt" }}
     # TODO: in Travis we also cache ~/zulip-emoji-cache, ~/node, ~/misc
+
+  - &do_bionic_hack
+    run:
+      name: do Bionic hack
+      command: |
+        # Temporary hack till `sudo service redis-server start` gets fixes in Bionic. See
+        # https://chat.zulip.org/#narrow/stream/3-backend/topic/Ubuntu.20bionic.20CircleCI
+        sudo sed -i '/^bind/s/bind.*/bind 0.0.0.0/' /etc/redis/redis.conf
 
   - &run_backend_tests
     run:
@@ -81,11 +89,123 @@ aliases:
        pip install codecov && codecov \
          || echo "Error in uploading coverage reports to codecov.io."
 
+  - &setup_production
+    run:
+      name: setup production
+      command: |
+        sudo apt-get update
+        # Install moreutils so we can use `ts` and `mispipe` in the following.
+        sudo apt-get install -y moreutils
+
+        mispipe ./tools/ci/setup-production ts
+
+  - &production_extract_tarball
+    run:
+     name: production extract tarball
+     command: |
+      sudo apt-get update
+      # Install moreutils so we can use `ts` and `mispipe` in the following.
+      sudo apt-get install -y moreutils
+
+      mispipe /tmp/production-extract-tarball ts
+
+  - &install_production
+    run:
+     name: install production
+     command: |
+      sudo service rabbitmq-server restart
+      mispipe /tmp/production ts
+
+  - &check_xenial_provision_error
+    run:
+      name: check tools/provision error message on xenial
+      command: |
+        ! tools/provision > >(tee provision.out)
+        grep -Fqx 'CRITICAL:root:Unsupported platform: ubuntu 16.04' provision.out
+
+  - &check_xenial_upgrade_error
+    run:
+      name: check scripts/lib/upgrade-zulip-stage-2 error message on xenial
+      command: |
+        ! sudo scripts/lib/upgrade-zulip-stage-2 2> >(tee upgrade.err >&2)
+        grep -Fq 'upgrade-zulip-stage-2: Unsupported platform: ubuntu 16.04' upgrade.err
+
+  - &check_xenial_puppet
+    run:
+      name: check scripts/zulip-puppet-apply on xenial
+      command: |
+        sudo apt-get update
+        sudo apt-get -qy install lsb-release
+        sudo mkdir /etc/zulip
+        printf '[machine]\npuppet_classes = zulip::base, zulip::postgres_appdb_tuned\n' | sudo tee /etc/zulip/zulip.conf
+        sudo scripts/zulip-puppet-apply -f
+        sudo python3 -m py_compile /usr/local/bin/pg_backup_and_purge /usr/local/bin/process_fts_updates
+
 jobs:
-  "xenial-backend-frontend-python3.5":
+  "bionic-backend-frontend-python3.6":
     docker:
-      # This is built from tools/circleci/images/xenial/Dockerfile .
-      # Xenial ships with Python 3.5.
+      # This is built from tools/circleci/images/bionic/Dockerfile .
+      # Bionic ships with Python 3.6.
+      - image: amanagr/circleci:bionic-python-2.test
+
+    working_directory: ~/zulip
+
+    steps:
+      - checkout
+
+      - *create_cache_directories
+      - *do_bionic_hack
+      - *restore_cache_package_json
+      - *restore_cache_requirements
+      - *install_dependencies
+      - *save_cache_package_json
+      - *save_cache_requirements
+      - *run_backend_tests
+
+      - run:
+          name: test locked requirements
+          command: |
+            . /srv/zulip-py3-venv/bin/activate
+            mispipe ./tools/test-locked-requirements ts
+
+      - *run_frontend_tests
+        # We only need to upload coverage reports on whichever platform
+        # runs the frontend tests.
+      - *upload_coverage_report
+
+      - store_artifacts:
+          path: ./var/casper/
+          destination: casper
+
+      - store_artifacts:
+          path: ../../../tmp/zulip-test-event-log/
+          destination: test-reports
+
+      - store_test_results:
+            path: ./var/xunit-test-results/casper/
+
+
+  "focal-backend-python3.8":
+      docker:
+        # This is built from tools/circleci/images/focal/Dockerfile.
+        # Focal ships with Python 3.8.2.
+        - image: arpit551/circleci:focal-test
+
+      working_directory: ~/zulip
+
+      steps:
+        - checkout
+
+        - *create_cache_directories
+        - *restore_cache_package_json
+        - *restore_cache_requirements
+        - *install_dependencies
+        - *save_cache_package_json
+        - *save_cache_requirements
+        - *run_backend_tests
+
+  "xenial-legacy":
+    docker:
       - image: gregprice/circleci:xenial-python-4.test
 
     working_directory: ~/zulip
@@ -93,34 +213,15 @@ jobs:
     steps:
       - checkout
 
-      - *create_cache_directories
-      - *restore_cache_package_json
-      - *restore_cache_requirements
-      - *install_dependencies
-      - *save_cache_package_json
-      - *save_cache_requirements
-      - *run_backend_tests
-      - *run_frontend_tests
-      # We only need to upload coverage reports on whichever platform
-      # runs the frontend tests.
-      - *upload_coverage_report
+      - *check_xenial_provision_error
+      - *check_xenial_upgrade_error
+      - *check_xenial_puppet
 
-      - store_artifacts:
-          path: ./var/casper/
-          destination: casper
-
-      - store_artifacts:    
-          path: ../../../tmp/zulip-test-event-log/
-          destination: test-reports
-
-      - store_test_results:
-            path: ./var/xunit-test-results/casper/
-
-  "bionic-backend-python3.6":
+  "bionic-production-build-python3.6":
     docker:
-      # This is built from tools/circleci/images/bionic/Dockerfile .
-      # Bionic ships with Python 3.6.
-      - image: gregprice/circleci:bionic-python-1.test
+        # This is built from tools/circleci/images/bionic/Dockerfile .
+        # Bionic ships with Python 3.6.
+        - image: amanagr/circleci:bionic-python-2.test
 
     working_directory: ~/zulip
 
@@ -128,24 +229,59 @@ jobs:
       - checkout
 
       - *create_cache_directories
-
-      - run:
-          name: do Bionic hack
-          command: |
-              # Temporary hack till `sudo service redis-server start` gets fixes in Bionic. See
-              # https://chat.zulip.org/#narrow/stream/3-backend/topic/Ubuntu.20bionic.20CircleCI
-              sudo sed -i '/^bind/s/bind.*/bind 0.0.0.0/' /etc/redis/redis.conf
-
+      - *do_bionic_hack
       - *restore_cache_package_json
       - *restore_cache_requirements
-      - *install_dependencies
+      - *setup_production
       - *save_cache_package_json
       - *save_cache_requirements
-      - *run_backend_tests
+
+      # Persist the built tarball to be used in downstream job
+      # for installation of production server.
+      # See https://circleci.com/docs/2.0/workflows/#using-workspaces-to-share-data-among-jobs
+      - persist_to_workspace:
+          # Must be an absolute path,
+          # or relative path from working_directory.
+          # This is a directory on the container which is
+          # taken to be the root directory of the workspace.
+          root: /tmp
+          # Must be relative path from root
+          paths:
+            - zulip-server-test.tar.gz
+            - success-http-headers.txt
+            - production-helper
+            - production
+            - production-extract-tarball
+
+  "bionic-production-install-python3.6":
+    docker:
+        # This is built from tools/circleci/images/bionic/Dockerfile .
+        # Bionic ships with Python 3.6.
+        - image: amanagr/circleci:bionic-python-2.test
+
+    working_directory: ~/zulip
+
+    steps:
+      # Contains the built tarball from bionic-production-build-python3.6 job
+      - attach_workspace:
+          # Must be absolute path or relative path from working_directory
+          at: /tmp
+
+      - *create_cache_directories
+      - *do_bionic_hack
+      - *production_extract_tarball
+      - *restore_cache_package_json
+      - *install_production
+      - *save_cache_package_json
 
 workflows:
   version: 2
   build:
     jobs:
-      - "xenial-backend-frontend-python3.5"
-      - "bionic-backend-python3.6"
+      - "bionic-backend-frontend-python3.6"
+      - "bionic-production-build-python3.6"
+      - "focal-backend-python3.8"
+      - "xenial-legacy"
+      - "bionic-production-install-python3.6":
+            requires:
+                - "bionic-production-build-python3.6"

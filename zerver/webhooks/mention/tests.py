@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
 
@@ -8,7 +7,7 @@ class MentionHookTests(WebhookTestCase):
     FIXTURE_DIR_NAME = 'mention'
 
     def test_mention_webfeed(self) -> None:
-        expected_topic = u"news"
+        expected_topic = "news"
         expected_message = """
 **[Historical Sexual Abuse (Football): 29 Nov 2016: House of Commons debates - TheyWorkForYou](https://www.theyworkforyou.com/debates/?id=2016-11-29b.1398.7&p=24887)**:
 

@@ -4,12 +4,32 @@ const render_widgets_todo_widget_tasks = require('../templates/widgets/todo_widg
 exports.task_data_holder = function () {
     const self = {};
 
-    const all_tasks = [];
-    const pending_tasks = [];
-    const completed_tasks = [];
-    let my_idx = 0;
+    const task_map = new Map();
+
+    function get_new_index() {
+        let idx = 0;
+
+        for (const item of task_map.values()) {
+            idx = Math.max(idx, item.idx);
+        }
+
+        return idx + 1;
+    }
 
     self.get_widget_data = function () {
+        const all_tasks = Array.from(task_map.values());
+        all_tasks.sort((a, b) => a.task.localeCompare(b.task));
+
+        const pending_tasks = [];
+        const completed_tasks = [];
+
+        for (const item of all_tasks) {
+            if (item.completed) {
+                completed_tasks.push(item);
+            } else {
+                pending_tasks.push(item);
+            }
+        }
 
         const widget_data = {
             pending_tasks: pending_tasks,
@@ -19,51 +39,52 @@ exports.task_data_holder = function () {
         return widget_data;
     };
 
-    self.check_task = {
-        task_exists: function (task) {
-            const task_exists = _.any(all_tasks, function (item) {
-                return item.task === task;
-            });
-            return task_exists;
-        },
+    self.name_in_use = function (name) {
+        for (const item of task_map.values()) {
+            if (item.task === name) {
+                return true;
+            }
+        }
+
+        return false;
     };
 
     self.handle = {
         new_task: {
-            outbound: function (task) {
+            outbound: function (task, desc) {
                 const event = {
                     type: 'new_task',
-                    key: my_idx,
+                    key: get_new_index(),
                     task: task,
+                    desc: desc,
                     completed: false,
                 };
-                my_idx += 1;
 
-                if (!self.check_task.task_exists(task)) {
+                if (!self.name_in_use(task)) {
                     return event;
                 }
                 return;
             },
 
             inbound: function (sender_id, data) {
+                // for legacy reasons, the inbound idx is
+                // called key in the event
                 const idx = data.key;
+                const key = idx + "," + sender_id;
                 const task = data.task;
+                const desc = data.desc;
                 const completed = data.completed;
 
                 const task_data = {
                     task: task,
-                    user_id: sender_id,
-                    key: idx,
+                    desc: desc,
+                    idx: idx,
+                    key: key,
                     completed: completed,
                 };
 
-                if (!self.check_task.task_exists(task)) {
-                    pending_tasks.push(task_data);
-                    all_tasks.push(task_data);
-
-                    if (my_idx <= idx) {
-                        my_idx = idx + 1;
-                    }
+                if (!self.name_in_use(task)) {
+                    task_map.set(key, task_data);
                 }
             },
         },
@@ -80,26 +101,14 @@ exports.task_data_holder = function () {
 
             inbound: function (sender_id, data) {
                 const key = data.key;
-                const task = all_tasks[key];
-                let index;
+                const item = task_map.get(key);
 
-                if (task === undefined) {
+                if (item === undefined) {
                     blueslip.error('unknown key for tasks: ' + key);
                     return;
                 }
 
-                all_tasks[key].completed = !all_tasks[key].completed;
-
-                // toggle
-                if (task.completed) {
-                    index = pending_tasks.indexOf(task);
-                    pending_tasks.splice(index, 1);
-                    completed_tasks.unshift(task);
-                } else {
-                    index = completed_tasks.indexOf(task);
-                    completed_tasks.splice(index, 1);
-                    pending_tasks.push(task);
-                }
+                item.completed = !item.completed;
             },
         },
     };
@@ -128,20 +137,22 @@ exports.activate = function (opts) {
             e.stopPropagation();
             elem.find(".widget-error").text('');
             const task = elem.find("input.add-task").val().trim();
+            const desc = elem.find("input.add-desc").val().trim();
 
             if (task === '') {
                 return;
             }
 
             elem.find(".add-task").val('').focus();
+            elem.find(".add-desc").val('').focus();
 
-            const task_exists = task_data.check_task.task_exists(task);
+            const task_exists = task_data.name_in_use(task);
             if (task_exists) {
                 elem.find(".widget-error").text(i18n.t('Task already exists'));
                 return;
             }
 
-            const data = task_data.handle.new_task.outbound(task);
+            const data = task_data.handle.new_task.outbound(task, desc);
             callback(data);
         });
     }
@@ -162,9 +173,10 @@ exports.activate = function (opts) {
     }
 
     elem.handle_events = function (events) {
-        _.each(events, function (event) {
+        for (const event of events) {
             task_data.handle_event(event.sender_id, event.data);
-        });
+        }
+
         render_results();
     };
 

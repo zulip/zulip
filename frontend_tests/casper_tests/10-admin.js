@@ -2,26 +2,7 @@ var common = require('../casper_lib/common.js');
 
 common.start_and_log_in();
 
-casper.then(function () {
-    var menu_selector = '#settings-dropdown';
-    casper.waitUntilVisible(menu_selector, function () {
-        casper.click(menu_selector);
-    });
-});
-
-casper.then(function () {
-    casper.test.info('Organization page');
-    casper.click('a[href^="#organization"]');
-});
-
-casper.waitForSelector('#settings_overlay_container.show', function () {
-    casper.test.info('Organization page is active');
-    casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#organization/, 'URL suggests we are on organization page');
-});
-
-casper.then(function () {
-    casper.click("li[data-section='organization-settings']");
-});
+common.manage_organization();
 
 function submit_notifications_stream_settings() {
     casper.then(function () {
@@ -37,11 +18,10 @@ function submit_notifications_stream_settings() {
 // Test changing notifications stream
 casper.then(function () {
     casper.test.info('Changing notifications stream to Verona by filtering with "verona"');
-    casper.click("#id_realm_notifications_stream > button.dropdown-toggle");
-
-    casper.waitUntilVisible('#id_realm_notifications_stream ul.dropdown-menu', function () {
-        casper.sendKeys('#id_realm_notifications_stream .dropdown-search > input[type=text]', 'verona');
-        casper.click("#id_realm_notifications_stream .dropdown-list-body li.stream_name");
+    casper.click("#realm_notifications_stream_id_widget button.dropdown-toggle");
+    casper.waitUntilVisible('#realm_notifications_stream_id_widget ul.dropdown-menu', function () {
+        casper.sendKeys('#realm_notifications_stream_id_widget  .dropdown-search > input[type=text]', 'verona');
+        casper.click("#realm_notifications_stream_id_widget .dropdown-list-body > li:nth-of-type(1)");
     });
 });
 
@@ -55,7 +35,7 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.click("#notifications_stream_disable");
+    casper.click("#realm_notifications_stream_id_widget  .dropdown_list_reset_button");
 });
 
 submit_notifications_stream_settings();
@@ -70,11 +50,10 @@ casper.then(function () {
 // Test changing signup notifications stream
 casper.then(function () {
     casper.test.info('Changing signup notifications stream to Verona by filtering with "verona"');
-    casper.click("#id_realm_signup_notifications_stream > button.dropdown-toggle");
-
-    casper.waitUntilVisible('#id_realm_signup_notifications_stream ul.dropdown-menu', function () {
-        casper.sendKeys('#id_realm_signup_notifications_stream .dropdown-search > input[type=text]', 'verona');
-        casper.click("#id_realm_signup_notifications_stream .dropdown-list-body li.stream_name");
+    casper.click("#id_realm_signup_notifications_stream_id > button.dropdown-toggle");
+    casper.waitUntilVisible('#realm_signup_notifications_stream_id_widget  ul.dropdown-menu', function () {
+        casper.sendKeys('#realm_signup_notifications_stream_id_widget  .dropdown-search > input[type=text]', 'verona');
+        casper.click("#realm_signup_notifications_stream_id_widget  .dropdown-list-body li.list_item");
     });
 });
 
@@ -88,7 +67,7 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.click("#signup_notifications_stream_disable");
+    casper.click("#realm_signup_notifications_stream_id_widget  .dropdown_list_reset_button");
 });
 
 submit_notifications_stream_settings();
@@ -114,8 +93,9 @@ function submit_permissions_change() {
 casper.then(function () {
     casper.test.info("Test setting create streams policy to 'admins only'.");
     casper.waitUntilVisible("#id_realm_create_stream_policy", function () {
+        // by_admins_only
         casper.evaluate(function () {
-            $("#id_realm_create_stream_policy").val("by_admins_only").change();
+            $("#id_realm_create_stream_policy").val(2).change();
         });
         submit_permissions_change();
     });
@@ -133,8 +113,9 @@ casper.then(function () {
 casper.then(function () {
     casper.test.info("Test setting create streams policy to 'members and admins'.");
     casper.waitUntilVisible("#id_realm_create_stream_policy", function () {
+        // by_members
         casper.evaluate(function () {
-            $("#id_realm_create_stream_policy").val("by_members").change();
+            $("#id_realm_create_stream_policy").val(1).change();
         });
         submit_permissions_change();
     });
@@ -152,8 +133,9 @@ casper.then(function () {
 casper.then(function () {
     casper.test.info("Test setting create streams policy to 'waiting period.");
     casper.waitUntilVisible("#id_realm_create_stream_policy", function () {
+        // by_full_members
         casper.evaluate(function () {
-            $("#id_realm_create_stream_policy").val("by_full_members").change();
+            $("#id_realm_create_stream_policy").val(3).change();
         });
         submit_permissions_change();
     });
@@ -171,8 +153,9 @@ casper.then(function () {
 casper.then(function () {
     casper.test.info("Test setting invite to streams policy to 'admins only'.");
     casper.waitUntilVisible("#id_realm_invite_to_stream_policy", function () {
+        // by_admins_only
         casper.evaluate(function () {
-            $("#id_realm_invite_to_stream_policy").val("by_admins_only").change();
+            $("#id_realm_invite_to_stream_policy").val(2).change();
         });
         submit_permissions_change();
     });
@@ -190,8 +173,9 @@ casper.then(function () {
 casper.then(function () {
     casper.test.info("Test setting invite to streams policy to 'members and admins'.");
     casper.waitUntilVisible("#id_realm_invite_to_stream_policy", function () {
+        // by_members
         casper.evaluate(function () {
-            $("#id_realm_invite_to_stream_policy").val("by_members").change();
+            $("#id_realm_invite_to_stream_policy").val(1).change();
         });
         submit_permissions_change();
     });
@@ -209,8 +193,9 @@ casper.then(function () {
 casper.then(function () {
     casper.test.info("Test setting invite to streams policy to 'waiting period'.");
     casper.waitUntilVisible("#id_realm_invite_to_stream_policy", function () {
+        // by_full_members
         casper.evaluate(function () {
-            $("#id_realm_invite_to_stream_policy").val("by_full_members").change();
+            $("#id_realm_invite_to_stream_policy").val(3).change();
         });
         submit_permissions_change();
     });
@@ -295,104 +280,6 @@ casper.then(function () {
     });
 });
 
-// Test custom profile fields
-casper.test.info("Testing custom profile fields");
-casper.thenClick("li[data-section='profile-field-settings']");
-casper.then(function () {
-    casper.waitUntilVisible('.admin-profile-field-form', function () {
-        casper.fill('form.admin-profile-field-form', {
-            name: 'Teams',
-            field_type: '1',
-        });
-        casper.click("form.admin-profile-field-form button[type='submit']");
-    });
-});
-
-casper.then(function () {
-    casper.waitUntilVisible('#admin-add-profile-field-status img', function () {
-        casper.test.assertSelectorHasText('div#admin-add-profile-field-status', 'Saved');
-    });
-    casper.waitUntilVisible('.profile-field-row span.profile_field_name', function () {
-        casper.test.assertSelectorHasText('.profile-field-row span.profile_field_name', 'Teams');
-        casper.test.assertSelectorHasText('.profile-field-row span.profile_field_type', 'Short text');
-        casper.click('.profile-field-row button.open-edit-form');
-    });
-});
-
-casper.then(function () {
-    casper.waitUntilVisible('tr.profile-field-form form', function () {
-        casper.fill('tr.profile-field-form form.name-setting', {
-            name: 'team',
-        });
-        casper.click('tr.profile-field-form button.submit');
-    });
-});
-
-casper.then(function () {
-    casper.waitUntilVisible('#admin-profile-field-status img', function () {
-        casper.test.assertSelectorHasText('div#admin-profile-field-status', 'Saved');
-    });
-    casper.waitForSelectorTextChange('.profile-field-row span.profile_field_name', function () {
-        casper.test.assertSelectorHasText('.profile-field-row span.profile_field_name', 'team');
-        casper.test.assertSelectorHasText('.profile-field-row span.profile_field_type', 'Short text');
-        casper.click('.profile-field-row button.delete');
-    });
-});
-
-casper.then(function () {
-    casper.waitUntilVisible('#admin-profile-field-status img', function () {
-        casper.test.assertSelectorHasText('div#admin-profile-field-status', 'Saved');
-    });
-});
-
-// Test custom realm filters
-casper.then(function () {
-    casper.click("li[data-section='filter-settings']");
-    casper.waitUntilVisible('.admin-filter-form', function () {
-        casper.fill('form.admin-filter-form', {
-            pattern: '#(?P<id>[0-9]+)',
-            url_format_string: 'https://trac.example.com/ticket/%(id)s',
-        });
-        casper.click('form.admin-filter-form button.button');
-    });
-});
-
-casper.then(function () {
-    casper.waitUntilVisible('div#admin-filter-status', function () {
-        casper.test.assertSelectorHasText('div#admin-filter-status', 'Custom filter added!');
-    });
-});
-
-casper.then(function () {
-    casper.waitUntilVisible('.filter_row', function () {
-        casper.test.assertSelectorHasText('.filter_row span.filter_pattern', '#(?P<id>[0-9]+)');
-        casper.test.assertSelectorHasText('.filter_row span.filter_url_format_string', 'https://trac.example.com/ticket/%(id)s');
-        casper.click('.filter_row button');
-    });
-});
-
-casper.then(function () {
-    casper.waitWhileVisible('.filter_row', function () {
-        casper.test.assertDoesntExist('.filter_row');
-    });
-});
-
-casper.then(function () {
-    casper.waitUntilVisible('.admin-filter-form', function () {
-        casper.fill('form.admin-filter-form', {
-            pattern: 'a$',
-            url_format_string: 'https://trac.example.com/ticket/%(id)s',
-        });
-        casper.click('form.admin-filter-form button.button');
-    });
-});
-
-casper.then(function () {
-    casper.waitUntilVisible('div#admin-filter-pattern-status', function () {
-        casper.test.assertSelectorHasText('div#admin-filter-pattern-status', 'Failed: Invalid filter pattern');
-    });
-});
-
 var stream_name = "Scotland";
 function get_suggestions(str) {
     casper.then(function () {
@@ -414,6 +301,7 @@ function select_from_suggestions(item) {
             });
             tah.select();
         }, {item: item});
+        casper.click(".default-stream-form #do_submit_stream");
     });
 }
 
@@ -431,24 +319,16 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.default_stream_row[id=' + stream_name + ']', function () {
-        casper.test.assertSelectorHasText('.default_stream_row[id=' + stream_name + '] .default_stream_name', stream_name);
+    var stream_id = common.get_stream_id(stream_name);
+    var row = ".default_stream_row[data-stream-id='" + stream_id + "']";
+    casper.waitUntilVisible(row, function () {
+        casper.test.assertSelectorHasText(row + ' .default_stream_name', stream_name);
+        casper.click(row + ' button.remove-default-stream');
+        casper.waitWhileVisible(row, function () {
+            casper.test.assertDoesntExist(row);
+        });
     });
 });
-
-casper.then(function () {
-    casper.waitUntilVisible('.default_stream_row[id=' + stream_name + ']', function () {
-        casper.test.assertSelectorHasText('.default_stream_row[id=' + stream_name + '] .default_stream_name', stream_name);
-        casper.click('.default_stream_row[id=' + stream_name + '] button.remove-default-stream');
-    });
-});
-
-casper.then(function () {
-    casper.waitWhileVisible('.default_stream_row[id=' + stream_name + ']', function () {
-        casper.test.assertDoesntExist('.default_stream_row[id=' + stream_name + ']');
-    });
-});
-
 
 // TODO: Test stream deletion
 

@@ -9,13 +9,20 @@ function add_pending_request(jqXHR) {
 }
 
 function remove_pending_request(jqXHR) {
-    const pending_request_index = _.indexOf(pending_requests, jqXHR);
+    const pending_request_index = pending_requests.indexOf(jqXHR);
     if (pending_request_index !== -1) {
         pending_requests.splice(pending_request_index, 1);
     }
 }
 
 function call(args, idempotent) {
+    if (reload_state.is_in_progress() && !args.ignore_reload) {
+        // If we're in the process of reloading, most HTTP requests
+        // are useless, with exceptions like cleaning up our event
+        // queue and blueslip (Which doesn't use channel.js).
+        return;
+    }
+
     // Wrap the error handlers to reload the page if we get a CSRF error
     // (What probably happened is that the user logged out in another tab).
     let orig_error = args.error;
@@ -24,6 +31,15 @@ function call(args, idempotent) {
     }
     args.error = function wrapped_error(xhr, error_type, xhn) {
         remove_pending_request(xhr);
+
+        if (reload_state.is_in_progress()) {
+            // If we're in the process of reloading the browser,
+            // there's no point in running the success handler,
+            // because all of our state is about to be discarded
+            // anyway.
+            blueslip.log(`Ignoring ${args.type} ${args.url} error response while reloading`);
+            return;
+        }
 
         if (xhr.status === 403) {
             try {
@@ -49,6 +65,15 @@ function call(args, idempotent) {
     args.success = function wrapped_success(data, textStatus, jqXHR) {
         remove_pending_request(jqXHR);
 
+        if (reload_state.is_in_progress()) {
+            // If we're in the process of reloading the browser,
+            // there's no point in running the success handler,
+            // because all of our state is about to be discarded
+            // anyway.
+            blueslip.log(`Ignoring ${args.type} ${args.url} response while reloading`);
+            return;
+        }
+
         if (!data && idempotent) {
             // If idempotent, retry
             blueslip.log("Retrying idempotent" + args);
@@ -67,23 +92,23 @@ function call(args, idempotent) {
 }
 
 exports.get = function (options) {
-    const args = _.extend({type: "GET", dataType: "json"}, options);
+    const args = { type: "GET", dataType: "json", ...options };
     return call(args, options.idempotent);
 };
 
 exports.post = function (options) {
-    const args = _.extend({type: "POST", dataType: "json"}, options);
+    const args = { type: "POST", dataType: "json", ...options };
     return call(args, options.idempotent);
 };
 
 exports.put = function (options) {
-    const args = _.extend({type: "PUT", dataType: "json"}, options);
+    const args = { type: "PUT", dataType: "json", ...options };
     return call(args, options.idempotent);
 };
 
 // Not called exports.delete because delete is a reserved word in JS
 exports.del = function (options) {
-    const args = _.extend({type: "DELETE", dataType: "json"}, options);
+    const args = { type: "DELETE", dataType: "json", ...options };
     return call(args, options.idempotent);
 };
 
@@ -95,7 +120,7 @@ exports.patch = function (options) {
         // method this way
         options.data.append("method", "PATCH");
     } else {
-        options.data = _.extend({}, options.data, {method: 'PATCH'});
+        options.data = { ...options.data, method: 'PATCH' };
     }
     return exports.post(options, options.idempotent);
 };

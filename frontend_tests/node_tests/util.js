@@ -1,8 +1,9 @@
-set_global('$', global.make_zjquery());
-set_global('blueslip', global.make_zblueslip({}));
-set_global('document', {});
+const { JSDOM } = require("jsdom");
 
-zrequire('util');
+set_global('$', global.make_zjquery());
+set_global('DOMParser', new JSDOM().window.DOMParser);
+set_global('document', {});
+const util = zrequire('util');
 
 run_test('CachedValue', () => {
     let x = 5;
@@ -37,12 +38,6 @@ run_test('is_pm_recipient', () => {
     assert(util.is_pm_recipient('alice@example.com', message));
     assert(util.is_pm_recipient('bob@example.com', message));
     assert(!util.is_pm_recipient('unknown@example.com', message));
-});
-
-run_test('rtrim', () => {
-    assert.equal(util.rtrim('foo'), 'foo');
-    assert.equal(util.rtrim('  foo'), '  foo');
-    assert.equal(util.rtrim('foo  '), 'foo');
 });
 
 run_test('lower_bound', () => {
@@ -112,13 +107,6 @@ run_test('robust_uri_decode', () => {
     } catch (e) {
         assert.equal(e, 'foo');
     }
-});
-
-run_test('get_message_topic', () => {
-    blueslip.set_test_data('warn', 'programming error: message has no topic');
-    assert.equal(util.get_message_topic({subject: 'foo'}), 'foo');
-    blueslip.clear_test_data();
-    assert.equal(util.get_message_topic({topic: 'bar'}), 'bar');
 });
 
 run_test('dumb_strcmp', () => {
@@ -222,27 +210,27 @@ run_test('all_and_everyone_mentions_regexp', () => {
 
     let i;
     for (i = 0; i < messages_with_all_mentions.length; i += 1) {
-        assert(util.is_all_or_everyone_mentioned(messages_with_all_mentions[i]));
+        assert(util.find_wildcard_mentions(messages_with_all_mentions[i]));
     }
 
     for (i = 0; i < messages_with_everyone_mentions.length; i += 1) {
-        assert(util.is_all_or_everyone_mentioned(messages_with_everyone_mentions[i]));
+        assert(util.find_wildcard_mentions(messages_with_everyone_mentions[i]));
     }
 
     for (i = 0; i < messages_with_stream_mentions.length; i += 1) {
-        assert(util.is_all_or_everyone_mentioned(messages_with_stream_mentions[i]));
+        assert(util.find_wildcard_mentions(messages_with_stream_mentions[i]));
     }
 
     for (i = 0; i < messages_without_all_mentions.length; i += 1) {
-        assert(!util.is_all_or_everyone_mentioned(messages_without_everyone_mentions[i]));
+        assert(!util.find_wildcard_mentions(messages_without_everyone_mentions[i]));
     }
 
     for (i = 0; i < messages_without_everyone_mentions.length; i += 1) {
-        assert(!util.is_all_or_everyone_mentioned(messages_without_everyone_mentions[i]));
+        assert(!util.find_wildcard_mentions(messages_without_everyone_mentions[i]));
     }
 
     for (i = 0; i < messages_without_stream_mentions.length; i += 1) {
-        assert(!util.is_all_or_everyone_mentioned(messages_without_stream_mentions[i]));
+        assert(!util.find_wildcard_mentions(messages_without_stream_mentions[i]));
     }
 });
 
@@ -300,4 +288,20 @@ run_test('move_array_elements_to_front', () => {
     for (i = 0; i < emails_actual.length; i += 1) {
         assert(emails_actual[i] === emails_expected[i]);
     }
+});
+
+run_test("clean_user_content_links", () => {
+    window.location.href = "http://zulip.zulipdev.com/";
+    assert.equal(
+        util.clean_user_content_links(
+            '<a href="http://example.com">good</a> ' +
+            '<a href="http://localhost:NNNN">invalid</a> ' +
+            '<a href="javascript:alert(1)">unsafe</a> ' +
+            '<a href="/#fragment" target="_blank">fragment</a>'
+        ),
+        '<a href="http://example.com" target="_blank" rel="noopener noreferrer">good</a> ' +
+        '<a>invalid</a> ' +
+        '<a>unsafe</a> ' +
+        '<a href="/#fragment">fragment</a>'
+    );
 });

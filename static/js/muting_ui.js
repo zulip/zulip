@@ -20,6 +20,7 @@ exports.rerender = function () {
     if (current_msg_list !== home_msg_list) {
         home_msg_list.update_muting_and_rerender();
     }
+    exports.set_up_muted_topics_ui();
 };
 
 exports.persist_mute = function (stream_id, topic_name) {
@@ -67,28 +68,26 @@ exports.update_muted_topics = function (muted_topics) {
     unread_ui.update_unread_counts();
 };
 
-exports.set_up_muted_topics_ui = function (muted_topics) {
-    const muted_topics_table = $("#muted_topics_table tbody");
-    muted_topics_table.empty();
-    _.each(muted_topics, function (tup) {
-        const stream_id = tup[0];
-        const topic = tup[1];
+exports.set_up_muted_topics_ui = function () {
+    const muted_topics = muting.get_muted_topics();
+    const muted_topics_table = $("#muted_topics_table");
+    const $search_input = $("#muted_topics_search");
 
-        const stream = stream_data.maybe_get_stream_name(stream_id);
-
-        if (!stream) {
-            blueslip.warn('Unknown stream_id in set_up_muted_topics_ui: ' + stream_id);
-            return;
-        }
-
-        const template_data = {
-            stream: stream,
-            stream_id: stream_id,
-            topic: topic,
-        };
-
-        const row = render_muted_topic_ui_row(template_data);
-        muted_topics_table.append(row);
+    list_render.create(muted_topics_table, muted_topics, {
+        name: "muted-topics-list",
+        modifier: function (muted_topics) {
+            return render_muted_topic_ui_row({ muted_topics: muted_topics });
+        },
+        filter: {
+            element: $search_input,
+            predicate: function (item, value) {
+                return item.topic.toLocaleLowerCase().indexOf(value) >= 0;
+            },
+            onupdate: function () {
+                ui.reset_scrollbar(muted_topics_table.closest(".progressive-table-wrapper"));
+            },
+        },
+        parent_container: $('#muted-topic-settings'),
     });
 };
 
@@ -113,7 +112,6 @@ exports.mute = function (stream_id, topic) {
         title_text: i18n.t("Topic muted"),
         undo_button_text: i18n.t("Unmute"),
     });
-    exports.set_up_muted_topics_ui(muting.get_muted_topics());
 };
 
 exports.unmute = function (stream_id, topic) {
@@ -125,13 +123,12 @@ exports.unmute = function (stream_id, topic) {
     unread_ui.update_unread_counts();
     exports.rerender();
     exports.persist_unmute(stream_id, topic);
-    exports.set_up_muted_topics_ui(muting.get_muted_topics());
     feedback_widget.dismiss();
 };
 
 exports.toggle_mute = function (message) {
     const stream_id = message.stream_id;
-    const topic = util.get_message_topic(message);
+    const topic = message.topic;
 
     if (muting.is_topic_muted(stream_id, topic)) {
         exports.unmute(stream_id, topic);

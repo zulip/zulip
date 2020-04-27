@@ -1,16 +1,24 @@
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
+from django.core.management import CommandError
 from django.template import loader
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import override as override_language
+from django.utils.translation import ugettext as _
 from django.template.exceptions import TemplateDoesNotExist
+from scripts.setup.inline_email_css import inline_template
+
 from zerver.models import ScheduledEmail, get_user_profile_by_id, \
-    EMAIL_TYPES, Realm
+    EMAIL_TYPES, Realm, UserProfile
 
 import datetime
 from email.utils import parseaddr, formataddr
+from email.parser import Parser
+from email.policy import default
+
 import logging
 import ujson
+import hashlib
 
 import os
 from typing import Any, Dict, List, Mapping, Optional, Tuple
@@ -27,12 +35,26 @@ class FromAddress:
     SUPPORT = parseaddr(settings.ZULIP_ADMINISTRATOR)[1]
     NOREPLY = parseaddr(settings.NOREPLY_EMAIL_ADDRESS)[1]
 
+    support_placeholder = "SUPPORT"
+    no_reply_placeholder = 'NO_REPLY'
+    tokenized_no_reply_placeholder = 'TOKENIZED_NO_REPLY'
+
     # Generates an unpredictable noreply address.
     @staticmethod
     def tokenized_no_reply_address() -> str:
         if settings.ADD_TOKENS_TO_NOREPLY_ADDRESS:
             return parseaddr(settings.TOKENIZED_NOREPLY_EMAIL_ADDRESS)[1].format(token=generate_key())
         return FromAddress.NOREPLY
+
+    @staticmethod
+    def security_email_from_name(language: Optional[str]=None,
+                                 user_profile: Optional[UserProfile]=None) -> str:
+        if language is None:
+            assert user_profile is not None
+            language = user_profile.default_language
+
+        with override_language(language):
+            return _("Zulip Account Security")
 
 def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
                 to_emails: Optional[List[str]]=None, from_name: Optional[str]=None,
@@ -84,6 +106,13 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
         from_name = "Zulip"
     if from_address is None:
         from_address = FromAddress.NOREPLY
+    if from_address == FromAddress.tokenized_no_reply_placeholder:
+        from_address = FromAddress.tokenized_no_reply_address()
+    if from_address == FromAddress.no_reply_placeholder:
+        from_address = FromAddress.NOREPLY
+    if from_address == FromAddress.support_placeholder:
+        from_address = FromAddress.SUPPORT
+
     from_email = formataddr((from_name, from_address))
     reply_to = None
     if reply_to_email is not None:
@@ -101,6 +130,18 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
 
 class EmailNotDeliveredException(Exception):
     pass
+
+class DoubledEmailArgumentException(CommandError):
+    def __init__(self, argument_name: str) -> None:
+        msg = "Argument '%s' is ambiguously present in both options and email template." % (
+            argument_name)
+        super().__init__(msg)
+
+class NoEmailArgumentException(CommandError):
+    def __init__(self, argument_name: str) -> None:
+        msg = "Argument '%s' is required in either options or email template." % (
+            argument_name)
+        super().__init__(msg)
 
 # When changing the arguments to this function, you may need to write a
 # migration to change or remove any emails in ScheduledEmail.
@@ -157,11 +198,12 @@ def send_future_email(template_prefix: str, realm: Realm, to_user_ids: Optional[
         raise e
 
 def send_email_to_admins(template_prefix: str, realm: Realm, from_name: Optional[str]=None,
-                         from_address: Optional[str]=None, context: Dict[str, Any]={}) -> None:
+                         from_address: Optional[str]=None, language: Optional[str]=None,
+                         context: Dict[str, Any]={}) -> None:
     admins = realm.get_human_admin_users()
     admin_user_ids = [admin.id for admin in admins]
     send_email(template_prefix, to_user_ids=admin_user_ids, from_name=from_name,
-               from_address=from_address, context=context)
+               from_address=from_address, language=language, context=context)
 
 def clear_scheduled_invitation_emails(email: str) -> None:
     """Unlike most scheduled emails, invitation emails don't have an
@@ -200,3 +242,71 @@ def deliver_email(email: ScheduledEmail) -> None:
     handle_send_email_format_changes(data)
     send_email(**data)
     email.delete()
+
+def get_header(option: Optional[str], header: Optional[str], name: str) -> str:
+    if option and header:
+        raise DoubledEmailArgumentException(name)
+    if not option and not header:
+        raise NoEmailArgumentException(name)
+    return str(option or header)
+
+def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None:
+    """
+    Can be used directly with from a management shell with
+    send_custom_email(user_profile_list, dict(
+        markdown_template_path="/path/to/markdown/file.md",
+        subject="Email Subject",
+        from_name="Sender Name")
+    )
+    """
+
+    with open(options["markdown_template_path"]) as f:
+        text = f.read()
+        parsed_email_template = Parser(policy=default).parsestr(text)
+        email_template_hash = hashlib.sha256(text.encode('utf-8')).hexdigest()[0:32]
+
+    email_filename = "custom/custom_email_%s.source.html" % (email_template_hash,)
+    email_id = "zerver/emails/custom/custom_email_%s" % (email_template_hash,)
+    markdown_email_base_template_path = "templates/zerver/emails/custom_email_base.pre.html"
+    html_source_template_path = "templates/%s.source.html" % (email_id,)
+    plain_text_template_path = "templates/%s.txt" % (email_id,)
+    subject_path = "templates/%s.subject.txt" % (email_id,)
+    os.makedirs(os.path.dirname(html_source_template_path), exist_ok=True)
+
+    # First, we render the markdown input file just like our
+    # user-facing docs with render_markdown_path.
+    with open(plain_text_template_path, "w") as f:
+        f.write(parsed_email_template.get_payload())
+
+    from zerver.templatetags.app_filters import render_markdown_path
+    rendered_input = render_markdown_path(plain_text_template_path.replace("templates/", ""))
+
+    # And then extend it with our standard email headers.
+    with open(html_source_template_path, "w") as f:
+        with open(markdown_email_base_template_path) as base_template:
+            # Note that we're doing a hacky non-Jinja2 substitution here;
+            # we do this because the normal render_markdown_path ordering
+            # doesn't commute properly with inline_email_css.
+            f.write(base_template.read().replace('{{ rendered_input }}',
+                                                 rendered_input))
+
+    with open(subject_path, "w") as f:
+        f.write(get_header(options.get("subject"),
+                           parsed_email_template.get("subject"), "subject"))
+
+    inline_template(email_filename)
+
+    # Finally, we send the actual emails.
+    for user_profile in filter(lambda user:
+                               not options.get('admins_only') or user.is_realm_admin, users):
+        context = {
+            'realm_uri': user_profile.realm.uri,
+            'realm_name': user_profile.realm.name,
+        }
+        send_email(email_id, to_user_ids=[user_profile.id],
+                   from_address=FromAddress.SUPPORT,
+                   reply_to_email=options.get("reply_to"),
+                   from_name=get_header(options.get("from_name"),
+                                        parsed_email_template.get("from"),
+                                        "from_name"),
+                   context=context)

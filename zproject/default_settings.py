@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from django_auth_ldap.config import LDAPSearch
@@ -14,7 +14,7 @@ else:
 # install of the Zulip server.
 
 # Extra HTTP "Host" values to allow (standard ones added in settings.py)
-ALLOWED_HOSTS = []  # type: List[str]
+ALLOWED_HOSTS: List[str] = []
 
 # Basic email settings
 NOREPLY_EMAIL_ADDRESS = "noreply@" + EXTERNAL_HOST.split(":")[0]
@@ -24,17 +24,17 @@ PHYSICAL_ADDRESS = ''
 FAKE_EMAIL_DOMAIN = EXTERNAL_HOST.split(":")[0]
 
 # SMTP settings
-EMAIL_HOST = None  # type: Optional[str]
+EMAIL_HOST: Optional[str] = None
 # Other settings, like EMAIL_HOST_USER, EMAIL_PORT, and EMAIL_USE_TLS,
 # we leave up to Django's defaults.
 
 # LDAP auth
 AUTH_LDAP_SERVER_URI = ""
-LDAP_EMAIL_ATTR = None  # type: Optional[str]
-AUTH_LDAP_USERNAME_ATTR = None  # type: Optional[str]
-AUTH_LDAP_REVERSE_EMAIL_SEARCH = None  # type: Optional[LDAPSearch]
+LDAP_EMAIL_ATTR: Optional[str] = None
+AUTH_LDAP_USERNAME_ATTR: Optional[str] = None
+AUTH_LDAP_REVERSE_EMAIL_SEARCH: Optional["LDAPSearch"] = None
 # AUTH_LDAP_CONNECTION_OPTIONS: we set ldap.OPT_REFERRALS in settings.py if unset.
-AUTH_LDAP_CONNECTION_OPTIONS = {}  # type: Dict[int, object]
+AUTH_LDAP_CONNECTION_OPTIONS: Dict[int, object] = {}
 # Disable django-auth-ldap caching, to prevent problems with OU changes.
 AUTH_LDAP_CACHE_TIMEOUT = 0
 # Disable syncing user on each login; Using sync_ldap_user_data cron is recommended.
@@ -42,46 +42,51 @@ AUTH_LDAP_ALWAYS_UPDATE_USER = False
 # Development-only settings for fake LDAP authentication; used to
 # support local development of LDAP auth without an LDAP server.
 # Detailed docs in zproject/dev_settings.py.
-FAKE_LDAP_MODE = None  # type: Optional[str]
+FAKE_LDAP_MODE: Optional[str] = None
 FAKE_LDAP_NUM_USERS = 8
 
 # Social auth; we support providing values for some of these
 # settings in zulip-secrets.conf instead of settings.py in development.
 SOCIAL_AUTH_GITHUB_KEY = get_secret('social_auth_github_key', development_only=True)
-SOCIAL_AUTH_GITHUB_ORG_NAME = None  # type: Optional[str]
-SOCIAL_AUTH_GITHUB_TEAM_ID = None  # type: Optional[str]
-SOCIAL_AUTH_SUBDOMAIN = None  # type: Optional[str]
+SOCIAL_AUTH_GITHUB_ORG_NAME: Optional[str] = None
+SOCIAL_AUTH_GITHUB_TEAM_ID: Optional[str] = None
+SOCIAL_AUTH_GITLAB_KEY = get_secret('social_auth_gitlab_key', development_only=True)
+SOCIAL_AUTH_SUBDOMAIN: Optional[str] = None
 SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET = get_secret('azure_oauth2_secret')
 SOCIAL_AUTH_GOOGLE_KEY = get_secret('social_auth_google_key', development_only=True)
 # SAML:
-SOCIAL_AUTH_SAML_SP_ENTITY_ID = None  # type: Optional[str]
+SOCIAL_AUTH_SAML_SP_ENTITY_ID: Optional[str] = None
 SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = ''
 SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = ''
-SOCIAL_AUTH_SAML_ORG_INFO = None  # type: Optional[Dict[str, Dict[str, str]]]
-SOCIAL_AUTH_SAML_TECHNICAL_CONTACT = None  # type: Optional[Dict[str, str]]
-SOCIAL_AUTH_SAML_SUPPORT_CONTACT = None  # type: Optional[Dict[str, str]]
-SOCIAL_AUTH_SAML_ENABLED_IDPS = {}  # type: Dict[str, Dict[str, str]]
+SOCIAL_AUTH_SAML_ORG_INFO: Optional[Dict[str, Dict[str, str]]] = None
+SOCIAL_AUTH_SAML_TECHNICAL_CONTACT: Optional[Dict[str, str]] = None
+SOCIAL_AUTH_SAML_SUPPORT_CONTACT: Optional[Dict[str, str]] = None
+SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, Dict[str, str]] = {}
+SOCIAL_AUTH_SAML_SECURITY_CONFIG: Dict[str, Any] = {}
+# Set this to True to enforce that any configured IdP needs to specify
+# the limit_to_subdomains setting to be considered valid:
+SAML_REQUIRE_LIMIT_TO_SUBDOMAINS = False
 # Historical name for SOCIAL_AUTH_GITHUB_KEY; still allowed in production.
-GOOGLE_OAUTH2_CLIENT_ID = None  # type: Optional[str]
+GOOGLE_OAUTH2_CLIENT_ID: Optional[str] = None
 
 # Other auth
-SSO_APPEND_DOMAIN = None  # type: Optional[str]
+SSO_APPEND_DOMAIN: Optional[str] = None
 
 # Email gateway
 EMAIL_GATEWAY_PATTERN = ''
-EMAIL_GATEWAY_LOGIN = None  # type: Optional[str]
-EMAIL_GATEWAY_IMAP_SERVER = None  # type: Optional[str]
-EMAIL_GATEWAY_IMAP_PORT = None  # type: Optional[int]
-EMAIL_GATEWAY_IMAP_FOLDER = None  # type: Optional[str]
+EMAIL_GATEWAY_LOGIN: Optional[str] = None
+EMAIL_GATEWAY_IMAP_SERVER: Optional[str] = None
+EMAIL_GATEWAY_IMAP_PORT: Optional[int] = None
+EMAIL_GATEWAY_IMAP_FOLDER: Optional[str] = None
 # Not documented for in /etc/zulip/settings.py, since it's rarely needed.
-EMAIL_GATEWAY_EXTRA_PATTERN_HACK = None  # type: Optional[str]
+EMAIL_GATEWAY_EXTRA_PATTERN_HACK: Optional[str] = None
 
 # Error reporting
 ERROR_REPORTING = True
 BROWSER_ERROR_REPORTING = False
 LOGGING_SHOW_MODULE = False
 LOGGING_SHOW_PID = False
-SLOW_QUERY_LOGS_STREAM = None  # type: Optional[str]
+SLOW_QUERY_LOGS_STREAM: Optional[str] = None
 
 # File uploads and avatars
 DEFAULT_AVATAR_URI = '/static/images/default-avatar.png'
@@ -89,7 +94,7 @@ DEFAULT_LOGO_URI = '/static/images/logo/zulip-org-logo.png'
 S3_AVATAR_BUCKET = ''
 S3_AUTH_UPLOADS_BUCKET = ''
 S3_REGION = ''
-LOCAL_UPLOADS_DIR = None  # type: Optional[str]
+LOCAL_UPLOADS_DIR: Optional[str] = None
 MAX_FILE_UPLOAD_SIZE = 25
 
 # Jitsi Meet video call integration; set to None to disable integration.
@@ -115,11 +120,11 @@ REMOTE_POSTGRES_SSLMODE = ''
 THUMBOR_URL = ''
 THUMBOR_SERVES_CAMO = False
 THUMBNAIL_IMAGES = False
-SENDFILE_BACKEND = None  # type: Optional[str]
+SENDFILE_BACKEND: Optional[str] = None
 
 # ToS/Privacy templates
-PRIVACY_POLICY = None  # type: Optional[str]
-TERMS_OF_SERVICE = None  # type: Optional[str]
+PRIVACY_POLICY: Optional[str] = None
+TERMS_OF_SERVICE: Optional[str] = None
 
 # Security
 ENABLE_FILE_LINKS = False
@@ -130,10 +135,11 @@ NAME_CHANGES_DISABLED = False
 AVATAR_CHANGES_DISABLED = False
 PASSWORD_MIN_LENGTH = 6
 PASSWORD_MIN_GUESSES = 10000
-PUSH_NOTIFICATION_BOUNCER_URL = None  # type: Optional[str]
+PUSH_NOTIFICATION_BOUNCER_URL: Optional[str] = None
 PUSH_NOTIFICATION_REDACT_CONTENT = False
 SUBMIT_USAGE_STATISTICS = True
 RATE_LIMITING = True
+RATE_LIMITING_AUTHENTICATE = True
 SEND_LOGIN_EMAILS = True
 EMBEDDED_BOTS_ENABLED = False
 
@@ -168,11 +174,11 @@ DEVELOPMENT_LOG_EMAILS = DEVELOPMENT
 
 # ERROR_BOT sends Django exceptions to an "errors" stream in the
 # system realm.
-ERROR_BOT = None  # type: Optional[str]
+ERROR_BOT: Optional[str] = None
 # These are extra bot users for our end-to-end Nagios message
 # sending tests.
-NAGIOS_STAGING_SEND_BOT = None  # type: Optional[str]
-NAGIOS_STAGING_RECEIVE_BOT = None  # type: Optional[str]
+NAGIOS_STAGING_SEND_BOT: Optional[str] = None
+NAGIOS_STAGING_RECEIVE_BOT: Optional[str] = None
 # SYSTEM_BOT_REALM would be a constant always set to 'zulip',
 # except that it isn't that on zulipchat.com.  We will likely do a
 # migration and eliminate this parameter in the future.
@@ -206,7 +212,7 @@ SYSTEM_ONLY_REALMS = {"zulip"}
 # their usual subdomains.  Keys are realm string_ids (aka subdomains),
 # and values are alternate hosts.
 # The values will also be added to ALLOWED_HOSTS.
-REALM_HOSTS = {}  # type: Dict[str, str]
+REALM_HOSTS: Dict[str, str] = {}
 
 # Whether the server is using the Pgroonga full-text search
 # backend.  Plan is to turn this on for everyone after further
@@ -215,7 +221,7 @@ USING_PGROONGA = False
 
 # How Django should send emails.  Set for most contexts in settings.py, but
 # available for sysadmin override in unusual cases.
-EMAIL_BACKEND = None  # type: Optional[str]
+EMAIL_BACKEND: Optional[str] = None
 
 # Whether to give admins a warning in the web app that email isn't set up.
 # Set in settings.py when email isn't configured.
@@ -238,7 +244,7 @@ POST_MIGRATION_CACHE_FLUSHING = False
 # Settings for APNS.  Only needed on push.zulipchat.com or if
 # rebuilding the mobile app with a different push notifications
 # server.
-APNS_CERT_FILE = None  # type: Optional[str]
+APNS_CERT_FILE: Optional[str] = None
 APNS_SANDBOX = True
 APNS_TOPIC = 'org.zulip.Zulip'
 ZULIP_IOS_APP_ID = 'org.zulip.Zulip'
@@ -271,7 +277,7 @@ INVITES_NEW_REALM_LIMIT_DAYS = [(1, 100)]
 INVITES_NEW_REALM_DAYS = 7
 
 # Controls for which links are published in portico footers/headers/etc.
-REGISTER_LINK_DISABLED = None  # type: Optional[bool]
+REGISTER_LINK_DISABLED: Optional[bool] = None
 LOGIN_LINK_DISABLED = False
 FIND_TEAM_LINK_DISABLED = True
 
@@ -290,7 +296,7 @@ ROOT_DOMAIN_LANDING_PAGE = False
 
 # If using the Zephyr mirroring supervisord configuration, the
 # hostname to connect to in order to transfer credentials from webathena.
-PERSONAL_ZMIRROR_SERVER = None  # type: Optional[str]
+PERSONAL_ZMIRROR_SERVER: Optional[str] = None
 
 # When security-relevant links in emails expire.
 CONFIRMATION_LINK_DEFAULT_VALIDITY_DAYS = 1
@@ -300,24 +306,24 @@ REALM_CREATION_LINK_VALIDITY_DAYS = 7
 # Version number for ToS.  Change this if you want to force every
 # user to click through to re-accept terms of service before using
 # Zulip again on the web.
-TOS_VERSION = None  # type: Optional[str]
+TOS_VERSION: Optional[str] = None
 # Template to use when bumping TOS_VERSION to explain situation.
-FIRST_TIME_TOS_TEMPLATE = None  # type: Optional[str]
+FIRST_TIME_TOS_TEMPLATE: Optional[str] = None
 
 # Hostname used for Zulip's statsd logging integration.
 STATSD_HOST = ''
 
 # Configuration for JWT auth.
-JWT_AUTH_KEYS = {}  # type: Dict[str, str]
+JWT_AUTH_KEYS: Dict[str, str] = {}
 
-# https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-SERVER_EMAIL
+# https://docs.djangoproject.com/en/2.2/ref/settings/#std:setting-SERVER_EMAIL
 # Django setting for what from address to use in error emails.
 SERVER_EMAIL = ZULIP_ADMINISTRATOR
 # Django setting for who receives error emails.
 ADMINS = (("Zulip Administrator", ZULIP_ADMINISTRATOR),)
 
 # From address for welcome emails.
-WELCOME_EMAIL_SENDER = None  # type: Optional[Dict[str, str]]
+WELCOME_EMAIL_SENDER: Optional[Dict[str, str]] = None
 # Whether we should use users' own email addresses as the from
 # address when sending missed-message emails.  Off by default
 # because some transactional email providers reject sending such
@@ -327,11 +333,15 @@ SEND_MISSED_MESSAGE_EMAILS_AS_USER = False
 SEND_DIGEST_EMAILS = True
 
 # Used to change the Zulip logo in portico pages.
-CUSTOM_LOGO_URL = None  # type: Optional[str]
+CUSTOM_LOGO_URL: Optional[str] = None
 
 # Random salt used when deterministically generating passwords in
 # development.
-INITIAL_PASSWORD_SALT = None  # type: Optional[str]
+INITIAL_PASSWORD_SALT: Optional[str] = None
+
+# Settings configuring the special instrumention of the send_event
+# code path used in generating API documentation for /events.
+LOG_API_EVENT_TYPES = False
 
 # Used to control whether certain management commands are run on
 # the server.

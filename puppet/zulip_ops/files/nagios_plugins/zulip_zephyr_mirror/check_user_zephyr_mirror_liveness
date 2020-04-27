@@ -11,7 +11,9 @@ import os
 import sys
 
 sys.path.append('/home/zulip/deployments/current')
-import scripts.lib.setup_path_on_import
+from scripts.lib.setup_path import setup_path
+
+setup_path()
 
 import django
 from django.utils.timezone import now as timezone_now
@@ -26,15 +28,14 @@ from zerver.models import UserActivity
 
 from typing import Any, Dict, Set, Optional
 
-states = {
+states: Dict[str, int] = {
     "OK": 0,
     "WARNING": 1,
     "CRITICAL": 2,
     "UNKNOWN": 3
-}  # type: Dict[str, int]
+}
 
-def report(state, short_msg, too_old=None):
-    # type: (str, str, Optional[Set[Any]]) -> None
+def report(state: str, short_msg: str, too_old: Optional[Set[Any]] = None) -> None:
     too_old_data = ""
     if too_old:
         too_old_data = "\nLast call to get_message for recently out of date mirrors:\n" + "\n".join(

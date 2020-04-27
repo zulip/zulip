@@ -6,7 +6,7 @@ set_global('message_list', {});
 zrequire('hash_util');
 zrequire('stream_data');
 zrequire('unread');
-zrequire('topic_data');
+zrequire('stream_topic_history');
 const topic_list_data = zrequire('topic_list_data');
 
 const general = {
@@ -14,22 +14,21 @@ const general = {
     name: 'general',
 };
 
-stream_data.add_sub('general', general);
+stream_data.add_sub(general);
 
 function clear() {
     narrow_state.topic = () => undefined;
-    topic_data.reset();
+    stream_topic_history.reset();
     muting.is_topic_muted = () => false;
 }
 
 function get_list_info(zoomed) {
     const stream_id = general.stream_id;
-    const max_topics = 5;
     return topic_list_data.get_list_info(
-        stream_id, max_topics, zoomed);
+        stream_id, zoomed);
 }
 
-run_test('get_list_info w/real topic_data', () => {
+run_test('get_list_info w/real stream_topic_history', () => {
     clear();
 
     let list_info;
@@ -41,14 +40,14 @@ run_test('get_list_info w/real topic_data', () => {
         num_possible_topics: 0,
     });
 
-    _.each(_.range(7), (i) => {
+    for (const i of _.range(7)) {
         const topic_name = 'topic ' + i;
-        topic_data.add_message({
+        stream_topic_history.add_message({
             stream_id: general.stream_id,
             topic_name: topic_name,
             message_id: 1000 + i,
         });
-    });
+    }
 
     narrow_state.topic = () => 'topic 6';
 
@@ -79,18 +78,16 @@ run_test('get_list_info unreads', () => {
 
     let list_info;
 
-    // Going forward, we just stub get_recent_names
+    // Going forward, we just stub get_recent_topic_names
     // for simpler test setup.
-    topic_data.get_recent_names = () => {
-        return _.map(_.range(15), (i) => {
-            return 'topic ' + i;
-        });
+    stream_topic_history.get_recent_topic_names = () => {
+        return _.range(15).map(i => 'topic ' + i);
     };
 
-    const unread_cnt = {};
+    const unread_cnt = new Map();
     unread.num_unread_for_topic = (stream_id, topic_name) => {
         assert.equal(stream_id, general.stream_id);
-        return unread_cnt[topic_name] || 0;
+        return unread_cnt.get(topic_name) || 0;
     };
 
     /*
@@ -102,8 +99,8 @@ run_test('get_list_info unreads', () => {
         So first we'll get 7 topics, where 2 are
         unread.
     */
-    unread_cnt['topic 8'] = 8;
-    unread_cnt['topic 9'] = 9;
+    unread_cnt.set('topic 8', 8);
+    unread_cnt.set('topic 9', 9);
 
     list_info = get_list_info();
     assert.equal(list_info.items.length, 7);
@@ -111,7 +108,7 @@ run_test('get_list_info unreads', () => {
     assert.equal(list_info.num_possible_topics, 15);
 
     assert.deepEqual(
-        _.map(list_info.items, (li) => li.topic_name),
+        list_info.items.map(li => li.topic_name),
         [
             'topic 0',
             'topic 1',
@@ -122,8 +119,8 @@ run_test('get_list_info unreads', () => {
             'topic 9',
         ]);
 
-    unread_cnt['topic 6'] = 6;
-    unread_cnt['topic 7'] = 7;
+    unread_cnt.set('topic 6', 6);
+    unread_cnt.set('topic 7', 7);
 
     list_info = get_list_info();
     assert.equal(list_info.items.length, 8);
@@ -131,7 +128,7 @@ run_test('get_list_info unreads', () => {
     assert.equal(list_info.num_possible_topics, 15);
 
     assert.deepEqual(
-        _.map(list_info.items, (li) => li.topic_name),
+        list_info.items.map(li => li.topic_name),
         [
             'topic 0',
             'topic 1',
@@ -143,9 +140,9 @@ run_test('get_list_info unreads', () => {
             'topic 8',
         ]);
 
-    unread_cnt['topic 4'] = 4;
-    unread_cnt['topic 5'] = 5;
-    unread_cnt['topic 13'] = 13;
+    unread_cnt.set('topic 4', 4);
+    unread_cnt.set('topic 5', 5);
+    unread_cnt.set('topic 13', 13);
 
     muting.is_topic_muted = (stream_id, topic_name) => {
         assert.equal(stream_id, general.stream_id);
@@ -158,7 +155,7 @@ run_test('get_list_info unreads', () => {
     assert.equal(list_info.num_possible_topics, 15);
 
     assert.deepEqual(
-        _.map(list_info.items, (li) => li.topic_name),
+        list_info.items.map(li => li.topic_name),
         [
             'topic 0',
             'topic 1',

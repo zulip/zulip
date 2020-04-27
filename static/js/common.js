@@ -71,13 +71,13 @@ exports.phrase_match = function (query, phrase) {
     query = query.toLowerCase();
 
     phrase = phrase.toLowerCase();
-    if (phrase.indexOf(query) === 0) {
+    if (phrase.startsWith(query)) {
         return true;
     }
 
     const parts = phrase.split(' ');
     for (i = 0; i < parts.length; i += 1) {
-        if (parts[i].indexOf(query) === 0) {
+        if (parts[i].startsWith(query)) {
             return true;
         }
     }
@@ -117,16 +117,18 @@ exports.adjust_mac_shortcuts = function (key_elem_class, require_cmd_style) {
 
     $(key_elem_class).each(function () {
         let key_text = $(this).text();
-        const keys = key_text.match(/[^\s\+]+/g);
+        const keys = key_text.match(/[^\s\+]+/g) || [];
 
-        if (key_text.indexOf('Ctrl') > -1 && require_cmd_style) {
+        if (key_text.includes('Ctrl') && require_cmd_style) {
             $(this).addClass("mac-cmd-key");
         }
-        _.each(keys, function (key) {
+
+        for (const key of keys) {
             if (keys_map.get(key)) {
                 key_text = key_text.replace(key, keys_map.get(key));
             }
-        });
+        }
+
         $(this).text(key_text);
     });
 };

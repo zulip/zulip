@@ -1,6 +1,6 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, List, Mapping, Optional, cast, Tuple, TypeVar, Type
+from typing import Any, Callable, Dict, List, Mapping, MutableSequence, Optional, cast, Tuple, TypeVar, Type
 
 import copy
 import signal
@@ -16,7 +16,7 @@ from django.db import connection
 from zerver.models import \
     get_client, get_system_bot, PreregistrationUser, \
     get_user_profile_by_id, Message, Realm, UserMessage, UserProfile, \
-    Client
+    Client, flush_per_request_caches
 from zerver.lib.context_managers import lockfile
 from zerver.lib.error_notify import do_report_error
 from zerver.lib.queue import SimpleQueueClient, retry_event
@@ -26,7 +26,7 @@ from zerver.lib.push_notifications import handle_push_notification, handle_remov
     initialize_push_notifications, clear_push_device_tokens
 from zerver.lib.actions import do_send_confirmation_email, \
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
-    internal_send_message, internal_send_private_message, notify_realm_export, \
+    internal_send_stream_message, internal_send_private_message, notify_realm_export, \
     render_incoming_message, do_update_embedded_data, do_mark_stream_messages_as_read
 from zerver.lib.url_preview import preview as url_preview
 from zerver.lib.digest import handle_digest_email
@@ -38,7 +38,7 @@ from zerver.lib.streams import access_stream_by_id
 from zerver.lib.db import reset_queries
 from zerver.context_processors import common_context
 from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
-from zerver.models import get_bot_services, RealmAuditLog
+from zerver.models import get_bot_services, get_stream, RealmAuditLog
 from zulip_bots.lib import ExternalBotHandler, extract_query_without_mention
 from zerver.lib.bot_lib import EmbeddedBotHandler, get_bot_handler, EmbeddedBotQuitException
 from zerver.lib.exceptions import RateLimited
@@ -47,7 +47,7 @@ from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
 
 import os
 import ujson
-from collections import defaultdict
+from collections import defaultdict, deque
 import email
 import time
 import datetime
@@ -72,8 +72,8 @@ def assign_queue(
         return clazz
     return decorate
 
-worker_classes = {}  # type: Dict[str, Type[QueueProcessingWorker]]
-queues = {}  # type: Dict[str, Dict[str, Type[QueueProcessingWorker]]]
+worker_classes: Dict[str, Type["QueueProcessingWorker"]] = {}
+queues: Dict[str, Dict[str, Type["QueueProcessingWorker"]]] = {}
 def register_worker(queue_name: str, clazz: Type['QueueProcessingWorker'], queue_type: str) -> None:
     if queue_type not in queues:
         queues[queue_type] = {}
@@ -114,24 +114,90 @@ def retry_send_email_failures(
     return wrapper
 
 class QueueProcessingWorker(ABC):
-    queue_name = None  # type: str
+    queue_name: str = None
+    CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM = 50
 
     def __init__(self) -> None:
-        self.q = None  # type: SimpleQueueClient
+        self.q: SimpleQueueClient = None
         if self.queue_name is None:
             raise WorkerDeclarationException("Queue worker declared without queue_name")
+
+        self.initialize_statistics()
+
+    def initialize_statistics(self) -> None:
+        self.queue_last_emptied_timestamp = time.time()
+        self.consumed_since_last_emptied = 0
+        self.recent_consume_times: MutableSequence[Tuple[int, float]] = deque(maxlen=50)
+        self.consume_interation_counter = 0
+
+        self.update_statistics(0)
+
+    def update_statistics(self, remaining_queue_size: int) -> None:
+        total_seconds = sum([seconds for _, seconds in self.recent_consume_times])
+        total_events = sum([events_number for events_number, _ in self.recent_consume_times])
+        if total_events == 0:
+            recent_average_consume_time = None
+        else:
+            recent_average_consume_time = total_seconds / total_events
+        stats_dict = dict(
+            update_time=time.time(),
+            recent_average_consume_time=recent_average_consume_time,
+            current_queue_size=remaining_queue_size,
+            queue_last_emptied_timestamp=self.queue_last_emptied_timestamp,
+            consumed_since_last_emptied=self.consumed_since_last_emptied,
+        )
+
+        os.makedirs(settings.QUEUE_STATS_DIR, exist_ok=True)
+
+        fname = '%s.stats' % (self.queue_name,)
+        fn = os.path.join(settings.QUEUE_STATS_DIR, fname)
+        with lockfile(fn + '.lock'):
+            tmp_fn = fn + '.tmp'
+            with open(tmp_fn, 'w') as f:
+                serialized_dict = ujson.dumps(stats_dict, indent=2)
+                serialized_dict += '\n'
+                f.write(serialized_dict)
+            os.rename(tmp_fn, fn)
 
     @abstractmethod
     def consume(self, data: Dict[str, Any]) -> None:
         pass
 
-    def consume_wrapper(self, data: Dict[str, Any]) -> None:
+    def do_consume(self, consume_func: Callable[[List[Dict[str, Any]]], None],
+                   events: List[Dict[str, Any]]) -> None:
         try:
-            self.consume(data)
+            time_start = time.time()
+            consume_func(events)
+            consume_time_seconds: Optional[float] = time.time() - time_start
+            self.consumed_since_last_emptied += len(events)
         except Exception:
-            self._handle_consume_exception([data])
+            self._handle_consume_exception(events)
+            consume_time_seconds = None
         finally:
+            flush_per_request_caches()
             reset_queries()
+
+            if consume_time_seconds is not None:
+                self.recent_consume_times.append((len(events), consume_time_seconds))
+
+            if self.q is not None:
+                remaining_queue_size = self.q.queue_size()
+            else:
+                remaining_queue_size = 0
+
+            if remaining_queue_size == 0:
+                self.queue_last_emptied_timestamp = time.time()
+                self.consumed_since_last_emptied = 0
+
+            self.consume_interation_counter += 1
+            if self.consume_interation_counter >= self.CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM:
+
+                self.consume_interation_counter = 0
+                self.update_statistics(remaining_queue_size)
+
+    def consume_wrapper(self, data: Dict[str, Any]) -> None:
+        consume_func = lambda events: self.consume(events[0])
+        self.do_consume(consume_func, [data])
 
     def _handle_consume_exception(self, events: List[Dict[str, Any]]) -> None:
         self._log_problem()
@@ -153,6 +219,7 @@ class QueueProcessingWorker(ABC):
         self.q = SimpleQueueClient()
 
     def start(self) -> None:
+        self.initialize_statistics()
         self.q.register_json_consumer(self.queue_name, self.consume_wrapper)
         self.q.start_consuming()
 
@@ -164,15 +231,10 @@ class LoopQueueProcessingWorker(QueueProcessingWorker):
     sleep_only_if_empty = True
 
     def start(self) -> None:  # nocoverage
+        self.initialize_statistics()
         while True:
             events = self.q.drain_queue(self.queue_name, json=True)
-            try:
-                self.consume_batch(events)
-            except Exception:
-                self._handle_consume_exception(events)
-            finally:
-                reset_queries()
-
+            self.do_consume(self.consume_batch, events)
             # To avoid spinning the CPU, we go to sleep if there's
             # nothing in the queue, or for certain queues with
             # sleep_only_if_empty=False, unconditionally.
@@ -241,7 +303,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
                 "zerver/emails/invitation_reminder",
                 referrer.realm,
                 to_emails=[invitee.email],
-                from_address=FromAddress.tokenized_no_reply_address(),
+                from_address=FromAddress.tokenized_no_reply_placeholder,
                 language=referrer.realm.default_language,
                 context=context,
                 delay=datetime.timedelta(days=settings.INVITATION_LINK_VALIDITY_DAYS - 2))
@@ -267,7 +329,7 @@ class UserActivityWorker(LoopQueueProcessingWorker):
     """
     sleep_delay = 10
     sleep_only_if_empty = True
-    client_id_map = {}  # type: Dict[str, int]
+    client_id_map: Dict[str, int] = {}
 
     def start(self) -> None:
         # For our unit tests to make sense, we need to clear this on startup.
@@ -275,7 +337,7 @@ class UserActivityWorker(LoopQueueProcessingWorker):
         super().start()
 
     def consume_batch(self, user_activity_events: List[Dict[str, Any]]) -> None:
-        uncommitted_events = {}  # type: Dict[Tuple[int, int, str], Tuple[int, float]]
+        uncommitted_events: Dict[Tuple[int, int, str], Tuple[int, float]] = {}
 
         # First, we drain the queue of all user_activity events and
         # deduplicate them for insertion into the database.
@@ -338,9 +400,9 @@ class MissedMessageWorker(QueueProcessingWorker):
     # mechanism for that case.
     TIMER_FREQUENCY = 5
     BATCH_DURATION = 120
-    timer_event = None  # type: Optional[Timer]
-    events_by_recipient = defaultdict(list)  # type: Dict[int, List[Dict[str, Any]]]
-    batch_start_by_recipient = {}  # type: Dict[int, float]
+    timer_event: Optional[Timer] = None
+    events_by_recipient: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
+    batch_start_by_recipient: Dict[int, float] = {}
 
     def consume(self, event: Dict[str, Any]) -> None:
         logging.debug("Received missedmessage_emails event: %s" % (event,))
@@ -396,19 +458,6 @@ class EmailSendingWorker(QueueProcessingWorker):
             del copied_event['failed_tries']
         handle_send_email_format_changes(copied_event)
         send_email_from_dict(copied_event)
-
-@assign_queue('missedmessage_email_senders')
-class MissedMessageSendingWorker(EmailSendingWorker):  # nocoverage
-    """
-    Note: Class decorators are not inherited.
-
-    The `missedmessage_email_senders` queue was used up through 1.7.1, so we
-    keep consuming from it in case we've just upgraded from an old version.
-    After the 1.8 release, we can delete it and tell admins to upgrade to 1.8
-    first.
-    """
-    # TODO: zulip-1.8: Delete code related to missedmessage_email_senders queue.
-    pass
 
 @assign_queue('missedmessage_mobile_notifications')
 class PushNotificationsWorker(QueueProcessingWorker):  # nocoverage
@@ -466,9 +515,19 @@ class SlowQueryWorker(LoopQueueProcessingWorker):
             for event in slow_query_events:
                 content += "    %s\n" % (event["query"],)
 
-            error_bot_realm = get_system_bot(settings.ERROR_BOT).realm
-            internal_send_message(error_bot_realm, settings.ERROR_BOT,
-                                  "stream", settings.SLOW_QUERY_LOGS_STREAM, topic, content)
+            error_bot = get_system_bot(settings.ERROR_BOT)
+            realm = error_bot.realm
+            errors_stream = get_stream(
+                settings.SLOW_QUERY_LOGS_STREAM,
+                realm
+            )
+            internal_send_stream_message(
+                realm,
+                error_bot,
+                errors_stream,
+                topic,
+                content
+            )
 
 @assign_queue('digest_emails')
 class DigestWorker(QueueProcessingWorker):  # nocoverage

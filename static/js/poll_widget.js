@@ -10,7 +10,7 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
 
     const me = people.my_current_user_id();
     let poll_question = question;
-    const key_to_option = {};
+    const key_to_option = new Map();
     let my_idx = 1;
 
     let input_mode = is_my_poll; // for now
@@ -43,9 +43,9 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
     self.get_widget_data = function () {
         const options = [];
 
-        _.each(key_to_option, function (obj, key) {
-            const voters = _.keys(obj.votes);
-            const current_user_vote = _.contains(voters, String(me));
+        for (const [key, obj] of key_to_option) {
+            const voters = Array.from(obj.votes.keys());
+            const current_user_vote = voters.includes(me);
 
             options.push({
                 option: obj.option,
@@ -54,8 +54,7 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
                 key: key,
                 current_user_vote: current_user_vote,
             });
-        });
-
+        }
 
         const widget_data = {
             options: options,
@@ -83,13 +82,13 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
                 const idx = data.idx;
                 const key = sender_id + ',' + idx;
                 const option = data.option;
-                const votes = {};
+                const votes = new Map();
 
-                key_to_option[key] = {
+                key_to_option.set(key, {
                     option: option,
                     user_id: sender_id,
                     votes: votes,
-                };
+                });
 
                 if (my_idx <= idx) {
                     my_idx = idx + 1;
@@ -120,7 +119,7 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
                 let vote = 1;
 
                 // toggle
-                if (key_to_option[key].votes[me]) {
+                if (key_to_option.get(key).votes.get(me)) {
                     vote = -1;
                 }
 
@@ -136,7 +135,7 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
             inbound: function (sender_id, data) {
                 const key = data.key;
                 const vote = data.vote;
-                const option = key_to_option[key];
+                const option = key_to_option.get(key);
 
                 if (option === undefined) {
                     blueslip.warn('unknown key for poll: ' + key);
@@ -146,9 +145,9 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
                 const votes = option.votes;
 
                 if (vote === 1) {
-                    votes[sender_id] = 1;
+                    votes.set(sender_id, 1);
                 } else {
-                    delete votes[sender_id];
+                    votes.delete(sender_id);
                 }
             },
         },
@@ -163,18 +162,16 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
 
     // function to check whether option already exists
     self.is_option_present = function (data, latest_option) {
-        return _.any(data, function (el) {
-            return el.option === latest_option;
-        });
+        return data.some(el => el.option === latest_option);
     };
 
     // function to add all options added along with the /poll command
-    _.each(options, function (option, i) {
+    for (const [i, option] of options.entries()) {
         self.handle.new_option.inbound('canned', {
             idx: i,
             option: option,
         });
-    });
+    }
 
     return self;
 };
@@ -356,9 +353,10 @@ exports.activate = function (opts) {
     }
 
     elem.handle_events = function (events) {
-        _.each(events, function (event) {
+        for (const event of events) {
             poll_data.handle_event(event.sender_id, event.data);
-        });
+        }
+
         render_question();
         render_results();
     };

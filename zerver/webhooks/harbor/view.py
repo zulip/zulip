@@ -43,7 +43,7 @@ def handle_push_image_event(payload: Dict[str, Any],
     image_name = payload["event_data"]["repository"]["repo_full_name"]
     image_tag = payload["event_data"]["resources"][0]["tag"]
 
-    return u"{author} pushed image `{image_name}:{image_tag}`".format(
+    return "{author} pushed image `{image_name}:{image_tag}`".format(
         author=operator_username,
         image_name=image_name,
         image_tag=image_tag
@@ -68,12 +68,12 @@ Image scan completed for `{image_name}:{image_tag}`. Vulnerabilities by severity
 def handle_scanning_completed_event(payload: Dict[str, Any],
                                     user_profile: UserProfile,
                                     operator_username: str) -> str:
-    scan_results = u""
+    scan_results = ""
     scan_summaries = payload["event_data"]["resources"][0]["scan_overview"]["components"]["summary"]
     summaries_sorted = sorted(
         scan_summaries, key=lambda x: x["severity"], reverse=True)
     for scan_summary in summaries_sorted:
-        scan_results += u"* {}: **{}**\n".format(
+        scan_results += "* {}: **{}**\n".format(
             VULNERABILITY_SEVERITY_NAME_MAP[scan_summary["severity"]], scan_summary["count"])
 
     return SCANNING_COMPLETED_TEMPLATE.format(
@@ -94,14 +94,14 @@ EVENT_FUNCTION_MAPPER = {
 def api_harbor_webhook(request: HttpRequest, user_profile: UserProfile,
                        payload: Dict[str, Any] = REQ(argument_type='body')) -> HttpResponse:
 
-    operator_username = u"**{}**".format(payload["operator"])
+    operator_username = "**{}**".format(payload["operator"])
 
     if operator_username != "auto":
         operator_profile = guess_zulip_user_from_harbor(
             operator_username, user_profile.realm)
 
     if operator_profile:
-        operator_username = u"@**{}**".format(operator_profile.full_name)  # nocoverage
+        operator_username = "@**{}**".format(operator_profile.full_name)  # nocoverage
 
     event = payload["type"]
     topic = payload["event_data"]["repository"]["repo_full_name"]
@@ -114,8 +114,7 @@ def api_harbor_webhook(request: HttpRequest, user_profile: UserProfile,
     if content_func is None:
         raise UnexpectedWebhookEventType('Harbor', event)
 
-    content = content_func(payload, user_profile,
-                           operator_username)  # type: str
+    content: str = content_func(payload, user_profile, operator_username)
 
     check_send_webhook_message(request, user_profile,
                                topic, content,

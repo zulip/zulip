@@ -1,5 +1,4 @@
 const render_group_pms = require('../templates/group_pms.hbs');
-const Dict = require('./dict').Dict;
 
 /*
     Helpers for detecting user activity and managing user idle states
@@ -27,7 +26,7 @@ exports.client_is_active = document.hasFocus && document.hasFocus();
 // server-initiated reload as user activity.
 exports.new_user_input = true;
 
-const huddle_timestamps = new Dict();
+const huddle_timestamps = new Map();
 
 function update_pm_count_in_dom(count_span, value_span, count) {
     const li = count_span.parents('li');
@@ -85,21 +84,21 @@ exports.update_dom_with_unread_counts = function (counts) {
     // counts is just a data object that gets calculated elsewhere
     // Our job is to update some DOM elements.
 
-    counts.pm_count.each(function (count, user_ids_string) {
+    for (const [user_ids_string, count] of counts.pm_count) {
         // TODO: just use user_ids_string in our markup
-        const is_pm = user_ids_string.indexOf(',') < 0;
+        const is_pm = !user_ids_string.includes(',');
         if (is_pm) {
             set_pm_count(user_ids_string, count);
         } else {
             set_group_count(user_ids_string, count);
         }
-    });
+    }
 };
 
 exports.process_loaded_messages = function (messages) {
     let need_resize = false;
 
-    _.each(messages, function (message) {
+    for (const message of messages) {
         const huddle_string = people.huddle_string(message);
 
         if (huddle_string) {
@@ -110,7 +109,7 @@ exports.process_loaded_messages = function (messages) {
                 need_resize = true;
             }
         }
-    });
+    }
 
     exports.update_huddles();
 
@@ -120,7 +119,7 @@ exports.process_loaded_messages = function (messages) {
 };
 
 exports.get_huddles = function () {
-    let huddles = huddle_timestamps.keys();
+    let huddles = Array.from(huddle_timestamps.keys());
     huddles = _.sortBy(huddles, function (huddle) {
         return huddle_timestamps.get(huddle);
     });
@@ -128,16 +127,14 @@ exports.get_huddles = function () {
 };
 
 function huddle_split(huddle) {
-    return _.map(huddle.split(','), function (s) {
-        return parseInt(s, 10);
-    });
+    return huddle.split(',').map(s => parseInt(s, 10));
 }
 
 exports.full_huddle_name = function (huddle) {
     const user_ids = huddle_split(huddle);
 
-    const names = _.map(user_ids, function (user_id) {
-        const person = people.get_person_from_user_id(user_id);
+    const names = user_ids.map(user_id => {
+        const person = people.get_by_user_id(user_id);
         return person.full_name;
     });
 
@@ -148,8 +145,8 @@ exports.short_huddle_name = function (huddle) {
     const user_ids = huddle_split(huddle);
 
     const num_to_show = 3;
-    let names = _.map(user_ids, function (user_id) {
-        const person = people.get_person_from_user_id(user_id);
+    let names = user_ids.map(user_id => {
+        const person = people.get_by_user_id(user_id);
         return person.full_name;
     });
 
@@ -246,23 +243,21 @@ exports.update_huddles = function () {
         return;
     }
 
-    const group_pms = _.map(huddles, function (huddle) {
-        return {
-            user_ids_string: huddle,
-            name: exports.full_huddle_name(huddle),
-            href: hash_util.huddle_with_uri(huddle),
-            fraction_present: buddy_data.huddle_fraction_present(huddle),
-            short_name: exports.short_huddle_name(huddle),
-        };
-    });
+    const group_pms = huddles.map(huddle => ({
+        user_ids_string: huddle,
+        name: exports.full_huddle_name(huddle),
+        href: hash_util.huddle_with_uri(huddle),
+        fraction_present: buddy_data.huddle_fraction_present(huddle),
+        short_name: exports.short_huddle_name(huddle),
+    }));
 
     const html = render_group_pms({group_pms: group_pms});
     ui.get_content_element($('#group-pms')).html(html);
 
-    _.each(huddles, function (user_ids_string) {
+    for (const user_ids_string of huddles) {
         const count = unread.num_unread_for_person(user_ids_string);
         set_group_count(user_ids_string, count);
-    });
+    }
 
     show_huddles();
 };
@@ -277,11 +272,11 @@ exports.compute_active_status = function () {
     // * For the electron desktop app, we also know whether the
     //   user is active or idle elsewhere on their system.
     //
-    // The check for `idle_on_system === undefined` is feature
+    // The check for `get_idle_on_system === undefined` is feature
     // detection; older desktop app releases never set that property.
     if (window.electron_bridge !== undefined
-            && window.electron_bridge.idle_on_system !== undefined) {
-        if (window.electron_bridge.idle_on_system) {
+            && window.electron_bridge.get_idle_on_system !== undefined) {
+        if (window.electron_bridge.get_idle_on_system()) {
             return exports.IDLE;
         }
         return exports.ACTIVE;
@@ -294,10 +289,23 @@ exports.compute_active_status = function () {
 };
 
 function send_presence_to_server(want_redraw) {
-    if (reload_state.is_in_progress()) {
-        blueslip.log("Skipping querying presence because reload in progress");
-        return;
-    }
+    // Zulip has 2 data feeds coming from the server to the client:
+    // The server_events data, and this presence feed.  Data from
+    // server_events is nicely serialized, but if we've been offline
+    // and not running for a while (e.g. due to suspend), we can end
+    // up with inconsistent state where users appear in presence that
+    // don't appear in people.js.  We handle this in 2 stages.  First,
+    // here, we trigger an extra run of the clock-jump check that
+    // detects whether this device just resumed from suspend.  This
+    // ensures that server_events.suspect_offline is always up-to-date
+    // before we initiate a presence request.
+    //
+    // If we did just resume, it will also trigger an immediate
+    // server_events request to the server (the success handler to
+    // which will clear suspect_offline and potentially trigger a
+    // reload if the device was offline for more than
+    // DEFAULT_EVENT_QUEUE_TIMEOUT_SECS).
+    server_events.check_for_unsuspend();
 
     channel.post({
         url: '/json/users/me/presence',
@@ -305,10 +313,10 @@ function send_presence_to_server(want_redraw) {
             status: exports.compute_active_status(),
             ping_only: !want_redraw,
             new_user_input: exports.new_user_input,
+            slim_presence: true,
         },
         idempotent: true,
         success: function (data) {
-
             // Update Zephyr mirror activity warning
             if (data.zephyr_mirror_active === false) {
                 $('#zephyr-mirror-error').addClass("show");
@@ -317,19 +325,6 @@ function send_presence_to_server(want_redraw) {
             }
 
             exports.new_user_input = false;
-
-            // Zulip has 2 data feeds coming from the server to the
-            // client: The server_events data, and this presence feed.
-            // Everything in server_events is nicely serialized, but
-            // if we've been offline and not running for a while
-            // (e.g. due to suspend), we can end up throwing
-            // exceptions due to users appearing in presence that we
-            // haven't learned about yet.  We handle this in 2 stages.
-            // First, here, we make sure that we've confirmed whether
-            // we are indeed in the unsuspend case.  Then, in
-            // `presence.set_info`, we only complain about unknown
-            // users if server_events does not suspect we're offline.
-            server_events.check_for_unsuspend();
 
             if (want_redraw) {
                 presence.set_info(data.presences, data.server_timestamp);
@@ -357,10 +352,6 @@ exports.initialize = function () {
                     onActive: mark_client_active,
                     keepTracking: true});
 
-    presence.set_info(page_params.presences,
-                      page_params.initial_servertime);
-    delete page_params.presences;
-
     exports.set_cursor_and_filter();
 
     exports.build_user_sidebar();
@@ -379,14 +370,8 @@ exports.initialize = function () {
     setInterval(get_full_presence_list_update, ACTIVE_PING_INTERVAL_MS);
 };
 
-exports.update_presence_info = function (email, info, server_time) {
-    const user_id = people.get_user_id(email);
-    if (!user_id) {
-        blueslip.warn('unknown email: ' + email);
-        return;
-    }
-
-    presence.set_info_for_user(user_id, info, server_time);
+exports.update_presence_info = function (user_id, info, server_time) {
+    presence.update_info_from_event(user_id, info, server_time);
     exports.redraw_user(user_id);
     exports.update_huddles();
     pm_list.update_private_messages();
@@ -423,7 +408,7 @@ exports.narrow_for_user = function (opts) {
 };
 
 exports.narrow_for_user_id = function (opts) {
-    const person = people.get_person_from_user_id(opts.user_id);
+    const person = people.get_by_user_id(opts.user_id);
     const email = person.email;
 
     narrow.by('pm-with', email, {trigger: 'sidebar'});

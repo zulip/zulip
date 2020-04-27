@@ -14,7 +14,8 @@ from copy import deepcopy
 import os
 import time
 import sys
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Tuple, Union
+from urllib.parse import urljoin
 
 from zerver.lib.db import TimeTrackingConnection
 import zerver.lib.logging_util
@@ -68,6 +69,10 @@ TUTORIAL_ENABLED = True
 CASPER_TESTS = False
 # This is overridden in test_settings.py for the test suites
 RUNNING_OPENAPI_CURL_TEST = False
+# This is overridden in test_settings.py for the test suites
+GENERATE_STRIPE_FIXTURES = False
+# This is overridden by dev_settings.py for droplets.
+IS_DEV_DROPLET = False
 
 # Google Compute Engine has an /etc/boto.cfg that is "nicely
 # configured" to work with GCE's storage service.  However, their
@@ -113,7 +118,7 @@ MANAGERS = ADMINS
 ########################################################################
 
 # Local time zone for this installation. Choices can be found here:
-# http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
+# https://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
 # In a Windows environment this must be set to your system time zone.
 TIME_ZONE = 'UTC'
@@ -161,9 +166,9 @@ MIDDLEWARE = (
     'zerver.middleware.JsonErrorHandler',
     'zerver.middleware.RateLimitMiddleware',
     'zerver.middleware.FlushDisplayRecipientCache',
-    'django_cookies_samesite.middleware.CookiesSameSite',
-    'django.middleware.common.CommonMiddleware',
-    'zerver.middleware.SessionHostDomainMiddleware',
+    'zerver.middleware.ZulipCommonMiddleware',
+    'zerver.middleware.HostDomainMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -213,7 +218,7 @@ CORPORATE_ENABLED = 'corporate' in INSTALLED_APPS
 # We set it to None when running backend tests or populate_db.
 # We override the port number when running frontend tests.
 TORNADO_PROCESSES = int(get_config('application_server', 'tornado_processes', '1'))
-TORNADO_SERVER = 'http://127.0.0.1:9993'  # type: Optional[str]
+TORNADO_SERVER: Optional[str] = 'http://127.0.0.1:9993'
 RUNNING_INSIDE_TORNADO = False
 AUTORELOAD = DEBUG
 
@@ -222,7 +227,7 @@ SILENCED_SYSTEM_CHECKS = [
     # `unique=True`.  For us this is `email`, and it's unique only per-realm.
     # Per Django docs, this is perfectly fine so long as our authentication
     # backends support the username not being unique; and they do.
-    # See: https://docs.djangoproject.com/en/1.11/topics/auth/customizing/#django.contrib.auth.models.CustomUser.USERNAME_FIELD
+    # See: https://docs.djangoproject.com/en/2.2/topics/auth/customizing/#django.contrib.auth.models.CustomUser.USERNAME_FIELD
     "auth.W004",
 ]
 
@@ -258,7 +263,7 @@ SILENCED_SYSTEM_CHECKS = [
 # We implement these options with a default DATABASES configuration
 # supporting peer authentication, with logic to override it as
 # appropriate if DEVELOPMENT or REMOTE_POSTGRES_HOST is set.
-DATABASES = {"default": {
+DATABASES: Dict[str, Dict[str, Any]] = {"default": {
     'ENGINE': 'django.db.backends.postgresql',
     'NAME': 'zulip',
     'USER': 'zulip',
@@ -271,7 +276,7 @@ DATABASES = {"default": {
     'OPTIONS': {
         'connection_factory': TimeTrackingConnection
     },
-}}  # type: Dict[str, Dict[str, Any]]
+}}
 
 if DEVELOPMENT:
     LOCAL_DATABASE_PASSWORD = get_secret("local_database_password")
@@ -349,9 +354,18 @@ CACHES = {
 # REDIS-BASED RATE LIMITING CONFIGURATION
 ########################################################################
 
-RATE_LIMITING_RULES = [
-    (60, 200),  # 200 requests max every minute
-]
+RATE_LIMITING_RULES = {
+    'api_by_user': [
+        (60, 200),  # 200 requests max every minute
+    ],
+    'authenticate_by_username': [
+        (1800, 5),  # 5 login attempts within 30 minutes
+    ],
+    'password_reset_form_by_email': [
+        (3600, 2),  # 2 reset emails per hour
+        (86400, 5),  # 5 per day
+    ],
+}
 
 RATE_LIMITING_MIRROR_REALM_RULES = [
     (60, 50),  # 50 emails per minute
@@ -366,6 +380,8 @@ REDIS_PASSWORD = get_secret('redis_password')
 # SECURITY SETTINGS
 ########################################################################
 
+SESSION_COOKIE_SAMESITE = 'Lax'
+
 # Tell the browser to never send our cookies without encryption, e.g.
 # when executing the initial http -> https redirect.
 #
@@ -374,18 +390,14 @@ if PRODUCTION:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
-    # For get_updates hostname sharding.
-    domain = get_config('django', 'cookie_domain', None)
-    if domain is not None:
-        CSRF_COOKIE_DOMAIN = '.' + domain
-
-# Enable SameSite cookies (default in Django 2.1)
-SESSION_COOKIE_SAMESITE = 'Lax'
+    # https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-05#section-4.1.3.2
+    SESSION_COOKIE_NAME = "__Host-sessionid"
+    CSRF_COOKIE_NAME = "__Host-csrftoken"
 
 # Prevent Javascript from reading the CSRF token from cookies.  Our code gets
 # the token from the DOM, which means malicious code could too.  But hiding the
 # cookie will slow down some attackers.
-CSRF_COOKIE_PATH = '/;HttpOnly'
+CSRF_COOKIE_HTTPONLY = True
 CSRF_FAILURE_VIEW = 'zerver.middleware.csrf_failure'
 
 if DEVELOPMENT:
@@ -418,7 +430,7 @@ S3_SECRET_KEY = get_secret("s3_secret_key")
 
 if LOCAL_UPLOADS_DIR is not None:
     if SENDFILE_BACKEND is None:
-        SENDFILE_BACKEND = 'sendfile.backends.nginx'
+        SENDFILE_BACKEND = 'django_sendfile.backends.nginx'
     SENDFILE_ROOT = os.path.join(LOCAL_UPLOADS_DIR, "files")
     SENDFILE_URL = '/serve_uploads'
 
@@ -457,7 +469,7 @@ INTERNAL_BOTS = [{'var_name': 'NOTIFICATION_BOT',
                   'name': 'Welcome Bot'}]
 
 # Bots that are created for each realm like the reminder-bot goes here.
-REALM_INTERNAL_BOTS = []  # type: List[Dict[str, str]]
+REALM_INTERNAL_BOTS: List[Dict[str, str]] = []
 # These are realm-internal bots that may exist in some organizations,
 # so configure power the setting, but should not be auto-created at this time.
 DISABLED_REALM_INTERNAL_BOTS = [
@@ -507,7 +519,10 @@ if CAMO_URI != '':
 # STATIC CONTENT AND MINIFICATION SETTINGS
 ########################################################################
 
-STATIC_URL = '/static/'
+if PRODUCTION or IS_DEV_DROPLET or os.getenv('EXTERNAL_HOST') is not None:
+    STATIC_URL = urljoin(ROOT_DOMAIN_URI, '/static/')
+else:
+    STATIC_URL = 'http://localhost:9991/static/'
 
 # ZulipStorage is a modified version of ManifestStaticFilesStorage,
 # and, like that class, it inserts a file hash into filenames
@@ -540,7 +555,7 @@ else:
 WEBPACK_LOADER = {
     'DEFAULT': {
         'CACHE': not DEBUG,
-        'BUNDLE_DIR_NAME': 'webpack-bundles/',
+        'BUNDLE_DIR_NAME': '../webpack/' if DEBUG else 'webpack-bundles/',
         'STATS_FILE': os.path.join(DEPLOY_ROOT, WEBPACK_STATS_FILE),
     }
 }
@@ -550,15 +565,15 @@ WEBPACK_LOADER = {
 ########################################################################
 
 # List of callables that know how to import templates from various sources.
-LOADERS = [
+LOADERS: List[Union[str, Tuple[object, ...]]] = [
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-]  # type: List[Union[str, Tuple[object, ...]]]
+]
 if PRODUCTION:
     # Template caching is a significant performance win in production.
     LOADERS = [('django.template.loaders.cached.Loader', LOADERS)]
 
-base_template_engine_settings = {
+base_template_engine_settings: Dict[str, Any] = {
     'BACKEND': 'django.template.backends.jinja2.Jinja2',
     'OPTIONS': {
         'environment': 'zproject.jinja2.environment',
@@ -572,7 +587,7 @@ base_template_engine_settings = {
             'django.template.context_processors.i18n',
         ],
     },
-}  # type: Dict[str, Any]
+}
 
 default_template_engine_settings = deepcopy(base_template_engine_settings)
 default_template_engine_settings.update({
@@ -647,6 +662,7 @@ EMAIL_CONTENT_LOG_PATH = zulip_path("/var/log/zulip/email_content.log")
 LDAP_LOG_PATH = zulip_path("/var/log/zulip/ldap.log")
 LDAP_SYNC_LOG_PATH = zulip_path("/var/log/zulip/sync_ldap_user_data.log")
 QUEUE_ERROR_DIR = zulip_path("/var/log/zulip/queue_error")
+QUEUE_STATS_DIR = zulip_path("/var/log/zulip/queue_stats")
 DIGEST_LOG_PATH = zulip_path("/var/log/zulip/digest.log")
 ANALYTICS_LOG_PATH = zulip_path("/var/log/zulip/analytics.log")
 ANALYTICS_LOCK_DIR = zulip_path("/home/zulip/deployments/analytics-lock-dir")
@@ -662,7 +678,7 @@ RETENTION_LOG_PATH = zulip_path("/var/log/zulip/message_retention.log")
 # We plan to replace it with RealmAuditLog, stored in the database,
 # everywhere that code mentioning it appears.
 if EVENT_LOGS_ENABLED:
-    EVENT_LOG_DIR = zulip_path("/home/zulip/logs/event_log")  # type: Optional[str]
+    EVENT_LOG_DIR: Optional[str] = zulip_path("/home/zulip/logs/event_log")
 else:
     EVENT_LOG_DIR = None
 
@@ -682,7 +698,7 @@ DEFAULT_ZULIP_HANDLERS = (
     ['console', 'file', 'errors_file']
 )
 
-LOGGING = {
+LOGGING: Dict[str, Any] = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
@@ -715,10 +731,6 @@ LOGGING = {
         'skip_200_and_304': {
             '()': 'django.utils.log.CallbackFilter',
             'callback': zerver.lib.logging_util.skip_200_and_304,
-        },
-        'skip_boring_404s': {
-            '()': 'django.utils.log.CallbackFilter',
-            'callback': zerver.lib.logging_util.skip_boring_404s,
         },
         'skip_site_packages_logs': {
             '()': 'django.utils.log.CallbackFilter',
@@ -796,8 +808,14 @@ LOGGING = {
             # configured; which is what we want for it.
         },
         'django.request': {
-            'level': 'WARNING',
-            'filters': ['skip_boring_404s'],
+            # We set this to ERROR to prevent Django's default
+            # low-value logs with lines like "Not Found: /robots.txt"
+            # from being logged for every HTTP 4xx error at WARNING
+            # level, which would otherwise end up spamming our
+            # errors.log.  We'll still get logs in errors.log
+            # including tracebacks for 5xx errors (i.e. Python
+            # exceptions).
+            'level': 'ERROR',
         },
         'django.security.DisallowedHost': {
             'handlers': ['file'],
@@ -890,7 +908,12 @@ LOGGING = {
             'propagate': False,
         },
     }
-}  # type: Dict[str, Any]
+}
+
+if DEVELOPMENT:
+    CONTRIBUTOR_DATA_FILE_PATH = os.path.join(DEPLOY_ROOT, 'var/github-contributors.json')
+else:
+    CONTRIBUTOR_DATA_FILE_PATH = '/var/lib/zulip/github-contributors.json'
 
 LOGIN_REDIRECT_URL = '/'
 
@@ -969,7 +992,10 @@ SOCIAL_AUTH_FIELDS_STORED_IN_SESSION = ['subdomain', 'is_signup', 'mobile_flow_o
 SOCIAL_AUTH_LOGIN_ERROR_URL = '/login/'
 
 SOCIAL_AUTH_GITHUB_SECRET = get_secret('social_auth_github_secret')
+SOCIAL_AUTH_GITLAB_SECRET = get_secret('social_auth_gitlab_secret')
 SOCIAL_AUTH_GITHUB_SCOPE = ['user:email']
+if SOCIAL_AUTH_GITHUB_ORG_NAME or SOCIAL_AUTH_GITHUB_TEAM_ID:
+    SOCIAL_AUTH_GITHUB_SCOPE.append("read:org")
 SOCIAL_AUTH_GITHUB_ORG_KEY = SOCIAL_AUTH_GITHUB_KEY
 SOCIAL_AUTH_GITHUB_ORG_SECRET = SOCIAL_AUTH_GITHUB_SECRET
 SOCIAL_AUTH_GITHUB_TEAM_KEY = SOCIAL_AUTH_GITHUB_KEY
@@ -986,6 +1012,13 @@ SOCIAL_AUTH_GOOGLE_SECRET = SOCIAL_AUTH_GOOGLE_SECRET or GOOGLE_OAUTH2_CLIENT_SE
 if PRODUCTION:
     SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = get_from_file_if_exists("/etc/zulip/saml/zulip-cert.crt")
     SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = get_from_file_if_exists("/etc/zulip/saml/zulip-private-key.key")
+
+if "signatureAlgorithm" not in SOCIAL_AUTH_SAML_SECURITY_CONFIG:
+    # If the configuration doesn't explicitly specify the algorithm,
+    # we set RSA1 with SHA256 to override the python3-saml default, which uses
+    # insecure SHA1.
+    default_signature_alg = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"
+    SOCIAL_AUTH_SAML_SECURITY_CONFIG["signatureAlgorithm"] = default_signature_alg
 
 for idp_name, idp_dict in SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
     if DEVELOPMENT:
@@ -1051,3 +1084,5 @@ CROSS_REALM_BOT_EMAILS = {
 }
 
 THUMBOR_KEY = get_secret('thumbor_key')
+
+TWO_FACTOR_PATCH_ADMIN = False

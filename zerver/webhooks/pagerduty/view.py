@@ -67,7 +67,7 @@ Incident [{incident_num}]({incident_url}) resolved:
 """.strip()
 
 def build_pagerduty_formatdict(message: Dict[str, Any]) -> Dict[str, Any]:
-    format_dict = {}  # type: Dict[str, Any]
+    format_dict: Dict[str, Any] = {}
     format_dict['action'] = PAGER_DUTY_EVENT_NAMES[message['type']]
 
     format_dict['incident_id'] = message['data']['incident']['id']
@@ -104,7 +104,7 @@ def build_pagerduty_formatdict(message: Dict[str, Any]) -> Dict[str, Any]:
         if trigger_description:
             trigger_message.append(trigger_description)
 
-    format_dict['trigger_message'] = u'\n'.join(trigger_message)
+    format_dict['trigger_message'] = '\n'.join(trigger_message)
     return format_dict
 
 def build_pagerduty_formatdict_v2(message: Dict[str, Any]) -> Dict[str, Any]:
@@ -153,7 +153,7 @@ def send_formated_pagerduty(request: HttpRequest,
     else:
         template = INCIDENT_WITH_ASSIGNEE
 
-    subject = u'Incident {incident_num}'.format(**format_dict)
+    subject = 'Incident {incident_num}'.format(**format_dict)
     body = template.format(**format_dict)
     check_send_webhook_message(request, user_profile, subject, body)
 

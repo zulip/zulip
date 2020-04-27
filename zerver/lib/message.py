@@ -2,6 +2,7 @@ import datetime
 import ujson
 import zlib
 import ahocorasick
+import copy
 
 from django.utils.translation import ugettext as _
 from django.utils.timezone import now as timezone_now
@@ -50,12 +51,14 @@ from zerver.models import (
     UserMessage,
     Reaction,
     get_usermessage_by_message_id,
+    MAX_MESSAGE_LENGTH,
+    MAX_TOPIC_NAME_LENGTH
 )
 
 from typing import Any, Dict, List, Optional, Set, Tuple, Sequence
 from typing_extensions import TypedDict
 
-RealmAlertWords = Dict[int, List[str]]
+RealmAlertWord = Dict[int, List[str]]
 
 RawUnreadMessagesResult = TypedDict('RawUnreadMessagesResult', {
     'pm_dict': Dict[int, Any],
@@ -80,6 +83,17 @@ UnreadMessagesResult = TypedDict('UnreadMessagesResult', {
 # user has more older unread messages that were cut off.
 MAX_UNREAD_MESSAGES = 50000
 
+def truncate_content(content: str, max_length: int, truncation_message: str) -> str:
+    if len(content) > max_length:
+        content = content[:max_length - len(truncation_message)] + truncation_message
+    return content
+
+def truncate_body(body: str) -> str:
+    return truncate_content(body, MAX_MESSAGE_LENGTH, "\n[message truncated]")
+
+def truncate_topic(topic: str) -> str:
+    return truncate_content(topic, MAX_TOPIC_NAME_LENGTH, "...")
+
 def messages_for_ids(message_ids: List[int],
                      user_message_flags: Dict[int, List[str]],
                      search_fields: Dict[int, Dict[str, str]],
@@ -99,7 +113,7 @@ def messages_for_ids(message_ids: List[int],
         extractor=extract_message_dict,
         setter=stringify_message_dict)
 
-    message_list = []  # type: List[Dict[str, Any]]
+    message_list: List[Dict[str, Any]] = []
 
     for message_id in message_ids:
         msg_dict = message_dicts[message_id]
@@ -170,7 +184,7 @@ class MessageDict:
     @staticmethod
     def wide_dict(message: Message) -> Dict[str, Any]:
         '''
-        The next two lines get the cachable field related
+        The next two lines get the cacheable field related
         to our message object, with the side effect of
         populating the cache.
         '''
@@ -190,17 +204,46 @@ class MessageDict:
 
     @staticmethod
     def post_process_dicts(objs: List[Dict[str, Any]], apply_markdown: bool, client_gravatar: bool) -> None:
+        '''
+        NOTE: This function mutates the objects in
+              the `objs` list, rather than making
+              shallow copies.  It might be safer to
+              make shallow copies here, but performance
+              is somewhat important here, as we are
+              often fetching several messages.
+        '''
         MessageDict.bulk_hydrate_sender_info(objs)
         MessageDict.bulk_hydrate_recipient_info(objs)
 
         for obj in objs:
-            MessageDict.finalize_payload(obj, apply_markdown, client_gravatar)
+            MessageDict._finalize_payload(obj, apply_markdown, client_gravatar)
 
     @staticmethod
     def finalize_payload(obj: Dict[str, Any],
                          apply_markdown: bool,
                          client_gravatar: bool,
-                         keep_rendered_content: bool=False) -> None:
+                         keep_rendered_content: bool=False) -> Dict[str, Any]:
+        '''
+        Make a shallow copy of the incoming dict to avoid
+        mutation-related bugs.  This function is often
+        called when we're sending out message events to
+        multiple clients, who often want the final dictionary
+        to have different shapes here based on the parameters.
+        '''
+        new_obj = copy.copy(obj)
+
+        # Next call our worker, which mutates the record in place.
+        MessageDict._finalize_payload(
+            new_obj,
+            apply_markdown=apply_markdown,
+            client_gravatar=client_gravatar,
+            keep_rendered_content=keep_rendered_content
+        )
+        return new_obj
+
+    @staticmethod
+    def _finalize_payload(obj: Dict[str, Any], apply_markdown: bool, client_gravatar: bool,
+                          keep_rendered_content: bool=False) -> None:
         MessageDict.set_sender_avatar(obj, client_gravatar)
         if apply_markdown:
             obj['content_type'] = 'text/html'
@@ -456,11 +499,13 @@ class MessageDict:
             if len(display_recipient) == 1:
                 # add the sender in if this isn't a message between
                 # someone and themself, preserving ordering
-                recip = {'email': sender_email,
-                         'full_name': sender_full_name,
-                         'short_name': sender_short_name,
-                         'id': sender_id,
-                         'is_mirror_dummy': sender_is_mirror_dummy}  # type: UserDisplayRecipient
+                recip: UserDisplayRecipient = {
+                    'email': sender_email,
+                    'full_name': sender_full_name,
+                    'short_name': sender_short_name,
+                    'id': sender_id,
+                    'is_mirror_dummy': sender_is_mirror_dummy,
+                }
                 if recip['email'] < display_recipient[0]['email']:
                     display_recipient = [recip, display_recipient[0]]
                 elif recip['email'] > display_recipient[0]['email']:
@@ -475,13 +520,13 @@ class MessageDict:
 
     @staticmethod
     def bulk_hydrate_recipient_info(objs: List[Dict[str, Any]]) -> None:
-        recipient_tuples = set(  # We use set to eliminate duplicate tuples.
+        recipient_tuples = {  # We use set to eliminate duplicate tuples.
             (
                 obj['recipient_id'],
                 obj['recipient_type'],
                 obj['recipient_type_id']
             ) for obj in objs
-        )
+        }
         display_recipients = bulk_fetch_display_recipients(recipient_tuples)
 
         for obj in objs:
@@ -511,9 +556,17 @@ class ReactionDict:
         return {'emoji_name': row['emoji_name'],
                 'emoji_code': row['emoji_code'],
                 'reaction_type': row['reaction_type'],
+                # TODO: We plan to remove this redundant user dictionary once
+                # clients are updated to support accessing use user_id.  See
+                # https://github.com/zulip/zulip/pull/14711 for details.
+                #
+                # When we do that, we can likely update the `.values()` query to
+                # not fetch the extra user_profile__* fields from the database
+                # as a small performance optimization.
                 'user': {'email': row['user_profile__email'],
                          'id': row['user_profile__id'],
-                         'full_name': row['user_profile__full_name']}}
+                         'full_name': row['user_profile__full_name']},
+                'user_id': row['user_profile__id']}
 
 
 def access_message(user_profile: UserProfile, message_id: int) -> Tuple[Message, Optional[UserMessage]]:
@@ -615,7 +668,7 @@ def render_markdown(message: Message,
     '''
 
     if user_ids is None:
-        message_user_ids = set()  # type: Set[int]
+        message_user_ids: Set[int] = set()
     else:
         message_user_ids = user_ids
 
@@ -676,21 +729,21 @@ def do_render_markdown(message: Message,
     return rendered_content
 
 def huddle_users(recipient_id: int) -> str:
-    display_recipient = get_display_recipient_by_id(recipient_id,
-                                                    Recipient.HUDDLE,
-                                                    None)  # type: DisplayRecipientT
+    display_recipient: DisplayRecipientT = get_display_recipient_by_id(
+        recipient_id, Recipient.HUDDLE, None
+    )
 
     # str is for streams.
     assert not isinstance(display_recipient, str)
 
-    user_ids = [obj['id'] for obj in display_recipient]  # type: List[int]
+    user_ids: List[int] = [obj['id'] for obj in display_recipient]
     user_ids = sorted(user_ids)
     return ','.join(str(uid) for uid in user_ids)
 
 def aggregate_message_dict(input_dict: Dict[int, Dict[str, Any]],
                            lookup_fields: List[str],
                            collect_senders: bool) -> List[Dict[str, Any]]:
-    lookup_dict = dict()  # type: Dict[Tuple[Any, ...], Dict[str, Any]]
+    lookup_dict: Dict[Tuple[Any, ...], Dict[str, Any]] = dict()
 
     '''
     A concrete example might help explain the inputs here:
@@ -819,7 +872,7 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
 
         return False
 
-    huddle_cache = {}  # type: Dict[int, str]
+    huddle_cache: Dict[int, str] = {}
 
     def get_huddle_users(recipient_id: int) -> str:
         if recipient_id in huddle_cache:
@@ -853,8 +906,19 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
                 unmuted_stream_msgs.add(message_id)
 
         elif msg_type == Recipient.PERSONAL:
+            if sender_id == user_profile.id:
+                other_user_id = row['message__recipient__type_id']
+            else:
+                other_user_id = sender_id
+
+            # The `sender_id` field here is misnamed.  It's really
+            # just the other participant in a PM conversation.  For
+            # most unread PM messages, the other user is also the sender,
+            # but that's not true for certain messages sent from the
+            # API.  Unfortunately, it's difficult now to rename the
+            # field without breaking mobile.
             pm_dict[message_id] = dict(
-                sender_id=sender_id,
+                sender_id=other_user_id,
             )
 
         elif msg_type == Recipient.HUDDLE:
@@ -921,12 +985,12 @@ def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesRe
         collect_senders=False,
     )
 
-    result = dict(
+    result: UnreadMessagesResult = dict(
         pms=pm_objects,
         streams=stream_objects,
         huddles=huddle_objects,
         mentions=mentions,
-        count=count)  # type: UnreadMessagesResult
+        count=count)
 
     return result
 
@@ -940,7 +1004,7 @@ def apply_unread_message_event(user_profile: UserProfile,
     elif message['type'] == 'private':
         others = [
             recip for recip in message['display_recipient']
-            if recip['id'] != message['sender_id']
+            if recip['id'] != user_profile.id
         ]
         if len(others) <= 1:
             message_type = 'private'
@@ -967,9 +1031,14 @@ def apply_unread_message_event(user_profile: UserProfile,
                 state['unmuted_stream_msgs'].add(message_id)
 
     elif message_type == 'private':
-        sender_id = message['sender_id']
+        if len(others) == 1:
+            other_id = others[0]['id']
+        else:
+            other_id = user_profile.id
+
+        # The `sender_id` field here is misnamed.
         new_row = dict(
-            sender_id=sender_id,
+            sender_id=other_id,
         )
         state['pm_dict'][message_id] = new_row
 

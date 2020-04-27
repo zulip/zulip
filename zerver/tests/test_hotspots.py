@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from zerver.lib.actions import do_mark_hotspot_as_read, do_create_user
 from zerver.lib.hotspots import ALL_HOTSPOTS, get_next_hotspots
 from zerver.lib.test_classes import ZulipTestCase
@@ -47,7 +45,7 @@ class TestHotspots(ZulipTestCase):
 
     def test_hotspots_url_endpoint(self) -> None:
         user = self.example_user('hamlet')
-        self.login(user.email)
+        self.login_user(user)
         result = self.client_post('/json/users/me/hotspots',
                                   {'hotspot': ujson.dumps('intro_reply')})
         self.assert_json_success(result)

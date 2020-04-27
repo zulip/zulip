@@ -10,9 +10,8 @@ This library implements two related, similar concepts:
 
 */
 
-const Dict = require('./dict').Dict;
 
-let _message_content_height_cache = new Dict();
+const _message_content_height_cache = new Map();
 
 function show_more_link(row) {
     row.find(".message_condenser").hide();
@@ -144,11 +143,11 @@ exports.toggle_collapse = function (message) {
 };
 
 exports.clear_message_content_height_cache = function () {
-    _message_content_height_cache = new Dict();
+    _message_content_height_cache.clear();
 };
 
 exports.un_cache_message_content_height = function (message_id) {
-    _message_content_height_cache.del(message_id);
+    _message_content_height_cache.delete(message_id);
 };
 
 function get_message_height(elem, message_id) {
@@ -177,43 +176,62 @@ exports.show_message_expander = function (row) {
 exports.condense_and_collapse = function (elems) {
     const height_cutoff = message_viewport.height() * 0.65;
 
-    _.each(elems, function (elem) {
+    for (const elem of elems) {
         const content = $(elem).find(".message_content");
-        const message = current_msg_list.get(rows.id($(elem)));
-        if (content !== undefined && message !== undefined) {
-            const message_height = get_message_height(elem, message.id);
-            const long_message = message_height > height_cutoff;
-            if (long_message) {
-                // All long messages are flagged as such.
-                content.addClass("could-be-condensed");
-            } else {
-                content.removeClass("could-be-condensed");
-            }
 
-            // If message.condensed is defined, then the user has manually
-            // specified whether this message should be expanded or condensed.
-            if (message.condensed === true) {
-                condense_row($(elem));
-                return;
-            } else if (message.condensed === false) {
-                uncondense_row($(elem));
-                return;
-            } else if (long_message) {
-                // By default, condense a long message.
-                condense_row($(elem));
-            } else {
-                content.removeClass('condensed');
-                $(elem).find(".message_expander").hide();
-            }
-
-            // Completely hide the message and replace it with a [More]
-            // link if the user has collapsed it.
-            if (message.collapsed) {
-                content.addClass("collapsed");
-                $(elem).find(".message_expander").show();
-            }
+        if (content.length !== 1) {
+            // We could have a "/me did this" message or something
+            // else without a `message_content` div.
+            continue;
         }
-    });
+
+        const message_id = rows.id($(elem));
+
+        if (!message_id) {
+            continue;
+        }
+
+        const message = current_msg_list.get(message_id);
+        if (message === undefined) {
+            continue;
+        }
+
+        const message_height = get_message_height(elem, message.id);
+        const long_message = message_height > height_cutoff;
+        if (long_message) {
+            // All long messages are flagged as such.
+            content.addClass("could-be-condensed");
+        } else {
+            content.removeClass("could-be-condensed");
+        }
+
+        // If message.condensed is defined, then the user has manually
+        // specified whether this message should be expanded or condensed.
+        if (message.condensed === true) {
+            condense_row($(elem));
+            continue;
+        }
+
+        if (message.condensed === false) {
+            uncondense_row($(elem));
+            continue;
+        }
+
+        if (long_message) {
+            // By default, condense a long message.
+            condense_row($(elem));
+        } else {
+            content.removeClass('condensed');
+            $(elem).find(".message_expander").hide();
+        }
+
+        // Completely hide the message and replace it with a [More]
+        // link if the user has collapsed it.
+        if (message.collapsed) {
+            content.addClass("collapsed");
+            $(elem).find(".message_expander").show();
+        }
+    }
 };
 
 exports.initialize = function () {

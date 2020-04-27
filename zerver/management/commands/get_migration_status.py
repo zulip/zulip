@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import argparse
 import os
 from typing import Any

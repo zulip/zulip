@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import re
 import sys
 import mock
@@ -9,12 +7,12 @@ from unittest.mock import patch, MagicMock
 
 from django.http import HttpResponse
 
-import zerver.lib.openapi as openapi
+import zerver.openapi.openapi as openapi
 from zerver.lib.bugdown.api_code_examples import generate_curl_example, \
     render_curl_example, parse_language_and_options
 from zerver.lib.request import _REQ
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.openapi import (
+from zerver.openapi.openapi import (
     get_openapi_fixture, get_openapi_parameters,
     validate_against_openapi_schema, to_python_type,
     SchemaError, openapi_spec, get_openapi_paths
@@ -38,11 +36,12 @@ VARMAP = {
 
 class OpenAPIToolsTest(ZulipTestCase):
     """Make sure that the tools we use to handle our OpenAPI specification
-    (located in zerver/lib/openapi.py) work as expected.
+    (located in zerver/openapi/openapi.py) work as expected.
 
     These tools are mostly dedicated to fetching parts of the -already parsed-
     specification, and comparing them to objects returned by our REST API.
     """
+
     def test_get_openapi_fixture(self) -> None:
         actual = get_openapi_fixture(TEST_ENDPOINT, TEST_METHOD,
                                      TEST_RESPONSE_BAD_REQ)
@@ -59,7 +58,7 @@ class OpenAPIToolsTest(ZulipTestCase):
             'name': 'message_id',
             'in': 'path',
             'description':
-                'The ID of the message that you wish to edit/update.',
+                'The target message\'s ID.\n',
             'example': 42,
             'required': True,
             'schema': {'type': 'integer'}
@@ -70,11 +69,11 @@ class OpenAPIToolsTest(ZulipTestCase):
         with self.assertRaises(SchemaError,
                                msg=('Extraneous key "foo" in '
                                     'the response\'scontent')):
-            bad_content = {
+            bad_content: Dict[str, object] = {
                 'msg': '',
                 'result': 'success',
                 'foo': 'bar'
-            }  # type: Dict[str, object]
+            }
             validate_against_openapi_schema(bad_content,
                                             TEST_ENDPOINT,
                                             TEST_METHOD,
@@ -155,84 +154,125 @@ class OpenAPIToolsTest(ZulipTestCase):
         self.assertNotEqual(openapi_spec.last_update, 0)
 
         # Now verify calling it again doesn't call reload
-        with mock.patch('zerver.lib.openapi.openapi_spec.reload') as mock_reload:
+        with mock.patch('zerver.openapi.openapi.openapi_spec.reload') as mock_reload:
             get_openapi_fixture(TEST_ENDPOINT, TEST_METHOD)
             self.assertFalse(mock_reload.called)
 
 class OpenAPIArgumentsTest(ZulipTestCase):
     # This will be filled during test_openapi_arguments:
-    checked_endpoints = set()  # type: Set[str]
-    # TODO: These endpoints need to be documented:
-    pending_endpoints = set([
-        '/users/me/avatar',
-        '/settings/display',
-        '/users/me/profile_data',
-        '/users/me/pointer',
+    checked_endpoints: Set[str] = set()
+    pending_endpoints = {
+        #### TODO: These endpoints are a priority to document:
+        '/messages/matches_narrow',
+        '/realm/presence',
+        '/streams/{stream_id}/members',
+        '/streams/{stream_id}/delete_topic',
         '/users/me/presence',
-        '/bot_storage',
-        '/users/me/api_key/regenerate',
-        '/default_streams',
-        '/default_stream_groups/create',
         '/users/me/alert_words',
         '/users/me/status',
-        '/messages/matches_narrow',
-        '/dev_fetch_api_key',
-        '/dev_list_users',
-        '/fetch_api_key',
-        '/fetch_google_client_id',
-        '/settings',
-        '/submessage',
+
+        #### These realm administration settings are valuable to document:
+        # List all files uploaded by current user.  May want to add support
+        # for a larger list available to administrators?
         '/attachments',
-        '/calls/create',
+        # Delete a file uploaded by current user.
+        '/attachments/{attachment_id}',
+        # List data exports for organization (GET) or request one (POST)
         '/export/realm',
+        # Delete a data export.
         '/export/realm/{export_id}',
-        '/zcommand',
-        '/realm',
-        '/realm/deactivate',
-        '/realm/domains',
-        '/realm/icon',
-        '/realm/logo',
-        '/realm/presence',
-        '/realm/profile_fields',
-        '/queue_id',
+        # Manage default streams and default stream groups
+        '/default_streams',
+        '/default_stream_groups/create',
+        '/default_stream_groups/{group_id}',
+        '/default_stream_groups/{group_id}/streams',
+        # Administer a user -- reactivate and/or modify settings.
+        '/users/{user_id}/reactivate',
+        # Administer invitations
         '/invites',
         '/invites/multiuse',
-        '/bots',
-        # Used for desktop app to test connectivity.
-        '/generate_204',
-        # Mobile-app only endpoints
-        '/users/me/android_gcm_reg_id',
-        '/users/me/apns_device_token',
-        # Regex based urls
-        '/realm/domains/{domain}',
-        '/realm/profile_fields/{field_id}',
-        '/realm/subdomain/{subdomain}',
-        '/users/{user_id}/reactivate',
-        '/users/{user_id}',
-        '/bots/{bot_id}/api_key/regenerate',
-        '/bots/{bot_id}',
         '/invites/{prereg_id}',
         '/invites/{prereg_id}/resend',
         '/invites/multiuse/{invite_id}',
+        # Single-stream settings alternative to the bulk endpoint
+        # users/me/subscriptions/properties; probably should just be a
+        # section of the same page.
         '/users/me/subscriptions/{stream_id}',
-        '/attachments/{attachment_id}',
-        '/user_groups/{user_group_id}/members',
-        '/streams/{stream_id}/members',
-        '/streams/{stream_id}/delete_topic',
-        '/default_stream_groups/{group_id}',
-        '/default_stream_groups/{group_id}/streams',
-        # Regex with an unnamed capturing group.
-        '/users/(?!me/)(?P<email>[^/]*)/presence',
-        # Actually '/user_groups/<user_group_id>' in urls.py but fails the reverse mapping
-        # test because of the variable name mismatch. So really, it's more of a buggy endpoint.
+
+        # Real-time-events endpoint
+        '/real-time',
+
+        # Rest error handling endpoint
+        '/rest-error-handling',
+
+        # Zulip outgoing webhook payload
+        '/zulip-outgoing-webhook',
+
+        #### Mobile-app only endpoints; important for mobile developers.
+        # Mobile interface for fetching API keys
+        '/fetch_api_key',
+        # Already documented; need to fix tracking bug
+        '/dev_fetch_api_key',
+        # Mobile interface for development environment login
+        '/dev_list_users',
+        # Registration for iOS/Android mobile push notifications.
+        '/users/me/android_gcm_reg_id',
+        '/users/me/apns_device_token',
+
+        #### These personal settings endpoints have modest value to document:
+        '/settings',
+        '/users/me/avatar',
+        '/users/me/api_key/regenerate',
+        # Not very useful outside the UI
+        '/settings/display',
+        # Much more valuable would be an org admin bulk-upload feature.
+        '/users/me/profile_data',
+        # To be deprecated and deleted.
+        '/users/me/pointer',
+
+        #### Should be documented as part of interactive bots documentation
+        '/bot_storage',
+        '/submessage',
+        '/zcommand',
+
+        #### These "organization settings" endpoint have modest value to document:
+        '/realm',
+        '/realm/domains',
+        '/realm/domains/{domain}',
+        '/bots',
+        '/bots/{bot_id}',
+        '/bots/{bot_id}/api_key/regenerate',
+        #### These "organization settings" endpoints have low value to document:
+        '/realm/profile_fields',
+        '/realm/profile_fields/{field_id}',
+        '/realm/icon',
+        '/realm/logo',
+        '/realm/deactivate',
+        '/realm/subdomain/{subdomain}',
+
+        #### Other low value endpoints
+        # Used for dead desktop app to test connectivity.  To delete.
+        '/generate_204',
+        # Used for failed approach with dead Android app.
+        '/fetch_google_client_id',
+        # API for video calls we're planning to remove/replace.
+        '/calls/create',
+
+        #### Documented endpoints not properly detected by tooling.
+        # E.g. '/user_groups/<user_group_id>' in urls.py but fails the
+        # reverse mapping test because of the variable name
+        # mismatch.
         '/user_groups/{group_id}',  # Equivalent of what's in urls.py
         '/user_groups/{user_group_id}',  # What's in the OpenAPI docs
-    ])
+        '/user_groups/{user_group_id}/members',
+        # Regex with an unnamed capturing group.
+        '/users/(?!me/)(?P<email>[^/]*)/presence',
+    }
 
     # Endpoints where the documentation is currently failing our
     # consistency tests.  We aim to keep this list empty.
-    buggy_documentation_endpoints = set([
-    ])  # type: Set[str]
+    buggy_documentation_endpoints: Set[str] = set([
+    ])
 
     def convert_regex_to_url_pattern(self, regex_pattern: str) -> str:
         """ Convert regular expressions style URL patterns to their
@@ -313,10 +353,22 @@ so maybe we shouldn't mark it as intentionally undocumented in the urls.
         E.g. typing.Union[typing.List[typing.Dict[str, typing.Any]], NoneType]
         needs to be mapped to list."""
 
-        if sys.version_info < (3, 6) and type(t) is type(Union):  # nocoverage # in python3.6+
-            origin = Union
-        else:  # nocoverage  # in python3.5. I.E. this is used in python3.6+
+        if sys.version_info < (3, 7):  # nocoverage  # python 3.5-3.6
+            if sys.version_info < (3, 6) and isinstance(t, type(Union)):  # python 3.5 has special consideration for Union
+                origin = Union
+            else:
+                origin = getattr(t, "__origin__", None)
+        else:  # nocoverage  # python3.7+
             origin = getattr(t, "__origin__", None)
+            t_name = getattr(t, "_name", None)
+            if origin == list:
+                origin = List
+            elif origin == dict:
+                origin = Dict
+            elif t_name == "Iterable":
+                origin = Iterable
+            elif t_name == "Mapping":
+                origin = Mapping
 
         if not origin:
             # Then it's most likely one of the fundamental data types
@@ -374,12 +426,29 @@ do not match the types declared in the implementation of {}.\n""".format(functio
         OpenAPI data defines a different type than that actually accepted by the function.
         Otherwise, we print out the exact differences for convenient debugging and raise an
         AssertionError. """
-        openapi_params = set()  # type: Set[Tuple[str, Union[type, Tuple[type, object]]]]
+        openapi_params: Set[Tuple[str, Union[type, Tuple[type, object]]]] = set()
         for element in openapi_parameters:
-            name = element["name"]  # type: str
-            _type = VARMAP[element["schema"]["type"]]
+            if function.__name__ == 'send_notification_backend':
+                if element['name'] == 'to':
+                    '''
+                    We want users to send ints here, but the mypy
+                    types for send_notification_backend are still
+                    str, because we need backward compatible
+                    support for old versions of mobile that still
+                    send emails for typing requests.
+                    '''
+                    continue
+
+            name: str = element["name"]
+            schema = element["schema"]
+            if 'oneOf' in schema:
+                # Hack: Just use the type of the first value
+                # Ideally, we'd turn this into a Union type.
+                _type = VARMAP[schema['oneOf'][0]['type']]
+            else:
+                _type = VARMAP[schema["type"]]
             if _type == list:
-                items = element["schema"]["items"]
+                items = schema["items"]
                 if "anyOf" in items.keys():
                     subtypes = []
                     for st in items["anyOf"]:
@@ -394,7 +463,7 @@ do not match the types declared in the implementation of {}.\n""".format(functio
             else:
                 openapi_params.add((name, _type))
 
-        function_params = set()  # type: Set[Tuple[str, Union[type, Tuple[type, object]]]]
+        function_params: Set[Tuple[str, Union[type, Tuple[type, object]]]] = set()
 
         # Iterate through the decorators to find the original
         # function, wrapped by has_request_variables, so we can parse
@@ -425,7 +494,7 @@ do not match the types declared in the implementation of {}.\n""".format(functio
                 # possible.
 
                 vtype = self.get_standardized_argument_type(function.__annotations__[vname])
-                vname = defval.post_var_name  # type: ignore # See zerver/lib/request.py
+                vname = defval.post_var_name  # type: ignore[attr-defined] # See zerver/lib/request.py
                 function_params.add((vname, vtype))
 
         diff = openapi_params - function_params
@@ -473,7 +542,7 @@ do not match the types declared in the implementation of {}.\n""".format(functio
             for method, value in methods_endpoints.items():
                 if isinstance(value, str):
                     function_name = value
-                    tags = set()  # type: Set[str]
+                    tags: Set[str] = set()
                 else:
                     function_name, tags = value
 
@@ -496,7 +565,7 @@ do not match the types declared in the implementation of {}.\n""".format(functio
                 # accepted by every view function in arguments_map.
                 accepted_arguments = set(arguments_map[function_name])
 
-                regex_pattern = p.regex.pattern
+                regex_pattern = p.pattern.regex.pattern
                 url_pattern = self.convert_regex_to_url_pattern(regex_pattern)
 
                 if "intentionally_undocumented" in tags:
@@ -528,7 +597,7 @@ so maybe we shouldn't include it in pending_endpoints.
                 #
                 # * method is the HTTP method, e.g. GET, POST, or PATCH
                 #
-                # * p.regex.pattern is the URL pattern; might require
+                # * p.pattern.regex.pattern is the URL pattern; might require
                 #   some processing to match with OpenAPI rules
                 #
                 # * accepted_arguments is the full set of arguments
@@ -542,9 +611,9 @@ so maybe we shouldn't include it in pending_endpoints.
                 # argument list matches what actually appears in the
                 # codebase.
 
-                openapi_parameter_names = set(
-                    [parameter['name'] for parameter in openapi_parameters]
-                )
+                openapi_parameter_names = {
+                    parameter['name'] for parameter in openapi_parameters
+                }
 
                 if len(accepted_arguments - openapi_parameter_names) > 0:  # nocoverage
                     print("Undocumented parameters for",
@@ -641,14 +710,14 @@ class TestCurlExampleGeneration(ZulipTestCase):
         }
     }
 
-    spec_mock_with_invalid_method = {
+    spec_mock_with_invalid_method: Dict[str, object] = {
         "security": [{"basicAuth": []}],
         "paths": {
             "/endpoint": {
                 "brew": {}  # the data is irrelevant as is should be rejected.
             }
         }
-    }  # type: Dict[str, object]
+    }
 
     spec_mock_using_object = {
         "security": [{"basicAuth": []}],
@@ -785,7 +854,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
-    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    @patch("zerver.openapi.openapi.OpenAPISpec.spec")
     def test_generate_and_render_curl_with_default_examples(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_without_examples
         generated_curl_example = self.curl_example("/mark_stream_as_read", "POST")
@@ -799,7 +868,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
-    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    @patch("zerver.openapi.openapi.OpenAPISpec.spec")
     def test_generate_and_render_curl_with_invalid_method(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_with_invalid_method
         with self.assertRaises(ValueError):
@@ -812,17 +881,17 @@ class TestCurlExampleGeneration(ZulipTestCase):
             'curl -sSX GET -G http://localhost:9991/api/v1/messages \\',
             '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\',
             "    -d 'anchor=42' \\",
-            "    -d 'use_first_unread_anchor=true' \\",
             "    -d 'num_before=4' \\",
             "    -d 'num_after=8' \\",
             '    --data-urlencode narrow=\'[{"operand": "Denmark", "operator": "stream"}]\' \\',
             "    -d 'client_gravatar=true' \\",
-            "    -d 'apply_markdown=false'",
+            "    -d 'apply_markdown=false' \\",
+            "    -d 'use_first_unread_anchor=true'",
             '```'
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
-    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    @patch("zerver.openapi.openapi.OpenAPISpec.spec")
     def test_generate_and_render_curl_with_object(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_using_object
         generated_curl_example = self.curl_example("/endpoint", "GET")
@@ -835,19 +904,19 @@ class TestCurlExampleGeneration(ZulipTestCase):
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
-    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    @patch("zerver.openapi.openapi.OpenAPISpec.spec")
     def test_generate_and_render_curl_with_object_without_example(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_using_object_without_example
         with self.assertRaises(ValueError):
             self.curl_example("/endpoint", "GET")
 
-    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    @patch("zerver.openapi.openapi.OpenAPISpec.spec")
     def test_generate_and_render_curl_with_array_without_example(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_using_array_without_example
         with self.assertRaises(ValueError):
             self.curl_example("/endpoint", "GET")
 
-    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    @patch("zerver.openapi.openapi.OpenAPISpec.spec")
     def test_generate_and_render_curl_with_param_in_path(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_using_param_in_path
         generated_curl_example = self.curl_example("/endpoint/{param1}", "GET")
@@ -880,10 +949,10 @@ class TestCurlExampleGeneration(ZulipTestCase):
             'curl -sSX GET -G http://localhost:9991/api/v1/messages \\',
             '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\',
             "    -d 'anchor=42' \\",
-            "    -d 'use_first_unread_anchor=true' \\",
             "    -d 'num_before=4' \\",
             "    -d 'num_after=8' \\",
-            '    --data-urlencode narrow=\'[{"operand": "Denmark", "operator": "stream"}]\'',
+            '    --data-urlencode narrow=\'[{"operand": "Denmark", "operator": "stream"}]\' \\',
+            "    -d 'use_first_unread_anchor=true'",
             '```'
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)

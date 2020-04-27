@@ -187,7 +187,7 @@ the maintainer time and get the PR merged quicker.
 
 We also strongly recommend reviewers to go through the following resources.
 
-* [The Gentle Art of Patch Review](http://sage.thesharps.us/2014/09/01/the-gentle-art-of-patch-review/)
+* [The Gentle Art of Patch Review](https://sage.thesharps.us/2014/09/01/the-gentle-art-of-patch-review/)
   article by Sarah Sharp
 * [Zulip & Good Code Review](https://www.harihareswara.net/sumana/2016/05/17/0)
   article by Sumana Harihareswara

@@ -4,8 +4,6 @@ zrequire('buddy_data');
 zrequire('buddy_list');
 zrequire('ui');
 
-set_global('blueslip', global.make_zblueslip());
-
 set_global('padded_widget', {
     update_padding: () => {},
 });
@@ -52,7 +50,7 @@ run_test('basics', () => {
 
     buddy_list.get_data_from_keys = (opts) => {
         const keys = opts.keys;
-        assert.deepEqual(keys, [alice.user_id.toString()]);
+        assert.deepEqual(keys, [alice.user_id]);
         return 'data-stub';
     };
 
@@ -81,7 +79,7 @@ run_test('basics', () => {
     buddy_list.get_li_from_key = (opts) => {
         const key = opts.key;
 
-        assert.equal(key, alice.user_id.toString());
+        assert.equal(key, alice.user_id);
         return alice_li;
     };
 
@@ -140,7 +138,7 @@ run_test('force_render', () => {
     assert.equal(num_rendered, 60 - 50 + 3);
 
     // Force a contrived error case for line coverage.
-    blueslip.set_test_data('error', 'cannot show key at this position: 10');
+    blueslip.expect('error', 'cannot show key at this position: 10');
     buddy_list.force_render({
         pos: 10,
     });

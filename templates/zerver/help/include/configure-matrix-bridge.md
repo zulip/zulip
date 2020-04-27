@@ -10,7 +10,8 @@
 1. Inside the virtualenv you created above, run
 
     ```
-    python matrix_bridge.py --write-sample-config matrix_bridge.conf --from-zuliprc <path/to/zuliprc>
+    python zulip/integrations/bridge_with_matrix/matrix_bridge.py \
+    --write-sample-config matrix_bridge.conf --from-zuliprc <path/to/zuliprc>
     ```
 
     where `<path/to/zuliprc>` is the path to the `zuliprc` file you downloaded.
@@ -54,11 +55,11 @@
 1. Run the following command to start the matrix bridge:
 
     ```
-    python matrix_bridge.py -c matrix_bridge.conf
+    python zulip/integrations/bridge_with_matrix/matrix_bridge.py -c matrix_bridge.conf
     ```
 
 !!! tip ""
 
     You can customize the message formatting by
     editing the variables `MATRIX_MESSAGE_TEMPLATE` and `ZULIP_MESSAGE_TEMPLATE`
-    in `zulip/integrations/matrix/matrix_bridge.py`.
+    in `zulip/integrations/bridge_with_matrix/matrix_bridge.py`.

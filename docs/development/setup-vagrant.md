@@ -48,8 +48,8 @@ a proxy to access the internet.)
 
 - **All**: 2GB available RAM, Active broadband internet connection, [GitHub account][set-up-git].
 - **macOS**: macOS (10.11 El Capitan or newer recommended)
-- **Ubuntu LTS**: 18.04 or 16.04 64-bit
-  - or **Debian**: 9.0 "stretch" 64-bit
+- **Ubuntu LTS**: 20.04 or 18.04
+  - or **Debian**: 10 "buster"
 - **Windows**: Windows 64-bit (Win 10 recommended), hardware
   virtualization enabled (VT-x or AMD-V), administrator access.
 
@@ -152,6 +152,11 @@ in Debian 10 and later; for Debian 9, see [Docker CE for
 Debian](https://docs.docker.com/install/linux/docker-ce/debian/).
 
 #### Windows 10
+
+```eval_rst
+.. note::
+    We now recommend using `WSL 2 for Windows development <../development/setup-advanced.html#installing-directly-on-windows-10-experimental>`_.
+```
 
 1. Install [Git for Windows][git-bash], which installs *Git BASH*.
 2. Install [VirtualBox][vbox-dl] (latest).
@@ -380,11 +385,11 @@ When you navigate to Zulip in your browser, check your terminal and you
 should see something like:
 
 ```
-2016-05-04 18:21:57,547 INFO     127.0.0.1       GET     302 582ms (+start: 417ms) / (unauth via ?)
+2016-05-04 18:21:57,547 INFO     127.0.0.1       GET     302 582ms (+start: 417ms) / (unauth@zulip via ?)
 [04/May/2016 18:21:57]"GET / HTTP/1.0" 302 0
-2016-05-04 18:21:57,568 INFO     127.0.0.1       GET     301   4ms /login (unauth via ?)
+2016-05-04 18:21:57,568 INFO     127.0.0.1       GET     301   4ms /login (unauth@zulip via ?)
 [04/May/2016 18:21:57]"GET /login HTTP/1.0" 301 0
-2016-05-04 18:21:57,819 INFO     127.0.0.1       GET     200 209ms (db: 7ms/2q) /login/ (unauth via ?)
+2016-05-04 18:21:57,819 INFO     127.0.0.1       GET     200 209ms (db: 7ms/2q) /login/ (unauth@zulip via ?)
 ```
 
 Now you're ready for [Step 4: Developing.](#step-4-developing)
@@ -479,7 +484,7 @@ can halt vagrant from another Terminal/Git BASH window.
 From the window where run-dev.py is running:
 
 ```
-2016-05-04 18:33:13,330 INFO     127.0.0.1       GET     200  92ms /register/ (unauth via ?)
+2016-05-04 18:33:13,330 INFO     127.0.0.1       GET     200  92ms /register/ (unauth@zulip via ?)
 ^C
 KeyboardInterrupt
 (zulip-py3-venv) vagrant@ubuntu-bionic:/srv/zulip$ exit
@@ -750,7 +755,7 @@ If this is already enabled in your BIOS, double-check that you are running a
 64-bit operating system.
 
 For further information about troubleshooting vagrant timeout errors [see
-this post](http://stackoverflow.com/questions/22575261/vagrant-stuck-connection-timeout-retrying#22575302).
+this post](https://stackoverflow.com/questions/22575261/vagrant-stuck-connection-timeout-retrying#22575302).
 
 #### Vagrant was unable to communicate with the guest machine
 
@@ -1016,10 +1021,10 @@ If at any time you wish to revert back to the default settings, simply
 remove the `GUEST_CPUS` and `GUEST_MEMORY_MB` lines from
 `~/.zulip-vagrant-config`.
 
-[cygwin-dl]: http://cygwin.com/
+[cygwin-dl]: https://cygwin.com/
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
 [vbox-dl]: https://www.virtualbox.org/wiki/Downloads
-[vmware-fusion-dl]: http://www.vmware.com/products/fusion.html
+[vmware-fusion-dl]: https://www.vmware.com/products/fusion.html
 [vagrant-vmware-fusion-dl]: https://www.vagrantup.com/vmware/
 [install-advanced]: ../development/setup-advanced.md
 [rtd-git-guide]: ../git/index.md

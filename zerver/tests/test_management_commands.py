@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import glob
 import os
 import re
@@ -59,7 +57,7 @@ class TestZulipBaseCommand(ZulipTestCase):
     def test_get_user(self) -> None:
         mit_realm = get_realm("zephyr")
         user_profile = self.example_user("hamlet")
-        email = user_profile.email
+        email = user_profile.delivery_email
 
         self.assertEqual(self.command.get_user(email, self.zulip_realm), user_profile)
         self.assertEqual(self.command.get_user(email, None), user_profile)
@@ -78,7 +76,7 @@ class TestZulipBaseCommand(ZulipTestCase):
 
     def test_get_user_profile_by_email(self) -> None:
         user_profile = self.example_user("hamlet")
-        email = user_profile.email
+        email = user_profile.delivery_email
 
         self.assertEqual(get_user_profile_by_email(email), user_profile)
 
@@ -87,16 +85,26 @@ class TestZulipBaseCommand(ZulipTestCase):
         user_profiles = self.command.get_users(options, realm, **kwargs)
         return sorted(user_profiles, key = lambda x: x.email)
 
+    def sorted_users(self, users: List[UserProfile]) -> List[UserProfile]:
+        return sorted(users, key = lambda x: x.email)
+
     def test_get_users(self) -> None:
-        user_emails = self.example_email("hamlet") + "," + self.example_email("iago")
-        expected_user_profiles = [self.example_user("hamlet"), self.example_user("iago")]
+        expected_user_profiles = self.sorted_users([
+            self.example_user('hamlet'),
+            self.example_user('iago'),
+        ])
+
+        user_emails = ','.join(u.delivery_email for u in expected_user_profiles)
         user_profiles = self.get_users_sorted(dict(users=user_emails), self.zulip_realm)
         self.assertEqual(user_profiles, expected_user_profiles)
         user_profiles = self.get_users_sorted(dict(users=user_emails), None)
         self.assertEqual(user_profiles, expected_user_profiles)
 
-        user_emails = self.example_email("iago") + "," + self.mit_email("sipbtest")
-        expected_user_profiles = [self.example_user("iago"), self.mit_user("sipbtest")]
+        expected_user_profiles = self.sorted_users([
+            self.mit_user('sipbtest'),
+            self.example_user('iago'),
+        ])
+        user_emails = ','.join(u.delivery_email for u in expected_user_profiles)
         user_profiles = self.get_users_sorted(dict(users=user_emails), None)
         self.assertEqual(user_profiles, expected_user_profiles)
         error_message = "The realm '%s' does not contain a user with email" % (self.zulip_realm,)
@@ -109,8 +117,11 @@ class TestZulipBaseCommand(ZulipTestCase):
         self.assertEqual(self.command.get_users(dict(users=None), None), [])
 
     def test_get_users_with_all_users_argument_enabled(self) -> None:
-        user_emails = self.example_email("hamlet") + "," + self.example_email("iago")
-        expected_user_profiles = [self.example_user("hamlet"), self.example_user("iago")]
+        expected_user_profiles = self.sorted_users([
+            self.example_user('hamlet'),
+            self.example_user('iago'),
+        ])
+        user_emails = ','.join(u.delivery_email for u in expected_user_profiles)
         user_profiles = self.get_users_sorted(dict(users=user_emails, all_users=False), self.zulip_realm)
         self.assertEqual(user_profiles, expected_user_profiles)
         error_message = "You can't use both -u/--users and -a/--all-users."
@@ -224,7 +235,7 @@ class TestSendWebhookFixtureMessage(TestCase):
                                                                ujson_mock: MagicMock,
                                                                client_mock: MagicMock,
                                                                os_path_exists_mock: MagicMock) -> None:
-        ujson_mock.loads.return_value = {}
+        ujson_mock.load.return_value = {}
         ujson_mock.dumps.return_value = "{}"
         os_path_exists_mock.return_value = True
 
@@ -233,7 +244,7 @@ class TestSendWebhookFixtureMessage(TestCase):
         with self.assertRaises(CommandError):
             call_command(self.COMMAND_NAME, fixture=self.fixture_path, url=self.url)
         self.assertTrue(ujson_mock.dumps.called)
-        self.assertTrue(ujson_mock.loads.called)
+        self.assertTrue(ujson_mock.load.called)
         self.assertTrue(open_mock.called)
         client.post.assert_called_once_with(self.url, "{}", content_type="application/json",
                                             HTTP_HOST="zulip.testserver")
@@ -248,7 +259,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
 
         # Get realm creation page
         result = self.client_get(generated_link)
-        self.assert_in_success_response([u"Create a new Zulip organization"], result)
+        self.assert_in_success_response(["Create a new Zulip organization"], result)
 
         # Enter email
         with self.assertRaises(Realm.DoesNotExist):
@@ -340,7 +351,7 @@ class TestSendToEmailMirror(ZulipTestCase):
     def test_sending_a_fixture(self) -> None:
         fixture_path = "zerver/tests/fixtures/email/1.txt"
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
 
         call_command(self.COMMAND_NAME, "--fixture={}".format(fixture_path))
@@ -352,7 +363,7 @@ class TestSendToEmailMirror(ZulipTestCase):
     def test_sending_a_json_fixture(self) -> None:
         fixture_path = "zerver/tests/fixtures/email/1.json"
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
 
         call_command(self.COMMAND_NAME, "--fixture={}".format(fixture_path))
@@ -364,7 +375,7 @@ class TestSendToEmailMirror(ZulipTestCase):
     def test_stream_option(self) -> None:
         fixture_path = "zerver/tests/fixtures/email/1.txt"
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark2")
 
         call_command(self.COMMAND_NAME, "--fixture={}".format(fixture_path), "--stream=Denmark2")
@@ -406,7 +417,7 @@ class TestExport(ZulipTestCase):
 
     def test_command_with_consented_message_id(self) -> None:
         realm = get_realm("zulip")
-        self.send_stream_message(self.example_email("othello"), "Verona",
+        self.send_stream_message(self.example_user("othello"), "Verona",
                                  topic_name="Export",
                                  content="Thumbs up for export")
         message = Message.objects.last()

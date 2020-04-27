@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
-
 import os
-import subprocess
 import ujson
+import mock
+from urllib.parse import urlsplit
 
 from django.conf import settings
 from django.test import TestCase, override_settings
@@ -10,7 +9,6 @@ from django.http import HttpResponse
 from typing import Any, Dict, List
 
 from zerver.lib.integrations import INTEGRATIONS
-from zerver.lib.storage import static_path
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.test_runner import slow
@@ -116,7 +114,7 @@ class DocPageTest(ZulipTestCase):
         self._test('/api/send-message', 'steal away your hearts')
         self._test('/api/render-message', '**foo**')
         self._test('/api/get-all-streams', 'include_public')
-        self._test('/api/get-stream-id', 'The name of the stream to retrieve the ID for.')
+        self._test('/api/get-stream-id', 'The name of the stream.')
         self._test('/api/get-subscribed-streams', 'Get all streams that the user is subscribed to.')
         self._test('/api/get-all-users', 'client_gravatar')
         self._test('/api/register-queue', 'apply_markdown')
@@ -133,7 +131,7 @@ class DocPageTest(ZulipTestCase):
         self._test('/en/history/', 'Cambridge, Massachusetts')
         self._test('/apps/', 'Apps for every platform.')
         self._test('/features/', 'Beautiful messaging')
-        self._test('/hello/', 'productive team chat', landing_missing_strings=["Login"])
+        self._test('/hello/', 'Chat for distributed teams', landing_missing_strings=["Login"])
         self._test('/why-zulip/', 'Why Zulip?')
         self._test('/for/open-source/', 'for open source projects')
         self._test('/for/companies/', 'in a company')
@@ -227,7 +225,8 @@ class DocPageTest(ZulipTestCase):
 
     def test_electron_detection(self) -> None:
         result = self.client_get("/accounts/password/reset/")
-        self.assertTrue('data-platform="website"' in result.content.decode("utf-8"))
+        # TODO: Ideally, this Mozilla would be the specific browser.
+        self.assertTrue('data-platform="Mozilla"' in result.content.decode("utf-8"))
 
         result = self.client_get("/accounts/password/reset/",
                                  HTTP_USER_AGENT="ZulipElectron/1.0.0")
@@ -272,10 +271,11 @@ class HelpTest(ZulipTestCase):
 class IntegrationTest(TestCase):
     def test_check_if_every_integration_has_logo_that_exists(self) -> None:
         for integration in INTEGRATIONS.values():
-            self.assertTrue(os.path.isfile(settings.DEPLOY_ROOT + integration.logo_url), integration.name)
+            path = urlsplit(integration.logo_url).path
+            self.assertTrue(os.path.isfile(settings.DEPLOY_ROOT + path), integration.name)
 
     def test_api_url_view_subdomains_base(self) -> None:
-        context = dict()  # type: Dict[str, Any]
+        context: Dict[str, Any] = dict()
         add_api_uri_context(context, HostRequestMock())
         self.assertEqual(context["api_url_scheme_relative"], "testserver/api")
         self.assertEqual(context["api_url"], "http://testserver/api")
@@ -283,14 +283,14 @@ class IntegrationTest(TestCase):
 
     @override_settings(ROOT_DOMAIN_LANDING_PAGE=True)
     def test_api_url_view_subdomains_homepage_base(self) -> None:
-        context = dict()  # type: Dict[str, Any]
+        context: Dict[str, Any] = dict()
         add_api_uri_context(context, HostRequestMock())
         self.assertEqual(context["api_url_scheme_relative"], "yourZulipDomain.testserver/api")
         self.assertEqual(context["api_url"], "http://yourZulipDomain.testserver/api")
         self.assertFalse(context["html_settings_links"])
 
     def test_api_url_view_subdomains_full(self) -> None:
-        context = dict()  # type: Dict[str, Any]
+        context: Dict[str, Any] = dict()
         request = HostRequestMock(host="mysubdomain.testserver")
         add_api_uri_context(context, request)
         self.assertEqual(context["api_url_scheme_relative"], "mysubdomain.testserver/api")
@@ -298,7 +298,7 @@ class IntegrationTest(TestCase):
         self.assertTrue(context["html_settings_links"])
 
     def test_html_settings_links(self) -> None:
-        context = dict()  # type: Dict[str, Any]
+        context: Dict[str, Any] = dict()
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             add_api_uri_context(context, HostRequestMock())
         self.assertEqual(
@@ -328,24 +328,23 @@ class IntegrationTest(TestCase):
             '<a target="_blank" href="/#streams">streams page</a>')
 
 class AboutPageTest(ZulipTestCase):
-    def setUp(self) -> None:
-        """ Manual installation which did not execute `tools/provision`
-        would not have the `static/generated/github-contributors.json` fixture
-        file.
-        """
-        super().setUp()
-        # This block has unreliable test coverage due to the implicit
-        # caching here, so we exclude it from coverage.
-        if not os.path.exists(static_path('generated/github-contributors.json')):
-            # Copy the fixture file in `zerver/tests/fixtures` to `static/generated`
-            update_script = os.path.join(os.path.dirname(__file__),
-                                         '../../tools/update-authors-json')  # nocoverage
-            subprocess.check_call([update_script, '--use-fixture'])  # nocoverage
-
     def test_endpoint(self) -> None:
-        """ We can't check the contributors list since it is rendered client-side """
-        result = self.client_get('/team/')
+        with self.settings(CONTRIBUTOR_DATA_FILE_PATH="zerver/tests/fixtures/authors.json"):
+            result = self.client_get('/team/')
         self.assert_in_success_response(['Our amazing community'], result)
+        self.assert_in_success_response(['2017-11-20'], result)
+        self.assert_in_success_response(['timabbott', 'showell', 'gnprice', 'rishig'], result)
+
+        with mock.patch("zerver.views.portico.open", side_effect=FileNotFoundError) as m:
+            result = self.client_get('/team/')
+            self.assertEqual(result.status_code, 200)
+            self.assert_in_success_response(['Never ran'], result)
+            m.called_once()
+
+        with self.settings(ZILENCER_ENABLED=False):
+            result = self.client_get('/team/')
+            self.assertEqual(result.status_code, 301)
+            self.assertEqual(result["Location"], "https://zulipchat.com/team/")
 
     def test_split_by(self) -> None:
         """Utility function primarily used in authors page"""
@@ -353,90 +352,18 @@ class AboutPageTest(ZulipTestCase):
         expected_result = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
         self.assertEqual(split_by(flat_list, 3, None), expected_result)
 
-class ConfigErrorTest(ZulipTestCase):
-    @override_settings(SOCIAL_AUTH_GOOGLE_KEY=None)
-    def test_google(self) -> None:
-        result = self.client_get("/accounts/login/social/google")
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/config-error/google')
-        result = self.client_get(result.url)
-        self.assert_in_success_response(["social_auth_google_key"], result)
-        self.assert_in_success_response(["social_auth_google_secret"], result)
-        self.assert_in_success_response(["zproject/dev-secrets.conf"], result)
-        self.assert_not_in_success_response(["SOCIAL_AUTH_GOOGLE_KEY"], result)
-        self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
-        self.assert_not_in_success_response(["/etc/zulip/settings.py"], result)
-        self.assert_not_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
-
-    @override_settings(SOCIAL_AUTH_GOOGLE_KEY=None)
-    @override_settings(DEVELOPMENT=False)
-    def test_google_production_error(self) -> None:
-        result = self.client_get("/accounts/login/social/google")
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/config-error/google')
-        result = self.client_get(result.url)
-        self.assert_in_success_response(["SOCIAL_AUTH_GOOGLE_KEY"], result)
-        self.assert_in_success_response(["/etc/zulip/settings.py"], result)
-        self.assert_in_success_response(["social_auth_google_secret"], result)
-        self.assert_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
-        self.assert_not_in_success_response(["social_auth_google_key"], result)
-        self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
-        self.assert_not_in_success_response(["zproject/dev-secrets.conf"], result)
-
-    @override_settings(SOCIAL_AUTH_GITHUB_KEY=None)
-    def test_github(self) -> None:
-        result = self.client_get("/accounts/login/social/github")
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/config-error/github')
-        result = self.client_get(result.url)
-        self.assert_in_success_response(["social_auth_github_key"], result)
-        self.assert_in_success_response(["social_auth_github_secret"], result)
-        self.assert_in_success_response(["zproject/dev-secrets.conf"], result)
-        self.assert_not_in_success_response(["SOCIAL_AUTH_GITHUB_KEY"], result)
-        self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
-        self.assert_not_in_success_response(["/etc/zulip/settings.py"], result)
-        self.assert_not_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
-
-    @override_settings(SOCIAL_AUTH_GITHUB_KEY=None)
-    @override_settings(DEVELOPMENT=False)
-    def test_github_production_error(self) -> None:
-        """Test the !DEVELOPMENT code path of config-error."""
-        result = self.client_get("/accounts/login/social/github")
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/config-error/github')
-        result = self.client_get(result.url)
-        self.assert_in_success_response(["SOCIAL_AUTH_GITHUB_KEY"], result)
-        self.assert_in_success_response(["/etc/zulip/settings.py"], result)
-        self.assert_in_success_response(["social_auth_github_secret"], result)
-        self.assert_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
-        self.assert_not_in_success_response(["social_auth_github_key"], result)
-        self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
-        self.assert_not_in_success_response(["zproject/dev-secrets.conf"], result)
-
-    @override_settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=None)
-    def test_saml_error(self) -> None:
-        result = self.client_get("/accounts/login/social/saml")
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/config-error/saml')
-        result = self.client_get(result.url)
-        self.assert_in_success_response(["SAML authentication"], result)
-
+class SmtpConfigErrorTest(ZulipTestCase):
     def test_smtp_error(self) -> None:
         result = self.client_get("/config-error/smtp")
         self.assertEqual(result.status_code, 200)
         self.assert_in_success_response(["email configuration"], result)
-
-    def test_dev_direct_production_error(self) -> None:
-        result = self.client_get("/config-error/dev")
-        self.assertEqual(result.status_code, 200)
-        self.assert_in_success_response(["DevAuthBackend"], result)
 
 class PlansPageTest(ZulipTestCase):
     def test_plans_auth(self) -> None:
         # Test root domain
         result = self.client_get("/plans/", subdomain="")
         self.assert_in_success_response(["Sign up now"], result)
-        # Test non-existant domain
+        # Test non-existent domain
         result = self.client_get("/plans/", subdomain="moo")
         self.assertEqual(result.status_code, 404)
         self.assert_in_response("does not exist", result)
@@ -448,7 +375,7 @@ class PlansPageTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/accounts/login/?next=plans")
         # Test valid domain, with login
-        self.login(self.example_email('hamlet'))
+        self.login('hamlet')
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response(["Current plan"], result)
         # Test root domain, with login on different domain
@@ -476,7 +403,7 @@ class PlansPageTest(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result["Location"], "https://zulipchat.com/plans")
 
-            self.login(self.example_email("iago"))
+            self.login('iago')
 
             # SELF_HOSTED should hide the local plans page, even if logged in
             result = self.client_get("/plans/", subdomain="zulip")
@@ -505,3 +432,73 @@ class PlansPageTest(ZulipTestCase):
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response([current_plan], result)
         self.assert_not_in_success_response([sign_up_now, buy_standard], result)
+
+class AppsPageTest(ZulipTestCase):
+    def test_apps_view(self) -> None:
+        result = self.client_get('/apps')
+        self.assertEqual(result.status_code, 301)
+        self.assertTrue(result['Location'].endswith('/apps/'))
+
+        with self.settings(ZILENCER_ENABLED=False):
+            result = self.client_get('/apps/')
+        self.assertEqual(result.status_code, 301)
+        self.assertTrue(result['Location'] == 'https://zulipchat.com/apps/')
+
+        with self.settings(ZILENCER_ENABLED=True):
+            result = self.client_get('/apps/')
+        self.assertEqual(result.status_code, 200)
+        html = result.content.decode('utf-8')
+        self.assertIn('Apps for every platform.', html)
+
+class PrivacyTermsTest(ZulipTestCase):
+    def test_custom_tos_template(self) -> None:
+        response = self.client_get("/terms/")
+
+        self.assert_in_success_response(["Thanks for using our products and services (\"Services\"). ",
+                                         "By using our Services, you are agreeing to these terms"],
+                                        response)
+
+    def test_custom_terms_of_service_template(self) -> None:
+        not_configured_message = 'This installation of Zulip does not have a configured ' \
+                                 'terms of service'
+        with self.settings(TERMS_OF_SERVICE=None):
+            response = self.client_get('/terms/')
+        self.assert_in_success_response([not_configured_message], response)
+        with self.settings(TERMS_OF_SERVICE='zerver/tests/markdown/test_markdown.md'):
+            response = self.client_get('/terms/')
+        self.assert_in_success_response(['This is some <em>bold text</em>.'], response)
+        self.assert_not_in_success_response([not_configured_message], response)
+
+    def test_custom_privacy_policy_template(self) -> None:
+        not_configured_message = 'This installation of Zulip does not have a configured ' \
+                                 'privacy policy'
+        with self.settings(PRIVACY_POLICY=None):
+            response = self.client_get('/privacy/')
+        self.assert_in_success_response([not_configured_message], response)
+        with self.settings(PRIVACY_POLICY='zerver/tests/markdown/test_markdown.md'):
+            response = self.client_get('/privacy/')
+        self.assert_in_success_response(['This is some <em>bold text</em>.'], response)
+        self.assert_not_in_success_response([not_configured_message], response)
+
+    def test_custom_privacy_policy_template_with_absolute_url(self) -> None:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        abs_path = os.path.join(current_dir, '..', '..',
+                                'templates/zerver/tests/markdown/test_markdown.md')
+        with self.settings(PRIVACY_POLICY=abs_path):
+            response = self.client_get('/privacy/')
+        self.assert_in_success_response(['This is some <em>bold text</em>.'], response)
+
+    def test_no_nav(self) -> None:
+        # Test that our ?nav=0 feature of /privacy and /terms,
+        # designed to comply with the Apple App Store draconian
+        # policies that ToS/Privacy pages linked from an iOS app have
+        # no links to the rest of the site if there's pricing
+        # information for anything elsewhere on the site.
+        response = self.client_get("/terms/")
+        self.assert_in_success_response(["Plans"], response)
+
+        response = self.client_get("/terms/?nav=no")
+        self.assert_not_in_success_response(["Plans"], response)
+
+        response = self.client_get("/privacy/?nav=no")
+        self.assert_not_in_success_response(["Plans"], response)

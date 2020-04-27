@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import mock
 import ujson
 from typing import Any, Callable, Dict, Optional
@@ -7,7 +5,7 @@ from requests.exceptions import ConnectionError
 from django.test import override_settings
 from django.utils.html import escape
 
-from zerver.models import Message, Realm
+from zerver.models import Message, Realm, UserProfile
 from zerver.lib.actions import queue_json_publish
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import MockPythonResponse
@@ -112,6 +110,16 @@ class OembedTestCase(ZulipTestCase):
     def test_error_request(self, get: Any) -> None:
         get.return_value = response = mock.Mock()
         response.ok = False
+        url = 'http://instagram.com/p/BLtI2WdAymy'
+        data = get_oembed_data(url)
+        self.assertIsNone(data)
+
+    @mock.patch('pyoembed.requests.get')
+    def test_invalid_json_in_response(self, get: Any) -> None:
+        get.return_value = response = mock.Mock()
+        response.headers = {'content-type': 'application/json'}
+        response.ok = True
+        response.text = '{invalid json}'
         url = 'http://instagram.com/p/BLtI2WdAymy'
         data = get_oembed_data(url)
         self.assertIsNone(data)
@@ -253,7 +261,7 @@ class PreviewTestCase(ZulipTestCase):
         """
 
     def setUp(self) -> None:
-        super(PreviewTestCase, self).setUp()
+        super().setUp()
         Realm.objects.all().update(inline_url_embed_preview=True)
 
     @classmethod
@@ -269,9 +277,9 @@ class PreviewTestCase(ZulipTestCase):
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_edit_message_history(self) -> None:
-        email = self.example_email('hamlet')
-        self.login(email)
-        msg_id = self.send_stream_message(email, "Scotland",
+        user = self.example_user('hamlet')
+        self.login_user(user)
+        msg_id = self.send_stream_message(user, "Scotland",
                                           topic_name="editing", content="original")
 
         url = 'http://test.org/'
@@ -291,18 +299,18 @@ class PreviewTestCase(ZulipTestCase):
             with mock.patch('requests.get', mocked_response):
                 FetchLinksEmbedData().consume(event)
 
-        embedded_link = '<a href="{0}" target="_blank" title="The Rock">The Rock</a>'.format(url)
+        embedded_link = '<a href="{}" title="The Rock">The Rock</a>'.format(url)
         msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertIn(embedded_link, msg.rendered_content)
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
-    def _send_message_with_test_org_url(self, sender_email: str, queue_should_run: bool=True,
+    def _send_message_with_test_org_url(self, sender: UserProfile, queue_should_run: bool=True,
                                         relative_url: bool=False) -> Message:
         url = 'http://test.org/'
         with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
             msg_id = self.send_personal_message(
-                sender_email,
-                self.example_email('cordelia'),
+                sender,
+                self.example_user('cordelia'),
                 content=url,
             )
             if queue_should_run:
@@ -319,7 +327,7 @@ class PreviewTestCase(ZulipTestCase):
         # Verify the initial message doesn't have the embedded links rendered
         msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertNotIn(
-            '<a href="{0}" target="_blank" title="The Rock">The Rock</a>'.format(url),
+            '<a href="{}" title="The Rock">The Rock</a>'.format(url),
             msg.rendered_content)
 
         # Mock the network request result so the test can be fast without Internet
@@ -334,12 +342,12 @@ class PreviewTestCase(ZulipTestCase):
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_message_update_race_condition(self) -> None:
-        email = self.example_email('hamlet')
-        self.login(email)
+        user = self.example_user('hamlet')
+        self.login_user(user)
         original_url = 'http://test.org/'
         edited_url = 'http://edited.org/'
         with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
-            msg_id = self.send_stream_message(email, "Scotland",
+            msg_id = self.send_stream_message(user, "Scotland",
                                               topic_name="foo", content=original_url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
@@ -359,7 +367,7 @@ class PreviewTestCase(ZulipTestCase):
             msg = Message.objects.select_related("sender").get(id=msg_id)
             # The content of the message has changed since the event for original_url has been created,
             # it should not be rendered. Another, up-to-date event will have been sent (edited_url).
-            self.assertNotIn('<a href="{0}" target="_blank" title="The Rock">The Rock</a>'.format(original_url),
+            self.assertNotIn('<a href="{}" title="The Rock">The Rock</a>'.format(original_url),
                              msg.rendered_content)
             mocked_response_edited.assert_not_called()
 
@@ -369,7 +377,7 @@ class PreviewTestCase(ZulipTestCase):
                     # up-to-date event for edited_url.
                     queue_json_publish(*args, **kwargs)
                     msg = Message.objects.select_related("sender").get(id=msg_id)
-                    self.assertIn('<a href="{0}" target="_blank" title="The Rock">The Rock</a>'.format(edited_url),
+                    self.assertIn('<a href="{}" title="The Rock">The Rock</a>'.format(edited_url),
                                   msg.rendered_content)
 
         with mock.patch('zerver.views.messages.queue_json_publish', wraps=wrapped_queue_json_publish) as patched:
@@ -380,33 +388,33 @@ class PreviewTestCase(ZulipTestCase):
 
     def test_get_link_embed_data(self) -> None:
         url = 'http://test.org/'
-        embedded_link = '<a href="{0}" target="_blank" title="The Rock">The Rock</a>'.format(url)
+        embedded_link = '<a href="{}" title="The Rock">The Rock</a>'.format(url)
 
         # When humans send, we should get embedded content.
-        msg = self._send_message_with_test_org_url(sender_email=self.example_email('hamlet'))
+        msg = self._send_message_with_test_org_url(sender=self.example_user('hamlet'))
         self.assertIn(embedded_link, msg.rendered_content)
 
         # We don't want embedded content for bots.
-        msg = self._send_message_with_test_org_url(sender_email='webhook-bot@zulip.com',
+        msg = self._send_message_with_test_org_url(sender=self.example_user('webhook_bot'),
                                                    queue_should_run=False)
         self.assertNotIn(embedded_link, msg.rendered_content)
 
         # Try another human to make sure bot failure was due to the
         # bot sending the message and not some other reason.
-        msg = self._send_message_with_test_org_url(sender_email=self.example_email('prospero'))
+        msg = self._send_message_with_test_org_url(sender=self.example_user('prospero'))
         self.assertIn(embedded_link, msg.rendered_content)
 
     def test_inline_url_embed_preview(self) -> None:
-        with_preview = '<p><a href="http://test.org/" target="_blank" title="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(http://ia.media-imdb.com/images/rock.jpg)" target="_blank"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" target="_blank" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
-        without_preview = '<p><a href="http://test.org/" target="_blank" title="http://test.org/">http://test.org/</a></p>'
-        msg = self._send_message_with_test_org_url(sender_email=self.example_email('hamlet'))
+        with_preview = '<p><a href="http://test.org/" title="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(http://ia.media-imdb.com/images/rock.jpg)"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
+        without_preview = '<p><a href="http://test.org/" title="http://test.org/">http://test.org/</a></p>'
+        msg = self._send_message_with_test_org_url(sender=self.example_user('hamlet'))
         self.assertEqual(msg.rendered_content, with_preview)
 
         realm = msg.get_realm()
         setattr(realm, 'inline_url_embed_preview', False)
         realm.save()
 
-        msg = self._send_message_with_test_org_url(sender_email=self.example_email('prospero'), queue_should_run=False)
+        msg = self._send_message_with_test_org_url(sender=self.example_user('prospero'), queue_should_run=False)
         self.assertEqual(msg.rendered_content, without_preview)
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
@@ -414,23 +422,23 @@ class PreviewTestCase(ZulipTestCase):
         # Relative urls should not be sent for url preview.
         with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
             self.send_personal_message(
-                self.example_email('prospero'),
-                self.example_email('cordelia'),
+                self.example_user('prospero'),
+                self.example_user('cordelia'),
                 content="http://zulip.testserver/api/",
             )
             patched.assert_not_called()
 
     def test_inline_url_embed_preview_with_relative_image_url(self) -> None:
-        with_preview_relative = '<p><a href="http://test.org/" target="_blank" title="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(http://test.org/images/rock.jpg)" target="_blank"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" target="_blank" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
+        with_preview_relative = '<p><a href="http://test.org/" title="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(http://test.org/images/rock.jpg)"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
         # Try case where the opengraph image is a relative url.
-        msg = self._send_message_with_test_org_url(sender_email=self.example_email('prospero'), relative_url=True)
+        msg = self._send_message_with_test_org_url(sender=self.example_user('prospero'), relative_url=True)
         self.assertEqual(msg.rendered_content, with_preview_relative)
 
     def test_http_error_get_data(self) -> None:
         url = 'http://test.org/'
         msg_id = self.send_personal_message(
-            self.example_email('hamlet'),
-            self.example_email('cordelia'),
+            self.example_user('hamlet'),
+            self.example_user('cordelia'),
             content=url,
         )
         msg = Message.objects.select_related("sender").get(id=msg_id)
@@ -444,13 +452,13 @@ class PreviewTestCase(ZulipTestCase):
                 FetchLinksEmbedData().consume(event)
         msg = Message.objects.get(id=msg_id)
         self.assertEqual(
-            '<p><a href="http://test.org/" target="_blank" title="http://test.org/">http://test.org/</a></p>',
+            '<p><a href="http://test.org/" title="http://test.org/">http://test.org/</a></p>',
             msg.rendered_content)
 
     def test_invalid_link(self) -> None:
         with self.settings(INLINE_URL_EMBED_PREVIEW=True, TEST_SUITE=False, CACHES=TEST_CACHES):
             self.assertIsNone(get_link_embed_data('com.notvalidlink'))
-            self.assertIsNone(get_link_embed_data(u'μένει.com.notvalidlink'))
+            self.assertIsNone(get_link_embed_data('μένει.com.notvalidlink'))
 
     def test_link_embed_data_from_cache(self) -> None:
         url = 'http://test.org/'
@@ -466,11 +474,11 @@ class PreviewTestCase(ZulipTestCase):
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_link_preview_non_html_data(self) -> None:
-        email = self.example_email('hamlet')
-        self.login(email)
+        user = self.example_user('hamlet')
+        self.login_user(user)
         url = 'http://test.org/audio.mp3'
         with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
-            msg_id = self.send_stream_message(email, "Scotland", topic_name="foo", content=url)
+            msg_id = self.send_stream_message(user, "Scotland", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
             self.assertEqual(queue, "embed_links")
@@ -488,17 +496,17 @@ class PreviewTestCase(ZulipTestCase):
         self.assertIsNone(cached_data)
         msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertEqual(
-            ('<p><a href="http://test.org/audio.mp3" target="_blank" title="http://test.org/audio.mp3">'
+            ('<p><a href="http://test.org/audio.mp3" title="http://test.org/audio.mp3">'
              'http://test.org/audio.mp3</a></p>'),
             msg.rendered_content)
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_link_preview_no_open_graph_image(self) -> None:
-        email = self.example_email('hamlet')
-        self.login(email)
+        user = self.example_user('hamlet')
+        self.login_user(user)
         url = 'http://test.org/foo.html'
         with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
-            msg_id = self.send_stream_message(email, "Scotland", topic_name="foo", content=url)
+            msg_id = self.send_stream_message(user, "Scotland", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
             self.assertEqual(queue, "embed_links")
@@ -516,17 +524,17 @@ class PreviewTestCase(ZulipTestCase):
         self.assertNotIn('image', cached_data)
         msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertEqual(
-            ('<p><a href="http://test.org/foo.html" target="_blank" title="http://test.org/foo.html">'
+            ('<p><a href="http://test.org/foo.html" title="http://test.org/foo.html">'
              'http://test.org/foo.html</a></p>'),
             msg.rendered_content)
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_link_preview_open_graph_image_missing_content(self) -> None:
-        email = self.example_email('hamlet')
-        self.login(email)
+        user = self.example_user('hamlet')
+        self.login_user(user)
         url = 'http://test.org/foo.html'
         with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
-            msg_id = self.send_stream_message(email, "Scotland", topic_name="foo", content=url)
+            msg_id = self.send_stream_message(user, "Scotland", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
             self.assertEqual(queue, "embed_links")
@@ -545,17 +553,17 @@ class PreviewTestCase(ZulipTestCase):
         self.assertNotIn('image', cached_data)
         msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertEqual(
-            ('<p><a href="http://test.org/foo.html" target="_blank" title="http://test.org/foo.html">'
+            ('<p><a href="http://test.org/foo.html" title="http://test.org/foo.html">'
              'http://test.org/foo.html</a></p>'),
             msg.rendered_content)
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_link_preview_no_content_type_header(self) -> None:
-        email = self.example_email('hamlet')
-        self.login(email)
+        user = self.example_user('hamlet')
+        self.login_user(user)
         url = 'http://test.org/'
         with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
-            msg_id = self.send_stream_message(email, "Scotland", topic_name="foo", content=url)
+            msg_id = self.send_stream_message(user, "Scotland", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
             self.assertEqual(queue, "embed_links")
@@ -580,8 +588,8 @@ class PreviewTestCase(ZulipTestCase):
         url = 'http://test.org/'
         with mock.patch('zerver.lib.actions.queue_json_publish'):
             msg_id = self.send_personal_message(
-                self.example_email('hamlet'),
-                self.example_email('cordelia'),
+                self.example_user('hamlet'),
+                self.example_user('cordelia'),
                 content=url,
             )
         msg = Message.objects.select_related("sender").get(id=msg_id)
@@ -602,7 +610,7 @@ class PreviewTestCase(ZulipTestCase):
 
         msg.refresh_from_db()
         self.assertEqual(
-            '<p><a href="http://test.org/" target="_blank" title="http://test.org/">http://test.org/</a></p>',
+            '<p><a href="http://test.org/" title="http://test.org/">http://test.org/</a></p>',
             msg.rendered_content)
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
@@ -611,8 +619,8 @@ class PreviewTestCase(ZulipTestCase):
         error_url = 'http://test.org/x'
         with mock.patch('zerver.lib.actions.queue_json_publish'):
             msg_id = self.send_personal_message(
-                self.example_email('hamlet'),
-                self.example_email('cordelia'),
+                self.example_user('hamlet'),
+                self.example_user('cordelia'),
                 content=error_url,
             )
         msg = Message.objects.select_related("sender").get(id=msg_id)
@@ -632,7 +640,7 @@ class PreviewTestCase(ZulipTestCase):
         self.assertIsNone(cached_data)
         msg.refresh_from_db()
         self.assertEqual(
-            '<p><a href="http://test.org/x" target="_blank" title="http://test.org/x">http://test.org/x</a></p>',
+            '<p><a href="http://test.org/x" title="http://test.org/x">http://test.org/x</a></p>',
             msg.rendered_content)
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
@@ -640,8 +648,8 @@ class PreviewTestCase(ZulipTestCase):
         url = 'http://test.org/'
         with mock.patch('zerver.lib.actions.queue_json_publish'):
             msg_id = self.send_personal_message(
-                self.example_email('hamlet'),
-                self.example_email('cordelia'),
+                self.example_user('hamlet'),
+                self.example_user('cordelia'),
                 content=url,
             )
         msg = Message.objects.select_related("sender").get(id=msg_id)
@@ -651,8 +659,8 @@ class PreviewTestCase(ZulipTestCase):
             'message_realm_id': msg.sender.realm_id,
             'message_content': url}
 
-        mocked_data = {'html': '<iframe src="{0}"></iframe>'.format(url),
-                       'oembed': True, 'type': 'video', 'image': '{0}/image.png'.format(url)}
+        mocked_data = {'html': '<iframe src="{}"></iframe>'.format(url),
+                       'oembed': True, 'type': 'video', 'image': '{}/image.png'.format(url)}
         mocked_response = mock.Mock(side_effect=self.create_mock_response(url))
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
             with mock.patch('requests.get', mocked_response):
@@ -670,8 +678,8 @@ class PreviewTestCase(ZulipTestCase):
         url = 'https://www.youtube.com/watch?v=eSJTXC7Ixgg'
         with mock.patch('zerver.lib.actions.queue_json_publish'):
             msg_id = self.send_personal_message(
-                self.example_email('hamlet'),
-                self.example_email('cordelia'),
+                self.example_user('hamlet'),
+                self.example_user('cordelia'),
                 content=url,
             )
         msg = Message.objects.select_related("sender").get(id=msg_id)
@@ -690,5 +698,5 @@ class PreviewTestCase(ZulipTestCase):
                     FetchLinksEmbedData().consume(event)
 
         msg.refresh_from_db()
-        expected_content = '<p><a href="https://www.youtube.com/watch?v=eSJTXC7Ixgg" target="_blank" title="https://www.youtube.com/watch?v=eSJTXC7Ixgg">YouTube - Clearer Code at Scale - Static Types at Zulip and Dropbox</a></p>\n<div class="youtube-video message_inline_image"><a data-id="eSJTXC7Ixgg" href="https://www.youtube.com/watch?v=eSJTXC7Ixgg" target="_blank" title="https://www.youtube.com/watch?v=eSJTXC7Ixgg"><img src="https://i.ytimg.com/vi/eSJTXC7Ixgg/default.jpg"></a></div>'
+        expected_content = '<p><a href="https://www.youtube.com/watch?v=eSJTXC7Ixgg" title="https://www.youtube.com/watch?v=eSJTXC7Ixgg">YouTube - Clearer Code at Scale - Static Types at Zulip and Dropbox</a></p>\n<div class="youtube-video message_inline_image"><a data-id="eSJTXC7Ixgg" href="https://www.youtube.com/watch?v=eSJTXC7Ixgg" title="https://www.youtube.com/watch?v=eSJTXC7Ixgg"><img src="https://i.ytimg.com/vi/eSJTXC7Ixgg/default.jpg"></a></div>'
         self.assertEqual(expected_content, msg.rendered_content)

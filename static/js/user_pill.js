@@ -1,5 +1,6 @@
 // This will be used for pills for things like composing PMs
 // or adding users to a stream/group.
+const settings_data = require("./settings_data");
 
 exports.create_item_from_email = function (email, current_items) {
     // For normal Zulip use, we need to validate the email for our realm.
@@ -7,9 +8,9 @@ exports.create_item_from_email = function (email, current_items) {
 
     if (!user) {
         if (page_params.realm_is_zephyr_mirror_realm) {
-            const existing_emails = _.pluck(current_items, 'email');
+            const existing_emails = current_items.map(item => item.email);
 
-            if (existing_emails.indexOf(email) >= 0) {
+            if (existing_emails.includes(email)) {
                 return;
             }
 
@@ -26,9 +27,9 @@ exports.create_item_from_email = function (email, current_items) {
         return;
     }
 
-    const existing_ids = _.pluck(current_items, 'user_id');
+    const existing_ids = current_items.map(item => item.user_id);
 
-    if (existing_ids.indexOf(user.user_id) >= 0) {
+    if (existing_ids.includes(user.user_id)) {
         return;
     }
 
@@ -66,8 +67,8 @@ exports.append_person = function (opts) {
 
 exports.get_user_ids = function (pill_widget) {
     const items = pill_widget.items();
-    let user_ids = _.pluck(items, 'user_id');
-    user_ids = _.filter(user_ids); // be defensive about undefined users
+    let user_ids = items.map(item => item.user_id);
+    user_ids = user_ids.filter(Boolean); // be defensive about undefined users
 
     return user_ids;
 };
@@ -80,23 +81,19 @@ exports.has_unconverted_data = function (pill_widget) {
     }
 
     const items = pill_widget.items();
-    const has_unknown_items = _.any(items, function (item) {
-        return item.user_id === undefined;
-    });
+    const has_unknown_items = items.some(item => item.user_id === undefined);
 
     return has_unknown_items;
 };
 
 exports.typeahead_source = function (pill_widget) {
-    const persons = people.get_realm_persons();
+    const persons = people.get_realm_users();
     return exports.filter_taken_users(persons, pill_widget);
 };
 
 exports.filter_taken_users = function (items, pill_widget) {
     const taken_user_ids = exports.get_user_ids(pill_widget);
-    items = _.filter(items, function (item) {
-        return taken_user_ids.indexOf(item.user_id) === -1;
-    });
+    items = items.filter(item => !taken_user_ids.includes(item.user_id));
     return items;
 };
 
@@ -134,8 +131,12 @@ exports.set_up_typeahead_on_pills = function (input, pills, update_func) {
         matcher: function (item) {
             let query = this.query.toLowerCase();
             query = query.replace(/\u00A0/g, String.fromCharCode(32));
-            return item.email.toLowerCase().indexOf(query) !== -1
-                    || item.full_name.toLowerCase().indexOf(query) !== -1;
+            if (!settings_data.show_email()) {
+                return item.full_name.toLowerCase().includes(query);
+            }
+            const email = people.get_visible_email(item);
+            return email.toLowerCase().includes(query)
+                    || item.full_name.toLowerCase().includes(query);
         },
         sorter: function (matches) {
             return typeahead_helper.sort_recipientbox_typeahead(

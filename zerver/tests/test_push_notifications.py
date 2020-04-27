@@ -98,15 +98,18 @@ class BouncerTestCase(ZulipTestCase):
         # args[0] is method, args[1] is URL.
         local_url = args[1].replace(settings.PUSH_NOTIFICATION_BOUNCER_URL, "")
         if args[0] == "POST":
-            result = self.api_post(self.server_uuid,
-                                   local_url,
-                                   kwargs['data'],
-                                   subdomain="")
+            result = self.uuid_post(
+                self.server_uuid,
+                local_url,
+                kwargs['data'],
+                subdomain='')
+
         elif args[0] == "GET":
-            result = self.api_get(self.server_uuid,
-                                  local_url,
-                                  kwargs['data'],
-                                  subdomain="")
+            result = self.uuid_get(
+                self.server_uuid,
+                local_url,
+                kwargs['data'],
+                subdomain='')
         else:
             raise AssertionError("Unsupported method for bounce_request")
         return result
@@ -128,21 +131,24 @@ class PushBouncerNotificationTest(BouncerTestCase):
         token_kind = PushDeviceToken.GCM
 
         endpoint = '/api/v1/remotes/push/unregister'
-        result = self.api_post(self.server_uuid, endpoint, {'token_kind': token_kind})
+        result = self.uuid_post(self.server_uuid, endpoint, {'token_kind': token_kind})
         self.assert_json_error(result, "Missing 'token' argument")
-        result = self.api_post(self.server_uuid, endpoint, {'token': token})
+        result = self.uuid_post(self.server_uuid, endpoint, {'token': token})
         self.assert_json_error(result, "Missing 'token_kind' argument")
 
         # We need the root ('') subdomain to be in use for this next
         # test, since the push bouncer API is only available there:
+        hamlet = self.example_user('hamlet')
         realm = get_realm("zulip")
         realm.string_id = ""
         realm.save()
 
-        result = self.api_post(self.example_email("hamlet"), endpoint, {'token': token,
-                                                                        'user_id': 15,
-                                                                        'token_kind': token_kind},
-                               subdomain="")
+        result = self.api_post(
+            hamlet,
+            endpoint,
+            dict(user_id=15, token=token, token_kind=token_kind),
+            subdomain='',
+        )
         self.assert_json_error(result, "Must validate with valid Zulip server API key")
 
     def test_register_remote_push_user_paramas(self) -> None:
@@ -152,18 +158,22 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
         endpoint = '/api/v1/remotes/push/register'
 
-        result = self.api_post(self.server_uuid, endpoint, {'user_id': user_id, 'token_kind': token_kind})
+        result = self.uuid_post(self.server_uuid, endpoint, {'user_id': user_id, 'token_kind': token_kind})
         self.assert_json_error(result, "Missing 'token' argument")
-        result = self.api_post(self.server_uuid, endpoint, {'user_id': user_id, 'token': token})
+        result = self.uuid_post(self.server_uuid, endpoint, {'user_id': user_id, 'token': token})
         self.assert_json_error(result, "Missing 'token_kind' argument")
-        result = self.api_post(self.server_uuid, endpoint, {'token': token, 'token_kind': token_kind})
+        result = self.uuid_post(self.server_uuid, endpoint, {'token': token, 'token_kind': token_kind})
         self.assert_json_error(result, "Missing 'user_id' argument")
-        result = self.api_post(self.server_uuid, endpoint, {'user_id': user_id, 'token': token, 'token_kind': 17})
+        result = self.uuid_post(self.server_uuid, endpoint, {'user_id': user_id, 'token': token, 'token_kind': 17})
         self.assert_json_error(result, "Invalid token type")
 
-        result = self.api_post(self.example_email("hamlet"), endpoint, {'user_id': user_id,
-                                                                        'token_kind': token_kind,
-                                                                        'token': token})
+        hamlet = self.example_user('hamlet')
+
+        result = self.api_post(
+            hamlet,
+            endpoint,
+            dict(user_id=user_id, token_kin=token_kind, token=token),
+        )
         self.assert_json_error(result, "Account is not associated with this subdomain",
                                status_code=401)
 
@@ -173,24 +183,28 @@ class PushBouncerNotificationTest(BouncerTestCase):
         realm.string_id = ""
         realm.save()
 
-        result = self.api_post(self.example_email("hamlet"), endpoint, {'user_id': user_id,
-                                                                        'token_kind': token_kind,
-                                                                        'token': token})
+        result = self.api_post(
+            hamlet,
+            endpoint,
+            dict(user_id=user_id, token_kind=token_kind, token=token),
+        )
         self.assert_json_error(result, "Must validate with valid Zulip server API key")
 
-        result = self.api_post(self.server_uuid, endpoint, {'user_id': user_id,
-                                                            'token_kind': token_kind,
-                                                            'token': token},
-                               subdomain="zulip")
+        result = self.uuid_post(
+            self.server_uuid,
+            endpoint,
+            dict(user_id=user_id, token_kind=token_kind, token=token),
+            subdomain="zulip")
         self.assert_json_error(result, "Invalid subdomain for push notifications bouncer",
                                status_code=401)
 
         # We do a bit of hackery here to the API_KEYS cache just to
         # make the code simple for sending an incorrect API key.
         self.API_KEYS[self.server_uuid] = 'invalid'
-        result = self.api_post(self.server_uuid, endpoint, {'user_id': user_id,
-                                                            'token_kind': token_kind,
-                                                            'token': token})
+        result = self.uuid_post(
+            self.server_uuid,
+            endpoint,
+            dict(user_id=user_id, token_kind=token_kind, token=token))
         self.assert_json_error(result, "Zulip server auth failure: key does not match role 1234-abcd",
                                status_code=401)
 
@@ -215,7 +229,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             payload = self.get_generic_payload(method)
 
             # Verify correct results are success
-            result = self.api_post(self.server_uuid, endpoint, payload)
+            result = self.uuid_post(self.server_uuid, endpoint, payload)
             self.assert_json_success(result)
 
             remote_tokens = RemotePushDeviceToken.objects.filter(token=payload['token'])
@@ -225,22 +239,22 @@ class PushBouncerNotificationTest(BouncerTestCase):
             # Try adding/removing tokens that are too big...
             broken_token = "x" * 5000  # too big
             payload['token'] = broken_token
-            result = self.api_post(self.server_uuid, endpoint, payload)
+            result = self.uuid_post(self.server_uuid, endpoint, payload)
             self.assert_json_error(result, 'Empty or invalid length token')
 
     def test_remote_push_unregister_all(self) -> None:
         payload = self.get_generic_payload('register')
 
         # Verify correct results are success
-        result = self.api_post(self.server_uuid,
-                               '/api/v1/remotes/push/register', payload)
+        result = self.uuid_post(self.server_uuid,
+                                '/api/v1/remotes/push/register', payload)
         self.assert_json_success(result)
 
         remote_tokens = RemotePushDeviceToken.objects.filter(token=payload['token'])
         self.assertEqual(len(remote_tokens), 1)
-        result = self.api_post(self.server_uuid,
-                               '/api/v1/remotes/push/unregister/all',
-                               dict(user_id=10))
+        result = self.uuid_post(self.server_uuid,
+                                '/api/v1/remotes/push/unregister/all',
+                                dict(user_id=10))
         self.assert_json_success(result)
 
         remote_tokens = RemotePushDeviceToken.objects.filter(token=payload['token'])
@@ -257,7 +271,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
                 'token': 'xyz uses non-hex characters',
                 'token_kind': PushDeviceToken.APNS,
             }
-            result = self.api_post(self.server_uuid, endpoint, payload)
+            result = self.uuid_post(self.server_uuid, endpoint, payload)
             self.assert_json_error(result, 'Invalid APNS token')
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
@@ -268,8 +282,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         """
         mock_request.side_effect = self.bounce_request
         user = self.example_user('cordelia')
-        email = user.email
-        self.login(email)
+        self.login_user(user)
         server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
 
         endpoints = [
@@ -363,7 +376,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
                                                                server=server))
             self.assertEqual(len(tokens), 2)
 
-        # Now we succesfully remove them:
+        # Now we successfully remove them:
         do_regenerate_api_key(user, user)
         tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id,
                                                            server=server))
@@ -466,12 +479,13 @@ class AnalyticsBouncerTest(BouncerTestCase):
          realmauditlog_data) = build_analytics_data(RealmCount.objects.all(),
                                                     InstallationCount.objects.all(),
                                                     RealmAuditLog.objects.all())
-        result = self.api_post(self.server_uuid,
-                               '/api/v1/remotes/server/analytics',
-                               {'realm_counts': ujson.dumps(realm_count_data),
-                                'installation_counts': ujson.dumps(installation_count_data),
-                                'realmauditlog_rows': ujson.dumps(realmauditlog_data)},
-                               subdomain="")
+        result = self.uuid_post(
+            self.server_uuid,
+            '/api/v1/remotes/server/analytics',
+            {'realm_counts': ujson.dumps(realm_count_data),
+             'installation_counts': ujson.dumps(installation_count_data),
+             'realmauditlog_rows': ujson.dumps(realmauditlog_data)},
+            subdomain="")
         self.assert_json_error(result, "Data is out of order.")
 
         with mock.patch("zilencer.views.validate_incoming_table_data"):
@@ -479,7 +493,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             # IntegrityError that will be thrown in here from breaking
             # the unittest transaction.
             with transaction.atomic():
-                result = self.api_post(
+                result = self.uuid_post(
                     self.server_uuid,
                     '/api/v1/remotes/server/analytics',
                     {'realm_counts': ujson.dumps(realm_count_data),
@@ -542,8 +556,8 @@ class AnalyticsBouncerTest(BouncerTestCase):
             event_time=self.TIME_ZERO, extra_data='data')
 
         def check_for_unwanted_data(*args: Any) -> Any:
-            if check_for_unwanted_data.first_call:  # type: ignore
-                check_for_unwanted_data.first_call = False  # type: ignore
+            if check_for_unwanted_data.first_call:  # type: ignore[attr-defined]
+                check_for_unwanted_data.first_call = False  # type: ignore[attr-defined]
             else:
                 # Test that we're respecting SYNCED_BILLING_EVENTS
                 self.assertIn('"event_type":{}'.format(RealmAuditLog.USER_REACTIVATED), str(args))
@@ -555,7 +569,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
         # send_analytics_to_remote_server calls send_to_push_bouncer twice.
         # We need to distinguish the first and second calls.
-        check_for_unwanted_data.first_call = True  # type: ignore
+        check_for_unwanted_data.first_call = True  # type: ignore[attr-defined]
         with mock.patch('zerver.lib.remote_server.send_to_push_bouncer',
                         side_effect=check_for_unwanted_data):
             send_analytics_to_remote_server()
@@ -611,7 +625,7 @@ class PushNotificationTest(BouncerTestCase):
             yield mock_apns
 
     def setup_apns_tokens(self) -> None:
-        self.tokens = [u'aaaa', u'bbbb']
+        self.tokens = ['aaaa', 'bbbb']
         for token in self.tokens:
             PushDeviceToken.objects.create(
                 kind=PushDeviceToken.APNS,
@@ -619,7 +633,7 @@ class PushNotificationTest(BouncerTestCase):
                 user=self.user_profile,
                 ios_app_id=settings.ZULIP_IOS_APP_ID)
 
-        self.remote_tokens = [u'cccc']
+        self.remote_tokens = ['cccc']
         for token in self.remote_tokens:
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.APNS,
@@ -629,7 +643,7 @@ class PushNotificationTest(BouncerTestCase):
             )
 
     def setup_gcm_tokens(self) -> None:
-        self.gcm_tokens = [u'1111', u'2222']
+        self.gcm_tokens = ['1111', '2222']
         for token in self.gcm_tokens:
             PushDeviceToken.objects.create(
                 kind=PushDeviceToken.GCM,
@@ -637,7 +651,7 @@ class PushNotificationTest(BouncerTestCase):
                 user=self.user_profile,
                 ios_app_id=None)
 
-        self.remote_gcm_tokens = [u'dddd']
+        self.remote_gcm_tokens = ['dddd']
         for token in self.remote_gcm_tokens:
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.GCM,
@@ -656,10 +670,11 @@ class HandlePushNotificationTest(PushNotificationTest):
         # args[0] is method, args[1] is URL.
         local_url = args[1].replace(settings.PUSH_NOTIFICATION_BOUNCER_URL, "")
         if args[0] == "POST":
-            result = self.api_post(self.server_uuid,
-                                   local_url,
-                                   kwargs['data'],
-                                   content_type="application/json")
+            result = self.uuid_post(
+                self.server_uuid,
+                local_url,
+                kwargs['data'],
+                content_type="application/json")
         else:
             raise AssertionError("Unsupported method for bounce_request")
         return result
@@ -957,7 +972,8 @@ class HandlePushNotificationTest(PushNotificationTest):
         not long-term idle; we fake it, though, in the sense that the user should
         not have received the message in the first place"""
         self.make_stream('public_stream')
-        message_id = self.send_stream_message("iago@zulip.com", "public_stream", "test")
+        sender = self.example_user('iago')
+        message_id = self.send_stream_message(sender, "public_stream", "test")
         missed_message = {'message_id': message_id}
         with mock.patch('zerver.lib.push_notifications.logger.error') as mock_logger, \
                 mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value = True) as mock_push_notifications:
@@ -977,7 +993,8 @@ class HandlePushNotificationTest(PushNotificationTest):
         self.subscribe(self.user_profile, 'public_stream')
         do_soft_deactivate_users([self.user_profile])
 
-        message_id = self.send_stream_message("iago@zulip.com", "public_stream", "test")
+        sender = self.example_user('iago')
+        message_id = self.send_stream_message(sender, "public_stream", "test")
         missed_message = {
             'message_id': message_id,
             'trigger': 'stream_push_notify',
@@ -1136,8 +1153,8 @@ class TestGetAPNsPayload(PushNotificationTest):
     def test_get_message_payload_apns_personal_message(self) -> None:
         user_profile = self.example_user("othello")
         message_id = self.send_personal_message(
-            self.sender.email,
-            user_profile.email,
+            self.sender,
+            user_profile,
             'Content of personal message',
         )
         message = Message.objects.get(id=message_id)
@@ -1170,8 +1187,8 @@ class TestGetAPNsPayload(PushNotificationTest):
     def test_get_message_payload_apns_huddle_message(self, mock_push_notifications: mock.MagicMock) -> None:
         user_profile = self.example_user("othello")
         message_id = self.send_huddle_message(
-            self.sender.email,
-            [self.example_email('othello'), self.example_email('cordelia')])
+            self.sender,
+            [self.example_user('othello'), self.example_user('cordelia')])
         message = Message.objects.get(id=message_id)
         message.trigger = 'private_message'
         payload = get_message_payload_apns(user_profile, message)
@@ -1203,14 +1220,12 @@ class TestGetAPNsPayload(PushNotificationTest):
         self.assertDictEqual(payload, expected)
         mock_push_notifications.assert_called()
 
-    def test_get_message_payload_apns_stream_message(self):
-        # type: () -> None
-        user_profile = self.example_user("hamlet")
+    def test_get_message_payload_apns_stream_message(self) -> None:
         stream = Stream.objects.filter(name='Verona').get()
         message = self.get_message(Recipient.STREAM, stream.id)
         message.trigger = 'push_stream_notify'
         message.stream_name = 'Verona'
-        payload = get_message_payload_apns(user_profile, message)
+        payload = get_message_payload_apns(self.sender, message)
         expected = {
             'alert': {
                 'title': '#Verona > Test Topic',
@@ -1230,14 +1245,13 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'server': settings.EXTERNAL_HOST,
                     'realm_id': self.sender.realm.id,
                     'realm_uri': self.sender.realm.uri,
-                    "user_id": user_profile.id,
+                    "user_id": self.sender.id,
                 }
             }
         }
         self.assertDictEqual(payload, expected)
 
-    def test_get_message_payload_apns_stream_mention(self):
-        # type: () -> None
+    def test_get_message_payload_apns_stream_mention(self) -> None:
         user_profile = self.example_user("othello")
         stream = Stream.objects.filter(name='Verona').get()
         message = self.get_message(Recipient.STREAM, stream.id)
@@ -1269,8 +1283,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         }
         self.assertDictEqual(payload, expected)
 
-    def test_get_message_payload_apns_stream_wildcard_mention(self):
-        # type: () -> None
+    def test_get_message_payload_apns_stream_wildcard_mention(self) -> None:
         user_profile = self.example_user("othello")
         stream = Stream.objects.filter(name='Verona').get()
         message = self.get_message(Recipient.STREAM, stream.id)
@@ -1306,8 +1319,8 @@ class TestGetAPNsPayload(PushNotificationTest):
     def test_get_message_payload_apns_redacted_content(self) -> None:
         user_profile = self.example_user("othello")
         message_id = self.send_huddle_message(
-            self.sender.email,
-            [self.example_email('othello'), self.example_email('cordelia')])
+            self.sender,
+            [self.example_user('othello'), self.example_user('cordelia')])
         message = Message.objects.get(id=message_id)
         message.trigger = 'private_message'
         payload = get_message_payload_apns(user_profile, message)
@@ -1347,10 +1360,10 @@ class TestGetGCMPayload(PushNotificationTest):
         message.save()
         message.trigger = 'mentioned'
 
-        user_profile = self.example_user('hamlet')
-        payload, gcm_options = get_message_payload_gcm(user_profile, message)
+        hamlet = self.example_user('hamlet')
+        payload, gcm_options = get_message_payload_gcm(hamlet, message)
         self.assertDictEqual(payload, {
-            "user_id": user_profile.id,
+            "user_id": hamlet.id,
             "event": "message",
             "alert": "New mention from King Hamlet",
             "zulip_message_id": message.id,
@@ -1358,10 +1371,10 @@ class TestGetGCMPayload(PushNotificationTest):
             "content": 'a' * 200 + '…',
             "content_truncated": True,
             "server": settings.EXTERNAL_HOST,
-            "realm_id": self.example_user("hamlet").realm.id,
-            "realm_uri": self.example_user("hamlet").realm.uri,
-            "sender_id": self.example_user("hamlet").id,
-            "sender_email": self.example_email("hamlet"),
+            "realm_id": hamlet.realm.id,
+            "realm_uri": hamlet.realm.uri,
+            "sender_id": hamlet.id,
+            "sender_email": hamlet.email,
             "sender_full_name": "King Hamlet",
             "sender_avatar_url": absolute_avatar_url(message.sender),
             "recipient_type": "stream",
@@ -1375,10 +1388,10 @@ class TestGetGCMPayload(PushNotificationTest):
     def test_get_message_payload_gcm_personal(self) -> None:
         message = self.get_message(Recipient.PERSONAL, 1)
         message.trigger = 'private_message'
-        user_profile = self.example_user('hamlet')
-        payload, gcm_options = get_message_payload_gcm(user_profile, message)
+        hamlet = self.example_user('hamlet')
+        payload, gcm_options = get_message_payload_gcm(hamlet, message)
         self.assertDictEqual(payload, {
-            "user_id": user_profile.id,
+            "user_id": hamlet.id,
             "event": "message",
             "alert": "New private message from King Hamlet",
             "zulip_message_id": message.id,
@@ -1386,10 +1399,10 @@ class TestGetGCMPayload(PushNotificationTest):
             "content": message.content,
             "content_truncated": False,
             "server": settings.EXTERNAL_HOST,
-            "realm_id": self.example_user("hamlet").realm.id,
-            "realm_uri": self.example_user("hamlet").realm.uri,
-            "sender_id": self.example_user("hamlet").id,
-            "sender_email": self.example_email("hamlet"),
+            "realm_id": hamlet.realm.id,
+            "realm_uri": hamlet.realm.uri,
+            "sender_id": hamlet.id,
+            "sender_email": hamlet.email,
             "sender_full_name": "King Hamlet",
             "sender_avatar_url": absolute_avatar_url(message.sender),
             "recipient_type": "private",
@@ -1402,10 +1415,10 @@ class TestGetGCMPayload(PushNotificationTest):
         message = self.get_message(Recipient.STREAM, 1)
         message.trigger = 'stream_push_notify'
         message.stream_name = 'Denmark'
-        user_profile = self.example_user('hamlet')
-        payload, gcm_options = get_message_payload_gcm(user_profile, message)
+        hamlet = self.example_user('hamlet')
+        payload, gcm_options = get_message_payload_gcm(hamlet, message)
         self.assertDictEqual(payload, {
-            "user_id": user_profile.id,
+            "user_id": hamlet.id,
             "event": "message",
             "alert": "New stream message from King Hamlet in Denmark",
             "zulip_message_id": message.id,
@@ -1413,10 +1426,10 @@ class TestGetGCMPayload(PushNotificationTest):
             "content": message.content,
             "content_truncated": False,
             "server": settings.EXTERNAL_HOST,
-            "realm_id": self.example_user("hamlet").realm.id,
-            "realm_uri": self.example_user("hamlet").realm.uri,
-            "sender_id": self.example_user("hamlet").id,
-            "sender_email": self.example_email("hamlet"),
+            "realm_id": hamlet.realm.id,
+            "realm_uri": hamlet.realm.uri,
+            "sender_id": hamlet.id,
+            "sender_email": hamlet.email,
             "sender_full_name": "King Hamlet",
             "sender_avatar_url": absolute_avatar_url(message.sender),
             "recipient_type": "stream",
@@ -1432,10 +1445,10 @@ class TestGetGCMPayload(PushNotificationTest):
         message = self.get_message(Recipient.STREAM, 1)
         message.trigger = 'stream_push_notify'
         message.stream_name = 'Denmark'
-        user_profile = self.example_user('hamlet')
-        payload, gcm_options = get_message_payload_gcm(user_profile, message)
+        hamlet = self.example_user('hamlet')
+        payload, gcm_options = get_message_payload_gcm(hamlet, message)
         self.assertDictEqual(payload, {
-            "user_id": user_profile.id,
+            "user_id": hamlet.id,
             "event": "message",
             "alert": "New stream message from King Hamlet in Denmark",
             "zulip_message_id": message.id,
@@ -1443,10 +1456,10 @@ class TestGetGCMPayload(PushNotificationTest):
             "content": "***REDACTED***",
             "content_truncated": False,
             "server": settings.EXTERNAL_HOST,
-            "realm_id": self.example_user("hamlet").realm.id,
-            "realm_uri": self.example_user("hamlet").realm.uri,
-            "sender_id": self.example_user("hamlet").id,
-            "sender_email": self.example_email("hamlet"),
+            "realm_id": hamlet.realm.id,
+            "realm_uri": hamlet.realm.uri,
+            "sender_id": hamlet.id,
+            "sender_email": hamlet.email,
             "sender_full_name": "King Hamlet",
             "sender_avatar_url": absolute_avatar_url(message.sender),
             "recipient_type": "stream",
@@ -1534,8 +1547,7 @@ class TestNumPushDevicesForUser(PushNotificationTest):
 class TestPushApi(ZulipTestCase):
     def test_push_api(self) -> None:
         user = self.example_user('cordelia')
-        email = user.email
-        self.login(email)
+        self.login_user(user)
 
         endpoints = [
             ('/json/users/me/apns_device_token', 'apple-tokenaz'),
@@ -1667,8 +1679,8 @@ class GCMSendTest(PushNotificationTest):
     def test_canonical_pushdevice_not_present(self, mock_warning: mock.MagicMock,
                                               mock_gcm: mock.MagicMock) -> None:
         res = {}
-        t1 = hex_to_b64(u'1111')
-        t2 = hex_to_b64(u'3333')
+        t1 = hex_to_b64('1111')
+        t2 = hex_to_b64('3333')
         res['canonical'] = {t1: t2}
         mock_gcm.json_request.return_value = res
 
@@ -1677,8 +1689,8 @@ class GCMSendTest(PushNotificationTest):
             return PushDeviceToken.objects.filter(
                 token=token, kind=PushDeviceToken.GCM).count()
 
-        self.assertEqual(get_count(u'1111'), 1)
-        self.assertEqual(get_count(u'3333'), 0)
+        self.assertEqual(get_count('1111'), 1)
+        self.assertEqual(get_count('3333'), 0)
 
         data = self.get_gcm_data()
         send_android_push_notification_to_user(self.user_profile, data, {})
@@ -1687,15 +1699,15 @@ class GCMSendTest(PushNotificationTest):
                "registered! Updating.")
         mock_warning.assert_called_once_with(msg % (t2, t1))
 
-        self.assertEqual(get_count(u'1111'), 0)
-        self.assertEqual(get_count(u'3333'), 1)
+        self.assertEqual(get_count('1111'), 0)
+        self.assertEqual(get_count('3333'), 1)
 
     @mock.patch('zerver.lib.push_notifications.logger.info')
     def test_canonical_pushdevice_different(self, mock_info: mock.MagicMock,
                                             mock_gcm: mock.MagicMock) -> None:
         res = {}
-        old_token = hex_to_b64(u'1111')
-        new_token = hex_to_b64(u'2222')
+        old_token = hex_to_b64('1111')
+        new_token = hex_to_b64('2222')
         res['canonical'] = {old_token: new_token}
         mock_gcm.json_request.return_value = res
 
@@ -1704,21 +1716,21 @@ class GCMSendTest(PushNotificationTest):
             return PushDeviceToken.objects.filter(
                 token=token, kind=PushDeviceToken.GCM).count()
 
-        self.assertEqual(get_count(u'1111'), 1)
-        self.assertEqual(get_count(u'2222'), 1)
+        self.assertEqual(get_count('1111'), 1)
+        self.assertEqual(get_count('2222'), 1)
 
         data = self.get_gcm_data()
         send_android_push_notification_to_user(self.user_profile, data, {})
         mock_info.assert_called_once_with(
             "GCM: Got canonical ref %s, dropping %s" % (new_token, old_token))
 
-        self.assertEqual(get_count(u'1111'), 0)
-        self.assertEqual(get_count(u'2222'), 1)
+        self.assertEqual(get_count('1111'), 0)
+        self.assertEqual(get_count('2222'), 1)
 
     @mock.patch('zerver.lib.push_notifications.logger.info')
     def test_not_registered(self, mock_info: mock.MagicMock, mock_gcm: mock.MagicMock) -> None:
         res = {}
-        token = hex_to_b64(u'1111')
+        token = hex_to_b64('1111')
         res['errors'] = {'NotRegistered': [token]}
         mock_gcm.json_request.return_value = res
 
@@ -1727,17 +1739,17 @@ class GCMSendTest(PushNotificationTest):
             return PushDeviceToken.objects.filter(
                 token=token, kind=PushDeviceToken.GCM).count()
 
-        self.assertEqual(get_count(u'1111'), 1)
+        self.assertEqual(get_count('1111'), 1)
 
         data = self.get_gcm_data()
         send_android_push_notification_to_user(self.user_profile, data, {})
         mock_info.assert_called_once_with("GCM: Removing %s" % (token,))
-        self.assertEqual(get_count(u'1111'), 0)
+        self.assertEqual(get_count('1111'), 0)
 
     @mock.patch('zerver.lib.push_notifications.logger.warning')
     def test_failure(self, mock_warn: mock.MagicMock, mock_gcm: mock.MagicMock) -> None:
         res = {}
-        token = hex_to_b64(u'1111')
+        token = hex_to_b64('1111')
         res['errors'] = {'Failed': [token]}
         mock_gcm.json_request.return_value = res
 
@@ -1756,7 +1768,7 @@ class TestClearOnRead(ZulipTestCase):
         hamlet.save()
         stream = self.subscribe(hamlet, "Denmark")
 
-        message_ids = [self.send_stream_message(self.example_email("iago"),
+        message_ids = [self.send_stream_message(self.example_user("iago"),
                                                 stream.name,
                                                 "yo {}".format(i))
                        for i in range(n_msgs)]
@@ -1777,7 +1789,7 @@ class TestClearOnRead(ZulipTestCase):
         for g in groups[:-1]:
             self.assertEqual(len(g), 1)
         self.assertEqual(sum(len(g) for g in groups), len(message_ids))
-        self.assertEqual(set(id for g in groups for id in g), set(message_ids))
+        self.assertEqual({id for g in groups for id in g}, set(message_ids))
 
 class TestReceivesNotificationsFunctions(ZulipTestCase):
     def setUp(self) -> None:

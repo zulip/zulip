@@ -5,7 +5,6 @@ from django.utils.timezone import utc as timezone_utc
 
 import hashlib
 import logging
-import re
 import threading
 import traceback
 from typing import Optional, Tuple
@@ -120,41 +119,9 @@ def skip_200_and_304(record: logging.LogRecord) -> bool:
     # Apparently, `status_code` is added by Django and is not an actual
     # attribute of LogRecord; as a result, mypy throws an error if we
     # access the `status_code` attribute directly.
-    if getattr(record, 'status_code') in [200, 304]:
+    if getattr(record, 'status_code', None) in [200, 304]:
         return False
 
-    return True
-
-IGNORABLE_404_URLS = [
-    re.compile(r'^/apple-touch-icon.*\.png$'),
-    re.compile(r'^/favicon\.ico$'),
-    re.compile(r'^/robots\.txt$'),
-    re.compile(r'^/django_static_404.html$'),
-    re.compile(r'^/wp-login.php$'),
-]
-
-def skip_boring_404s(record: logging.LogRecord) -> bool:
-    """Prevents Django's 'Not Found' warnings from being logged for common
-    404 errors that don't reflect a problem in Zulip.  The overall
-    result is to keep the Zulip error logs cleaner than they would
-    otherwise be.
-
-    Assumes that its input is a django.request log record.
-    """
-    # Apparently, `status_code` is added by Django and is not an actual
-    # attribute of LogRecord; as a result, mypy throws an error if we
-    # access the `status_code` attribute directly.
-    if getattr(record, 'status_code') != 404:
-        return True
-
-    # We're only interested in filtering the "Not Found" errors.
-    if getattr(record, 'msg') != 'Not Found: %s':
-        return True
-
-    path = getattr(record, 'args', [''])[0]
-    for pattern in IGNORABLE_404_URLS:
-        if re.match(pattern, path):
-            return False
     return True
 
 def skip_site_packages_logs(record: logging.LogRecord) -> bool:
@@ -176,11 +143,12 @@ def find_log_caller_module(record: logging.LogRecord) -> Optional[str]:
     # we find something in the same source file, and that should give the
     # right module name.
     f = logging.currentframe()
-    while f is not None:
+    while True:
         if f.f_code.co_filename == record.pathname:
             return f.f_globals.get('__name__')
+        if f.f_back is None:
+            return None
         f = f.f_back
-    return None  # type: ignore # required because of previous ignore on f
 
 logger_nicknames = {
     'root': '',  # This one is more like undoing a nickname.
@@ -194,11 +162,18 @@ def find_log_origin(record: logging.LogRecord) -> str:
         module_name = find_log_caller_module(record)
         if module_name == logger_name or module_name == record.name:
             # Abbreviate a bit.
-            return logger_name
+            pass
         else:
-            return '{}/{}'.format(logger_name, module_name or '?')
-    else:
-        return logger_name
+            logger_name = '{}/{}'.format(logger_name, module_name or '?')
+
+    if settings.RUNNING_INSIDE_TORNADO:
+        # In multi-sharded Tornado, it's often valuable to have which shard is
+        # responsible for the request in the logs.
+        from zerver.tornado.ioloop_logging import logging_data
+        shard = logging_data.get('port', 'unknown')
+        logger_name = "{}:{}".format(logger_name, shard)
+
+    return logger_name
 
 log_level_abbrevs = {
     'DEBUG':    'DEBG',

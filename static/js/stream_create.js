@@ -97,54 +97,11 @@ const stream_name_error = (function () {
     return self;
 }());
 
-function ajaxSubscribeForCreation(stream_name, description, user_ids, invite_only,
-                                  is_announcement_only, announce, history_public_to_subscribers) {
-    // TODO: We can eliminate the user_ids -> principals conversion
-    //       once we upgrade the backend to accept user_ids.
-    const persons = _.compact(_.map(user_ids, (user_id) => {
-        return people.get_person_from_user_id(user_id);
-    }));
-
-    const principals = _.map(persons, (person) => person.email);
-
-    // Subscribe yourself and possible other people to a new stream.
-    return channel.post({
-        url: "/json/users/me/subscriptions",
-        data: {subscriptions: JSON.stringify([{name: stream_name,
-                                               description: description}]),
-               principals: JSON.stringify(principals),
-               invite_only: JSON.stringify(invite_only),
-               is_announcement_only: JSON.stringify(is_announcement_only),
-               announce: JSON.stringify(announce),
-               history_public_to_subscribers: JSON.stringify(history_public_to_subscribers),
-        },
-        success: function () {
-            $("#create_stream_name").val("");
-            $("#create_stream_description").val("");
-            ui_report.success(i18n.t("Stream successfully created!"), $(".stream_create_info"));
-            loading.destroy_indicator($('#stream_creating_indicator'));
-            // The rest of the work is done via the subscribe event we will get
-        },
-        error: function (xhr) {
-            const msg = JSON.parse(xhr.responseText).msg;
-            if (msg.indexOf('access') >= 0) {
-                // If we can't access the stream, we can safely assume it's
-                // a duplicate stream that we are not invited to.
-                stream_name_error.report_already_exists(stream_name);
-                stream_name_error.select();
-            }
-
-            ui_report.error(i18n.t("Error creating stream"), xhr, $(".stream_create_info"));
-            loading.destroy_indicator($('#stream_creating_indicator'));
-        },
-    });
-}
-
 // Within the new stream modal...
 function update_announce_stream_state() {
 
     // If there is no notifications_stream, we simply hide the widget.
-    if (!page_params.notifications_stream) {
+    if (!stream_data.realm_has_notifications_stream()) {
         $('#announce-new-stream').hide();
         return;
     }
@@ -169,24 +126,31 @@ function update_announce_stream_state() {
 }
 
 function get_principals() {
-    return _.map(
-        $("#stream_creation_form input:checkbox[name=user]:checked"),
-        function (elem) {
-            const label = $(elem).closest('.add-user-label');
-            return parseInt(label.attr('data-user-id'), 10);
-        }
-    );
+    return Array.from($("#stream_creation_form input:checkbox[name=user]:checked"), elem => {
+        const label = $(elem).closest(".add-user-label");
+        return parseInt(label.attr("data-user-id"), 10);
+    });
 }
 
 function create_stream() {
+    const data = {};
     const stream_name = $.trim($("#create_stream_name").val());
     const description = $.trim($("#create_stream_description").val());
-    const privacy_setting = $('#stream_creation_form input[name=privacy]:checked').val();
-    const is_announcement_only = $('#stream_creation_form input[name=is-announcement-only]').prop('checked');
-    const principals = get_principals();
+    created_stream = stream_name;
+
+    // Even though we already check to make sure that while typing the user cannot enter
+    // newline characters (by pressing the enter key) it would still be possible to copy
+    // and paste over a description with newline characters in it. Prevent that.
+    if (description.includes('\n')) {
+        ui_report.message(i18n.t("The stream description cannot contain newline characters."),
+                          $(".stream_create_info"), 'alert-error');
+        return;
+    }
+    data.subscriptions = JSON.stringify([{name: stream_name, description: description}]);
 
     let invite_only;
     let history_public_to_subscribers;
+    const privacy_setting = $('#stream_creation_form input[name=privacy]:checked').val();
 
     if (privacy_setting === 'invite-only') {
         invite_only = true;
@@ -198,31 +162,61 @@ function create_stream() {
         invite_only = false;
         history_public_to_subscribers = true;
     }
+    data.invite_only = JSON.stringify(invite_only);
+    data.history_public_to_subscribers = JSON.stringify(history_public_to_subscribers);
 
-    created_stream = stream_name;
+    let stream_post_policy = parseInt($('#stream_creation_form input[name=stream-post-policy]:checked').val(), 10);
 
-    const announce = !!page_params.notifications_stream &&
-        $('#announce-new-stream input').prop('checked');
-
-    // Even though we already check to make sure that while typing the user cannot enter
-    // newline characters (by pressing the enter key) it would still be possible to copy
-    // and paste over a description with newline characters in it. Prevent that.
-    if (description.indexOf('\n') !== -1) {
-        ui_report.message(i18n.t("The stream description cannot contain newline characters."), $(".stream_create_info"), 'alert-error');
-        return;
+    // Because the stream_post_policy field is hidden when non-administrators create streams,
+    // we need to set the default value here.
+    if (isNaN(stream_post_policy)) {
+        stream_post_policy = stream_data.stream_post_policy_values.everyone.code;
     }
+    data.stream_post_policy = JSON.stringify(stream_post_policy);
+
+    const announce = stream_data.realm_has_notifications_stream() &&
+        $('#announce-new-stream input').prop('checked');
+    data.announce = JSON.stringify(announce);
+
+    // TODO: We can eliminate the user_ids -> principals conversion
+    //       once we upgrade the backend to accept user_ids.
+    const user_ids = get_principals();
+    const persons = user_ids.map(user_id => people.get_by_user_id(user_id)).filter(Boolean);
+    const principals = persons.map(person => person.email);
+    data.principals = JSON.stringify(principals);
 
     loading.make_indicator($('#stream_creating_indicator'), {text: i18n.t('Creating stream...')});
 
-    ajaxSubscribeForCreation(
-        stream_name,
-        description,
-        principals,
-        invite_only,
-        is_announcement_only,
-        announce,
-        history_public_to_subscribers
-    );
+    // Subscribe yourself and possible other people to a new stream.
+    return channel.post({
+        url: "/json/users/me/subscriptions",
+        data: data,
+        success: function () {
+            $("#create_stream_name").val("");
+            $("#create_stream_description").val("");
+            ui_report.success(i18n.t("Stream successfully created!"), $(".stream_create_info"));
+            loading.destroy_indicator($('#stream_creating_indicator'));
+            // The rest of the work is done via the subscribe event we will get
+        },
+        error: function (xhr) {
+            const msg = JSON.parse(xhr.responseText).msg;
+            if (msg.includes('access')) {
+                // If we can't access the stream, we can safely assume it's
+                // a duplicate stream that we are not invited to.
+                //
+                // BUG: This check should be using error codes, not
+                // parsing the error string, so it works correctly
+                // with i18n.  And likely we should be reporting the
+                // error text directly rather than turning it into
+                // "Error creating stream"?
+                stream_name_error.report_already_exists(stream_name);
+                stream_name_error.select();
+            }
+
+            ui_report.error(i18n.t("Error creating stream"), xhr, $(".stream_create_info"));
+            loading.destroy_indicator($('#stream_creating_indicator'));
+        },
+    });
 }
 
 exports.new_stream_clicked = function (stream_name) {
@@ -246,7 +240,7 @@ exports.new_stream_clicked = function (stream_name) {
     // focus  the button on that page, the entire app view jumps over to
     // the other tab, and the animation breaks.
     // it is unclear whether this is a browser bug or "feature", however what
-    // is clear is that this shoudn't be touched unless you're also changing
+    // is clear is that this shouldn't be touched unless you're also changing
     // the mobile @media query at 700px.
     if (window.innerWidth > 700) {
         $('#create_stream_name').focus();
@@ -265,7 +259,7 @@ exports.show_new_stream_modal = function () {
 
     const all_users = people.get_people_for_stream_create();
     // Add current user on top of list
-    all_users.unshift(people.get_person_from_user_id(page_params.user_id));
+    all_users.unshift(people.get_by_user_id(page_params.user_id));
     const html = render_new_stream_users({
         users: all_users,
         streams: stream_data.get_streams_for_settings_page(),
@@ -280,7 +274,7 @@ exports.show_new_stream_modal = function () {
     // public, "announce stream" on.
     $('#make-invite-only input:radio[value=public]').prop('checked', true);
 
-    if (page_params.notifications_stream) {
+    if (stream_data.realm_has_notifications_stream()) {
         $('#announce-new-stream').show();
         $('#announce-new-stream input').prop('disabled', false);
         $('#announce-new-stream input').prop('checked', true);
@@ -406,7 +400,7 @@ exports.set_up_handlers = function () {
             stream_subscription_error.report_no_subs_to_stream();
             return;
         }
-        if (principals.indexOf(people.my_current_user_id()) < 0 && !page_params.is_admin) {
+        if (!principals.includes(people.my_current_user_id()) && !page_params.is_admin) {
             stream_subscription_error.cant_create_stream_without_susbscribing();
             return;
         }
@@ -443,7 +437,8 @@ exports.set_up_handlers = function () {
         announce_stream_docs.popover({
             placement: "right",
             content: render_announce_stream_docs({
-                notifications_stream: page_params.notifications_stream}),
+                notifications_stream: stream_data.get_notifications_stream(),
+            }),
             html: true,
             trigger: "manual"});
         announce_stream_docs.popover('show');

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
 
@@ -8,7 +7,7 @@ class OpsGenieHookTests(WebhookTestCase):
     FIXTURE_DIR_NAME = 'opsgenie'
 
     def test_acknowledge_alert(self) -> None:
-        expected_topic = u"Integration1"
+        expected_topic = "Integration1"
         expected_message = """
 [OpsGenie Alert for Integration1](https://app.opsgenie.com/alert/V2#/show/052652ac-5d1c-464a-812a-7dd18bbfba8c):
 * **Type**: Acknowledge
@@ -20,7 +19,7 @@ class OpsGenieHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded")
 
     def test_addnote_alert(self) -> None:
-        expected_topic = u"Integration1"
+        expected_topic = "Integration1"
         expected_message = """
 [OpsGenie Alert for Integration1](https://app.opsgenie.com/alert/V2#/show/052652ac-5d1c-464a-812a-7dd18bbfba8c):
 * **Type**: AddNote
@@ -33,7 +32,7 @@ class OpsGenieHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded")
 
     def test_addrecipient_alert(self) -> None:
-        expected_topic = u"Integration1"
+        expected_topic = "Integration1"
         expected_message = """
 [OpsGenie Alert for Integration1](https://app.opsgenie.com/alert/V2#/show/052652ac-5d1c-464a-812a-7dd18bbfba8c):
 * **Type**: AddRecipient
@@ -46,7 +45,7 @@ class OpsGenieHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded")
 
     def test_addtags_alert(self) -> None:
-        expected_topic = u"Integration1"
+        expected_topic = "Integration1"
         expected_message = """
 [OpsGenie Alert for Integration1](https://app.opsgenie.com/alert/V2#/show/052652ac-5d1c-464a-812a-7dd18bbfba8c):
 * **Type**: AddTags
@@ -59,7 +58,7 @@ class OpsGenieHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded")
 
     def test_addteam_alert(self) -> None:
-        expected_topic = u"Integration1"
+        expected_topic = "Integration1"
         expected_message = """
 [OpsGenie Alert for Integration1](https://app.opsgenie.com/alert/V2#/show/052652ac-5d1c-464a-812a-7dd18bbfba8c):
 * **Type**: AddTeam
@@ -72,7 +71,7 @@ class OpsGenieHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded")
 
     def test_assignownership_alert(self) -> None:
-        expected_topic = u"Integration1"
+        expected_topic = "Integration1"
         expected_message = """
 [OpsGenie Alert for Integration1](https://app.opsgenie.com/alert/V2#/show/052652ac-5d1c-464a-812a-7dd18bbfba8c):
 * **Type**: AssignOwnership
@@ -85,7 +84,7 @@ class OpsGenieHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded")
 
     def test_close_alert(self) -> None:
-        expected_topic = u"Integration1"
+        expected_topic = "Integration1"
         expected_message = """
 [OpsGenie Alert for Integration1](https://app.opsgenie.com/alert/V2#/show/052652ac-5d1c-464a-812a-7dd18bbfba8c):
 * **Type**: Close
@@ -96,7 +95,7 @@ class OpsGenieHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded")
 
     def test_create_alert(self) -> None:
-        expected_topic = u"Webhook"
+        expected_topic = "Webhook"
         expected_message = """
 [OpsGenie Alert for Webhook](https://app.opsgenie.com/alert/V2#/show/ec03dad6-62c8-4c94-b38b-d88f398e900f):
 * **Type**: Create
@@ -108,7 +107,7 @@ class OpsGenieHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded")
 
     def test_customaction_alert(self) -> None:
-        expected_topic = u"Integration1"
+        expected_topic = "Integration1"
         expected_message = """
 [OpsGenie Alert for Integration1](https://app.opsgenie.com/alert/V2#/show/052652ac-5d1c-464a-812a-7dd18bbfba8c):
 * **Type**: TestAction
@@ -120,7 +119,7 @@ class OpsGenieHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded")
 
     def test_delete_alert(self) -> None:
-        expected_topic = u"Integration1"
+        expected_topic = "Integration1"
         expected_message = """
 [OpsGenie Alert for Integration1](https://app.opsgenie.com/alert/V2#/show/052652ac-5d1c-464a-812a-7dd18bbfba8c):
 * **Type**: Delete
@@ -131,7 +130,7 @@ class OpsGenieHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded")
 
     def test_escalate_alert(self) -> None:
-        expected_topic = u"Webhook_Test"
+        expected_topic = "Webhook_Test"
         expected_message = """
 [OpsGenie Alert for Webhook_Test](https://app.opsgenie.com/alert/V2#/show/7ba97e3a-d328-4b5e-8f9a-39e945a3869a):
 * **Type**: Escalate
@@ -142,7 +141,7 @@ class OpsGenieHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded")
 
     def test_removetags_alert(self) -> None:
-        expected_topic = u"Integration1"
+        expected_topic = "Integration1"
         expected_message = """
 [OpsGenie Alert for Integration1](https://app.opsgenie.com/alert/V2#/show/052652ac-5d1c-464a-812a-7dd18bbfba8c):
 * **Type**: RemoveTags
@@ -155,7 +154,7 @@ class OpsGenieHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded")
 
     def test_takeownership_alert(self) -> None:
-        expected_topic = u"Webhook"
+        expected_topic = "Webhook"
         expected_message = """
 [OpsGenie Alert for Webhook](https://app.opsgenie.com/alert/V2#/show/8a745a79-3ed3-4044-8427-98e067c0623c):
 * **Type**: TakeOwnership
@@ -167,7 +166,7 @@ class OpsGenieHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded")
 
     def test_unacknowledge_alert(self) -> None:
-        expected_topic = u"Integration1"
+        expected_topic = "Integration1"
         expected_message = """
 [OpsGenie Alert for Integration1](https://app.opsgenie.com/alert/V2#/show/052652ac-5d1c-464a-812a-7dd18bbfba8c):
 * **Type**: UnAcknowledge

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from zerver.lib.alert_words import (
     add_user_alert_words,
     alert_words_in_realm,
@@ -23,12 +21,11 @@ from zerver.models import (
 import ujson
 
 class AlertWordTests(ZulipTestCase):
-    interesting_alert_word_list = ['alert', 'multi-word word', u'☃']
+    interesting_alert_word_list = ['alert', 'multi-word word', '☃']
 
     def test_internal_endpoint(self) -> None:
         user_name = "cordelia"
-        email = self.example_email(user_name)
-        self.login(email)
+        self.login(user_name)
 
         params = {
             'alert_words': ujson.dumps(['milk', 'cookies'])
@@ -37,7 +34,7 @@ class AlertWordTests(ZulipTestCase):
         self.assert_json_success(result)
         user = self.example_user(user_name)
         words = user_alert_words(user)
-        self.assertEqual(words, ['milk', 'cookies'])
+        self.assertEqual(set(words), {'milk', 'cookies'})
 
     def test_default_no_words(self) -> None:
         """
@@ -47,17 +44,37 @@ class AlertWordTests(ZulipTestCase):
         words = user_alert_words(user)
         self.assertEqual(words, [])
 
-    def test_add_word(self) -> None:
+    def test_basics(self) -> None:
         """
-        add_user_alert_words can add multiple alert words at once.
+        Verifies the basic behavior of modifying alert words.
+
+        Also verifies the cache-flushing behavior.
         """
         user = self.example_user('cordelia')
+        realm_alert_words = alert_words_in_realm(user.realm)
+        self.assert_length(realm_alert_words.get(user.id, []), 0)
 
         # Add several words, including multi-word and non-ascii words.
         add_user_alert_words(user, self.interesting_alert_word_list)
 
         words = user_alert_words(user)
-        self.assertEqual(words, self.interesting_alert_word_list)
+        self.assertEqual(set(words), set(self.interesting_alert_word_list))
+        realm_alert_words = alert_words_in_realm(user.realm)
+        self.assert_length(realm_alert_words[user.id], 3)
+
+        # Test the case-insensitivity of adding words
+        add_user_alert_words(user, set(["ALert", "ALERT"]))
+        words = user_alert_words(user)
+        self.assertEqual(set(words), set(self.interesting_alert_word_list))
+        realm_alert_words = alert_words_in_realm(user.realm)
+        self.assert_length(realm_alert_words[user.id], 3)
+
+        # Test the case-insensitivity of removing words
+        remove_user_alert_words(user, set(["ALert"]))
+        words = user_alert_words(user)
+        self.assertEqual(set(words), set(self.interesting_alert_word_list) - {'alert'})
+        realm_alert_words = alert_words_in_realm(user.realm)
+        self.assert_length(realm_alert_words[user.id], 2)
 
     def test_remove_word(self) -> None:
         """
@@ -66,16 +83,15 @@ class AlertWordTests(ZulipTestCase):
         """
         user = self.example_user('cordelia')
 
+        expected_remaining_alerts = set(self.interesting_alert_word_list)
         add_user_alert_words(user, self.interesting_alert_word_list)
 
-        theoretical_remaining_alerts = self.interesting_alert_word_list[:]
-
         for alert_word in self.interesting_alert_word_list:
-            remove_user_alert_words(user, alert_word)
-            theoretical_remaining_alerts.remove(alert_word)
+            remove_user_alert_words(user, [alert_word])
+            expected_remaining_alerts.remove(alert_word)
             actual_remaining_alerts = user_alert_words(user)
-            self.assertEqual(actual_remaining_alerts,
-                             theoretical_remaining_alerts)
+            self.assertEqual(set(actual_remaining_alerts),
+                             expected_remaining_alerts)
 
     def test_realm_words(self) -> None:
         """
@@ -92,13 +108,13 @@ class AlertWordTests(ZulipTestCase):
 
         realm_words = alert_words_in_realm(user2.realm)
         self.assertEqual(len(realm_words), 2)
-        self.assertEqual(list(realm_words.keys()), [user1.id, user2.id])
-        self.assertEqual(realm_words[user1.id],
-                         self.interesting_alert_word_list)
-        self.assertEqual(realm_words[user2.id], ['another'])
+        self.assertEqual(set(realm_words.keys()), {user1.id, user2.id})
+        self.assertEqual(set(realm_words[user1.id]),
+                         set(self.interesting_alert_word_list))
+        self.assertEqual(set(realm_words[user2.id]), {'another'})
 
     def test_json_list_default(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
 
         result = self.client_get('/json/users/me/alert_words')
         self.assert_json_success(result)
@@ -108,42 +124,46 @@ class AlertWordTests(ZulipTestCase):
         hamlet = self.example_user('hamlet')
         add_user_alert_words(hamlet, ['one', 'two', 'three'])
 
-        self.login(self.example_email('hamlet'))
+        self.login('hamlet')
         result = self.client_get('/json/users/me/alert_words')
         self.assert_json_success(result)
-        self.assertEqual(result.json()['alert_words'], ['one', 'two', 'three'])
+        self.assertEqual(set(result.json()['alert_words']), {'one', 'two', 'three'})
 
     def test_json_list_add(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
 
-        result = self.client_post('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one ', '\n two', 'three'])})
+        result = self.client_post('/json/users/me/alert_words',
+                                  {'alert_words': ujson.dumps(['one ', '\n two', 'three'])})
         self.assert_json_success(result)
-        self.assertEqual(result.json()['alert_words'], ['one', 'two', 'three'])
+        self.assertEqual(set(result.json()['alert_words']), {'one', 'two', 'three'})
 
     def test_json_list_remove(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
 
-        result = self.client_post('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
+        result = self.client_post('/json/users/me/alert_words',
+                                  {'alert_words': ujson.dumps(['one', 'two', 'three'])})
         self.assert_json_success(result)
-        self.assertEqual(result.json()['alert_words'], ['one', 'two', 'three'])
+        self.assertEqual(set(result.json()['alert_words']), {'one', 'two', 'three'})
 
-        result = self.client_delete('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one'])})
+        result = self.client_delete('/json/users/me/alert_words',
+                                    {'alert_words': ujson.dumps(['one'])})
         self.assert_json_success(result)
-        self.assertEqual(result.json()['alert_words'], ['two', 'three'])
+        self.assertEqual(set(result.json()['alert_words']), {'two', 'three'})
 
     def message_does_alert(self, user_profile: UserProfile, message: str) -> bool:
         """Send a bunch of messages as othello, so Hamlet is notified"""
-        self.send_stream_message(self.example_email("othello"), "Denmark", message)
+        self.send_stream_message(self.example_user("othello"), "Denmark", message)
         user_message = most_recent_usermessage(user_profile)
         return 'has_alert_word' in user_message.flags_list()
 
     def test_alert_flags(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         user_profile_hamlet = self.example_user('hamlet')
 
-        result = self.client_post('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
+        result = self.client_post('/json/users/me/alert_words',
+                                  {'alert_words': ujson.dumps(['one', 'two', 'three'])})
         self.assert_json_success(result)
-        self.assertEqual(result.json()['alert_words'], ['one', 'two', 'three'])
+        self.assertEqual(set(result.json()['alert_words']), {'one', 'two', 'three'})
 
         # Alerts in the middle of messages work.
         self.assertTrue(self.message_does_alert(user_profile_hamlet, "Normal alert one time"))
@@ -166,13 +186,13 @@ class AlertWordTests(ZulipTestCase):
 
     def test_update_alert_words(self) -> None:
         user_profile = self.example_user('hamlet')
-        me_email = user_profile.email
 
-        self.login(me_email)
-        result = self.client_post('/json/users/me/alert_words', {'alert_words': ujson.dumps(['ALERT'])})
+        self.login_user(user_profile)
+        result = self.client_post('/json/users/me/alert_words',
+                                  {'alert_words': ujson.dumps(['ALERT'])})
 
         content = 'this is an ALERT for you'
-        self.send_stream_message(me_email, "Denmark", content)
+        self.send_stream_message(user_profile, "Denmark", content)
         self.assert_json_success(result)
 
         original_message = most_recent_message(user_profile)

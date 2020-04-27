@@ -14,6 +14,7 @@ from zerver.lib.request import REQ
 from zerver.models import (
     Message,
     Recipient,
+    Stream,
     UserMessage,
     UserProfile,
 )
@@ -23,7 +24,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # Only use these constants for events.
 ORIG_TOPIC = "orig_subject"
 TOPIC_NAME = "subject"
-TOPIC_LINKS = "subject_links"
+TOPIC_LINKS = "topic_links"
 MATCH_TOPIC = "match_subject"
 
 # This constant is actually embedded into
@@ -94,9 +95,9 @@ def filter_by_exact_message_topic(query: QuerySet, message: Message) -> QuerySet
 def filter_by_topic_name_via_message(query: QuerySet, topic_name: str) -> QuerySet:
     return query.filter(message__subject__iexact=topic_name)
 
-def messages_for_topic(stream_id: int, topic_name: str) -> QuerySet:
+def messages_for_topic(stream_recipient_id: int, topic_name: str) -> QuerySet:
     return Message.objects.filter(
-        recipient__type_id=stream_id,
+        recipient_id=stream_recipient_id,
         subject__iexact=topic_name,
     )
 
@@ -104,7 +105,7 @@ def save_message_for_edit_use_case(message: Message) -> None:
     message.save(update_fields=[TOPIC_NAME, "content", "rendered_content",
                                 "rendered_content_version", "last_edit_time",
                                 "edit_history", "has_attachment", "has_image",
-                                "has_link"])
+                                "has_link", "recipient_id"])
 
 
 def user_message_exists_for_topic(user_profile: UserProfile,
@@ -119,11 +120,15 @@ def user_message_exists_for_topic(user_profile: UserProfile,
 def update_messages_for_topic_edit(message: Message,
                                    propagate_mode: str,
                                    orig_topic_name: str,
-                                   topic_name: str) -> List[Message]:
+                                   topic_name: Optional[str],
+                                   new_stream: Optional[Stream]) -> List[Message]:
     propagate_query = Q(recipient = message.recipient, subject = orig_topic_name)
-    # We only change messages up to 7 days in the past, to avoid hammering our
-    # DB by changing an unbounded amount of messages
     if propagate_mode == 'change_all':
+        # We only change messages up to 7 days in the past, to avoid hammering our
+        # DB by changing an unbounded amount of messages
+        #
+        # TODO: Look at removing this restriction and/or add a "change_last_week"
+        # option; this behavior feels buggy.
         before_bound = timezone_now() - datetime.timedelta(days=7)
 
         propagate_query = (propagate_query & ~Q(id = message.id) &
@@ -133,19 +138,30 @@ def update_messages_for_topic_edit(message: Message,
 
     messages = Message.objects.filter(propagate_query).select_related()
 
+    update_fields = {}
+
     # Evaluate the query before running the update
     messages_list = list(messages)
-    messages.update(subject=topic_name)
 
-    for m in messages_list:
-        # The cached ORM object is not changed by messages.update()
-        # and the remote cache update requires the new value
-        m.set_topic_name(topic_name)
+    # The cached ORM objects are not changed by the upcoming
+    # messages.update(), and the remote cache update (done by the
+    # caller) requires the new value, so we manually update the
+    # objects in addition to sending a bulk query to the database.
+    if new_stream is not None:
+        update_fields["recipient"] = new_stream.recipient
+        for m in messages_list:
+            m.recipient = new_stream.recipient
+    if topic_name is not None:
+        update_fields["subject"] = topic_name
+        for m in messages_list:
+            m.set_topic_name(topic_name)
+
+    messages.update(**update_fields)
 
     return messages_list
 
 def generate_topic_history_from_db_rows(rows: List[Tuple[str, int]]) -> List[Dict[str, Any]]:
-    canonical_topic_names = {}  # type: Dict[str, Tuple[int, str]]
+    canonical_topic_names: Dict[str, Tuple[int, str]] = {}
 
     # Sort rows by max_message_id so that if a topic
     # has many different casings, we use the most

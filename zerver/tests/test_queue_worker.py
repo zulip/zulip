@@ -12,9 +12,10 @@ from typing import Any, Callable, Dict, List, Mapping, Tuple
 from zerver.lib.email_mirror import RateLimitedRealmMirror
 from zerver.lib.email_mirror_helpers import encode_email_address
 from zerver.lib.queue import MAX_REQUEST_RETRIES
-from zerver.lib.rate_limiter import RateLimiterLockingException, clear_history
+from zerver.lib.rate_limiter import RateLimiterLockingException
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
 from zerver.lib.send_email import FromAddress
+from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_helpers import simulated_queue_client
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_client, UserActivity, PreregistrationUser, \
@@ -48,8 +49,8 @@ loopworker_sleep_mock = patch(
 class WorkerTest(ZulipTestCase):
     class FakeClient:
         def __init__(self) -> None:
-            self.consumers = {}  # type: Dict[str, Callable[[Dict[str, Any]], None]]
-            self.queue = []  # type: List[Tuple[str, Any]]
+            self.consumers: Dict[str, Callable[[Dict[str, Any]], None]] = {}
+            self.queue: List[Tuple[str, Any]] = []
 
         def register_json_consumer(self,
                                    queue_name: str,
@@ -77,14 +78,19 @@ class WorkerTest(ZulipTestCase):
 
             return events
 
+        def queue_size(self) -> int:
+            return len(self.queue)
+
     @override_settings(SLOW_QUERY_LOGS_STREAM="errors")
     def test_slow_queries_worker(self) -> None:
         error_bot = get_system_bot(settings.ERROR_BOT)
         fake_client = self.FakeClient()
         worker = SlowQueryWorker()
 
+        create_stream_if_needed(error_bot.realm, 'errors')
+
         send_mock = patch(
-            'zerver.worker.queue_processors.internal_send_message'
+            'zerver.worker.queue_processors.internal_send_stream_message'
         )
 
         with send_mock as sm, loopworker_sleep_mock as tm:
@@ -93,7 +99,7 @@ class WorkerTest(ZulipTestCase):
                     worker.setup()
                     # `write_log_line` is where we publish slow queries to the queue.
                     with patch('zerver.middleware.is_slow_query', return_value=True):
-                        write_log_line(log_data=dict(test='data'), email='test@zulip.com',
+                        write_log_line(log_data=dict(test='data'), requestor_for_logs='test@zulip.com',
                                        remote_ip='127.0.0.1', client_name='website', path='/test/',
                                        method='GET')
                     worker.start()
@@ -105,12 +111,11 @@ class WorkerTest(ZulipTestCase):
         sm.assert_called_once()
         args = [c[0] for c in sm.call_args_list][0]
         self.assertEqual(args[0], error_bot.realm)
-        self.assertEqual(args[1], error_bot.email)
-        self.assertEqual(args[2], "stream")
-        self.assertEqual(args[3], "errors")
-        self.assertEqual(args[4], "testserver: slow queries")
+        self.assertEqual(args[1].email, error_bot.email)
+        self.assertEqual(args[2].name, "errors")
+        self.assertEqual(args[3], "testserver: slow queries")
         # Testing for specific query times can lead to test discrepancies.
-        logging_info = re.sub(r'\(db: [0-9]+ms/13q\)', '', args[5])
+        logging_info = re.sub(r'\(db: [0-9]+ms/\d+q\)', '', args[4])
         self.assertEqual(logging_info, '    127.0.0.1       GET     200 -1000ms '
                                        ' /test/ (test@zulip.com via website) (test@zulip.com)\n')
 
@@ -171,26 +176,26 @@ class WorkerTest(ZulipTestCase):
         othello = self.example_user('othello')
 
         hamlet1_msg_id = self.send_personal_message(
-            from_email=cordelia.email,
-            to_email=hamlet.email,
+            from_user=cordelia,
+            to_user=hamlet,
             content='hi hamlet',
         )
 
         hamlet2_msg_id = self.send_personal_message(
-            from_email=cordelia.email,
-            to_email=hamlet.email,
+            from_user=cordelia,
+            to_user=hamlet,
             content='goodbye hamlet',
         )
 
         hamlet3_msg_id = self.send_personal_message(
-            from_email=cordelia.email,
-            to_email=hamlet.email,
+            from_user=cordelia,
+            to_user=hamlet,
             content='hello again hamlet',
         )
 
         othello_msg_id = self.send_personal_message(
-            from_email=cordelia.email,
-            to_email=othello.email,
+            from_user=cordelia,
+            to_user=othello,
             content='where art thou, othello?',
         )
 
@@ -335,7 +340,7 @@ class WorkerTest(ZulipTestCase):
         stream_to_address = encode_email_address(stream)
         data = [
             dict(
-                message=u'\xf3test',
+                message='\xf3test',
                 time=time.time(),
                 rcpt_to=stream_to_address
             )
@@ -357,12 +362,12 @@ class WorkerTest(ZulipTestCase):
                                          mock_warn: MagicMock) -> None:
         fake_client = self.FakeClient()
         realm = get_realm('zulip')
-        clear_history(RateLimitedRealmMirror(realm))
+        RateLimitedRealmMirror(realm).clear_history()
         stream = get_stream('Denmark', realm)
         stream_to_address = encode_email_address(stream)
         data = [
             dict(
-                message=u'\xf3test',
+                message='\xf3test',
                 time=time.time(),
                 rcpt_to=stream_to_address
             )
@@ -389,7 +394,7 @@ class WorkerTest(ZulipTestCase):
                 with self.settings(EMAIL_GATEWAY_PATTERN="%s@example.com"):
                     address = 'mm' + ('x' * 32) + '@example.com'
                     event = dict(
-                        message=u'\xf3test',
+                        message='\xf3test',
                         time=time.time(),
                         rcpt_to=address
                     )
@@ -404,12 +409,13 @@ class WorkerTest(ZulipTestCase):
                 self.assertEqual(mock_mirror_email.call_count, 4)
 
                 # If RateLimiterLockingException is thrown, we rate-limit the new message:
-                with patch('zerver.lib.rate_limiter.incr_ratelimit',
+                with patch('zerver.lib.rate_limiter.RedisRateLimiterBackend.incr_ratelimit',
                            side_effect=RateLimiterLockingException):
                     fake_client.queue.append(('email_mirror', data[0]))
                     worker.start()
                     self.assertEqual(mock_mirror_email.call_count, 4)
-                    expected_warn = "Deadlock trying to incr_ratelimit for RateLimitedRealmMirror:zulip"
+                    expected_warn = "Deadlock trying to incr_ratelimit for RateLimitedRealmMirror:%s" % (
+                        realm.string_id,)
                     mock_warn.assert_called_with(expected_warn)
 
     def test_email_sending_worker_retries(self) -> None:
@@ -574,7 +580,7 @@ class WorkerTest(ZulipTestCase):
                     "Problem handling data on queue unreliable_worker")
 
         self.assertEqual(processed, ['good', 'fine', 'back to normal'])
-        with open(fn, 'r') as f:
+        with open(fn) as f:
             line = f.readline().strip()
         events = ujson.loads(line.split('\t')[1])
         self.assert_length(events, 1)
@@ -611,7 +617,7 @@ class WorkerTest(ZulipTestCase):
                     "Problem handling data on queue unreliable_loopworker")
 
         self.assertEqual(processed, ['good', 'fine'])
-        with open(fn, 'r') as f:
+        with open(fn) as f:
             line = f.readline().strip()
         events = ujson.loads(line.split('\t')[1])
         self.assert_length(events, 4)

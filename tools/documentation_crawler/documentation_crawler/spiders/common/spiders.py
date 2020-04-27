@@ -44,12 +44,12 @@ VNU_IGNORE = re.compile(r'|'.join([
 
 
 class BaseDocumentationSpider(scrapy.Spider):
-    name = None  # type: Optional[str]
+    name: Optional[str] = None
     # Exclude domain address.
-    deny_domains = []  # type: List[str]
-    start_urls = []  # type: List[str]
-    deny = []  # type: List[str]
-    file_extensions = ['.' + ext for ext in IGNORED_EXTENSIONS]  # type: List[str]
+    deny_domains: List[str] = []
+    start_urls: List[str] = []
+    deny: List[str] = []
+    file_extensions: List[str] = ['.' + ext for ext in IGNORED_EXTENSIONS]
     tags = ('a', 'area', 'img')
     attrs = ('href', 'src')
 
@@ -70,8 +70,10 @@ class BaseDocumentationSpider(scrapy.Spider):
             # We also want CI to check any links to built documentation.
             return False
         if 'github.com/zulip' in url:
-            # Finally, links to our own GitHub organization should always work.
-            return False
+            # We want to check these links but due to rate limiting from GitHub, these checks often
+            # fail in the CI. Thus, we should treat these as external links for now.
+            # TODO: Figure out how to test github.com/zulip links in CI.
+            return True
         return True
 
     def check_fragment(self, response: Response) -> None:
@@ -105,7 +107,7 @@ class BaseDocumentationSpider(scrapy.Spider):
         return callback
 
     def _make_requests(self, url: str) -> Iterable[Request]:
-        callback = self.parse  # type: Callable[[Response], Optional[Iterable[Request]]]
+        callback: Callable[[Response], Optional[Iterable[Request]]] = self.parse
         dont_filter = False
         method = 'GET'
         if self._is_external_url(url):

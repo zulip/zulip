@@ -20,13 +20,24 @@ exports.clear_success_banner = function () {
     }
 };
 
+function sort_user(a, b) {
+    const a_name = people.get_full_name(a.acting_user_id).toLowerCase();
+    const b_name = people.get_full_name(b.acting_user_id).toLowerCase();
+    if (a_name > b_name) {
+        return 1;
+    } else if (a_name === b_name) {
+        return 0;
+    }
+    return -1;
+}
+
 exports.populate_exports_table = function (exports) {
     if (!meta.loaded) {
         return;
     }
 
     const exports_table = $('#admin_exports_table').expectOne();
-    const exports_list = list_render.create(exports_table, Object.values(exports), {
+    list_render.create(exports_table, Object.values(exports), {
         name: "admin_exports_list",
         modifier: function (data) {
             if (data.deleted_timestamp === null) {
@@ -47,27 +58,18 @@ exports.populate_exports_table = function (exports) {
         filter: {
             element: exports_table.closest(".settings-section").find(".search"),
             predicate: function (item, value) {
-                return people.get_full_name(item.acting_user_id).toLowerCase().indexOf(value) >= 0;
+                return people.get_full_name(item.acting_user_id).toLowerCase().includes(value);
             },
             onupdate: function () {
                 ui.reset_scrollbar(exports_table);
             },
         },
         parent_container: $("#data-exports").expectOne(),
-    }).init();
-
-    exports_list.add_sort_function("user", function (a, b) {
-        const a_name = people.get_full_name(a.acting_user_id).toLowerCase();
-        const b_name = people.get_full_name(b.acting_user_id).toLowerCase();
-        if (a_name > b_name) {
-            return 1;
-        } else if (a_name === b_name) {
-            return 0;
-        }
-        return -1;
+        init_sort: [sort_user],
+        sort_fields: {
+            user: sort_user,
+        },
     });
-
-    exports_list.sort("user");
 };
 
 exports.set_up = function () {

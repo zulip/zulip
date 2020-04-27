@@ -55,7 +55,6 @@ The main CircleCI configuration file is
 We run multiple jobs during a CircleCI build to test different
 supported platforms. They are currently:
 
-* xenial-backend-frontend-python3.5
 * bionic-backend-python3.6
 
 Each runs the Zulip backend test suites, using the indicated
@@ -79,7 +78,7 @@ create the directory mentioned in `working_directory` and all the
 steps are be run from here.
 
 The `steps` section describes describes everything: fetching the Zulip
-code, provisioning, fetching catched data, running tests and uploading
+code, provisioning, fetching caught data, running tests and uploading
 coverage reports. The steps with prefix `*` reference aliases, which
 are defined in the `aliases` section at the top of the file.
 

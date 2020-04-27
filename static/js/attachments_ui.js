@@ -55,13 +55,29 @@ function delete_attachments(attachment) {
     });
 }
 
+function sort_mentioned_in(a, b) {
+    const a_m = a.messages[0];
+    const b_m = b.messages[0];
+
+    if (!a_m) { return 1; }
+    if (!b_m) { return -1; }
+
+    if (a_m.id > b_m.id) {
+        return 1;
+    } else if (a_m.id === b_m.id) {
+        return 0;
+    }
+
+    return -1;
+}
+
 function render_attachments_ui() {
     set_upload_space_stats();
 
     const uploaded_files_table = $("#uploaded_files_table").expectOne();
     const $search_input = $("#upload_file_search");
 
-    const list = list_render.create(uploaded_files_table, attachments, {
+    list_render.create(uploaded_files_table, attachments, {
         name: "uploaded-files-list",
         modifier: function (attachment) {
             return render_uploaded_files_list({ attachment: attachment });
@@ -69,42 +85,28 @@ function render_attachments_ui() {
         filter: {
             element: $search_input,
             predicate: function (item, value) {
-                return item.name.toLocaleLowerCase().indexOf(value) >= 0;
+                return item.name.toLocaleLowerCase().includes(value);
             },
             onupdate: function () {
                 ui.reset_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
             },
         },
         parent_container: $('#attachments-settings').expectOne(),
-    }).init();
-
-    list.sort('numeric', 'create_time');
-
-    list.add_sort_function("mentioned-in", function (a, b) {
-        const a_m = a.messages[0];
-        const b_m = b.messages[0];
-
-        if (!a_m) { return 1; }
-        if (!b_m) { return -1; }
-
-        if (a_m.id > b_m.id) {
-            return 1;
-        } else if (a_m.id === b_m.id) {
-            return 0;
-        }
-
-        return -1;
+        init_sort: ['numeric', 'create_time'],
+        sort_fields: {
+            mentioned_in: sort_mentioned_in,
+        },
     });
 
     ui.reset_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
 }
 
 function format_attachment_data(new_attachments) {
-    _.each(new_attachments, function (attachment) {
+    for (const attachment of new_attachments) {
         const time = new XDate(attachment.create_time);
         attachment.create_time_str = timerender.render_now(time).time_str;
         attachment.size_str = exports.bytes_to_size(attachment.size);
-    });
+    }
 }
 
 exports.update_attachments = function (event) {

@@ -15,7 +15,7 @@ class NestedCodeBlocksRenderer(Extension):
 
 class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocessor):
     def __init__(self, md: markdown.Markdown, config: Dict[str, Any]) -> None:
-        super(NestedCodeBlocksRendererTreeProcessor, self).__init__(md)
+        super().__init__(md)
 
     def run(self, root: Element) -> None:
         code_tags = walk_tree_with_family(root, self.get_code_tags)
@@ -37,8 +37,8 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
     ) -> List[ResultWithFamily]:
         nested_code_blocks = []
         for code_tag in code_tags:
-            parent = code_tag.family.parent  # type: Any
-            grandparent = code_tag.family.grandparent  # type: Any
+            parent: Any = code_tag.family.parent
+            grandparent: Any = code_tag.family.grandparent
             if parent.tag == "p" and grandparent.tag == "li":
                 # if the parent (<p>) has no text, and no children,
                 # that means that the <code> element inside is its

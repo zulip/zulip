@@ -1,7 +1,11 @@
 zrequire('message_events');
 zrequire('message_store');
+zrequire('muting');
 zrequire('people');
-zrequire('util');
+zrequire('recent_senders');
+zrequire('stream_data');
+zrequire('stream_topic_history');
+zrequire('unread');
 
 set_global('alert_words', {});
 set_global('condense', {});
@@ -24,10 +28,17 @@ const alice = {
 
 people.add(alice);
 
+const denmark = {
+    subscribed: false,
+    name: 'Denmark',
+    stream_id: 101,
+};
+stream_data.add_sub(denmark);
+
 function test_helper(side_effects) {
     const events = [];
 
-    _.each(side_effects, (side_effect) => {
+    for (const side_effect of side_effects) {
         const parts = side_effect.split('.');
         const module = parts[0];
         const field = parts[1];
@@ -35,7 +46,7 @@ function test_helper(side_effects) {
         global[module][field] = () => {
             events.push(side_effect);
         };
-    });
+    }
 
     const self = {};
 
@@ -49,14 +60,31 @@ function test_helper(side_effects) {
 run_test('update_messages', () => {
     const original_message = {
         id: 111,
+        display_recipient: denmark.name,
+        flags: ['mentioned'],
         sender_id: alice.user_id,
+        stream_id: denmark.stream_id,
+        topic: 'lunch',
+        type: 'stream',
     };
 
     message_store.add_message_metadata(original_message);
+    message_store.set_message_booleans(original_message);
+
+    assert.equal(original_message.mentioned, true);
+    assert.equal(original_message.unread, true);
+
+    assert.deepEqual(
+        stream_topic_history.get_recent_topic_names(denmark.stream_id),
+        ['lunch']
+    );
+
+    unread.update_message_for_mention(original_message);
+    assert(unread.unread_mentions_counter.has(original_message.id));
 
     const events = [
         {
-            message_id: 111,
+            message_id: original_message.id,
             flags: [],
             orig_content: 'old stuff',
             content: '**new content**',
@@ -79,7 +107,7 @@ run_test('update_messages', () => {
 
     const side_effects = [
         'condense.un_cache_message_content_height',
-        'message_edit.end',
+        'message_edit.end_message_row_edit',
         'notifications.received_messages',
         'unread_ui.update_unread_counts',
         'stream_list.update_streams_sidebar',
@@ -94,23 +122,35 @@ run_test('update_messages', () => {
     // TEST THIS:
     message_events.update_messages(events);
 
+    assert(!unread.unread_mentions_counter.has(original_message.id));
+
     helper.verify();
 
     assert.deepEqual(rendered_mgs,  [
         {
             alerted: false,
+            collapsed: false,
             content: '<b>new content</b>',
+            display_recipient: denmark.name,
+            historical: false,
             id: 111,
+            is_stream: true,
             last_edit_timestamp: undefined,
             mentioned: false,
             mentioned_me_directly: false,
             raw_content: '**new content**',
             reactions: [],
-            sender_email: 'alice@example.com',
-            sender_full_name: 'Alice Patel',
+            reply_to: alice.email,
+            sender_email: alice.email,
+            sender_full_name: alice.full_name,
             sender_id: 32,
             sent_by_me: false,
-            topic: undefined,
+            starred: false,
+            stream: denmark.name,
+            stream_id: denmark.stream_id,
+            topic: 'lunch',
+            type: 'stream',
+            unread: true,
         },
     ]);
 

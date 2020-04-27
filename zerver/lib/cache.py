@@ -87,7 +87,7 @@ def get_or_create_key_prefix() -> str:
         # The file already exists
         tries = 1
         while tries < 10:
-            with open(filename, 'r') as f:
+            with open(filename) as f:
                 prefix = f.readline()[:-1]
             if len(prefix) == 33:
                 break
@@ -101,7 +101,7 @@ def get_or_create_key_prefix() -> str:
 
     return prefix
 
-KEY_PREFIX = get_or_create_key_prefix()  # type: str
+KEY_PREFIX: str = get_or_create_key_prefix()
 
 def bounce_key_prefix_for_testing(test_name: str) -> None:
     global KEY_PREFIX
@@ -244,7 +244,7 @@ def cache_get_many(keys: List[str], cache_name: Optional[str]=None) -> Dict[str,
     remote_cache_stats_start()
     ret = get_cache_backend(cache_name).get_many(keys)
     remote_cache_stats_finish()
-    return dict([(key[len(KEY_PREFIX):], value) for key, value in ret.items()])
+    return {key[len(KEY_PREFIX):]: value for key, value in ret.items()}
 
 def safe_cache_get_many(keys: List[str], cache_name: Optional[str]=None) -> Dict[str, Any]:
     """Variant of cache_get_many that drops any keys that fail
@@ -290,7 +290,7 @@ def safe_cache_set_many(items: Dict[str, Any], cache_name: Optional[str]=None,
         good_keys, bad_keys = filter_good_and_bad_keys(list(items.keys()))
         log_invalid_cache_keys(stack_trace, bad_keys)
 
-        good_items = dict((key, items[key]) for key in good_keys)
+        good_items = {key: items[key] for key in good_keys}
         return cache_set_many(good_items, cache_name, timeout)
 
 def cache_delete(key: str, cache_name: Optional[str]=None) -> None:
@@ -339,16 +339,16 @@ CacheItemT = TypeVar('CacheItemT')
 CompressedItemT = TypeVar('CompressedItemT')
 
 def default_extractor(obj: CompressedItemT) -> ItemT:
-    return obj  # type: ignore # Need a type assert that ItemT=CompressedItemT
+    return obj  # type: ignore[return-value] # Need a type assert that ItemT=CompressedItemT
 
 def default_setter(obj: ItemT) -> CompressedItemT:
-    return obj  # type: ignore # Need a type assert that ItemT=CompressedItemT
+    return obj  # type: ignore[return-value] # Need a type assert that ItemT=CompressedItemT
 
 def default_id_fetcher(obj: ItemT) -> ObjKT:
-    return obj.id  # type: ignore # Need ItemT/CompressedItemT typevars to be a Django protocol
+    return obj.id  # type: ignore[attr-defined] # Need ItemT/CompressedItemT typevars to be a Django protocol
 
 def default_cache_transformer(obj: ItemT) -> CacheItemT:
-    return obj  # type: ignore # Need a type assert that ItemT=CacheItemT
+    return obj  # type: ignore[return-value] # Need a type assert that ItemT=CacheItemT
 
 # Required Arguments are as follows:
 # * object_ids: The list of object ids to look up
@@ -377,14 +377,15 @@ def generic_bulk_cached_fetch(
         # Nothing to fetch.
         return {}
 
-    cache_keys = {}  # type: Dict[ObjKT, str]
+    cache_keys: Dict[ObjKT, str] = {}
     for object_id in object_ids:
         cache_keys[object_id] = cache_key_function(object_id)
 
-    cached_objects_compressed = safe_cache_get_many([cache_keys[object_id]
-                                                     for object_id in object_ids])  # type: Dict[str, Tuple[CompressedItemT]]
+    cached_objects_compressed: Dict[str, Tuple[CompressedItemT]] = safe_cache_get_many(
+        [cache_keys[object_id] for object_id in object_ids]
+    )
 
-    cached_objects = {}  # type: Dict[str, CacheItemT]
+    cached_objects: Dict[str, CacheItemT] = {}
     for (key, val) in cached_objects_compressed.items():
         cached_objects[key] = extractor(cached_objects_compressed[key][0])
     needed_ids = [object_id for object_id in object_ids if
@@ -396,7 +397,7 @@ def generic_bulk_cached_fetch(
     else:
         db_objects = []
 
-    items_for_remote_cache = {}  # type: Dict[str, Tuple[CompressedItemT]]
+    items_for_remote_cache: Dict[str, Tuple[CompressedItemT]] = {}
     for obj in db_objects:
         key = cache_keys[id_fetcher(obj)]
         item = cache_transformer(obj)
@@ -404,24 +405,8 @@ def generic_bulk_cached_fetch(
         cached_objects[key] = item
     if len(items_for_remote_cache) > 0:
         safe_cache_set_many(items_for_remote_cache)
-    return dict((object_id, cached_objects[cache_keys[object_id]]) for object_id in object_ids
-                if cache_keys[object_id] in cached_objects)
-
-def cache(func: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
-    """Decorator which applies Django caching to a function.
-
-       Uses a key based on the function's name, filename, and
-       the repr() of its arguments."""
-
-    func_uniqifier = '%s-%s' % (func.__code__.co_filename, func.__name__)
-
-    @wraps(func)
-    def keyfunc(*args: Any, **kwargs: Any) -> str:
-        # Django complains about spaces because memcached rejects them
-        key = func_uniqifier + repr((args, kwargs))
-        return key.replace('-', '--').replace(' ', '-s')
-
-    return cache_with_key(keyfunc)(func)
+    return {object_id: cached_objects[cache_keys[object_id]] for object_id in object_ids
+            if cache_keys[object_id] in cached_objects}
 
 def preview_url_cache_key(url: str) -> str:
     return "preview_url:%s" % (make_safe_digest(url),)
@@ -441,7 +426,7 @@ def user_profile_by_email_cache_key(email: str) -> str:
     return 'user_profile_by_email:%s' % (make_safe_digest(email.strip()),)
 
 def user_profile_cache_key_id(email: str, realm_id: int) -> str:
-    return u"user_profile:%s:%s" % (make_safe_digest(email.strip()), realm_id,)
+    return "user_profile:%s:%s" % (make_safe_digest(email.strip()), realm_id,)
 
 def user_profile_cache_key(email: str, realm: 'Realm') -> str:
     return user_profile_cache_key_id(email, realm.id)
@@ -455,19 +440,19 @@ def user_profile_by_id_cache_key(user_profile_id: int) -> str:
 def user_profile_by_api_key_cache_key(api_key: str) -> str:
     return "user_profile_by_api_key:%s" % (api_key,)
 
-realm_user_dict_fields = [
+realm_user_dict_fields: List[str] = [
     'id', 'full_name', 'short_name', 'email',
     'avatar_source', 'avatar_version', 'is_active',
     'role', 'is_bot', 'realm_id', 'timezone',
     'date_joined', 'bot_owner_id', 'delivery_email',
     'bot_type'
-]  # type: List[str]
+]
 
 def realm_user_dicts_cache_key(realm_id: int) -> str:
     return "realm_user_dicts:%s" % (realm_id,)
 
 def get_realm_used_upload_space_cache_key(realm: 'Realm') -> str:
-    return u'realm_used_upload_space:%s' % (realm.id,)
+    return 'realm_used_upload_space:%s' % (realm.id,)
 
 def active_user_ids_cache_key(realm_id: int) -> str:
     return "active_user_ids:%s" % (realm_id,)
@@ -475,13 +460,15 @@ def active_user_ids_cache_key(realm_id: int) -> str:
 def active_non_guest_user_ids_cache_key(realm_id: int) -> str:
     return "active_non_guest_user_ids:%s" % (realm_id,)
 
-bot_dict_fields = ['id', 'full_name', 'short_name', 'bot_type', 'email',
-                   'is_active', 'default_sending_stream__name',
-                   'realm_id',
-                   'default_events_register_stream__name',
-                   'default_all_public_streams', 'api_key',
-                   'bot_owner__email', 'avatar_source',
-                   'avatar_version']  # type: List[str]
+bot_dict_fields: List[str] = [
+    'id', 'full_name', 'short_name', 'bot_type', 'email',
+    'is_active', 'default_sending_stream__name',
+    'realm_id',
+    'default_events_register_stream__name',
+    'default_all_public_streams', 'api_key',
+    'bot_owner__email', 'avatar_source',
+    'avatar_version',
+]
 
 def bot_dicts_in_realm_cache_key(realm: 'Realm') -> str:
     return "bot_dicts_in_realm:%s" % (realm.id,)
@@ -552,12 +539,6 @@ def flush_user_profile(sender: Any, **kwargs: Any) -> None:
     # changed the fields in the dict or become (in)active
     if user_profile.is_bot and changed(kwargs, bot_dict_fields):
         cache_delete(bot_dicts_in_realm_cache_key(user_profile.realm))
-
-    # Invalidate realm-wide alert words cache if any user in the realm has changed
-    # alert words
-    if changed(kwargs, ['alert_words']):
-        cache_delete(realm_alert_words_cache_key(user_profile.realm))
-        cache_delete(realm_alert_words_automaton_cache_key(user_profile.realm))
 
 # Called by models.py to flush various caches whenever we save
 # a Realm object.  The main tricky thing here is that Realm info is
@@ -672,7 +653,7 @@ def ignore_unhashable_lru_cache(maxsize: int=128, typed: bool=False) -> DECORATO
                 pass
 
             # Deliberately calling this function from outside of exception
-            # handler to get a more descriptive traceback. Otherise traceback
+            # handler to get a more descriptive traceback. Otherwise traceback
             # can include the exception from cached_enabled_user_function as
             # well.
             return user_function(*args, **kwargs)

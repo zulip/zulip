@@ -5,6 +5,7 @@ set_global('location', {
     host: 'example.com',
 });
 set_global('to_$', () => window_stub);
+
 zrequire('people');
 zrequire('hash_util');
 zrequire('hashchange');
@@ -24,7 +25,6 @@ set_global('overlays', {});
 set_global('settings', {});
 set_global('subs', {});
 set_global('ui_util', {});
-set_global('blueslip', global.make_zblueslip());
 
 run_test('operators_round_trip', () => {
     let operators;
@@ -62,7 +62,7 @@ run_test('operators_round_trip', () => {
         name: 'Florida, USA',
         stream_id: 987,
     };
-    stream_data.add_sub(florida_stream.name, florida_stream);
+    stream_data.add_sub(florida_stream);
     operators = [
         {operator: 'stream', operand: 'Florida, USA'},
     ];
@@ -298,9 +298,8 @@ run_test('save_narrow', () => {
         {operator: 'is', operand: 'private'},
     ];
 
-    blueslip.set_test_data('warn', 'browser does not support pushState');
+    blueslip.expect('warn', 'browser does not support pushState');
     hashchange.save_narrow(operators);
-    blueslip.clear_test_data();
 
     helper.assert_events([
         'message_viewport.stop_auto_scrolling',

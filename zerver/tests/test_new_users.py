@@ -6,7 +6,7 @@ from django.test import override_settings
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.signals import get_device_browser, get_device_os, JUST_CREATED_THRESHOLD
 from zerver.lib.actions import notify_new_user, do_change_notification_settings
-from zerver.models import Recipient, Stream, Realm, get_realm
+from zerver.models import Recipient, Stream, Realm
 from zerver.lib.initial_password import initial_password
 from unittest import mock
 from zerver.lib.timezone import get_timezone
@@ -34,13 +34,18 @@ class SendLoginEmailTest(ZulipTestCase):
             user.twenty_four_hour_time = False
             user.date_joined = mock_time - datetime.timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
             user.save()
-            password = initial_password(user.email)
+            password = initial_password(user.delivery_email)
+            login_info = dict(
+                username=user.delivery_email,
+                password=password,
+            )
             firefox_windows = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"
             user_tz = get_timezone(user.timezone)
             mock_time = datetime.datetime(year=2018, month=1, day=1, tzinfo=utc)
             reference_time = mock_time.astimezone(user_tz).strftime('%A, %B %d, %Y at %I:%M%p %Z')
             with mock.patch('zerver.signals.timezone_now', return_value=mock_time):
-                self.client_post("/accounts/login/", info={"username": user.email, "password": password},
+                self.client_post("/accounts/login/",
+                                 info=login_info,
                                  HTTP_USER_AGENT=firefox_windows)
 
             # email is sent and correct subject
@@ -55,7 +60,8 @@ class SendLoginEmailTest(ZulipTestCase):
             user.twenty_four_hour_time = True
             user.save()
             with mock.patch('zerver.signals.timezone_now', return_value=mock_time):
-                self.client_post("/accounts/login/", info={"username": user.email, "password": password},
+                self.client_post("/accounts/login/",
+                                 info=login_info,
                                  HTTP_USER_AGENT=firefox_windows)
 
             reference_time = mock_time.astimezone(user_tz).strftime('%A, %B %d, %Y at %H:%M %Z')
@@ -63,8 +69,8 @@ class SendLoginEmailTest(ZulipTestCase):
 
     def test_dont_send_login_emails_if_send_login_emails_is_false(self) -> None:
         self.assertFalse(settings.SEND_LOGIN_EMAILS)
-        email = self.example_email('hamlet')
-        self.login(email)
+        user = self.example_user('hamlet')
+        self.login_user(user)
 
         self.assertEqual(len(mail.outbox), 0)
 
@@ -98,13 +104,13 @@ class SendLoginEmailTest(ZulipTestCase):
         do_change_notification_settings(user, "enable_login_emails", False)
         self.assertFalse(user.enable_login_emails)
         with mock.patch('zerver.signals.timezone_now', return_value=mock_time):
-            self.login(user.email)
+            self.login_user(user)
         self.assertEqual(len(mail.outbox), 0)
 
         do_change_notification_settings(user, "enable_login_emails", True)
         self.assertTrue(user.enable_login_emails)
         with mock.patch('zerver.signals.timezone_now', return_value=mock_time):
-            self.login(user.email)
+            self.login_user(user)
         self.assertEqual(len(mail.outbox), 1)
 
 
@@ -171,17 +177,6 @@ class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
 
 
 class TestNotifyNewUser(ZulipTestCase):
-    def test_notify_of_new_user_internally(self) -> None:
-        new_user = self.example_user('cordelia')
-        self.make_stream('signups', get_realm(settings.SYSTEM_BOT_REALM))
-        notify_new_user(new_user, internal=True)
-
-        message = self.get_last_message()
-        actual_stream = Stream.objects.get(id=message.recipient.type_id)
-        self.assertEqual(actual_stream.name, 'signups')
-        self.assertEqual(message.recipient.type, Recipient.STREAM)
-        self.assertIn("**INTERNAL SIGNUP**", message.content)
-
     def test_notify_realm_of_new_user(self) -> None:
         new_user = self.example_user('cordelia')
         stream = self.make_stream(Realm.INITIAL_PRIVATE_STREAM_NAME)

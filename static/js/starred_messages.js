@@ -1,37 +1,37 @@
-const Dict = require('./dict').Dict;
-
-exports.ids = new Dict();
+exports.ids = new Set();
 
 exports.initialize = function () {
-    exports.ids = new Dict();
-    _.each(page_params.starred_messages, function (id) {
-        exports.ids.set(id, true);
-    });
+    exports.ids.clear();
+
+    for (const id of page_params.starred_messages) {
+        exports.ids.add(id);
+    }
+
     exports.rerender_ui();
 };
 
 exports.add = function (ids) {
-    _.each(ids, function (id) {
-        exports.ids.set(id, true);
-    });
+    for (const id of ids) {
+        exports.ids.add(id);
+    }
+
     exports.rerender_ui();
 };
 
 exports.remove = function (ids) {
-    _.each(ids, function (id) {
-        if (exports.ids.has(id)) {
-            exports.ids.del(id);
-        }
-    });
+    for (const id of ids) {
+        exports.ids.delete(id);
+    }
+
     exports.rerender_ui();
 };
 
 exports.count = function () {
-    return exports.ids.num_items();
+    return exports.ids.size;
 };
 
 exports.get_starred_msg_ids = function () {
-    return exports.ids.keys();
+    return Array.from(exports.ids);
 };
 
 exports.rerender_ui = function () {

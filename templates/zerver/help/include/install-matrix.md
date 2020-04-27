@@ -17,5 +17,5 @@
 1. Install the Matrix bridge software in your virtualenv, by running:
 
     ```
-    pip install -r zulip/integrations/matrix/requirements.txt
+    pip install -r zulip/integrations/bridge_with_matrix/requirements.txt
     ```

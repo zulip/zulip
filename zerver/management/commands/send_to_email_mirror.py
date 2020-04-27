@@ -23,7 +23,7 @@ from zerver.models import Realm, get_realm, get_stream
 # See zerver/tests/fixtures/email/1.txt for a very simple example,
 # but anything that the message_from_binary_file function
 # from the email library can parse should work.
-# Value of the TO: header doesn't matter, as it is overriden
+# Value of the TO: header doesn't matter, as it is overridden
 # by the command in order for the email to be sent to the correct stream.
 
 class Command(ZulipBaseCommand):
@@ -70,7 +70,7 @@ Example:
         message = self._parse_email_fixture(full_fixture_path)
         self._prepare_message(message, realm, stream)
 
-        data = {}  # type: Dict[str, str]
+        data: Dict[str, str] = {}
         data['recipient'] = str(message['To'])  # Need str() here to avoid mypy throwing an error
         data['msg_text'] = message.as_string()
         mirror_email_message(data)
@@ -104,7 +104,7 @@ Example:
 
         # The block below ensures that the imported email message doesn't have any recipient-like
         # headers that are inconsistent with the recipient we want (the stream address).
-        recipient_headers = ["X-Gm-Original-To", "Delivered-To",
+        recipient_headers = ["X-Gm-Original-To", "Delivered-To", "Envelope-To",
                              "Resent-To", "Resent-CC", "CC"]
         for header in recipient_headers:
             if header in message:

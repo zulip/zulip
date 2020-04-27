@@ -5,8 +5,7 @@ from zerver.lib.actions import bulk_add_subscriptions, \
     bulk_remove_subscriptions, do_deactivate_stream
 from zerver.lib.cache import cache_delete_many, to_dict_cache_key_id
 from zerver.lib.management import ZulipBaseCommand
-from zerver.models import Message, Subscription, get_stream, \
-    get_stream_recipient
+from zerver.models import Message, Subscription, get_stream
 
 
 def bulk_delete_cache_keys(message_ids_to_clear: List[int]) -> None:
@@ -34,8 +33,8 @@ class Command(ZulipBaseCommand):
         stream_to_keep = get_stream(options["stream_to_keep"], realm)
         stream_to_destroy = get_stream(options["stream_to_destroy"], realm)
 
-        recipient_to_destroy = get_stream_recipient(stream_to_destroy.id)
-        recipient_to_keep = get_stream_recipient(stream_to_keep.id)
+        recipient_to_destroy = stream_to_destroy.recipient
+        recipient_to_keep = stream_to_keep.recipient
 
         # The high-level approach here is to move all the messages to
         # the surviving stream, deactivate all the subscriptions on
@@ -54,7 +53,7 @@ class Command(ZulipBaseCommand):
         # preserve any stream settings/colors/etc. from the stream
         # being destroyed, but it's convenient.
         existing_subs = Subscription.objects.filter(recipient=recipient_to_keep)
-        users_already_subscribed = dict((sub.user_profile_id, sub.active) for sub in existing_subs)
+        users_already_subscribed = {sub.user_profile_id: sub.active for sub in existing_subs}
 
         subs_to_deactivate = Subscription.objects.filter(recipient=recipient_to_destroy, active=True)
         users_to_activate = [

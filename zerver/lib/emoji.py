@@ -11,26 +11,19 @@ from zerver.lib.upload import upload_backend
 from zerver.lib.exceptions import OrganizationAdministratorRequired
 from zerver.models import Reaction, Realm, RealmEmoji, UserProfile
 
-EMOJI_PATH = static_path("generated/emoji")
-NAME_TO_CODEPOINT_PATH = os.path.join(EMOJI_PATH, "name_to_codepoint.json")
-CODEPOINT_TO_NAME_PATH = os.path.join(EMOJI_PATH, "codepoint_to_name.json")
-EMOTICON_CONVERSIONS_PATH = os.path.join(EMOJI_PATH, "emoticon_conversions.json")
+with open(static_path("generated/emoji/emoji_codes.json")) as fp:
+    emoji_codes = ujson.load(fp)
 
-with open(NAME_TO_CODEPOINT_PATH) as fp:
-    name_to_codepoint = ujson.load(fp)
-
-with open(CODEPOINT_TO_NAME_PATH) as fp:
-    codepoint_to_name = ujson.load(fp)
-
-with open(EMOTICON_CONVERSIONS_PATH) as fp:
-    EMOTICON_CONVERSIONS = ujson.load(fp)
+name_to_codepoint = emoji_codes["name_to_codepoint"]
+codepoint_to_name = emoji_codes["codepoint_to_name"]
+EMOTICON_CONVERSIONS = emoji_codes["emoticon_conversions"]
 
 possible_emoticons = EMOTICON_CONVERSIONS.keys()
 possible_emoticon_regexes = (re.escape(emoticon) for emoticon in possible_emoticons)
 terminal_symbols = ',.;?!()\\[\\] "\'\\n\\t'  # from composebox_typeahead.js
-emoticon_regex = ('(?<![^{0}])(?P<emoticon>('.format(terminal_symbols)
+emoticon_regex = ('(?<![^{}])(?P<emoticon>('.format(terminal_symbols)
                   + ')|('.join(possible_emoticon_regexes)
-                  + '))(?![^{0}])'.format(terminal_symbols))
+                  + '))(?![^{}])'.format(terminal_symbols))
 
 # Translates emoticons to their colon syntax, e.g. `:smiley:`.
 def translate_emoticons(text: str) -> str:
@@ -104,9 +97,11 @@ def check_emoji_admin(user_profile: UserProfile, emoji_name: Optional[str]=None)
         raise JsonableError(_("Must be an organization administrator or emoji author"))
 
 def check_valid_emoji_name(emoji_name: str) -> None:
-    if re.match(r'^[0-9a-z.\-_]+(?<![.\-_])$', emoji_name):
-        return
-    raise JsonableError(_("Invalid characters in emoji name"))
+    if emoji_name:
+        if re.match(r'^[0-9a-z.\-_]+(?<![.\-_])$', emoji_name):
+            return
+        raise JsonableError(_("Invalid characters in emoji name"))
+    raise JsonableError(_("Emoji name is missing"))
 
 def get_emoji_url(emoji_file_name: str, realm_id: int) -> str:
     return upload_backend.get_emoji_url(emoji_file_name, realm_id)

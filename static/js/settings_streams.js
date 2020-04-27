@@ -1,5 +1,4 @@
 const render_admin_default_streams_list = require("../templates/admin_default_streams_list.hbs");
-const Dict = require('./dict').Dict;
 
 const meta = {
     loaded: false,
@@ -18,69 +17,47 @@ exports.maybe_disable_widgets = function () {
         .find("input:not(.search), button, select").attr("disabled", true);
 };
 
-exports.build_default_stream_table = function (streams_data) {
-    const self = {};
-
-    self.row_dict = new Dict();
-
+exports.build_default_stream_table = function () {
     const table = $("#admin_default_streams_table").expectOne();
 
-    const streams_list = list_render.create(table, streams_data, {
+    const stream_ids = stream_data.get_default_stream_ids();
+    const subs = stream_ids.map(stream_data.get_sub_by_id);
+
+    list_render.create(table, subs, {
         name: "default_streams_list",
         modifier: function (item) {
-            const row = $(render_admin_default_streams_list({
+            return render_admin_default_streams_list({
                 stream: item,
                 can_modify: page_params.is_admin,
-            }));
-            self.row_dict.set(item.stream_id, row);
-            return row;
+            });
         },
         filter: {
             element: table.closest(".settings-section").find(".search"),
-            predicate: function (item, value) {
-                return item.name.toLowerCase().indexOf(value) >= 0;
+            predicate: function (item, query) {
+                return item.name.toLowerCase().includes(query.toLowerCase());
             },
             onupdate: function () {
                 ui.reset_scrollbar(table);
             },
         },
         parent_container: $("#admin-default-streams-list").expectOne(),
-    }).init();
-
-    streams_list.sort("alphabetic", "name");
+        init_sort: ['alphabetic', 'name'],
+    });
 
     loading.destroy_indicator($('#admin_page_default_streams_loading_indicator'));
-
-    self.remove = function (stream_id) {
-        if (self.row_dict.has(stream_id)) {
-            const row = self.row_dict.get(stream_id);
-            row.remove();
-        }
-    };
-
-    return self;
-};
-
-let default_stream_table;
-
-exports.remove_default_stream = function (stream_id) {
-    if (default_stream_table) {
-        default_stream_table.remove(stream_id);
-    }
 };
 
 exports.update_default_streams_table = function () {
     if (/#*organization/.test(window.location.hash) ||
         /#*settings/.test(window.location.hash)) {
         $("#admin_default_streams_table").expectOne().find("tr.default_stream_row").remove();
-        default_stream_table = exports.build_default_stream_table(
-            page_params.realm_default_streams);
+        exports.build_default_stream_table();
     }
 };
 
-function make_stream_default(stream_name) {
+function make_stream_default(stream_id) {
     const data = {
-        stream_name: stream_name,
+        stream_id: stream_id,
     };
     const default_stream_status = $("#admin-default-stream-status");
     default_stream_status.hide();
@@ -99,9 +76,9 @@ function make_stream_default(stream_name) {
     });
 }
 
-exports.delete_default_stream = function (stream_name, default_stream_row, alert_element) {
+exports.delete_default_stream = function (stream_id, default_stream_row, alert_element) {
     channel.del({
-        url: "/json/default_streams" + "?" + $.param({ stream_name: stream_name }),
+        url: "/json/default_streams" + "?" + $.param({ stream_id: stream_id }),
         error: function (xhr) {
             ui_report.generic_row_button_error(xhr, alert_element);
         },
@@ -126,7 +103,7 @@ exports.build_page = function () {
             e.preventDefault();
             e.stopPropagation();
             const default_stream_input = $(".create_default_stream");
-            make_stream_default(default_stream_input.val());
+            make_stream_default(stream_data.get_stream_id(default_stream_input.val()));
             default_stream_input[0].value = "";
         }
     });
@@ -140,24 +117,21 @@ exports.build_page = function () {
         highlighter: function (item) {
             return typeahead_helper.render_typeahead_item({ primary: item });
         },
-        updater: function (stream_name) {
-            make_stream_default(stream_name);
-        },
     });
 
     $(".default-stream-form").on("click", "#do_submit_stream", function (e) {
         e.preventDefault();
         e.stopPropagation();
         const default_stream_input = $(".create_default_stream");
-        make_stream_default(default_stream_input.val());
+        make_stream_default(stream_data.get_stream_id(default_stream_input.val()));
         // Clear value inside input box
         default_stream_input[0].value = "";
     });
 
     $("body").on("click", ".default_stream_row .remove-default-stream", function (e) {
         const row = $(this).closest(".default_stream_row");
-        const stream_name = row.attr("id");
-        exports.delete_default_stream(stream_name, row, $(e.target));
+        const stream_id = parseInt(row.attr("data-stream-id"), 10);
+        exports.delete_default_stream(stream_id, row, $(e.target));
     });
 };
 

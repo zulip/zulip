@@ -84,7 +84,7 @@ class TabbedSectionsGenerator(Extension):
 
 class TabbedSectionsPreprocessor(Preprocessor):
     def __init__(self, md: markdown.Markdown, config: Dict[str, Any]) -> None:
-        super(TabbedSectionsPreprocessor, self).__init__(md)
+        super().__init__(md)
 
     def run(self, lines: List[str]) -> List[str]:
         tab_section = self.parse_tabs(lines)
@@ -138,7 +138,7 @@ class TabbedSectionsPreprocessor(Preprocessor):
         return NAV_BAR_TEMPLATE.format(tabs='\n'.join(li_elements))
 
     def parse_tabs(self, lines: List[str]) -> Optional[Dict[str, Any]]:
-        block = {}  # type: Dict[str, Any]
+        block: Dict[str, Any] = {}
         for index, line in enumerate(lines):
             start_match = START_TABBED_SECTION_REGEX.search(line)
             if start_match:

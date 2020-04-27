@@ -12,7 +12,7 @@
  * assert.notEqual().
  *
  * There is a default _output_formatter used to create the
- * AssertionError error message; this function can be overriden using
+ * AssertionError error message; this function can be overridden using
  * the exported setFormatter() function below.
  *
  * The HTML passed to the _output_formatter is not the original HTML, but
@@ -58,10 +58,8 @@ class MarkdownComparer {
         if (node1.content.childNodes.length !== node2.content.childNodes.length) {
             return false;
         }
-        return _.reduce(
-            _.zip(node1.content.childNodes, node2.content.childNodes),
-            (prev, nodePair) => { return prev && nodePair[0].isEqualNode(nodePair[1]); },
-            true
+        return _.zip(node1.content.childNodes, node2.content.childNodes).every(([child1, child2]) =>
+            child1.isEqualNode(child2)
         );
     }
 
@@ -69,9 +67,10 @@ class MarkdownComparer {
         // Sorts every attribute in every element by name.  Ensures consistent diff HTML output
 
         const attributeList = [];
-        _.forEach(node.attributes, (attr) => {
+
+        for (const attr of node.attributes) {
             attributeList.push(attr);
-        });
+        }
 
         // If put in above forEach loop, causes issues (possible nodes.attribute invalidation?)
         attributeList.forEach((attr) => {node.removeAttribute(attr.name);});
@@ -93,14 +92,14 @@ class MarkdownComparer {
         });
 
         if (node.hasChildNodes()) {
-            _.forEach(node.children, (childNode) => {
+            for (const childNode of node.children) {
                 this._reorderAttributes(childNode);
-            });
+            }
         }
         if (node.content && node.content.hasChildNodes()) {
-            _.forEach(node.content.children, (childNode) => {
+            for (const childNode of node.content.children) {
                 this._reorderAttributes(childNode);
-            });
+            }
         }
         return node;
     }

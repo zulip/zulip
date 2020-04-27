@@ -1,21 +1,24 @@
-const Dict = require('./dict').Dict;
 const FoldDict = require('./fold_dict').FoldDict;
 
-let muted_topics = new Dict();
+const muted_topics = new Map();
 
-exports.add_muted_topic = function (stream_id, topic) {
+exports.add_muted_topic = function (stream_id, topic, date_muted) {
     let sub_dict = muted_topics.get(stream_id);
     if (!sub_dict) {
         sub_dict = new FoldDict();
         muted_topics.set(stream_id, sub_dict);
     }
-    sub_dict.set(topic, true);
+    let time = date_muted * 1000;
+    if (!date_muted) {
+        time = Date.now();
+    }
+    sub_dict.set(topic, time);
 };
 
 exports.remove_muted_topic = function (stream_id, topic) {
     const sub_dict = muted_topics.get(stream_id);
     if (sub_dict) {
-        sub_dict.del(topic);
+        sub_dict.delete(topic);
     }
 };
 
@@ -29,30 +32,40 @@ exports.is_topic_muted = function (stream_id, topic) {
 
 exports.get_muted_topics = function () {
     const topics = [];
-    muted_topics.each(function (sub_dict, stream_id) {
-        _.each(sub_dict.keys(), function (topic) {
-            topics.push([stream_id, topic]);
-        });
-    });
+    for (const [stream_id, sub_dict] of muted_topics) {
+        const stream = stream_data.maybe_get_stream_name(stream_id);
+        for (const topic of sub_dict.keys()) {
+            const date_muted = sub_dict.get(topic);
+            const date_muted_str = timerender.render_now(new XDate(date_muted)).time_str;
+            topics.push({
+                stream_id: stream_id,
+                stream: stream,
+                topic: topic,
+                date_muted: date_muted,
+                date_muted_str: date_muted_str,
+            });
+        }
+    }
     return topics;
 };
 
 exports.set_muted_topics = function (tuples) {
-    muted_topics = new Dict();
+    muted_topics.clear();
 
-    _.each(tuples, function (tuple) {
+    for (const tuple of tuples) {
         const stream_name = tuple[0];
         const topic = tuple[1];
+        const date_muted = tuple[2];
 
         const stream_id = stream_data.get_stream_id(stream_name);
 
         if (!stream_id) {
             blueslip.warn('Unknown stream in set_muted_topics: ' + stream_name);
-            return;
+            continue;
         }
 
-        exports.add_muted_topic(stream_id, topic);
-    });
+        exports.add_muted_topic(stream_id, topic, date_muted);
+    }
 };
 
 exports.initialize = function () {

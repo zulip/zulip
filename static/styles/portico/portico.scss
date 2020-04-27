@@ -1,5 +1,14 @@
 body {
     background-color: hsl(0, 0%, 98%);
+    font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
+    line-height: 150%;
+    height: 100%;
+    font-weight: 300;
+    font-size: 17px;
+}
+
+html {
+    height: 100%;
 }
 
 .noscroll {
@@ -54,13 +63,15 @@ body {
     z-index: 100;
 }
 
-.navbar.footer .nav > li {
-    line-height: 56px;
-}
+.navbar.footer .nav {
+    > li {
+        line-height: 56px;
 
-.navbar.footer .nav > li > a {
-    padding-top: 0;
-    padding-bottom: 0;
+        > a {
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+    }
 }
 
 .push {
@@ -71,27 +82,19 @@ body {
     display: inline-block;
 }
 
-html {
-    height: 100%;
-}
-
-body {
-    font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
-    line-height: 150%;
-    height: 100%;
-    font-weight: 300;
-    font-size: 17px;
-}
-
 /* The API tabbed content tends to have a lot of code blocks,
    which look nicer against a different background */
-.api-center .code-section .blocks {
-    background-color: hsl(0, 0%, 98%);
-}
+.api-center .code-section {
+    .blocks {
+        background-color: hsl(0, 0%, 98%);
+    }
 
-.api-center .code-section ul.nav li.active {
-    background-color: hsl(0, 0%, 98%);
-    border-bottom: 1px solid hsl(0, 0%, 98%);
+    ul.nav {
+        li.active {
+            background-color: hsl(0, 0%, 98%);
+            border-bottom: 1px solid hsl(0, 0%, 98%);
+        }
+    }
 }
 
 /* The Help Center tabbed content tends to be a lot short sentences.
@@ -117,11 +120,6 @@ body {
     border-radius: 5px;
 }
 
-.help .app-main {
-    padding: 0;
-    margin-top: 59px;
-}
-
 .app.help {
     display: inline-flex;
 
@@ -129,6 +127,15 @@ body {
     overflow: auto;
 
     color: hsl(0, 0%, 27%);
+
+    .hamburger {
+        display: none;
+    }
+}
+
+.help .app-main {
+    padding: 0;
+    margin-top: 59px;
 }
 
 /* Markdown processor generates lots of spurious <p></p> */
@@ -155,12 +162,8 @@ body {
     padding: 10px 20px;
 }
 
-.help .sidebar h1,
-.help .sidebar h2 {
-    font-weight: 400;
-}
-
 .help .sidebar h1 {
+    font-weight: 400;
     font-size: 1.25em;
     line-height: 1.5;
     margin-bottom: 0px;
@@ -176,7 +179,23 @@ body {
     border-bottom: none;
 }
 
+
+.help .sidebar h1.home-link {
+    font-size: 1em;
+    margin-bottom: 17px;
+}
+
+.help .sidebar h1.home-link a::before {
+    display: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+    font-size: inherit;
+
+    content: "\f0d9";
+    margin-right: 10px;
+}
+
 .help .sidebar h2 {
+    font-weight: 400;
     font-size: 1.2em;
     line-height: 1.05;
     margin-bottom: 5px;
@@ -196,20 +215,6 @@ body {
     float: right;
 
     opacity: 0.5;
-}
-
-.help .sidebar h1.home-link {
-    font-size: 1em;
-    margin-bottom: 17px;
-}
-
-.help .sidebar h1.home-link a::before {
-    display: inline-block;
-    font: normal normal normal 14px/1 FontAwesome;
-    font-size: inherit;
-
-    content: "\f0d9";
-    margin-right: 10px;
 }
 
 .help .sidebar ul {
@@ -255,10 +260,6 @@ body {
 .help .sidebar a:focus,
 .help .sidebar a:visited {
     outline: none;
-}
-
-.app.help .hamburger {
-    display: none;
 }
 
 .help-center ol,
@@ -1303,10 +1304,14 @@ input.new-organization-button {
 }
 
 .error_page {
-    padding: 20px 0px;
     min-height: calc(100vh - 290px);
+    height: 100%;
     background-color: hsl(163, 42%, 85%);
     font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
+}
+
+.error_page .container {
+    padding: 20px 0px;
 }
 
 .error_page .row-fluid {
@@ -1356,61 +1361,57 @@ input.new-organization-button {
 }
 
 @media (max-width: 800px) {
-    .app.help .markdown {
-        width: 100vw;
-    }
+    .app.help {
+        .markdown {
+            width: 100vw;
 
-    .app.help .markdown .content {
-        max-width: none;
-        margin-left: 50px;
-    }
-
-    .app.help .hamburger {
-        display: block;
-        position: fixed;
-        top: 70px;
-        left: 9px;
-        fill: hsl(0, 0%, 100%);
-        z-index: 2;
-
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-
-    .app.help .sidebar {
-        position: fixed;
-        top: 59px;
-        right: calc(100vw - 50px);
-
-        width: 100%;
-        min-width: unset;
-        height: calc(100vh - 59px);
-
-        pointer-events: none;
-        overflow: hidden;
-        transform: translateX(0);
-        transition: all 0.3s ease;
-    }
-
-    .help .sidebar .content:not(.show) {
-        visibility: hidden;
-    }
-
-    .app.help .sidebar.show {
-        pointer-events: initial;
-        transform: translateX(calc(100% - 50px));
-        overflow: auto;
-        .content {
-            visibility: visible;
+            .content {
+                max-width: none;
+                margin-left: 50px;
+            }
         }
-    }
 
-    .app.help .sidebar.show + .hamburger {
-        transform: translateX(calc(100vw - 50px));
-    }
+        .hamburger {
+            display: block;
+            position: fixed;
+            top: 70px;
+            left: 9px;
+            fill: hsl(0, 0%, 100%);
+            z-index: 2;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
 
-    .app.help .sidebar.show ~ .markdown {
-        filter: brightness(0.7);
+        .sidebar {
+            position: fixed;
+            top: 59px;
+            right: calc(100vw - 50px);
+            width: 100%;
+            min-width: unset;
+            height: calc(100vh - 59px);
+            pointer-events: none;
+            overflow: hidden;
+            transform: translateX(0);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar.show {
+            pointer-events: initial;
+            transform: translateX(calc(100% - 50px));
+            overflow: auto;
+
+            .content {
+                visibility: visible;
+            }
+
+            + .hamburger {
+                transform: translateX(calc(100vw - 50px));
+            }
+
+            ~ .markdown {
+                filter: brightness(0.7);
+            }
+        }
     }
 
     .app-main,
@@ -1420,6 +1421,10 @@ input.new-organization-button {
 
     .app-main {
         padding: 0;
+    }
+
+    .help .sidebar .content:not(.show) {
+        visibility: hidden;
     }
 
     .help .sidebar:not(.show) a.highlighted {
@@ -1498,17 +1503,19 @@ input.new-organization-button {
 }
 
 @media (max-width: 500px) {
+    .app.help {
+        .sidebar {
+            top: 39px;
+            height: calc(100vh - 39px);
+        }
+
+        .hamburger {
+            top: 50px;
+        }
+    }
+
     .help .app-main {
         margin-top: 39px;
-    }
-
-    .app.help .sidebar {
-        top: 39px;
-        height: calc(100vh - 39px);
-    }
-
-    .app.help .hamburger {
-        top: 50px;
     }
 
     .help .markdown {
@@ -1710,12 +1717,43 @@ input.new-organization-button {
     padding-right: 10px;
 }
 
-.table .json-api-example {
-    width: fit-content;
-    max-width: 300px;
-    word-wrap: break-word;
+.api-argument {
+    .api-argument-name {
+        font-family: monospace;
+    }
+
+    .api-argument-example-label {
+        font-style: italic;
+    }
+
+    .api-argument-required {
+        text-transform: uppercase;
+        font-weight: 600;
+        font-size: 12px;
+        color: hsl(14, 75%, 60%);
+    }
+    .api-argument-optional {
+        text-transform: uppercase;
+        font-weight: 400;
+        font-size: 12px;
+        color: hsl(0, 0%, 47%);
+    }
 }
 
-.table .json-api-example code {
-    white-space: pre-wrap;
+.desktop-redirect-box {
+    text-align: center;
+}
+
+.desktop-redirect-links {
+    margin-top: 20px;
+    text-decoration: underline;
+    color: hsl(0, 0%, 50%);
+}
+
+.desktop-redirect-image {
+    margin-bottom: 20px;
+}
+
+.unsupported_browser_page {
+    padding-bottom: 80px;
 }

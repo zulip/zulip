@@ -81,9 +81,9 @@ def gather_hot_conversations(user_profile: UserProfile, messages: List[Message])
     # Returns a list of dictionaries containing the templating
     # information for each hot conversation.
 
-    conversation_length = defaultdict(int)  # type: Dict[Tuple[int, str], int]
-    conversation_messages = defaultdict(list)  # type: Dict[Tuple[int, str], List[Message]]
-    conversation_diversity = defaultdict(set)  # type: Dict[Tuple[int, str], Set[str]]
+    conversation_length: Dict[Tuple[int, str], int] = defaultdict(int)
+    conversation_messages: Dict[Tuple[int, str], List[Message]] = defaultdict(list)
+    conversation_diversity: Dict[Tuple[int, str], Set[str]] = defaultdict(set)
     for message in messages:
         key = (message.recipient.type_id,
                message.topic_name())
@@ -212,7 +212,8 @@ def handle_digest_email(user_profile_id: int, cutoff: float,
         logger.info("Sending digest email for user %s" % (user_profile.id,))
         # Send now, as a ScheduledEmail
         send_future_email('zerver/emails/digest', user_profile.realm, to_user_ids=[user_profile.id],
-                          from_name="Zulip Digest", from_address=FromAddress.NOREPLY, context=context)
+                          from_name="Zulip Digest", from_address=FromAddress.no_reply_placeholder,
+                          context=context)
     return None
 
 def exclude_subscription_modified_streams(user_profile: UserProfile,

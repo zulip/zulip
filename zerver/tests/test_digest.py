@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import datetime
 import mock
 import time
@@ -9,9 +7,10 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import one_click_unsubscribe_link
-from zerver.lib.actions import create_stream_if_needed, do_create_user
+from zerver.lib.actions import do_create_user
 from zerver.lib.digest import gather_new_streams, handle_digest_email, enqueue_emails, \
     exclude_subscription_modified_streams
+from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
 from zerver.models import get_client, get_realm, flush_per_request_caches, \
@@ -140,7 +139,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         RealmAuditLog.objects.all().delete()
 
         realm = othello.realm
-        stream_names = self.get_streams(othello.email, realm)
+        stream_names = self.get_streams(othello)
         stream_ids = {name: get_stream(name, realm).id for name in stream_names}
 
         # Unsubscribe and subscribe from a stream
@@ -271,15 +270,15 @@ class TestDigestEmailMessages(ZulipTestCase):
         sending_client = get_client(client)
         message_ids = []  # List[int]
         for sender_name in senders:
-            email = self.example_email(sender_name)
-            content = 'some content for {} from {}'.format(stream, email)
-            message_id = self.send_stream_message(email, stream, content)
+            sender = self.example_user(sender_name)
+            content = 'some content for {} from {}'.format(stream, sender_name)
+            message_id = self.send_stream_message(sender, stream, content)
             message_ids.append(message_id)
         Message.objects.filter(id__in=message_ids).update(sending_client=sending_client)
         return message_ids
 
 class TestDigestContentInBrowser(ZulipTestCase):
     def test_get_digest_content_in_browser(self) -> None:
-        self.login(self.example_email('hamlet'))
+        self.login('hamlet')
         result = self.client_get("/digest/")
         self.assert_in_success_response(["Click here to log in to Zulip and catch up."], result)

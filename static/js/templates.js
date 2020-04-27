@@ -1,3 +1,5 @@
+const util = require("./util");
+
 // Below, we register Zulip-specific extensions to the handlebars API.
 //
 // IMPORTANT: When adding a new handlebars helper, update the
@@ -16,31 +18,31 @@ Handlebars.registerHelper('plural', function (condition, one, other) {
 
 Handlebars.registerHelper({
     eq: function (a, b) { return a === b; },
-    and: function () {
-        // last argument is Handlebars options
-        if (arguments.length < 2) {
+    and: function (...args) {
+        args.pop(); // Handlebars options
+        if (args.length === 0) {
             return true;
         }
-        let i;
-        for (i = 0; i < arguments.length - 2; i += 1) {
-            if (!arguments[i] || Handlebars.Utils.isEmpty(arguments[i])) {
-                return arguments[i];
+        const last = args.pop();
+        for (const arg of args) {
+            if (!arg || Handlebars.Utils.isEmpty(arg)) {
+                return arg;
             }
         }
-        return arguments[i];
+        return last;
     },
-    or: function () {
-        // last argument is Handlebars options
-        if (arguments.length < 2) {
+    or: function (...args) {
+        args.pop(); // Handlebars options
+        if (args.length === 0) {
             return false;
         }
-        let i;
-        for (i = 0; i < arguments.length - 2; i += 1) {
-            if (arguments[i] && !Handlebars.Utils.isEmpty(arguments[i])) {
-                return arguments[i];
+        const last = args.pop();
+        for (const arg of args) {
+            if (arg && !Handlebars.Utils.isEmpty(arg)) {
+                return arg;
             }
         }
-        return arguments[i];
+        return last;
     },
     not: function (a) { return !a || Handlebars.Utils.isEmpty(a); },
 });
@@ -86,5 +88,10 @@ Handlebars.registerHelper('tr', function (context, options) {
     const result = i18n.t(options.fn(context).trim().split("\n").map(s => s.trim()).join(" "), context);
     return new Handlebars.SafeString(result);
 });
+
+Handlebars.registerHelper(
+    "rendered_markdown",
+    content => new Handlebars.SafeString(util.clean_user_content_links(content))
+);
 
 window.templates = exports;

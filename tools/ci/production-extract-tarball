@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -e
+set -x
+
+ZULIP_PATH=~/zulip
+tar -xf /tmp/zulip-server-test.tar.gz -C "$ZULIP_PATH" --strip-components=1

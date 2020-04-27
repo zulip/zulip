@@ -1,9 +1,9 @@
+
 zrequire('Filter', 'js/filter');
 zrequire('MessageListData', 'js/message_list_data');
 zrequire('narrow_state');
 zrequire('narrow');
 zrequire('stream_data');
-zrequire('util');
 
 set_global('message_list', {});
 set_global('muting', {
@@ -18,11 +18,11 @@ function test_with(fixture) {
     // invarariant that the first unread message we find
     // does indeed satisfy our filter.
     if (fixture.unread_info.flavor === 'found') {
-        _.each(fixture.all_messages, (msg) => {
+        for (const msg of fixture.all_messages) {
             if (msg.id === fixture.unread_info.msg_id) {
                 assert(filter.predicate()(msg));
             }
-        });
+        }
     }
 
     const muting_enabled = narrow_state.muting_enabled();
@@ -65,7 +65,7 @@ function test_with(fixture) {
     assert.deepEqual(id_info, fixture.expected_id_info);
 
     const msgs = msg_data.all_messages();
-    const msg_ids = _.pluck(msgs, 'id');
+    const msg_ids = msgs.map(message => message.id);
     assert.deepEqual(msg_ids, fixture.expected_msg_ids);
 }
 

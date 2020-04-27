@@ -6,6 +6,7 @@
 # effect on the very next upgrade.
 import argparse
 import configparser
+import glob
 import hashlib
 import subprocess
 import os
@@ -21,13 +22,33 @@ os.environ["LANG"] = "en_US.UTF-8"
 os.environ["LANGUAGE"] = "en_US.UTF-8"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, su_to_zulip, assert_running_as_root
+from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, su_to_zulip, \
+    assert_running_as_root, parse_os_release
 
 assert_running_as_root()
 
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s upgrade-zulip-stage-2: %(message)s",
                     level=logging.INFO)
+
+# Do not upgrade on unsupported OS versions.
+UNSUPPORTED_DISTROS = [
+    ('ubuntu', '14.04'),
+    ('ubuntu', '16.04'),
+    ('debian', '9'),
+]
+distro_info = parse_os_release()
+vendor = distro_info['ID']
+os_version = distro_info['VERSION_ID']
+
+if (vendor, os_version) in UNSUPPORTED_DISTROS:
+    # Link to documentation for how to correctly upgrade the OS.
+    logging.critical("Unsupported platform: {} {}".format(vendor, os_version))
+    logging.info("Sorry! The support for your OS has been discontinued.\n"
+                 "Please upgrade your OS to a supported release first.\n"
+                 "See https://zulip.readthedocs.io/en/latest/production/"
+                 "upgrade-or-modify.html#upgrading-the-operating-system")
+    sys.exit(1)
 
 # make sure we have appropriate file permissions
 os.umask(0o22)
@@ -57,15 +78,19 @@ try:
 except (configparser.NoSectionError, configparser.NoOptionError):
     tornado_processes = 1
 
-# Handle issues around upstart on Ubuntu Xenial
-subprocess.check_call(["./scripts/lib/check-upstart"])
+if glob.glob("/usr/share/postgresql/*/extension/tsearch_extras.control"):
+    # Remove legacy tsearch_extras package references
+    subprocess.check_call([
+        "su", "postgres", "-c",
+        'psql -v ON_ERROR_STOP=1 zulip -c "DROP EXTENSION IF EXISTS tsearch_extras;"'])
+    subprocess.check_call(["apt-get", "remove", "-y", "postgresql-*-tsearch-extras"])
 
 if not args.skip_puppet:
     logging.info("Upgrading system packages...")
     subprocess.check_call(["apt-get", "update"])
     subprocess.check_call(["apt-get", "-y", "upgrade"])
 
-if not os.path.exists((os.path.join(deploy_path, "zproject/prod_settings.py"))):
+if not os.path.exists(os.path.join(deploy_path, "zproject/prod_settings.py")):
     # This is normally done in unpack-zulip, but for upgrading from
     # zulip<1.4.0, we need to do it.  See discussion in commit 586b23637.
     os.symlink("/etc/zulip/settings.py",
@@ -117,7 +142,7 @@ elif args.from_git:
     # update-prod-static with the git upgrade process.  But it'll fail
     # safely; this seems like a worthwhile tradeoff to minimize downtime.
     logging.info("Building static assets...")
-    subprocess.check_call(["./tools/update-prod-static", "--authors-not-required", "--prev-deploy",
+    subprocess.check_call(["./tools/update-prod-static", "--prev-deploy",
                            os.path.join(DEPLOYMENTS_DIR, 'current')],
                           preexec_fn=su_to_zulip)
     logging.info("Caching zulip git version...")

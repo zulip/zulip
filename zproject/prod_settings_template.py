@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 ################################################################
 # Zulip Server settings.
@@ -42,7 +42,7 @@ EXTERNAL_HOST = 'zulip.example.com'
 # representing the host/domain names that your users can enter in
 # their browsers to access Zulip.  This is a security measure; for
 # details, see the Django documentation:
-# https://docs.djangoproject.com/en/1.11/ref/settings/#allowed-hosts
+# https://docs.djangoproject.com/en/2.2/ref/settings/#allowed-hosts
 #
 # Zulip automatically adds to this list 'localhost', '127.0.0.1', and
 # patterns representing EXTERNAL_HOST and subdomains of it.  If you are
@@ -119,6 +119,7 @@ AUTHENTICATION_BACKENDS = (
     'zproject.backends.EmailAuthBackend',  # Email and password; just requires SMTP setup
     # 'zproject.backends.GoogleAuthBackend',  # Google auth, setup below
     # 'zproject.backends.GitHubAuthBackend',  # GitHub auth, setup below
+    # 'zproject.backends.GitLabAuthBackend',  # GitLab auth, setup below
     # 'zproject.backends.AzureADAuthBackend',  # Microsoft Azure Active Directory auth, setup below
     # 'zproject.backends.SAMLAuthBackend', # SAML, setup below
     # 'zproject.backends.ZulipLDAPAuthBackend',  # LDAP, setup below
@@ -147,6 +148,27 @@ AUTHENTICATION_BACKENDS = (
 # Use the client ID as `SOCIAL_AUTH_GOOGLE_KEY` here, and put the
 # client secret in zulip-secrets.conf as `social_auth_google_secret`.
 #SOCIAL_AUTH_GOOGLE_KEY = <your client ID from Google>
+
+#######
+# GitLab OAuth.
+#
+# To set up GitLab authentication, you'll need to do the following:
+#
+# (1) Register an OAuth application with GitLab at
+#       https://gitlab.com/oauth/applications
+#     Or the equivalent URL on a self-hosted GitLab server.
+# (2) Fill in the "Redirect URI" with a value like
+#       http://zulip.example.com/complete/gitlab/
+# based on your value for EXTERNAL_HOST.
+# (3) For "scopes", select only "read_user", and create the application.
+# (4) You'll end up on a page with the Application ID and Secret for
+# your new GitLab Application. Use the Application ID as
+# `SOCIAL_AUTH_GITLAB_KEY` here, and put the Secret in
+# zulip-secrets.conf as `social_auth_gitlab_secret`.
+# (5) If you are self-hosting GitLab, provide the URL of the
+# GitLab server as SOCIAL_AUTH_GITLAB_API_URL here.
+#SOCIAL_AUTH_GITLAB_KEY = <your Application ID from GitLab>
+#SOCIAL_AUTH_GITLAB_API_URL = https://gitlab.example.com
 
 ########
 # GitHub OAuth.
@@ -205,7 +227,7 @@ SOCIAL_AUTH_SAML_ORG_INFO = {
 }
 SOCIAL_AUTH_SAML_ENABLED_IDPS = {
     # The fields are explained in detail here:
-    #     https://python-social-auth-docs.readthedocs.io/en/latest/backends/saml.html
+    #     https://python-social-auth.readthedocs.io/en/latest/backends/saml.html
     "idp_name": {
         # Configure entity_id and url according to information provided to you by your IdP:
         "entity_id": "https://idp.testshib.org/idp/shibboleth",
@@ -232,6 +254,10 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS = {
         # the left end of the login/register buttons for this IDP.
         # The default of None results in a text-only button.
         # "display_icon": "/path/to/icon.png",
+
+        # If you want this IdP to only be enabled for authentication
+        # to certain subdomains, uncomment and edit the setting below.
+        # "limit_to_subdomains": ["subdomain1", "subdomain2"],
     }
 }
 
@@ -240,7 +266,7 @@ SOCIAL_AUTH_SAML_SECURITY_CONFIG = {
     # set this to True to enable signing of SAMLRequests using the
     # private key.
     "authnRequestsSigned": False,
-}
+}  # type: Dict[str, Any]
 
 # These SAML settings you likely won't need to modify.
 SOCIAL_AUTH_SAML_SP_ENTITY_ID = 'https://' + EXTERNAL_HOST
@@ -545,7 +571,7 @@ AUTH_LDAP_USER_ATTR_MAP = {
 # Miscellaneous settings.
 
 # The default CAMO_URI of '/external_content/' is served by the camo
-# setup in the default Voyager nginx configuration.  Setting CAMO_URI
+# setup in the default Zulip nginx configuration.  Setting CAMO_URI
 # to '' will disable the Camo integration.
 CAMO_URI = '/external_content/'
 

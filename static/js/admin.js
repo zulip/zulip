@@ -1,3 +1,5 @@
+const settings_config = require("./settings_config");
+const settings_data = require("./settings_data");
 const render_admin_tab = require('../templates/admin_tab.hbs');
 
 const admin_settings_label = {
@@ -14,6 +16,7 @@ const admin_settings_label = {
     realm_message_content_allowed_in_email_notifications:
         i18n.t("Allow message content in missed message emails"),
     realm_digest_emails_enabled: i18n.t("Send weekly digest emails to inactive users"),
+    realm_default_code_block_language: i18n.t("Default language for code blocks:"),
 
     // Organization permissions
     realm_name_changes_disabled: i18n.t("Prevent users from changing their name"),
@@ -31,7 +34,7 @@ exports.build_page = function () {
         server_inline_image_preview: page_params.server_inline_image_preview,
         realm_inline_url_embed_preview: page_params.realm_inline_url_embed_preview,
         server_inline_url_embed_preview: page_params.server_inline_url_embed_preview,
-        realm_default_twenty_four_hour_time_values: settings_display.twenty_four_hour_time_values,
+        realm_default_twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
         realm_authentication_methods: page_params.realm_authentication_methods,
         realm_create_stream_policy: page_params.realm_create_stream_policy,
         realm_invite_to_stream_policy: page_params.realm_invite_to_stream_policy,
@@ -70,7 +73,7 @@ exports.build_page = function () {
         settings_send_digest_emails: page_params.settings_send_digest_emails,
         realm_digest_emails_enabled: page_params.realm_digest_emails_enabled,
         realm_digest_weekday: page_params.realm_digest_weekday,
-        show_email: settings_org.show_email(),
+        show_email: settings_data.show_email(),
         development: page_params.development_environment,
         plan_includes_wide_organization_logo: page_params.plan_includes_wide_organization_logo,
         upgrade_text_for_wide_organization_logo:
@@ -79,10 +82,11 @@ exports.build_page = function () {
     };
 
     options.admin_settings_label = admin_settings_label;
-    options.msg_edit_limit_dropdown_values = settings_org.msg_edit_limit_dropdown_values;
-    options.msg_delete_limit_dropdown_values = settings_org.msg_delete_limit_dropdown_values;
+    options.msg_edit_limit_dropdown_values = settings_config.msg_edit_limit_dropdown_values;
+    options.msg_delete_limit_dropdown_values = settings_config.msg_delete_limit_dropdown_values;
     options.bot_creation_policy_values = settings_bots.bot_creation_policy_values;
-    options.email_address_visibility_values = settings_org.email_address_visibility_values;
+    options.email_address_visibility_values = settings_config.email_address_visibility_values;
+    Object.assign(options, settings_org.get_organization_settings_options());
 
     if (options.realm_logo_source !== 'D' && options.realm_night_logo_source === 'D') {
         // If no night mode logo is specified but a day mode one is,

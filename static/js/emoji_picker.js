@@ -1,3 +1,6 @@
+const emoji_codes = require("../generated/emoji/emoji_codes.json");
+const typeahead = require("../shared/js/typeahead");
+
 const render_emoji_popover = require('../templates/emoji_popover.hbs');
 const render_emoji_popover_content = require('../templates/emoji_popover_content.hbs');
 const render_emoji_popover_search_results = require('../templates/emoji_popover_search_results.hbs');
@@ -27,8 +30,9 @@ let edit_message_id = null;
 
 function get_all_emoji_categories() {
     return [
-        { name: "Popular", icon: "fa-thumbs-o-up" },
-        { name: "Smileys & People", icon: "fa-smile-o" },
+        { name: "Popular", icon: "fa-star-o" },
+        { name: "Smileys & Emotion", icon: "fa-smile-o" },
+        { name: "People & Body", icon: "fa-thumbs-o-up" },
         { name: "Animals & Nature", icon: "fa-leaf" },
         { name: "Food & Drink", icon: "fa-cutlery" },
         { name: "Activities", icon: "fa-soccer-ball-o" },
@@ -97,47 +101,43 @@ function show_emoji_catalog() {
 }
 
 exports.generate_emoji_picker_data = function (realm_emojis) {
-    exports.complete_emoji_catalog = {};
-    exports.complete_emoji_catalog.Custom = [];
-    _.each(realm_emojis, function (realm_emoji, realm_emoji_name) {
-        exports.complete_emoji_catalog.Custom.push(emoji.emojis_by_name[realm_emoji_name]);
-    });
+    const catalog = new Map();
+    catalog.set("Custom", Array.from(realm_emojis.keys(), realm_emoji_name =>
+        emoji.emojis_by_name.get(realm_emoji_name)
+    ));
 
-    _.each(emoji_codes.emoji_catalog, function (codepoints, category) {
-        exports.complete_emoji_catalog[category] = [];
-        _.each(codepoints, function (codepoint) {
+    for (const [category, codepoints] of Object.entries(emoji_codes.emoji_catalog)) {
+        const emojis = [];
+        for (const codepoint of codepoints) {
             if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
-                const emoji_name = emoji_codes.codepoint_to_name[codepoint];
-                if (emoji.emojis_by_name.hasOwnProperty(emoji_name) &&
-                    emoji.emojis_by_name[emoji_name].is_realm_emoji !== true) {
-                    exports.complete_emoji_catalog[category].push(
-                        emoji.emojis_by_name[emoji_name]
-                    );
+                const emoji_dict = emoji.emojis_by_name.get(
+                    emoji_codes.codepoint_to_name[codepoint]
+                );
+                if (emoji_dict !== undefined && emoji_dict.is_realm_emoji !== true) {
+                    emojis.push(emoji_dict);
                 }
             }
-        });
-    });
+        }
+        catalog.set(category, emojis);
+    }
 
-    exports.complete_emoji_catalog.Popular = [];
-    _.each(emoji.frequently_used_emojis_list, function (codepoint) {
+    const popular = [];
+    for (const codepoint of typeahead.popular_emojis) {
         if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
-            const emoji_name = emoji_codes.codepoint_to_name[codepoint];
-            if (emoji.emojis_by_name.hasOwnProperty(emoji_name)) {
-                exports.complete_emoji_catalog.Popular.push(emoji.emojis_by_name[emoji_name]);
+            const emoji_dict = emoji.emojis_by_name.get(emoji_codes.codepoint_to_name[codepoint]);
+            if (emoji_dict !== undefined) {
+                popular.push(emoji_dict);
             }
         }
-    });
+    }
+    catalog.set("Popular", popular);
 
-    const categories = get_all_emoji_categories().filter(function (category) {
-        return !!exports.complete_emoji_catalog[category.name];
-    });
-    exports.complete_emoji_catalog = categories.map(function (category) {
-        return {
-            name: category.name,
-            icon: category.icon,
-            emojis: exports.complete_emoji_catalog[category.name],
-        };
-    });
+    const categories = get_all_emoji_categories().filter(category => catalog.has(category.name));
+    exports.complete_emoji_catalog = categories.map(category => ({
+        name: category.name,
+        icon: category.icon,
+        emojis: catalog.get(category.name),
+    }));
 };
 
 const generate_emoji_picker_content = function (id) {
@@ -146,11 +146,9 @@ const generate_emoji_picker_content = function (id) {
     if (id !== undefined) {
         emojis_used = reactions.get_emojis_used_by_user_for_message_id(id);
     }
-    _.each(emoji.emojis_by_name, function (emoji_dict) {
-        emoji_dict.has_reacted = _.any(emoji_dict.aliases, function (alias) {
-            return _.contains(emojis_used, alias);
-        });
-    });
+    for (const emoji_dict of emoji.emojis_by_name.values()) {
+        emoji_dict.has_reacted = emoji_dict.aliases.some(alias => emojis_used.includes(alias));
+    }
 
     return render_emoji_popover_content({
         message_id: id,
@@ -204,23 +202,24 @@ function filter_emojis() {
         const categories = exports.complete_emoji_catalog;
         const search_terms = query.split(" ");
         search_results.length = 0;
-        _.each(categories, function (category) {
+
+        for (const category of categories) {
             if (category.name === "Popular") {
-                return;
+                continue;
             }
             const emojis = category.emojis;
-            _.each(emojis, function (emoji_dict) {
-                _.any(emoji_dict.aliases, function (alias) {
-                    const match = _.every(search_terms, function (search_term) {
-                        return alias.indexOf(search_term) >= 0;
-                    });
+
+            for (const emoji_dict of emojis) {
+                for (const alias of emoji_dict.aliases) {
+                    const match = search_terms.every(search_term => alias.includes(search_term));
                     if (match) {
-                        search_results.push(_.extend({}, emoji_dict, {name: alias}));
-                        return true;
+                        search_results.push({ ...emoji_dict, name: alias });
+                        break;  // We only need the first matching alias per emoji.
                     }
-                });
-            });
-        });
+                }
+            }
+        }
+
         const rendered_search_results = render_emoji_popover_search_results({
             search_results: search_results,
             message_id: message_id,
@@ -235,31 +234,6 @@ function filter_emojis() {
     }
 }
 
-function get_alias_to_be_used(message_id, emoji_name) {
-    // If the user has reacted to this message, then this function
-    // returns the alias of this emoji he used, otherwise, returns
-    // the passed name as it is.
-    const message = message_store.get(message_id);
-    let aliases = [emoji_name];
-    if (!emoji.active_realm_emojis.hasOwnProperty(emoji_name)) {
-        if (emoji_codes.name_to_codepoint.hasOwnProperty(emoji_name)) {
-            const codepoint = emoji_codes.name_to_codepoint[emoji_name];
-            aliases = emoji.default_emoji_aliases[codepoint];
-        } else {
-            blueslip.error("Invalid emoji name.");
-            return;
-        }
-    }
-    const user_id = page_params.user_id;
-    const reaction = _.find(message.reactions, function (reaction) {
-        return reaction.user.id === user_id && _.contains(aliases, reaction.emoji_name);
-    });
-    if (reaction) {
-        return reaction.emoji_name;
-    }
-    return emoji_name;
-}
-
 function toggle_reaction(emoji_name) {
     const message_id = current_msg_list.selected_id();
     const message = message_store.get(message_id);
@@ -268,8 +242,7 @@ function toggle_reaction(emoji_name) {
         return;
     }
 
-    const alias = get_alias_to_be_used(message_id, emoji_name);
-    reactions.toggle_emoji_reaction(message_id, alias);
+    reactions.toggle_emoji_reaction(message_id, emoji_name);
 }
 
 function maybe_select_emoji(e) {
@@ -280,7 +253,7 @@ function maybe_select_emoji(e) {
             if (exports.is_composition(first_emoji)) {
                 first_emoji.click();
             } else {
-                toggle_reaction(first_emoji.data("emoji-name"));
+                toggle_reaction(first_emoji.attr("data-emoji-name"));
             }
         }
     }
@@ -294,7 +267,7 @@ exports.toggle_selected_emoji = function () {
         return;
     }
 
-    const emoji_name = $(selected_emoji).data("emoji-name");
+    const emoji_name = $(selected_emoji).attr("data-emoji-name");
 
     toggle_reaction(emoji_name);
 };
@@ -312,11 +285,12 @@ function update_emoji_showcase($focused_emoji) {
     // of converting emoji names like :100:, :1234: etc to number.
     const focused_emoji_name = $focused_emoji.attr("data-emoji-name");
     const canonical_name = emoji.get_canonical_name(focused_emoji_name);
-    const focused_emoji_dict = emoji.emojis_by_name[canonical_name];
+    const focused_emoji_dict = emoji.emojis_by_name.get(canonical_name);
 
-    const emoji_dict = _.extend({}, focused_emoji_dict, {
+    const emoji_dict = {
+        ...focused_emoji_dict,
         name: focused_emoji_name.replace(/_/g, ' '),
-    });
+    };
     const rendered_showcase = render_emoji_showcase({
         emoji_dict: emoji_dict,
     });
@@ -645,12 +619,12 @@ exports.register_click_handlers = function () {
         // if the user has reacted to this message with this emoji
         // the reaction is removed
         // otherwise, the reaction is added
-        const emoji_name = $(this).data("emoji-name");
+        const emoji_name = $(this).attr("data-emoji-name");
         toggle_reaction(emoji_name);
     });
 
     $(document).on('click', '.emoji-popover-emoji.composition', function (e) {
-        const emoji_name = $(this).data("emoji-name");
+        const emoji_name = $(this).attr("data-emoji-name");
         const emoji_text = ':' + emoji_name + ':';
         // The following check will return false if emoji was not selected in
         // message edit form.
@@ -670,12 +644,12 @@ exports.register_click_handlers = function () {
     $("body").on("click", "#emoji_map", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        // The data-message-id atribute is only present in the emoji icon present in
+        // The data-message-id attribute is only present in the emoji icon present in
         // the message edit form. So the following check will return false if this
         // event was not fired from message edit form.
         if ($(this).attr("data-message-id") !== undefined) {
             // Store data-message-id value in global variable edit_message_id so that
-            // its value can be further used to correclty find the message textarea element.
+            // its value can be further used to correctly find the message textarea element.
             edit_message_id = $(this).attr("data-message-id");
         } else {
             edit_message_id = null;
@@ -726,7 +700,7 @@ exports.register_click_handlers = function () {
     $("body").on("click", ".emoji-popover-tab-item", function (e) {
         e.stopPropagation();
         e.preventDefault();
-        const offset = _.find(section_head_offsets, function (o) {
+        const offset = section_head_offsets.find(function (o) {
             return o.section === $(this).attr("data-tab-name");
         }.bind(this));
 

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from django.conf import settings
 
 import os
@@ -9,6 +7,7 @@ from mock import patch
 from typing import Any, Dict, List, Set, Optional, Tuple, Callable, \
     FrozenSet
 from django.db.models import Q
+from django.utils.timezone import now as timezone_now
 
 from zerver.lib.export import (
     do_export_realm,
@@ -28,6 +27,8 @@ from zerver.lib.upload import (
     upload_emoji_image,
     upload_avatar_image,
 )
+from zerver.lib import upload
+
 from zerver.lib.utils import (
     query_chunker,
 )
@@ -51,9 +52,12 @@ from zerver.lib.bot_config import (
 from zerver.lib.actions import (
     do_create_user,
     do_add_reaction,
-    create_stream_if_needed
+    do_change_icon_source,
+    do_change_logo_source,
+    do_update_user_presence,
+    do_change_plan_type,
 )
-
+from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_runner import slow
 
 from zerver.models import (
@@ -75,13 +79,13 @@ from zerver.models import (
     MutedTopic,
     UserGroup,
     UserGroupMembership,
+    UserPresence,
     BotStorageData,
     BotConfigData,
     get_active_streams,
+    get_client,
     get_realm,
     get_stream,
-    get_stream_recipient,
-    get_personal_recipient,
     get_huddle_hash,
 )
 
@@ -91,11 +95,10 @@ from zerver.lib.test_helpers import (
 
 class QueryUtilTest(ZulipTestCase):
     def _create_messages(self) -> None:
-        for email in [self.example_email('cordelia'),
-                      self.example_email('hamlet'),
-                      self.example_email('iago')]:
+        for name in ['cordelia', 'hamlet', 'iago']:
+            user = self.example_user(name)
             for _ in range(5):
-                self.send_personal_message(email, self.example_email('othello'))
+                self.send_personal_message(user, self.example_user('othello'))
 
     @slow('creates lots of data')
     def test_query_chunker(self) -> None:
@@ -119,7 +122,7 @@ class QueryUtilTest(ZulipTestCase):
 
         queries = get_queries()
 
-        all_msg_ids = set()  # type: Set[int]
+        all_msg_ids: Set[int] = set()
         chunker = query_chunker(
             queries=queries,
             id_collector=all_msg_ids,
@@ -208,7 +211,7 @@ class QueryUtilTest(ZulipTestCase):
             id_collector=all_msg_ids,
             chunk_size=10,  # use a different size each time
         )
-        first_chunk = next(chunker)  # type: ignore
+        first_chunk = next(chunker)  # type: ignore[call-overload]
         self.assertEqual(len(first_chunk), 10)
         self.assertEqual(len(all_msg_ids), 10)
         expected_msg = Message.objects.all()[0:10][5]
@@ -276,13 +279,15 @@ class ImportExportTest(ZulipTestCase):
         result['emoji_dir_records'] = read_file(os.path.join('emoji', 'records.json'))
         result['avatar_dir'] = os.path.join(output_dir, 'avatars')
         result['avatar_dir_records'] = read_file(os.path.join('avatars', 'records.json'))
+        result['realm_icons_dir'] = os.path.join(output_dir, 'realm_icons')
+        result['realm_icons_dir_records'] = read_file(os.path.join('realm_icons', 'records.json'))
         return result
 
     def _setup_export_files(self) -> Tuple[str, str, str, bytes]:
         realm = Realm.objects.get(string_id='zulip')
         message = Message.objects.all()[0]
         user_profile = message.sender
-        url = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
+        url = upload_message_file('dummy.txt', len(b'zulip!'), 'text/plain', b'zulip!', user_profile)
         attachment_path_id = url.replace('/user_uploads/', '')
         claim_attachment(
             user_profile=user_profile,
@@ -304,6 +309,19 @@ class ImportExportTest(ZulipTestCase):
             upload_avatar_image(img_file, user_profile, user_profile)
         with open(get_test_image_file('img.png').name, 'rb') as f:
             test_image = f.read()
+
+        with get_test_image_file('img.png') as img_file:
+            upload.upload_backend.upload_realm_icon_image(img_file, user_profile)
+            do_change_icon_source(realm, Realm.ICON_UPLOADED, False)
+
+        with get_test_image_file('img.png') as img_file:
+            upload.upload_backend.upload_realm_logo_image(img_file, user_profile, night=False)
+            do_change_logo_source(realm, Realm.LOGO_UPLOADED, False)
+        with get_test_image_file('img.png') as img_file:
+            upload.upload_backend.upload_realm_logo_image(img_file, user_profile, night=True)
+            do_change_logo_source(realm, Realm.LOGO_UPLOADED, True)
+
+        test_image = get_test_image_file('img.png').read()
         message.sender.avatar_source = 'U'
         message.sender.save()
 
@@ -325,7 +343,7 @@ class ImportExportTest(ZulipTestCase):
 
         # Test uploads
         fn = os.path.join(full_data['uploads_dir'], path_id)
-        with open(fn, 'r') as f:
+        with open(fn) as f:
             self.assertEqual(f.read(), 'zulip!')
         records = full_data['uploads_dir_records']
         self.assertEqual(records[0]['path'], path_id)
@@ -339,6 +357,21 @@ class ImportExportTest(ZulipTestCase):
         self.assertEqual(records[0]['file_name'], '1.png')
         self.assertEqual(records[0]['path'], '2/emoji/images/1.png')
         self.assertEqual(records[0]['s3_path'], '2/emoji/images/1.png')
+
+        # Test realm logo and icon
+        records = full_data['realm_icons_dir_records']
+        image_files = set()
+        for record in records:
+            image_path = os.path.join(full_data['realm_icons_dir'], record["path"])
+            if image_path[-9:] == ".original":
+                image_data = open(image_path, 'rb').read()
+                self.assertEqual(image_data, test_image)
+            else:
+                self.assertTrue(os.path.exists(image_path))
+
+            image_files.add(os.path.basename(image_path))
+        self.assertEqual(set(image_files), {'night_logo.png', 'logo.original', 'logo.png',
+                                            'icon.png', 'night_logo.original', 'icon.original'})
 
         # Test avatars
         fn = os.path.join(full_data['avatar_dir'], original_avatar_path_id)
@@ -373,7 +406,7 @@ class ImportExportTest(ZulipTestCase):
         # Test uploads
         fields = attachment_path_id.split('/')
         fn = os.path.join(full_data['uploads_dir'], os.path.join(fields[0], fields[1], fields[2]))
-        with open(fn, 'r') as f:
+        with open(fn) as f:
             self.assertEqual(f.read(), 'zulip!')
         records = full_data['uploads_dir_records']
         self.assertEqual(records[0]['path'], os.path.join(fields[0], fields[1], fields[2]))
@@ -391,6 +424,21 @@ class ImportExportTest(ZulipTestCase):
         self.assertEqual(records[0]['s3_path'], '2/emoji/images/1.png')
         check_variable_type(records[0]['user_profile_id'], records[0]['realm_id'])
 
+        # Test realm logo and icon
+        records = full_data['realm_icons_dir_records']
+        image_files = set()
+        for record in records:
+            image_path = os.path.join(full_data['realm_icons_dir'], record["s3_path"])
+            if image_path[-9:] == ".original":
+                image_data = open(image_path, 'rb').read()
+                self.assertEqual(image_data, test_image)
+            else:
+                self.assertTrue(os.path.exists(image_path))
+
+            image_files.add(os.path.basename(image_path))
+        self.assertEqual(set(image_files), {'night_logo.png', 'logo.original', 'logo.png',
+                                            'icon.png', 'night_logo.original', 'icon.original'})
+
         # Test avatars
         fn = os.path.join(full_data['avatar_dir'], original_avatar_path_id)
         with open(fn, 'rb') as file:
@@ -406,9 +454,10 @@ class ImportExportTest(ZulipTestCase):
     def test_zulip_realm(self) -> None:
         realm = Realm.objects.get(string_id='zulip')
 
-        pm_a_msg_id = self.send_personal_message(self.example_email("AARON"), "default-bot@zulip.com")
-        pm_b_msg_id = self.send_personal_message("default-bot@zulip.com", self.example_email("iago"))
-        pm_c_msg_id = self.send_personal_message(self.example_email("othello"), self.example_email("hamlet"))
+        default_bot = self.example_user('default_bot')
+        pm_a_msg_id = self.send_personal_message(self.example_user("AARON"), default_bot)
+        pm_b_msg_id = self.send_personal_message(default_bot, self.example_user("iago"))
+        pm_c_msg_id = self.send_personal_message(self.example_user("othello"), self.example_user("hamlet"))
 
         realm_emoji = RealmEmoji.objects.get(realm=realm)
         realm_emoji.delete()
@@ -419,14 +468,14 @@ class ImportExportTest(ZulipTestCase):
         self.assertEqual(len(data['zerver_userprofile_crossrealm']), 3)
         self.assertEqual(len(data['zerver_userprofile_mirrordummy']), 0)
 
-        exported_user_emails = self.get_set(data['zerver_userprofile'], 'email')
+        exported_user_emails = self.get_set(data['zerver_userprofile'], 'delivery_email')
         self.assertIn(self.example_email('cordelia'), exported_user_emails)
         self.assertIn('default-bot@zulip.com', exported_user_emails)
 
         exported_streams = self.get_set(data['zerver_stream'], 'name')
         self.assertEqual(
             exported_streams,
-            set([u'Denmark', u'Rome', u'Scotland', u'Venice', u'Verona'])
+            {'Denmark', 'Rome', 'Scotland', 'Venice', 'Verona'}
         )
 
         data = full_data['message']
@@ -448,12 +497,12 @@ class ImportExportTest(ZulipTestCase):
 
         cordelia = self.example_user('iago')
         hamlet = self.example_user('hamlet')
-        user_ids = set([cordelia.id, hamlet.id])
+        user_ids = {cordelia.id, hamlet.id}
 
-        pm_a_msg_id = self.send_personal_message(self.example_email("AARON"), self.example_email("othello"))
-        pm_b_msg_id = self.send_personal_message(self.example_email("cordelia"), self.example_email("iago"))
-        pm_c_msg_id = self.send_personal_message(self.example_email("hamlet"), self.example_email("othello"))
-        pm_d_msg_id = self.send_personal_message(self.example_email("iago"), self.example_email("hamlet"))
+        pm_a_msg_id = self.send_personal_message(self.example_user("AARON"), self.example_user("othello"))
+        pm_b_msg_id = self.send_personal_message(self.example_user("cordelia"), self.example_user("iago"))
+        pm_c_msg_id = self.send_personal_message(self.example_user("hamlet"), self.example_user("othello"))
+        pm_d_msg_id = self.send_personal_message(self.example_user("iago"), self.example_user("hamlet"))
 
         realm_emoji = RealmEmoji.objects.get(realm=realm)
         realm_emoji.delete()
@@ -462,13 +511,13 @@ class ImportExportTest(ZulipTestCase):
 
         data = full_data['realm']
 
-        exported_user_emails = self.get_set(data['zerver_userprofile'], 'email')
+        exported_user_emails = self.get_set(data['zerver_userprofile'], 'delivery_email')
         self.assertIn(self.example_email('iago'), exported_user_emails)
         self.assertIn(self.example_email('hamlet'), exported_user_emails)
         self.assertNotIn('default-bot@zulip.com', exported_user_emails)
         self.assertNotIn(self.example_email('cordelia'), exported_user_emails)
 
-        dummy_user_emails = self.get_set(data['zerver_userprofile_mirrordummy'], 'email')
+        dummy_user_emails = self.get_set(data['zerver_userprofile_mirrordummy'], 'delivery_email')
         self.assertIn(self.example_email('cordelia'), dummy_user_emails)
         self.assertIn(self.example_email('othello'), dummy_user_emails)
         self.assertIn('default-bot@zulip.com', dummy_user_emails)
@@ -490,42 +539,42 @@ class ImportExportTest(ZulipTestCase):
         create_stream_if_needed(realm, "Private A", invite_only=True)
         self.subscribe(self.example_user("iago"), "Private A")
         self.subscribe(self.example_user("othello"), "Private A")
-        self.send_stream_message(self.example_email("iago"), "Private A", "Hello Stream A")
+        self.send_stream_message(self.example_user("iago"), "Private A", "Hello Stream A")
 
         create_stream_if_needed(realm, "Private B", invite_only=True)
         self.subscribe(self.example_user("prospero"), "Private B")
-        stream_b_message_id = self.send_stream_message(self.example_email("prospero"),
+        stream_b_message_id = self.send_stream_message(self.example_user("prospero"),
                                                        "Private B", "Hello Stream B")
         self.subscribe(self.example_user("hamlet"), "Private B")
 
         create_stream_if_needed(realm, "Private C", invite_only=True)
         self.subscribe(self.example_user("othello"), "Private C")
         self.subscribe(self.example_user("prospero"), "Private C")
-        stream_c_message_id = self.send_stream_message(self.example_email("othello"),
+        stream_c_message_id = self.send_stream_message(self.example_user("othello"),
                                                        "Private C", "Hello Stream C")
 
         # Create huddles
-        self.send_huddle_message(self.example_email("iago"), [self.example_email("cordelia"),
-                                                              self.example_email("AARON")])
+        self.send_huddle_message(self.example_user("iago"), [self.example_user("cordelia"),
+                                                             self.example_user("AARON")])
         huddle_a = Huddle.objects.last()
-        self.send_huddle_message(self.example_email("ZOE"), [self.example_email("hamlet"),
-                                                             self.example_email("AARON"),
-                                                             self.example_email("othello")])
+        self.send_huddle_message(self.example_user("ZOE"), [self.example_user("hamlet"),
+                                                            self.example_user("AARON"),
+                                                            self.example_user("othello")])
         huddle_b = Huddle.objects.last()
 
         huddle_c_message_id = self.send_huddle_message(
-            self.example_email("AARON"), [self.example_email("cordelia"),
-                                          self.example_email("ZOE"),
-                                          self.example_email("othello")])
+            self.example_user("AARON"), [self.example_user("cordelia"),
+                                         self.example_user("ZOE"),
+                                         self.example_user("othello")])
 
         # Create PMs
-        pm_a_msg_id = self.send_personal_message(self.example_email("AARON"), self.example_email("othello"))
-        pm_b_msg_id = self.send_personal_message(self.example_email("cordelia"), self.example_email("iago"))
-        pm_c_msg_id = self.send_personal_message(self.example_email("hamlet"), self.example_email("othello"))
-        pm_d_msg_id = self.send_personal_message(self.example_email("iago"), self.example_email("hamlet"))
+        pm_a_msg_id = self.send_personal_message(self.example_user("AARON"), self.example_user("othello"))
+        pm_b_msg_id = self.send_personal_message(self.example_user("cordelia"), self.example_user("iago"))
+        pm_c_msg_id = self.send_personal_message(self.example_user("hamlet"), self.example_user("othello"))
+        pm_d_msg_id = self.send_personal_message(self.example_user("iago"), self.example_user("hamlet"))
 
         # Send message advertising export and make users react
-        self.send_stream_message(self.example_email("othello"), "Verona",
+        self.send_stream_message(self.example_user("othello"), "Verona",
                                  topic_name="Export",
                                  content="Thumbs up for export")
         message = Message.objects.last()
@@ -543,7 +592,7 @@ class ImportExportTest(ZulipTestCase):
         self.assertEqual(len(data['zerver_userprofile_crossrealm']), 3)
         self.assertEqual(len(data['zerver_userprofile_mirrordummy']), 0)
 
-        exported_user_emails = self.get_set(data['zerver_userprofile'], 'email')
+        exported_user_emails = self.get_set(data['zerver_userprofile'], 'delivery_email')
         self.assertIn(self.example_email('cordelia'), exported_user_emails)
         self.assertIn(self.example_email('hamlet'), exported_user_emails)
         self.assertIn(self.example_email('iago'), exported_user_emails)
@@ -553,8 +602,8 @@ class ImportExportTest(ZulipTestCase):
         exported_streams = self.get_set(data['zerver_stream'], 'name')
         self.assertEqual(
             exported_streams,
-            set([u'Denmark', u'Rome', u'Scotland', u'Venice', u'Verona',
-                 u'Private A', u'Private B', u'Private C'])
+            {'Denmark', 'Rome', 'Scotland', 'Venice', 'Verona',
+             'Private A', 'Private B', 'Private C'}
         )
 
         data = full_data['message']
@@ -620,9 +669,9 @@ class ImportExportTest(ZulipTestCase):
         user = read_file('user.json')
 
         exported_user_id = self.get_set(user['zerver_userprofile'], 'id')
-        self.assertEqual(exported_user_id, set([cordelia.id]))
+        self.assertEqual(exported_user_id, {cordelia.id})
         exported_user_email = self.get_set(user['zerver_userprofile'], 'email')
-        self.assertEqual(exported_user_email, set([cordelia.email]))
+        self.assertEqual(exported_user_email, {cordelia.email})
 
         exported_recipient_type_id = self.get_set(user['zerver_recipient'], 'type_id')
         self.assertIn(cordelia.id, exported_recipient_type_id)
@@ -640,45 +689,48 @@ class ImportExportTest(ZulipTestCase):
     """
     Tests for import_realm
     """
+
     def test_import_realm(self) -> None:
 
         original_realm = Realm.objects.get(string_id='zulip')
         RealmEmoji.objects.get(realm=original_realm).delete()
         # data to test import of huddles
         huddle = [
-            self.example_email('hamlet'),
-            self.example_email('othello')
+            self.example_user('hamlet'),
+            self.example_user('othello')
         ]
         self.send_huddle_message(
-            self.example_email('cordelia'), huddle, 'test huddle message'
+            self.example_user('cordelia'), huddle, 'test huddle message'
         )
 
         user_mention_message = '@**King Hamlet** Hello'
-        self.send_stream_message(self.example_email("iago"), "Verona", user_mention_message)
+        self.send_stream_message(self.example_user("iago"), "Verona", user_mention_message)
 
         stream_mention_message = 'Subscribe to #**Denmark**'
-        self.send_stream_message(self.example_email("hamlet"), "Verona", stream_mention_message)
+        self.send_stream_message(self.example_user("hamlet"), "Verona", stream_mention_message)
 
         user_group_mention_message = 'Hello @*hamletcharacters*'
-        self.send_stream_message(self.example_email("othello"), "Verona", user_group_mention_message)
+        self.send_stream_message(self.example_user("othello"), "Verona", user_group_mention_message)
 
         special_characters_message = "```\n'\n```\n@**Polonius**"
-        self.send_stream_message(self.example_email("iago"), "Denmark", special_characters_message)
+        self.send_stream_message(self.example_user("iago"), "Denmark", special_characters_message)
 
-        # data to test import of hotspots
         sample_user = self.example_user('hamlet')
 
+        # data to test import of hotspots
         UserHotspot.objects.create(
             user=sample_user, hotspot='intro_streams'
         )
 
         # data to test import of muted topic
-        stream = get_stream(u'Verona', original_realm)
+        stream = get_stream('Verona', original_realm)
         add_topic_mute(
             user_profile=sample_user,
             stream_id=stream.id,
-            recipient_id=get_stream_recipient(stream.id).id,
-            topic_name=u'Verona2')
+            recipient_id=stream.recipient.id,
+            topic_name='Verona2')
+
+        do_update_user_presence(sample_user, get_client("website"), timezone_now(), UserPresence.ACTIVE)
 
         # data to test import of botstoragedata and botconfigdata
         bot_profile = do_create_user(
@@ -734,15 +786,11 @@ class ImportExportTest(ZulipTestCase):
         )
 
         # test recipients
-        def get_recipient_stream(r: Realm) -> Stream:
-            return get_stream_recipient(
-                Stream.objects.get(name='Verona', realm=r).id
-            )
+        def get_recipient_stream(r: Realm) -> Recipient:
+            return Stream.objects.get(name='Verona', realm=r).recipient
 
-        def get_recipient_user(r: Realm) -> UserProfile:
-            return get_personal_recipient(
-                UserProfile.objects.get(full_name='Iago', realm=r).id
-            )
+        def get_recipient_user(r: Realm) -> Recipient:
+            return UserProfile.objects.get(full_name='Iago', realm=r).recipient
 
         assert_realm_values(lambda r: get_recipient_stream(r).type)
         assert_realm_values(lambda r: get_recipient_user(r).type)
@@ -784,7 +832,7 @@ class ImportExportTest(ZulipTestCase):
                 return {get_email(user_id) for user_id in user_id_list}
 
             def custom_profile_field_values_for(fields: List[CustomProfileField]) -> Set[FrozenSet[str]]:
-                user_emails = set()  # type: Set[FrozenSet[str]]
+                user_emails: Set[FrozenSet[str]] = set()
                 for field in fields:
                     values = CustomProfileFieldValue.objects.filter(field=field)
                     for value in values:
@@ -908,7 +956,7 @@ class ImportExportTest(ZulipTestCase):
         assert_realm_values(get_user_mention)
 
         def get_stream_mention(r: Realm) -> Set[Any]:
-            mentioned_stream = get_stream(u'Denmark', r)
+            mentioned_stream = get_stream('Denmark', r)
             data_stream_id = 'data-stream-id="{}"'.format(mentioned_stream.id)
             mention_message = get_stream_messages(r).get(rendered_content__contains=data_stream_id)
             return mention_message.content
@@ -923,41 +971,56 @@ class ImportExportTest(ZulipTestCase):
 
         assert_realm_values(get_user_group_mention)
 
+        def get_userpresence_timestamp(r: Realm) -> Set[Any]:
+            # It should be sufficient to compare UserPresence timestamps to verify
+            # they got exported/imported correctly.
+            return set(UserPresence.objects.filter(realm=r).values_list('timestamp', flat=True))
+
+        assert_realm_values(get_userpresence_timestamp)
+
         # test to highlight that bs4 which we use to do data-**id
         # replacements modifies the HTML sometimes. eg replacing <br>
         # with </br>, &#39; with \' etc. The modifications doesn't
         # affect how the browser displays the rendered_content so we
         # are okay with using bs4 for this.  lxml package also has
         # similar behavior.
-        orig_polonius_user = UserProfile.objects.get(email=self.example_email("polonius"),
-                                                     realm=original_realm)
+        orig_polonius_user = self.example_user('polonius')
         original_msg = Message.objects.get(content=special_characters_message, sender__realm=original_realm)
         self.assertEqual(
             original_msg.rendered_content,
-            ('<div class="codehilite"><pre><span></span>&#39;\n</pre></div>\n\n\n'
+            ('<div class="codehilite"><pre><span></span><code>&#39;\n</code></pre></div>\n\n\n'
              '<p><span class="user-mention" data-user-id="%s">@Polonius</span></p>' %
              (orig_polonius_user.id,))
         )
-        imported_polonius_user = UserProfile.objects.get(email=self.example_email("polonius"),
+        imported_polonius_user = UserProfile.objects.get(delivery_email=self.example_email("polonius"),
                                                          realm=imported_realm)
         imported_msg = Message.objects.get(content=special_characters_message, sender__realm=imported_realm)
         self.assertEqual(
             imported_msg.rendered_content,
-            ('<div class="codehilite"><pre><span></span>\'\n</pre></div>\n'
+            ('<div class="codehilite"><pre><span></span><code>\'\n</code></pre></div>\n'
              '<p><span class="user-mention" data-user-id="%s">@Polonius</span></p>' %
              (imported_polonius_user.id,))
         )
 
         # Check recipient_id was generated correctly for the imported users and streams.
         for user_profile in UserProfile.objects.filter(realm=imported_realm):
-            self.assertEqual(user_profile.recipient_id, get_personal_recipient(user_profile.id).id)
+            self.assertEqual(user_profile.recipient_id, Recipient.objects.get(type=Recipient.PERSONAL,
+                                                                              type_id=user_profile.id).id)
         for stream in Stream.objects.filter(realm=imported_realm):
-            self.assertEqual(stream.recipient_id, get_stream_recipient(stream.id).id)
+            self.assertEqual(stream.recipient_id, Recipient.objects.get(type=Recipient.STREAM,
+                                                                        type_id=stream.id).id)
+
+        for huddle_object in Huddle.objects.all():
+            # Huddles don't have a realm column, so we just test all Huddles for simplicity.
+            self.assertEqual(huddle_object.recipient_id, Recipient.objects.get(type=Recipient.HUDDLE,
+                                                                               type_id=huddle_object.id).id)
 
     def test_import_files_from_local(self) -> None:
 
         realm = Realm.objects.get(string_id='zulip')
         self._setup_export_files()
+        realm.refresh_from_db()
+
         self._export_realm(realm)
 
         with patch('logging.info'):
@@ -988,6 +1051,29 @@ class ImportExportTest(ZulipTestCase):
         avatar_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", avatar_path_id)
         self.assertTrue(os.path.isfile(avatar_file_path))
 
+        # Test realm icon and logo
+        upload_path = upload.upload_backend.realm_avatar_and_logo_path(imported_realm)
+        full_upload_path = os.path.join(settings.LOCAL_UPLOADS_DIR, upload_path)
+
+        with open(get_test_image_file('img.png').name, 'rb') as f:
+            test_image_data = f.read()
+        self.assertIsNotNone(test_image_data)
+
+        with open(os.path.join(full_upload_path, "icon.original"), 'rb') as f:
+            self.assertEqual(f.read(), test_image_data)
+        self.assertTrue(os.path.isfile(os.path.join(full_upload_path, "icon.png")))
+        self.assertEqual(imported_realm.icon_source, Realm.ICON_UPLOADED)
+
+        with open(os.path.join(full_upload_path, "logo.original"), 'rb') as f:
+            self.assertEqual(f.read(), test_image_data)
+        self.assertTrue(os.path.isfile(os.path.join(full_upload_path, "logo.png")))
+        self.assertEqual(imported_realm.logo_source, Realm.LOGO_UPLOADED)
+
+        with open(os.path.join(full_upload_path, "night_logo.original"), 'rb') as f:
+            self.assertEqual(f.read(), test_image_data)
+        self.assertTrue(os.path.isfile(os.path.join(full_upload_path, "night_logo.png")))
+        self.assertEqual(imported_realm.night_logo_source, Realm.LOGO_UPLOADED)
+
     @use_s3_backend
     def test_import_files_from_s3(self) -> None:
         uploads_bucket, avatar_bucket = create_s3_buckets(
@@ -996,6 +1082,8 @@ class ImportExportTest(ZulipTestCase):
 
         realm = Realm.objects.get(string_id='zulip')
         self._setup_export_files()
+        realm.refresh_from_db()
+
         self._export_realm(realm)
         with patch('logging.info'):
             do_import_realm(os.path.join(settings.TEST_WORKER_DIR, 'test-export'),
@@ -1030,6 +1118,33 @@ class ImportExportTest(ZulipTestCase):
         image_data = original_image_key.get_contents_as_string()
         self.assertEqual(image_data, test_image_data)
 
+        # Test realm icon and logo
+        upload_path = upload.upload_backend.realm_avatar_and_logo_path(imported_realm)
+
+        original_icon_path_id = os.path.join(upload_path, "icon.original")
+        original_icon_key = avatar_bucket.get_key(original_icon_path_id)
+        self.assertEqual(original_icon_key.get_contents_as_string(), test_image_data)
+        resized_icon_path_id = os.path.join(upload_path, "icon.png")
+        resized_icon_key = avatar_bucket.get_key(resized_icon_path_id)
+        self.assertEqual(resized_icon_key.key, resized_icon_path_id)
+        self.assertEqual(imported_realm.icon_source, Realm.ICON_UPLOADED)
+
+        original_logo_path_id = os.path.join(upload_path, "logo.original")
+        original_logo_key = avatar_bucket.get_key(original_logo_path_id)
+        self.assertEqual(original_logo_key.get_contents_as_string(), test_image_data)
+        resized_logo_path_id = os.path.join(upload_path, "logo.png")
+        resized_logo_key = avatar_bucket.get_key(resized_logo_path_id)
+        self.assertEqual(resized_logo_key.key, resized_logo_path_id)
+        self.assertEqual(imported_realm.logo_source, Realm.LOGO_UPLOADED)
+
+        night_logo_original_path_id = os.path.join(upload_path, "night_logo.original")
+        night_logo_original_key = avatar_bucket.get_key(night_logo_original_path_id)
+        self.assertEqual(night_logo_original_key.get_contents_as_string(), test_image_data)
+        resized_night_logo_path_id = os.path.join(upload_path, "night_logo.png")
+        resized_night_logo_key = avatar_bucket.get_key(resized_night_logo_path_id)
+        self.assertEqual(resized_night_logo_key.key, resized_night_logo_path_id)
+        self.assertEqual(imported_realm.night_logo_source, Realm.LOGO_UPLOADED)
+
     def test_get_incoming_message_ids(self) -> None:
         import_dir = os.path.join(settings.DEPLOY_ROOT, "zerver", "tests", "fixtures", "import_fixtures")
         message_ids = get_incoming_message_ids(
@@ -1048,8 +1163,7 @@ class ImportExportTest(ZulipTestCase):
 
     def test_plan_type(self) -> None:
         realm = get_realm('zulip')
-        realm.plan_type = Realm.STANDARD
-        realm.save(update_fields=['plan_type'])
+        do_change_plan_type(realm, Realm.LIMITED)
 
         self._setup_export_files()
         self._export_realm(realm)
@@ -1058,12 +1172,18 @@ class ImportExportTest(ZulipTestCase):
             with self.settings(BILLING_ENABLED=True):
                 realm = do_import_realm(os.path.join(settings.TEST_WORKER_DIR, 'test-export'),
                                         'test-zulip-1')
-                self.assertTrue(realm.plan_type, Realm.LIMITED)
+                self.assertEqual(realm.plan_type, Realm.LIMITED)
+                self.assertEqual(realm.max_invites, 100)
+                self.assertEqual(realm.upload_quota_gb, 5)
+                self.assertEqual(realm.message_visibility_limit, 10000)
                 self.assertTrue(RealmAuditLog.objects.filter(
                     realm=realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED).exists())
             with self.settings(BILLING_ENABLED=False):
                 realm = do_import_realm(os.path.join(settings.TEST_WORKER_DIR, 'test-export'),
                                         'test-zulip-2')
-                self.assertTrue(realm.plan_type, Realm.SELF_HOSTED)
+                self.assertEqual(realm.plan_type, Realm.SELF_HOSTED)
+                self.assertEqual(realm.max_invites, 100)
+                self.assertEqual(realm.upload_quota_gb, None)
+                self.assertEqual(realm.message_visibility_limit, None)
                 self.assertTrue(RealmAuditLog.objects.filter(
                     realm=realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED).exists())

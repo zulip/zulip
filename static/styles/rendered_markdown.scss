@@ -105,6 +105,12 @@
         padding: 4px;
     }
 
+    /* Emoji; sized to be easily understood while not overwhelming text. */
+    .emoji {
+        height: 20px;
+        width: 20px;
+    }
+
     /* Mentions and alert words */
     .user-mention-me :not(.silent) {
         background-color: hsl(112, 88%, 87%);
@@ -142,7 +148,7 @@
     }
 
     .highlight_text_deleted {
-        color: hsl(0, 0%, 73%);
+        color: hsl(0, 100%, 50%);
         text-decoration: line-through;
         background-color: hsl(7, 90%, 92%);
         word-break: break-all;
@@ -415,6 +421,12 @@ pre {
     padding-bottom: 3px;
     padding-left: 7px;
     padding-right: 7px;
+}
+
+.rendered_markdown pre code {
+    font-size: inherit;
+    padding: 0;
+    white-space: inherit;
 }
 
 /* Ensure the horizontal scrollbar is visible on Mac */

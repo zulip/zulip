@@ -218,7 +218,7 @@ def get_fork_body(payload: Dict[str, Any]) -> str:
 
 def get_commit_comment_body(payload: Dict[str, Any]) -> str:
     comment = payload['comment']
-    action = u'[commented]({})'.format(comment['links']['html']['href'])
+    action = '[commented]({})'.format(comment['links']['html']['href'])
     return get_commits_comment_action_message(
         get_user_username(payload),
         action,
@@ -332,10 +332,10 @@ def get_pull_request_comment_action_body(
     )
 
 def get_push_tag_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str:
-    if change.get('created'):
+    if change.get('new'):
         tag = change['new']
-        action = 'pushed'  # type: Optional[str]
-    elif change.get('closed'):
+        action: Optional[str] = 'pushed'
+    elif change.get('old'):
         tag = change['old']
         action = 'removed'
 

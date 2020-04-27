@@ -2,12 +2,11 @@ from functools import wraps
 from typing import Any, Callable, Dict
 
 from django.utils.module_loading import import_string
-from django.utils.translation import ugettext as _
 from django.utils.cache import add_never_cache_headers
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 from zerver.decorator import authenticated_json_view, authenticated_rest_api_view, \
-    process_as_post, authenticated_uploads_api_view, RespondAsynchronously, \
+    process_as_post, authenticated_uploads_api_view, \
     ReturnT
 from zerver.lib.response import json_method_not_allowed, json_unauthorized
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
@@ -22,18 +21,11 @@ def default_never_cache_responses(
     decorator that adds headers to a response so that it will never be
     cached, unless the view code has already set a Cache-Control
     header.
-
-    We also need to patch this because our Django+Tornado
-    RespondAsynchronously hack involves returning a value that isn't a
-    Django response object, on which add_never_cache_headers would
-    crash.  This only occurs in a case where client-side caching
-    wouldn't be possible anyway (we aren't returning a response to the
-    client yet -- it's for longpolling).
     """
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> ReturnT:
         response = view_func(request, *args, **kwargs)
-        if response is RespondAsynchronously or response.has_header("Cache-Control"):
+        if response.has_header("Cache-Control"):
             return response
 
         add_never_cache_headers(response)
@@ -65,7 +57,12 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     Never make a urls.py pattern put user input into a variable called GET, POST,
     etc, as that is where we route HTTP verbs to target functions.
     """
-    supported_methods = {}  # type: Dict[str, Any]
+    supported_methods: Dict[str, Any] = {}
+
+    if hasattr(request, "saved_response"):
+        # For completing long-polled Tornado requests, we skip the
+        # view function logic and just return the response.
+        return request.saved_response
 
     # duplicate kwargs so we can mutate the original as we go
     for arg in list(kwargs):
@@ -140,7 +137,7 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
             view_kwargs = {}
             if 'allow_incoming_webhooks' in view_flags:
                 view_kwargs['is_webhook'] = True
-            target_function = authenticated_rest_api_view(**view_kwargs)(target_function)  # type: ignore # likely mypy bug
+            target_function = authenticated_rest_api_view(**view_kwargs)(target_function)  # type: ignore[arg-type] # likely mypy bug
         # Pick a way to tell user they're not authed based on how the request was made
         else:
             # If this looks like a request from a top-level page in a
@@ -150,7 +147,7 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
                 return HttpResponseRedirect('%s?next=%s' % (settings.HOME_NOT_LOGGED_IN, request.path))
             # Ask for basic auth (email:apiKey)
             elif request.path.startswith("/api"):
-                return json_unauthorized(_("Not logged in: API authentication or user session required"))
+                return json_unauthorized()
             # Logged out user accessing an endpoint with anonymous user access on JSON; proceed.
             elif request.path.startswith("/json") and 'allow_anonymous_user_web' in view_flags:
                 auth_kwargs = dict(allow_unauthenticated=True)
@@ -158,8 +155,7 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
                     target_function, **auth_kwargs))
             # Session cookie expired, notify the client
             else:
-                return json_unauthorized(_("Not logged in: API authentication or user session required"),
-                                         www_authenticate='session')
+                return json_unauthorized(www_authenticate='session')
 
         if request.method not in ["GET", "POST"]:
             # process_as_post needs to be the outer decorator, because

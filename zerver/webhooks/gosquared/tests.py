@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.webhooks.gosquared.view import CHAT_MESSAGE_TEMPLATE
 
@@ -11,7 +10,7 @@ class GoSquaredHookTests(WebhookTestCase):
     # Note: Include a test function per each distinct message condition your integration supports
     def test_traffic_message(self) -> None:
         expected_topic = "GoSquared - requestb.in"
-        expected_message = u"[requestb.in](https://www.gosquared.com/now/GSN-595854-T) has 33 visitors online."
+        expected_message = "[requestb.in](https://www.gosquared.com/now/GSN-595854-T) has 33 visitors online."
 
         self.send_and_test_stream_message('traffic_spike', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")

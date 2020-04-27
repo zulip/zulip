@@ -1,41 +1,37 @@
-# -*- coding: utf-8 -*-
 from typing import cast, Any, Dict
 
 import mock
 import json
 import requests
 
+from zerver.lib.avatar import get_gravatar_url
 from zerver.lib.message import MessageDict
 from zerver.lib.outgoing_webhook import (
     get_service_interface_class,
     process_success_response,
 )
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
-from zerver.models import get_realm, get_user, SLACK_INTERFACE, Message
+from zerver.models import (
+    get_realm,
+    get_stream,
+    get_user,
+    Message,
+    SLACK_INTERFACE,
+)
+
 
 class TestGenericOutgoingWebhookService(ZulipTestCase):
 
     def setUp(self) -> None:
         super().setUp()
 
-        # TODO: Ideally, this test would use the full flow, rather
-        # than making a mock message like this.
-        message_id = self.send_stream_message(self.example_email('othello'),
-                                              "Denmark", content="@**test**")
-        message = Message.objects.get(id=message_id)
-        wide_message_dict = MessageDict.wide_dict(message)
-
-        self.event = {
-            u'command': '@**test**',
-            u'message': wide_message_dict,
-            u'trigger': 'mention',
-        }
-        self.bot_user = get_user("outgoing-webhook@zulip.com", get_realm("zulip"))
+        bot_user = get_user("outgoing-webhook@zulip.com", get_realm("zulip"))
         service_class = get_service_interface_class('whatever')  # GenericOutgoingWebhookService
         self.handler = service_class(service_name='test-service',
                                      token='abcdef',
-                                     user_profile=self.bot_user)
+                                     user_profile=bot_user)
 
     def test_process_success_response(self) -> None:
         class Stub:
@@ -72,19 +68,69 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         self.assertTrue(m.called)
 
     def test_build_bot_request(self) -> None:
-        request_data = self.handler.build_bot_request(self.event)
+        othello = self.example_user('othello')
+        stream = get_stream('Denmark', othello.realm)
+        message_id = self.send_stream_message(
+            othello,
+            stream.name,
+            content="@**test**"
+        )
+
+        message = Message.objects.get(id=message_id)
+
+        gravatar_url = get_gravatar_url(
+            othello.delivery_email,
+            othello.avatar_version,
+        )
+
+        expected_message_data = {
+            'avatar_url': gravatar_url,
+            'client': 'test suite',
+            'content': '@**test**',
+            'content_type': 'text/x-markdown',
+            'display_recipient': 'Denmark',
+            'id': message.id,
+            'is_me_message': False,
+            'reactions': [],
+            'recipient_id': message.recipient_id,
+            'rendered_content': '<p>@<strong>test</strong></p>',
+            'sender_email': othello.email,
+            'sender_full_name': 'Othello, the Moor of Venice',
+            'sender_id': othello.id,
+            'sender_realm_str': 'zulip',
+            'sender_short_name': 'othello',
+            'stream_id': stream.id,
+            TOPIC_NAME: 'test',
+            'submessages': [],
+            'timestamp': datetime_to_timestamp(message.date_sent),
+            'topic_links': [],
+            'type': 'stream',
+        }
+
+        wide_message_dict = MessageDict.wide_dict(message)
+
+        event = {
+            'command': '@**test**',
+            'message': wide_message_dict,
+            'trigger': 'mention',
+        }
+
+        request_data = self.handler.build_bot_request(event)
         request_data = json.loads(request_data)
         self.assertEqual(request_data['data'], "@**test**")
         self.assertEqual(request_data['token'], "abcdef")
-        self.assertEqual(request_data['message'], self.event['message'])
+        self.assertEqual(request_data['message'], expected_message_data)
+
+        # Make sure we didn't accidentally mutate wide_message_dict.
+        self.assertEqual(wide_message_dict['sender_realm_id'], othello.realm_id)
 
     def test_process_success(self) -> None:
-        response = dict(response_not_required=True)  # type: Dict[str, Any]
-        success_response = self.handler.process_success(response, self.event)
+        response: Dict[str, Any] = dict(response_not_required=True)
+        success_response = self.handler.process_success(response)
         self.assertEqual(success_response, None)
 
         response = dict(response_string='test_content')
-        success_response = self.handler.process_success(response, self.event)
+        success_response = self.handler.process_success(response)
         self.assertEqual(success_response, dict(content='test_content'))
 
         response = dict(
@@ -92,7 +138,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
             widget_content='test_widget_content',
             red_herring='whatever',
         )
-        success_response = self.handler.process_success(response, self.event)
+        success_response = self.handler.process_success(response)
         expected_response = dict(
             content='test_content',
             widget_content='test_widget_content',
@@ -100,7 +146,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         self.assertEqual(success_response, expected_response)
 
         response = dict()
-        success_response = self.handler.process_success(response, self.event)
+        success_response = self.handler.process_success(response)
         self.assertEqual(success_response, None)
 
 class TestSlackOutgoingWebhookService(ZulipTestCase):
@@ -108,11 +154,11 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.stream_message_event = {
-            u'command': '@**test**',
-            u'user_profile_id': 12,
-            u'service_name': 'test-service',
-            u'trigger': 'mention',
-            u'message': {
+            'command': '@**test**',
+            'user_profile_id': 12,
+            'service_name': 'test-service',
+            'trigger': 'mention',
+            'message': {
                 'content': 'test_content',
                 'type': 'stream',
                 'sender_realm_str': 'zulip',
@@ -126,11 +172,11 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         }
 
         self.private_message_event = {
-            u'user_profile_id': 24,
-            u'service_name': 'test-service',
-            u'command': 'test content',
-            u'trigger': 'private_message',
-            u'message': {
+            'user_profile_id': 24,
+            'service_name': 'test-service',
+            'command': 'test content',
+            'trigger': 'private_message',
+            'message': {
                 'sender_id': 3,
                 'sender_realm_str': 'zulip',
                 'timestamp': 1529821610,
@@ -171,10 +217,10 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         self.assertTrue(mock_fail_with_message.called)
 
     def test_process_success(self) -> None:
-        response = dict(response_not_required=True)  # type: Dict[str, Any]
-        success_response = self.handler.process_success(response, self.stream_message_event)
+        response: Dict[str, Any] = dict(response_not_required=True)
+        success_response = self.handler.process_success(response)
         self.assertEqual(success_response, None)
 
         response = dict(text='test_content')
-        success_response = self.handler.process_success(response, self.stream_message_event)
+        success_response = self.handler.process_success(response)
         self.assertEqual(success_response, dict(content='test_content'))

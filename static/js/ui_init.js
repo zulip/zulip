@@ -1,3 +1,6 @@
+const emojisets = require("./emojisets");
+const markdown_config = require('./markdown_config');
+
 // This is where most of our initialization takes place.
 // TODO: Organize it a lot better.  In particular, move bigger
 //       functions to other modules.
@@ -16,8 +19,8 @@ function message_unhover() {
 }
 
 function message_hover(message_row) {
-    const id = parseInt(message_row.attr("zid"), 10);
-    if (current_message_hover && message_row && current_message_hover.attr("zid") === message_row.attr("zid")) {
+    const id = rows.id(message_row);
+    if (current_message_hover && rows.id(current_message_hover) === id) {
         return;
     }
     // Don't allow on-hover editing for local-only messages
@@ -125,12 +128,12 @@ exports.initialize_kitchen_sink_stuff = function () {
         $("body").addClass("more_dense_mode");
     }
 
-    $("#main_div").on("mouseover", ".message_row", function () {
+    $("#main_div").on("mouseover", ".message_table .message_row", function () {
         const row = $(this).closest(".message_row");
         message_hover(row);
     });
 
-    $("#main_div").on("mouseleave", ".message_row", function () {
+    $("#main_div").on("mouseleave", ".message_table .message_row", function () {
         message_unhover();
     });
 
@@ -218,7 +221,7 @@ exports.initialize_kitchen_sink_stuff = function () {
                     render_end: event.msg_list.view._render_win_end,
                     selected_id_from_idx: messages[event.msg_list.selected_idx()].id,
                     msg_list_sorted: _.isEqual(
-                        _.pluck(messages, 'id'),
+                        messages.map(message => message.id),
                         _.chain(current_msg_list.all_messages()).pluck('id').clone().value().sort()
                     ),
                     found_in_dom: row_from_dom.length,
@@ -292,16 +295,144 @@ exports.initialize_kitchen_sink_stuff = function () {
 };
 
 exports.initialize_everything = function () {
-    // initialize other stuff
-    people.initialize();
+    /*
+        When we initialize our various modules, a lot
+        of them will consume data from the server
+        in the form of `page_params`.
+
+        The global `page_params` var is basically
+        a massive dictionary with all the information
+        that the client needs to run the app.  Here
+        are some examples of what it includes:
+
+            - all of the user's user-specific settings
+            - all realm-specific settings that are
+              pertinent to the user
+            - info about streams/subscribers on the realm
+            - realm settings
+            - info about all the other users
+            - some fairly dynamic data, like which of
+              the other users are "present"
+
+        Except for the actual Zulip messages, basically
+        any data that you see in the app soon after page
+        load comes from `page_params`.
+
+        ## Mostly static data
+
+        Now, we mostly leave `page_params` intact through
+        the duration of the app.  Most of the data in
+        `page_params` is fairly static in nature, and we
+        will simply update it for basic changes like
+        the following (meant as examples, not gospel):
+
+            - I changed my 24-hour time preference.
+            - The realm admin changed who can edit topics.
+            - The team's realm icon has changed.
+            - I switched from day mode to night mode.
+
+        Especially for things that are settings-related,
+        we rarely abstract away the data from `page_params`.
+        As of this writing, over 90 modules refer directly
+        to `page_params` for some reason or another.
+
+        ## Dynamic data
+
+        Some of the data in `page_params` is either
+        more highly dynamic than settings data, or
+        has more performance requirements than
+        simple settings data, or both.  Examples
+        include:
+
+            - tracking all users (we want to have
+              multiple Maps to find users, for example)
+            - tracking all streams
+            - tracking presence data
+            - tracking user groups and bots
+            - tracking recent PMs
+
+        Using stream data as an example, we use a
+        module called `stream_data` to actually track
+        all the info about the streams that a user
+        can know about.  We populate this module
+        with data from `page_params`, but thereafter
+        `stream_data.js` "owns" the stream data:
+
+            - other modules should ask `stream_data`
+              for stuff (and not go to `page_params`)
+            - when server events come in, they should
+              be processed by stream_data to update
+              its own data structures
+
+        To help enforce this paradigm, we do the
+        following:
+
+            - only pass `stream_data` what it needs
+              from `page_params`
+            - delete the reference to data owned by
+              `stream_data` in `page_params` itself
+    */
+
+    function pop_fields(...fields) {
+        const result = {};
+
+        for (const field of fields) {
+            result[field] = page_params[field];
+            delete page_params[field];
+        }
+
+        return result;
+    }
+
+    const alert_words_params = pop_fields(
+        'alert_words'
+    );
+
+    const bot_params = pop_fields(
+        'realm_bots'
+    );
+
+    const people_params = pop_fields(
+        'realm_users',
+        'realm_non_active_users',
+        'cross_realm_bots'
+    );
+
+    const pm_conversations_params = pop_fields(
+        'recent_private_conversations'
+    );
+
+    const presence_params = pop_fields(
+        'presences',
+        'initial_servertime'
+    );
+
+    const stream_data_params = pop_fields(
+        'subscriptions',
+        'unsubscribed',
+        'never_subscribed',
+        'realm_default_streams'
+    );
+
+    const user_groups_params = pop_fields(
+        'realm_user_groups'
+    );
+
+    const user_status_params = pop_fields(
+        'user_status'
+    );
+
+    alert_words.initialize(alert_words_params);
+    emojisets.initialize();
+    people.initialize(page_params.user_id, people_params);
     scroll_bar.initialize();
     message_viewport.initialize();
     exports.initialize_kitchen_sink_stuff();
     echo.initialize();
     stream_color.initialize();
     stream_edit.initialize();
-    stream_data.initialize();
-    pm_conversations.recent.initialize();
+    stream_data.initialize(stream_data_params);
+    pm_conversations.recent.initialize(pm_conversations_params);
     muting.initialize();
     subs.initialize();
     stream_list.initialize();
@@ -316,17 +447,20 @@ exports.initialize_everything = function () {
         tab_bar.initialize();
     }
     server_events.initialize();
-    user_status.initialize();
+    user_status.initialize(user_status_params);
     compose_pm_pill.initialize();
     search_pill_widget.initialize();
     reload.initialize();
-    user_groups.initialize();
+    user_groups.initialize(user_groups_params);
     unread.initialize();
-    bot_data.initialize(); // Must happen after people.initialize()
+    bot_data.initialize(bot_params); // Must happen after people.initialize()
     message_fetch.initialize();
     message_scroll.initialize();
     emoji.initialize();
-    markdown.initialize(); // Must happen after emoji.initialize()
+    markdown.initialize(
+        page_params.realm_filters,
+        markdown_config.get_helpers()
+    );
     compose.initialize();
     composebox_typeahead.initialize(); // Must happen after compose.initialize()
     search.initialize();
@@ -339,6 +473,7 @@ exports.initialize_everything = function () {
     hashchange.initialize();
     pointer.initialize();
     unread_ui.initialize();
+    presence.initialize(presence_params);
     activity.initialize();
     emoji_picker.initialize();
     compose_fade.initialize();

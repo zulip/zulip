@@ -80,7 +80,7 @@ def get_membership_body(payload: Dict[str, Any]) -> str:
     member = payload['member']
     team_name = payload['team']['name']
 
-    return u"{sender} {action} [{username}]({html_url}) {preposition} the {team_name} team.".format(
+    return "{sender} {action} [{username}]({html_url}) {preposition} the {team_name} team.".format(
         sender=get_sender_name(payload),
         action=action,
         username=member['login'],
@@ -90,7 +90,7 @@ def get_membership_body(payload: Dict[str, Any]) -> str:
     )
 
 def get_member_body(payload: Dict[str, Any]) -> str:
-    return u"{} {} [{}]({}) to [{}]({}).".format(
+    return "{} {} [{}]({}) to [{}]({}).".format(
         get_sender_name(payload),
         payload['action'],
         payload['member']['login'],
@@ -137,25 +137,25 @@ def get_issue_comment_body(payload: Dict[str, Any],
 
 def get_fork_body(payload: Dict[str, Any]) -> str:
     forkee = payload['forkee']
-    return u"{} forked [{}]({}).".format(
+    return "{} forked [{}]({}).".format(
         get_sender_name(payload),
         forkee['name'],
         forkee['html_url']
     )
 
 def get_deployment_body(payload: Dict[str, Any]) -> str:
-    return u'{} created new deployment.'.format(
+    return '{} created new deployment.'.format(
         get_sender_name(payload),
     )
 
 def get_change_deployment_status_body(payload: Dict[str, Any]) -> str:
-    return u'Deployment changed status to {}.'.format(
+    return 'Deployment changed status to {}.'.format(
         payload['deployment_status']['state'],
     )
 
 def get_create_or_delete_body(payload: Dict[str, Any], action: str) -> str:
     ref_type = payload['ref_type']
-    return u'{} {} {} {}.'.format(
+    return '{} {} {} {}.'.format(
         get_sender_name(payload),
         action,
         ref_type,
@@ -166,7 +166,7 @@ def get_commit_comment_body(payload: Dict[str, Any]) -> str:
     comment = payload['comment']
     comment_url = comment['html_url']
     commit_url = comment_url.split('#', 1)[0]
-    action = u'[commented]({})'.format(comment_url)
+    action = '[commented]({})'.format(comment_url)
     return get_commits_comment_action_message(
         get_sender_name(payload),
         action,
@@ -199,43 +199,43 @@ def get_push_commits_body(payload: Dict[str, Any]) -> str:
     )
 
 def get_public_body(payload: Dict[str, Any]) -> str:
-    return u"{} made [the repository]({}) public.".format(
+    return "{} made [the repository]({}) public.".format(
         get_sender_name(payload),
         payload['repository']['html_url'],
     )
 
 def get_wiki_pages_body(payload: Dict[str, Any]) -> str:
-    wiki_page_info_template = u"* {action} [{title}]({url})\n"
-    wiki_info = u''
+    wiki_page_info_template = "* {action} [{title}]({url})\n"
+    wiki_info = ''
     for page in payload['pages']:
         wiki_info += wiki_page_info_template.format(
             action=page['action'],
             title=page['title'],
             url=page['html_url'],
         )
-    return u"{}:\n{}".format(get_sender_name(payload), wiki_info.rstrip())
+    return "{}:\n{}".format(get_sender_name(payload), wiki_info.rstrip())
 
 def get_watch_body(payload: Dict[str, Any]) -> str:
-    return u"{} starred [the repository]({}).".format(
+    return "{} starred [the repository]({}).".format(
         get_sender_name(payload),
         payload['repository']['html_url']
     )
 
 def get_repository_body(payload: Dict[str, Any]) -> str:
-    return u"{} {} [the repository]({}).".format(
+    return "{} {} [the repository]({}).".format(
         get_sender_name(payload),
         payload.get('action'),
         payload['repository']['html_url']
     )
 
 def get_add_team_body(payload: Dict[str, Any]) -> str:
-    return u"[The repository]({}) was added to team {}.".format(
+    return "[The repository]({}) was added to team {}.".format(
         payload['repository']['html_url'],
         payload['team']['name']
     )
 
 def get_release_body(payload: Dict[str, Any]) -> str:
-    return u"{} {} [release for tag {}]({}).".format(
+    return "{} {} [release for tag {}]({}).".format(
         get_sender_name(payload),
         payload['action'],
         payload['release']['tag_name'],
@@ -257,7 +257,7 @@ def get_page_build_body(payload: Dict[str, Any]) -> str:
         CONTENT_MESSAGE_TEMPLATE.format(message=build['error']['message'])
     )
 
-    return u"Github Pages build, trigerred by {}, {}.".format(
+    return "Github Pages build, triggered by {}, {}.".format(
         payload['build']['pusher']['login'],
         action
     )
@@ -270,7 +270,7 @@ def get_status_body(payload: Dict[str, Any]) -> str:
         )
     else:
         status = payload['state']
-    return u"[{}]({}) changed its status to {}.".format(
+    return "[{}]({}) changed its status to {}.".format(
         payload['sha'][:7],  # TODO
         payload['commit']['html_url'],
         status
@@ -313,8 +313,12 @@ def get_pull_request_review_comment_body(payload: Dict[str, Any],
 
 def get_pull_request_review_requested_body(payload: Dict[str, Any],
                                            include_title: Optional[bool]=False) -> str:
-    requested_reviewers = (payload['pull_request']['requested_reviewers'] or
-                           [payload['requested_reviewer']])
+    requested_reviewer = [payload['requested_reviewer']] if 'requested_reviewer' in payload else []
+    requested_reviewers = (payload['pull_request']['requested_reviewers'] or requested_reviewer)
+
+    requested_team = [payload['requested_team']] if 'requested_team' in payload else []
+    requested_team_reviewers = (payload['pull_request']['requested_teams'] or requested_team)
+
     sender = get_sender_name(payload)
     pr_number = payload['pull_request']['number']
     pr_url = payload['pull_request']['html_url']
@@ -323,13 +327,19 @@ def get_pull_request_review_requested_body(payload: Dict[str, Any],
                           "[PR #{pr_number} {title}]({pr_url}).")
     body = message_with_title if include_title else message
 
+    all_reviewers = []
+
+    for reviewer in requested_reviewers:
+        all_reviewers.append("[{login}]({html_url})".format(**reviewer))
+
+    for team_reviewer in requested_team_reviewers:
+        all_reviewers.append("[{name}]({html_url})".format(**team_reviewer))
+
     reviewers = ""
-    if len(requested_reviewers) == 1:
-        reviewers = "[{login}]({html_url})".format(**requested_reviewers[0])
+    if len(all_reviewers) == 1:
+        reviewers = all_reviewers[0]
     else:
-        for reviewer in requested_reviewers[:-1]:
-            reviewers += "[{login}]({html_url}), ".format(**reviewer)
-        reviewers += "and [{login}]({html_url})".format(**requested_reviewers[-1])
+        reviewers = "{} and {}".format(', '.join(all_reviewers[:-1]), all_reviewers[-1])
 
     return body.format(
         sender=sender,
@@ -402,12 +412,12 @@ def get_subject_based_on_type(payload: Dict[str, Any], event: str) -> str:
             title=payload['issue']['title']
         )
     elif event.startswith('deployment'):
-        return u"{} / Deployment on {}".format(
+        return "{} / Deployment on {}".format(
             get_repository_name(payload),
             payload['deployment']['environment']
         )
     elif event == 'membership':
-        return u"{} organization".format(payload['organization']['login'])
+        return "{} organization".format(payload['organization']['login'])
     elif event == 'push_commits':
         return TOPIC_WITH_BRANCH_TEMPLATE.format(
             repo=get_repository_name(payload),
@@ -422,7 +432,7 @@ def get_subject_based_on_type(payload: Dict[str, Any], event: str) -> str:
         if payload.get('repository') is None:
             return get_organization_name(payload)
     elif event == 'check_run':
-        return u"{} / checks".format(get_repository_name(payload))
+        return "{} / checks".format(get_repository_name(payload))
 
     return get_repository_name(payload)
 

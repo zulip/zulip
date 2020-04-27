@@ -38,10 +38,10 @@ exports.can_edit = function (group_id) {
 };
 
 exports.populate_user_groups = function () {
-
     const user_groups_section = $('#user-groups').expectOne();
     const user_groups_array = user_groups.get_realm_user_groups();
-    _.each(user_groups_array, function (data) {
+
+    for (const data of user_groups_array) {
         user_groups_section.append(render_admin_user_group_list({
             user_group: {
                 name: data.name,
@@ -58,7 +58,7 @@ exports.populate_user_groups = function () {
 
         const userg = $('div.user-group[id="' + data.id + '"]');
         data.members.forEach(function (user_id) {
-            const user = people.get_person_from_user_id(user_id);
+            const user = people.get_by_user_id(user_id);
             user_pill.append_user(user, pills);
         });
 
@@ -87,7 +87,7 @@ exports.populate_user_groups = function () {
         function is_user_group_changed() {
             const draft_group = get_pill_user_ids();
             const group_data = user_groups.get_user_group_from_id(data.id);
-            const original_group = [...group_data.members];
+            const original_group = Array.from(group_data.members);
             const same_groups = _.isEqual(_.sortBy(draft_group), _.sortBy(original_group));
             const description = $('#user-groups #' + data.id + ' .description').text().trim();
             const name = $('#user-groups #' + data.id + ' .name').text().trim();
@@ -115,8 +115,8 @@ exports.populate_user_groups = function () {
             if (is_user_group_changed() &&
                !cancel_button.is(':visible')) {
                 saved_button.fadeOut(0);
-                cancel_button.css({display: 'inline-block', opacity: 0}).fadeTo(400, 1);
-                save_instructions.css({display: 'block', opacity: 0}).fadeTo(400, 1);
+                cancel_button.css({display: 'inline-block', opacity: '0'}).fadeTo(400, 1);
+                save_instructions.css({display: 'block', opacity: '0'}).fadeTo(400, 1);
             } else if (!is_user_group_changed() &&
                 cancel_button.is(':visible')) {
                 cancel_button.fadeOut();
@@ -131,14 +131,14 @@ exports.populate_user_groups = function () {
             if (!saved_button.is(':visible')) {
                 cancel_button.fadeOut(0);
                 save_instructions.fadeOut(0);
-                saved_button.css({display: 'inline-block', opacity: 0}).fadeTo(400, 1).delay(2000).fadeTo(400, 0);
+                saved_button.css({display: 'inline-block', opacity: '0'}).fadeTo(400, 1).delay(2000).fadeTo(400, 0);
             }
         }
 
         function save_members() {
             const draft_group = get_pill_user_ids();
             const group_data = user_groups.get_user_group_from_id(data.id);
-            const original_group = [...group_data.members];
+            const original_group = Array.from(group_data.members);
             const same_groups = _.isEqual(_.sortBy(draft_group), _.sortBy(original_group));
             if (!draft_group.length || same_groups) {
                 return;
@@ -197,9 +197,9 @@ exports.populate_user_groups = function () {
             const blur_exceptions = _.without([".pill-container", ".name", ".description", ".input", ".delete"],
                                               except_class);
             if ($(event.relatedTarget).closest('#user-groups #' + data.id).length) {
-                return _.some(blur_exceptions, function (class_name) {
-                    return $(event.relatedTarget).closest(class_name).length;
-                });
+                return blur_exceptions.some(
+                    class_name => $(event.relatedTarget).closest(class_name).length
+                );
             }
             return false;
         }
@@ -257,7 +257,7 @@ exports.populate_user_groups = function () {
                 }, 100);
             });
         }());
-    });
+    }
 };
 
 exports.set_up = function () {
@@ -273,12 +273,13 @@ exports.set_up = function () {
         const group = {
             members: JSON.stringify([people.my_current_user_id()]),
         };
-        _.each($(this).serializeArray(), function (obj) {
+
+        for (const obj of $(this).serializeArray()) {
             if (obj.value.trim() === "") {
-                return;
+                continue;
             }
             group[obj.name] = obj.value;
-        });
+        }
 
         channel.post({
             url: "/json/user_groups/create",

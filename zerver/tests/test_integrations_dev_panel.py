@@ -30,7 +30,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         bot = get_user('webhook-bot@zulip.com', self.zulip_realm)
         url = "/api/v1/external/airbrake?api_key={key}&stream=Denmark&topic=Airbrake Notifications".format(key=bot.api_key)
         target_url = "/devtools/integrations/check_send_webhook_fixture_message"
-        with open("zerver/webhooks/airbrake/fixtures/error_message.json", "r") as f:
+        with open("zerver/webhooks/airbrake/fixtures/error_message.json") as f:
             body = f.read()
 
         data = {
@@ -57,7 +57,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         bot = get_user('webhook-bot@zulip.com', self.zulip_realm)
         url = "/api/v1/external/github?api_key={key}&stream=Denmark&topic=GitHub Notifications".format(key=bot.api_key)
         target_url = "/devtools/integrations/check_send_webhook_fixture_message"
-        with open("zerver/webhooks/github/fixtures/ping__organization.json", "r") as f:
+        with open("zerver/webhooks/github/fixtures/ping__organization.json") as f:
             body = f.read()
 
         data = {
@@ -80,7 +80,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         bot = get_user('webhook-bot@zulip.com', self.zulip_realm)
         url = "/api/v1/external/wordpress?api_key={key}&stream=Denmark&topic=Wordpress Notifications".format(key=bot.api_key)
         target_url = "/devtools/integrations/check_send_webhook_fixture_message"
-        with open("zerver/webhooks/wordpress/fixtures/publish_post_no_data_provided.txt", "r") as f:
+        with open("zerver/webhooks/wordpress/fixtures/publish_post_no_data_provided.txt") as f:
             body = f.read()
 
         data = {
@@ -233,7 +233,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             # We have to use this roundabout manner since the order may vary each time. This is not
             # an issue. Basically, we're trying to compare 2 lists and since we're not resorting to
             # using sets or a sorted order, we're sticking with O(n*m) time complexity for this
-            # comparision (where n and m are the lengths of the two lists respectively). But since
+            # comparison (where n and m are the lengths of the two lists respectively). But since
             # this is just a unit test and more importantly n = m = some-low-number we don't really
             # care about the time complexity being what it is.
             self.assertTrue(r in expected_responses)

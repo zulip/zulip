@@ -1,14 +1,15 @@
 zrequire('hash_util');
 set_global('katex', zrequire('katex', 'katex/dist/katex.min.js'));
 set_global('marked', zrequire('marked', 'third/marked/lib/marked'));
-zrequire('util');
+
 zrequire('fenced_code');
 zrequire('stream_data');
 zrequire('people');
 zrequire('user_groups');
-set_global('emoji_codes', zrequire('emoji_codes', 'generated/emoji/emoji_codes'));
+const emoji_codes = zrequire('emoji_codes', 'generated/emoji/emoji_codes.json');
 zrequire('emoji');
 zrequire('message_store');
+const markdown_config = zrequire('markdown_config');
 zrequire('markdown');
 
 set_global('location', {
@@ -41,8 +42,6 @@ set_global('page_params', {
     translate_emoticons: false,
 });
 
-set_global('blueslip', global.make_zblueslip());
-
 set_global('Image', function () {
     return {};
 });
@@ -52,10 +51,6 @@ const doc = "";
 set_global('document', doc);
 
 set_global('$', global.make_zjquery());
-
-set_global('feature_flags', {local_echo: true});
-
-const people = global.people;
 
 const cordelia = {
     full_name: 'Cordelia Lear',
@@ -94,6 +89,12 @@ people.add({
     email: 'bobby2@zulip.com',
 });
 
+people.add({
+    full_name: "& & &amp;",
+    user_id: 107,
+    email: "ampampamp@zulip.com",
+});
+
 people.initialize_current_user(cordelia.user_id);
 
 const hamletcharacters = {
@@ -117,9 +118,17 @@ const edgecase_group = {
     members: [],
 };
 
+const amp_group = {
+    name: "& & &amp;",
+    id: 4,
+    description: "Check ampersand escaping",
+    members: [],
+};
+
 global.user_groups.add(hamletcharacters);
 global.user_groups.add(backend);
 global.user_groups.add(edgecase_group);
+global.user_groups.add(amp_group);
 
 const stream_data = global.stream_data;
 const denmark = {
@@ -151,23 +160,34 @@ const edgecase_stream_2 = {
     stream_id: 4,
     is_muted: false,
 };
-stream_data.add_sub('Denmark', denmark);
-stream_data.add_sub('social', social);
-stream_data.add_sub('Bobby <h1>Tables</h1>', edgecase_stream);
-stream_data.add_sub('Bobby <h1', edgecase_stream_2);
+const amp_stream = {
+    subscribed: true,
+    color: 'orange',
+    name: '& & &amp;',
+    stream_id: 5,
+    is_muted: false,
+};
+stream_data.add_sub(denmark);
+stream_data.add_sub(social);
+stream_data.add_sub(edgecase_stream);
+stream_data.add_sub(edgecase_stream_2);
 // Note: edgecase_stream cannot be mentioned because it is caught by
 // streamTopicHandler and it would be parsed as edgecase_stream_2.
+stream_data.add_sub(amp_stream);
 
 // Check the default behavior of fenced code blocks
 // works properly before markdown is initialized.
 run_test('fenced_block_defaults', () => {
     const input = '\n```\nfenced code\n```\n\nand then after\n';
-    const expected = '\n\n<div class="codehilite"><pre><span></span>fenced code\n</pre></div>\n\n\n\nand then after\n\n';
+    const expected = '\n\n<div class="codehilite"><pre><span></span><code>fenced code\n</code></pre></div>\n\n\n\nand then after\n\n';
     const output = fenced_code.process_fenced_code(input);
     assert.equal(output, expected);
 });
 
-markdown.initialize();
+markdown.initialize(
+    page_params.realm_filters,
+    markdown_config.get_helpers()
+);
 
 const bugdown_data = global.read_fixture_data('markdown_test_cases.json');
 
@@ -270,22 +290,22 @@ run_test('marked', () => {
         {input: 'hello ***foo*** for you', expected: '<p>hello <strong><em>foo</em></strong> for you</p>'},
         {input: '__hello__', expected: '<p>__hello__</p>'},
         {input: '\n```\nfenced code\n```\n\nand then after\n',
-         expected: '<div class="codehilite"><pre><span></span>fenced code\n</pre></div>\n\n\n<p>and then after</p>'},
+         expected: '<div class="codehilite"><pre><span></span><code>fenced code\n</code></pre></div>\n\n\n<p>and then after</p>'},
         {input: '\n```\n    fenced code trailing whitespace            \n```\n\nand then after\n',
-         expected: '<div class="codehilite"><pre><span></span>    fenced code trailing whitespace\n</pre></div>\n\n\n<p>and then after</p>'},
+         expected: '<div class="codehilite"><pre><span></span><code>    fenced code trailing whitespace\n</code></pre></div>\n\n\n<p>and then after</p>'},
         {input: '* a\n* list \n* here',
          expected: '<ul>\n<li>a</li>\n<li>list </li>\n<li>here</li>\n</ul>'},
         {input: '\n```c#\nfenced code special\n```\n\nand then after\n',
-         expected: '<div class="codehilite"><pre><span></span>fenced code special\n</pre></div>\n\n\n<p>and then after</p>'},
+         expected: '<div class="codehilite"><pre><span></span><code>fenced code special\n</code></pre></div>\n\n\n<p>and then after</p>'},
         {input: '\n```vb.net\nfenced code dot\n```\n\nand then after\n',
-         expected: '<div class="codehilite"><pre><span></span>fenced code dot\n</pre></div>\n\n\n<p>and then after</p>'},
+         expected: '<div class="codehilite"><pre><span></span><code>fenced code dot\n</code></pre></div>\n\n\n<p>and then after</p>'},
         {input: 'Some text first\n* a\n* list \n* here\n\nand then after',
          expected: '<p>Some text first</p>\n<ul>\n<li>a</li>\n<li>list </li>\n<li>here</li>\n</ul>\n<p>and then after</p>'},
         {input: '1. an\n2. ordered \n3. list',
          expected: '<ol>\n<li>an</li>\n<li>ordered </li>\n<li>list</li>\n</ol>'},
         {input: '\n~~~quote\nquote this for me\n~~~\nthanks\n',
          expected: '<blockquote>\n<p>quote this for me</p>\n</blockquote>\n<p>thanks</p>'},
-        {input: 'This is a @**Cordelia Lear** mention',
+        {input: 'This is a @**CordeLIA Lear** mention',
          expected: '<p>This is a <span class="user-mention" data-user-id="101">@Cordelia Lear</span> mention</p>'},
         {input: 'These @ @**** are not mentions',
          expected: '<p>These @ @<em>**</em> are not mentions</p>'},
@@ -323,13 +343,13 @@ run_test('marked', () => {
         // `contains_backend_only_syntax()`. Those which return True
         // are tested separately.
         {input: 'This is a realm filter #1234 with text after it',
-         expected: '<p>This is a realm filter <a href="https://trac.zulip.net/ticket/1234" target="_blank" title="https://trac.zulip.net/ticket/1234">#1234</a> with text after it</p>'},
+         expected: '<p>This is a realm filter <a href="https://trac.zulip.net/ticket/1234" title="https://trac.zulip.net/ticket/1234">#1234</a> with text after it</p>'},
         {input: '#1234is not a realm filter.',
          expected: '<p>#1234is not a realm filter.</p>'},
         {input: 'A pattern written as #1234is not a realm filter.',
          expected: '<p>A pattern written as #1234is not a realm filter.</p>'},
         {input: 'This is a realm filter with ZGROUP_123:45 groups',
-         expected: '<p>This is a realm filter with <a href="https://zone_45.zulip.net/ticket/123" target="_blank" title="https://zone_45.zulip.net/ticket/123">ZGROUP_123:45</a> groups</p>'},
+         expected: '<p>This is a realm filter with <a href="https://zone_45.zulip.net/ticket/123" title="https://zone_45.zulip.net/ticket/123">ZGROUP_123:45</a> groups</p>'},
         {input: 'This is an !avatar(cordelia@zulip.com) of Cordelia Lear',
          expected: '<p>This is an <img alt="cordelia@zulip.com" class="message_body_gravatar" src="/avatar/cordelia@zulip.com?s=30" title="cordelia@zulip.com"> of Cordelia Lear</p>'},
         {input: 'This is a !gravatar(cordelia@zulip.com) of Cordelia Lear',
@@ -344,8 +364,8 @@ run_test('marked', () => {
          expected: '<p><span class="user-mention" data-user-id="104">@Mark Twin</span> and <span class="user-mention" data-user-id="105">@Mark Twin</span> are out to confuse you.</p>'},
         {input: '@**Invalid User|1234**',
          expected: '<p>@**Invalid User|1234**</p>'},
-        {input: '@**Cordelia Lear|103** has a wrong user_id.',
-         expected: '<p>@**Cordelia Lear|103** has a wrong user_id.</p>'},
+        {input: '@**Cordelia LeAR|103** has a wrong user_id.',
+         expected: '<p>@**Cordelia LeAR|103** has a wrong user_id.</p>'},
         {input: '@**Brother of Bobby|123** is really the full name.',
          expected: '<p><span class="user-mention" data-user-id="106">@Brother of Bobby|123</span> is really the full name.</p>'},
         {input: '@**Brother of Bobby|123|106**',
@@ -381,10 +401,18 @@ run_test('marked', () => {
          expected: '<p>@**O&#39;Connell**</p>'},
         {input: '@*Bobby <h1>Tables</h1>*',
          expected: '<p><span class="user-group-mention" data-user-group-id="3">@Bobby &lt;h1&gt;Tables&lt;/h1&gt;</span></p>'},
+        {input: '@*& &amp; &amp;amp;*',
+         expected: '<p><span class="user-group-mention" data-user-group-id="4">@&amp; &amp; &amp;amp;</span></p>'},
         {input: '@**Bobby <h1>Tables</h1>**',
          expected: '<p><span class="user-mention" data-user-id="103">@Bobby &lt;h1&gt;Tables&lt;/h1&gt;</span></p>'},
+        {input: '@**& &amp; &amp;amp;**',
+         expected: '<p><span class="user-mention" data-user-id="107">@&amp; &amp; &amp;amp;</span></p>'},
         {input: '#**Bobby <h1>Tables</h1>**',
          expected: '<p><a class="stream-topic" data-stream-id="4" href="/#narrow/stream/4-Bobby-.3Ch1/topic/Tables.3C.2Fh1.3E">#Bobby &lt;h1 > Tables&lt;/h1&gt;</a></p>'},
+        {input: '#**& &amp; &amp;amp;**',
+         expected: '<p><a class="stream" data-stream-id="5" href="/#narrow/stream/5-.26-.26.20.26amp.3B">#&amp; &amp; &amp;amp;</a></p>'},
+        {input: '#**& &amp; &amp;amp;>& &amp; &amp;amp;**',
+         expected: '<p><a class="stream-topic" data-stream-id="5" href="/#narrow/stream/5-.26-.26.20.26amp.3B/topic/.26.20.26.20.26amp.3B">#&amp; &amp; &amp;amp; > &amp; &amp; &amp;amp;</a></p>'},
     ];
 
     // We remove one of the unicode emoji we put as input in one of the test
@@ -409,50 +437,50 @@ run_test('marked', () => {
 run_test('topic_links', () => {
     let message = {type: 'stream', topic: "No links here"};
     markdown.add_topic_links(message);
-    assert.equal(util.get_topic_links(message).length, []);
+    assert.equal(message.topic_links.length, 0);
 
     message = {type: 'stream', topic: "One #123 link here"};
     markdown.add_topic_links(message);
-    assert.equal(util.get_topic_links(message).length, 1);
-    assert.equal(util.get_topic_links(message)[0], "https://trac.zulip.net/ticket/123");
+    assert.equal(message.topic_links.length, 1);
+    assert.equal(message.topic_links[0], "https://trac.zulip.net/ticket/123");
 
     message = {type: 'stream', topic: "Two #123 #456 link here"};
     markdown.add_topic_links(message);
-    assert.equal(util.get_topic_links(message).length, 2);
-    assert.equal(util.get_topic_links(message)[0], "https://trac.zulip.net/ticket/123");
-    assert.equal(util.get_topic_links(message)[1], "https://trac.zulip.net/ticket/456");
+    assert.equal(message.topic_links.length, 2);
+    assert.equal(message.topic_links[0], "https://trac.zulip.net/ticket/123");
+    assert.equal(message.topic_links[1], "https://trac.zulip.net/ticket/456");
 
     message = {type: 'stream', topic: "New ZBUG_123 link here"};
     markdown.add_topic_links(message);
-    assert.equal(util.get_topic_links(message).length, 1);
-    assert.equal(util.get_topic_links(message)[0], "https://trac2.zulip.net/ticket/123");
+    assert.equal(message.topic_links.length, 1);
+    assert.equal(message.topic_links[0], "https://trac2.zulip.net/ticket/123");
 
     message = {type: 'stream', topic: "New ZBUG_123 with #456 link here"};
     markdown.add_topic_links(message);
-    assert.equal(util.get_topic_links(message).length, 2);
-    assert(util.get_topic_links(message).indexOf("https://trac2.zulip.net/ticket/123") !== -1);
-    assert(util.get_topic_links(message).indexOf("https://trac.zulip.net/ticket/456") !== -1);
+    assert.equal(message.topic_links.length, 2);
+    assert(message.topic_links.includes("https://trac2.zulip.net/ticket/123"));
+    assert(message.topic_links.includes("https://trac.zulip.net/ticket/456"));
 
     message = {type: 'stream', topic: "One ZGROUP_123:45 link here"};
     markdown.add_topic_links(message);
-    assert.equal(util.get_topic_links(message).length, 1);
-    assert.equal(util.get_topic_links(message)[0], "https://zone_45.zulip.net/ticket/123");
+    assert.equal(message.topic_links.length, 1);
+    assert.equal(message.topic_links[0], "https://zone_45.zulip.net/ticket/123");
 
     message = {type: 'stream', topic: "Hello https://google.com"};
     markdown.add_topic_links(message);
-    assert.equal(util.get_topic_links(message).length, 1);
-    assert.equal(util.get_topic_links(message)[0], "https://google.com");
+    assert.equal(message.topic_links.length, 1);
+    assert.equal(message.topic_links[0], "https://google.com");
 
     message = {type: 'stream', topic: "#456 https://google.com https://github.com"};
     markdown.add_topic_links(message);
-    assert.equal(util.get_topic_links(message).length, 3);
-    assert(util.get_topic_links(message).indexOf("https://google.com") !== -1);
-    assert(util.get_topic_links(message).indexOf("https://github.com") !== -1);
-    assert(util.get_topic_links(message).indexOf("https://trac.zulip.net/ticket/456") !== -1);
+    assert.equal(message.topic_links.length, 3);
+    assert(message.topic_links.includes("https://google.com"));
+    assert(message.topic_links.includes("https://github.com"));
+    assert(message.topic_links.includes("https://trac.zulip.net/ticket/456"));
 
     message = {type: "not-stream"};
     markdown.add_topic_links(message);
-    assert.equal(util.get_topic_links(message).length, 0);
+    assert.equal(message.topic_links.length, 0);
 });
 
 run_test('message_flags', () => {
@@ -539,33 +567,29 @@ run_test('backend_only_realm_filters', () => {
 
 run_test('python_to_js_filter', () => {
     // The only way to reach python_to_js_filter is indirectly, hence the call
-    // to set_realm_filters.
-    markdown.set_realm_filters([['/a(?im)a/g'], ['/a(?L)a/g']]);
+    // to update_realm_filter_rules.
+    markdown.update_realm_filter_rules([['/a(?im)a/g'], ['/a(?L)a/g']]);
     let actual_value = marked.InlineLexer.rules.zulip.realm_filters;
     let expected_value = [/\/aa\/g(?![\w])/gim, /\/aa\/g(?![\w])/g];
     assert.deepEqual(actual_value, expected_value);
     // Test case with multiple replacements.
-    markdown.set_realm_filters([['#cf(?P<contest>[0-9]+)(?P<problem>[A-Z][0-9A-Z]*)', 'http://google.com']]);
+    markdown.update_realm_filter_rules([['#cf(?P<contest>[0-9]+)(?P<problem>[A-Z][0-9A-Z]*)', 'http://google.com']]);
     actual_value = marked.InlineLexer.rules.zulip.realm_filters;
     expected_value = [/#cf([0-9]+)([A-Z][0-9A-Z]*)(?![\w])/g];
     assert.deepEqual(actual_value, expected_value);
     // Test incorrect syntax.
-    blueslip.set_test_data('error', 'python_to_js_filter: Invalid regular expression: /!@#@(!#&((!&(@#((?![\\w])/: Unterminated group');
-    markdown.set_realm_filters([['!@#@(!#&((!&(@#(', 'http://google.com']]);
+    blueslip.expect('error', 'python_to_js_filter: Invalid regular expression: /!@#@(!#&((!&(@#((?![\\w])/: Unterminated group');
+    markdown.update_realm_filter_rules([['!@#@(!#&((!&(@#(', 'http://google.com']]);
     actual_value = marked.InlineLexer.rules.zulip.realm_filters;
     expected_value = [];
     assert.deepEqual(actual_value, expected_value);
-    assert.equal(blueslip.get_test_logs('error').length, 1);
-    blueslip.clear_test_data();
 });
 
 run_test('katex_throws_unexpected_exceptions', () => {
     katex.renderToString = function () { throw new Error('some-exception'); };
-    blueslip.set_test_data('error', 'Error: some-exception');
+    blueslip.expect('error', 'Error: some-exception');
     const message = { raw_content: '$$a$$' };
     markdown.apply_markdown(message);
-    assert.equal(blueslip.get_test_logs('error').length, 1);
-    blueslip.clear_test_data();
 });
 
 run_test('misc_helpers', () => {
@@ -575,4 +599,40 @@ run_test('misc_helpers', () => {
     elem.addClass('silent');
     markdown.set_name_in_mention_element(elem, 'Aaron, but silent');
     assert.equal(elem.text(), 'Aaron, but silent');
+});
+
+run_test('translate_emoticons_to_names', () => {
+    // Simple test
+    const test_text = 'Testing :)';
+    const expected = 'Testing :slight_smile:';
+    const result = markdown.translate_emoticons_to_names(test_text);
+    assert.equal(expected, result);
+
+    // Extensive tests.
+    // The following code loops over the test cases and each emoticon conversion
+    // to generate multiple test cases.
+    const testcases = [
+        {name: 'only emoticon', original: '<original>', expected: '<converted>'},
+        {name: 'space at start', original: ' <original>', expected: ' <converted>'},
+        {name: 'space at end', original: '<original> ', expected: '<converted> '},
+        {name: 'symbol at end', original: '<original>!', expected: '<converted>!'},
+        {name: 'symbol at start', original: 'Hello,<original>', expected: 'Hello,<converted>'},
+        {name: 'after a word', original: 'Hello<original>', expected: 'Hello<original>'},
+        {name: 'between words', original: 'Hello<original>World', expected: 'Hello<original>World'},
+        {name: 'end of sentence', original: 'End of sentence. <original>', expected: 'End of sentence. <converted>'},
+        {name: 'between symbols', original: 'Hello.<original>! World.', expected: 'Hello.<original>! World.'},
+        {name: 'before end of sentence', original: 'Hello <original>!', expected: 'Hello <converted>!'},
+    ];
+    for (const [shortcut, full_name] of Object.entries(emoji_codes.emoticon_conversions)) {
+        for (const t of testcases) {
+            const converted_value = full_name;
+            let original = t.original;
+            let expected = t.expected;
+            original = original.replace(/(<original>)/g, shortcut);
+            expected = expected.replace(/(<original>)/g, shortcut)
+                .replace(/(<converted>)/g, converted_value);
+            const result = markdown.translate_emoticons_to_names(original);
+            assert.equal(result, expected);
+        }
+    }
 });

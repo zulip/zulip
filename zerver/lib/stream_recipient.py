@@ -16,9 +16,10 @@ class StreamRecipientMap:
     Note that this class uses raw SQL, because we want to highly
     optimize page loads.
     '''
+
     def __init__(self) -> None:
-        self.recip_to_stream = dict()  # type: Dict[int, int]
-        self.stream_to_recip = dict()  # type: Dict[int, int]
+        self.recip_to_stream: Dict[int, int] = dict()
+        self.stream_to_recip: Dict[int, int] = dict()
 
     def populate_with(self, *, stream_id: int, recipient_id: int) -> None:
         # We use * to enforce using named arguments when calling this function,

@@ -102,7 +102,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     # We can't use request.client here because we might not be using
     # an auth decorator that sets it, but we can call its helper to
     # get the same result.
-    platform = get_client_name(request, True)
+    platform = get_client_name(request)
 
     context = {
         'root_domain_landing_page': settings.ROOT_DOMAIN_LANDING_PAGE,
@@ -152,14 +152,14 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
         realm_description = get_realm_rendered_description(realm)
         realm_invite_required = realm.invite_required
 
-    context = {
+    context: Dict[str, Any] = {
         'realm_invite_required': realm_invite_required,
         'realm_description': realm_description,
         'require_email_format_usernames': require_email_format_usernames(realm),
         'password_auth_enabled': password_auth_enabled(realm),
         'any_social_backend_enabled': any_social_backend_enabled(realm),
         'two_factor_authentication_enabled': settings.TWO_FACTOR_AUTHENTICATION_ENABLED,
-    }  # type: Dict[str, Any]
+    }
 
     if realm is not None and realm.description:
         context['OPEN_GRAPH_TITLE'] = realm.name
@@ -177,6 +177,15 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
 
     context['external_authentication_methods'] = get_external_method_dicts(realm)
     context['no_auth_enabled'] = no_auth_enabled
+
+    # Include another copy of external_authentication_methods in page_params for use
+    # by the desktop client. We expand it with IDs of the <button> elements corresponding
+    # to the authentication methods.
+    context['page_params'] = dict(
+        external_authentication_methods = get_external_method_dicts(realm)
+    )
+    for auth_dict in context['page_params']['external_authentication_methods']:
+        auth_dict['button_id_suffix'] = "auth_button_%s" % (auth_dict['name'],)
 
     return context
 

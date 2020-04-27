@@ -10,7 +10,8 @@ to allow you to easily format your messages.
 * [Emphasis](#emphasis)
 * [Lists](#lists)
 * [Links and images](#links)
-* [Code and TeX](#code)
+* [Code blocks](#code)
+* [LaTeX](#latex)
 * [Quotes](#quotes)
 * [Emoji and emoticons](#emoji-and-emoticons)
 * [Mentions](#mentions)
@@ -108,20 +109,29 @@ You can also use `~~~` to start codeblocks, or just indent the code 4 or more sp
 
 Zulip supports syntax highlighting for hundreds of languages, and a
 typeahead will pop up when you start typing after the ` ``` `. If you can't
-find your language, search for it [here](http://pygments.org/docs/lexers)
+find your language, search for it [here](https://pygments.org/docs/lexers/)
 and try the **short names** listed for the lexers for your language.
+
+Organization administrators can also configure a default syntax
+highlighting language.  In this configuration, one can use ````text`
+to display content without any syntax highlighting.
 
 ## Latex
 ~~~
 Inline: $$O(n^2)$$
 
 Displayed:
-```tex
+``` math
 \int_a^b f(t)\, dt = F(b) - F(a)
 ```
 ~~~
 
 ![](/static/images/help/markdown-latex.png)
+
+Zulip's LaTeX rendering is powered by [KaTeX](https://katex.org).
+Their [support table](https://katex.org/docs/support_table.html) is a
+helpful resource for checking what's supported or how to express
+something.
 
 ## Quotes
 

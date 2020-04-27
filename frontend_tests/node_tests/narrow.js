@@ -4,9 +4,7 @@ zrequire('hashchange');
 zrequire('narrow_state');
 zrequire('people');
 zrequire('stream_data');
-zrequire('util');
 zrequire('Filter', 'js/filter');
-set_global('i18n', global.stub_i18n);
 set_global('page_params', {
     stop_words: ['what', 'about'],
 });
@@ -14,9 +12,10 @@ set_global('page_params', {
 zrequire('narrow');
 
 function set_filter(operators) {
-    operators = _.map(operators, function (op) {
-        return {operator: op[0], operand: op[1]};
-    });
+    operators = operators.map(op => ({
+        operator: op[0],
+        operand: op[1],
+    }));
     narrow_state.set_current_filter(new Filter(operators));
 }
 
@@ -37,37 +36,6 @@ const ray = {
     user_id: 22,
     full_name: 'Raymond',
 };
-
-run_test('stream_topic', () => {
-    set_filter([['stream', 'Foo'], ['topic', 'Bar'], ['search', 'Yo']]);
-
-    set_global('current_msg_list', {
-    });
-
-    global.current_msg_list.selected_message = function () {};
-
-    let stream_topic = narrow.stream_topic();
-
-    assert.deepEqual(stream_topic, {
-        stream: 'Foo',
-        topic: 'Bar',
-    });
-
-    global.current_msg_list.selected_message = function () {
-        return {
-            stream: 'Stream1',
-            topic: 'Topic1',
-        };
-    };
-
-    stream_topic = narrow.stream_topic();
-
-    assert.deepEqual(stream_topic, {
-        stream: 'Stream1',
-        topic: 'Topic1',
-    });
-
-});
 
 run_test('uris', () => {
     people.add(ray);
@@ -110,7 +78,7 @@ run_test('show_empty_narrow_message', () => {
     assert($('#nonsubbed_private_nonexistent_stream_narrow_message').visible());
 
     // for non sub public stream
-    stream_data.add_sub('ROME', {name: 'ROME', stream_id: 99});
+    stream_data.add_sub({name: 'ROME', stream_id: 99});
     stream_data.update_calculated_fields(stream_data.get_sub("ROME"));
     set_filter([['stream', 'Rome']]);
     narrow.show_empty_narrow_message();
@@ -136,7 +104,7 @@ run_test('show_empty_narrow_message', () => {
     narrow.show_empty_narrow_message();
     assert($('#non_existing_user').visible());
 
-    people.add_in_realm(alice);
+    people.add(alice);
     set_filter([['pm-with', ['alice@example.com', 'Yo']]]);
     narrow.show_empty_narrow_message();
     assert($('#non_existing_users').visible());
@@ -221,8 +189,8 @@ run_test('show_invalid_narrow_message', () => {
     narrow_state.reset_current_filter();
     const display = $("#empty_search_stop_words_string");
 
-    stream_data.add_sub('streamA', {name: 'streamA', stream_id: 88});
-    stream_data.add_sub('streamB', {name: 'streamB', stream_id: 77});
+    stream_data.add_sub({name: 'streamA', stream_id: 88});
+    stream_data.add_sub({name: 'streamB', stream_id: 77});
 
     set_filter([['stream', 'streamA'], ['stream', 'streamB']]);
     narrow.show_empty_narrow_message();
@@ -234,8 +202,8 @@ run_test('show_invalid_narrow_message', () => {
     assert($('#empty_search_narrow_message').visible());
     assert.equal(display.text(), 'translated: You are searching for messages that belong to more than one topic, which is not possible.');
 
-    people.add_in_realm(ray);
-    people.add_in_realm(alice);
+    people.add(ray);
+    people.add(alice);
 
     set_filter([['sender', 'alice@example.com'], ['sender', 'ray@example.com']]);
     narrow.show_empty_narrow_message();
@@ -245,7 +213,7 @@ run_test('show_invalid_narrow_message', () => {
 
 run_test('narrow_to_compose_target', () => {
     set_global('compose_state', {});
-    set_global('topic_data', {});
+    set_global('stream_topic_history', {});
     const args = {called: false};
     const activate_backup = narrow.activate;
     narrow.activate = function (operators, opts) {
@@ -269,9 +237,9 @@ run_test('narrow_to_compose_target', () => {
 
     // --- Tests for stream messages ---
     global.compose_state.get_message_type = () => 'stream';
-    stream_data.add_sub('ROME', {name: 'ROME', stream_id: 99});
+    stream_data.add_sub({name: 'ROME', stream_id: 99});
     global.compose_state.stream_name = () => 'ROME';
-    global.topic_data.get_recent_names = () => ['one', 'two', 'three'];
+    global.stream_topic_history.get_recent_topic_names = () => ['one', 'two', 'three'];
 
     // Test with existing topic
     global.compose_state.topic = () => 'one';
@@ -313,9 +281,9 @@ run_test('narrow_to_compose_target', () => {
 
     // --- Tests for PMs ---
     global.compose_state.get_message_type = () => 'private';
-    people.add_in_realm(ray);
-    people.add_in_realm(alice);
-    people.add_in_realm(me);
+    people.add(ray);
+    people.add(alice);
+    people.add(me);
 
     // Test with valid person
     global.compose_state.private_message_recipient = () => 'alice@example.com';
@@ -335,7 +303,7 @@ run_test('narrow_to_compose_target', () => {
         {operator: 'pm-with', operand: 'alice@example.com,ray@example.com'},
     ]);
 
-    // Test with some inavlid persons
+    // Test with some invalid persons
     global.compose_state.private_message_recipient = () => 'alice@example.com,random,ray@example.com';
     args.called = false;
     narrow.to_compose_target();
@@ -344,7 +312,7 @@ run_test('narrow_to_compose_target', () => {
         {operator: 'is', operand: 'private'},
     ]);
 
-    // Test with all inavlid persons
+    // Test with all invalid persons
     global.compose_state.private_message_recipient = () => 'alice,random,ray';
     args.called = false;
     narrow.to_compose_target();

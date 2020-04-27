@@ -2,6 +2,7 @@ import { basename, resolve } from 'path';
 import { cacheLoader, getExposeLoaders } from './webpack-helpers';
 import BundleTracker from 'webpack4-bundle-tracker';
 import CleanCss from 'clean-css';
+import DebugRequirePlugin from './debug-require-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import OptimizeCssAssetsPlugin from 'optimize-css-assets-webpack-plugin';
@@ -15,7 +16,6 @@ const assets: { [name: string]: string[] } = require('./webpack.assets.json');
 
 export default (env?: string): webpack.Configuration[] => {
     const production: boolean = env === "production";
-    const publicPath = production ? '/static/webpack-bundles/' : '/webpack/';
     const config: webpack.Configuration = {
         name: "frontend",
         mode: production ? "production" : "development",
@@ -28,12 +28,17 @@ export default (env?: string): webpack.Configuration[] => {
                     test: /\.font\.js$/,
                     use: [
                         MiniCssExtractPlugin.loader,
-                        'css-loader',
+                        {
+                            loader: 'css-loader',
+                            options: {
+                                url: false,  // webfonts-loader generates public relative URLs
+                            },
+                        },
                         {
                             loader: 'webfonts-loader',
                             options: {
                                 fileName: production ? 'files/[fontname].[chunkhash].[ext]' : 'files/[fontname].[ext]',
-                                publicPath,
+                                publicPath: '',
                             },
                         },
                     ],
@@ -110,7 +115,7 @@ export default (env?: string): webpack.Configuration[] => {
                         knownHelpers: ['if', 'unless', 'each', 'with',
                             // The ones below are defined in static/js/templates.js
                             'plural', 'eq', 'and', 'or', 'not',
-                            't', 'tr'],
+                            't', 'tr', 'rendered_markdown'],
                         preventIndent: true,
                     },
                 },
@@ -120,7 +125,7 @@ export default (env?: string): webpack.Configuration[] => {
                     use: [{
                         loader: 'file-loader',
                         options: {
-                            name: production ? '[name].[hash].[ext]' : '[name].[ext]',
+                            name: production ? '[name].[hash].[ext]' : '[path][name].[ext]',
                             outputPath: 'files/',
                         },
                     }],
@@ -129,7 +134,6 @@ export default (env?: string): webpack.Configuration[] => {
         },
         output: {
             path: resolve(__dirname, '../static/webpack-bundles'),
-            publicPath,
             filename: production ? '[name].[contenthash].js' : '[name].js',
             chunkFilename: production ? '[contenthash].js' : '[id].js',
         },
@@ -187,6 +191,7 @@ export default (env?: string): webpack.Configuration[] => {
             },
         },
         plugins: [
+            new DebugRequirePlugin(),
             new BundleTracker({
                 filename: production
                     ? 'webpack-stats-production.json'
@@ -217,12 +222,11 @@ export default (env?: string): webpack.Configuration[] => {
     // Use the unminified versions of jquery and underscore so that
     // Good error messages show up in production and development in the source maps
     const exposeOptions = [
+        { path: "./debug-require.js", name: "require" },
         { path: "blueimp-md5/js/md5.js" },
         { path: "clipboard/dist/clipboard.js", name: "ClipboardJS" },
         { path: "xdate/src/xdate.js", name: "XDate" },
         { path: "../static/third/marked/lib/marked.js" },
-        { path: "../static/generated/emoji/emoji_codes.js" },
-        { path: "../static/generated/pygments_data.js" },
         { path: "../static/js/debug.js" },
         { path: "../static/js/blueslip.js" },
         { path: "../static/js/common.js" },
@@ -241,6 +245,10 @@ export default (env?: string): webpack.Configuration[] => {
         }
         config.devServer = {
             clientLogLevel: "error",
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+            },
+            publicPath: "/webpack/",
             stats: "errors-only",
         };
     }

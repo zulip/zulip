@@ -41,8 +41,74 @@ exports.last_visible = function () {
     return $('.focused_table .selectable_row').last();
 };
 
+exports.visible_range = function (start_id, end_id) {
+    /*
+        Get all visible rows between start_id
+        and end_in, being inclusive on both ends.
+    */
+
+    const rows = [];
+
+    let row = current_msg_list.get_row(start_id);
+    let msg_id = exports.id(row);
+
+    while (msg_id <= end_id) {
+        rows.push(row);
+
+        if (msg_id >= end_id) {
+            break;
+        }
+        row = exports.next_visible(row);
+        msg_id = exports.id(row);
+    }
+
+    return rows;
+};
+
+exports.is_draft_row = function (row) {
+    return row.find('.restore-draft').length >= 1;
+};
+
 exports.id = function (message_row) {
-    return parseFloat(message_row.attr('zid'));
+    if (exports.is_draft_row(message_row)) {
+        blueslip.error('Drafts have no zid');
+        return;
+    }
+
+    /*
+        For blueslip errors, don't return early, since
+        we may have some code now that actually relies
+        on the NaN behavior here.  We can try to clean
+        that up in the future, but we mainly just want
+        more data now.
+    */
+
+    if (message_row.length !== 1) {
+        blueslip.error("Caller should pass in a single row.");
+    }
+
+    const zid = message_row.attr('zid');
+
+    if (zid === undefined) {
+        blueslip.error("Calling code passed rows.id a row with no zid attr.");
+    }
+
+    return parseFloat(zid);
+};
+
+exports.local_echo_id = function (message_row) {
+    const zid = message_row.attr('zid');
+
+    if (zid === undefined) {
+        blueslip.error("Calling code passed rows.local_id a row with no zid attr.");
+        return;
+    }
+
+    if (!zid.includes('.0')) {
+        blueslip.error('Trying to get local_id from row that has reified message id: ' + zid);
+    }
+
+    return zid;
 };
 
 const valid_table_names = {
