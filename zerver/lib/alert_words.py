@@ -1,3 +1,5 @@
+from django.db import transaction
+
 from zerver.models import UserProfile, Realm, AlertWord
 from zerver.lib.cache import cache_with_key, realm_alert_words_cache_key, \
     realm_alert_words_automaton_cache_key
@@ -38,22 +40,29 @@ def get_alert_word_automaton(realm: Realm) -> ahocorasick.Automaton:
 def user_alert_words(user_profile: UserProfile) -> List[str]:
     return list(AlertWord.objects.filter(user_profile=user_profile).values_list("word", flat=True))
 
-def add_user_alert_words(user_profile: UserProfile, alert_words: Iterable[str]) -> List[str]:
-    words = user_alert_words(user_profile)
+@transaction.atomic
+def add_user_alert_words(user_profile: UserProfile, new_words: Iterable[str]) -> List[str]:
+    existing_words_lower = {word.lower() for word in user_alert_words(user_profile)}
 
-    new_words = [w for w in alert_words if w not in words]
-
-    # to avoid duplication of words
-    new_words = list(set(new_words))
+    # Keeping the case, use a dictionary to get the set of
+    # case-insensitive distinct, new alert words
+    word_dict: Dict[str, str] = {}
+    for word in new_words:
+        if word.lower() in existing_words_lower:
+            continue
+        word_dict[word.lower()] = word
 
     AlertWord.objects.bulk_create(
-        AlertWord(user_profile=user_profile, word=word, realm=user_profile.realm) for word in new_words)
+        AlertWord(user_profile=user_profile, word=word, realm=user_profile.realm)
+        for word in word_dict.values()
+    )
 
-    return words+new_words
+    return user_alert_words(user_profile)
 
-def remove_user_alert_words(user_profile: UserProfile, alert_words: Iterable[str]) -> List[str]:
-    words = user_alert_words(user_profile)
-    delete_words = [w for w in alert_words if w in words]
-    AlertWord.objects.filter(user_profile=user_profile, word__in=delete_words).delete()
-
+@transaction.atomic
+def remove_user_alert_words(user_profile: UserProfile, delete_words: Iterable[str]) -> List[str]:
+    # TODO: Ideally, this would be a bulk query, but Django doesn't have a `__iexact`.
+    # We can clean this up if/when Postgres has more native support for case-insensitive fields.
+    for delete_word in delete_words:
+        AlertWord.objects.filter(user_profile=user_profile, word__iexact=delete_word).delete()
     return user_alert_words(user_profile)

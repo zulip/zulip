@@ -2894,6 +2894,7 @@ class AlertWord(models.Model):
     # all the alert words in a realm.
     realm = models.ForeignKey(Realm, db_index=True, on_delete=CASCADE)  # type: Realm
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
+    # Case-insensitive name for the alert word.
     word = models.TextField()   # type: str
 
     class Meta:
