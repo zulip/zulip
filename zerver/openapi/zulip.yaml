@@ -4495,6 +4495,27 @@ paths:
                         "bot_email": "outgoing-bot@localhost"
                     }
 
+  /calls/bigbluebutton/create:
+    get:
+      tags: ["streams"]
+      operationId: create_big_blue_button_video_call
+      description: |
+        Create a video call url for a Big Blue Button video call.
+        Requires Big Blue Button to be configured on the Zulip server.
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonSuccess'
+                example:
+                  {
+                    "msg": "",
+                    "result": "success",
+                    "url": "/calls/bbb/join?meeting_id=%22zulip-something%22&password=%22something%22&checksum=%22somechecksum%22"
+                  }
+
 components:
   #######################
   # Security definitions

@@ -67,6 +67,7 @@ TAB_DISPLAY_NAMES = {
 
     'zoom': 'Zoom (experimental)',
     'jitsi-meet': 'Jitsi Meet',
+    'bigbluebutton': 'Big Blue Button',
     'disable': 'Disabled',
 
     'chrome': 'Chrome',

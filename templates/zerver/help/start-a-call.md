@@ -37,6 +37,12 @@ Meet](https://meet.jit.si/).
 You can also use Zulip with Jitsi Meet on-premise; to configure this,
 just set `JITSI_SERVER_URL` in `/etc/zulip/settings.py`.
 
+{tab|bigbluebutton}
+
+In order to use Big Blue Button as the video call provider, you need
+to first configure the `BIG_BLUE_BUTTON_URL` setting in
+`/etc/zulip/settings.py`.
+
 {tab|zoom}
 
 Zulip supports Zoom as the video chat provider using an OAuth

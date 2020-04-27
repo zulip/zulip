@@ -504,7 +504,7 @@ class RealmTest(ZulipTestCase):
             invite_to_stream_policy=10,
             email_address_visibility=10,
             message_retention_days=10,
-            video_chat_provider=4,
+            video_chat_provider=10,
             waiting_period_threshold=-10,
             digest_weekday=10,
             user_group_edit_policy=10,
@@ -539,7 +539,7 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(get_realm('zulip').video_chat_provider, Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['id'])
         self.login('iago')
 
-        invalid_video_chat_provider_value = 4
+        invalid_video_chat_provider_value = 10
         req = {"video_chat_provider": ujson.dumps(invalid_video_chat_provider_value)}
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result,
@@ -555,6 +555,12 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
         self.assertEqual(get_realm('zulip').video_chat_provider, Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['id'])
+
+        req = {"video_chat_provider": ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['big_blue_button']['id'])}
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_success(result)
+        self.assertEqual(get_realm('zulip').video_chat_provider,
+                         Realm.VIDEO_CHAT_PROVIDERS['big_blue_button']['id'])
 
         req = {"video_chat_provider": ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['zoom']['id'])}
         result = self.client_patch('/json/realm', req)

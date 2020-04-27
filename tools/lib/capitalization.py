@@ -66,6 +66,7 @@ IGNORED_PHRASES = [
     r"Emoji One",
     r"mailinator.com",
     r"HQ",
+    r"Big Blue Button",
     # Code things
     r".zuliprc",
     r"__\w+\.\w+__",

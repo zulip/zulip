@@ -458,6 +458,8 @@ ANDROID_GCM_API_KEY = get_secret("android_gcm_api_key")
 
 DROPBOX_APP_KEY = get_secret("dropbox_app_key")
 
+BIG_BLUE_BUTTON_SECRET = get_secret('big_blue_button_secret')
+
 MAILCHIMP_API_KEY = get_secret("mailchimp_api_key")
 
 # Twitter API credentials

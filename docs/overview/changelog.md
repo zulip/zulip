@@ -64,6 +64,7 @@ in bursts.
 - Added server support for creating an account from mobile/terminal apps.
 - The Zulip desktop apps now do social authentication (Google, GitHub,
   etc.) via an external browser.
+- Added support for BigBlueButton as video chat provider.
 - Added support for setting an organization-wide default language for
   code blocks.
 - Added an API endpoint for fetching a single user.
