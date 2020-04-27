@@ -649,3 +649,7 @@ CAMO_URI = '/external_content/'
 # your own Jitsi Meet server, or if you'd like to disable the
 # integration, set JITSI_SERVER_URL = None.
 #JITSI_SERVER_URL = 'jitsi.example.com'
+
+# Controls the Big Blue Button video call integration.  You must also
+# set big_blue_button_secret in zulip-secrets.conf.
+# BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"

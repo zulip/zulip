@@ -947,6 +947,10 @@ run_test('initialize', () => {
             id: 3,
             name: "Zoom",
         },
+        big_blue_button: {
+            id: 4,
+            name: "Big Blue Button",
+        },
     };
 
     page_params.realm_video_chat_provider =
@@ -1461,6 +1465,18 @@ run_test('on_events', () => {
 
         handler(ev);
         video_link_regex = /\[Click to join video call\]\(example\.zoom\.com\)/;
+        assert(video_link_regex.test(syntax_to_insert));
+
+        page_params.realm_video_chat_provider =
+            page_params.realm_available_video_chat_providers.big_blue_button.id;
+
+        channel.get = function (options) {
+            assert(options.url === '/json/calls/bigbluebutton/create');
+            options.success({ url: '/calls/bigbluebutton/join?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22' });
+        };
+
+        handler(ev);
+        video_link_regex = /\[Click to join video call\]\(\/calls\/bigbluebutton\/join\?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22\)/;
         assert(video_link_regex.test(syntax_to_insert));
 
     }());

@@ -1122,6 +1122,15 @@ exports.initialize = function () {
                     "width=800,height=500,noopener,noreferrer"
                 );
             }
+        } else if (
+            page_params.realm_video_chat_provider === available_providers.big_blue_button.id) {
+
+            channel.get({
+                url: '/json/calls/bigbluebutton/create',
+                success: function (response) {
+                    insert_video_call_url(response.url, target_textarea);
+                },
+            });
         } else {
             video_call_link = page_params.jitsi_server_url + "/" +  video_call_id;
             insert_video_call_url(video_call_link, target_textarea);

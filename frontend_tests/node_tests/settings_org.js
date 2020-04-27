@@ -759,6 +759,10 @@ run_test('set_up', () => {
             id: 3,
             name: "Zoom",
         },
+        big_blue_button: {
+            id: 4,
+            name: "Big Blue Button",
+        },
     };
     simulate_tip_box();
 

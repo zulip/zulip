@@ -88,6 +88,11 @@ EXCLUDE_PROPERTIES = {
             '200': ['deliver_at'],
         }
     },
+    '/calls/bigbluebutton/create': {
+        'get': {
+            '200': ['url']
+        }
+    },
 }
 
 # A list of endpoint-methods such that the endpoint

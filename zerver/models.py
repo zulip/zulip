@@ -362,11 +362,19 @@ class Realm(models.Model):
         # ID 2 was used for the now-deleted Google Hangouts.
         # ID 3 reserved for optional Zoom, see below.
     }
+
     if settings.VIDEO_ZOOM_CLIENT_ID is not None and settings.VIDEO_ZOOM_CLIENT_SECRET is not None:
         VIDEO_CHAT_PROVIDERS['zoom'] = {
             'name': "Zoom",
             'id': 3,
         }
+
+    if settings.BIG_BLUE_BUTTON_SECRET is not None and settings.BIG_BLUE_BUTTON_URL is not None:
+        VIDEO_CHAT_PROVIDERS['big_blue_button'] = {
+            'name': "Big Blue Button",
+            'id': 4
+        }
+
     video_chat_provider = models.PositiveSmallIntegerField(default=VIDEO_CHAT_PROVIDERS['jitsi_meet']['id'])
 
     default_code_block_language: Optional[str] = models.TextField(null=True, default=None)

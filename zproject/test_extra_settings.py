@@ -185,6 +185,9 @@ APPLE_ID_TOKEN_GENERATION_KEY = get_from_file_if_exists("zerver/tests/fixtures/a
 VIDEO_ZOOM_CLIENT_ID = "client_id"
 VIDEO_ZOOM_CLIENT_SECRET = "client_secret"
 
+BIG_BLUE_BUTTON_SECRET = "123"
+BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
+
 # By default two factor authentication is disabled in tests.
 # Explicitly set this to True within tests that must have this on.
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
