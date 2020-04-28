@@ -84,7 +84,7 @@ def extract_message_attachments(
             if 'image/' in file['type']:
                 has_image = True
                 file_extension = '.' + file['type'][6:]
-            if 'application' in file['type']:
+            if 'application/' in file['type']:
                 file_extension = '.' + file['type'][12:]
             
             # zulip expects size, created, name
@@ -174,7 +174,7 @@ def create_zulip_topics_and_import_messages(user_map: dict,
                 zulip_message = build_message(topic_name=main_topic_name,
                                                 date_sent=message_time,
                                                 message_id=message_id,
-                                                content=main_topic_chat['body'][:10000],
+                                                content=main_topic_content,
                                                 rendered_content=rendered_content,
                                                 user_id=user_map[ryver_user_id],
                                                 recipient_id=main_topic_recipient_id)
@@ -208,7 +208,7 @@ def create_zulip_topics_and_import_messages(user_map: dict,
                         # The first message is embedded in this object and not available in /posts
                         post_id = forum_topic['id'] # used below for the rest of the messages
                         topic_name = forum_topic['subject'][:60]
-                        topic_content = forum_topic['body'] # This cannot be null which is None in json
+                        topic_content = forum_topic['body'] # This can be null which is None in json
                         if topic_content is not None:
                             topic_content = topic_content[:10000]
                         else:
@@ -280,73 +280,31 @@ def create_zulip_topics_and_import_messages(user_map: dict,
         
         # Main Topic
         raw_tw_main_topic_chats_count = api_call_build_execute('/workrooms(id={})/Chat.History()'.format(tw_id), only_count=True) # Chat.History() is a shortcut for count here
-        raw_tw_main_topic_chats = api_call_build_execute('/workrooms(id={})/Chat.History()'.format(tw_id), results=raw_tw_main_topic_chats_count, hard_results=True, select_str='from,body,when,attachments', expand='attachments', only_count=False)
-        # main_topic_name = raw_tw['name'][:60]
-        main_topic_name = '(no topic)' # Zulip standard for main topic in a stream
-        print("Importing messages from Team '{}'".format(raw_tw['name']))
-        main_topic_recipient_id = tw_recipient_map[tw_id]
-        for main_topic_chat in raw_tw_main_topic_chats:
-            message_time = float(dateutil.parser.parse(main_topic_chat['when']).timestamp())
-            main_topic_content = main_topic_chat['body'] # This can be null which is None in json
-            if main_topic_content is not None:
-                main_topic_content = main_topic_content[:10000]
-            else:
-                main_topic_content = ''
-            rendered_content = None
-            ryver_user_id = main_topic_chat['from']['id']
-            if ryver_user_id not in user_map:
-                print('test for errors 12322')
-                continue
-            
-            zulip_message = build_message(topic_name=main_topic_name,
-                                            date_sent=message_time,
-                                            message_id=message_id,
-                                            content=main_topic_content,
-                                            rendered_content=rendered_content,
-                                            user_id=user_map[ryver_user_id],
-                                            recipient_id=main_topic_recipient_id)
-            build_usermessages(
-                zerver_usermessage=usermessages,
-                subscriber_map=subscriber_map,
-                recipient_id=main_topic_recipient_id,
-                message_id=message_id,
-                mentioned_user_ids=[],
-                is_private=False,
-            )
-            has_attachment, has_link, has_image, markdown_links = extract_message_attachments(message=main_topic_chat, zulip_message_id=zulip_message['id'], zulip_user_id=user_map[ryver_user_id], attachments_list=attachments_list, uploads_list=uploads_list)
-            if has_attachment:
-                zulip_message['has_attachment'] = True
-                zulip_message['has_link'] = has_link
-                zulip_message['has_image'] = has_image
-                zulip_message['content'] += '\n'.join(markdown_links)
-            messages.append(zulip_message)
-            message_id += 1
-        
-        # Team/Workroom Topics
-        # Topics only exists if this flag is true
-        if raw_tw['sharePosts'] == True:
-            raw_tw_topics_count = api_call_build_execute('/workrooms(id={})/Post.Stream()'.format(tw_id), only_count=True)
-            raw_tw_topics = api_call_build_execute('/workrooms(id={})/Post.Stream()'.format(tw_id), only_count=False, results=raw_tw_topics_count, hard_results=True, select_str='id,subject,createDate,body,createUser,attachments', expand='attachments')
-            
-            for tw_topic in raw_tw_topics:
-                # The first message is embedded in this object and not available in /posts
-                post_id = tw_topic['id'] # used below for the rest of the messages
-                topic_name = tw_topic['subject'][:60]
-                tw_topic_content = tw_topic['body'] # This can't be null? Safety
-                if tw_topic_content is not None:
-                    tw_topic_content = tw_topic_content[:10000]
+        if raw_tw_main_topic_chats_count > 0:
+            raw_tw_main_topic_chats = api_call_build_execute('/workrooms(id={})/Chat.History()'.format(tw_id), results=raw_tw_main_topic_chats_count, hard_results=True, select_str='from,body,when,attachments', expand='attachments', only_count=False)
+            # main_topic_name = raw_tw['name'][:60]
+            main_topic_name = '(no topic)' # Zulip standard for main topic in a stream
+            print("Importing messages from Team '{}'".format(raw_tw['name']))
+            main_topic_recipient_id = tw_recipient_map[tw_id]
+            for main_topic_chat in raw_tw_main_topic_chats:
+                message_time = float(dateutil.parser.parse(main_topic_chat['when']).timestamp())
+                main_topic_content = main_topic_chat['body'] # This can be null which is None in json
+                if main_topic_content is not None:
+                    main_topic_content = main_topic_content[:10000]
                 else:
-                    # When you create a topic from previous messages it will be empty. You might be able to retreive those from an expand.
-                    tw_topic_content = '*Created Topic*' # Maybe change this to enumerate to only apply to message 1 
+                    main_topic_content = ''
                 rendered_content = None
+                ryver_user_id = main_topic_chat['from']['id']
+                if ryver_user_id not in user_map:
+                    print('test for errors 12322')
+                    continue
                 
-                
-                zulip_message = build_message(topic_name=topic_name,
-                                                date_sent=float(dateutil.parser.parse(tw_topic['createDate']).timestamp()),
+                zulip_message = build_message(topic_name=main_topic_name,
+                                                date_sent=message_time,
                                                 message_id=message_id,
-                                                content=tw_topic_content,
+                                                content=main_topic_content,
                                                 rendered_content=rendered_content,
-                                                user_id=user_map[tw_topic['createUser']['id']],
+                                                user_id=user_map[ryver_user_id],
                                                 recipient_id=main_topic_recipient_id)
                 build_usermessages(
                     zerver_usermessage=usermessages,
@@ -356,7 +314,7 @@ def create_zulip_topics_and_import_messages(user_map: dict,
                     mentioned_user_ids=[],
                     is_private=False,
                 )
-                has_attachment, has_link, has_image, markdown_links = extract_message_attachments(message=tw_topic, zulip_message_id=zulip_message['id'], zulip_user_id=user_map[tw_topic['createUser']['id']], attachments_list=attachments_list, uploads_list=uploads_list)
+                has_attachment, has_link, has_image, markdown_links = extract_message_attachments(message=main_topic_chat, zulip_message_id=zulip_message['id'], zulip_user_id=user_map[ryver_user_id], attachments_list=attachments_list, uploads_list=uploads_list)
                 if has_attachment:
                     zulip_message['has_attachment'] = True
                     zulip_message['has_link'] = has_link
@@ -364,23 +322,33 @@ def create_zulip_topics_and_import_messages(user_map: dict,
                     zulip_message['content'] += '\n'.join(markdown_links)
                 messages.append(zulip_message)
                 message_id += 1
+        
+        # Team/Workroom Topics
+        # Topics only exists if this flag is true
+        if raw_tw['sharePosts'] == True:
+            raw_tw_topics_count = api_call_build_execute('/workrooms(id={})/Post.Stream()'.format(tw_id), only_count=True)
+            if raw_tw_topics_count > 0:
+                raw_tw_topics = api_call_build_execute('/workrooms(id={})/Post.Stream()'.format(tw_id), only_count=False, results=raw_tw_topics_count, hard_results=True, select_str='id,subject,createDate,body,createUser,attachments', expand='attachments')
                 
-                # Get the rest of the messages
-                raw_topic_posts_count = api_call_build_execute('/posts(id={})/comments'.format(post_id), only_count=True)
-                raw_topic_posts = api_call_build_execute('/posts(id={})/comments'.format(post_id), only_count=False, results=raw_topic_posts_count, select_str='createDate,comment,createUser,attachments', expand='createUser,attachments')
-                
-                for post in raw_topic_posts:
-                    post_content = post['comment'] # This can be null
-                    if post_content is not None:
-                        post_content = post_content[:10000]
+                for tw_topic in raw_tw_topics:
+                    # The first message is embedded in this object and not available in /posts
+                    post_id = tw_topic['id'] # used below for the rest of the messages
+                    topic_name = tw_topic['subject'][:60]
+                    tw_topic_content = tw_topic['body'] # This can't be null? Safety
+                    if tw_topic_content is not None:
+                        tw_topic_content = tw_topic_content[:10000]
                     else:
-                        post_content = ''
+                        # When you create a topic from previous messages it will be empty. You might be able to retreive those from an expand.
+                        tw_topic_content = '*Created Topic*' # Maybe change this to enumerate to only apply to message 1 
+                    rendered_content = None
+                    
+                    
                     zulip_message = build_message(topic_name=topic_name,
-                                                    date_sent=float(dateutil.parser.parse(post['createDate']).timestamp()),
+                                                    date_sent=float(dateutil.parser.parse(tw_topic['createDate']).timestamp()),
                                                     message_id=message_id,
-                                                    content=post_content,
+                                                    content=tw_topic_content,
                                                     rendered_content=rendered_content,
-                                                    user_id=user_map[post['createUser']['id']],
+                                                    user_id=user_map[tw_topic['createUser']['id']],
                                                     recipient_id=main_topic_recipient_id)
                     build_usermessages(
                         zerver_usermessage=usermessages,
@@ -390,7 +358,7 @@ def create_zulip_topics_and_import_messages(user_map: dict,
                         mentioned_user_ids=[],
                         is_private=False,
                     )
-                    has_attachment, has_link, has_image, markdown_links = extract_message_attachments(message=post, zulip_message_id=zulip_message['id'], zulip_user_id=user_map[post['createUser']['id']], attachments_list=attachments_list, uploads_list=uploads_list)
+                    has_attachment, has_link, has_image, markdown_links = extract_message_attachments(message=tw_topic, zulip_message_id=zulip_message['id'], zulip_user_id=user_map[tw_topic['createUser']['id']], attachments_list=attachments_list, uploads_list=uploads_list)
                     if has_attachment:
                         zulip_message['has_attachment'] = True
                         zulip_message['has_link'] = has_link
@@ -398,6 +366,41 @@ def create_zulip_topics_and_import_messages(user_map: dict,
                         zulip_message['content'] += '\n'.join(markdown_links)
                     messages.append(zulip_message)
                     message_id += 1
+                    
+                    # Get the rest of the messages
+                    raw_topic_posts_count = api_call_build_execute('/posts(id={})/comments'.format(post_id), only_count=True)
+                    if raw_topic_posts_count > 0:
+                        raw_topic_posts = api_call_build_execute('/posts(id={})/comments'.format(post_id), only_count=False, results=raw_topic_posts_count, select_str='createDate,comment,createUser,attachments', expand='createUser,attachments')
+                        
+                        for post in raw_topic_posts:
+                            post_content = post['comment'] # This can be null
+                            if post_content is not None:
+                                post_content = post_content[:10000]
+                            else:
+                                post_content = ''
+                            zulip_message = build_message(topic_name=topic_name,
+                                                            date_sent=float(dateutil.parser.parse(post['createDate']).timestamp()),
+                                                            message_id=message_id,
+                                                            content=post_content,
+                                                            rendered_content=rendered_content,
+                                                            user_id=user_map[post['createUser']['id']],
+                                                            recipient_id=main_topic_recipient_id)
+                            build_usermessages(
+                                zerver_usermessage=usermessages,
+                                subscriber_map=subscriber_map,
+                                recipient_id=main_topic_recipient_id,
+                                message_id=message_id,
+                                mentioned_user_ids=[],
+                                is_private=False,
+                            )
+                            has_attachment, has_link, has_image, markdown_links = extract_message_attachments(message=post, zulip_message_id=zulip_message['id'], zulip_user_id=user_map[post['createUser']['id']], attachments_list=attachments_list, uploads_list=uploads_list)
+                            if has_attachment:
+                                zulip_message['has_attachment'] = True
+                                zulip_message['has_link'] = has_link
+                                zulip_message['has_image'] = has_image
+                                zulip_message['content'] += '\n'.join(markdown_links)
+                            messages.append(zulip_message)
+                            message_id += 1
     
     message_json['zerver_message'] = messages
     message_json['zerver_usermessage'] = usermessages
@@ -524,77 +527,79 @@ def create_streams_and_map(timestamp: Any) -> (list, dict, dict, dict, dict, dic
     # get the raw forum data, 
     # !! NOTE the user has to be a participant/member of the forum or workroom/team in order to query these !!
     forum_count = api_call_build_execute('/forums', results=0, only_count=True)
-    raw_api_forums = api_call_build_execute('/forums', only_count=False, select_str='id,name,description,createDate,members', expand='members', results=forum_count) # results=1
-    
-    for forum in raw_api_forums:
-        if forum['id'] not in forum_stream_map:
-            forum_stream_map[forum['id']] = stream_id
-            # Ryver API will None/nulls on some optional fields
-            try:
-                if forum['description'] == None:
-                    forum['description'] = ""
-                print("Processing Forum '{}'".format(forum['name']))
-                # Ryver is default invite only channels so we will maintain that
-                stream = build_stream(
-                    date_created=int(dateutil.parser.parse(forum['createDate']).timestamp()),
-                    realm_id=realm_id,
-                    name=forum['name'],
-                    description=forum['description'],
-                    stream_id=stream_id,
-                    invite_only=True)
-                streams.append(stream)
-                members = forum['members']['results']
-                if len(members):
-                    if forum['id'] not in forum_stream_members:
-                        forum_stream_members[forum['id']] = []
-                    for member in members:
-                        # a membership['id'] is not a user id so we unfortunately need to dive again for the member field, this is horribly optimized
-                        member_user = api_call_build_execute('/workroomMembers(id={})'.format(member['id']), select_str='member', expand='member', only_count=False)
-                        # You can have more than 1 member type through notifications
-                        if member_user['member']['id'] not in forum_stream_members[forum['id']]:
-                            forum_stream_members[forum['id']].append(member_user['member']['id'])
-            except Exception as e:
-                print('Failed to parse forum with exception {}:\n{}'.format(e, forum))
-            stream_id += 1
+    if forum_count > 0:
+        raw_api_forums = api_call_build_execute('/forums', only_count=False, select_str='id,name,description,createDate,members', expand='members', results=forum_count) # results=1
+        
+        for forum in raw_api_forums:
+            if forum['id'] not in forum_stream_map:
+                forum_stream_map[forum['id']] = stream_id
+                # Ryver API will None/nulls on some optional fields
+                try:
+                    if forum['description'] == None:
+                        forum['description'] = ""
+                    print("Processing Forum '{}'".format(forum['name']))
+                    # Ryver is default invite only channels so we will maintain that
+                    stream = build_stream(
+                        date_created=int(dateutil.parser.parse(forum['createDate']).timestamp()),
+                        realm_id=realm_id,
+                        name=forum['name'],
+                        description=forum['description'],
+                        stream_id=stream_id,
+                        invite_only=True)
+                    streams.append(stream)
+                    members = forum['members']['results']
+                    if len(members):
+                        if forum['id'] not in forum_stream_members:
+                            forum_stream_members[forum['id']] = []
+                        for member in members:
+                            # a membership['id'] is not a user id so we unfortunately need to dive again for the member field, this is horribly optimized
+                            member_user = api_call_build_execute('/workroomMembers(id={})'.format(member['id']), select_str='member', expand='member', only_count=False)
+                            # You can have more than 1 member type through notifications
+                            if member_user['member']['id'] not in forum_stream_members[forum['id']]:
+                                forum_stream_members[forum['id']].append(member_user['member']['id'])
+                except Exception as e:
+                    print('Failed to parse forum with exception {}:\n{}'.format(e, forum))
+                stream_id += 1
     
     # get the raw team/workroom data, 
     # !! NOTE the user has to be a participant/member of the forum or workroom/team in order to query these !!
     team_workroom_count = api_call_build_execute('/workrooms', only_count=True)
-    raw_api_workrooms_teams = api_call_build_execute('/workrooms', only_count=False, select_str='id,description,createDate,name,members', expand='members', results=team_workroom_count) # results=1
-    for tw in raw_api_workrooms_teams:
-        if tw['id'] not in teams_workrooms_stream_map:
-            teams_workrooms_stream_map[tw['id']] = stream_id
-            # Ryver API will None/nulls on some optional fields
-            try:
-                if tw['description'] == None:
-                    tw['description'] = ""
-                print("Processing Team '{}'".format(tw['name']))
-                # Ryver is default invite only channels so we will maintain that
-                stream = build_stream(
-                    date_created=int(dateutil.parser.parse(tw['createDate']).timestamp()),
-                    realm_id=realm_id,
-                    name=tw['name'],
-                    description=tw['description'],
-                    stream_id=stream_id,
-                    invite_only=True)
-                streams.append(stream)
-                members = tw['members']['results']
-                if len(members):
-                    if tw['id'] not in teams_workrooms_stream_members:
-                        teams_workrooms_stream_members[tw['id']] = []
-                    for member in members:
-                        # a membership['id'] is not a user id so we unfortunately need to dive again for the member field, this is horribly optimized
-                        member_user = api_call_build_execute('/workroomMembers(id={})'.format(member['id']), select_str='member', expand='member', only_count=False)
-                        # You can have more than 1 member type through notifications
-                        if member_user['member']['id'] not in teams_workrooms_stream_members[tw['id']]:
-                            teams_workrooms_stream_members[tw['id']].append(member_user['member']['id'])
-            except Exception as e:
-                print('Failed to parse team/workroom with exception {}:\n{}'.format(e, forum))
-            stream_id += 1
-    
-        # We want users to see history if they are subbed after the import by default (to match ryver behavior)
-        for stream in streams:
-            stream['history_public_to_subscribers'] = True
+    if team_workroom_count > 0:
+        raw_api_workrooms_teams = api_call_build_execute('/workrooms', only_count=False, select_str='id,description,createDate,name,members', expand='members', results=team_workroom_count) # results=1
+        for tw in raw_api_workrooms_teams:
+            if tw['id'] not in teams_workrooms_stream_map:
+                teams_workrooms_stream_map[tw['id']] = stream_id
+                # Ryver API will None/nulls on some optional fields
+                try:
+                    if tw['description'] == None:
+                        tw['description'] = ""
+                    print("Processing Team '{}'".format(tw['name']))
+                    # Ryver is default invite only channels so we will maintain that
+                    stream = build_stream(
+                        date_created=int(dateutil.parser.parse(tw['createDate']).timestamp()),
+                        realm_id=realm_id,
+                        name=tw['name'],
+                        description=tw['description'],
+                        stream_id=stream_id,
+                        invite_only=True)
+                    streams.append(stream)
+                    members = tw['members']['results']
+                    if len(members):
+                        if tw['id'] not in teams_workrooms_stream_members:
+                            teams_workrooms_stream_members[tw['id']] = []
+                        for member in members:
+                            # a membership['id'] is not a user id so we unfortunately need to dive again for the member field, this is horribly optimized
+                            member_user = api_call_build_execute('/workroomMembers(id={})'.format(member['id']), select_str='member', expand='member', only_count=False)
+                            # You can have more than 1 member type through notifications
+                            if member_user['member']['id'] not in teams_workrooms_stream_members[tw['id']]:
+                                teams_workrooms_stream_members[tw['id']].append(member_user['member']['id'])
+                except Exception as e:
+                    print('Failed to parse team/workroom with exception {}:\n{}'.format(e, forum))
+                stream_id += 1
+        
+    # We want users to see history if they are subbed after the import by default (to match ryver behavior)
+    for stream in streams:
+        stream['history_public_to_subscribers'] = True
     logging.info("==Ryver Data Handler - Finished Building Streams and User Lists==")
     return streams, default_stream, forum_stream_map, teams_workrooms_stream_map, forum_stream_members, teams_workrooms_stream_members
     
