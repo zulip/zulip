@@ -89,9 +89,9 @@ aliases:
        pip install codecov && codecov \
          || echo "Error in uploading coverage reports to codecov.io."
 
-  - &setup_production
+  - &build_production
     run:
-      name: setup production
+      name: build production
       command: |
         sudo apt-get update
         # Install moreutils so we can use `ts` and `mispipe` in the following.
@@ -232,7 +232,7 @@ jobs:
       - *do_bionic_hack
       - *restore_cache_package_json
       - *restore_cache_requirements
-      - *setup_production
+      - *build_production
       - *save_cache_package_json
       - *save_cache_requirements
 
