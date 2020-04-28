@@ -30,6 +30,5 @@ fi
 
 mv /tmp/tmp.*/zulip-server-test.tar.gz /tmp/
 cp -a tools/ci/success-http-headers.txt /tmp/success-http-headers.txt
-cp -a tools/ci/production /tmp/production
 cp -a tools/ci/production-install /tmp/production-install
 cp -a tools/ci/production-extract-tarball /tmp/production-extract-tarball

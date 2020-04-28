@@ -114,7 +114,7 @@ aliases:
      name: install production
      command: |
       sudo service rabbitmq-server restart
-      mispipe /tmp/production ts
+      sudo mispipe /tmp/production-install ts
 
   - &check_xenial_provision_error
     run:
