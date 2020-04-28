@@ -97,7 +97,7 @@ aliases:
         # Install moreutils so we can use `ts` and `mispipe` in the following.
         sudo apt-get install -y moreutils
 
-        mispipe ./tools/ci/setup-production ts
+        mispipe ./tools/ci/production-build ts
 
   - &production_extract_tarball
     run:
