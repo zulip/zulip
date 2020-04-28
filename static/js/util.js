@@ -332,3 +332,11 @@ exports.clean_user_content_links = function (html) {
     }
     return content.innerHTML;
 };
+
+exports.get_messages_in_topic = function (stream_id, topic) {
+    return message_list.all.all_messages().filter(x => {
+        return x.type === 'stream' &&
+               x.stream_id === stream_id &&
+               x.topic === topic;
+    });
+}
