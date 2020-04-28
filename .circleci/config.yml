@@ -89,15 +89,15 @@ aliases:
        pip install codecov && codecov \
          || echo "Error in uploading coverage reports to codecov.io."
 
-  - &setup_production
+  - &build_production
     run:
-      name: setup production
+      name: build production
       command: |
         sudo apt-get update
         # Install moreutils so we can use `ts` and `mispipe` in the following.
         sudo apt-get install -y moreutils
 
-        mispipe ./tools/ci/setup-production ts
+        mispipe ./tools/ci/production-build ts
 
   - &production_extract_tarball
     run:
@@ -114,7 +114,7 @@ aliases:
      name: install production
      command: |
       sudo service rabbitmq-server restart
-      mispipe /tmp/production ts
+      sudo mispipe /tmp/production-install ts
 
   - &check_xenial_provision_error
     run:
@@ -232,7 +232,7 @@ jobs:
       - *do_bionic_hack
       - *restore_cache_package_json
       - *restore_cache_requirements
-      - *setup_production
+      - *build_production
       - *save_cache_package_json
       - *save_cache_requirements
 
@@ -249,7 +249,7 @@ jobs:
           paths:
             - zulip-server-test.tar.gz
             - success-http-headers.txt
-            - production-helper
+            - production-install
             - production
             - production-extract-tarball
 

@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-set -e
-set -x
-
-sudo /tmp/production-helper

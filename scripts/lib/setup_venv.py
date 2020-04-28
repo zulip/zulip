@@ -10,10 +10,6 @@ from typing import List, Optional, Tuple, Set
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 VENV_CACHE_PATH = "/srv/zulip-venv-cache"
 
-if 'TRAVIS' in os.environ:
-    # In Travis CI, we don't have root access
-    VENV_CACHE_PATH = "/home/travis/zulip-venv-cache"
-
 VENV_DEPENDENCIES = [
     "build-essential",
     "libffi-dev",

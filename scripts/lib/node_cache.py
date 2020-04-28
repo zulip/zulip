@@ -9,11 +9,6 @@ from scripts.lib.zulip_tools import subprocess_text_output, run
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ZULIP_SRV_PATH = "/srv"
 
-if 'TRAVIS' in os.environ:
-    # In Travis CI, we don't have root access
-    ZULIP_SRV_PATH = "/home/travis"
-
-
 NODE_MODULES_CACHE_PATH = os.path.join(ZULIP_SRV_PATH, 'zulip-npm-cache')
 YARN_BIN = os.path.join(ZULIP_SRV_PATH, 'zulip-yarn/bin/yarn')
 YARN_PACKAGE_JSON = os.path.join(ZULIP_SRV_PATH, 'zulip-yarn/package.json')

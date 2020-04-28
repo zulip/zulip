@@ -27,7 +27,6 @@ function set_count(count) {
 function remove_expanded_private_messages() {
     stream_popover.hide_topic_popover();
     ui.get_content_element($("#private-container")).empty();
-    resize.resize_stream_filters_container();
 }
 
 exports.close = function () {
@@ -145,7 +144,6 @@ exports.expand = function () {
     private_messages_open = true;
     stream_popover.hide_topic_popover();
     exports.update_private_messages();
-    resize.resize_stream_filters_container();
     if (exports.is_all_privates()) {
         $(".top_left_private_messages").addClass('active-filter');
     }

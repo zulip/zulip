@@ -214,8 +214,6 @@ def log_management_command(cmd: str, log_path: str) -> None:
 def get_environment() -> str:
     if os.path.exists(DEPLOYMENTS_DIR):
         return "prod"
-    if os.environ.get("TRAVIS"):
-        return "travis"
     return "dev"
 
 def get_recent_deployments(threshold_days: int) -> Set[str]:

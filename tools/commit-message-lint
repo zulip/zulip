@@ -1,14 +1,11 @@
 #!/usr/bin/env bash
 
 # Lint all commit messages that are newer than upstream/master if running
-# locally or the commits in the push or PR if in Travis CI.
+# locally or the commits in the push or PR if in CircleCI.
 
 # The rules can be found in /.gitlint
 
-if [ "$TRAVIS" ]; then
-    # Work around https://github.com/travis-ci/travis-ci/issues/4596
-    range="${TRAVIS_COMMIT_RANGE/.../..}"
-elif [[ "
+if [[ "
 $(git remote -v)
 " =~ '
 '([^[:space:]]*)[[:space:]]*(https://github\.com/|ssh://git@github\.com/|git@github\.com:)zulip/zulip(\.git|/)?\ \(fetch\)'

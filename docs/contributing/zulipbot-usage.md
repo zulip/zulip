@@ -85,12 +85,6 @@ assignee(s) if they are still working on the issue.
     issue's current assignee(s) and the "in progress" label to allow others to
     work on an inactive issue.
 
-* **Receive Travis build status notifications** — If you would like to receive
-a notification whenever the build status of your pull request is updated, label
-your pull request with the "travis updates" label using the command `@zulipbot
-label "travis updates"`, and **@zulipbot** will let you know the build status
-(e.g. passed, failed, errored) of your pull request once all tests finish.
-
 ### Contributing
 
 If you wish to help develop and contribute to **@zulipbot**, check out the

@@ -16,8 +16,6 @@ TOOLS_DIR = os.path.abspath(os.path.dirname(__file__))
 ZULIP_PATH = os.path.dirname(TOOLS_DIR)
 REQS_DIR = os.path.join(ZULIP_PATH, 'requirements')
 CACHE_DIR = os.path.join(ZULIP_PATH, 'var', 'tmp')
-if 'TRAVIS' in os.environ:
-    CACHE_DIR = os.path.join(os.environ['HOME'], 'misc')
 CACHE_FILE = os.path.join(CACHE_DIR, 'requirements_hashes')
 
 def print_diff(path_file1: str, path_file2: str) -> None:

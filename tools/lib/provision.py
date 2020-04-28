@@ -29,7 +29,6 @@ if TYPE_CHECKING:
 
 VAR_DIR_PATH = os.path.join(ZULIP_PATH, 'var')
 
-is_travis = 'TRAVIS' in os.environ
 is_circleci = 'CIRCLECI' in os.environ
 
 if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):

@@ -13,8 +13,6 @@ from scripts.lib.zulip_tools import \
 
 ENV = get_environment()
 EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
-if ENV == "travis":
-    EMOJI_CACHE_PATH = os.path.join(os.environ["HOME"], "zulip-emoji-cache")
 
 def get_caches_in_use(threshold_days: int) -> Set[str]:
     setups_to_check = {ZULIP_PATH}
