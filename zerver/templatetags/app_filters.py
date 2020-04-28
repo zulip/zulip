@@ -12,6 +12,7 @@ from jinja2.exceptions import TemplateNotFound
 import zerver.lib.bugdown.fenced_code
 import zerver.lib.bugdown.api_arguments_table_generator
 import zerver.lib.bugdown.api_code_examples
+import zerver.lib.bugdown.api_description
 import zerver.lib.bugdown.nested_code_blocks
 import zerver.lib.bugdown.tabbed_sections
 import zerver.lib.bugdown.help_settings_links
@@ -124,6 +125,9 @@ def render_markdown_path(markdown_file_path: str,
         # TODO: Convert this to something more efficient involving
         # passing the API URL as a direct parameter.
         extensions = extensions + [zerver.lib.bugdown.api_code_examples.makeExtension(
+            api_url=context["api_url"],
+        )]
+        extensions = extensions + [zerver.lib.bugdown.api_description.makeExtension(
             api_url=context["api_url"],
         )]
     if not any(doc in markdown_file_path for doc in docs_without_macros):
