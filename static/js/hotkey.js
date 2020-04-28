@@ -106,6 +106,7 @@ const keypress_mappings = {
     113: {name: 'query_streams', message_view_only: true}, // 'q'
     114: {name: 'reply_message', message_view_only: true}, // 'r'
     115: {name: 'narrow_by_recipient', message_view_only: true}, // 's'
+    116: {name: 'open_recents', message_view_only: true}, // 't'
     117: {name: 'show_sender_info', message_view_only: true}, // 'u'
     118: {name: 'show_lightbox', message_view_only: true}, // 'v'
     119: {name: 'query_users', message_view_only: true}, // 'w'
@@ -464,6 +465,10 @@ exports.process_hotkey = function (e, hotkey) {
             overlays.close_overlay('drafts');
             return true;
         }
+        if (event_name === 'open_recents' && overlays.recents_open()) {
+            overlays.close_overlay('recents');
+            return true;
+        }
         return false;
     }
 
@@ -665,6 +670,9 @@ exports.process_hotkey = function (e, hotkey) {
         return true;
     case 'copy_with_c':
         copy_and_paste.copy_handler();
+        return true;
+    case 'open_recents':
+        recent_topics.launch();
         return true;
     }
 
