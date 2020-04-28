@@ -1,8 +1,6 @@
 # Get topics in a stream
 
-Get all the topics in a specific stream
-
-`GET {{ api_url }}/v1/users/me/{stream_id}/topics`
+{generate_api_description(/users/me/{stream_id}/topics:get)}
 
 ## Usage examples
 

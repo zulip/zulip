@@ -1,10 +1,6 @@
 # Topic muting
 
-This endpoint mutes/unmutes a topic within a stream that the current
-user is subscribed to.  Muted topics are displayed faded in the Zulip
-UI, and are not included in the user's unread count totals.
-
-`PATCH {{ api_url }}/v1/users/me/subscriptions/muted_topics`
+{generate_api_description(/users/me/subscriptions/muted_topics:patch)}
 
 ## Usage examples
 

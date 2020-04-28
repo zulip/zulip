@@ -1,12 +1,6 @@
 # Get a user
 
-Fetch details for a single user in the organization.
-
-`GET {{ api_url }}/v1/users/{user_id}`
-
-You can also fetch details on [all users in the organization](/api/get-all-users).
-
-*This endpoint is new in Zulip Server 2.2.*
+{generate_api_description(/users/{user_id}:get)}
 
 ## Usage examples
 

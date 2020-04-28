@@ -1,8 +1,6 @@
 # Remove subscriptions
 
-Unsubscribe yourself or other users from one or more streams.
-
-`DELETE {{ api_url }}/v1/users/me/subscriptions`
+{generate_api_description(/users/me/subscriptions:delete)}
 
 ## Usage examples
 

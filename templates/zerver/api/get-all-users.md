@@ -1,9 +1,6 @@
 # Get all users
 
-Retrieve details on all users in the organization.  Optionally
-includes values of [custom profile field](/help/add-custom-profile-fields).
-
-`GET {{ api_url }}/v1/users`
+{generate_api_description(/users:get)}
 
 You can also [fetch details on a single user](/api/get-user).
 

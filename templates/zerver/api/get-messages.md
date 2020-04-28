@@ -1,33 +1,6 @@
 # Get messages
 
-Fetch message history from a Zulip server.
-
-`GET {{ api_url }}/v1/messages`
-
-This `GET /api/v1/messages` endpoint is the primary way to fetch
-message history from a Zulip server.  It is useful both for Zulip
-clients (e.g. the web, desktop, mobile, and terminal clients) as well
-as bots, API clients, backup scripts, etc.
-
-By specifying a [narrow filter](/api/construct-narrow), you can use
-this endpoint to fetch the messages matching any search query that is
-supported by Zulip's powerful full-text search backend.
-
-When a narrow is not specified, it can be used to fetch a user's
-message history (We recommend paginating to 1000 messages at a time).
-
-In either case, you specify an `anchor` message (or ask the server to
-calculate the first unread message for you and use that as the
-anchor), as well as a number of messages before and after the anchor
-message.  The server returns those messages, sorted by message ID, as
-well as some metadata that makes it easy for a client to determine
-whether there are more messages matching the query that were not
-returned due to the `num_before` and `num_after` limits.
-
-We recommend using `num_before <= 1000` and `num_after <= 1000` to
-avoid generating very large HTTP responses. A maximum of 5000 messages
-can be obtained per request; attempting to exceed this will result in an
-error.
+{generate_api_description(/messages:get)}
 
 ## Usage examples
 

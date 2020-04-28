@@ -1,8 +1,6 @@
 # Create User Group
 
-Create a new [user group](/help/user-groups).
-
-`POST {{ api_url }}/v1/user_groups/create`
+{generate_api_description(/user_groups/create:post)}
 
 ## Usage examples
 

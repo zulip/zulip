@@ -1,18 +1,6 @@
 # Get user presence
 
-Get the presence status for a specific user.
-
-This endpoint is most useful for embedding data about a user's
-presence status in other sites (E.g. an employee directory).  Full
-Zulip clients like mobile/desktop apps will want to use the main
-presence endpoint, which returns data for all active users in the
-organization, instead.
-
-`GET {{ api_url }}/v1/users/{email}/presence`
-
-See
-[Zulip's developer documentation](https://zulip.readthedocs.io/en/latest/subsystems/presence.html)
-for details on the data model for presence in Zulip.
+{generate_api_description(/users/{email}/presence:get)}
 
 ## Usage examples
 

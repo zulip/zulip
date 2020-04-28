@@ -1,13 +1,6 @@
 # Get a raw message
 
-Get the raw content of a message.
-
-`GET {{ api_url }}/v1/messages/{msg_id}`
-
-This is a rarely-used endpoint relevant for clients that primarily
-work with HTML-rendered messages but might need to occasionally fetch
-the message's raw markdown (e.g. for pre-filling a message-editing
-UI).
+{generate_api_description(/messages/{message_id}:get)}
 
 ## Usage examples
 

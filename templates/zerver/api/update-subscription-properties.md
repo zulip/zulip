@@ -1,10 +1,6 @@
 # Update subscription properties
 
-This endpoint is used to update the user's personal settings for the
-streams they are subscribed to, including muting, color, pinning, and
-per-stream notification settings.
-
-`POST {{ api_url }}/v1/users/me/subscriptions/properties`
+{generate_api_description(/users/me/subscriptions/properties:post)}
 
 ## Usage examples
 
