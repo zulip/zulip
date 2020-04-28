@@ -79,6 +79,10 @@ We use a few helper scripts to setup the production suites:
   production suites.
 * `tools/ci/production`: It installs and run production tests.
 
+Since we dropped the support for Ubuntu Xenial 16.04 it is important that we
+test our upgradation process. So the job xenial-legacy is to
+test provision and upgradation on Ubuntu 16.04.
+
 ### Configuration
 
 The remaining details in this section are primarily relevant for doing
