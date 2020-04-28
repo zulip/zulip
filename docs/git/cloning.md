@@ -104,14 +104,13 @@ first-time contributors][zulip-rtd-dev-first-time].
 This step is optional, but recommended.
 
 The Zulip Server project is configured to use [Circle CI][circle-ci]
-and [Travis CI][travis-ci] to test and create builds upon each new commit
-and pull request. CircleCI is the primary CI that runs frontend and backend
-tests across a wide range of Ubuntu distributions. Travis CI is used only for
-running the end-to-end production installer test.
+to test and create builds upon each new commit and pull request.
+CircleCI is the primary CI that runs frontend and backend
+tests across a wide range of Ubuntu distributions.
 
-CircleCI and Travis CI are free for open source projects and it's easy to
-configure for your own fork of Zulip. After doing so, CircleCI and Travis
-CI will run tests for new refs you push to GitHub and email you the outcome
+CircleCI is free for open source projects and it's easy to
+configure for your own fork of Zulip. After doing so, CircleCI
+will run tests for new refs you push to GitHub and email you the outcome
 (you can also view the results in the web interface).
 
 Running CI against your fork can help save both your and the
@@ -120,8 +119,8 @@ submitting a pull request.  We generally recommend a workflow where as
 you make changes, you use a fast edit-refresh cycle running individual
 tests locally until your changes work.  But then once you've gotten
 the tests you'd expect to be relevant to your changes working, push a
-branch to run the full test suite in CircleCI and Travis CI before
-you create a pull request.  While you wait for CircleCI and Travis CI
+branch to run the full test suite in CircleCI before
+you create a pull request.  While you wait for Circle CI jobs
 to run, you can start working on your next task.  When the tests finish,
 you can create a pull request that you already know passes the tests.
 
@@ -133,15 +132,6 @@ in click on **Add Projects** in right sidebar. This will list all your GitHub
 repositories. Now goto the row of Zulip and click on **Set Up Project**.
 ![Screencast of CircleCI setup](../images/zulip-circleci.gif)
 
-### Setup Travis CI
-
-First, sign in to [Travis CI][travis-ci] with your GitHub account and authorize
-Travis CI to access your GitHub account and repositories. Once you've done
-this, Travis CI will fetch your repository information and display it on your
-[profile page][travis-ci-profile]. From there you can enable integration with
-Zulip.
-![Screencast of Travis CI setup](../_static/zulip-travisci.gif)
-
 [gitbook-rebase]: https://git-scm.com/book/en/v2/Git-Branching-Rebasing
 [github-help-add-ssh-key]: https://help.github.com/en/articles/adding-a-new-ssh-key-to-your-github-account
 [github-help-conf-remote]: https://help.github.com/en/articles/configuring-a-remote-for-a-fork
@@ -149,9 +139,7 @@ Zulip.
 [github-help-sync-fork]: https://help.github.com/en/articles/syncing-a-fork
 [github-zulip]: https://github.com/zulip/
 [github-zulip-zulip]: https://github.com/zulip/zulip/
-[travis-ci]: https://travis-ci.org/
 [circle-ci]:https://circleci.com/
-[travis-ci-profile]: https://travis-ci.org/profile
 [zulip-rtd-dev-first-time]: ../development/setup-vagrant.md
 [zulip-rtd-dev-overview]: ../development/overview.md
 [zulip-rtd-tools-setup]: ../git/zulip-tools.html#set-up-git-repo-script

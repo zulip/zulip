@@ -48,7 +48,7 @@ note are:
 * `--skip` and `--only`: Only run certain linters.
 * `-m`: Only check modified files.
 
-Finally, you can rely on our Travis CI setup to run linters for you, but
+Finally, you can rely on our Circle CI setup to run linters for you, but
 it is good practice to run lint checks locally.
 
 ```eval_rst
