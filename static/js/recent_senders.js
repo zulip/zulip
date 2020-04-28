@@ -1,3 +1,4 @@
+const util = require("./util");
 const FoldDict = require('./fold_dict').FoldDict;
 
 const topic_senders = new Map(); // key is stream-id, value is Map
@@ -60,6 +61,25 @@ exports.compare_by_recency = function (user_a, user_b, stream_id, topic) {
 
     return 0;
 };
+
+exports.process_topic_edit = function (stream_id, old_topic, new_topic) {
+    // Since most topics don't have more than 10-20 messages, this shouldn't
+    // be much expensive.
+    const topic_dict = topic_senders.get(stream_id);
+    // We remove the old topic and process and new & old topics.
+    topic_dict.delete(old_topic);
+    topic_senders.set(stream_id, topic_dict);
+
+    const old_topic_msgs = util.get_messages_in_topic(stream_id, old_topic);
+    old_topic_msgs.forEach((msg) => {
+        exports.process_message_for_senders(msg);
+    });
+
+    const new_topic_msgs = util.get_messages_in_topic(stream_id, new_topic);
+    new_topic_msgs.forEach((msg) => {
+        exports.process_message_for_senders(msg);
+    });
+}
 
 exports.get_topic_recent_senders = function (stream_id, topic) {
     const topic_dict = topic_senders.get(stream_id);
