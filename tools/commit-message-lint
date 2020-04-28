@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Lint all commit messages that are newer than upstream/master if running
-# locally or the commits in the push or PR if in Circle CI.
+# locally or the commits in the push or PR if in CircleCI.
 
 # The rules can be found in /.gitlint
 

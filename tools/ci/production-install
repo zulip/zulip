@@ -20,7 +20,7 @@ fi
 "$ZULIP_PATH"/scripts/setup/install --self-signed-cert --hostname 127.0.0.1 --email circleci@example.com
 
 cat >>/etc/zulip/settings.py <<EOF
-# Circle CI override settings above
+# CircleCI override settings above
 AUTHENTICATION_BACKENDS = ( 'zproject.backends.EmailAuthBackend', )
 NOREPLY_EMAIL_ADDRESS = 'noreply@circleci.example.com'
 ALLOWED_HOSTS = []
