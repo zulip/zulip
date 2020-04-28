@@ -269,7 +269,7 @@ def update_test_databases_if_required(rebuild_test_database: bool=False) -> None
     test_template_db_status = TEST_DATABASE.template_status()
 
     if test_template_db_status == 'needs_rebuild':
-        run(['tools/rebuild-dev-database'])
+        run(['tools/rebuild-test-database'])
         return
 
     if test_template_db_status == 'run_migrations':
