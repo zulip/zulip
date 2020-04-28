@@ -103,7 +103,7 @@ first-time contributors][zulip-rtd-dev-first-time].
 
 This step is optional, but recommended.
 
-The Zulip Server project is configured to use [Circle CI][circle-ci]
+The Zulip Server project is configured to use [CircleCI][circle-ci]
 to test and create builds upon each new commit and pull request.
 CircleCI is the primary CI that runs frontend and backend
 tests across a wide range of Ubuntu distributions.
@@ -120,13 +120,13 @@ you make changes, you use a fast edit-refresh cycle running individual
 tests locally until your changes work.  But then once you've gotten
 the tests you'd expect to be relevant to your changes working, push a
 branch to run the full test suite in CircleCI before
-you create a pull request.  While you wait for Circle CI jobs
+you create a pull request.  While you wait for CircleCI jobs
 to run, you can start working on your next task.  When the tests finish,
 you can create a pull request that you already know passes the tests.
 
 ### Setup CircleCI
 
-First, sign in to [Circle CI][circle-ci] with your GitHub account and authorize
+First, sign in to [CircleCI][circle-ci] with your GitHub account and authorize
 CircleCI to access your GitHub account and repositories. Once you've logged
 in click on **Add Projects** in right sidebar. This will list all your GitHub
 repositories. Now goto the row of Zulip and click on **Set Up Project**.

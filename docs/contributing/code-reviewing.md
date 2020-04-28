@@ -73,7 +73,7 @@ this?". Good choices include
   in [#10618](https://github.com/zulip/zulip/pull/10618), browse to
   bottom and click the red X next to `c6044ee` to see the build jobs
   for that commit. You can see that there are 5 build jobs in total.
-  All the 5 jobs run in Circle CI. You can see what caused
+  All the 5 jobs run in CircleCI. You can see what caused
   the job to fail by clicking on the failed job. This will open
   up a page in the CI that has more details on why the job failed.
   For example [this](https://circleci.com/gh/zulip/zulip/16617)
