@@ -119,6 +119,7 @@ def extract_message_attachments(
             markdown_links.append('[{file_title}](/user_uploads/{file_path})'.format(file_title=file['fileName'], file_path=file_info['zulip_path']))
 
     # TODO external_link/external_url work goes here
+    # This is only applicable if you expect the files to become unavailable in the future. For now the URL's should show in the zulip messages anyways.
             
     return has_attachment, has_link, has_image, markdown_links
 
@@ -558,8 +559,6 @@ def create_streams_and_map(timestamp: Any) -> (list, dict, dict, dict, dict, dic
     
     # get the raw team/workroom data, 
     # !! NOTE the user has to be a participant/member of the forum or workroom/team in order to query these !!
-    #a21
-    # raw_api_workrooms_teams = [api_call_build_execute('/workrooms(id=1157561)', only_count=False, select_str='id,description,createDate,name,members', expand='members')]
     team_workroom_count = api_call_build_execute('/workrooms', only_count=True)
     raw_api_workrooms_teams = api_call_build_execute('/workrooms', only_count=False, select_str='id,description,createDate,name,members', expand='members', results=team_workroom_count) # results=1
     for tw in raw_api_workrooms_teams:
