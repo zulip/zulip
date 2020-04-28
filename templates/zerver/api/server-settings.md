@@ -1,16 +1,6 @@
 # Get global settings
 
-Fetch global settings for a Zulip server.
-
-`GET {{ api_url }}/v1/server_settings`
-
-**Note:** this endpoint does not require any authentication at all, and you can use it to check:
-
-* If this is a Zulip server, and if so, what version of Zulip it's running.
-* What a Zulip client (e.g. a mobile app or
-  [zulip-terminal](https://github.com/zulip/zulip-terminal/)) needs to
-  know in order to display a login prompt for the server (e.g. what
-  authentication methods are available).
+{generate_api_description(/server_settings:get)}
 
 ## Usage examples
 

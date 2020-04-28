@@ -1,10 +1,6 @@
 # Update notification settings
 
-This endpoint is used to edit the user's global notification settings.
-See [this endpoint](/api/update-subscription-properties) for
-per-stream notification settings.
-
-`PATCH {{ api_url }}/v1/settings/notifications`
+{generate_api_description(/settings/notifications:patch)}
 
 ## Usage examples
 

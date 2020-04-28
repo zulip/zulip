@@ -1,13 +1,6 @@
 # Get a message's edit history
 
-Fetch the message edit history of a previously edited message.
-
-`GET {{ api_url }}/v1/messages/{message_id}/history`
-
-Note that edit history may be disabled in some organizations; see the
-[Zulip Help Center documentation on editing messages][edit-settings].
-
-[edit-settings]: /help/view-a-messages-edit-history
+{generate_api_description(/messages/{message_id}/history:get)}
 
 ## Usage examples
 

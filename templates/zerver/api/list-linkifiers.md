@@ -1,11 +1,6 @@
 # List linkifiers
 
-List all of an organization's configured
-[linkifiers](/help/add-a-custom-linkification-filter), regular
-expression patterns that are automatically linkified when they appear
-in messages and topics.
-
-`GET {{ api_url }}/v1/realm/filters`
+{generate_api_description(/realm/filters:get)}
 
 ## Usage examples
 

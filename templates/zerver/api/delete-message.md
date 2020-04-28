@@ -1,12 +1,6 @@
 # Delete a message
 
-Permanently delete a message.
-
-`DELETE {{ api_url }}/v1/messages/{msg_id}`
-
-This API corresponds to the
-[delete a message completely][delete-completely] feature documented in
-the Zulip Help Center.
+{generate_api_description(/messages/{message_id}:delete)}
 
 [delete-completely]: /help/edit-or-delete-a-message#delete-a-message-completely
 

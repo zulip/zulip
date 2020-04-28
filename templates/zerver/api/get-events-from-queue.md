@@ -1,9 +1,6 @@
 # Get events from an event queue
 
-`GET {{ api_url }}/v1/events`
-
-This endpoint allows you to receive new events from
-[a registered event queue](/api/register-queue).
+{generate_api_description(/events:get)}
 
 ## Usage examples
 

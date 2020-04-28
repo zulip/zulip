@@ -1,8 +1,6 @@
 # Update User Group
 
-Update the name or description of a [user group](/help/user-groups).
-
-`PATCH {{ api_url }}/v1/user_groups/{group_id}`
+{generate_api_description(/user_groups/{group_id}:patch)}
 
 ## Usage examples
 

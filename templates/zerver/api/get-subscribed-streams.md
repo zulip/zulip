@@ -1,8 +1,6 @@
 # Get subscribed streams
 
-Get all streams that the user is subscribed to.
-
-`GET {{ api_url }}/v1/users/me/subscriptions`
+{generate_api_description(/users/me/subscriptions:get)}
 
 ## Usage examples
 
