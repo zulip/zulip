@@ -19,7 +19,20 @@ info:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
 servers:
-- url: 'https://your.zulip.server/api/v1'
+# Zulip Cloud
+- url: 'https://{subdomain}.zulipchat.com/api/v1'
+  variables:
+    subdomain:
+      default: example
+# Self-hosted
+- url: '{server}/api/v1'
+  variables:
+    server:
+      default: https://
+# chat.zulip.org
+- url: 'https://chat.zulip.org/api/v1'
+# Development server
+- url: 'http://localhost:9991/api/v1'
 security:
   - basicAuth: []
 #######################
