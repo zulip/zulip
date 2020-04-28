@@ -1,15 +1,6 @@
 # Update stream
 
-Configure the stream with the ID `stream_id`.  This endpoint supports
-an organization administrator editing any property of a stream,
-including:
-
-* Stream [name](/help/rename-a-stream) and [description](/help/change-the-stream-description)
-* Stream [permissions](/help/stream-permissions), including
-  [privacy](/help/change-the-privacy-of-a-stream) and [who can
-  send](/help/stream-sending-policy).
-
-`PATCH {{ api_url }}/v1/streams/{stream_id}`
+{generate_api_description(/streams/{stream_id}:patch)}
 
 ## Usage examples
 

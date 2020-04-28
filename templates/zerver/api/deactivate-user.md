@@ -2,11 +2,7 @@
 
 {!api-admin-only.md!}
 
-[Deactivates a
-user](https://zulipchat.com/help/deactivate-or-reactivate-a-user)
-given their user ID.
-
-`DELETE {{ api_url }}/v1/users/{user_id}`
+{generate_api_description(/users/{user_id}:delete)}
 
 ## Usage examples
 

@@ -1,17 +1,6 @@
 # Upload a file
 
-Upload a single file and get the corresponding URI.
-
-`POST {{ api_url }}/v1/user_uploads`
-
-Initially, only you will be able to access the link.  To share the
-uploaded file, you'll need to [send a message][send-message]
-containing the resulting link.  Users who can already access the link
-can reshare it with other users by sending additional Zulip messages
-containing the link.
-
-[uploaded-files]: /help/manage-your-uploaded-files
-[send-message]: /api/send-message
+{generate_api_description(/user_uploads:post)}
 
 ## Usage examples
 

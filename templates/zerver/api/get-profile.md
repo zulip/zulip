@@ -1,8 +1,6 @@
 # Get profile
 
-Get basic data about the user/bot that requests this endpoint.
-
-`GET {{ api_url }}/v1/users/me`
+{generate_api_description(/users/me:get)}
 
 ## Usage examples
 

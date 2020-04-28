@@ -1,8 +1,6 @@
 # Delete stream
 
-[Delete the stream](/help/delete-a-stream) with the ID `stream_id`.
-
-`DELETE {{ api_url }}/v1/streams/{stream_id}`
+{generate_api_description(/streams/{stream_id}:delete)}
 
 ## Usage examples
 
