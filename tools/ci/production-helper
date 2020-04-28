@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # This test installs a Zulip production environment (from the release
-# tarball from setup-production), and then runs some Nagios checks and
+# tarball from production-build), and then runs some Nagios checks and
 # other tools to verify that everything is working properly.
 set -e
 set -x
