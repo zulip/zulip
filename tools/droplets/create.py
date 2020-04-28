@@ -147,7 +147,7 @@ def create_droplet(my_token: str, template_id: str, username: str, tags: List[st
         name='{}.zulipdev.org'.format(username),
         region='nyc3',
         image=template_id,
-        size_slug='2gb',
+        size_slug='s-1vcpu-2gb',
         user_data=user_data,
         tags=tags,
         backups=False)
@@ -228,7 +228,7 @@ if __name__ == '__main__':
     # Broken in two to satisfy linter (line too long)
     # curl -X GET -H "Content-Type: application/json" -u <API_KEY>: "https://api.digitaloc
     # ean.com/v2/images?page=5" | grep --color=always base.zulipdev.org
-    template_id = "48106286"
+    template_id = "63219191"
 
     # get command line arguments
     args = parser.parse_args()
