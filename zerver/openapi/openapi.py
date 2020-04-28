@@ -79,6 +79,12 @@ def get_openapi_fixture(endpoint: str, method: str,
         response = '200'
     return (get_schema(endpoint, method, response)['example'])
 
+def get_openapi_description(endpoint: str, method: str) -> str:
+    """Fetch a description from the full spec object.
+    """
+    description = openapi_spec.spec()['paths'][endpoint][method.lower()]['description']
+    return description
+
 def get_openapi_paths() -> Set[str]:
     return set(openapi_spec.spec()['paths'].keys())
 
