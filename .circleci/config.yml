@@ -249,7 +249,7 @@ jobs:
           paths:
             - zulip-server-test.tar.gz
             - success-http-headers.txt
-            - production-helper
+            - production-install
             - production
             - production-extract-tarball
 
