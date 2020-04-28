@@ -125,7 +125,7 @@ Now you're ready to work on the issue or feature.
 
 ## Run linters and tests locally
 
-In addition to having Travis run tests and linters each time you push a new
+In addition to having Circle CI run tests and linters each time you push a new
 commit, you can also run them locally. See [testing](../testing/testing.md) for details.
 
 ## Stage changes
