@@ -59,14 +59,13 @@ class Command(BaseCommand):
                 raise CommandError('If no base64 encoding for account was included, you must enter a valid --acount-user in order to extract')
             else:
                 print('Please Input password for account: {}'.format(account_user))
-                account_password = ''
                 base64 = b64encode(str.encode('{username}:{password}'.format(username=account_user, password=account_password))).decode('utf-8')
                 # grab secure password from command line next
-                # account_password = getpass()
-                # if account_password == '':
-                #     raise CommandError('No input was given for password. Restart command to try again.')
-                # else:
-                #     base64 = b64encode(str.encode('{username}:{password}'.format(username=account_user, password=account_password))).decode('utf-8')
+                account_password = getpass()
+                if account_password == '':
+                    raise CommandError('No input was given for password. Restart command to try again.')
+                else:
+                    base64 = b64encode(str.encode('{username}:{password}'.format(username=account_user, password=account_password))).decode('utf-8')
         
         logging.info("==Ryver Data Handler - Performing Ryver extraction and conversion==")
         do_convert_data(base64=base64, api_endpoint=options["api_endpoint"], output_dir=output_dir, threads=num_threads)

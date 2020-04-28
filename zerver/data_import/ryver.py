@@ -62,8 +62,8 @@ def extract_message_attachments(
                                 # message_id: int,
                                 ) -> (bool, bool, bool, list):
     """
-        Zulip upload: the actual file on server/s3 bucket 
-        Zulip attachment: the pointer between the file and a message (one upload -> many attachments)
+        Zulip upload: the actual file on zulip server/s3 bucket 
+        Zulip attachment: the pointer between the upload and a message (one upload -> many attachments -> many messages)
     """
     markdown_links = []
     has_attachment = False
@@ -117,6 +117,7 @@ def extract_message_attachments(
                             )
             # Markdown to add the uploads to the end of messages, match s3_path of upload again
             markdown_links.append('[{file_title}](/user_uploads/{file_path})'.format(file_title=file['fileName'], file_path=file_info['zulip_path']))
+
     # TODO external_link/external_url work goes here
             
     return has_attachment, has_link, has_image, markdown_links
@@ -129,7 +130,7 @@ def create_zulip_topics_and_import_messages(user_map: dict,
                                             forum_recipient_map: dict,
                                             tw_recipient_map: dict) -> (List[ZerverFieldsT], List[ZerverFieldsT]):
     # Note: user id mentions are not implemented yet, I believe they just add to a notification stream though
-        # It would seem to delete the key in realm['zerver_messages']['user_mentions'] in the import_realm.py anyways?
+        # Part of the import code deletes the key in realm['zerver_messages']['user_mentions'] in the import_realm.py anyways?
     # Note: you don't need to do anything special to create topics, just make a message to the topic name for a recipient group
     # Note: Zulip has a max topic name length of 60
     # Note: Zulip has a max content length of 10000
@@ -142,6 +143,7 @@ def create_zulip_topics_and_import_messages(user_map: dict,
     uploads_list = []
     attachments_list = []
     # Usermessages are required if you want old messages to actually show up (by default), this might not matter with setting stream history on
+    # Above might not be true after setting the history flag
     usermessages = []
     
     # Handle forums
@@ -435,7 +437,7 @@ def create_subscriptions(user_profiles: List[ZerverFieldsT],
         subscription_id += 1
     recipient_group_id += 1
     
-    # Everyone subs to themselves, is this necessary if we can't query this through api?
+    # Everyone subs to themselves, is this necessary?
     for user in user_profiles:
         recipient = build_recipient(type_id=user['id'], recipient_id=recipient_group_id, type=Recipient.PERSONAL)
         subscription = build_subscription(recipient_id=recipient_group_id, user_id=user['id'], subscription_id=subscription_id)
@@ -509,8 +511,8 @@ def create_streams_and_map(timestamp: Any) -> (list, dict, dict, dict, dict, dic
     teams_workrooms_stream_members = {} # type: Dict[int, list[user_ryver_id]]
     # topics_stream_map = {} # type: Dict[int, int]
     
-    # Default stream will have no content, I'm just not sure if its mandatory to build one or not
-    stream_name = 'From Ryver landing'
+    # Default stream will have no content
+    stream_name = 'Default Stream'
     stream_description = "Imported users from ryver (no content)"
     stream_id = 1 # skipping over it for the default stream
     dstream = build_stream(date_created=timestamp, realm_id=realm_id, name=stream_name, description=stream_description, stream_id=0)
@@ -520,8 +522,6 @@ def create_streams_and_map(timestamp: Any) -> (list, dict, dict, dict, dict, dic
     
     # get the raw forum data, 
     # !! NOTE the user has to be a participant/member of the forum or workroom/team in order to query these !!
-    #a21
-    # raw_api_forums = []
     forum_count = api_call_build_execute('/forums', results=0, only_count=True)
     raw_api_forums = api_call_build_execute('/forums', only_count=False, select_str='id,name,description,createDate,members', expand='members', results=forum_count) # results=1
     
@@ -606,7 +606,7 @@ def create_user_profiles_and_map(user_count: int) -> (list, dict, dict):
     raw_api_users = []
     user_profiles = []
     user_map = {} # type: Dict[int, int]
-    user_bot_map = {} # type: Dict[str, int]
+    user_bot_map = {} # type: Dict[str, int] DEPRECATED
     user_id = 0
     
     # get the raw data
@@ -617,13 +617,13 @@ def create_user_profiles_and_map(user_count: int) -> (list, dict, dict):
             user_map[user['id']] = user_id
             # Ryver Bots do not have email and it's a constraint on the database so we need to depend on displayName which is unique for them
             if user['emailAddress'] is None:
-                user['emailAddress'] = '{}@ryverimport.com'.format(user['displayName'])
+                user['emailAddress'] = '{}@ryverimport.com'.format(user['displayName']).replace(' ', '_')
                 print('Affixed fake email for user "{}" who is of type "{}"'.format(user['displayName'], user['type']))
             
             try:
                 # the ['role'] key doesn't matter zulip imports all users as basic users. If that changes its ROLE_ADMIN ROLE_USER ROLE_BOT ROLE_GUEST strings in a list
                 # Build userprofile object, pointer is just a unique message id counter
-                # short_name is a lookup helper in zulip when typing a message to a stream, afaik it should match emailAddress in the future
+                # short_name does nothing in zulip? afaik it should match emailAddress in the future
                 userprofile = UserProfile(
                     full_name=user['displayName'],
                     short_name=user['username'],
@@ -795,8 +795,7 @@ def do_convert_data(base64: str, api_endpoint: str, output_dir: str, threads: in
     success, user_count = test_api_call()
     if not success:
         return
-    
-    
+
     ## Realm ##
     NOW = float(timezone_now().timestamp())
     # Default realm using google and email as auth methods, last argument is description from imported from
@@ -818,13 +817,8 @@ def do_convert_data(base64: str, api_endpoint: str, output_dir: str, threads: in
     realm['zerver_defaultstream'] = default_stream
     realm['zerver_recipient'] = recipient_groups
     realm['zerver_subscription'] = subscriptions
-    # This is needed to fix the order of messages appearing in the UI.
+    # This is needed to fix the order of messages appearing in the UI. Alternatively fixing the message id #'s would work
     realm['sort_by_date'] = True
-
-    # a21
-    # personal hack
-    # if 'private_message_policy' in realm:
-    #     del realm['private_message_policy']
     
     subscriber_map = make_subscriber_map(zerver_subscription=realm['zerver_subscription'])
     
