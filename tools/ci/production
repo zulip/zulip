@@ -2,4 +2,4 @@
 set -e
 set -x
 
-sudo /tmp/production-helper
+sudo /tmp/production-install
