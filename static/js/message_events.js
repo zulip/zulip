@@ -308,6 +308,7 @@ exports.update_messages = function update_messages(events) {
             const stream_id = event.stream_id;
             const old_topic = util.get_edit_event_orig_topic(event);
 
+            recent_senders.process_topic_edit(stream_id, old_topic, new_topic);
             // reprocess the old and new topics.
             [old_topic, new_topic].forEach((topic) => {
                 recent_topics.process_topic(stream_id, topic);
