@@ -1962,10 +1962,6 @@ def get_usermessage_by_message_id(user_profile: UserProfile, message_id: int) ->
     except UserMessage.DoesNotExist:
         return None
 
-def get_latest_read_usermessage(user_profile: UserProfile) -> Optional[UserMessage]:
-    return UserMessage.objects.select_related().filter(user_profile=user_profile,
-                                                       flags=UserMessage.flags.read).last()
-
 class ArchivedUserMessage(AbstractUserMessage):
     """Used as a temporary holding place for deleted UserMessages objects
     before they are permanently deleted.  This is an important part of
