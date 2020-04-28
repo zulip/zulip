@@ -71,11 +71,16 @@ Zulip's production installer:
 
 * bionic-production-build-python3.6
 * bionic-production-install-python3.6
+* xenial-legacy
 
 The `production-build` job builds a Zulip release tarball, which is
 then installed in a fresh container in the `production-install` job;
 various Nagios and other checks are run to confirm the installation
 worked.
+
+The xenial-legacy tests are just designed to ensure we give the right
+error messages when trying to install or upgrade a Xenial system to
+master.
 
 ### Configuration
 
