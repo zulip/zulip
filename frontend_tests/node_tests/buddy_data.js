@@ -249,6 +249,11 @@ run_test('level', () => {
 });
 
 run_test('user_last_seen_time_status', () => {
+    user_status.set_away(selma.user_id);
+    assert.equal(buddy_data.user_last_seen_time_status(selma.user_id),
+                 'translated: Unavailable');
+
+    user_status.revoke_away(selma.user_id);
     assert.equal(buddy_data.user_last_seen_time_status(selma.user_id),
                  'translated: Active now');
 

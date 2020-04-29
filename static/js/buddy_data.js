@@ -151,6 +151,10 @@ exports.my_user_status = function (user_id) {
 
 exports.user_last_seen_time_status = function (user_id) {
     const status = presence.get_status(user_id);
+    if (user_status.is_away(user_id)) {
+        return i18n.t("Unavailable");
+    }
+
     if (status === "active") {
         return i18n.t("Active now");
     }
