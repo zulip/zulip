@@ -274,6 +274,27 @@ jobs:
       - *install_production
       - *save_cache_package_json
 
+  "focal-production-install-python3.8":
+    docker:
+        # This is built from tools/circleci/images/focal/Dockerfile.
+        # Focal ships with Python 3.8.2.
+        - image: arpit551/circleci:focal-test
+
+    working_directory: ~/zulip
+
+    steps:
+      # Contains the built tarball from bionic-production-build-python3.6 job
+      - attach_workspace:
+          # Must be absolute path or relative path from working_directory
+          at: /tmp
+
+      - *create_cache_directories
+      - *do_bionic_hack
+      - *production_extract_tarball
+      - *restore_cache_package_json
+      - *install_production
+      - *save_cache_package_json
+
 workflows:
   version: 2
   build:
@@ -285,3 +306,6 @@ workflows:
       - "bionic-production-install-python3.6":
             requires:
                 - "bionic-production-build-python3.6"
+      # - "focal-production-install-python3.8":
+      #       requires:
+      #           - "bionic-production-build-python3.6"
