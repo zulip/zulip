@@ -390,10 +390,6 @@ python_rules = RuleList(
          },
          'description': 'Please use access_stream_by_*() to fetch Stream objects',
          },
-        {'pattern': 'Stream.objects.filter',
-         'include_only': {"zerver/views/"},
-         'description': 'Please use access_stream_by_*() to fetch Stream objects',
-         },
         {'pattern': '^from (zerver|analytics|confirmation)',
          'include_only': {"/migrations/"},
          'exclude': {
