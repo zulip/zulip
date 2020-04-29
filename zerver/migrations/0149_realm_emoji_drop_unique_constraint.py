@@ -106,5 +106,6 @@ class Migration(migrations.Migration):
         ),
         migrations.RunPython(
             migrate_realm_emoji_image_files,
-            reverse_code=reversal),
+            reverse_code=reversal,
+            elidable=True),
     ]

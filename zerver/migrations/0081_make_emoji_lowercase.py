@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
             e.save()
 
     operations = [
-        migrations.RunPython(emoji_to_lowercase),
+        migrations.RunPython(emoji_to_lowercase, elidable=True),
         migrations.AlterField(
             model_name='realmemoji',
             name='name',

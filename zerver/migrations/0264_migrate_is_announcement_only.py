@@ -22,5 +22,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(upgrade_stream_post_policy,
-                             reverse_code=migrations.RunPython.noop),
+                             reverse_code=migrations.RunPython.noop,
+                             elidable=True),
     ]

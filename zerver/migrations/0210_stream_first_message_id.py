@@ -26,5 +26,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(backfill_first_message_id,
-                             reverse_code=migrations.RunPython.noop),
+                             reverse_code=migrations.RunPython.noop,
+                             elidable=True),
     ]

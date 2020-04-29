@@ -24,6 +24,7 @@ class Migration(migrations.Migration):
             field=models.BooleanField(default=False),
         ),
         migrations.RunPython(disable_realm_inline_url_embed_preview,
-                             reverse_code=migrations.RunPython.noop)
+                             reverse_code=migrations.RunPython.noop,
+                             elidable=True)
 
     ]

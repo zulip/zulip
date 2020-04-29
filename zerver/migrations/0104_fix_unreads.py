@@ -19,5 +19,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(fix_unreads),
+        migrations.RunPython(fix_unreads, elidable=True),
     ]

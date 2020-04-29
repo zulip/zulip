@@ -46,5 +46,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(move_to_seperate_table, move_back_to_user_profile)
+        migrations.RunPython(move_to_seperate_table, move_back_to_user_profile, elidable=True)
     ]

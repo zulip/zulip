@@ -48,5 +48,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(set_initial_value_of_is_private_flag,
-                             reverse_code=migrations.RunPython.noop),
+                             reverse_code=migrations.RunPython.noop,
+                             elidable=True),
     ]

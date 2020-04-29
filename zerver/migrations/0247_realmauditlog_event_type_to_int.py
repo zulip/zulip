@@ -104,7 +104,8 @@ class Migration(migrations.Migration):
             field=models.CharField(max_length=40, null=True),
         ),
         migrations.RunPython(update_existing_event_type_values,
-                             reverse_code=reverse_code),
+                             reverse_code=reverse_code,
+                             elidable=True),
         migrations.RemoveField(
             model_name='realmauditlog',
             name='event_type',

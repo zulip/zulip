@@ -35,7 +35,8 @@ class Migration(migrations.Migration):
         ),
         migrations.RunPython(
             set_initial_value_for_is_muted,
-            reverse_code=reverse_code
+            reverse_code=reverse_code,
+            elidable=True
         ),
         migrations.RemoveField(
             model_name='subscription',

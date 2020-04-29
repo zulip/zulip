@@ -225,5 +225,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(ensure_no_empty_passwords,
-                             reverse_code=migrations.RunPython.noop),
+                             reverse_code=migrations.RunPython.noop,
+                             elidable=True),
     ]
