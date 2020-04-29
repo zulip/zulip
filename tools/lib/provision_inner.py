@@ -57,6 +57,13 @@ def inline_email_css_paths() -> List[str]:
     paths += glob.glob('templates/zerver/emails/*.source.html')
     return paths
 
+def configure_rabbitmq_paths() -> List[str]:
+    paths = [
+        "scripts/setup/configure-rabbitmq",
+        "zproject/dev-secrets.conf",
+    ]
+    return paths
+
 def setup_shell_profile(shell_profile: str) -> None:
     shell_profile_path = os.path.expanduser(shell_profile)
 
@@ -145,6 +152,22 @@ def need_to_run_inline_email_css() -> bool:
         inline_email_css_paths(),
     )
 
+def need_to_run_configure_rabbitmq() -> bool:
+    obsolete = is_digest_obsolete(
+        'last_configure_rabbitmq_hash',
+        configure_rabbitmq_paths(),
+    )
+
+    if obsolete:
+        return True
+
+    try:
+        from zerver.lib.queue import SimpleQueueClient
+        SimpleQueueClient()
+        return False
+    except Exception:
+        return True
+
 def main(options: argparse.Namespace) -> int:
     setup_bash_profile()
     setup_shell_profile('~/.zprofile')
@@ -198,15 +221,12 @@ def main(options: argparse.Namespace) -> int:
             destroy_leaked_test_databases,
         )
 
-        try:
-            from zerver.lib.queue import SimpleQueueClient
-            SimpleQueueClient()
-            rabbitmq_is_configured = True
-        except Exception:
-            rabbitmq_is_configured = False
-
-        if options.is_force or not rabbitmq_is_configured:
+        if options.is_force or need_to_run_configure_rabbitmq():
             run(["scripts/setup/configure-rabbitmq"])
+            write_new_digest(
+                'last_configure_rabbitmq_hash',
+                configure_rabbitmq_paths(),
+            )
         else:
             print("No need to run `scripts/setup/configure-rabbitmq.")
 
