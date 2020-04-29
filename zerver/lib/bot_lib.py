@@ -9,8 +9,10 @@ from zerver.lib.bot_storage import get_bot_storage, set_bot_storage, \
 from zerver.lib.bot_config import get_bot_config, ConfigError
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.topic import get_topic_from_message_info
+from zerver.views.reactions import add_reaction
 
 from django.utils.translation import ugettext as _
+from django.http import HttpRequest
 
 from typing import Any, Dict
 
@@ -110,6 +112,14 @@ class EmbeddedBotHandler:
                 content=response,
                 sender_email=message['sender_email'],
             ))
+
+    def react(self, message: Dict[str, Any], emoji_name: str) -> None:
+        return add_reaction(HttpRequest,
+                            self.user_profile,
+                            message['id'],
+                            emoji_name,
+                            None,
+                            'unicode_emoji')
 
     # The bot_name argument exists only to comply with ExternalBotHandler.get_config_info().
     def get_config_info(self, bot_name: str, optional: bool=False) -> Dict[str, str]:
