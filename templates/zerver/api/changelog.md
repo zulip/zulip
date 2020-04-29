@@ -10,6 +10,12 @@ below features are supported.
 
 ## Changes in Zulip 2.2
 
+**Feature level 3**:
+
+* `zulip_version` and `zulip_feature_level` are always returned
+  in `POST /register`; previously they were only returned if `event_types`
+  included `zulip_version`.
+
 **Feature level 2**:
 
 * [`POST /messages/{message_id}/reactions`](/api/add-emoji-reaction):

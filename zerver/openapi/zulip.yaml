@@ -2587,6 +2587,14 @@ paths:
                       type: integer
                       description: |
                         The initial value of `last_event_id` to pass to `GET /api/v1/events`.
+                    zulip_feature_level:
+                      type: integer
+                      description: |
+                        The server's current [Zulip feature level](/api/changelog).
+                    zulip_version:
+                      type: string
+                      description: |
+                        The server's version.
                 - example:
                     {
                         "last_event_id": -1,
@@ -2605,7 +2613,9 @@ paths:
                                 "source_url": "/user_avatars/1/emoji/images/1.png"
                             }
                         },
-                        "result": "success"
+                        "result": "success",
+                        "zulip_feature_level": 2,
+                        "zulip_version": "2.1.0"
                     }
   /server_settings:
     get:

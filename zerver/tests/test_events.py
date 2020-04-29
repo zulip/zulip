@@ -3662,7 +3662,6 @@ class FetchQueriesTest(ZulipTestCase):
             update_global_notifications=0,
             update_message_flags=5,
             user_status=1,
-            zulip_version=0,
         )
 
         wanted_event_types = {
