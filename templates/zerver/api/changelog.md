@@ -19,8 +19,8 @@ below features are supported.
 **Feature level 2**:
 
 * [`POST /messages/{message_id}/reactions`](/api/add-emoji-reaction):
-  The `emoji_type` parameter is optional; the server will guess the
-  emoji_type if it is not specified (checking custom emoji, then
+  The `reaction_type` parameter is optional; the server will guess the
+  `reaction_type` if it is not specified (checking custom emoji, then
   unicode emoji for any with the provided name).
 * `reactions` objects returned by the API (both in `GET /messages` and
   in `GET /events`) now include the user who reacted in a top-level
