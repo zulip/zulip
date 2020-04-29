@@ -131,10 +131,10 @@ exports.exit_search = function () {
     }
 };
 
-exports.update_stream_name = function (new_name) {
+exports.update_stream_name = function () {
     const stream_name = $(".stream a");
     if (stream_name !== undefined) {
-        stream_name.text(new_name);
+        this.initialize();
     }
 };
 
@@ -145,6 +145,10 @@ exports.update_stream_description = function () {
 
     // TODO: Do similar rerenders for stream privacy or subscriber
     // count changes.
+    const stream_name = $(".stream a");
+    if (stream_name !== undefined) {
+        this.initialize();
+    }
     return;
 };
 

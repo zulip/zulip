@@ -144,7 +144,12 @@ exports.update_stream_name = function (sub, new_name) {
     // Update navbar stream name if needed
     const filter = narrow_state.filter();
     if (filter && filter.operands("stream")[0] === old_name) {
-        tab_bar.update_stream_name(new_name);
+        narrow.activate(
+            [
+                {operator: "stream", operand: new_name},
+            ]
+        );
+        tab_bar.update_stream_name();
     }
 };
 
