@@ -97,6 +97,10 @@ def fetch_initial_state_data(user_profile: UserProfile,
     else:
         want = set(event_types).__contains__
 
+    # Show the version info unconditionally.
+    state['zulip_version'] = ZULIP_VERSION
+    state['zulip_feature_level'] = API_FEATURE_LEVEL
+
     if want('alert_words'):
         state['alert_words'] = user_alert_words(user_profile)
 
@@ -309,10 +313,6 @@ def fetch_initial_state_data(user_profile: UserProfile,
 
     if want('user_status'):
         state['user_status'] = get_user_info_dict(realm_id=realm.id)
-
-    if want('zulip_version'):
-        state['zulip_version'] = ZULIP_VERSION
-        state['zulip_feature_level'] = API_FEATURE_LEVEL
 
     return state
 
