@@ -57,7 +57,6 @@ aliases:
       paths:
         - /srv/zulip-venv-cache
       key: v1-venv-base.{{ .Environment.CIRCLE_JOB }}-{{ checksum "requirements/thumbor-dev.txt" }}-{{ checksum "requirements/dev.txt" }}
-    # TODO: in Travis we also cache ~/zulip-emoji-cache, ~/node, ~/misc
 
   - &do_bionic_hack
     run:
