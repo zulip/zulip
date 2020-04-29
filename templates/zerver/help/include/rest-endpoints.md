@@ -45,6 +45,7 @@
 * [Create a user group](/api/create-user-group)
 * [Update a user group](/api/update-user-group)
 * [Delete a user group](/api/delete-user-group)
+* [Get attachments](/api/get-attachments)
 
 #### Server & organizations
 
