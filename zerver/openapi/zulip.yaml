@@ -373,7 +373,7 @@ paths:
           The special values of `'newest'` and `'oldest'` are also supported
           for anchoring the query at the most recent or oldest messages.
 
-          **Changes**: String values are new in Zulip 2.2.  The
+          **Changes**: String values are new in Zulip 2.2 (feature level 1).  The
             `first_unread` functionality was supported in Zulip 2.1.x
             and older by not sending anchor and using use_first_unread_anchor.
 
@@ -588,7 +588,7 @@ paths:
           private messages, either a list containing integer user IDs or a list
           containing string email addresses.
 
-          **Changes**: Support using user/stream IDs was added in Zulip 2.0.0.
+          **Changes**: Support for using user/stream IDs was added in Zulip 2.0.0.
         schema:
           type: string
         example: [9, 10]
@@ -1940,8 +1940,8 @@ paths:
           * 2 => Only administrators can post.
           * 3 => Only new members can post.
 
-          **Changes**: New in Zulip 2.2, replacing the previous is_announcement_only
-          boolean.
+          **Changes**: New in Zulip 2.2 (feature level 1), replacing
+          the previous is_announcement_only boolean.
         schema:
           type: integer
           default: 1
@@ -2506,7 +2506,7 @@ paths:
           Setting this to `true` will make presence dictionaries be keyed by
           user_id instead of email.
 
-          **Changes**: New in Zulip 2.2.
+          **Changes**: New in Zulip 2.2 (Unstable with no feature level yet).
         schema:
           type: boolean
           default: false
@@ -2631,9 +2631,12 @@ paths:
                     external_authentication_methods:
                       type: array
                       description: |
-                        List of dictionaries describing which external authentication methods
-                        are enabled and their parameters - most importantly the login url,
+                        List of dictionaries describing which external
+                        authentication methods are enabled and their
+                        parameters - most importantly the login url,
                         display_name and display_icon.
+
+                        **Changes**: New in Zulip 2.1.
                       items:
                         type: object
                     zulip_version:
@@ -3147,7 +3150,8 @@ paths:
         description: |
           Whether the stream is limited to announcements.
 
-          **Changes**: Deprecated in Zulip 2.2, use `stream_post_policy` instead.
+          **Changes**: Deprecated in Zulip 2.2 (feature level 1), use
+            `stream_post_policy` instead.
         schema:
           type: boolean
         example: true
@@ -3161,8 +3165,8 @@ paths:
           * 2 => Only administrators can post.
           * 3 => Only new members can post.
 
-          **Changes**: New in Zulip 2.2, replacing the previous `is_announcement_only`
-          boolean.
+          **Changes**: New in Zulip 2.2 (feature level 1), replacing
+          the previous `is_announcement_only` boolean.
         schema:
           type: integer
         example: 2
