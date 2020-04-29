@@ -949,8 +949,15 @@ paths:
       - name: reaction_type
         in: query
         description: |
-          If you are reacting with a [custom emoji](/help/add-custom-emoji), set
-          `reaction_type` to `realm_emoji`.
+          If the client is upvoting a reaction and wants to specifically add
+          a vote to an existing reaction, we recommend passing this parameter
+          using the value the server provided for the existing reaction.
+
+          **Changes**: In Zulip 2.2 (feature level 2), this become
+          optional for [custom emoji](/help/add-custom-emoji);
+          previously, this endpoint assumed `unicode_emoji` if this
+          parameter was not specified (as `realm_emoji` for custom
+          emoji).
         schema:
           type: string
         example: 'unicode_emoji'
