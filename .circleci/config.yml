@@ -167,9 +167,11 @@ jobs:
       - *do_bionic_hack
       - *restore_cache_package_json
       - *restore_cache_requirements
+      - *restore_emoji_cache
       - *install_dependencies
       - *save_cache_package_json
       - *save_cache_requirements
+      - *save_emoji_cache
       - *run_backend_tests
 
       - run:
@@ -209,9 +211,11 @@ jobs:
         - *create_cache_directories
         - *restore_cache_package_json
         - *restore_cache_requirements
+        - *restore_emoji_cache
         - *install_dependencies
         - *save_cache_package_json
         - *save_cache_requirements
+        - *save_emoji_cache
         - *run_backend_tests
 
   "xenial-legacy":
@@ -242,9 +246,11 @@ jobs:
       - *do_bionic_hack
       - *restore_cache_package_json
       - *restore_cache_requirements
+      - *restore_emoji_cache
       - *build_production
       - *save_cache_package_json
       - *save_cache_requirements
+      - *save_emoji_cache
 
       # Persist the built tarball to be used in downstream job
       # for installation of production server.
@@ -281,8 +287,10 @@ jobs:
       - *do_bionic_hack
       - *production_extract_tarball
       - *restore_cache_package_json
+      - *restore_emoji_cache
       - *install_production
       - *save_cache_package_json
+      - *save_emoji_cache
 
   "focal-production-install-python3.8":
     docker:
@@ -302,8 +310,10 @@ jobs:
       - *do_bionic_hack
       - *production_extract_tarball
       - *restore_cache_package_json
+      - *restore_emoji_cache
       - *install_production
       - *save_cache_package_json
+      - *save_emoji_cache
 
 workflows:
   version: 2
