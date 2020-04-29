@@ -23,5 +23,6 @@ class Migration(migrations.Migration):
             field=models.BooleanField(default=False),
         ),
         migrations.RunPython(disable_realm_digest_emails_enabled,
-                             reverse_code=migrations.RunPython.noop)
+                             reverse_code=migrations.RunPython.noop,
+                             elidable=True)
     ]

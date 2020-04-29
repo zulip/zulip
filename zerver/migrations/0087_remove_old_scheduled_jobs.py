@@ -20,5 +20,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(delete_old_scheduled_jobs),
+        migrations.RunPython(delete_old_scheduled_jobs, elidable=True),
     ]

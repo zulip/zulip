@@ -23,5 +23,6 @@ class Migration(migrations.Migration):
             field=models.IntegerField(default=0),
         ),
         migrations.RunPython(migrate_set_order_value,
-                             reverse_code=migrations.RunPython.noop),
+                             reverse_code=migrations.RunPython.noop,
+                             elidable=True),
     ]

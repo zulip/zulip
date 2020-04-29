@@ -45,5 +45,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(realm_emoji_name_to_id,
-                             reverse_code=reversal),
+                             reverse_code=reversal,
+                             elidable=True),
     ]

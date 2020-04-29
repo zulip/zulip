@@ -23,5 +23,6 @@ class Migration(migrations.Migration):
         ),
         migrations.RunPython(
             change_emojiset_choice,
-            reverse_code=migrations.RunPython.noop),
+            reverse_code=migrations.RunPython.noop,
+            elidable=True),
     ]

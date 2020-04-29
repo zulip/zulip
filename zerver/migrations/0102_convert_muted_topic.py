@@ -71,5 +71,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(convert_muted_topics),
+        migrations.RunPython(convert_muted_topics, elidable=True),
     ]

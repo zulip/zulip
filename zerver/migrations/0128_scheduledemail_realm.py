@@ -39,7 +39,8 @@ class Migration(migrations.Migration):
 
         # Sets realm for existing ScheduledEmails
         migrations.RunPython(set_realm_for_existing_scheduledemails,
-                             reverse_code=migrations.RunPython.noop),
+                             reverse_code=migrations.RunPython.noop,
+                             elidable=True),
 
         # Require ScheduledEmail.realm to be non-null
         migrations.AlterField(

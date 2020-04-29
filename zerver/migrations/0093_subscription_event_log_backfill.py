@@ -61,5 +61,5 @@ class Migration(migrations.Migration):
             field=models.IntegerField(null=True),
         ),
         migrations.RunPython(backfill_subscription_log_events,
-                             reverse_code=reverse_code),
+                             reverse_code=reverse_code, elidable=True),
     ]

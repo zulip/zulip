@@ -18,5 +18,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(fix_bot_type),
+        migrations.RunPython(fix_bot_type, elidable=True),
     ]

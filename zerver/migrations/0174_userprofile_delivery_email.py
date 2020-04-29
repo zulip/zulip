@@ -26,5 +26,6 @@ class Migration(migrations.Migration):
             preserve_default=False,
         ),
         migrations.RunPython(copy_email_field,
-                             reverse_code=migrations.RunPython.noop),
+                             reverse_code=migrations.RunPython.noop,
+                             elidable=True),
     ]

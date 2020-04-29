@@ -16,7 +16,8 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunPython(
             change_emojiset_choice,
-            reverse_code=migrations.RunPython.noop),
+            reverse_code=migrations.RunPython.noop,
+            elidable=True),
         migrations.AlterField(
             model_name='userprofile',
             name='emojiset',
