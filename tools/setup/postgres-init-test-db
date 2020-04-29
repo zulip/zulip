@@ -2,4 +2,4 @@
 set -x
 set -e
 
-"$(dirname "$0")/postgres-init-dev-db" zulip_test "$("$(dirname "$0")/../../scripts/get-django-setting" LOCAL_DATABASE_PASSWORD)" zulip_test zulip,public migration_status_test
+"$(dirname "$0")/postgres-init-dev-db" test

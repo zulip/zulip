@@ -1,6 +1,31 @@
 #!/usr/bin/env bash
-set -x
 set -e
+
+if [[ $# == 0 ]]; then
+    MODE=dev
+elif [[ $# == 1 ]]; then
+    MODE=$1
+else
+    echo "Too many arguments"
+    exit 1
+fi
+
+if [[ "$MODE" == "dev" ]]; then
+    USERNAME=zulip
+    DBNAME=zulip
+    STATUS_FILE_NAME=migration_status_dev
+elif [[ "$MODE" == "test" ]]; then
+    USERNAME=zulip_test
+    DBNAME=zulip_test
+    STATUS_FILE_NAME=migration_status_test
+else
+    echo "Usage Instructions"
+    echo "Run with either no arguments (sets up devel db for local deploy--zulip with user zulip)"
+    echo "or specify 'test'"
+    exit 1
+fi
+
+set -x
 
 POSTGRES_USER="postgres"
 if [ "$(uname)" = "OpenBSD" ]; then
@@ -20,25 +45,8 @@ fi
 
 VAGRANTUSERNAME=$(whoami)
 
-if [[ $# == 0 ]]; then
-    USERNAME=zulip
-    PASSWORD=$("$(dirname "$0")/../../scripts/get-django-setting" LOCAL_DATABASE_PASSWORD)
-    DBNAME=zulip
-    SEARCH_PATH="$USERNAME",public
-    STATUS_FILE_NAME="migration_status_dev"
-elif [[ $# == 5 ]]; then
-    USERNAME=$1
-    PASSWORD=$2
-    DBNAME=$3
-    SEARCH_PATH=$4
-    STATUS_FILE_NAME=$5
-else
-    echo "Usage Instructions"
-    echo "Run with either no arguments (sets up devel db for local deploy--zulip with user zulip)"
-    echo "or specify <db-username> <password> <db-name> <user-schema-search-path> <migration-status-path>"
-    exit
-fi
-
+SEARCH_PATH=zulip,public
+PASSWORD=$("$(dirname "$0")/../../scripts/get-django-setting" LOCAL_DATABASE_PASSWORD)
 DBNAME_BASE=${DBNAME}_base
 
 if ! pg_isready -U "$POSTGRES_USER" -q; then
