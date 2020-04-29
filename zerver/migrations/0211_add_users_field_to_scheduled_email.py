@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
             name='users',
             field=models.ManyToManyField(to=settings.AUTH_USER_MODEL),
         ),
-        migrations.RunPython(set_users_for_existing_scheduledemails, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(set_users_for_existing_scheduledemails, reverse_code=migrations.RunPython.noop, elidable=True),
         migrations.RemoveField(
             model_name='scheduledemail',
             name='user',

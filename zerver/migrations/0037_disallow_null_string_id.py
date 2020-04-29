@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(set_string_id_using_domain),
+        migrations.RunPython(set_string_id_using_domain, elidable=True),
 
         migrations.AlterField(
             model_name='realm',

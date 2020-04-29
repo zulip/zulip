@@ -40,5 +40,6 @@ class Migration(migrations.Migration):
             field=models.PositiveSmallIntegerField(default=BOT_CREATION_EVERYONE),
         ),
         migrations.RunPython(set_initial_value_for_bot_creation_policy,
-                             reverse_code=reverse_code),
+                             reverse_code=reverse_code,
+                             elidable=True),
     ]

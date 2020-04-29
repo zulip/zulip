@@ -64,7 +64,7 @@ class Migration(migrations.Migration):
         FOR EACH ROW
         EXECUTE PROCEDURE zerver_message_date_sent_to_pub_date_trigger_function();
         """),
-        migrations.RunPython(copy_pub_date_to_date_sent),
+        migrations.RunPython(copy_pub_date_to_date_sent, elidable=True),
         # The name for the index was chosen to match the name of the index Django would create
         # in a normal migration with AlterField of date_sent to have db_index=True:
         migrations.RunSQL("""

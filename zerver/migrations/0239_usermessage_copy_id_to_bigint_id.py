@@ -67,7 +67,7 @@ class Migration(migrations.Migration):
         FOR EACH ROW
         EXECUTE PROCEDURE zerver_usermessage_bigint_id_to_id_trigger_function();
         """),
-        migrations.RunPython(copy_id_to_bigid),
+        migrations.RunPython(copy_id_to_bigid, elidable=True),
         migrations.RunSQL("""
         CREATE UNIQUE INDEX CONCURRENTLY zerver_usermessage_bigint_id_idx ON zerver_usermessage (bigint_id);
         """)

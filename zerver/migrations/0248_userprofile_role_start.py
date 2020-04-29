@@ -44,5 +44,5 @@ class Migration(migrations.Migration):
             field=models.PositiveSmallIntegerField(null=True),
         ),
 
-        migrations.RunPython(update_role, reverse_code=reverse_code),
+        migrations.RunPython(update_role, reverse_code=reverse_code, elidable=True),
     ]

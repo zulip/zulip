@@ -84,5 +84,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(fix_messages,
-                             reverse_code=migrations.RunPython.noop),
+                             reverse_code=migrations.RunPython.noop,
+                             elidable=True),
     ]

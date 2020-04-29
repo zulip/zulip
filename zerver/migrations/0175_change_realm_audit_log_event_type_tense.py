@@ -17,5 +17,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(change_realm_audit_log_event_type_tense,
-                             reverse_code=migrations.RunPython.noop),
+                             reverse_code=migrations.RunPython.noop,
+                             elidable=True),
     ]

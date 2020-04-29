@@ -570,6 +570,7 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
         ),
         migrations.RunPython(
             code=migrate_existing_attachment_data,
+            elidable=True,
         ),
         migrations.AddField(
             model_name='subscription',

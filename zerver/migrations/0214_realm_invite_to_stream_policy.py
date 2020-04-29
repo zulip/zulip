@@ -25,5 +25,6 @@ class Migration(migrations.Migration):
             field=models.PositiveSmallIntegerField(default=INVITE_TO_STREAM_POLICY_MEMBERS),
         ),
         migrations.RunPython(handle_waiting_period,
-                             reverse_code=migrations.RunPython.noop),
+                             reverse_code=migrations.RunPython.noop,
+                             elidable=True),
     ]

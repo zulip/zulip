@@ -26,5 +26,6 @@ class Migration(migrations.Migration):
             field=models.TextField(default=''),
         ),
         migrations.RunPython(render_all_stream_descriptions,
-                             reverse_code=migrations.RunPython.noop),
+                             reverse_code=migrations.RunPython.noop,
+                             elidable=True),
     ]
