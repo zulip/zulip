@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
         DELETE FROM zerver_archivedmessage;
         DELETE FROM zerver_archivetransaction;
         COMMIT;
-        """),
+        """, elidable=True),
         migrations.AlterField(
             model_name='archivedmessage',
             name='archive_transaction',
