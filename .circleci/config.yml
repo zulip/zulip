@@ -9,7 +9,7 @@ aliases:
     run:
       name: create cache directories
       command: |
-          dirs=(/srv/zulip-{npm,venv}-cache)
+          dirs=(/srv/zulip-{npm,venv,emoji}-cache)
           sudo mkdir -p "${dirs[@]}"
           sudo chown -R circleci "${dirs[@]}"
 
@@ -22,6 +22,11 @@ aliases:
     restore_cache:
       keys:
       - v1-venv-base.{{ .Environment.CIRCLE_JOB }}-{{ checksum "requirements/thumbor-dev.txt" }}-{{ checksum "requirements/dev.txt" }}
+
+  - &restore_emoji_cache
+    restore_cache:
+      keys:
+      - v1-venv-base.{{ .Environment.CIRCLE_JOB }}-{{ checksum "tools/setup/emoji/emoji_map.json" }}-{{ checksum "tools/setup/emoji/build_emoji" }}-{{checksum "tools/setup/emoji/emoji_setup_utils.py" }}-{{ checksum "tools/setup/emoji/emoji_names.py" }}-{{ checksum "package.json" }}
 
   - &install_dependencies
     run:
@@ -57,6 +62,12 @@ aliases:
       paths:
         - /srv/zulip-venv-cache
       key: v1-venv-base.{{ .Environment.CIRCLE_JOB }}-{{ checksum "requirements/thumbor-dev.txt" }}-{{ checksum "requirements/dev.txt" }}
+
+  - &save_emoji_cache
+    save_cache:
+      paths:
+        - /srv/zulip-emoji-cache
+      key: v1-venv-base.{{ .Environment.CIRCLE_JOB }}-{{ checksum "tools/setup/emoji/emoji_map.json" }}-{{ checksum "tools/setup/emoji/build_emoji" }}-{{checksum "tools/setup/emoji/emoji_setup_utils.py" }}-{{ checksum "tools/setup/emoji/emoji_names.py" }}-{{ checksum "package.json" }}
 
   - &do_bionic_hack
     run:
