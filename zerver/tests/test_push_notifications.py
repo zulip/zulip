@@ -771,6 +771,8 @@ class HandlePushNotificationTest(PushNotificationTest):
         user_profile.enable_offline_email_notifications = False
         user_profile.enable_offline_push_notifications = False
         user_profile.enable_stream_push_notifications = False
+        user_profile.enable_topic_follow_email_notifications = False
+        user_profile.enable_topic_follow_push_notifications = False
         user_profile.save()
         handle_push_notification(user_profile.id, {})
         mock_push_notifications.assert_called()
@@ -1222,10 +1224,10 @@ class TestGetAPNsPayload(PushNotificationTest):
         self.assertDictEqual(payload, expected)
         mock_push_notifications.assert_called()
 
-    def test_get_message_payload_apns_stream_message(self) -> None:
+    def test_get_message_payload_apns_stream_or_topic_follow_message(self) -> None:
         stream = Stream.objects.filter(name='Verona').get()
         message = self.get_message(Recipient.STREAM, stream.id)
-        message.trigger = 'push_stream_notify'
+        message.trigger = 'stream_push_notify'
         message.stream_name = 'Verona'
         payload = get_message_payload_apns(self.sender, message)
         expected = {
@@ -1251,6 +1253,10 @@ class TestGetAPNsPayload(PushNotificationTest):
                 }
             }
         }
+        self.assertDictEqual(payload, expected)
+
+        message.trigger = 'topic_follow_push_notify'
+        payload = get_message_payload_apns(self.sender, message)
         self.assertDictEqual(payload, expected)
 
     def test_get_message_payload_apns_stream_mention(self) -> None:
@@ -1413,13 +1419,13 @@ class TestGetGCMPayload(PushNotificationTest):
             "priority": "high",
         })
 
-    def test_get_message_payload_gcm_stream_notifications(self) -> None:
+    def test_get_message_payload_gcm_stream_ot_topic_follow_notifications(self) -> None:
         message = self.get_message(Recipient.STREAM, 1)
         message.trigger = 'stream_push_notify'
         message.stream_name = 'Denmark'
         hamlet = self.example_user('hamlet')
         payload, gcm_options = get_message_payload_gcm(hamlet, message)
-        self.assertDictEqual(payload, {
+        expected = {
             "user_id": hamlet.id,
             "event": "message",
             "alert": "New stream message from King Hamlet in Denmark",
@@ -1437,7 +1443,16 @@ class TestGetGCMPayload(PushNotificationTest):
             "recipient_type": "stream",
             "topic": "Test Topic",
             "stream": "Denmark"
+        }
+
+        self.assertDictEqual(payload, expected)
+        self.assertDictEqual(gcm_options, {
+            "priority": "high",
         })
+
+        message.trigger = 'stream_push_notify'
+        payload, gcm_options = get_message_payload_gcm(hamlet, message)
+        self.assertDictEqual(payload, expected)
         self.assertDictEqual(gcm_options, {
             "priority": "high",
         })
@@ -1867,20 +1882,23 @@ class TestReceivesNotificationsFunctions(ZulipTestCase):
     def test_receivers_stream_notifications_when_user_is_a_bot(self) -> None:
         self.user.is_bot = True
 
-        self.user.enable_stream_push_notifications = True
-        self.assertFalse(receives_stream_notifications(self.user))
-
-        self.user.enable_stream_push_notifications = False
-        self.assertFalse(receives_stream_notifications(self.user))
+        for stream_push_notification in [False, True]:
+            self.user.enable_stream_push_notifications = stream_push_notification
+            for topic_follow_push_notification in [False, True]:
+                self.user.enable_topic_follow_push_notification = topic_follow_push_notification
+                self.assertFalse(receives_stream_notifications(self.user))
 
     def test_receivers_stream_notifications_when_user_is_not_a_bot(self) -> None:
         self.user.is_bot = False
 
-        self.user.enable_stream_push_notifications = True
-        self.assertTrue(receives_stream_notifications(self.user))
-
-        self.user.enable_stream_push_notifications = False
-        self.assertFalse(receives_stream_notifications(self.user))
+        for stream_push_notification in [False, True]:
+            self.user.enable_stream_push_notifications = stream_push_notification
+            for topic_follow_push_notification in [False, True]:
+                self.user.enable_topic_follow_push_notifications = topic_follow_push_notification
+                if stream_push_notification or topic_follow_push_notification:
+                    self.assertTrue(receives_stream_notifications(self.user))
+                else:
+                    self.assertFalse(receives_stream_notifications(self.user))
 
 class TestPushNotificationsContent(ZulipTestCase):
     def test_fixtures(self) -> None:

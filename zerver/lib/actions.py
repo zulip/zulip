@@ -992,6 +992,7 @@ class RecipientInfoResult(TypedDict):
     stream_push_user_ids: Set[int]
     wildcard_mention_user_ids: Set[int]
     topic_follow_email_user_ids: Set[int]
+    topic_follow_push_user_ids: Set[int]
     topic_follow_wildcard_mention_user_ids: Set[int]
     um_eligible_user_ids: Set[int]
     long_term_idle_user_ids: Set[int]
@@ -1007,6 +1008,7 @@ def get_recipient_info(recipient: Recipient,
     stream_email_user_ids: Set[int] = set()
     wildcard_mention_user_ids: Set[int] = set()
     topic_follow_email_user_ids: Set[int] = set()
+    topic_follow_push_user_ids: Set[int] = set()
     topic_follow_wildcard_mention_user_ids: Set[int] = set()
 
     if recipient.type == Recipient.PERSONAL:
@@ -1093,6 +1095,14 @@ def get_recipient_info(recipient: Recipient,
             for row in subscription_rows
             # Note: muting a stream overrides stream_push_notify
             if should_send('push_notifications', row)
+        }
+
+        topic_follow_push_user_ids = {
+            row['user_profile_id']
+            # Note: muting a stream or topic overrides topic_follow_push_notify
+            # and row[setting] will never be None for topics
+            for row in follower_rows
+            if should_send('push_notifications', row, check_active=True)
         }
 
         stream_email_user_ids = {
@@ -1241,6 +1251,7 @@ def get_recipient_info(recipient: Recipient,
         stream_email_user_ids=stream_email_user_ids,
         wildcard_mention_user_ids=wildcard_mention_user_ids,
         topic_follow_email_user_ids=topic_follow_email_user_ids,
+        topic_follow_push_user_ids=topic_follow_push_user_ids,
         topic_follow_wildcard_mention_user_ids=topic_follow_wildcard_mention_user_ids,
         um_eligible_user_ids=um_eligible_user_ids,
         long_term_idle_user_ids=long_term_idle_user_ids,
@@ -1393,6 +1404,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
         message['stream_push_user_ids'] = info['stream_push_user_ids']
         message['stream_email_user_ids'] = info['stream_email_user_ids']
         message['topic_follow_email_user_ids'] = info['topic_follow_email_user_ids']
+        message['topic_follow_push_user_ids'] = info['topic_follow_push_user_ids']
         message['um_eligible_user_ids'] = info['um_eligible_user_ids']
         message['long_term_idle_user_ids'] = info['long_term_idle_user_ids']
         message['default_bot_user_ids'] = info['default_bot_user_ids']
@@ -1465,6 +1477,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
                 stream_push_user_ids = message['stream_push_user_ids'],
                 stream_email_user_ids = message['stream_email_user_ids'],
                 topic_follow_email_user_ids=message['topic_follow_email_user_ids'],
+                topic_follow_push_user_ids = message['topic_follow_push_user_ids'],
                 mentioned_user_ids=mentioned_user_ids,
                 mark_as_read=mark_as_read
             )
@@ -1542,6 +1555,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
                 stream_email_notify=(user_id in message['stream_email_user_ids']),
                 wildcard_mention_notify=(user_id in message['wildcard_mention_user_ids']),
                 topic_follow_email_notify=(user_id in message['topic_follow_email_user_ids']),
+                topic_follow_push_notify = (user_id in message['topic_follow_push_user_ids']),
                 topic_follow_wildcard_mention_notify=(
                     user_id in message['topic_follow_wildcard_mention_user_ids']),
             )
@@ -1621,6 +1635,7 @@ def create_user_messages(message: Message,
                          stream_push_user_ids: Set[int],
                          stream_email_user_ids: Set[int],
                          topic_follow_email_user_ids: Set[int],
+                         topic_follow_push_user_ids: Set[int],
                          mentioned_user_ids: Set[int],
                          mark_as_read: List[int]=[]) -> List[UserMessageLite]:
     ums_to_create = []
@@ -1674,6 +1689,7 @@ def create_user_messages(message: Message,
     for um in ums_to_create:
         if (um.user_profile_id in long_term_idle_user_ids and
                 um.user_profile_id not in stream_push_user_ids and
+                um.user_profile_id not in topic_follow_push_user_ids and
                 um.user_profile_id not in stream_email_user_ids and
                 um.user_profile_id not in topic_follow_email_user_ids and
                 message.is_stream_message() and
@@ -4456,6 +4472,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
         event['stream_push_user_ids'] = list(info['stream_push_user_ids'])
         event['stream_email_user_ids'] = list(info['stream_email_user_ids'])
         event['topic_follow_email_user_ids'] = list(info['topic_follow_email_user_ids'])
+        event['topic_follow_push_user_ids'] = list(info['topic_follow_push_user_ids'])
         event['prior_mention_user_ids'] = list(prior_mention_user_ids)
         event['mention_user_ids'] = list(mention_user_ids)
         event['presence_idle_user_ids'] = filter_presence_idle_user_ids(info['active_user_ids'])

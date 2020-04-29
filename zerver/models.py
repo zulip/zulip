@@ -1263,7 +1263,8 @@ def receives_online_notifications(user_profile: UserProfile) -> bool:
             not user_profile.is_bot)
 
 def receives_stream_notifications(user_profile: UserProfile) -> bool:
-    return (user_profile.enable_stream_push_notifications and
+    return ((user_profile.enable_stream_push_notifications or
+             user_profile.enable_topic_follow_push_notifications) and
             not user_profile.is_bot)
 
 def remote_user_to_email(remote_user: str) -> str:

@@ -1302,6 +1302,7 @@ class RecipientInfoTest(ZulipTestCase):
             stream_email_user_ids=set(),
             wildcard_mention_user_ids=set(),
             topic_follow_email_user_ids=set(),
+            topic_follow_push_user_ids=set(),
             topic_follow_wildcard_mention_user_ids=set(),
             um_eligible_user_ids=all_user_ids,
             long_term_idle_user_ids=set(),

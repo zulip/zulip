@@ -474,7 +474,8 @@ def get_gcm_alert(message: Message) -> str:
     elif message.is_stream_message() and (message.trigger == 'mentioned' or
                                           message.trigger == 'wildcard_mentioned'):
         return f"New mention from {sender_str}"
-    else:  # message.is_stream_message() and message.trigger == 'stream_push_notify'
+    else:  # message.is_stream_message() and (message.trigger == 'stream_push_notify' or
+        #                                     message.trigger == 'topic_follow_push_notify')
         return f"New stream message from {sender_str} in {get_display_recipient(message.recipient)}"
 
 def get_mobile_push_content(rendered_content: str) -> str:
