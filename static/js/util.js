@@ -280,6 +280,12 @@ exports.convert_message_topic = function (message) {
     }
 };
 
+exports.get_absolute_url = () => {
+    return window.location.protocol + "//" +
+           window.location.host + "/" +
+           window.location.pathname.split('/')[1];
+};
+
 exports.clean_user_content_links = function (html) {
     const content = new DOMParser().parseFromString(html, "text/html").body;
     for (const elt of content.getElementsByTagName("a")) {
