@@ -50,7 +50,7 @@ export default (env?: string): webpack.Configuration[] => {
                         resolve(__dirname, '../static/shared/js'),
                         resolve(__dirname, '../static/js'),
                     ],
-                    loader: 'babel-loader',
+                    use: [cacheLoader, 'babel-loader'],
                 },
                 // Uses script-loader on minified files so we don't change global variables in them.
                 // Also has the effect of making processing these files fast
