@@ -20,12 +20,21 @@ set_global("avatar", {});
 
 set_global('$', global.make_zjquery());
 
+global.stub_templates(function (name) {
+    if (name === 'settings/edit_incoming_webhook_url') {
+        return 'stub-edit-webhook-url';
+    }
+});
+
 zrequire('bot_data');
 zrequire('settings_bots');
 zrequire('people');
-
-set_global('ClipboardJS', function (sel) {
-    assert.equal(sel, '#copy_zuliprc');
+zrequire('stream_data');
+set_global('settings_list_widget', (opts) => {
+    return {
+        render: () => {},
+        value: () => `${opts.setting_name}-value`,
+    };
 });
 
 bot_data.initialize(bot_data_params);
@@ -125,11 +134,17 @@ function set_up() {
     avatar.build_bot_create_widget = () => {};
     avatar.build_bot_edit_widget = () => {};
 
+    $("#incoming_webhook_url_maker").append = () => {};
     settings_bots.set_up();
 }
 
 run_test('set_up', () => {
+    const clip_selectors = [];
+    set_global('ClipboardJS', function (sel) {
+        clip_selectors.push(sel);
+    });
     set_up();
+    assert.deepEqual(clip_selectors.sort(), ['#copy_webhook_url', '#copy_zuliprc']);
 });
 
 run_test('test tab clicks', () => {
@@ -158,7 +173,7 @@ run_test('test tab clicks', () => {
 
     const forms = {
         add: $('#add-a-new-bot-form'),
-        active: $('#active_bots_list'),
+        active: $('#active_bots_list_holder'),
         inactive: $('#inactive_bots_list'),
     };
 

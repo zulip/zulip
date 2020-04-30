@@ -841,7 +841,6 @@ input[type=checkbox].inline-block {
 }
 
 .bots_list {
-    display: none;
     list-style-type: none;
     margin-left: 0px;
 }
@@ -897,11 +896,13 @@ input[type=checkbox].inline-block {
     color: hsl(203, 77%, 56%);
 }
 
-.bots_list .edit-bot-buttons .danger-red {
+.bots_list .edit-bot-buttons .danger-red,
+#bot_table_url .danger-red {
     color: hsl(0, 56%, 73%);
 }
 
-.bots_list .edit-bot-buttons .copy-gold {
+.bots_list .edit-bot-buttons .copy-gold,
+#bot_table_url .copy-gold {
     color: hsl(51, 90%, 50%);
 }
 
@@ -932,6 +933,7 @@ input[type=checkbox].inline-block {
     margin-bottom: 5px;
 }
 
+#bot_table_url #url,
 .bots_list .email .value,
 .bots_list .api_key .api-key-value-and-button {
     display: block;
@@ -1999,6 +2001,34 @@ input[type=text]#settings_search {
 #toggle_collapse {
     margin-left: 2px;
     display: inline-block;
+}
+
+#incoming_webhook_url_maker {
+    .input-group {
+        margin-bottom: 0px;
+        margin-top: 10px;
+    }
+}
+
+#bot_table_url {
+    padding-right: 14px;
+    .top-row {
+        display: flex;
+
+        p {
+            flex-grow: 1;
+        }
+        button {
+            background-color: transparent;
+            padding: 0;
+            padding-left: 5px;
+
+            i.fa-close {
+                // the close icon has a smaller apparent size; manually increase the font size.
+                font-size: 16px;
+            }
+        }
+    }
 }
 
 .admin_exports_table {

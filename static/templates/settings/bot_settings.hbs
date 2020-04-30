@@ -20,8 +20,22 @@
             <li class="add-a-new-bot-tab {{#unless can_create_new_bots}}hide{{/unless}}"><a>{{t "Add a new bot" }}</a></li>
         </ul>
 
-        <ol class="bots_list required-text" id="active_bots_list" data-empty="{{t 'You have no active bots.' }}">
-        </ol>
+        <div id="active_bots_list_holder">
+            <div id="bot_table_url" class="alert alert-success hide">
+                <div class="top-row">
+                    <p>{{t "Success! Post to this webhook URL:"}}</p>
+                    <button type="submit" id="copy_webhook_url" class="btn copy_webhook_url" title="{{t 'Copy webhook url' }}">
+                        <i class="fa fa-clipboard copy-gold"></i>
+                    </button>
+                    <button type="submit" class="btn close_url" title="{{t 'Close' }}">
+                        <i aria-hidden="true" class="fa fa-close danger-red"></i>
+                    </button>
+                </div>
+                <code id="url"></code>
+            </div>
+            <ol class="bots_list required-text" id="active_bots_list" data-empty="{{t 'You have no active bots.' }}">
+            </ol>
+        </div>
 
         <ol class="bots_list required-text" id="inactive_bots_list" data-empty="{{t 'You have no inactive bots.' }}">
         </ol>
@@ -67,6 +81,11 @@
                         -bot@{{ page_params.realm_bot_domain }}
                         <div>
                             <label for="create_bot_short_name" generated="true" class="text-error"></label>
+                        </div>
+                    </div>
+                    <div id="incoming_webhook_url_maker" class="grey-box input-group">
+                        <div class="section-heading">
+                            <label>{{t "Webhook URL options (Optional)" }}</label>
                         </div>
                     </div>
                     <div id="payload_url_inputbox">
