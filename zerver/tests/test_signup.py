@@ -1467,8 +1467,12 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
     # make sure users can't take a valid confirmation key from another
     # pathway and use it with the invitation url route
     def test_confirmation_key_of_wrong_type(self) -> None:
-        user = self.example_user('hamlet')
-        url = create_confirmation_link(user, 'host', Confirmation.USER_REGISTRATION)
+        email = self.nonreg_email("alice")
+        realm = get_realm('zulip')
+        inviter = self.example_user('iago')
+        prereg_user = PreregistrationUser.objects.create(
+            email=email, referred_by=inviter, realm=realm)
+        url = create_confirmation_link(prereg_user, 'host', Confirmation.USER_REGISTRATION)
         registration_key = url.split('/')[-1]
 
         # Mainly a test of get_object_from_key, rather than of the invitation pathway
@@ -1477,7 +1481,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assertEqual(cm.exception.error_type, ConfirmationKeyException.DOES_NOT_EXIST)
 
         # Verify that using the wrong type doesn't work in the main confirm code path
-        email_change_url = create_confirmation_link(user, 'host', Confirmation.EMAIL_CHANGE)
+        email_change_url = create_confirmation_link(prereg_user, 'host', Confirmation.EMAIL_CHANGE)
         email_change_key = email_change_url.split('/')[-1]
         url = '/accounts/do_confirm/' + email_change_key
         result = self.client_get(url)
@@ -1485,8 +1489,12 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
                                          "confirmation link in the system."], result)
 
     def test_confirmation_expired(self) -> None:
-        user = self.example_user('hamlet')
-        url = create_confirmation_link(user, 'host', Confirmation.USER_REGISTRATION)
+        email = self.nonreg_email("alice")
+        realm = get_realm('zulip')
+        inviter = self.example_user('iago')
+        prereg_user = PreregistrationUser.objects.create(
+            email=email, referred_by=inviter, realm=realm)
+        url = create_confirmation_link(prereg_user, 'host', Confirmation.USER_REGISTRATION)
         registration_key = url.split('/')[-1]
 
         conf = Confirmation.objects.filter(confirmation_key=registration_key).first()
