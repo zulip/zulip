@@ -137,6 +137,7 @@
 * [Configure authentication methods](/help/configure-authentication-methods)
 * [Add a custom linkification filter](/help/add-a-custom-linkification-filter)
 * [Message retention policy](/help/message-retention-policy)
+* [SAML authentication](/help/saml-authentication)
 
 ## Users & bots
 * [Invite new users](/help/invite-new-users)

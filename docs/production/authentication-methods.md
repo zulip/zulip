@@ -41,9 +41,13 @@ Zulip 2.1 and later supports SAML authentication, used by Okta,
 OneLogin, and many other IdPs (identity providers).  You can configure
 it as follows:
 
-1. These instructions assume you have an installed Zulip server.  You
-   can have created an organization already using EmailAuthBackend, or
-   plan to create the organization using SAML authentication.
+1. These instructions assume you have an installed Zulip server; if
+   you're using Zulip Cloud, see [this article][saml-help-center],
+   which also has IdP-side configuration advice for common IdPs.
+
+   You can have created a Zulip organization already using the default
+   EmailAuthBackend, or plan to create the organization using SAML
+   authentication.
 
 1. Tell your IdP how to find your Zulip server:
 
@@ -134,6 +138,8 @@ create an account (including when creating a new organization).
 found at `https://yourzulipdomain.example.com/saml/metadata.xml`. You
 can use this for verifying your configuration or provide it to your
 IdP.
+
+[saml-help-center]: https://zulip.com/help/saml-authentication
 
 ### IdP-initiated SSO
 
