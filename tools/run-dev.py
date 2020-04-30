@@ -100,7 +100,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from scripts.lib.zulip_tools import WARNING, ENDC
+from scripts.lib.zulip_tools import CYAN, WARNING, ENDC
 
 proxy_port = base_port
 django_port = base_port + 1
@@ -325,18 +325,25 @@ def shutdown_handler(*args: Any, **kwargs: Any) -> None:
     else:
         io_loop.stop()
 
-# log which services/ports will be started
-print("Starting Zulip services on ports: web proxy: {},".format(proxy_port),
-      "Django: {}, Tornado: {}, Thumbor: {}".format(django_port, tornado_port, thumbor_port),
-      end='')
-if options.test:
-    print("")  # no webpack for --test
-else:
-    print(", webpack: {}".format(webpack_port))
+def print_listeners() -> None:
+    print("\nZulip services will listen on ports:")
+    ports = [
+        (proxy_port, CYAN + 'web proxy' + ENDC),
+        (django_port, 'Django'),
+        (tornado_port, 'Tornado'),
+    ]
 
-print("".join((WARNING,
-               "Note: only port {} is exposed to the host in a Vagrant environment.".format(
-                   proxy_port), ENDC)))
+    if not options.test:
+        ports.append((webpack_port, 'webpack'))
+
+    ports.append((thumbor_port, 'Thumbor'))
+
+    for port, label in ports:
+        print(f'   {port}: {label}')
+    print()
+
+    proxy_warning = f"Only the proxy port ({proxy_port}) is exposed."
+    print(WARNING + "Note to Vagrant users: " + ENDC + proxy_warning + '\n')
 
 try:
     app = Application(enable_logging=options.enable_tornado_logging)
@@ -346,6 +353,9 @@ try:
         if e.errno == 98:
             print('\n\nERROR: You probably have another server running!!!\n\n')
         raise
+
+    print_listeners()
+
     ioloop = IOLoop.instance()
     for s in (signal.SIGINT, signal.SIGTERM):
         signal.signal(s, shutdown_handler)
