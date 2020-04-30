@@ -116,6 +116,7 @@ const DropdownListWidget = function (opts) {
     return {
         render,
         value,
+        update,
     };
 };
 
