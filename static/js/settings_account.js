@@ -104,11 +104,10 @@ function update_custom_profile_field(field, method) {
         field_id = field.id;
     }
 
-    const spinner = $('.custom_user_field[data-field-id="' + field_id +
+    const spinner_element = $('.custom_user_field[data-field-id="' + field_id +
         '"] .custom-field-status').expectOne();
-    loading.make_indicator(spinner, {text: 'Saving ...'});
     settings_ui.do_settings_change(method, "/json/users/me/profile_data",
-                                   {data: JSON.stringify([field])}, spinner);
+                                   {data: JSON.stringify([field])}, spinner_element);
 }
 
 function update_user_custom_profile_fields(fields, method) {
