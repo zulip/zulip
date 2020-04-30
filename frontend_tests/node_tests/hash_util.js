@@ -104,6 +104,31 @@ run_test('test_get_hash_section', () => {
     );
 });
 
+run_test('test_get_remaining_sections', () => {
+    assert.deepEqual(
+        hash_util.get_remaining_sections('streams/subscribed'),
+        []
+    );
+    assert.deepEqual(
+        hash_util.get_remaining_sections('#settings/your-bots/create/github'),
+        ['create', 'github']
+    );
+
+    assert.deepEqual(
+        hash_util.get_remaining_sections('settings/10/general/'),
+        ['general']
+    );
+
+    assert.deepEqual(
+        hash_util.get_remaining_sections('#drafts'),
+        []
+    );
+    assert.deepEqual(
+        hash_util.get_remaining_sections(''),
+        []
+    );
+});
+
 run_test('test_parse_narrow', () => {
     assert.deepEqual(
         hash_util.parse_narrow(['narrow', 'stream', '99-frontend']),

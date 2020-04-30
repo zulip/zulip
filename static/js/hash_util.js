@@ -17,6 +17,16 @@ exports.get_hash_section = function (hash) {
     return parts[1] || '';
 };
 
+exports.get_remaining_sections = (hash) => {
+    // given '#streams/5/social/hello", returns ["social", "hello"]
+    if (!hash) {
+        return [];
+    }
+
+    const parts = hash.replace(/\/$/, "").split(/\//);
+    return parts.slice(2);
+};
+
 // Some browsers zealously URI-decode the contents of
 // window.location.hash.  So we hide our URI-encoding
 // by replacing % with . (like MediaWiki).
