@@ -67,7 +67,7 @@ def test_server_running(force: bool=False, external_host: str='testserver',
         update_test_databases_if_required(rebuild_test_database=True)
 
     # Run this not through the shell, so that we have the actual PID.
-    run_dev_server_command = ['tools/run-dev.py', '--test']
+    run_dev_server_command = ['tools/run-dev.py', '--test', '--streamlined']
     if force:
         run_dev_server_command.append('--force')
     server = subprocess.Popen(run_dev_server_command,
