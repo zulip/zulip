@@ -1006,6 +1006,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     translate_emoticons: bool = models.BooleanField(default=False)
     twenty_four_hour_time: bool = models.BooleanField(default=False)
     starred_message_counts: bool = models.BooleanField(default=False)
+    sort_streams_by_activity: bool = models.BooleanField(default=False)
 
     # UI setting controlling Zulip's behavior of demoting in the sort
     # order and graying out streams with no recent traffic.  The
@@ -1081,6 +1082,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         left_side_userlist=bool,
         night_mode=bool,
         starred_message_counts=bool,
+        sort_streams_by_activity=bool,
         timezone=str,
         translate_emoticons=bool,
         twenty_four_hour_time=bool,

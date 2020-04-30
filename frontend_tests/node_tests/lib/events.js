@@ -496,6 +496,12 @@ exports.fixtures = {
         setting: true,
     },
 
+    update_display_settings__sort_streams_by_activity: {
+        type: 'update_display_settings',
+        setting_name: 'sort_streams_by_activity',
+        setting: true,
+    },
+
     update_display_settings__fluid_layout_width: {
         type: 'update_display_settings',
         setting_name: 'fluid_layout_width',

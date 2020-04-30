@@ -41,6 +41,7 @@ function setup_settings_label() {
         starred_message_counts: i18n.t("Show counts for starred messages"),
         twenty_four_hour_time: i18n.t("Time format"),
         translate_emoticons: i18n.t("Convert emoticons before sending (<code>:)</code> becomes 😃)"),
+        sort_streams_by_activity: i18n.t("Sort streams by most recent activity"),
     };
 }
 

@@ -394,6 +394,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             'twenty_four_hour_time',
             'translate_emoticons',
             'starred_message_counts',
+            'sort_streams_by_activity',
         ];
         if (user_display_settings.includes(event.setting_name)) {
             page_params[event.setting_name] = event.setting;
@@ -435,6 +436,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         }
         if (event.setting_name === 'starred_message_counts') {
             starred_messages.rerender_ui();
+        }
+        if (event.setting_name === 'sort_streams_by_activity') {
+            stream_list.build_stream_list();
         }
         if (event.setting_name === 'fluid_layout_width') {
             scroll_bar.set_layout_width();

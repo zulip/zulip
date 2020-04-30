@@ -46,6 +46,7 @@ exports.get_all_display_settings = () => ({
             "high_contrast_mode",
             "left_side_userlist",
             "starred_message_counts",
+            "sort_streams_by_activity",
             "fluid_layout_width",
         ],
     },

@@ -1,6 +1,9 @@
-
+zrequire('stream_topic_history');
 zrequire('stream_data');
 zrequire('stream_sort');
+set_global('page_params', {
+    sort_streams_by_activity: false,
+});
 const with_overrides = global.with_overrides;
 
 run_test('no_subscribed_streams', () => {
@@ -44,6 +47,42 @@ stream_data.add_sub(fast_tortoise);
 stream_data.add_sub(pneumonia);
 stream_data.add_sub(clarinet);
 stream_data.add_sub(weaving);
+
+const scalene_opts = {
+    stream_id: scalene.stream_id,
+    message_id: 3,
+    topic_name: 'test_topic',
+};
+
+const fast_tortoise_opts = {
+    stream_id: fast_tortoise.stream_id,
+    message_id: 2,
+    topic_name: 'test_topic',
+};
+
+const pneumonia_opts = {
+    stream_id: pneumonia.stream_id,
+    message_id: 7,
+    topic_name: 'test_topic',
+};
+
+const clarinet_opts = {
+    stream_id: clarinet.stream_id,
+    message_id: 1,
+    topic_name: 'test_topic',
+};
+
+const weaving_opts = {
+    stream_id: weaving.stream_id,
+    message_id: 12,
+    topic_name: 'test_topic',
+};
+
+stream_topic_history.add_message(scalene_opts);
+stream_topic_history.add_message(fast_tortoise_opts);
+stream_topic_history.add_message(pneumonia_opts);
+stream_topic_history.add_message(clarinet_opts);
+stream_topic_history.add_message(weaving_opts);
 
 function sort_groups(query) {
     const streams = stream_data.subscribed_streams();
@@ -97,4 +136,19 @@ with_overrides(function (override) {
     assert.deepEqual(sorted.pinned_streams, []);
     assert.deepEqual(sorted.normal_streams, ['fast tortoise']);
     assert.deepEqual(sorted.dormant_streams, []);
+
+    page_params.sort_streams_by_activity = true;
+
+    // Test sorting into catagories by most recent activity.
+    sorted = sort_groups("");
+    assert.deepEqual(sorted.pinned_streams, ['scalene']);
+    assert.deepEqual(sorted.normal_streams, ['fast tortoise', 'clarinet']);
+    assert.deepEqual(sorted.dormant_streams, ['pneumonia']);
+
+    clarinet_opts.message_id = 99;
+    stream_topic_history.add_message(clarinet_opts);
+
+    // Test after updating the activity of a stream.
+    sorted = sort_groups("");
+    assert.deepEqual(sorted.normal_streams, ['clarinet', 'fast tortoise']);
 });

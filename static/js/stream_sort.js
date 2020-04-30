@@ -59,6 +59,19 @@ exports.sort_groups = function (streams, search_term) {
     normal_streams.sort(util.strcmp);
     dormant_streams.sort(util.strcmp);
 
+    if (page_params.sort_streams_by_activity) {
+        function compare_max_message_ids(a, b) {
+            const a_id = stream_data.get_sub(a).stream_id;
+            const b_id = stream_data.get_sub(b).stream_id;
+            return stream_topic_history.get_max_message_id(b_id) -
+                stream_topic_history.get_max_message_id(a_id);
+        }
+
+        pinned_streams.sort(compare_max_message_ids);
+        normal_streams.sort(compare_max_message_ids);
+        dormant_streams.sort(compare_max_message_ids);
+    }
+
     const same_as_before =
         previous_pinned !== undefined &&
         util.array_compare(previous_pinned, pinned_streams) &&

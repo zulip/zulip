@@ -724,6 +724,12 @@ with_overrides(function (override) {
     dispatch(event);
     assert_same(page_params.starred_message_counts, true);
 
+    override('stream_list.build_stream_list', noop);
+    event = event_fixtures.update_display_settings__sort_streams_by_activity;
+    page_params.sort_streams_by_activity = false;
+    dispatch(event);
+    assert_same(page_params.sort_streams_by_activity, true);
+
     override('scroll_bar.set_layout_width', noop);
     event = event_fixtures.update_display_settings__fluid_layout_width;
     page_params.fluid_layout_width = false;

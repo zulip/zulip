@@ -207,6 +207,7 @@ class HomeTest(ZulipTestCase):
             "server_inline_url_embed_preview",
             "server_name_changes_disabled",
             "settings_send_digest_emails",
+            "sort_streams_by_activity",
             "starred_message_counts",
             "starred_messages",
             "stop_words",
