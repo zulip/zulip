@@ -26,3 +26,27 @@ rules:
     severity: ERROR
     paths:
       - directory: "zerver/views/"
+
+  - id: dont-import-models-in-migrations
+    patterns:
+      - pattern-not: from zerver.lib.redis_utils import get_redis_client
+      - pattern-not: from zerver.lib.utils import generate_random_token
+      - pattern-not: from zerver.models import filter_pattern_validator
+      - pattern-not: from zerver.models import filter_format_validator
+      - pattern-not: from zerver.models import generate_email_token_for_stream
+      - pattern-either:
+          - pattern: from zerver import $X
+          - pattern: from analytics import $X
+          - pattern: from confirmation import $X
+    message: "Don't import models or other code in migrations; see docs/subsystems/schema-migrations.md"
+    languages: [python]
+    severity: ERROR
+    paths:
+      - directory: "**/migrations"
+      - path-not: 'zerver/migrations/0032_verify_all_medium_avatar_images.py'
+      - path-not: 'zerver/migrations/0060_move_avatars_to_be_uid_based.py'
+      - path-not: 'zerver/migrations/0104_fix_unreads.py'
+      - path-not: 'zerver/migrations/0206_stream_rendered_description.py'
+      - path-not: 'zerver/migrations/0209_user_profile_no_empty_password.py'
+      - path-not: 'zerver/migrations/0260_missed_message_addresses_from_redis_to_db.py'
+      - path-not: 'pgroonga/migrations/0002_html_escape_subject.py'
