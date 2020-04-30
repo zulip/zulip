@@ -131,6 +131,15 @@ def need_to_run_build_pygments_data() -> bool:
         [pygments_version]
     )
 
+def need_to_run_build_webhook_data() -> bool:
+    if not os.path.exists("static/generated/webhooks_data.json"):
+        return True
+    return is_digest_obsolete(
+        "build_webhook_data_hash",
+        ["tools/setup/build_webhook_data"],
+        []
+    )
+
 def need_to_run_compilemessages() -> bool:
     if not os.path.exists('locale/language_name_map.json'):
         # User may have cleaned their git checkout.
@@ -208,6 +217,16 @@ def main(options: argparse.Namespace) -> int:
         )
     else:
         print("No need to run `tools/setup/build_pygments_data`.")
+
+    if options.is_force or need_to_run_build_webhook_data():
+        run(["tools/setup/build_webhook_data"])
+        write_new_digest(
+            'build_webhook_data_hash',
+            ["tools/setup/build_webhook_data"],
+            []
+        )
+    else:
+        print("No need to run `tools/setup/build_webhook_data`.")
 
     if options.is_force or need_to_run_inline_email_css():
         run(["scripts/setup/inline_email_css.py"])
