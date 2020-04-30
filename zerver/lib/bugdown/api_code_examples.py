@@ -99,7 +99,7 @@ def render_python_code_example(function: str, admin_config: Optional[bool]=False
         # Remove one level of indentation and strip newlines
         code_example.append(line[4:].rstrip())
 
-    code_example.append('    print(result)')
+    code_example.append('print(result)')
     code_example.append('\n')
     code_example.append('```')
 
