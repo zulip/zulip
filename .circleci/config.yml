@@ -287,10 +287,8 @@ jobs:
       - *do_bionic_hack
       - *production_extract_tarball
       - *restore_cache_package_json
-      - *restore_emoji_cache
       - *install_production
       - *save_cache_package_json
-      - *save_emoji_cache
 
   "focal-production-install-python3.8":
     docker:
@@ -310,10 +308,8 @@ jobs:
       - *do_bionic_hack
       - *production_extract_tarball
       - *restore_cache_package_json
-      - *restore_emoji_cache
       - *install_production
       - *save_cache_package_json
-      - *save_emoji_cache
 
 workflows:
   version: 2
