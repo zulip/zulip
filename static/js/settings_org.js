@@ -533,7 +533,9 @@ exports.init_dropdown_widgets = () => {
             };
             return item;
         }),
-        subsection: 'notifications',
+        on_update: () => {
+            exports.save_discard_widget_status_handler($(`#org-notifications`));
+        },
         default_text: i18n.t("Disabled"),
         render_text: (x) => {return `#${x}`;},
         null_value: -1,
@@ -552,7 +554,9 @@ exports.init_dropdown_widgets = () => {
                 value: x,
             };
         }),
-        subsection: 'other-settings',
+        on_update: () => {
+            exports.save_discard_widget_status_handler($(`#org-other-settings`));
+        },
         default_text: i18n.t("No language set"),
     });
 };
