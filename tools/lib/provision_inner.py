@@ -60,7 +60,6 @@ def inline_email_css_paths() -> List[str]:
 def configure_rabbitmq_paths() -> List[str]:
     paths = [
         "scripts/setup/configure-rabbitmq",
-        "zproject/dev-secrets.conf",
     ]
     return paths
 
@@ -152,10 +151,11 @@ def need_to_run_inline_email_css() -> bool:
         inline_email_css_paths(),
     )
 
-def need_to_run_configure_rabbitmq() -> bool:
+def need_to_run_configure_rabbitmq(settings_list: List[str]) -> bool:
     obsolete = is_digest_obsolete(
         'last_configure_rabbitmq_hash',
         configure_rabbitmq_paths(),
+        settings_list
     )
 
     if obsolete:
@@ -220,12 +220,15 @@ def main(options: argparse.Namespace) -> int:
             TEST_DATABASE,
             destroy_leaked_test_databases,
         )
+        from django.conf import settings
 
-        if options.is_force or need_to_run_configure_rabbitmq():
+        if options.is_force or need_to_run_configure_rabbitmq(
+                [settings.RABBITMQ_PASSWORD]):
             run(["scripts/setup/configure-rabbitmq"])
             write_new_digest(
                 'last_configure_rabbitmq_hash',
                 configure_rabbitmq_paths(),
+                [settings.RABBITMQ_PASSWORD]
             )
         else:
             print("No need to run `scripts/setup/configure-rabbitmq.")
