@@ -1506,6 +1506,27 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assert_in_success_response(["Whoops. The confirmation link has expired "
                                          "or been deactivated."], result)
 
+    def test_validate_email_not_already_in_realm(self) -> None:
+        email = self.nonreg_email('alice')
+        password = 'password'
+        realm = get_realm('zulip')
+        inviter = self.example_user('iago')
+        prereg_user = PreregistrationUser.objects.create(
+            email=email, referred_by=inviter, realm=realm)
+
+        confirmation_link = create_confirmation_link(prereg_user, 'host', Confirmation.USER_REGISTRATION)
+        registration_key = confirmation_link.split('/')[-1]
+
+        url = "/accounts/register/"
+        self.client_post(url, {"key": registration_key, "from_confirmation": 1, "full_name": "alice"})
+        self.submit_reg_form_for_user(email, password, key=registration_key)
+
+        url = "/accounts/register/"
+        response = self.client_post(url, {"key": registration_key, "from_confirmation": 1, "full_name": "alice"})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('django.contrib.auth.views.login') + '?email=' +
+                         urllib.parse.quote_plus(email))
+
 class InvitationsTestCase(InviteUserBase):
     def test_do_get_user_invites(self) -> None:
         self.login('iago')
