@@ -2,9 +2,11 @@ const DropdownListWidget = function (opts) {
     opts = Object.assign({
         null_value: null,
         render_text: (item_name) => item_name,
+        on_update: () => {},
     }, opts);
     opts.container_id = `${opts.setting_name}_widget`;
     opts.value_id = `id_${opts.setting_name}`;
+    opts.value = opts.value || page_params[opts.setting_name];
 
     const render_dropdown_list = require("../templates/settings/dropdown_list.hbs");
 
@@ -30,7 +32,7 @@ const DropdownListWidget = function (opts) {
 
     const update = (value) => {
         render(value);
-        settings_org.save_discard_widget_status_handler($(`#org-${opts.subsection}`));
+        opts.on_update(value);
     };
 
     const register_event_handlers = () => {
@@ -96,7 +98,7 @@ const DropdownListWidget = function (opts) {
             dropdown_toggle.trigger(custom_event);
         });
 
-        render(page_params[opts.setting_name]);
+        render(opts.value);
         register_event_handlers();
     };
 
