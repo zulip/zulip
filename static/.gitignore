@@ -10,5 +10,7 @@
 /generated/emoji-styles
 # From passing pygments data to the frontend
 /generated/pygments_data.json
+# From passing webhooks data to the frontend
+/generated/webhooks_data.json
 # Legacy emoji data directory
 /third/emoji-data

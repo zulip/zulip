@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+
+from typing import Dict, Any, Callable, Optional
+import json
+import os
+import sys
+
+ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../')
+if ZULIP_PATH not in sys.path:
+    sys.path.append(ZULIP_PATH)
+
+from django.contrib.staticfiles.storage import staticfiles_storage
+from django.utils import module_loading
+
+os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
+import django
+django.setup()
+
+def wrap_staticfiles_storage(func: Callable[[str], Optional[str]]) -> Callable[[str], Optional[str]]:
+    def wrapper(url: str) -> Optional[str]:
+        try:
+            return func(url)
+        except ValueError:
+            # We get this error when running build_webhook_data in prod
+            # because we haven't run manage.py collectstatic yet. We can
+            # simply ignore this here.
+            pass
+        return None
+    return wrapper
+
+def stub_import_string(module: str) -> str:
+    # We do not need to actually import the webhook modules, we are only
+    # concerned with the metadata defined in integrations.py
+    return "stub-module"
+
+staticfiles_storage.url = wrap_staticfiles_storage(staticfiles_storage.url)
+
+
+module_loading.import_string = stub_import_string
+
+from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
+OUT_PATH = os.path.join(ZULIP_PATH, 'static', 'generated', 'webhooks_data.json')
+
+webhooks_data: Dict[str, Any] = {}
+
+for webhook in WEBHOOK_INTEGRATIONS:
+    fields = webhook.config_options
+    name = webhook.name
+    webhooks_data[name] = {}
+    webhooks_data[name]["display_name"] = webhook.display_name
+    webhooks_data[name]["fields"] = []
+    if not fields:
+        continue
+    for field in fields:
+        description, field_name, validator = field
+        webhooks_data[name]["fields"].append({
+            "name": field_name,
+            "description": description,
+        })
+
+
+with open(OUT_PATH, 'w') as f:
+    json.dump(webhooks_data, f)
