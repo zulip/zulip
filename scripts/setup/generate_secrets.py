@@ -17,7 +17,6 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 import argparse
 import uuid
 import configparser
-from zproject import settings
 
 os.chdir(os.path.join(os.path.dirname(__file__), '..', '..'))
 
@@ -83,48 +82,48 @@ def generate_secrets(development: bool = False) -> None:
         secret_key = generate_django_secretkey()
         add_secret('secret_key', secret_key)
         # To prevent Django ImproperlyConfigured error
+        from zproject import settings
         settings.SECRET_KEY = secret_key
 
     if need_secret('camo_key'):
         add_secret('camo_key', random_string(64))
 
-    if (
-        not development
-        and settings.MEMCACHED_LOCATION == "127.0.0.1:11211"
-        and need_secret("memcached_password")
-    ):
-        add_secret("memcached_password", random_token())
+    if not development:
+        if need_secret("memcached_password"):
+            from zproject import settings
 
-    if (
-        not development
-        and settings.REDIS_HOST == "127.0.0.1"
-        and need_secret("redis_password")
-    ):
-        # To prevent Puppet from restarting Redis, which would lose
-        # data because we configured Redis to disable persistence, set
-        # the Redis password on the running server and edit the config
-        # file directly.
+            if settings.MEMCACHED_LOCATION == "127.0.0.1:11211":
+                add_secret("memcached_password", random_token())
 
-        import redis
-        from zerver.lib.redis_utils import get_redis_client
+        if need_secret("redis_password"):
+            from zproject import settings
 
-        redis_password = random_token()
+            if settings.REDIS_HOST == "127.0.0.1":
+                # To prevent Puppet from restarting Redis, which would lose
+                # data because we configured Redis to disable persistence, set
+                # the Redis password on the running server and edit the config
+                # file directly.
 
-        for filename in ["/etc/redis/zuli-redis.conf", "/etc/redis/zulip-redis.conf"]:
-            if os.path.exists(filename):
-                with open(filename, "a") as f:
-                    f.write(
-                        "# Set a Redis password based on zulip-secrets.conf\n"
-                        "requirepass '%s'\n" % (redis_password,)
-                    )
-                break
+                import redis
+                from zerver.lib.redis_utils import get_redis_client
 
-        try:
-            get_redis_client().config_set("requirepass", redis_password)
-        except redis.exceptions.ConnectionError:
-            pass
+                redis_password = random_token()
 
-        add_secret("redis_password", redis_password)
+                for filename in ["/etc/redis/zuli-redis.conf", "/etc/redis/zulip-redis.conf"]:
+                    if os.path.exists(filename):
+                        with open(filename, "a") as f:
+                            f.write(
+                                "# Set a Redis password based on zulip-secrets.conf\n"
+                                "requirepass '%s'\n" % (redis_password,)
+                            )
+                        break
+
+                try:
+                    get_redis_client().config_set("requirepass", redis_password)
+                except redis.exceptions.ConnectionError:
+                    pass
+
+                add_secret("redis_password", redis_password)
 
     # zulip_org_key is generated using os.urandom().
     # zulip_org_id does not require a secure CPRNG,
