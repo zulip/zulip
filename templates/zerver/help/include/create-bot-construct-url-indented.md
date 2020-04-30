@@ -12,3 +12,7 @@
 
     If you'd like this integration to always send to the topic
     `your topic`, just add `&topic=your%20topic` to the end of the URL.
+
+    !!! tip ""
+        Please [Click here](/#settings/your-bots/create/{{ integration_name }})
+        to create a new bot for this integration.
