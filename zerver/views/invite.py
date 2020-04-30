@@ -59,12 +59,12 @@ def get_invitee_emails_set(invitee_emails_raw: str) -> Set[str]:
         invitee_emails.add(email.strip())
     return invitee_emails
 
-@require_realm_admin
+@require_member_or_admin
 def get_user_invites(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     all_users = do_get_user_invites(user_profile)
     return json_success({'invites': all_users})
 
-@require_realm_admin
+@require_member_or_admin
 @has_request_variables
 def revoke_user_invite(request: HttpRequest, user_profile: UserProfile,
                        prereg_id: int) -> HttpResponse:
@@ -75,6 +75,9 @@ def revoke_user_invite(request: HttpRequest, user_profile: UserProfile,
 
     if prereg_user.referred_by.realm != user_profile.realm:
         raise JsonableError(_("No such invitation"))
+
+    if prereg_user.referred_by_id != user_profile.id and not user_profile.is_realm_admin:
+        raise JsonableError(_("Must be an organization administrator"))
 
     do_revoke_user_invite(prereg_user)
     return json_success()
@@ -95,7 +98,7 @@ def revoke_multiuse_invite(request: HttpRequest, user_profile: UserProfile,
     do_revoke_multi_use_invite(invite)
     return json_success()
 
-@require_realm_admin
+@require_member_or_admin
 @has_request_variables
 def resend_user_invite_email(request: HttpRequest, user_profile: UserProfile,
                              prereg_id: int) -> HttpResponse:
@@ -108,6 +111,9 @@ def resend_user_invite_email(request: HttpRequest, user_profile: UserProfile,
     # have a referred_by set for the user who created it.
     if prereg_user.referred_by is None or prereg_user.referred_by.realm != user_profile.realm:
         raise JsonableError(_("No such invitation"))
+
+    if prereg_user.referred_by_id != user_profile.id and not user_profile.is_realm_admin:
+        raise JsonableError(_("Must be an organization administrator"))
 
     timestamp = do_resend_user_invite_email(prereg_user)
     return json_success({'timestamp': timestamp})

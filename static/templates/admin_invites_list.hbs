@@ -7,9 +7,11 @@
         <span class="email">{{email}}</span>
         {{/if}}
     </td>
+    {{#if is_admin}}
     <td>
         <span class="referred_by">{{ref}}</span>
     </td>
+    {{/if}}
     <td>
         <span class="invited_at">{{invited_absolute_time}}</span>
     </td>

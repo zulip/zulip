@@ -5102,8 +5102,9 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
 
     lowest_datetime = timezone_now() - datetime.timedelta(days=days_to_activate)
     prereg_users = PreregistrationUser.objects.exclude(status=active_value).filter(
-        invited_at__gte=lowest_datetime,
-        referred_by__realm=user_profile.realm)
+        invited_at__gte=lowest_datetime)
+    if not user_profile.is_realm_admin:
+        prereg_users = prereg_users.filter(referred_by=user_profile)
 
     invites = []
 
