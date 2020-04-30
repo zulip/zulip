@@ -109,15 +109,22 @@ export default (env?: string): webpack.Configuration[] => {
                 },
                 {
                     test: /\.hbs$/,
-                    loader: 'handlebars-loader',
-                    options: {
-                        // Tell webpack not to explicitly require these.
-                        knownHelpers: ['if', 'unless', 'each', 'with',
-                            // The ones below are defined in static/js/templates.js
-                            'plural', 'eq', 'and', 'or', 'not',
-                            't', 'tr', 'rendered_markdown'],
-                        preventIndent: true,
-                    },
+                    use: [
+                        cacheLoader,
+                        {
+                            loader: 'handlebars-loader',
+                            options: {
+                                // Tell webpack not to explicitly require these.
+                                knownHelpers: [
+                                    'if', 'unless', 'each', 'with',
+                                    // The ones below are defined in static/js/templates.js
+                                    'plural', 'eq', 'and', 'or', 'not',
+                                    't', 'tr', 'rendered_markdown',
+                                ],
+                                preventIndent: true,
+                            },
+                        },
+                    ],
                 },
                 // load fonts and files
                 {
