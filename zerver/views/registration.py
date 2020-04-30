@@ -43,18 +43,24 @@ from confirmation.models import Confirmation, RealmCreationKey, ConfirmationKeyE
     validate_key, create_confirmation_link, get_object_from_key, \
     render_confirmation_key_error
 
+from confirmation import settings as confirmation_settings
+
 import logging
 import smtplib
 
 import urllib
 
 def check_prereg_key_and_redirect(request: HttpRequest, confirmation_key: str) -> HttpResponse:
-    # If the key isn't valid, show the error message on the original URL
     confirmation = Confirmation.objects.filter(confirmation_key=confirmation_key).first()
     if confirmation is None or confirmation.type not in [
             Confirmation.USER_REGISTRATION, Confirmation.INVITATION, Confirmation.REALM_CREATION]:
         return render_confirmation_key_error(
             request, ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST))
+
+    prereg_user = confirmation.content_object
+    if prereg_user.status == confirmation_settings.STATUS_REVOKED:
+        return render(request, "zerver/confirmation_link_expired_error.html")
+
     try:
         get_object_from_key(confirmation_key, confirmation.type, activate_object=False)
     except ConfirmationKeyException as exception:
@@ -73,6 +79,8 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
     key = request.POST['key']
     confirmation = Confirmation.objects.get(confirmation_key=key)
     prereg_user = confirmation.content_object
+    if prereg_user.status == confirmation_settings.STATUS_REVOKED:
+        return render(request, "zerver/confirmation_link_expired_error.html")
     email = prereg_user.email
     realm_creation = prereg_user.realm_creation
     password_required = prereg_user.password_required

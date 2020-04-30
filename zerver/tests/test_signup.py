@@ -8,6 +8,7 @@ from django.http import HttpResponse
 from django.test import TestCase, override_settings
 from django.utils.timezone import now as timezone_now
 from django.core.exceptions import ValidationError
+from django.urls import reverse
 
 from unittest.mock import patch, MagicMock
 from zerver.lib.test_helpers import (
@@ -41,7 +42,8 @@ from zerver.lib.actions import (
     do_create_default_stream_group,
     do_add_default_stream,
     do_create_realm,
-    get_default_streams_for_realm)
+    get_default_streams_for_realm,
+    do_invite_users, do_create_user)
 from zerver.lib.send_email import send_future_email, FromAddress, \
     deliver_email
 from zerver.lib.initial_password import initial_password
@@ -1506,6 +1508,40 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assert_in_success_response(["Whoops. The confirmation link has expired "
                                          "or been deactivated."], result)
 
+    def test_send_more_than_one_invite_to_same_user(self) -> None:
+        self.user_profile = self.example_user('iago')
+        streams = []
+        for stream_name in ["Denmark", "Scotland"]:
+            streams.append(get_stream(stream_name, self.user_profile.realm))
+
+        do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False)
+        prereg_user = PreregistrationUser.objects.get(email="foo@zulip.com")
+        do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False)
+        do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False)
+
+        invites = PreregistrationUser.objects.filter(email__iexact="foo@zulip.com")
+        self.assertEqual(len(invites), 3)
+
+        do_create_user(
+            'foo@zulip.com',
+            'password',
+            self.user_profile.realm,
+            'full name', 'short name',
+            prereg_user=prereg_user,
+        )
+
+        accepted_invite = PreregistrationUser.objects.filter(
+            email__iexact="foo@zulip.com", status=confirmation_settings.STATUS_ACTIVE)
+        revoked_invites = PreregistrationUser.objects.filter(
+            email__iexact="foo@zulip.com", status=confirmation_settings.STATUS_REVOKED)
+        # If a user was invited more than once, when it accepts one invite and register
+        # the others must be canceled.
+        self.assertEqual(len(accepted_invite), 1)
+        self.assertEqual(accepted_invite[0].id, prereg_user.id)
+
+        expected_revoked_invites = set(invites.exclude(id=prereg_user.id))
+        self.assertEqual(set(revoked_invites), expected_revoked_invites)
+
     def test_validate_email_not_already_in_realm(self) -> None:
         email = self.nonreg_email('alice')
         password = 'password'
@@ -2763,11 +2799,9 @@ class UserSignUpTest(InviteUserBase):
              'terms': True,
              'full_name': "New Guy",
              'from_confirmation': '1'})
-        # We should get redirected back to the login page.
-        expected_url = ('/accounts/login/' + '?email=' +
-                        urllib.parse.quote_plus(email))
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], expected_url)
+        # Error page should be displayed
+        self.assert_in_success_response(["The registration link has expired or is not valid."], result)
+        self.assertEqual(result.status_code, 200)
 
     def test_signup_with_multiple_default_stream_groups(self) -> None:
         # Check if user is subscribed to the streams of default
