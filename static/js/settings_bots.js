@@ -268,7 +268,7 @@ exports.set_up_incoming_webhook_url_form = function () {
             stream: stream_widget.value(),
         };
     };
-    return get_url_data;
+    return { get_url_data, name_widget };
 };
 
 exports.show_webhook_url = (opts) => {
@@ -285,7 +285,7 @@ exports.show_webhook_url = (opts) => {
     $('#bot_table_url').show();
 };
 
-exports.set_up = function () {
+exports.set_up = function (additional_data) {
     $('#payload_url_inputbox').hide();
     $('#create_payload_url').val('');
     $('#service_name_list').hide();
@@ -326,7 +326,7 @@ exports.set_up = function () {
 
     const GENERIC_INTERFACE = '1';
 
-    const get_url_data = exports.set_up_incoming_webhook_url_form();
+    const { get_url_data, name_widget } = exports.set_up_incoming_webhook_url_form();
 
     $('#create_bot_form').validate({
         errorClass: 'text-error',
@@ -614,6 +614,19 @@ exports.set_up = function () {
         e.stopPropagation();
         focus_tab.inactive_bots_tab();
     });
+
+    // Process initial state of the widget.
+    if (additional_data && additional_data.length > 1 && additional_data[0] === 'create') {
+        const webhook_name = additional_data[1];
+        if (Object.keys(webhooks_data).includes(webhook_name)) {
+            // Directly launch the add new bot tab.
+            if (exports.can_create_new_bots()) {
+                focus_tab.add_a_new_bot_tab();
+                name_widget.update(webhook_name);
+                $("#create_bot_type").val(INCOMING_WEBHOOK_BOT_TYPE).trigger('change');
+            }
+        }
+    }
 
 };
 

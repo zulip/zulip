@@ -132,6 +132,7 @@ function do_hashchange_overlay(old_hash) {
     const base = hash_util.get_hash_category(window.location.hash);
     const old_base = hash_util.get_hash_category(old_hash);
     let section = hash_util.get_hash_section(window.location.hash);
+    const additional_data = hash_util.get_remaining_sections(window.location.hash);
 
     const coming_from_overlay = is_overlay_hash(old_hash || '#');
 
@@ -154,7 +155,7 @@ function do_hashchange_overlay(old_hash) {
                     blueslip.warn('missing section for settings');
                     section = 'your-account';
                 }
-                settings_panel_menu.normal_settings.activate_section(section);
+                settings_panel_menu.normal_settings.activate_section(section, additional_data);
                 return;
             }
 
@@ -165,7 +166,7 @@ function do_hashchange_overlay(old_hash) {
                     blueslip.warn('missing section for organization');
                     section = 'organization-profile';
                 }
-                settings_panel_menu.org_settings.activate_section(section);
+                settings_panel_menu.org_settings.activate_section(section, additional_data);
                 return;
             }
 
@@ -206,7 +207,7 @@ function do_hashchange_overlay(old_hash) {
             exports.replace_hash(settings_hash);
         }
 
-        settings.launch(section);
+        settings.launch(section, additional_data);
         return;
     }
 

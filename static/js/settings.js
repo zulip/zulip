@@ -72,13 +72,13 @@ exports.build_page = function () {
     $(".settings-box").html(rendered_settings_tab);
 };
 
-exports.launch = function (section) {
+exports.launch = function (section, additional_data) {
     exports.build_page();
     admin.build_page();
     settings_sections.reset_sections();
 
     overlays.open_settings();
-    settings_panel_menu.normal_settings.activate_section(section);
+    settings_panel_menu.normal_settings.activate_section(section, additional_data);
     settings_toggle.highlight_toggle('settings');
 };
 

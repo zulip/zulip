@@ -57,7 +57,7 @@ exports.make_menu = function (opts) {
         return true;
     };
 
-    self.activate_section = function (section) {
+    self.activate_section = function (section, additional_data) {
         curr_li = self.li_for_section(section);
 
         main_elem.children("li").removeClass("active no-border");
@@ -69,7 +69,7 @@ exports.make_menu = function (opts) {
 
         $(".settings-section, .settings-wrapper").removeClass("show");
 
-        settings_sections.load_settings_section(section);
+        settings_sections.load_settings_section(section, additional_data);
 
         self.get_panel().addClass('show');
 

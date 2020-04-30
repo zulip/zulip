@@ -43,7 +43,7 @@ exports.initialize = function () {
     load_func_dict.set('data-exports-admin', settings_exports.set_up);
 };
 
-exports.load_settings_section = function (section) {
+exports.load_settings_section = function (section, additional_data) {
     const group = exports.get_group(section);
 
     if (!load_func_dict.has(group)) {
@@ -51,16 +51,17 @@ exports.load_settings_section = function (section) {
         return;
     }
 
-    if (loaded_groups.has(group)) {
+    if (loaded_groups.has(group) && !additional_data) {
         // We only load groups once (unless somebody calls
-        // reset_sections).
+        // reset_sections or we have additional data).
         return;
     }
 
     const load_func = load_func_dict.get(group);
 
     // Do the real work here!
-    load_func();
+    // Call the function with the optional initialisation data:
+    load_func(additional_data);
     loaded_groups.add(group);
 };
 
