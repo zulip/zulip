@@ -56,6 +56,7 @@ def overwrite_symlink(src: str, dst: str) -> None:
         raise
 
 def parse_cache_script_args(description: str) -> argparse.Namespace:
+    # Keep this in sync with clean_unused_caches in provision_inner.py
     parser = argparse.ArgumentParser(description=description)
 
     parser.add_argument(

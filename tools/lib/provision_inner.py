@@ -168,6 +168,20 @@ def need_to_run_configure_rabbitmq(settings_list: List[str]) -> bool:
     except Exception:
         return True
 
+
+def clean_unused_caches() -> None:
+    args = argparse.Namespace(
+        threshold_days=6,
+        # The defaults here should match parse_cache_script_args in zulip_tools.py
+        dry_run=False,
+        verbose=False,
+        no_headings=True,
+    )
+    from scripts.lib import clean_venv_cache, clean_node_cache, clean_emoji_cache
+    clean_venv_cache.main(args)
+    clean_node_cache.main(args)
+    clean_emoji_cache.main(args)
+
 def main(options: argparse.Namespace) -> int:
     setup_bash_profile()
     setup_shell_profile('~/.zprofile')
@@ -264,7 +278,7 @@ def main(options: argparse.Namespace) -> int:
         if destroyed:
             print("Dropped %s stale test databases!" % (destroyed,))
 
-    run(["scripts/lib/clean-unused-caches", "--threshold=6"])
+    clean_unused_caches()
 
     # Keeping this cache file around can cause eslint to throw
     # random TypeErrors when new/updated dependencies are added
