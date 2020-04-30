@@ -187,15 +187,6 @@ class Database:
             return 'needs_rebuild'
 
         if self.files_or_settings_have_changed():
-            # Write the new hash, relying on our callers to
-            # actually rebuild the db successfully.
-            # TODO: Move this code to the callers, and write
-            #       the digest only AFTER the rebuild succeeds.
-            write_new_digest(
-                self.digest_name,
-                IMPORTANT_FILES,
-                self.important_settings(),
-            )
             return 'needs_rebuild'
 
         # Here we hash and compare our migration files before doing
@@ -238,6 +229,13 @@ class Database:
             migration_paths(),
         )
 
+    def write_new_db_digest(self) -> None:
+        write_new_digest(
+            self.digest_name,
+            IMPORTANT_FILES,
+            self.important_settings(),
+        )
+
 DEV_DATABASE = Database(
     platform='dev',
     database_name='zulip',
@@ -271,6 +269,7 @@ def update_test_databases_if_required(rebuild_test_database: bool=False) -> None
 
     if test_template_db_status == 'needs_rebuild':
         run(['tools/rebuild-test-database'])
+        TEST_DATABASE.write_new_db_digest()
         return
 
     if test_template_db_status == 'run_migrations':
