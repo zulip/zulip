@@ -79,6 +79,7 @@ class Database:
             return json.dumps(value, sort_keys=True)
 
         return [
+            get('LOCAL_DATABASE_PASSWORD'),
             get('INTERNAL_BOTS'),
             get('REALM_INTERNAL_BOTS'),
             get('DISABLED_REALM_INTERNAL_BOTS'),
