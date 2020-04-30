@@ -123,8 +123,8 @@ def stats_for_realm(request: HttpRequest, realm_str: str) -> HttpResponse:
 
 @require_server_admin
 @has_request_variables
-def stats_for_remote_realm(request: HttpRequest, remote_server_id: str,
-                           remote_realm_id: str) -> HttpResponse:
+def stats_for_remote_realm(request: HttpRequest, remote_server_id: int,
+                           remote_realm_id: int) -> HttpResponse:
     server = RemoteZulipServer.objects.get(id=remote_server_id)
     return render_stats(request, f'/remote/{server.id}/realm/{remote_realm_id}',
                         f"Realm {remote_realm_id} on server {server.hostname}")
@@ -143,8 +143,8 @@ def get_chart_data_for_realm(request: HttpRequest, user_profile: UserProfile,
 @require_server_admin_api
 @has_request_variables
 def get_chart_data_for_remote_realm(
-        request: HttpRequest, user_profile: UserProfile, remote_server_id: str,
-        remote_realm_id: str, **kwargs: Any) -> HttpResponse:
+        request: HttpRequest, user_profile: UserProfile, remote_server_id: int,
+        remote_realm_id: int, **kwargs: Any) -> HttpResponse:
     server = RemoteZulipServer.objects.get(id=remote_server_id)
     return get_chart_data(request=request, user_profile=user_profile, server=server,
                           remote=True, remote_realm_id=int(remote_realm_id), **kwargs)
@@ -154,7 +154,7 @@ def stats_for_installation(request: HttpRequest) -> HttpResponse:
     return render_stats(request, '/installation', 'Installation', True)
 
 @require_server_admin
-def stats_for_remote_installation(request: HttpRequest, remote_server_id: str) -> HttpResponse:
+def stats_for_remote_installation(request: HttpRequest, remote_server_id: int) -> HttpResponse:
     server = RemoteZulipServer.objects.get(id=remote_server_id)
     return render_stats(request, f'/remote/{server.id}/installation',
                         f'remote Installation {server.hostname}', True, True)
@@ -170,7 +170,7 @@ def get_chart_data_for_installation(request: HttpRequest, user_profile: UserProf
 def get_chart_data_for_remote_installation(
         request: HttpRequest,
         user_profile: UserProfile,
-        remote_server_id: str,
+        remote_server_id: int,
         chart_name: str=REQ(),
         **kwargs: Any) -> HttpResponse:
     server = RemoteZulipServer.objects.get(id=remote_server_id)
