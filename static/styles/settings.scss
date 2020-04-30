@@ -640,7 +640,7 @@ input[type=checkbox].inline-block {
         border: 1px solid hsl(156, 30%, 50%);
     }
 
-    .alert-error {
+    &.alert-error {
         color: hsl(2, 46%, 68%);
         border-color: hsl(2, 46%, 68%);
     }
