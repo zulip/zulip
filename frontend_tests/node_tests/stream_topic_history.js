@@ -16,7 +16,9 @@ run_test('basics', () => {
     });
 
     let history = stream_topic_history.get_recent_topic_names(stream_id);
+    let max_message_id = stream_topic_history.get_max_message_id(stream_id);
     assert.deepEqual(history, ['toPic1']);
+    assert.deepEqual(max_message_id, 101);
 
     stream_topic_history.add_message({
         stream_id: stream_id,
@@ -24,7 +26,9 @@ run_test('basics', () => {
         topic_name: 'Topic1',
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
+    max_message_id = stream_topic_history.get_max_message_id(stream_id);
     assert.deepEqual(history, ['Topic1']);
+    assert.deepEqual(max_message_id, 102);
 
     stream_topic_history.add_message({
         stream_id: stream_id,
@@ -32,7 +36,9 @@ run_test('basics', () => {
         topic_name: 'topic2',
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
+    max_message_id = stream_topic_history.get_max_message_id(stream_id);
     assert.deepEqual(history, ['topic2', 'Topic1']);
+    assert.deepEqual(max_message_id, 103);
 
     // Removing first topic1 message has no effect.
     stream_topic_history.remove_message({
@@ -41,6 +47,9 @@ run_test('basics', () => {
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, ['topic2', 'Topic1']);
+    // Removing a topic message shouldn't effect the max_message_id.
+    max_message_id = stream_topic_history.get_max_message_id(stream_id);
+    assert.deepEqual(max_message_id, 103);
 
     // Removing second topic1 message removes the topic.
     stream_topic_history.remove_message({
