@@ -1506,7 +1506,7 @@ class BugdownListPreprocessor(markdown.preprocessors.Preprocessor):
         directly after a line of text, and inserts a newline between
         to satisfy Markdown"""
 
-    LI_RE = re.compile(r'^[ ]{0,3}([*+-]|\d\.)[ ]+(.*)', re.MULTILINE)
+    LI_RE = re.compile(r'^[ ]*([*+-]|\d\.)[ ]+(.*)', re.MULTILINE)
 
     def run(self, lines: List[str]) -> List[str]:
         """ Insert a newline between a paragraph and ulist if missing """

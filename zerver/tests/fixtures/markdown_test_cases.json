@@ -183,6 +183,16 @@
       "text_content": "Some text with a list:\n\nOne item\nTwo items\nThree items\n"
     },
     {
+      "name": "list_complexly_nested",
+      "input": "This is a heavily nested OL\n1. level-1\n  2. level-2\n    3. level-3\n    3. level-3a\n  2. level-2a\n2. level-1a\n",
+      "expected_output": "<p>This is a heavily nested OL</p>\n<ol>\n<li>level-1<ol start=\"2\">\n<li>level-2<ol start=\"3\">\n<li>level-3</li>\n<li>level-3a</li>\n</ol>\n</li>\n<li>level-2a</li>\n</ol>\n</li>\n<li>level-1a</li>\n</ol>"
+    },
+    {
+      "name": "list_codeblock_interference",
+      "input": "para:\n\n    1. list-1\n    2. list-2\n      1. list-2a\n    3. list-3\n",
+      "expected_output": "<p>para:</p>\n<div class=\"codehilite\"><pre><span></span><code>1. list-1\n2. list-2\n  1. list-2a\n3. list-3\n</code></pre></div>"
+    },
+    {
       "name": "ulist_mixed_bullets",
       "input": "Combine four lists:\n\n* One\n- Two\n+ Three\n- Four\n- Five",
       "expected_output": "<p>Combine four lists:</p>\n<ul>\n<li>One</li>\n<li>Two</li>\n<li>Three</li>\n<li>Four</li>\n<li>Five</li>\n</ul>",
