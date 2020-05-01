@@ -134,6 +134,12 @@ class Command(BaseCommand):
                             default=0,
                             help='The number of extra streams to create')
 
+        parser.add_argument('--max-topics',
+                            dest='max_topics',
+                            type=int,
+                            default=None,
+                            help='The number of maximum topics to create')
+
         parser.add_argument('--huddles',
                             dest='num_huddles',
                             type=int,
@@ -190,6 +196,11 @@ class Command(BaseCommand):
         # Get consistent data for backend tests.
         if options["test_suite"]:
             random.seed(0)
+
+        # If max_topics is not set, we set it proportional to the
+        # number of messages.
+        if options["max_topics"] is None:
+            options["max_topics"] = 1 + options["num_messages"] // 100
 
         if options["delete"]:
             # Start by clearing all the data in our database
@@ -682,7 +693,7 @@ def generate_and_send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping
             # Pick a random subscriber to the stream
             message.sender = random.choice(Subscription.objects.filter(
                 recipient=message.recipient)).user_profile
-            message.subject = stream.name + str(random.randint(1, 3))
+            message.subject = stream.name + str(random.randint(1, options["max_topics"]))
             saved_data['subject'] = message.subject
 
         message.date_sent = choose_date_sent(num_messages, tot_messages, options['threads'])
