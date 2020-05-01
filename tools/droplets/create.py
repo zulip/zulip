@@ -96,15 +96,13 @@ def exit_if_droplet_exists(my_token: str, username: str, recreate: bool) -> None
                 return
     print("...No droplet found...proceeding.")
 
-def set_user_data(username: str, userkeys: List[Dict[str, Any]]) -> str:
+def set_user_data(username: str, userkey_dicts: List[Dict[str, Any]]) -> str:
     print("Setting cloud-config data, populated with GitHub user's public keys...")
-    ssh_authorized_keys = ""
+    userkeys = [userkey_dict["key"] for userkey_dict in userkey_dicts]
+    ssh_keys = "\n".join(userkeys)
 
-    # spaces here are important here - these need to be properly indented under
-    # ssh_authorized_keys:
-    for key in userkeys:
-        ssh_authorized_keys += "\n          - {}".format(key['key'])
-    # print(ssh_authorized_keys)
+    setup_root_ssh_keys = "printf '{keys}' > /root/.ssh/authorized_keys".format(keys=ssh_keys)
+    setup_zulipdev_ssh_keys = "printf '{keys}' > /home/zulipdev/.ssh/authorized_keys".format(keys=ssh_keys)
 
     # We pass the hostname as username.zulipdev.org to the DigitalOcean API.
     # But some droplets (eg on 18.04) are created with with hostname set to just username.
@@ -121,23 +119,20 @@ def set_user_data(username: str, userkeys: List[Dict[str, Any]]) -> str:
     server_repo_setup = setup_repo.format(username, "zulip")
     python_api_repo_setup = setup_repo.format(username, "python-zulip-api")
 
-    cloudconf = """
-    #cloud-config
-    users:
-      - name: zulipdev
-        ssh_authorized_keys:{ssh_authorized_keys}
-    runcmd:
-      - {hostname_setup}
-      - su -c '{server_repo_setup}' zulipdev
-      - su -c '{python_api_repo_setup}' zulipdev
-      - su -c 'git config --global core.editor nano' zulipdev
-      - su -c 'git config --global pull.rebase true' zulipdev
-    power_state:
-     mode: reboot
-     condition: True
-    """.format(ssh_authorized_keys=ssh_authorized_keys, hostname_setup=hostname_setup,
-               server_repo_setup=server_repo_setup, python_api_repo_setup=python_api_repo_setup)
+    cloudconf = """\
+#!/bin/bash
 
+{setup_zulipdev_ssh_keys}
+{setup_root_ssh_keys}
+{hostname_setup}
+su -c '{server_repo_setup}' zulipdev
+su -c '{python_api_repo_setup}' zulipdev
+su -c 'git config --global core.editor nano' zulipdev
+su -c 'git config --global pull.rebase true' zulipdev
+""".format(setup_root_ssh_keys=setup_root_ssh_keys,
+           setup_zulipdev_ssh_keys=setup_zulipdev_ssh_keys,
+           hostname_setup=hostname_setup,
+           server_repo_setup=server_repo_setup, python_api_repo_setup=python_api_repo_setup)
     print("...returning cloud-config data.")
     return cloudconf
 
@@ -251,7 +246,7 @@ if __name__ == '__main__':
     exit_if_droplet_exists(my_token=api_token, username=args.username, recreate=args.recreate)
 
     # set user_data
-    user_data = set_user_data(username=args.username, userkeys=public_keys)
+    user_data = set_user_data(username=args.username, userkey_dicts=public_keys)
 
     # create droplet
     ip_address = create_droplet(my_token=api_token,
