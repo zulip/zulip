@@ -605,3 +605,33 @@ class GetRealmStatusesTest(ZulipTestCase):
         self.assert_json_success(result)
         json = result.json()
         self.assertEqual(set(json['presences'].keys()), {hamlet.email, othello.email})
+
+    def test_presence_disabled(self) -> None:
+        # Disable presence status and test whether the presence
+        # is reported or not.
+        othello = self.example_user("othello")
+        hamlet = self.example_user("hamlet")
+        othello.presence_enabled = False
+        hamlet.presence_enabled = True
+        othello.save(update_fields=['presence_enabled'])
+        hamlet.save(update_fields=['presence_enabled'])
+
+        result = self.api_post(othello, "/api/v1/users/me/presence",
+                               dict(status='active'),
+                               HTTP_USER_AGENT="ZulipAndroid/1.0")
+
+        result = self.api_post(hamlet, "/api/v1/users/me/presence",
+                               dict(status='idle'),
+                               HTTP_USER_AGENT="ZulipDesktop/1.0")
+        self.assert_json_success(result)
+        json = result.json()
+
+        # Othello's presence status is disabled so it won't be reported.
+        self.assertEqual(set(json['presences'].keys()), {hamlet.email})
+
+        result = self.api_post(hamlet, "/api/v1/users/me/presence",
+                               dict(status='active', slim_presence='true'),
+                               HTTP_USER_AGENT="ZulipDesktop/1.0")
+        self.assert_json_success(result)
+        json = result.json()
+        self.assertEqual(set(json['presences'].keys()), {str(hamlet.id)})

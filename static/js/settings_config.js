@@ -216,10 +216,15 @@ const email_notification_settings = [
     "realm_name_in_notifications",
 ];
 
+const presence_notification_settings = [
+    "presence_enabled",
+];
+
 const other_notification_settings = desktop_notification_settings.concat(
     ["desktop_icon_count_display"],
     mobile_notification_settings,
     email_notification_settings,
+    presence_notification_settings,
     ["notification_sound"]
 );
 
@@ -245,6 +250,7 @@ exports.all_notifications = () => ({
         desktop_notification_settings: desktop_notification_settings,
         mobile_notification_settings: mobile_notification_settings,
         email_notification_settings: email_notification_settings,
+        presence_notification_settings: presence_notification_settings,
     },
     show_push_notifications_tooltip: {
         push_notifications: !page_params.realm_push_notifications_enabled,
