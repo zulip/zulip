@@ -26,6 +26,7 @@ import argparse
 import base64
 import subprocess
 from typing import Any, Dict
+from urllib.parse import urlencode
 
 import requests
 import ujson
@@ -103,11 +104,6 @@ def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, 
     # Delete all messages, so new message is the only one it's message group
     Message.objects.filter(sender=bot).delete()
 
-    assert isinstance(bot.bot_owner, UserProfile)
-    stream = integration.stream_name or 'devel'
-    url = "{}/{}?api_key={}&stream={}".format(
-        bot.bot_owner.realm.uri, integration.url, bot.api_key, stream
-    )
     with open(fixture_path) as f:
         data = ujson.load(f)
     _, fixture_name = split_fixture_path(fixture_path)
@@ -119,8 +115,17 @@ def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, 
         auth = 'basic {}'.format(credentials)
         headers.update(dict(Authorization=auth))
 
+    assert isinstance(bot.bot_owner, UserProfile)
+    stream = integration.stream_name or 'devel'
+    url = "{}/{}".format(bot.bot_owner.realm.uri, integration.url)
+    params = {'api_key': bot.api_key, 'stream': stream}
+    if config.payload_as_query_param:
+        params[config.payload_param_name] = ujson.dumps(data)
+
+    url = '{}?{}'.format(url, urlencode(params))
+    extra_args = {'json': data} if not config.payload_as_query_param else {}
     try:
-        response = requests.post(url, json=data, headers=headers)
+        response = requests.post(url=url, headers=headers, **extra_args)
     except requests.exceptions.ConnectionError:
         print('This tool needs the local dev server to be running. '
               'Please start it using tools/run-dev.py before running this tool.')
@@ -159,6 +164,10 @@ parser.add_argument('--image-name', type=str, default='001.png', help='Name for 
 parser.add_argument('--image-dir', type=str, help='Directory name where to save the screenshot image')
 parser.add_argument('-A', '--use-basic-auth', action='store_true',
                     help='Add basic auth headers to the request')
+parser.add_argument('-Q', '--payload-as-query-param', action='store_true',
+                    help='Send payload as query param instead of body')
+parser.add_argument('-P', '--payload-param-name', type=str, default='payload',
+                    help='Param name to use for the payload')
 parser.add_argument('-H', '--custom-headers',
                     type=custom_headers,
                     help='Any additional headers to be sent with the request.')
@@ -166,5 +175,7 @@ parser.add_argument('-H', '--custom-headers',
 options = parser.parse_args()
 prepare_puppeteer_run()
 screenshot_config = ScreenshotConfig(
-    options.fixture, options.image_name, options.image_dir, options.use_basic_auth, options.custom_headers)
+    options.fixture, options.image_name, options.image_dir,
+    options.payload_as_query_param, options.payload_param_name,
+    options.use_basic_auth, options.custom_headers)
 generate_screenshot_from_config(options.integration, screenshot_config)
