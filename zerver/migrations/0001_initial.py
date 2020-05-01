@@ -9,7 +9,7 @@ from django.db import migrations, models
 from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
-import zerver.models
+from zerver.models import generate_email_token_for_stream
 
 
 def migrate_existing_attachment_data(apps: StateApps,
@@ -256,7 +256,7 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(db_index=True, max_length=60)),
                 ('invite_only', models.NullBooleanField(default=False)),
-                ('email_token', models.CharField(default=zerver.models.generate_email_token_for_stream, max_length=32)),
+                ('email_token', models.CharField(default=generate_email_token_for_stream, max_length=32)),
                 ('description', models.CharField(default='', max_length=1024)),
                 ('date_created', models.DateTimeField(default=django.utils.timezone.now)),
                 ('deactivated', models.BooleanField(default=False)),
