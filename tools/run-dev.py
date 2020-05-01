@@ -136,9 +136,9 @@ if not os.path.exists(os.path.dirname(pid_file_path)):
 with open(pid_file_path, 'w+') as f:
     f.write(str(os.getpgrp()) + "\n")
 
-# Pass --nostatic because we configure static serving ourselves in
-# zulip/urls.py.
-cmds = [['./manage.py', 'runserver'] +
+def server_processes() -> List[List[str]]:
+    main_cmds = [
+        ['./manage.py', 'runserver'] +
         manage_args + runserver_args + ['127.0.0.1:%d' % (django_port,)],
         ['env', 'PYTHONUNBUFFERED=1', './manage.py', 'runtornado'] +
         manage_args + ['127.0.0.1:%d' % (tornado_port,)],
@@ -147,14 +147,19 @@ cmds = [['./manage.py', 'runserver'] +
          './puppet/zulip/files/postgresql/process_fts_updates'],
         ['./manage.py', 'deliver_scheduled_messages'],
         ['/srv/zulip-thumbor-venv/bin/thumbor', '-c', './zthumbor/thumbor.conf',
-         '-p', '%s' % (thumbor_port,)]]
-if options.test:
+         '-p', '%s' % (thumbor_port,)],
+    ]
+
+    return main_cmds
+
+def do_one_time_webpack_compile() -> None:
     # We just need to compile webpack assets once at startup, not run a daemon,
     # in test mode.  Additionally, webpack-dev-server doesn't support running 2
     # copies on the same system, so this model lets us run the casper tests
     # with a running development server.
     subprocess.check_call(['./tools/webpack', '--quiet', '--test'])
-else:
+
+def start_webpack_watcher() -> None:
     webpack_cmd = ['./tools/webpack', '--watch', '--port', str(webpack_port)]
     if options.minify:
         webpack_cmd.append('--minify')
@@ -166,10 +171,7 @@ else:
         webpack_cmd += ["--host", options.interface]
     else:
         webpack_cmd += ["--host", "0.0.0.0"]
-    cmds.append(webpack_cmd)
-for cmd in cmds:
-    subprocess.Popen(cmd)
-
+    subprocess.Popen(webpack_cmd)
 
 def transform_url(protocol: str, path: str, query: str, target_port: int, target_host: str) -> str:
     # generate url with target host
@@ -180,7 +182,6 @@ def transform_url(protocol: str, path: str, query: str, target_port: int, target
         path = path[len('/thumbor'):]
     newpath = urlunparse((protocol, host, path, '', query, ''))
     return newpath
-
 
 @gen.engine
 def fetch_request(url: str, callback: Any, **kwargs: Any) -> "Generator[Callable[..., Any], Any, None]":
@@ -344,6 +345,14 @@ def print_listeners() -> None:
 
     proxy_warning = f"Only the proxy port ({proxy_port}) is exposed."
     print(WARNING + "Note to Vagrant users: " + ENDC + proxy_warning + '\n')
+
+if options.test:
+    do_one_time_webpack_compile()
+else:
+    start_webpack_watcher()
+
+for cmd in server_processes():
+    subprocess.Popen(cmd)
 
 try:
     app = Application(enable_logging=options.enable_tornado_logging)
