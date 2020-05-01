@@ -254,7 +254,7 @@ exports.remove_stream = function (stream_id) {
     row.remove();
     const sub = stream_data.get_sub_by_id(stream_id);
     if (stream_edit.is_sub_settings_active(sub)) {
-        exports.show_subs_pane.nothing_selected();
+        stream_edit.open_edit_panel_empty();
     }
 };
 
