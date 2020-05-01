@@ -20,13 +20,18 @@ from tornado import gen
 from tornado import web
 from tornado.ioloop import IOLoop
 
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+from tools.lib.test_script import (
+    assert_provisioning_status_ok,
+)
+
 from typing import Any, Callable, Generator, List, Optional
 
 if 'posix' in os.name and os.geteuid() == 0:
     raise RuntimeError("run-dev.py should not be run as root.")
 
-parser = argparse.ArgumentParser(description=r"""
-
+DESCRIPTION = '''
 Starts the app listening on localhost, for local development.
 
 This script launches the Django and Tornado servers, then runs a reverse proxy
@@ -37,14 +42,10 @@ which serves to both of them.  After it's all up and running, browse to
 Note that, while runserver and runtornado have the usual auto-restarting
 behavior, the reverse proxy itself does *not* automatically restart on changes
 to this file.
-""",
-                                 formatter_class=argparse.RawTextHelpFormatter)
+'''
 
-TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.dirname(TOOLS_DIR))
-from tools.lib.test_script import (
-    assert_provisioning_status_ok,
-)
+parser = argparse.ArgumentParser(description=DESCRIPTION,
+                                 formatter_class=argparse.RawTextHelpFormatter)
 
 parser.add_argument('--test',
                     action='store_true',
