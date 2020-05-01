@@ -60,6 +60,12 @@ body.night-mode {
 
     .streams_popover .sp-container {
         background-color: transparent;
+
+        button {
+            background-color: hsl(208, 35%, 11%);
+            border: 1px solid hsl(210, 36%, 4%);
+            color: hsl(236, 31%, 90%);
+        }
     }
 
     /* this one is because in the app we have blue and in night-mode it should be white. */
