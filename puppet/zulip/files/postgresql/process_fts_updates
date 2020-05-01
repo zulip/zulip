@@ -22,6 +22,7 @@ try:
 except ImportError:
     pass
 
+import argparse
 import psycopg2
 import psycopg2.extensions
 import select
@@ -32,6 +33,19 @@ import sys
 import os
 
 BATCH_SIZE = 1000
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--quiet',
+                    action='store_true')
+options = parser.parse_args()
+
+logging.Formatter.converter = time.gmtime
+logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s")
+logger = logging.getLogger("process_fts_updates")
+if options.quiet:
+    logger.setLevel(logging.INFO)
+else:
+    logger.setLevel(logging.DEBUG)
 
 def update_fts_columns(cursor: psycopg2.extensions.cursor) -> int:
     cursor.execute("SELECT id, message_id FROM fts_update_log LIMIT %s;" % (
@@ -54,13 +68,6 @@ def update_fts_columns(cursor: psycopg2.extensions.cursor) -> int:
 def am_master(cursor: psycopg2.extensions.cursor) -> bool:
     cursor.execute("SELECT pg_is_in_recovery()")
     return not cursor.fetchall()[0][0]
-
-logging.Formatter.converter = time.gmtime
-logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s")
-logger = logging.getLogger("process_fts_updates")
-logger.setLevel(logging.DEBUG)
-
-logger.info("process_fts_updates starting")
 
 pg_args = {}
 
@@ -124,16 +131,21 @@ while True:
             while not am_master(cursor):
                 if first_check:
                     first_check = False
-                    logger.info("In recovery; sleeping")
+                    logger.warning("In recovery; sleeping")
                 time.sleep(5)
 
-            logger.info("Not in recovery; listening for FTS updates")
+            logger.info("process_fts_updates: listening for search index updates")
 
             cursor.execute("LISTEN fts_update_log;")
             # Catch up on any historical columns
             while True:
                 rows_updated = update_fts_columns(cursor)
-                logger.info("Processed %s rows catching up" % (rows_updated,))
+                notice = "Processed %s rows catching up" % (rows_updated,)
+                if rows_updated > 0:
+                    logger.info(notice)
+                else:
+                    logger.debug(notice)
+
                 if rows_updated != BATCH_SIZE:
                     # We're caught up, so proceed to the listening for updates phase.
                     break

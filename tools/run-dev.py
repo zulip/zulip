@@ -155,7 +155,7 @@ def server_processes() -> List[List[str]]:
     other_cmds = [
         ['./manage.py', 'process_queue', '--all'] + manage_args,
         ['env', 'PGHOST=127.0.0.1',  # Force password authentication using .pgpass
-         './puppet/zulip/files/postgresql/process_fts_updates'],
+         './puppet/zulip/files/postgresql/process_fts_updates', '--quiet'],
         ['./manage.py', 'deliver_scheduled_messages'],
         ['/srv/zulip-thumbor-venv/bin/thumbor', '-c', './zthumbor/thumbor.conf',
          '-p', '%s' % (thumbor_port,)],
