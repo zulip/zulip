@@ -30,6 +30,7 @@ function setup_settings_label() {
         enable_login_emails: i18n.t("Send email notifications for new logins to my account"),
         message_content_in_email_notifications: i18n.t("Include message content in missed message emails"),
         realm_name_in_notifications: i18n.t("Include organization name in subject of missed message emails"),
+        presence_enabled: i18n.t("Display my availability to other users when online"),
 
         // display settings
         dense_mode: i18n.t("Dense mode"),

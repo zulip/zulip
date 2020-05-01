@@ -2897,6 +2897,13 @@ paths:
         schema:
           type: boolean
         example: true
+      - name: presence_enabled
+        in: query
+        description: |
+            Display the presence status to other users when online.
+        schema:
+            type: boolean
+        example: true
       responses:
         '200':
           description: Success.

@@ -119,6 +119,7 @@ class HomeTest(ZulipTestCase):
             "pm_content_in_desktop_notifications",
             "pointer",
             "poll_timeout",
+            "presence_enabled",
             "presences",
             "prompt_for_invites",
             "queue_id",
