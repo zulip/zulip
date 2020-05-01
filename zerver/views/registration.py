@@ -76,8 +76,12 @@ def check_prereg_key_and_redirect(request: HttpRequest, confirmation_key: str) -
 
 @require_post
 def accounts_register(request: HttpRequest) -> HttpResponse:
-    key = request.POST['key']
-    confirmation = Confirmation.objects.get(confirmation_key=key)
+    try:
+        key = request.POST.get('key', default='')
+        confirmation = Confirmation.objects.get(confirmation_key=key)
+    except Confirmation.DoesNotExist:
+        return render(request, "zerver/confirmation_link_expired_error.html")
+
     prereg_user = confirmation.content_object
     if prereg_user.status == confirmation_settings.STATUS_REVOKED:
         return render(request, "zerver/confirmation_link_expired_error.html")
