@@ -59,6 +59,9 @@ parser.add_argument('--interface',
 parser.add_argument('--no-clear-memcached',
                     action='store_false', dest='clear_memcached',
                     default=True, help='Do not clear memcached')
+parser.add_argument('--streamlined',
+                    action="store_true",
+                    default=False, help='Avoid thumbor, etc.')
 parser.add_argument('--force',
                     action="store_true",
                     default=False, help='Run command despite possible problems.')
@@ -100,7 +103,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from scripts.lib.zulip_tools import CYAN, WARNING, ENDC
+from scripts.lib.zulip_tools import CYAN, WARNING, FAIL, ENDC
 
 proxy_port = base_port
 django_port = base_port + 1
@@ -142,6 +145,14 @@ def server_processes() -> List[List[str]]:
         manage_args + runserver_args + ['127.0.0.1:%d' % (django_port,)],
         ['env', 'PYTHONUNBUFFERED=1', './manage.py', 'runtornado'] +
         manage_args + ['127.0.0.1:%d' % (tornado_port,)],
+    ]
+
+    if options.streamlined:
+        # The streamlined operation allows us to do many
+        # things, but search/thumbor/etc. features won't work.
+        return main_cmds
+
+    other_cmds = [
         ['./manage.py', 'process_queue', '--all'] + manage_args,
         ['env', 'PGHOST=127.0.0.1',  # Force password authentication using .pgpass
          './puppet/zulip/files/postgresql/process_fts_updates'],
@@ -150,7 +161,8 @@ def server_processes() -> List[List[str]]:
          '-p', '%s' % (thumbor_port,)],
     ]
 
-    return main_cmds
+    # NORMAL (but slower) operation:
+    return main_cmds + other_cmds
 
 def do_one_time_webpack_compile() -> None:
     # We just need to compile webpack assets once at startup, not run a daemon,
@@ -299,13 +311,24 @@ class ThumborHandler(BaseHandler):
     target_port = thumbor_port
 
 
+class ErrorHandler(BaseHandler):
+    @web.asynchronous
+    def prepare(self) -> None:
+        print(FAIL + 'Unexpected request: ' + ENDC, self.request.path)
+        self.set_status(500)
+        self.write('path not supported')
+        self.finish()
+
+def using_thumbor() -> bool:
+    return not options.streamlined
+
 class Application(web.Application):
     def __init__(self, enable_logging: bool = False) -> None:
         handlers = [
             (r"/json/events.*", TornadoHandler),
             (r"/api/v1/events.*", TornadoHandler),
             (r"/webpack.*", WebPackHandler),
-            (r"/thumbor.*", ThumborHandler),
+            (r"/thumbor.*", ThumborHandler if using_thumbor() else ErrorHandler),
             (r"/.*", DjangoHandler)
         ]
         super().__init__(handlers, enable_logging=enable_logging)
@@ -337,7 +360,8 @@ def print_listeners() -> None:
     if not options.test:
         ports.append((webpack_port, 'webpack'))
 
-    ports.append((thumbor_port, 'Thumbor'))
+    if using_thumbor():
+        ports.append((thumbor_port, 'Thumbor'))
 
     for port, label in ports:
         print(f'   {port}: {label}')
