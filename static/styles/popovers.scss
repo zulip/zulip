@@ -74,6 +74,19 @@
 
                 width: calc(100% - 13px);
             }
+
+            button {
+                background-color: hsl(0, 0%, 100%);
+                background-image: none;
+                border: 1px solid hsl(0, 0%, 80%);
+                border-radius: 4px;
+                color: hsl(0, 0%, 25%);
+                font-size: 12px;
+                padding: 6px;
+                text-transform: capitalize;
+                text-align: center;
+                text-shadow: none;
+            }
         }
     }
 
