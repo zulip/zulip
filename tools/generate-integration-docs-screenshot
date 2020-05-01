@@ -25,7 +25,7 @@ django.setup()
 import argparse
 import base64
 import subprocess
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from urllib.parse import urlencode
 
 import requests
@@ -43,11 +43,12 @@ from zerver.lib.integrations import (
 from zerver.lib.webhooks.common import get_fixture_http_headers
 from zerver.lib.storage import static_path
 
-def create_integration_bot(integration: WebhookIntegration) -> UserProfile:
+def create_integration_bot(integration: WebhookIntegration, bot_name: Optional[str]=None) -> UserProfile:
     realm = get_realm('zulip')
     owner = get_user_by_delivery_email("iago@zulip.com", realm)
     bot_email = "{}-bot@example.com".format(integration.name)
-    bot_name = "{} Bot".format(integration.name.capitalize())
+    if bot_name is None:
+        bot_name = "{} Bot".format(integration.name.capitalize())
     try:
         bot = UserProfile.objects.get(email=bot_email)
     except UserProfile.DoesNotExist:
@@ -150,7 +151,7 @@ def capture_last_message_screenshot(bot: UserProfile, image_path: str) -> None:
 def generate_screenshot_from_config(integration_name: str, screenshot_config: ScreenshotConfig) -> None:
     integration = get_integration(integration_name)
     fixture_path, image_path = get_fixture_and_image_paths(integration, screenshot_config)
-    bot = create_integration_bot(integration)
+    bot = create_integration_bot(integration, screenshot_config.bot_name)
     create_integration_stream(integration, bot)
     message_sent = send_bot_payload_message(bot, integration, fixture_path, screenshot_config)
     if message_sent:
@@ -162,6 +163,7 @@ parser.add_argument('integration', type=str, help='Name of the integration')
 parser.add_argument('fixture', type=str, help='Name of the fixture file to use')
 parser.add_argument('--image-name', type=str, default='001.png', help='Name for the screenshot image')
 parser.add_argument('--image-dir', type=str, help='Directory name where to save the screenshot image')
+parser.add_argument('--bot-name', type=str, help='Name to use for the bot')
 parser.add_argument('-A', '--use-basic-auth', action='store_true',
                     help='Add basic auth headers to the request')
 parser.add_argument('-Q', '--payload-as-query-param', action='store_true',
@@ -175,7 +177,7 @@ parser.add_argument('-H', '--custom-headers',
 options = parser.parse_args()
 prepare_puppeteer_run()
 screenshot_config = ScreenshotConfig(
-    options.fixture, options.image_name, options.image_dir,
+    options.fixture, options.image_name, options.image_dir, options.bot_name,
     options.payload_as_query_param, options.payload_param_name,
     options.use_basic_auth, options.custom_headers)
 generate_screenshot_from_config(options.integration, screenshot_config)
