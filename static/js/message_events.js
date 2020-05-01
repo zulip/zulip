@@ -302,6 +302,19 @@ exports.update_messages = function update_messages(events) {
 
         notifications.received_messages([msg]);
         alert_words.process_message(msg);
+
+        if (topic_edited || stream_changed) {
+            // if topic is changed
+            let pre_edit_topic = util.get_edit_event_orig_topic(event);
+            let post_edit_topic = new_topic;
+
+            if (!topic_edited) {
+                pre_edit_topic = msg.topic;
+                post_edit_topic = pre_edit_topic;
+            }
+            recent_senders.process_topic_edit(
+                event.stream_id, pre_edit_topic, post_edit_topic, new_stream_id);
+        }
     }
 
     // If a topic was edited, we re-render the whole view to get any
