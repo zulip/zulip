@@ -120,6 +120,8 @@ def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, 
     stream = integration.stream_name or 'devel'
     url = "{}/{}".format(bot.bot_owner.realm.uri, integration.url)
     params = {'api_key': bot.api_key, 'stream': stream}
+    if config.extra_params:
+        params.update(config.extra_params)
     if config.payload_as_query_param:
         params[config.payload_param_name] = ujson.dumps(data)
 
