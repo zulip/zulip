@@ -200,7 +200,8 @@ def json_change_notify_settings(
         message_content_in_email_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
         pm_content_in_desktop_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
         desktop_icon_count_display: Optional[int]=REQ(validator=check_int, default=None),
-        realm_name_in_notifications: Optional[bool]=REQ(validator=check_bool, default=None)
+        realm_name_in_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
+        presence_enabled: Optional[bool]=REQ(validator=check_bool, default=None),
 ) -> HttpResponse:
     result = {}
 

@@ -15,6 +15,8 @@ below features are supported.
 * `zulip_version` and `zulip_feature_level` are always returned
   in `POST /register`; previously they were only returned if `event_types`
   included `zulip_version`.
+* Added new `presence_enabled` user notification setting; previously
+  [presence](/help/status-and-availability) was always enabled.
 
 **Feature level 2**:
 
