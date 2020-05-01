@@ -44,7 +44,6 @@ rules:
     paths:
       - directory: "**/migrations"
       - path-not: 'zerver/migrations/0032_verify_all_medium_avatar_images.py'
-      - path-not: 'zerver/migrations/0060_move_avatars_to_be_uid_based.py'
       - path-not: 'zerver/migrations/0104_fix_unreads.py'
       - path-not: 'zerver/migrations/0206_stream_rendered_description.py'
       - path-not: 'zerver/migrations/0209_user_profile_no_empty_password.py'
