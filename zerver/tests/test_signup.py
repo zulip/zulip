@@ -1542,6 +1542,32 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         expected_revoked_invites = set(invites.exclude(id=prereg_user.id))
         self.assertEqual(set(revoked_invites), expected_revoked_invites)
 
+    def test_confirmation_obj_not_exist_error(self) -> None:
+        """ Since the key is a param input by the user to the registration endpoint,
+        if it inserts an invalid value, the confirmation object won't be found. This
+        tests if, in that scenario, we handle the exception by redirecting the user to
+        the confirmation_link_expired_error page.
+        """
+        email = self.nonreg_email('alice')
+        password = 'password'
+        realm = get_realm('zulip')
+        inviter = self.example_user('iago')
+        prereg_user = PreregistrationUser.objects.create(
+            email=email, referred_by=inviter, realm=realm)
+        confirmation_link = create_confirmation_link(prereg_user, 'host', Confirmation.USER_REGISTRATION)
+
+        registration_key = 'invalid_confirmation_key'
+        url = '/accounts/register/'
+        response = self.client_post(url, {'key': registration_key, 'from_confirmation': 1, 'full_nme': 'alice'})
+        self.assertEqual(response.status_code, 200)
+        self.assert_in_success_response(['The registration link has expired or is not valid.'], response)
+
+        registration_key = confirmation_link.split('/')[-1]
+        response = self.client_post(url, {'key': registration_key, 'from_confirmation': 1, 'full_nme': 'alice'})
+        self.assert_in_success_response(['We just need you to do one last thing.'], response)
+        response = self.submit_reg_form_for_user(email, password, key=registration_key)
+        self.assertEqual(response.status_code, 302)
+
     def test_validate_email_not_already_in_realm(self) -> None:
         email = self.nonreg_email('alice')
         password = 'password'
