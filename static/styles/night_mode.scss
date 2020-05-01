@@ -66,6 +66,10 @@ body.night-mode {
             border: 1px solid hsl(210, 36%, 4%);
             color: hsl(236, 31%, 90%);
         }
+
+        .sp-picker-container {
+            border-left: solid 1px hsl(210, 36%, 4%);
+        }
     }
 
     /* this one is because in the app we have blue and in night-mode it should be white. */
