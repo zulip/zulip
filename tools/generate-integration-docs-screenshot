@@ -23,8 +23,9 @@ import django
 django.setup()
 
 import argparse
+import base64
 import subprocess
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import requests
 import ujson
@@ -98,7 +99,7 @@ def custom_headers(headers_json: str) -> Dict[str, str]:
             'Note: all strings must be enclosed within "" instead of \'\''.format(ve))
 
 def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, fixture_path: str,
-                             extra_headers: Optional[Dict[str, str]]) -> bool:
+                             config: ScreenshotConfig) -> bool:
     # Delete all messages, so new message is the only one it's message group
     Message.objects.filter(sender=bot).delete()
 
@@ -111,8 +112,13 @@ def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, 
         data = ujson.load(f)
     _, fixture_name = split_fixture_path(fixture_path)
     headers = get_requests_headers(integration.name, fixture_name)
-    if extra_headers:
-        headers.update(extra_headers)
+    if config.custom_headers:
+        headers.update(config.custom_headers)
+    if config.use_basic_auth:
+        credentials = base64.b64encode('{}:{}'.format(bot.email, bot.api_key).encode('utf8')).decode('utf8')
+        auth = 'basic {}'.format(credentials)
+        headers.update(dict(Authorization=auth))
+
     try:
         response = requests.post(url, json=data, headers=headers)
     except requests.exceptions.ConnectionError:
@@ -141,7 +147,7 @@ def generate_screenshot_from_config(integration_name: str, screenshot_config: Sc
     fixture_path, image_path = get_fixture_and_image_paths(integration, screenshot_config)
     bot = create_integration_bot(integration)
     create_integration_stream(integration, bot)
-    message_sent = send_bot_payload_message(bot, integration, fixture_path, screenshot_config.custom_headers)
+    message_sent = send_bot_payload_message(bot, integration, fixture_path, screenshot_config)
     if message_sent:
         capture_last_message_screenshot(bot, image_path)
         print(f'Screenshot captured to: {BOLDRED}{image_path}{ENDC}')
@@ -151,6 +157,8 @@ parser.add_argument('integration', type=str, help='Name of the integration')
 parser.add_argument('fixture', type=str, help='Name of the fixture file to use')
 parser.add_argument('--image-name', type=str, default='001.png', help='Name for the screenshot image')
 parser.add_argument('--image-dir', type=str, help='Directory name where to save the screenshot image')
+parser.add_argument('-A', '--use-basic-auth', action='store_true',
+                    help='Add basic auth headers to the request')
 parser.add_argument('-H', '--custom-headers',
                     type=custom_headers,
                     help='Any additional headers to be sent with the request.')
@@ -158,5 +166,5 @@ parser.add_argument('-H', '--custom-headers',
 options = parser.parse_args()
 prepare_puppeteer_run()
 screenshot_config = ScreenshotConfig(
-    options.fixture, options.image_name, options.image_dir, options.custom_headers)
+    options.fixture, options.image_name, options.image_dir, options.use_basic_auth, options.custom_headers)
 generate_screenshot_from_config(options.integration, screenshot_config)
