@@ -78,11 +78,10 @@ def one_time(method: Callable[[], ReturnT]) -> Callable[[], ReturnT]:
         return val
     return cache_wrapper
 
-FullNameInfo = TypedDict('FullNameInfo', {
-    'id': int,
-    'email': str,
-    'full_name': str,
-})
+class FullNameInfo(TypedDict):
+    id: int
+    email: str
+    full_name: str
 
 DbData = Dict[str, Any]
 
@@ -292,12 +291,11 @@ def walk_tree(root: Element,
 
     return results
 
-ElementFamily = NamedTuple('ElementFamily', [
-    ('grandparent', Optional[Element]),
-    ('parent', Element),
-    ('child', Element),
-    ('in_blockquote', bool),
-])
+class ElementFamily(NamedTuple):
+    grandparent: Optional[Element]
+    parent: Element
+    child: Element
+    in_blockquote: bool
 
 T = TypeVar("T")
 
@@ -1529,10 +1527,9 @@ class BugdownListPreprocessor(markdown.preprocessors.Preprocessor):
 
     def run(self, lines: List[str]) -> List[str]:
         """ Insert a newline between a paragraph and ulist if missing """
-        Fence = NamedTuple('Fence', [
-            ('fence_str', str),
-            ('is_code', bool),
-        ])
+        class Fence(NamedTuple):
+            fence_str: str
+            is_code: bool
 
         inserts = 0
         in_code_fence: bool = False

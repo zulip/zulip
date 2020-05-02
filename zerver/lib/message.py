@@ -60,22 +60,20 @@ from typing_extensions import TypedDict
 
 RealmAlertWord = Dict[int, List[str]]
 
-RawUnreadMessagesResult = TypedDict('RawUnreadMessagesResult', {
-    'pm_dict': Dict[int, Any],
-    'stream_dict': Dict[int, Any],
-    'huddle_dict': Dict[int, Any],
-    'mentions': Set[int],
-    'muted_stream_ids': List[int],
-    'unmuted_stream_msgs': Set[int],
-})
+class RawUnreadMessagesResult(TypedDict):
+    pm_dict: Dict[int, Any]
+    stream_dict: Dict[int, Any]
+    huddle_dict: Dict[int, Any]
+    mentions: Set[int]
+    muted_stream_ids: List[int]
+    unmuted_stream_msgs: Set[int]
 
-UnreadMessagesResult = TypedDict('UnreadMessagesResult', {
-    'pms': List[Dict[str, Any]],
-    'streams': List[Dict[str, Any]],
-    'huddles': List[Dict[str, Any]],
-    'mentions': List[int],
-    'count': int,
-})
+class UnreadMessagesResult(TypedDict):
+    pms: List[Dict[str, Any]]
+    streams: List[Dict[str, Any]]
+    huddles: List[Dict[str, Any]]
+    mentions: List[int]
+    count: int
 
 # We won't try to fetch more unread message IDs from the database than
 # this limit.  The limit is super high, in large part because it means

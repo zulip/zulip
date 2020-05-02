@@ -987,17 +987,16 @@ def render_incoming_message(message: Message,
         raise JsonableError(_('Unable to render message'))
     return rendered_content
 
-RecipientInfoResult = TypedDict('RecipientInfoResult', {
-    'active_user_ids': Set[int],
-    'push_notify_user_ids': Set[int],
-    'stream_email_user_ids': Set[int],
-    'stream_push_user_ids': Set[int],
-    'wildcard_mention_user_ids': Set[int],
-    'um_eligible_user_ids': Set[int],
-    'long_term_idle_user_ids': Set[int],
-    'default_bot_user_ids': Set[int],
-    'service_bot_tuples': List[Tuple[int, int]],
-})
+class RecipientInfoResult(TypedDict):
+    active_user_ids: Set[int]
+    push_notify_user_ids: Set[int]
+    stream_email_user_ids: Set[int]
+    stream_push_user_ids: Set[int]
+    wildcard_mention_user_ids: Set[int]
+    um_eligible_user_ids: Set[int]
+    long_term_idle_user_ids: Set[int]
+    default_bot_user_ids: Set[int]
+    service_bot_tuples: List[Tuple[int, int]]
 
 def get_recipient_info(recipient: Recipient,
                        sender_id: int,
@@ -4185,10 +4184,9 @@ def do_update_message_flags(user_profile: UserProfile,
     statsd.incr("flags.%s.%s" % (flag, operation), count)
     return count
 
-MessageUpdateUserInfoResult = TypedDict('MessageUpdateUserInfoResult', {
-    'message_user_ids': Set[int],
-    'mention_user_ids': Set[int],
-})
+class MessageUpdateUserInfoResult(TypedDict):
+    message_user_ids: Set[int]
+    mention_user_ids: Set[int]
 
 def notify_topic_moved_streams(user_profile: UserProfile,
                                old_stream: Stream, old_topic: str,
