@@ -47,8 +47,8 @@ exports.colorize_tab_bar = function () {
     if (filter === undefined || !filter.has_operator('stream')) {return;}
     const color_for_stream = stream_data.get_color(filter.operands("stream")[0]);
     const stream_light = colorspace.getHexColor(colorspace.getDecimalColor(color_for_stream));
-    $("#tab_list .fa-hashtag").css('color', stream_light);
-    $("#tab_list .fa-lock").css('color', stream_light);
+    $("#tab_list .stream").css('background-color', stream_light);
+    $("#tab_list .stream").css('color', "white");
 };
 
 function display_tab_bar(tab_bar_data) {
