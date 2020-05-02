@@ -879,6 +879,34 @@ def do_scrub_realm(realm: Realm, acting_user: Optional[UserProfile]=None) -> Non
                                  acting_user=acting_user,
                                  event_type=RealmAuditLog.REALM_SCRUBBED)
 
+def do_delete_user(user_profile: UserProfile) -> None:
+    if user_profile.realm.is_zephyr_mirror_realm:
+        raise AssertionError("Deleting zephyr mirror users is not supported")
+
+    do_deactivate_user(user_profile)
+
+    subscribed_huddle_recipient_ids = set(
+        Subscription.objects.filter(user_profile=user_profile, recipient__type=Recipient.HUDDLE)
+        .values_list('recipient_id', flat=True)
+    )
+    user_id = user_profile.id
+    realm = user_profile.realm
+    personal_recipient = user_profile.recipient
+
+    user_profile.delete()
+    # Recipient objects don't get deleted through CASCADE, so we need to handle
+    # the user's personal recipient manually. This will also delete all Messages pointing
+    # to this recipient (all private messages sent to the user).
+    personal_recipient.delete()
+    replacement_user = create_user(force_id=user_id, email=f"deleteduser{user_id}@{realm.uri}",
+                                   password=None,
+                                   realm=realm,
+                                   full_name=f"Deleted User {user_id}",
+                                   is_mirror_dummy=True)
+    subs_to_recreate = [Subscription(user_profile=replacement_user, recipient=recipient)
+                        for recipient in Recipient.objects.filter(id__in=subscribed_huddle_recipient_ids)]
+    Subscription.objects.bulk_create(subs_to_recreate)
+
 def do_deactivate_user(user_profile: UserProfile,
                        acting_user: Optional[UserProfile]=None,
                        _cascade: bool=True) -> None:
