@@ -18,7 +18,7 @@ Comment:
 
 Files: *
 Copyright: 2011-2015 Dropbox, Inc., 2015-2019 Kandra Labs, Inc., and contributors
-License: Apache-2
+License: Apache-2.0
 
 Files: confirmation/*
 Copyright: 2008, Jarek Zgoda <jarek.zgoda@gmail.com>
@@ -145,7 +145,7 @@ License: Apache-2.0
  On Debian systems, the full text of the Apache License version 2 can
  be found in /usr/share/common-licenses/Apache-2.0.
 
-License: BSD-2-clause
+License: BSD-2-Clause
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
  are met:
