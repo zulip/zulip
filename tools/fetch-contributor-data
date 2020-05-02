@@ -36,10 +36,9 @@ parser.add_argument('--max-retries', type=int, default=10,
                     help='Number of times to retry fetching data from Github')
 args = parser.parse_args()
 
-ContributorsJSON = TypedDict('ContributorsJSON', {
-    'date': str,
-    'contrib': List[Dict[str, Union[str, int]]],
-})
+class ContributorsJSON(TypedDict):
+    date: str
+    contrib: List[Dict[str, Union[str, int]]]
 
 logger = logging.getLogger('zulip.fetch_contributors_json')
 

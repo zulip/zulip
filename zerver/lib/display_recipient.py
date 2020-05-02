@@ -14,10 +14,9 @@ display_recipient_fields = [
     "is_mirror_dummy",
 ]
 
-TinyStreamResult = TypedDict('TinyStreamResult', {
-    'id': int,
-    'name': str,
-})
+class TinyStreamResult(TypedDict):
+    id: int
+    name: str
 
 @cache_with_key(lambda *args: display_recipient_cache_key(args[0]),
                 timeout=3600*24*7)

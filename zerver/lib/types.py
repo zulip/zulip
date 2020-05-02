@@ -28,6 +28,10 @@ UserFieldElement = Tuple[int, str, RealmUserValidator, Callable[[Any], Any], str
 
 ProfileFieldData = Dict[str, Union[Dict[str, str], str]]
 
-UserDisplayRecipient = TypedDict('UserDisplayRecipient', {'email': str, 'full_name': str, 'short_name': str,
-                                                          'id': int, 'is_mirror_dummy': bool})
+class UserDisplayRecipient(TypedDict):
+    email: str
+    full_name: str
+    short_name: str
+    id: int
+    is_mirror_dummy: bool
 DisplayRecipientT = Union[str, List[UserDisplayRecipient]]
