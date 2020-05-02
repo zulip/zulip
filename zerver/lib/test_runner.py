@@ -227,18 +227,6 @@ def run_subsuite(args: SubsuiteArgs) -> Tuple[int, Any]:
     process_instrumented_calls(partial(result.addInstrumentation, None))
     return subsuite_index, result.events
 
-# Monkey-patch database creation to fix unnecessary sleep(1)
-from django.db.backends.postgresql.creation import DatabaseCreation
-def _replacement_destroy_test_db(self: DatabaseCreation,
-                                 test_database_name: str,
-                                 verbosity: int) -> None:
-    """Replacement for Django's _destroy_test_db that removes the
-    unnecessary sleep(1)."""
-    with self.connection._nodb_connection.cursor() as cursor:
-        cursor.execute("DROP DATABASE %s"
-                       % (self.connection.ops.quote_name(test_database_name),))
-DatabaseCreation._destroy_test_db = _replacement_destroy_test_db
-
 def destroy_test_databases(worker_id: Optional[int]=None) -> None:
     for alias in connections:
         connection = connections[alias]
