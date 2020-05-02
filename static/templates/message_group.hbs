@@ -12,7 +12,7 @@
         {{/if}}
 
         <div class="recipient_row" id="{{message_group_id}}">
-            {{> recipient_row use_match_properties=../use_match_properties}}
+            {{> recipient_row use_match_properties=../use_match_properties narrow_is_stream=../narrow_is_stream}}
             {{#each message_containers}}
                 {{#with this}}
                 {{> single_message use_match_properties=../../use_match_properties table_name=../../table_name}}

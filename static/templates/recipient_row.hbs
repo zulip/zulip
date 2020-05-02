@@ -11,7 +11,12 @@
                 {{#if invite_only}}
                 <i class="fa fa-lock invite-stream-icon" title="{{t 'This is a private stream' }}" aria-label="{{t 'This is a private stream' }}"></i>
                 {{/if}}
-                {{display_recipient}}</a>
+                {{#unless narrow_is_stream}}
+                    {{display_recipient}}
+                {{else}}
+                    &nbsp
+                {{/unless}}
+            </a>
 
             {{! hidden narrow icon for copy-pasting }}
             <span class="copy-paste-text">&gt;</span>

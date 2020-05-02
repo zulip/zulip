@@ -651,11 +651,13 @@ MessageListView.prototype = {
         const message_groups = opts.message_groups;
         const use_match_properties = opts.use_match_properties;
         const table_name = opts.table_name;
+        const stream_operands = opts.stream_operands;
 
         return $(render_message_group({
             message_groups: message_groups,
             use_match_properties: use_match_properties,
             table_name: table_name,
+            narrow_is_stream: stream_operands,
         }));
     },
 
@@ -672,6 +674,10 @@ MessageListView.prototype = {
         }
 
         const list = self.list; // for convenience
+
+        const msg_filter = list.data.filter;
+        const stream_operands = msg_filter.operands("stream");
+
         const table_name = self.table_name;
         const table = rows.get_table(table_name);
         let orig_scrolltop_offset;
@@ -736,6 +742,7 @@ MessageListView.prototype = {
                 message_groups: message_actions.prepend_groups,
                 use_match_properties: self.list.is_search(),
                 table_name: self.table_name,
+                stream_operands: stream_operands,
             });
 
             dom_messages = rendered_groups.find('.message_row');
@@ -763,6 +770,7 @@ MessageListView.prototype = {
                     message_groups: [message_group],
                     use_match_properties: self.list.is_search(),
                     table_name: self.table_name,
+                    stream_operands: stream_operands,
                 });
 
                 dom_messages = rendered_groups.find('.message_row');
@@ -813,6 +821,7 @@ MessageListView.prototype = {
                 message_groups: message_actions.append_groups,
                 use_match_properties: self.list.is_search(),
                 table_name: self.table_name,
+                stream_operands: stream_operands,
             });
 
             dom_messages = rendered_groups.find('.message_row');
@@ -1188,7 +1197,9 @@ MessageListView.prototype = {
         // where we constructed an artificial message group for this
         // rerendering rather than looking up the original version.
         populate_group_from_message_container(group, group.message_containers[0]);
-
+        const msg_filter = this.list.data.filter;
+        const stream_operands = msg_filter.operands("stream");
+        group.narrow_is_stream = stream_operands;
         const rendered_recipient_row = $(render_recipient_row(group));
 
         header.replaceWith(rendered_recipient_row);

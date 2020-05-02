@@ -70,9 +70,9 @@ function expect_stream() {
     casper.then(function () {
         casper.waitUntilVisible('#zfilt', function () {
             common.expected_messages('zfilt', [
-                'Verona > frontend test',
-                'Verona > other subject',
-                'Verona > frontend test',
+                '> frontend test',
+                '> other subject',
+                '> frontend test',
             ], [
                 '<p>test message A</p>',
                 '<p>test message B</p>',
@@ -87,7 +87,7 @@ function expect_stream_subject() {
     casper.then(function () {
         casper.waitUntilVisible('#zfilt', function () {
             common.expected_messages('zfilt', [
-                'Verona > frontend test',
+                '> frontend test',
             ], [
                 '<p>test message A</p>',
                 '<p>test message B</p>',
