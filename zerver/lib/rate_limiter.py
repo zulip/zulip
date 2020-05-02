@@ -153,7 +153,6 @@ class RateLimiterBackend(ABC):
     @abstractmethod
     def block_access(cls, entity_key: str, seconds: int) -> None:
         "Manually blocks an entity for the desired number of seconds"
-        pass
 
     @classmethod
     @abstractmethod
