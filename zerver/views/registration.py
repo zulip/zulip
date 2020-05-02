@@ -136,7 +136,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                     try:
                         ldap_username = backend.django_to_ldap_username(email)
                     except ZulipLDAPExceptionNoMatchingLDAPUser:
-                        logging.warning("New account email %s could not be found in LDAP" % (email,))
+                        logging.warning("New account email %s could not be found in LDAP", email)
                         break
 
                     # Note that this `ldap_user` object is not a
@@ -353,8 +353,10 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                                    use_dummy_backend=True)
         if return_data.get('invalid_subdomain'):
             # By construction, this should never happen.
-            logging.error("Subdomain mismatch in registration %s: %s" % (
-                realm.subdomain, user_profile.delivery_email,))
+            logging.error(
+                "Subdomain mismatch in registration %s: %s",
+                realm.subdomain, user_profile.delivery_email,
+            )
             return redirect('/')
 
         return login_and_go_to_home(request, auth_result)
@@ -464,7 +466,7 @@ def create_realm(request: HttpRequest, creation_key: Optional[str]=None) -> Http
             try:
                 send_confirm_registration_email(email, activation_url, request.LANGUAGE_CODE)
             except smtplib.SMTPException as e:
-                logging.error('Error in create_realm: %s' % (str(e),))
+                logging.error('Error in create_realm: %s', str(e))
                 return HttpResponseRedirect("/config-error/smtp")
 
             if key_record is not None:
@@ -505,7 +507,7 @@ def accounts_home(request: HttpRequest, multiuse_object_key: Optional[str]="",
             try:
                 send_confirm_registration_email(email, activation_url, request.LANGUAGE_CODE)
             except smtplib.SMTPException as e:
-                logging.error('Error in accounts_home: %s' % (str(e),))
+                logging.error('Error in accounts_home: %s', str(e))
                 return HttpResponseRedirect("/config-error/smtp")
 
             return HttpResponseRedirect(reverse('signup_send_confirm', kwargs={'email': email}))

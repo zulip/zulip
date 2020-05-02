@@ -198,7 +198,7 @@ class InvalidCacheKeyException(Exception):
 
 def log_invalid_cache_keys(stack_trace: str, key: List[str]) -> None:
     logger.warning(
-        "Invalid cache key used: {}\nStack trace: {}\n".format(key, stack_trace)
+        "Invalid cache key used: %s\nStack trace: %s\n", key, stack_trace,
     )
 
 def validate_cache_key(key: str) -> None:

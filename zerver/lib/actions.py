@@ -1219,8 +1219,9 @@ def get_service_bot_events(sender: UserProfile, service_bot_tuples: List[Tuple[i
             queue_name = 'embedded_bots'
         else:
             logging.error(
-                'Unexpected bot_type for Service bot id=%s: %s' %
-                (user_profile_id, bot_type))
+                'Unexpected bot_type for Service bot id=%s: %s',
+                user_profile_id, bot_type,
+            )
             return
 
         is_stream = (recipient_type == Recipient.STREAM)
@@ -5420,8 +5421,10 @@ def do_claim_attachments(message: Message, potential_path_ids: List[str]) -> boo
             #
             # Either case is unusual and suggests a UI bug that got
             # the user in this situation, so we log in these cases.
-            logging.warning("User %s tried to share upload %s in message %s, but lacks permission" % (
-                user_profile.id, path_id, message.id))
+            logging.warning(
+                "User %s tried to share upload %s in message %s, but lacks permission",
+                user_profile.id, path_id, message.id,
+            )
             continue
 
         claimed = True

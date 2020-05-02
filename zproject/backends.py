@@ -433,7 +433,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                     # This is possible, but strange, so worth logging a warning about.
                     # We can't translate the email to a unique username,
                     # so we don't do anything else here.
-                    logging.warning("Multiple users with email {} found in LDAP.".format(username))
+                    logging.warning("Multiple users with email %s found in LDAP.", username)
                     result = username
 
         if _LDAPUser(self, result).attrs is None:
@@ -509,8 +509,8 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 user.avatar_hash = user_avatar_content_hash(ldap_avatar)
                 user.save(update_fields=["avatar_hash"])
             else:
-                logging.warning("Could not parse %s field for user %s" %
-                                (avatar_attr_name, user.id))
+                logging.warning("Could not parse %s field for user %s",
+                                avatar_attr_name, user.id)
 
     def is_account_control_disabled_user(self, ldap_user: _LDAPUser) -> bool:
         """Implements the userAccountControl check for whether a user has been
@@ -761,14 +761,14 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
             user_disabled_in_ldap = self.is_account_control_disabled_user(ldap_user)
             if user_disabled_in_ldap:
                 if user.is_active:
-                    logging.info("Deactivating user %s because they are disabled in LDAP." %
-                                 (user.delivery_email,))
+                    logging.info("Deactivating user %s because they are disabled in LDAP.",
+                                 user.delivery_email)
                     do_deactivate_user(user)
                 # Do an early return to avoid trying to sync additional data.
                 return (user, built)
             elif not user.is_active:
-                logging.info("Reactivating user %s because they are not disabled in LDAP." %
-                             (user.delivery_email,))
+                logging.info("Reactivating user %s because they are not disabled in LDAP.",
+                             user.delivery_email)
                 do_reactivate_user(user)
 
         self.sync_avatar_from_ldap(user, ldap_user)
@@ -801,10 +801,10 @@ def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bo
     except ZulipLDAPExceptionNoMatchingLDAPUser:
         if settings.LDAP_DEACTIVATE_NON_MATCHING_USERS:
             do_deactivate_user(user_profile)
-            logger.info("Deactivated non-matching user: %s" % (user_profile.delivery_email,))
+            logger.info("Deactivated non-matching user: %s", user_profile.delivery_email)
             return True
         elif user_profile.is_active:
-            logger.warning("Did not find %s in LDAP." % (user_profile.delivery_email,))
+            logger.warning("Did not find %s in LDAP.", user_profile.delivery_email)
         return False
 
     # What one would expect to see like to do here is just a call to
@@ -824,7 +824,7 @@ def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bo
     # making this flow possible in a more directly supported fashion.
     updated_user = ZulipLDAPUser(backend, ldap_username, realm=user_profile.realm).populate_user()
     if updated_user:
-        logger.info("Updated %s." % (user_profile.delivery_email,))
+        logger.info("Updated %s.", user_profile.delivery_email)
         return True
 
     raise PopulateUserLDAPError("populate_user unexpectedly returned {}".format(updated_user))
@@ -1075,8 +1075,8 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
         if verified_emails_length == 0:
             # TODO: Provide a nice error message screen to the user
             # for this case, rather than just logging a warning.
-            logging.warning("Social auth (%s) failed because user has no verified emails" %
-                            (backend.auth_backend_name,))
+            logging.warning("Social auth (%s) failed because user has no verified emails",
+                            backend.auth_backend_name)
             return_data["email_not_verified"] = True
             return None
 
@@ -1114,8 +1114,8 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
             # end up with a wrong email associated with the account. The below code
             # takes care of that.
             logging.warning("Social auth (%s) failed because user has no verified"
-                            " emails associated with the account" %
-                            (backend.auth_backend_name,))
+                            " emails associated with the account",
+                            backend.auth_backend_name)
             return_data["email_not_associated"] = True
             return None
 
@@ -1230,7 +1230,7 @@ def social_auth_finish(backend: Any,
         # In case of invalid email, we will end up on registration page.
         # This seems better than redirecting to login page.
         logging.warning(
-            "{} got invalid email argument.".format(backend.auth_backend_name)
+            "%s got invalid email argument.", backend.auth_backend_name,
         )
         return None
 
@@ -1504,7 +1504,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         except KeyError as e:
             # If the above raise KeyError, it means invalid or no idp was specified,
             # we should log that and redirect to the login page.
-            logging.info("/login/saml/ : Bad idp param: KeyError: {}.".format(e))
+            logging.info("/login/saml/ : Bad idp param: KeyError: %s.", str(e))
             return reverse('zerver.views.auth.login_page',
                            kwargs = {'template_name': 'zerver/login.html'})
 
@@ -1575,14 +1575,14 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         subdomain = relayed_params.get("subdomain")
         if idp_name is None or subdomain is None:
             error_msg = "Missing idp or subdomain value in relayed_params in SAML auth_complete: %s"
-            logging.info(error_msg % (dict(subdomain=subdomain, idp=idp_name),))
+            logging.info(error_msg, dict(subdomain=subdomain, idp=idp_name))
             return None
 
         idp_valid = self.validate_idp_for_subdomain(idp_name, subdomain)
         if not idp_valid:
             error_msg = "User authenticated with IdP %s but this provider is not " + \
                         "enabled for this realm %s."
-            logging.info(error_msg % (idp_name, subdomain))
+            logging.info(error_msg, idp_name, subdomain)
             return None
 
         result = None

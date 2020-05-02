@@ -2273,8 +2273,8 @@ class UserSignUpTest(InviteUserBase):
         self._assert_redirected_to(result, '/config-error/smtp')
 
         self.assertEqual(
-            err.call_args_list[0][0][0],
-            'Error in accounts_home: uh oh'
+            err.call_args_list[0][0],
+            ('Error in accounts_home: %s', 'uh oh'),
         )
 
     def test_bad_email_configuration_for_create_realm(self) -> None:
@@ -2296,8 +2296,8 @@ class UserSignUpTest(InviteUserBase):
         self._assert_redirected_to(result, '/config-error/smtp')
 
         self.assertEqual(
-            err.call_args_list[0][0][0],
-            'Error in create_realm: uh oh'
+            err.call_args_list[0][0],
+            ('Error in create_realm: %s', 'uh oh'),
         )
 
     def test_user_default_language_and_timezone(self) -> None:
@@ -3310,7 +3310,10 @@ class UserSignUpTest(InviteUserBase):
                     # Pass HTTP_HOST for the target subdomain
                     HTTP_HOST=subdomain + ".testserver")
                 self.assertEqual(result.status_code, 200)
-                mock_warning.assert_called_once_with("New account email newuser@zulip.com could not be found in LDAP")
+                mock_warning.assert_called_once_with(
+                    "New account email %s could not be found in LDAP",
+                    "newuser@zulip.com",
+                )
 
             result = self.submit_reg_form_for_user(email,
                                                    password,
@@ -3396,7 +3399,10 @@ class UserSignUpTest(InviteUserBase):
                     # Pass HTTP_HOST for the target subdomain
                     HTTP_HOST=subdomain + ".testserver")
                 self.assertEqual(result.status_code, 200)
-                mock_warning.assert_called_once_with("New account email nonexistent@zulip.com could not be found in LDAP")
+                mock_warning.assert_called_once_with(
+                    "New account email %s could not be found in LDAP",
+                    "nonexistent@zulip.com",
+                )
 
             result = self.submit_reg_form_for_user(email,
                                                    password,

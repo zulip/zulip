@@ -317,7 +317,7 @@ def fix_message_rendered_content(realm: Realm,
             # * rendering markdown failing with the exception being
             #   caught in bugdown (which then returns None, causing the the
             #   rendered_content assert above to fire).
-            logging.warning("Error in markdown rendering for message ID %s; continuing" % (message['id'],))
+            logging.warning("Error in markdown rendering for message ID %s; continuing", message['id'])
 
 def current_table_ids(data: TableData, table: TableName) -> List[int]:
     """
@@ -428,10 +428,8 @@ def re_map_foreign_keys_internal(data_table: List[Record],
         if old_id in lookup_table:
             new_id = lookup_table[old_id]
             if verbose:
-                logging.info('Remapping %s %s from %s to %s' % (table,
-                                                                field_name + '_id',
-                                                                old_id,
-                                                                new_id))
+                logging.info('Remapping %s %s from %s to %s',
+                             table, field_name + '_id', old_id, new_id)
         else:
             new_id = old_id
         if not id_field:
@@ -479,10 +477,8 @@ def re_map_foreign_keys_many_to_many_internal(table: TableName,
         if old_id in lookup_table:
             new_id = lookup_table[old_id]
             if verbose:
-                logging.info('Remapping %s %s from %s to %s' % (table,
-                                                                field_name + '_id',
-                                                                old_id,
-                                                                new_id))
+                logging.info('Remapping %s %s from %s to %s',
+                             table, field_name + '_id', old_id, new_id)
         else:
             new_id = old_id
         new_id_list.append(new_id)
@@ -566,16 +562,16 @@ def bulk_import_user_message_data(data: TableData, dump_file_id: int) -> None:
         process_batch=process_batch,
     )
 
-    logging.info("Successfully imported %s from %s[%s]." % (model, table, dump_file_id))
+    logging.info("Successfully imported %s from %s[%s].", model, table, dump_file_id)
 
 def bulk_import_model(data: TableData, model: Any, dump_file_id: Optional[str]=None) -> None:
     table = get_db_table(model)
     # TODO, deprecate dump_file_id
     model.objects.bulk_create(model(**item) for item in data[table])
     if dump_file_id is None:
-        logging.info("Successfully imported %s from %s." % (model, table))
+        logging.info("Successfully imported %s from %s.", model, table)
     else:
-        logging.info("Successfully imported %s from %s[%s]." % (model, table, dump_file_id))
+        logging.info("Successfully imported %s from %s[%s].", model, table, dump_file_id)
 
 # Client is a table shared by multiple realms, so in order to
 # correctly import multiple realms into the same server, we need to
@@ -627,7 +623,7 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
     for record in records:
         count += 1
         if count % 1000 == 0:
-            logging.info("Processed %s/%s uploads" % (count, len(records)))
+            logging.info("Processed %s/%s uploads", count, len(records))
 
         if processing_avatars:
             # For avatars, we need to rehash the user ID with the
@@ -677,7 +673,7 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
                 user_profile_id = int(record['user_profile_id'])
                 # Support email gateway bot and other cross-realm messages
                 if user_profile_id in ID_MAP["user_profile"]:
-                    logging.info("Uploaded by ID mapped user: %s!" % (user_profile_id,))
+                    logging.info("Uploaded by ID mapped user: %s!", user_profile_id)
                     user_profile_id = ID_MAP["user_profile"][user_profile_id]
                 user_profile = get_user_profile_by_id(user_profile_id)
                 key.set_metadata("user_profile_id", str(user_profile.id))
@@ -733,8 +729,10 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
                     if record.get("importer_should_thumbnail"):
                         upload_backend.ensure_basic_avatar_image(user_profile=user_profile)
                 except BadImageError:
-                    logging.warning("Could not thumbnail avatar image for user %s; ignoring" % (
-                        user_profile.id,))
+                    logging.warning(
+                        "Could not thumbnail avatar image for user %s; ignoring",
+                        user_profile.id,
+                    )
                     # Delete the record of the avatar to avoid 404s.
                     do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR)
             return 0
@@ -767,7 +765,7 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
 # faithful, we have to use a set of fixers (e.g. on DateTime objects
 # and Foreign Keys) to do the import correctly.
 def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm:
-    logging.info("Importing realm dump %s" % (import_dir,))
+    logging.info("Importing realm dump %s", import_dir)
     if not os.path.exists(import_dir):
         raise Exception("Missing import directory!")
 
@@ -778,7 +776,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
     if not server_initialized():
         create_internal_realm()
 
-    logging.info("Importing realm data from %s" % (realm_data_filename,))
+    logging.info("Importing realm data from %s", realm_data_filename)
     with open(realm_data_filename) as f:
         data = ujson.load(f)
     remove_denormalized_recipient_column_from_data(data)
@@ -833,7 +831,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
     # Remap the user IDs for notification_bot and friends to their
     # appropriate IDs on this server
     for item in data['zerver_userprofile_crossrealm']:
-        logging.info("Adding to ID map: %s %s" % (item['id'], get_system_bot(item['email']).id))
+        logging.info("Adding to ID map: %s %s", item['id'], get_system_bot(item['email']).id)
         new_user_id = get_system_bot(item['email']).id
         update_id_map(table='user_profile', old_id=item['id'], new_id=new_user_id)
         new_recipient_id = Recipient.objects.get(type=Recipient.PERSONAL, type_id=new_user_id).id
@@ -1070,7 +1068,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
     if not os.path.exists(fn):
         raise Exception("Missing attachment.json file!")
 
-    logging.info("Importing attachment data from %s" % (fn,))
+    logging.info("Importing attachment data from %s", fn)
     with open(fn) as f:
         data = ujson.load(f)
 
@@ -1194,7 +1192,7 @@ def import_message_data(realm: Realm,
         with open(message_filename) as f:
             data = ujson.load(f)
 
-        logging.info("Importing message dump %s" % (message_filename,))
+        logging.info("Importing message dump %s", message_filename)
         re_map_foreign_keys(data, 'zerver_message', 'sender', related_table="user_profile")
         re_map_foreign_keys(data, 'zerver_message', 'recipient', related_table="recipient")
         re_map_foreign_keys(data, 'zerver_message', 'sending_client', related_table='client')
@@ -1299,14 +1297,14 @@ def import_attachments(data: TableData) -> None:
         tups = [(row[parent_id], row[child_id]) for row in m2m_rows]
         cursor.executemany(sql_template, tups)
 
-    logging.info('Successfully imported M2M table %s' % (m2m_table_name,))
+    logging.info('Successfully imported M2M table %s', m2m_table_name)
 
 def import_analytics_data(realm: Realm, import_dir: Path) -> None:
     analytics_filename = os.path.join(import_dir, "analytics.json")
     if not os.path.exists(analytics_filename):
         return
 
-    logging.info("Importing analytics data from %s" % (analytics_filename,))
+    logging.info("Importing analytics data from %s", analytics_filename)
     with open(analytics_filename) as f:
         data = ujson.load(f)
 

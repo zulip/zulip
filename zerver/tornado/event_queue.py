@@ -207,9 +207,9 @@ class ClientDescriptor:
             clear_descriptor_by_handler_id(self.current_handler_id, None)
             clear_handler_by_id(self.current_handler_id)
             if client_closed:
-                logging.info("Client disconnected for queue %s (%s via %s)" %
-                             (self.event_queue.id, self.user_profile_id,
-                              self.current_client_name))
+                logging.info("Client disconnected for queue %s (%s via %s)",
+                             self.event_queue.id, self.user_profile_id,
+                             self.current_client_name)
         self.current_handler_id = None
         self.current_client_name = None
         if self._timeout_handle is not None:
@@ -430,10 +430,10 @@ def gc_event_queues(port: int) -> None:
     do_gc_event_queues(to_remove, affected_users, affected_realms)
 
     if settings.PRODUCTION:
-        logging.info(('Tornado %d removed %d expired event queues owned by %d users in %.3fs.' +
-                      '  Now %d active queues, %s')
-                     % (port, len(to_remove), len(affected_users), time.time() - start,
-                        len(clients), handler_stats_string()))
+        logging.info('Tornado %d removed %d expired event queues owned by %d users in %.3fs.'
+                     '  Now %d active queues, %s',
+                     port, len(to_remove), len(affected_users), time.time() - start,
+                     len(clients), handler_stats_string())
     statsd.gauge('tornado.active_queues', len(clients))
     statsd.gauge('tornado.active_users', len(user_clients))
 
@@ -454,8 +454,8 @@ def dump_event_queues(port: int) -> None:
         ujson.dump([(qid, client.to_dict()) for (qid, client) in clients.items()],
                    stored_queues)
 
-    logging.info('Tornado %d dumped %d event queues in %.3fs'
-                 % (port, len(clients), time.time() - start))
+    logging.info('Tornado %d dumped %d event queues in %.3fs',
+                 port, len(clients), time.time() - start)
 
 def load_event_queues(port: int) -> None:
     global clients
@@ -481,8 +481,8 @@ def load_event_queues(port: int) -> None:
 
         add_to_client_dicts(client)
 
-    logging.info('Tornado %d loaded %d event queues in %.3fs'
-                 % (port, len(clients), time.time() - start))
+    logging.info('Tornado %d loaded %d event queues in %.3fs',
+                 port, len(clients), time.time() - start)
 
 def send_restart_events(immediate: bool=False) -> None:
     event: Dict[str, Any] = dict(type='restart', server_generation=settings.SERVER_GENERATION)
@@ -572,8 +572,8 @@ def fetch_events(query: Mapping[str, Any]) -> Dict[str, Any]:
         # After this point, dont_block=False, the queue is empty, and we
         # have a pre-existing queue, so we wait for new events.
         if was_connected:
-            logging.info("Disconnected handler for queue %s (%s/%s)" % (queue_id, user_profile_id,
-                                                                        client_type_name))
+            logging.info("Disconnected handler for queue %s (%s/%s)",
+                         queue_id, user_profile_id, client_type_name)
     except JsonableError as e:
         return dict(type="error", exception=e)
 
@@ -608,8 +608,8 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
                                         data=req)
         except requests.adapters.ConnectionError:
             logging.error('Tornado server does not seem to be running, check %s '
-                          'and %s for more information.' %
-                          (settings.ERROR_FILE_LOG_PATH, "tornado.log"))
+                          'and %s for more information.',
+                          settings.ERROR_FILE_LOG_PATH, "tornado.log")
             raise requests.adapters.ConnectionError(
                 "Django cannot connect to Tornado server (%s); try restarting" %
                 (tornado_uri,))
@@ -1083,14 +1083,16 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         process_presence_event(event, cast(Iterable[int], users))
     else:
         process_event(event, cast(Iterable[int], users))
-    logging.debug("Tornado: Event %s for %s users took %sms" % (
-        event['type'], len(users), int(1000 * (time.time() - start_time))))
+    logging.debug(
+        "Tornado: Event %s for %s users took %sms",
+        event['type'], len(users), int(1000 * (time.time() - start_time)),
+    )
 
 def get_wrapped_process_notification(queue_name: str) -> Callable[[Dict[str, Any]], None]:
     def failure_processor(notice: Dict[str, Any]) -> None:
         logging.error(
-            "Maximum retries exceeded for Tornado notice:%s\nStack trace:\n%s\n" % (
-                notice, traceback.format_exc()))
+            "Maximum retries exceeded for Tornado notice:%s\nStack trace:\n%s\n",
+            notice, traceback.format_exc())
 
     def wrapped_process_notification(notice: Dict[str, Any]) -> None:
         try:

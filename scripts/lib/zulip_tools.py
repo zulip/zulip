@@ -210,7 +210,7 @@ def log_management_command(cmd: str, log_path: str) -> None:
     logger.addHandler(file_handler)
     logger.setLevel(logging.INFO)
 
-    logger.info("Ran '%s'" % (cmd,))
+    logger.info("Ran '%s'", cmd)
 
 def get_environment() -> str:
     if os.path.exists(DEPLOYMENTS_DIR):

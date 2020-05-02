@@ -49,3 +49,29 @@ rules:
       - path-not: 'zerver/migrations/0209_user_profile_no_empty_password.py'
       - path-not: 'zerver/migrations/0260_missed_message_addresses_from_redis_to_db.py'
       - path-not: 'pgroonga/migrations/0002_html_escape_subject.py'
+
+  - id: logging-format
+    languages: [python]
+    pattern-either:
+      - pattern: logging.debug(... % ...)
+      - pattern: logging.debug(... .format(...))
+      - pattern: logger.debug(... % ...)
+      - pattern: logger.debug(... .format(...))
+      - pattern: logging.info(... % ...)
+      - pattern: logging.info(... .format(...))
+      - pattern: logger.info(... % ...)
+      - pattern: logger.info(... .format(...))
+      - pattern: logging.warning(... % ...)
+      - pattern: logging.warning(... .format(...))
+      - pattern: logger.warning(... % ...)
+      - pattern: logger.warning(... .format(...))
+      - pattern: logging.error(... % ...)
+      - pattern: logging.error(... .format(...))
+      - pattern: logger.error(... % ...)
+      - pattern: logger.error(... .format(...))
+      - pattern: logging.critical(... % ...)
+      - pattern: logging.critical(... .format(...))
+      - pattern: logger.critical(... % ...)
+      - pattern: logger.critical(... .format(...))
+    severity: ERROR
+    message: "Pass format arguments to logging (https://docs.python.org/3/howto/logging.html#optimization)"

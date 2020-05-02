@@ -720,15 +720,17 @@ class HandlePushNotificationTest(PushNotificationTest):
                     self.user_profile.id, token)
             for _, _, token in gcm_devices:
                 mock_info.assert_any_call(
-                    "GCM: Sent %s as %s" % (token, message.id))
+                    "GCM: Sent %s as %s", token, message.id,
+                )
 
             # Now test the unregistered case
             mock_apns.get_notification_result.return_value = ('Unregistered', 1234567)
             handle_push_notification(self.user_profile.id, missed_message)
             for _, _, token in apns_devices:
                 mock_info.assert_any_call(
-                    "APNs: Removing invalid/expired token %s (%s)" %
-                    (token, "Unregistered"))
+                    "APNs: Removing invalid/expired token %s (%s)",
+                    token, "Unregistered",
+                )
             self.assertEqual(RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS).count(), 0)
 
     def test_connection_error(self) -> None:
@@ -978,9 +980,10 @@ class HandlePushNotificationTest(PushNotificationTest):
         with mock.patch('zerver.lib.push_notifications.logger.error') as mock_logger, \
                 mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value = True) as mock_push_notifications:
             handle_push_notification(self.user_profile.id, missed_message)
-            mock_logger.assert_called_with("Could not find UserMessage with "
-                                           "message_id %s and user_id %s" %
-                                           (message_id, self.user_profile.id,))
+            mock_logger.assert_called_with(
+                "Could not find UserMessage with message_id %s and user_id %s",
+                message_id, self.user_profile.id,
+            )
             mock_push_notifications.assert_called_once()
 
     def test_user_message_soft_deactivated(self) -> None:
@@ -1659,8 +1662,8 @@ class GCMSendTest(PushNotificationTest):
         data = self.get_gcm_data()
         send_android_push_notification_to_user(self.user_profile, data, {})
         self.assertEqual(mock_info.call_count, 2)
-        c1 = call("GCM: Sent 1111 as 0")
-        c2 = call("GCM: Sent 2222 as 1")
+        c1 = call("GCM: Sent %s as %s", "1111", 0)
+        c2 = call("GCM: Sent %s as %s", "2222", 1)
         mock_info.assert_has_calls([c1, c2], any_order=True)
         mock_warning.assert_not_called()
 
@@ -1672,8 +1675,9 @@ class GCMSendTest(PushNotificationTest):
 
         data = self.get_gcm_data()
         send_android_push_notification_to_user(self.user_profile, data, {})
-        mock_warning.assert_called_once_with("GCM: Got canonical ref but it "
-                                             "already matches our ID 1!")
+        mock_warning.assert_called_once_with(
+            "GCM: Got canonical ref but it already matches our ID %s!", 1,
+        )
 
     @mock.patch('zerver.lib.push_notifications.logger.warning')
     def test_canonical_pushdevice_not_present(self, mock_warning: mock.MagicMock,
@@ -1697,7 +1701,7 @@ class GCMSendTest(PushNotificationTest):
         msg = ("GCM: Got canonical ref %s "
                "replacing %s but new ID not "
                "registered! Updating.")
-        mock_warning.assert_called_once_with(msg % (t2, t1))
+        mock_warning.assert_called_once_with(msg, t2, t1)
 
         self.assertEqual(get_count('1111'), 0)
         self.assertEqual(get_count('3333'), 1)
@@ -1722,7 +1726,8 @@ class GCMSendTest(PushNotificationTest):
         data = self.get_gcm_data()
         send_android_push_notification_to_user(self.user_profile, data, {})
         mock_info.assert_called_once_with(
-            "GCM: Got canonical ref %s, dropping %s" % (new_token, old_token))
+            "GCM: Got canonical ref %s, dropping %s", new_token, old_token,
+        )
 
         self.assertEqual(get_count('1111'), 0)
         self.assertEqual(get_count('2222'), 1)
@@ -1743,7 +1748,7 @@ class GCMSendTest(PushNotificationTest):
 
         data = self.get_gcm_data()
         send_android_push_notification_to_user(self.user_profile, data, {})
-        mock_info.assert_called_once_with("GCM: Removing %s" % (token,))
+        mock_info.assert_called_once_with("GCM: Removing %s", token)
         self.assertEqual(get_count('1111'), 0)
 
     @mock.patch('zerver.lib.push_notifications.logger.warning')
@@ -1755,7 +1760,7 @@ class GCMSendTest(PushNotificationTest):
 
         data = self.get_gcm_data()
         send_android_push_notification_to_user(self.user_profile, data, {})
-        c1 = call("GCM: Delivery to %s failed: Failed" % (token,))
+        c1 = call("GCM: Delivery to %s failed: %s", token, "Failed")
         mock_warn.assert_has_calls([c1], any_order=True)
 
 class TestClearOnRead(ZulipTestCase):

@@ -556,8 +556,10 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
 
         with mock.patch('zerver.lib.email_mirror.logger.warning') as mock_warn:
             process_message(incoming_valid_message)
-            mock_warn.assert_called_with("Payload is not bytes (invalid attachment %s in message from %s)." %
-                                         ('some_attachment', self.example_email('hamlet')))
+            mock_warn.assert_called_with(
+                "Payload is not bytes (invalid attachment %s in message from %s).",
+                'some_attachment', self.example_email('hamlet'),
+            )
 
     def test_receive_plaintext_and_html_prefer_text_html_options(self) -> None:
         user_profile = self.example_user('hamlet')

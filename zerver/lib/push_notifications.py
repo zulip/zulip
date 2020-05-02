@@ -164,7 +164,7 @@ def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
             logger.info("APNs: Success sending for user %d to device %s",
                         user_id, device.token)
         elif result in ["Unregistered", "BadDeviceToken", "DeviceTokenNotForTopic"]:
-            logger.info("APNs: Removing invalid/expired token %s (%s)" % (device.token, result))
+            logger.info("APNs: Removing invalid/expired token %s (%s)", device.token, result)
             # We remove all entries for this token (There
             # could be multiple for different Zulip servers).
             DeviceTokenClass.objects.filter(token=device.token, kind=DeviceTokenClass.APNS).delete()
@@ -280,7 +280,7 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
 
     if res and 'success' in res:
         for reg_id, msg_id in res['success'].items():
-            logger.info("GCM: Sent %s as %s" % (reg_id, msg_id))
+            logger.info("GCM: Sent %s as %s", reg_id, msg_id)
 
     if remote:
         DeviceTokenClass = RemotePushDeviceToken
@@ -294,7 +294,7 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
         for reg_id, new_reg_id in res['canonical'].items():
             if reg_id == new_reg_id:
                 # I'm not sure if this should happen. In any case, not really actionable.
-                logger.warning("GCM: Got canonical ref but it already matches our ID %s!" % (reg_id,))
+                logger.warning("GCM: Got canonical ref but it already matches our ID %s!", reg_id)
             elif not DeviceTokenClass.objects.filter(token=new_reg_id,
                                                      kind=DeviceTokenClass.GCM).count():
                 # This case shouldn't happen; any time we get a canonical ref it should have been
@@ -302,13 +302,13 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
                 #
                 # That said, recovery is easy: just update the current PDT object to use the new ID.
                 logger.warning(
-                    "GCM: Got canonical ref %s replacing %s but new ID not registered! Updating." %
-                    (new_reg_id, reg_id))
+                    "GCM: Got canonical ref %s replacing %s but new ID not registered! Updating.",
+                    new_reg_id, reg_id)
                 DeviceTokenClass.objects.filter(
                     token=reg_id, kind=DeviceTokenClass.GCM).update(token=new_reg_id)
             else:
                 # Since we know the new ID is registered in our system we can just drop the old one.
-                logger.info("GCM: Got canonical ref %s, dropping %s" % (new_reg_id, reg_id))
+                logger.info("GCM: Got canonical ref %s, dropping %s", new_reg_id, reg_id)
 
                 DeviceTokenClass.objects.filter(token=reg_id, kind=DeviceTokenClass.GCM).delete()
 
@@ -316,13 +316,13 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
         for error, reg_ids in res['errors'].items():
             if error in ['NotRegistered', 'InvalidRegistration']:
                 for reg_id in reg_ids:
-                    logger.info("GCM: Removing %s" % (reg_id,))
+                    logger.info("GCM: Removing %s", reg_id)
                     # We remove all entries for this token (There
                     # could be multiple for different Zulip servers).
                     DeviceTokenClass.objects.filter(token=reg_id, kind=DeviceTokenClass.GCM).delete()
             else:
                 for reg_id in reg_ids:
-                    logger.warning("GCM: Delivery to %s failed: %s" % (reg_id, error))
+                    logger.warning("GCM: Delivery to %s failed: %s", reg_id, error)
 
     # python-gcm handles retrying of the unsent messages.
     # Ref: https://github.com/geeknam/python-gcm/blob/master/gcm/gcm.py#L497
@@ -707,8 +707,10 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
             # If the cause is a race with the message being deleted,
             # that's normal and we have no need to log an error.
             return
-        logging.error("Unexpected message access failure handling push notifications: %s %s" % (
-            user_profile.id, missed_message['message_id']))
+        logging.error(
+            "Unexpected message access failure handling push notifications: %s %s",
+            user_profile.id, missed_message['message_id'],
+        )
         return
 
     if user_message is not None:
@@ -730,15 +732,17 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         # queue for messages they haven't received if they're
         # long-term idle; anything else is likely a bug.
         if not user_profile.long_term_idle:
-            logger.error("Could not find UserMessage with message_id %s and user_id %s" % (
-                missed_message['message_id'], user_profile_id))
+            logger.error(
+                "Could not find UserMessage with message_id %s and user_id %s",
+                missed_message['message_id'], user_profile_id,
+            )
             return
 
     message.trigger = missed_message['trigger']
 
     apns_payload = get_message_payload_apns(user_profile, message)
     gcm_payload, gcm_options = get_message_payload_gcm(user_profile, message)
-    logger.info("Sending push notifications to mobile clients for user %s" % (user_profile_id,))
+    logger.info("Sending push notifications to mobile clients for user %s", user_profile_id)
 
     if uses_notification_bouncer():
         send_notifications_to_bouncer(user_profile_id,

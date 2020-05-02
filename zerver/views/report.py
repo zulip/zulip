@@ -163,14 +163,15 @@ def report_csp_violations(request: HttpRequest,
                     "Blocked URI('%s'), Original Policy('%s'), "
                     "Violated Directive('%s'), Effective Directive('%s'), "
                     "Disposition('%s'), Referrer('%s'), "
-                    "Status Code('%s'), Script Sample('%s')" % (get_attr('document-uri'),
-                                                                get_attr('blocked-uri'),
-                                                                get_attr('original-policy'),
-                                                                get_attr('violated-directive'),
-                                                                get_attr('effective-directive'),
-                                                                get_attr('disposition'),
-                                                                get_attr('referrer'),
-                                                                get_attr('status-code'),
-                                                                get_attr('script-sample')))
+                    "Status Code('%s'), Script Sample('%s')",
+                    get_attr('document-uri'),
+                    get_attr('blocked-uri'),
+                    get_attr('original-policy'),
+                    get_attr('violated-directive'),
+                    get_attr('effective-directive'),
+                    get_attr('disposition'),
+                    get_attr('referrer'),
+                    get_attr('status-code'),
+                    get_attr('script-sample'))
 
     return json_success()

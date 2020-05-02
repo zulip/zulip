@@ -70,14 +70,14 @@ def untar_input_file(tar_file: str) -> str:
     data_dir = os.path.abspath(data_dir)
 
     if os.path.exists(data_dir):
-        logging.info('input data was already untarred to %s, we will use it' % (data_dir,))
+        logging.info('input data was already untarred to %s, we will use it', data_dir)
         return data_dir
 
     os.makedirs(data_dir)
 
     subprocess.check_call(['tar', '-xf', tar_file, '-C', data_dir])
 
-    logging.info('input data was untarred to %s' % (data_dir,))
+    logging.info('input data was untarred to %s', data_dir)
 
     return data_dir
 
@@ -696,7 +696,7 @@ def process_raw_message_batch(realm_id: int,
         content = h.handle(content)
 
         if len(content) > 10000:
-            logging.info('skipping too-long message of length %s' % (len(content),))
+            logging.info('skipping too-long message of length %s', len(content))
             continue
 
         date_sent = raw_message['date_sent']

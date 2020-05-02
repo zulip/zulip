@@ -138,9 +138,11 @@ class AdminNotifyHandler(logging.Handler):
 
         if settings.DEBUG_ERROR_REPORTING:  # nocoverage
             logging.warning("Reporting an error to admins...")
-            logging.warning("Reporting an error to admins: {} {} {} {} {}" .format(
+            logging.warning(
+                "Reporting an error to admins: %s %s %s %s %s",
                 record.levelname, report['logger_name'], report['log_module'],
-                report['message'], report['stack_trace']))
+                report['message'], report['stack_trace'],
+            )
 
         try:
             if settings.STAGING_ERROR_NOTIFICATIONS:

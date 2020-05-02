@@ -133,6 +133,6 @@ def fill_remote_cache(cache: str) -> None:
             cache_set_many(items_for_remote_cache, timeout=3600*24)
             items_for_remote_cache = {}
     cache_set_many(items_for_remote_cache, timeout=3600*24*7)
-    logging.info("Successfully populated %s cache!  Consumed %s remote cache queries (%s time)" %
-                 (cache, get_remote_cache_requests() - remote_cache_requests_start,
-                  round(get_remote_cache_time() - remote_cache_time_start, 2)))
+    logging.info("Successfully populated %s cache!  Consumed %s remote cache queries (%s time)",
+                 cache, get_remote_cache_requests() - remote_cache_requests_start,
+                 round(get_remote_cache_time() - remote_cache_time_start, 2))
