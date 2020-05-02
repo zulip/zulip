@@ -66,14 +66,14 @@ class AlertWordTests(ZulipTestCase):
         self.assert_length(realm_alert_words[user.id], 3)
 
         # Test the case-insensitivity of adding words
-        do_add_alert_words(user, set(["ALert", "ALERT"]))
+        do_add_alert_words(user, {"ALert", "ALERT"})
         words = user_alert_words(user)
         self.assertEqual(set(words), set(self.interesting_alert_word_list))
         realm_alert_words = alert_words_in_realm(user.realm)
         self.assert_length(realm_alert_words[user.id], 3)
 
         # Test the case-insensitivity of removing words
-        do_remove_alert_words(user, set(["ALert"]))
+        do_remove_alert_words(user, {"ALert"})
         words = user_alert_words(user)
         self.assertEqual(set(words), set(self.interesting_alert_word_list) - {'alert'})
         realm_alert_words = alert_words_in_realm(user.realm)
