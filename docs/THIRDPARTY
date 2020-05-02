@@ -75,7 +75,7 @@ Comment: From https://freesound.org/s/411089/.
 
 Files: static/audio/notification_sounds/zulip.*
 Copyright: 2011 Vidsyn
-License: CC-0-1.0
+License: CC0-1.0
 
 Files: static/third/bootstrap/css/bootstrap-btn.css
 Copyright: 2011-2014 Twitter, Inc
@@ -198,7 +198,7 @@ License: BSD-3-Clause
  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-License: CC-0-1.0
+License: CC0-1.0
  Creative Commons CC0 1.0 Universal
  CREATIVE COMMONS CORPORATION IS NOT A LAW FIRM AND DOES NOT PROVIDE
  LEGAL SERVICES. DISTRIBUTION OF THIS DOCUMENT DOES NOT CREATE AN
