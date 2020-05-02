@@ -367,7 +367,6 @@ ldap_logger = logging.getLogger("zulip.ldap")
 class ZulipLDAPException(_LDAPUser.AuthenticationFailed):
     """Since this inherits from _LDAPUser.AuthenticationFailed, these will
     be caught and logged at debug level inside django-auth-ldap's authenticate()"""
-    pass
 
 class ZulipLDAPExceptionNoMatchingLDAPUser(ZulipLDAPException):
     pass

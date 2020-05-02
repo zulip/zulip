@@ -225,7 +225,6 @@ class FakeMessage:
     We just need a stub object for do_render_markdown
     to write stuff to.
     '''
-    pass
 
 def fix_message_rendered_content(realm: Realm,
                                  sender_map: Dict[int, Record],
@@ -416,7 +415,6 @@ def re_map_foreign_keys_internal(data_table: List[Record],
                 # subscription object
                 # check function 'get_huddles_from_subscription'
                 ID_MAP['recipient_to_huddle_map'][item['id']] = lookup_table[old_id]
-                pass
             else:
                 continue
         old_id = item[field_name]

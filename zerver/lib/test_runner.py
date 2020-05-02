@@ -477,7 +477,6 @@ class Runner(DiscoverRunner):
             shutil.rmtree(TEST_RUN_DIR)
         except OSError:
             print("Unable to clean up the test run's directory.")
-            pass
         return super().teardown_test_environment(*args, **kwargs)
 
     def test_imports(self, test_labels: List[str], suite: Union[TestSuite, ParallelTestSuite]) -> None:
