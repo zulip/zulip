@@ -1,4 +1,4 @@
-Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: Zulip
 Upstream-Contact: Tim Abbott <tabbott@zulipchat.com>
 Source: https://zulipchat.com/
