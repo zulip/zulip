@@ -769,11 +769,10 @@ def maybe_enqueue_notifications(user_profile_id: int, message_id: int, private_m
 
     return notified
 
-ClientInfo = TypedDict('ClientInfo', {
-    'client': ClientDescriptor,
-    'flags': Optional[Iterable[str]],
-    'is_sender': bool,
-})
+class ClientInfo(TypedDict):
+    client: ClientDescriptor
+    flags: Optional[Iterable[str]]
+    is_sender: bool
 
 def get_client_info_for_message_event(event_template: Mapping[str, Any],
                                       users: Iterable[Mapping[str, Any]]) -> Dict[str, ClientInfo]:

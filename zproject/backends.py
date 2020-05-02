@@ -872,13 +872,12 @@ class DevAuthBackend(ZulipAuthMixin):
             return None
         return common_get_active_user(dev_auth_username, realm, return_data=return_data)
 
-ExternalAuthMethodDictT = TypedDict('ExternalAuthMethodDictT', {
-    'name': str,
-    'display_name': str,
-    'display_icon': Optional[str],
-    'login_url': str,
-    'signup_url': str,
-})
+class ExternalAuthMethodDictT(TypedDict):
+    name: str
+    display_name: str
+    display_icon: Optional[str]
+    login_url: str
+    signup_url: str
 
 class ExternalAuthMethod(ABC):
     """
