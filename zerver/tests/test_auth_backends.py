@@ -728,6 +728,32 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                          alternative_start_url: Optional[str]=None,
                          user_agent: Optional[str]=None,
                          **extra_data: Any) -> HttpResponse:
+        """Main entrypoint for all social authentication tests.
+
+        * account_data_dict: Dictionary containing the name/email data
+          that should be returned by the social auth backend.
+        * subdomain: Which organization's login page is being accessed.
+        * desktop_flow_otp / mobile_flow_otp: Token to be used for
+          mobile or desktop authentication flow testing.
+        * is_signup: Whether we're testing the social flow for
+          /register (True) or /login (False).  This is important
+          because we need to verify behavior like the
+          "Continue to registration" if you try to login using an
+          account that doesn't exist but is allowed to signup.
+        * next: Parameter passed through in production authentication
+          to redirect the user to (e.g.) the specific page in the webapp
+          that they clicked a link to before being presented with the login
+          page.
+        * expect_choose_email_screen: Some social auth backends, like
+          GitHub, simultaneously authenticate for multiple email addresses.
+          Set this to True if we expect to show the "Choose Email" screen
+          in this test should the backend have that feature.
+        * multiuse_object_key: Used when the user has clicked a multi-use
+          reusable invitation link.
+        * alternative_start_url: Used to test legacy mobile app behavior.
+        * user_agent: What user-agent to use for the HTTP requests.
+        """
+
         url, headers = self.prepare_login_url_and_headers(
             subdomain, mobile_flow_otp, desktop_flow_otp, is_signup, next,
             multiuse_object_key, alternative_start_url,
