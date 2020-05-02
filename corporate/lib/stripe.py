@@ -153,8 +153,10 @@ def catch_stripe_errors(func: CallableT) -> CallableT:
         # https://stripe.com/docs/error-codes gives a more detailed set of error codes
         except stripe.error.StripeError as e:
             err = e.json_body.get('error', {})
-            billing_logger.error("Stripe error: %s %s %s %s" % (
-                e.http_status, err.get('type'), err.get('code'), err.get('param')))
+            billing_logger.error(
+                "Stripe error: %s %s %s %s",
+                e.http_status, err.get('type'), err.get('code'), err.get('param'),
+            )
             if isinstance(e, stripe.error.CardError):
                 # TODO: Look into i18n for this
                 raise StripeCardError('card error', err.get('message'))
@@ -285,7 +287,8 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
         # at exactly the same time. Doesn't fully resolve the race condition, but having
         # a check here reduces the likelihood.
         billing_logger.warning(
-            "Customer {} trying to upgrade, but has an active subscription".format(customer))
+            "Customer %s trying to upgrade, but has an active subscription", customer,
+        )
         raise BillingError('subscribing with existing subscription', BillingError.TRY_RELOADING)
 
     billing_cycle_anchor, next_invoice_date, period_end, price_per_license = compute_plan_parameters(
@@ -476,8 +479,10 @@ def get_discount_for_realm(realm: Realm) -> Optional[Decimal]:
 def do_change_plan_status(plan: CustomerPlan, status: int) -> None:
     plan.status = status
     plan.save(update_fields=['status'])
-    billing_logger.info('Change plan status: Customer.id: %s, CustomerPlan.id: %s, status: %s' % (
-        plan.customer.id, plan.id, status))
+    billing_logger.info(
+        'Change plan status: Customer.id: %s, CustomerPlan.id: %s, status: %s',
+        plan.customer.id, plan.id, status,
+    )
 
 def process_downgrade(plan: CustomerPlan) -> None:
     from zerver.lib.actions import do_change_plan_type
