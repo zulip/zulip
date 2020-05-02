@@ -211,7 +211,7 @@ def try_to_copy_venv(venv_path: str, new_packages: Set[str]) -> bool:
         except subprocess.CalledProcessError:
             # Virtualenv-clone is either not installed or threw an
             # error.  Just return False: making a new venv is safe.
-            logging.warning("Error cloning virtualenv %s" % (source_venv_path,))
+            logging.warning("Error cloning virtualenv %s", source_venv_path)
             return False
 
         # virtualenv-clone, unfortunately, copies the success stamp,

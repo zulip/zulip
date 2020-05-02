@@ -25,7 +25,7 @@ def transfer_avatars_to_s3(processes: int) -> None:
         try:
             with open(file_path, 'rb') as f:
                 s3backend.upload_avatar_image(f, user, user)
-                logging.info("Uploaded avatar for {} in realm {}".format(user.id, user.realm.name))
+                logging.info("Uploaded avatar for %s in realm %s", user.id, user.realm.name)
         except FileNotFoundError:
             pass
         return 0
@@ -48,7 +48,7 @@ def transfer_message_files_to_s3(processes: int) -> None:
                 bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
                 guessed_type = guess_type(attachment.file_name)[0]
                 upload_image_to_s3(bucket_name, attachment.path_id, guessed_type, attachment.owner, f.read())
-                logging.info("Uploaded message file in path {}".format(file_path))
+                logging.info("Uploaded message file in path %s", file_path)
         except FileNotFoundError:  # nocoverage
             pass
         return 0
@@ -75,7 +75,7 @@ def transfer_emoji_to_s3(processes: int) -> None:
         try:
             with open(emoji_path, 'rb') as f:
                 s3backend.upload_emoji_image(f, realm_emoji.file_name, realm_emoji.author)
-                logging.info("Uploaded emoji file in path {}".format(emoji_path))
+                logging.info("Uploaded emoji file in path %s", emoji_path)
         except FileNotFoundError:  # nocoverage
             pass
         return 0

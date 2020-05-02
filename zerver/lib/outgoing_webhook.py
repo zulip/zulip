@@ -244,8 +244,10 @@ def request_retry(event: Dict[str, Any],
         bot_user = get_user_profile_by_id(event['user_profile_id'])
         fail_with_message(event, "Bot is unavailable")
         notify_bot_owner(event, request_data, failure_message=failure_message)
-        logging.warning("Maximum retries exceeded for trigger:%s event:%s" % (
-            bot_user.email, event['command']))
+        logging.warning(
+            "Maximum retries exceeded for trigger:%s event:%s",
+            bot_user.email, event['command'],
+        )
 
     retry_event('outgoing_webhooks', event, failure_processor)
 
@@ -288,23 +290,25 @@ def do_rest_call(base_url: str,
         else:
             logging.warning("Message %(message_url)s triggered an outgoing webhook, returning status "
                             "code %(status_code)s.\n Content of response (in quotes): \""
-                            "%(response)s\""
-                            % {'message_url': get_message_url(event),
-                               'status_code': response.status_code,
-                               'response': response.content})
+                            "%(response)s\"",
+                            {'message_url': get_message_url(event),
+                             'status_code': response.status_code,
+                             'response': response.content})
             failure_message = "Third party responded with %d" % (response.status_code,)
             fail_with_message(event, failure_message)
             notify_bot_owner(event, request_data, response.status_code, response.content)
 
     except requests.exceptions.Timeout:
-        logging.info("Trigger event %s on %s timed out. Retrying" % (
-            event["command"], event['service_name']))
+        logging.info(
+            "Trigger event %s on %s timed out. Retrying",
+            event["command"], event['service_name'],
+        )
         failure_message = "A timeout occurred."
         request_retry(event, request_data, failure_message=failure_message)
 
     except requests.exceptions.ConnectionError:
-        logging.info("Trigger event %s on %s resulted in a connection error. Retrying"
-                     % (event["command"], event['service_name']))
+        logging.info("Trigger event %s on %s resulted in a connection error. Retrying",
+                     event["command"], event['service_name'])
         failure_message = "A connection error occurred. Is my bot server down?"
         request_retry(event, request_data, failure_message=failure_message)
 

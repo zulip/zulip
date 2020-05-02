@@ -226,7 +226,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         latest_read = get_usermessage_by_message_id(user_profile, user_profile.pointer)
         if latest_read is None:
             # Don't completely fail if your saved pointer ID is invalid
-            logging.warning("User %s has invalid pointer %s" % (user_profile.id, user_profile.pointer))
+            logging.warning("User %s has invalid pointer %s", user_profile.id, user_profile.pointer)
         furthest_read_time = sent_time_in_epoch_seconds(latest_read)
 
     # We pick a language for the user as follows:

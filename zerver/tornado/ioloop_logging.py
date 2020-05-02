@@ -68,8 +68,8 @@ class InstrumentedPoll:
             if total > 0:
                 percent_busy = 100 * (1 - in_poll / total)
                 if settings.PRODUCTION:
-                    logging.info('Tornado %s %5.1f%% busy over the past %4.1f seconds'
-                                 % (logging_data.get('port', 'unknown'), percent_busy, total))
+                    logging.info('Tornado %s %5.1f%% busy over the past %4.1f seconds',
+                                 logging_data.get('port', 'unknown'), percent_busy, total)
                     self._last_print = t1
 
         return result

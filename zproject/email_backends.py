@@ -94,5 +94,5 @@ class EmailLogBackEnd(BaseEmailBackend):
             if settings.DEVELOPMENT_LOG_EMAILS:
                 self.log_email(email)
                 email_log_url = settings.ROOT_DOMAIN_URI + "/emails"
-                logging.info("Emails sent in development are available at %s" % (email_log_url,))
+                logging.info("Emails sent in development are available at %s", email_log_url)
         return len(email_messages)

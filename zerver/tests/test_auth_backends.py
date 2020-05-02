@@ -1554,13 +1554,13 @@ class SAMLAuthBackendTest(SocialAuthBase):
             result = self.client_get('/login/saml/')
             self.assertEqual(result.status_code, 302)
             self.assertEqual('/login/', result.url)
-            m.assert_called_with("/login/saml/ : Bad idp param: KeyError: 'idp'.")
+            m.assert_called_with("/login/saml/ : Bad idp param: KeyError: %s.", "'idp'")
 
         with mock.patch('zproject.backends.logging.info') as m:
             result = self.client_get('/login/saml/?idp=bad_idp')
             self.assertEqual(result.status_code, 302)
             self.assertEqual('/login/', result.url)
-            m.assert_called_with("/login/saml/ : Bad idp param: KeyError: 'bad_idp'.")
+            m.assert_called_with("/login/saml/ : Bad idp param: KeyError: %s.", "'bad_idp'")
 
     def test_social_auth_invalid_email(self) -> None:
         """
@@ -1635,7 +1635,8 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual('/login/', result.url)
         m.assert_called_with(
-            "User authenticated with IdP test_idp but this provider is not enabled for this realm zephyr."
+            "User authenticated with IdP %s but this provider is not enabled for this realm %s.",
+            "test_idp", "zephyr",
         )
 
     def test_social_auth_saml_login_bad_idp_arg(self) -> None:
@@ -1739,8 +1740,10 @@ class GitHubAuthBackendTest(SocialAuthBase):
                                            email_data=email_data)
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "/login/")
-            mock_warning.assert_called_once_with("Social auth (GitHub) failed "
-                                                 "because user has no verified emails")
+            mock_warning.assert_called_once_with(
+                "Social auth (%s) failed because user has no verified emails",
+                "GitHub",
+            )
 
     @override_settings(SOCIAL_AUTH_GITHUB_TEAM_ID='zulip-webapp')
     def test_social_auth_github_team_not_member_failed(self) -> None:
@@ -2016,8 +2019,11 @@ class GitHubAuthBackendTest(SocialAuthBase):
                                            email_data=email_data)
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "/login/")
-            mock_warning.assert_called_once_with("Social auth (GitHub) failed because user has no verified"
-                                                 " emails associated with the account")
+            mock_warning.assert_called_once_with(
+                "Social auth (%s) failed because user has no verified"
+                " emails associated with the account",
+                "GitHub",
+            )
 
     def test_github_oauth2_email_not_associated(self) -> None:
         account_data_dict = dict(email='not-associated@zulip.com', name=self.name)
@@ -2037,8 +2043,11 @@ class GitHubAuthBackendTest(SocialAuthBase):
                                            email_data=email_data)
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "/login/")
-            mock_warning.assert_called_once_with("Social auth (GitHub) failed because user has no verified"
-                                                 " emails associated with the account")
+            mock_warning.assert_called_once_with(
+                "Social auth (%s) failed because user has no verified"
+                " emails associated with the account",
+                "GitHub",
+            )
 
 class GitLabAuthBackendTest(SocialAuthBase):
     __unittest_skip__ = False
@@ -2085,8 +2094,10 @@ class GoogleAuthBackendTest(SocialAuthBase):
                                            subdomain='zulip')
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "/login/")
-            mock_warning.assert_called_once_with("Social auth (Google) failed "
-                                                 "because user has no verified emails")
+            mock_warning.assert_called_once_with(
+                "Social auth (%s) failed because user has no verified emails",
+                "Google",
+            )
 
     def test_social_auth_mobile_success_legacy_url(self) -> None:
         mobile_flow_otp = '1234abcd' * 8
@@ -2171,7 +2182,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
                 'redirect_to': ''}  # type: ExternalAuthDataDict
         with mock.patch("logging.warning") as mock_warn:
             result = self.get_log_into_subdomain(data, force_token='nonsense')
-            mock_warn.assert_called_once_with("log_into_subdomain: Malformed token given: nonsense")
+            mock_warn.assert_called_once_with("log_into_subdomain: Malformed token given: %s", "nonsense")
         self.assertEqual(result.status_code, 400)
 
     def test_log_into_subdomain_when_token_not_found(self) -> None:
@@ -2183,7 +2194,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         with mock.patch("logging.warning") as mock_warn:
             token = generate_random_token(ExternalAuthResult.LOGIN_TOKEN_LENGTH)
             result = self.get_log_into_subdomain(data, force_token=token)
-            mock_warn.assert_called_once_with("log_into_subdomain: Invalid token given: %s" % (token,))
+            mock_warn.assert_called_once_with("log_into_subdomain: Invalid token given: %s", token)
         self.assertEqual(result.status_code, 400)
         self.assert_in_response("Invalid or expired login session.", result)
 
@@ -3188,7 +3199,7 @@ class DjangoToLDAPUsernameTests(ZulipTestCase):
         with mock.patch("zproject.backends.logging.warning") as mock_warn:
             with self.assertRaises(ZulipLDAPExceptionNoMatchingLDAPUser):
                 self.backend.django_to_ldap_username("shared_email@zulip.com")
-            mock_warn.assert_called_with("Multiple users with email shared_email@zulip.com found in LDAP.")
+            mock_warn.assert_called_with("Multiple users with email %s found in LDAP.", "shared_email@zulip.com")
 
         # Test on a weird case of a user whose uid is an email and his actual "mail"
         # attribute is a different email address:
@@ -3740,7 +3751,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             mock_logger = mock.MagicMock()
             result = sync_user_from_ldap(othello, mock_logger)
             mock_logger.warning.assert_called_once_with(
-                "Did not find %s in LDAP." % (othello.delivery_email,))
+                "Did not find %s in LDAP.", othello.delivery_email)
             self.assertFalse(result)
 
             do_deactivate_user(othello)
@@ -3810,7 +3821,8 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             with mock.patch('logging.warning') as mock_warning:
                 self.perform_ldap_sync(self.example_user('hamlet'))
                 mock_warning.assert_called_once_with(
-                    'Could not parse jpegPhoto field for user %s' % (hamlet.id,))
+                    'Could not parse %s field for user %s', 'jpegPhoto', hamlet.id,
+                )
 
     def test_deactivate_non_matching_users(self) -> None:
         with self.settings(LDAP_APPEND_DOMAIN='zulip.com',

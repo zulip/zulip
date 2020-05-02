@@ -205,7 +205,7 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
         if not user.get('is_primary_owner', False):
             user_id_count += 1
 
-        logging.info("{} -> {}".format(user['name'], userprofile_dict['email']))
+        logging.info("%s -> %s", user['name'], userprofile_dict['email'])
 
     process_customprofilefields(zerver_customprofilefield, zerver_customprofilefield_values)
     logging.info('######### IMPORTING USERS FINISHED #########\n')
@@ -397,7 +397,7 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int,
 
             stream_id_count += 1
             recipient_id_count += 1
-            logging.info("{} -> created".format(channel['name']))
+            logging.info("%s -> created", channel['name'])
 
             # TODO map Slack's pins to Zulip's stars
             # There is the security model that Slack's pins are known to the team owner
@@ -443,7 +443,7 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int,
 
             huddle_id_count += 1
             recipient_id_count += 1
-            logging.info("{} -> created".format(mpim['name']))
+            logging.info("%s -> created", mpim['name'])
 
     try:
         mpims = get_data_file(slack_data_dir + '/mpims.json')
@@ -595,7 +595,7 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
             zerver_usermessage=zerver_usermessage)
 
         message_file = "/messages-%06d.json" % (dump_file_id,)
-        logging.info("Writing Messages to %s\n" % (output_dir + message_file,))
+        logging.info("Writing Messages to %s\n", output_dir + message_file)
         create_converted_data_files(message_json, output_dir, message_file)
 
         total_reactions += reactions
@@ -796,8 +796,10 @@ def channel_message_to_zerver_message(realm_id: int,
             total_user_messages += num_created
             total_skipped_user_messages += num_skipped
 
-    logging.debug("Created %s UserMessages; deferred %s due to long-term idle" % (
-        total_user_messages, total_skipped_user_messages))
+    logging.debug(
+        "Created %s UserMessages; deferred %s due to long-term idle",
+        total_user_messages, total_skipped_user_messages,
+    )
     return zerver_message, zerver_usermessage, zerver_attachment, uploads_list, \
         reaction_list
 
@@ -1091,7 +1093,7 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
     subprocess.check_call(["tar", "-czf", output_dir + '.tar.gz', output_dir, '-P'])
 
     logging.info('######### DATA CONVERSION FINISHED #########\n')
-    logging.info("Zulip data dump created at %s" % (output_dir,))
+    logging.info("Zulip data dump created at %s", output_dir)
 
 def get_data_file(path: str) -> Any:
     with open(path) as fp:

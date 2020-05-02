@@ -357,7 +357,7 @@ class S3UploadBackend(ZulipUploadBackend):
             return True
 
         file_name = path_id.split("/")[-1]
-        logging.warning("%s does not exist. Its entry in the database will be removed." % (file_name,))
+        logging.warning("%s does not exist. Its entry in the database will be removed.", file_name)
         return False
 
     def upload_message_file(self, uploaded_file_name: str, uploaded_file_size: int,
@@ -655,7 +655,7 @@ def delete_local_file(type: str, path: str) -> bool:
         os.remove(file_path)
         return True
     file_name = path.split("/")[-1]
-    logging.warning("%s does not exist. Its entry in the database will be removed." % (file_name,))
+    logging.warning("%s does not exist. Its entry in the database will be removed.", file_name)
     return False
 
 def get_local_file_path(path_id: str) -> Optional[str]:

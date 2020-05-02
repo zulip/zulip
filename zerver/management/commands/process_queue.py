@@ -57,7 +57,7 @@ class Command(BaseCommand):
                 td = Threaded_worker(queue_name)
                 td.start()
             assert len(queues) == cnt
-            logger.info('%d queue worker threads were launched' % (cnt,))
+            logger.info('%d queue worker threads were launched', cnt)
 
         if options['all']:
             signal.signal(signal.SIGUSR1, exit_with_three)
@@ -70,12 +70,12 @@ class Command(BaseCommand):
             queue_name = options['queue_name']
             worker_num = options['worker_num']
 
-            logger.info("Worker %d connecting to queue %s" % (worker_num, queue_name))
+            logger.info("Worker %d connecting to queue %s", worker_num, queue_name)
             worker = get_worker(queue_name)
             worker.setup()
 
             def signal_handler(signal: int, frame: FrameType) -> None:
-                logger.info("Worker %d disconnecting from queue %s" % (worker_num, queue_name))
+                logger.info("Worker %d disconnecting from queue %s", worker_num, queue_name)
                 worker.stop()
                 sys.exit(0)
             signal.signal(signal.SIGTERM, signal_handler)

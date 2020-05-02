@@ -258,7 +258,7 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
             logging.warning("User from realm %s attempted to access /stats, but the computed "
                             "start time: %s (creation of realm or installation) is later than the computed "
                             "end time: %s (last successful analytics update). Is the "
-                            "analytics cron job running?" % (realm.string_id, start, end))
+                            "analytics cron job running?", realm.string_id, start, end)
             raise JsonableError(_("No analytics data available. Please contact your server administrator."))
 
     assert len({stat.frequency for stat in stats}) == 1

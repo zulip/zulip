@@ -200,7 +200,7 @@ def extract_body(message: message.Message, include_quotes: bool=False, prefer_te
     html_content = extract_html_body(message, include_quotes)
 
     if plaintext_content is None and html_content is None:
-        logging.warning("Content types: %s" % ([part.get_content_type() for part in message.walk()],))
+        logging.warning("Content types: %s", [part.get_content_type() for part in message.walk()])
         raise ZulipEmailForwardUserError("Unable to find plaintext or HTML message body")
     if not plaintext_content and not html_content:
         raise ZulipEmailForwardUserError("Email has no nonempty body sections; ignoring.")
@@ -282,8 +282,8 @@ def extract_and_upload_attachments(message: message.Message, realm: Realm) -> st
                 formatted_link = "[%s](%s)" % (filename, s3_url)
                 attachment_links.append(formatted_link)
             else:
-                logger.warning("Payload is not bytes (invalid attachment %s in message from %s)." %
-                               (filename, message.get("From")))
+                logger.warning("Payload is not bytes (invalid attachment %s in message from %s).",
+                               filename, message.get("From"))
 
     return '\n'.join(attachment_links)
 
@@ -343,8 +343,10 @@ def process_stream_message(to: str, message: message.Message) -> None:
     send_zulip(
         get_system_bot(settings.EMAIL_GATEWAY_BOT),
         stream, subject, body)
-    logger.info("Successfully processed email to %s (%s)" % (
-        stream.name, stream.realm.string_id))
+    logger.info(
+        "Successfully processed email to %s (%s)",
+        stream.name, stream.realm.string_id,
+    )
 
 def process_missed_message(to: str, message: message.Message) -> None:
     mm_address = get_usable_missed_message_address(to)
@@ -389,8 +391,10 @@ def process_missed_message(to: str, message: message.Message) -> None:
     else:
         raise AssertionError("Invalid recipient type!")
 
-    logger.info("Successfully processed email from user %s to %s" % (
-        user_profile.id, recipient_str))
+    logger.info(
+        "Successfully processed email from user %s to %s",
+        user_profile.id, recipient_str,
+    )
 
 def process_message(message: message.Message, rcpt_to: Optional[str]=None) -> None:
     to: Optional[str] = None

@@ -195,7 +195,7 @@ class ExceptionFreeTornadoConnection(pika.adapters.tornado_connection.TornadoCon
                 pika.exceptions.ProbableAccessDeniedError,
                 pika.exceptions.IncompatibleProtocolError) as e:
             logging.warning("Caught exception '%r' in ExceptionFreeTornadoConnection when \
-calling _adapter_disconnect, ignoring" % (e,))
+calling _adapter_disconnect, ignoring", e)
 
 
 class TornadoQueueClient(SimpleQueueClient):

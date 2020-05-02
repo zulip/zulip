@@ -100,7 +100,7 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
             (html_message, message, email_subject) = render_templates()
     else:
         (html_message, message, email_subject) = render_templates()
-        logger.warning("Missing language for email template '{}'".format(template_prefix))
+        logger.warning("Missing language for email template '%s'", template_prefix)
 
     if from_name is None:
         from_name = "Zulip"
@@ -153,10 +153,10 @@ def send_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
                        from_name=from_name, from_address=from_address,
                        reply_to_email=reply_to_email, language=language, context=context)
     template = template_prefix.split("/")[-1]
-    logger.info("Sending %s email to %s" % (template, mail.to))
+    logger.info("Sending %s email to %s", template, mail.to)
 
     if mail.send() == 0:
-        logger.error("Error sending %s email to %s" % (template, mail.to))
+        logger.error("Error sending %s email to %s", template, mail.to)
         raise EmailNotDeliveredException
 
 def send_email_from_dict(email_dict: Mapping[str, Any]) -> None:

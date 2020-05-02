@@ -210,7 +210,7 @@ def do_soft_deactivate_user(user_profile: UserProfile) -> None:
     user_profile.save(update_fields=[
         'long_term_idle',
         'last_active_message_id'])
-    logger.info('Soft Deactivated user %s' % (user_profile.id,))
+    logger.info('Soft Deactivated user %s', user_profile.id)
 
 def do_soft_deactivate_users(users: List[UserProfile]) -> List[UserProfile]:
     BATCH_SIZE = 100
@@ -234,8 +234,8 @@ def do_soft_deactivate_users(users: List[UserProfile]) -> List[UserProfile]:
                 users_soft_deactivated.append(user)
             RealmAuditLog.objects.bulk_create(realm_logs)
 
-        logging.info("Soft-deactivated batch of %s users; %s remain to process" %
-                     (len(user_batch), len(users)))
+        logging.info("Soft-deactivated batch of %s users; %s remain to process",
+                     len(user_batch), len(users))
 
     return users_soft_deactivated
 
@@ -267,7 +267,7 @@ def reactivate_user_if_soft_deactivated(user_profile: UserProfile) -> Union[User
             event_type=RealmAuditLog.USER_SOFT_ACTIVATED,
             event_time=timezone_now()
         )
-        logger.info('Soft Reactivated user %s' % (user_profile.id,))
+        logger.info('Soft Reactivated user %s', user_profile.id)
         return user_profile
     return None
 
@@ -301,7 +301,7 @@ def do_catch_up_soft_deactivated_users(users: List[UserProfile]) -> List[UserPro
         if user_profile.long_term_idle:
             add_missing_messages(user_profile)
             users_caught_up.append(user_profile)
-    logger.info("Caught up %d soft-deactivated users" % (len(users_caught_up),))
+    logger.info("Caught up %d soft-deactivated users", len(users_caught_up))
     return users_caught_up
 
 def get_soft_deactivated_users_for_catch_up(filter_kwargs: Any) -> List[UserProfile]:

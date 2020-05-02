@@ -40,8 +40,8 @@ def interactive_debug_listen() -> None:
 
 def tracemalloc_dump() -> None:
     if not tracemalloc.is_tracing():
-        logger.warning("pid {}: tracemalloc off, nothing to dump"
-                       .format(os.getpid()))
+        logger.warning("pid %s: tracemalloc off, nothing to dump",
+                       os.getpid())
         return
     # Despite our name for it, `timezone_now` always deals in UTC.
     basename = "snap.{}.{}".format(os.getpid(),
@@ -55,15 +55,15 @@ def tracemalloc_dump() -> None:
     with open('/proc/{}/stat'.format(os.getpid()), 'rb') as f:
         procstat = f.read().split()
     rss_pages = int(procstat[23])
-    logger.info("tracemalloc dump: tracing {} MiB ({} MiB peak), using {} MiB; rss {} MiB; dumped {}"
-                .format(tracemalloc.get_traced_memory()[0] // 1048576,
-                        tracemalloc.get_traced_memory()[1] // 1048576,
-                        tracemalloc.get_tracemalloc_memory() // 1048576,
-                        rss_pages // 256,
-                        basename))
+    logger.info("tracemalloc dump: tracing %s MiB (%s MiB peak), using %s MiB; rss %s MiB; dumped %s",
+                tracemalloc.get_traced_memory()[0] // 1048576,
+                tracemalloc.get_traced_memory()[1] // 1048576,
+                tracemalloc.get_tracemalloc_memory() // 1048576,
+                rss_pages // 256,
+                basename)
 
 def tracemalloc_listen_sock(sock: socket.socket) -> None:
-    logger.debug('pid {}: tracemalloc_listen_sock started!'.format(os.getpid()))
+    logger.debug('pid %s: tracemalloc_listen_sock started!', os.getpid())
     while True:
         sock.recv(1)
         tracemalloc_dump()
@@ -75,7 +75,7 @@ def tracemalloc_listen() -> None:
     if listener_pid == os.getpid():
         # Already set up -- and in this process, not just its parent.
         return
-    logger.debug('pid {}: tracemalloc_listen working...'.format(os.getpid()))
+    logger.debug('pid %s: tracemalloc_listen working...', os.getpid())
     listener_pid = os.getpid()
 
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
@@ -84,8 +84,7 @@ def tracemalloc_listen() -> None:
     thread = threading.Thread(target=lambda: tracemalloc_listen_sock(sock),
                               daemon=True)
     thread.start()
-    logger.debug('pid {}: tracemalloc_listen done: {}'.format(
-        os.getpid(), path))
+    logger.debug('pid %s: tracemalloc_listen done: %s', os.getpid(), path)
 
 def maybe_tracemalloc_listen() -> None:
     '''If tracemalloc tracing enabled, listen for requests to dump a snapshot.

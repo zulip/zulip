@@ -72,7 +72,7 @@ def get_language_name(code: str) -> str:
         if code in (lang['code'], lang['locale']):
             return lang['name']
     # Log problem, but still return a name
-    logging.error("Unknown language code '%s'" % (code,))
+    logging.error("Unknown language code '%s'", code)
     return "Unknown"
 
 def get_available_language_codes() -> List[str]:

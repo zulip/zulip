@@ -97,13 +97,13 @@ def process_count_stat(stat: CountStat, fill_to_time: datetime,
         fill_state = FillState.objects.create(property=stat.property,
                                               end_time=currently_filled,
                                               state=FillState.DONE)
-        logger.info("INITIALIZED %s %s" % (stat.property, currently_filled))
+        logger.info("INITIALIZED %s %s", stat.property, currently_filled)
     elif fill_state.state == FillState.STARTED:
-        logger.info("UNDO START %s %s" % (stat.property, fill_state.end_time))
+        logger.info("UNDO START %s %s", stat.property, fill_state.end_time)
         do_delete_counts_at_hour(stat, fill_state.end_time)
         currently_filled = fill_state.end_time - time_increment
         do_update_fill_state(fill_state, currently_filled, FillState.DONE)
-        logger.info("UNDO DONE %s" % (stat.property,))
+        logger.info("UNDO DONE %s", stat.property)
     elif fill_state.state == FillState.DONE:
         currently_filled = fill_state.end_time
     else:
@@ -113,21 +113,21 @@ def process_count_stat(stat: CountStat, fill_to_time: datetime,
         for dependency in stat.dependencies:
             dependency_fill_time = last_successful_fill(dependency)
             if dependency_fill_time is None:
-                logger.warning("DependentCountStat %s run before dependency %s." %
-                               (stat.property, dependency))
+                logger.warning("DependentCountStat %s run before dependency %s.",
+                               stat.property, dependency)
                 return
             fill_to_time = min(fill_to_time, dependency_fill_time)
 
     currently_filled = currently_filled + time_increment
     while currently_filled <= fill_to_time:
-        logger.info("START %s %s" % (stat.property, currently_filled))
+        logger.info("START %s %s", stat.property, currently_filled)
         start = time.time()
         do_update_fill_state(fill_state, currently_filled, FillState.STARTED)
         do_fill_count_stat_at_hour(stat, currently_filled, realm)
         do_update_fill_state(fill_state, currently_filled, FillState.DONE)
         end = time.time()
         currently_filled = currently_filled + time_increment
-        logger.info("DONE %s (%dms)" % (stat.property, (end-start)*1000))
+        logger.info("DONE %s (%dms)", stat.property, (end-start)*1000)
 
 def do_update_fill_state(fill_state: FillState, end_time: datetime, state: int) -> None:
     fill_state.end_time = end_time
@@ -142,8 +142,8 @@ def do_fill_count_stat_at_hour(stat: CountStat, end_time: datetime, realm: Optio
         timer = time.time()
         assert(stat.data_collector.pull_function is not None)
         rows_added = stat.data_collector.pull_function(stat.property, start_time, end_time, realm)
-        logger.info("%s run pull_function (%dms/%sr)" %
-                    (stat.property, (time.time()-timer)*1000, rows_added))
+        logger.info("%s run pull_function (%dms/%sr)",
+                    stat.property, (time.time()-timer)*1000, rows_added)
     do_aggregate_to_summary_table(stat, end_time, realm)
 
 def do_delete_counts_at_hour(stat: CountStat, end_time: datetime) -> None:
@@ -190,8 +190,10 @@ def do_aggregate_to_summary_table(stat: CountStat, end_time: datetime,
         start = time.time()
         cursor.execute(realmcount_query, {'end_time': end_time})
         end = time.time()
-        logger.info("%s RealmCount aggregation (%dms/%sr)" % (
-            stat.property, (end - start) * 1000, cursor.rowcount))
+        logger.info(
+            "%s RealmCount aggregation (%dms/%sr)",
+            stat.property, (end - start) * 1000, cursor.rowcount,
+        )
 
     if realm is None:
         # Aggregate into InstallationCount.  Only run if we just
@@ -213,8 +215,10 @@ def do_aggregate_to_summary_table(stat: CountStat, end_time: datetime,
         start = time.time()
         cursor.execute(installationcount_query, {'end_time': end_time})
         end = time.time()
-        logger.info("%s InstallationCount aggregation (%dms/%sr)" % (
-            stat.property, (end - start) * 1000, cursor.rowcount))
+        logger.info(
+            "%s InstallationCount aggregation (%dms/%sr)",
+            stat.property, (end - start) * 1000, cursor.rowcount,
+        )
 
     cursor.close()
 

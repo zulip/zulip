@@ -199,16 +199,18 @@ class SafeCacheFunctionsTest(ZulipTestCase):
         with patch('zerver.lib.cache.logger.warning') as mock_warn:
             safe_cache_set_many(items)
             mock_warn.assert_called_once()
-            warning_string = mock_warn.call_args[0][0]
-            self.assertIn("badkey1", warning_string)
-            self.assertIn("badkey2", warning_string)
+            self.assertEqual(
+                mock_warn.call_args[0][1],
+                ['SafeFunctionsTest:\nbadkey1', 'SafeFunctionsTest:\nbadkey2'],
+            )
 
         with patch('zerver.lib.cache.logger.warning') as mock_warn:
             result = safe_cache_get_many(list(items.keys()))
             mock_warn.assert_called_once()
-            warning_string = mock_warn.call_args[0][0]
-            self.assertIn("badkey1", warning_string)
-            self.assertIn("badkey2", warning_string)
+            self.assertEqual(
+                mock_warn.call_args[0][1],
+                ['SafeFunctionsTest:\nbadkey1', 'SafeFunctionsTest:\nbadkey2'],
+            )
 
             self.assertEqual(result, {})
 
@@ -220,16 +222,18 @@ class SafeCacheFunctionsTest(ZulipTestCase):
         with patch('zerver.lib.cache.logger.warning') as mock_warn:
             safe_cache_set_many(items)
             mock_warn.assert_called_once()
-            warning_string = mock_warn.call_args[0][0]
-            self.assertIn("badkey1", warning_string)
-            self.assertIn("badkey2", warning_string)
+            self.assertEqual(
+                mock_warn.call_args[0][1],
+                ['SafeFunctionsTest:\nbadkey1', 'SafeFunctionsTest:\nbadkey2'],
+            )
 
         with patch('zerver.lib.cache.logger.warning') as mock_warn:
             result = safe_cache_get_many(list(items.keys()))
             mock_warn.assert_called_once()
-            warning_string = mock_warn.call_args[0][0]
-            self.assertIn("badkey1", warning_string)
-            self.assertIn("badkey2", warning_string)
+            self.assertEqual(
+                mock_warn.call_args[0][1],
+                ['SafeFunctionsTest:\nbadkey1', 'SafeFunctionsTest:\nbadkey2'],
+            )
 
             self.assertEqual(result, good_items)
 

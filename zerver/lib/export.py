@@ -301,7 +301,7 @@ def sanity_check_output(data: TableData) -> None:
 
     for table in tables:
         if table not in data:
-            logging.warning('??? NO DATA EXPORTED FOR TABLE %s!!!' % (table,))
+            logging.warning('??? NO DATA EXPORTED FOR TABLE %s!!!', table)
 
 def write_data_to_file(output_file: Path, data: Any) -> None:
     with open(output_file, "w") as f:
@@ -451,7 +451,7 @@ def export_from_config(response: TableData, config: Config, seed_object: Optiona
         exported_tables = config.custom_tables
 
     for t in exported_tables:
-        logging.info('Exporting via export_from_config:  %s' % (t,))
+        logging.info('Exporting via export_from_config:  %s', t)
 
     rows = None
     if config.is_seeded:
@@ -476,7 +476,7 @@ def export_from_config(response: TableData, config: Config, seed_object: Optiona
         for t in config.concat_and_destroy:
             data += response[t]
             del response[t]
-            logging.info('Deleted temporary %s' % (t,))
+            logging.info('Deleted temporary %s', t)
         assert table is not None
         response[table] = data
 
@@ -945,7 +945,7 @@ def fetch_usermessages(realm: Realm,
         user_message_obj['flags_mask'] = user_message.flags.mask
         del user_message_obj['flags']
         user_message_chunk.append(user_message_obj)
-    logging.info("Fetched UserMessages for %s" % (message_filename,))
+    logging.info("Fetched UserMessages for %s", message_filename)
     return user_message_chunk
 
 def export_usermessages_batch(input_path: Path, output_path: Path,
@@ -968,7 +968,7 @@ def export_usermessages_batch(input_path: Path, output_path: Path,
 
 def write_message_export(message_filename: Path, output: MessageOutput) -> None:
     write_data_to_file(output_file=message_filename, data=output)
-    logging.info("Dumped to %s" % (message_filename,))
+    logging.info("Dumped to %s", message_filename)
 
 def export_partial_message_files(realm: Realm,
                                  response: TableData,
@@ -1107,7 +1107,7 @@ def write_message_partial_for_query(realm: Realm, message_query: Any, dump_file_
         # Figure out the name of our shard file.
         message_filename = os.path.join(output_dir, "messages-%06d.json" % (dump_file_id,))
         message_filename += '.partial'
-        logging.info("Fetched Messages for %s" % (message_filename,))
+        logging.info("Fetched Messages for %s", message_filename)
 
         # Clean up our messages.
         table_data: TableData = {}
@@ -1251,7 +1251,7 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
     bucket = conn.get_bucket(bucket_name, validate=True)
     records = []
 
-    logging.info("Downloading uploaded files from %s" % (bucket_name,))
+    logging.info("Downloading uploaded files from %s", bucket_name)
 
     avatar_hash_values = set()
     user_ids = set()
@@ -1293,7 +1293,7 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
         count += 1
 
         if (count % 100 == 0):
-            logging.info("Finished %s" % (count,))
+            logging.info("Finished %s", count)
 
     with open(os.path.join(output_dir, "records.json"), "w") as records_file:
         ujson.dump(records, records_file, indent=4)
@@ -1321,7 +1321,7 @@ def export_uploads_from_local(realm: Realm, local_dir: Path, output_dir: Path) -
         count += 1
 
         if (count % 100 == 0):
-            logging.info("Finished %s" % (count,))
+            logging.info("Finished %s", count)
     with open(os.path.join(output_dir, "records.json"), "w") as records_file:
         ujson.dump(records, records_file, indent=4)
 
@@ -1344,8 +1344,10 @@ def export_avatars_from_local(realm: Realm, local_dir: Path, output_dir: Path) -
         wildcard = os.path.join(local_dir, avatar_path + '.*')
 
         for local_path in glob.glob(wildcard):
-            logging.info('Copying avatar file for user %s from %s' % (
-                user.email, local_path))
+            logging.info(
+                'Copying avatar file for user %s from %s',
+                user.email, local_path,
+            )
             fn = os.path.relpath(local_path, local_dir)
             output_path = os.path.join(output_dir, fn)
             os.makedirs(str(os.path.dirname(output_path)), exist_ok=True)
@@ -1364,7 +1366,7 @@ def export_avatars_from_local(realm: Realm, local_dir: Path, output_dir: Path) -
             count += 1
 
             if (count % 100 == 0):
-                logging.info("Finished %s" % (count,))
+                logging.info("Finished %s", count)
 
     with open(os.path.join(output_dir, "records.json"), "w") as records_file:
         ujson.dump(records, records_file, indent=4)
@@ -1416,7 +1418,7 @@ def export_emoji_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> 
 
         count += 1
         if (count % 100 == 0):
-            logging.info("Finished %s" % (count,))
+            logging.info("Finished %s", count)
     with open(os.path.join(output_dir, "records.json"), "w") as records_file:
         ujson.dump(records, records_file, indent=4)
 
@@ -1428,7 +1430,7 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
     message_files = glob.glob(os.path.join(output_dir, 'messages-*.json'))
     fns = sorted([analytics_file] + [attachment_file] + message_files + [realm_file])
 
-    logging.info('Writing stats file: %s\n' % (stats_file,))
+    logging.info('Writing stats file: %s\n', stats_file)
     with open(stats_file, 'w') as f:
         for fn in fns:
             f.write(os.path.basename(fn) + '\n')
@@ -1487,7 +1489,7 @@ def do_export_realm(realm: Realm, output_dir: Path, threads: int,
     message_ids = export_partial_message_files(realm, response, output_dir=output_dir,
                                                public_only=public_only,
                                                consent_message_id=consent_message_id)
-    logging.info('%d messages were exported' % (len(message_ids),))
+    logging.info('%d messages were exported', len(message_ids))
 
     # zerver_reaction
     zerver_reaction: TableData = {}
@@ -1497,7 +1499,7 @@ def do_export_realm(realm: Realm, output_dir: Path, threads: int,
     # Write realm data
     export_file = os.path.join(output_dir, "realm.json")
     write_data_to_file(output_file=export_file, data=response)
-    logging.info('Writing realm data to %s' % (export_file,))
+    logging.info('Writing realm data to %s', export_file)
 
     # Write analytics data
     export_analytics_tables(realm=realm, output_dir=output_dir)
@@ -1509,7 +1511,7 @@ def do_export_realm(realm: Realm, output_dir: Path, threads: int,
     launch_user_message_subprocesses(threads=threads, output_dir=output_dir,
                                      consent_message_id=consent_message_id)
 
-    logging.info("Finished exporting %s" % (realm.string_id,))
+    logging.info("Finished exporting %s", realm.string_id)
     create_soft_link(source=output_dir, in_progress=False)
 
     do_write_stats_file_for_realm_export(output_dir)
@@ -1528,7 +1530,7 @@ def export_attachment_table(realm: Realm, output_dir: Path, message_ids: Set[int
     response: TableData = {}
     fetch_attachment_data(response=response, realm_id=realm.id, message_ids=message_ids)
     output_file = os.path.join(output_dir, "attachment.json")
-    logging.info('Writing attachment table data to %s' % (output_file,))
+    logging.info('Writing attachment table data to %s', output_file)
     write_data_to_file(output_file=output_file, data=response)
 
 def create_soft_link(source: Path, in_progress: bool=True) -> None:
@@ -1551,11 +1553,11 @@ def create_soft_link(source: Path, in_progress: bool=True) -> None:
 
     overwrite_symlink(source, new_target)
     if is_done:
-        logging.info('See %s for output files' % (new_target,))
+        logging.info('See %s for output files', new_target)
 
 def launch_user_message_subprocesses(threads: int, output_dir: Path,
                                      consent_message_id: Optional[int]=None) -> None:
-    logging.info('Launching %d PARALLEL subprocesses to export UserMessage rows' % (threads,))
+    logging.info('Launching %d PARALLEL subprocesses to export UserMessage rows', threads)
     pids = {}
 
     for shard_id in range(threads):
@@ -1669,7 +1671,7 @@ def export_messages_single_user(user_profile: UserProfile, output_dir: Path,
             message_chunk.append(item)
 
         message_filename = os.path.join(output_dir, "messages-%06d.json" % (dump_file_id,))
-        logging.info("Fetched Messages for %s" % (message_filename,))
+        logging.info("Fetched Messages for %s", message_filename)
 
         output = {'zerver_message': message_chunk}
         floatify_datetime_fields(output, 'zerver_message')
