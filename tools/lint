@@ -94,6 +94,9 @@ def run() -> None:
                                   description="Syntactic Grep (semgrep) Code Search Tool "
                                   "(config: ./tools/semgrep.yml)")
 
+    linter_config.external_linter('thirdparty', ['tools/check-thirdparty'],
+                                  description="Check docs/THIRDPARTY copyright file syntax")
+
     @linter_config.lint
     def custom_py() -> int:
         """Runs custom checks for python files (config: tools/linter_lib/custom_check.py)"""

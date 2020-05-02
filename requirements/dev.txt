@@ -164,7 +164,7 @@ cfn-lint==0.29.5 \
 chardet==3.0.4 \
     --hash=sha256:84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae \
     --hash=sha256:fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691 \
-    # via requests, talon
+    # via python-debian, requests, talon
 click==7.0 \
     --hash=sha256:2335065e6395b9e67ca716de5f7526736bfa6ceead690adf616d925bdc622b13 \
     --hash=sha256:5b94b49521f6456670fdb30cd82a4eca9412788a93fa6dd6df72c94d5a8ff2d7 \
@@ -725,6 +725,10 @@ python-dateutil==2.8.1 \
     --hash=sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c \
     --hash=sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a \
     # via -r requirements/common.in, arrow, botocore, hypchat, moto
+python-debian==0.1.37 \
+    --hash=sha256:847890c158ae77f3d09bc6da10ae6cb4f2c2a5fb6d874528c6e076417d5fd333 \
+    --hash=sha256:ab04f535155810c46c8abf3f7d46364b67b034c49ff8690cdb510092eee56750 \
+    # via -r requirements/dev.in
 python-digitalocean==1.15.0 \
     --hash=sha256:e318fe7b866ae00820f7ecec690a9320337f88c6e645310bf92f9b491148122a \
     # via -r requirements/dev.in
@@ -846,7 +850,7 @@ sh==1.12.14 \
 six==1.14.0 \
     --hash=sha256:236bdbdce46e6e6a3d61a337c0f8b763ca1e8717c03b369e87a7ec7ce1319c0a \
     --hash=sha256:8f3cd2e254d8f793e7f3d6d9df77b92252b52637291d0f0da013c76ea2724b6c \
-    # via -r requirements/common.in, argon2-cffi, automat, aws-sam-translator, cfn-lint, cryptography, django-bitfield, docker, ecdsa, hypchat, isodate, jsonschema, libthumbor, mock, moto, packaging, parsel, pip-tools, prompt-toolkit, protego, pyopenssl, python-dateutil, python-jose, qrcode, responses, social-auth-app-django, social-auth-core, talon, traitlets, twilio, w3lib, websocket-client, zulint, zulip
+    # via -r requirements/common.in, argon2-cffi, automat, aws-sam-translator, cfn-lint, cryptography, django-bitfield, docker, ecdsa, hypchat, isodate, jsonschema, libthumbor, mock, moto, packaging, parsel, pip-tools, prompt-toolkit, protego, pyopenssl, python-dateutil, python-debian, python-jose, qrcode, responses, social-auth-app-django, social-auth-core, talon, traitlets, twilio, w3lib, websocket-client, zulint, zulip
 snakeviz==2.0.1 \
     --hash=sha256:5e30f144edb17d875b46cb5f82bd3e67fb5018e534ecc1a94e092ef3ce932c25 \
     --hash=sha256:80acc9c204aeb1e089f209a4c79bb5940dc40b6536a5184c1778a3f448634885 \
