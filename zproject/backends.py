@@ -618,7 +618,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             # django-auth-ldap authenticate().
             username = self.django_to_ldap_username(username)
         except ZulipLDAPExceptionNoMatchingLDAPUser as e:
-            ldap_logger.debug("{}: {}".format(self.__class__.__name__, e))
+            ldap_logger.debug("%s: %s", self.__class__.__name__, e)
             if return_data is not None:
                 return_data['no_matching_ldap_user'] = True
             return None

@@ -99,10 +99,11 @@ def upgrade(request: HttpRequest, user: UserProfile,
     except BillingError as e:
         if not settings.TEST_SUITE:  # nocoverage
             billing_logger.warning(
-                ("BillingError during upgrade: %s. user=%s, realm=%s (%s), billing_modality=%s, "
-                 "schedule=%s, license_management=%s, licenses=%s, has stripe_token: %s")
-                % (e.description, user.id, user.realm.id, user.realm.string_id, billing_modality,
-                   schedule, license_management, licenses, stripe_token is not None))
+                "BillingError during upgrade: %s. user=%s, realm=%s (%s), billing_modality=%s, "
+                "schedule=%s, license_management=%s, licenses=%s, has stripe_token: %s",
+                e.description, user.id, user.realm.id, user.realm.string_id, billing_modality,
+                schedule, license_management, licenses, stripe_token is not None,
+            )
         return json_error(e.message, data={'error_description': e.description})
     except Exception as e:
         billing_logger.exception("Uncaught exception in billing: %s" % (e,))
