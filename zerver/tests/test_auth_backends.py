@@ -2840,8 +2840,8 @@ class ExternalMethodDictsTests(ZulipTestCase):
             external_auth_methods = get_external_method_dicts(get_realm("zephyr"))
             # Both idps enabled for the zephyr realm, + github auth.
             self.assert_length(external_auth_methods, 3)
-            self.assertEqual(set([external_auth_methods[0]['name'], external_auth_methods[1]['name']]),
-                             set(['saml:test_idp', 'saml:test_idp2']))
+            self.assertEqual({external_auth_methods[0]['name'], external_auth_methods[1]['name']},
+                             {'saml:test_idp', 'saml:test_idp2'})
 
 class FetchAuthBackends(ZulipTestCase):
     def assert_on_error(self, error: Optional[str]) -> None:
