@@ -95,7 +95,7 @@ elif vendor == "rhel" and os_version.startswith("7."):
 elif vendor == "centos" and os_version == "7":
     POSTGRES_VERSION = "10"
 else:
-    logging.critical("Unsupported platform: {} {}".format(vendor, os_version))
+    logging.critical("Unsupported platform: %s %s", vendor, os_version)
     if vendor == 'ubuntu' and os_version == '14.04':
         print()
         print("Ubuntu Trusty reached end-of-life upstream and is no longer a supported platform for Zulip")

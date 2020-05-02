@@ -224,8 +224,10 @@ def validate_account_and_subdomain(request: HttpRequest, user_profile: UserProfi
         not (settings.RUNNING_INSIDE_TORNADO and
              request.META["SERVER_NAME"] == "127.0.0.1" and
              request.META["REMOTE_ADDR"] == "127.0.0.1")):
-        logging.warning("User %s (%s) attempted to access API on wrong subdomain (%s)" % (
-            user_profile.delivery_email, user_profile.realm.subdomain, get_subdomain(request)))
+        logging.warning(
+            "User %s (%s) attempted to access API on wrong subdomain (%s)",
+            user_profile.delivery_email, user_profile.realm.subdomain, get_subdomain(request),
+        )
         raise JsonableError(_("Account is not associated with this subdomain"))
 
 def access_user_by_api_key(request: HttpRequest, api_key: str, email: Optional[str]=None) -> UserProfile:
@@ -772,8 +774,8 @@ def rate_limit(domain: str='api_by_user') -> Callable[[ViewFuncT], ViewFuncT]:
                 user = None
 
             if not user:  # nocoverage # See comments below
-                logging.error("Requested rate-limiting on %s but user is not authenticated!" %
-                              (func.__name__,))
+                logging.error("Requested rate-limiting on %s but user is not authenticated!",
+                              func.__name__)
                 return func(request, *args, **kwargs)
 
             if isinstance(user, AnonymousUser):  # nocoverage

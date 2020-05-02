@@ -119,7 +119,7 @@ def api_teamcity_webhook(request: HttpRequest, user_profile: UserProfile,
         if teamcity_user is None:
             # We can't figure out who started this build - there's nothing we can do here.
             logging.info("Teamcity webhook couldn't find a matching Zulip user for "
-                         "Teamcity user '%s' or '%s'" % (teamcity_fullname, teamcity_shortname))
+                         "Teamcity user '%s' or '%s'", teamcity_fullname, teamcity_shortname)
             return json_success()
 
         body = "Your personal build for {}".format(body)

@@ -32,12 +32,12 @@ class Command(BaseCommand):
 
         age = int(client.ttl(key))
         if age < 0:
-            logging.error("Found key with age of %s, will never expire: %s" % (age, key,))
+            logging.error("Found key with age of %s, will never expire: %s", age, key)
 
         count = count_func()
         if count > max_calls:
             logging.error("Redis health check found key with more elements \
-than max_api_calls! (trying to trim) %s %s" % (key, count))
+than max_api_calls! (trying to trim) %s %s", key, count)
             if trim_func is not None:
                 client.expire(key, entity.max_api_window())
                 trim_func(key, max_calls)

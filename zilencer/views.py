@@ -176,8 +176,10 @@ def batch_create_table_data(server: RemoteZulipServer, model: Any,
         try:
             model.objects.bulk_create(row_objects[:BATCH_SIZE])
         except IntegrityError:
-            logging.warning("Invalid data saving %s for server %s/%s" % (
-                model._meta.db_table, server.hostname, server.uuid))
+            logging.warning(
+                "Invalid data saving %s for server %s/%s",
+                model._meta.db_table, server.hostname, server.uuid,
+            )
             raise JsonableError(_("Invalid data."))
         row_objects = row_objects[BATCH_SIZE:]
 

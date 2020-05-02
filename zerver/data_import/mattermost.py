@@ -330,7 +330,7 @@ def process_raw_message_batch(realm_id: int,
         content = h.handle(content)
 
         if len(content) > 10000:  # nocoverage
-            logging.info('skipping too-long message of length %s' % (len(content),))
+            logging.info('skipping too-long message of length %s', len(content))
             continue
 
         date_sent = raw_message['date_sent']

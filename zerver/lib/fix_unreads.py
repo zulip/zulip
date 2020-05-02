@@ -63,7 +63,7 @@ def get_timing(message: str, f: Callable[[], None]) -> None:
     logger.info(message)
     f()
     elapsed = time.time() - start
-    logger.info('elapsed time: %.03f\n' % (elapsed,))
+    logger.info('elapsed time: %.03f\n', elapsed)
 
 
 def fix_unsubscribed(cursor: CursorObj, user_profile: UserProfile) -> None:
@@ -126,7 +126,7 @@ def fix_unsubscribed(cursor: CursorObj, user_profile: UserProfile) -> None:
         rows = cursor.fetchall()
         for row in rows:
             user_message_ids.append(row[0])
-        logger.info('rows found: %d' % (len(user_message_ids),))
+        logger.info('rows found: %d', len(user_message_ids))
 
     get_timing(
         'finding unread messages for non-active streams',
@@ -216,7 +216,7 @@ def fix_pre_pointer(cursor: CursorObj, user_profile: UserProfile) -> None:
         for (um_id, recipient_id, topic) in rows:
             if not is_topic_muted(recipient_id, topic):
                 user_message_ids.append(um_id)
-        logger.info('rows found: %d' % (len(user_message_ids),))
+        logger.info('rows found: %d', len(user_message_ids))
 
     get_timing(
         'finding pre-pointer messages that are not muted',
@@ -235,7 +235,7 @@ def fix_pre_pointer(cursor: CursorObj, user_profile: UserProfile) -> None:
     )
 
 def fix(user_profile: UserProfile) -> None:
-    logger.info('\n---\nFixing %s:' % (user_profile.id,))
+    logger.info('\n---\nFixing %s:', user_profile.id)
     with connection.cursor() as cursor:
         fix_unsubscribed(cursor, user_profile)
         fix_pre_pointer(cursor, user_profile)

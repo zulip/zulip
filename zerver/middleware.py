@@ -230,7 +230,7 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
             error_data = repr(b''.join(error_content_list))
         if len(error_data) > 200:
             error_data = "[content more than 200 characters]"
-        logger.info('status=%3d, data=%s, uid=%s' % (status_code, error_data, requestor_for_logs))
+        logger.info('status=%3d, data=%s, uid=%s', status_code, error_data, requestor_for_logs)
 
 class LogRequests(MiddlewareMixin):
     # We primarily are doing logging using the process_view hook, but

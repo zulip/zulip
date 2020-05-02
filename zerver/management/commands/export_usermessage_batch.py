@@ -32,7 +32,7 @@ class Command(BaseCommand):
                             help='ID of the message advertising users to react with thumbs up')
 
     def handle(self, *args: Any, **options: Any) -> None:
-        logging.info("Starting UserMessage batch thread %s" % (options['thread'],))
+        logging.info("Starting UserMessage batch thread %s", options['thread'])
         files = set(glob.glob(os.path.join(options['path'], 'messages-*.json.partial')))
         for partial_path in files:
             locked_path = partial_path.replace(".json.partial", ".json.locked")
@@ -42,7 +42,7 @@ class Command(BaseCommand):
             except Exception:
                 # Already claimed by another process
                 continue
-            logging.info("Thread %s processing %s" % (options['thread'], output_path))
+            logging.info("Thread %s processing %s", options['thread'], output_path)
             try:
                 export_usermessages_batch(locked_path, output_path, options["consent_message_id"])
             except Exception:

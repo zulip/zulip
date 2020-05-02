@@ -455,7 +455,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
             try:
                 cls.incr_ratelimit(entity_key, max_api_calls, max_api_window)
             except RateLimiterLockingException:
-                logger.warning("Deadlock trying to incr_ratelimit for %s" % (entity_key,))
+                logger.warning("Deadlock trying to incr_ratelimit for %s", entity_key)
                 # rate-limit users who are hitting the API so hard we can't update our stats.
                 ratelimited = True
 

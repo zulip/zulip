@@ -89,7 +89,7 @@ def run_archiving_in_chunks(query: str, type: int, realm: Optional[Realm]=None,
     while True:
         with transaction.atomic():
             archive_transaction = ArchiveTransaction.objects.create(type=type, realm=realm)
-            logger.info("Archiving in {}".format(archive_transaction))
+            logger.info("Archiving in %s", archive_transaction)
             new_chunk = move_rows(Message, query, chunk_size=chunk_size, returning_id=True,
                                   archive_transaction_id=archive_transaction.id, **kwargs)
             if new_chunk:
@@ -102,7 +102,7 @@ def run_archiving_in_chunks(query: str, type: int, realm: Optional[Realm]=None,
         # This line needs to be outside of the atomic block, to capture the actual moment
         # archiving of the chunk is finished (since Django does some significant additional work
         # when leaving the block).
-        logger.info("Finished. Archived {} messages in this transaction.".format(len(new_chunk)))
+        logger.info("Finished. Archived %s messages in this transaction.", len(new_chunk))
 
         # We run the loop, until the query returns fewer results than chunk_size,
         # which means we are done:
@@ -269,7 +269,7 @@ def archive_messages_by_recipient(recipient: Recipient, message_retention_days: 
 def archive_personal_and_huddle_messages(realm: Realm, chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
     logger.info("Archiving personal and huddle messages for realm " + realm.string_id)
     message_count = move_expired_personal_and_huddle_messages_to_archive(realm, chunk_size)
-    logger.info("Done. Archived {} messages".format(message_count))
+    logger.info("Done. Archived %s messages", message_count)
 
 def archive_stream_messages(realm: Realm, chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
     logger.info("Archiving stream messages for realm " + realm.string_id)
@@ -296,10 +296,10 @@ def archive_stream_messages(realm: Realm, chunk_size: int=MESSAGE_BATCH_SIZE) ->
             recipient, retention_policy_dict[recipient.type_id], realm, chunk_size
         )
 
-    logger.info("Done. Archived {} messages.".format(message_count))
+    logger.info("Done. Archived %s messages.", message_count)
 
 def archive_messages(chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
-    logger.info("Starting the archiving process with chunk_size {}".format(chunk_size))
+    logger.info("Starting the archiving process with chunk_size %s", chunk_size)
 
     # We exclude SYSTEM_BOT_REALM here because the logic for archiving
     # private messages and huddles isn't designed to correctly handle
@@ -393,7 +393,7 @@ def restore_attachment_messages_from_archive(archive_transaction_id: int) -> Non
         cursor.execute(query.format(archive_transaction_id=archive_transaction_id))
 
 def restore_data_from_archive(archive_transaction: ArchiveTransaction) -> int:
-    logger.info("Restoring {}".format(archive_transaction))
+    logger.info("Restoring %s", archive_transaction)
     # transaction.atomic needs to be used here, rather than being a wrapper on the whole function,
     # so that when we log "Finished", the process has indeed finished - and that happens only after
     # leaving the atomic block - Django does work committing the changes to the database when
@@ -407,7 +407,7 @@ def restore_data_from_archive(archive_transaction: ArchiveTransaction) -> int:
         archive_transaction.restored = True
         archive_transaction.save()
 
-    logger.info("Finished. Restored {} messages".format(len(msg_ids)))
+    logger.info("Finished. Restored %s messages", len(msg_ids))
     return len(msg_ids)
 
 def restore_data_from_archive_by_transactions(archive_transactions: List[ArchiveTransaction]) -> int:
@@ -422,10 +422,10 @@ def restore_data_from_archive_by_transactions(archive_transactions: List[Archive
 def restore_data_from_archive_by_realm(realm: Realm) -> None:
     transactions = ArchiveTransaction.objects.exclude(restored=True).filter(
         realm=realm, type=ArchiveTransaction.RETENTION_POLICY_BASED)
-    logger.info("Restoring {} transactions from realm {}".format(len(transactions), realm.string_id))
+    logger.info("Restoring %s transactions from realm %s", len(transactions), realm.string_id)
     message_count = restore_data_from_archive_by_transactions(transactions)
 
-    logger.info("Finished. Restored {} messages from realm {}".format(message_count, realm.string_id))
+    logger.info("Finished. Restored %s messages from realm %s", message_count, realm.string_id)
 
 def restore_all_data_from_archive(restore_manual_transactions: bool=True) -> None:
     for realm in Realm.objects.all():
@@ -444,4 +444,4 @@ def clean_archived_data() -> None:
     count = transactions.count()
     transactions.delete()
 
-    logger.info("Deleted {} old ArchiveTransactions.".format(count))
+    logger.info("Deleted %s old ArchiveTransactions.", count)

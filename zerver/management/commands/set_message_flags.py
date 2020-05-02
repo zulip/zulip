@@ -74,7 +74,7 @@ class Command(ZulipBaseCommand):
                 msgs.update(flags=models.F('flags').bitand(~flag))
 
         if not options["for_real"]:
-            logging.info("Updating %s by %s %s" % (mids, op, flag))
+            logging.info("Updating %s by %s %s", mids, op, flag)
             logging.info("Dry run completed. Run with --for-real to change message flags.")
             raise CommandError
 

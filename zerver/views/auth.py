@@ -461,8 +461,8 @@ def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[s
         # This backend requires the name of the IdP (from the list of configured ones)
         # to be passed as the parameter.
         if not extra_arg or extra_arg not in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS:
-            logging.info("Attempted to initiate SAML authentication with wrong idp argument: {}"
-                         .format(extra_arg))
+            logging.info("Attempted to initiate SAML authentication with wrong idp argument: %s",
+                         extra_arg)
             return redirect_to_config_error("saml")
         extra_url_params = {'idp': extra_arg}
 
@@ -485,8 +485,8 @@ def start_social_signup(request: HttpRequest, backend: str, extra_arg: Optional[
             return result
 
         if not extra_arg or extra_arg not in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS:
-            logging.info("Attempted to initiate SAML authentication with wrong idp argument: {}"
-                         .format(extra_arg))
+            logging.info("Attempted to initiate SAML authentication with wrong idp argument: %s",
+                         extra_arg)
             return redirect_to_config_error("saml")
         extra_url_params = {'idp': extra_arg}
     return oauth_redirect_to_root(request, backend_url, 'social', is_signup=True,
@@ -502,13 +502,13 @@ def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
     result data that has been stored in redis, associated with this token.
     """
     if not has_api_key_format(token):  # The tokens are intended to have the same format as API keys.
-        logging.warning("log_into_subdomain: Malformed token given: %s" % (token,))
+        logging.warning("log_into_subdomain: Malformed token given: %s", token)
         return HttpResponse(status=400)
 
     try:
         result = ExternalAuthResult(login_token=token)
     except ExternalAuthResult.InvalidTokenError:
-        logging.warning("log_into_subdomain: Invalid token given: %s" % (token,))
+        logging.warning("log_into_subdomain: Invalid token given: %s", token)
         return render(request, 'zerver/log_into_subdomain_token_invalid.html', status=400)
 
     subdomain = get_subdomain(request)

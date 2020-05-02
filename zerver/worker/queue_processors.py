@@ -255,8 +255,10 @@ class SignupWorker(QueueProcessingWorker):
     def consume(self, data: Dict[str, Any]) -> None:
         # TODO: This is the only implementation with Dict cf Mapping; should we simplify?
         user_profile = get_user_profile_by_id(data['user_id'])
-        logging.info("Processing signup for user %s in realm %s" % (
-            user_profile.id, user_profile.realm.string_id))
+        logging.info(
+            "Processing signup for user %s in realm %s",
+            user_profile.id, user_profile.realm.string_id,
+        )
         if settings.MAILCHIMP_API_KEY and settings.PRODUCTION:
             endpoint = "https://%s.api.mailchimp.com/3.0/lists/%s/members" % \
                        (settings.MAILCHIMP_API_KEY.split('-')[1], settings.ZULIP_FRIENDS_LIST_ID)
@@ -266,8 +268,8 @@ class SignupWorker(QueueProcessingWorker):
             params['status'] = 'subscribed'
             r = requests.post(endpoint, auth=('apikey', settings.MAILCHIMP_API_KEY), json=params, timeout=10)
             if r.status_code == 400 and ujson.loads(r.text)['title'] == 'Member Exists':
-                logging.warning("Attempted to sign up already existing email to list: %s" %
-                                (data['email_address'],))
+                logging.warning("Attempted to sign up already existing email to list: %s",
+                                data['email_address'])
             elif r.status_code == 400:
                 retry_event(self.queue_name, data, lambda e: r.raise_for_status())
             else:
@@ -288,7 +290,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
                 return
 
         referrer = get_user_profile_by_id(data["referrer_id"])
-        logger.info("Sending invitation for realm %s to %s" % (referrer.realm.string_id, invitee.email))
+        logger.info("Sending invitation for realm %s to %s", referrer.realm.string_id, invitee.email)
         activate_url = do_send_confirmation_email(invitee, referrer)
 
         # queue invitation reminder
@@ -378,7 +380,7 @@ class UserActivityIntervalWorker(QueueProcessingWorker):
 @assign_queue('user_presence')
 class UserPresenceWorker(QueueProcessingWorker):
     def consume(self, event: Mapping[str, Any]) -> None:
-        logging.debug("Received presence event: %s" % (event,),)
+        logging.debug("Received presence event: %s", event)
         user_profile = get_user_profile_by_id(event["user_profile_id"])
         client = get_client(event["client"])
         log_time = timestamp_to_datetime(event["time"])
@@ -406,7 +408,7 @@ class MissedMessageWorker(QueueProcessingWorker):
     batch_start_by_recipient: Dict[int, float] = {}
 
     def consume(self, event: Dict[str, Any]) -> None:
-        logging.debug("Received missedmessage_emails event: %s" % (event,))
+        logging.debug("Received missedmessage_emails event: %s", event)
 
         # When we process an event, just put it into the queue and ensure we have a timer going.
         user_profile_id = event['user_profile_id']
@@ -435,8 +437,8 @@ class MissedMessageWorker(QueueProcessingWorker):
             if current_time - timestamp < self.BATCH_DURATION:
                 continue
             events = self.events_by_recipient[user_profile_id]
-            logging.info("Batch-processing %s missedmessage_emails events for user %s" %
-                         (len(events), user_profile_id))
+            logging.info("Batch-processing %s missedmessage_emails events for user %s",
+                         len(events), user_profile_id)
             handle_missedmessage_emails(user_profile_id, events)
             del self.events_by_recipient[user_profile_id]
             del self.batch_start_by_recipient[user_profile_id]
@@ -481,14 +483,14 @@ class PushNotificationsWorker(QueueProcessingWorker):  # nocoverage
         except PushNotificationBouncerRetryLaterError:
             def failure_processor(event: Dict[str, Any]) -> None:
                 logger.warning(
-                    "Maximum retries exceeded for trigger:%s event:push_notification" % (
-                        event['user_profile_id'],))
+                    "Maximum retries exceeded for trigger:%s event:push_notification",
+                    event['user_profile_id'])
             retry_event(self.queue_name, event, failure_processor)
 
 @assign_queue('error_reports')
 class ErrorReporter(QueueProcessingWorker):
     def consume(self, event: Mapping[str, Any]) -> None:
-        logging.info("Processing traceback with type %s for %s" % (event['type'], event.get('user_email')))
+        logging.info("Processing traceback with type %s for %s", event['type'], event.get('user_email'))
         if settings.ERROR_REPORTING:
             do_report_error(event['report']['host'], event['type'], event['report'])
 
@@ -501,7 +503,7 @@ class SlowQueryWorker(LoopQueueProcessingWorker):
 
     def consume_batch(self, slow_query_events: List[Dict[str, Any]]) -> None:
         for event in slow_query_events:
-            logging.info("Slow query: %s" % (event["query"],))
+            logging.info("Slow query: %s", event["query"])
 
         if settings.SLOW_QUERY_LOGS_STREAM is None:
             return
@@ -535,7 +537,7 @@ class DigestWorker(QueueProcessingWorker):  # nocoverage
     # Who gets a digest is entirely determined by the enqueue_digest_emails
     # management command, not here.
     def consume(self, event: Mapping[str, Any]) -> None:
-        logging.info("Received digest event: %s" % (event,))
+        logging.info("Received digest event: %s", event)
         handle_digest_email(event["user_profile_id"], event["cutoff"])
 
 @assign_queue('email_mirror')
@@ -551,8 +553,8 @@ class MirrorWorker(QueueProcessingWorker):
             except RateLimited:
                 msg = email.message_from_string(event["message"])
                 logger.warning("MirrorWorker: Rejecting an email from: %s "
-                               "to realm: %s - rate limited."
-                               % (msg['From'], recipient_realm.name))
+                               "to realm: %s - rate limited.",
+                               msg['From'], recipient_realm.name)
                 return
 
         mirror_email(email.message_from_string(event["message"]),
@@ -567,7 +569,7 @@ class TestWorker(QueueProcessingWorker):
     def consume(self, event: Mapping[str, Any]) -> None:  # nocoverage
         fn = settings.ZULIP_WORKER_TEST_FILE
         message = ujson.dumps(event)
-        logging.info("TestWorker should append this message to %s: %s" % (fn, message))
+        logging.info("TestWorker should append this message to %s: %s", fn, message)
         with open(fn, 'a') as f:
             f.write(message + '\n')
 
@@ -635,8 +637,10 @@ class EmbeddedBotWorker(QueueProcessingWorker):
         for service in services:
             bot_handler = get_bot_handler(str(service.name))
             if bot_handler is None:
-                logging.error("Error: User %s has bot with invalid embedded bot service %s" % (
-                    user_profile_id, service.name))
+                logging.error(
+                    "Error: User %s has bot with invalid embedded bot service %s",
+                    user_profile_id, service.name,
+                )
                 continue
             try:
                 if hasattr(bot_handler, 'initialize'):
@@ -674,8 +678,8 @@ class DeferredWorker(QueueProcessingWorker):
             except PushNotificationBouncerRetryLaterError:
                 def failure_processor(event: Dict[str, Any]) -> None:
                     logger.warning(
-                        "Maximum retries exceeded for trigger:%s event:clear_push_device_tokens" % (
-                            event['user_profile_id'],))
+                        "Maximum retries exceeded for trigger:%s event:clear_push_device_tokens",
+                        event['user_profile_id'])
                 retry_event(self.queue_name, event, failure_processor)
         elif event['type'] == 'realm_export':
             start = time.time()
@@ -693,8 +697,10 @@ class DeferredWorker(QueueProcessingWorker):
                     failed_timestamp=timezone_now().timestamp()
                 ))
                 export_event.save(update_fields=['extra_data'])
-                logging.error("Data export for %s failed after %s" % (
-                    user_profile.realm.string_id, time.time() - start))
+                logging.error(
+                    "Data export for %s failed after %s",
+                    user_profile.realm.string_id, time.time() - start,
+                )
                 notify_realm_export(user_profile)
                 return
 
@@ -720,5 +726,7 @@ class DeferredWorker(QueueProcessingWorker):
             # For future frontend use, also notify administrator
             # clients that the export happened.
             notify_realm_export(user_profile)
-            logging.info("Completed data export for %s in %s" % (
-                user_profile.realm.string_id, time.time() - start))
+            logging.info(
+                "Completed data export for %s in %s",
+                user_profile.realm.string_id, time.time() - start,
+            )

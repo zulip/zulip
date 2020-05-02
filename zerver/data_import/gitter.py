@@ -199,7 +199,7 @@ def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
         message_json['zerver_message'] = zerver_message
         message_json['zerver_usermessage'] = zerver_usermessage
         message_filename = os.path.join(output_dir, "messages-%06d.json" % (dump_file_id,))
-        logging.info("Writing Messages to %s\n" % (message_filename,))
+        logging.info("Writing Messages to %s\n", message_filename)
         write_data_to_file(os.path.join(message_filename), message_json)
 
         low_index = upper_index
@@ -216,8 +216,8 @@ def get_usermentions(message: Dict[str, Any], user_map: Dict[str, int],
             if mention.get('userId') in user_map:
                 gitter_mention = '@%s' % (mention['screenName'],)
                 if mention['screenName'] not in user_short_name_to_full_name:
-                    logging.info("Mentioned user %s never sent any messages, so has no full name data" %
-                                 (mention['screenName'],))
+                    logging.info("Mentioned user %s never sent any messages, so has no full name data",
+                                 mention['screenName'])
                     full_name = mention['screenName']
                 else:
                     full_name = user_short_name_to_full_name[mention['screenName']]
@@ -278,7 +278,7 @@ def do_convert_data(gitter_data_file: str, output_dir: str, threads: int=6) -> N
     subprocess.check_call(["tar", "-czf", output_dir + '.tar.gz', output_dir, '-P'])
 
     logging.info('######### DATA CONVERSION FINISHED #########\n')
-    logging.info("Zulip data dump created at %s" % (output_dir,))
+    logging.info("Zulip data dump created at %s", output_dir)
 
 def write_data_to_file(output_file: str, data: Any) -> None:
     with open(output_file, "w") as f:

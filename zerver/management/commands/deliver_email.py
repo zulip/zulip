@@ -46,7 +46,7 @@ Usage: ./manage.py deliver_email
                     try:
                         deliver_email(job)
                     except EmailNotDeliveredException:
-                        logger.warning("%r not delivered" % (job,))
+                        logger.warning("%r not delivered", job)
                 time.sleep(10)
             else:
                 # Less load on the db during times of activity,

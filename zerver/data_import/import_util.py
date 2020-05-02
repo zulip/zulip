@@ -572,7 +572,7 @@ def write_avatar_png(avatar_folder: str,
 ListJobData = TypeVar('ListJobData')
 def run_parallel_wrapper(f: Callable[[ListJobData], None], full_items: List[ListJobData],
                          threads: int=6) -> Iterable[Tuple[int, List[ListJobData]]]:
-    logging.info("Distributing %s items across %s threads" % (len(full_items), threads))
+    logging.info("Distributing %s items across %s threads", len(full_items), threads)
 
     def wrapping_function(items: List[ListJobData]) -> int:
         count = 0
@@ -580,11 +580,11 @@ def run_parallel_wrapper(f: Callable[[ListJobData], None], full_items: List[List
             try:
                 f(item)
             except Exception:
-                logging.info("Error processing item: %s" % (item,))
+                logging.info("Error processing item: %s", item)
                 traceback.print_exc()
             count += 1
             if count % 1000 == 0:
-                logging.info("A download thread finished %s items" % (count,))
+                logging.info("A download thread finished %s items", count)
         return 0
     job_lists: List[List[ListJobData]] = [full_items[i::threads] for i in range(threads)]
     return run_parallel(wrapping_function, job_lists, threads=threads)
