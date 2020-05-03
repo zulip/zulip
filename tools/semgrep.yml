@@ -75,3 +75,13 @@ rules:
       - pattern: logger.critical(... .format(...))
     severity: ERROR
     message: "Pass format arguments to logging (https://docs.python.org/3/howto/logging.html#optimization)"
+
+  - id: sql-format
+    languages: [python]
+    pattern-either:
+      - pattern: ... .execute(... % ...)
+      - pattern: ... .execute("...".format(...))
+      - pattern: psycopg2.sql.SQL(... % ...)
+      - pattern: psycopg2.sql.SQL(... .format(...))
+    severity: ERROR
+    message: "Do not write a SQL injection vulnerability please"
