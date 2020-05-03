@@ -269,7 +269,7 @@ def archive_messages_by_recipient(recipient: Recipient, message_retention_days: 
                                                          realm, chunk_size)
 
 def archive_personal_and_huddle_messages(realm: Realm, chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
-    logger.info("Archiving personal and huddle messages for realm " + realm.string_id)
+    logger.info("Archiving personal and huddle messages for realm %s", realm.string_id)
     message_count = move_expired_personal_and_huddle_messages_to_archive(realm, chunk_size)
     logger.info("Done. Archived %s messages", message_count)
 
@@ -285,7 +285,7 @@ def archive_stream_messages(realm: Realm, chunk_size: int=MESSAGE_BATCH_SIZE) ->
     if not streams:
         return
 
-    logger.info("Archiving stream messages for realm " + realm.string_id)
+    logger.info("Archiving stream messages for realm %s", realm.string_id)
     retention_policy_dict: Dict[int, int] = {}
     for stream in streams:
         #  if stream.message_retention_days is null, use the realm's policy
