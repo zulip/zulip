@@ -883,6 +883,29 @@ exports.compose_trigger_selection = function (event) {
     return false;
 };
 
+function keep_selections_out(selector) {
+    $(selector).on('input', () => {
+        const s = window.getSelection();
+        if (s.toString() === $(selector).val()) {
+            s.removeAllRanges(); // prevent entire text from staying selected after undo
+
+            // place cursor back
+            const element = document.querySelector(selector);
+            element.focus();
+            try {
+                // for textareas, setting selection ranges is easier
+                element.setSelectionRange(element.value.length, element.value.length);
+            } catch {
+                // for contenteditables that are not text areas
+                const range = document.createRange();
+                range.selectNodeContents(element);
+                range.collapse(false);
+                s.addRange(range);
+            }
+        }
+    });
+}
+
 function get_header_text() {
     let tip_text = '';
     switch (this.completing) {
@@ -896,6 +919,9 @@ function get_header_text() {
 }
 
 exports.initialize_compose_typeahead = function (selector) {
+
+    keep_selections_out(selector);
+
     const completions = {
         mention: true,
         emoji: true,
@@ -964,6 +990,9 @@ exports.initialize = function () {
     if (page_params.enter_sends) {
         $("#compose-send-button").hide();
     }
+
+    keep_selections_out("#stream_message_recipient_stream");
+    keep_selections_out("#stream_message_recipient_topic");
 
     // limit number of items so the list doesn't fall off the screen
     $("#stream_message_recipient_stream").typeahead({
