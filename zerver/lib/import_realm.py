@@ -345,8 +345,8 @@ def allocate_ids(model_class: Any, count: int) -> List[int]:
     """
     conn = connection.cursor()
     sequence = idseq(model_class)
-    conn.execute("select nextval('%s') from generate_series(1,%s)" %
-                 (sequence, str(count)))
+    conn.execute("select nextval(%s) from generate_series(1, %s)",
+                 [sequence, count])
     query = conn.fetchall()  # Each element in the result is a tuple like (5,)
     conn.close()
     # convert List[Tuple[int]] to List[int]
