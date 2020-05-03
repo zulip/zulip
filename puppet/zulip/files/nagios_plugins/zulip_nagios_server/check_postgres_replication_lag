@@ -20,7 +20,7 @@ states = {
     "UNKNOWN": 3
 }
 
-def report(state: str, msg: str) -> NoReturn:
+def report(state: str, msg: str) -> "NoReturn":
     print("%s: %s" % (state, msg))
     exit(states[state])
 
