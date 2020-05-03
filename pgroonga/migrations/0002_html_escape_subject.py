@@ -1,15 +1,19 @@
 from django.db import connection, migrations
 from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
+from psycopg2.sql import SQL
 
 from zerver.lib.migrate import do_batch_update
 
 
 def rebuild_pgroonga_index(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     with connection.cursor() as cursor:
-        do_batch_update(cursor, 'zerver_message', ['search_pgroonga'],
-                        ["escape_html(subject) || ' ' || rendered_content"],
-                        escape=False, batch_size=10000)
+        do_batch_update(
+            cursor,
+            "zerver_message",
+            [SQL("search_pgroonga = escape_html(subject) || ' ' || rendered_content")],
+            batch_size=10000,
+        )
 
 class Migration(migrations.Migration):
     atomic = False
