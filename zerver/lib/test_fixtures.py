@@ -138,7 +138,7 @@ class Database:
 
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "SELECT 1 from pg_database WHERE datname='{}';".format(self.database_name)
+                    "SELECT 1 from pg_database WHERE datname=%s;", [self.database_name],
                 )
                 return_value = bool(cursor.fetchone())
             connections.close_all()
