@@ -249,12 +249,14 @@ def delete_messages(msg_ids: List[int]) -> None:
     Message.objects.filter(id__in=msg_ids).delete()
 
 def delete_expired_attachments(realm: Realm) -> None:
-    logger.info("Cleaning up attachments for realm " + realm.string_id)
-    Attachment.objects.filter(
+    attachments_deleted, _ = Attachment.objects.filter(
         messages__isnull=True,
         realm_id=realm.id,
         id__in=ArchivedAttachment.objects.filter(realm_id=realm.id),
     ).delete()
+
+    if attachments_deleted > 0:
+        logger.info("Cleaned up %s attachments for realm %s", attachments_deleted, realm.string_id)
 
 def move_related_objects_to_archive(msg_ids: List[int]) -> None:
     move_models_with_message_key_to_archive(msg_ids)
@@ -272,14 +274,18 @@ def archive_personal_and_huddle_messages(realm: Realm, chunk_size: int=MESSAGE_B
     logger.info("Done. Archived %s messages", message_count)
 
 def archive_stream_messages(realm: Realm, chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
-    logger.info("Archiving stream messages for realm " + realm.string_id)
     # We don't archive, if the stream has message_retention_days set to -1,
     # or if neither the stream nor the realm have a retention policy.
-    streams = Stream.objects.select_related("recipient").filter(
+    query = Stream.objects.select_related("recipient").filter(
         realm_id=realm.id).exclude(message_retention_days=-1)
     if not realm.message_retention_days:
-        streams = streams.exclude(message_retention_days__isnull=True)
+        query = query.exclude(message_retention_days__isnull=True)
 
+    streams = list(query)
+    if not streams:
+        return
+
+    logger.info("Archiving stream messages for realm " + realm.string_id)
     retention_policy_dict: Dict[int, int] = {}
     for stream in streams:
         #  if stream.message_retention_days is null, use the realm's policy
