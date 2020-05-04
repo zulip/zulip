@@ -65,9 +65,31 @@ administrator.
 If you don't see the **Delete message** option, it means you don't have
 permissions to delete that message.
 
-It's important to understand that anyone who received the message before you
-deleted it could have made a copy of its content. Even if no one is online
-when you send the message, users may have received the message via email or
-mobile notifications. So if you accidentally shared secret information that
-you can change, like a password, you may want to change that password
-regardless of whether you also delete the message.
+## How deletion works
+
+* Deleted messages will immediately disappear from the UI in all
+  official Zulip clients.
+* Any uploaded files referenced only by deleted messages will also be
+  immediately inaccessible (An uploaded file shared in multiple
+  messages will not be deleted until all of those messages are
+  deleted).
+* It's important to understand that anyone who received the message
+  before you deleted it could have made a copy of its content. Even if
+  no one is online when you send the message, users may have received
+  the message via email or mobile notifications. So if you
+  accidentally shared secret information that you can change, like a
+  password, you may want to change that password regardless of whether
+  you also delete the message.
+* For protection against accidental or immediately regretted
+  deletions, messages deleted directly or via a [message retention
+  policy](/help/message-retention-policy) are archived for 7 days in a
+  format that can be restored.  After that time, they are permanently
+  and irrecoverably deleted from the Zulip server.  Server
+  administrators can adjust the archival time using the
+  `ARCHIVED_DATA_VACUUMING_DELAY_DAYS` setting.
+
+## Related articles
+
+* [Delete a topic](/help/delete-a-topic)
+* [Delete a stream](/help/delete-a-stream)
+* [Message retention policy](/help/message-retention-policy)

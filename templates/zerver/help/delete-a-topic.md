@@ -34,3 +34,9 @@ whereas [deleting a stream](/help/delete-a-stream) does not.
 
 Note that deleting the last message with a particular topic also deletes
 that topic.
+
+## Related articles
+
+* [Edit or delete a message](/help/edit-or-delete-a-message)
+* [Delete a stream](/help/delete-a-stream)
+* [Message retention policy](/help/message-retention-policy)
