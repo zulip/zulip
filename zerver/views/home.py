@@ -349,6 +349,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                'show_invites': show_invites,
                                'show_add_streams': show_add_streams,
                                'show_billing': show_billing,
+                               'corporate_enabled': settings.CORPORATE_ENABLED,
                                'show_plans': show_plans,
                                'is_admin': is_realm_admin,
                                'is_guest': is_guest,
