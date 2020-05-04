@@ -45,6 +45,8 @@ exports.get_item = function (key, config) {
             return "compose-file-input";
         case "drag_drop_container":
             return $("#compose");
+        case "drag_drop_container_img":
+            return $("#main_div");
         default:
             throw Error(`Invalid key name for mode "${config.mode}"`);
         }
@@ -71,6 +73,8 @@ exports.get_item = function (key, config) {
             return "message-edit-file-input";
         case "drag_drop_container":
             return $("#message_edit_form");
+        case "drag_drop_container_img":
+            return $("#main_div");
         default:
             throw Error(`Invalid key name for mode "${config.mode}"`);
         }
@@ -201,6 +205,16 @@ exports.setup_upload = function (config) {
             files.push(file);
         }
         exports.upload_files(uppy, config, files);
+    });
+
+    const drag_drop_container_img = exports.get_item("drag_drop_container_img", config);
+    drag_drop_container_img.on("dragover", (event) => event.preventDefault());
+    drag_drop_container_img.on("dragenter", (event) => event.preventDefault());
+
+    drag_drop_container_img.on("drop", (event) => {
+        event.preventDefault();
+        const img = event.originalEvent.dataTransfer.files;
+        exports.upload_files(uppy, config, img);
     });
 
     uppy.on('upload-success', (file, response) => {
