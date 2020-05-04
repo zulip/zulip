@@ -162,3 +162,6 @@
 * [Change the privacy of a stream](/help/change-the-privacy-of-a-stream)
 * [Add or remove users from a stream](/help/add-or-remove-users-from-a-stream)
 * [Stream posting policy](/help/stream-sending-policy)
+
+## Support
+* [Contact support](/help/contact-support)
