@@ -100,6 +100,13 @@
                                     <i class="fa fa-search" aria-hidden="true"></i> {{ _('Search operators') }}
                                 </a>
                             </li>
+                            {% if corporate_enabled %}
+                            <li role="presentation">
+                                <a href="/help/contact-support" target="_blank" role="menuitem">
+                                    <i class="fa fa-envelope" aria-hidden="true"></i> {{ _('Contact support') }}
+                                </a>
+                            </li>
+                            {% endif %}
                             <li class="divider" role="presentation"></li>
                             <li role="presentation">
                                 <a href="{{ apps_page_url }}" target="_blank" role="menuitem">
