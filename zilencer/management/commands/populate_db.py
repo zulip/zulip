@@ -316,7 +316,7 @@ class Command(BaseCommand):
             add_service("outgoing-webhook", user_profile=outgoing_webhook, interface=Service.GENERIC,
                         base_url="http://127.0.0.1:5002", token=generate_api_key())
 
-            # Add the realm internl bots to each realm.
+            # Add the realm internal bots to each realm.
             create_if_missing_realm_internal_bots()
 
             # Create public streams.
@@ -506,17 +506,6 @@ class Command(BaseCommand):
             for url in urls_with_preview_data:
                 cache_set(url, urls_with_preview_data[url], PREVIEW_CACHE_NAME)
 
-        threads = options["threads"]
-        jobs: List[Tuple[int, List[List[int]], Dict[str, Any], Callable[[str], int], int]] = []
-        for i in range(threads):
-            count = options["num_messages"] // threads
-            if i < options["num_messages"] % threads:
-                count += 1
-            jobs.append((count, personals_pairs, options, self.stdout.write, random.randint(0, 10**10)))
-
-        for job in jobs:
-            generate_and_send_messages(job)
-
         if options["delete"]:
             if options["test_suite"]:
                 # Create test users; the MIT ones are needed to test
@@ -581,17 +570,6 @@ class Command(BaseCommand):
                 # Now subscribe everyone to these streams
                 subscribe_users_to_streams(zulip_realm, zulip_stream_dict)
 
-                # These bots are not needed by the test suite
-                internal_zulip_users_nosubs = [
-                    ("Zulip Commit Bot", "commit-bot@zulip.com"),
-                    ("Zulip Trac Bot", "trac-bot@zulip.com"),
-                    ("Zulip Nagios Bot", "nagios-bot@zulip.com"),
-                ]
-                create_users(zulip_realm, internal_zulip_users_nosubs, bot_type=UserProfile.DEFAULT_BOT)
-
-            # Mark all messages as read
-            UserMessage.objects.all().update(flags=UserMessage.flags.read)
-
             if not options["test_suite"]:
                 # Update pointer of each user to point to the last message in their
                 # UserMessage rows with sender_id=user_profile_id.
@@ -608,6 +586,32 @@ class Command(BaseCommand):
                 # We populate the analytics database here for
                 # development purpose only
                 call_command('populate_analytics_db')
+
+        threads = options["threads"]
+        jobs: List[Tuple[int, List[List[int]], Dict[str, Any], Callable[[str], int], int]] = []
+        for i in range(threads):
+            count = options["num_messages"] // threads
+            if i < options["num_messages"] % threads:
+                count += 1
+            jobs.append((count, personals_pairs, options, self.stdout.write, random.randint(0, 10**10)))
+
+        for job in jobs:
+            generate_and_send_messages(job)
+
+        if options["delete"]:
+            if not options['test_suite']:
+                # These bots are not needed by the test suite
+                # Also, we don't want interacting with each other
+                # in dev setup.
+                internal_zulip_users_nosubs = [
+                    ("Zulip Commit Bot", "commit-bot@zulip.com"),
+                    ("Zulip Trac Bot", "trac-bot@zulip.com"),
+                    ("Zulip Nagios Bot", "nagios-bot@zulip.com"),
+                ]
+                create_users(zulip_realm, internal_zulip_users_nosubs, bot_type=UserProfile.DEFAULT_BOT)
+
+            # Mark all messages as read
+            UserMessage.objects.all().update(flags=UserMessage.flags.read)
             self.stdout.write("Successfully populated test database.\n")
 
 recipient_hash: Dict[int, Recipient] = {}
