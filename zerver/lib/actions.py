@@ -4609,7 +4609,7 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
         send_event(realm, event, users_to_notify)
 
 def do_delete_messages_by_sender(user: UserProfile) -> None:
-    message_ids = Message.objects.filter(sender=user).values_list('id', flat=True).order_by('id')
+    message_ids = list(Message.objects.filter(sender=user).values_list('id', flat=True).order_by('id'))
     if message_ids:
         move_messages_to_archive(message_ids)
 
