@@ -29,3 +29,9 @@ than deleting them.
 
 !!! warn ""
     Deleting a stream is irreversible.
+
+## Related articles
+
+* [Edit or delete a message](/help/edit-or-delete-a-message)
+* [Delete a topic](/help/delete-a-topic)
+* [Message retention policy](/help/message-retention-policy)

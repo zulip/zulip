@@ -62,3 +62,4 @@ You can access the message editing and deletion settings as follows.
 ## Related articles
 
 * [Disable message edit history](/help/disable-message-edit-history)
+* [Configure message retention policy](/help/message-retention-policy)
