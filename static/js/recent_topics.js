@@ -19,6 +19,7 @@ function reduce_message(msg) {
         topic: msg.topic,
         sender_id: msg.sender_id,
         type: msg.type,
+        starred: msg.starred,
     };
 }
 
@@ -36,12 +37,17 @@ exports.process_message = function (msg) {
     if (!topic) {
         topics.set(key, {
             last_msg: reduce_message(msg),
+            starred: msg.starred ? new Set([msg.id]) : new Set(),
         });
         return true;
     }
     // Update last messages sent to topic.
     if (topic.last_msg.timestamp <= msg.timestamp) {
         topic.last_msg = reduce_message(msg);
+    }
+
+    if (msg.starred) {
+        topic.starred.add(msg.id);
     }
     topics.set(key, topic);
     return true;
@@ -66,6 +72,36 @@ exports.update_muted_topics = function () {
     exports.update();
 };
 
+exports.toggle_bookmark_topic = function (stream_id, topic) {
+    // We simply star the last msg in the topic
+    // until native support for bookmark is available
+    const key = stream_id + ":" + topic;
+    const saved_topic = topics.get(key);
+    if (saved_topic.starred.size !== 0) {
+        starred_messages.unstar_topic(stream_id, topic);
+    } else {
+        const message = message_store.get(saved_topic.last_msg.id);
+        message_flags.toggle_starred_and_update_server(message);
+    }
+};
+
+exports.change_starred = function (msg_id, flag) {
+    const message = message_store.get(msg_id);
+    const key = message.stream_id + ':' + message.topic;
+
+    const saved_topic = topics.get(key);
+    if (saved_topic === undefined) {
+        return;
+    }
+
+    if (flag === 'add') {
+        saved_topic.starred.add(msg_id);
+    } else {
+        saved_topic.starred.delete(msg_id);
+    }
+    topics.set(key, saved_topic);
+};
+
 exports.process_topic = function (stream_id, topic) {
     // Delete topic if it exists
     // and procoess it again, this ensures that we haven't
@@ -82,6 +118,7 @@ function format_values() {
             elem.last_msg.stream_id) || elem.last_msg.stream_name;
         const stream_id = parseInt(key.split(':')[0], 10);
         const topic = key.split(':')[1];
+        const bookmarked = elem.starred.size !== 0;
 
         // Display in most recent sender first order
         const all_senders = recent_senders.get_topic_recent_senders(
@@ -106,6 +143,7 @@ function format_values() {
             topic_url: hash_util.by_stream_topic_uri(stream_id, topic),
             senders: senders_info,
             count_senders: Math.max(0, all_senders.length - MAX_AVATAR),
+            bookmarked: bookmarked,
         });
     });
     return topics_array;

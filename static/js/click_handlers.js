@@ -346,12 +346,19 @@ exports.initialize = function () {
         muting_ui.mute(stream_id, topic);
     });
 
-    // MARK TOPIC AS READ
+    // RECENT TOPIC UI HANDLERS
     $('body').on('click', '.on_hover_topic_read', function (e) {
         e.stopPropagation();
         const stream_id = parseInt($(e.currentTarget).attr('data-stream-id'), 10);
         const topic = $(e.currentTarget).attr('data-topic-name');
         unread_ops.mark_topic_as_read(stream_id, topic);
+    });
+
+    $('body').on('click', '.on_hover_topic_bookmark', function (e) {
+        e.stopPropagation();
+        const stream_id = parseInt($(e.currentTarget).attr('data-stream-id'), 10);
+        const topic = $(e.currentTarget).attr('data-topic-name');
+        recent_topics.toggle_bookmark_topic(stream_id, topic);
     });
 
     // RECIPIENT BARS

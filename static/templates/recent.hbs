@@ -15,6 +15,7 @@
     <td class="recent_actions">
         <i class="fa fa-bell-slash on_hover_topic_mute recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Mute topic' }} (M)" role="button" tabindex="0" aria-label="{{t 'Mute topic' }} (M)"></i>
         <i class="fa fa-check-circle on_hover_topic_read recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Mark as read' }} (R)" role="button" tabindex="0" aria-label="{{t 'Mark as read' }} (R)"></i>
+        <i class="fa fa-bookmark on_hover_topic_bookmark recipient_bar_icon {{#if bookmarked}}bookmarked{{/if}}" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Mark as read' }} (R)" role="button" tabindex="0" aria-label="{{t 'Mark as read' }} (R)"></i>
     </td>
     <td class='recent_users'>
         <ul class="recent_avatars">
