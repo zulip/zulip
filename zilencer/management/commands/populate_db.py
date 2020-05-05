@@ -20,7 +20,7 @@ from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, check_add_realm_emoji, 
     try_add_realm_custom_profile_field, try_add_realm_default_custom_profile_field
 from zerver.lib.bulk_create import bulk_create_streams
 from zerver.lib.cache import cache_set
-from zerver.lib.generate_test_data import create_test_data
+from zerver.lib.generate_test_data import create_test_data, generate_topics
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
 from zerver.lib.push_notifications import logger as push_notifications_logger
 from zerver.lib.server_initialization import create_internal_realm, create_users
@@ -648,6 +648,11 @@ def generate_and_send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping
         huddle_members[h] = [s.user_profile.id for s in
                              Subscription.objects.filter(recipient_id=h)]
 
+    # Generate different topics for each stream
+    possible_topics = dict()
+    for stream_id in recipient_streams:
+        possible_topics[stream_id] = generate_topics(options["max_topics"])
+
     message_batch_size = options['batch_size']
     num_messages = 0
     random_max = 1000000
@@ -693,11 +698,10 @@ def generate_and_send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping
             message.sender = get_user_profile_by_id(personals_pair[1])
             saved_data['personals_pair'] = personals_pair
         elif message_type == Recipient.STREAM:
-            stream = Stream.objects.get(id=message.recipient.type_id)
             # Pick a random subscriber to the stream
             message.sender = random.choice(Subscription.objects.filter(
                 recipient=message.recipient)).user_profile
-            message.subject = stream.name + str(random.randint(1, options["max_topics"]))
+            message.subject = random.choice(possible_topics[message.recipient.id])
             saved_data['subject'] = message.subject
 
         message.date_sent = choose_date_sent(num_messages, tot_messages, options['threads'])
