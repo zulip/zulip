@@ -1123,7 +1123,7 @@ class RequiresBillingAccessTest(ZulipTestCase):
         # Quite a hack, but probably fine for now
         string_with_all_endpoints = str(get_resolver('corporate.urls').reverse_dict)
         json_endpoints = {word.strip("\"'()[],$") for word in string_with_all_endpoints.split()
-                          if 'json' in word}
+                          if 'json/' in word}
         # No need to test upgrade endpoint as it only requires user to be logged in.
         json_endpoints.remove("json/billing/upgrade")
 
