@@ -674,17 +674,15 @@ exports.launch = function (section) {
         overlays.open_overlay({
             name: 'subscriptions',
             overlay: $("#subscription_overlay"),
-            on_close: exports.close,
+            on_close: function () {
+                hashchange.exit_overlay();
+            },
         });
         exports.change_state(section);
     });
     if (!exports.get_active_data().id) {
         $('#search_stream_name').focus();
     }
-};
-
-exports.close = function () {
-    hashchange.exit_overlay();
 };
 
 exports.switch_rows = function (event) {
