@@ -10,10 +10,12 @@ from typing import Any, Dict, Optional, List, Tuple, Pattern
 import markdown
 
 import zerver.openapi.python_examples
-from zerver.openapi.openapi import get_openapi_fixture, openapi_spec
+from zerver.openapi.openapi import get_openapi_fixture, openapi_spec, get_openapi_description
 
-MACRO_REGEXP = re.compile(r'\{generate_code_example(\(\s*(.+?)\s*\))*\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+)\s*\))?\}')
+MACRO_REGEXP = re.compile(
+    r'\{generate_code_example(\(\s*(.+?)\s*\))*\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+)\s*\))?\}')
 PYTHON_EXAMPLE_REGEX = re.compile(r'\# \{code_example\|\s*(.+?)\s*\}')
+MACRO_REGEXP_DESC = re.compile(r'\{generate_api_description(\(\s*(.+?)\s*\))}')
 
 PYTHON_CLIENT_CONFIG = """
 #!/usr/bin/env python3
@@ -196,12 +198,14 @@ def generate_curl_example(endpoint: str, method: str,
         if global_security == [{'basicAuth': []}]:
             authentication_required = True
         else:
-            raise AssertionError("Unhandled global securityScheme. Please update the code to handle this scheme.")
+            raise AssertionError("Unhandled global securityScheme."
+                                 + " Please update the code to handle this scheme.")
     elif operation_security == []:
         if operation in insecure_operations:
             authentication_required = False
         else:
-            raise AssertionError("Unknown operation without a securityScheme. Please update insecure_operations.")
+            raise AssertionError("Unknown operation without a securityScheme. "
+                                 + "Please update insecure_operations.")
     else:
         raise AssertionError("Unhandled securityScheme. Please update the code to handle this scheme.")
 
@@ -263,7 +267,7 @@ SUPPORTED_LANGUAGES: Dict[str, Any] = {
     }
 }
 
-class APICodeExamplesGenerator(Extension):
+class APIMarkdownExtension(Extension):
     def __init__(self, api_url: Optional[str]) -> None:
         self.config = {
             'api_url': [
@@ -275,6 +279,9 @@ class APICodeExamplesGenerator(Extension):
     def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
         md.preprocessors.add(
             'generate_code_example', APICodeExamplesPreprocessor(md, self.getConfigs()), '_begin'
+        )
+        md.preprocessors.add(
+            'generate_api_description', APIDescriptionPreprocessor(md, self.getConfigs()), '_begin'
         )
 
 class APICodeExamplesPreprocessor(Preprocessor):
@@ -335,5 +342,42 @@ class APICodeExamplesPreprocessor(Preprocessor):
 
         return fixture
 
-def makeExtension(*args: Any, **kwargs: str) -> APICodeExamplesGenerator:
-    return APICodeExamplesGenerator(*args, **kwargs)
+class APIDescriptionPreprocessor(Preprocessor):
+    def __init__(self, md: markdown.Markdown, config: Dict[str, Any]) -> None:
+        super().__init__(md)
+        self.api_url = config['api_url']
+
+    def run(self, lines: List[str]) -> List[str]:
+        done = False
+        while not done:
+            for line in lines:
+                loc = lines.index(line)
+                match = MACRO_REGEXP_DESC.search(line)
+
+                if match:
+                    function = match.group(2)
+                    text = self.render_description(function)
+                    # The line that contains the directive to include the macro
+                    # may be preceded or followed by text or tags, in that case
+                    # we need to make sure that any preceding or following text
+                    # stays the same.
+                    line_split = MACRO_REGEXP_DESC.split(line, maxsplit=0)
+                    preceding = line_split[0]
+                    following = line_split[-1]
+                    text = [preceding] + text + [following]
+                    lines = lines[:loc] + text + lines[loc+1:]
+                    break
+            else:
+                done = True
+        return lines
+
+    def render_description(self, function: str) -> List[str]:
+        description: List[str] = []
+        path, method = function.rsplit(':', 1)
+        description_dict = get_openapi_description(path, method)
+        description_dict = description_dict.replace('{{api_url}}', self.api_url)
+        description.extend(description_dict.splitlines())
+        return description
+
+def makeExtension(*args: Any, **kwargs: str) -> APIMarkdownExtension:
+    return APIMarkdownExtension(*args, **kwargs)
