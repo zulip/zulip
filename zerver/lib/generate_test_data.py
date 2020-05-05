@@ -12,12 +12,6 @@ def load_config() -> Dict[str, Any]:
 
     return config
 
-def get_stream_title(gens: Dict[str, Any]) -> str:
-
-    return next(gens["adjectives"]) + " " + next(gens["nouns"]) + " " + \
-        next(gens["connectors"]) + " " + next(gens["verbs"]) + " " + \
-        next(gens["adverbs"])
-
 def load_generators(config: Dict[str, Any]) -> Dict[str, Any]:
 
     results = {}
