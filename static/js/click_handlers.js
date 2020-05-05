@@ -423,12 +423,6 @@ exports.initialize = function () {
         $(".tooltip").remove();
     });
 
-    $("#subscriptions_table").on("click", ".exit, #subscription_overlay", function (e) {
-        if ($(e.target).is(".exit, .exit-sign, #subscription_overlay, #subscription_overlay > .flex")) {
-            subs.close();
-        }
-    });
-
     function do_render_buddy_list_tooltip(elem, title_data) {
         elem.tooltip({
             template: render_buddy_list_tooltip(),
