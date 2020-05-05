@@ -1,6 +1,7 @@
 # Contact support
 
-Support for Zulip is available through three channels:
+General and technical support for Zulip is available through three
+channels:
 
 * [chat.zulip.org][chat-zulip-org], the Zulip development community.
   Depending on the time of day/week of your query and the complexity
@@ -25,3 +26,8 @@ questions, or just want to brainstorm how to make Zulip work for your
 organization.
 
 [chat-zulip-org]: https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html
+
+## Billing and commercial questions
+
+We provide exclusively [email support](mailto:support@zulipchat.com)
+for sales, billing, partnerships, and other commercial questions.
