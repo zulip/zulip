@@ -47,8 +47,9 @@ Instructions for integrating with [JIRA](/integrations/doc/jira),
 [OpsGenie](/integrations/doc/opsgenie) are linked.
 
 We recommend integrating via [Zapier](/integrations/doc/zapier) for
-Confluence, Bamboo, Fisheye, Crucible, Crowd, and Sourcetree. Email
-<support@zulipchat.com> if you get stuck and we’d be happy to help you out.
+Confluence, Bamboo, Fisheye, Crucible, Crowd, and Sourcetree.
+[Contact us](/help/contact-support) if you get stuck and we’d be happy to help
+you out.
 
 ## Read our guides.
 

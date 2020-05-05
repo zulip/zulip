@@ -12,7 +12,7 @@ into an existing Zulip organization.
 
 First, export your data from Mattermost.
 The instructions below correspond to various common ways Mattermost is installed; if
-yours isn't covered contact support@zulipchat.com and we'll help you out.
+yours isn't covered, [contact us](/help/contact-support) and we'll help you out.
 
 Replace `<username>` and `<server_ip>` with the appropriate values below.
 

@@ -85,10 +85,8 @@ expert teaching other users how to use Zulip.
 
 * Bonus: learn [Markdown message formatting](/help/format-your-message-using-markdown).
 
-* If anything is confusing or feels missing, tweet `@zulip`, ask on the
-  [Zulip community server](https://chat.zulip.org), or email
-  [support@zulipchat.com](mailto:support@zulipchat.com). We love hearing
-  from new administrators!
+* If anything is confusing or feels missing, [contact
+  us](/help/contact-support)!  We love hearing from users.
 
 ## Invite users and onboard your community
 

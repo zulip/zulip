@@ -29,8 +29,8 @@ are treated the same as spaces.
 ### Bulk add emoji
 
 We expose a [REST API endpoint](/api/upload-custom-emoji) for bulk uploading
-emoji. Using REST API endpoints requires some technical expertise; email
-support@zulipchat.com if you get stuck.
+emoji. Using REST API endpoints requires some technical expertise;
+[contact us](/help/contact-support) if you get stuck.
 
 ## Replace a default emoji
 

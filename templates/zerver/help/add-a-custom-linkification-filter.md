@@ -49,6 +49,6 @@ Generic GitHub `org/repo#ID` format:
 * Automatically links to: `https://github.com/zulip/zulip/issues/2468`
 
 Linkifiers can be very useful, but also complicated to set up. If you have
-any trouble setting these up, please email support@zulipchat.com with a few
-examples of "Original text" and "Automatically links to" and we'll be happy
-to help you out.
+any trouble setting these up, please [contact us](/help/contact-support) with
+a few examples of "Original text" and "Automatically links to" and we'll be
+happy to help you out.
