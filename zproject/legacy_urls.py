@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.urls import path
 import zerver.views
 import zerver.views.streams
 import zerver.views.auth
@@ -15,5 +15,5 @@ legacy_urls = [
     # for devs, and I don't think we need to go to the server
     # any more to find out about subscriptions, since they are already
     # pushed to us via the event system.
-    url(r'^json/subscriptions/exists$', zerver.views.streams.json_stream_exists),
+    path('json/subscriptions/exists', zerver.views.streams.json_stream_exists),
 ]
