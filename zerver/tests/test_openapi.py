@@ -8,7 +8,7 @@ from unittest.mock import patch, MagicMock
 from django.http import HttpResponse
 
 import zerver.openapi.openapi as openapi
-from zerver.lib.bugdown.api_code_examples import generate_curl_example, \
+from zerver.openapi.markdown_extension import generate_curl_example, \
     render_curl_example, parse_language_and_options
 from zerver.lib.request import _REQ
 from zerver.lib.test_classes import ZulipTestCase
