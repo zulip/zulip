@@ -419,10 +419,10 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             # We also exempt some development environment debugging
             # static content URLs, since the content they point to may
             # or may not exist.
-            'coverage/(?P<path>.*)',
-            'node-coverage/(?P<path>.*)',
-            'docs/(?P<path>.*)',
-            'casper/(?P<path>.*)',
+            'coverage/(?P<path>.+)',
+            'node-coverage/(?P<path>.+)',
+            'docs/(?P<path>.+)',
+            'casper/(?P<path>.+)',
             'static/(?P<path>.*)',
         ] + [webhook.url for webhook in WEBHOOK_INTEGRATIONS if not include_webhooks])
 
