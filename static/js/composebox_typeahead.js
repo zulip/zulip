@@ -917,6 +917,9 @@ function get_header_text() {
     case 'stream':
         tip_text = i18n.t('Press > for list of topics');
         break;
+    case 'silent_mention':
+        tip_text = i18n.t('User will not be notified');
+        break;
     default:
         return false;
     }
