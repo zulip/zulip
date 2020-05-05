@@ -1104,6 +1104,18 @@ a.message_label_clickable:hover {
     opacity: 1.0 !important;
 }
 
+#recent_topics_filter_buttons {
+    margin-bottom: 10px;
+}
+
+.btn-recent-filters {
+    border-radius: 40px;    
+}
+
+.btn-recent-selected {
+    background-color: hsl(0, 4%, 80%) !important;
+}
+
 .edit_content {
     width: 12px;
     display: inline-block;

@@ -1,6 +1,7 @@
 const util = require("./util");
 const render_recent_topics_body = require('../templates/recent_topics_list.hbs');
 
+let filter = 'all';       // filter = all | unread | bookmarked
 const topics = new Map(); // Key is stream-id:topic.
 const MAX_AVATAR = 3;  // Number of avatars to display
 
@@ -118,7 +119,16 @@ function format_values() {
             elem.last_msg.stream_id) || elem.last_msg.stream_name;
         const stream_id = parseInt(key.split(':')[0], 10);
         const topic = key.split(':')[1];
+
+        const unread_count = unread.unread_topic_counter.get(stream_id, topic);
+        if (unread_count === 0 && filter === 'unread') {
+            return;
+        }
+
         const bookmarked = elem.starred.size !== 0;
+        if (!bookmarked && filter === 'bookmarked') {
+            return;
+        }
 
         // Display in most recent sender first order
         const all_senders = recent_senders.get_topic_recent_senders(
@@ -137,7 +147,7 @@ function format_values() {
             stream_id: stream_id,
             stream_name: stream_name,
             topic: topic,
-            unread_count: unread.unread_topic_counter.get(stream_id, topic),
+            unread_count: unread_count,
             timestamp: time_stamp,
             stream_url: hash_util.by_stream_uri(stream_id),
             topic_url: hash_util.by_stream_topic_uri(stream_id, topic),
@@ -154,6 +164,14 @@ exports.update = function () {
         recent_topics: format_values(),
     });
     $('#recent_topics_table').html(rendered_body);
+    $('#recent_topics_filter_buttons')
+        .find('[data-filter="' + filter + '"]')
+        .addClass('btn-recent-selected');
+};
+
+exports.set_filter = function (new_filter) {
+    filter = new_filter;
+    exports.update();
 };
 
 exports.launch = function () {

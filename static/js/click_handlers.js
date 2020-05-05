@@ -361,6 +361,16 @@ exports.initialize = function () {
         recent_topics.toggle_bookmark_topic(stream_id, topic);
     });
 
+    $('body').on('click', '.btn-recent-filters', function (e) {
+        e.stopPropagation();
+        if ($(e.currentTarget).hasClass('btn-recent-selected')) {
+            return;
+        }
+        const filter = e.currentTarget.dataset.filter;
+        // $('.btn-recent-filters').removeClass('btn-recent-selected');
+        recent_topics.set_filter(filter);
+    });
+
     // RECIPIENT BARS
 
     function get_row_id_for_narrowing(narrow_link_elem) {
