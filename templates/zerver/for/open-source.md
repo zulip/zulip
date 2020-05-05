@@ -217,5 +217,4 @@ So if there’s something we could improve to make Zulip the obvious
 choice either for you or your community, [open an
 issue](https://github.com/zulip/zulip/issues), [submit a
 patch](https://zulip.readthedocs.io/en/latest/development/overview.html),
-[email us](mailto:support@zulipchat.com), or chat with us directly at
-[chat.zulip.org](https://chat.zulip.org).
+or [contact us](/help/contact-support).
