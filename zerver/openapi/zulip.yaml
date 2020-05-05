@@ -3595,7 +3595,7 @@ components:
       name: group_id
       in: path
       description: |
-        The ID of the group.
+        The ID of the target user group.
       schema:
         type: integer
       example: 42
@@ -3605,8 +3605,9 @@ components:
       in: query
       description: |
         The topic of the message. Only required for stream messages
-        (`type="stream"`), ignored otherwise. Maximum length of 60
-        characters.
+        (`type="stream"`), ignored otherwise.
+
+        Maximum length of 60 characters.
       schema:
         type: string
       example: Castle
@@ -3614,8 +3615,8 @@ components:
       name: queue_id
       in: query
       description: |
-        The ID of a queue that you registered via `POST /api/v1/register` (see
-        [Register a queue](/api/register-queue)).
+        The ID of an event queue that was previously registered via `POST
+        /api/v1/register` (see [Register a queue](/api/register-queue)).
       schema:
         type: string
       example: 1375801870:2942
@@ -3624,7 +3625,7 @@ components:
       name: stream
       in: query
       description: |
-        The name of the stream.
+        The name of the stream to access.
       schema:
         type: string
       example: Denmark
@@ -3683,7 +3684,7 @@ components:
       name: user_id
       in: path
       description: |
-        The user id of the user.
+        The target user's ID.
       schema:
         type: integer
       example: 11
@@ -3698,8 +3699,8 @@ components:
         * 2 => Only administrators can post.
         * 3 => Only new members can post.
 
-        **Changes**: New in Zulip 2.2, replacing the previous is_announcement_only
-        boolean.
+        **Changes**: New in Zulip 2.2, replacing the previous
+        `is_announcement_only` boolean.
       schema:
         type: integer
         default: 1
@@ -3709,8 +3710,12 @@ components:
       name: history_public_to_subscribers
       in: query
       description: |
-        A boolean indicating if the history should be available to newly
-        subscribed members.
+        Whether the stream's message history should be available to
+        newly subscribed members, or users can only access messages
+        they actually received while subscribed to the stream.
+
+        Corresponds to the [shared history](/help/stream-permissions)
+        option in documentation.
       schema:
         type: boolean
         default: None
@@ -3736,7 +3741,7 @@ components:
       name: emoji_name
       in: query
       description: |
-        Name of the emoji.
+        The target emoji's human-readable name.
 
         To find an emoji's name, hover over a message to reveal
         three icons on the right, then click the smiley face icon.
@@ -3749,8 +3754,8 @@ components:
       name: include_custom_profile_fields
       in: query
       description: |
-        Set to `true` if the client wants custom profile field data to be
-        included in the response.
+        Whether the client wants [custom profile field](/help/add-custom-profile-fields)
+        data to be included in the response.
 
         **Changes**: New in Zulip 2.1.0.  Previous versions do no offer these
         data via the API.
@@ -3775,8 +3780,19 @@ components:
       name: reaction_type
       in: query
       description: |
-        When removing a reaction with a [custom emoji](/help/add-custom-emoji),
-        set `reaction_type` to `realm_emoji`.
+        If an app is adding/removing a vote on an existing reaction,
+        it should pass this parameter using the value the server provided
+        for the existing reaction for specificity.  Supported values:
+
+        * `unicode_emoji`: Unicode emoji (`emoji_code` will be its unicode codepoint).
+        * `realm_emoji`: Custom emoji. (`emoji_code` will be its ID).
+        * `zulip_extra_emoji`: Special emoji included with Zulip.  Exists to
+           namespace the `zulip` emoji.
+
+        **Changes**: In Zulip 2.2 (feature level 2), this become
+        optional for [custom emoji](/help/add-custom-emoji);
+        previously, this endpoint assumed `unicode_emoji` if this
+        parameter was not specified.
       schema:
         type: string
       example: 'unicode_emoji'
@@ -3785,16 +3801,19 @@ components:
       name: emoji_code
       in: query
       description: |
-        An encoded version of the unicode codepoint.  For most
-        clients, you won't need this; it's used to handle a rare
-        corner case when upvoting a unicode emoji reaction added
-        previously by another user.
-        If the existing reaction was added when the Zulip
-        server was using a previous version of the emoji
-        data mapping from codepoints to human-readable
-        names, sending the `emoji_code` in the data for
-        the original reaction allows the Zulip server to
-        correctly consider your upvote as an upvote
+        A unique ID, defining the specific emoji codepoint requested,
+        within the namespace of the `reaction_type`.
+
+        For most API clients, you won't need this, but it's important
+        for Zulip apps to handle rare corner cases when
+        adding/removing votes on an emoji reaction added previously by
+        another user.
+
+        If the existing reaction was added when the Zulip server was
+        using a previous version of the emoji data mapping between
+        Unicode codepoints and human-readable names, sending the
+        `emoji_code` in the data for the original reaction allows the
+        Zulip server to correctly interpret your upvote as an upvote
         rather than a reaction with a "diffenent" emoji.
       schema:
         type: string
