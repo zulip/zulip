@@ -901,6 +901,10 @@ class BugdownTest(ZulipTestCase):
         converted = bugdown.convert(":green_tick:", message_realm=realm, message=msg)
         self.assertEqual(converted, '<p>:green_tick:</p>')
 
+    def test_unicode_emoji_to_codepoint(self) -> None:
+        self.assertEqual(bugdown.unicode_emoji_to_codepoint('👨‍👩‍👧‍👦'), '1f468-200d-1f469-200d-1f467-200d-1f466')
+        self.assertEqual(bugdown.unicode_emoji_to_codepoint('👨'), '1f468')
+
     def test_unicode_emoji(self) -> None:
         msg = '\u2615'  # ☕
         converted = bugdown_convert(msg)
@@ -909,6 +913,11 @@ class BugdownTest(ZulipTestCase):
         msg = '\u2615\u2615'  # ☕☕
         converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p><span aria-label=\"coffee\" class="emoji emoji-2615" role=\"img\" title="coffee">:coffee:</span><span aria-label=\"coffee\" class="emoji emoji-2615" role=\"img\" title="coffee">:coffee:</span></p>')
+
+        # Ignore the ZWJ emoji sequence that starts with an emoji we otherwise convert
+        msg = '\U0001F468 \U0001F468\u200D\U0001F469\u200D\U0001F467\u200D\U0001F467'  # 👨 👨‍👩‍👧‍👦
+        converted = bugdown_convert(msg)
+        self.assertEqual(converted, '<p><span aria-label="man" class="emoji emoji-1f468" role="img" title="man">:man:</span> 👨‍👩‍👧‍👧</p>')
 
     def test_no_translate_emoticons_if_off(self) -> None:
         user_profile = self.example_user('othello')

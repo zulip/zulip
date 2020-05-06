@@ -1224,17 +1224,19 @@ def possible_avatar_emails(content: str) -> Set[str]:
 # \u2b00-\u2bff         - Miscellaneous Symbols and Arrows
 # \u3000-\u303f         - CJK Symbols and Punctuation
 # \u3200-\u32ff         - Enclosed CJK Letters and Months
-unicode_emoji_regex = '(?P<syntax>['\
-    '\U0001F100-\U0001F64F'    \
-    '\U0001F680-\U0001F6FF'    \
-    '\U0001F900-\U0001F9FF'    \
-    '\u2000-\u206F'            \
-    '\u2300-\u27BF'            \
-    '\u2900-\u297F'            \
-    '\u2B00-\u2BFF'            \
-    '\u3000-\u303F'            \
-    '\u3200-\u32FF'            \
-    '])'
+emoji_chars = '\U0001F100-\U0001F64F'    \
+              '\U0001F680-\U0001F6FF'    \
+              '\U0001F900-\U0001F9FF'    \
+              '\u2000-\u206F'            \
+              '\u2300-\u27BF'            \
+              '\u2900-\u297F'            \
+              '\u2B00-\u2BFF'            \
+              '\u3000-\u303F'            \
+              '\u3200-\u32FF'
+unicode_emoji_regex = f'(?P<syntax>[{emoji_chars}](\u200d[{emoji_chars}])*)'
+# For the main regex, we also match ZWJ emojis as emoji(ZWJ,emoji)*,
+# matching (E: emoji, Z: Zero Width Joiner): E, EZE, EZEZE, etc.
+
 # The equivalent JS regex is \ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|
 # \ud83e[\udd00-\uddff]|[\u2000-\u206f]|[\u2300-\u27bf]|[\u2b00-\u2bff]|[\u3000-\u303f]|
 # [\u3200-\u32ff]. See below comments for explanation. The JS regex is used by marked.js for
@@ -1268,12 +1270,19 @@ def make_realm_emoji(src: str, display_string: str) -> Element:
     return elt
 
 def unicode_emoji_to_codepoint(unicode_emoji: str) -> str:
-    codepoint = hex(ord(unicode_emoji))[2:]
-    # Unicode codepoints are minimum of length 4, padded
-    # with zeroes if the length is less than zero.
-    while len(codepoint) < 4:
-        codepoint = '0' + codepoint
-    return codepoint
+    def process_char(codepoint_str: str) -> str:
+        codepoint = hex(ord(codepoint_str))[2:]
+        # Unicode codepoints are minimum of length 4, padded
+        # with zeroes if the length is less than zero.
+        while len(codepoint) < 4:
+            codepoint = '0' + codepoint
+        return codepoint
+
+    codepoints = []
+    for codepoint_str in unicode_emoji:
+        codepoints.append(process_char(codepoint_str))
+
+    return '-'.join(codepoints)
 
 class EmoticonTranslation(markdown.inlinepatterns.Pattern):
     """ Translates emoticons like `:)` into emoji like `:smile:`. """
