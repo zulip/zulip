@@ -25,12 +25,6 @@ def try_git_describe() -> Optional[str]:
     except Exception:  # nocoverage
         return None
 
-def add_deployment_metadata(report: Dict[str, Any]) -> None:
-    report['deployment_data'] = dict(
-        git=try_git_describe(),
-        ZULIP_VERSION=ZULIP_VERSION,
-    )
-
 def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
     report['has_request'] = True
 
@@ -103,7 +97,10 @@ class AdminNotifyHandler(logging.Handler):
             report['node'] = platform.node()
             report['host'] = platform.node()
 
-            add_deployment_metadata(report)
+            report['deployment_data'] = dict(
+                git=try_git_describe(),
+                ZULIP_VERSION=ZULIP_VERSION,
+            )
 
             if record.exc_info:
                 stack_trace = ''.join(traceback.format_exception(*record.exc_info))
