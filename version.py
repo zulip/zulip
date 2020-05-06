@@ -18,7 +18,7 @@ LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.org/2019/12/13/zulip-2-1-relea
 # DESKTOP_MINIMUM_VERSION but below DESKTOP_WARNING_VERSION will have
 # a banner at the top of the page asking the user to upgrade.
 DESKTOP_MINIMUM_VERSION = "5.0.0"
-DESKTOP_WARNING_VERSION = "5.0.0"
+DESKTOP_WARNING_VERSION = "5.2.0"
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump
