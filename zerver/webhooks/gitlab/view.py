@@ -253,10 +253,15 @@ def get_pipeline_event_body(payload: Dict[str, Any]) -> str:
     else:
         action = 'changed status to {}'.format(pipeline_status)
 
+    pipeline_url = '{}/pipelines/{}'.format(
+        get_project_homepage(payload),
+        payload['object_attributes'].get('id')
+    )
+
     builds_status = ""
     for build in payload['builds']:
         builds_status += "* {} - {}\n".format(build.get('name'), build.get('status'))
-    return "Pipeline {} with build(s):\n{}.".format(action, builds_status[:-1])
+    return "[Pipeline]({}) {} with build(s):\n{}.".format(pipeline_url, action, builds_status[:-1])
 
 def get_repo_name(payload: Dict[str, Any]) -> str:
     return payload['project']['name']
