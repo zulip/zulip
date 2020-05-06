@@ -124,6 +124,8 @@ def set_user_data(username: str, userkey_dicts: List[Dict[str, Any]]) -> str:
 
 {setup_zulipdev_ssh_keys}
 {setup_root_ssh_keys}
+sed -i "s/PasswordAuthentication yes/PasswordAuthentication no/g" /etc/ssh/sshd_config
+service ssh restart
 {hostname_setup}
 su -c '{server_repo_setup}' zulipdev
 su -c '{python_api_repo_setup}' zulipdev
