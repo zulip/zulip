@@ -68,7 +68,7 @@ casper.then(function () {
 
 casper.then(function () {
     // The user is logged in to the newly created realm and the app is loaded
-    casper.waitUntilVisible('#zfilt', function () {
+    casper.waitUntilVisible('.message_row', function () {
         this.test.assertTitleMatch(/ - Zulip$/, "Successfully logged into Zulip webapp");
     }, null, 20000);
 });
