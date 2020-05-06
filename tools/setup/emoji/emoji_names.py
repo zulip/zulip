@@ -1,5 +1,22 @@
 from typing import Any, Dict
 
+def import_zwj_emoji_sequences(file_path: str) -> Dict[str, Dict[str, Any]]:
+    emoji_name_map: Dict[str, Dict[str, Any]] = {}
+    with open(file_path) as zwj_file:
+        for line in zwj_file:
+            if line == '' or line.startswith('#'):
+                continue
+            if not line.strip():
+                continue
+            # format: code_point(s) ; type_field ; description # comments
+            line = line.split('#')[0]
+            data = [field.strip() for field in line.split(';')]
+            code_points, type_field, description = data
+            code_points_list = code_points.lower().replace(' ', '-')
+            description = description.replace(':', '').replace(' ', '-')
+            emoji_name_map[code_points_list] = {'canonical_name': f'zero-width-{description}', 'aliases': []}
+    return emoji_name_map
+
 EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # seems like best emoji for happy
     '1f600': {'canonical_name': 'grinning', 'aliases': ['happy']},
