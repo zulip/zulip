@@ -29,7 +29,7 @@ these plans and would like to enable it.
 
 * Deleted messages are preserved temporarily in a special archive.  So
 if you discover a misconfiguration accidentally deleted content you
-meant to preserve, contact Zulip support promtly for assistance with
+meant to preserve, contact Zulip support promptly for assistance with
 restoration.  See the [deletion
 documentation](/help/edit-or-delete-a-message#how-deletion-works) for
 more details on precisely how message deletion works in Zulip.
