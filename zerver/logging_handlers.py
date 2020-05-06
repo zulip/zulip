@@ -29,11 +29,6 @@ def add_deployment_metadata(report: Dict[str, Any]) -> None:
     report['git_described'] = try_git_describe()
     report['zulip_version_const'] = ZULIP_VERSION
 
-    version_path = os.path.join(os.path.dirname(__file__), '../version')
-    if os.path.exists(version_path):
-        with open(version_path) as f:  # nocoverage
-            report['zulip_version_file'] = f.read().strip()
-
 def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
     report['has_request'] = True
 
