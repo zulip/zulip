@@ -112,6 +112,10 @@ exports.initialize = function () {
         },
         stopAdvance: page_params.search_pills_enabled,
         advanceKeyCodes: [8],
+
+        // Use our custom typeahead `on_escape` hook to exit
+        // the search bar as soon as the user hits Esc.
+        on_escape: tab_bar.exit_search,
     });
 
     searchbox_form.on('compositionend', function () {
