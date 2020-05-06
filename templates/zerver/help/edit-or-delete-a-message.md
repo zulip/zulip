@@ -83,10 +83,10 @@ permissions to delete that message.
 * For protection against accidental or immediately regretted
   deletions, messages deleted directly or via a [message retention
   policy](/help/message-retention-policy) are archived for 7 days in a
-  format that can be restored.  After that time, they are permanently
-  and irrecoverably deleted from the Zulip server.  Server
-  administrators can adjust the archival time using the
-  `ARCHIVED_DATA_VACUUMING_DELAY_DAYS` setting.
+  format that can be restored by a server administrator.  After that
+  time, they are permanently and irrecoverably deleted from the Zulip
+  server.  Server administrators can adjust the archival time using
+  the `ARCHIVED_DATA_VACUUMING_DELAY_DAYS` setting.
 
 ## Related articles
 
