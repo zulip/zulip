@@ -114,7 +114,7 @@ class DocPageTest(ZulipTestCase):
         self._test('/api/send-message', 'steal away your hearts')
         self._test('/api/render-message', '**foo**')
         self._test('/api/get-all-streams', 'include_public')
-        self._test('/api/get-stream-id', 'The name of the stream.')
+        self._test('/api/get-stream-id', 'The name of the stream to access.')
         self._test('/api/get-subscribed-streams', 'Get all streams that the user is subscribed to.')
         self._test('/api/get-all-users', 'client_gravatar')
         self._test('/api/register-queue', 'apply_markdown')
