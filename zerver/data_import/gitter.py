@@ -157,21 +157,22 @@ def build_recipient_and_subscription(
         zerver_recipient.append(build_recipient(recipient_id, recipient_id, Recipient.STREAM))
         recipient_id += 1
 
-    # There is only one default stream to subscribe users to.
-    # which corresponds to 'recipient_id' = 'stream_id' = 0
-    #
-    # TODO: For multi-stream imports, subscribe users to streams
-    # based either on Gitter API data or who sent messages where.
-    for user in zerver_userprofile:
-        zerver_subscription.append(build_subscription(0, user['id'], subscription_id))
-        subscription_id += 1
-
     # For users
     for user in zerver_userprofile:
         zerver_recipient.append(build_recipient(user['id'], recipient_id, Recipient.PERSONAL))
         zerver_subscription.append(build_subscription(recipient_id, user['id'], subscription_id))
         recipient_id += 1
         subscription_id += 1
+
+    # As suggested in #14830, we subscribe every user to every stream.
+    # We rely on the above invariant: 'recipient_id'=n corresponds to 'stream_id'=n
+    #
+    # TODO: For multi-stream imports, subscribe users to streams
+    # based either on Gitter API data or who sent messages where.
+    for user in zerver_userprofile:
+        for stream in zerver_stream:
+            zerver_subscription.append(build_subscription(stream['id'], user['id'], subscription_id))
+            subscription_id += 1
 
     return zerver_recipient, zerver_subscription
 
