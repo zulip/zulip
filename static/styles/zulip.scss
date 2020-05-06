@@ -1249,6 +1249,17 @@ div.focused_table {
     margin-bottom: 5px;
 }
 
+.select_edit_stream {
+    margin-bottom: 5px !important;
+}
+
+.edit-controls .fa-angle-right {
+    font-size: 0.9em;
+    -webkit-text-stroke: 0.05em;
+    position: relative;
+    margin: 0px 5px;
+}
+
 #inline_topic_edit.header-v {
     height: 18px;
     display: inline-block;
@@ -1265,6 +1276,7 @@ div.focused_table {
 #message_edit_topic:focus {
     outline: none;
 }
+
 
 .message_edit_topic_propagate {
     display: inline-block;

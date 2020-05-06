@@ -263,6 +263,11 @@ function edit_message(row, raw_content) {
 
     const show_video_chat_button = compose.compute_show_video_chat_button();
 
+    const show_edit_stream = message.is_stream && page_params.is_admin;
+    // current message's stream has been already been added and selected in handlebar
+    const available_streams = show_edit_stream ? stream_data.subscribed_subs()
+        .filter(s => s.stream_id !== message.stream_id) : null;
+
     const form = $(render_message_edit_form({
         is_stream: message.type === 'stream',
         message_id: message.id,
@@ -274,6 +279,10 @@ function edit_message(row, raw_content) {
         file_upload_enabled: file_upload_enabled,
         show_video_chat_button: show_video_chat_button,
         minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60),
+        show_edit_stream: show_edit_stream,
+        available_streams: available_streams,
+        stream_id: message.stream_id,
+        stream_name: message.stream,
     }));
 
     const edit_obj = {form: form, raw_content: raw_content};
@@ -284,6 +293,7 @@ function edit_message(row, raw_content) {
 
     upload.feature_check($('#attach_files_' + rows.id(row)));
 
+    const message_edit_stream = row.find("#select_stream_id_" + message.id);
     const message_edit_content = row.find('textarea.message_edit_content');
     const message_edit_topic = row.find('input.message_edit_topic');
     const message_edit_topic_propagate = row.find('select.message_edit_topic_propagate');
@@ -399,11 +409,23 @@ function edit_message(row, raw_content) {
     edit_obj.scrolled_by = scroll_by;
     message_viewport.scrollTop(message_viewport.scrollTop() + scroll_by);
 
+    const original_stream_id = message.stream_id;
+    const original_topic = message.topic;
+    function set_propagate_selector_display() {
+        const new_topic = message_edit_topic.val();
+        const new_stream_id = parseInt(message_edit_stream.val(), 10);
+        const is_topic_edited = new_topic !== original_topic && new_topic !== "";
+        const is_stream_edited = new_stream_id !== original_stream_id;
+        message_edit_topic_propagate.toggle(is_topic_edited || is_stream_edited);
+    }
+
     if (!message.locally_echoed) {
-        const original_topic = message.topic;
         message_edit_topic.keyup(function () {
-            const new_topic = message_edit_topic.val();
-            message_edit_topic_propagate.toggle(new_topic !== original_topic && new_topic !== "");
+            set_propagate_selector_display();
+        });
+
+        message_edit_stream.on('change', function () {
+            set_propagate_selector_display();
         });
     }
 }
@@ -566,18 +588,26 @@ exports.save_message_row_edit = function (row) {
     let new_topic;
     const old_topic = message.topic;
 
+    let stream_changed = false;
+    let new_stream_id;
+    const old_stream_id = message.stream_id;
+
     if (message.type === "stream") {
         new_topic = row.find(".message_edit_topic").val();
         topic_changed = new_topic !== old_topic && new_topic.trim() !== "";
+
+        new_stream_id = parseInt($("#select_stream_id_" + message_id).val(), 10);
+        stream_changed = new_stream_id !== old_stream_id;
     }
     // Editing a not-yet-acked message (because the original send attempt failed)
     // just results in the in-memory message being changed
     if (message.locally_echoed) {
-        if (new_content !== message.raw_content || topic_changed) {
-            // `edit_locally` handles the case where `new_topic` is undefined
+        if (new_content !== message.raw_content || topic_changed || stream_changed) {
+            // `edit_locally` handles the case where `new_topic/new_stream_id` is undefined
             echo.edit_locally(message, {
                 raw_content: new_content,
                 new_topic: new_topic,
+                new_stream_id: new_stream_id,
             });
             row = current_msg_list.get_row(message_id);
         }
@@ -586,13 +616,19 @@ exports.save_message_row_edit = function (row) {
     }
 
     const request = {message_id: message.id};
-    if (topic_changed) {
-        request.topic = new_topic;
+
+    if (topic_changed || stream_changed) {
         const selected_topic_propagation = row.find("select.message_edit_topic_propagate").val() || "change_later";
         request.propagate_mode = selected_topic_propagation;
         changed = true;
     }
 
+    if (topic_changed) {
+        request.topic = new_topic;
+    }
+    if (stream_changed) {
+        request.stream_id = new_stream_id;
+    }
     if (new_content !== message.raw_content) {
         request.content = new_content;
         changed = true;
@@ -604,7 +640,7 @@ exports.save_message_row_edit = function (row) {
         return;
     }
 
-    if (changed && !topic_changed &&
+    if (changed && !topic_changed && !stream_changed &&
             !markdown.contains_backend_only_syntax(new_content)) {
         // If the topic isn't changed, and the new message content
         // could have been locally echoed, than we can locally echo
