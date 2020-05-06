@@ -16,7 +16,7 @@ You can run them all at once with
 
 You can set this up as a local Git commit hook with
 
-    ``tools/setup-git-repo``
+    tools/setup-git-repo
 
 The Vagrant setup process runs this for you.
 
