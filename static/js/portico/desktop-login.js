@@ -47,12 +47,9 @@ async function decrypt_manual() {
 
     const keyHex = Array.from(key, (b) => b.toString(16).padStart(2, "0")).join("");
     window.open(
-        new URL(
-            (window.location.search ? window.location.search + "&" : "?") +
-                "desktop_flow_otp=" +
-                encodeURIComponent(keyHex),
-            window.location.href
-        ),
+        (window.location.search ? window.location.search + "&" : "?") +
+            "desktop_flow_otp=" +
+            encodeURIComponent(keyHex),
         "_blank"
     );
 
