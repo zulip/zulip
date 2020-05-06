@@ -35,7 +35,6 @@ def deployment_repr(report: Dict[str, Any]) -> str:
     deployment = 'Deployed code:\n'
     for (label, field) in [('git', 'git_described'),
                            ('ZULIP_VERSION', 'zulip_version_const'),
-                           ('version', 'zulip_version_file'),
                            ]:
         if report[field] is not None:
             deployment += '- %s: %s\n' % (label, report[field])
