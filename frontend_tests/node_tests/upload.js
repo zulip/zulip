@@ -46,6 +46,7 @@ run_test('get_item', () => {
     assert.equal(upload.get_item("file_input_identifier", {mode: "compose"}), "#file_input");
     assert.equal(upload.get_item("source", {mode: "compose"}), "compose-file-input");
     assert.equal(upload.get_item("drag_drop_container", {mode: "compose"}), $('#compose'));
+    assert.equal(upload.get_item("drag_drop_container_img", {mode: "compose"}), $("#main_div"));
 
     assert.equal(upload.get_item("textarea", {mode: "edit", row: 1}), $('#message_edit_content_1'));
 
@@ -67,6 +68,7 @@ run_test('get_item', () => {
     assert.equal(upload.get_item("file_input_identifier", {mode: "edit", row: 123}), "#message_edit_file_input_123");
     assert.equal(upload.get_item("source", {mode: "edit", row: 123}), "message-edit-file-input");
     assert.equal(upload.get_item("drag_drop_container", {mode: "edit", row: 1}), $("#message_edit_form"));
+    assert.equal(upload.get_item("drag_drop_container_img", {mode: "edit", row: 1}), $("#main_div"));
 
     assert.throws(
         () => {
@@ -371,6 +373,43 @@ run_test('file_drop', () => {
         },
     };
     const drop_handler = $("#compose").get_on_handler("drop");
+    let upload_files_called = false;
+    upload.upload_files = () => {upload_files_called = true;};
+    drop_handler(drop_event);
+    assert.equal(prevent_default_counter, 3);
+    assert.equal(upload_files_called, true);
+
+});
+
+run_test('universal_file_drop', () => {
+    set_global('$', global.make_zjquery());
+    upload.setup_upload({mode: "compose"});
+    let prevent_default_counter = 0;
+    const drag_event = {
+        preventDefault: () => {
+            prevent_default_counter += 1;
+        },
+    };
+    const dragover_handler = $("#main_div").get_on_handler("dragover");
+    dragover_handler(drag_event);
+    assert.equal(prevent_default_counter, 1);
+
+    const dragenter_handler = $("#main_div").get_on_handler("dragenter");
+    dragenter_handler(drag_event);
+    assert.equal(prevent_default_counter, 2);
+
+    const files = ["file1", "file2"];
+    const drop_event = {
+        preventDefault: () => {
+            prevent_default_counter += 1;
+        },
+        originalEvent: {
+            dataTransfer: {
+                files: files,
+            },
+        },
+    };
+    const drop_handler = $("#main_div").get_on_handler("drop");
     let upload_files_called = false;
     upload.upload_files = () => {upload_files_called = true;};
     drop_handler(drop_event);
