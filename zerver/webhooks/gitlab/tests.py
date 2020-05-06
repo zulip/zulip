@@ -491,7 +491,7 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_pipeline_succeeded_event_message(self) -> None:
         expected_topic = "my-awesome-project / master"
-        expected_message = "Pipeline changed status to success with build(s):\n* job_name2 - success\n* job_name - success."
+        expected_message = "[Pipeline](https://gitlab.com/TomaszKolek/my-awesome-project/pipelines/4414206) changed status to success with build(s):\n* [job_name2](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541113) - success\n* [job_name](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541112) - success."
 
         self.send_and_test_stream_message(
             'pipeline_hook__pipeline_succeeded',
@@ -501,7 +501,7 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_pipeline_started_event_message(self) -> None:
         expected_topic = "my-awesome-project / master"
-        expected_message = "Pipeline started with build(s):\n* job_name - running\n* job_name2 - pending."
+        expected_message = "[Pipeline](https://gitlab.com/TomaszKolek/my-awesome-project/pipelines/4414206) started with build(s):\n* [job_name](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541112) - running\n* [job_name2](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541113) - pending."
 
         self.send_and_test_stream_message(
             'pipeline_hook__pipeline_started',
@@ -511,7 +511,7 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_pipeline_pending_event_message(self) -> None:
         expected_topic = "my-awesome-project / master"
-        expected_message = "Pipeline was created with build(s):\n* job_name2 - pending\n* job_name - created."
+        expected_message = "[Pipeline](https://gitlab.com/TomaszKolek/my-awesome-project/pipelines/4414206) was created with build(s):\n* [job_name2](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541113) - pending\n* [job_name](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541112) - created."
 
         self.send_and_test_stream_message(
             'pipeline_hook__pipeline_pending',
