@@ -205,7 +205,7 @@ def do_soft_deactivate_user(user_profile: UserProfile) -> None:
     except IndexError:  # nocoverage
         # In the unlikely event that a user somehow has never received
         # a message, we just use the overall max message ID.
-        user_profile.last_active_message_id = Message.objects.max().id
+        user_profile.last_active_message_id = Message.objects.last().id
     user_profile.long_term_idle = True
     user_profile.save(update_fields=[
         'long_term_idle',
