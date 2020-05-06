@@ -50,13 +50,11 @@
  *   in compose.scss and splitting $container out of $menu so we can insert
  *   additional HTML before $menu.
  *
- * 4. Navbar changes:
+ * 4. Escape hooks:
  *
- *  Typically, typeahead hotkey actions are independent of other application
- *  actions, however, the navbar is one case where we want to try and do more
- *  than a simple typeahead action with a single hotkey press, and so we've
- *  been forced to make a custom modification, see inline comment at `Esc`
- *  keyup for more details.
+ *  You can set an on_escape hook to take extra actions when the user hits
+ *  the `Esc` key.  We use this in our navbar code to close the navbar when
+ *  a user hits escape while in the typeahead.
  * ============================================================ */
 
 !function($){
@@ -83,6 +81,7 @@
     this.fixed = this.options.fixed || false;
     this.automated = this.options.automated || this.automated;
     this.trigger_selection = this.options.trigger_selection || this.trigger_selection;
+    this.on_escape = this.options.on_escape;
     this.header = this.options.header || this.header;
 
     if (this.fixed) {
@@ -356,14 +355,10 @@
 
         case 27: // escape
           if (!this.shown) return
-          // Custom Zulip code to achieve the following goals:
-          // when the searchbox is open in the navbar, and the typeahead is open, a single `Esc` should
-          // be able to close both the searchbox and the typeahead.
-          if ($("input:focus,textarea:focus")[0].className === "search-query input-block-level") {
-            tab_bar.exit_search();
-            $("input:focus,textarea:focus").blur();
-          }
           this.hide()
+          if (this.on_escape) {
+            this.on_escape();
+          }
           break
 
         default:
