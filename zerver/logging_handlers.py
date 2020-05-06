@@ -26,8 +26,10 @@ def try_git_describe() -> Optional[str]:
         return None
 
 def add_deployment_metadata(report: Dict[str, Any]) -> None:
-    report['git_described'] = try_git_describe()
-    report['zulip_version_const'] = ZULIP_VERSION
+    report['deployment_data'] = dict(
+        git=try_git_describe(),
+        ZULIP_VERSION=ZULIP_VERSION,
+    )
 
 def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
     report['has_request'] = True

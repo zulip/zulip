@@ -33,11 +33,8 @@ def user_info_str(report: Dict[str, Any]) -> str:
 
 def deployment_repr(report: Dict[str, Any]) -> str:
     deployment = 'Deployed code:\n'
-    for (label, field) in [('git', 'git_described'),
-                           ('ZULIP_VERSION', 'zulip_version_const'),
-                           ]:
-        if report[field] is not None:
-            deployment += '- %s: %s\n' % (label, report[field])
+    for field, val in report['deployment_data'].items():
+        deployment += '- %s: %s\n' % (field, val)
     return deployment
 
 def notify_browser_error(report: Dict[str, Any]) -> None:
