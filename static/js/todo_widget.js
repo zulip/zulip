@@ -104,7 +104,7 @@ exports.task_data_holder = function () {
                 const item = task_map.get(key);
 
                 if (item === undefined) {
-                    blueslip.error('unknown key for tasks: ' + key);
+                    blueslip.warn('Do we have legacy data? unknown key for tasks: ' + key);
                     return;
                 }
 
