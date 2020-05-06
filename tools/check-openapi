@@ -4,24 +4,31 @@ const fs = require('fs');
 const jsyaml = require('js-yaml');
 const SwaggerParser = require('swagger-parser');
 
-async function validate_swagger(file) {
-    try {
-        await SwaggerParser.validate(file);
-    } catch (err) {
-        // There is something wrong. Display the validation errors
-        console.error('In', file + ':');
-        console.error(err.message);
-        process.exitCode = 1;
-    }
-}
-
 (async () => {
     // Iterate through the changed files, passed in the arguments.
     // The two first arguments are the call to the Node interpreter and this
     // script, hence the starting point at 2.
     for (const file of process.argv.slice(2)) {
-        if (jsyaml.safeLoad(await fs.promises.readFile(file, 'utf8')).openapi !== undefined) {
-            await validate_swagger(file);
+        try {
+            if (
+                jsyaml.safeLoad(await fs.promises.readFile(file, 'utf8'), {
+                    filename: file,
+                }).openapi !== undefined
+            ) {
+                await SwaggerParser.validate(file);
+            }
+        } catch (error) {
+            if (error instanceof jsyaml.YAMLException) {
+                console.error(error.message);
+            } else if (error instanceof SyntaxError) {
+                console.error(`${file}: ${error.message}`);
+            } else {
+                throw error;
+            }
+            process.exitCode = 1;
         }
     }
-})();
+})().catch((error) => {
+    console.error(error);
+    process.exit(1);
+});
