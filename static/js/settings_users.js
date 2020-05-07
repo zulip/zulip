@@ -11,6 +11,12 @@ exports.reset = function () {
     meta.loaded = false;
 };
 
+const section = {
+    active: {},
+    deactivated: {},
+    bots: {},
+};
+
 function compare_a_b(a, b) {
     if (a > b) {
         return 1;
@@ -190,12 +196,18 @@ function populate_users(realm_people_data) {
     deactivated_users = _.sortBy(deactivated_users, 'full_name');
     bots = _.sortBy(bots, 'full_name');
 
-    const reset_scrollbar = function ($sel) {
-        return function () {
-            ui.reset_scrollbar($sel);
-        };
-    };
+    section.active.create_table(active_users);
+    section.deactivated.create_table(deactivated_users);
+    section.bots.create_table(bots);
+}
 
+function reset_scrollbar($sel) {
+    return function () {
+        ui.reset_scrollbar($sel);
+    };
+}
+
+section.bots.create_table = (bots) => {
     const $bots_table = $("#admin_bots_table");
     list_render.create($bots_table, bots, {
         name: "admin_bot_list",
@@ -223,6 +235,11 @@ function populate_users(realm_people_data) {
         },
     });
 
+    loading.destroy_indicator($('#admin_page_bots_loading_indicator'));
+    $("#admin_bots_table").show();
+};
+
+section.active.create_table = (active_users) => {
     function get_last_active(user) {
         const last_active_date = presence.last_active_date(user.user_id);
 
@@ -258,6 +275,11 @@ function populate_users(realm_people_data) {
         },
     });
 
+    loading.destroy_indicator($('#admin_page_users_loading_indicator'));
+    $("#admin_users_table").show();
+};
+
+section.deactivated.create_table = (deactivated_users) => {
     const $deactivated_users_table = $("#admin_deactivated_users_table");
     list_render.create($deactivated_users_table, deactivated_users, {
         name: "deactivated_users_table_list",
@@ -281,13 +303,9 @@ function populate_users(realm_people_data) {
         },
     });
 
-    loading.destroy_indicator($('#admin_page_users_loading_indicator'));
-    loading.destroy_indicator($('#admin_page_bots_loading_indicator'));
     loading.destroy_indicator($('#admin_page_deactivated_users_loading_indicator'));
     $("#admin_deactivated_users_table").show();
-    $("#admin_users_table").show();
-    $("#admin_bots_table").show();
-}
+};
 
 exports.set_up = function () {
     loading.make_indicator($('#admin_page_users_loading_indicator'), {text: 'Loading...'});
