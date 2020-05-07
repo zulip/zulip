@@ -1,10 +1,10 @@
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.decorator import to_non_negative_int
 from zerver.lib.actions import do_update_pointer
 from zerver.lib.request import has_request_variables, JsonableError, REQ
 from zerver.lib.response import json_success
+from zerver.lib.validator import to_non_negative_int
 from zerver.models import UserProfile, get_usermessage_by_message_id
 
 def get_pointer_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:

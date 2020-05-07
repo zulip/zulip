@@ -804,6 +804,8 @@ run_test('set_up', () => {
     };
     $("#id_realm_message_content_edit_limit_minutes").set_parent($.create('<stub edit limit parent>'));
     $("#id_realm_message_content_delete_limit_minutes").set_parent($.create('<stub delete limit parent>'));
+    $("#id_realm_message_retention_days").set_parent($.create('<stub retention period parent>'));
+    $("#id_realm_message_retention_setting").change = noop;
     $("#message_content_in_email_notifications_label").set_parent($.create('<stub in-content setting checkbox>'));
     $("#enable_digest_emails_label").set_parent($.create('<stub digest setting checkbox>'));
     $("#id_realm_digest_weekday").set_parent($.create('<stub digest weekday setting dropdown>'));
