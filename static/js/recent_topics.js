@@ -1,7 +1,7 @@
 const util = require("./util");
 const render_recent_topics_body = require('../templates/recent_topics_list.hbs');
 
-let filter = 'all';       // filter = all | unread | bookmarked
+let filters = new Set();
 const topics = new Map(); // Key is stream-id:topic.
 const MAX_AVATAR = 3;  // Number of avatars to display
 
@@ -27,7 +27,7 @@ function reduce_message(msg) {
 exports.process_message = function (msg) {
     const is_ours = people.is_my_user_id(msg.sender_id);
     // only process stream msgs in which current user's msg is present.
-    const is_relevant = is_ours && msg.type === 'stream';
+    const is_relevant = msg.type === 'stream';
     const key = msg.stream_id + ':' + msg.topic;
     const topic = topics.get(key);
     // Process msg if it's not user's but we are tracking the topic.
@@ -39,6 +39,7 @@ exports.process_message = function (msg) {
         topics.set(key, {
             last_msg: reduce_message(msg),
             starred: msg.starred ? new Set([msg.id]) : new Set(),
+            participated: is_ours,
         });
         return true;
     }
@@ -50,6 +51,7 @@ exports.process_message = function (msg) {
     if (msg.starred) {
         topic.starred.add(msg.id);
     }
+    topic.participated = is_ours || topic.participated;
     topics.set(key, topic);
     return true;
 };
@@ -121,15 +123,17 @@ function format_values() {
         const topic = key.split(':')[1];
 
         const unread_count = unread.unread_topic_counter.get(stream_id, topic);
-        if (unread_count === 0 && filter === 'unread') {
+        if (unread_count === 0 && filters.has('unread')) {
             return;
         }
 
         const bookmarked = elem.starred.size !== 0;
-        if (!bookmarked && filter === 'bookmarked') {
+        if (!bookmarked && filters.has('bookmarked')) {
             return;
         }
-
+        if (!elem.participated && filters.has('participated')) {
+            return;
+        }
         // Display in most recent sender first order
         const all_senders = recent_senders.get_topic_recent_senders(
             stream_id, topic);
@@ -164,13 +168,31 @@ exports.update = function () {
         recent_topics: format_values(),
     });
     $('#recent_topics_table').html(rendered_body);
-    $('#recent_topics_filter_buttons')
-        .find('[data-filter="' + filter + '"]')
-        .addClass('btn-recent-selected');
+
+    if (filters.size === 0) {
+        $('#recent_topics_filter_buttons')
+            .find('[data-filter="all"]')
+            .addClass('btn-recent-selected');
+    } else {
+        filters.forEach(function (filter) {
+            $('#recent_topics_filter_buttons')
+                .find('[data-filter="' + filter + '"]')
+                .addClass('btn-recent-selected');
+        });
+    }
 };
 
-exports.set_filter = function (new_filter) {
-    filter = new_filter;
+exports.set_filter = function (filter) {
+    const filter_elem = $('#recent_topics_filter_buttons')
+        .find('[data-filter="' + filter + '"]');
+
+    if (filter === 'all' && filters.size !== 0) {
+        filters = new Set();
+    } else if (filter_elem.hasClass('btn-recent-selected')) {
+        filters.delete(filter);
+    } else {
+        filters.add(filter);
+    }
     exports.update();
 };
 

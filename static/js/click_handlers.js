@@ -363,12 +363,7 @@ exports.initialize = function () {
 
     $('body').on('click', '.btn-recent-filters', function (e) {
         e.stopPropagation();
-        if ($(e.currentTarget).hasClass('btn-recent-selected')) {
-            return;
-        }
-        const filter = e.currentTarget.dataset.filter;
-        // $('.btn-recent-filters').removeClass('btn-recent-selected');
-        recent_topics.set_filter(filter);
+        recent_topics.set_filter(e.currentTarget.dataset.filter);
     });
 
     // All table rows without header
