@@ -84,7 +84,7 @@
                         <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                     </a>
                 </label>
-                <select name="realm_email_address_visibility" class="setting-widget prop-element" id="id_realm_email_address_visibility" data-setting-widget-type="integer">
+                <select name="realm_email_address_visibility" class="setting-widget prop-element" id="id_realm_email_address_visibility" data-setting-widget-type="number">
                     {{> dropdown_options_widget option_values=email_address_visibility_values}}
                 </select>
             </div>
@@ -98,13 +98,13 @@
             <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">
                     <label for="realm_create_stream_policy" class="dropdown-title">{{t "Who can create streams" }}</label>
-                    <select name="realm_create_stream_policy" id="id_realm_create_stream_policy" class="prop-element" data-setting-widget-type="integer">
+                    <select name="realm_create_stream_policy" id="id_realm_create_stream_policy" class="prop-element" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=create_stream_policy_values}}
                     </select>
                 </div>
                 <div class="input-group">
                     <label for="realm_invite_to_stream_policy" class="dropdown-title">{{t "Who can add users to streams" }}</label>
-                    <select name="realm_invite_to_stream_policy" id="id_realm_invite_to_stream_policy" class="prop-element" data-setting-widget-type="integer">
+                    <select name="realm_invite_to_stream_policy" id="id_realm_invite_to_stream_policy" class="prop-element" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=invite_to_stream_policy_values}}
                     </select>
                 </div>
@@ -119,14 +119,14 @@
             <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">
                     <label for="realm_bot_creation_policy">{{t "Who can add bots" }}</label>
-                    <select name="realm_bot_creation_policy" class="setting-widget prop-element" id="id_realm_bot_creation_policy" data-setting-widget-type="integer">
+                    <select name="realm_bot_creation_policy" class="setting-widget prop-element" id="id_realm_bot_creation_policy" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=bot_creation_policy_values}}
                     </select>
                 </div>
 
                 <div class="input-group">
                     <label for="realm_user_group_edit_policy" class="dropdown-title">{{t "Who can create and manage user groups" }}</label>
-                    <select name="realm_user_group_edit_policy" id="id_realm_user_group_edit_policy" class="prop-element" data-setting-widget-type="integer">
+                    <select name="realm_user_group_edit_policy" id="id_realm_user_group_edit_policy" class="prop-element" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=user_group_edit_policy_values}}
                     </select>
                 </div>
@@ -145,7 +145,7 @@
                             <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                         </a>
                     </label>
-                    <select name="realm_private_message_policy" class="setting-widget prop-element" id="id_realm_private_message_policy" data-setting-widget-type="integer">
+                    <select name="realm_private_message_policy" class="setting-widget prop-element" id="id_realm_private_message_policy" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=private_message_policy_values}}
                     </select>
                 </div>

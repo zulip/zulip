@@ -242,14 +242,14 @@ function test_submit_settings_form(submit_form) {
     invite_to_stream_policy_elem.val('1');
     invite_to_stream_policy_elem.attr("id", 'id_realm_invite_to_stream_policy');
     invite_to_stream_policy_elem.data = () => {
-        return "integer";
+        return "number";
     };
 
     const create_stream_policy_elem = $("#id_realm_create_stream_policy");
     create_stream_policy_elem.val('2');
     create_stream_policy_elem.attr("id", 'id_realm_create_stream_policy');
     create_stream_policy_elem.data = () => {
-        return "integer";
+        return "number";
     };
 
     const add_emoji_by_admins_only_elem = $("#id_realm_add_emoji_by_admins_only");
@@ -260,13 +260,13 @@ function test_submit_settings_form(submit_form) {
     bot_creation_policy_elem.val("1");
     bot_creation_policy_elem.attr('id', 'id_realm_bot_creation_policy');
     bot_creation_policy_elem.data = () => {
-        return "integer";
+        return "number";
     };
     const email_address_visibility_elem = $("#id_realm_email_address_visibility");
     email_address_visibility_elem.val("1");
     email_address_visibility_elem.attr('id', 'id_realm_email_address_visibility');
     email_address_visibility_elem.data = () => {
-        return "integer";
+        return "number";
     };
 
     let subsection_elem = $(`#org-${subsection}`);
@@ -302,13 +302,13 @@ function test_submit_settings_form(submit_form) {
     realm_default_language_elem.val("en");
     realm_default_language_elem.attr('id', 'id_realm_default_language');
     realm_default_language_elem.data = () => {
-        return "text";
+        return "string";
     };
     const realm_default_twenty_four_hour_time_elem = $("#id_realm_default_twenty_four_hour_time");
     realm_default_twenty_four_hour_time_elem.val('true');
     realm_default_twenty_four_hour_time_elem.attr('id', 'id_realm_default_twenty_four_hour_time');
     realm_default_twenty_four_hour_time_elem.data = () => {
-        return "bool";
+        return "boolean";
     };
 
     subsection_elem = $(`#org-${subsection}`);
