@@ -308,7 +308,7 @@ section.deactivated.create_table = (deactivated_users) => {
     $("#admin_deactivated_users_table").show();
 };
 
-exports.set_up = function () {
+function start_data_load() {
     loading.make_indicator($('#admin_page_users_loading_indicator'), {text: 'Loading...'});
     loading.make_indicator($('#admin_page_bots_loading_indicator'), {text: 'Loading...'});
     loading.make_indicator($('#admin_page_deactivated_users_loading_indicator'), {text: 'Loading...'});
@@ -324,7 +324,7 @@ exports.set_up = function () {
         success: exports.on_load_success,
         error: failed_listing_users,
     });
-};
+}
 
 function open_human_form(person) {
     const user_id = person.user_id;
@@ -445,8 +445,8 @@ function confirm_deactivation(row, user_id) {
     modal_elem.modal("show");
 }
 
-function handle_deactivation() {
-    $(".admin_user_table").on("click", ".deactivate", function (e) {
+function handle_deactivation(tbody) {
+    tbody.on("click", ".deactivate", function (e) {
         // This click event must not get propagated to parent container otherwise the modal
         // will not show up because of a call to `close_active_modal` in `settings.js`.
         e.preventDefault();
@@ -458,8 +458,8 @@ function handle_deactivation() {
     });
 }
 
-function handle_bot_deactivation() {
-    $(".admin_bot_table").on("click", ".deactivate", function (e) {
+function handle_bot_deactivation(tbody) {
+    tbody.on("click", ".deactivate", function (e) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -482,8 +482,8 @@ function handle_bot_deactivation() {
     });
 }
 
-function handle_reactivation() {
-    $(".admin_user_table, .admin_bot_table").on("click", ".reactivate", function (e) {
+function handle_reactivation(tbody) {
+    tbody.on("click", ".reactivate", function (e) {
         e.preventDefault();
         e.stopPropagation();
         // Go up the tree until we find the user row, then grab the email element
@@ -507,8 +507,8 @@ function handle_reactivation() {
     });
 }
 
-function handle_bot_owner_profile() {
-    $('.admin_bot_table').on('click', '.user_row .view_user_profile', function (e) {
+function handle_bot_owner_profile(tbody) {
+    tbody.on('click', '.user_row .view_user_profile', function (e) {
         const owner_id = parseInt($(e.target).attr('data-owner-id'), 10);
         const owner = people.get_by_user_id(owner_id);
         popovers.show_user_profile(owner);
@@ -517,8 +517,8 @@ function handle_bot_owner_profile() {
     });
 }
 
-function handle_human_form() {
-    $(".admin_user_table").on("click", ".open-user-form", function (e) {
+function handle_human_form(tbody) {
+    tbody.on("click", ".open-user-form", function (e) {
         const user_id = parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const person = people.get_by_user_id(user_id);
 
@@ -554,8 +554,8 @@ function handle_human_form() {
     });
 }
 
-function handle_bot_form() {
-    $(".admin_bot_table").on("click", ".open-user-form", function (e) {
+function handle_bot_form(tbody) {
+    tbody.on("click", ".open-user-form", function (e) {
         const user_id = parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const bot = people.get_by_user_id(user_id);
 
@@ -592,13 +592,35 @@ exports.on_load_success = function (realm_people_data) {
     meta.loaded = true;
 
     populate_users(realm_people_data);
-    handle_deactivation();
-    handle_reactivation();
-    handle_human_form();
+};
 
-    handle_bot_owner_profile();
-    handle_bot_deactivation();
-    handle_bot_form();
+section.active.handle_events = () => {
+    const tbody = $('#admin_users_table').expectOne();
+    handle_deactivation(tbody);
+    handle_reactivation(tbody);
+    handle_human_form(tbody);
+};
+
+section.deactivated.handle_events = () => {
+    const tbody = $('#admin_deactivated_users_table').expectOne();
+    handle_deactivation(tbody);
+    handle_reactivation(tbody);
+    handle_human_form(tbody);
+};
+
+section.bots.handle_events = () => {
+    const tbody = $('#admin_bots_table').expectOne();
+    handle_bot_owner_profile(tbody);
+    handle_bot_deactivation(tbody);
+    handle_reactivation(tbody);
+    handle_bot_form(tbody);
+};
+
+exports.set_up = function () {
+    start_data_load();
+    section.active.handle_events();
+    section.deactivated.handle_events();
+    section.bots.handle_events();
 };
 
 window.settings_users = exports;
