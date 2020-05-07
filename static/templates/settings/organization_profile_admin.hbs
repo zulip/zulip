@@ -58,13 +58,7 @@
                     <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                 </a>
             </h3>
-            <div>
-                {{#unless plan_includes_wide_organization_logo}}
-                <a href="/upgrade" class="upgrade-tip" target="_blank">
-                    {{upgrade_text_for_wide_organization_logo}}
-                </a>
-                {{/unless}}
-            </div>
+            {{> upgrade_tip_widget }}
         </div>
 
         <p>{{t "A wide image for the upper left corner of the app." }}</p>
