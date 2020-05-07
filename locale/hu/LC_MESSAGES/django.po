@@ -5,12 +5,16 @@
 # Translators:
 # Barna Kovács <vonbraun22@gmail.com>, 2018
 # Hrotkó Gábor <hrotko.gabor@gmail.com>, 2016-2017
+# klucsik <klucsik.krisztian@gmail.com>, 2020
+# klucsik <klucsik.krisztian@gmail.com>, 2020
+# Stuntsman, 2020
+# Tim Abbott <tabbott@kandralabs.com>, 2020
 msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-13 03:00+0000\n"
-"PO-Revision-Date: 2019-12-13 03:01+0000\n"
+"POT-Creation-Date: 2020-04-30 23:12+0000\n"
+"PO-Revision-Date: 2020-04-30 23:12+0000\n"
 "Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
 "Language-Team: Hungarian (http://www.transifex.com/zulip/zulip/language/hu/)\n"
 "MIME-Version: 1.0\n"
@@ -19,174 +23,178 @@ msgstr ""
 "Language: hu\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: analytics/views.py:80 zerver/decorator.py:522 zerver/decorator.py:531
+#: analytics/views.py:87 zerver/decorator.py:487 zerver/decorator.py:496
 msgid "Not allowed for guest users"
-msgstr ""
+msgstr "Vendég felhasználóknak nem engedélyezett"
 
-#: analytics/views.py:108
+#: analytics/views.py:117
 msgid "Invalid organization"
 msgstr "Hibás szervezet"
 
-#: analytics/views.py:193
+#: analytics/views.py:202
 msgid "Public streams"
 msgstr "Nyilvános üzenetfolyamok"
 
-#: analytics/views.py:194
+#: analytics/views.py:203
 msgid "Private streams"
 msgstr "Privát üzenetfolyamok"
 
-#: analytics/views.py:195 templates/zerver/app/left_sidebar.html:25
+#: analytics/views.py:204 templates/zerver/app/left_sidebar.html:25
 msgid "Private messages"
 msgstr "Privát üzenetek"
 
-#: analytics/views.py:196
+#: analytics/views.py:205
 msgid "Group private messages"
 msgstr "Csoport privát üzenetei"
 
-#: analytics/views.py:208
+#: analytics/views.py:217
 #, python-format
 msgid "Unknown chart name: %s"
 msgstr "Ismeretlen diagram: %s"
 
-#: analytics/views.py:217
+#: analytics/views.py:226
 #, python-format
 msgid "Start time is later than end time. Start: %(start)s, End: %(end)s"
 msgstr "Az induló dátum későbbi mint a befejezés dátuma. Indulás: %(start)s, befejezés: %(end)s"
 
-#: analytics/views.py:231 analytics/views.py:252
+#: analytics/views.py:240 analytics/views.py:262
 msgid "No analytics data available. Please contact your server administrator."
 msgstr "Nincs elemzési adat. Lépj kapcsolatba a szerver adminisztrátorával!"
 
-#: corporate/lib/stripe.py:127
+#: corporate/lib/stripe.py:128
 #, python-format
 msgid "Something went wrong. Please contact %s."
-msgstr ""
+msgstr "Valami gond van. Keresd őt: %s."
 
-#: corporate/lib/stripe.py:128
+#: corporate/lib/stripe.py:129
 msgid "Something went wrong. Please reload the page."
-msgstr ""
+msgstr "Valami gond van. Töltsd újra az oldalt!"
 
-#: corporate/lib/stripe.py:164
+#: corporate/lib/stripe.py:165
 msgid "Something went wrong. Please wait a few seconds and try again."
-msgstr ""
+msgstr "Valami gond van. Várj pár másodpercet és próbáld újra."
 
-#: corporate/views.py:55
+#: corporate/views.py:56
 msgid "You must invoice for at least {} users."
-msgstr ""
+msgstr "Legalább {} felhasználóhoz kell számlát készítened."
 
-#: corporate/views.py:62
+#: corporate/views.py:63
 msgid "No payment method on file"
-msgstr ""
+msgstr "Nincs fizetési mód eltárolva."
 
-#: corporate/views.py:64
+#: corporate/views.py:65
 #, python-format
 msgid "%(brand)s ending in %(last4)s"
-msgstr ""
+msgstr "%(brand)sbefejeződik %(last4)sidőn belül"
 
-#: corporate/views.py:71
+#: corporate/views.py:72
 #, python-format
 msgid "Unknown payment method. Please contact %s."
-msgstr ""
+msgstr "Ismeretlen fizetési mód. Keresd őt: %s."
 
 #: templates/analytics/stats.html:10
+msgid "Analytics are fully available 24 hours after organization creation."
+msgstr ""
+
+#: templates/analytics/stats.html:15
 #, python-format
 msgid "Zulip analytics for %(target_name)s"
-msgstr "%(target_name)s Zulip elemzése"
+msgstr " Zulip analitika %(target_name)s számára"
 
-#: templates/analytics/stats.html:14
+#: templates/analytics/stats.html:19
 msgid "Messages sent over time"
 msgstr "Küldött üzenetek idő szerint"
 
-#: templates/analytics/stats.html:16
+#: templates/analytics/stats.html:21
 msgid "Aggregation"
 msgstr "Összegzés"
 
-#: templates/analytics/stats.html:18
+#: templates/analytics/stats.html:23
 msgid "Daily"
 msgstr "Napi"
 
-#: templates/analytics/stats.html:19
+#: templates/analytics/stats.html:24
 msgid "Weekly"
 msgstr "Heti"
 
-#: templates/analytics/stats.html:20
+#: templates/analytics/stats.html:25
 msgid "Cumulative"
-msgstr ""
+msgstr "Halmozott"
 
-#: templates/analytics/stats.html:28 templates/analytics/stats.html:44
-#: templates/analytics/stats.html:64
+#: templates/analytics/stats.html:33 templates/analytics/stats.html:49
+#: templates/analytics/stats.html:69
 msgid "Me"
 msgstr "Én"
 
-#: templates/analytics/stats.html:30
+#: templates/analytics/stats.html:35
 msgid "Humans"
 msgstr "Emberek"
 
-#: templates/analytics/stats.html:32
+#: templates/analytics/stats.html:37
 #: templates/zerver/app/settings_overlay.html:115
 msgid "Bots"
 msgstr "Botok"
 
-#: templates/analytics/stats.html:39
+#: templates/analytics/stats.html:44
 msgid "Messages sent by client"
 msgstr "Ügyfél által küldött üzenetek"
 
-#: templates/analytics/stats.html:45 templates/analytics/stats.html:65
+#: templates/analytics/stats.html:50 templates/analytics/stats.html:70
 msgid "Everyone"
 msgstr "Mindenki"
 
-#: templates/analytics/stats.html:46 templates/analytics/stats.html:66
+#: templates/analytics/stats.html:51 templates/analytics/stats.html:71
 msgid "Last week"
 msgstr "Előző hét"
 
-#: templates/analytics/stats.html:47 templates/analytics/stats.html:67
+#: templates/analytics/stats.html:52 templates/analytics/stats.html:72
 msgid "Last month"
 msgstr "Előző hónap"
 
-#: templates/analytics/stats.html:48 templates/analytics/stats.html:68
+#: templates/analytics/stats.html:53 templates/analytics/stats.html:73
 msgid "Last year"
 msgstr "Előző év"
 
-#: templates/analytics/stats.html:49 templates/analytics/stats.html:69
+#: templates/analytics/stats.html:54 templates/analytics/stats.html:74
 msgid "All time"
-msgstr ""
+msgstr "Összes"
 
-#: templates/analytics/stats.html:58
+#: templates/analytics/stats.html:63
 msgid "Messages sent by recipient type"
 msgstr "Elküldött üzenetek a címzett típusa szerint"
 
-#: templates/analytics/stats.html:74
+#: templates/analytics/stats.html:79
 msgid "Active users"
 msgstr "Aktív felhasználók"
 
-#: templates/analytics/stats.html:77
+#: templates/analytics/stats.html:82
 msgid "Daily actives"
 msgstr "Napi aktivitás"
 
-#: templates/analytics/stats.html:78
+#: templates/analytics/stats.html:83
 msgid "15 day actives"
 msgstr "15 napi aktivitás"
 
-#: templates/analytics/stats.html:79
+#: templates/analytics/stats.html:84
 msgid "Total users"
 msgstr "Összes felhasználó"
 
-#: templates/analytics/stats.html:87
+#: templates/analytics/stats.html:92
 #: templates/zerver/app/settings_overlay.html:97
 msgid "Users"
 msgstr "Felhasználók"
 
-#: templates/analytics/stats.html:97
+#: templates/analytics/stats.html:102
 msgid "Last update"
 msgstr "Utolsó frissítés"
 
-#: templates/analytics/stats.html:98
+#: templates/analytics/stats.html:103
 msgid ""
 "A full update of all the graphs happens once a day.<br/>The “Messages Sent "
 "Over Time” graph is updated once an hour."
 msgstr "Minden diagram naponta egyszer frissül.<br/>A \"Küldött üzenetek idő szerint\" diagram óránként egyszer frissül."
 
-#: templates/analytics/stats.html:102
+#: templates/analytics/stats.html:107
 msgid "Analytics documentation"
 msgstr "Elemzési dokumentáció"
 
@@ -194,62 +202,62 @@ msgstr "Elemzési dokumentáció"
 msgid "Email changed!"
 msgstr "Email cím megváltoztatva!"
 
-#: templates/corporate/billing.html:21 templates/zerver/app/navbar.html:165
+#: templates/corporate/billing.html:21 templates/zerver/app/navbar.html:137
 msgid "Billing"
-msgstr ""
+msgstr "Számlázás"
 
 #: templates/corporate/upgrade.html:20
 #, python-format
 msgid "Upgrade to %(plan)s"
-msgstr ""
+msgstr "Váltás %(plan)s csomagra"
 
 #: templates/corporate/upgrade.html:43 templates/corporate/upgrade.html:135
 msgid "Payment schedule"
-msgstr ""
+msgstr "Fizetési ütemezés"
 
-#: templates/corporate/upgrade.html:47 templates/corporate/upgrade.html:139
-msgid "Pay annually"
-msgstr ""
-
-#: templates/corporate/upgrade.html:59
+#: templates/corporate/upgrade.html:47
 msgid "Pay monthly"
-msgstr ""
+msgstr "Havi"
+
+#: templates/corporate/upgrade.html:54 templates/corporate/upgrade.html:139
+msgid "Pay annually"
+msgstr "Évenkénti"
 
 #: templates/corporate/upgrade.html:66
 msgid "License management"
-msgstr ""
+msgstr "Licensz kezelés"
 
 #: templates/corporate/upgrade.html:70
 msgid "Automatic"
-msgstr ""
+msgstr "Automatikus"
 
 #: templates/corporate/upgrade.html:71
 msgid "Most convenient"
-msgstr ""
+msgstr "Legkényelmesebb"
 
 #: templates/corporate/upgrade.html:77
 msgid "Manual"
-msgstr ""
+msgstr "Manuális"
 
 #: templates/corporate/upgrade.html:78
 msgid "Most control"
-msgstr ""
+msgstr "Legjobban felügyelhető"
 
 #: templates/two_factor/_wizard_forms.html:26
 msgid "Or, alternatively, use one of your backup phones:"
-msgstr ""
+msgstr "Vagy használhatsz egy tartalék telefont:"
 
 #: templates/two_factor/_wizard_forms.html:37
 msgid "As a last resort, you can use a backup token:"
-msgstr ""
+msgstr "Utolsó esélyként használhatsz tartalék tokent:"
 
 #: templates/two_factor/_wizard_forms.html:40
 msgid "Use backup token"
-msgstr ""
+msgstr "Tartalék token használata"
 
 #: templates/zerver/accounts_accept_terms.html:16
 msgid "Accept the new Terms of Service"
-msgstr ""
+msgstr "Az új Felhasználási Feltételek elfogadása"
 
 #: templates/zerver/accounts_accept_terms.html:24
 #: templates/zerver/create_realm.html:22 templates/zerver/login.html:64
@@ -259,12 +267,12 @@ msgid "Email"
 msgstr "E-mail"
 
 #: templates/zerver/accounts_accept_terms.html:43
-#: templates/zerver/register.html:203
+#: templates/zerver/register.html:220
 #, python-format
 msgid ""
 "I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\">Terms"
 " of Service</a>."
-msgstr ""
+msgstr "Elfogadom a <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\">Felhasználási Feltételeket</a>."
 
 #: templates/zerver/accounts_accept_terms.html:54
 msgid "Enter"
@@ -279,17 +287,17 @@ msgid "You need an invitation to join this organization."
 msgstr "E szervezethez való csatlakozáshoz meghívó szükséges!"
 
 #: templates/zerver/accounts_home.html:68 templates/zerver/footer.html:39
-#: templates/zerver/login.html:133 templates/zerver/portico-header.html:43
-#: templates/zerver/register.html:213
+#: templates/zerver/login.html:128 templates/zerver/portico-header.html:43
+#: templates/zerver/register.html:230
 msgid "Sign up"
 msgstr "Feliratkozás"
 
-#: templates/zerver/accounts_home.html:72 templates/zerver/login.html:112
+#: templates/zerver/accounts_home.html:72 templates/zerver/login.html:106
 #: templates/zerver/register.html:60
 msgid "OR"
 msgstr "VAGY"
 
-#: templates/zerver/accounts_home.html:81
+#: templates/zerver/accounts_home.html:82
 #, python-format
 msgid "Sign up with %(identity_provider)s"
 msgstr "Regisztráció %(identity_provider)s segítségével"
@@ -310,31 +318,8 @@ msgstr "Még nem kaptál e-mailt? <a href=\"#\" id=\"resend_email_link\">Újrak�
 msgid "Just in case, take a look at your Spam folder."
 msgstr "Ellenőrizd a Spam mappát is."
 
-#: templates/zerver/app/bankruptcy.html:5
-#: templates/zerver/app/delete_message.html:3
-#: templates/zerver/app/deprecation_notice.html:5
-#: templates/zerver/app/invite_user.html:5
-#: templates/zerver/app/lightbox_overlay.html:7
-#: templates/zerver/app/message_history.html:4
-#: templates/zerver/app/message_history.html:12
-#: templates/zerver/app/navbar.html:3 templates/zerver/app/navbar.html:21
-msgid "Close"
-msgstr "Bezár"
-
-#: templates/zerver/app/bankruptcy.html:6
-msgid "Welcome back"
-msgstr "Üdv újra"
-
-#: templates/zerver/app/bankruptcy.html:13
-msgid "Yes, please!"
-msgstr "Igen, kérem!"
-
-#: templates/zerver/app/bankruptcy.html:15
-msgid "No, I'll catch up."
-msgstr "Nem, felzárkózok."
-
 #: templates/zerver/app/compose.html:12 templates/zerver/app/compose.html:13
-#: templates/zerver/app/compose.html:108
+#: templates/zerver/app/compose.html:106
 #: templates/zerver/app/keyboard_shortcuts.html:239
 msgid "Drafts"
 msgstr "Piszkozatok"
@@ -345,7 +330,7 @@ msgstr "Elmentve piszkozatként"
 
 #: templates/zerver/app/compose.html:20
 msgid "New message"
-msgstr ""
+msgstr "Új üzenet"
 
 #: templates/zerver/app/compose.html:27 templates/zerver/app/compose.html:28
 msgid "New topic"
@@ -415,25 +400,39 @@ msgstr "Formázás"
 msgid "Attach files"
 msgstr "Fájlok csatolása"
 
-#: templates/zerver/app/compose.html:104
+#: templates/zerver/app/compose.html:103
 msgid "Add video call"
 msgstr "Videohívás hozzáadása"
 
-#: templates/zerver/app/compose.html:106
+#: templates/zerver/app/compose.html:104
 msgid "Write"
 msgstr "Írás"
 
-#: templates/zerver/app/compose.html:107
+#: templates/zerver/app/compose.html:105
 msgid "Preview"
 msgstr "Előnézet"
 
-#: templates/zerver/app/compose.html:112
+#: templates/zerver/app/compose.html:110
 msgid "Press Enter to send"
 msgstr "Nyomj Enter-t a küldéshez"
 
-#: templates/zerver/app/compose.html:114
+#: templates/zerver/app/compose.html:112
 msgid "Send"
 msgstr "Küldés"
+
+#: templates/zerver/app/delete_message.html:3
+#: templates/zerver/app/deprecation_notice.html:5
+#: templates/zerver/app/invite_user.html:5
+#: templates/zerver/app/lightbox_overlay.html:7
+#: templates/zerver/app/message_history.html:4
+#: templates/zerver/app/message_history.html:12
+#: templates/zerver/app/navbar_alerts.html:3
+#: templates/zerver/app/navbar_alerts.html:21
+#: templates/zerver/app/navbar_alerts.html:30
+#: templates/zerver/app/navbar_alerts.html:41
+#: templates/zerver/app/navbar_alerts.html:52
+msgid "Close"
+msgstr "Bezár"
 
 #: templates/zerver/app/delete_message.html:4
 msgid "Delete message"
@@ -474,7 +473,7 @@ msgid ""
 "\n"
 "            End of results from your\n"
 "            <a href=\"/help/search-for-messages#searching-shared-history\"\n"
-"              target=\"_blank\">personal history</a>.\n"
+"              target=\"_blank\">history</a>.\n"
 "            Consider <a class=\"search-shared-history\" href=\"\">searching all public streams</a>.\n"
 "            "
 msgstr ""
@@ -490,7 +489,7 @@ msgid ""
 "            here for you right now. I'm sure someone will eventually send\n"
 "            you one.\n"
 "            "
-msgstr "\nNézd, a helyzet az... hogy most nincs üzenetünk\na számodra. De valaki bégül biztosan fog neked\nírni..."
+msgstr "\nNézd, a helyzet az, hogy... most nincs üzenetünk\na számodra. Valaki végül biztosan fog neked\nírni."
 
 #: templates/zerver/app/home.html:45
 msgid ""
@@ -532,7 +531,7 @@ msgstr "Még nincs privát üzenetváltásod ezzel a személlyel!"
 
 #: templates/zerver/app/home.html:83
 msgid "You have not sent any private messages to yourself yet!"
-msgstr ""
+msgstr "Még nem küldtél magadnak egy privát üzenetet sem!"
 
 #: templates/zerver/app/home.html:86
 msgid ""
@@ -593,7 +592,7 @@ msgstr "Nincs olvasatlan üzeneted!"
 
 #: templates/zerver/app/home.html:146
 msgid "You haven't been mentioned yet!"
-msgstr "Még nem elített meg senki!"
+msgstr "Még nem említett meg senki!"
 
 #: templates/zerver/app/home.html:149
 msgid ""
@@ -601,31 +600,31 @@ msgid ""
 "            Learn more about mentions <a href=\"/help/mention-a-user-or-group\">\n"
 "            here</a>.\n"
 "            "
-msgstr ""
+msgstr "\nIsmerd meg az említéseket <a href=\"/help/mention-a-user-or-group\">\nitt</a>."
 
 #: templates/zerver/app/home.html:156
 msgid "No search results"
-msgstr ""
+msgstr "Nincs találat"
 
 #: templates/zerver/app/home.html:159 templates/zerver/app/home.html:161
 msgid "Messages"
-msgstr ""
+msgstr "Üzenetek"
 
-#: templates/zerver/app/index.html:34
+#: templates/zerver/app/index.html:33
 msgid "Loading..."
 msgstr "Betöltés..."
 
-#: templates/zerver/app/index.html:35
+#: templates/zerver/app/index.html:34
 msgid ""
 "If this message does not go away, please wait a couple seconds and <a id"
 "=\"reload-lnk\">reload</a> the page."
-msgstr "Ha ez az üzenet nem tűnik el, kérjük, bárj néhány másodpercet és <a id=\"reload-lnk\">töltsd újra</a> az oldalt!"
+msgstr "Ha ez az üzenet nem tűnik el, várj néhány másodpercet és <a id=\"reload-lnk\">töltsd újra</a> az oldalt!"
 
 #: templates/zerver/app/index.html:67
 msgid ""
 "<strong class=\"message\">Unable to connect to\n"
 "            Zulip.</strong>  Updates may be delayed."
-msgstr "<strong class=\"message\">Nem tudok csatlakozni a\nZulip-hoz!</strong> A frissítések így késhetnek."
+msgstr "<strong class=\"message\">Nem sikerült csatlakozni a\nZulip-hoz.</strong> A frissítések így késhetnek."
 
 #: templates/zerver/app/index.html:68
 msgid "Retrying soon..."
@@ -649,16 +648,16 @@ msgstr "Egy vagy több e-mail cím..."
 
 #: templates/zerver/app/invite_user.html:20
 msgid "or"
-msgstr ""
+msgstr "vagy"
 
 #: templates/zerver/app/invite_user.html:20
 #: templates/zerver/app/invite_user.html:26
 msgid "Generate invite link"
-msgstr ""
+msgstr "Meghívó link készítése"
 
 #: templates/zerver/app/invite_user.html:33
 msgid "User(s) join as"
-msgstr "Felhasználók csatlakoznak, mint"
+msgstr "Felhasználó(k) szerepe csatlakozáskor"
 
 #: templates/zerver/app/invite_user.html:36
 msgid "Members"
@@ -670,7 +669,7 @@ msgstr "Szervezeti adminisztrátorok"
 
 #: templates/zerver/app/invite_user.html:40
 msgid "Guests"
-msgstr ""
+msgstr "Vendégek"
 
 #: templates/zerver/app/invite_user.html:45
 msgid "Streams they should join"
@@ -685,8 +684,8 @@ msgid "Invite"
 msgstr "Meghívás"
 
 #: templates/zerver/app/keyboard_shortcuts.html:2
-#: templates/zerver/app/navbar.html:118
-#: templates/zerver/app/right_sidebar.html:37
+#: templates/zerver/app/navbar.html:90
+#: templates/zerver/app/right_sidebar.html:30
 msgid "Keyboard shortcuts"
 msgstr "Billenyűparancsok"
 
@@ -747,7 +746,7 @@ msgid "Search streams"
 msgstr "Keresés az üzenetfolyamokban"
 
 #: templates/zerver/app/keyboard_shortcuts.html:73
-#: templates/zerver/app/right_sidebar.html:16
+#: templates/zerver/app/right_sidebar.html:9
 msgid "Search people"
 msgstr "Személyek keresése"
 
@@ -797,11 +796,11 @@ msgstr "Szűkítés"
 
 #: templates/zerver/app/keyboard_shortcuts.html:155
 msgid "Narrow to stream"
-msgstr ""
+msgstr "Szűkítés üzenetfolyamra"
 
 #: templates/zerver/app/keyboard_shortcuts.html:159
 msgid "Narrow to topic or PM conversation"
-msgstr ""
+msgstr "Szűkítés témára vagy privát beszélgetésre"
 
 #: templates/zerver/app/keyboard_shortcuts.html:163
 msgid "Narrow to all private messages"
@@ -825,7 +824,7 @@ msgstr "Szűkítés minden nem némított üzenetre"
 
 #: templates/zerver/app/keyboard_shortcuts.html:183
 msgid "Narrow to current compose box recipient"
-msgstr ""
+msgstr "Szűkítés a szövegmező címzettjére"
 
 #: templates/zerver/app/keyboard_shortcuts.html:192
 msgid "Message actions"
@@ -947,7 +946,7 @@ msgstr "Minden üzenetfolyam"
 
 #: templates/zerver/app/left_sidebar.html:78
 msgid "Add streams"
-msgstr ""
+msgstr "Üzenetfolyamok hozzáadása"
 
 #: templates/zerver/app/lightbox_overlay.html:10
 msgid "Pan &amp; Zoom"
@@ -970,7 +969,7 @@ msgid "Download"
 msgstr "Letöltés"
 
 #: templates/zerver/app/markdown_help.html:2
-#: templates/zerver/app/navbar.html:123
+#: templates/zerver/app/navbar.html:95
 msgid "Message formatting"
 msgstr "Üzenet formázása"
 
@@ -985,10 +984,10 @@ msgstr "Azt kapod"
 #: templates/zerver/app/markdown_help.html:115
 msgid ""
 "To add syntax highlighting to a multi-line code block,\n"
-"                          add the language's <b>first</b> <a target=\"_blank\" href=\"http://pygments.org/docs/lexers/\">Pygments short name</a>\n"
+"                          add the language's <b>first</b> <a target=\"_blank\" href=\"https://pygments.org/docs/lexers/\">Pygments short name</a>\n"
 "                          after the first set of back-ticks.\n"
 "                          You can also make a code block by indenting each line with 4 spaces."
-msgstr "Többsoros kódblokkok szintaxis-kiemeléséhez\n<b>először</b> a nyelvet add hozzá. <a target=\"_blank\" href=\"http://pygments.org/docs/lexers/\">Pygmentek rövid neveit</a>\naz első fordított aposztrófok után.\nÚgy is létrehozhatsz kód blokkot, hogy minden sort 4 szóközzel kezdesz."
+msgstr ""
 
 #: templates/zerver/app/markdown_help.html:146
 msgid ""
@@ -1003,163 +1002,187 @@ msgstr "<a target=\"_blank\"\n                            href=\"https://github.
 msgid "Message edit history"
 msgstr "Az üzenet szerkesztési története"
 
-#: templates/zerver/app/navbar.html:5
+#: templates/zerver/app/navbar.html:10
+msgid "Stream list"
+msgstr "Üzenetfolyam lista"
+
+#: templates/zerver/app/navbar.html:23 templates/zerver/app/navbar.html:24
+#: templates/zerver/app/navbar.html:36 templates/zerver/app/navbar.html:37
+msgid "Search"
+msgstr "Keresés"
+
+#: templates/zerver/app/navbar.html:28 templates/zerver/app/navbar.html:38
+msgid "Exit search"
+msgstr "Kilépés a keresésből"
+
+#: templates/zerver/app/navbar.html:48
+msgid "User list"
+msgstr "Felhasználók listája"
+
+#: templates/zerver/app/navbar.html:56
+msgid "Menu"
+msgstr "Menü"
+
+#: templates/zerver/app/navbar.html:68
+msgid "Manage streams"
+msgstr "Üzenetfolyamok kezelése"
+
+#: templates/zerver/app/navbar.html:73
+#: templates/zerver/app/settings_overlay.html:4
+#: templates/zerver/app/settings_overlay.html:164 zerver/lib/hotspots.py:27
+msgid "Settings"
+msgstr "Beállítások"
+
+#: templates/zerver/app/navbar.html:79
+msgid "Manage organization"
+msgstr "Szervezet kezelése"
+
+#: templates/zerver/app/navbar.html:85 templates/zerver/footer.html:16
+msgid "Help center"
+msgstr "Súgó Központ"
+
+#: templates/zerver/app/navbar.html:100
+#: templates/zerver/app/search_operators.html:2
+msgid "Search operators"
+msgstr "Keresési operátorok"
+
+#: templates/zerver/app/navbar.html:106
+msgid "Desktop & mobile apps"
+msgstr "Asztali és mobil alkalmazások"
+
+#: templates/zerver/app/navbar.html:111 templates/zerver/footer.html:49
+msgid "Integrations"
+msgstr "Integrációk"
+
+#: templates/zerver/app/navbar.html:116
+msgid "API documentation"
+msgstr "API dokumentáció"
+
+#: templates/zerver/app/navbar.html:123
+msgid "Statistics"
+msgstr "Statisztikák"
+
+#: templates/zerver/app/navbar.html:130
+msgid "Plans and pricing"
+msgstr "Árazás"
+
+#: templates/zerver/app/navbar.html:145
+msgid "Invite users"
+msgstr "Felhasználók meghívása"
+
+#: templates/zerver/app/navbar.html:151
+msgid ""
+"Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via "
+"Webathena"
+msgstr ""
+
+#: templates/zerver/app/navbar.html:153
+msgid "Link with Webathena"
+msgstr ""
+
+#: templates/zerver/app/navbar.html:159
+msgid "Log out"
+msgstr "Kijelentkezés"
+
+#: templates/zerver/app/navbar_alerts.html:5
 msgid ""
 "Zulip needs your permission to\n"
 "            <a class=\"request-desktop-notifications alert-link\">enable desktop notifications.</a>\n"
 "            "
 msgstr "A Zulip-nak engedélyre van szüksége, hogy\n<a class=\"request-desktop-notifications alert-link\">az asztali értesítéseket engedélyezhesse.</a>"
 
-#: templates/zerver/app/navbar.html:10
+#: templates/zerver/app/navbar_alerts.html:10
 msgid ""
 "We strongly recommend enabling desktop notifications. They help Zulip keep "
 "your team connected."
 msgstr "Erősen javasoljuk az asztali értesítések engedélyezését. Segít a Zulip-nak egyben tartani a csapatodat!"
 
-#: templates/zerver/app/navbar.html:12
+#: templates/zerver/app/navbar_alerts.html:12
 msgid "Enable notifications"
 msgstr "Értesítések engedélyezése"
 
-#: templates/zerver/app/navbar.html:14
+#: templates/zerver/app/navbar_alerts.html:14
 msgid "Ask me later"
 msgstr "Kérdezz később"
 
-#: templates/zerver/app/navbar.html:16
+#: templates/zerver/app/navbar_alerts.html:16
 msgid "Never ask on this computer"
 msgstr "Ezen a gépen soha ne kérdezd"
 
-#: templates/zerver/app/navbar.html:23
+#: templates/zerver/app/navbar_alerts.html:23
 msgid ""
 "Zulip needs to send email to confirm users' addresses and send "
 "notifications."
-msgstr ""
+msgstr "A Zulipnak e-mailt küld a felhasználók címének ellenőrzéséhez és értesítések esetén."
 
-#: templates/zerver/app/navbar.html:25
+#: templates/zerver/app/navbar_alerts.html:25
 msgid "See how to configure email."
-msgstr ""
+msgstr "Nézd meg, hogyan állíthatod be az e-mail küldést."
 
-#: templates/zerver/app/navbar.html:39
-msgid "Stream list"
-msgstr "Üzenetfolyam lista"
-
-#: templates/zerver/app/navbar.html:48 templates/zerver/app/navbar.html:68
-msgid "Search help"
-msgstr ""
-
-#: templates/zerver/app/navbar.html:51 templates/zerver/app/navbar.html:52
-#: templates/zerver/app/navbar.html:64 templates/zerver/app/navbar.html:65
-msgid "Search"
-msgstr "Keresés"
-
-#: templates/zerver/app/navbar.html:56 templates/zerver/app/navbar.html:67
-msgid "Exit search"
-msgstr ""
-
-#: templates/zerver/app/navbar.html:76
-msgid "User list"
-msgstr ""
-
-#: templates/zerver/app/navbar.html:84
-msgid "Menu"
-msgstr ""
-
-#: templates/zerver/app/navbar.html:96
-msgid "Manage streams"
-msgstr "Üzenetfolyamok kezelése"
-
-#: templates/zerver/app/navbar.html:101
-#: templates/zerver/app/settings_overlay.html:4
-#: templates/zerver/app/settings_overlay.html:164 zerver/lib/hotspots.py:27
-msgid "Settings"
-msgstr "Beállítások"
-
-#: templates/zerver/app/navbar.html:107
-msgid "Manage organization"
-msgstr "Szervezet kezelése"
-
-#: templates/zerver/app/navbar.html:113 templates/zerver/footer.html:16
-msgid "Help center"
-msgstr ""
-
-#: templates/zerver/app/navbar.html:128
-#: templates/zerver/app/search_operators.html:2
-msgid "Search operators"
-msgstr ""
-
-#: templates/zerver/app/navbar.html:134
-msgid "Desktop & mobile apps"
-msgstr ""
-
-#: templates/zerver/app/navbar.html:139 templates/zerver/footer.html:49
-msgid "Integrations"
-msgstr ""
-
-#: templates/zerver/app/navbar.html:144
-msgid "API documentation"
-msgstr ""
-
-#: templates/zerver/app/navbar.html:151
-msgid "Statistics"
-msgstr ""
-
-#: templates/zerver/app/navbar.html:158
-msgid "Plans and pricing"
-msgstr ""
-
-#: templates/zerver/app/navbar.html:173
-msgid "Feedback"
-msgstr ""
-
-#: templates/zerver/app/navbar.html:180
-msgid "Invite users"
-msgstr ""
-
-#: templates/zerver/app/navbar.html:186
+#: templates/zerver/app/navbar_alerts.html:32
 msgid ""
-"Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via "
-"Webathena"
+"\n"
+"            Complete the\n"
+"            <a class=\"alert-link\" href=\"#organization/organization-profile\">\n"
+"                organization profile\n"
+"            </a> to brand and explain the purpose of this Zulip organization.\n"
+"            "
 msgstr ""
 
-#: templates/zerver/app/navbar.html:188
-msgid "Link with Webathena"
+#: templates/zerver/app/navbar_alerts.html:43
+msgid ""
+"\n"
+"            You are using an old version of the Zulip desktop app with known security bugs.\n"
+"            <a class=\"alert-link\" href=\"https://zulipchat.com/apps\" target=\"_blank\">\n"
+"                Download the latest version.\n"
+"            </a>\n"
+"            "
 msgstr ""
 
-#: templates/zerver/app/navbar.html:194
-msgid "Log out"
-msgstr "Kijelentkezés"
+#: templates/zerver/app/navbar_alerts.html:54
+#, python-format
+msgid ""
+"\n"
+"            Welcome back!  You have <span class=\"bankruptcy_unread_count\">%(count)s</span> unread messages.  Do you want to mark them all as read?\n"
+"            <span class=\"buttons\">\n"
+"                <a class=\"alert-link accept-bankruptcy\">Yes, please!</a>\n"
+"                &bull;\n"
+"                <a class=\"alert-link exit\">No, I'll catch up.</a>\n"
+"            </span>\n"
+"            "
+msgstr ""
 
-#: templates/zerver/app/navbar.html:200
-msgid "Debug"
-msgstr "Hibakeresés"
+#: templates/zerver/app/navbar_alerts.html:65
+msgid ""
+"\n"
+"        Marking all messages as read…\n"
+"        "
+msgstr ""
 
+#: templates/zerver/app/right_sidebar.html:5
 #: templates/zerver/app/right_sidebar.html:6
-msgid "Send feedback"
-msgstr ""
-
-#: templates/zerver/app/right_sidebar.html:12
-#: templates/zerver/app/right_sidebar.html:13
 msgid "Filter users"
 msgstr "Felhasználók szűrése"
 
-#: templates/zerver/app/right_sidebar.html:12
+#: templates/zerver/app/right_sidebar.html:5
 msgid "USERS"
-msgstr ""
+msgstr "FELHASZNÁLÓK"
 
-#: templates/zerver/app/right_sidebar.html:28
+#: templates/zerver/app/right_sidebar.html:21
 msgid "GROUP PMs"
-msgstr ""
+msgstr "CSOPORTOS PRIVÁT ÜZENETEK"
 
-#: templates/zerver/app/right_sidebar.html:34
+#: templates/zerver/app/right_sidebar.html:27
 msgid "Invite more users"
-msgstr ""
+msgstr "További felhasználók meghívása"
 
 #: templates/zerver/app/search_operators.html:7
 msgid "Operator"
-msgstr ""
+msgstr "Operátor"
 
 #: templates/zerver/app/search_operators.html:8
 msgid "Effect"
-msgstr ""
+msgstr "Hatása"
 
 #: templates/zerver/app/search_operators.html:13
 msgid "Narrow to messages on stream"
@@ -1167,83 +1190,83 @@ msgstr "Szűkítés üzenetfolyam üzeneteire"
 
 #: templates/zerver/app/search_operators.html:17
 msgid "Narrow to messages with topic"
-msgstr ""
+msgstr "Szűkítés témával rendelkező üzenetekre"
 
 #: templates/zerver/app/search_operators.html:21
 msgid "Narrow to private messages with"
-msgstr ""
+msgstr "Szűkítés privát üzenetekre vele"
 
 #: templates/zerver/app/search_operators.html:25
 msgid "Narrow to group private messages with"
-msgstr ""
+msgstr "Szűkítés privát üzenetekre velük"
 
 #: templates/zerver/app/search_operators.html:29
 msgid "Narrow to messages sent by"
-msgstr ""
+msgstr "Szűkítés az ő üzeneteire:"
 
 #: templates/zerver/app/search_operators.html:33
 msgid "Narrow to messages sent by you."
-msgstr ""
+msgstr "Szűkítés az elküldött üzeneteidre."
 
 #: templates/zerver/app/search_operators.html:37
 msgid "Center the view around message ID"
-msgstr ""
+msgstr "Az adott üzenet ID szerint és környezete"
 
 #: templates/zerver/app/search_operators.html:41
 msgid "Narrow to just message ID"
-msgstr ""
+msgstr "Szűkítés közvetlenül az üzenet ID szerint"
 
 #: templates/zerver/app/search_operators.html:45
 msgid "Search all public streams in the organization."
-msgstr ""
+msgstr "Keresés a szervezet minden nyilvános üzenetfolyamában."
 
 #: templates/zerver/app/search_operators.html:49
 msgid "Narrow to messages with alert words."
-msgstr ""
+msgstr "Szűkítés a szófigyelő által elkapott üzenetekre"
 
 #: templates/zerver/app/search_operators.html:53
 msgid "Narrow to messages that mention you."
-msgstr ""
+msgstr "Szűkítés üzenetekre amiben megemlítenek."
 
 #: templates/zerver/app/search_operators.html:57
 msgid "Narrow to private messages."
-msgstr ""
+msgstr "Szűkítés privát üzenetekre."
 
 #: templates/zerver/app/search_operators.html:61
 msgid "Narrow to starred messages."
-msgstr ""
+msgstr "Szűkítés csillagozott üzenetekre."
 
 #: templates/zerver/app/search_operators.html:65
 msgid "Narrow to unread messages."
-msgstr ""
+msgstr "Szűkítés olvasatlan üzenetekre."
 
 #: templates/zerver/app/search_operators.html:69
 msgid "Narrow to messages containing links."
-msgstr ""
+msgstr "Szűkítés linkeket tartalmazó üzenetekre."
 
 #: templates/zerver/app/search_operators.html:73
 msgid "Narrow to messages containing images."
-msgstr ""
+msgstr "Szűkítés képeket tartalmazó üzenetekre."
 
 #: templates/zerver/app/search_operators.html:77
 msgid "Narrow to messages containing uploads."
-msgstr ""
+msgstr "Szűkítés feltöltéseket tartalmazó üzenetekre."
 
 #: templates/zerver/app/search_operators.html:81
 msgid ""
 "Search for <span class=\"operator_value\"> keyword </span> in the topic or "
 "message content "
-msgstr ""
+msgstr "Keresés <span class=\"operator_value\">kulcsszó</span>szerint témában vagy üzenetekben."
 
 #: templates/zerver/app/search_operators.html:85
 msgid "Exclude messages with topic <span class=\"operator_value\">topic</span>"
-msgstr ""
+msgstr "Üzenetek kizárása <span class=\"operator_value\">téma</span> témával."
 
 #: templates/zerver/app/search_operators.html:89
 msgid ""
 "You can use any combination of these search\n"
 "        operators in a single query. For example:"
-msgstr ""
+msgstr "A keresőoperátorokat bármilyen kombinációban\nhasználhatod egyetlen keresés során. Például:"
 
 #: templates/zerver/app/search_operators.html:92
 msgid "streamname"
@@ -1251,11 +1274,11 @@ msgstr "üzenetfolyam neve"
 
 #: templates/zerver/app/search_operators.html:93
 msgid "user@example.com"
-msgstr ""
+msgstr "user@example.com"
 
 #: templates/zerver/app/search_operators.html:94
 msgid "keyword"
-msgstr ""
+msgstr "kulcsszó"
 
 #: templates/zerver/app/search_operators.html:106
 #, python-format
@@ -1272,11 +1295,11 @@ msgstr "\nEz a lekérdezés <span class=\"operator_value\">%(placeholder_email)s
 
 #: templates/zerver/app/search_operators.html:116
 msgid "Detailed search operators documentation"
-msgstr ""
+msgstr "Keresőoperátorok részletes leírása"
 
 #: templates/zerver/app/settings_overlay.html:16
 msgid "Your account"
-msgstr ""
+msgstr "Saját fiókod"
 
 #: templates/zerver/app/settings_overlay.html:20
 msgid "Display settings"
@@ -1288,15 +1311,15 @@ msgstr "Értesítések"
 
 #: templates/zerver/app/settings_overlay.html:29
 msgid "Your bots"
-msgstr ""
+msgstr "Saját botjaid"
 
 #: templates/zerver/app/settings_overlay.html:34
 msgid "Alert words"
-msgstr "Figyelmeztető szavak"
+msgstr "Szófigyelés"
 
 #: templates/zerver/app/settings_overlay.html:39
 msgid "Uploaded files"
-msgstr ""
+msgstr "Feltöltött fájlok"
 
 #: templates/zerver/app/settings_overlay.html:44
 msgid "Muted topics"
@@ -1317,7 +1340,7 @@ msgstr "Szervezeti profil"
 #: templates/zerver/app/settings_overlay.html:126
 #: templates/zerver/app/settings_overlay.html:134
 msgid "Only organization administrators can edit these settings."
-msgstr ""
+msgstr "Ezeket a beállításokat csak a szervezet adminisztrátorai módosíthatják."
 
 #: templates/zerver/app/settings_overlay.html:58
 msgid "Organization settings"
@@ -1327,17 +1350,17 @@ msgstr "Szervezeti beállítások"
 msgid "Organization permissions"
 msgstr "Szervezeti engedélyek"
 
-#: templates/zerver/app/settings_overlay.html:72 zerver/models.py:1777
+#: templates/zerver/app/settings_overlay.html:72 zerver/models.py:1804
 msgid "Custom emoji"
-msgstr ""
+msgstr "Egyedi hangulatjel"
 
 #: templates/zerver/app/settings_overlay.html:74
 msgid "Guest users cannot edit custom emoji."
-msgstr ""
+msgstr "Vendég felhasználók nem szerkeszthetnek egyedi hangulatjeleket."
 
 #: templates/zerver/app/settings_overlay.html:84
 msgid "User groups"
-msgstr ""
+msgstr "Felhasználói csoportok"
 
 #: templates/zerver/app/settings_overlay.html:89
 msgid "Authentication methods"
@@ -1349,11 +1372,11 @@ msgstr "Deaktivált felhasználók"
 
 #: templates/zerver/app/settings_overlay.html:124
 msgid "Default streams"
-msgstr "Alapértelmezett folyamok"
+msgstr "Alapértelmezett üzenetfolyamok"
 
 #: templates/zerver/app/settings_overlay.html:132
 msgid "Linkifiers"
-msgstr ""
+msgstr "Linkesítők"
 
 #: templates/zerver/app/settings_overlay.html:140
 msgid "Custom profile fields"
@@ -1361,15 +1384,15 @@ msgstr "Egyéni profil mezők"
 
 #: templates/zerver/app/settings_overlay.html:146
 msgid "Invitations"
-msgstr ""
+msgstr "Meghívások"
 
 #: templates/zerver/app/settings_overlay.html:150
 msgid "Data exports"
-msgstr ""
+msgstr "Adatexportok"
 
 #: templates/zerver/app/settings_overlay.html:156
 msgid "Show more"
-msgstr ""
+msgstr "Mutass többet"
 
 #: templates/zerver/config_error.html:14
 msgid ""
@@ -1378,11 +1401,11 @@ msgid ""
 "                        organization first. Please use EmailAuthBackend to create\n"
 "                        your organization and then try again.\n"
 "                        "
-msgstr ""
+msgstr "\nLDAP segítségével próbáltál belépni azelőtt, hogy szervezetet hoztál volna létre. Használd az EmailAuthBackend-et a szervezet létrehozásához és próbáld újra."
 
 #: templates/zerver/confirm_continue_registration.html:10
 msgid "Zulip account not found."
-msgstr "Zulip azonosító nem található."
+msgstr "Zulip fiók nem található."
 
 #: templates/zerver/confirm_continue_registration.html:14
 #, python-format
@@ -1390,15 +1413,15 @@ msgid ""
 "\n"
 "                            No account found for %(email)s.\n"
 "                            "
-msgstr ""
+msgstr "\nNem található felhasználó a(z) %(email)s címen"
 
 #: templates/zerver/confirm_continue_registration.html:26
 msgid "Log in with another account"
-msgstr ""
+msgstr "Lépj be másik fiókkal"
 
 #: templates/zerver/confirm_continue_registration.html:33
 msgid "Continue to registration"
-msgstr ""
+msgstr "Tovább a regisztrációhoz"
 
 #: templates/zerver/create_realm.html:12
 msgid "Create a new Zulip organization"
@@ -1406,7 +1429,7 @@ msgstr "Új Zulip szervezet létrehozása"
 
 #: templates/zerver/create_realm.html:20
 msgid "Enter your email address"
-msgstr "Adja meg az e-mail címét"
+msgstr "Add meg az e-mail címed"
 
 #: templates/zerver/create_realm.html:25
 msgid "Create organization"
@@ -1432,47 +1455,11 @@ msgstr "Adminisztrátorok"
 
 #: templates/zerver/dev_login.html:30
 msgid "Guest users"
-msgstr ""
+msgstr "Vendég felhasználók"
 
 #: templates/zerver/dev_login.html:42
 msgid "Normal users"
 msgstr "Normál felhasználók"
-
-#: templates/zerver/emails/compiled/confirm_new_email.html:4
-#: templates/zerver/emails/compiled/custom_email_0a044db0e6751f218a47a4331c50b45c.html:4
-#: templates/zerver/emails/compiled/custom_email_323d33263c802b7a808798ed9b6b5891.html:4
-#: templates/zerver/emails/compiled/custom_email_556550265caff1cd1fc70d6c7ef85cfc.html:4
-#: templates/zerver/emails/compiled/custom_email_71be297c80227efa5868a945ab2f03d5.html:4
-#: templates/zerver/emails/compiled/custom_email_76050a3fd18b4fc53c74b18de6b3cc57.html:4
-#: templates/zerver/emails/compiled/custom_email_8a64d4c3ba4c8579f83733107016b9b0.html:4
-#: templates/zerver/emails/compiled/custom_email_bb3181f792c96e031e57a0697a9ccba6.html:4
-#: templates/zerver/emails/compiled/custom_email_ebb5a4fe863941c2b7fc04a6f169a4ec.html:4
-#: templates/zerver/emails/compiled/custom_email_ed271a34d10d853722568eb6ada75850.html:4
-#: templates/zerver/emails/compiled/find_team.html:4
-#: templates/zerver/emails/compiled/followup_day1.html:4
-#: templates/zerver/emails/compiled/markdown_email.html:4
-#: templates/zerver/emails/compiled/notify_change_in_email.html:4
-#: templates/zerver/emails/compiled/notify_new_login.html:8
-#: templates/zerver/emails/compiled/password_reset.html:4
-#: templates/zerver/emails/confirm_new_email.source.html:4
-#: templates/zerver/emails/custom_email_0a044db0e6751f218a47a4331c50b45c.source.html:4
-#: templates/zerver/emails/custom_email_323d33263c802b7a808798ed9b6b5891.source.html:4
-#: templates/zerver/emails/custom_email_556550265caff1cd1fc70d6c7ef85cfc.source.html:4
-#: templates/zerver/emails/custom_email_71be297c80227efa5868a945ab2f03d5.source.html:4
-#: templates/zerver/emails/custom_email_76050a3fd18b4fc53c74b18de6b3cc57.source.html:4
-#: templates/zerver/emails/custom_email_8a64d4c3ba4c8579f83733107016b9b0.source.html:4
-#: templates/zerver/emails/custom_email_base.pre.html:4
-#: templates/zerver/emails/custom_email_bb3181f792c96e031e57a0697a9ccba6.source.html:4
-#: templates/zerver/emails/custom_email_ebb5a4fe863941c2b7fc04a6f169a4ec.source.html:4
-#: templates/zerver/emails/custom_email_ed271a34d10d853722568eb6ada75850.source.html:4
-#: templates/zerver/emails/find_team.source.html:4
-#: templates/zerver/emails/followup_day1.source.html:4
-#: templates/zerver/emails/markdown_email.source.html:4
-#: templates/zerver/emails/notify_change_in_email.source.html:4
-#: templates/zerver/emails/notify_new_login.source.html:8
-#: templates/zerver/emails/password_reset.source.html:4
-msgid "Zulip logo"
-msgstr ""
 
 #: templates/zerver/emails/compiled/confirm_new_email.html:9
 #: templates/zerver/emails/compiled/find_team.html:9
@@ -1482,7 +1469,7 @@ msgstr ""
 #: templates/zerver/emails/find_team.txt:1
 #, python-format
 msgid "Hi %(user_name)s,"
-msgstr ""
+msgstr "Szia %(user_name)s,"
 
 #: templates/zerver/emails/compiled/confirm_new_email.html:11
 #: templates/zerver/emails/confirm_new_email.source.html:10
@@ -1492,12 +1479,12 @@ msgid ""
 "We received a request to change the email address for the Zulip account on "
 "%(realm_uri)s from %(old_email)s to %(new_email)s. To confirm this change, "
 "please click below:"
-msgstr ""
+msgstr "E-mail változtatási kérés érkezett a Zulip fiókodhoz a %(realm_uri)scímen. Ha megerősíted az e-mail cím változtatását a(z) %(old_email)scímről a(z) %(new_email)s címre, kattints ide:"
 
 #: templates/zerver/emails/compiled/confirm_new_email.html:12
 #: templates/zerver/emails/confirm_new_email.source.html:11
 msgid "Confirm email change"
-msgstr ""
+msgstr "E-mail változtatás megerősítése"
 
 #: templates/zerver/emails/compiled/confirm_new_email.html:14
 #, python-format
@@ -1505,27 +1492,18 @@ msgid ""
 "If you did not request this change, please contact us immediately at <a "
 "href=\"mailto:%(support_email)s\" style=\"color:#46aa8f; text-"
 "decoration:underline\">%(support_email)s</a>."
-msgstr ""
-
-#: templates/zerver/emails/compiled/confirm_registration.html:4
-#: templates/zerver/emails/compiled/invitation.html:4
-#: templates/zerver/emails/compiled/realm_reactivation.html:4
-#: templates/zerver/emails/confirm_registration.source.html:4
-#: templates/zerver/emails/invitation.source.html:4
-#: templates/zerver/emails/realm_reactivation.source.html:4
-msgid "Turtle with envelope"
-msgstr ""
+msgstr "Ha nem te kérted a változtatást, keress bennünket haladéktalanul a <a href=\"mailto:%(support_email)s\" style=\"color:#46aa8f; text-decoration:underline\">%(support_email)s</a> címen."
 
 #: templates/zerver/emails/compiled/confirm_registration.html:10
 #: templates/zerver/emails/confirm_registration.source.html:9
 #: templates/zerver/emails/confirm_registration.txt:1
 msgid "You recently signed up for Zulip. Awesome!"
-msgstr ""
+msgstr "Épp most regisztráltál a Zulip-ba. Kiváló!"
 
 #: templates/zerver/emails/compiled/confirm_registration.html:13
 #: templates/zerver/emails/confirm_registration.source.html:12
 msgid "Click the button below to complete registration."
-msgstr ""
+msgstr "Kattints az alábbi gombra a regisztráció befejezéséhez."
 
 #: templates/zerver/emails/compiled/confirm_registration.html:14
 #: templates/zerver/emails/compiled/invitation.html:16
@@ -1534,7 +1512,7 @@ msgstr ""
 #: templates/zerver/emails/invitation.source.html:15
 #: templates/zerver/emails/invitation_reminder.source.html:14
 msgid "Complete registration"
-msgstr ""
+msgstr "Regisztráció befejezése"
 
 #: templates/zerver/emails/compiled/confirm_registration.html:16
 #: templates/zerver/emails/compiled/invitation.html:19
@@ -1546,10 +1524,49 @@ msgid ""
 "you run into trouble, have any feedback, or just want to chat!"
 msgstr ""
 
+#: templates/zerver/emails/compiled/custom_email_0a044db0e6751f218a47a4331c50b45c.html:4
+#: templates/zerver/emails/compiled/custom_email_323d33263c802b7a808798ed9b6b5891.html:4
+#: templates/zerver/emails/compiled/custom_email_556550265caff1cd1fc70d6c7ef85cfc.html:4
+#: templates/zerver/emails/compiled/custom_email_71be297c80227efa5868a945ab2f03d5.html:4
+#: templates/zerver/emails/compiled/custom_email_76050a3fd18b4fc53c74b18de6b3cc57.html:4
+#: templates/zerver/emails/compiled/custom_email_8a64d4c3ba4c8579f83733107016b9b0.html:4
+#: templates/zerver/emails/compiled/custom_email_bb3181f792c96e031e57a0697a9ccba6.html:4
+#: templates/zerver/emails/compiled/custom_email_ebb5a4fe863941c2b7fc04a6f169a4ec.html:4
+#: templates/zerver/emails/compiled/custom_email_ed271a34d10d853722568eb6ada75850.html:4
+#: templates/zerver/emails/compiled/markdown_email.html:4
+#: templates/zerver/emails/markdown_email.source.html:4
+msgid "Zulip logo"
+msgstr "Zulip logo"
+
+#: templates/zerver/emails/compiled/digest.html:28
+#: templates/zerver/emails/digest.source.html:27
+msgid "New streams"
+msgstr ""
+
+#: templates/zerver/emails/compiled/digest.html:35
+#: templates/zerver/emails/digest.source.html:34
+msgid "Click here to log in to Zulip and catch up."
+msgstr ""
+
+#: templates/zerver/emails/compiled/digest.html:40
+#: templates/zerver/emails/compiled/followup_day2.html:34
+#: templates/zerver/emails/compiled/notify_new_login.html:48
+#: templates/zerver/emails/digest.source.html:39
+#: templates/zerver/emails/followup_day2.source.html:33
+#: templates/zerver/emails/notify_new_login.source.html:46
+msgid "Manage email preferences"
+msgstr "E-mail tulajdonságok kezelése"
+
+#: templates/zerver/emails/compiled/digest.html:41
+#: templates/zerver/emails/digest.source.html:40
+msgid "Unsubscribe from digest emails"
+msgstr ""
+
 #: templates/zerver/emails/compiled/email_base_default.html:87
+#: templates/zerver/emails/custom/custom_email_87e5498dc967c76480e0895fe3f11751.txt:30
 #: templates/zerver/emails/email_base_default.source.html:30
 msgid "Swimming fish"
-msgstr ""
+msgstr "Úszó hal"
 
 #: templates/zerver/emails/compiled/find_team.html:11
 #: templates/zerver/emails/find_team.source.html:10
@@ -1565,7 +1582,7 @@ msgstr ""
 #: templates/zerver/emails/find_team.txt:8
 #, python-format
 msgid "The email address associated with your account is %(email)s."
-msgstr ""
+msgstr "A fiókodhoz a(z) %(email)se-mail cím tartozik."
 
 #: templates/zerver/emails/compiled/find_team.html:23
 #: templates/zerver/emails/find_team.source.html:22
@@ -1573,13 +1590,13 @@ msgstr ""
 msgid ""
 "If you have trouble logging in, please contact Zulip support by replying to "
 "this email."
-msgstr ""
+msgstr "Ha gondod van a belépéssel, írj egy választ erre a levélre a Zulip ügyfélszolgáltatának."
 
 #: templates/zerver/emails/compiled/find_team.html:25
 #: templates/zerver/emails/find_team.source.html:24
 #: templates/zerver/emails/find_team.txt:14
 msgid "Thanks for using Zulip!"
-msgstr ""
+msgstr "Köszönjük, hogy a Zulipot használod!"
 
 #: templates/zerver/emails/compiled/followup_day1.html:9
 #: templates/zerver/emails/followup_day1.source.html:8
@@ -1591,50 +1608,50 @@ msgstr "Üdvözlünk a Zulipban!"
 #: templates/zerver/emails/followup_day1.source.html:12
 #, python-format
 msgid "You've created the new Zulip organization <b>%(realm_name)s</b>."
-msgstr ""
+msgstr "Létrehoztad egy új szervezetet <b>%(realm_name)s</b> néven."
 
 #: templates/zerver/emails/compiled/followup_day1.html:15
 #: templates/zerver/emails/followup_day1.source.html:14
 #, python-format
 msgid "You've joined the Zulip organization <b>%(realm_name)s</b>."
-msgstr ""
+msgstr "Beléptél a(z) <b>%(realm_name)s</b> szervezetbe."
 
 #: templates/zerver/emails/compiled/followup_day1.html:20
 #: templates/zerver/emails/followup_day1.source.html:19
 #: templates/zerver/emails/followup_day1.txt:10
 msgid "Your account details:"
-msgstr ""
+msgstr "Fiókod adatai:"
 
 #: templates/zerver/emails/compiled/followup_day1.html:22
 #: templates/zerver/emails/followup_day1.source.html:20
 #: templates/zerver/emails/followup_day1.txt:11
 msgid "Organization URL:"
-msgstr ""
+msgstr "Szervezet URL-je:"
 
 #: templates/zerver/emails/compiled/followup_day1.html:26
 #: templates/zerver/emails/followup_day1.source.html:23
 #: templates/zerver/emails/followup_day1.txt:14
 msgid "Username:"
-msgstr ""
+msgstr "Felhasználónév:"
 
 #: templates/zerver/emails/compiled/followup_day1.html:29
 #: templates/zerver/emails/followup_day1.source.html:25
 #: templates/zerver/emails/followup_day1.txt:16
 msgid "Use your LDAP account to login"
-msgstr ""
+msgstr "Használd LDAP fiókodat a belépéshez"
 
 #: templates/zerver/emails/compiled/followup_day1.html:33
 #: templates/zerver/emails/followup_day1.source.html:28
 #: templates/zerver/emails/followup_day1.txt:19
 msgid "Email:"
-msgstr ""
+msgstr "E-mail:"
 
 #: templates/zerver/emails/compiled/followup_day1.html:36
 msgid ""
 "(you'll need these to sign in to the <a href=\"https://zulipchat.com/apps\" "
 "style=\"color:#46aa8f; text-decoration:underline\">mobile and desktop</a> "
 "apps)"
-msgstr ""
+msgstr "(ezekre a <a href=\"https://zulipchat.com/apps\" style=\"color:#46aa8f; text-decoration:underline\">mobil és asztali</a> alkalmazásokban lesz szükséged belépéskor)"
 
 #: templates/zerver/emails/compiled/followup_day1.html:41
 #, python-format
@@ -1660,7 +1677,7 @@ msgstr ""
 #: templates/zerver/emails/followup_day1.source.html:42
 #: templates/zerver/emails/followup_day1.txt:31
 msgid "Cheers,"
-msgstr ""
+msgstr "Üdvözlettel,"
 
 #: templates/zerver/emails/compiled/followup_day1.html:49
 #: templates/zerver/emails/compiled/notify_change_in_email.html:15
@@ -1669,7 +1686,7 @@ msgstr ""
 #: templates/zerver/emails/notify_change_in_email.source.html:14
 #: templates/zerver/emails/notify_change_in_email.txt:7
 msgid "Team Zulip"
-msgstr ""
+msgstr "Zulip csapat"
 
 #: templates/zerver/emails/compiled/followup_day1.html:53
 msgid ""
@@ -1681,16 +1698,11 @@ msgid ""
 "decoration:underline\">Zulip community server</a>!"
 msgstr ""
 
-#: templates/zerver/emails/compiled/followup_day2.html:4
-#: templates/zerver/emails/followup_day2.source.html:4
-msgid "Octopus box with heart"
-msgstr ""
-
 #: templates/zerver/emails/compiled/followup_day2.html:9
 #: templates/zerver/emails/followup_day2.source.html:8
 #: templates/zerver/emails/followup_day2.txt:1
 msgid "Hey,"
-msgstr ""
+msgstr "Szia,"
 
 #: templates/zerver/emails/compiled/followup_day2.html:11
 #: templates/zerver/emails/followup_day2.source.html:10
@@ -1698,25 +1710,25 @@ msgstr ""
 msgid ""
 "I wanted to share one last thing with you: a few tips about topics, since "
 "mastering topics is a key part of being a Zulip power user."
-msgstr ""
+msgstr "Szerettem volna mégvalamit megosztani veled: egy pár tippet a témákról, hiszen ezek használatával válhatsz igazi Zulip mesterré."
 
 #: templates/zerver/emails/compiled/followup_day2.html:13
 #: templates/zerver/emails/followup_day2.source.html:12
 msgid "Examples of short topics"
-msgstr ""
+msgstr "Példák rövid témákra"
 
 #: templates/zerver/emails/compiled/followup_day2.html:15
 msgid ""
 "Topics are like email subject lines. The big difference, though, is that "
 "they're really short and lightweight. Two or three words will do it. Don't "
 "overthink 'em—you can always edit the message later!"
-msgstr ""
+msgstr "A témák olyanok, mint az e-mailek esetén a tárgy. Nagy különbség azonban, hogy a témák mindig rövidek és egyszerűek. Két vagy három szó is elegendő. Ne gondold túl - bármikor módosíthatsz az üzeneten később!"
 
 #: templates/zerver/emails/compiled/followup_day2.html:18
 #: templates/zerver/emails/followup_day2.source.html:17
 #: templates/zerver/emails/followup_day2.txt:7
 msgid "Good topics: design mockup, Bug 345, acme burgers"
-msgstr ""
+msgstr "Jó témák lehetnek: terv vázlat, 345-ös hiba, sarki büfé"
 
 #: templates/zerver/emails/compiled/followup_day2.html:19
 #: templates/zerver/emails/followup_day2.source.html:18
@@ -1724,12 +1736,12 @@ msgstr ""
 msgid ""
 "Not recommended: \"What do people think of this new design mockup?\", \"I'm "
 "looking at Bug 345\", \"Is Acme Burgers open for lunch?\""
-msgstr ""
+msgstr "Nem ajánljuk: \"Emberek, mit gondoltok erről az új terv vázlatról?\", \"A 345-ös hibát kezdtem nézegetni\", \"Nyitva van a sarki büfé ebédidőben?\""
 
 #: templates/zerver/emails/compiled/followup_day2.html:22
 #: templates/zerver/emails/followup_day2.source.html:21
 msgid "Example of a topic that is too long"
-msgstr ""
+msgstr "Példa a túl hosszú témákra"
 
 #: templates/zerver/emails/compiled/followup_day2.html:24
 msgid ""
@@ -1737,12 +1749,12 @@ msgid ""
 "(imagine if email didn't have them!), and it lets you more efficiently catch"
 " up on what's happened while you're away—read the topics that are relevant "
 "to you, and ignore the ones that aren't!"
-msgstr ""
+msgstr "Miért érdekeljen a témák kezelése? Nos, két okból: a témák köré épülő párbeszédek egyértelműbbek lesznek (képzeld el, ha az e-maileknek nem lenne tárgyuk!), és neked is segít hatékonyabban követni, hogy mi történt amíg nem láttad az üzeneteidet — a számodra fontos témákat elolvashatod, a többit pedig figyelmen kívül hagyhatod!"
 
 #: templates/zerver/emails/compiled/followup_day2.html:26
 #: templates/zerver/emails/followup_day2.source.html:25
 msgid "Take it for a spin now."
-msgstr ""
+msgstr "Most próbáld ki te is."
 
 #: templates/zerver/emails/compiled/followup_day2.html:28
 #: templates/zerver/emails/compiled/notify_new_login.html:42
@@ -1751,7 +1763,7 @@ msgstr ""
 #: templates/zerver/emails/notify_new_login.source.html:40
 #: templates/zerver/emails/notify_new_login.txt:19
 msgid "Thanks,"
-msgstr ""
+msgstr "Köszi,"
 
 #: templates/zerver/emails/compiled/followup_day2.html:28
 #: templates/zerver/emails/followup_day2.source.html:27
@@ -1760,23 +1772,16 @@ msgstr ""
 msgid "Zulip"
 msgstr "Zulip"
 
-#: templates/zerver/emails/compiled/followup_day2.html:34
-#: templates/zerver/emails/compiled/notify_new_login.html:48
-#: templates/zerver/emails/followup_day2.source.html:33
-#: templates/zerver/emails/notify_new_login.source.html:46
-msgid "Manage email preferences"
-msgstr ""
-
 #: templates/zerver/emails/compiled/followup_day2.html:35
 #: templates/zerver/emails/followup_day2.source.html:34
 msgid "Unsubscribe from welcome emails"
-msgstr ""
+msgstr "Leiratkozás az üdvözlő e-mailekről"
 
 #: templates/zerver/emails/compiled/invitation.html:9
 #: templates/zerver/emails/invitation.source.html:8
 #: templates/zerver/emails/invitation.txt:1
 msgid "Hi there,"
-msgstr ""
+msgstr "Szia,"
 
 #: templates/zerver/emails/compiled/invitation.html:12
 #, python-format
@@ -1785,25 +1790,20 @@ msgid ""
 "style=\"color:#46aa8f; text-decoration:underline\">%(referrer_email)s</a>) "
 "wants you to join them on Zulip — the team communication tool designed for "
 "productivity."
-msgstr ""
+msgstr "%(referrer_full_name)s(<a href=\"mailto:%(referrer_email)s\" style=\"color:#46aa8f; text-decoration:underline\">%(referrer_email)s</a>) szeretné, ha csatlakozná hozzá a Zulip-ban, ami egy hatékony csapatkommunikációs eszköz."
 
 #: templates/zerver/emails/compiled/invitation.html:15
 #: templates/zerver/emails/compiled/invitation_reminder.html:14
 #: templates/zerver/emails/invitation.source.html:14
 #: templates/zerver/emails/invitation_reminder.source.html:13
 msgid "To get started, click the button below."
-msgstr ""
-
-#: templates/zerver/emails/compiled/invitation_reminder.html:4
-#: templates/zerver/emails/invitation_reminder.source.html:4
-msgid "Mailbox with envelope"
-msgstr ""
+msgstr "A kezdéshez kattints az alábbi gombra."
 
 #: templates/zerver/emails/compiled/invitation_reminder.html:9
 #: templates/zerver/emails/invitation_reminder.source.html:8
 #: templates/zerver/emails/invitation_reminder.txt:1
 msgid "Hi again,"
-msgstr ""
+msgstr "Szia ismét,"
 
 #: templates/zerver/emails/compiled/invitation_reminder.html:11
 #, python-format
@@ -1812,13 +1812,13 @@ msgid ""
 "href=\"mailto:%(referrer_email)s\" style=\"color:#46aa8f; text-"
 "decoration:underline\">%(referrer_email)s</a>) wants you to join them on "
 "Zulip — the team communication tool designed for productivity."
-msgstr ""
+msgstr "Ez egy kedves emlékeztető, hogy %(referrer_name)s (<a href=\"mailto:%(referrer_email)s\" style=\"color:#46aa8f; text-decoration:underline\">%(referrer_email)s</a>) meghívott a Zulipba, ami egy hatékony csapatkommunikációs eszköz."
 
 #: templates/zerver/emails/compiled/invitation_reminder.html:19
 #: templates/zerver/emails/invitation_reminder.source.html:18
 #: templates/zerver/emails/invitation_reminder.txt:8
 msgid "This is the last reminder you'll receive for this invitation."
-msgstr ""
+msgstr "Ez az utolsó emlékeztető, amit küldünk erről a meghívásról."
 
 #: templates/zerver/emails/compiled/invitation_reminder.html:23
 #: templates/zerver/emails/invitation_reminder.source.html:22
@@ -1827,13 +1827,13 @@ msgstr ""
 msgid ""
 "This invitation expires in two days. If the invitation expires, you'll need "
 "to ask %(referrer_name)s for another one."
-msgstr ""
+msgstr "Ez a meghívás két nap múlva lejár. Ha lejárt, %(referrer_name)stud újat küldeni."
 
 #: templates/zerver/emails/compiled/notify_change_in_email.html:9
 #: templates/zerver/emails/notify_change_in_email.source.html:8
 #: templates/zerver/emails/notify_change_in_email.txt:1
 msgid "Hi,"
-msgstr ""
+msgstr "Szia,"
 
 #: templates/zerver/emails/compiled/notify_change_in_email.html:11
 #, python-format
@@ -1844,13 +1844,13 @@ msgid ""
 "change, please contact us immediately at <a "
 "href=\"mailto:%(support_email)s\" style=\"color:#46aa8f; text-"
 "decoration:underline\">%(support_email)s</a>."
-msgstr ""
+msgstr "A Zulip fiókodhoz tartozó e-mail cím nemrég változott meg erre: <a href=\"%(new_email)s\" style=\"color:#46aa8f; text-decoration:underline\">%(new_email)s</a>. Ha nem te akartad a változtatást, sürgősen írj nekünk erre a címre: <a href=\"mailto:%(support_email)s\" style=\"color:#46aa8f; text-decoration:underline\">%(support_email)s</a>."
 
 #: templates/zerver/emails/compiled/notify_change_in_email.html:14
 #: templates/zerver/emails/notify_change_in_email.source.html:13
 #: templates/zerver/emails/notify_change_in_email.txt:6
 msgid "Best,"
-msgstr ""
+msgstr "A legjobbakat,"
 
 #: templates/zerver/emails/compiled/notify_new_login.html:4
 #: templates/zerver/emails/notify_new_login.source.html:4
@@ -1858,20 +1858,20 @@ msgstr ""
 msgid ""
 "Organization: %(organization_url)s Time: %(login_time)s Email: "
 "%(user_email)s"
-msgstr ""
+msgstr "Szervezet: %(organization_url)s Időpont: %(login_time)s Email: %(user_email)s"
 
 #: templates/zerver/emails/compiled/notify_new_login.html:13
 #: templates/zerver/emails/notify_new_login.source.html:12
 #: templates/zerver/emails/notify_new_login.txt:1
 msgid "We noticed a recent login for the following Zulip account."
-msgstr ""
+msgstr "Egy új belépést láttunk az alábbi Zulip fióknál."
 
 #: templates/zerver/emails/compiled/notify_new_login.html:18
 #, python-format
 msgid ""
 "Organization: <a href=\"%(realm_uri)s\" target=\"_blank\" "
 "style=\"color:#46aa8f; text-decoration:underline\">%(realm_uri)s</a>"
-msgstr ""
+msgstr "Szervezet: <a href=\"%(realm_uri)s\" target=\"_blank\" style=\"color:#46aa8f; text-decoration:underline\">%(realm_uri)s</a>"
 
 #: templates/zerver/emails/compiled/notify_new_login.html:21
 #, python-format
@@ -1899,13 +1899,13 @@ msgstr ""
 #: templates/zerver/emails/notify_new_login.txt:11
 #, python-format
 msgid "IP address: %(device_ip)s"
-msgstr ""
+msgstr "IP cím: %(device_ip)s"
 
 #: templates/zerver/emails/compiled/notify_new_login.html:35
 #: templates/zerver/emails/notify_new_login.source.html:33
 #: templates/zerver/emails/notify_new_login.txt:14
 msgid "If this was you, great! There's nothing else you need to do."
-msgstr ""
+msgstr "Ha te voltál, minden rendben! Nem kell semmit tenned."
 
 #: templates/zerver/emails/compiled/notify_new_login.html:38
 #, python-format
@@ -1922,12 +1922,12 @@ msgstr ""
 #: templates/zerver/emails/notify_new_login.source.html:41
 #: templates/zerver/emails/notify_new_login.txt:20
 msgid "Zulip Security"
-msgstr ""
+msgstr "Zulip Biztonsági Szolgálat"
 
 #: templates/zerver/emails/compiled/notify_new_login.html:48
 #: templates/zerver/emails/notify_new_login.source.html:46
 msgid "Unsubscribe from login notifications"
-msgstr ""
+msgstr "Leiratkozás a belépési értesítésekről"
 
 #: templates/zerver/emails/compiled/password_reset.html:10
 #: templates/zerver/emails/password_reset.source.html:9
@@ -1936,17 +1936,17 @@ msgstr ""
 msgid ""
 "Somebody (possibly you) requested a new password for the Zulip account "
 "%(email)s on %(realm_uri)s."
-msgstr ""
+msgstr "Valaki (talán épp te) új jelszót kért a(z) %(email)s Zulip fiókhoz a(z) %(realm_uri)s címen."
 
 #: templates/zerver/emails/compiled/password_reset.html:14
 #: templates/zerver/emails/password_reset.source.html:13
 msgid "Click the button below to reset your password."
-msgstr ""
+msgstr "Kattints az alábbi gombra új jelszó készítéséhez"
 
 #: templates/zerver/emails/compiled/password_reset.html:15
 #: templates/zerver/emails/password_reset.source.html:14
 msgid "Reset password"
-msgstr ""
+msgstr "Új jelszó készítése"
 
 #: templates/zerver/emails/compiled/password_reset.html:20
 #, python-format
@@ -1962,13 +1962,13 @@ msgstr ""
 #: templates/zerver/emails/password_reset.source.html:21
 #: templates/zerver/emails/password_reset.txt:10
 msgid "You do not have an account in that Zulip organization."
-msgstr ""
+msgstr "Nincs fiókod ebben a Zulip szervezetben."
 
 #: templates/zerver/emails/compiled/password_reset.html:27
 #: templates/zerver/emails/password_reset.source.html:26
 #: templates/zerver/emails/password_reset.txt:15
 msgid "You do have active accounts in the following organization(s)."
-msgstr ""
+msgstr "Az alábbi szervezet(ek)ben van aktív fiókod."
 
 #: templates/zerver/emails/compiled/password_reset.html:34
 #: templates/zerver/emails/password_reset.source.html:32
@@ -1976,21 +1976,21 @@ msgstr ""
 msgid ""
 "You can try logging in or resetting your password in the organization(s) "
 "above."
-msgstr ""
+msgstr "Próbálj meg belépni a fenti szervezetekbe vagy új jelszót kérni."
 
 #: templates/zerver/emails/compiled/password_reset.html:40
 #: templates/zerver/emails/password_reset.source.html:38
 #: templates/zerver/emails/password_reset.txt:24
 msgid ""
 "If you do not recognize this activity, you can safely ignore this email."
-msgstr ""
+msgstr "Ha nem ismerős a fenti aktivitás, nyugodtan hagyd figyelmen kívül ezt az üzenetet."
 
 #: templates/zerver/emails/compiled/realm_reactivation.html:9
 #: templates/zerver/emails/realm_reactivation.source.html:8
 #: templates/zerver/emails/realm_reactivation.txt:1
 #, python-format
 msgid "Dear former administrators of %(realm_name)s,"
-msgstr ""
+msgstr "Kedves %(realm_name)s korábbi adminisztrátora,"
 
 #: templates/zerver/emails/compiled/realm_reactivation.html:11
 #: templates/zerver/emails/realm_reactivation.source.html:10
@@ -1999,17 +1999,17 @@ msgstr ""
 msgid ""
 "One of your administrators requested reactivation of the previously "
 "deactivated Zulip organization hosted at %(realm_uri)s."
-msgstr ""
+msgstr "Az egyik adminisztrátorod a(z) %(realm_uri)scímen üzemelő Zulip szervezet újraaktivásálát kérte, amit korábban deaktiváltak."
 
 #: templates/zerver/emails/compiled/realm_reactivation.html:14
 #: templates/zerver/emails/realm_reactivation.source.html:13
 msgid "Click the button below to reactivate your organization."
-msgstr ""
+msgstr "Kattints az alábbi gombra a szervezet újraaktivásálához."
 
 #: templates/zerver/emails/compiled/realm_reactivation.html:15
 #: templates/zerver/emails/realm_reactivation.source.html:14
 msgid "Reactivate organization"
-msgstr ""
+msgstr "Szervezet újraaktiválása"
 
 #: templates/zerver/emails/compiled/realm_reactivation.html:18
 #: templates/zerver/emails/realm_reactivation.source.html:17
@@ -2017,25 +2017,25 @@ msgstr ""
 msgid ""
 "If the request was in error, you can take no action and this link will "
 "expire in 24 hours."
-msgstr ""
+msgstr "Ha a kérés hiba következménye, nem kell semmit tenni, a hivatkozás 24 óra múlva lejár."
 
 #: templates/zerver/emails/confirm_new_email.source.html:13
 #, python-format
 msgid ""
 "If you did not request this change, please contact us immediately at <a "
 "href=\"mailto:%(support_email)s\">%(support_email)s</a>."
-msgstr ""
+msgstr "Ha nem te kérted a változtatást, keress minket haladéktalanul a(z) <a href=\"mailto:%(support_email)s\">%(support_email)s</a> címen."
 
 #: templates/zerver/emails/confirm_new_email.subject.txt:1
 msgid "Verify your new email address"
-msgstr ""
+msgstr "Új e-mail cím ellenőrzése"
 
 #: templates/zerver/emails/confirm_new_email.txt:9
 #, python-format
 msgid ""
 "If you did not request this change, please contact us immediately at "
 "<%(support_email)s>."
-msgstr ""
+msgstr "Ha nem te voltál, keress bennünket haladéktalanul a <%(support_email)s> címen."
 
 #: templates/zerver/emails/confirm_registration.source.html:15
 #: templates/zerver/emails/invitation.source.html:18
@@ -2049,11 +2049,11 @@ msgstr ""
 
 #: templates/zerver/emails/confirm_registration.subject.txt:1
 msgid "Activate your Zulip account"
-msgstr ""
+msgstr "Zulip fiók aktiválása"
 
 #: templates/zerver/emails/confirm_registration.txt:3
 msgid "Click the link below to complete registration."
-msgstr ""
+msgstr "Kattints az alábbi linkre a regisztráció befejezéséhez."
 
 #: templates/zerver/emails/confirm_registration.txt:6
 #: templates/zerver/emails/invitation.txt:8
@@ -2061,11 +2061,30 @@ msgstr ""
 msgid ""
 "Contact us any time at %(support_email)s if you run into trouble,have any "
 "feedback, or just want to chat!"
+msgstr "Keress bennünket a %(support_email)s címen ha problémába ütköztél, észrevételed van vagy csak beszélgetni szeretnél!"
+
+#: templates/zerver/emails/digest.subject.txt:1
+#, python-format
+msgid "Zulip digest for %(realm_name)s"
+msgstr ""
+
+#: templates/zerver/emails/digest.txt:12
+#, python-format
+msgid "Click here to log in to Zulip and catch up: %(organization_uri)s."
+msgstr ""
+
+#: templates/zerver/emails/digest.txt:15
+#: templates/zerver/emails/followup_day2.txt:19
+msgid "Manage email preferences:"
+msgstr "E-mail tulajdonságok kezelése"
+
+#: templates/zerver/emails/digest.txt:19
+msgid "Unsubscribe from digest emails:"
 msgstr ""
 
 #: templates/zerver/emails/find_team.subject.txt:1
 msgid "Your Zulip login page"
-msgstr ""
+msgstr "A Zulip belépési oldalad"
 
 #: templates/zerver/emails/followup_day1.source.html:30
 msgid ""
@@ -2100,28 +2119,28 @@ msgstr ""
 #: templates/zerver/emails/followup_day1.subject.txt:2
 #, python-format
 msgid "%(realm_name)s on Zulip: Your new organization details"
-msgstr ""
+msgstr "%(realm_name)s a Zulipon: az új szervezeted részletei"
 
 #: templates/zerver/emails/followup_day1.subject.txt:4
 #, python-format
 msgid "%(realm_name)s on Zulip: Your new account details"
-msgstr ""
+msgstr "%(realm_name)sa Zulipon: az új fiókod részletei"
 
 #: templates/zerver/emails/followup_day1.txt:4
 #, python-format
 msgid "You've created the new Zulip organization %(realm_name)s."
-msgstr ""
+msgstr "Létrehoztad a(z) %(realm_name)snevű Zulip szervezetet."
 
 #: templates/zerver/emails/followup_day1.txt:6
 #, python-format
 msgid "You've joined the Zulip organization %(realm_name)s."
-msgstr ""
+msgstr "Beléptél a(z) %(realm_name)s nevű Zulip szervezetbe."
 
 #: templates/zerver/emails/followup_day1.txt:21
 msgid ""
 "(you'll need these to sign in to the mobile and desktop apps "
 "(https://zulipchat.com/apps))"
-msgstr ""
+msgstr "(ezekre szükséged lesz a mobil és asztali alkalmazásokba történő belépéskor (https://zulipchat.com/apps))"
 
 #: templates/zerver/emails/followup_day1.txt:25
 #, python-format
@@ -2129,7 +2148,7 @@ msgid ""
 "Check out our guide (%(getting_started_link)s) for admins, become a Zulip "
 "pro with a few keyboard shortcuts (%(keyboard_shortcuts_link)s), or dive "
 "right in to %(realm_uri)s!"
-msgstr ""
+msgstr "Olvasd el útmutatónkat (%(getting_started_link)s) adminok számára, válj Zulip mesterré pár gyorsbillentyű megismerésével (%(keyboard_shortcuts_link)s) vagy merülj alá a %(realm_uri)s címen!"
 
 #: templates/zerver/emails/followup_day1.txt:27
 #, python-format
@@ -2137,7 +2156,7 @@ msgid ""
 "Learn more (%(getting_started_link)s) about Zulip, become a pro with a few "
 "keyboard shortcuts (%(keyboard_shortcuts_link)s), or dive right in to "
 "%(realm_uri)s!"
-msgstr ""
+msgstr "Olvasd el útmutatónkat (%(getting_started_link)s) a Zulipról, válj Zulip mesterré pár gyorsbillentyű megismerésével (%(keyboard_shortcuts_link)s) vagy merülj alá a %(realm_uri)s címen!"
 
 #: templates/zerver/emails/followup_day1.txt:34
 msgid ""
@@ -2151,7 +2170,7 @@ msgid ""
 "Topics are like email subject lines. The big difference, though, is that "
 "they're really short and lightweight. Two or three words will do it. Don't "
 "overthink 'em&mdash;you can always edit the message later!"
-msgstr ""
+msgstr "A témák olyanok, mint az e-mailek esetén a tárgy. Nagy különbség azonban, hogy a témák mindig rövidek és egyszerűek. Két vagy három szó is elegendő. Ne gondold túl - bármikor módosíthatsz az üzeneten később!"
 
 #: templates/zerver/emails/followup_day2.source.html:23
 msgid ""
@@ -2159,18 +2178,18 @@ msgid ""
 "(imagine if email didn't have them!), and it lets you more efficiently catch"
 " up on what's happened while you're away&mdash;read the topics that are "
 "relevant to you, and ignore the ones that aren't!"
-msgstr ""
+msgstr "Miért érdekeljen a témák kezelése? Nos, két okból: a témák köré épülő párbeszédek egyértelműbbek lesznek (képzeld el, ha az e-maileknek nem lenne tárgyuk!), és neked is segít hatékonyabban követni, hogy mi történt amíg nem láttad az üzeneteidet — a számodra fontos témákat elolvashatod, a többit pedig figyelmen kívül hagyhatod!"
 
 #: templates/zerver/emails/followup_day2.subject.txt:1
 msgid "One last thing: using topics like a pro"
-msgstr ""
+msgstr "Mégvalami: használd a témákat úgy, mint a nagyok"
 
 #: templates/zerver/emails/followup_day2.txt:5
 msgid ""
 "Topics are like email subject lines. The big difference, though, is that "
 "they're really short and lightweight. Two or three words will do it. Don't "
 "overthink 'em -- you can always edit the message later!"
-msgstr ""
+msgstr "A témák olyanok, mint az e-mailek esetén a tárgy. Nagy különbség azonban, hogy a témák mindig rövidek és egyszerűek. Két vagy három szó is elegendő. Ne gondold túl - bármikor módosíthatsz az üzeneten később!"
 
 #: templates/zerver/emails/followup_day2.txt:11
 msgid ""
@@ -2178,15 +2197,11 @@ msgid ""
 "(imagine if email didn't have them!), and it lets you more efficiently catch"
 " up on what's happened while you're away -- read the topics that are "
 "relevant to you, and ignore the ones that aren't!"
-msgstr ""
+msgstr "Miért érdekeljen a témák kezelése? Nos, két okból: a témák köré épülő párbeszédek egyértelműbbek lesznek (képzeld el, ha az e-maileknek nem lenne tárgyuk!), és neked is segít hatékonyabban követni, hogy mi történt amíg nem láttad az üzeneteidet — a számodra fontos témákat elolvashatod, a többit pedig figyelmen kívül hagyhatod!"
 
 #: templates/zerver/emails/followup_day2.txt:13
 msgid "Take it for a spin now:"
-msgstr ""
-
-#: templates/zerver/emails/followup_day2.txt:19
-msgid "Manage email preferences:"
-msgstr ""
+msgstr "Most próbáld ki te is."
 
 #: templates/zerver/emails/followup_day2.txt:22
 msgid "Unsubscribe from welcome emails:"
@@ -2216,7 +2231,7 @@ msgstr ""
 #: templates/zerver/emails/invitation.txt:5
 #: templates/zerver/emails/invitation_reminder.txt:5
 msgid "To get started, click the link below."
-msgstr ""
+msgstr "A kezdéshez kattints az alábbi linkre"
 
 #: templates/zerver/emails/invitation_reminder.source.html:10
 #, python-format
@@ -2238,6 +2253,117 @@ msgid ""
 "This is a friendly reminder that %(referrer_name)s (%(referrer_email)s) "
 "wants you to join them on Zulip -- the team communication tool designed for "
 "productivity."
+msgstr ""
+
+#: templates/zerver/emails/missed_message.source.html:17
+#, python-format
+msgid ""
+"This email does not include message content because your organization has "
+"disabled <a class=\"content_disabled_help_link\" "
+"href=\"%(help_url)s\">message content appearing in email notifications</a>."
+msgstr ""
+
+#: templates/zerver/emails/missed_message.source.html:19
+#, python-format
+msgid ""
+"This email does not include message content because you have disabled <a "
+"class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">message "
+"content appearing in email notifications</a>."
+msgstr ""
+
+#: templates/zerver/emails/missed_message.source.html:29
+#: templates/zerver/emails/missed_message.txt:25
+#, python-format
+msgid "You are receiving this because you were mentioned in %(realm_name)s."
+msgstr ""
+
+#: templates/zerver/emails/missed_message.source.html:31
+#: templates/zerver/emails/missed_message.txt:27
+msgid ""
+"You are receiving this because you have email notifications enabled for this"
+" stream."
+msgstr ""
+
+#: templates/zerver/emails/missed_message.source.html:34
+#, python-format
+msgid ""
+"Reply to this email directly, <a href=\"%(narrow_url)s\">view it in "
+"Zulip</a>, or <a href=\"%(notif_url)s\">manage email preferences</a>."
+msgstr ""
+
+#: templates/zerver/emails/missed_message.source.html:36
+#, python-format
+msgid ""
+"<a href=\"%(narrow_url)s\">View or reply in Zulip</a>, or <a "
+"href=\"%(notif_url)s\">manage email preferences</a>."
+msgstr ""
+
+#: templates/zerver/emails/missed_message.source.html:38
+#, python-format
+msgid ""
+"<a href=\"%(narrow_url)s\">Reply in Zulip</a>, or <a "
+"href=\"%(notif_url)s\">manage email preferences</a>."
+msgstr ""
+
+#: templates/zerver/emails/missed_message.source.html:40
+#, python-format
+msgid ""
+"\n"
+"    Do not reply to this email. This Zulip server is not configured to accept incoming emails (<a href=\"%(url)s\">help</a>).\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/missed_message.subject.txt:2
+#, python-format
+msgid "Group PMs with %(huddle_display_name)s"
+msgstr ""
+
+#: templates/zerver/emails/missed_message.subject.txt:3
+#, python-format
+msgid "PMs with %(sender_str)s"
+msgstr ""
+
+#: templates/zerver/emails/missed_message.subject.txt:7
+msgid "New missed messages"
+msgstr ""
+
+#: templates/zerver/emails/missed_message.txt:11
+#, python-format
+msgid ""
+"\n"
+"This email does not include message content because your organization has disabled message content appearing in email notifications.\n"
+"See %(hide_content_url)s for more details.\n"
+msgstr ""
+
+#: templates/zerver/emails/missed_message.txt:16
+#, python-format
+msgid ""
+"\n"
+"This email does not include message content because you have disabled message content appearing in email notifications.\n"
+"See %(alert_notif_url)s for more details.\n"
+msgstr ""
+
+#: templates/zerver/emails/missed_message.txt:31
+msgid "Reply to this email directly, or view it in Zulip:"
+msgstr ""
+
+#: templates/zerver/emails/missed_message.txt:35
+msgid "View or reply in Zulip:"
+msgstr ""
+
+#: templates/zerver/emails/missed_message.txt:39
+msgid "Reply in Zulip:"
+msgstr ""
+
+#: templates/zerver/emails/missed_message.txt:43
+msgid ""
+"\n"
+"Do not reply to this email. This Zulip server is not configured to accept\n"
+"incoming emails. Help:\n"
+msgstr ""
+
+#: templates/zerver/emails/missed_message.txt:50
+msgid "Manage email preferences: "
 msgstr ""
 
 #: templates/zerver/emails/notify_change_in_email.source.html:10
@@ -2330,6 +2456,10 @@ msgid ""
 " You can contact an organization administrator to reactivate your account."
 msgstr ""
 
+#: templates/zerver/emails/realm_reactivation.subject.txt:1
+msgid "Reactivate your Zulip organization"
+msgstr ""
+
 #: templates/zerver/emails/realm_reactivation.txt:7
 msgid "Click the link below to reactivate your organization."
 msgstr ""
@@ -2351,11 +2481,11 @@ msgstr ""
 
 #: templates/zerver/find_account.html:43
 msgid "Find accounts"
-msgstr ""
+msgstr "Fiókok keresése"
 
 #: templates/zerver/footer.html:3
 msgid "About Zulip"
-msgstr ""
+msgstr "A Zulip-ról"
 
 #: templates/zerver/footer.html:5
 msgid "Home"
@@ -2379,7 +2509,7 @@ msgstr ""
 
 #: templates/zerver/footer.html:9
 msgid "History"
-msgstr ""
+msgstr "Előzmények"
 
 #: templates/zerver/footer.html:13
 msgid "Help &amp; community"
@@ -2426,15 +2556,15 @@ msgid "Desktop &amp; mobile apps"
 msgstr ""
 
 #: templates/zerver/for-companies.html:18
-msgid "The best chat for workplaces"
+msgid "The best chat for workplaces."
 msgstr ""
 
 #: templates/zerver/for-open-source.html:23
-msgid "Zulip for open source"
+msgid "Zulip for open source."
 msgstr ""
 
 #: templates/zerver/for-working-groups-and-communities.html:18
-msgid "The best chat for working groups and communities"
+msgid "The best chat for working groups and communities."
 msgstr ""
 
 #: templates/zerver/hello.html:58
@@ -2505,6 +2635,30 @@ msgstr ""
 
 #: templates/zerver/hello.html:542
 msgid "Sign up now"
+msgstr ""
+
+#: templates/zerver/insecure_desktop_app.html:11
+msgid "Update required"
+msgstr ""
+
+#: templates/zerver/insecure_desktop_app.html:13
+msgid ""
+"\n"
+"                        You are using old version of the Zulip desktop\n"
+"                        app that is no longer supported.\n"
+"                        "
+msgstr ""
+
+#: templates/zerver/insecure_desktop_app.html:21
+msgid ""
+"\n"
+"                        The auto-update feature in this old version of\n"
+"                        Zulip desktop app no longer works.\n"
+"                        "
+msgstr ""
+
+#: templates/zerver/insecure_desktop_app.html:30
+msgid "Download the latest release."
 msgstr ""
 
 #: templates/zerver/integrations/index.html:23
@@ -2616,6 +2770,16 @@ msgstr ""
 msgid "There is no Zulip organization hosted at this subdomain."
 msgstr ""
 
+#: templates/zerver/log_into_subdomain_token_invalid.html:8
+msgid "Invalid or expired login session."
+msgstr ""
+
+#: templates/zerver/log_into_subdomain_token_invalid.html:9
+#: templates/zerver/login.html:101 templates/zerver/portico-header.html:33
+#: templates/zerver/portico-header.html:39
+msgid "Log in"
+msgstr "Bejelentkezés"
+
 #: templates/zerver/login.html:13
 msgid "Log in to Zulip"
 msgstr ""
@@ -2638,17 +2802,12 @@ msgid ""
 "You've already registered with this email address. Please log in below."
 msgstr ""
 
-#: templates/zerver/login.html:107 templates/zerver/portico-header.html:33
-#: templates/zerver/portico-header.html:39
-msgid "Log in"
-msgstr "Bejelentkezés"
-
-#: templates/zerver/login.html:122
+#: templates/zerver/login.html:117
 #, python-format
 msgid "Log in with %(identity_provider)s"
 msgstr ""
 
-#: templates/zerver/login.html:130
+#: templates/zerver/login.html:125
 msgid "Forgot your password?"
 msgstr ""
 
@@ -2741,7 +2900,7 @@ msgstr ""
 
 #: templates/zerver/register.html:47
 msgid "Organization URL"
-msgstr ""
+msgstr "Szervezet URL-je"
 
 #: templates/zerver/register.html:54
 #, python-format
@@ -2782,8 +2941,8 @@ msgstr ""
 msgid "Password strength"
 msgstr ""
 
-#: templates/zerver/register.html:177
-msgid "What parts of the organization are you interested in?"
+#: templates/zerver/register.html:178
+msgid "What are you interested in?"
 msgstr ""
 
 #: templates/zerver/reset.html:7
@@ -2883,6 +3042,35 @@ msgid ""
 "page</a>."
 msgstr ""
 
+#: templates/zerver/unsupported_browser.html:11
+msgid "Unsupported browser"
+msgstr ""
+
+#: templates/zerver/unsupported_browser.html:13
+#, python-format
+msgid ""
+"\n"
+"                        %(browser_name)s is not supported by Zulip.\n"
+"                        "
+msgstr ""
+
+#: templates/zerver/unsupported_browser.html:18
+msgid ""
+"\n"
+"                        Zulip supports modern browsers like Firefox,\n"
+"                        Chrome, and Edge.\n"
+"                        "
+msgstr ""
+
+#: templates/zerver/unsupported_browser.html:24
+msgid ""
+"\n"
+"                        You can also use\n"
+"                        the <a href=\"https://zulipchat.com/apps\">Zulip\n"
+"                        desktop app</a>.\n"
+"                        "
+msgstr ""
+
 #: templates/zerver/zulipchat_migration_tos.html:2
 msgid ""
 "\n"
@@ -2891,204 +3079,210 @@ msgid ""
 "    "
 msgstr ""
 
-#: zerver/decorator.py:148
+#: zerver/decorator.py:119
 msgid "Must be a billing administrator or an organization administrator"
 msgstr ""
 
-#: zerver/decorator.py:230
+#: zerver/decorator.py:199
 msgid "Invalid subdomain for push notifications bouncer"
 msgstr ""
 
-#: zerver/decorator.py:240
+#: zerver/decorator.py:208
 msgid "This API is not available to incoming webhook bots."
 msgstr ""
 
-#: zerver/decorator.py:250
+#: zerver/decorator.py:217
 msgid "This organization has been deactivated"
 msgstr ""
 
-#: zerver/decorator.py:252
+#: zerver/decorator.py:219
 msgid "Account is deactivated"
 msgstr ""
 
-#: zerver/decorator.py:266
+#: zerver/decorator.py:229
 msgid "Account is not associated with this subdomain"
 msgstr ""
 
-#: zerver/decorator.py:471 zerver/decorator.py:533
+#: zerver/decorator.py:436 zerver/decorator.py:498
 msgid "This endpoint does not accept bot requests."
 msgstr ""
 
-#: zerver/decorator.py:513
+#: zerver/decorator.py:478
 msgid "Must be an server administrator"
 msgstr ""
 
-#: zerver/decorator.py:588
+#: zerver/decorator.py:553
 msgid "This endpoint requires HTTP basic authentication."
 msgstr ""
 
-#: zerver/decorator.py:591
+#: zerver/decorator.py:556
 msgid "Invalid authorization header for basic auth"
 msgstr ""
 
-#: zerver/decorator.py:593
+#: zerver/decorator.py:558
 msgid "Missing authorization header for basic auth"
 msgstr ""
 
-#: zerver/decorator.py:670
-msgid "Not logged in"
-msgstr ""
-
-#: zerver/decorator.py:681
+#: zerver/decorator.py:646
 msgid "Webhook bots can only access webhooks"
 msgstr ""
 
-#: zerver/decorator.py:740
+#: zerver/decorator.py:704
 msgid "Access denied"
 msgstr ""
 
-#: zerver/forms.py:64
+#: zerver/forms.py:69
 msgid "Subdomain needs to have length 3 or greater."
 msgstr ""
 
-#: zerver/forms.py:65
+#: zerver/forms.py:70
 msgid "Subdomain cannot start or end with a '-'."
 msgstr ""
 
-#: zerver/forms.py:66
+#: zerver/forms.py:71
 msgid "Subdomain can only have lowercase letters, numbers, and '-'s."
 msgstr ""
 
-#: zerver/forms.py:67
+#: zerver/forms.py:72
 msgid "Subdomain unavailable. Please choose a different one."
 msgstr ""
 
-#: zerver/forms.py:154
+#: zerver/forms.py:159
 #, python-brace-format
 msgid "The organization you are trying to join using {email} does not exist."
 msgstr ""
 
-#: zerver/forms.py:159
+#: zerver/forms.py:164
 #, python-brace-format
 msgid ""
 "Please request an invite for {email} from the organization administrator."
 msgstr ""
 
-#: zerver/forms.py:167
+#: zerver/forms.py:172
 #, python-brace-format
 msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
 "to register for accounts in this organization."
 msgstr ""
 
-#: zerver/forms.py:171 zerver/forms.py:184 zerver/lib/actions.py:5036
+#: zerver/forms.py:176 zerver/forms.py:189 zerver/lib/email_validation.py:108
 msgid "Please use your real email address."
 msgstr ""
 
-#: zerver/forms.py:173
+#: zerver/forms.py:178
 msgid "Email addresses containing + are not allowed in this organization."
 msgstr ""
 
-#: zerver/forms.py:349
+#: zerver/forms.py:382
 msgid "Token"
 msgstr ""
 
-#: zerver/forms.py:369
+#: zerver/forms.py:402
 msgid "Add up to 10 comma-separated email addresses."
 msgstr ""
 
-#: zerver/forms.py:374
+#: zerver/forms.py:407
 msgid "Please enter at most 10 emails."
 msgstr ""
 
-#: zerver/forms.py:386
+#: zerver/forms.py:419
 msgid "We couldn't find that Zulip organization."
 msgstr ""
 
-#: zerver/lib/actions.py:974
+#: zerver/lib/actions.py:956
+msgid "Congratulations on your first reply!"
+msgstr ""
+
+#: zerver/lib/actions.py:961
+msgid ""
+"Feel free to continue using this space to practice your new messaging "
+"skills. Or, try clicking on some of the stream names to your left!"
+msgstr ""
+
+#: zerver/lib/actions.py:985
 msgid "Unable to render message"
 msgstr ""
 
-#: zerver/lib/actions.py:1723 zerver/lib/actions.py:1745
-#: zerver/views/reactions.py:44
+#: zerver/lib/actions.py:1716 zerver/lib/actions.py:1738
+#: zerver/views/reactions.py:48
 msgid "Reaction already exists."
 msgstr ""
 
-#: zerver/lib/actions.py:1789
+#: zerver/lib/actions.py:1785
 msgid "Missing parameter: 'to' (recipient)"
 msgstr ""
 
-#: zerver/lib/actions.py:1791
+#: zerver/lib/actions.py:1787
 msgid "Invalid 'op' value (should be start or stop)"
 msgstr ""
 
-#: zerver/lib/actions.py:1927 zerver/lib/actions.py:5406
-#: zerver/views/messages.py:1305 zerver/views/messages.py:1312
-#: zerver/views/messages.py:1336
+#: zerver/lib/actions.py:1824 zerver/lib/addressee.py:48
+msgid "Invalid user ID {}"
+msgstr ""
+
+#: zerver/lib/actions.py:1864 zerver/lib/actions.py:5335
+#: zerver/views/messages.py:1354 zerver/views/messages.py:1361
+#: zerver/views/messages.py:1384
 msgid "User not authorized for this query"
 msgstr ""
 
-#: zerver/lib/actions.py:1959
+#: zerver/lib/actions.py:1896
 #, python-format
 msgid "'%s' is no longer using Zulip."
 msgstr ""
 
-#: zerver/lib/actions.py:1965
+#: zerver/lib/actions.py:1902
 msgid "You can't send private messages outside of your organization."
 msgstr ""
 
-#: zerver/lib/actions.py:1980 zerver/lib/addressee.py:38
+#: zerver/lib/actions.py:1920 zerver/lib/addressee.py:38
 #, python-format
 msgid "Invalid email '%s'"
 msgstr ""
 
-#: zerver/lib/actions.py:1997 zerver/lib/addressee.py:48
-msgid "Invalid user ID {}"
+#: zerver/lib/actions.py:1977
+msgid "Expected exactly one stream"
 msgstr ""
 
-#: zerver/lib/actions.py:2159
+#: zerver/lib/actions.py:1988
+msgid "Invalid data type for stream"
+msgstr ""
+
+#: zerver/lib/actions.py:2003 zerver/lib/actions.py:2013
+msgid "Invalid data type for recipients"
+msgstr ""
+
+#: zerver/lib/actions.py:2020 zerver/lib/actions.py:2027
+msgid "Recipient lists may contain emails or user IDs, but not both."
+msgstr ""
+
+#: zerver/lib/actions.py:2092
 msgid "Reminders can only be set for streams."
 msgstr ""
 
-#: zerver/lib/actions.py:2165 zerver/lib/streams.py:118
-#: zerver/lib/streams.py:180
-#, python-format
-msgid "Invalid stream name '%s'"
-msgstr "Hibás üzenetfolyam név '%s'"
-
-#: zerver/lib/actions.py:2167
-#, python-format
-msgid "Stream name too long (limit: %s characters)."
-msgstr "Az üzenetfolyam neve túl hosszú (max. %s karakter lehet)."
-
-#: zerver/lib/actions.py:2170
-#, python-format
-msgid "Stream name '%s' contains NULL (0x00) characters."
-msgstr "Az üzenetfolyam neve '%s' NULL (0x00) karaktert tartalmaz!"
-
-#: zerver/lib/actions.py:2174
+#: zerver/lib/actions.py:2099
 #, python-format
 msgid "Invalid default stream group name '%s'"
 msgstr "Hibás alapértelmezett üzenetfolyam csoport név '%s'"
 
-#: zerver/lib/actions.py:2176
+#: zerver/lib/actions.py:2101
 #, python-format
 msgid "Default stream group name too long (limit: %s characters)"
 msgstr "Az alapértelmezett üzenetfolyam csoport név túl hosszú (max. %s karakter lehet)"
 
-#: zerver/lib/actions.py:2180
+#: zerver/lib/actions.py:2105
 #, python-format
 msgid "Default stream group name '%s' contains NULL (0x00) characters."
 msgstr "Az alapértelmezett üzenetfolyam csoport név '%s' NULL (0x00) karaktert tartalmaz!"
 
-#: zerver/lib/actions.py:2236
+#: zerver/lib/actions.py:2161
 #, python-format
 msgid ""
 "Your bot `%(bot_identity)s` tried to send a message to stream ID "
 "%(stream_id)s, but there is no stream with that ID."
 msgstr ""
 
-#: zerver/lib/actions.py:2240
+#: zerver/lib/actions.py:2165
 #, python-format
 msgid ""
 "Your bot `%(bot_identity)s` tried to send a message to stream "
@@ -3096,182 +3290,162 @@ msgid ""
 "[here](#streams/new) to create it."
 msgstr ""
 
-#: zerver/lib/actions.py:2246
+#: zerver/lib/actions.py:2171
 #, python-format
 msgid ""
 "Your bot `%(bot_identity)s` tried to send a message to stream "
 "#**%(stream_name)s**. The stream exists but does not have any subscribers."
 msgstr ""
 
-#: zerver/lib/actions.py:2265
-msgid "Only organization administrators can send to this stream."
-msgstr "Erre az üzenetfolyamra csak szervezeti adminisztrátorok írhatnak!"
+#: zerver/lib/actions.py:2211
+msgid "Private messages are disabled in this organization."
+msgstr "A privát üzenetek nem engedélyezettek ebben a szervezetben."
 
-#: zerver/lib/actions.py:2294
-#, python-format
-msgid "Not authorized to send to stream '%s'"
-msgstr "Nincs jogosultságot a(z) '%s' üzenetfolyamra írni!"
-
-#: zerver/lib/actions.py:2338
+#: zerver/lib/actions.py:2230
 msgid "Message must not be empty"
-msgstr ""
+msgstr "Az üzenet nem lehet üres"
 
-#: zerver/lib/actions.py:2340
+#: zerver/lib/actions.py:2232
 msgid "Message must not contain null bytes"
-msgstr ""
+msgstr "Az üzenet nem tartalmazhat null byteokat."
 
-#: zerver/lib/actions.py:2417
+#: zerver/lib/actions.py:2312
 msgid "Widgets: API programmer sent invalid JSON content"
-msgstr ""
+msgstr "Widgetek: az API programozó érvénytelen JSON tartalmat küldött"
 
-#: zerver/lib/actions.py:2421
+#: zerver/lib/actions.py:2316
 #, python-format
 msgid "Widgets: %s"
-msgstr ""
+msgstr "Widgetek: %s"
 
-#: zerver/lib/actions.py:2657
+#: zerver/lib/actions.py:2525
 msgid "Subscriber data is not available for this stream"
 msgstr "Ennél az üzenetfolyamnál nem érhetők el a feliratkozók adatai."
 
-#: zerver/lib/actions.py:2664
+#: zerver/lib/actions.py:2532
 msgid "Unable to retrieve subscribers for private stream"
 msgstr "Privát üzenetfolyamnál nem érhetők el a feliratkozók adatai."
 
-#: zerver/lib/actions.py:3713
+#: zerver/lib/actions.py:3595
 #, python-format
 msgid ""
 "@_**%(user_name)s|%(user_id)d** renamed stream **%(old_stream_name)s** to "
 "**%(new_stream_name)s**."
 msgstr ""
 
-#: zerver/lib/actions.py:3847
+#: zerver/lib/actions.py:3747
 #, python-format
 msgid "Invalid default stream group %s"
 msgstr "Hibás alapértelmezett üzenetfolyam csoport %s"
 
-#: zerver/lib/actions.py:3884 zerver/lib/actions.py:3903
+#: zerver/lib/actions.py:3784 zerver/lib/actions.py:3803
 #, python-format
 msgid ""
 "'%(stream_name)s' is a default stream and cannot be added to "
 "'%(group_name)s'"
 msgstr "'%(stream_name)s' alapértelmezett üzenetfolyam, ezért nem adható hozzá ehhez: '%(group_name)s'"
 
-#: zerver/lib/actions.py:3891
+#: zerver/lib/actions.py:3791
 #, python-format
 msgid "Default stream group '%(group_name)s' already exists"
 msgstr "A(z) '%(group_name)s' alapértelmezett üzenetfolyam már létezik!"
 
-#: zerver/lib/actions.py:3907
+#: zerver/lib/actions.py:3807
 #, python-format
 msgid ""
 "Stream '%(stream_name)s' is already present in default stream group "
 "'%(group_name)s'"
 msgstr "A(z) '%(stream_name)s' üzenetfolyam már létezik a(z) '%(group_name)s' alapértelmezett üzenetfolyam csoportban!"
 
-#: zerver/lib/actions.py:3919
+#: zerver/lib/actions.py:3819
 #, python-format
 msgid ""
 "Stream '%(stream_name)s' is not present in default stream group "
 "'%(group_name)s'"
 msgstr "A(z) '%(stream_name)s' üzenetfolyam nincs benne a(z) '%(group_name)s' alapértelmezett üzenetfolyam csoportban!"
 
-#: zerver/lib/actions.py:3929
+#: zerver/lib/actions.py:3829
 #, python-format
 msgid "This default stream group is already named '%s'"
 msgstr "Ez az alapértelmezett üzenetfolyam csoport már a(z) '%s' nevet viseli!"
 
-#: zerver/lib/actions.py:3932
+#: zerver/lib/actions.py:3832
 #, python-format
 msgid "Default stream group '%s' already exists"
 msgstr "A(z) '%s' alapértelmezett üzenetfolyam csoport már létezik!"
 
-#: zerver/lib/actions.py:4259
+#: zerver/lib/actions.py:4168
 #, python-format
 msgid "Invalid flag: '%s'"
 msgstr ""
 
-#: zerver/lib/actions.py:4261
+#: zerver/lib/actions.py:4170
 #, python-format
 msgid "Flag not editable: '%s'"
 msgstr ""
 
-#: zerver/lib/actions.py:4277 zerver/lib/actions.py:4279
-#: zerver/lib/message.py:531 zerver/lib/message.py:537
+#: zerver/lib/actions.py:4186 zerver/lib/actions.py:4188
+#: zerver/lib/message.py:584 zerver/lib/message.py:590
 msgid "Invalid message(s)"
-msgstr ""
+msgstr "Érvénytelen üzenet(ek)"
 
-#: zerver/lib/actions.py:5019
+#: zerver/lib/actions.py:4242
 #, python-format
-msgid "%s already has an account"
+msgid "This topic was moved here from %(old_location)s by %(user)s"
 msgstr ""
 
-#: zerver/lib/actions.py:5020
-msgid "Already has an account."
+#: zerver/lib/actions.py:4248
+#, python-format
+msgid "This topic was moved by %(user)s to %(new_location)s"
 msgstr ""
 
-#: zerver/lib/actions.py:5023
-msgid "Account has been deactivated."
-msgstr ""
-
-#: zerver/lib/actions.py:5029
-msgid "Invalid address."
-msgstr ""
-
-#: zerver/lib/actions.py:5034
-msgid "Outside your domain."
-msgstr ""
-
-#: zerver/lib/actions.py:5038 zerver/views/users.py:446
-msgid "Email addresses containing + are not allowed."
-msgstr ""
-
-#: zerver/lib/actions.py:5069
+#: zerver/lib/actions.py:4980
 #, python-format
 msgid ""
 "You do not have enough remaining invites. Please contact %s to have your "
 "limit raised. No invitations were sent."
-msgstr ""
+msgstr "Nincs már elegendő meghívód. A korlát megemeléséhez vedd fel a kapcsolatot vele: %s. Egy meghívót sem küldtünk ki. "
 
-#: zerver/lib/actions.py:5116
+#: zerver/lib/actions.py:5027
 msgid ""
 "Your account is too new to send invites for this organization. Ask an "
 "organization admin, or a more experienced user."
-msgstr ""
+msgstr "A fiókod túl új ahhoz, hogy meghívókat küldhess ehhez a szervezethez. Kérj meg egy szervezeti adminisztrátort vagy egy tapasztaltabb felhasználót."
 
-#: zerver/lib/actions.py:5136
+#: zerver/lib/actions.py:5064
 msgid "Some emails did not validate, so we didn't send any invitations."
-msgstr ""
+msgstr "Néhány e-mail nem volt érvényes, ezért egy meghívót sem küldtünk ki."
 
-#: zerver/lib/actions.py:5141
+#: zerver/lib/actions.py:5069
 msgid "We weren't able to invite anyone."
-msgstr ""
+msgstr "Senki sem sikerült meghívnunk."
 
-#: zerver/lib/actions.py:5165
+#: zerver/lib/actions.py:5093
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
-msgstr ""
+msgstr "Néhány címzett már használja a Zulipot, ezért nem küldtünk nekik meghívót. Mindenki másnak viszont igen!"
 
-#: zerver/lib/actions.py:5593
+#: zerver/lib/actions.py:5515
 msgid "Invalid order mapping."
-msgstr ""
+msgstr "Érvénytelen sorrend megfeleltetés."
 
-#: zerver/lib/actions.py:5652 zerver/lib/users.py:258
+#: zerver/lib/actions.py:5574 zerver/lib/users.py:272
 #: zerver/views/custom_profile_fields.py:120
 #: zerver/views/custom_profile_fields.py:139
 #, python-brace-format
 msgid "Field id {id} not found."
 msgstr ""
 
-#: zerver/lib/actions.py:5673 zerver/lib/actions.py:5684
+#: zerver/lib/actions.py:5595 zerver/lib/actions.py:5606
 #, python-format
 msgid "User group '%s' already exists."
 msgstr ""
 
-#: zerver/lib/addressee.py:56 zerver/views/messages.py:1496
-#: zerver/webhooks/ifttt/view.py:22 zerver/webhooks/zapier/view.py:32
+#: zerver/lib/addressee.py:56 zerver/views/messages.py:1552
+#: zerver/webhooks/ifttt/view.py:23 zerver/webhooks/zapier/view.py:33
 msgid "Topic can't be empty"
-msgstr ""
+msgstr "A téma nem lehet üres."
 
 #: zerver/lib/addressee.py:80 zerver/lib/addressee.py:146
 msgid "Missing topic"
@@ -3279,147 +3453,188 @@ msgstr ""
 
 #: zerver/lib/addressee.py:131
 msgid "Cannot send to multiple streams"
-msgstr "Nem küldheted több üzenetfolyamra!"
+msgstr "Nem küldheted több üzenetfolyamra"
 
 #: zerver/lib/addressee.py:143
 msgid "Missing stream"
-msgstr "Hiányzó üzenetfolyam!"
+msgstr "Hiányzó üzenetfolyam"
 
 #: zerver/lib/addressee.py:156
 msgid "Message must have recipients"
-msgstr ""
+msgstr "Az üzenethez címzettnek is kell tartoznia"
 
-#: zerver/lib/addressee.py:165 zerver/lib/outgoing_webhook.py:168
+#: zerver/lib/addressee.py:165 zerver/lib/outgoing_webhook.py:175
 msgid "Invalid message type"
-msgstr ""
+msgstr "Érvénytelen üzenettípus"
 
 #: zerver/lib/attachments.py:20
 msgid "Invalid attachment"
-msgstr ""
+msgstr "Érvénytelen csatolmány"
 
 #: zerver/lib/attachments.py:27
 msgid ""
 "An error occurred while deleting the attachment. Please try again later."
-msgstr ""
+msgstr "Hiba történt a csatolmány törlése közben. Próbáld újra később."
 
-#: zerver/lib/bot_lib.py:86
+#: zerver/lib/bot_lib.py:88
 msgid "Message must have recipients!"
-msgstr ""
+msgstr "Az üzenethez tartoznia kell címzettnek!"
 
 #: zerver/lib/domains.py:10
 msgid "Domain can't be empty."
-msgstr ""
+msgstr "A domain nem lehet üres."
 
 #: zerver/lib/domains.py:12
 msgid "Domain must have at least one dot (.)"
-msgstr ""
+msgstr "A domainnek legalább egy pontot (.) kell tartalmaznia."
 
 #: zerver/lib/domains.py:14
 msgid "Domain is too long"
-msgstr ""
+msgstr "A domain túl hosszú"
 
 #: zerver/lib/domains.py:16
 msgid "Domain cannot start or end with a dot (.)"
-msgstr ""
+msgstr "A domain nem kezdődhet vagy végződhet ponttal (.)"
 
 #: zerver/lib/domains.py:19
 msgid "Consecutive '.' are not allowed."
-msgstr ""
+msgstr "Nem lehet több egymást követő '.' karakter."
 
 #: zerver/lib/domains.py:21
 msgid "Subdomains cannot start or end with a '-'."
-msgstr ""
+msgstr "Az aldomain nem kezdődhet vagy végződhet kötőjellel."
 
 #: zerver/lib/domains.py:23
 msgid "Domain can only have letters, numbers, '.' and '-'s."
+msgstr "A domain csak betűket, számokat, pontot és kötőjelet tartalmazhat."
+
+#: zerver/lib/email_notifications.py:420
+msgid "Zulip missed messages"
+msgstr "Zulip függő üzenetek"
+
+#: zerver/lib/email_validation.py:101
+msgid "Invalid address."
+msgstr "Érvénytelen cím."
+
+#: zerver/lib/email_validation.py:106
+msgid "Outside your domain."
+msgstr "Kívül van a tartományodon."
+
+#: zerver/lib/email_validation.py:110 zerver/views/users.py:453
+msgid "Email addresses containing + are not allowed."
+msgstr "A + jeleket tartalmazó e-mail címek nem megengedettek."
+
+#: zerver/lib/email_validation.py:153
+msgid "Reserved for system bots."
 msgstr ""
 
-#: zerver/lib/emoji.py:53 zerver/views/realm_emoji.py:52
+#: zerver/lib/email_validation.py:176
+#, python-format
+msgid "%s already has an account"
+msgstr ""
+
+#: zerver/lib/email_validation.py:178
+msgid "Already has an account."
+msgstr "Már van fiókja."
+
+#: zerver/lib/email_validation.py:180
+msgid "Account has been deactivated."
+msgstr "A fiók letiltásra került."
+
+#: zerver/lib/emoji.py:46 zerver/views/realm_emoji.py:52
 #, python-format
 msgid "Emoji '%s' does not exist"
 msgstr ""
 
-#: zerver/lib/emoji.py:63
+#: zerver/lib/emoji.py:56
 msgid "Invalid custom emoji."
-msgstr ""
+msgstr "Érvénytelen egyedi hangulatjel."
 
-#: zerver/lib/emoji.py:65
+#: zerver/lib/emoji.py:58
 msgid "Invalid custom emoji name."
-msgstr ""
+msgstr "Érvénytelen egyedi hangulatjel név."
 
-#: zerver/lib/emoji.py:67
+#: zerver/lib/emoji.py:60
 msgid "This custom emoji has been deactivated."
-msgstr ""
+msgstr "Ez az egyedi hangulatjel deaktiválásra került."
 
-#: zerver/lib/emoji.py:70 zerver/lib/emoji.py:75
+#: zerver/lib/emoji.py:63 zerver/lib/emoji.py:68
 msgid "Invalid emoji code."
-msgstr ""
+msgstr "Érvénytelen hangulatjel kód."
 
-#: zerver/lib/emoji.py:72 zerver/lib/emoji.py:77
+#: zerver/lib/emoji.py:65 zerver/lib/emoji.py:70
 msgid "Invalid emoji name."
-msgstr ""
+msgstr "Érvénytelen hangulatjel név."
 
-#: zerver/lib/emoji.py:80
+#: zerver/lib/emoji.py:73
 msgid "Invalid emoji type."
-msgstr ""
+msgstr "Érvénytelen hangulatjel típus."
 
-#: zerver/lib/emoji.py:104
+#: zerver/lib/emoji.py:97
 msgid "Must be an organization administrator or emoji author"
 msgstr ""
 
-#: zerver/lib/emoji.py:109 zerver/models.py:601
+#: zerver/lib/emoji.py:103 zerver/models.py:597
 msgid "Invalid characters in emoji name"
+msgstr "Érvénytelen karakter a hangulatjel nevében."
+
+#: zerver/lib/emoji.py:104
+msgid "Emoji name is missing"
 msgstr ""
 
-#: zerver/lib/error_notify.py:151
+#: zerver/lib/error_notify.py:167
 msgid "Invalid type parameter"
-msgstr ""
+msgstr "Érvénytelen type paraméter."
 
-#: zerver/lib/events.py:862
+#: zerver/lib/events.py:811
 msgid "Could not allocate event queue"
-msgstr ""
+msgstr "Az esemény sor allokálása nem sikerült."
 
-#: zerver/lib/exceptions.py:146
+#: zerver/lib/exceptions.py:145
 #, python-brace-format
 msgid "Stream '{stream}' does not exist"
 msgstr "A(z) '{stream}' üzenetfolyam nem létezik!"
 
-#: zerver/lib/exceptions.py:157
+#: zerver/lib/exceptions.py:156
 #, python-brace-format
 msgid "Stream with ID '{stream_id}' does not exist"
 msgstr ""
 
-#: zerver/lib/exceptions.py:165
+#: zerver/lib/exceptions.py:164
 msgid "organization administrator"
-msgstr ""
+msgstr "szervezeti adminisztrátor"
 
-#: zerver/lib/exceptions.py:165
+#: zerver/lib/exceptions.py:164
 msgid "user"
-msgstr ""
+msgstr "felhasználó"
 
-#: zerver/lib/exceptions.py:169
+#: zerver/lib/exceptions.py:168
 #, python-brace-format
 msgid "Cannot deactivate the only {entity}."
 msgstr ""
 
-#: zerver/lib/exceptions.py:180
+#: zerver/lib/exceptions.py:179
 #, python-brace-format
 msgid "Invalid markdown include statement: {include_statement}"
 msgstr ""
 
-#: zerver/lib/exceptions.py:191 zerver/lib/request.py:304
+#: zerver/lib/exceptions.py:190 zerver/lib/request.py:304
 msgid "Malformed JSON"
-msgstr ""
+msgstr "Hibás formátumú JSON"
 
-#: zerver/lib/exceptions.py:196 zerver/views/invite.py:32
+#: zerver/lib/exceptions.py:195 zerver/views/invite.py:32
 msgid "Must be an organization administrator"
-msgstr ""
+msgstr "Szervezeti adminisztrátornak kell lenned"
 
-#: zerver/lib/exceptions.py:217
+#: zerver/lib/exceptions.py:216
 msgid "Invalid API key"
-msgstr ""
+msgstr "Érvénytelen API kulcs"
 
-#: zerver/lib/exceptions.py:229
+#: zerver/lib/exceptions.py:221
+msgid "Malformed API key"
+msgstr "Hibás formátumú API kulcs"
+
+#: zerver/lib/exceptions.py:233
 #, python-brace-format
 msgid ""
 "The '{event_type}' event isn't currently supported by the {webhook_name} "
@@ -3428,19 +3643,19 @@ msgstr ""
 
 #: zerver/lib/external_accounts.py:47
 msgid "Custom external account must define url pattern"
-msgstr ""
+msgstr "Az egyedi külső fiókhoz meg kell határozni egy URL mintát"
 
 #: zerver/lib/external_accounts.py:49
 msgid "Invalid external account type"
-msgstr ""
+msgstr "Érvénytelen külső fiók típus"
 
 #: zerver/lib/hotspots.py:12
 msgid "Reply to a message"
-msgstr ""
+msgstr "Válasz az üzenetre"
 
 #: zerver/lib/hotspots.py:13
 msgid "Click anywhere on a message to reply."
-msgstr "A válaszoláshoz kattints bárhová egy üzeneten."
+msgstr "A válaszadáshoz kattints bárhová egy üzeneten."
 
 #: zerver/lib/hotspots.py:16
 msgid "Catch up on a stream"
@@ -3460,107 +3675,205 @@ msgstr "Témák"
 msgid ""
 "Every message has a topic. Topics keep conversations easy to follow, and "
 "make it easy to reply to conversations that start while you are offline."
-msgstr ""
+msgstr "Minden üzenethez tartozik téma. A témáktól lesznek a párbeszédek könnyen követhetőek, és egyszerűvé teszik azt is, hogy utólag becsatlakozz mások témáiba."
 
 #: zerver/lib/hotspots.py:28
 msgid "Go to Settings to configure your notifications and display settings."
-msgstr ""
+msgstr "Az értesítési és megjelenítési beállításokat a Beállítások között találod."
 
 #: zerver/lib/hotspots.py:32
 msgid "Compose"
-msgstr ""
+msgstr "Üzenetírás"
 
 #: zerver/lib/hotspots.py:33
 msgid ""
 "Click here to start a new conversation. Pick a topic (2-3 words is best), "
 "and give it a go!"
-msgstr ""
+msgstr "Kattints ide új párbeszéd indításához. Válassz témát (2-3 szó is elég), és már mehet is!"
 
 #: zerver/lib/integrations.py:33
 msgid "Integration frameworks"
-msgstr ""
+msgstr "Integrációs keretrendszerek"
 
 #: zerver/lib/integrations.py:34
 msgid "Continuous integration"
-msgstr ""
+msgstr "Folyamatos integráció"
 
 #: zerver/lib/integrations.py:35
 msgid "Customer support"
-msgstr ""
+msgstr "Ügyfélszolgálat"
 
 #: zerver/lib/integrations.py:36
 msgid "Deployment"
-msgstr ""
+msgstr "Telepítés"
 
 #: zerver/lib/integrations.py:37
 msgid "Communication"
-msgstr ""
+msgstr "Kommunikáció"
 
 #: zerver/lib/integrations.py:38
 msgid "Financial"
-msgstr ""
+msgstr "Gazdasági"
 
 #: zerver/lib/integrations.py:39
 msgid "HR"
-msgstr ""
+msgstr "Munkaügy"
 
 #: zerver/lib/integrations.py:40
 msgid "Marketing"
-msgstr ""
+msgstr "Marketing"
 
 #: zerver/lib/integrations.py:41
 msgid "Miscellaneous"
-msgstr ""
+msgstr "Egyéb"
 
 #: zerver/lib/integrations.py:42
 msgid "Monitoring tools"
-msgstr ""
+msgstr "Felügyeleti eszközök"
 
 #: zerver/lib/integrations.py:43
 msgid "Project management"
-msgstr ""
+msgstr "Projekt menedzsment"
 
 #: zerver/lib/integrations.py:44
 msgid "Productivity"
-msgstr ""
+msgstr "Hatékonyság"
 
 #: zerver/lib/integrations.py:45
 msgid "Version control"
-msgstr ""
+msgstr "Verziókezelés"
 
 #: zerver/lib/narrow.py:26
 #, python-format
 msgid "Operator %s not supported."
 msgstr ""
 
-#: zerver/lib/outgoing_webhook.py:159
-msgid "Missing content"
+#: zerver/lib/onboarding.py:56
+#, python-brace-format
+msgid ""
+"[Read the guide]({help_url}) for getting your organization started with "
+"Zulip"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:238
+#: zerver/lib/onboarding.py:61
+msgid "Hello, and welcome to Zulip!"
+msgstr ""
+
+#: zerver/lib/onboarding.py:64
+msgid "This is a private message from me, Welcome Bot."
+msgstr ""
+
+#: zerver/lib/onboarding.py:66
+msgid "Here are some tips to get you started:"
+msgstr ""
+
+#: zerver/lib/onboarding.py:69
+#, python-brace-format
+msgid "Download our [Desktop and mobile apps]({apps_url})"
+msgstr ""
+
+#: zerver/lib/onboarding.py:72
+#, python-brace-format
+msgid ""
+"Customize your account and notifications on your [Settings "
+"page]({settings_url})"
+msgstr ""
+
+#: zerver/lib/onboarding.py:75
+msgid "Type `?` to check out Zulip's keyboard shortcuts"
+msgstr ""
+
+#: zerver/lib/onboarding.py:79
+msgid "The most important shortcut is `r` to reply."
+msgstr ""
+
+#: zerver/lib/onboarding.py:82
+msgid "Practice sending a few messages by replying to this conversation."
+msgstr ""
+
+#: zerver/lib/onboarding.py:84
+msgid ""
+"If you're not into keyboards, that's okay too; clicking anywhere on this "
+"message will also do the trick!"
+msgstr ""
+
+#: zerver/lib/onboarding.py:100
+msgid ""
+"This is a private stream, as indicated by the lock icon next to the stream "
+"name."
+msgstr ""
+
+#: zerver/lib/onboarding.py:102
+msgid "Private streams are only visible to stream members."
+msgstr ""
+
+#: zerver/lib/onboarding.py:105
+#, python-brace-format
+msgid ""
+"To manage this stream, go to [Stream settings]({stream_settings_url}) and "
+"click on `{initial_private_stream_name}`."
+msgstr ""
+
+#: zerver/lib/onboarding.py:111
+#, python-brace-format
+msgid ""
+"This is a message on stream #**{default_notification_stream_name}** with the"
+" topic `topic demonstration`."
+msgstr ""
+
+#: zerver/lib/onboarding.py:116
+msgid "Topics are a lightweight tool to keep conversations organized."
+msgstr ""
+
+#: zerver/lib/onboarding.py:118
+#, python-brace-format
+msgid ""
+"You can learn more about topics at [Streams and "
+"topics]({about_topics_help_url})."
+msgstr ""
+
+#: zerver/lib/onboarding.py:122
+#, python-brace-format
+msgid ""
+"This is a message on stream #**{default_notification_stream_name}** with the"
+" topic `swimming turtles`."
+msgstr ""
+
+#: zerver/lib/onboarding.py:129
+#, python-brace-format
+msgid ""
+"[Start a new topic]({start_topic_help_url}) any time you're not replying to "
+"a         previous message."
+msgstr ""
+
+#: zerver/lib/outgoing_webhook.py:166
+msgid "Missing content"
+msgstr "Hiányzó tartalom"
+
+#: zerver/lib/push_notifications.py:236
 #, python-format
 msgid "Invalid GCM option to bouncer: priority %r"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:245
+#: zerver/lib/push_notifications.py:243
 #, python-format
 msgid "Invalid GCM options to bouncer: %s"
 msgstr ""
 
 #. error
-#: zerver/lib/push_notifications.py:419 zilencer/views.py:119
+#: zerver/lib/push_notifications.py:417 zilencer/views.py:119
 msgid "Token does not exist"
-msgstr ""
+msgstr "A token nem létezik"
 
-#: zerver/lib/push_notifications.py:595
+#: zerver/lib/push_notifications.py:598
 #, python-format
 msgid "%(full_name)s mentioned you:"
-msgstr ""
+msgstr "%(full_name)s megszólított téged:"
 
-#: zerver/lib/push_notifications.py:597
+#: zerver/lib/push_notifications.py:600
 #, python-format
 msgid "%(full_name)s mentioned everyone:"
-msgstr ""
+msgstr "%(full_name)s megszólított mindenkit:"
 
 #: zerver/lib/remote_server.py:80
 #, python-format
@@ -3584,253 +3897,291 @@ msgstr ""
 
 #: zerver/lib/request.py:309
 msgid "Invalid argument type"
-msgstr ""
+msgstr "Érvénytelen argumentum típus"
 
-#: zerver/lib/request.py:353
+#: zerver/lib/request.py:354
 #, python-format
 msgid "Argument \"%s\" is not valid JSON."
 msgstr ""
 
-#: zerver/lib/rest.py:155 zerver/lib/rest.py:163
+#: zerver/lib/response.py:23
 msgid "Not logged in: API authentication or user session required"
 msgstr ""
 
-#: zerver/lib/streams.py:15
+#: zerver/lib/send_email.py:57
+msgid "Zulip Account Security"
+msgstr ""
+
+#: zerver/lib/streams.py:110 zerver/lib/streams.py:278
+#: zerver/lib/streams.py:340
+#, python-format
+msgid "Invalid stream name '%s'"
+msgstr "Hibás üzenetfolyam név '%s'"
+
+#: zerver/lib/streams.py:112
+#, python-format
+msgid "Stream name too long (limit: %s characters)."
+msgstr "Az üzenetfolyam neve túl hosszú (max. %s karakter lehet)."
+
+#: zerver/lib/streams.py:115
+#, python-format
+msgid "Stream name '%s' contains NULL (0x00) characters."
+msgstr "Az üzenetfolyam neve '%s' NULL (0x00) karaktert tartalmaz!"
+
+#: zerver/lib/streams.py:137
+msgid "Only organization administrators can send to this stream."
+msgstr "Erre az üzenetfolyamra csak szervezeti adminisztrátorok írhatnak!"
+
+#: zerver/lib/streams.py:141 zerver/lib/streams.py:143
+msgid "New members cannot send to this stream."
+msgstr ""
+
+#: zerver/lib/streams.py:172
+#, python-format
+msgid "Not authorized to send to stream '%s'"
+msgstr "Nincs jogosultságot a(z) '%s' üzenetfolyamra írni!"
+
+#: zerver/lib/streams.py:176
 msgid "Please supply 'stream'."
 msgstr ""
 
-#: zerver/lib/streams.py:18
+#: zerver/lib/streams.py:179
 msgid "Please choose one: 'stream' or 'stream_id'."
 msgstr ""
 
-#: zerver/lib/streams.py:28 zerver/lib/streams.py:89 zerver/lib/streams.py:100
+#: zerver/lib/streams.py:188 zerver/lib/streams.py:249
+#: zerver/lib/streams.py:260
 msgid "Invalid stream id"
 msgstr "Hibás üzenetfolyam-azonosító!"
 
-#: zerver/lib/streams.py:111
+#: zerver/lib/streams.py:271
 #, python-format
 msgid "Stream name '%s' is already taken."
 msgstr "A(z) '%s' üzenetfolyam-név már foglalt!"
 
-#: zerver/lib/streams.py:277
+#: zerver/lib/streams.py:445
 msgid "User cannot create streams."
 msgstr "A felhasználó nem tud üzenetfolyamokat létrehozni!"
 
-#: zerver/lib/streams.py:279
+#: zerver/lib/streams.py:447
 #, python-format
 msgid "Stream(s) (%s) do not exist"
 msgstr "A(z) '%s' üzenetfolyamok nem léteznek!"
 
-#: zerver/lib/streams.py:282
+#: zerver/lib/streams.py:450
 msgid "User cannot create a stream with these settings."
-msgstr ""
+msgstr "Felhasználó nem hozhat létre üzenetfolyamot ilyen beállításokkal."
 
-#: zerver/lib/streams.py:299
+#: zerver/lib/streams.py:467
 #, python-format
 msgid "Default stream group with id '%s' does not exist."
 msgstr "A(z) '%s' azonosítójú alapértelmezett üzenetfolyam nem létezik!"
 
-#: zerver/lib/upload.py:130 zerver/lib/upload.py:145 zerver/lib/upload.py:197
+#: zerver/lib/upload.py:134 zerver/lib/upload.py:149 zerver/lib/upload.py:201
 msgid "Could not decode image; did you upload an image file?"
-msgstr ""
+msgstr "Kép dekódolása sikertelen; biztosan képet töltöttél fel?"
 
-#: zerver/lib/upload.py:132 zerver/lib/upload.py:147 zerver/lib/upload.py:199
+#: zerver/lib/upload.py:136 zerver/lib/upload.py:151 zerver/lib/upload.py:203
 msgid "Image size exceeds limit."
-msgstr ""
+msgstr "A kép mérete meghaladja a beállított korlátokat."
 
-#: zerver/lib/upload.py:306
+#: zerver/lib/upload.py:312
 msgid "Upload would exceed your organization's upload quota."
-msgstr ""
+msgstr "A feltöltéseddel a szervezeted túllépné a rendelkezésre álló keretét."
 
-#: zerver/lib/user_groups.py:13
+#: zerver/lib/user_groups.py:11
 msgid ""
 "Only group members and organization administrators can administer this "
 "group."
-msgstr ""
+msgstr "Csak csoporttagok és szervezeti adminisztrátorok kezelhetik ezt a csoportot."
 
-#: zerver/lib/user_groups.py:17
+#: zerver/lib/user_groups.py:15
 msgid "Invalid user group"
-msgstr ""
+msgstr "Érvénytelen felhasználói csoport"
 
-#: zerver/lib/users.py:22
+#: zerver/lib/users.py:26
 msgid "Name too long!"
-msgstr ""
-
-#: zerver/lib/users.py:24
-msgid "Name too short!"
-msgstr ""
+msgstr "A név túl hosszú!"
 
 #: zerver/lib/users.py:28
+msgid "Name too short!"
+msgstr "A név túl rövid!"
+
+#: zerver/lib/users.py:32
 msgid "Invalid characters in name!"
+msgstr "Érvénytelen karakter a névben!"
+
+#: zerver/lib/users.py:38
+msgid "Invalid format!"
 msgstr ""
 
-#: zerver/lib/users.py:43
+#: zerver/lib/users.py:53
 msgid "Name is already in use!"
-msgstr ""
+msgstr "A név már használatban van!"
 
-#: zerver/lib/users.py:48 zerver/views/users.py:296 zerver/views/users.py:432
+#: zerver/lib/users.py:58 zerver/views/users.py:293 zerver/views/users.py:439
 msgid "Bad name or username"
-msgstr ""
+msgstr "Hibás név vagy felhasználói név"
 
-#: zerver/lib/users.py:62
+#: zerver/lib/users.py:72
 #, python-format
 msgid "Invalid integration '%s'."
 msgstr ""
 
-#: zerver/lib/users.py:66
+#: zerver/lib/users.py:76
 #, python-format
 msgid "Missing configuration parameters: %s"
 msgstr ""
 
-#: zerver/lib/users.py:73
+#: zerver/lib/users.py:83
 msgid "Invalid {} value {} ({})"
 msgstr ""
 
-#: zerver/lib/users.py:88
+#: zerver/lib/users.py:98
 msgid "Invalid configuration data!"
 msgstr ""
 
-#: zerver/lib/users.py:114
+#: zerver/lib/users.py:124
 msgid "Invalid bot type"
-msgstr ""
+msgstr "Érvénytelen bot típus"
 
-#: zerver/lib/users.py:118
+#: zerver/lib/users.py:128
 msgid "Invalid interface type"
-msgstr ""
+msgstr "Érvénytelen interfész típus"
 
-#: zerver/lib/users.py:178 zerver/lib/users.py:183
+#: zerver/lib/users.py:188 zerver/lib/users.py:193
 #, python-format
 msgid "Invalid user ID: %s"
 msgstr ""
 
-#: zerver/lib/users.py:190 zerver/lib/users.py:192
+#: zerver/lib/users.py:200 zerver/lib/users.py:202
 msgid "No such bot"
-msgstr ""
+msgstr "Nincs ilyen bot"
 
-#: zerver/lib/users.py:194 zerver/lib/users.py:208
+#: zerver/lib/users.py:204 zerver/lib/users.py:222
 msgid "Insufficient permission"
-msgstr ""
+msgstr "Elégtelen jogosultság"
 
-#: zerver/lib/users.py:202 zerver/lib/users.py:204 zerver/views/presence.py:33
+#: zerver/lib/users.py:213 zerver/lib/users.py:215 zerver/views/presence.py:34
 msgid "No such user"
-msgstr ""
+msgstr "Nincs ilyen felhasználó"
 
-#: zerver/lib/users.py:206
+#: zerver/lib/users.py:217
 msgid "User is deactivated"
-msgstr ""
+msgstr "A felhasználó deaktiválásra került"
 
-#: zerver/lib/validator.py:41 zerver/lib/validator.py:61
-#: zerver/lib/validator.py:71 zerver/lib/validator.py:83
-#: zerver/lib/validator.py:118
+#: zerver/lib/validator.py:59 zerver/lib/validator.py:94
+#: zerver/lib/validator.py:106 zerver/lib/validator.py:120
+#: zerver/lib/validator.py:160
 #, python-format
 msgid "%s is not a string"
-msgstr ""
+msgstr "%s nem sztring"
 
-#: zerver/lib/validator.py:51
+#: zerver/lib/validator.py:70
 #, python-brace-format
 msgid "{item} cannot be blank."
-msgstr ""
+msgstr "{item} nem lehet üres."
 
-#: zerver/lib/validator.py:63
+#: zerver/lib/validator.py:81 zerver/lib/validator.py:140
+#, python-format
+msgid "Invalid %s"
+msgstr "%s érvénytelen"
+
+#: zerver/lib/validator.py:96
 #, python-brace-format
 msgid "{var_name} is too long (limit: {max_length} characters)"
 msgstr ""
 
-#: zerver/lib/validator.py:73
+#: zerver/lib/validator.py:108
 #, python-brace-format
 msgid "{var_name} has incorrect length {length}; should be {target_length}"
 msgstr ""
 
-#: zerver/lib/validator.py:87
+#: zerver/lib/validator.py:124
 #, python-format
 msgid "%s is not a date"
-msgstr ""
+msgstr "%s nem dátum"
 
-#: zerver/lib/validator.py:92
+#: zerver/lib/validator.py:130
 #, python-format
 msgid "%s is not an integer"
-msgstr ""
+msgstr "%s nem egész szám"
 
-#: zerver/lib/validator.py:101
-#, python-format
-msgid "Invalid %s"
-msgstr ""
-
-#: zerver/lib/validator.py:108
+#: zerver/lib/validator.py:148
 #, python-format
 msgid "%s is not a float"
-msgstr ""
+msgstr "%s nem lebegőpontos szám"
 
-#: zerver/lib/validator.py:113
+#: zerver/lib/validator.py:154
 #, python-format
 msgid "%s is not a boolean"
-msgstr ""
+msgstr "%s nem logikai érték"
 
-#: zerver/lib/validator.py:122
+#: zerver/lib/validator.py:164
 #, python-format
 msgid "%s is not a valid hex color code"
-msgstr ""
+msgstr "%s nem érvényes hex szín kód"
 
-#: zerver/lib/validator.py:136
+#: zerver/lib/validator.py:193
 #, python-format
 msgid "%s is not a list"
-msgstr ""
+msgstr "%s nem lista"
 
-#: zerver/lib/validator.py:139
+#: zerver/lib/validator.py:196
 #, python-format
 msgid "%(container)s should have exactly %(length)s items"
 msgstr ""
 
-#: zerver/lib/validator.py:158
+#: zerver/lib/validator.py:218
 #, python-format
 msgid "%s is not a dict"
-msgstr ""
+msgstr "%s nem szótár (dict)"
 
-#: zerver/lib/validator.py:162
+#: zerver/lib/validator.py:222
 #, python-format
 msgid "%(key_name)s key is missing from %(var_name)s"
 msgstr ""
 
-#: zerver/lib/validator.py:188
+#: zerver/lib/validator.py:254
 #, python-format
 msgid "Unexpected arguments: %s"
-msgstr ""
+msgstr "Váratlan argumentum: %s"
 
-#: zerver/lib/validator.py:210
+#: zerver/lib/validator.py:283
 #, python-format
 msgid "%s is not an allowed_type"
-msgstr ""
+msgstr "%s nem allowed_type"
 
-#: zerver/lib/validator.py:216
+#: zerver/lib/validator.py:290
 #, python-format
 msgid "%(variable)s != %(expected_value)s (%(value)s is wrong)"
 msgstr ""
 
-#: zerver/lib/validator.py:240
+#: zerver/lib/validator.py:316
 #, python-format
 msgid "%s is not a URL"
-msgstr ""
+msgstr "%s nem egy URL"
 
-#: zerver/lib/validator.py:249
+#: zerver/lib/validator.py:326
 msgid "Malformed URL pattern."
-msgstr ""
+msgstr "Hibás formátumú URL minta."
 
-#: zerver/lib/validator.py:269
+#: zerver/lib/validator.py:346
 #, python-brace-format
 msgid "'{item}' cannot be blank."
 msgstr ""
 
-#: zerver/lib/validator.py:284
+#: zerver/lib/validator.py:361
 #, python-brace-format
 msgid "'{value}' is not a valid choice for '{field_name}'."
 msgstr ""
 
-#: zerver/lib/validator.py:348
+#: zerver/lib/validator.py:427
 #, python-format
 msgid "%s is not a string or an integer list"
 msgstr ""
 
-#: zerver/lib/validator.py:356
+#: zerver/lib/validator.py:436
 #, python-format
 msgid "%s is not a string or integer"
 msgstr ""
@@ -3840,248 +4191,227 @@ msgstr ""
 msgid "Missing the HTTP event header '{header}'"
 msgstr ""
 
-#: zerver/lib/zcommand.py:10
+#: zerver/lib/zcommand.py:22
 msgid "There should be a leading slash in the zcommand."
-msgstr ""
+msgstr "A zcommandban kezdő per jelnek kell szerepelnie."
 
-#: zerver/lib/zcommand.py:40
+#: zerver/lib/zcommand.py:55
 #, python-format
 msgid "No such command: %s"
 msgstr ""
 
-#: zerver/middleware.py:292
+#: zerver/middleware.py:315
 msgid "Internal server error"
-msgstr ""
+msgstr "Belső kiszolgáló hiba."
 
-#: zerver/middleware.py:316
+#: zerver/middleware.py:339
 #, python-brace-format
 msgid "CSRF Error: {reason}"
 msgstr ""
 
-#: zerver/middleware.py:350
+#: zerver/middleware.py:376
 msgid "API usage exceeded rate limit"
-msgstr ""
+msgstr "Az API használat túllépte a limitet"
 
-#: zerver/models.py:255
+#: zerver/models.py:259
 msgid "stream events"
-msgstr ""
+msgstr "üzenetfolyam eseményei"
 
-#: zerver/models.py:274
+#: zerver/models.py:282
 msgid "Available on Zulip Standard. Upgrade to access."
 msgstr ""
 
-#: zerver/models.py:664
+#: zerver/models.py:660
 #, python-format
 msgid "Invalid filter pattern.  Valid characters are %s."
 msgstr ""
 
-#: zerver/models.py:680
+#: zerver/models.py:676
 msgid "Invalid URL format string."
-msgstr ""
+msgstr "Érvénytelen URL formátum sztring."
 
-#: zerver/models.py:1776
+#: zerver/models.py:1803
 msgid "Unicode emoji"
-msgstr ""
+msgstr "Unicode hangulatjel"
 
-#: zerver/models.py:1778
+#: zerver/models.py:1805
 msgid "Zulip extra emoji"
-msgstr ""
+msgstr "Zulip extra hangulatjel"
 
-#: zerver/models.py:2684
+#: zerver/models.py:2682
 #, python-format
 msgid "Invalid user ID: %d"
 msgstr ""
 
-#: zerver/models.py:2688
+#: zerver/models.py:2686
 #, python-format
 msgid "User with ID %d is deactivated"
 msgstr ""
 
-#: zerver/models.py:2691
+#: zerver/models.py:2689
 #, python-format
 msgid "User with ID %d is a bot"
 msgstr ""
 
-#: zerver/models.py:2721
+#: zerver/models.py:2719
 msgid "List of options"
-msgstr ""
+msgstr "Opciók listája"
 
-#: zerver/models.py:2724
+#: zerver/models.py:2722
 msgid "Person picker"
-msgstr ""
+msgstr "Személy kiválasztó"
+
+#: zerver/models.py:2734
+msgid "Short text"
+msgstr "Rövid szöveg"
+
+#: zerver/models.py:2735
+msgid "Long text"
+msgstr "Hosszú szöveg"
 
 #: zerver/models.py:2736
-msgid "Short text"
-msgstr ""
+msgid "Date picker"
+msgstr "Dátum kiválasztó"
 
 #: zerver/models.py:2737
-msgid "Long text"
-msgstr ""
+msgid "Link"
+msgstr "Link"
 
 #: zerver/models.py:2738
-msgid "Date picker"
-msgstr ""
-
-#: zerver/models.py:2739
-msgid "Link"
-msgstr ""
-
-#: zerver/models.py:2740
 msgid "External account"
-msgstr ""
+msgstr "Külső fiók"
 
 #: zerver/signals.py:90
 msgid "Unknown IP address"
-msgstr ""
+msgstr "Ismeretlen IP cím"
 
 #: zerver/signals.py:91
 msgid "an unknown operating system"
-msgstr ""
+msgstr "egy ismeretlen operációs rendszer"
 
 #: zerver/signals.py:92
 msgid "An unknown browser"
-msgstr ""
+msgstr "Egy ismeretlen böngésző"
 
-#: zerver/tornado/event_queue.py:523 zerver/tornado/socket.py:131
+#: zerver/tornado/event_queue.py:534
 msgid "Missing 'queue_id' argument"
 msgstr ""
 
-#: zerver/tornado/event_queue.py:526
+#: zerver/tornado/event_queue.py:537
 msgid "Missing 'last_event_id' argument"
 msgstr ""
 
-#: zerver/tornado/event_queue.py:531
+#: zerver/tornado/event_queue.py:542
 msgid "You are not authorized to get events from this queue"
-msgstr ""
+msgstr "Nincs jogosultságod hozzáférni az eseményekhez ebben a sorban"
 
-#: zerver/tornado/event_queue.py:536
+#: zerver/tornado/event_queue.py:547
 #, python-format
 msgid "An event newer than %s has already been pruned!"
-msgstr ""
+msgstr "Egy %s -nál/nél későbbi esemény már törlésre került!"
 
-#: zerver/tornado/event_queue.py:542
+#: zerver/tornado/event_queue.py:553
 #, python-format
 msgid "Event %s was not in this queue"
-msgstr ""
+msgstr "A(z) %s esemény nem volt ebben a sorban"
 
 #: zerver/tornado/exceptions.py:14
 #, python-brace-format
 msgid "Bad event queue id: {queue_id}"
 msgstr ""
 
-#: zerver/tornado/socket.py:120
-msgid "Unknown or missing session"
-msgstr ""
-
-#: zerver/tornado/socket.py:126
-msgid "CSRF token entry missing from request"
-msgstr ""
-
-#: zerver/tornado/socket.py:128
-msgid "CSRF token does not match that in cookie"
-msgstr ""
-
-#: zerver/tornado/socket.py:139
-#, python-format
-msgid "You are not the owner of the queue with id '%s'"
-msgstr ""
-
-#: zerver/tornado/views.py:31
+#: zerver/tornado/views.py:30
 msgid "You are not authorized to access this queue"
-msgstr ""
+msgstr "Nincs jogosultságod hozzáférni ehhez a sorhoz"
 
-#: zerver/views/auth.py:281 zerver/views/auth.py:363
-msgid "Invalid OTP"
-msgstr ""
-
-#: zerver/views/auth.py:302
+#: zerver/views/auth.py:373
 msgid "Auth key for this subdomain not found."
-msgstr ""
+msgstr "A hitelesítő kulcs nem található ehhez az aldomainhez."
 
-#: zerver/views/auth.py:309
+#: zerver/views/auth.py:380
 msgid "No JSON web token passed in request"
 msgstr ""
 
-#: zerver/views/auth.py:311
+#: zerver/views/auth.py:382
 msgid "Bad JSON web token"
 msgstr ""
 
-#: zerver/views/auth.py:315
+#: zerver/views/auth.py:386
 msgid "No user specified in JSON web token claims"
 msgstr ""
 
-#: zerver/views/auth.py:318
+#: zerver/views/auth.py:389
 msgid "No organization specified in JSON web token claims"
 msgstr ""
 
-#: zerver/views/auth.py:325
+#: zerver/views/auth.py:396
 msgid "Wrong subdomain"
 msgstr ""
 
-#: zerver/views/auth.py:733 zerver/views/auth.py:764
-msgid "Dev environment not enabled."
-msgstr ""
-
-#: zerver/views/auth.py:749 zerver/views/auth.py:790
-msgid "This organization has been deactivated."
-msgstr ""
-
-#: zerver/views/auth.py:752 zerver/views/auth.py:787
-msgid "Your account has been disabled."
-msgstr ""
-
-#: zerver/views/auth.py:755
-msgid "This user is not registered."
-msgstr ""
-
-#: zerver/views/auth.py:793
-msgid "Password auth is disabled in your team."
-msgstr ""
-
-#: zerver/views/auth.py:796 zerver/views/auth.py:880
-msgid "Your username or password is incorrect."
-msgstr ""
-
-#: zerver/views/auth.py:821
+#: zerver/views/auth.py:509 zerver/views/auth.py:826
 msgid "Invalid subdomain"
 msgstr ""
 
-#: zerver/views/auth.py:827
-msgid "Subdomain required"
+#: zerver/views/auth.py:737 zerver/views/auth.py:768
+msgid "Dev environment not enabled."
 msgstr ""
 
-#: zerver/views/auth.py:888
-msgid "GOOGLE_CLIENT_ID is not configured"
+#: zerver/views/auth.py:753 zerver/views/auth.py:795
+msgid "This organization has been deactivated."
+msgstr "A szervezet deaktiválásra került."
+
+#: zerver/views/auth.py:756 zerver/views/auth.py:792
+msgid "Your account has been disabled."
+msgstr "A fiókod letiltásra került."
+
+#: zerver/views/auth.py:759
+msgid "This user is not registered."
+msgstr "Ez egy nem regisztrált felhasználó."
+
+#: zerver/views/auth.py:798
+msgid "Password auth is disabled in your team."
 msgstr ""
+
+#: zerver/views/auth.py:801 zerver/views/auth.py:886
+msgid "Your username or password is incorrect."
+msgstr "A felhasználói neved vagy jelszavad hibás."
+
+#: zerver/views/auth.py:832
+msgid "Subdomain required"
+msgstr "Aldomain megadása kötelező"
+
+#: zerver/views/auth.py:894
+msgid "GOOGLE_CLIENT_ID is not configured"
+msgstr "GOOGLE_CLIENT_ID nincs megadva"
 
 #: zerver/views/camo.py:23
 msgid "<p>Not a valid URL.</p>"
 msgstr ""
 
-#: zerver/views/compatibility.py:76
+#: zerver/views/compatibility.py:78
 msgid "User-Agent header missing from request"
 msgstr ""
 
 #: zerver/views/custom_profile_fields.py:37
 msgid "Label cannot be blank."
-msgstr ""
+msgstr "A címke nem lehet üres."
 
 #: zerver/views/custom_profile_fields.py:53
 msgid "Field must have at least one choice."
-msgstr ""
+msgstr "A mezőnek legalább egy választási lehetőséggel rendelkeznie kell."
 
 #: zerver/views/custom_profile_fields.py:81
 msgid "Invalid field type."
-msgstr ""
+msgstr "Érvénytelen mezőtípus."
 
 #: zerver/views/custom_profile_fields.py:112
 #: zerver/views/custom_profile_fields.py:150
 msgid "A field with that label already exists."
-msgstr ""
+msgstr "Ilyen címkével már létezik mező."
 
 #: zerver/views/custom_profile_fields.py:143
 msgid "Default custom field cannot be updated."
-msgstr ""
+msgstr "Alapértelmezett egyedi mező frissítése sikertelen."
 
 #: zerver/views/hotspots.py:17
 #, python-format
@@ -4090,119 +4420,139 @@ msgstr ""
 
 #: zerver/views/invite.py:30
 msgid "Must be invited as an valid type of user"
-msgstr ""
+msgstr "Érvényes felhasználótípusként kell meghívni."
 
 #: zerver/views/invite.py:34
 msgid "You must specify at least one email address."
-msgstr ""
+msgstr "Legalább egy e-mail cím megadása kötelező."
 
 #: zerver/views/invite.py:36
 msgid "You must specify at least one stream for invitees to join."
-msgstr "Legalább egy üzenetfolyamot meg kell adnod, amihez a meghívottak csatlakozni tudnak!"
+msgstr "Legalább egy üzenetfolyamot meg kell adnod, amihez a meghívottak csatlakozni tudnak."
 
-#: zerver/views/invite.py:52
+#: zerver/views/invite.py:46
 msgid "Stream does not exist with id: {}. No invites were sent."
 msgstr ""
 
-#: zerver/views/invite.py:80 zerver/views/invite.py:83
-#: zerver/views/invite.py:96 zerver/views/invite.py:99
-#: zerver/views/invite.py:111 zerver/views/invite.py:116
+#: zerver/views/invite.py:74 zerver/views/invite.py:77
+#: zerver/views/invite.py:90 zerver/views/invite.py:93
+#: zerver/views/invite.py:105 zerver/views/invite.py:110
 msgid "No such invitation"
-msgstr ""
+msgstr "Nincs ilyen meghívó."
 
-#: zerver/views/invite.py:132
+#: zerver/views/invite.py:126
 msgid "Invalid stream id {}. No invites were sent."
 msgstr "Hibás üzenetfolyam-azonosító '{}'. Meghívót nem küldtünk."
 
-#: zerver/views/messages.py:80
+#: zerver/views/messages.py:82
 #, python-brace-format
 msgid "Invalid narrow operator: {desc}"
 msgstr ""
 
-#: zerver/views/messages.py:777
-msgid "Missing 'anchor' argument (or set 'use_first_unread_anchor'=True)."
+#: zerver/views/messages.py:774
+msgid "Missing 'anchor' argument."
 msgstr ""
 
-#: zerver/views/messages.py:779
+#: zerver/views/messages.py:792
+msgid "Invalid anchor"
+msgstr ""
+
+#: zerver/views/messages.py:807
 #, python-format
 msgid "Too many messages requested (maximum %s)."
 msgstr ""
 
-#: zerver/views/messages.py:1141
+#: zerver/views/messages.py:1170
 #, python-format
 msgid "No such topic '%s'"
 msgstr ""
 
-#: zerver/views/messages.py:1254
+#: zerver/views/messages.py:1283
 msgid "Invalid time format"
-msgstr ""
+msgstr "Érvénytelen időformátum."
 
-#: zerver/views/messages.py:1264
+#: zerver/views/messages.py:1293
 msgid "Time must be in the future."
-msgstr ""
+msgstr "Az időpontnak a jövőben kell lennie."
 
-#: zerver/views/messages.py:1316
+#: zerver/views/messages.py:1365
 #, python-format
 msgid "Unknown organization '%s'"
 msgstr ""
 
-#: zerver/views/messages.py:1334
+#: zerver/views/messages.py:1382
 msgid "Missing sender"
-msgstr ""
+msgstr "Hiányzó küldő"
 
-#: zerver/views/messages.py:1341
+#: zerver/views/messages.py:1389
 msgid "Mirroring not allowed with recipient user IDs"
 msgstr ""
 
-#: zerver/views/messages.py:1351
+#: zerver/views/messages.py:1399 zerver/views/messages.py:1406
 msgid "Invalid mirrored message"
 msgstr ""
 
-#: zerver/views/messages.py:1354
+#: zerver/views/messages.py:1402
 msgid "Zephyr mirroring is not allowed in this organization"
 msgstr ""
 
-#: zerver/views/messages.py:1360
+#: zerver/views/messages.py:1410
 msgid "Missing deliver_at in a request for delayed message delivery"
 msgstr ""
 
-#: zerver/views/messages.py:1429
+#: zerver/views/messages.py:1479
 msgid "Message edit history is disabled in this organization"
 msgstr ""
 
-#: zerver/views/messages.py:1450
+#: zerver/views/messages.py:1503
 msgid "Your organization has turned off message editing"
 msgstr ""
 
-#: zerver/views/messages.py:1468
+#: zerver/views/messages.py:1506
+msgid "Invalid propagate_mode without topic edit"
+msgstr ""
+
+#: zerver/views/messages.py:1524
 msgid "You don't have permission to edit this message"
 msgstr ""
 
-#: zerver/views/messages.py:1479 zerver/views/messages.py:1489
+#: zerver/views/messages.py:1535 zerver/views/messages.py:1545
 msgid "The time limit for editing this message has passed"
 msgstr ""
 
-#: zerver/views/messages.py:1492
+#: zerver/views/messages.py:1548
 msgid "Nothing to change"
 msgstr ""
 
-#: zerver/views/messages.py:1554 zerver/views/messages.py:1557
+#: zerver/views/messages.py:1590
+msgid "You don't have permission to move this message"
+msgstr ""
+
+#: zerver/views/messages.py:1592
+msgid "Cannot change message content while changing stream"
+msgstr ""
+
+#: zerver/views/messages.py:1601
+msgid "Streams must be public"
+msgstr ""
+
+#: zerver/views/messages.py:1630 zerver/views/messages.py:1633
 msgid "You don't have permission to delete this message"
 msgstr ""
 
-#: zerver/views/messages.py:1565
+#: zerver/views/messages.py:1641
 msgid "The time limit for deleting this message has passed"
 msgstr ""
 
-#: zerver/views/messages.py:1577
+#: zerver/views/messages.py:1653
 msgid "Message already deleted"
 msgstr ""
 
-#: zerver/views/muting.py:30
+#: zerver/views/muting.py:33
 msgid "Topic already muted"
 msgstr ""
 
-#: zerver/views/muting.py:39
+#: zerver/views/muting.py:42
 msgid "Topic is not muted"
 msgstr ""
 
@@ -4210,20 +4560,20 @@ msgstr ""
 msgid "Invalid message ID"
 msgstr ""
 
-#: zerver/views/presence.py:35
+#: zerver/views/presence.py:36
 msgid "Presence is not supported for bot users."
 msgstr ""
 
-#: zerver/views/presence.py:39
+#: zerver/views/presence.py:40
 #, python-format
 msgid "No presence data for %s"
 msgstr ""
 
-#: zerver/views/presence.py:65
+#: zerver/views/presence.py:66
 msgid "Client did not pass any new values."
 msgstr ""
 
-#: zerver/views/presence.py:85
+#: zerver/views/presence.py:87
 #, python-format
 msgid "Invalid status: %s"
 msgstr ""
@@ -4236,54 +4586,54 @@ msgstr ""
 msgid "Invalid APNS token"
 msgstr ""
 
-#: zerver/views/reactions.py:91
+#: zerver/views/reactions.py:95
 msgid ""
 "At least one of the following arguments must be present: emoji_name, "
 "emoji_code"
 msgstr ""
 
-#: zerver/views/reactions.py:106
+#: zerver/views/reactions.py:110
 msgid "Reaction doesn't exist."
 msgstr ""
 
-#: zerver/views/realm.py:86 zerver/views/user_settings.py:136
+#: zerver/views/realm.py:89
 #, python-format
 msgid "Invalid language '%s'"
 msgstr ""
 
-#: zerver/views/realm.py:88
+#: zerver/views/realm.py:91
 msgid "Organization description is too long."
 msgstr ""
 
-#: zerver/views/realm.py:90
+#: zerver/views/realm.py:93
 msgid "Organization name is too long."
 msgstr ""
 
-#: zerver/views/realm.py:92
+#: zerver/views/realm.py:95
 msgid "At least one authentication method must be enabled."
 msgstr ""
 
-#: zerver/views/realm.py:95
+#: zerver/views/realm.py:98
 msgid "Invalid video_chat_provider {}"
 msgstr ""
 
-#: zerver/views/realm.py:100 zerver/views/realm_domains.py:28
+#: zerver/views/realm.py:103 zerver/views/realm_domains.py:28
 msgid "Invalid domain: {}"
 msgstr ""
 
-#: zerver/views/realm.py:106
+#: zerver/views/realm.py:109
 msgid "User ID cannot be empty"
 msgstr ""
 
-#: zerver/views/realm.py:108
+#: zerver/views/realm.py:111
 msgid "API key cannot be empty"
 msgstr ""
 
-#: zerver/views/realm.py:110
+#: zerver/views/realm.py:113
 msgid "API secret cannot be empty"
 msgstr ""
 
-#: zerver/views/realm.py:122
+#: zerver/views/realm.py:125
 #, python-format
 msgid "Invalid credentials for the %(third_party_service)s API."
 msgstr ""
@@ -4306,9 +4656,9 @@ msgstr ""
 msgid "You must upload exactly one file."
 msgstr ""
 
-#: zerver/views/realm_emoji.py:35 zerver/views/realm_icon.py:22
-#: zerver/views/realm_logo.py:27 zerver/views/upload.py:72
-#: zerver/views/user_settings.py:207
+#: zerver/views/realm_emoji.py:35 zerver/views/realm_icon.py:23
+#: zerver/views/realm_logo.py:28 zerver/views/upload.py:103
+#: zerver/views/user_settings.py:231
 #, python-format
 msgid "Uploaded file is larger than the allowed limit of %s MB"
 msgstr ""
@@ -4326,11 +4676,11 @@ msgstr ""
 msgid "Please request a manual export from %s."
 msgstr ""
 
-#: zerver/views/realm_export.py:76
+#: zerver/views/realm_export.py:80
 msgid "Invalid data export ID"
 msgstr ""
 
-#: zerver/views/realm_export.py:80
+#: zerver/views/realm_export.py:84
 msgid "Export already deleted"
 msgstr ""
 
@@ -4338,105 +4688,105 @@ msgstr ""
 msgid "Filter not found"
 msgstr ""
 
-#: zerver/views/realm_icon.py:18
+#: zerver/views/realm_icon.py:19
 msgid "You must upload exactly one icon."
 msgstr ""
 
-#: zerver/views/realm_logo.py:21
+#: zerver/views/realm_logo.py:22
 msgid "Feature unavailable on your current plan."
 msgstr ""
 
-#: zerver/views/realm_logo.py:24
+#: zerver/views/realm_logo.py:25
 msgid "You must upload exactly one logo."
 msgstr ""
 
-#: zerver/views/registration.py:428
+#: zerver/views/registration.py:442
 msgid "The organization creation link has expired or is not valid."
 msgstr ""
 
-#: zerver/views/registration.py:433
+#: zerver/views/registration.py:447
 msgid "New organization creation disabled"
 msgstr ""
 
-#: zerver/views/streams.py:49
+#: zerver/views/streams.py:48
 #, python-brace-format
 msgid "User not authorized to execute queries on behalf of '{principal}'"
 msgstr ""
 
-#: zerver/views/streams.py:97
+#: zerver/views/streams.py:96
 msgid "You must pass \"new_description\" or \"new_group_name\"."
 msgstr ""
 
-#: zerver/views/streams.py:123
+#: zerver/views/streams.py:122
 msgid "Invalid value for \"op\". Specify one of \"add\" or \"remove\"."
 msgstr ""
 
-#: zerver/views/streams.py:167
+#: zerver/views/streams.py:171
 msgid "Stream already has that name!"
 msgstr "Az üzenetfolyamnak már ez a neve!"
 
-#: zerver/views/streams.py:204 zerver/views/user_groups.py:71
+#: zerver/views/streams.py:216 zerver/views/user_groups.py:71
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
 msgstr ""
 
-#: zerver/views/streams.py:246
+#: zerver/views/streams.py:261
 msgid "This action requires administrative rights"
 msgstr ""
 
-#: zerver/views/streams.py:276
+#: zerver/views/streams.py:291
 #, python-format
 msgid "@**%(full_name)s** subscribed you to the stream #**%(stream_name)s**."
 msgstr ""
 
-#: zerver/views/streams.py:280
+#: zerver/views/streams.py:295
 #, python-format
 msgid "@**%(full_name)s** subscribed you to the following streams:"
 msgstr ""
 
-#: zerver/views/streams.py:334
+#: zerver/views/streams.py:350
 #, python-format
 msgid "Unable to access stream (%s)."
 msgstr "A(z) '%s' üzenetfolyam nem elérhető!"
 
-#: zerver/views/streams.py:340
+#: zerver/views/streams.py:356
 msgid "You can only invite other Zephyr mirroring users to private streams."
 msgstr ""
 
-#: zerver/views/streams.py:343
+#: zerver/views/streams.py:359
 msgid "Only administrators can modify other users' subscriptions."
 msgstr ""
 
-#: zerver/views/streams.py:348
+#: zerver/views/streams.py:364
 msgid "Your account is too new to modify other users' subscriptions."
 msgstr ""
 
-#: zerver/views/streams.py:407
+#: zerver/views/streams.py:423
 #, python-format
 msgid ""
 "@_**%(user_name)s|%(user_id)d** created the following streams: "
 "%(stream_str)s."
 msgstr ""
 
-#: zerver/views/streams.py:409
+#: zerver/views/streams.py:425
 #, python-format
 msgid "@_**%(user_name)s|%(user_id)d** created a new stream %(stream_str)s."
 msgstr ""
 
-#: zerver/views/streams.py:416
+#: zerver/views/streams.py:432
 msgid "new streams"
 msgstr ""
 
-#: zerver/views/streams.py:437
+#: zerver/views/streams.py:453
 #, python-format
 msgid "Stream created by @_**%(user_name)s|%(user_id)d**."
 msgstr ""
 
-#: zerver/views/streams.py:593
+#: zerver/views/streams.py:609
 #, python-format
 msgid "Unknown subscription property: %s"
 msgstr ""
 
-#: zerver/views/streams.py:597
+#: zerver/views/streams.py:613
 #, python-format
 msgid "Not subscribed to stream id %d"
 msgstr "Nem iratkoztál fel a(z) %d azonosítójú üzenetfolyamra."
@@ -4445,24 +4795,32 @@ msgstr "Nem iratkoztál fel a(z) %d azonosítójú üzenetfolyamra."
 msgid "Invalid json for submessage"
 msgstr ""
 
-#: zerver/views/thumbnail.py:25 zerver/views/upload.py:57
+#: zerver/views/thumbnail.py:24 zerver/views/upload.py:79
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr ""
 
-#: zerver/views/thumbnail.py:34
+#: zerver/views/thumbnail.py:33
 msgid "<p>Invalid size.</p>"
 msgstr ""
 
-#: zerver/views/upload.py:55
+#: zerver/views/upload.py:77
 msgid "<p>File not found.</p>"
 msgstr ""
 
-#: zerver/views/upload.py:65
+#: zerver/views/upload.py:88
+msgid "Invalid token"
+msgstr ""
+
+#: zerver/views/upload.py:90
+msgid "Invalid filename"
+msgstr ""
+
+#: zerver/views/upload.py:96
 msgid "You must specify a file to upload"
 msgstr ""
 
-#: zerver/views/upload.py:67 zerver/views/users.py:229
-#: zerver/views/users.py:315
+#: zerver/views/upload.py:98 zerver/views/users.py:226
+#: zerver/views/users.py:312
 msgid "You may only upload one file at a time"
 msgstr ""
 
@@ -4480,140 +4838,134 @@ msgstr ""
 msgid "There is no member '%s' in this user group"
 msgstr ""
 
-#: zerver/views/user_settings.py:29
+#: zerver/views/user_settings.py:34
 msgid "Avatar changes are disabled in this organization."
 msgstr ""
 
-#: zerver/views/user_settings.py:42 zerver/views/user_settings.py:96
+#: zerver/views/user_settings.py:47 zerver/views/user_settings.py:112
 msgid "Email address changes are disabled in this organization."
 msgstr ""
 
-#: zerver/views/user_settings.py:65
+#: zerver/views/user_settings.py:72
 msgid "Please fill out all fields."
 msgstr ""
 
-#: zerver/views/user_settings.py:70
+#: zerver/views/user_settings.py:77
 msgid "Your Zulip password is managed in LDAP"
 msgstr ""
 
-#: zerver/views/user_settings.py:73
+#: zerver/views/user_settings.py:82
 msgid "Wrong password!"
 msgstr ""
 
-#: zerver/views/user_settings.py:75
+#: zerver/views/user_settings.py:86
+#, python-format
+msgid "You're making too many attempts! Try again in %s seconds."
+msgstr ""
+
+#: zerver/views/user_settings.py:90
 msgid "New password is too weak!"
 msgstr ""
 
-#: zerver/views/user_settings.py:104
+#: zerver/views/user_settings.py:131
 msgid "Check your email for a confirmation link. "
 msgstr ""
 
-#: zerver/views/user_settings.py:140
-#, python-format
-msgid "Invalid timezone '%s'"
+#: zerver/views/user_settings.py:172
+msgid "Invalid default_language"
 msgstr ""
 
-#: zerver/views/user_settings.py:144
-#, python-format
-msgid "Invalid emojiset '%s'"
-msgstr ""
-
-#: zerver/views/user_settings.py:148
-#, python-format
-msgid "Invalid setting value '%s'"
-msgstr ""
-
-#: zerver/views/user_settings.py:187
+#: zerver/views/user_settings.py:211
 #, python-format
 msgid "Invalid notification sound '%s'"
 msgstr ""
 
-#: zerver/views/user_settings.py:200
+#: zerver/views/user_settings.py:224
 msgid "You must upload exactly one avatar."
 msgstr ""
 
-#: zerver/views/users.py:47
+#: zerver/views/users.py:45
 msgid "Cannot deactivate the only organization administrator"
 msgstr ""
 
-#: zerver/views/users.py:98
+#: zerver/views/users.py:96
 msgid "Guests cannot be organization administrators"
 msgstr ""
 
-#: zerver/views/users.py:102
+#: zerver/views/users.py:100
 msgid "Cannot remove the only organization administrator"
 msgstr ""
 
-#: zerver/views/users.py:186
+#: zerver/views/users.py:183
 msgid "Failed to change owner, no such user"
 msgstr ""
 
-#: zerver/views/users.py:188
+#: zerver/views/users.py:185
 msgid "Failed to change owner, user is deactivated"
 msgstr ""
 
-#: zerver/views/users.py:190
+#: zerver/views/users.py:187
 msgid "Failed to change owner, bots can't own other bots"
 msgstr ""
 
-#: zerver/views/users.py:284
+#: zerver/views/users.py:281
 msgid ""
 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
 msgstr ""
 
-#: zerver/views/users.py:290
+#: zerver/views/users.py:287
 msgid "Embedded bots are not enabled."
 msgstr ""
 
-#: zerver/views/users.py:292
+#: zerver/views/users.py:289
 msgid "Invalid embedded bot name."
 msgstr ""
 
-#: zerver/views/users.py:299
+#: zerver/views/users.py:296
 msgid "Username already in use"
 msgstr ""
 
-#: zerver/views/users.py:441
+#: zerver/views/users.py:448
 #, python-format
 msgid "Email '%(email)s' not allowed in this organization"
 msgstr ""
 
-#: zerver/views/users.py:444
+#: zerver/views/users.py:451
 msgid "Disposable email addresses are not allowed in this organization"
 msgstr ""
 
-#: zerver/views/users.py:450
+#: zerver/views/users.py:457
 #, python-format
 msgid "Email '%s' already in use"
 msgstr ""
 
-#: zerver/views/zephyr.py:31
+#: zerver/views/zephyr.py:32
 msgid "Could not find Kerberos credential"
 msgstr ""
 
-#: zerver/views/zephyr.py:33
+#: zerver/views/zephyr.py:34
 msgid "Webathena login not enabled"
 msgstr ""
 
-#: zerver/views/zephyr.py:43
+#: zerver/views/zephyr.py:47
 msgid "Invalid Kerberos cache"
 msgstr ""
 
-#: zerver/views/zephyr.py:55
+#: zerver/views/zephyr.py:59
 msgid "We were unable to setup mirroring for you"
 msgstr ""
 
-#: zerver/webhooks/freshdesk/view.py:150
+#: zerver/webhooks/freshdesk/view.py:149
 #, python-format
 msgid "Missing key %s in JSON"
 msgstr ""
 
-#: zerver/webhooks/front/view.py:119
+#: zerver/webhooks/front/view.py:120
 msgid "Unknown webhook request"
 msgstr ""
 
-#: zerver/webhooks/ifttt/view.py:25 zerver/webhooks/zapier/view.py:35
+#: zerver/webhooks/ifttt/view.py:26 zerver/webhooks/zapier/view.py:36
 msgid "Content can't be empty"
 msgstr ""
 
@@ -4642,7 +4994,7 @@ msgstr ""
 msgid "Unknown WordPress webhook action: %s"
 msgstr ""
 
-#: zerver/webhooks/zabbix/view.py:45
+#: zerver/webhooks/zabbix/view.py:46
 msgid "Invalid payload"
 msgstr ""
 
@@ -4672,4 +5024,12 @@ msgstr ""
 
 #: zilencer/views.py:181
 msgid "Invalid data."
+msgstr ""
+
+#: zproject/backends.py:1666
+msgid "Invalid OTP"
+msgstr ""
+
+#: zproject/backends.py:1669
+msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr ""
