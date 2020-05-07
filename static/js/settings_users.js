@@ -409,7 +409,7 @@ function open_bot_form(person) {
     return div;
 }
 
-function confirm_deactivation(row, user_id) {
+function confirm_deactivation(row, user_id, status_field) {
     const modal_elem = $("#deactivation_user_modal").expectOne();
 
     function set_fields() {
@@ -432,9 +432,8 @@ function confirm_deactivation(row, user_id) {
                 row_deactivate_button.text(i18n.t("Deactivate"));
             },
         };
-        const status = get_status_field();
         const url = '/json/users/' + encodeURIComponent(user_id);
-        settings_ui.do_settings_change(channel.del, url, {}, status, opts);
+        settings_ui.do_settings_change(channel.del, url, {}, status_field, opts);
 
     }
 
@@ -445,7 +444,7 @@ function confirm_deactivation(row, user_id) {
     modal_elem.modal("show");
 }
 
-function handle_deactivation(tbody) {
+function handle_deactivation(tbody, status_field) {
     tbody.on("click", ".deactivate", function (e) {
         // This click event must not get propagated to parent container otherwise the modal
         // will not show up because of a call to `close_active_modal` in `settings.js`.
@@ -454,11 +453,11 @@ function handle_deactivation(tbody) {
 
         const row = $(e.target).closest(".user_row");
         const user_id = row.data('user-id');
-        confirm_deactivation(row, user_id);
+        confirm_deactivation(row, user_id, status_field);
     });
 }
 
-function handle_bot_deactivation(tbody) {
+function handle_bot_deactivation(tbody, status_field) {
     tbody.on("click", ".deactivate", function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -476,13 +475,12 @@ function handle_bot_deactivation(tbody) {
                 ui_report.generic_row_button_error(xhr, button_elem);
             },
         };
-        const status = get_status_field();
-        settings_ui.do_settings_change(channel.del, url, {}, status, opts);
+        settings_ui.do_settings_change(channel.del, url, {}, status_field, opts);
 
     });
 }
 
-function handle_reactivation(tbody) {
+function handle_reactivation(tbody, status_field) {
     tbody.on("click", ".reactivate", function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -492,7 +490,6 @@ function handle_reactivation(tbody) {
         const user_id = parseInt(row.attr("data-user-id"), 10);
         const url = '/json/users/' + encodeURIComponent(user_id) + "/reactivate";
         const data = {};
-        const status = get_status_field();
 
         const opts = {
             success_continuation: function () {
@@ -503,7 +500,7 @@ function handle_reactivation(tbody) {
             },
         };
 
-        settings_ui.do_settings_change(channel.post, url, data, status, opts);
+        settings_ui.do_settings_change(channel.post, url, data, status_field, opts);
     });
 }
 
@@ -517,7 +514,7 @@ function handle_bot_owner_profile(tbody) {
     });
 }
 
-function handle_human_form(tbody) {
+function handle_human_form(tbody, status_field) {
     tbody.on("click", ".open-user-form", function (e) {
         const user_id = parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const person = people.get_by_user_id(user_id);
@@ -534,8 +531,6 @@ function handle_human_form(tbody) {
             e.preventDefault();
             e.stopPropagation();
 
-            const admin_status = get_status_field();
-
             const user_role_select_value = modal.find('#user-role-select').val();
             const full_name = modal.find("input[name='full_name']");
             const profile_data = get_human_profile_data(fields_user_pills);
@@ -548,13 +543,13 @@ function handle_human_form(tbody) {
                 profile_data: JSON.stringify(profile_data),
             };
 
-            settings_ui.do_settings_change(channel.patch, url, data, admin_status);
+            settings_ui.do_settings_change(channel.patch, url, data, status_field);
             overlays.close_modal('#admin-human-form');
         });
     });
 }
 
-function handle_bot_form(tbody) {
+function handle_bot_form(tbody, status_field) {
     tbody.on("click", ".open-user-form", function (e) {
         const user_id = parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const bot = people.get_by_user_id(user_id);
@@ -570,7 +565,6 @@ function handle_bot_form(tbody) {
             e.stopPropagation();
 
             const full_name = modal.find("input[name='full_name']");
-            const admin_status = get_status_field();
 
             const url = "/json/bots/" + encodeURIComponent(user_id);
             const data = {
@@ -582,7 +576,7 @@ function handle_bot_form(tbody) {
                 data.bot_owner_id = people.get_by_email(owner_select_value).user_id;
             }
 
-            settings_ui.do_settings_change(channel.patch, url, data, admin_status);
+            settings_ui.do_settings_change(channel.patch, url, data, status_field);
             overlays.close_modal('#admin-bot-form');
         });
     });
@@ -596,24 +590,30 @@ exports.on_load_success = function (realm_people_data) {
 
 section.active.handle_events = () => {
     const tbody = $('#admin_users_table').expectOne();
-    handle_deactivation(tbody);
-    handle_reactivation(tbody);
-    handle_human_form(tbody);
+    const status_field = $('#user-field-status').expectOne();
+
+    handle_deactivation(tbody, status_field);
+    handle_reactivation(tbody, status_field);
+    handle_human_form(tbody, status_field);
 };
 
 section.deactivated.handle_events = () => {
     const tbody = $('#admin_deactivated_users_table').expectOne();
-    handle_deactivation(tbody);
-    handle_reactivation(tbody);
-    handle_human_form(tbody);
+    const status_field = $("#deactivated-user-field-status").expectOne();
+
+    handle_deactivation(tbody, status_field);
+    handle_reactivation(tbody, status_field);
+    handle_human_form(tbody, status_field);
 };
 
 section.bots.handle_events = () => {
     const tbody = $('#admin_bots_table').expectOne();
+    const status_field = $("#bot-field-status").expectOne();
+
     handle_bot_owner_profile(tbody);
-    handle_bot_deactivation(tbody);
-    handle_reactivation(tbody);
-    handle_bot_form(tbody);
+    handle_bot_deactivation(tbody, status_field);
+    handle_reactivation(tbody, status_field);
+    handle_bot_form(tbody, status_field);
 };
 
 exports.set_up = function () {
