@@ -12,7 +12,7 @@ from zerver.models import (Message, UserMessage, ArchivedUserMessage, Realm,
                            SubMessage, ArchivedSubMessage, Recipient, Stream, ArchiveTransaction,
                            get_user_including_cross_realm)
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import logging
 
@@ -303,15 +303,7 @@ def archive_personal_and_huddle_messages(realm: Realm, chunk_size: int=MESSAGE_B
     message_count = move_expired_personal_and_huddle_messages_to_archive(realm, chunk_size)
     logger.info("Done. Archived %s messages", message_count)
 
-def archive_stream_messages(realm: Realm, chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
-    # We don't archive, if the stream has message_retention_days set to -1,
-    # or if neither the stream nor the realm have a retention policy.
-    query = Stream.objects.select_related("recipient").filter(
-        realm_id=realm.id).exclude(message_retention_days=-1)
-    if not realm.message_retention_days:
-        query = query.exclude(message_retention_days__isnull=True)
-
-    streams = list(query)
+def archive_stream_messages(realm: Realm, streams: List[Stream], chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
     if not streams:
         return
 
@@ -337,17 +329,56 @@ def archive_stream_messages(realm: Realm, chunk_size: int=MESSAGE_BATCH_SIZE) ->
 def archive_messages(chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
     logger.info("Starting the archiving process with chunk_size %s", chunk_size)
 
-    # We exclude SYSTEM_BOT_REALM here because the logic for archiving
-    # private messages and huddles isn't designed to correctly handle
-    # that realm.  In practice, excluding it has no effect, because
-    # that realm is expected to always have message_retention_days=None.
-    for realm in Realm.objects.exclude(string_id=settings.SYSTEM_BOT_REALM):
-        archive_stream_messages(realm, chunk_size)
+    for realm, streams in get_realms_and_streams_for_archiving():
+        archive_stream_messages(realm, streams, chunk_size)
         if realm.message_retention_days:
             archive_personal_and_huddle_messages(realm, chunk_size)
 
         # Messages have been archived for the realm, now we can clean up attachments:
         delete_expired_attachments(realm)
+
+def get_realms_and_streams_for_archiving() -> List[Tuple[Realm, List[Stream]]]:
+    """
+    This function constructs a list of (realm, streams_of_the_realm) tuples
+    where each realm is a Realm that requires calling the archiving functions on it,
+    and streams_of_the_realm is a list of streams of the realm to call archive_stream_messages with.
+
+    The purpose of this is performance - for servers with thousands of realms, it is important
+    to fetch all this data in bulk.
+    """
+
+    realm_id_to_realm = {}
+    realm_id_to_streams_list: Dict[int, List[Stream]] = {}
+
+    # All realms with a retention policy set qualify for archiving:
+    for realm in Realm.objects.filter(message_retention_days__isnull=False):
+        realm_id_to_realm[realm.id] = realm
+        realm_id_to_streams_list[realm.id] = []
+
+    # Now we find all streams that require archiving.
+    # First category are streams in retention-enabled realms,
+    # that don't have retention explicitly disabled (through the value -1).
+    query_one = Stream.objects.exclude(message_retention_days=-1) \
+        .filter(realm__message_retention_days__isnull=False) \
+        .select_related('realm', 'recipient')
+    # Second category are streams that are in realms without a realm-wide retention policy,
+    # but have their own stream-specific policy enabled.
+    query_two = Stream.objects.filter(realm__message_retention_days__isnull=True) \
+        .exclude(message_retention_days__isnull=True) \
+        .exclude(message_retention_days=-1) \
+        .select_related('realm', 'recipient')
+    query = query_one.union(query_two)
+
+    for stream in query:
+        realm = stream.realm
+        realm_id_to_realm[realm.id] = realm
+        if realm.id not in realm_id_to_streams_list:
+            realm_id_to_streams_list[realm.id] = []
+
+        realm_id_to_streams_list[realm.id].append(stream)
+
+    return [(realm_id_to_realm[realm_id], realm_id_to_streams_list[realm_id])
+            for realm_id in realm_id_to_realm]
 
 def move_messages_to_archive(message_ids: List[int], chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
     query = SQL("""

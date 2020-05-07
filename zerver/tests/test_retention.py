@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from unittest import mock
 
 from django.conf import settings
@@ -18,6 +18,7 @@ from zerver.lib.retention import (
     move_messages_to_archive,
     restore_all_data_from_archive,
     clean_archived_data,
+    get_realms_and_streams_for_archiving,
 )
 from zerver.tornado.event_queue import send_event
 
@@ -744,6 +745,93 @@ class TestCleaningArchive(ArchiveMessagesTestingBase):
 
         for message in ArchivedMessage.objects.all():
             self.assertEqual(message.archive_transaction_id, remaining_transactions[0].id)
+
+
+class TestGetRealmAndStreamsForArchiving(ZulipTestCase):
+    def fix_ordering_of_result(self, result: List[Tuple[Realm, List[Stream]]]) -> None:
+        """
+        This is a helper for giving the struture returned by get_realms_and_streams_for_archiving
+        a consistent ordering.
+        """
+        # Sort the list of tuples by realm id:
+        result.sort(key=lambda x: x[0].id)
+
+        # Now we sort the lists of streams in each tuple:
+        for realm, streams_list in result:
+            streams_list.sort(key=lambda stream: stream.id)
+
+    def simple_get_realms_and_streams_for_archiving(self) -> List[Tuple[Realm, List[Stream]]]:
+        """
+        This is an implementation of the function we're testing, but using the obvious,
+        unoptimized algorithm. We can use this for additional verification of correctness,
+        by comparing the output of the two implementations.
+        """
+
+        result = []
+        for realm in Realm.objects.all():
+            if realm.message_retention_days is not None:
+                streams = Stream.objects.filter(realm=realm).exclude(message_retention_days=-1)
+                result.append((realm, list(streams)))
+            else:
+                streams = Stream.objects.filter(realm=realm).exclude(message_retention_days__isnull=True) \
+                    .exclude(message_retention_days=-1)
+                if streams.exists():
+                    result.append((realm, list(streams)))
+
+        return result
+
+    def test_get_realms_and_streams_for_archiving(self) -> None:
+        zulip_realm = get_realm("zulip")
+        zulip_realm.message_retention_days = 10
+        zulip_realm.save()
+
+        verona = get_stream("Verona", zulip_realm)
+        verona.message_retention_days = -1  # Block archiving for this stream
+        verona.save()
+        denmark = get_stream("Denmark", zulip_realm)
+        denmark.message_retention_days = 1
+        denmark.save()
+
+        zephyr_realm = get_realm("zephyr")
+        zephyr_realm.message_retention_days = None
+        zephyr_realm.save()
+        self.make_stream("normal stream", realm=zephyr_realm)
+
+        archiving_blocked_zephyr_stream = self.make_stream("no archiving", realm=zephyr_realm)
+        archiving_blocked_zephyr_stream.message_retention_days = -1
+        archiving_blocked_zephyr_stream.save()
+
+        archiving_enabled_zephyr_stream = self.make_stream("with archiving", realm=zephyr_realm)
+        archiving_enabled_zephyr_stream.message_retention_days = 1
+        archiving_enabled_zephyr_stream.save()
+
+        Realm.objects.create(string_id="no_archiving", invite_required=False, message_retention_days=None)
+        empty_realm_with_archiving = Realm.objects.create(string_id="with_archiving", invite_required=False,
+                                                          message_retention_days=1)
+
+        # We construct a list representing how the result of get_realms_and_streams_for_archiving should be.
+        # One nuisance is that the ordering of the elements in the result structure is not deterministic,
+        # so we use a helper to order both structures in a consistent manner. This wouldn't be necessary
+        # if python had a true "unordered list" data structure. Set doesn't do the job, because it requires
+        # elements to be hashable.
+        expected_result = [
+            (zulip_realm, list(Stream.objects.filter(realm=zulip_realm).exclude(id=verona.id))),
+            (zephyr_realm, [archiving_enabled_zephyr_stream]),
+            (empty_realm_with_archiving, []),
+        ]
+        self.fix_ordering_of_result(expected_result)
+
+        simple_algorithm_result = self.simple_get_realms_and_streams_for_archiving()
+        self.fix_ordering_of_result(simple_algorithm_result)
+
+        result = get_realms_and_streams_for_archiving()
+        self.fix_ordering_of_result(result)
+
+        self.assert_length(result, len(expected_result))
+        self.assertEqual(result, expected_result)
+
+        self.assert_length(result, len(simple_algorithm_result))
+        self.assertEqual(result, simple_algorithm_result)
 
 class TestDoDeleteMessages(ZulipTestCase):
     def test_do_delete_messages_multiple(self) -> None:
