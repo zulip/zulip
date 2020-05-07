@@ -826,6 +826,10 @@ LOGGING: Dict[str, Any] = {
             'handlers': ['console', 'file'],
             'propagate': False,
         },
+        'django.utils.autoreload': {
+            # We don't want logging spam from the autoreloaders in development.
+            'level': 'WARNING',
+        },
         'django.template': {
             'level': 'DEBUG',
             'filters': ['require_debug_true', 'skip_site_packages_logs'],
