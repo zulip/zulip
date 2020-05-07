@@ -1399,7 +1399,10 @@ class Stream(models.Model):
         max_length=32, default=generate_email_token_for_stream, unique=True
     )
 
-    # For old messages being automatically deleted
+    # For old messages being automatically deleted.
+    # Value NULL means "use retention policy of the realm".
+    # Value -1 means "disable retention policy for this stream unconditionally".
+    # Non-negative values have the natural meaning of "archive messages older than <value> days".
     message_retention_days: Optional[int] = models.IntegerField(null=True, default=None)
 
     # The very first message ID in the stream.  Used to help clients
