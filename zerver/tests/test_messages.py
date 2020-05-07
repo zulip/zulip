@@ -5225,7 +5225,7 @@ class NoRecipientIDsTest(ZulipTestCase):
         user_profile = self.example_user('cordelia')
         # self.login_user(user_profile)
 
-        Subscription.objects.all().delete()
+        Subscription.objects.filter(user_profile=user_profile, recipient__type=Recipient.STREAM).delete()
 
         subs = gather_subscriptions_helper(user_profile)
 
