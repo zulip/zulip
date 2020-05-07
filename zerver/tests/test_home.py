@@ -1,11 +1,11 @@
-import datetime
+import calendar
 import lxml.html
 import ujson
 
 from django.conf import settings
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
-from mock import MagicMock, patch
+from mock import patch
 import urllib
 from typing import Any, Dict
 from zerver.lib.actions import (
@@ -22,10 +22,11 @@ from zerver.lib.users import compute_show_invites_and_add_streams
 from zerver.models import (
     get_realm, get_stream, get_user, UserProfile,
     flush_per_request_caches, DefaultStream, Realm,
-    get_system_bot,
+    get_system_bot, UserActivity
 )
-from zerver.views.home import sent_time_in_epoch_seconds, compute_navbar_logo_url
+from zerver.views.home import compute_navbar_logo_url, get_furthest_read_time
 from corporate.models import Customer, CustomerPlan
+from zerver.worker.queue_processors import UserActivityWorker
 
 class HomeTest(ZulipTestCase):
     def test_home(self) -> None:
@@ -250,7 +251,7 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(set(result["Cache-Control"].split(", ")),
                          {"must-revalidate", "no-store", "no-cache"})
 
-        self.assert_length(queries, 43)
+        self.assert_length(queries, 44)
         self.assert_length(cache_mock.call_args_list, 5)
 
         html = result.content.decode('utf-8')
@@ -316,7 +317,7 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
                 self.assertEqual(result.status_code, 200)
                 self.assert_length(cache_mock.call_args_list, 6)
-            self.assert_length(queries, 41)
+            self.assert_length(queries, 42)
 
     @slow("Creates and subscribes 10 users in a loop.  Should use bulk queries.")
     def test_num_queries_with_streams(self) -> None:
@@ -348,7 +349,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries2:
             result = self._get_home_page()
 
-        self.assert_length(queries2, 38)
+        self.assert_length(queries2, 39)
 
         # Do a sanity check that our new streams were in the payload.
         html = result.content.decode('utf-8')
@@ -459,11 +460,7 @@ class HomeTest(ZulipTestCase):
         user_profile.save()
 
         self.login_user(user_profile)
-        with patch('logging.warning') as mock:
-            result = self._get_home_page()
-        mock.assert_called_once_with(
-            'User %s has invalid pointer %s', user_profile.id, 999999,
-        )
+        result = self._get_home_page()
         self._sanity_check(result)
 
     def test_topic_narrow(self) -> None:
@@ -807,12 +804,34 @@ class HomeTest(ZulipTestCase):
         result = self.client_get("/api/v1/generate_204")
         self.assertEqual(result.status_code, 204)
 
-    def test_message_sent_time(self) -> None:
-        epoch_seconds = 1490472096
-        date_sent = datetime.datetime.fromtimestamp(epoch_seconds)
-        user_message = MagicMock()
-        user_message.message.date_sent = date_sent
-        self.assertEqual(sent_time_in_epoch_seconds(user_message), epoch_seconds)
+    def test_furthest_read_time(self) -> None:
+        msg_id = self.send_test_message("hello!", sender_name="iago")
+
+        hamlet = self.example_user('hamlet')
+        self.login_user(hamlet)
+        self.client_post("/json/messages/flags",
+                         {"messages": ujson.dumps([msg_id]),
+                          "op": "add",
+                          "flag": "read"})
+
+        # Manually process the UserActivity
+        activity_time = calendar.timegm(timezone_now().timetuple())
+        user_activity_event = {'user_profile_id': hamlet.id,
+                               'client': 'test-client',
+                               'query': 'update_message_flags',
+                               'time': activity_time}
+        UserActivityWorker().consume_batch([user_activity_event])
+        furthest_read_time = get_furthest_read_time(hamlet)
+        self.assertGreaterEqual(furthest_read_time, activity_time)
+
+        # Check when user has no activity
+        UserActivity.objects.filter(user_profile=hamlet).delete()
+        furthest_read_time = get_furthest_read_time(hamlet)
+        self.assertIsNone(furthest_read_time)
+
+        # Check no user profile handling
+        furthest_read_time = get_furthest_read_time(None)
+        self.assertIsNotNone(furthest_read_time)
 
     def test_subdomain_homepage(self) -> None:
         self.login('hamlet')

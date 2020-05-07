@@ -11,9 +11,7 @@ from zerver.context_processors import latest_info_context
 from zerver.decorator import zulip_login_required
 from zerver.forms import ToSForm
 from zerver.models import Message, Stream, UserProfile, \
-    Realm, UserMessage, \
-    PreregistrationUser, \
-    get_usermessage_by_message_id
+    Realm, PreregistrationUser
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_tos_version, \
     realm_user_count
@@ -26,6 +24,7 @@ from zerver.lib.users import compute_show_invites_and_add_streams
 from zerver.lib.utils import statsd, generate_random_token
 from zerver.views.compatibility import is_outdated_desktop_app, \
     is_unsupported_browser
+from zerver.views.messages import get_latest_update_message_flag_activity
 from two_factor.utils import default_device
 
 import calendar
@@ -105,25 +104,15 @@ def update_last_reminder(user_profile: Optional[UserProfile]) -> None:
         user_profile.last_reminder = None
         user_profile.save(update_fields=["last_reminder"])
 
-def sent_time_in_epoch_seconds(user_message: Optional[UserMessage]) -> Optional[float]:
-    if user_message is None:
-        return None
-    # We have USE_TZ = True, so our datetime objects are timezone-aware.
-    # Return the epoch seconds in UTC.
-    return calendar.timegm(user_message.message.date_sent.utctimetuple())
-
 def get_furthest_read_time(user_profile: Optional[UserProfile]) -> Optional[float]:
-    if user_profile is None:  # nocoverage
-        furthest_read_time: Optional[float] = time.time()
-    elif user_profile.pointer == -1:
-        furthest_read_time = None
-    else:
-        latest_read = get_usermessage_by_message_id(user_profile, user_profile.pointer)
-        if latest_read is None:
-            # Don't completely fail if your saved pointer ID is invalid
-            logging.warning("User %s has invalid pointer %s", user_profile.id, user_profile.pointer)
-        furthest_read_time = sent_time_in_epoch_seconds(latest_read)
-    return furthest_read_time
+    if user_profile is None:
+        return time.time()
+
+    user_activity = get_latest_update_message_flag_activity(user_profile)
+    if user_activity is None:
+        return None
+
+    return calendar.timegm(user_activity.last_visit.utctimetuple())
 
 def get_bot_types(user_profile: Optional[UserProfile]) -> List[Dict[str, object]]:
     bot_types: List[Dict[str, object]] = []

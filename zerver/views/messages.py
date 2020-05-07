@@ -52,7 +52,7 @@ from zerver.lib.validator import \
     check_required_string, to_non_negative_int
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import Message, UserProfile, Stream, Subscription, Client,\
-    Realm, RealmDomain, Recipient, UserMessage, \
+    Realm, RealmDomain, Recipient, UserMessage, UserActivity, \
     email_to_domain, get_realm, get_active_streams, get_user_including_cross_realm, \
     get_user_by_id_in_realm_including_cross_realm
 
@@ -1113,6 +1113,12 @@ def post_process_limited_query(rows: List[Any],
         history_limited=history_limited,
     )
 
+def get_latest_update_message_flag_activity(user_profile: UserProfile) -> Optional[UserActivity]:
+    return UserActivity.objects.filter(user_profile=user_profile,
+                                       query='update_message_flags').last()
+
+# NOTE: If this function name is changed, add the new name to the
+# query in get_latest_update_message_flag_activity
 @has_request_variables
 def update_message_flags(request: HttpRequest, user_profile: UserProfile,
                          messages: List[int]=REQ(validator=check_list(check_int)),
