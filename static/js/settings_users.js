@@ -352,11 +352,7 @@ function open_user_info_form_modal(person) {
     return user_info_form_modal;
 }
 
-exports.on_load_success = function (realm_people_data) {
-    meta.loaded = true;
-
-    populate_users(realm_people_data);
-
+function handle_deactivation() {
     const modal_elem = $("#deactivation_user_modal").expectOne();
 
     $(".admin_user_table").on("click", ".deactivate", function (e) {
@@ -394,7 +390,9 @@ exports.on_load_success = function (realm_people_data) {
         settings_ui.do_settings_change(channel.del, url, {}, status, opts);
 
     });
+}
 
+function handle_bot_deactivation() {
     $(".admin_bot_table").on("click", ".deactivate", function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -416,7 +414,9 @@ exports.on_load_success = function (realm_people_data) {
         settings_ui.do_settings_change(channel.del, url, {}, status, opts);
 
     });
+}
 
+function handle_reactivation() {
     $(".admin_user_table, .admin_bot_table").on("click", ".reactivate", function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -439,7 +439,9 @@ exports.on_load_success = function (realm_people_data) {
 
         settings_ui.do_settings_change(channel.post, url, data, status, opts);
     });
+}
 
+function handle_bot_owner_profile() {
     $('.admin_bot_table').on('click', '.user_row .view_user_profile', function (e) {
         const owner_id = parseInt($(e.target).attr('data-owner-id'), 10);
         const owner = people.get_by_user_id(owner_id);
@@ -447,7 +449,9 @@ exports.on_load_success = function (realm_people_data) {
         e.stopPropagation();
         e.preventDefault();
     });
+}
 
+function handle_user_form() {
     $(".admin_user_table, .admin_bot_table").on("click", ".open-user-form", function (e) {
         const user_id = parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const person = people.get_by_user_id(user_id);
@@ -520,7 +524,18 @@ exports.on_load_success = function (realm_people_data) {
             overlays.close_modal('#user-info-form-modal');
         });
     });
+}
 
+exports.on_load_success = function (realm_people_data) {
+    meta.loaded = true;
+
+    populate_users(realm_people_data);
+    handle_deactivation();
+    handle_reactivation();
+    handle_user_form();
+
+    handle_bot_owner_profile();
+    handle_bot_deactivation();
 };
 
 window.settings_users = exports;
