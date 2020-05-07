@@ -2332,6 +2332,9 @@ class UserActivity(models.Model):
     class Meta:
         unique_together = ("user_profile", "client", "query")
 
+def get_latest_update_message_flag_activity(user_profile: UserProfile) -> Optional[UserActivity]:
+    return UserActivity.objects.filter(user_profile=user_profile, query='update_message_flags').last()
+
 class UserActivityInterval(models.Model):
     MIN_INTERVAL_LENGTH = datetime.timedelta(minutes=15)
 

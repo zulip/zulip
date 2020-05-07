@@ -1114,6 +1114,8 @@ def post_process_limited_query(rows: List[Any],
         history_limited=history_limited,
     )
 
+# NOTE: If this function name is changed ,change the query in
+# zerver.models.get_latest_update_message_flag_activity
 @has_request_variables
 def update_message_flags(request: HttpRequest, user_profile: UserProfile,
                          messages: List[int]=REQ(validator=check_list(check_int)),
