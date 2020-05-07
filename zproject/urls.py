@@ -83,15 +83,15 @@ v1_api_and_json_patterns = [
     path('generate_204', zerver.views.registration.generate_204,
          name='zerver.views.registration.generate_204'),
 
-    re_path(r'^realm/subdomain/(?P<subdomain>\S+)$', zerver.views.realm.check_subdomain_available,
-            name='zerver.views.realm.check_subdomain_available'),
+    path('realm/subdomain/<str:subdomain>', zerver.views.realm.check_subdomain_available,
+         name='zerver.views.realm.check_subdomain_available'),
 
     # realm/domains -> zerver.views.realm_domains
     path('realm/domains', rest_dispatch,
          {'GET': 'zerver.views.realm_domains.list_realm_domains',
           'POST': 'zerver.views.realm_domains.create_realm_domain'}),
-    re_path(r'^realm/domains/(?P<domain>\S+)$', rest_dispatch,
-            {'PATCH': 'zerver.views.realm_domains.patch_realm_domain',
+    path('realm/domains/<str:domain>', rest_dispatch,
+         {'PATCH': 'zerver.views.realm_domains.patch_realm_domain',
              'DELETE': 'zerver.views.realm_domains.delete_realm_domain'}),
 
     # realm/emoji -> zerver.views.realm_emoji
@@ -414,8 +414,8 @@ v1_api_and_json_patterns = [
     path('export/realm', rest_dispatch,
          {'POST': 'zerver.views.realm_export.export_realm',
           'GET': 'zerver.views.realm_export.get_realm_exports'}),
-    re_path(r'^export/realm/(?P<export_id>.*)$', rest_dispatch,
-            {'DELETE': 'zerver.views.realm_export.delete_realm_export'}),
+    path('export/realm/<str:export_id>', rest_dispatch,
+         {'DELETE': 'zerver.views.realm_export.delete_realm_export'}),
 ]
 
 # These views serve pages (HTML). As such, their internationalization
@@ -474,11 +474,11 @@ i18n_urls = [
          name='zerver.views.auth.password_reset'),
     path('accounts/password/reset/done/',
          PasswordResetDoneView.as_view(template_name='zerver/reset_emailed.html')),
-    re_path(r'^accounts/password/reset/(?P<uidb64>[0-9A-Za-z]+)/(?P<token>.+)/$',
-            PasswordResetConfirmView.as_view(success_url='/accounts/password/done/',
-                                             template_name='zerver/reset_confirm.html',
-                                             form_class=zerver.forms.LoggingSetPasswordForm),
-            name='django.contrib.auth.views.password_reset_confirm'),
+    path('accounts/password/reset/<str:uidb64>/<str:token>/',
+         PasswordResetConfirmView.as_view(success_url='/accounts/password/done/',
+                                          template_name='zerver/reset_confirm.html',
+                                          form_class=zerver.forms.LoggingSetPasswordForm),
+         name='django.contrib.auth.views.password_reset_confirm'),
     path('accounts/password/done/',
          PasswordResetCompleteView.as_view(template_name='zerver/reset_done.html')),
     path('accounts/deactivated/',
@@ -550,9 +550,9 @@ i18n_urls = [
     path('login/', zerver.views.auth.login_page, {'template_name': 'zerver/login.html'},
          name='zerver.views.auth.login_page'),
 
-    re_path(r'^join/(?P<confirmation_key>\S+)/$',
-            zerver.views.registration.accounts_home_from_multiuse_invite,
-            name='zerver.views.registration.accounts_home_from_multiuse_invite'),
+    path('join/<str:confirmation_key>/',
+         zerver.views.registration.accounts_home_from_multiuse_invite,
+         name='zerver.views.registration.accounts_home_from_multiuse_invite'),
 
     # Used to generate a Zoom video call URL
     path('calls/zoom/register', zerver.views.video_calls.register_zoom_user),
@@ -632,10 +632,10 @@ urls += [
             rest_dispatch,
             {'GET': ('zerver.views.users.avatar',
                      {'override_api_url_scheme'})}),
-    re_path(r'^avatar/(?P<email_or_id>[\S]+)$',
-            rest_dispatch,
-            {'GET': ('zerver.views.users.avatar',
-                     {'override_api_url_scheme'})}),
+    path('avatar/<str:email_or_id>',
+         rest_dispatch,
+         {'GET': ('zerver.views.users.avatar',
+                  {'override_api_url_scheme'})}),
 ]
 
 # This url serves as a way to receive CSP violation reports from the users.
@@ -650,9 +650,9 @@ urls += [
 # such links with images previews. Now thumbor can be used for serving such
 # images.
 urls += [
-    re_path(r'^external_content/(?P<digest>[\S]+)/(?P<received_url>[\S]+)$',
-            zerver.views.camo.handle_camo_url,
-            name='zerver.views.camo.handle_camo_url'),
+    path('external_content/<str:digest>/<str:received_url>',
+         zerver.views.camo.handle_camo_url,
+         name='zerver.views.camo.handle_camo_url'),
 ]
 
 # Incoming webhook URLs
