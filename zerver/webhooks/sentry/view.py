@@ -9,6 +9,14 @@ from zerver.lib.webhooks.common import UnexpectedWebhookEventType, check_send_we
 from zerver.models import UserProfile
 
 
+DEPRECATED_EXCEPTION_MESSAGE_TEMPLATE = """
+New [issue]({url}) (level: {level}):
+
+``` quote
+{message}
+```
+"""
+
 MESSAGE_EVENT_TEMPLATE = """
 **New message event:** [{title}]({web_link})
 ```quote
@@ -194,19 +202,32 @@ def handle_issue_payload(action: str, issue: Dict[str, Any], actor: Dict[str, An
     return (subject, body)
 
 
+def handle_deprecated_payload(payload: Dict[str, Any]) -> Tuple[str, str]:
+    subject = "{}".format(payload.get('project_name'))
+    body = DEPRECATED_EXCEPTION_MESSAGE_TEMPLATE.format(
+        level=payload['level'].upper(),
+        url=payload.get('url'),
+        message=payload.get('message')
+    )
+    return (subject, body)
+
+
 @api_key_only_webhook_view('Sentry')
 @has_request_variables
 def api_sentry_webhook(request: HttpRequest, user_profile: UserProfile,
                        payload: Dict[str, Any] = REQ(argument_type="body")) -> HttpResponse:
-    data = payload["data"]
+    data = payload.get("data", None)
 
     # We currently support two types of payloads: events and issues.
-    if "event" in data:
-        subject, body = handle_event_payload(data["event"])
-    elif "issue" in data:
-        subject, body = handle_issue_payload(payload["action"], data["issue"], payload["actor"])
+    if data:
+        if "event" in data:
+            subject, body = handle_event_payload(data["event"])
+        elif "issue" in data:
+            subject, body = handle_issue_payload(payload["action"], data["issue"], payload["actor"])
+        else:
+            raise UnexpectedWebhookEventType("Sentry", str((list(data.keys()))))
     else:
-        raise UnexpectedWebhookEventType("Sentry", str((list(data.keys()))))
+        subject, body = handle_deprecated_payload(payload)
 
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success()
