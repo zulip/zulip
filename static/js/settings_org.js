@@ -444,9 +444,10 @@ exports.change_save_button_state = function ($element, state) {
     show_hide_element($element, is_show, 800);
 };
 
-exports.get_input_element_value = function (input_elem) {
+exports.get_input_element_value = function (input_elem, input_type) {
     input_elem = $(input_elem);
-    const input_type = input_elem.data("setting-widget-type");
+    input_type = ["boolean", "string", "number"].includes(input_type)
+        || input_elem.data("setting-widget-type");
     if (input_type) {
         if (input_type === 'boolean') {
             return input_elem.prop('checked');
@@ -481,8 +482,8 @@ function get_auth_method_table_data() {
 function check_property_changed(elem) {
     elem = $(elem);
     const property_name = exports.extract_property_name(elem);
-    let changed_val;
     let current_val = get_property_value(property_name);
+    let changed_val;
 
     if (property_name === 'realm_authentication_methods') {
         current_val = sort_object_by_key(current_val);
@@ -495,13 +496,8 @@ function check_property_changed(elem) {
         changed_val = parseInt(exports.signup_notifications_stream_widget.value(), 10);
     } else if (property_name === 'realm_default_code_block_language') {
         changed_val = exports.default_code_language_widget.value();
-    } else if (typeof current_val === 'boolean') {
-        changed_val = elem.prop('checked');
-    } else if (typeof current_val === 'string') {
-        changed_val = elem.val().trim();
-    } else if (typeof current_val === 'number') {
-        current_val = current_val.toString();
-        changed_val = elem.val().trim();
+    } else if (current_val !== undefined) {
+        changed_val = exports.get_input_element_value(elem, typeof current_val);
     } else {
         blueslip.error('Element refers to unknown property ' + property_name);
     }
