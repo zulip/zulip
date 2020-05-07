@@ -458,7 +458,7 @@ exports.get_input_element_value = function (input_elem) {
             return parseInt(input_elem.val().trim(), 10);
         }
     }
-    return null;
+    return;
 };
 
 exports.set_up = function () {
@@ -744,7 +744,7 @@ exports.build_page = function () {
             input_elem = $(input_elem);
             if (check_property_changed(input_elem)) {
                 const input_value = exports.get_input_element_value(input_elem);
-                if (input_value !== null) {
+                if (input_value !== undefined) {
                     const property_name = input_elem.attr('id').replace("id_realm_", "");
                     data[property_name] = JSON.stringify(input_value);
                 }
