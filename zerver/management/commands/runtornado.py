@@ -69,7 +69,6 @@ class Command(BaseCommand):
 
         xheaders = options.get('xheaders', True)
         no_keep_alive = options.get('no_keep_alive', False)
-        quit_command = 'CTRL-C'
 
         if settings.DEBUG:
             logging.basicConfig(level=logging.INFO,
@@ -80,11 +79,10 @@ class Command(BaseCommand):
             from django.utils import translation
             translation.activate(settings.LANGUAGE_CODE)
 
-            print("Validating Django models.py...")
-            self.check(display_num_errors=True)
-            print("\nDjango version %s" % (django.get_version(),))
+            # We pass display_num_errors=False, since Django will
+            # likely display similar output anyway.
+            self.check(display_num_errors=False)
             print("Tornado server is running at http://%s:%s/" % (addr, port))
-            print("Quit the server with %s." % (quit_command,))
 
             if settings.USING_RABBITMQ:
                 queue_client = get_queue_client()
