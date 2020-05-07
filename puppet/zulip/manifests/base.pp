@@ -67,7 +67,7 @@ class zulip::base {
     'xenial'  => '9.5',
     'bionic'  => '10',
     'CentOS7' => '10',
-  });
+  })
 
   $normal_queues = [
     'deferred_work',
