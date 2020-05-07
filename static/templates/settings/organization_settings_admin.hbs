@@ -90,7 +90,7 @@
                     <select name="realm_digest_weekday"
                       id="id_realm_digest_weekday"
                       class="setting-widget prop-element"
-                      data-setting-widget-type="integer">
+                      data-setting-widget-type="number">
                         <option value="0">{{t "Monday" }}</option>
                         <option value="1">{{t "Tuesday" }}</option>
                         <option value="2">{{t "Wednesday" }}</option>
@@ -125,7 +125,7 @@
             <div class="inline-block organization-settings-parent">
                 <div class="input-group">
                     <label for="realm_default_language" class="dropdown-title">{{t "Default language" }}</label>
-                    <select name="realm_default_language" class ="setting-widget prop-element" id="id_realm_default_language" data-setting-widget-type="text">
+                    <select name="realm_default_language" class ="setting-widget prop-element" id="id_realm_default_language" data-setting-widget-type="string">
                         {{#each language_list}}
                         <option value='{{this.code}}'>{{this.name}}</option>
                         {{/each}}
@@ -133,7 +133,7 @@
                 </div>
                 <div class="input-group">
                     <label for="realm_default_twenty_four_hour_time" class="dropdown-title">{{ admin_settings_label.realm_default_twenty_four_hour_time }}</label>
-                    <select name="realm_default_twenty_four_hour_time" class ="setting-widget prop-element" id="id_realm_default_twenty_four_hour_time" data-setting-widget-type="text">
+                    <select name="realm_default_twenty_four_hour_time" class ="setting-widget prop-element" id="id_realm_default_twenty_four_hour_time" data-setting-widget-type="string">
                         {{#each realm_default_twenty_four_hour_time_values}}
                         <option value='{{ this.value }}'>{{ this.description }}</option>
                         {{/each}}
@@ -152,7 +152,7 @@
                     <label for="realm_video_chat_provider" class="dropdown-title">
                         {{t 'Video chat provider' }}
                     </label>
-                    <select name="realm_video_chat_provider" class ="setting-widget prop-element" id="id_realm_video_chat_provider" data-setting-widget-type="integer">
+                    <select name="realm_video_chat_provider" class ="setting-widget prop-element" id="id_realm_video_chat_provider" data-setting-widget-type="number">
                         {{#each realm_available_video_chat_providers}}
                         <option value='{{this.id}}'>{{this.name}}</option>
                         {{/each}}
@@ -163,7 +163,7 @@
                           name="realm_google_hangouts_domain"
                           autocomplete="off"
                           class="admin-realm-google-hangouts-domain setting-widget prop-element"
-                          data-setting-widget-type="text"/>
+                          data-setting-widget-type="string"/>
                     </div>
                     <div id="zoom_help_text" class="zoom_credentials">
                         <p>
@@ -177,7 +177,7 @@
                           name="realm_zoom_user_id"
                           autocomplete="off"
                           class="admin-realm-zoom-field setting-widget prop-element"
-                          data-setting-widget-type="text"/>
+                          data-setting-widget-type="string"/>
                     </div>
                     <div id="zoom_api_key" class="zoom_credentials">
                         <label>{{t 'Zoom API key (required)' }}:</label>
@@ -185,7 +185,7 @@
                           name="realm_zoom_api_key"
                           autocomplete="off"
                           class="admin-realm-zoom-field setting-widget prop-element"
-                          data-setting-widget-type="text"/>
+                          data-setting-widget-type="string"/>
                     </div>
                     <div id="zoom_api_secret" class="zoom_credentials">
                         <label>{{t 'Zoom API secret (required if changed)' }}:</label>
@@ -193,7 +193,7 @@
                           name="realm_zoom_api_secret"
                           autocomplete="off"
                           class="admin-realm-zoom-field setting-widget prop-element"
-                          data-setting-widget-type="text"/>
+                          data-setting-widget-type="string"/>
                     </div>
                 </div>
 

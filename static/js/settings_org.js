@@ -451,13 +451,13 @@ exports.get_input_element_value = function (input_elem) {
     input_elem = $(input_elem);
     const input_type = input_elem.data("setting-widget-type");
     if (input_type) {
-        if (input_type === 'bool') {
+        if (input_type === 'boolean') {
             return input_elem.prop('checked');
         }
-        if (input_type === 'text') {
+        if (input_type === 'string') {
             return input_elem.val().trim();
         }
-        if (input_type === 'integer') {
+        if (input_type === 'number') {
             return parseInt(input_elem.val().trim(), 10);
         }
     }
