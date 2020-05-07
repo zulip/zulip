@@ -935,6 +935,11 @@ exports.initialize = function () {
         });
     }());
 
+    $("#subscriptions_table").on("click", ".exit, #subscription_overlay", function () {
+        const colorpicker = $(" .colorpicker");
+        colorpicker.spectrum('hide');
+    });
+
 };
 
 window.subs = exports;
