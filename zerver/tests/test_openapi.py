@@ -281,6 +281,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
             Examples:
                 1. /messages/{message_id} <-> r'^messages/(?P<message_id>[0-9]+)$'
                 2. /events <-> r'^events$'
+                3. '/realm/domains' <-> r'/realm\\/domains$'
         """
 
         # TODO: Probably we should be able to address the below
@@ -291,14 +292,15 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         if me_pattern in regex_pattern:
             # Remove the exclude-me pattern if present.
             regex_pattern = regex_pattern.replace(me_pattern, "/")
-        if '[^/]*' in regex_pattern:
-            # Handle the presence-email code which has a non-slashes syntax.
-            regex_pattern = regex_pattern.replace('[^/]*', '.*')
+
+        # Handle the presence-email code which has a non-slashes syntax.
+        regex_pattern = regex_pattern.replace('[^/]*', '.*').replace('[^/]+', '.*')
 
         self.assertTrue(regex_pattern.startswith("^"))
         self.assertTrue(regex_pattern.endswith("$"))
         url_pattern = '/' + regex_pattern[1:][:-1]
         url_pattern = re.sub(r"\(\?P<(\w+)>[^/]+\)", r"{\1}", url_pattern)
+        url_pattern = url_pattern.replace('\\', '')
         return url_pattern
 
     def ensure_no_documentation_if_intentionally_undocumented(self, url_pattern: str,
