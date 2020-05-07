@@ -536,6 +536,34 @@ exports.initialize = function () {
         $(".tooltip").remove();
     });
 
+    // Tooltips for left sidebar icons.
+    $("#streams_filter_icon").on("mouseenter", (e) => {
+        e.stopPropagation();
+
+        const elem = $(e.currentTarget);
+        const hotkey = '(q)';
+        const title = i18n.t("Filter streams __hotkey__", {hotkey: hotkey});
+
+        ui.create_generic_tooltip(elem, title, "left");
+    });
+    $("#streams_filter_icon").on("mouseleave", (e) => {
+        e.stopPropagation();
+        $(e.currentTarget).tooltip('hide');
+    });
+
+    $("#streams_inline_cog").on("mouseenter", (e) => {
+        e.stopPropagation();
+
+        const elem = $(e.currentTarget);
+        const title = i18n.t("Subscribe, add, or configure streams");
+
+        ui.create_generic_tooltip(elem, title, "left");
+    });
+    $("#streams_inline_cog").on("mouseleave", (e) => {
+        e.stopPropagation();
+        $(e.currentTarget).tooltip('hide');
+    });
+
     function do_render_buddy_list_tooltip(elem, title_data) {
         elem.tooltip({
             template: render_buddy_list_tooltip(),
