@@ -26,7 +26,6 @@ from zerver.lib.exceptions import JsonableError, ErrorCode, \
     InvalidJSONError, InvalidAPIKeyError, InvalidAPIKeyFormatError, \
     OrganizationAdministratorRequired
 from zerver.lib.types import ViewFuncT
-from zerver.lib.validator import to_non_negative_int
 
 from zerver.lib.rate_limiter import RateLimitedUser
 from zerver.lib.request import REQ, has_request_variables
@@ -715,13 +714,6 @@ def internal_notify_view(is_tornado_view: bool) -> Callable[[ViewFuncT], ViewFun
             return view_func(request, *args, **kwargs)
         return _wrapped_func_arguments
     return _wrapped_view_func
-
-
-def to_not_negative_int_or_none(s: str) -> Optional[int]:
-    if s:
-        return to_non_negative_int(s)
-    return None
-
 
 def to_utc_datetime(timestamp: str) -> datetime.datetime:
     return timestamp_to_datetime(float(timestamp))
