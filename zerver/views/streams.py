@@ -9,7 +9,7 @@ from django.http import HttpRequest, HttpResponse
 from zerver.lib.exceptions import JsonableError, ErrorCode
 from zerver.lib.request import REQ, has_request_variables
 from zerver.decorator import authenticated_json_post_view, \
-    require_realm_admin, to_non_negative_int, require_non_guest_user
+    require_realm_admin, require_non_guest_user
 from zerver.lib.actions import bulk_remove_subscriptions, \
     do_change_subscription_property, internal_prep_private_message, \
     internal_prep_stream_message, \
@@ -28,7 +28,7 @@ from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
 from zerver.lib.topic import get_topic_history_for_stream, messages_for_topic
 from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
     check_bool, check_variable_type, check_capped_string, check_color, check_dict_only, \
-    check_int_in
+    check_int_in, to_non_negative_int
 from zerver.models import UserProfile, Stream, Realm, UserMessage, \
     get_system_bot, get_active_user
 

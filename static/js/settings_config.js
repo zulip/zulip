@@ -166,6 +166,7 @@ const time_limit_dropdown_values = new Map([
 exports.msg_edit_limit_dropdown_values = time_limit_dropdown_values;
 exports.msg_delete_limit_dropdown_values = time_limit_dropdown_values;
 
+exports.retain_message_forever = -1;
 
 // NOTIFICATIONS
 
