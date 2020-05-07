@@ -103,6 +103,7 @@ exports.insert_new_messages = function insert_new_messages(messages, sent_by_thi
 
 exports.update_messages = function update_messages(events) {
     const msgs_to_rerender = [];
+    let edit_history_entry = {};
     let topic_edited = false;
     let changed_narrow = false;
     let changed_compose = false;
@@ -153,6 +154,14 @@ exports.update_messages = function update_messages(events) {
             const stream_name = stream_data.get_sub_by_id(event.stream_id).name;
             const compose_stream_name = compose_state.stream_name();
             const orig_topic = util.get_edit_event_orig_topic(event);
+
+            if (page_params.realm_allow_edit_history) {
+                edit_history_entry  = {
+                    timestamp: event.edit_timestamp,
+                    user_id: event.user_id,
+                    prev_topic: orig_topic,
+                };
+            }
 
             if (going_forward_change && stream_name && compose_stream_name) {
                 if (stream_name.toLowerCase() === compose_stream_name.toLowerCase()) {
@@ -273,28 +282,27 @@ exports.update_messages = function update_messages(events) {
 
         if (event.orig_content !== undefined) {
             if (page_params.realm_allow_edit_history) {
-                // Most correctly, we should do this for topic edits as
-                // well; but we don't use the data except for content
-                // edits anyway.
-                const edit_history_entry = {
+                edit_history_entry = {
                     edited_by: event.edited_by,
                     prev_content: event.orig_content,
                     prev_rendered_content: event.orig_rendered_content,
                     prev_rendered_content_version: event.prev_rendered_content_version,
                     timestamp: event.edit_timestamp,
                 };
-                // Add message's edit_history in message dict
-                // For messages that are edited, edit_history needs to
-                // be added to message in frontend.
-                if (msg.edit_history === undefined) {
-                    msg.edit_history = [];
-                }
-                msg.edit_history = [edit_history_entry].concat(msg.edit_history);
             }
             message_content_edited = true;
 
             // Update raw_content, so that editing a few times in a row is fast.
             msg.raw_content = event.content;
+        }
+
+        // Add message's edit_history to message dict.
+        // For messages that are edited, edit_history needs to be added in frontend.
+        if (page_params.realm_allow_edit_history && (message_content_edited || topic_edited)) {
+            if (msg.edit_history === undefined) {
+                msg.edit_history = [];
+            }
+            msg.edit_history = [edit_history_entry].concat(msg.edit_history);
         }
 
         msg.last_edit_timestamp = event.edit_timestamp;
