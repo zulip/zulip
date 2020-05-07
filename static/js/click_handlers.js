@@ -371,6 +371,19 @@ exports.initialize = function () {
         recent_topics.set_filter(filter);
     });
 
+    // All table rows without header
+    $('body').on('keyup', '#recent_topics_search', _.debounce(function () {
+        const $rows = $('.recents_table tr').slice(1);
+        const val = '^(?=.*\\b' + $.trim($(this).val()).split(/\s+/).join('\\b)(?=.*\\b') + ').*$';
+        const reg = RegExp(val, 'i');
+        let text;
+
+        $rows.show().filter(function () {
+            text = $(this).text().replace(/\s+/g, ' ');
+            return !reg.test(text);
+        }).hide();
+    }, 300));
+
     // RECIPIENT BARS
 
     function get_row_id_for_narrowing(narrow_link_elem) {
