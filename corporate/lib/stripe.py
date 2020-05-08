@@ -37,6 +37,7 @@ log_to_file(logging.getLogger('stripe'), BILLING_LOG_PATH)
 CallableT = TypeVar('CallableT', bound=Callable[..., Any])
 
 MIN_INVOICED_LICENSES = 30
+MAX_INVOICED_LICENSES = 1000
 DEFAULT_INVOICE_DAYS_UNTIL_DUE = 30
 
 def get_latest_seat_count(realm: Realm) -> int:
