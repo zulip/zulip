@@ -654,6 +654,7 @@ SERVER_LOG_PATH = zulip_path("/var/log/zulip/server.log")
 ERROR_FILE_LOG_PATH = zulip_path("/var/log/zulip/errors.log")
 MANAGEMENT_LOG_PATH = zulip_path("/var/log/zulip/manage.log")
 WORKER_LOG_PATH = zulip_path("/var/log/zulip/workers.log")
+SLOW_QUERIES_LOG_PATH = zulip_path("/var/log/zulip/slow_queries.log")
 JSON_PERSISTENT_QUEUE_FILENAME_PATTERN = zulip_path("/home/zulip/tornado/event_queues%s.json")
 EMAIL_LOG_PATH = zulip_path("/var/log/zulip/send_email.log")
 EMAIL_MIRROR_LOG_PATH = zulip_path("/var/log/zulip/email_mirror.log")
@@ -767,6 +768,12 @@ LOGGING: Dict[str, Any] = {
             'class': 'logging.handlers.WatchedFileHandler',
             'formatter': 'default',
             'filename': LDAP_LOG_PATH,
+        },
+        'slow_queries_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.WatchedFileHandler',
+            'formatter': 'default',
+            'filename': SLOW_QUERIES_LOG_PATH,
         },
     },
     'loggers': {
@@ -891,6 +898,10 @@ LOGGING: Dict[str, Any] = {
         'zulip.retention': {
             'handlers': ['file', 'errors_file'],
             'propagate': False,
+        },
+        'zulip.slow_queries': {
+            'level': 'INFO',
+            'handlers': ['slow_queries_file'],
         },
         'zulip.soft_deactivation': {
             'handlers': ['file', 'errors_file'],

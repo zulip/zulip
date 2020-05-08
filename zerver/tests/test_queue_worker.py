@@ -2,7 +2,6 @@ import os
 import time
 import ujson
 import smtplib
-import re
 
 from django.conf import settings
 from django.test import override_settings
@@ -15,11 +14,10 @@ from zerver.lib.queue import MAX_REQUEST_RETRIES
 from zerver.lib.rate_limiter import RateLimiterLockingException
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
 from zerver.lib.send_email import FromAddress
-from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_helpers import simulated_queue_client
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_client, UserActivity, PreregistrationUser, \
-    get_system_bot, get_stream, get_realm
+    get_stream, get_realm
 from zerver.tornado.event_queue import build_offline_notification
 from zerver.worker import queue_processors
 from zerver.worker.queue_processors import (
@@ -28,10 +26,7 @@ from zerver.worker.queue_processors import (
     EmailSendingWorker,
     LoopQueueProcessingWorker,
     MissedMessageWorker,
-    SlowQueryWorker,
 )
-
-from zerver.middleware import write_log_line
 
 Event = Dict[str, Any]
 
@@ -80,44 +75,6 @@ class WorkerTest(ZulipTestCase):
 
         def queue_size(self) -> int:
             return len(self.queue)
-
-    @override_settings(SLOW_QUERY_LOGS_STREAM="errors")
-    def test_slow_queries_worker(self) -> None:
-        error_bot = get_system_bot(settings.ERROR_BOT)
-        fake_client = self.FakeClient()
-        worker = SlowQueryWorker()
-
-        create_stream_if_needed(error_bot.realm, 'errors')
-
-        send_mock = patch(
-            'zerver.worker.queue_processors.internal_send_stream_message'
-        )
-
-        with send_mock as sm, loopworker_sleep_mock as tm:
-            with simulated_queue_client(lambda: fake_client):
-                try:
-                    worker.setup()
-                    # `write_log_line` is where we publish slow queries to the queue.
-                    with patch('zerver.middleware.is_slow_query', return_value=True):
-                        write_log_line(log_data=dict(test='data'), requestor_for_logs='test@zulip.com',
-                                       remote_ip='127.0.0.1', client_name='website', path='/test/',
-                                       method='GET')
-                    worker.start()
-                except AbortLoop:
-                    pass
-
-        self.assertEqual(tm.call_args[0][0], 60)  # should sleep 60 seconds
-
-        sm.assert_called_once()
-        args = [c[0] for c in sm.call_args_list][0]
-        self.assertEqual(args[0], error_bot.realm)
-        self.assertEqual(args[1].email, error_bot.email)
-        self.assertEqual(args[2].name, "errors")
-        self.assertEqual(args[3], "testserver: slow queries")
-        # Testing for specific query times can lead to test discrepancies.
-        logging_info = re.sub(r'\(db: [0-9]+ms/\d+q\)', '', args[4])
-        self.assertEqual(logging_info, '    127.0.0.1       GET     200 -1000ms '
-                                       ' /test/ (test@zulip.com via website) (test@zulip.com)\n')
 
     def test_UserActivityWorker(self) -> None:
         fake_client = self.FakeClient()

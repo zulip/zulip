@@ -22,7 +22,6 @@ normal_queues = [
     'missedmessage_mobile_notifications',
     'outgoing_webhooks',
     'signups',
-    'slow_queries',
     'user_activity',
     'user_activity_interval',
     'user_presence',
@@ -43,24 +42,20 @@ states = {
 MAX_SECONDS_TO_CLEAR_FOR_BURSTS: DefaultDict[str, int] = defaultdict(
     lambda: 120,
     digest_emails=600,
-    slow_queries=600,
 )
 MAX_SECONDS_TO_CLEAR_NORMAL: DefaultDict[str, int] = defaultdict(
     lambda: 30,
     digest_emails=1200,
-    slow_queries=120,
     missedmessage_mobile_notifications=120,
 )
 CRITICAL_SECONDS_TO_CLEAR_FOR_BURSTS: DefaultDict[str, int] = defaultdict(
     lambda: 240,
     digest_emails=1200,
-    slow_queries=1200,
 )
 CRITICAL_SECONDS_TO_CLEAR_NORMAL: DefaultDict[str, int] = defaultdict(
     lambda: 60,
     missedmessage_mobile_notifications=180,
     digest_emails=600,
-    slow_queries=600,
 )
 
 def analyze_queue_stats(queue_name: str, stats: Dict[str, Any],

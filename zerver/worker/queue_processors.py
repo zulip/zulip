@@ -27,7 +27,7 @@ from zerver.lib.push_notifications import handle_push_notification, handle_remov
     initialize_push_notifications, clear_push_device_tokens
 from zerver.lib.actions import do_send_confirmation_email, \
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
-    internal_send_stream_message, internal_send_private_message, notify_realm_export, \
+    internal_send_private_message, notify_realm_export, \
     render_incoming_message, do_update_embedded_data, do_mark_stream_messages_as_read
 from zerver.lib.url_preview import preview as url_preview
 from zerver.lib.digest import handle_digest_email
@@ -39,7 +39,7 @@ from zerver.lib.streams import access_stream_by_id
 from zerver.lib.db import reset_queries
 from zerver.context_processors import common_context
 from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
-from zerver.models import get_bot_services, get_stream, RealmAuditLog
+from zerver.models import get_bot_services, RealmAuditLog
 from zulip_bots.lib import ExternalBotHandler, extract_query_without_mention
 from zerver.lib.bot_lib import EmbeddedBotHandler, get_bot_handler, EmbeddedBotQuitException
 from zerver.lib.exceptions import RateLimited
@@ -493,44 +493,6 @@ class ErrorReporter(QueueProcessingWorker):
         logging.info("Processing traceback with type %s for %s", event['type'], event.get('user_email'))
         if settings.ERROR_REPORTING:
             do_report_error(event['report']['host'], event['type'], event['report'])
-
-@assign_queue('slow_queries', queue_type="loop")
-class SlowQueryWorker(LoopQueueProcessingWorker):
-    # Sleep 1 minute between checking the queue unconditionally,
-    # regardless of whether anything is in the queue.
-    sleep_delay = 60 * 1
-    sleep_only_if_empty = False
-
-    def consume_batch(self, slow_query_events: List[Dict[str, Any]]) -> None:
-        for event in slow_query_events:
-            logging.info("Slow query: %s", event["query"])
-
-        if settings.SLOW_QUERY_LOGS_STREAM is None:
-            return
-
-        if settings.ERROR_BOT is None:
-            return
-
-        if len(slow_query_events) > 0:
-            topic = "%s: slow queries" % (settings.EXTERNAL_HOST,)
-
-            content = ""
-            for event in slow_query_events:
-                content += "    %s\n" % (event["query"],)
-
-            error_bot = get_system_bot(settings.ERROR_BOT)
-            realm = error_bot.realm
-            errors_stream = get_stream(
-                settings.SLOW_QUERY_LOGS_STREAM,
-                realm
-            )
-            internal_send_stream_message(
-                realm,
-                error_bot,
-                errors_stream,
-                topic,
-                content
-            )
 
 @assign_queue('digest_emails')
 class DigestWorker(QueueProcessingWorker):  # nocoverage
