@@ -113,9 +113,7 @@ def report_error(request: HttpRequest, user_profile: UserProfile, message: str=R
         version = None
 
     # Get the IP address of the request
-    remote_ip = request.META.get('HTTP_X_REAL_IP')
-    if remote_ip is None:
-        remote_ip = request.META['REMOTE_ADDR']
+    remote_ip = request.META['REMOTE_ADDR']
 
     # For the privacy of our users, we remove any actual text content
     # in draft_content (from drafts rendering exceptions).  See the

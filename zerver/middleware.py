@@ -276,10 +276,7 @@ class LogRequests(MiddlewareMixin):
             # intends to block, so we stop here to avoid unnecessary work.
             return response
 
-        # The reverse proxy might have sent us the real external IP
-        remote_ip = request.META.get('HTTP_X_REAL_IP')
-        if remote_ip is None:
-            remote_ip = request.META['REMOTE_ADDR']
+        remote_ip = request.META['REMOTE_ADDR']
 
         # Get the requestor's identifier and client, if available.
         try:
