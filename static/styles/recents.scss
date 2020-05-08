@@ -21,6 +21,11 @@
         width: 90%;
     }
 
+    #recent_topics_search {
+        @media (max-width: 1250px) {
+            margin-top: 10px;
+        }
+    }
 
     .recents-list {
         overflow: hidden !important;
