@@ -292,30 +292,43 @@ exports.clean_user_content_links = function (html) {
         // Fragment links, which we intend to only open within the
         // Zulip webapp using our hashchange system, do not require
         // these attributes.
+        const href = elt.getAttribute("href");
         let url;
         try {
-            url = new URL(elt.getAttribute("href"), window.location.href);
+            url = new URL(href, window.location.href);
         } catch {
             elt.removeAttribute("href");
+            elt.removeAttribute("title");
             continue;
         }
 
-        if (
-            // eslint-disable-next-line no-script-url
-            ["data:", "javascript:", "vbscript:"].includes(url.protocol)
-        ) {
+        // eslint-disable-next-line no-script-url
+        if (["data:", "javascript:", "vbscript:"].includes(url.protocol)) {
             // Remove unsafe links completely.
             elt.removeAttribute("href");
-        } else if (
-            // We detect URLs that are just fragments by comparing the URL
-            // against a new URL generated using only the hash.
-            url.hash === "" || url.href !== new URL(url.hash, window.location.href).href
-        ) {
+            elt.removeAttribute("title");
+            continue;
+        }
+
+        // We detect URLs that are just fragments by comparing the URL
+        // against a new URL generated using only the hash.
+        if (url.hash === "" || url.href !== new URL(url.hash, window.location.href).href) {
             elt.setAttribute("target", "_blank");
             elt.setAttribute("rel", "noopener noreferrer");
         } else {
             elt.removeAttribute("target");
         }
+
+        // Ensure that the title displays the real URL.
+        let title;
+        let legacy_title;
+        if (url.origin === window.location.origin && url.pathname.startsWith("/user_uploads/")) {
+            title = legacy_title = url.pathname.slice(url.pathname.lastIndexOf("/") + 1);
+        } else {
+            title = url;
+            legacy_title = href;
+        }
+        elt.setAttribute("title", ["", legacy_title].includes(elt.title) ? title : `${title}\n${elt.title}`);
     }
     return content.innerHTML;
 };
