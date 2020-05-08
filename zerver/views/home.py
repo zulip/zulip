@@ -112,6 +112,19 @@ def sent_time_in_epoch_seconds(user_message: Optional[UserMessage]) -> Optional[
     # Return the epoch seconds in UTC.
     return calendar.timegm(user_message.message.date_sent.utctimetuple())
 
+def get_furthest_read_time(user_profile: Optional[UserProfile]) -> Optional[float]:
+    if user_profile is None:  # nocoverage
+        furthest_read_time: Optional[float] = time.time()
+    elif user_profile.pointer == -1:
+        furthest_read_time = None
+    else:
+        latest_read = get_usermessage_by_message_id(user_profile, user_profile.pointer)
+        if latest_read is None:
+            # Don't completely fail if your saved pointer ID is invalid
+            logging.warning("User %s has invalid pointer %s", user_profile.id, user_profile.pointer)
+        furthest_read_time = sent_time_in_epoch_seconds(latest_read)
+    return furthest_read_time
+
 def get_bot_types(user_profile: Optional[UserProfile]) -> List[Dict[str, object]]:
     bot_types: List[Dict[str, object]] = []
     if user_profile is None:  # nocoverage
@@ -209,25 +222,17 @@ def home_real(request: HttpRequest) -> HttpResponse:
         # The current tutorial doesn't super make sense for logged-out users.
         needs_tutorial = False
 
-    if user_profile is None:  # nocoverage
-        furthest_read_time: Optional[float] = time.time()
-    elif user_profile.pointer == -1:
-        if user_has_messages:
-            # Put the new user's pointer at the bottom
-            #
-            # This improves performance, because we limit backfilling of messages
-            # before the pointer.  It's also likely that someone joining an
-            # organization is interested in recent messages more than the very
-            # first messages on the system.
+    if user_has_messages and user_profile.pointer == -1:
+        # Put the new user's pointer at the bottom
+        #
+        # This improves performance, because we limit backfilling of messages
+        # before the pointer.  It's also likely that someone joining an
+        # organization is interested in recent messages more than the very
+        # first messages on the system.
 
-            register_ret['pointer'] = register_ret['max_message_id']
-        furthest_read_time = None
-    else:
-        latest_read = get_usermessage_by_message_id(user_profile, user_profile.pointer)
-        if latest_read is None:
-            # Don't completely fail if your saved pointer ID is invalid
-            logging.warning("User %s has invalid pointer %s", user_profile.id, user_profile.pointer)
-        furthest_read_time = sent_time_in_epoch_seconds(latest_read)
+        register_ret['pointer'] = register_ret['max_message_id']
+
+    furthest_read_time = get_furthest_read_time(user_profile)
 
     # We pick a language for the user as follows:
     # * First priority is the language in the URL, for debugging.
