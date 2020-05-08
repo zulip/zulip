@@ -21,7 +21,6 @@ from zerver.lib.debug import maybe_tracemalloc_listen
 from zerver.lib.db import reset_queries
 from zerver.lib.exceptions import ErrorCode, JsonableError, RateLimited
 from zerver.lib.html_to_text import get_content_description
-from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import RateLimitResult
 from zerver.lib.response import json_error, json_response_from_error
 from zerver.lib.subdomains import get_subdomain
@@ -30,6 +29,7 @@ from zerver.lib.types import ViewFuncT
 from zerver.models import Realm, flush_per_request_caches, get_realm
 
 logger = logging.getLogger('zulip.requests')
+slow_query_logger = logging.getLogger('zulip.slow_queries')
 
 def record_request_stop_data(log_data: MutableMapping[str, Any]) -> None:
     log_data['time_stopped'] = time.time()
@@ -210,8 +210,7 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
         logger.info(logger_line)
 
     if (is_slow_query(time_delta, path)):
-        queue_json_publish("slow_queries", dict(
-            query="%s (%s)" % (logger_line, requestor_for_logs)))
+        slow_query_logger.info(logger_line)
 
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"].disable()

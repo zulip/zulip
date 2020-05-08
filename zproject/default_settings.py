@@ -86,7 +86,6 @@ ERROR_REPORTING = True
 BROWSER_ERROR_REPORTING = False
 LOGGING_SHOW_MODULE = False
 LOGGING_SHOW_PID = False
-SLOW_QUERY_LOGS_STREAM: Optional[str] = None
 
 # File uploads and avatars
 DEFAULT_AVATAR_URI = '/static/images/default-avatar.png'
