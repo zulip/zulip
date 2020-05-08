@@ -36,6 +36,7 @@
 
     **Changes**.  New in Zulip 2.2.  We recommend using an implied value
     of 0 for Zulip servers that do not send this field.
+
 * `push_notifications_enabled`: whether mobile/push notifications are enabled.
 * `is_incompatible`: whether the Zulip client that has sent a request to
   this endpoint is deemed incompatible with the server.
