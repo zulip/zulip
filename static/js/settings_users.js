@@ -232,6 +232,44 @@ function bot_info(bot_user) {
     return info;
 }
 
+function get_last_active(user) {
+    const last_active_date = presence.last_active_date(user.user_id);
+
+    if (!last_active_date) {
+        return i18n.t("Unknown");
+    }
+    return timerender.render_now(last_active_date).time_str;
+}
+
+function human_info(person) {
+    const info = {};
+    const user = {};
+
+    user.is_bot = false;
+    user.is_admin = person.is_admin;
+    user.is_guest = person.is_guest;
+    user.is_active = person.is_active;
+    user.user_id = person.user_id;
+    user.full_name = person.full_name;
+    user.bot_owner_id = person.bot_owner_id;
+
+    info.can_modify = page_params.is_admin;
+    info.is_current_user = people.is_my_user_id(person.user_id);
+    info.display_email = settings_data.email_for_user_settings(person);
+
+    if (person.is_active) {
+        // TODO: We might just want to show this
+        // for deactivated users, too, even though
+        // it might usually just be undefined.
+        info.last_active_date = get_last_active(person);
+    }
+
+    // TODO: We want to flatten this.
+    info.user = user;
+
+    return info;
+}
+
 section.bots.create_table = (bots) => {
     const $bots_table = $("#admin_bots_table");
     list_render.create($bots_table, bots, {
@@ -261,26 +299,12 @@ section.bots.create_table = (bots) => {
 };
 
 section.active.create_table = (active_users) => {
-    function get_last_active(user) {
-        const last_active_date = presence.last_active_date(user.user_id);
-
-        if (!last_active_date) {
-            return i18n.t("Unknown");
-        }
-        return timerender.render_now(last_active_date).time_str;
-    }
-
     const $users_table = $("#admin_users_table");
     list_render.create($users_table, active_users, {
         name: "users_table_list",
         modifier: function (item) {
-            return render_admin_user_list({
-                can_modify: page_params.is_admin,
-                is_current_user: people.is_my_user_id(item.user_id),
-                display_email: settings_data.email_for_user_settings(item),
-                user: item,
-                last_active_date: get_last_active(item),
-            });
+            const info = human_info(item);
+            return render_admin_user_list(info);
         },
         filter: {
             element: $users_table.closest(".settings-section").find(".search"),
@@ -305,11 +329,8 @@ section.deactivated.create_table = (deactivated_users) => {
     list_render.create($deactivated_users_table, deactivated_users, {
         name: "deactivated_users_table_list",
         modifier: function (item) {
-            return render_admin_user_list({
-                user: item,
-                display_email: settings_data.email_for_user_settings(item),
-                can_modify: page_params.is_admin,
-            });
+            const info = human_info(item);
+            return render_admin_user_list(info);
         },
         filter: {
             element: $deactivated_users_table.closest(".settings-section").find(".search"),
