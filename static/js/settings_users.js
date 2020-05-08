@@ -198,26 +198,25 @@ function reset_scrollbar($sel) {
 
 function bot_info(bot_user) {
     const info = {};
-    const user = {};
 
-    user.is_bot = true;
-    user.is_admin = false;
-    user.is_guest = false;
-    user.is_active = bot_user.is_active;
-    user.user_id = bot_user.user_id;
-    user.full_name = bot_user.full_name;
-    user.bot_owner_id = bot_user.bot_owner_id;
+    info.is_bot = true;
+    info.is_admin = false;
+    info.is_guest = false;
+    info.is_active = bot_user.is_active;
+    info.user_id = bot_user.user_id;
+    info.full_name = bot_user.full_name;
+    info.bot_owner_id = bot_user.bot_owner_id;
 
     // Convert bot type id to string for viewing to the users.
-    user.bot_type = settings_bots.type_id_to_string(bot_user.bot_type);
+    info.bot_type = settings_bots.type_id_to_string(bot_user.bot_type);
 
     const bot_owner = people.get_bot_owner_user(bot_user);
 
     if (bot_owner) {
-        user.bot_owner_full_name = bot_owner.full_name;
+        info.bot_owner_full_name = bot_owner.full_name;
     } else {
-        user.no_owner = true;
-        user.bot_owner_full_name = i18n.t("No owner");
+        info.no_owner = true;
+        info.bot_owner_full_name = i18n.t("No owner");
     }
 
     info.is_current_user = false;
@@ -225,9 +224,6 @@ function bot_info(bot_user) {
 
     // It's always safe to show the fake email addresses for bot users
     info.display_email = bot_user.email;
-
-    // TODO: We want to flatten this.
-    info.user = user;
 
     return info;
 }
@@ -243,15 +239,14 @@ function get_last_active(user) {
 
 function human_info(person) {
     const info = {};
-    const user = {};
 
-    user.is_bot = false;
-    user.is_admin = person.is_admin;
-    user.is_guest = person.is_guest;
-    user.is_active = person.is_active;
-    user.user_id = person.user_id;
-    user.full_name = person.full_name;
-    user.bot_owner_id = person.bot_owner_id;
+    info.is_bot = false;
+    info.is_admin = person.is_admin;
+    info.is_guest = person.is_guest;
+    info.is_active = person.is_active;
+    info.user_id = person.user_id;
+    info.full_name = person.full_name;
+    info.bot_owner_id = person.bot_owner_id;
 
     info.can_modify = page_params.is_admin;
     info.is_current_user = people.is_my_user_id(person.user_id);
@@ -263,9 +258,6 @@ function human_info(person) {
         // it might usually just be undefined.
         info.last_active_date = get_last_active(person);
     }
-
-    // TODO: We want to flatten this.
-    info.user = user;
 
     return info;
 }
