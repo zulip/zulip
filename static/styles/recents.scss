@@ -21,6 +21,19 @@
         width: 90%;
     }
 
+
+    .recents-list {
+        overflow: hidden !important;
+    }
+
+    .tableFixHead {
+        padding: 10px;
+        padding-top: 0px !important;
+        overflow-y: auto;
+        max-height: 100%;
+    }
+    .tableFixHead thead th { position: sticky; top: 0; z-index: 1000;}
+
     .recents-header {
         padding-top: 4px;
         padding-bottom: 8px;

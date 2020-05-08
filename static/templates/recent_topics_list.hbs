@@ -1,15 +1,12 @@
-
-<div class="modal-body" data-simplebar data-simplebar-auto-hide="true">
-    <div id="recent_topics_filter_buttons" class="btn-group" role="group" aria-label="Recent Topics">
-        <button data-filter="all" type="button" class="btn btn-default btn-recent-filters">All</button>
-        <button data-filter="unread" type="button" class="btn btn-default btn-recent-filters">Unread</button>
-        <button data-filter="bookmarked" type="button" class="btn btn-default btn-recent-filters">Bookmarked</button>
-        <button data-filter="participated" type="button" class="btn btn-default btn-recent-filters">Participated</button>
-        <input type="text" id="recent_topics_search" placeholder="Search Stream / Topics names" aria-label="search-topics">
-    </div>
-    <div class="table-responsive">
+<div id="recent_topics_filter_buttons" class="btn-group" role="group" aria-label="Recent Topics">
+    <button data-filter="all" type="button" class="btn btn-default btn-recent-filters">All</button>
+    <button data-filter="unread" type="button" class="btn btn-default btn-recent-filters">Unread</button>
+    <button data-filter="bookmarked" type="button" class="btn btn-default btn-recent-filters">Bookmarked</button>
+    <button data-filter="participated" type="button" class="btn btn-default btn-recent-filters">Participated</button>
+    <input type="text" id="recent_topics_search" placeholder="Search Stream / Topics names" aria-label="search-topics">
+</div>
+    <div class="tableFixHead">
         <table class="recents_table table table-striped table-bordered table-responsive table-hover">
-            {{!-- DO WE NEED HEADERS? (THEY DON'T LOOK BAD :) --}}
             <thead class="thead-dark">
                 <tr>
                     <th>Unread</th>
@@ -26,4 +23,3 @@
             {{/each}}
         </table>
     </div>
-</div>
