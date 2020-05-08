@@ -103,6 +103,17 @@ class TestCustomEmails(ZulipTestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn(admin_user.delivery_email, mail.outbox[0].to[0])
 
+    def test_send_custom_email_markdown_realm(self) -> None:
+        hamlet = self.example_user('hamlet')
+        markdown_template_path = "zerver/tests/fixtures/email/custom_emails/email_base_markdown_realm.source.html"
+        send_custom_email([hamlet], {
+            "markdown_template_path": markdown_template_path,
+        })
+        msg = mail.outbox[0]
+        html_msg = msg.alternatives[0][0]
+        self.assertIn('<a href="%s"' % hamlet.realm.uri, html_msg)
+        self.assertIn('%s</a>' % hamlet.realm.name, html_msg)
+        self.assertEqual('[%s](%s)' % (hamlet.realm.name, hamlet.realm.uri), msg.body)
 
 class TestFollowupEmails(ZulipTestCase):
     def test_day1_email_context(self) -> None:
