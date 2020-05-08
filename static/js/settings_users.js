@@ -412,26 +412,16 @@ function open_bot_form(person) {
     return div;
 }
 
-function handle_deactivation() {
+function confirm_deactivation(row, user_id) {
     const modal_elem = $("#deactivation_user_modal").expectOne();
 
-    $(".admin_user_table").on("click", ".deactivate", function (e) {
-        // This click event must not get propagated to parent container otherwise the modal
-        // will not show up because of a call to `close_active_modal` in `settings.js`.
-        e.preventDefault();
-        e.stopPropagation();
-
-        const row = $(e.target).closest(".user_row");
-        const user_id = row.data('user-id');
+    function set_fields() {
         const user = people.get_by_user_id(user_id);
         modal_elem.find(".email").text(user.email);
         modal_elem.find(".user_name").text(user.full_name);
-        modal_elem.modal("show");
-        modal_elem.data('user-id', user_id);
-    });
+    }
 
-    modal_elem.find('.do_deactivate_button').click(function () {
-        const user_id = modal_elem.data('user-id');
+    function handle_confirm() {
         const row = get_user_info_row(user_id);
 
         modal_elem.modal("hide");
@@ -449,6 +439,25 @@ function handle_deactivation() {
         const url = '/json/users/' + encodeURIComponent(user_id);
         settings_ui.do_settings_change(channel.del, url, {}, status, opts);
 
+    }
+
+    modal_elem.modal("hide");
+    modal_elem.off('click', '.do_deactivate_button');
+    set_fields();
+    modal_elem.on('click', '.do_deactivate_button', handle_confirm);
+    modal_elem.modal("show");
+}
+
+function handle_deactivation() {
+    $(".admin_user_table").on("click", ".deactivate", function (e) {
+        // This click event must not get propagated to parent container otherwise the modal
+        // will not show up because of a call to `close_active_modal` in `settings.js`.
+        e.preventDefault();
+        e.stopPropagation();
+
+        const row = $(e.target).closest(".user_row");
+        const user_id = row.data('user-id');
+        confirm_deactivation(row, user_id);
     });
 }
 
