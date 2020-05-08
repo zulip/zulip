@@ -2,6 +2,10 @@ label {
     margin: 0;
 }
 
+label .fa-question-circle-o {
+    left: 2px;
+}
+
 label,
 h4,
 h3 {
@@ -18,10 +22,6 @@ h3 {
             opacity: 1;
         }
     }
-}
-
-label .fa-question-circle-o {
-    left: 2px;
 }
 
 h3 .fa-question-circle-o {
