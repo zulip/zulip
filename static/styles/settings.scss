@@ -188,6 +188,10 @@ h3 .fa-question-circle-o {
     width: 20%;
 }
 
+#settings_content .admin-table-wrapper table.admin_profile_fields_table tr td {
+    width: 28%;
+}
+
 #uploaded_files_table > tr > td:nth-of-type(1),
 .upload-file-name {
     width: 30%;
@@ -799,10 +803,6 @@ input[type=checkbox].inline-block {
 
 .grey-box .wrapper {
     margin: 10px 0px;
-}
-
-#settings_content .admin-table-wrapper table.admin_profile_fields_table tr td {
-    width: 28%;
 }
 
 .admin_profile_fields_table,
