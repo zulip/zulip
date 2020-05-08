@@ -1,3 +1,4 @@
+import * as google_analytics from './google-analytics.js';
 import SimpleBar from 'simplebar';
 import {activate_correct_tab} from './tabbed-instructions.js';
 
@@ -93,6 +94,7 @@ const update_page = function (html_map, path) {
             scrollToHash(markdownSB);
         });
     }
+    google_analytics.config({page_path: path});
 };
 
 new SimpleBar($(".sidebar")[0]);

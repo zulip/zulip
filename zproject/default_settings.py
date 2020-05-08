@@ -370,3 +370,6 @@ FREE_TRIAL_MONTHS = None
 # users, and you would like to save some disk space. Soft-deactivated
 # returning users would still be caught-up normally.
 AUTO_CATCH_UP_SOFT_DEACTIVATED_USERS = True
+
+# Enables Google Analytics on selected portico pages.
+GOOGLE_ANALYTICS_ID: Optional[str] = None

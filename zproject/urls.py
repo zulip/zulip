@@ -35,7 +35,6 @@ import zerver.views.streams
 import zerver.views.realm
 import zerver.views.digest
 import zerver.views.messages
-from zerver.context_processors import latest_info_context
 import zerver.views.realm_export
 import zerver.views.upload
 
@@ -548,23 +547,24 @@ i18n_urls = [
     url(r'^integrations/(.*)$', IntegrationView.as_view()),
 
     # Landing page, features pages, signup form, etc.
-    url(r'^hello/$', TemplateView.as_view(template_name='zerver/hello.html',
-                                          get_context_data=latest_info_context),
-        name='landing-page'),
+    url(r'^hello/$', zerver.views.portico.hello_view, name='landing-page'),
     url(r'^new-user/$', RedirectView.as_view(url='/hello', permanent=True)),
-    url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
+    url(r'^features/$', zerver.views.portico.landing_view, {'template_name': 'zerver/features.html'}),
     url(r'^plans/$', zerver.views.portico.plans_view, name='plans'),
     url(r'^apps/(.*)$', zerver.views.portico.apps_view, name='zerver.views.home.apps_view'),
     url(r'^team/$', zerver.views.portico.team_view),
-    url(r'^history/$', TemplateView.as_view(template_name='zerver/history.html')),
-    url(r'^why-zulip/$', TemplateView.as_view(template_name='zerver/why-zulip.html')),
-    url(r'^for/open-source/$', TemplateView.as_view(template_name='zerver/for-open-source.html')),
-    url(r'^for/companies/$', TemplateView.as_view(template_name='zerver/for-companies.html')),
-    url(r'^for/working-groups-and-communities/$',
-        TemplateView.as_view(template_name='zerver/for-working-groups-and-communities.html')),
-    url(r'^for/mystery-hunt/$', TemplateView.as_view(template_name='zerver/for-mystery-hunt.html')),
-    url(r'^security/$', TemplateView.as_view(template_name='zerver/security.html')),
-    url(r'^atlassian/$', TemplateView.as_view(template_name='zerver/atlassian.html')),
+    url(r'^history/$', zerver.views.portico.landing_view, {'template_name': 'zerver/history.html'}),
+    url(r'^why-zulip/$', zerver.views.portico.landing_view, {'template_name': 'zerver/why-zulip.html'}),
+    url(r'^for/open-source/$', zerver.views.portico.landing_view,
+        {'template_name': 'zerver/for-open-source.html'}),
+    url(r'^for/companies/$', zerver.views.portico.landing_view,
+        {'template_name': 'zerver/for-companies.html'}),
+    url(r'^for/working-groups-and-communities/$', zerver.views.portico.landing_view,
+        {'template_name': 'zerver/for-working-groups-and-communities.html'}),
+    url(r'^for/mystery-hunt/$', zerver.views.portico.landing_view,
+        {'template_name': 'zerver/for-mystery-hunt.html'}),
+    url(r'^security/$', zerver.views.portico.landing_view, {'template_name': 'zerver/security.html'}),
+    url(r'^atlassian/$', zerver.views.portico.landing_view, {'template_name': 'zerver/atlassian.html'}),
 
     # Terms of Service and privacy pages.
     url(r'^terms/$', zerver.views.portico.terms_view, name='terms'),
