@@ -140,17 +140,6 @@ aliases:
         ! sudo scripts/lib/upgrade-zulip-stage-2 2> >(tee upgrade.err >&2)
         grep -Fq 'upgrade-zulip-stage-2: Unsupported platform: ubuntu 16.04' upgrade.err
 
-  - &check_xenial_puppet
-    run:
-      name: check scripts/zulip-puppet-apply on xenial
-      command: |
-        sudo apt-get update
-        sudo apt-get -qy install lsb-release
-        sudo mkdir /etc/zulip
-        printf '[machine]\npuppet_classes = zulip::base, zulip::postgres_appdb_tuned\n' | sudo tee /etc/zulip/zulip.conf
-        sudo scripts/zulip-puppet-apply -f
-        sudo python3 -m py_compile /usr/local/bin/pg_backup_and_purge /usr/local/bin/process_fts_updates
-
 jobs:
   "bionic-backend-frontend-python3.6":
     docker:
@@ -229,7 +218,6 @@ jobs:
 
       - *check_xenial_provision_error
       - *check_xenial_upgrade_error
-      - *check_xenial_puppet
 
   "bionic-production-build-python3.6":
     docker:
