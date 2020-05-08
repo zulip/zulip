@@ -115,7 +115,6 @@ class HomeTest(ZulipTestCase):
             "notification_sound",
             "password_min_guesses",
             "password_min_length",
-            "plan_includes_wide_organization_logo",
             "pm_content_in_desktop_notifications",
             "pointer",
             "poll_timeout",
@@ -226,6 +225,7 @@ class HomeTest(ZulipTestCase):
             "webpack_public_path",
             "wildcard_mentions_notify",
             "zulip_feature_level",
+            "zulip_plan_is_not_limited",
             "zulip_version",
         ]
 
