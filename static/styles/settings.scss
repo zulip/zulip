@@ -97,12 +97,6 @@ h3 .fa-question-circle-o {
     }
 }
 
-.user-avatar-section,
-.realm-logo-section,
-.realm-icon-section {
-    position: relative;
-}
-
 .realm-logo-block {
     margin-bottom: 10px;
 }
@@ -123,6 +117,12 @@ h3 .fa-question-circle-o {
 .realm-icon-section {
     float: none;
     display: inline-block;
+}
+
+.user-avatar-section,
+.realm-logo-section,
+.realm-icon-section {
+    position: relative;
 }
 
 .user-avatar-section,
