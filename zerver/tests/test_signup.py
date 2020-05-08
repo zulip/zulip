@@ -1216,7 +1216,7 @@ earl-test@zulip.com""", ["Denmark"]))
         # that third-party products will linkify using the full_name
         # field, because we've included that field inside the mailto:
         # link for the sender.
-        self.assertIn('<a href="mailto:hamlet@zulip.com" style="color:#46aa8f; text-decoration:underline">&lt;/a&gt; https://www.google.com (hamlet@zulip.com</a>) wants', body)
+        self.assertIn('<a href="mailto:hamlet@zulip.com" style="color:#46aa8f; text-decoration:underline">&lt;/a&gt; https://www.google.com (hamlet@zulip.com)</a> wants', body)
 
         # TODO: Ideally, this test would also test the Invitation
         # Reminder email generated, but the test setup for that is
