@@ -363,9 +363,11 @@ td .button {
     }
 }
 
-#admin-user-list .table tr:first-of-type td,
-#admin-bot-list .table tr:first-of-type td {
-    border-top: none;
+#admin-user-list,
+#admin-bot-list {
+    .table tr:first-of-type td {
+        border-top: none;
+    }
 }
 
 .dynamic-input {
