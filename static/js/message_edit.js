@@ -254,7 +254,7 @@ function edit_message(row, raw_content) {
     const editability = get_editability(message, seconds_left_buffer);
     const is_editable = editability === exports.editability_types.TOPIC_ONLY ||
                        editability === exports.editability_types.FULL;
-    const max_file_upload_size = page_params.max_file_upload_size;
+    const max_file_upload_size = page_params.max_file_upload_size_mib;
     let file_upload_enabled = false;
 
     if (max_file_upload_size > 0) {

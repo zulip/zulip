@@ -74,7 +74,7 @@ exports.build_user_avatar_widget = function (upload_function) {
             $("#user_avatar_file_input_error").expectOne(),
             $("#user-settings-avatar").expectOne(),
             upload_function,
-            page_params.max_avatar_file_size
+            page_params.max_avatar_file_size_mib
         );
     }
 };
