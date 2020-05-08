@@ -170,6 +170,17 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['plan_includes_wide_organization_logo'] = realm.plan_type != Realm.LIMITED
         state['upgrade_text_for_wide_organization_logo'] = str(Realm.UPGRADE_TEXT_STANDARD)
         state['realm_default_external_accounts'] = DEFAULT_EXTERNAL_ACCOUNTS
+        state['jitsi_server_url']                = settings.JITSI_SERVER_URL
+        state['development_environment']         = settings.DEVELOPMENT
+        state['server_generation']               = settings.SERVER_GENERATION
+        state['password_min_length']             = settings.PASSWORD_MIN_LENGTH
+        state['password_min_guesses']            = settings.PASSWORD_MIN_GUESSES
+        state['max_file_upload_size_mib']        = settings.MAX_FILE_UPLOAD_SIZE
+        state['max_avatar_file_size_mib']        = settings.MAX_AVATAR_FILE_SIZE
+        state['server_inline_image_preview']     = settings.INLINE_IMAGE_PREVIEW
+        state['server_inline_url_embed_preview'] = settings.INLINE_URL_EMBED_PREVIEW
+        state['server_avatar_changes_disabled']  = settings.AVATAR_CHANGES_DISABLED
+        state['server_name_changes_disabled']    = settings.NAME_CHANGES_DISABLED
 
         if realm.notifications_stream and not realm.notifications_stream.deactivated:
             notifications_stream = realm.notifications_stream

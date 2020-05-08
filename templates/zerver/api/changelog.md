@@ -10,6 +10,16 @@ below features are supported.
 
 ## Changes in Zulip 2.2
 
+**Feature level 4**
+
+* `jitsi_server_url`, `development_environment`, `server_generation`,
+  `password_min_length`, `password_min_guesses`, `max_file_upload_size_mib`,
+  `max_avatar_file_size_mib`, `server_inline_image_preview`,
+  `server_inline_url_embed_preview`, `server_avatar_changes_disabled` and
+  `server_name_changes_disabled` fields are now available via
+  `POST /register` to make them accessible to all the clients;
+  they were only internally available to Zulip's web app prior to this.
+
 **Feature level 3**:
 
 * `zulip_version` and `zulip_feature_level` are always returned
