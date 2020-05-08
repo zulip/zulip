@@ -47,6 +47,7 @@ from zerver.lib.send_email import send_future_email, FromAddress, \
 from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import (
     do_get_user_invites,
+    do_change_full_name,
     do_deactivate_realm,
     do_deactivate_user,
     do_set_realm_property,
@@ -1191,6 +1192,35 @@ earl-test@zulip.com""", ["Denmark"]))
             PreregistrationUser.objects.filter(email__iexact=hamlet_email).exists()
         )
         self.check_sent_emails([])
+
+    def normalize_string(self, s: str) -> str:
+        s = s.strip()
+        return re.sub(r'\s+', ' ', s)
+
+    def test_invite_links_in_name(self) -> None:
+        """
+        If you invite an address already using Zulip, no invitation is sent.
+        """
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        # Test we properly handle links in user full names
+        do_change_full_name(hamlet, "</a> https://www.google.com", hamlet)
+
+        result = self.invite('newuser@zulip.com', ["Denmark"])
+        self.assert_json_success(result)
+        self.check_sent_emails(['newuser@zulip.com'])
+        from django.core.mail import outbox
+        body = self.normalize_string(outbox[0].alternatives[0][0])
+
+        # Verify that one can't get Zulip to send invitation emails
+        # that third-party products will linkify using the full_name
+        # field, because we've included that field inside the mailto:
+        # link for the sender.
+        self.assertIn('<a href="mailto:hamlet@zulip.com" style="color:#46aa8f; text-decoration:underline">&lt;/a&gt; https://www.google.com (hamlet@zulip.com</a>) wants', body)
+
+        # TODO: Ideally, this test would also test the Invitation
+        # Reminder email generated, but the test setup for that is
+        # annoying.
 
     def test_invite_some_existing_some_new(self) -> None:
         """
