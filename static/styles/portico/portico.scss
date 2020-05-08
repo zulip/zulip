@@ -1742,6 +1742,15 @@ input.new-organization-button {
 
 .desktop-redirect-box {
     text-align: center;
+
+    .copy-token-info {
+        font-weight: normal;
+    }
+
+    #desktop-data {
+        padding: 13px 12px 12px 12px;
+        font-family: monospace;
+    }
 }
 
 .desktop-redirect-links {
