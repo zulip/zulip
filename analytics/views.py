@@ -1024,7 +1024,7 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
 @require_server_admin
 @has_request_variables
 def get_activity(request: HttpRequest) -> HttpResponse:
-    duration_content, realm_minutes = user_activity_intervals()  # type: Tuple[mark_safe, Dict[str, float]]
+    duration_content, realm_minutes = user_activity_intervals()
     counts_content: str = realm_summary_table(realm_minutes)
     data = [
         ('Counts', counts_content),

@@ -68,7 +68,7 @@ class JsonableError(Exception):
              data_fields = ['widget_name']
 
              def __init__(self, widget_name: str) -> None:
-                 self.widget_name = widget_name  # type: str
+                 self.widget_name: str = widget_name
 
              @staticmethod
              def msg_format() -> str:

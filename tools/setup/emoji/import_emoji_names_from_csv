@@ -30,9 +30,9 @@ INACTIVE_ENTRY = (
 
 FILE_TEMPLATE = (
     "from typing import Any, Dict\n\n"
-    "EMOJI_NAME_MAPS = {"
+    "EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {"
     "%(emoji_entries)s\n"
-    "}   # type: Dict[str, Dict[str, Any]]\n"
+    "}\n"
 )
 
 emoji_names: Set[str] = set()

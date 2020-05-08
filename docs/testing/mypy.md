@@ -3,12 +3,12 @@
 [mypy](http://mypy-lang.org/) is a compile-time static type checker
 for Python, allowing optional, gradual typing of Python code.  Zulip
 was fully annotated with mypy's Python 2 syntax in 2016, before our
-migration to Python 3 in late 2017.  In 2018, we migrated essentially
-the entire codebase to the nice PEP-484 (Python 3 only) syntax for
-static types:
+migration to Python 3 in late 2017.  In 2018 and 2020, we migrated
+essentially the entire codebase to the nice PEP 484 (Python 3 only)
+and PEP 526 (Python 3.6) syntax for static types:
 
 ```
-user_dict = {} # type: Dict[str, UserProfile]
+user_dict: Dict[str, UserProfile] = {}
 
 def get_user(email: str, realm: Realm) -> UserProfile:
     ... # Actual code of the function here
