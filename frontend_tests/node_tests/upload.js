@@ -176,7 +176,7 @@ run_test('upload_files', () => {
     upload.upload_files(uppy, config, []);
     assert.equal($("#compose-send-button").attr("disabled"), false);
 
-    page_params.max_file_upload_size = 0;
+    page_params.max_file_upload_size_mib = 0;
     let show_error_message_called = false;
     upload.show_error_message = (config, message) => {
         show_error_message_called = true;
@@ -186,7 +186,7 @@ run_test('upload_files', () => {
     upload.upload_files(uppy, config, files);
     assert(show_error_message_called);
 
-    page_params.max_file_upload_size = 25;
+    page_params.max_file_upload_size_mib = 25;
     let on_click_close_button_callback;
     $(".compose-send-status-close").one = (event, callback) => {
         assert.equal(event, "click");

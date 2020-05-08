@@ -922,7 +922,7 @@ run_test('initialize', () => {
     global.document = 'document-stub';
     global.csrf_token = 'fake-csrf-token';
 
-    page_params.max_file_upload_size = 512;
+    page_params.max_file_upload_size_mib = 512;
 
     let setup_upload_called = false;
     let uppy_cancel_all_called = false;

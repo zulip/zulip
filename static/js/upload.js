@@ -97,7 +97,7 @@ exports.upload_files = function (uppy, config, files) {
     if (files.length === 0) {
         return;
     }
-    if (page_params.max_file_upload_size === 0) {
+    if (page_params.max_file_upload_size_mib === 0) {
         exports.show_error_message(config, i18n.t('File and image uploads have been disabled for this organization.'));
         return;
     }
@@ -138,7 +138,7 @@ exports.setup_upload = function (config) {
         debug: false,
         autoProceed: true,
         restrictions: {
-            maxFileSize: page_params.max_file_upload_size * 1024 * 1024,
+            maxFileSize: page_params.max_file_upload_size_mib * 1024 * 1024,
         },
         locale: {
             strings: {
