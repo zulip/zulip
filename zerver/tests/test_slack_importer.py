@@ -677,7 +677,8 @@ class SlackImporter(ZulipTestCase):
         realm: Dict[str, Any] = {'zerver_subscription': []}
         user_list: List[Dict[str, Any]] = []
         reactions = [{"name": "grinning", "users": ["U061A5N1G"], "count": 1}]
-        attachments = uploads = []  # type: List[Dict[str, Any]]
+        attachments: List[Dict[str, Any]] = []
+        uploads: List[Dict[str, Any]] = []
 
         zerver_usermessage = [{'id': 3}, {'id': 5}, {'id': 6}, {'id': 9}]
 

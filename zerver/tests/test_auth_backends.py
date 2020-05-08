@@ -2229,11 +2229,13 @@ class GoogleAuthBackendTest(SocialAuthBase):
 
     def test_redirect_to_next_url_for_log_into_subdomain(self) -> None:
         def test_redirect_to_next_url(next: str='') -> HttpResponse:
-            data = {'full_name': 'Hamlet',
-                    'email': self.example_email("hamlet"),
-                    'subdomain': 'zulip',
-                    'is_signup': False,
-                    'redirect_to': next}  # type: ExternalAuthDataDict
+            data: ExternalAuthDataDict = {
+                'full_name': 'Hamlet',
+                'email': self.example_email("hamlet"),
+                'subdomain': 'zulip',
+                'is_signup': False,
+                'redirect_to': next,
+            }
             user_profile = self.example_user('hamlet')
             with mock.patch(
                     'zerver.views.auth.authenticate',
@@ -2254,22 +2256,26 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assertEqual(res.url, 'http://zulip.testserver/#narrow/stream/7-test-here')
 
     def test_log_into_subdomain_when_token_is_malformed(self) -> None:
-        data = {'full_name': 'Full Name',
-                'email': self.example_email("hamlet"),
-                'subdomain': 'zulip',
-                'is_signup': False,
-                'redirect_to': ''}  # type: ExternalAuthDataDict
+        data: ExternalAuthDataDict = {
+            'full_name': 'Full Name',
+            'email': self.example_email("hamlet"),
+            'subdomain': 'zulip',
+            'is_signup': False,
+            'redirect_to': '',
+        }
         with mock.patch("logging.warning") as mock_warn:
             result = self.get_log_into_subdomain(data, force_token='nonsense')
             mock_warn.assert_called_once_with("log_into_subdomain: Malformed token given: %s", "nonsense")
         self.assertEqual(result.status_code, 400)
 
     def test_log_into_subdomain_when_token_not_found(self) -> None:
-        data = {'full_name': 'Full Name',
-                'email': self.example_email("hamlet"),
-                'subdomain': 'zulip',
-                'is_signup': False,
-                'redirect_to': ''}  # type: ExternalAuthDataDict
+        data: ExternalAuthDataDict = {
+            'full_name': 'Full Name',
+            'email': self.example_email("hamlet"),
+            'subdomain': 'zulip',
+            'is_signup': False,
+            'redirect_to': '',
+        }
         with mock.patch("logging.warning") as mock_warn:
             token = generate_random_token(ExternalAuthResult.LOGIN_TOKEN_LENGTH)
             result = self.get_log_into_subdomain(data, force_token=token)
@@ -2283,11 +2289,13 @@ class GoogleAuthBackendTest(SocialAuthBase):
         existing_user.email = 'whatever@zulip.com'
         existing_user.save()
 
-        data = {'full_name': 'Full Name',
-                'email': 'existing@zulip.com',
-                'subdomain': 'zulip',
-                'is_signup': True,
-                'redirect_to': ''}  # type: ExternalAuthDataDict
+        data: ExternalAuthDataDict = {
+            'full_name': 'Full Name',
+            'email': 'existing@zulip.com',
+            'subdomain': 'zulip',
+            'is_signup': True,
+            'redirect_to': '',
+        }
         result = self.get_log_into_subdomain(data)
 
         # Should simply get logged into the existing account:
@@ -2295,11 +2303,13 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assert_logged_in_user_id(existing_user.id)
 
     def test_log_into_subdomain_when_is_signup_is_true_and_new_user(self) -> None:
-        data = {'full_name': 'New User Name',
-                'email': 'new@zulip.com',
-                'subdomain': 'zulip',
-                'is_signup': True,
-                'redirect_to': ''}  # type: ExternalAuthDataDict
+        data: ExternalAuthDataDict = {
+            'full_name': 'New User Name',
+            'email': 'new@zulip.com',
+            'subdomain': 'zulip',
+            'is_signup': True,
+            'redirect_to': '',
+        }
         result = self.get_log_into_subdomain(data)
         self.assertEqual(result.status_code, 302)
         confirmation = Confirmation.objects.all().first()
@@ -2318,11 +2328,13 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assert_in_success_response(['id_full_name'], result)
 
     def test_log_into_subdomain_when_is_signup_is_false_and_new_user(self) -> None:
-        data = {'full_name': 'New User Name',
-                'email': 'new@zulip.com',
-                'subdomain': 'zulip',
-                'is_signup': False,
-                'redirect_to': ''}  # type: ExternalAuthDataDict
+        data: ExternalAuthDataDict = {
+            'full_name': 'New User Name',
+            'email': 'new@zulip.com',
+            'subdomain': 'zulip',
+            'is_signup': False,
+            'redirect_to': '',
+        }
         result = self.get_log_into_subdomain(data)
         self.assertEqual(result.status_code, 200)
         self.assert_in_response('No account found for', result)
@@ -2346,11 +2358,13 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assert_in_success_response(['id_full_name'], result)
 
     def test_log_into_subdomain_when_using_invite_link(self) -> None:
-        data = {'full_name': 'New User Name',
-                'email': 'new@zulip.com',
-                'subdomain': 'zulip',
-                'is_signup': True,
-                'redirect_to': ''}  # type: ExternalAuthDataDict
+        data: ExternalAuthDataDict = {
+            'full_name': 'New User Name',
+            'email': 'new@zulip.com',
+            'subdomain': 'zulip',
+            'is_signup': True,
+            'redirect_to': '',
+        }
 
         realm = get_realm("zulip")
         realm.invite_required = True
@@ -2406,11 +2420,13 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assertEqual(sorted(new_streams), stream_names)
 
     def test_log_into_subdomain_when_email_is_none(self) -> None:
-        data = {'full_name': None,
-                'email': None,
-                'subdomain': 'zulip',
-                'is_signup': False,
-                'redirect_to': ''}  # type: ExternalAuthDataDict
+        data: ExternalAuthDataDict = {
+            'full_name': None,
+            'email': None,
+            'subdomain': 'zulip',
+            'is_signup': False,
+            'redirect_to': '',
+        }
 
         with mock.patch('logging.warning') as mock_warn:
             result = self.get_log_into_subdomain(data)
@@ -2418,9 +2434,11 @@ class GoogleAuthBackendTest(SocialAuthBase):
             mock_warn.assert_called_once()
 
     def test_user_cannot_log_into_wrong_subdomain(self) -> None:
-        data = {'full_name': 'Full Name',
-                'email': self.example_email("hamlet"),
-                'subdomain': 'zephyr'}  # type: ExternalAuthDataDict
+        data: ExternalAuthDataDict = {
+            'full_name': 'Full Name',
+            'email': self.example_email("hamlet"),
+            'subdomain': 'zephyr',
+        }
         result = self.get_log_into_subdomain(data)
         self.assert_json_error(result, "Invalid subdomain")
 

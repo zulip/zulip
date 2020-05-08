@@ -47,7 +47,9 @@ def _transform_commits_list_to_common_format(commits: List[Dict[str, Any]]) -> L
 def beanstalk_decoder(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        auth_type, encoded_value = request.META['HTTP_AUTHORIZATION'].split()  # type: str, str
+        auth_type: str
+        encoded_value: str
+        auth_type, encoded_value = request.META['HTTP_AUTHORIZATION'].split()
         if auth_type.lower() == "basic":
             email, api_key = base64.b64decode(encoded_value).decode('utf-8').split(":")
             email = email.replace('%40', '@')

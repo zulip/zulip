@@ -2894,10 +2894,10 @@ class AlertWord(models.Model):
     # never move to another realm, so it's static, and having Realm
     # here optimizes the main query on this table, which is fetching
     # all the alert words in a realm.
-    realm = models.ForeignKey(Realm, db_index=True, on_delete=CASCADE)  # type: Realm
-    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
+    realm: Realm = models.ForeignKey(Realm, db_index=True, on_delete=CASCADE)
+    user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     # Case-insensitive name for the alert word.
-    word = models.TextField()   # type: str
+    word: str = models.TextField()
 
     class Meta:
         unique_together = ("user_profile", "word")
