@@ -109,16 +109,15 @@ h3 .fa-question-circle-o {
 
 .user-avatar-section {
     float: right;
-}
 
-.user-avatar-section .avatar-controls {
-    margin-top: 20px;
+    .avatar-controls {
+        margin-top: 20px;
+        box-shadow: none;
+    }
 
-    box-shadow: none;
-}
-
-.user-avatar-section .inline-block {
-    box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
+    .inline-block {
+        box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
+    }
 }
 
 .realm-icon-section {
