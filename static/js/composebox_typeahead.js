@@ -743,7 +743,7 @@ exports.get_candidates = function (query) {
         const time_jump_regex = /!time(\(([^\)]*?\)?))?$/;
         if (time_jump_regex.test(split[0])) {
             this.completing = 'time_jump';
-            return ['Pick a date/time'];
+            return [i18n.t('Pick a date/time')];
 
         }
     }
@@ -859,10 +859,22 @@ exports.content_typeahead_selected = function (item, event) {
         beginning = beginning.substring(0, start) + item + '** ';
     } else if (this.completing === 'time_jump') {
         const flatpickr_input = $("<input id='#timestamp_flatpickr'>");
+        let timeobject;
+        let timestring = beginning.substring(beginning.lastIndexOf('!time'));
+        if (timestring.startsWith('!time(') && timestring.endsWith(')')) {
+            timestring = timestring.substring(6, timestring.length - 1);
+            moment.suppressDeprecationWarnings = true;
+            try {
+                timeobject = moment(timestring).toDate();
+            } catch {
+                // do nothing. We'll just default to showing current date for the edit.
+            }
+        }
+
         const instance = flatpickr_input.flatpickr({
             enableTime: true,
             clickOpens: false,
-            defaultDate: moment().format(),
+            defaultDate: timeobject || moment().format(),
             plugins: [new confirmDatePlugin({})], // eslint-disable-line new-cap, no-undef
             positionElement: this.$element[0],
             dateFormat: 'Z',
