@@ -173,18 +173,6 @@ function populate_users(realm_people_data) {
     for (const user of realm_people_data.members) {
         user.is_active_human = user.is_active && !user.is_bot;
         if (user.is_bot) {
-            // Convert bot type id to string for viewing to the users.
-            user.bot_type = settings_bots.type_id_to_string(user.bot_type);
-
-            const bot_owner = people.get_bot_owner_user(user);
-
-            if (bot_owner) {
-                user.bot_owner_full_name = bot_owner.full_name;
-            } else {
-                user.no_owner = true;
-                user.bot_owner_full_name = i18n.t("No owner");
-            }
-
             bots.push(user);
         } else if (user.is_active) {
             active_users.push(user);
@@ -208,17 +196,49 @@ function reset_scrollbar($sel) {
     };
 }
 
+function bot_info(bot_user) {
+    const info = {};
+    const user = {};
+
+    user.is_bot = true;
+    user.is_admin = false;
+    user.is_guest = false;
+    user.is_active = bot_user.is_active;
+    user.user_id = bot_user.user_id;
+    user.full_name = bot_user.full_name;
+    user.bot_owner_id = bot_user.bot_owner_id;
+
+    // Convert bot type id to string for viewing to the users.
+    user.bot_type = settings_bots.type_id_to_string(bot_user.bot_type);
+
+    const bot_owner = people.get_bot_owner_user(bot_user);
+
+    if (bot_owner) {
+        user.bot_owner_full_name = bot_owner.full_name;
+    } else {
+        user.no_owner = true;
+        user.bot_owner_full_name = i18n.t("No owner");
+    }
+
+    info.is_current_user = false;
+    info.can_modify = page_params.is_admin;
+
+    // It's always safe to show the fake email addresses for bot users
+    info.display_email = bot_user.email;
+
+    // TODO: We want to flatten this.
+    info.user = user;
+
+    return info;
+}
+
 section.bots.create_table = (bots) => {
     const $bots_table = $("#admin_bots_table");
     list_render.create($bots_table, bots, {
         name: "admin_bot_list",
-        modifier: function (item) {
-            return render_admin_user_list({
-                can_modify: page_params.is_admin,
-                // It's always safe to show the fake email addresses for bot users
-                display_email: item.email,
-                user: item,
-            });
+        modifier: function (bot_user) {
+            const info = bot_info(bot_user);
+            return render_admin_user_list(info);
         },
         filter: {
             element: $bots_table.closest(".settings-section").find(".search"),
