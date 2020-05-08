@@ -167,7 +167,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['realm_push_notifications_enabled'] = push_notifications_enabled()
         state['realm_upload_quota'] = realm.upload_quota_bytes()
         state['realm_plan_type'] = realm.plan_type
-        state['plan_includes_wide_organization_logo'] = realm.plan_type != Realm.LIMITED
+        state['zulip_plan_is_not_limited'] = realm.plan_type != Realm.LIMITED
         state['upgrade_text_for_wide_organization_logo'] = str(Realm.UPGRADE_TEXT_STANDARD)
         state['realm_default_external_accounts'] = DEFAULT_EXTERNAL_ACCOUNTS
 
@@ -526,7 +526,7 @@ def apply_event(state: Dict[str, Any],
 
             if event['property'] == 'plan_type':
                 # Then there are some extra fields that also need to be set.
-                state['plan_includes_wide_organization_logo'] = event['value'] != Realm.LIMITED
+                state['zulip_plan_is_not_limited'] = event['value'] != Realm.LIMITED
                 state['realm_upload_quota'] = event['extra_data']['upload_quota']
 
             policy_permission_dict = {'create_stream_policy': 'can_create_streams',

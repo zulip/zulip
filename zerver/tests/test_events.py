@@ -1990,7 +1990,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         state_data = fetch_initial_state_data(self.user_profile, None, "", False)
         self.assertEqual(state_data['realm_plan_type'], Realm.SELF_HOSTED)
-        self.assertEqual(state_data['plan_includes_wide_organization_logo'], True)
+        self.assertEqual(state_data['zulip_plan_is_not_limited'], True)
 
         schema_checker = self.check_events_dict([
             ('type', equals('realm')),
@@ -2007,7 +2007,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         state_data = fetch_initial_state_data(self.user_profile, None, "", False)
         self.assertEqual(state_data['realm_plan_type'], Realm.LIMITED)
-        self.assertEqual(state_data['plan_includes_wide_organization_logo'], False)
+        self.assertEqual(state_data['zulip_plan_is_not_limited'], False)
 
     def test_realm_emoji_events(self) -> None:
         schema_checker = self.check_events_dict([

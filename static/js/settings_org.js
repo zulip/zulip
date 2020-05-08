@@ -989,7 +989,7 @@ exports.build_page = function () {
         });
     }
 
-    if (page_params.plan_includes_wide_organization_logo) {
+    if (page_params.zulip_plan_is_not_limited) {
         realm_logo.build_realm_logo_widget(upload_realm_logo, false);
         realm_logo.build_realm_logo_widget(upload_realm_logo, true);
     }
