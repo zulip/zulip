@@ -102,9 +102,7 @@ automatically in Zulip's automated test suite.  The code there will
 look something like this:
 
 ``` python
-def render_message(client):
-    # type: (Client) -> None
-
+def render_message(client: Client) -> None:
     # {code_example|start}
     # Render a message
     request = {
