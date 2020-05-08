@@ -143,6 +143,9 @@ function get_property_value(property_name) {
 
     if (property_name === 'realm_user_invite_restriction') {
         if (!page_params.realm_invite_required) {
+            if (page_params.realm_invite_by_admins_only) {
+                return "no_invite_required_by_admins_only";
+            }
             return "no_invite_required";
         }
         if (page_params.realm_invite_by_admins_only) {
@@ -710,6 +713,9 @@ exports.build_page = function () {
             if (user_invite_restriction === 'no_invite_required') {
                 data.invite_required = false;
                 data.invite_by_admins_only = false;
+            } else if (user_invite_restriction === 'no_invite_required_by_admins_only') {
+                data.invite_required = false;
+                data.invite_by_admins_only = true;
             } else if (user_invite_restriction === 'by_admins_only') {
                 data.invite_required = true;
                 data.invite_by_admins_only = true;
