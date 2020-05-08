@@ -575,10 +575,14 @@ input[type=checkbox].inline-block {
 }
 
 .alert-word-information-box {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
     position: relative;
-    padding: 7px;
     margin: 2px;
     width: 50%;
+    padding: 0px 5px 0px 10px;
 }
 
 .green-bg {
@@ -586,7 +590,6 @@ input[type=checkbox].inline-block {
 }
 
 .remove-alert-word {
-    margin-top: 1px;
     height: 35px;
 }
 
@@ -1057,15 +1060,9 @@ input[type=checkbox].inline-block {
     margin-top: 8px;
 }
 
-#alert_words_list .edit-alert-word-buttons,
-#attachments_list .edit-attachment-buttons {
-    position: absolute;
-    right: 20px;
-    top: 0px;
-}
-
 #alert_words_list .alert_word_listing .value {
     display: block;
+    margin-right: 15px;
     white-space: pre-wrap;
     word-wrap: break-word;
     word-break: break-all;
