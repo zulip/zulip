@@ -20,7 +20,7 @@ from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
     stripe_get_customer, get_latest_seat_count, \
     process_initial_upgrade, sign_string, \
     unsign_string, BillingError, do_change_plan_status, do_replace_payment_source, \
-    MIN_INVOICED_LICENSES, DEFAULT_INVOICE_DAYS_UNTIL_DUE, \
+    MIN_INVOICED_LICENSES, MAX_INVOICED_LICENSES, DEFAULT_INVOICE_DAYS_UNTIL_DUE, \
     start_of_next_billing_cycle, renewal_amount, \
     make_end_of_cycle_updates_if_needed
 from corporate.models import CustomerPlan, get_current_plan_by_customer, \
@@ -49,11 +49,19 @@ def check_upgrade_parameters(
             raise BillingError('autopay with no card')
 
     min_licenses = seat_count
+    max_licenses = None
     if billing_modality == 'send_invoice':
         min_licenses = max(seat_count, MIN_INVOICED_LICENSES)
+        max_licenses = MAX_INVOICED_LICENSES
+
     if licenses is None or licenses < min_licenses:
         raise BillingError('not enough licenses',
                            _("You must invoice for at least {} users.").format(min_licenses))
+
+    if max_licenses is not None and licenses > max_licenses:
+        message = _("Invoices with more than {} licenses can't be processed from this page. To complete "
+                    "the upgrade, please contact {}.").format(max_licenses, settings.ZULIP_ADMINISTRATOR)
+        raise BillingError('too many licenses', message)
 
 # Should only be called if the customer is being charged automatically
 def payment_method_string(stripe_customer: stripe.Customer) -> str:
