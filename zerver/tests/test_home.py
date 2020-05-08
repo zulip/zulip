@@ -827,10 +827,10 @@ class HomeTest(ZulipTestCase):
             self._sanity_check(result)
 
     def send_test_message(self, content: str, sender_name: str='iago',
-                          stream_name: str='Denmark', topic_name: str='foo') -> None:
+                          stream_name: str='Denmark', topic_name: str='foo') -> int:
         sender = self.example_user(sender_name)
-        self.send_stream_message(sender, stream_name,
-                                 content=content, topic_name=topic_name)
+        return self.send_stream_message(sender, stream_name,
+                                        content=content, topic_name=topic_name)
 
     def soft_activate_and_get_unread_count(self, stream: str='Denmark', topic: str='foo') -> int:
         stream_narrow = self._get_home_page(stream=stream, topic=topic)
