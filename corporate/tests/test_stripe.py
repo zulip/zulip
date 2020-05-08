@@ -30,7 +30,7 @@ from zerver.models import Realm, UserProfile, get_realm, RealmAuditLog
 from corporate.lib.stripe import catch_stripe_errors, attach_discount_to_realm, \
     get_latest_seat_count, sign_string, unsign_string, \
     BillingError, StripeCardError, stripe_get_customer, \
-    MIN_INVOICED_LICENSES, \
+    MIN_INVOICED_LICENSES, MAX_INVOICED_LICENSES, \
     add_months, next_month, \
     compute_plan_parameters, update_or_create_stripe_customer, \
     process_initial_upgrade, make_end_of_cycle_updates_if_needed, \
@@ -675,8 +675,8 @@ class StripeTest(StripeTestCase):
         check_error('autopay with no card', {}, del_args=['stripe_token'])
 
     def test_upgrade_license_counts(self) -> None:
-        def check_error(invoice: bool, licenses: Optional[int], min_licenses_in_response: int,
-                        upgrade_params: Dict[str, Any]={}) -> None:
+        def check_min_licenses_error(invoice: bool, licenses: Optional[int], min_licenses_in_response: int,
+                                     upgrade_params: Dict[str, Any]={}) -> None:
             if licenses is None:
                 del_args = ['licenses']
             else:
@@ -686,6 +686,12 @@ class StripeTest(StripeTestCase):
                                     del_args=del_args, **upgrade_params)
             self.assert_json_error_contains(response, "at least {} users".format(min_licenses_in_response))
             self.assertEqual(ujson.loads(response.content)['error_description'], 'not enough licenses')
+
+        def check_max_licenses_error(licenses: int) -> None:
+            response = self.upgrade(invoice=True, talk_to_stripe=False,
+                                    licenses=licenses)
+            self.assert_json_error_contains(response, "with more than {} licenses".format(MAX_INVOICED_LICENSES))
+            self.assertEqual(ujson.loads(response.content)['error_description'], 'too many licenses')
 
         def check_success(invoice: bool, licenses: Optional[int], upgrade_params: Dict[str, Any]={}) -> None:
             if licenses is None:
@@ -701,16 +707,20 @@ class StripeTest(StripeTestCase):
         hamlet = self.example_user('hamlet')
         self.login_user(hamlet)
         # Autopay with licenses < seat count
-        check_error(False, self.seat_count - 1, self.seat_count, {'license_management': 'manual'})
+        check_min_licenses_error(False, self.seat_count - 1, self.seat_count, {'license_management': 'manual'})
         # Autopay with not setting licenses
-        check_error(False, None, self.seat_count, {'license_management': 'manual'})
+        check_min_licenses_error(False, None, self.seat_count, {'license_management': 'manual'})
         # Invoice with licenses < MIN_INVOICED_LICENSES
-        check_error(True, MIN_INVOICED_LICENSES - 1, MIN_INVOICED_LICENSES)
+        check_min_licenses_error(True, MIN_INVOICED_LICENSES - 1, MIN_INVOICED_LICENSES)
         # Invoice with licenses < seat count
         with patch("corporate.views.MIN_INVOICED_LICENSES", 3):
-            check_error(True, 4, self.seat_count)
+            check_min_licenses_error(True, 4, self.seat_count)
         # Invoice with not setting licenses
-        check_error(True, None, MIN_INVOICED_LICENSES)
+        check_min_licenses_error(True, None, MIN_INVOICED_LICENSES)
+        # Invoice exceeding max licenses
+        check_max_licenses_error(MAX_INVOICED_LICENSES + 1)
+        with patch("corporate.lib.stripe.get_latest_seat_count", return_value=MAX_INVOICED_LICENSES + 5):
+            check_max_licenses_error(MAX_INVOICED_LICENSES + 5)
 
         # Autopay with automatic license_management
         check_success(False, None)
@@ -718,8 +728,12 @@ class StripeTest(StripeTestCase):
         check_success(False, self.seat_count)
         # Autopay
         check_success(False, self.seat_count, {'license_management': 'manual'})
+        # Autopay has no limit on max licenses
+        check_success(False, MAX_INVOICED_LICENSES + 1, {'license_management': 'manual'})
         # Invoice
         check_success(True, self.seat_count + MIN_INVOICED_LICENSES)
+        # Invoice
+        check_success(True, MAX_INVOICED_LICENSES)
 
     @patch("corporate.lib.stripe.billing_logger.error")
     def test_upgrade_with_uncaught_exception(self, mock_: Mock) -> None:
