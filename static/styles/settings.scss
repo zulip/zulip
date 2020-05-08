@@ -125,13 +125,15 @@ h3 .fa-question-circle-o {
     display: inline-block;
 }
 
-.user-avatar-section .inline-block,
-.realm-logo-section .inline-block,
-.realm-icon-section .inline-block {
-    margin: 5px 20px 0px 0px;
-    vertical-align: top;
+.user-avatar-section,
+.realm-logo-section,
+.realm-icon-section {
 
-    border-radius: 4px;
+    .inline-block {
+        margin: 5px 20px 0px 0px;
+        vertical-align: top;
+        border-radius: 4px;
+    }
 }
 
 #change_email_modal {
