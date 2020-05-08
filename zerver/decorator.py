@@ -16,6 +16,7 @@ from django.shortcuts import resolve_url
 from django.utils.decorators import available_attrs
 from django.utils.timezone import now as timezone_now
 from django.conf import settings
+from django.template.response import SimpleTemplateResponse
 
 from zerver.lib.exceptions import UnexpectedWebhookEventType
 from zerver.lib.queue import queue_json_publish
@@ -825,3 +826,20 @@ def zulip_otp_required(view: Any=None,
                                         redirect_field_name=redirect_field_name)
 
     return decorator if (view is None) else decorator(view)
+
+def add_google_analytics_context(context: Dict[str, Any]) -> None:
+    if settings.GOOGLE_ANALYTICS_ID is not None:  # nocoverage
+        context.setdefault("page_params", {})["google_analytics_id"] = settings.GOOGLE_ANALYTICS_ID
+
+def add_google_analytics(view_func: ViewFuncT) -> ViewFuncT:
+    @wraps(view_func)
+    def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        response = view_func(request, *args, **kwargs)
+        if isinstance(response, SimpleTemplateResponse):
+            if response.context_data is None:
+                response.context_data = {}
+            add_google_analytics_context(response.context_data)
+        elif response.status_code == 200:  # nocoverage
+            raise TypeError("add_google_analytics requires a TemplateResponse")
+        return response
+    return _wrapped_view_func  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927

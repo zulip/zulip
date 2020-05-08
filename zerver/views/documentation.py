@@ -9,6 +9,7 @@ import os
 import random
 import re
 
+from zerver.decorator import add_google_analytics_context
 from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, HubotIntegration, \
     WebhookIntegration
 from zerver.lib.request import has_request_variables, REQ
@@ -123,6 +124,7 @@ class MarkdownDirectoryView(ApiURLView):
         add_api_uri_context(api_uri_context, self.request)
         api_uri_context["run_content_validators"] = True
         context["api_uri_context"] = api_uri_context
+        add_google_analytics_context(context)
         return context
 
     def get(self, request: HttpRequest, article: str="") -> HttpResponse:
@@ -170,6 +172,7 @@ class IntegrationView(ApiURLView):
         context: Dict[str, Any] = super().get_context_data(**kwargs)
         add_integrations_context(context)
         add_integrations_open_graph_context(context, self.request)
+        add_google_analytics_context(context)
         return context
 
 
