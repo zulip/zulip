@@ -42,6 +42,7 @@ exports.get_all_display_settings = () => ({
     settings: {
         user_display_settings: [
             "dense_mode",
+            "enable_prefer_color_scheme",
             "night_mode",
             "high_contrast_mode",
             "left_side_userlist",

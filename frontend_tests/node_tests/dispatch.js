@@ -613,6 +613,18 @@ const event_fixtures = {
         setting: true,
     },
 
+    update_display_settings__enable_prefer_color_scheme: {
+        type: 'update_display_settings',
+        setting_name: 'enable_prefer_color_scheme',
+        setting: true,
+    },
+
+    update_display_settings__enable_prefer_color_scheme_false: {
+        type: 'update_display_settings',
+        setting_name: 'enable_prefer_color_scheme',
+        setting: false,
+    },
+
     update_display_settings__night_mode: {
         type: 'update_display_settings',
         setting_name: 'night_mode',
@@ -1437,6 +1449,22 @@ with_overrides(function (override) {
 
     $("body").fadeOut = (secs) => { assert_same(secs, 300); };
     $("body").fadeIn  = (secs) => { assert_same(secs, 300); };
+
+    global.with_stub(function (stub) {
+        event = event_fixtures.update_display_settings__enable_prefer_color_scheme;
+        page_params.enable_prefer_color_scheme = false;
+        override('night_mode.enable_default_preference', stub.f); // automatically checks if called
+        dispatch(event);
+        assert_same(page_params.enable_prefer_color_scheme, true);
+    });
+
+    global.with_stub(function (stub) {
+        event = event_fixtures.update_display_settings__enable_prefer_color_scheme_false;
+        page_params.enable_prefer_color_scheme = false;
+        override('night_mode.disable_default_preference', stub.f); // automatically checks if called
+        dispatch(event);
+        assert(!page_params.enable_prefer_color_scheme);
+    });
 
     global.with_stub(function (stub) {
         event = event_fixtures.update_display_settings__night_mode;

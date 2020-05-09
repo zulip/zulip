@@ -391,6 +391,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             'night_mode',
             'left_side_userlist',
             'timezone',
+            'enable_prefer_color_scheme',
             'twenty_four_hour_time',
             'translate_emoticons',
             'starred_message_counts',
@@ -419,6 +420,17 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         if (event.setting_name === 'dense_mode') {
             $("body").toggleClass("less_dense_mode");
             $("body").toggleClass("more_dense_mode");
+        }
+        if (event.setting_name === 'enable_prefer_color_scheme') {
+            $("body").fadeOut(300);
+            setTimeout(function () {
+                if (event.setting === true) {
+                    night_mode.enable_default_preference();
+                } else {
+                    night_mode.disable_default_preference();
+                }
+                $("body").fadeIn(300);
+            }, 300);
         }
         if (event.setting_name === 'night_mode') {
             $("body").fadeOut(300);

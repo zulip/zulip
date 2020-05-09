@@ -85,6 +85,7 @@
 * [Bots and integrations](/help/bots-and-integrations)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
 * [Create a poll](/help/create-a-poll)
+* [Automatic theme detection](/help/automatic-theme-detection)
 * [Night mode](/help/night-mode)
 * [Enable emoticon translations](/help/enable-emoticon-translations)
 * [Manage your uploaded files](/help/manage-your-uploaded-files)

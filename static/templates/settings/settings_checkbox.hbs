@@ -2,7 +2,7 @@
 <div class="input-group {{#if is_nested}}disableable{{/if}}">
     <label class="checkbox">
         <input type="checkbox" class="inline-block setting-widget prop-element" name="{{setting_name}}" data-setting-widget-type="boolean"
-          id="{{prefix}}{{setting_name}}" {{#if is_checked}}checked="checked"{{/if}} />
+          id="{{prefix}}{{setting_name}}" {{#if has_theme_preference}}{{#if is_night_mode}}disabled{{/if}}{{/if}} {{#if is_checked}}checked="checked"{{/if}} />
         <span></span>
     </label>
     <label for="{{prefix}}{{setting_name}}" class="inline-block" id="{{prefix}}{{setting_name}}_label">

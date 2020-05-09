@@ -153,6 +153,7 @@ def update_display_settings_backend(
         starred_message_counts: Optional[bool]=REQ(validator=check_bool, default=None),
         fluid_layout_width: Optional[bool]=REQ(validator=check_bool, default=None),
         high_contrast_mode: Optional[bool]=REQ(validator=check_bool, default=None),
+        enable_prefer_color_scheme: Optional[bool]=REQ(validator=check_bool, default=None),
         night_mode: Optional[bool]=REQ(validator=check_bool, default=None),
         translate_emoticons: Optional[bool]=REQ(validator=check_bool, default=None),
         default_language: Optional[bool]=REQ(validator=check_string, default=None),

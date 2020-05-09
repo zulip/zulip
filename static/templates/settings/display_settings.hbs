@@ -26,6 +26,8 @@
               setting_name=this
               is_checked=(lookup ../page_params this)
               label=(lookup ../settings_label this)
+              is_night_mode=(eq this "night_mode")
+              has_theme_preference=(lookup ../page_params "enable_prefer_color_scheme")
               render_only=(lookup ../display_settings.render_only this)}}
             {{/each}}
 

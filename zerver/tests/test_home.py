@@ -77,6 +77,7 @@ class HomeTest(ZulipTestCase):
             "enable_offline_email_notifications",
             "enable_offline_push_notifications",
             "enable_online_push_notifications",
+            "enable_prefer_color_scheme",
             "enable_sounds",
             "enable_stream_audible_notifications",
             "enable_stream_desktop_notifications",

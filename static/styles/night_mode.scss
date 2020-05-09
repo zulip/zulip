@@ -697,3 +697,9 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: hsla(0, 0%, 0%, 0.2);
     }
 }
+
+@media (prefers-color-scheme: dark) {
+    .dark-preference-checker {
+        @extend body.night-mode;
+    }
+}

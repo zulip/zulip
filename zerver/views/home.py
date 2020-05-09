@@ -312,11 +312,13 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     csp_nonce = generate_random_token(48)
     if user_profile is not None:
+        enable_prefer_color_scheme = user_profile.enable_prefer_color_scheme
         night_mode = user_profile.night_mode
         is_guest = user_profile.is_guest
         is_realm_admin = user_profile.is_realm_admin
         show_webathena = user_profile.realm.webathena_enabled
     else:  # nocoverage
+        enable_prefer_color_scheme = True
         night_mode = False
         is_guest = False
         is_realm_admin = False
@@ -336,6 +338,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                'show_plans': show_plans,
                                'is_admin': is_realm_admin,
                                'is_guest': is_guest,
+                               'enable_prefer_color_scheme': enable_prefer_color_scheme,
                                'night_mode': night_mode,
                                'navbar_logo_url': navbar_logo_url,
                                'show_webathena': show_webathena,

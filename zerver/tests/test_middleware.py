@@ -95,8 +95,7 @@ class OpenGraphTest(ZulipTestCase):
         self.check_title_and_description(
             '/help/night-mode',
             "Night mode (Zulip Help Center)",
-            ['By default, Zulip has a white background. ',
-             'Zulip also provides a "night mode", which is great for working in a dark space.'],
+            ['Zulip provides both a white background and a "night mode", which is great for working in a dark space.'],
             []
         )
 
