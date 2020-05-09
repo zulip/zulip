@@ -1,6 +1,8 @@
 Get Zulip notifications from Slack for messages on your team's
 public channels!
 
+See also the [Slack-compatible webhook](/integrations/doc/slack_incoming).
+
 1. {!create-stream.md!}
 
 1. {!create-bot-construct-url-indented.md!}

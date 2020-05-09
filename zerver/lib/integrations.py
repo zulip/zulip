@@ -363,7 +363,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration('sentry', ['monitoring']),
     WebhookIntegration(
         'slack_incoming',
-        ['communication'],
+        ['communication', 'meta-integration'],
         display_name="Slack-compatible webhook",
         logo='images/integrations/logos/slack.svg',
     ),
