@@ -583,6 +583,9 @@ input[type=checkbox].inline-block {
     margin: 2px;
     width: 50%;
     padding: 0px 5px 0px 10px;
+    @media (max-width: 600px) {
+        width: 96%;
+    }
 }
 
 .green-bg {
