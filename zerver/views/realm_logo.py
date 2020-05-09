@@ -6,20 +6,19 @@ from django.http import HttpResponse, HttpRequest
 from zerver.lib.validator import check_bool
 from zerver.lib.request import REQ, has_request_variables
 from zerver.decorator import require_realm_admin
-from zerver.lib.actions import do_change_logo_source
+from zerver.lib.actions import do_change_logo_source, check_realm_has_non_limited_plan
 from zerver.lib.realm_logo import get_realm_logo_url
 from zerver.lib.response import json_error, json_success
 from zerver.lib.upload import upload_logo_image
 from zerver.lib.url_encoding import add_query_arg_to_redirect_url
-from zerver.models import Realm, UserProfile
+from zerver.models import UserProfile
 
 
 @require_realm_admin
 @has_request_variables
 def upload_logo(request: HttpRequest, user_profile: UserProfile,
                 night: bool=REQ(validator=check_bool)) -> HttpResponse:
-    if user_profile.realm.plan_type == Realm.LIMITED:
-        return json_error(_("Feature unavailable on your current plan."))
+    check_realm_has_non_limited_plan(user_profile.realm)
 
     if len(request.FILES) != 1:
         return json_error(_("You must upload exactly one logo."))
