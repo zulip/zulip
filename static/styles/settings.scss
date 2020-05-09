@@ -378,37 +378,35 @@ td .button {
     border-radius: 3px;
     transition: box-shadow 0.3s ease;
     min-width: 208px;
-}
 
-.dynamic-input:hover {
-    outline: none;
-    box-shadow: 0px 0px 4px hsla(199, 79%, 56%, 1.0);
-}
+    &:hover {
+        outline: none;
+        box-shadow: 0px 0px 4px hsla(199, 79%, 56%, 1.0);
+    }
 
-.dynamic-input {
     div,
     label {
         display: inline-block;
         margin: 0;
     }
-}
 
-.dynamic-input div {
-    margin-right: -2px;
+    div {
+        margin-right: -2px;
 
-    &:empty::after {
-        content: "username";
+        &:empty::after {
+            content: "username";
+            color: hsl(0, 0%, 67%);
+        }
+    }
+
+    &.bot_user_name div:empty::after {
+        content: "bot_user_name";
         color: hsl(0, 0%, 67%);
     }
-}
 
-.dynamic-input.bot_user_name div:empty::after {
-    content: "bot_user_name";
-    color: hsl(0, 0%, 67%);
-}
-
-.dynamic-input [contenteditable=true] {
-    outline: none;
+    [contenteditable=true] {
+        outline: none;
+    }
 }
 
 .button,
