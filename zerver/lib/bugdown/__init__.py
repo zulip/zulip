@@ -674,7 +674,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return False
 
         # List from https://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
-        for ext in [".bmp", ".gif", ".jpg", "jpeg", ".png", ".webp"]:
+        for ext in [".bmp", ".gif", ".jpe", "jpeg", ".jpg", ".png", ".webp"]:
             if parsed_url.path.lower().endswith(ext):
                 return True
         return False
