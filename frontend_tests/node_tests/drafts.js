@@ -320,7 +320,7 @@ run_test('format_drafts', () => {
         return '<draft table stub>';
     });
 
-    drafts.open_modal = noop;
+    drafts.open_overlay = noop;
     drafts.set_initial_element = noop;
     $("#drafts_table .draft-row").length = 0;
 
