@@ -1,7 +1,8 @@
 const settings_data = require("./settings_data");
 const render_admin_user_list = require("../templates/admin_user_list.hbs");
 const render_bot_owner_select = require("../templates/bot_owner_select.hbs");
-const render_user_info_form_modal = require('../templates/user_info_form_modal.hbs');
+const render_admin_human_form = require('../templates/admin_human_form.hbs');
+const render_admin_bot_form = require('../templates/admin_bot_form.hbs');
 
 const meta = {
     loaded: false,
@@ -325,31 +326,41 @@ exports.set_up = function () {
     });
 };
 
-function open_user_info_form_modal(person) {
-    const html = render_user_info_form_modal({
+function open_human_form(person) {
+    const html = render_admin_human_form({
         user_id: person.user_id,
         email: person.email,
         full_name: people.get_full_name(person.user_id),
         is_admin: person.is_admin,
         is_guest: person.is_guest,
         is_member: !person.is_admin && !person.is_guest,
-        is_bot: person.is_bot,
     });
-    const user_info_form_modal = $(html);
+    const div = $(html);
     const modal_container = $('#user-info-form-modal-container');
-    modal_container.empty().append(user_info_form_modal);
-    overlays.open_modal('#user-info-form-modal');
+    modal_container.empty().append(div);
+    overlays.open_modal('#admin-human-form');
 
-    if (person.is_bot) {
-        // Dynamically add the owner select control in order to
-        // avoid performance issues in case of large number of users.
-        const users_list = people.get_active_humans();
-        const owner_select = $(render_bot_owner_select({users_list: users_list}));
-        owner_select.val(bot_data.get(person.user_id).owner || "");
-        modal_container.find(".edit_bot_owner_container").append(owner_select);
-    }
+    return div;
+}
 
-    return user_info_form_modal;
+function open_bot_form(person) {
+    const html = render_admin_bot_form({
+        user_id: person.user_id,
+        email: person.email,
+        full_name: people.get_full_name(person.user_id),
+    });
+    const div = $(html);
+    const modal_container = $('#user-info-form-modal-container');
+    modal_container.empty().append(div);
+    overlays.open_modal('#admin-bot-form');
+
+    // NOTE: building `users_list` is quite expensive!
+    const users_list = people.get_active_humans();
+    const owner_select = $(render_bot_owner_select({users_list: users_list}));
+    owner_select.val(bot_data.get(person.user_id).owner || "");
+    modal_container.find(".edit_bot_owner_container").append(owner_select);
+
+    return div;
 }
 
 function handle_deactivation() {
@@ -451,8 +462,8 @@ function handle_bot_owner_profile() {
     });
 }
 
-function handle_user_form() {
-    $(".admin_user_table, .admin_bot_table").on("click", ".open-user-form", function (e) {
+function handle_human_form() {
+    $(".admin_user_table").on("click", ".open-user-form", function (e) {
         const user_id = parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const person = people.get_by_user_id(user_id);
 
@@ -460,8 +471,8 @@ function handle_user_form() {
             return;
         }
 
-        const user_info_form_modal = open_user_info_form_modal(person);
-        const element = "#user-info-form-modal .custom-profile-field-form";
+        const modal = open_human_form(person);
+        const element = "#admin-human-form .custom-profile-field-form";
         $(element).html("");
         settings_account.append_custom_profile_fields(element, user_id);
         settings_account.initialize_custom_date_type_fields(element);
@@ -469,29 +480,15 @@ function handle_user_form() {
                                                                                       user_id,
                                                                                       true, false);
 
-        let url;
-        let data;
-        const full_name = user_info_form_modal.find("input[name='full_name']");
-
-        user_info_form_modal.find('.submit_user_info_change').on("click", function (e) {
+        modal.find('.submit_human_change').on("click", function (e) {
             e.preventDefault();
             e.stopPropagation();
 
-            const user_role_select_value = user_info_form_modal.find('#user-role-select').val();
-
             const admin_status = get_status_field();
-            if (person.is_bot) {
-                url = "/json/bots/" + encodeURIComponent(user_id);
-                data = {
-                    full_name: full_name.val(),
-                };
-                const owner_select_value = user_info_form_modal.find('.bot_owner_select').val();
-                if (owner_select_value) {
-                    data.bot_owner_id = people.get_by_email(owner_select_value).user_id;
-                }
-            } else {
+
+            function get_profile_data() {
                 const new_profile_data = [];
-                $("#user-info-form-modal .custom_user_field_value").each(function () {
+                $("#admin-human-form .custom_user_field_value").each(function () {
                     // Remove duplicate datepicker input element generated flatpicker library
                     if (!$(this).hasClass("form-control")) {
                         new_profile_data.push({
@@ -511,17 +508,57 @@ function handle_user_form() {
                     }
                 }
 
-                url = "/json/users/" + encodeURIComponent(user_id);
-                data = {
-                    full_name: JSON.stringify(full_name.val()),
-                    is_admin: JSON.stringify(user_role_select_value === 'admin'),
-                    is_guest: JSON.stringify(user_role_select_value === 'guest'),
-                    profile_data: JSON.stringify(new_profile_data),
-                };
+                return new_profile_data;
+            }
+
+            const user_role_select_value = modal.find('#user-role-select').val();
+            const full_name = modal.find("input[name='full_name']");
+            const profile_data = get_profile_data();
+
+            const url = "/json/users/" + encodeURIComponent(user_id);
+            const data = {
+                full_name: JSON.stringify(full_name.val()),
+                is_admin: JSON.stringify(user_role_select_value === 'admin'),
+                is_guest: JSON.stringify(user_role_select_value === 'guest'),
+                profile_data: JSON.stringify(profile_data),
+            };
+
+            settings_ui.do_settings_change(channel.patch, url, data, admin_status);
+            overlays.close_modal('#admin-human-form');
+        });
+    });
+}
+
+function handle_bot_form() {
+    $(".admin_bot_table").on("click", ".open-user-form", function (e) {
+        const user_id = parseInt($(e.currentTarget).attr("data-user-id"), 10);
+        const bot = people.get_by_user_id(user_id);
+
+        if (!bot) {
+            return;
+        }
+
+        const modal = open_bot_form(bot);
+
+        modal.find('.submit_bot_change').on("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const full_name = modal.find("input[name='full_name']");
+            const admin_status = get_status_field();
+
+            const url = "/json/bots/" + encodeURIComponent(user_id);
+            const data = {
+                full_name: full_name.val(),
+            };
+
+            const owner_select_value = modal.find('.bot_owner_select').val();
+            if (owner_select_value) {
+                data.bot_owner_id = people.get_by_email(owner_select_value).user_id;
             }
 
             settings_ui.do_settings_change(channel.patch, url, data, admin_status);
-            overlays.close_modal('#user-info-form-modal');
+            overlays.close_modal('#admin-bot-form');
         });
     });
 }
@@ -532,10 +569,11 @@ exports.on_load_success = function (realm_people_data) {
     populate_users(realm_people_data);
     handle_deactivation();
     handle_reactivation();
-    handle_user_form();
+    handle_human_form();
 
     handle_bot_owner_profile();
     handle_bot_deactivation();
+    handle_bot_form();
 };
 
 window.settings_users = exports;
