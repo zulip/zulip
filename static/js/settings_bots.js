@@ -388,7 +388,7 @@ exports.set_up = function () {
     $("#active_bots_list").on("click", "button.open_edit_bot_form", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        overlays.open_modal('edit_bot_modal');
+        overlays.open_modal('#edit_bot_modal');
         const li = $(e.currentTarget).closest('li');
         const bot_id = parseInt(li.find('.bot_info').attr('data-user-id'), 10);
         const bot = bot_data.get(bot_id);
@@ -475,13 +475,13 @@ exports.set_up = function () {
                             image_version += 1;
                             image.find('img').attr('src', data.avatar_url + '&v=' + image_version.toString());
                         }
-                        overlays.close_modal('edit_bot_modal');
+                        overlays.close_modal('#edit_bot_modal');
                     },
                     error: function (xhr) {
                         loading.destroy_indicator(spinner);
                         edit_button.show();
                         errors.text(JSON.parse(xhr.responseText).msg).show();
-                        overlays.close_modal('edit_bot_modal');
+                        overlays.close_modal('#edit_bot_modal');
                     },
                 });
             },

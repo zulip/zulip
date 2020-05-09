@@ -410,7 +410,7 @@ function change_stream_privacy(e) {
         url: "/json/streams/" + stream_id,
         data: data,
         success: function () {
-            overlays.close_modal('stream_privacy_modal');
+            overlays.close_modal('#stream_privacy_modal');
             $("#stream_privacy_modal").remove();
             // The rest will be done by update stream event we will get.
         },
@@ -529,7 +529,7 @@ exports.initialize = function () {
         const change_privacy_modal = render_subscription_stream_privacy_modal(template_data);
         $("#stream_privacy_modal").remove();
         $("#subscriptions_table").append(change_privacy_modal);
-        overlays.open_modal('stream_privacy_modal');
+        overlays.open_modal('#stream_privacy_modal');
         e.preventDefault();
         e.stopPropagation();
     });
@@ -665,12 +665,12 @@ exports.initialize = function () {
         });
         $("#deactivation_stream_modal").remove();
         $("#subscriptions_table").append(deactivate_stream_modal);
-        overlays.open_modal('deactivation_stream_modal');
+        overlays.open_modal('#deactivation_stream_modal');
     });
 
     $("#subscriptions_table").on("click", "#do_deactivate_stream_button", function (e) {
         const stream_id = $(e.target).data("stream-id");
-        overlays.close_modal('deactivation_stream_modal');
+        overlays.close_modal('#deactivation_stream_modal');
         $("#deactivation_stream_modal").remove();
         if (!stream_id) {
             ui_report.message(i18n.t("Invalid stream id"), $(".stream_change_property_info"), 'alert-error');
