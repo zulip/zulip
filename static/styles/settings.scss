@@ -414,12 +414,14 @@ td .button {
     margin: 0 0 20px 0;
 }
 
-.input-group.thinner {
-    margin: 10px 0px;
-}
+.input-group {
+    .thinner {
+        margin: 10px 0px;
+    }
 
-.input-group label.checkbox + label {
-    cursor: pointer;
+    label.checkbox + label {
+        cursor: pointer;
+    }
 }
 
 .dependent-block {
