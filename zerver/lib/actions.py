@@ -5826,3 +5826,7 @@ def get_topic_messages(user_profile: UserProfile, stream: Stream,
         message__recipient=stream.recipient
     ).order_by("id")
     return [um.message for um in filter_by_topic_name_via_message(query, topic_name)]
+
+def check_realm_has_non_limited_plan(realm: Realm) -> None:
+    if realm.plan_type == Realm.LIMITED:
+        raise JsonableError(_("Feature unavailable on your current plan."))

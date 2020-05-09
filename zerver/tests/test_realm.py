@@ -684,6 +684,34 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.message_visibility_limit, None)
         self.assertEqual(realm.upload_quota_gb, None)
 
+    def test_message_retention_days(self) -> None:
+        self.login('iago')
+        realm = get_realm('zulip')
+
+        req = dict(message_retention_days=ujson.dumps(0))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(result, "Bad value for 'message_retention_days': 0")
+
+        req = dict(message_retention_days=ujson.dumps(-10))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(
+            result, "Bad value for 'message_retention_days': -10")
+
+        req = dict(message_retention_days=ujson.dumps(Realm.RETAIN_MESSAGE_FOREVER))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_success(result)
+
+        req = dict(message_retention_days=ujson.dumps(10))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_success(result)
+
+        do_change_plan_type(realm, Realm.LIMITED)
+        req = dict(message_retention_days=ujson.dumps(10))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(
+            result, "Feature unavailable on your current plan.")
+
+
 class RealmAPITest(ZulipTestCase):
 
     def setUp(self) -> None:
