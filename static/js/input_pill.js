@@ -47,7 +47,7 @@ exports.create = function (opts) {
     const funcs = {
         // return the value of the contenteditable input form.
         value: function (input_elem) {
-            return input_elem.innerText.trim();
+            return input_elem.innerText;
         },
 
         // clear the value of the input form.
@@ -239,7 +239,7 @@ exports.create = function (opts) {
 
                 // if there is input, grab the input, make a pill from it,
                 // and append the pill, then clear the input.
-                const value = funcs.value(e.target);
+                const value = funcs.value(e.target).trim();
                 if (value.length > 0) {
                     // append the pill and by proxy create the pill object.
                     const ret = funcs.appendPill(value);
