@@ -7,7 +7,6 @@ from zerver.lib.avatar import (
     get_avatar_field,
 )
 from zerver.lib.avatar_hash import user_avatar_path
-from zerver.lib.bugdown import url_filename
 from zerver.lib.initial_password import initial_password
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_url
@@ -201,7 +200,6 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.subscribe(self.example_user("hamlet"), "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
         self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
-        self.assertIn('title="zulip.txt"', self.get_last_message().rendered_content)
 
         # Now try the endpoint that's supposed to return a temporary url for access
         # to the file.
@@ -1588,7 +1586,6 @@ class S3Test(ZulipTestCase):
         self.subscribe(self.example_user("hamlet"), "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
         self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
-        self.assertIn('title="dummy.txt"', self.get_last_message().rendered_content)
 
     @use_s3_backend
     def test_file_upload_s3_with_undefined_content_type(self) -> None:
@@ -1654,7 +1651,6 @@ class S3Test(ZulipTestCase):
         self.subscribe(self.example_user("hamlet"), "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
         self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
-        self.assertIn('title="zulip.txt"', self.get_last_message().rendered_content)
 
     @use_s3_backend
     def test_upload_avatar_image(self) -> None:
@@ -1872,17 +1868,6 @@ class S3Test(ZulipTestCase):
         self.assertIsNone(delete_export_tarball('not_a_file'))
         path_id = urllib.parse.urlparse(uri).path
         self.assertEqual(delete_export_tarball(path_id), path_id)
-
-class UploadTitleTests(TestCase):
-    def test_upload_titles(self) -> None:
-        zulip_realm = get_realm("zulip")
-        self.assertEqual(url_filename("http://localhost:9991/user_uploads/%s/LUeQZUG5jxkagzVzp1Ox_amr/dummy.txt" % (
-            zulip_realm.id,)), "dummy.txt")
-        self.assertEqual(url_filename("http://localhost:9991/user_uploads/%s/94/SzGYe0RFT-tEcOhQ6n-ZblFZ/zulip.txt" % (
-            zulip_realm.id,)), "zulip.txt")
-        self.assertEqual(url_filename("https://zulip.com/user_uploads/4142/LUeQZUG5jxkagzVzp1Ox_amr/pasted_image.png"), "pasted_image.png")
-        self.assertEqual(url_filename("https://zulipchat.com/integrations"), "https://zulipchat.com/integrations")
-        self.assertEqual(url_filename("https://example.com"), "https://example.com")
 
 class SanitizeNameTests(TestCase):
     def test_file_name(self) -> None:

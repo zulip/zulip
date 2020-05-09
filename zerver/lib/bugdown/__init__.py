@@ -545,8 +545,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             insertion_index: Optional[int]=None,
             already_thumbnailed: Optional[bool]=False
     ) -> None:
-        title = title if title is not None else url_filename(link)
-        title = title if title else ""
         desc = desc if desc is not None else ""
 
         # Update message.has_image attribute.
@@ -562,7 +560,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         div.set("class", class_attr)
         a = markdown.util.etree.SubElement(div, "a")
         a.set("href", link)
-        a.set("title", title)
+        if title is not None:
+            a.set("title", title)
         if data_id is not None:
             a.set("data-id", data_id)
         img = markdown.util.etree.SubElement(a, "img")
@@ -591,7 +590,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
     def add_oembed_data(self, root: Element, link: str, extracted_data: Dict[str, Any]) -> bool:
         oembed_resource_type = extracted_data.get('type', '')
-        title = extracted_data.get('title', link)
+        title = extracted_data.get('title')
 
         if oembed_resource_type == 'photo':
             image = extracted_data.get('image')
@@ -602,7 +601,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         elif oembed_resource_type == 'video':
             html = extracted_data['html']
             image = extracted_data['image']
-            title = extracted_data.get('title', link)
+            title = extracted_data.get('title')
             description = extracted_data.get('description')
             self.add_a(root, image, link, title, description,
                        "embed-video message_inline_image",
@@ -960,7 +959,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 img_div.set('class', 'twitter-image')
                 img_a = markdown.util.etree.SubElement(img_div, 'a')
                 img_a.set('href', media_item['url'])
-                img_a.set('title', media_item['url'])
                 img = markdown.util.etree.SubElement(img_a, 'img')
                 img.set('src', media_url)
 
@@ -972,14 +970,16 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             bugdown_logger.warning(traceback.format_exc())
             return None
 
-    def get_url_data(self, e: Element) -> Optional[Tuple[str, str]]:
+    def get_url_data(self, e: Element) -> Optional[Tuple[str, Optional[str]]]:
         if e.tag == "a":
-            if e.text is not None:
-                return (e.get("href"), e.text)
-            return (e.get("href"), e.get("href"))
+            return (e.get("href"), e.text)
         return None
 
-    def handle_image_inlining(self, root: Element, found_url: ResultWithFamily[Tuple[str, str]]) -> None:
+    def handle_image_inlining(
+        self,
+        root: Element,
+        found_url: ResultWithFamily[Tuple[str, Optional[str]]],
+    ) -> None:
         grandparent = found_url.family.grandparent
         parent = found_url.family.parent
         ahref_element = found_url.family.child
@@ -987,10 +987,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         actual_url = self.get_actual_image_url(url)
 
         # url != text usually implies a named link, which we opt not to remove
-        url_eq_text = (url == text)
+        url_eq_text = text is None or url == text
+        title = None if url_eq_text else text
 
         if parent.tag == 'li':
-            self.add_a(parent, self.get_actual_image_url(url), url, title=text)
+            self.add_a(parent, self.get_actual_image_url(url), url, title=title)
             if not parent.text and not ahref_element.tail and url_eq_text:
                 parent.remove(ahref_element)
 
@@ -1003,12 +1004,12 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
             if parent_index is not None:
                 ins_index = self.find_proper_insertion_index(grandparent, parent, parent_index)
-                self.add_a(grandparent, actual_url, url, title=text, insertion_index=ins_index)
+                self.add_a(grandparent, actual_url, url, title=title, insertion_index=ins_index)
 
             else:
                 # We're not inserting after parent, since parent not found.
                 # Append to end of list of grandparent's children as normal
-                self.add_a(grandparent, actual_url, url, title=text)
+                self.add_a(grandparent, actual_url, url, title=title)
 
             # If link is alone in a paragraph, delete paragraph containing it
             if (len(parent.getchildren()) == 1 and
@@ -1019,7 +1020,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
         else:
             # If none of the above criteria match, fall back to old behavior
-            self.add_a(root, actual_url, url, title=text)
+            self.add_a(root, actual_url, url, title=title)
 
     def find_proper_insertion_index(self, grandparent: Element, parent: Element,
                                     parent_index_in_grandparent: int) -> int:
@@ -1116,7 +1117,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     class_attr = "message_inline_image"
                     # Not making use of title and description of images
                 self.add_a(root, dropbox_image['image'], url,
-                           title=dropbox_image.get('title', ""),
+                           title=dropbox_image.get('title'),
                            desc=dropbox_image.get('desc', ""),
                            class_attr=class_attr,
                            already_thumbnailed=True)
@@ -1350,19 +1351,6 @@ class Tex(markdown.inlinepatterns.Pattern):
             span.text = '$$' + match.group('body') + '$$'
             return span
 
-upload_title_re = re.compile("^(https?://[^/]*)?(/user_uploads/\\d+)(/[^/]*)?/[^/]*/(?P<filename>[^/]*)$")
-def url_filename(url: str) -> str:
-    """Extract the filename if a URL is an uploaded file, or return the original URL"""
-    match = upload_title_re.match(url)
-    if match:
-        return match.group('filename')
-    else:
-        return url
-
-def fixup_link(link: markdown.util.etree.Element) -> None:
-    """Set title attributes we want on every link."""
-    link.set('title', url_filename(link.get('href')))
-
 
 def sanitize_url(url: str) -> Optional[str]:
     """
@@ -1432,7 +1420,6 @@ def url_to_a(db_data: Optional[DbData], url: str, text: Optional[str]=None) -> U
 
     a.set('href', href)
     a.text = text
-    fixup_link(a)
     return a
 
 class CompiledPattern(markdown.inlinepatterns.Pattern):
@@ -1772,7 +1759,6 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
 
         # Make changes to <a> tag attributes
         el.set("href", href)
-        fixup_link(el)
 
         # Show link href if title is empty
         if not el.text.strip():

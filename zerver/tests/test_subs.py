@@ -783,9 +783,10 @@ class StreamAdminTest(ZulipTestCase):
                                        {'description': ujson.dumps('See https://zulipchat.com/team')})
         self.assert_json_success(result)
         stream = get_stream('stream_name1', realm)
-        self.assertEqual(stream.rendered_description,
-                         '<p>See <a href="https://zulipchat.com/team" '
-                         'title="https://zulipchat.com/team">https://zulipchat.com/team</a></p>')
+        self.assertEqual(
+            stream.rendered_description,
+            '<p>See <a href="https://zulipchat.com/team">https://zulipchat.com/team</a></p>',
+        )
 
     def test_change_stream_description_requires_realm_admin(self) -> None:
         user_profile = self.example_user('hamlet')

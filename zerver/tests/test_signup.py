@@ -734,8 +734,7 @@ class LoginTest(ZulipTestCase):
         realm.description = description
         realm.save(update_fields=["description"])
         response = self.client_get("/login/")
-        expected_response = """<p><a href="https://www.google.com/images/srpr/logo4w.png" \
-title="https://www.google.com/images/srpr/logo4w.png">\
+        expected_response = """<p><a href="https://www.google.com/images/srpr/logo4w.png">\
 https://www.google.com/images/srpr/logo4w.png</a></p>"""
         self.assertEqual(response.context_data["realm_description"], expected_response)
         self.assertEqual(response.status_code, 200)
