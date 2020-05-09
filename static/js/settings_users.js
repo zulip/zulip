@@ -171,7 +171,6 @@ function populate_users(realm_people_data) {
     let deactivated_users = [];
     let bots = [];
     for (const user of realm_people_data.members) {
-        user.is_active_human = user.is_active && !user.is_bot;
         if (user.is_bot) {
             bots.push(user);
         } else if (user.is_active) {
