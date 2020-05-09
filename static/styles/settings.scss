@@ -460,89 +460,93 @@ input[type=checkbox] {
     margin-bottom: 10px;
 }
 
-#settings_page .icon-button {
-    border-radius: 5px;
-    border: 1px solid hsl(0, 0%, 80%);
-    font-size: 14px;
-    padding: 3px 14px 4px 11px;
-    text-decoration: none;
-    color: hsl(0, 0%, 47%);
-    min-width: 80px;
-    line-height: 16px;
-}
+#settings_page {
+    .icon-button {
+        border-radius: 5px;
+        border: 1px solid hsl(0, 0%, 80%);
+        font-size: 14px;
+        padding: 3px 14px 4px 11px;
+        text-decoration: none;
+        color: hsl(0, 0%, 47%);
+        min-width: 80px;
+        line-height: 16px;
 
-#settings_page .icon-button:hover {
-    background-color: hsl(0, 0%, 100%);
-    border: 1px solid hsl(0, 0%, 61%);
-    color: hsl(0, 0%, 18%);
-}
+        &:hover {
+            background-color: hsl(0, 0%, 100%);
+            border: 1px solid hsl(0, 0%, 61%);
+            color: hsl(0, 0%, 18%);
 
-#settings_page .icon-button:hover .icon-button-icon {
-    color: hsl(0, 0%, 47%);
-}
+            .icon-button-icon {
+                color: hsl(0, 0%, 47%);
+            }
+        }
 
-#settings_page .icon-button.primary {
-    background-color: hsl(156, 30%, 50%);
-    color: hsl(0, 0%, 100%);
-    border: 1px solid hsl(155, 30%, 50%);
-}
+        &.primary {
+            background-color: hsl(156, 30%, 50%);
+            color: hsl(0, 0%, 100%);
+            border: 1px solid hsl(155, 30%, 50%);
 
-#settings_page .icon-button.primary:hover {
-    background-color: hsl(166, 35%, 57%);
-    border: 1px solid hsl(166, 35%, 57%);
-}
+            &:hover {
+                background-color: hsl(166, 35%, 57%);
+                border: 1px solid hsl(166, 35%, 57%);
+            }
 
-#settings_page .icon-button.primary .icon-button-icon {
-    font-weight: lighter;
-    color: hsl(0, 0%, 100%);
-}
+            .icon-button-icon {
+                font-weight: lighter;
+                color: hsl(0, 0%, 100%);
+            }
 
-#settings_page .icon-button.save-button.saving {
-    background-color: hsl(156, 14%, 40%);
-    border-color: hsl(156, 14%, 40%);
-}
+            &.saving {
+                background-color: hsl(156, 14%, 40%);
+                border-color: hsl(156, 14%, 40%);
+            }
+        }
 
-#settings_page .icon-button .icon-button-icon {
-    vertical-align: bottom;
-    margin-right: 3px;
-    margin-bottom: 1px;
-    font-size: 15px;
-    font-weight: 500;
-}
+        .icon-button-icon {
+            vertical-align: bottom;
+            margin-right: 3px;
+            margin-bottom: 1px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+    }
 
-#settings_page .save-button-controls {
-    display: inline;
-    margin-left: 15px;
-}
+    .save-button-controls {
+        display: inline;
+        margin-left: 15px;
 
-#settings_page .save-button-controls.hide {
-    display: none;
-}
+        &.hide {
+            display: none;
+        }
+    }
 
-#settings_page .save-button {
-    margin-right: 5px;
-}
+    .save-button {
+        margin-right: 5px;
 
-#settings_page .save-button .icon-button-loading {
-    display: none;
-}
+        .icon-button-loading {
+            display: none;
+        }
 
-#settings_page .save-button.saving .icon-button-icon {
-    display: none;
-}
+        &.saving {
+            .icon-button-icon {
+                display: none;
+            }
 
-#settings_page .save-button.saving .icon-button-loading {
-    display: inline-block;
-    margin-right: 2px;
-}
+            .icon-button-loading {
+                display: inline-block;
+                margin-right: 2px;
+            }
+        }
+    }
 
-#settings_page .admin-realm-time-limit-input {
-    width: 5ch;
-    text-align: right;
-}
+    .admin-realm-time-limit-input {
+        width: 5ch;
+        text-align: right;
+    }
 
-#settings_page .realm-time-limit-label {
-    vertical-align: middle;
+    .realm-time-limit-label {
+        vertical-align: middle;
+    }
 }
 
 #google_hangouts_domain,
