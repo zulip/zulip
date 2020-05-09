@@ -437,12 +437,14 @@ td .button {
     margin: 0px;
 }
 
-input[type=checkbox] + .inline-block {
-    margin-left: 10px;
-}
+input[type=checkbox] {
+    + .inline-block {
+        margin-left: 10px;
+    }
 
-input[type=checkbox].inline-block {
-    margin: -2px 0px 0px 0px;
+    .inline-block {
+        margin: -2px 0px 0px 0px;
+    }
 }
 
 .allow-subdomains,
