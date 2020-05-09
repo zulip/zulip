@@ -342,7 +342,7 @@ exports.set_up = function () {
 
     $('#api_key_button').click(function (e) {
         setup_api_key_modal();
-        overlays.open_modal('api_key_modal');
+        overlays.open_modal('#api_key_modal');
         e.preventDefault();
         e.stopPropagation();
     });
@@ -361,14 +361,14 @@ exports.set_up = function () {
         e.stopPropagation();
         if (exports.user_can_change_name()) {
             $('#change_full_name_modal').find("input[name='full_name']").val(page_params.full_name);
-            overlays.open_modal('change_full_name_modal');
+            overlays.open_modal('#change_full_name_modal');
         }
     });
 
     $('#change_password').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        overlays.open_modal('change_password_modal');
+        overlays.open_modal('#change_password_modal');
         $('#pw_change_controls').show();
         if (page_params.realm_password_auth_enabled !== false) {
             // zxcvbn.js is pretty big, and is only needed on password
@@ -419,7 +419,7 @@ exports.set_up = function () {
 
         const opts = {
             success_continuation: function () {
-                overlays.close_modal("change_password_modal");
+                overlays.close_modal("#change_password_modal");
             },
             error_msg_element: change_password_error,
         };
@@ -443,7 +443,7 @@ exports.set_up = function () {
 
         const opts = {
             success_continuation: function () {
-                overlays.close_modal("change_full_name_modal");
+                overlays.close_modal("#change_full_name_modal");
             },
             error_msg_element: change_full_name_error,
         };
@@ -464,7 +464,7 @@ exports.set_up = function () {
                     const email_msg = render_settings_dev_env_email_access();
                     ui_report.success(email_msg, $("#dev-account-settings-status").expectOne(), 4000);
                 }
-                overlays.close_modal('change_email_modal');
+                overlays.close_modal('#change_email_modal');
             },
             error_msg_element: change_email_error,
             success_msg: i18n.t('Check your email (%s) to confirm the new address.').replace(
@@ -478,7 +478,7 @@ exports.set_up = function () {
         e.preventDefault();
         e.stopPropagation();
         if (!page_params.realm_email_changes_disabled || page_params.is_admin) {
-            overlays.open_modal('change_email_modal');
+            overlays.open_modal('#change_email_modal');
             const email = $('#email_value').text().trim();
             $('.email_change_container').find("input[name='email']").val(email);
         }

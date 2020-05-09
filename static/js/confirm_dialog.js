@@ -51,7 +51,7 @@ exports.launch = function (conf) {
     // Close any existing modals--on settings screens you can
     // have multiple buttons that need confirmation.
     if (overlays.is_modal_open()) {
-        overlays.close_modal('confirm_dialog_modal');
+        overlays.close_modal('#confirm_dialog_modal');
     }
 
     confirm_dialog.find('.confirm_dialog_heading').html(conf.html_heading);
@@ -63,7 +63,7 @@ exports.launch = function (conf) {
 
     // Set up handlers.
     yes_button.on('click', function () {
-        overlays.close_modal('confirm_dialog_modal');
+        overlays.close_modal('#confirm_dialog_modal');
         conf.on_click();
     });
 
@@ -72,7 +72,7 @@ exports.launch = function (conf) {
     });
 
     // Open the modal
-    overlays.open_modal('confirm_dialog_modal');
+    overlays.open_modal('#confirm_dialog_modal');
 };
 
 window.confirm_dialog = exports;
