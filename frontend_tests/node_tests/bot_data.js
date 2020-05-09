@@ -113,6 +113,12 @@ run_test('test_basics', () => {
         assert.equal(bot.is_active, false);
     }());
 
+    (function test_all_user_ids() {
+        const all_ids = bot_data.all_user_ids();
+        all_ids.sort();
+        assert.deepEqual(all_ids, [143, 314, 42, 43]);
+    }());
+
     (function test_delete() {
         let bot;
 
