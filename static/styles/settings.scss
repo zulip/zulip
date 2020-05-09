@@ -395,10 +395,6 @@ td .button {
     margin-right: -2px;
 }
 
-.dynamic-input [contenteditable=true] {
-    outline: none;
-}
-
 .dynamic-input div:empty::after {
     content: "username";
     color: hsl(0, 0%, 67%);
@@ -407,6 +403,10 @@ td .button {
 .dynamic-input.bot_user_name div:empty::after {
     content: "bot_user_name";
     color: hsl(0, 0%, 67%);
+}
+
+.dynamic-input [contenteditable=true] {
+    outline: none;
 }
 
 .button,
