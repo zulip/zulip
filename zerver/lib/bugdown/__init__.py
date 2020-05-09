@@ -305,10 +305,13 @@ class ResultWithFamily(Generic[T]):
         self.family = family
         self.result = result
 
-ElementPair = NamedTuple('ElementPair', [
-    ('parent', Optional[Any]),  # Recursive types are not fully supported yet
-    ('value', Element)
-])
+class ElementPair:
+    parent: Optional["ElementPair"]
+    value: Element
+
+    def __init__(self, parent: Optional["ElementPair"], value: Element):
+        self.parent = parent
+        self.value = value
 
 def walk_tree_with_family(root: Element,
                           processor: Callable[[Element], Optional[_T]]
