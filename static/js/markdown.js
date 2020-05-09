@@ -440,16 +440,9 @@ exports.initialize = function (realm_filters, helper_config) {
     // class-specific highlighting.
     r.code = code => fenced_code.wrap_code(code) + '\n\n';
 
-    // Our links have title=
-    r.link = function (href, title, text) {
-        title = title || href;
-        if (!text.trim()) {
-            text = href;
-        }
-        const out = '<a href="' + href + '"' + ' title="' +
-                  title + '"' + '>' + text + '</a>';
-        return out;
-    };
+    // Prohibit empty links for some reason.
+    const old_link = r.link;
+    r.link = (href, title, text) => old_link.call(r, href, title, text.trim() ? text : href);
 
     // Put a newline after a <br> in the generated HTML to match bugdown
     r.br = function () {
