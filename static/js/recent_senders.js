@@ -1,7 +1,9 @@
 const FoldDict = require('./fold_dict').FoldDict;
 
-const topic_senders = new Map(); // key is stream-id, value is Map
-const stream_senders = new Map(); // key is stream-id, value is Map
+// topic_senders[stream_id][topic_id][sender_id] = latest_message_id
+const topic_senders = new Map();
+// topic_senders[stream_id][sender_id] = latest_message_id
+const stream_senders = new Map();
 
 exports.process_message_for_senders = function (message) {
     const stream_id = message.stream_id;
@@ -9,18 +11,18 @@ exports.process_message_for_senders = function (message) {
 
     // Process most recent sender to topic
     const topic_dict = topic_senders.get(stream_id) || new FoldDict();
-    let sender_message_ids = topic_dict.get(topic) || new Map();
-    let old_message_id = sender_message_ids.get(message.sender_id);
+    const topic_sender_message_ids = topic_dict.get(topic) || new Map();
+    let old_message_id = topic_sender_message_ids.get(message.sender_id);
 
     if (old_message_id === undefined || old_message_id < message.id) {
-        sender_message_ids.set(message.sender_id, message.id);
+        topic_sender_message_ids.set(message.sender_id, message.id);
     }
 
-    topic_dict.set(topic, sender_message_ids);
+    topic_dict.set(topic, topic_sender_message_ids);
     topic_senders.set(stream_id, topic_dict);
 
     // Process most recent sender to whole stream
-    sender_message_ids = stream_senders.get(stream_id) || new Map();
+    const sender_message_ids = stream_senders.get(stream_id) || new Map();
     old_message_id = sender_message_ids.get(message.sender_id);
 
     if (old_message_id === undefined || old_message_id < message.id) {
