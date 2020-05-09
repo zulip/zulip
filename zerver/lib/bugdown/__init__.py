@@ -1,6 +1,6 @@
 # Zulip's main markdown implementation.  See docs/subsystems/markdown.md for
 # detailed documentation on our markdown syntax.
-from typing import (Any, Callable, Dict, Iterable, List, NamedTuple,
+from typing import (Any, Callable, Dict, Generic, Iterable, List, NamedTuple,
                     Optional, Set, Tuple, TypeVar, Union)
 from typing.re import Match, Pattern
 from typing_extensions import TypedDict
@@ -295,10 +295,15 @@ ElementFamily = NamedTuple('ElementFamily', [
     ('in_blockquote', bool),
 ])
 
-ResultWithFamily = NamedTuple('ResultWithFamily', [
-    ('family', ElementFamily),
-    ('result', Any)
-])
+T = TypeVar("T")
+
+class ResultWithFamily(Generic[T]):
+    family: ElementFamily
+    result: T
+
+    def __init__(self, family: ElementFamily, result: T):
+        self.family = family
+        self.result = result
 
 ElementPair = NamedTuple('ElementPair', [
     ('parent', Optional[Any]),  # Recursive types are not fully supported yet
@@ -307,7 +312,7 @@ ElementPair = NamedTuple('ElementPair', [
 
 def walk_tree_with_family(root: Element,
                           processor: Callable[[Element], Optional[_T]]
-                          ) -> List[ResultWithFamily]:
+                          ) -> List[ResultWithFamily[_T]]:
     results = []
 
     queue = deque([ElementPair(parent=None, value=root)])
@@ -971,7 +976,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return (e.get("href"), e.get("href"))
         return None
 
-    def handle_image_inlining(self, root: Element, found_url: ResultWithFamily) -> None:
+    def handle_image_inlining(self, root: Element, found_url: ResultWithFamily[Tuple[str, str]]) -> None:
         grandparent = found_url.family.grandparent
         parent = found_url.family.parent
         ahref_element = found_url.family.child

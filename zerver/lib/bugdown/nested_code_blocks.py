@@ -33,8 +33,8 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
         return None
 
     def get_nested_code_blocks(
-            self, code_tags: List[ResultWithFamily]
-    ) -> List[ResultWithFamily]:
+        self, code_tags: List[ResultWithFamily[Tuple[str, Optional[str]]]]
+    ) -> List[ResultWithFamily[Tuple[str, Optional[str]]]]:
         nested_code_blocks = []
         for code_tag in code_tags:
             parent: Any = code_tag.family.parent
@@ -49,7 +49,7 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
 
         return nested_code_blocks
 
-    def get_codehilite_block(self, code_block_text: str) -> Element:
+    def get_codehilite_block(self, code_block_text: Optional[str]) -> Element:
         div = markdown.util.etree.Element("div")
         div.set("class", "codehilite")
         pre = markdown.util.etree.SubElement(div, "pre")
