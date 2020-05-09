@@ -167,15 +167,4 @@ class zulip::app_frontend_base {
     mode    => '0755',
     source  => 'puppet:///modules/zulip/nagios_plugins/zulip_app_frontend',
   }
-
-  if $::osfamily == 'debian' {
-    # The pylibmc wheel looks for SASL plugins in the wrong place.
-    file { '/usr/lib64':
-      ensure => directory,
-    }
-    file { '/usr/lib64/sasl2':
-      ensure => link,
-      target => "/usr/lib/${::rubyplatform}/sasl2",
-    }
-  }
 }

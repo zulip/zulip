@@ -277,6 +277,9 @@ django-bitfield==2.0.1 \
     --hash=sha256:83bfa27da718caff436f646369ce58e2d9f922e1f3d65a93f0b731a835cbfc58 \
     --hash=sha256:ab340eb50cdb1e8c005594b9f8170a95a698102d06cf3f5031763be2750a8862 \
     # via -r requirements/common.in
+django-bmemcached==0.3.0 \
+    --hash=sha256:4e4b7d97216dbae331c1de10e699ca22804b94ec3a90d2762dd5d146e6986a8a \
+    # via -r requirements/common.in
 django-cookies-samesite==0.6.6 \
     --hash=sha256:a26dc27bfc446279c981a301b053eff845b93d9ba62798e281c90584a7ccaa4a \
     # via -r requirements/common.in
@@ -292,10 +295,6 @@ django-phonenumber-field==3.0.1 \
     --hash=sha256:1ab19f723928582fed412bd9844221fa4ff466276d8526b8b4a9913ee1487c5e \
     --hash=sha256:794ebbc3068a7af75aa72a80cb0cec67e714ff8409a965968040f1fd210b2d97 \
     # via django-two-factor-auth
-django-pylibmc==0.6.1 \
-    --hash=sha256:02b591933a029eb552388cced713028f3c6cbb021639fc8de388bd1ca87981d4 \
-    --hash=sha256:9cffdee703aaf9ebc029d9dbdee8abdd0723564b95e4b2ac59e4a668b8e58f93 \
-    # via -r requirements/common.in
 django-sendfile2==0.6.0 \
     --hash=sha256:7f850040ddc29c9c42192ed85b915465a3ed7cced916c4fafdd5eda057dd06ec \
     # via -r requirements/common.in
@@ -787,13 +786,6 @@ pyjwt==1.7.1 \
     --hash=sha256:5c6eca3c2940464d106b99ba83b00c6add741c9becaec087fb7ccdefea71350e \
     --hash=sha256:8d59a976fb773f3e6a39c85636357c4f0e242707394cadadd9814f5cbaa20e96 \
     # via -r requirements/common.in, apns2, social-auth-core, twilio
-pylibmc==1.6.1 \
-    --hash=sha256:01a7e2e3fa9fcd7a791c7818a80a07e7a381aee988a5d810a1c1e6f7a9a288fd \
-    --hash=sha256:6fff384e3c30af029bbac87f88b3fab14ae87b50103d389341d9b3e633349a3f \
-    --hash=sha256:8a8dd406487d419d58c6d944efd91e8189b360a0c4d9e8c6ebe3990d646ae7e9 \
-    --hash=sha256:c749b4251c1137837d00542b62992b96cd2aed639877407f66291120dd6de2ff \
-    --hash=sha256:e6c0c452336db0868d0de521d48872c2a359b1233b974c6b32c36ce68abc4820 \
-    # via -r requirements/common.in, django-pylibmc
 pyoembed==0.1.2 \
     --hash=sha256:0f755c8308039f1e49238e95ea94ef16aa08add9f32075ba13ab9b65f32ff582 \
     # via -r requirements/common.in
@@ -808,6 +800,9 @@ pyparsing==2.4.7 \
 pyrsistent==0.16.0 \
     --hash=sha256:28669905fe725965daa16184933676547c5bb40a5153055a8dee2a4bd7933ad3 \
     # via jsonschema
+https://github.com/jaysonsantos/python-binary-memcached/archive/364ce723ea73290a6ae27551cab28070424fd280.zip#egg=python-binary-memcached==0.29.0+git \
+    --hash=sha256:0e6f4c7c34c71e29e1daa53cca6598dcbdb8bd49d7c6aaac6c02d93bdc2d5a8f \
+    # via -r requirements/common.in, django-bmemcached
 python-dateutil==2.8.1 \
     --hash=sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c \
     --hash=sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a \
@@ -971,7 +966,7 @@ sh==1.12.14 \
 six==1.15.0 \
     --hash=sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259 \
     --hash=sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced \
-    # via argon2-cffi, automat, aws-sam-translator, cfn-lint, cryptography, django-bitfield, docker, ecdsa, hypchat, isodate, jsonschema, junit-xml, libthumbor, moto, openapi-core, openapi-schema-validator, openapi-spec-validator, packaging, parsel, pip-tools, protego, pyopenssl, python-dateutil, python-debian, python-jose, qrcode, responses, social-auth-app-django, social-auth-core, talon, traitlets, twilio, w3lib, websocket-client, zulip
+    # via argon2-cffi, automat, aws-sam-translator, cfn-lint, cryptography, django-bitfield, docker, ecdsa, hypchat, isodate, jsonschema, junit-xml, libthumbor, moto, openapi-core, openapi-schema-validator, openapi-spec-validator, packaging, parsel, pip-tools, protego, pyopenssl, python-binary-memcached, python-dateutil, python-debian, python-jose, qrcode, responses, social-auth-app-django, social-auth-core, talon, traitlets, twilio, w3lib, websocket-client, zulip
 snakeviz==2.1.0 \
     --hash=sha256:8ce375b18ae4a749516d7e6c6fbbf8be6177c53974f53534d8eadb646cd279b1 \
     --hash=sha256:92ad876fb6a201a7e23a6b85ea96d9643a51e285667c253a8653643804f7cb68 \
@@ -1163,6 +1158,9 @@ ua-parser==0.10.0 \
     --hash=sha256:46ab2e383c01dbd2ab284991b87d624a26a08f72da4d7d413f5bfab8b9036f8a \
     --hash=sha256:47b1782ed130d890018d983fac37c2a80799d9e0b9c532e734c67cf70f185033 \
     # via django-cookies-samesite
+uhashring==1.2 \
+    --hash=sha256:f7304ca2ff763bbf1e2f8a78f21131721811619c5841de4f8c98063344906931 \
+    # via python-binary-memcached
 https://github.com/zulip/ultrajson/archive/70ac02becc3e11174cd5072650f885b30daab8a8.zip#egg=ujson==1.35+git \
     --hash=sha256:e95c20f47093dc7376ddf70b95489979375fb6e88b8d7e4b5576d917dda8ef5a \
     # via -r requirements/common.in
