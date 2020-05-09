@@ -9,15 +9,10 @@ from scripts.lib.setup_path import setup_path
 
 setup_path()
 
-import pylibmc
+import bmemcached
 
 from zproject import settings
 
-assert isinstance(settings.CACHES["default"], dict)  # for mypy
-pylibmc.Client(
-    [settings.MEMCACHED_LOCATION],
-    binary=True,
-    username=settings.MEMCACHED_USERNAME,
-    password=settings.MEMCACHED_PASSWORD,
-    behaviors=settings.CACHES["default"]["OPTIONS"],
-).flush_all()
+cache = settings.CACHES["default"]
+assert isinstance(cache, dict)  # for mypy
+bmemcached.Client((cache["LOCATION"],), **cache["OPTIONS"]).flush_all()

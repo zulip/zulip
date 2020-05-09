@@ -326,24 +326,17 @@ RABBITMQ_PASSWORD = get_secret("rabbitmq_password")
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
-# Compress large values being stored in memcached; this is important
-# for at least the realm_users cache.
-PYLIBMC_MIN_COMPRESS_LEN = 100 * 1024
-PYLIBMC_COMPRESS_LEVEL = 1
-
 MEMCACHED_PASSWORD = get_secret("memcached_password")
 
 CACHES = {
     'default': {
-        'BACKEND': 'django_pylibmc.memcached.PyLibMCCache',
+        'BACKEND': 'django_bmemcached.memcached.BMemcached',
         'LOCATION': MEMCACHED_LOCATION,
-        'TIMEOUT': 3600,
-        'BINARY': True,
-        'USERNAME': MEMCACHED_USERNAME,
-        'PASSWORD': MEMCACHED_PASSWORD,
         'OPTIONS': {
-            'tcp_nodelay': True,
-            'retry_timeout': 1,
+            'socket_timeout': 3600,
+            'username': MEMCACHED_USERNAME,
+            'password': MEMCACHED_PASSWORD,
+            'pickle_protocol': 4,
         },
     },
     'database': {

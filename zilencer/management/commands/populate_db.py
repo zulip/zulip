@@ -4,7 +4,7 @@ import random
 from datetime import datetime
 from typing import Any, Callable, Dict, List, Mapping, Sequence, Tuple
 
-import pylibmc
+import bmemcached
 import ujson
 from django.conf import settings
 from django.contrib.sessions.models import Session
@@ -79,13 +79,9 @@ def clear_database() -> None:
     # With `zproject.test_settings`, we aren't using real memcached
     # and; we only need to flush memcached if we're populating a
     # database that would be used with it (i.e. zproject.dev_settings).
-    if default_cache['BACKEND'] == 'django_pylibmc.memcached.PyLibMCCache':
-        pylibmc.Client(
-            [default_cache['LOCATION']],
-            binary=True,
-            username=default_cache["USERNAME"],
-            password=default_cache["PASSWORD"],
-            behaviors=default_cache["OPTIONS"],
+    if default_cache['BACKEND'] == 'django_bmemcached.memcached.BMemcached':
+        bmemcached.Client(
+            (default_cache['LOCATION'],), **default_cache['OPTIONS'],
         ).flush_all()
 
     model: Any = None  # Hack because mypy doesn't know these are model classes

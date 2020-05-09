@@ -17,7 +17,6 @@ VENV_DEPENDENCIES = [
     "zlib1g-dev",             # Needed to handle compressed PNGs with Pillow
     "libjpeg-dev",          # Needed to handle JPEGs with Pillow
     "libldap2-dev",
-    "libmemcached-dev",
     "python3-dev",          # Needed to install typed-ast dependency of mypy
     "python3-pip",
     "virtualenv",
@@ -43,7 +42,6 @@ COMMON_YUM_VENV_DEPENDENCIES = [
     "zlib-devel",
     "libjpeg-turbo-devel",
     "openldap-devel",
-    "libmemcached-devel",
     # Needed by python-xmlsec:
     "gcc"
     "python3-devel",
