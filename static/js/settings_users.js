@@ -120,17 +120,19 @@ function get_status_field() {
 function failed_listing_users(xhr) {
     loading.destroy_indicator($('#subs_page_loading_indicator'));
     const status = get_status_field();
-    ui_report.error(i18n.t("Error listing users or bots"), xhr, status);
+    ui_report.error(i18n.t("Error listing users"), xhr, status);
 }
 
 function populate_users(realm_people_data) {
     let active_users = [];
     let deactivated_users = [];
-    let bots = [];
+
     for (const user of realm_people_data.members) {
         if (user.is_bot) {
-            bots.push(user);
-        } else if (user.is_active) {
+            continue;
+        }
+
+        if (user.is_active) {
             active_users.push(user);
         } else {
             deactivated_users.push(user);
@@ -139,11 +141,9 @@ function populate_users(realm_people_data) {
 
     active_users = _.sortBy(active_users, 'full_name');
     deactivated_users = _.sortBy(deactivated_users, 'full_name');
-    bots = _.sortBy(bots, 'full_name');
 
     section.active.create_table(active_users);
     section.deactivated.create_table(deactivated_users);
-    section.bots.create_table(bots);
 }
 
 function reset_scrollbar($sel) {
@@ -237,9 +237,10 @@ function human_info(person) {
     return info;
 }
 
-section.bots.create_table = (bots) => {
+section.bots.create_table = () => {
     const $bots_table = $("#admin_bots_table");
-    const bot_user_ids = bots.map(b => b.user_id);
+    const bot_user_ids = bot_data.all_user_ids();
+
     list_render.create($bots_table, bot_user_ids, {
         name: "admin_bot_list",
         get_item: bot_info,
@@ -660,11 +661,15 @@ section.bots.handle_events = () => {
     handle_bot_form(tbody, status_field);
 };
 
-exports.set_up = function () {
+exports.set_up_humans = function () {
     start_data_load();
     section.active.handle_events();
     section.deactivated.handle_events();
+};
+
+exports.set_up_bots = function () {
     section.bots.handle_events();
+    section.bots.create_table();
 };
 
 window.settings_users = exports;
