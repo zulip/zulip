@@ -1668,7 +1668,7 @@ class GetOldMessagesTest(ZulipTestCase):
         ))
         self.assertEqual(len(link_search_result['messages']), 1)
         self.assertEqual(link_search_result['messages'][0]['match_content'],
-                         '<p><a href="https://google.com" title="https://google.com">https://<span class="highlight">google.com</span></a></p>')
+                         '<p><a href="https://google.com">https://<span class="highlight">google.com</span></a></p>')
 
         (meeting_message,) = [
             m for m in messages
@@ -1886,7 +1886,7 @@ class GetOldMessagesTest(ZulipTestCase):
         ))
         self.assertEqual(len(multi_search_result['messages']), 1)
         self.assertEqual(multi_search_result['messages'][0]['match_content'],
-                         '<p><span class="highlight">Can</span> you <span class="highlight">speak</span> <a href="https://en.wikipedia.org/wiki/Japanese" title="https://en.wikipedia.org/wiki/Japanese">https://en.<span class="highlight">wiki</span>pedia.org/<span class="highlight">wiki</span>/Japanese</a>?</p>')
+                         '<p><span class="highlight">Can</span> you <span class="highlight">speak</span> <a href="https://en.wikipedia.org/wiki/Japanese">https://en.<span class="highlight">wiki</span>pedia.org/<span class="highlight">wiki</span>/Japanese</a>?</p>')
 
         # Multiple search operands with unicode
         multi_search_narrow = [
@@ -1912,7 +1912,7 @@ class GetOldMessagesTest(ZulipTestCase):
         ))
         self.assertEqual(len(link_search_result['messages']), 1)
         self.assertEqual(link_search_result['messages'][0]['match_content'],
-                         '<p><a href="https://google.com" title="https://google.com"><span class="highlight">https://google.com</span></a></p>')
+                         '<p><a href="https://google.com"><span class="highlight">https://google.com</span></a></p>')
 
         # Search operands with HTML Special Characters
         special_search_narrow = [
