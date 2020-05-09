@@ -37,7 +37,7 @@ from zerver.decorator import (
     authenticate_notify, cachify,
     get_client_name, internal_notify_view, is_local_addr,
     rate_limit, validate_api_key,
-    return_success_on_head_request,
+    return_success_on_head_request, to_not_negative_int_or_none,
     zulip_login_required
 )
 from zerver.lib.cache import ignore_unhashable_lru_cache, dict_to_items_tuple, items_tuple_to_dict
@@ -45,8 +45,7 @@ from zerver.lib.validator import (
     check_string, check_dict, check_dict_only, check_bool, check_float, check_int, check_list, Validator,
     check_variable_type, equals, check_none_or, check_url, check_short_string,
     check_string_fixed_length, check_capped_string, check_color, to_non_negative_int,
-    check_string_or_int_list, check_string_or_int, check_int_in, check_string_in,
-    to_positive_or_allowed_int
+    check_string_or_int_list, check_string_or_int, check_int_in, check_string_in
 )
 from zerver.models import \
     get_realm, get_user, UserProfile, Realm
@@ -774,13 +773,11 @@ class ValidatorTestCase(TestCase):
         with self.assertRaisesRegex(ValueError, re.escape('%s is too large (max %s)' % (2**32, 2**32-1))):
             self.assertEqual(to_non_negative_int(str(2**32)))
 
-    def test_to_positive_or_allowed_int(self) -> None:
-        self.assertEqual(to_positive_or_allowed_int(-1)('5'), 5)
-        self.assertEqual(to_positive_or_allowed_int(-1)('-1'), -1)
-        with self.assertRaisesRegex(ValueError, 'argument is negative'):
-            to_positive_or_allowed_int(-1)('-5')
+    def test_check_to_not_negative_int_or_none(self) -> None:
+        self.assertEqual(to_not_negative_int_or_none('5'), 5)
+        self.assertEqual(to_not_negative_int_or_none(None), None)
         with self.assertRaises(ValueError):
-            to_positive_or_allowed_int(-1)('0')
+            to_not_negative_int_or_none('-5')
 
     def test_check_float(self) -> None:
         x: Any = 5.5

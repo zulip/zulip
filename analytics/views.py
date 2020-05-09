@@ -31,7 +31,7 @@ from analytics.models import BaseCount, InstallationCount, \
     RealmCount, StreamCount, UserCount, last_successful_fill, installation_epoch
 from confirmation.models import Confirmation, confirmation_url, _properties
 from zerver.decorator import require_server_admin, require_server_admin_api, \
-    to_utc_datetime, zulip_login_required, require_non_guest_user
+    to_non_negative_int, to_utc_datetime, zulip_login_required, require_non_guest_user
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -41,7 +41,6 @@ from zerver.views.invite import get_invitee_emails_set
 from zerver.lib.subdomains import get_subdomain_from_hostname
 from zerver.lib.actions import do_change_plan_type, do_deactivate_realm, \
     do_send_realm_reactivation_email, do_scrub_realm
-from zerver.lib.validator import to_non_negative_int
 from confirmation.settings import STATUS_ACTIVE
 
 if settings.BILLING_ENABLED:

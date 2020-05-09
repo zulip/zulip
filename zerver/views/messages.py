@@ -9,7 +9,8 @@ from typing import Dict, List, Set, Any, Iterable, \
     Optional, Tuple, Union, Sequence, cast
 from zerver.lib.exceptions import JsonableError, ErrorCode
 from zerver.lib.html_diff import highlight_html_differences
-from zerver.decorator import has_request_variables, REQ
+from zerver.decorator import has_request_variables, \
+    REQ, to_non_negative_int
 from django.utils.html import escape as escape_html
 from zerver.lib import bugdown
 from zerver.lib.zcommand import process_zcommands
@@ -49,7 +50,7 @@ from zerver.lib.utils import statsd
 from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool, \
     check_string_or_int_list, check_string_or_int, check_string_in, \
-    check_required_string, to_non_negative_int
+    check_required_string
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import Message, UserProfile, Stream, Subscription, Client,\
     Realm, RealmDomain, Recipient, UserMessage, UserActivity, \

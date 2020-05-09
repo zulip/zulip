@@ -5,7 +5,7 @@ from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 from django.views.decorators.http import require_safe
 
-from zerver.decorator import require_realm_admin
+from zerver.decorator import require_realm_admin, to_non_negative_int, to_not_negative_int_or_none
 from zerver.lib.actions import (
     do_set_realm_message_editing,
     do_set_realm_message_deleting,
@@ -19,8 +19,7 @@ from zerver.lib.actions import (
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.request import has_request_variables, REQ, JsonableError
 from zerver.lib.response import json_success, json_error
-from zerver.lib.validator import check_string, check_dict, check_bool, check_int, \
-    check_int_in, to_positive_or_allowed_int, to_non_negative_int
+from zerver.lib.validator import check_string, check_dict, check_bool, check_int, check_int_in
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.domains import validate_domain
 from zerver.lib.video_calls import request_zoom_video_call_url
@@ -56,8 +55,7 @@ def update_realm(
         authentication_methods: Optional[Dict[Any, Any]]=REQ(validator=check_dict([]), default=None),
         notifications_stream_id: Optional[int]=REQ(validator=check_int, default=None),
         signup_notifications_stream_id: Optional[int]=REQ(validator=check_int, default=None),
-        message_retention_days: Optional[int] = REQ(converter=to_positive_or_allowed_int(
-            Realm.RETAIN_MESSAGE_FOREVER), default=None),
+        message_retention_days: Optional[int]=REQ(converter=to_not_negative_int_or_none, default=None),
         send_welcome_emails: Optional[bool]=REQ(validator=check_bool, default=None),
         digest_emails_enabled: Optional[bool]=REQ(validator=check_bool, default=None),
         message_content_allowed_in_email_notifications: Optional[bool]=REQ(

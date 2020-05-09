@@ -264,7 +264,6 @@ class Realm(models.Model):
         "Stream", related_name="+", null=True, blank=True, on_delete=CASCADE
     )
 
-    RETAIN_MESSAGE_FOREVER = -1
     # For old messages being automatically deleted
     message_retention_days: Optional[int] = models.IntegerField(null=True)
 
