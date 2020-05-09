@@ -23,6 +23,10 @@ const send_change_event = _.debounce(function () {
     settings_bots.render_bots();
 }, 50);
 
+exports.all_user_ids = function () {
+    return Array.from(bots.keys());
+};
+
 exports.add = function (bot) {
     const clean_bot = _.pick(bot, bot_fields);
     bots.set(bot.user_id, clean_bot);
