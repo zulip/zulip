@@ -740,10 +740,10 @@ input[type=checkbox] {
 
 .control-label-disabled {
     color: hsl(0, 0%, 82%);
-}
 
-.control-label-disabled.enabled {
-    color: hsl(0, 0%, 20%);
+    &.enabled {
+        color: hsl(0, 0%, 20%);
+    }
 }
 
 .disableable {
