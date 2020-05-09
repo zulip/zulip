@@ -28,6 +28,11 @@ Zulip.
   product. If it does, follow [these instructions](/integrations/doc/ifttt)
   to set it up.
 
+* Use a third-party webhook integration designed to work with
+  [Slack's webhook API](https://api.slack.com/messaging/webhooks)
+  pointed at Zulip's
+  [Slack-compatible webhook API](/integrations/slack/slack_incoming).
+
 * Check if [Hubot](https://github.com/hubot-scripts) has an integration with
   the product. If it does, follow
   [these instructions](/integrations/doc/hubot) to set it up.
