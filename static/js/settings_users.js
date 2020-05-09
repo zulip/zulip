@@ -330,7 +330,7 @@ function open_human_form(person) {
     const html = render_admin_human_form({
         user_id: person.user_id,
         email: person.email,
-        full_name: people.get_full_name(person.user_id),
+        full_name: person.full_name,
         is_admin: person.is_admin,
         is_guest: person.is_guest,
         is_member: !person.is_admin && !person.is_guest,
@@ -347,7 +347,7 @@ function open_bot_form(person) {
     const html = render_admin_bot_form({
         user_id: person.user_id,
         email: person.email,
-        full_name: people.get_full_name(person.user_id),
+        full_name: person.full_name,
     });
     const div = $(html);
     const modal_container = $('#user-info-form-modal-container');
