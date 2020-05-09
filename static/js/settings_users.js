@@ -4,14 +4,6 @@ const render_bot_owner_select = require("../templates/bot_owner_select.hbs");
 const render_admin_human_form = require('../templates/admin_human_form.hbs');
 const render_admin_bot_form = require('../templates/admin_bot_form.hbs');
 
-const meta = {
-    loaded: false,
-};
-
-exports.reset = function () {
-    meta.loaded = false;
-};
-
 const section = {
     active: {},
     deactivated: {},
@@ -321,11 +313,11 @@ section.deactivated.create_table = (deactivated_users) => {
 };
 
 exports.update_user_data = function (user_id, new_data) {
-    if (!meta.loaded) {
+    const user_row = get_user_info_row(user_id);
+
+    if (user_row.length === 0) {
         return;
     }
-
-    const user_row = get_user_info_row(user_id);
 
     if (new_data.full_name !== undefined) {
         // Update the full name in the table
@@ -370,7 +362,7 @@ function start_data_load() {
         url: '/json/users',
         idempotent: true,
         timeout: 10 * 1000,
-        success: exports.on_load_success,
+        success: populate_users,
         error: failed_listing_users,
     });
 }
@@ -633,12 +625,6 @@ function handle_bot_form(tbody, status_field) {
         });
     });
 }
-
-exports.on_load_success = function (realm_people_data) {
-    meta.loaded = true;
-
-    populate_users(realm_people_data);
-};
 
 section.active.handle_events = () => {
     const tbody = $('#admin_users_table').expectOne();
