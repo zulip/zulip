@@ -481,15 +481,25 @@ input[type=checkbox] {
     color: hsl(0, 0%, 47%);
 }
 
+#settings_page .icon-button.primary {
+    background-color: hsl(156, 30%, 50%);
+    color: hsl(0, 0%, 100%);
+    border: 1px solid hsl(155, 30%, 50%);
+}
+
 #settings_page .icon-button.primary:hover {
     background-color: hsl(166, 35%, 57%);
     border: 1px solid hsl(166, 35%, 57%);
 }
 
-#settings_page .icon-button.primary {
-    background-color: hsl(156, 30%, 50%);
+#settings_page .icon-button.primary .icon-button-icon {
+    font-weight: lighter;
     color: hsl(0, 0%, 100%);
-    border: 1px solid hsl(155, 30%, 50%);
+}
+
+#settings_page .icon-button.save-button.saving {
+    background-color: hsl(156, 14%, 40%);
+    border-color: hsl(156, 14%, 40%);
 }
 
 #settings_page .icon-button .icon-button-icon {
@@ -498,11 +508,6 @@ input[type=checkbox] {
     margin-bottom: 1px;
     font-size: 15px;
     font-weight: 500;
-}
-
-#settings_page .icon-button.primary .icon-button-icon {
-    font-weight: lighter;
-    color: hsl(0, 0%, 100%);
 }
 
 #settings_page .save-button-controls {
@@ -518,9 +523,8 @@ input[type=checkbox] {
     margin-right: 5px;
 }
 
-#settings_page .icon-button.save-button.saving {
-    background-color: hsl(156, 14%, 40%);
-    border-color: hsl(156, 14%, 40%);
+#settings_page .save-button .icon-button-loading {
+    display: none;
 }
 
 #settings_page .save-button.saving .icon-button-icon {
@@ -532,8 +536,13 @@ input[type=checkbox] {
     margin-right: 2px;
 }
 
-#settings_page .save-button .icon-button-loading {
-    display: none;
+#settings_page .admin-realm-time-limit-input {
+    width: 5ch;
+    text-align: right;
+}
+
+#settings_page .realm-time-limit-label {
+    vertical-align: middle;
 }
 
 #google_hangouts_domain,
@@ -734,15 +743,6 @@ input[type=checkbox] {
 .disableable {
     margin-left: 22px;
     margin-top: -10px;
-}
-
-#settings_page .admin-realm-time-limit-input {
-    width: 5ch;
-    text-align: right;
-}
-
-#settings_page .realm-time-limit-label {
-    vertical-align: middle;
 }
 
 .admin-realm-message-content-delete-limit-minutes {
