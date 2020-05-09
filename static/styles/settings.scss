@@ -441,6 +441,10 @@ input[type=checkbox] + .inline-block {
     margin-left: 10px;
 }
 
+input[type=checkbox].inline-block {
+    margin: -2px 0px 0px 0px;
+}
+
 .allow-subdomains,
 .new-realm-domain-allow-subdomains {
     margin: 0 !important;
@@ -565,10 +569,6 @@ input[type=checkbox] + .inline-block {
 #realm-icon-section {
     border-radius: 5px;
     box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
-}
-
-input[type=checkbox].inline-block {
-    margin: -2px 0px 0px 0px;
 }
 
 .remove-attachment {
@@ -1686,30 +1686,6 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     overflow-y: auto;
     margin-top: 0;
     display: block;
-}
-
-input[type=text]#settings_search {
-    width: calc(100% - 10px - 2px);
-    margin: 0px;
-
-    color: hsl(0, 0%, 33%);
-    font-size: 0.9rem;
-    padding: 3px 5px;
-    outline: none;
-    border: 1px solid hsl(0, 0%, 87%);
-    border-radius: 4px;
-}
-
-input[type=text]:focus#settings_search {
-    box-shadow: none;
-    border: 1px solid hsl(0, 0%, 73%);
-
-    border-bottom: 1px solid hsl(0, 0%, 87%);
-}
-
-input[type=text]#settings_search {
-    width: calc(100% - 10px - 2px);
-    margin: 0px;
 }
 
 #settings_page .sidebar ul {
