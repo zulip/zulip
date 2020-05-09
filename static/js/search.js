@@ -149,7 +149,17 @@ exports.initialize = function () {
             // operators.  (The reason the other actions don't call
             // this codepath is that they first all blur the box to
             // indicate that they've done what they need to do)
-            narrow.activate(Filter.parse(search_query_box.val()), {trigger: 'search'});
+
+            let operators = Filter.parse(search_query_box.val());
+            if (page_params.search_pills_enabled) {
+                // Pill is already added during keydown event of input pills.
+                // Thus we can't call narrow_or_search_for_term as the
+                // search_query_box has empty value.
+                const base_query = search_pill.get_search_string_for_current_filter(
+                    search_pill_widget.widget);
+                operators = Filter.parse(base_query);
+            }
+            narrow.activate(operators, {trigger: 'search'});
             search_query_box.blur();
             update_buttons_with_focus(false);
         }
