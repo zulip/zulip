@@ -359,6 +359,36 @@ function open_human_form(person) {
     };
 }
 
+function get_human_profile_data(fields_user_pills) {
+    /*
+        This build profile data to send to the server.
+        See render_admin_human_form and open_human_form
+        to see how the form is built.
+    */
+    const new_profile_data = [];
+    $("#admin-human-form .custom_user_field_value").each(function () {
+        // Remove duplicate datepicker input element generated flatpicker library
+        if (!$(this).hasClass("form-control")) {
+            new_profile_data.push({
+                id: parseInt($(this).closest(".custom_user_field").attr("data-field-id"), 10),
+                value: $(this).val(),
+            });
+        }
+    });
+    // Append user type field values also
+    for (const [field_id, field_pills] of  fields_user_pills) {
+        if (field_pills) {
+            const user_ids = user_pill.get_user_ids(field_pills);
+            new_profile_data.push({
+                id: field_id,
+                value: user_ids,
+            });
+        }
+    }
+
+    return new_profile_data;
+}
+
 function open_bot_form(person) {
     const html = render_admin_bot_form({
         user_id: person.user_id,
@@ -497,34 +527,9 @@ function handle_human_form() {
 
             const admin_status = get_status_field();
 
-            function get_profile_data() {
-                const new_profile_data = [];
-                $("#admin-human-form .custom_user_field_value").each(function () {
-                    // Remove duplicate datepicker input element generated flatpicker library
-                    if (!$(this).hasClass("form-control")) {
-                        new_profile_data.push({
-                            id: parseInt($(this).closest(".custom_user_field").attr("data-field-id"), 10),
-                            value: $(this).val(),
-                        });
-                    }
-                });
-                // Append user type field values also
-                for (const [field_id, field_pills] of  fields_user_pills) {
-                    if (field_pills) {
-                        const user_ids = user_pill.get_user_ids(field_pills);
-                        new_profile_data.push({
-                            id: field_id,
-                            value: user_ids,
-                        });
-                    }
-                }
-
-                return new_profile_data;
-            }
-
             const user_role_select_value = modal.find('#user-role-select').val();
             const full_name = modal.find("input[name='full_name']");
-            const profile_data = get_profile_data();
+            const profile_data = get_human_profile_data(fields_user_pills);
 
             const url = "/json/users/" + encodeURIComponent(user_id);
             const data = {
