@@ -34,7 +34,6 @@ async function run() {
         const confirmation_key = await JSON.parse(page_content).confirmation_key;
         const confirmation_url = 'http://' + host + '/accounts/do_confirm/' + confirmation_key;
         await page.goto(confirmation_url);
-        await page.$eval('#register', form => form.submit());
 
         // Make sure the realm creation page is loaded correctly by
         // checking the text in <p> tag under pitch class is as expected.
