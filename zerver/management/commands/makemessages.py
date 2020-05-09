@@ -30,12 +30,12 @@ https://stackoverflow.com/questions/2090717
 """
 import glob
 import json
+import itertools
 import os
 import re
 from argparse import ArgumentParser
 from typing import Any, Dict, Iterable, List, Mapping
 
-from django.conf import settings
 from django.core.management.commands import makemessages
 from django.template.base import BLOCK_TAG_END, BLOCK_TAG_START
 from django.utils.translation import template
@@ -170,11 +170,12 @@ class Command(makemessages.Command):
                 with open(os.path.join(dirpath, filename)) as reader:
                     data = reader.read()
                     translation_strings.extend(self.extract_strings(data))
-
-        dirname = os.path.join(settings.DEPLOY_ROOT, 'static/js')
-        for filename in os.listdir(dirname):
-            if filename.endswith('.js') and not filename.startswith('.'):
-                with open(os.path.join(dirname, filename)) as reader:
+        for dirpath, dirnames, filenames in itertools.chain(os.walk("static/js"),
+                                                            os.walk("static/shared/js")):
+            for filename in [f for f in filenames if f.endswith(".js") or f.endswith(".ts")]:
+                if filename.startswith('.'):
+                    continue
+                with open(os.path.join(dirpath, filename)) as reader:
                     data = reader.read()
                     data = self.ignore_javascript_comments(data)
                     translation_strings.extend(self.extract_strings(data))
