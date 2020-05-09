@@ -79,10 +79,11 @@ pika
 psycopg2 --no-binary psycopg2
 
 # Needed for memcached usage
-pylibmc
+# https://github.com/jaysonsantos/python-binary-memcached/pull/230, https://github.com/jaysonsantos/python-binary-memcached/pull/231
+https://github.com/jaysonsantos/python-binary-memcached/archive/364ce723ea73290a6ae27551cab28070424fd280.zip#egg=python-binary-memcached==0.29.0+git
 
-# Needed for compression support in memcached via pylibmc
-django-pylibmc
+# Needed for compression support in memcached via python-binary-memcached
+django-bmemcached
 
 # Needed for zerver/tests/test_timestamp.py
 python-dateutil

@@ -14,7 +14,6 @@ done
 
 is_centos=false
 is_rhel=false
-is_rhel_registered=false
 if [ -e /etc/centos-release ]; then
     is_centos=true
     yum install -y epel-release
@@ -27,12 +26,6 @@ if [ -e /etc/centos-release ]; then
 elif grep -q "Red Hat" /etc/redhat-release; then
     is_rhel=true
     yum localinstall -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-    if subscription-manager status; then
-        # See https://access.redhat.com/discussions/2217891#comment-1032701
-        is_rhel_registered=true
-        # libmemcached-devel can be installed directly if the machine is registered
-        subscription-manager repos --enable "rhel-*-optional-rpms" --enable "rhel-*-extras-rpms"
-    fi
 fi
 
 yum update -y
@@ -51,10 +44,6 @@ if [ "$is_centos" = true ]; then
     # https://pgroonga.github.io/install/centos.html
     yum localinstall -y https://packages.groonga.org/centos/groonga-release-latest.noarch.rpm
 elif [ "$is_rhel" = true ]; then
-    if [ "$is_rhel_registered" = false ]; then
-        echo "This machine is unregistered; installing libmemcached-devel from a CentOS mirror ..."
-        yum localinstall -y http://mirror.centos.org/centos/7/os/x86_64/Packages/libmemcached-devel-1.0.16-5.el7.x86_64.rpm
-    fi
     yum localinstall -y https://download.postgresql.org/pub/repos/yum/10/redhat/rhel-latest-x86_64/pgdg-redhat10-10-2.noarch.rpm
     yum localinstall -y https://packages.groonga.org/centos/groonga-release-latest.noarch.rpm
 else

@@ -52,7 +52,7 @@ run apt-get install -y --no-install-recommends \
   memcached redis-server \
   hunspell-en-us supervisor libssl-dev puppet \
   gettext libffi-dev libfreetype6-dev zlib1g-dev libjpeg-dev \
-  libldap2-dev libmemcached-dev \
+  libldap2-dev \
   libxml2-dev libxslt1-dev libpq-dev \
   virtualenv \
   "${extra_packages[@]}"

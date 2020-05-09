@@ -177,7 +177,7 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 
 ```
 doas pkg_add sudo bash gcc postgresql-server redis rabbitmq \
-    memcached libmemcached py-Pillow py-cryptography py-cffi
+    memcached py-Pillow py-cryptography py-cffi
 
 # Point environment to custom include locations and use newer GCC
 # (needed for Node modules):
