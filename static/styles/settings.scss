@@ -722,18 +722,20 @@ input[type=checkbox] {
     }
 }
 
-#account-settings .custom-profile-fields-form .custom_user_field label {
-    min-width: fit-content;
-}
+#account-settings {
+    .custom-profile-fields-form .custom_user_field label {
+        min-width: fit-content;
+    }
 
-#account-settings .alert-notification.custom-field-status {
-    padding-top: 0px;
-    padding-bottom: 0px;
-    margin-top: 0px;
-    font-size: 14px;
-    padding-left: 0px;
-    margin-left: 5px;
-    border: none;
+    .alert-notification.custom-field-status {
+        padding-top: 0px;
+        padding-bottom: 0px;
+        margin-top: 0px;
+        font-size: 14px;
+        padding-left: 0px;
+        margin-left: 5px;
+        border: none;
+    }
 }
 
 .control-label-disabled {
