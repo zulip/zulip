@@ -385,19 +385,21 @@ td .button {
     box-shadow: 0px 0px 4px hsla(199, 79%, 56%, 1.0);
 }
 
-.dynamic-input div,
-.dynamic-input label {
-    display: inline-block;
-    margin: 0;
+.dynamic-input {
+    div,
+    label {
+        display: inline-block;
+        margin: 0;
+    }
 }
 
 .dynamic-input div {
     margin-right: -2px;
-}
 
-.dynamic-input div:empty::after {
-    content: "username";
-    color: hsl(0, 0%, 67%);
+    &:empty::after {
+        content: "username";
+        color: hsl(0, 0%, 67%);
+    }
 }
 
 .dynamic-input.bot_user_name div:empty::after {
