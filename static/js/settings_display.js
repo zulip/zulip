@@ -34,7 +34,7 @@ exports.set_up = function () {
     $(".emojiset_choice[value=" + page_params.emojiset + "]").prop("checked", true);
 
     $("#default_language_modal [data-dismiss]").click(function () {
-        overlays.close_modal('default_language_modal');
+        overlays.close_modal('#default_language_modal');
     });
 
     const all_display_settings = settings_config.get_all_display_settings();
@@ -57,7 +57,7 @@ exports.set_up = function () {
     $("#default_language_modal .language").click(function (e) {
         e.preventDefault();
         e.stopPropagation();
-        overlays.close_modal('default_language_modal');
+        overlays.close_modal('#default_language_modal');
 
         const $link = $(e.target).closest("a[data-code]");
         const setting_value = $link.attr('data-code');
@@ -74,7 +74,7 @@ exports.set_up = function () {
     $('#default_language').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        overlays.open_modal('default_language_modal');
+        overlays.open_modal('#default_language_modal');
     });
 
     $('#demote_inactive_streams').change(function () {

@@ -817,7 +817,7 @@ exports.build_page = function () {
         if (org_join_restrictions === 'only_selected_domain') {
             node.show();
             if (page_params.realm_domains.length === 0) {
-                overlays.open_modal('realm_domains_modal');
+                overlays.open_modal('#realm_domains_modal');
             }
         } else {
             node.hide();
@@ -997,13 +997,13 @@ exports.build_page = function () {
         if (!overlays.is_modal_open()) {
             e.preventDefault();
             e.stopPropagation();
-            overlays.open_modal('deactivate-realm-modal');
+            overlays.open_modal('#deactivate-realm-modal');
         }
     });
 
     $('#do_deactivate_realm_button').on('click', function () {
         if (overlays.is_modal_open()) {
-            overlays.close_modal('deactivate-realm-modal');
+            overlays.close_modal('#deactivate-realm-modal');
         }
         channel.post({
             url: '/json/realm/deactivate',

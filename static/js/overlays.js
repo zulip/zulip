@@ -59,7 +59,7 @@ exports.active_modal = function () {
         blueslip.error("Programming error — Called active_modal when there is no modal open");
         return;
     }
-    return $(".modal.in").attr("id");
+    return '#' + $(".modal.in").attr("id");
 };
 
 exports.open_overlay = function (opts) {
@@ -101,9 +101,14 @@ exports.open_overlay = function (opts) {
     };
 };
 
-exports.open_modal = function (name) {
-    if (name === undefined) {
-        blueslip.error('Undefined name was passed into open_modal');
+exports.open_modal = function (selector) {
+    if (selector === undefined) {
+        blueslip.error('Undefined selector was passed into open_modal');
+        return;
+    }
+
+    if (selector[0] !== '#') {
+        blueslip.error('Non-id-based selector passed in to open_modal: ' + selector);
         return;
     }
 
@@ -113,14 +118,15 @@ exports.open_modal = function (name) {
         return;
     }
 
-    blueslip.debug('open modal: ' + name);
+    blueslip.debug('open modal: ' + selector);
 
-    $("#" + name).modal("show").attr("aria-hidden", false);
+    const elem = $(selector).expectOne();
+    elem.modal("show").attr("aria-hidden", false);
     // Disable background mouse events when modal is active
     exports.disable_background_mouse_events();
     // Remove previous alert messages from modal, if exists.
-    $("#" + name).find(".alert").hide();
-    $("#" + name).find(".alert-notification").html("");
+    elem.find(".alert").hide();
+    elem.find(".alert-notification").html("");
 };
 
 exports.close_overlay = function (name) {
@@ -160,9 +166,9 @@ exports.close_active = function () {
     exports.close_overlay(open_overlay_name);
 };
 
-exports.close_modal = function (name) {
-    if (name === undefined) {
-        blueslip.error('Undefined name was passed into close_modal');
+exports.close_modal = function (selector) {
+    if (selector === undefined) {
+        blueslip.error('Undefined selector was passed into close_modal');
         return;
     }
 
@@ -171,15 +177,16 @@ exports.close_modal = function (name) {
         return;
     }
 
-    if (exports.active_modal() !== name) {
-        blueslip.error("Trying to close " + name +
+    if (exports.active_modal() !== selector) {
+        blueslip.error("Trying to close " + selector +
             " modal when " + exports.active_modal() + " is open.");
         return;
     }
 
-    blueslip.debug('close modal: ' + name);
+    blueslip.debug('close modal: ' + selector);
 
-    $("#" + name).modal("hide").attr("aria-hidden", true);
+    const elem = $(selector).expectOne();
+    elem.modal("hide").attr("aria-hidden", true);
     // Enable mouse events for the background as the modal closes.
     exports.enable_background_mouse_events();
 

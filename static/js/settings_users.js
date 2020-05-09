@@ -320,7 +320,7 @@ function open_user_info_form_modal(person) {
     const user_info_form_modal = $(html);
     const modal_container = $('#user-info-form-modal-container');
     modal_container.empty().append(user_info_form_modal);
-    overlays.open_modal('user-info-form-modal');
+    overlays.open_modal('#user-info-form-modal');
 
     if (person.is_bot) {
         // Dynamically add the owner select control in order to
@@ -499,7 +499,7 @@ exports.on_load_success = function (realm_people_data) {
             }
 
             settings_ui.do_settings_change(channel.patch, url, data, admin_status);
-            overlays.close_modal('user-info-form-modal');
+            overlays.close_modal('#user-info-form-modal');
         });
     });
 
