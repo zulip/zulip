@@ -327,8 +327,10 @@ exports.set_up = function () {
 };
 
 function open_human_form(person) {
+    const user_id = person.user_id;
+
     const html = render_admin_human_form({
-        user_id: person.user_id,
+        user_id: user_id,
         email: person.email,
         full_name: person.full_name,
         is_admin: person.is_admin,
@@ -340,7 +342,21 @@ function open_human_form(person) {
     modal_container.empty().append(div);
     overlays.open_modal('#admin-human-form');
 
-    return div;
+    const element = "#admin-human-form .custom-profile-field-form";
+    $(element).html("");
+    settings_account.append_custom_profile_fields(element, user_id);
+    settings_account.initialize_custom_date_type_fields(element);
+    const pills = settings_account.initialize_custom_user_type_fields(
+        element,
+        user_id,
+        true,
+        false
+    );
+
+    return {
+        modal: div,
+        fields_user_pills: pills,
+    };
 }
 
 function open_bot_form(person) {
@@ -471,14 +487,9 @@ function handle_human_form() {
             return;
         }
 
-        const modal = open_human_form(person);
-        const element = "#admin-human-form .custom-profile-field-form";
-        $(element).html("");
-        settings_account.append_custom_profile_fields(element, user_id);
-        settings_account.initialize_custom_date_type_fields(element);
-        const fields_user_pills = settings_account.initialize_custom_user_type_fields(element,
-                                                                                      user_id,
-                                                                                      true, false);
+        const ret = open_human_form(person);
+        const modal = ret.modal;
+        const fields_user_pills = ret.fields_user_pills;
 
         modal.find('.submit_human_change').on("click", function (e) {
             e.preventDefault();
