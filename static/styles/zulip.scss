@@ -546,6 +546,10 @@ li.actual-dropdown-menu i {
     margin-right: 3px;
 }
 
+.settings-dropdown-cog {
+    padding-right: 14px;
+}
+
 .message_area_padder {
     /* The height of the header and the tabbar plus a small gap */
     margin-top: 57px;
@@ -1829,7 +1833,7 @@ div.focused_table {
         width: 0px;
         height: 0px;
         top: -7px;
-        right: 10px;
+        right: 14px;
         display: inline-block;
         border-right: 7px solid transparent;
         border-bottom: 7px solid hsl(0, 0%, 67%);
@@ -2175,12 +2179,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     top: 1px;
 }
 
-.settings-dropdown-caret {
-    margin-left: 8px;
-    margin-right: 8px;
-    font-size: 14px;
-}
-
 #notifications-area {
     position: fixed;
     z-index: 10;
@@ -2510,6 +2508,14 @@ select.inline_select_topic_edit {
         &::after {
             right: 10px;
         }
+    }
+
+    .nav .dropdown-menu::after {
+        right: 21px;
+    }
+
+    .settings-dropdown-cog {
+        padding-right: 21px;
     }
 
     .column-middle {
