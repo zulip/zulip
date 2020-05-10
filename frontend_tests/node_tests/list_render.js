@@ -577,6 +577,12 @@ run_test('errors', () => {
     list_render.create(container, list);
     blueslip.reset();
 
+    blueslip.expect('error', 'get_item should be a function');
+    list_render.create(container, list, {
+        get_item: 'not a function',
+    });
+    blueslip.reset();
+
     blueslip.expect('error', 'Filter predicate is not a function.');
     list_render.create(container, list, {
         filter: {
@@ -665,5 +671,63 @@ run_test('replace_list_data w/filter update', () => {
     assert.deepEqual(
         container.appended_data.html(),
         '(6)(8)'
+    );
+});
+
+run_test('opts.get_item', () => {
+    const items = {};
+
+    items[1] = 'one';
+    items[2] = 'two';
+    items[3] = 'three';
+    items[4] = 'four';
+
+    const list = [1, 2, 3, 4];
+
+    const boring_opts = {
+        get_item: (n) => items[n],
+    };
+
+    assert.deepEqual(
+        list_render.get_filtered_items(
+            'whatever', list, boring_opts
+        ),
+        ['one', 'two', 'three', 'four']
+    );
+
+    const predicate = (item, value) => {
+        return item.startsWith(value);
+    };
+
+    const predicate_opts = {
+        get_item: (n) => items[n],
+        filter: {
+            predicate: predicate,
+        },
+    };
+
+    assert.deepEqual(
+        list_render.get_filtered_items(
+            't', list, predicate_opts
+        ),
+        ['two', 'three']
+    );
+
+    const filterer_opts = {
+        get_item: (n) => items[n],
+        filter: {
+            filterer: (items, value) => {
+                return items.filter((item) => {
+                    return predicate(item, value);
+                });
+            },
+        },
+    };
+
+    assert.deepEqual(
+        list_render.get_filtered_items(
+            't', list, filterer_opts
+        ),
+        ['two', 'three']
     );
 });
