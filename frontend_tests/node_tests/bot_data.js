@@ -2,6 +2,28 @@ const _settings_bots = {
     render_bots: () => {},
 };
 
+set_global('page_params', {is_admin: false});
+set_global('settings_bots', _settings_bots);
+
+zrequire('bot_data');
+zrequire('people');
+
+const me = {
+    email: 'me@zulip.com',
+    full_name: 'Me Myself',
+    user_id: 2,
+};
+
+const fred = {
+    email: 'fred@zulip.com',
+    full_name: 'Fred Frederickson',
+    user_id: 3,
+};
+
+people.add(me);
+people.add(fred);
+people.initialize_current_user(me.user_id);
+
 const bot_data_params = {
     realm_bots: [{email: 'bot0@zulip.com', user_id: 42, full_name: 'Bot 0',
                   services: []},
@@ -9,19 +31,6 @@ const bot_data_params = {
                   services: [{base_url: "http://foo.com", interface: 1}]}],
 };
 
-set_global('page_params', {is_admin: false});
-set_global('settings_bots', _settings_bots);
-
-zrequire('people');
-zrequire('bot_data');
-
-people.add({
-    email: 'owner@zulip.com',
-    full_name: 'The Human Boss',
-    user_id: 42,
-});
-
-people.initialize_current_user(42);
 
 bot_data.initialize(bot_data_params);
 // Our startup logic should have added Bot 0 from page_params.
@@ -112,9 +121,9 @@ run_test('test_basics', () => {
     (function test_get_editable() {
         let editable_bots;
 
-        bot_data.add({...test_bot, user_id: 44, owner: 'owner@zulip.com', is_active: true});
-        bot_data.add({...test_bot, user_id: 45, email: 'bot2@zulip.com', owner: 'owner@zulip.com', is_active: true});
-        bot_data.add({...test_bot, user_id: 46, email: 'bot3@zulip.com', owner: 'not_owner@zulip.com', is_active: true});
+        bot_data.add({...test_bot, user_id: 44, owner: me.email, is_active: true});
+        bot_data.add({...test_bot, user_id: 45, email: 'bot2@zulip.com', owner: me.email, is_active: true});
+        bot_data.add({...test_bot, user_id: 46, email: 'bot3@zulip.com', owner: fred.email, is_active: true});
 
         editable_bots = bot_data.get_editable().map(bot => bot.email);
         assert.deepEqual(['bot1@zulip.com', 'bot2@zulip.com'], editable_bots);
