@@ -2,7 +2,6 @@ const _settings_bots = {
     render_bots: () => {},
 };
 
-set_global('page_params', {is_admin: false});
 set_global('settings_bots', _settings_bots);
 
 zrequire('bot_data');
@@ -119,18 +118,12 @@ run_test('test_basics', () => {
     }());
 
     (function test_get_editable() {
-        let editable_bots;
 
         bot_data.add({...test_bot, user_id: 44, owner: me.email, is_active: true});
         bot_data.add({...test_bot, user_id: 45, email: 'bot2@zulip.com', owner: me.email, is_active: true});
         bot_data.add({...test_bot, user_id: 46, email: 'bot3@zulip.com', owner: fred.email, is_active: true});
 
-        editable_bots = bot_data.get_editable().map(bot => bot.email);
-        assert.deepEqual(['bot1@zulip.com', 'bot2@zulip.com'], editable_bots);
-
-        page_params.is_admin = true;
-
-        editable_bots = bot_data.get_editable().map(bot => bot.email);
+        const editable_bots = bot_data.get_editable().map(bot => bot.email);
         assert.deepEqual(['bot1@zulip.com', 'bot2@zulip.com'], editable_bots);
     }());
 
