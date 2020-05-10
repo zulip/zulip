@@ -132,12 +132,4 @@ run_test('test_basics', () => {
         assert.equal(bots[0].email, 'bot1@zulip.com');
         assert.equal(bots[1].email, 'bot2@zulip.com');
     }());
-
-    (function test_get_bot_owner_email() {
-        let bot_owner_email = bot_data.get_bot_owner_email(test_embedded_bot.user_id);
-        assert.equal('cordelia@zulip.com', bot_owner_email);
-        bot_data.add(test_bot);
-        bot_owner_email = bot_data.get_bot_owner_email(test_bot.user_id);
-        assert.equal(undefined, bot_owner_email);
-    }());
 });
