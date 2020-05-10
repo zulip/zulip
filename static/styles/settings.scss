@@ -1605,6 +1605,38 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     background-color: hsl(0, 0%, 100%);
 }
 
+.modal.fade {
+    /* Ensure the modal is entirely off-screen while we fade the background */
+    top: -50%;
+    transition: opacity 0.3s linear;
+    transform: translateY(-50%);
+}
+
+#account-settings,
+#user-info-form-modal {
+    .user-role button {
+        cursor: default;
+    }
+
+    .custom_user_field .field_hint {
+        color: hsl(0, 0%, 67%);
+    }
+
+    #show_my_user_profile_modal {
+        width: 150px;
+        margin-top: 20px;
+    }
+
+    #show_my_user_profile_modal i {
+        padding-left: 2px;
+        vertical-align: middle;
+    }
+}
+
+body:not(.night-mode) #settings_page .custom_user_field .datepicker {
+    background-color: hsl(0, 0%, 100%);
+}
+
 #confirm_dialog_modal,
 #deactivation_user_modal.fade.in {
     top: calc(50% - 120px);
