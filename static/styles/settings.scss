@@ -1376,47 +1376,6 @@ input[type=checkbox] {
     border-radius: 4px;
 }
 
-#settings_page .sidebar {
-    float: left;
-    position: relative;
-    width: 250px;
-    height: 100%;
-    overflow-y: auto;
-    border-top-left-radius: 4px;
-    border-right: 1px solid hsl(0, 0%, 93%);
-}
-
-#settings_page .sidebar .tab-container {
-    padding: 6px;
-    border-bottom: 1px solid hsl(0, 0%, 87%);
-}
-
-#settings_page .sidebar .normal-settings-list,
-#settings_page .sidebar .org-settings-list {
-    position: relative;
-}
-
-#settings_page .content-wrapper {
-    position: absolute;
-    left: 251px;
-    /* the width of the settings sidbar this is right of is 250px + 1px border. */
-    width: calc(100% - 250px - 1px);
-    height: 100%;
-    overflow: hidden;
-}
-
-#settings_page .content-wrapper .settings-header {
-    width: 100%;
-    height: 43px;
-    border-bottom: 1px solid hsl(0, 0%, 87%);
-}
-
-#settings_page .content-wrapper .settings-header h1 .section {
-    font-weight: 400;
-    color: inherit;
-    opacity: 0.6;
-}
-
 #settings_page h3 {
     font-size: 1.5em;
     font-weight: normal;
@@ -1427,37 +1386,6 @@ input[type=checkbox] {
     font-size: 1.2em;
     font-weight: normal;
     line-height: 1.2;
-}
-
-#settings_page .settings-header.mobile {
-    display: none;
-    border-bottom: 1px solid hsl(0, 0%, 87%);
-}
-
-.settings-header.mobile .fa-chevron-left {
-    float: left;
-    position: relative;
-    top: 14px;
-    left: 10px;
-}
-
-#settings_page .content-wrapper #settings_content {
-    position: relative;
-    width: 100%;
-    height: calc(100% - 45px);
-
-    float: left;
-    overflow-y: auto;
-    overflow-x: hidden;
-
-    background-color: hsla(0, 0%, 0%, 0.02);
-}
-
-.modal.fade {
-    /* Ensure the modal is entirely off-screen while we fade the background */
-    top: -50%;
-    transition: opacity 0.3s linear;
-    transform: translateY(-50%);
 }
 
 #settings_page input.search {
@@ -1526,6 +1454,16 @@ input[type=checkbox] {
     cursor: pointer;
 }
 
+#settings_page .sidebar {
+    float: left;
+    position: relative;
+    width: 250px;
+    height: 100%;
+    overflow-y: auto;
+    border-top-left-radius: 4px;
+    border-right: 1px solid hsl(0, 0%, 93%);
+}
+
 #settings_page .sidebar .header {
     height: auto;
     position: relative;
@@ -1538,8 +1476,113 @@ input[type=checkbox] {
     border-bottom: 1px solid hsl(0, 0%, 87%);
 }
 
+#settings_page .sidebar ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#settings_page .sidebar li {
+    padding: 5px 0px;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid hsl(0, 0%, 93%);
+}
+
+
+#settings_page .sidebar li:last-of-type .text {
+    border-bottom: none;
+}
+
+#settings_page .sidebar li.border-top {
+    border-top: 1px solid hsl(0, 0%, 93%);
+    border-bottom: none;
+}
+
+#settings_page .sidebar li.no-border {
+    border-color: transparent;
+}
+
+#settings_page .sidebar li.active {
+    background-color: hsl(0, 0%, 93%);
+}
+
+#settings_page .sidebar li.active {
+    border-bottom: 1px solid transparent;
+}
+
+#settings_page .sidebar li .text,
+#settings_page .sidebar li .icon,
+#settings_page .sidebar li .locked {
+    display: inline-block;
+    vertical-align: top;
+}
+
+#settings_page .sidebar li .text {
+    width: calc(100% - 90px);
+    padding: 10px 12px 10px 0px;
+}
+
+#settings_page .sidebar li .icon {
+    width: 18px;
+    height: 18px;
+    margin: 10px 10px;
+    text-align: center;
+
+    font-size: 1.4em;
+    color: hsl(0, 0%, 53%);
+
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+#settings_page .sidebar li .locked {
+    width: 18px;
+    height: 18px;
+    margin: 14px 8px 6px;
+
+    font-size: 1em;
+    color: hsl(0, 0%, 62%);
+
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+#settings_page .sidebar .org-settings-list {
+    display: none;
+}
+
+#settings_page .sidebar .sidebar-bottom-anchor {
+    width: 100%;
+    position: absolute;
+    bottom: 0px;
+}
+
+#settings_page .sidebar .tab-container {
+    padding: 6px;
+    border-bottom: 1px solid hsl(0, 0%, 87%);
+}
+
+#settings_page .sidebar .normal-settings-list,
+#settings_page .sidebar .org-settings-list {
+    position: relative;
+}
+
 #settings_page .settings-header {
     padding-top: 1px;
+}
+
+#settings_page .settings-header.mobile {
+    display: none;
+    border-bottom: 1px solid hsl(0, 0%, 87%);
+}
+
+.settings-header.mobile .fa-chevron-left {
+    float: left;
+    position: relative;
+    top: 14px;
+    left: 10px;
 }
 
 #settings_page .settings-header h1 {
@@ -1573,6 +1616,91 @@ input[type=checkbox] {
     width: auto;
 }
 
+#settings_page .custom_user_field {
+    padding-bottom: 20px;
+}
+
+#settings_page .custom_user_field textarea {
+    width: 320px;
+    height: 80px;
+}
+
+#settings_page .custom_user_field:hover .remove_date {
+    display: inline-flex;
+}
+
+#settings_page .custom_user_field .remove_date {
+    opacity: 0.5;
+    display: none;
+    cursor: pointer;
+    position: relative;
+    top: 2px;
+    left: -20px;
+}
+
+#settings_page .custom_user_field .remove_date:hover {
+    opacity: 1;
+}
+
+#settings_page .custom_user_field_value.datepicker {
+    cursor: pointer;
+}
+
+#settings_page .custom_user_field .person_picker {
+    min-width: 206px;
+}
+
+#settings_page .content-wrapper {
+    position: absolute;
+    left: 251px;
+    /* the width of the settings sidbar this is right of is 250px + 1px border. */
+    width: calc(100% - 250px - 1px);
+    height: 100%;
+    overflow: hidden;
+}
+
+#settings_page .content-wrapper .settings-header {
+    width: 100%;
+    height: 43px;
+    border-bottom: 1px solid hsl(0, 0%, 87%);
+}
+
+#settings_page .content-wrapper .settings-header h1 .section {
+    font-weight: 400;
+    color: inherit;
+    opacity: 0.6;
+}
+
+#settings_page .content-wrapper #settings_content {
+    position: relative;
+    width: 100%;
+    height: calc(100% - 45px);
+
+    float: left;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    background-color: hsla(0, 0%, 0%, 0.02);
+}
+
+#settings_page .display-settings-form select {
+    width: 245px;
+}
+
+#settings_page #change_full_name_modal .change_full_name_info,
+#settings_page #change_email_modal .change_email_info,
+#settings_page #change_password_modal .change_password_info,
+#settings_page #api_key_modal #api_key_status {
+    margin-top: 3px;
+}
+
+.modal.fade {
+    /* Ensure the modal is entirely off-screen while we fade the background */
+    top: -50%;
+    transition: opacity 0.3s linear;
+    transform: translateY(-50%);
+}
+
 #account-settings,
 #admin-human-form {
     .user-role button {
@@ -1594,49 +1722,8 @@ input[type=checkbox] {
     }
 }
 
-#settings_page .custom_user_field {
-    padding-bottom: 20px;
-}
-
 body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     background-color: hsl(0, 0%, 100%);
-}
-
-#settings_page .custom_user_field textarea {
-    width: 320px;
-    height: 80px;
-}
-
-#settings_page .custom_user_field .remove_date {
-    opacity: 0.5;
-    display: none;
-    cursor: pointer;
-    position: relative;
-    top: 2px;
-    left: -20px;
-}
-
-#settings_page .custom_user_field:hover .remove_date {
-    display: inline-flex;
-}
-
-#settings_page .custom_user_field .remove_date:hover {
-    opacity: 1;
-}
-
-#settings_page .custom_user_field_value.datepicker {
-    cursor: pointer;
-}
-
-#settings_page .custom_user_field .person_picker {
-    min-width: 206px;
-}
-
-#settings_page #change_full_name_modal .change_full_name_info,
-#settings_page #change_email_modal .change_email_info,
-#settings_page #change_password_modal .change_password_info,
-#settings_page #api_key_modal #api_key_status {
-    margin-top: 3px;
 }
 
 #confirm_dialog_modal,
@@ -1709,88 +1796,6 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
         margin-top: 0;
         display: block;
     }
-}
-
-#settings_page .sidebar ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-#settings_page .sidebar li {
-    padding: 5px 0px;
-    outline: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border-bottom: 1px solid hsl(0, 0%, 93%);
-}
-
-#settings_page .sidebar li.border-top {
-    border-top: 1px solid hsl(0, 0%, 93%);
-    border-bottom: none;
-}
-
-#settings_page .sidebar li.no-border {
-    border-color: transparent;
-}
-
-#settings_page .sidebar li.active {
-    background-color: hsl(0, 0%, 93%);
-}
-
-#settings_page .sidebar li.active {
-    border-bottom: 1px solid transparent;
-}
-
-#settings_page .sidebar li .text,
-#settings_page .sidebar li .icon,
-#settings_page .sidebar li .locked {
-    display: inline-block;
-    vertical-align: top;
-}
-
-#settings_page .sidebar li .text {
-    width: calc(100% - 90px);
-    padding: 10px 12px 10px 0px;
-}
-
-#settings_page .sidebar li .icon {
-    width: 18px;
-    height: 18px;
-    margin: 10px 10px;
-    text-align: center;
-
-    font-size: 1.4em;
-    color: hsl(0, 0%, 53%);
-
-    background-size: cover;
-    background-repeat: no-repeat;
-}
-
-#settings_page .sidebar li .locked {
-    width: 18px;
-    height: 18px;
-    margin: 14px 8px 6px;
-
-    font-size: 1em;
-    color: hsl(0, 0%, 62%);
-
-    background-size: cover;
-    background-repeat: no-repeat;
-}
-
-#settings_page .sidebar .org-settings-list {
-    display: none;
-}
-
-#settings_page .sidebar li:last-of-type .text {
-    border-bottom: none;
-}
-
-#settings_page .sidebar .sidebar-bottom-anchor {
-    width: 100%;
-    position: absolute;
-    bottom: 0px;
 }
 
 .subsection-failed-status p {
@@ -1888,10 +1893,6 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 
 #admin-user-list .last_active {
     width: 100px;
-}
-
-#settings_page .display-settings-form select {
-    width: 245px;
 }
 
 #attachments_list:empty {
