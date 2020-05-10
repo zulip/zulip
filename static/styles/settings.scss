@@ -1374,324 +1374,321 @@ input[type=checkbox] {
     margin: 2.5vh auto;
     overflow: hidden;
     border-radius: 4px;
-}
 
-#settings_page h3 {
-    font-size: 1.5em;
-    font-weight: normal;
-    line-height: 1.5;
-}
+    h3 {
+        font-size: 1.5em;
+        font-weight: normal;
+        line-height: 1.5;
+    }
 
-#settings_page h5 {
-    font-size: 1.2em;
-    font-weight: normal;
-    line-height: 1.2;
-}
+    h5 {
+        font-size: 1.2em;
+        font-weight: normal;
+        line-height: 1.2;
+    }
 
-#settings_page input.search {
-    font-size: 0.9rem;
-    margin: 10px 0px 20px 0px;
-}
+    input.search {
+        font-size: 0.9rem;
+        margin: 10px 0px 20px 0px;
+    }
 
-#settings_page .form-sidebar {
-    position: absolute;
-    top: 45px;
-    right: 0px;
-    transform: translateX(303px);
-    width: 300px;
-    height: calc(100% - 45px);
+    .form-sidebar {
+        position: absolute;
+        top: 45px;
+        right: 0px;
+        transform: translateX(303px);
+        width: 300px;
+        height: calc(100% - 45px);
 
-    background-color: hsl(0, 0%, 100%);
-    border-left: 1px solid hsl(0, 0%, 87%);
+        background-color: hsl(0, 0%, 100%);
+        border-left: 1px solid hsl(0, 0%, 87%);
 
-    pointer-events: none;
-    transition: all 0.3s ease;
-    visibility: hidden;
-}
+        pointer-events: none;
+        transition: all 0.3s ease;
+        visibility: hidden;
 
-#settings_page .form-sidebar.show {
-    pointer-events: auto;
-    transform: translateX(0px);
-    visibility: visible;
-}
+        &.show {
+            pointer-events: auto;
+            transform: translateX(0px);
+            visibility: visible;
+        }
 
-#settings_page .form-sidebar input[type=text] {
-    width: calc(100% - 10px - 4px);
-}
+        input[type=text] {
+            width: calc(100% - 10px - 4px);
+        }
 
-#settings_page .form-sidebar input[type=submit],
-#settings_page .form-sidebar button {
-    border-radius: 4px;
-    outline: none;
-}
+        input[type=submit],
+        button {
+            border-radius: 4px;
+            outline: none;
+        }
 
-#settings_page .form-sidebar select {
-    width: 100%;
-}
+        select {
+            width: 100%;
+        }
 
-#settings_page .form-sidebar .title,
-#settings_page .form-sidebar .content {
-    padding: 20px;
-}
+        .title,
+        .content {
+            padding: 20px;
+        }
 
-#settings_page .form-sidebar .title {
-    padding: 10px 20px;
-    background-color: hsl(0, 0%, 98%);
-    border-bottom: 1px solid hsl(0, 0%, 87%);
-}
+        .title {
+            padding: 10px 20px;
+            background-color: hsl(0, 0%, 98%);
+            border-bottom: 1px solid hsl(0, 0%, 87%);
 
-#settings_page .form-sidebar .title h1 {
-    display: inline-block;
-    font-size: 1.3rem;
-    margin: 0px;
-}
+            h1 {
+                display: inline-block;
+                font-size: 1.3rem;
+                margin: 0px;
+            }
 
-#settings_page .form-sidebar .title .exit {
-    float: right;
-    font-size: 2rem;
-    font-weight: 300;
-    margin-top: 11px;
-    cursor: pointer;
-}
+            .exit {
+                float: right;
+                font-size: 2rem;
+                font-weight: 300;
+                margin-top: 11px;
+                cursor: pointer;
+            }
+        }
+    }
 
-#settings_page .sidebar {
-    float: left;
-    position: relative;
-    width: 250px;
-    height: 100%;
-    overflow-y: auto;
-    border-top-left-radius: 4px;
-    border-right: 1px solid hsl(0, 0%, 93%);
-}
+    .sidebar {
+        float: left;
+        position: relative;
+        width: 250px;
+        height: 100%;
+        overflow-y: auto;
+        border-top-left-radius: 4px;
+        border-right: 1px solid hsl(0, 0%, 93%);
 
-#settings_page .sidebar .header {
-    height: auto;
-    position: relative;
-    width: calc(100% - 20px);
-    padding: 10px;
-    text-align: center;
-    text-transform: uppercase;
+        .header {
+            height: auto;
+            position: relative;
+            width: calc(100% - 20px);
+            padding: 10px;
+            text-align: center;
+            text-transform: uppercase;
 
-    background-color: hsl(180, 6%, 93%);
-    border-bottom: 1px solid hsl(0, 0%, 87%);
-}
+            background-color: hsl(180, 6%, 93%);
+            border-bottom: 1px solid hsl(0, 0%, 87%);
+        }
 
-#settings_page .sidebar ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
+        ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
 
-#settings_page .sidebar li {
-    padding: 5px 0px;
-    outline: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border-bottom: 1px solid hsl(0, 0%, 93%);
-}
+        li {
+            padding: 5px 0px;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid hsl(0, 0%, 93%);
 
+            &:last-of-type .text {
+                border-bottom: none;
+            }
 
-#settings_page .sidebar li:last-of-type .text {
-    border-bottom: none;
-}
+            &.border-top {
+                border-top: 1px solid hsl(0, 0%, 93%);
+                border-bottom: none;
+            }
 
-#settings_page .sidebar li.border-top {
-    border-top: 1px solid hsl(0, 0%, 93%);
-    border-bottom: none;
-}
+            &.no-border {
+                border-color: transparent;
+            }
 
-#settings_page .sidebar li.no-border {
-    border-color: transparent;
-}
+            &.active {
+                background-color: hsl(0, 0%, 93%);
+                border-bottom: 1px solid transparent;
+            }
 
-#settings_page .sidebar li.active {
-    background-color: hsl(0, 0%, 93%);
-}
+            .text,
+            .icon,
+            .locked {
+                display: inline-block;
+                vertical-align: top;
+            }
 
-#settings_page .sidebar li.active {
-    border-bottom: 1px solid transparent;
-}
+            &,
+            .text {
+                width: calc(100% - 90px);
+                padding: 10px 12px 10px 0px;
+            }
 
-#settings_page .sidebar li .text,
-#settings_page .sidebar li .icon,
-#settings_page .sidebar li .locked {
-    display: inline-block;
-    vertical-align: top;
-}
+            .icon {
+                width: 18px;
+                height: 18px;
+                margin: 10px 10px;
+                text-align: center;
 
-#settings_page .sidebar li .text {
-    width: calc(100% - 90px);
-    padding: 10px 12px 10px 0px;
-}
+                font-size: 1.4em;
+                color: hsl(0, 0%, 53%);
 
-#settings_page .sidebar li .icon {
-    width: 18px;
-    height: 18px;
-    margin: 10px 10px;
-    text-align: center;
+                background-size: cover;
+                background-repeat: no-repeat;
+            }
 
-    font-size: 1.4em;
-    color: hsl(0, 0%, 53%);
+            .locked {
+                width: 18px;
+                height: 18px;
+                margin: 14px 8px 6px;
 
-    background-size: cover;
-    background-repeat: no-repeat;
-}
+                font-size: 1em;
+                color: hsl(0, 0%, 62%);
 
-#settings_page .sidebar li .locked {
-    width: 18px;
-    height: 18px;
-    margin: 14px 8px 6px;
+                background-size: cover;
+                background-repeat: no-repeat;
+            }
+        }
 
-    font-size: 1em;
-    color: hsl(0, 0%, 62%);
+        .org-settings-list {
+            display: none;
+        }
 
-    background-size: cover;
-    background-repeat: no-repeat;
-}
+        .sidebar-bottom-anchor {
+            width: 100%;
+            position: absolute;
+            bottom: 0px;
+        }
 
-#settings_page .sidebar .org-settings-list {
-    display: none;
-}
+        .tab-container {
+            padding: 6px;
+            border-bottom: 1px solid hsl(0, 0%, 87%);
+        }
 
-#settings_page .sidebar .sidebar-bottom-anchor {
-    width: 100%;
-    position: absolute;
-    bottom: 0px;
-}
+        .normal-settings-list,
+        .org-settings-list {
+            position: relative;
+        }
+    }
 
-#settings_page .sidebar .tab-container {
-    padding: 6px;
-    border-bottom: 1px solid hsl(0, 0%, 87%);
-}
+    .settings-header {
+        padding-top: 1px;
 
-#settings_page .sidebar .normal-settings-list,
-#settings_page .sidebar .org-settings-list {
-    position: relative;
-}
+        &.mobile {
+            display: none;
+            border-bottom: 1px solid hsl(0, 0%, 87%);
 
-#settings_page .settings-header {
-    padding-top: 1px;
-}
+            .fa-chevron-left {
+                float: left;
+                position: relative;
+                top: 14px;
+                left: 10px;
+            }
+        }
 
-#settings_page .settings-header.mobile {
-    display: none;
-    border-bottom: 1px solid hsl(0, 0%, 87%);
-}
+        h1 {
+            text-align: center;
+            font-size: 1.1em;
+            line-height: 1;
+            margin: 15px;
+            text-transform: uppercase;
+        }
 
-.settings-header.mobile .fa-chevron-left {
-    float: left;
-    position: relative;
-    top: 14px;
-    left: 10px;
-}
+        .exit {
+            font-weight: 600;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: hsl(0, 0%, 67%);
+            cursor: pointer;
+        }
 
-#settings_page .settings-header h1 {
-    text-align: center;
-    font-size: 1.1em;
-    line-height: 1;
-    margin: 15px;
-    text-transform: uppercase;
-}
+        .exit-sign {
+            float: right;
+            position: relative;
+            top: 3px;
+            margin-left: 3px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    }
 
-#settings_page .settings-header .exit {
-    font-weight: 600;
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    color: hsl(0, 0%, 67%);
-    cursor: pointer;
-}
+    #change_password_modal {
+        width: auto;
+    }
 
-#settings_page .settings-header .exit-sign {
-    float: right;
-    position: relative;
-    top: 3px;
-    margin-left: 3px;
-    font-size: 1.5rem;
-    font-weight: 600;
-    cursor: pointer;
-}
+    .custom_user_field {
+        padding-bottom: 20px;
 
-#settings_page #change_password_modal {
-    width: auto;
-}
+        textarea {
+            width: 320px;
+            height: 80px;
+        }
 
-#settings_page .custom_user_field {
-    padding-bottom: 20px;
-}
+        &:hover .remove_date {
+            display: inline-flex;
+        }
 
-#settings_page .custom_user_field textarea {
-    width: 320px;
-    height: 80px;
-}
+        .remove_date {
+            opacity: 0.5;
+            display: none;
+            cursor: pointer;
+            position: relative;
+            top: 2px;
+            left: -20px;
 
-#settings_page .custom_user_field:hover .remove_date {
-    display: inline-flex;
-}
+            &:hover {
+                opacity: 1;
+            }
+        }
 
-#settings_page .custom_user_field .remove_date {
-    opacity: 0.5;
-    display: none;
-    cursor: pointer;
-    position: relative;
-    top: 2px;
-    left: -20px;
-}
+        &.datepicker {
+            cursor: pointer;
+        }
 
-#settings_page .custom_user_field .remove_date:hover {
-    opacity: 1;
-}
+        .person_picker {
+            min-width: 206px;
+        }
+    }
 
-#settings_page .custom_user_field_value.datepicker {
-    cursor: pointer;
-}
+    .content-wrapper {
+        position: absolute;
+        left: 251px;
+        /* the width of the settings sidbar this is right of is 250px + 1px border. */
+        width: calc(100% - 250px - 1px);
+        height: 100%;
+        overflow: hidden;
 
-#settings_page .custom_user_field .person_picker {
-    min-width: 206px;
-}
+        .settings-header {
+            width: 100%;
+            height: 43px;
+            border-bottom: 1px solid hsl(0, 0%, 87%);
 
-#settings_page .content-wrapper {
-    position: absolute;
-    left: 251px;
-    /* the width of the settings sidbar this is right of is 250px + 1px border. */
-    width: calc(100% - 250px - 1px);
-    height: 100%;
-    overflow: hidden;
-}
+            h1 .section {
+                font-weight: 400;
+                color: inherit;
+                opacity: 0.6;
+            }
+        }
 
-#settings_page .content-wrapper .settings-header {
-    width: 100%;
-    height: 43px;
-    border-bottom: 1px solid hsl(0, 0%, 87%);
-}
+        #settings_content {
+            position: relative;
+            width: 100%;
+            height: calc(100% - 45px);
 
-#settings_page .content-wrapper .settings-header h1 .section {
-    font-weight: 400;
-    color: inherit;
-    opacity: 0.6;
-}
+            float: left;
+            overflow-y: auto;
+            overflow-x: hidden;
 
-#settings_page .content-wrapper #settings_content {
-    position: relative;
-    width: 100%;
-    height: calc(100% - 45px);
+            background-color: hsla(0, 0%, 0%, 0.02);
+        }
+    }
 
-    float: left;
-    overflow-y: auto;
-    overflow-x: hidden;
+    .display-settings-form select {
+        width: 245px;
+    }
 
-    background-color: hsla(0, 0%, 0%, 0.02);
-}
-
-#settings_page .display-settings-form select {
-    width: 245px;
-}
-
-#settings_page #change_full_name_modal .change_full_name_info,
-#settings_page #change_email_modal .change_email_info,
-#settings_page #change_password_modal .change_password_info,
-#settings_page #api_key_modal #api_key_status {
-    margin-top: 3px;
+    #change_full_name_modal .change_full_name_info,
+    #change_email_modal .change_email_info,
+    #change_password_modal .change_password_info,
+    #api_key_modal #api_key_status {
+        margin-top: 3px;
+    }
 }
 
 .modal.fade {
