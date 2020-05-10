@@ -993,17 +993,17 @@ input[type=checkbox] {
     font-size: 100%;
     margin: 0px;
     padding: 0px;
-}
 
-.edit_bot_form label {
-    text-transform: uppercase;
-    font-weight: 600;
-    color: hsl(0, 0%, 67%);
-    margin-top: 5px;
-}
+    label {
+        text-transform: uppercase;
+        font-weight: 600;
+        color: hsl(0, 0%, 67%);
+        margin-top: 5px;
+    }
 
-.edit_bot_form .buttons {
-    margin: 10px 0px 5px 0px;
+    .buttons {
+        margin: 10px 0px 5px 0px;
+    }
 }
 
 .edit_bot_email {
