@@ -1,7 +1,7 @@
 // Exported for unit testing
 exports.is_using_input_method = false;
 
-function narrow_or_search_for_term(search_string) {
+exports.narrow_or_search_for_term = function (search_string) {
     const search_query_box = $("#search_query");
     if (exports.is_using_input_method) {
         // Neither narrow nor search when using input tools as
@@ -13,14 +13,12 @@ function narrow_or_search_for_term(search_string) {
 
     let operators;
     if (page_params.search_pills_enabled) {
-        // search_string only contains the suggestion selected
-        // from the typeahead. base_query stores the query
-        // corresponding to the existing pills.
+        // We have to take care to append the new pill before calling this
+        // function, so that the base_query includes the suggestion selected
+        // along with query corresponding to the existing pills.
         const base_query = search_pill.get_search_string_for_current_filter(
             search_pill_widget.widget);
-        const base_operators = Filter.parse(base_query);
-        const suggestion_operator = Filter.parse(search_string);
-        operators = base_operators.concat(suggestion_operator);
+        operators = Filter.parse(base_query);
     } else {
         operators = Filter.parse(search_string);
     }
@@ -32,9 +30,11 @@ function narrow_or_search_for_term(search_string) {
 
     // Narrowing will have already put some operators in the search box,
     // so leave the current text in.
-    search_query_box.blur();
+    if (!page_params.search_pills_enabled) {
+        search_query_box.blur();
+    }
     return search_query_box.val();
-}
+};
 
 function update_buttons_with_focus(focused) {
     const search_query_box = $('#search_query');
@@ -90,22 +90,11 @@ exports.initialize = function () {
             return true;
         },
         updater: function (search_string) {
-            // Order is important here. narrow_or_search_for_term
-            // gets a search string from existing pills and obtains
-            // existing operators. Newly selected suggestion is added
-            // to those operators. If narrow_or_search_for_term was
-            // called after append_search_string, the existing search
-            // pills at the time for calling that function would also
-            // have the newly selected suggestion, and appending it again
-            // would cause duplication.
-            const result = narrow_or_search_for_term(search_string);
             if (page_params.search_pills_enabled) {
                 search_pill.append_search_string(search_string,
                                                  search_pill_widget.widget);
-                $("#search_query").focus();
-            } else {
-                return result;
             }
+            return exports.narrow_or_search_for_term(search_string);
         },
         sorter: function (items) {
             return items;
@@ -150,16 +139,8 @@ exports.initialize = function () {
             // this codepath is that they first all blur the box to
             // indicate that they've done what they need to do)
 
-            let operators = Filter.parse(search_query_box.val());
-            if (page_params.search_pills_enabled) {
-                // Pill is already added during keydown event of input pills.
-                // Thus we can't call narrow_or_search_for_term as the
-                // search_query_box has empty value.
-                const base_query = search_pill.get_search_string_for_current_filter(
-                    search_pill_widget.widget);
-                operators = Filter.parse(base_query);
-            }
-            narrow.activate(operators, {trigger: 'search'});
+            // Pill is already added during keydown event of input pills.
+            exports.narrow_or_search_for_term(search_query_box.val());
             search_query_box.blur();
             update_buttons_with_focus(false);
         }
