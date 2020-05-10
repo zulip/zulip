@@ -858,11 +858,6 @@ input[type=checkbox] {
     vertical-align: top;
 }
 
-.bots_list .bot-information-box .details {
-    display: inline-block;
-    width: calc(100% - 75px);
-}
-
 .bots_list .name {
     font-weight: 600;
     font-size: 1.1rem;
@@ -924,6 +919,11 @@ input[type=checkbox] {
     box-sizing: border-box;
 
     overflow: auto;
+}
+
+.bots_list .bot-information-box .details {
+    display: inline-block;
+    width: calc(100% - 75px);
 }
 
 .bots_list img.avatar {
