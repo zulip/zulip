@@ -1064,19 +1064,19 @@ input[type=checkbox] {
     margin-top: 8px;
 }
 
-#alert_words_list .edit-alert-word-buttons,
-#attachments_list .edit-attachment-buttons {
-    position: absolute;
-    right: 20px;
-    top: 0px;
-}
-
 #alert_words_list .alert_word_listing .value {
     display: block;
     white-space: pre-wrap;
     word-wrap: break-word;
     word-break: break-all;
     white-space: normal;
+}
+
+#alert_words_list .edit-alert-word-buttons,
+#attachments_list .edit-attachment-buttons {
+    position: absolute;
+    right: 20px;
+    top: 0px;
 }
 
 .emojiset_choices {
