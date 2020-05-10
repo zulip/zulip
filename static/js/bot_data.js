@@ -66,10 +66,6 @@ exports.get = function (bot_id) {
     return bots.get(bot_id);
 };
 
-exports.get_bot_owner_email = function (bot_id) {
-    return bots.get(bot_id).owner;
-};
-
 exports.get_services = function (bot_id) {
     return services.get(bot_id);
 };
