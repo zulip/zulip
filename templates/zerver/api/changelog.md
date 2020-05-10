@@ -10,6 +10,12 @@ below features are supported.
 
 ## Changes in Zulip 2.2
 
+**Feature level 5**
+* [`GET /events`](/api/get-events-from-queue): `realm_bot` events,
+  sent when changes are made to bot users, now contain an
+  integer-format `owner_id` field, replacing the `owner` field (which
+  was an email address).
+
 **Feature level 4**
 
 * `jitsi_server_url`, `development_environment`, `server_generation`,

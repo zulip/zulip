@@ -380,17 +380,6 @@ const event_fixtures = {
         },
     },
 
-    realm_bot__update_owner: {
-        type: 'realm_bot',
-        op: 'update',
-        bot: {
-            email: 'the-bot@example.com',
-            user_id: 4321,
-            full_name: 'The Bot Has A New Name',
-            owner_id: test_user.user_id,
-        },
-    },
-
     realm_emoji: {
         type: 'realm_emoji',
         realm_emoji: {
@@ -1110,12 +1099,6 @@ with_overrides(function (override) {
             assert_same(args.update_bot_data, event.bot);
         });
     });
-
-    event = event_fixtures.realm_bot__update_owner;
-    override('bot_data.update', noop);
-    override('settings_users.update_user_data', noop);
-    dispatch(event);
-    assert_same(event.bot.owner, 'test@example.com');
 });
 
 with_overrides(function (override) {

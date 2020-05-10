@@ -80,6 +80,15 @@ run_test('test_basics', () => {
         assert.equal('New Bot 1', bot.full_name);
         assert.equal(2, services[0].interface);
         assert.equal('http://baz.com', services[0].base_url);
+
+        const change_owner_event = {
+            owner_id: fred.user_id,
+        };
+        bot_data.update(43, change_owner_event);
+
+        bot = bot_data.get(43);
+        assert.equal(bot.owner_id, fred.user_id);
+        assert.equal(bot.owner, fred.email);
     }());
 
     (function test_embedded_bot_update() {
