@@ -1118,10 +1118,10 @@ input[type=checkbox] {
 
 #api_key_buttons {
     display: inline-flex;
-}
 
-#api_key_buttons .regenerate_api_key {
-    margin-right: 5px;
+    .regenerate_api_key {
+        margin-right: 5px;
+    }
 }
 
 .right.show .emoji_alt_code {
