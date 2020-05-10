@@ -195,7 +195,22 @@ function reset_scrollbar($sel) {
     };
 }
 
+function bot_owner_full_name(owner_id) {
+    if (!owner_id) {
+        return;
+    }
+
+    const bot_owner = people.get_by_user_id(owner_id);
+    if (!bot_owner) {
+        return;
+    }
+
+    return bot_owner.full_name;
+}
+
 function bot_info(bot_user) {
+    const owner_id = bot_user.bot_owner_id;
+
     const info = {};
 
     info.is_bot = true;
@@ -204,16 +219,14 @@ function bot_info(bot_user) {
     info.is_active = bot_user.is_active;
     info.user_id = bot_user.user_id;
     info.full_name = bot_user.full_name;
-    info.bot_owner_id = bot_user.bot_owner_id;
+    info.bot_owner_id = owner_id;
 
     // Convert bot type id to string for viewing to the users.
     info.bot_type = settings_bots.type_id_to_string(bot_user.bot_type);
 
-    const bot_owner = people.get_bot_owner_user(bot_user);
+    info.bot_owner_full_name = bot_owner_full_name(owner_id);
 
-    if (bot_owner) {
-        info.bot_owner_full_name = bot_owner.full_name;
-    } else {
+    if (!info.bot_owner_full_name) {
         info.no_owner = true;
         info.bot_owner_full_name = i18n.t("No owner");
     }
