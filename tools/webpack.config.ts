@@ -119,7 +119,7 @@ export default (env?: string): webpack.Configuration[] => {
                                     'if', 'unless', 'each', 'with',
                                     // The ones below are defined in static/js/templates.js
                                     'plural', 'eq', 'and', 'or', 'not',
-                                    't', 'tr', 'rendered_markdown', 'recent_topics_filter',
+                                    't', 'tr', 'rendered_markdown',
                                 ],
                                 preventIndent: true,
                             },
