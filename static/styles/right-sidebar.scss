@@ -151,18 +151,21 @@
     right: 0px;
     text-align: center;
     vertical-align: middle;
-    border-left: 2px solid hsl(204, 20%, 74%);
+    border-left: 1px solid hsl(0, 0%, 88%);
 }
 
 #userlist-toggle-button {
     text-decoration: none;
-    background-color: hsl(0, 0%, 89%);
-    color: hsl(0, 0%, 52%);
+    color: hsl(0, 0%, 60%);
     display: block;
     width: 45px;
     height: 19px;
     padding-top: 12px;
     padding-bottom: 9px;
+
+    &:hover {
+        color: inherit;
+    }
 }
 
 #userlist-header {
