@@ -356,13 +356,21 @@ on a dark background, and don't change the dark labels dark either. */
 
     #streamlist-toggle,
     #userlist-toggle {
-        border-color: hsla(199, 33%, 46%, 0.2);
+        color: inherit;
+        border-color: hsla(0, 0%, 0%, 0.6);
     }
 
-    #streamlist-toggle-button,
-    #userlist-toggle-button {
+    #streamlist-toggle-button {
         color: inherit;
         background-color: inherit;
+    }
+
+    #userlist-toggle-button {
+        color: hsl(221, 9%, 54%);
+
+        &:hover {
+            color: inherit;
+        }
     }
 
     li.active-filter,
