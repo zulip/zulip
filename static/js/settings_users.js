@@ -332,9 +332,14 @@ exports.update_user_data = function (user_id, new_data) {
         user_row.find(".user_name").text(new_data.full_name);
     }
 
-    if (new_data.owner !== undefined) {
-        // Update the bot owner in the table
-        user_row.find(".owner").text(new_data.owner);
+    if (new_data.owner_id !== undefined) {
+        // TODO: Linkify the owner name to match the
+        //       formatting of the list. Ideally we can
+        //       make this whole function simpler
+        //       by re-rendering the entire row via
+        //       the list widget.
+        const owner_name = bot_owner_full_name(new_data.owner_id);
+        user_row.find(".owner").text(owner_name);
     }
 
     if (new_data.is_active !== undefined) {
