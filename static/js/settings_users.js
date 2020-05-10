@@ -28,6 +28,14 @@ function sort_email(a, b) {
     );
 }
 
+function sort_bot_email(a, b) {
+    function email(bot) {
+        return (bot.display_email || '').toLowerCase();
+    }
+
+    return compare_a_b(email(a), email(b));
+}
+
 function sort_role(a, b) {
     function role(user) {
         if (user.is_admin) { return 0; }
@@ -38,18 +46,8 @@ function sort_role(a, b) {
 }
 
 function sort_bot_owner(a, b) {
-    function owner_name(item) {
-        const owner = people.get_bot_owner_user(item);
-
-        if (!owner) {
-            return '';
-        }
-
-        if (!owner.full_name) {
-            return '';
-        }
-
-        return owner.full_name.toLowerCase();
+    function owner_name(bot) {
+        return (bot.bot_owner_full_name || '').toLowerCase();
     }
 
     return compare_a_b(
@@ -167,8 +165,14 @@ function bot_owner_full_name(owner_id) {
     return bot_owner.full_name;
 }
 
-function bot_info(bot_user) {
-    const owner_id = bot_user.bot_owner_id;
+function bot_info(bot_user_id) {
+    const bot_user = bot_data.get(bot_user_id);
+
+    if (!bot_user) {
+        return;
+    }
+
+    const owner_id = bot_user.owner_id;
 
     const info = {};
 
@@ -235,24 +239,26 @@ function human_info(person) {
 
 section.bots.create_table = (bots) => {
     const $bots_table = $("#admin_bots_table");
-    list_render.create($bots_table, bots, {
+    const bot_user_ids = bots.map(b => b.user_id);
+    list_render.create($bots_table, bot_user_ids, {
         name: "admin_bot_list",
-        modifier: function (bot_user) {
-            const info = bot_info(bot_user);
-            return render_admin_user_list(info);
-        },
+        get_item: bot_info,
+        modifier: render_admin_user_list,
         filter: {
             element: $bots_table.closest(".settings-section").find(".search"),
             predicate: function (item, value) {
+                if (!item) {
+                    return false;
+                }
                 return item.full_name.toLowerCase().includes(value) ||
-                item.email.toLowerCase().includes(value);
+                item.display_email.toLowerCase().includes(value);
             },
             onupdate: reset_scrollbar($bots_table),
         },
         parent_container: $("#admin-bot-list").expectOne(),
         init_sort: ['alphabetic', 'full_name'],
         sort_fields: {
-            email: sort_email,
+            email: sort_bot_email,
             bot_owner: sort_bot_owner,
         },
     });
