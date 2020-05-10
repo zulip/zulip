@@ -477,6 +477,7 @@ def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
     # set the owner key while reactivating them.
     if user_profile.bot_owner is not None:
         bot['owner'] = user_profile.bot_owner.email
+        bot['owner_id'] = user_profile.bot_owner.id
 
     return dict(type="realm_bot", op="add", bot=bot)
 
@@ -5732,7 +5733,8 @@ def get_owned_bot_dicts(user_profile: UserProfile,
              'default_sending_stream': botdict['default_sending_stream__name'],
              'default_events_register_stream': botdict['default_events_register_stream__name'],
              'default_all_public_streams': botdict['default_all_public_streams'],
-             'owner': botdict['bot_owner__email'],
+             'owner': botdict['bot_owner__email'],  # TODO: eliminate
+             'owner_id': botdict['bot_owner__id'],
              'avatar_url': avatar_url_from_dict(botdict),
              'services': services_by_ids[botdict['id']],
              }

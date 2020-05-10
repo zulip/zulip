@@ -480,7 +480,12 @@ def apply_event(state: Dict[str, Any],
             for bot in state['realm_bots']:
                 if bot['email'] == event['bot']['email']:
                     if 'owner_id' in event['bot']:
-                        bot['owner'] = get_user_profile_by_id(event['bot']['owner_id']).email
+                        bot_owner_id = event['bot']['owner_id']
+                        bot['owner_id'] = bot_owner_id
+
+                        # TODO: eliminate `owner` field.
+                        bot_owner = get_user_profile_by_id(bot_owner_id)
+                        bot['owner'] = bot_owner.email
                     else:
                         bot.update(event['bot'])
 

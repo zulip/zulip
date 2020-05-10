@@ -181,6 +181,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                     default_events_register_stream=None,
                     default_all_public_streams=False,
                     services=[],
+                    owner_id=hamlet.id,
                     owner=hamlet.email,
                 ),
             ),
@@ -314,6 +315,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                          default_events_register_stream=None,
                          default_all_public_streams=False,
                          services=[],
+                         owner_id=user.id,
                          # Important: This is the product-facing
                          # email, not the delivery email, for this
                          # user.  TODO: Migrate this to an integer ID.
@@ -417,6 +419,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                     default_events_register_stream=None,
                     default_all_public_streams=False,
                     services=[],
+                    owner_id=user_profile.id,
                     owner=user_profile.email,
                 ),
             ),
@@ -492,6 +495,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                     default_events_register_stream='Denmark',
                     default_all_public_streams=False,
                     services=[],
+                    owner_id=user_profile.id,
                     owner=user_profile.email,
                 ),
             ),

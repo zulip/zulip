@@ -461,13 +461,21 @@ def active_non_guest_user_ids_cache_key(realm_id: int) -> str:
     return "active_non_guest_user_ids:%s" % (realm_id,)
 
 bot_dict_fields: List[str] = [
-    'id', 'full_name', 'short_name', 'bot_type', 'email',
-    'is_active', 'default_sending_stream__name',
-    'realm_id',
-    'default_events_register_stream__name',
-    'default_all_public_streams', 'api_key',
-    'bot_owner__email', 'avatar_source',
+    'api_key',
+    'avatar_source',
     'avatar_version',
+    'bot_owner__id',
+    'bot_owner__email',  # TODO: eliminate
+    'bot_type',
+    'default_all_public_streams',
+    'default_events_register_stream__name',
+    'default_sending_stream__name',
+    'email',
+    'full_name',
+    'id',
+    'is_active',
+    'realm_id',
+    'short_name',
 ]
 
 def bot_dicts_in_realm_cache_key(realm: 'Realm') -> str:
