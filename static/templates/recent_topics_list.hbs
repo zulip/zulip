@@ -1,20 +1,20 @@
 <div id="recent_topics_filter_buttons" class="btn-group" role="group" aria-label="Recent Topics">
-    <button data-filter="all" type="button" class="btn btn-default btn-recent-filters">All</button>
-    <button data-filter="unread" type="button" class="btn btn-default btn-recent-filters">Unread</button>
-    <button data-filter="bookmarked" type="button" class="btn btn-default btn-recent-filters">Bookmarked</button>
-    <button data-filter="participated" type="button" class="btn btn-default btn-recent-filters">Participated</button>
+    <button data-filter="all" type="button" class="btn btn-default btn-recent-filters">{{t 'All' }}</button>
+    <button data-filter="unread" type="button" class="btn btn-default btn-recent-filters">{{t 'Unread' }}</button>
+    <button data-filter="bookmarked" type="button" class="btn btn-default btn-recent-filters">{{t 'Bookmarked' }}</button>
+    <button data-filter="participated" type="button" class="btn btn-default btn-recent-filters">{{t 'Participated' }}</button>
     <input type="text" id="recent_topics_search" placeholder="Search Stream / Topics names" aria-label="search-topics">
 </div>
     <div class="tableFixHead">
         <table class="recents_table table table-striped table-bordered table-responsive table-hover">
             <thead class="thead-dark">
                 <tr>
-                    <th>Unread</th>
-                    <th>Stream</th>
-                    <th>Topic</th>
-                    <th>Actions</th>
-                    <th>Active Users</th>
-                    <th>Last message</th>
+                    <th>{{t 'Unread' }}</th>
+                    <th>{{t 'Stream' }}</th>
+                    <th>{{t 'Topic' }}</th>
+                    <th>{{t 'Actions' }}</th>
+                    <th>{{t 'Active users' }}</th>
+                    <th>{{t 'Last message' }}</th>
                 </tr>
             </thead>
             {{!-- RECENT TOPICS LIST --}}
