@@ -288,7 +288,9 @@ def get_issue_user_name(payload: Dict[str, Any]) -> str:
     return payload['user']['name']
 
 def get_project_homepage(payload: Dict[str, Any]) -> str:
-    return payload['project']['web_url']
+    if 'project' in payload:
+        return payload['project']['web_url']
+    return payload['repository']['homepage']
 
 def get_branch_name(payload: Dict[str, Any]) -> str:
     return payload['ref'].replace('refs/heads/', '')
