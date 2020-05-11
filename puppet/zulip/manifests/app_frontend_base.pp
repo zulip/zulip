@@ -65,10 +65,10 @@ class zulip::app_frontend_base {
     }
   }
 
-  # The number of Tornado processes to run on the server;
-  # historically, this has always been 1, but we now have experimental
-  # support for Tornado sharding.
-  $tornado_processes = zulipconf('application_server', 'tornado_processes', 1)
+  # The number of Tornado processes to run on the server; this
+  # defaults to 1, since Tornado sharding is currently only at the
+  # Realm level.
+  $tornado_processes = Integer(zulipconf('application_server', 'tornado_processes', 1))
   if $tornado_processes > 1 {
     $tornado_ports = range(9800, 9800 + $tornado_processes)
     $tornado_multiprocess = true
