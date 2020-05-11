@@ -3,6 +3,7 @@ from typing import Optional, Any, Dict, List, Tuple
 from collections import defaultdict
 TOPIC_WITH_BRANCH_TEMPLATE = '{repo} / {branch}'
 TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE = '{repo} / {type} #{id} {title}'
+TOPIC_WITH_RELEASE_TEMPLATE = '{repo} / {tag} {title}'
 
 EMPTY_SHA = '0000000000000000000000000000000000000000'
 
@@ -51,6 +52,7 @@ PUSH_TAGS_MESSAGE_TEMPLATE = """{user_name} {action} tag {tag}"""
 TAG_WITH_URL_TEMPLATE = "[{tag_name}]({tag_url})"
 TAG_WITHOUT_URL_TEMPLATE = "{tag_name}"
 
+RELEASE_MESSAGE_TEMPLATE = "{user_name} {action} release [{release_name}]({url}) for tag {tagname}."
 
 def get_push_commits_event_message(user_name: str, compare_url: Optional[str],
                                    branch_name: str, commits_data: List[Dict[str, Any]],
@@ -274,6 +276,18 @@ def get_commits_content(commits_data: List[Dict[str, Any]], is_truncated: Option
             commits_number=''
         ).replace('  ', ' ')
     return commits_content.rstrip()
+
+def get_release_event_message(user_name: str, action: str,
+                              tagname: str, release_name: str, url: str) -> str:
+    content = RELEASE_MESSAGE_TEMPLATE.format(
+        user_name=user_name,
+        action=action,
+        tagname=tagname,
+        release_name=release_name,
+        url=url
+    )
+
+    return content
 
 def get_short_sha(sha: str) -> str:
     return sha[:7]

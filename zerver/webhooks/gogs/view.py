@@ -10,9 +10,10 @@ from zerver.lib.webhooks.common import UnexpectedWebhookEventType, \
     check_send_webhook_message, get_http_headers_from_filename, \
     validate_extract_webhook_http_header
 from zerver.lib.webhooks.git import TOPIC_WITH_BRANCH_TEMPLATE, \
-    TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE, get_create_branch_event_message, \
+    TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE, TOPIC_WITH_RELEASE_TEMPLATE, \
+    get_create_branch_event_message, \
     get_issue_event_message, get_pull_request_event_message, \
-    get_push_commits_event_message
+    get_push_commits_event_message, get_release_event_message
 from zerver.models import UserProfile
 
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_GOGS_EVENT")
@@ -100,6 +101,17 @@ def format_issue_comment_event(payload: Dict[str, Any], include_title: Optional[
         title=issue['title'] if include_title else None
     )
 
+def format_release_event(payload: Dict[str, Any], include_title: Optional[bool]=False) -> str:
+    data = {
+        'user_name': payload['release']['author']['username'],
+        'action': payload['action'],
+        'tagname': payload['release']['tag_name'],
+        'release_name': payload['release']['name'],
+        'url': payload['repository']['html_url']
+    }
+
+    return get_release_event_message(**data)
+
 @api_key_only_webhook_view('Gogs')
 @has_request_variables
 def api_gogs_webhook(request: HttpRequest, user_profile: UserProfile,
@@ -165,6 +177,17 @@ def gogs_webhook_main(integration_name: str, http_header_name: str,
             id=payload['issue']['number'],
             title=payload['issue']['title']
         )
+    elif event == 'release':
+        body = format_release_event(
+            payload,
+            include_title=user_specified_topic is not None
+        )
+        topic = TOPIC_WITH_RELEASE_TEMPLATE.format(
+            repo=repo,
+            tag=payload['release']['tag_name'],
+            title=payload['release']['name']
+        )
+
     else:
         raise UnexpectedWebhookEventType('Gogs', event)
 
