@@ -1,3 +1,4 @@
+const user_dropdown = require("./user_dropdown");
 const render_bot_avatar_row = require('../templates/bot_avatar_row.hbs');
 const render_edit_bot = require('../templates/edit_bot.hbs');
 const render_settings_edit_embedded_bot_service = require("../templates/settings/edit_embedded_bot_service.hbs");
@@ -403,7 +404,10 @@ exports.set_up = function () {
         const image = li.find(".image");
         const errors = form.find('.bot_edit_errors');
 
-        $("#settings_page .edit_bot_form .edit-bot-owner select").val(bot.owner);
+        const owner_dropdown = user_dropdown.create(bot.owner_id);
+        const owner_select_div = $('#edit_bot_modal .select-form');
+        owner_select_div.append(owner_dropdown.elem);
+
         const service = bot_data.get_services(bot_id)[0];
         if (bot.bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {
             $("#service_data").append(render_settings_edit_outgoing_webhook_service({
@@ -429,7 +433,7 @@ exports.set_up = function () {
                 const type = form.attr('data-type');
 
                 const full_name = form.find('.edit_bot_name').val();
-                const bot_owner = form.find('.edit-bot-owner select').val();
+                const bot_owner_id = owner_dropdown.get_user_id();
                 const file_input = $(".edit_bot_form").find('.edit_bot_avatar_file_input');
                 const spinner = form.find('.edit_bot_spinner');
                 const edit_button = form.find('.edit_bot_button');
@@ -437,7 +441,7 @@ exports.set_up = function () {
                 const formData = new FormData();
                 formData.append('csrfmiddlewaretoken', csrf_token);
                 formData.append('full_name', full_name);
-                formData.append('bot_owner_id', people.get_by_email(bot_owner).user_id);
+                formData.append('bot_owner_id', bot_owner_id);
 
                 if (type === OUTGOING_WEBHOOK_BOT_TYPE) {
                     const service_payload_url = $("#edit_service_base_url").val();
