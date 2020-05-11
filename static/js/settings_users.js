@@ -127,39 +127,6 @@ function get_status_field() {
     }
 }
 
-
-exports.update_user_data = function (user_id, new_data) {
-    if (!meta.loaded) {
-        return;
-    }
-
-    const user_row = get_user_info_row(user_id);
-
-    if (new_data.full_name !== undefined) {
-        // Update the full name in the table
-        user_row.find(".user_name").text(new_data.full_name);
-    }
-
-    if (new_data.owner !== undefined) {
-        // Update the bot owner in the table
-        user_row.find(".owner").text(new_data.owner);
-    }
-
-    if (new_data.is_active !== undefined) {
-        if (new_data.is_active === false) {
-            // Deactivate the user/bot in the table
-            update_view_on_deactivate(user_row);
-        } else {
-            // Reactivate the user/bot in the table
-            update_view_on_reactivate(user_row);
-        }
-    }
-
-    if (new_data.is_admin !== undefined || new_data.is_guest !== undefined) {
-        user_row.find(".user_role").text(people.get_user_type(user_id));
-    }
-};
-
 function failed_listing_users(xhr) {
     loading.destroy_indicator($('#subs_page_loading_indicator'));
     const status = get_status_field();
@@ -351,6 +318,38 @@ section.deactivated.create_table = (deactivated_users) => {
 
     loading.destroy_indicator($('#admin_page_deactivated_users_loading_indicator'));
     $("#admin_deactivated_users_table").show();
+};
+
+exports.update_user_data = function (user_id, new_data) {
+    if (!meta.loaded) {
+        return;
+    }
+
+    const user_row = get_user_info_row(user_id);
+
+    if (new_data.full_name !== undefined) {
+        // Update the full name in the table
+        user_row.find(".user_name").text(new_data.full_name);
+    }
+
+    if (new_data.owner !== undefined) {
+        // Update the bot owner in the table
+        user_row.find(".owner").text(new_data.owner);
+    }
+
+    if (new_data.is_active !== undefined) {
+        if (new_data.is_active === false) {
+            // Deactivate the user/bot in the table
+            update_view_on_deactivate(user_row);
+        } else {
+            // Reactivate the user/bot in the table
+            update_view_on_reactivate(user_row);
+        }
+    }
+
+    if (new_data.is_admin !== undefined || new_data.is_guest !== undefined) {
+        user_row.find(".user_role").text(people.get_user_type(user_id));
+    }
 };
 
 function start_data_load() {
