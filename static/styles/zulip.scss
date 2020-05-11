@@ -1492,10 +1492,11 @@ div.focused_table {
             .fa.fa-user-o {
                 margin-left: 0px;
             }
-            &::before {
+
+            &::before,
+            &::after {
                 content: "";
                 position: absolute;
-                left: -5px;
                 top: 25%;
                 width: 1px;
                 height: 50%;
@@ -1504,17 +1505,13 @@ div.focused_table {
                     top: 10%;
                 }
             }
+
+            &::before {
+                left: -5px;
+            }
+
             &::after {
-                content: "";
-                position: absolute;
                 right: -5px;
-                top: 25%;
-                width: 1px;
-                height: 50%;
-                background: hsl(0, 0%, 88%);
-                @media (max-width: 500px) {
-                    top: 10%;
-                }
             }
         }
 
