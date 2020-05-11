@@ -88,7 +88,6 @@ run_test('test_basics', () => {
 
         bot = bot_data.get(43);
         assert.equal(bot.owner_id, fred.user_id);
-        assert.equal(bot.owner, fred.email);
     }());
 
     (function test_embedded_bot_update() {
@@ -134,9 +133,9 @@ run_test('test_basics', () => {
 
     (function test_get_editable() {
 
-        bot_data.add({...test_bot, user_id: 44, owner: me.email, is_active: true});
-        bot_data.add({...test_bot, user_id: 45, email: 'bot2@zulip.com', owner: me.email, is_active: true});
-        bot_data.add({...test_bot, user_id: 46, email: 'bot3@zulip.com', owner: fred.email, is_active: true});
+        bot_data.add({...test_bot, user_id: 44, owner_id: me.user_id, is_active: true});
+        bot_data.add({...test_bot, user_id: 45, email: 'bot2@zulip.com', owner_id: me.user_id, is_active: true});
+        bot_data.add({...test_bot, user_id: 46, email: 'bot3@zulip.com', owner_id: fred.user_id, is_active: true});
 
         const editable_bots = bot_data.get_editable().map(bot => bot.email);
         assert.deepEqual(['bot1@zulip.com', 'bot2@zulip.com'], editable_bots);
