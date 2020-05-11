@@ -4404,10 +4404,16 @@ def do_update_message(user_profile: UserProfile, message: Message,
 
     if content is not None:
         assert rendered_content is not None
-        update_user_message_flags(message, ums)
 
         # mention_data is required if there's a content edit.
         assert mention_data is not None
+
+        # add data from group mentions to mentions_user_ids.
+        for group_id in message.mentions_user_group_ids:
+            members = mention_data.get_group_members(group_id)
+            message.mentions_user_ids.update(members)
+
+        update_user_message_flags(message, ums)
 
         # One could imagine checking realm.allow_edit_history here and
         # modifying the events based on that setting, but doing so
