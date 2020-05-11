@@ -360,10 +360,8 @@ function discard_property_element_changes(elem) {
         exports.signup_notifications_stream_widget.render(property_value);
     } else if (property_name === 'realm_default_code_block_language') {
         exports.default_code_language_widget.render(property_value);
-    } else if (typeof property_value === 'boolean') {
-        elem.prop('checked', property_value);
-    } else if (typeof property_value === 'string' || typeof property_value === 'number') {
-        elem.val(property_value);
+    } else if (property_value !== undefined) {
+        exports.set_input_element_value(elem, property_value);
     } else {
         blueslip.error('Element refers to unknown property ' + property_name);
     }
@@ -485,6 +483,19 @@ exports.get_input_element_value = function (input_elem, input_type) {
         }
     }
     return;
+};
+
+exports.set_input_element_value = function (input_elem, value) {
+    const input_type = get_input_type(input_elem, typeof value);
+    if (input_type) {
+        if (input_type === 'boolean') {
+            return input_elem.prop('checked', value);
+        }
+        if (input_type === 'string' || input_type === 'number') {
+            return input_elem.val(value);
+        }
+    }
+    blueslip.error(`Failed to set value of property ${exports.extract_property_name(input_elem)}`);
 };
 
 exports.set_up = function () {
