@@ -463,10 +463,16 @@ exports.change_save_button_state = function ($element, state) {
     show_hide_element($element, is_show, 800);
 };
 
+function get_input_type(input_elem, input_type) {
+    if (["boolean", "string", "number"].includes(input_type)) {
+        return input_type;
+    }
+    return input_elem.data("setting-widget-type");
+}
+
 exports.get_input_element_value = function (input_elem, input_type) {
     input_elem = $(input_elem);
-    input_type = ["boolean", "string", "number"].includes(input_type)
-        || input_elem.data("setting-widget-type");
+    input_type = get_input_type(input_elem, input_type);
     if (input_type) {
         if (input_type === 'boolean') {
             return input_elem.prop('checked');
