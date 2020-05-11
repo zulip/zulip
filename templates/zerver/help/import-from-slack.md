@@ -17,29 +17,44 @@ into an existing Zulip organization.
 
 First, export your data from Slack.
 
-### Export your Slack data
+!!! warn ""
+    **Note:** Only Slack owners and admins can export data from Slack.
+    See Slack's
+    [guide to data exports](https://get.slack.help/hc/en-us/articles/201658943-Export-data-and-message-history)
+    for more information.
+
+#### Get a Slack API token.
+
+It will be a long string starting with `xoxb-`.  It is required to
+fetch data that Slack doesn't include in their data exports, like
+email addresses.
+
 
 {start_tabs}
 
-1. [Generate a Slack Legacy API
-   token](https://api.slack.com/custom-integrations/legacy-tokens).
-   It will be a long string starting with `xoxp-`.  It is required to
-   fetch data that Slack doesn't include in their data exports, like
-   email addresses.
+1. [Create a new Slack app](https://api.slack.com/apps).
 
-2. [Export your Slack data](https://my.slack.com/services/export). You will
-   receive a zip file `slack_data.zip`.
+2. [Add OAuth scopes](https://api.slack.com/authentication/basics#scopes)
+   to your app. We need the following 'bot token scopes':
+    - `emoji:read`
+    - `users:read`
+    - `users:read.email`
+    - `team:read`
 
-    !!! warn ""
-        **Note:** Only Slack owners and admins can export data from Slack.
-        See Slack's
-        [guide to data exports](https://get.slack.help/hc/en-us/articles/201658943-Export-data-and-message-history)
-        for more information.
-
-    This step will also generate a different token starting with
-    `xoxe-`; you don't need it.
+3. [Install the app](https://api.slack.com/authentication/basics#installing)
+  to your workspace. You will get an API token that you can now use to fetch
+      data from your slack workspace.
 
 {end_tabs}
+
+### Export your Slack data
+
+Now, [Export your Slack data](https://my.slack.com/services/export). You will
+receive a zip file `slack_data.zip`.
+
+
+This step will also generate a different token starting with
+`xoxe-`; you don't need it.
 
 ### Import into zulipchat.com
 
