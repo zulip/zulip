@@ -1500,8 +1500,9 @@ div.focused_table {
                 top: 25%;
                 height: 50%;
                 color: hsl(0, 0%, 88%);
+                font-size: 20px;
                 @media (max-width: 500px) {
-                    top: 12%;
+                    top: 10%;
                 }
             }
 
