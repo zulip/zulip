@@ -273,7 +273,13 @@ def get_pipeline_event_body(payload: Dict[str, Any]) -> str:
     return "[Pipeline]({}) {} with build(s):\n{}.".format(pipeline_url, action, builds_status[:-1])
 
 def get_repo_name(payload: Dict[str, Any]) -> str:
-    return payload['project']['name']
+    if 'project' in payload:
+        return payload['project']['name']
+
+    # Apparently, Job Hook payloads don't have a `project` section,
+    # but the repository name is accessible from the `repository`
+    # section.
+    return payload['repository']['name']
 
 def get_user_name(payload: Dict[str, Any]) -> str:
     return payload['user_name']
