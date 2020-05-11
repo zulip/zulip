@@ -1,6 +1,6 @@
 const settings_data = require("./settings_data");
+const user_dropdown = require("./user_dropdown");
 const render_admin_user_list = require("../templates/admin_user_list.hbs");
-const render_bot_owner_select = require("../templates/bot_owner_select.hbs");
 const render_admin_human_form = require('../templates/admin_human_form.hbs');
 const render_admin_bot_form = require('../templates/admin_bot_form.hbs');
 
@@ -451,13 +451,18 @@ function open_bot_form(person) {
     modal_container.empty().append(div);
     overlays.open_modal('#admin-bot-form');
 
-    // NOTE: building `users_list` is quite expensive!
-    const users_list = people.get_active_humans();
-    const owner_select = $(render_bot_owner_select({users_list: users_list}));
-    owner_select.val(bot_data.get(person.user_id).owner || "");
-    modal_container.find(".edit_bot_owner_container").append(owner_select);
+    // NOTE: building `owner_dropdown` is quite expensive!
+    const owner_id = bot_data.get(person.user_id).owner_id;
+    const owner_dropdown = user_dropdown.create(owner_id);
 
-    return div;
+    modal_container.find(
+        ".edit_bot_owner_container"
+    ).append(owner_dropdown.elem);
+
+    return {
+        modal: div,
+        owner_dropdown: owner_dropdown,
+    };
 }
 
 function confirm_deactivation(row, user_id, status_field) {
@@ -609,7 +614,9 @@ function handle_bot_form(tbody, status_field) {
             return;
         }
 
-        const modal = open_bot_form(bot);
+        const ret = open_bot_form(bot);
+        const modal = ret.modal;
+        const owner_dropdown = ret.owner_dropdown;
 
         modal.find('.submit_bot_change').on("click", function (e) {
             e.preventDefault();
@@ -622,9 +629,9 @@ function handle_bot_form(tbody, status_field) {
                 full_name: full_name.val(),
             };
 
-            const owner_select_value = modal.find('.bot_owner_select').val();
-            if (owner_select_value) {
-                data.bot_owner_id = people.get_by_email(owner_select_value).user_id;
+            const human_user_id = owner_dropdown.get_user_id();
+            if (human_user_id) {
+                data.bot_owner_id = human_user_id;
             }
 
             settings_ui.do_settings_change(channel.patch, url, data, status_field);
