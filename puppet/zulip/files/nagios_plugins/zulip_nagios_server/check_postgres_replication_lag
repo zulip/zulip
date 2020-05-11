@@ -54,9 +54,9 @@ def loc_to_abs_offset(loc_str: str) -> int:
 
 # Fetch the locations in this order to make the differences positive
 # in the normal case given the delay in getting the values via ssh
-secondary_replay_loc = get_loc_over_ssh('postgres-secondary.zulip.net', 'pg_last_xlog_replay_location')
-secondary_recv_loc   = get_loc_over_ssh('postgres-secondary.zulip.net', 'pg_last_xlog_receive_location')
-primary_loc          = get_loc_over_ssh('postgres-primary.zulip.net', 'pg_current_xlog_location')
+secondary_replay_loc = get_loc_over_ssh('postgres-secondary.zulip.net', 'pg_last_wal_replay_lsn')
+secondary_recv_loc   = get_loc_over_ssh('postgres-secondary.zulip.net', 'pg_last_wal_receive_lsn')
+primary_loc          = get_loc_over_ssh('postgres-primary.zulip.net', 'pg_current_wal_lsn')
 
 primary_offset = loc_to_abs_offset(primary_loc)
 secondary_recv_offset = loc_to_abs_offset(secondary_recv_loc)
