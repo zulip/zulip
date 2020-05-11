@@ -1495,12 +1495,12 @@ div.focused_table {
 
             &::before,
             &::after {
-                content: "";
+                content: "|";
                 position: absolute;
                 top: 25%;
-                width: 1px;
                 height: 50%;
-                background: hsl(0, 0%, 88%);
+                color: hsl(0, 0%, 88%);
+                font-size: 20px;
                 @media (max-width: 500px) {
                     top: 10%;
                 }
