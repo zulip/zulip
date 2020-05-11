@@ -1612,6 +1612,11 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     transform: translateY(-50%);
 }
 
+.modal.fade.in {
+    top: 50%;
+    pointer-events: all;
+}
+
 #account-settings,
 #user-info-form-modal {
     .user-role button {
