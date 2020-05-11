@@ -107,7 +107,9 @@ exports.toggle_pin_to_top_stream = function (sub) {
 exports.is_subscribed_stream_tab_active = function () {
     // Returns true if "Subscribed" tab in stream settings is open
     // otherwise false.
-    if ($("#subscriptions_table .search-container .tab-switcher .first").hasClass("selected")) {
+    const tab = $(`#subscriptions_table .search-container .tab-switcher
+                  .first[data-tab-key=subscribed]`).expectOne();
+    if (tab.hasClass("selected")) {
         return true;
     }
     return false;
