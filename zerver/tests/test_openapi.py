@@ -442,7 +442,16 @@ do not match the types declared in the implementation of {}.\n""".format(functio
                     continue
 
             name: str = element["name"]
-            schema = element["schema"]
+            schema = {}
+            if "content" in element:
+                schema = element["content"]["application/json"]["schema"]
+                # If content_type is application/json then the
+                # data type is essentially string.
+                openapi_params.add((name, VARMAP["string"]))
+                continue
+
+            else:
+                schema = element["schema"]
             if 'oneOf' in schema:
                 # Hack: Just use the type of the first value
                 # Ideally, we'd turn this into a Union type.
@@ -459,7 +468,7 @@ do not match the types declared in the implementation of {}.\n""".format(functio
                     self.assertTrue(len(subtypes) > 1)
                     sub_type = self.get_type_by_priority(subtypes)
                 else:
-                    sub_type = VARMAP[element["schema"]["items"]["type"]]
+                    sub_type = VARMAP[schema["items"]["type"]]
                     self.assertIsNotNone(sub_type)
                 openapi_params.add((name, (_type, sub_type)))
             else:

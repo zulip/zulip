@@ -127,6 +127,11 @@ def curl_method_arguments(endpoint: str, method: str,
 
 def get_openapi_param_example_value_as_string(endpoint: str, method: str, param: Dict[str, Any],
                                               curl_argument: bool=False) -> str:
+    jsonify = False
+    param_name = param["name"]
+    if "content" in param:
+        param = param["content"]["application/json"]
+        jsonify = True
     if "type" in param["schema"]:
         param_type = param["schema"]["type"]
     else:
@@ -135,7 +140,6 @@ def get_openapi_param_example_value_as_string(endpoint: str, method: str, param:
         # union type.  But for this logic's purpose, it's good enough
         # to just check the first parameter.
         param_type = param["schema"]["oneOf"][0]["type"]
-    param_name = param["name"]
     if param_type in ["object", "array"]:
         example_value = param.get("example", None)
         if not example_value:
@@ -152,7 +156,7 @@ cURL example.""".format(endpoint, method, param_name)
         example_value = param.get("example", DEFAULT_EXAMPLE[param_type])
         if isinstance(example_value, bool):
             example_value = str(example_value).lower()
-        if param["schema"].get("format", "") == "json":
+        if jsonify:
             example_value = json.dumps(example_value)
         if curl_argument:
             return "    -d '{}={}'".format(param_name, example_value)
