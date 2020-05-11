@@ -78,18 +78,13 @@ function build_tab_bar(filter) {
         });
 
         $("#tab_list span:nth-last-child(2)").on("click", function (e) {
-            exports.open_search_bar_and_close_narrow_description();
-            search.initiate_search();
-            e.preventDefault();
-            e.stopPropagation();
-        });
-
-        // Hacky way of protecting the behaviour of links via preventDefault
-        // and stopPropagation
-        $(".narrow_description > a").on("click", function (e) {
-            window.location.href = e.target.href;
-            e.preventDefault();
-            e.stopPropagation();
+            // Let links behave normally, ie, do nothing if <a>
+            if (e.target.tagName.toLowerCase() === 'span') {
+                exports.open_search_bar_and_close_narrow_description();
+                search.initiate_search();
+                e.preventDefault();
+                e.stopPropagation();
+            }
         });
 
         const color = $(".search_closed").css("color");
