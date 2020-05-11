@@ -1574,6 +1574,11 @@ input[type=checkbox] {
     }
 }
 
+.modal.fade.in {
+    top: 50%;
+    pointer-events: all;
+}
+
 #account-settings,
 #admin-human-form {
     .user-role button {
