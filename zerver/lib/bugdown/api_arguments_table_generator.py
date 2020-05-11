@@ -117,11 +117,15 @@ class APIArgumentsTablePreprocessor(Preprocessor):
 
             # TODO: OpenAPI allows indicating where the argument goes
             # (path, querystring, form data...).  We should document this detail.
+            example = ""
+            if 'example' in argument:
+                example = argument['example']
+            else:
+                example = json.dumps(argument['content']['application/json']['example'])
+
             table.append(argument_template.format(
                 argument=argument.get('argument') or argument.get('name'),
-                # Show this as JSON to avoid changing the quoting style, which
-                # may cause problems with JSON encoding.
-                example=escape_html(json.dumps(argument['example'])),
+                example=escape_html(example),
                 required='<span class="api-argument-required">required</span>' if argument.get('required')
                 else '<span class="api-argument-optional">optional</span>',
                 description=md_engine.convert(description),
