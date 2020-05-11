@@ -993,6 +993,8 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
     realm_id = 0
     domain_name = settings.EXTERNAL_HOST
 
+    log_token_warning(token)
+
     slack_data_dir = slack_zip_file.replace('.zip', '')
     if not os.path.exists(slack_data_dir):
         os.makedirs(slack_data_dir)
@@ -1055,15 +1057,16 @@ def get_data_file(path: str) -> Any:
         data = ujson.load(fp)
         return data
 
+def log_token_warning(token: str) -> None:
+    if not token.startswith("xoxp-"):
+        logging.info('Not a Slack legacy token.\n'
+                     '  This token might not have all the needed scopes. We need the following scopes:\n'
+                     '  - emoji:read\n  - users:read\n  - users:read.email\n  - team:read')
+
+
 def get_slack_api_data(slack_api_url: str, get_param: str, **kwargs: Any) -> Any:
     if not kwargs.get("token"):
         raise AssertionError("Slack token missing in kwargs")
-    token = kwargs["token"]
-    if not token.startswith("xoxp-"):
-        raise Exception('Invalid Slack legacy token.\n'
-                        '  You must pass a Slack "legacy token" starting with "xoxp-".\n'
-                        '  Create one at https://api.slack.com/custom-integrations/legacy-tokens')
-
     data = requests.get("{}?{}".format(slack_api_url, urlencode(kwargs)))
 
     if data.status_code == requests.codes.ok:
