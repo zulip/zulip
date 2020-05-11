@@ -96,11 +96,6 @@ class SlackImporter(ZulipTestCase):
             get_slack_api_data(slack_user_list_url, "members", token=token)
         self.assertEqual(invalid.exception.args, ('Error accessing Slack API: invalid_auth',),)
 
-        token = 'xoxe-invalid-token'
-        with self.assertRaises(Exception) as invalid:
-            get_slack_api_data(slack_user_list_url, "members", token=token)
-        self.assertTrue(invalid.exception.args[0].startswith("Invalid Slack legacy token.\n"))
-
         with self.assertRaises(Exception) as invalid:
             get_slack_api_data(slack_user_list_url, "members")
         self.assertEqual(invalid.exception.args, ('Slack token missing in kwargs',),)
