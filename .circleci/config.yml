@@ -140,6 +140,19 @@ aliases:
         ! sudo scripts/lib/upgrade-zulip-stage-2 2> >(tee upgrade.err >&2)
         grep -Fq 'upgrade-zulip-stage-2: Unsupported platform: ubuntu 16.04' upgrade.err
 
+  - &notify_failure_status
+    run:
+      name: On fail
+      when: on_fail
+      branches:
+        only: master
+      command: |
+        if [[ "$CIRCLE_REPOSITORY_URL" == 'git@github.com:zulip/zulip.git' ]]; then
+          curl  -H "Content-Type: application/json" \
+          -X POST -i 'https://chat.zulip.org/api/v1/external/circleci?api_key=$ZULIP_BOT_KEY&stream=automated%20testing&topic=master%20failing' \
+          -d '{"payload": { "branch": "'"$CIRCLE_BRANCH"'", "reponame": "'"$CIRCLE_PROJECT_REPONAME"'", "status": "failed", "build_url": "'"$CIRCLE_BUILD_URL"'", "username": "'"$CIRCLE_USERNAME"'"}}'
+        fi
+
 jobs:
   "bionic-backend-frontend-python3.6":
     docker:
@@ -184,6 +197,7 @@ jobs:
 
       - store_test_results:
             path: ./var/xunit-test-results/casper/
+      - *notify_failure_status
 
 
   "focal-backend-python3.8":
@@ -206,6 +220,7 @@ jobs:
         - *save_cache_requirements
         - *save_emoji_cache
         - *run_backend_tests
+        - *notify_failure_status
 
   "xenial-legacy":
     docker:
@@ -218,6 +233,7 @@ jobs:
 
       - *check_xenial_provision_error
       - *check_xenial_upgrade_error
+      - *notify_failure_status
 
   "bionic-production-build-python3.6":
     docker:
@@ -256,6 +272,7 @@ jobs:
             - production-install
             - production
             - production-extract-tarball
+      - *notify_failure_status
 
   "bionic-production-install-python3.6":
     docker:
@@ -277,6 +294,7 @@ jobs:
       - *restore_cache_package_json
       - *install_production
       - *save_cache_package_json
+      - *notify_failure_status
 
   "focal-production-install-python3.8":
     docker:
@@ -298,6 +316,7 @@ jobs:
       - *restore_cache_package_json
       - *install_production
       - *save_cache_package_json
+      - *notify_failure_status
 
 workflows:
   version: 2
