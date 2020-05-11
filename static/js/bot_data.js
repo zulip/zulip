@@ -57,18 +57,13 @@ exports.update = function (bot_id, bot_update) {
         Object.assign(service, _.pick(bot_update.services[0], services_fields));
     }
 
-    // TODO: eliminate `owner` (which is an email)
-    if (bot.owner_id) {
-        const bot_owner = people.get_by_user_id(bot.owner_id);
-        bot.owner = bot_owner.email;
-    }
     send_change_event();
 };
 
 exports.get_all_bots_for_current_user = function () {
     const ret = [];
     for (const bot of bots.values()) {
-        if (people.is_current_user(bot.owner)) {
+        if (people.is_my_user_id(bot.owner_id)) {
             ret.push(bot);
         }
     }
@@ -78,7 +73,7 @@ exports.get_all_bots_for_current_user = function () {
 exports.get_editable = function () {
     const ret = [];
     for (const bot of bots.values()) {
-        if (bot.is_active && people.is_current_user(bot.owner)) {
+        if (bot.is_active && people.is_my_user_id(bot.owner_id)) {
             ret.push(bot);
         }
     }
