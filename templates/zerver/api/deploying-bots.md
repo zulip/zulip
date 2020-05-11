@@ -140,18 +140,6 @@ Botserver process.  You can do this with the following procedure.
     token=aQVQmSd6j6IHphJ9m1jhgHdbnhl5ZcsY
     ```
 
-    Each section contains the configuration for an outgoing webhook bot. For each
-    bot, enter the name of the bot you want to run in the square brackets `[]`.
-    For example, if we want `foo-bot@hostname` to run the `helloworld` bot, our
-    new section would look like this:
-
-    ```
-    [helloworld]
-    email=foo-bot@hostname
-    key=dOHHlyqgpt5g0tVuVl6NHxDLlc9eFRX4
-    site=http://hostname
-    ```
-
     To run an external bot, enter the path to the bot's python file in the square
     brackets `[]`. For example, if we want to run `~/Documents/my_new_bot.py`, our
     new section could look like this:
