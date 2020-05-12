@@ -79,12 +79,16 @@ the most common configuration, run the following commands, replacing
 
 ```
 cd /home/zulip/deployments/current
+supervisorctl stop all  # Stop the Zulip server
 ./manage.py convert_slack_data slack_data.zip --token <token> --output converted_slack_data
 ./manage.py import '' converted_slack_data
+./scripts/restart-server
 ```
 
-This could take several minutes to run, depending on how much data you're
-importing.
+This could take several minutes to run, depending on how much data
+you're importing.  The server stop/restart is only necessary when
+importing on a server with minimal RAM, where an OOM kill might
+otherwise occur.
 
 **Import options**
 
