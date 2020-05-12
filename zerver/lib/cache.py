@@ -465,7 +465,6 @@ bot_dict_fields: List[str] = [
     'avatar_source',
     'avatar_version',
     'bot_owner__id',
-    'bot_owner__email',  # TODO: eliminate
     'bot_type',
     'default_all_public_streams',
     'default_events_register_stream__name',

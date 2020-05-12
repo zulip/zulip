@@ -54,7 +54,7 @@ from zerver.lib.user_status import get_user_info_dict
 from zerver.tornado.event_queue import request_event_queue, get_user_events
 from zerver.models import (
     Client, Message, Realm, UserProfile, UserMessage,
-    get_user_profile_by_id, realm_filters_for_realm,
+    realm_filters_for_realm,
     custom_profile_fields_for_realm, get_realm_domains,
     get_default_stream_groups, CustomProfileField, Stream
 )
@@ -482,10 +482,6 @@ def apply_event(state: Dict[str, Any],
                     if 'owner_id' in event['bot']:
                         bot_owner_id = event['bot']['owner_id']
                         bot['owner_id'] = bot_owner_id
-
-                        # TODO: eliminate `owner` field.
-                        bot_owner = get_user_profile_by_id(bot_owner_id)
-                        bot['owner'] = bot_owner.email
                     else:
                         bot.update(event['bot'])
 

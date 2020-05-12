@@ -278,7 +278,6 @@ class HomeTest(ZulipTestCase):
             'email',
             'full_name',
             'is_active',
-            'owner',
             'owner_id',
             'services',
             'user_id',
@@ -568,7 +567,7 @@ class HomeTest(ZulipTestCase):
                 if field == 'realm_bots':
                     self.assertNotIn('is_bot', rec)
                     self.assertIn('is_active', rec)
-                    self.assertIn('owner', rec)
+                    self.assertIn('owner_id', rec)
                 else:
                     self.assertIn('is_bot', rec)
                     self.assertNotIn('is_active', rec)
