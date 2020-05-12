@@ -1999,11 +1999,11 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 .collapse-settings-btn {
     margin: 10px 0px 0px 10px;
     color: hsl(200, 100%, 40%);
-}
 
-.collapse-settings-btn:hover {
-    cursor: pointer;
-    color: hsl(208, 56%, 38%);
+    &:hover {
+        cursor: pointer;
+        color: hsl(208, 56%, 38%);
+    }
 }
 
 #toggle_collapse {
