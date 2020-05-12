@@ -456,12 +456,14 @@ input[type=checkbox] {
     margin-bottom: 0px;
 }
 
-.admin-realm-form h3 {
-    margin-bottom: 10px;
-}
+.admin-realm-form {
+    h3 {
+        margin-bottom: 10px;
+    }
 
-.admin-realm-form .subsection-header h3 {
-    display: inline;
+    .subsection-header h3 {
+        display: inline;
+    }
 }
 
 #settings_page {
