@@ -15,7 +15,8 @@ from zerver.lib.webhooks.git import CONTENT_MESSAGE_TEMPLATE, \
     TOPIC_WITH_BRANCH_TEMPLATE, TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
     get_commits_comment_action_message, get_issue_event_message, \
     get_pull_request_event_message, get_push_commits_event_message, \
-    get_push_tag_event_message, get_setup_webhook_message
+    get_push_tag_event_message, get_setup_webhook_message, \
+    get_release_event_message
 from zerver.models import UserProfile
 
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_GITHUB_EVENT")
@@ -235,12 +236,16 @@ def get_add_team_body(payload: Dict[str, Any]) -> str:
     )
 
 def get_release_body(payload: Dict[str, Any]) -> str:
-    return "{} {} [release for tag {}]({}).".format(
-        get_sender_name(payload),
-        payload['action'],
-        payload['release']['tag_name'],
-        payload['release']['html_url'],
-    )
+    data = {
+        'user_name': get_sender_name(payload),
+        'action': payload['action'],
+        'tagname': payload['release']['tag_name'],
+        # Not every GitHub release has a "name" set; if not there, use the tag name.
+        'release_name': payload['release']['name'] or payload['release']['tag_name'],
+        'url': payload['release']['html_url']
+    }
+
+    return get_release_event_message(**data)
 
 def get_page_build_body(payload: Dict[str, Any]) -> str:
     build = payload['build']
