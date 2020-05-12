@@ -120,4 +120,4 @@ const DropdownListWidget = function (opts) {
     };
 };
 
-window.settings_list_widget = DropdownListWidget;
+window.dropdown_list_widget = DropdownListWidget;

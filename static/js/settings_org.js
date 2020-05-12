@@ -556,13 +556,13 @@ exports.init_dropdown_widgets = () => {
         render_text: (x) => {return `#${x}`;},
         null_value: -1,
     };
-    exports.notifications_stream_widget = settings_list_widget(
+    exports.notifications_stream_widget = dropdown_list_widget(
         Object.assign({setting_name: 'realm_notifications_stream_id'},
                       notification_stream_options));
-    exports.signup_notifications_stream_widget = settings_list_widget(
+    exports.signup_notifications_stream_widget = dropdown_list_widget(
         Object.assign({setting_name: 'realm_signup_notifications_stream_id'},
                       notification_stream_options));
-    exports.default_code_language_widget = settings_list_widget({
+    exports.default_code_language_widget = dropdown_list_widget({
         setting_name: 'realm_default_code_block_language',
         data: Object.keys(pygments_data.langs).map(x => {
             return {
