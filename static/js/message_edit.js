@@ -294,11 +294,18 @@ function edit_message(row, raw_content) {
     upload.feature_check($('#attach_files_' + rows.id(row)));
 
     const message_edit_stream = row.find("#select_stream_id_" + message.id);
+    const stream_header_colorblock = row.find(".stream_header_colorblock");
     const message_edit_content = row.find('textarea.message_edit_content');
     const message_edit_topic = row.find('input.message_edit_topic');
     const message_edit_topic_propagate = row.find('select.message_edit_topic_propagate');
     const message_edit_countdown_timer = row.find('.message_edit_countdown_timer');
     const copy_message = row.find('.copy_message');
+
+    ui_util.decorate_stream_bar(message.stream, stream_header_colorblock, false);
+    message_edit_stream.change(function () {
+        const stream_name = stream_data.maybe_get_stream_name(parseInt(this.value, 10));
+        ui_util.decorate_stream_bar(stream_name, stream_header_colorblock, false);
+    });
 
     if (editability === editability_types.NO) {
         message_edit_content.attr("readonly", "readonly");

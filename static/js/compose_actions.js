@@ -112,7 +112,7 @@ exports.complete_starting_tasks = function (msg_type, opts) {
     exports.maybe_scroll_up_selected_message();
     ui_util.change_tab_to("#home");
     compose_fade.start_compose(msg_type);
-    ui_util.decorate_stream_bar(opts.stream, $("#stream-message .message_header_stream"));
+    ui_util.decorate_stream_bar(opts.stream, $("#stream-message .message_header_stream"), true);
     $(document).trigger($.Event('compose_started.zulip', opts));
     resize.resize_bottom_whitespace();
     exports.update_placeholder_text(opts);
