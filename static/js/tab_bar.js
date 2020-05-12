@@ -60,6 +60,9 @@ function display_tab_bar(tab_bar_data) {
         exports.colorize_tab_bar();
     }
     tab_bar.removeClass('notdisplayed');
+    tab_bar.find('span.timestamp').each(function (index, elem) {
+        timerender.replace_markdown_timestamp(elem);
+    });
 }
 
 function build_tab_bar(filter) {

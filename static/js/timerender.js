@@ -194,6 +194,21 @@ exports.render_markdown_timestamp = function (time, now, text) {
     };
 };
 
+exports.replace_markdown_timestamp = (elem) => {
+    // Populate each timestamp span with mentioned time
+    // in user's local timezone.
+    const timestamp = moment.unix($(elem).attr('value'));
+    if (timestamp.isValid() && $(elem).attr('value') !== null) {
+        const text = $(elem).text();
+        const rendered_time = exports.render_markdown_timestamp(timestamp, null, text);
+        $(elem).text(rendered_time.text);
+        $(elem).attr('title', rendered_time.title);
+    } else {
+        elem.classList.remove('timestamp');
+        elem.setAttribute('title', 'Could not parse timestamp.');
+    }
+};
+
 // This isn't expected to be called externally except manually for
 // testing purposes.
 exports.update_timestamps = function () {

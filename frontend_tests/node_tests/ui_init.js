@@ -168,6 +168,10 @@ page_params.starred_messages = [];
 page_params.presences = [];
 
 $('#tab_bar').append = () => {};
+$('#tab_bar').empty = () => {};  // We need this to be noop to not clear the find_results.
+const timestamp_stub = $.create('timestamp_stub');
+timestamp_stub.each = () => {};
+$('#tab_bar').set_find_results('span.timestamp', timestamp_stub);
 upload.setup_upload = () => {};
 
 server_events.home_view_loaded = () => true;
