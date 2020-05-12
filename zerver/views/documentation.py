@@ -10,7 +10,7 @@ import os
 import random
 import re
 
-from zerver.decorator import add_google_analytics
+from zerver.decorator import add_google_analytics, use_portico_domain
 from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, HubotIntegration, \
     WebhookIntegration
 from zerver.lib.request import has_request_variables, REQ
@@ -127,6 +127,7 @@ class MarkdownDirectoryView(ApiURLView):
         context["api_uri_context"] = api_uri_context
         return context
 
+    @method_decorator(use_portico_domain)
     @method_decorator(add_google_analytics)
     def get(self, request: HttpRequest, article: str="") -> HttpResponse:
         (path, http_status) = self.get_path(article)
@@ -175,11 +176,13 @@ class IntegrationView(ApiURLView):
         add_integrations_open_graph_context(context, self.request)
         return context
 
+    @method_decorator(use_portico_domain)
     @method_decorator(add_google_analytics)
     def get(self, request: HttpRequest, path_name: str) -> HttpResponse:
         return super().get(self, request, path_name)
 
 
+@use_portico_domain
 @has_request_variables
 def integration_doc(request: HttpRequest, integration_name: str=REQ()) -> HttpResponse:
     if not request.is_ajax():

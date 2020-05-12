@@ -5,7 +5,7 @@ from django_otp import user_has_device
 from django.contrib.auth.decorators import user_passes_test as django_user_passes_test
 from django.contrib.auth.models import AnonymousUser
 from django.utils.translation import ugettext as _
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponsePermanentRedirect, HttpResponseRedirect, HttpResponse
 from django.contrib.auth import REDIRECT_FIELD_NAME, login as django_login
 from django.views.decorators.csrf import csrf_exempt
 from django.http import QueryDict, HttpResponseNotAllowed, HttpRequest
@@ -38,6 +38,7 @@ import ujson
 import logging
 from io import BytesIO
 import urllib
+from urllib.parse import urljoin
 
 from typing import Union, Any, Callable, Dict, Optional, TypeVar, Tuple
 from zerver.lib.logging_util import log_to_file
@@ -826,6 +827,14 @@ def zulip_otp_required(view: Any=None,
                                         redirect_field_name=redirect_field_name)
 
     return decorator if (view is None) else decorator(view)
+
+def use_portico_domain(view_func: ViewFuncT) -> ViewFuncT:
+    @wraps(view_func)
+    def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        if get_subdomain(request) != settings.PORTICO_SUBDOMAIN:
+            return HttpResponsePermanentRedirect(urljoin(settings.PORTICO_URI, request.get_full_path()))
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view_func  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
 
 def add_google_analytics(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)

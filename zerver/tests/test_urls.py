@@ -4,7 +4,7 @@ import ujson
 
 import django.urls.resolvers
 from django.test import TestCase, Client
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_runner import slow
@@ -17,15 +17,15 @@ class PublicURLTest(ZulipTestCase):
     URLs redirect to a page.
     """
 
-    def fetch(self, method: str, urls: List[str], expected_status: int) -> None:
+    def fetch(self, method: str, urls: List[str], expected_status: int, kwargs: Dict[str, Any]={}) -> None:
         for url in urls:
             # e.g. self.client_post(url) if method is "post"
-            response = getattr(self, method)(url)
+            response = getattr(self, method)(url, **kwargs)
             self.assertEqual(response.status_code, expected_status,
                              msg="Expected %d, received %d for %s to %s" % (
                                  expected_status, response.status_code, method, url))
 
-    @slow("Tests dozens of endpoints, including all of our /help/ documents")
+    @slow("Tests dozens of endpoints")
     def test_public_urls(self) -> None:
         """
         Test which views are accessible when not logged in.
@@ -36,8 +36,8 @@ class PublicURLTest(ZulipTestCase):
         denmark_stream_id = Stream.objects.get(name='Denmark').id
         get_urls = {200: ["/accounts/home/", "/accounts/login/",
                           "/en/accounts/home/", "/ru/accounts/home/",
-                          "/en/accounts/login/", "/ru/accounts/login/",
-                          "/help/"],
+                          "/en/accounts/login/", "/ru/accounts/login/"],
+                    301: ["/help/"],
                     302: ["/", "/en/", "/ru/"],
                     401: ["/json/streams/%d/members" % (denmark_stream_id,),
                           "/api/v1/users/me/subscriptions",
@@ -45,17 +45,7 @@ class PublicURLTest(ZulipTestCase):
                           "/json/messages",
                           "/api/v1/streams",
                           ],
-                    404: ["/help/nonexistent", "/help/include/admin",
-                          "/help/" + "z" * 1000],
                     }
-
-        # Add all files in 'templates/zerver/help' directory (except for 'main.html' and
-        # 'index.md') to `get_urls['200']` list.
-        for doc in os.listdir('./templates/zerver/help'):
-            if doc.startswith(".") or '~' in doc or '#' in doc:
-                continue  # nocoverage -- just here for convenience
-            if doc not in {'main.html', 'index.md', 'include', 'missing.md'}:
-                get_urls[200].append('/help/' + os.path.splitext(doc)[0])  # Strip the extension.
 
         post_urls = {200: ["/accounts/login/"],
                      302: ["/accounts/logout/"],
@@ -86,6 +76,23 @@ class PublicURLTest(ZulipTestCase):
             self.fetch("client_patch", url_set, status_code)
         for status_code, url_set in put_urls.items():
             self.fetch("client_put", url_set, status_code)
+
+    @slow("Tests all of our /help/ documents")
+    def test_public_help_urls(self) -> None:
+        get_urls = {200: ["/help/"],
+                    404: ["/help/nonexistent", "/help/include/admin",
+                          "/help/" + "z" * 1000]}
+
+        # Add all files in 'templates/zerver/help' directory (except for 'main.html' and
+        # 'index.md') to `get_urls['200']` list.
+        for doc in os.listdir('./templates/zerver/help'):
+            if doc.startswith(".") or '~' in doc or '#' in doc:
+                continue  # nocoverage -- just here for convenience
+            if doc not in {'main.html', 'index.md', 'include', 'missing.md'}:
+                get_urls[200].append('/help/' + os.path.splitext(doc)[0])  # Strip the extension.
+
+        for status_code, url_set in get_urls.items():
+            self.fetch("client_get", url_set, status_code, {"subdomain": ""})
 
     def test_get_gcid_when_not_configured(self) -> None:
         with self.settings(GOOGLE_CLIENT_ID=None):

@@ -1,5 +1,5 @@
 import time
-from typing import List
+from typing import Any, Dict, List
 
 from bs4 import BeautifulSoup
 from unittest.mock import patch
@@ -49,8 +49,9 @@ class OpenGraphTest(ZulipTestCase):
     def check_title_and_description(self, path: str, title: str,
                                     in_description: List[str],
                                     not_in_description: List[str],
-                                    status_code: int=200) -> None:
-        response = self.client_get(path)
+                                    status_code: int=200,
+                                    kwargs: Dict[str, Any]={}) -> None:
+        response = self.client_get(path, **kwargs)
         self.assertEqual(response.status_code, status_code)
         decoded = response.content.decode('utf-8')
         bs = BeautifulSoup(decoded, features='lxml')
@@ -73,7 +74,8 @@ class OpenGraphTest(ZulipTestCase):
              "users can view the edit history of a message. | To remove the",
              "best to delete the message entirely. "],
             ["Disable message edit history", "feature is only available", "Related articles",
-             "Restrict message editing"]
+             "Restrict message editing"],
+            kwargs={"subdomain": ""},
         )
 
     def test_double_quotes(self) -> None:
@@ -83,7 +85,8 @@ class OpenGraphTest(ZulipTestCase):
             "Night mode (Zulip Help Center)",
             ['By default, Zulip has a white background. ',
              'Zulip also provides a "night mode", which is great for working in a dark space.'],
-            []
+            [],
+            kwargs={"subdomain": ""},
         )
 
     def test_settings_tab(self) -> None:
@@ -92,7 +95,9 @@ class OpenGraphTest(ZulipTestCase):
             '/help/deactivate-your-account',
             "Deactivate your account (Zulip Help Center)",
             ["Any bots that you maintain will be disabled. | Deactivating "],
-            ["Confirm by clicking", "  ", "\n"])
+            ["Confirm by clicking", "  ", "\n"],
+            kwargs={"subdomain": ""},
+        )
 
     def test_tabs(self) -> None:
         # logging-out starts with {start_tabs}
@@ -102,20 +107,28 @@ class OpenGraphTest(ZulipTestCase):
             # Ideally we'd do something better here
             ["We're here to help! Email us at zulip-admin@example.com with questions, feedback, or " +
              "feature requests."],
-            ["Click on the gear"])
+            ["Click on the gear"],
+            kwargs={"subdomain": ""},
+        )
 
     def test_index_pages(self) -> None:
         self.check_title_and_description(
             '/help/',
             "Zulip Help Center",
             [("Zulip is a group chat app. Its most distinctive characteristic is that "
-              "conversation within an organization is divided into “streams” and further ")], [])
+              "conversation within an organization is divided into “streams” and further ")],
+            [],
+            kwargs={"subdomain": ""},
+        )
 
         self.check_title_and_description(
             '/api/',
             "Zulip API Documentation",
             [("Zulip's APIs allow you to integrate other services with Zulip. This "
-              "guide should help you find the API you need:")], [])
+              "guide should help you find the API you need:")],
+            [],
+            kwargs={"subdomain": ""},
+        )
 
     def test_nonexistent_page(self) -> None:
         self.check_title_and_description(
@@ -126,7 +139,9 @@ class OpenGraphTest(ZulipTestCase):
              "Email us at zulip-admin@example.com with questions, feedback, or feature requests."],
             [],
             # Test that our open graph logic doesn't throw a 500
-            404)
+            404,
+            kwargs={"subdomain": ""},
+        )
 
     def test_login_page_simple_description(self) -> None:
         name = 'Zulip Dev'

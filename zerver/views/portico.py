@@ -4,10 +4,11 @@ from django.template.response import TemplateResponse
 import ujson
 
 from zerver.context_processors import get_realm_from_request, latest_info_context
-from zerver.decorator import add_google_analytics, redirect_to_login
+from zerver.decorator import add_google_analytics, redirect_to_login, use_portico_domain
 from zerver.models import Realm
 from version import LATEST_DESKTOP_VERSION
 
+@use_portico_domain
 @add_google_analytics
 def apps_view(request: HttpRequest, _: str) -> HttpResponse:
     if settings.ZILENCER_ENABLED:
@@ -39,6 +40,7 @@ def plans_view(request: HttpRequest) -> HttpResponse:
         context={"realm_plan_type": realm_plan_type, 'free_trial_months': free_trial_months},
     )
 
+@use_portico_domain
 @add_google_analytics
 def team_view(request: HttpRequest) -> HttpResponse:
     if not settings.ZILENCER_ENABLED:
@@ -65,14 +67,17 @@ def get_isolated_page(request: HttpRequest) -> bool:
     '''Accept a GET param `?nav=no` to render an isolated, navless page.'''
     return request.GET.get('nav') == 'no'
 
+@use_portico_domain
 @add_google_analytics
 def landing_view(request: HttpRequest, template_name: str) -> HttpResponse:
     return TemplateResponse(request, template_name)
 
+@use_portico_domain
 @add_google_analytics
 def hello_view(request: HttpRequest) -> HttpResponse:
     return TemplateResponse(request, 'zerver/hello.html', latest_info_context())
 
+@use_portico_domain
 @add_google_analytics
 def terms_view(request: HttpRequest) -> HttpResponse:
     return TemplateResponse(
@@ -80,6 +85,7 @@ def terms_view(request: HttpRequest) -> HttpResponse:
         context={'isolated_page': get_isolated_page(request)},
     )
 
+@use_portico_domain
 @add_google_analytics
 def privacy_view(request: HttpRequest) -> HttpResponse:
     return TemplateResponse(

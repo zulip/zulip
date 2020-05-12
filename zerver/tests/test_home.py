@@ -839,8 +839,7 @@ class HomeTest(ZulipTestCase):
     def test_subdomain_homepage(self) -> None:
         self.login('hamlet')
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-            with patch('zerver.views.home.get_subdomain', return_value=""):
-                result = self._get_home_page()
+            result = self.client_get('/', subdomain="")
             self.assertEqual(result.status_code, 200)
             self.assert_in_response('Chat for distributed teams', result)
 
