@@ -167,10 +167,6 @@ exports.render_date = function (time, time_above, today) {
 // Renders the timestamp returned by the !time() markdown syntax.
 exports.render_markdown_timestamp = function (time, now, text) {
     now = now || moment();
-    if (page_params.timezone) {
-        now = now.tz(page_params.timezone);
-        time = time.tz(page_params.timezone);
-    }
     let timestring = time.format('ddd, MMM D');
     if (now.year() !== time.year()) {
         timestring += time.format(' YYYY');
