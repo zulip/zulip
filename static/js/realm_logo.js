@@ -1,7 +1,10 @@
 exports.build_realm_logo_widget = function (upload_function, is_night) {
     let logo_section_id = '#day-logo-section';
+    let logo_source = page_params.realm_logo_source;
+
     if (is_night) {
         logo_section_id = '#night-logo-section';
+        logo_source = page_params.realm_night_logo_source;
     }
 
     const delete_button_elem = $(logo_section_id + " .realm-logo-delete-button");
@@ -17,7 +20,7 @@ exports.build_realm_logo_widget = function (upload_function, is_night) {
         return;
     }
 
-    if (page_params.realm_logo_source === 'D') {
+    if (logo_source === 'D') {
         delete_button_elem.hide();
     } else {
         delete_button_elem.show();
