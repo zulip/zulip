@@ -5,6 +5,7 @@ Nagios plugin to check the difference between the primary and
 secondary Postgres servers' xlog location.
 """
 
+import configparser
 import subprocess
 import re
 
@@ -52,11 +53,18 @@ def loc_to_abs_offset(loc_str: str) -> int:
     # Since XLOG_SEG_SIZE is normally 16MB, XLogFileSize comes out to 0xFF000000
     return 0xFF000000 * int(xlog_file, 16) + int(file_offset, 16)
 
-# Fetch the locations in this order to make the differences positive
-# in the normal case given the delay in getting the values via ssh
-secondary_replay_loc = get_loc_over_ssh('postgres-secondary.zulip.net', 'pg_last_wal_replay_lsn')
-secondary_recv_loc   = get_loc_over_ssh('postgres-secondary.zulip.net', 'pg_last_wal_receive_lsn')
-primary_loc          = get_loc_over_ssh('postgres-primary.zulip.net', 'pg_current_wal_lsn')
+config_file = configparser.RawConfigParser()
+config_file.read("/etc/zulip/zulip.conf")
+hosts_domain = config_file.get('nagios', 'hosts_domain')
+primary_server = config_file.get('nagios', 'hosts_postgres_primary') + "." + hosts_domain
+secondary_servers = config_file.get('nagios', 'hosts_postgres_secondary').split(',')
+
+# TODO: Make this a loop
+secondary_server = secondary_servers[0] + "." + hosts_domain
+
+secondary_replay_loc = get_loc_over_ssh(secondary_server, 'pg_last_wal_replay_lsn')
+secondary_recv_loc   = get_loc_over_ssh(secondary_server, 'pg_last_wal_receive_lsn')
+primary_loc          = get_loc_over_ssh(primary_server, 'pg_current_wal_lsn')
 
 primary_offset = loc_to_abs_offset(primary_loc)
 secondary_recv_offset = loc_to_abs_offset(secondary_recv_loc)
