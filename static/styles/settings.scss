@@ -1955,16 +1955,16 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     margin-top: 5px;
 }
 
-.profile-field-choices > .choice-row:first-of-type {
-    margin-top: 0;
-}
-
 .profile-field-choices .choice-row input {
     width: 190px;
 }
 
 .profile-field-choices .choice-row button {
     margin-left: 0 !important;
+}
+
+.profile-field-choices > .choice-row:first-of-type {
+    margin-top: 0;
 }
 
 .custom_user_field .pill-container {
