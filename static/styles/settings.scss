@@ -808,9 +808,11 @@ input[type=checkbox] {
     color: hsl(0, 0%, 67%);
 }
 
-.add-new-profile-field-box button,
-.add-new-filter-box button {
-    margin-left: calc(10em - -20px) !important;
+.add-new-profile-field-box,
+.add-new-filter-box {
+    button {
+        margin-left: calc(10em - -20px) !important;
+    }
 }
 
 .grey-box .wrapper {
