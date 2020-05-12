@@ -1019,15 +1019,17 @@ input[type=checkbox] {
     white-space: pre;
 }
 
-#create_bot_form .control-label,
-#create_alert_word_form .control-label,
-.admin-emoji-form .control-label,
-.admin-filter-form .control-label,
-.admin-profile-field-form .control-label,
-.edit_bot_form .control-label {
-    width: 10em;
-    text-align: right;
-    margin-right: 20px;
+#create_bot_form,
+#create_alert_word_form,
+.admin-emoji-form,
+.admin-filter-form,
+.admin-profile-field-form,
+.edit_bot_form {
+    .control-label {
+        width: 10em;
+        text-align: right;
+        margin-right: 20px;
+    }
 }
 
 .admin-profile-field-form #custom_external_account_url_pattern input {
