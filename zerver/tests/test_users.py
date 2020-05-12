@@ -157,7 +157,7 @@ class PermissionTest(ZulipTestCase):
         admin_users = realm.get_human_admin_users()
         self.assertTrue(othello in admin_users)
         person = events[0]['event']['person']
-        self.assertEqual(person['email'], othello.email)
+        self.assertEqual(person['user_id'], othello.id)
         self.assertEqual(person['is_admin'], True)
 
         # Taketh away
@@ -169,7 +169,7 @@ class PermissionTest(ZulipTestCase):
         admin_users = realm.get_human_admin_users()
         self.assertFalse(othello in admin_users)
         person = events[0]['event']['person']
-        self.assertEqual(person['email'], othello.email)
+        self.assertEqual(person['user_id'], othello.id)
         self.assertEqual(person['is_admin'], False)
 
         # Cannot take away from last admin
@@ -182,7 +182,7 @@ class PermissionTest(ZulipTestCase):
         admin_users = realm.get_human_admin_users()
         self.assertFalse(hamlet in admin_users)
         person = events[0]['event']['person']
-        self.assertEqual(person['email'], hamlet.email)
+        self.assertEqual(person['user_id'], hamlet.id)
         self.assertEqual(person['is_admin'], False)
         with tornado_redirected_to_list([]):
             result = self.client_patch('/json/users/{}'.format(iago.id), req)
@@ -383,7 +383,7 @@ class PermissionTest(ZulipTestCase):
         self.assertTrue(hamlet.is_guest)
         self.assertFalse(hamlet.can_access_all_realm_members())
         person = events[0]['event']['person']
-        self.assertEqual(person['email'], hamlet.email)
+        self.assertEqual(person['user_id'], hamlet.id)
         self.assertTrue(person['is_guest'])
 
     def test_change_guest_to_regular_member(self) -> None:
@@ -401,7 +401,7 @@ class PermissionTest(ZulipTestCase):
         polonius = self.example_user("polonius")
         self.assertFalse(polonius.is_guest)
         person = events[0]['event']['person']
-        self.assertEqual(person['email'], polonius.email)
+        self.assertEqual(person['user_id'], polonius.id)
         self.assertFalse(person['is_guest'])
 
     def test_change_admin_to_guest(self) -> None:
@@ -431,11 +431,11 @@ class PermissionTest(ZulipTestCase):
         self.assertFalse(hamlet.is_realm_admin)
 
         person = events[0]['event']['person']
-        self.assertEqual(person['email'], hamlet.email)
+        self.assertEqual(person['user_id'], hamlet.id)
         self.assertFalse(person['is_admin'])
 
         person = events[1]['event']['person']
-        self.assertEqual(person['email'], hamlet.email)
+        self.assertEqual(person['user_id'], hamlet.id)
         self.assertTrue(person['is_guest'])
 
     def test_change_guest_to_admin(self) -> None:
@@ -464,7 +464,7 @@ class PermissionTest(ZulipTestCase):
         self.assertTrue(polonius.is_realm_admin)
 
         person = events[0]['event']['person']
-        self.assertEqual(person['email'], polonius.email)
+        self.assertEqual(person['user_id'], polonius.id)
         self.assertTrue(person['is_admin'])
 
     def test_admin_user_can_change_profile_data(self) -> None:
