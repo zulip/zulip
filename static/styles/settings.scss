@@ -798,14 +798,11 @@ input[type=checkbox] {
 
     white-space: nowrap;
     font-style: italic;
+    color: hsl(0, 0%, 67%);
 }
 
 #emoji_file_input_error {
     vertical-align: middle;
-}
-
-.add-new-emoji-box #emoji-file-name {
-    color: hsl(0, 0%, 67%);
 }
 
 .add-new-profile-field-box,
