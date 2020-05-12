@@ -799,15 +799,13 @@ def do_deactivate_user(user_profile: UserProfile,
         update_license_ledger_if_needed(user_profile.realm, event_time)
 
     event = dict(type="realm_user", op="remove",
-                 person=dict(email=user_profile.email,
-                             user_id=user_profile.id,
+                 person=dict(user_id=user_profile.id,
                              full_name=user_profile.full_name))
     send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
     if user_profile.is_bot:
         event = dict(type="realm_bot", op="remove",
-                     bot=dict(email=user_profile.email,
-                              user_id=user_profile.id,
+                     bot=dict(user_id=user_profile.id,
                               full_name=user_profile.full_name))
         send_event(user_profile.realm, event, bot_owner_user_ids(user_profile))
 
@@ -3117,8 +3115,7 @@ def do_change_full_name(user_profile: UserProfile, full_name: str,
     RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=acting_user,
                                  modified_user=user_profile, event_type=RealmAuditLog.USER_FULL_NAME_CHANGED,
                                  event_time=event_time, extra_data=old_name)
-    payload = dict(email=user_profile.email,
-                   user_id=user_profile.id,
+    payload = dict(user_id=user_profile.id,
                    full_name=user_profile.full_name)
     send_event(user_profile.realm,
                dict(type='realm_user', op='update', person=payload),
@@ -3175,9 +3172,9 @@ def do_change_bot_owner(user_profile: UserProfile, bot_owner: UserProfile,
         send_event(user_profile.realm,
                    dict(type='realm_bot',
                         op="delete",
-                        bot=dict(email=user_profile.email,
-                                 user_id=user_profile.id,
-                                 )),
+                        bot=dict(
+                            user_id=user_profile.id,
+                        )),
                    {previous_owner.id, })
         # Do not send update event for previous bot owner.
         update_users = update_users - {previous_owner.id, }
@@ -3192,8 +3189,7 @@ def do_change_bot_owner(user_profile: UserProfile, bot_owner: UserProfile,
     send_event(user_profile.realm,
                dict(type='realm_bot',
                     op='update',
-                    bot=dict(email=user_profile.email,
-                             user_id=user_profile.id,
+                    bot=dict(user_id=user_profile.id,
                              owner_id=user_profile.bot_owner.id,
                              )),
                update_users)
@@ -3239,8 +3235,7 @@ def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -
         send_event(user_profile.realm,
                    dict(type='realm_bot',
                         op='update',
-                        bot=dict(email=user_profile.email,
-                                 user_id=user_profile.id,
+                        bot=dict(user_id=user_profile.id,
                                  api_key=new_api_key,
                                  )),
                    bot_owner_user_ids(user_profile))
@@ -3256,8 +3251,7 @@ def notify_avatar_url_change(user_profile: UserProfile) -> None:
         send_event(user_profile.realm,
                    dict(type='realm_bot',
                         op='update',
-                        bot=dict(email=user_profile.email,
-                                 user_id=user_profile.id,
+                        bot=dict(user_id=user_profile.id,
                                  avatar_url=avatar_url(user_profile),
                                  )),
                    bot_owner_user_ids(user_profile))
@@ -3267,7 +3261,8 @@ def notify_avatar_url_change(user_profile: UserProfile) -> None:
         avatar_url=avatar_url(user_profile),
         avatar_url_medium=avatar_url(user_profile, medium=True),
         avatar_version=user_profile.avatar_version,
-        email=user_profile.email,
+        # Even clients using client_gravatar don't need the email,
+        # since we're sending the URL anyway.
         user_id=user_profile.id
     )
 
@@ -3382,8 +3377,7 @@ def do_change_default_sending_stream(user_profile: UserProfile, stream: Optional
         send_event(user_profile.realm,
                    dict(type='realm_bot',
                         op='update',
-                        bot=dict(email=user_profile.email,
-                                 user_id=user_profile.id,
+                        bot=dict(user_id=user_profile.id,
                                  default_sending_stream=stream_name,
                                  )),
                    bot_owner_user_ids(user_profile))
@@ -3405,8 +3399,7 @@ def do_change_default_events_register_stream(user_profile: UserProfile,
         send_event(user_profile.realm,
                    dict(type='realm_bot',
                         op='update',
-                        bot=dict(email=user_profile.email,
-                                 user_id=user_profile.id,
+                        bot=dict(user_id=user_profile.id,
                                  default_events_register_stream=stream_name,
                                  )),
                    bot_owner_user_ids(user_profile))
@@ -3423,8 +3416,7 @@ def do_change_default_all_public_streams(user_profile: UserProfile, value: bool,
         send_event(user_profile.realm,
                    dict(type='realm_bot',
                         op='update',
-                        bot=dict(email=user_profile.email,
-                                 user_id=user_profile.id,
+                        bot=dict(user_id=user_profile.id,
                                  default_all_public_streams=user_profile.default_all_public_streams,
                                  )),
                    bot_owner_user_ids(user_profile))
@@ -3456,8 +3448,7 @@ def do_change_is_admin(user_profile: UserProfile, value: bool,
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
             }))
         event = dict(type="realm_user", op="update",
-                     person=dict(email=user_profile.email,
-                                 user_id=user_profile.id,
+                     person=dict(user_id=user_profile.id,
                                  is_admin=value))
         send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
@@ -3480,8 +3471,7 @@ def do_change_is_guest(user_profile: UserProfile, value: bool) -> None:
             RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
         }))
     event = dict(type="realm_user", op="update",
-                 person=dict(email=user_profile.email,
-                             user_id=user_profile.id,
+                 person=dict(user_id=user_profile.id,
                              is_guest=value))
     send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
@@ -5640,8 +5630,7 @@ def do_update_outgoing_webhook_service(bot_profile: UserProfile,
     send_event(bot_profile.realm,
                dict(type='realm_bot',
                     op='update',
-                    bot=dict(email=bot_profile.email,
-                             user_id=bot_profile.id,
+                    bot=dict(user_id=bot_profile.id,
                              services = [dict(base_url=service.base_url,
                                               interface=service.interface,
                                               token=service.token,)],
@@ -5657,8 +5646,7 @@ def do_update_bot_config_data(bot_profile: UserProfile,
     send_event(bot_profile.realm,
                dict(type='realm_bot',
                     op='update',
-                    bot=dict(email=bot_profile.email,
-                             user_id=bot_profile.id,
+                    bot=dict(user_id=bot_profile.id,
                              services = [dict(config_data=updated_config_data)],
                              ),
                     ),

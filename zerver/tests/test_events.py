@@ -474,7 +474,6 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_bot')),
             ('op', equals('update')),
             ('bot', check_dict_only([
-                ('email', check_string),
                 ('user_id', check_int),
                 (field_name, check),
             ])),
@@ -1532,12 +1531,11 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_user')),
             ('op', equals('update')),
             ('person', check_dict_only([
-                ('email', check_string),
-                ('user_id', check_int),
                 ('avatar_url', check_string),
                 ('avatar_url_medium', check_string),
                 ('avatar_version', check_int),
                 ('avatar_source', check_string),
+                ('user_id', check_int),
             ])),
         ])
         events = self.do_test(
@@ -1554,7 +1552,6 @@ class EventsRegisterTest(ZulipTestCase):
                 ('avatar_url', check_none_or(check_string)),
                 ('avatar_url_medium', check_none_or(check_string)),
                 ('avatar_version', check_int),
-                ('email', check_string),
                 ('user_id', check_int),
             ])),
         ])
@@ -1569,7 +1566,6 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_user')),
             ('op', equals('update')),
             ('person', check_dict_only([
-                ('email', check_string),
                 ('full_name', check_string),
                 ('user_id', check_int),
             ])),
@@ -1591,12 +1587,11 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_user')),
             ('op', equals('update')),
             ('person', check_dict_only([
-                ('email', check_string),
-                ('user_id', check_int),
                 ('avatar_source', check_string),
                 ('avatar_url', check_string),
                 ('avatar_url_medium', check_string),
                 ('avatar_version', check_int),
+                ('user_id', check_int),
             ])),
         ])
         do_set_realm_property(self.user_profile.realm, "email_address_visibility",
@@ -1836,7 +1831,6 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_user')),
             ('op', equals('update')),
             ('person', check_dict_only([
-                ('email', check_string),
                 ('is_admin', check_bool),
                 ('user_id', check_int),
             ])),
@@ -1907,7 +1901,6 @@ class EventsRegisterTest(ZulipTestCase):
                 ('type', equals('realm_user')),
                 ('op', equals('update')),
                 ('person', check_dict_only([
-                    ('email', check_string),
                     ('user_id', check_int),
                     ('timezone', check_string),
                 ])),
@@ -2259,7 +2252,6 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_bot')),
             ('op', equals('update')),
             ('bot', check_dict_only([
-                ('email', check_string),
                 ('user_id', check_int),
                 ('owner_id', check_int),
             ])),
@@ -2278,7 +2270,6 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_bot')),
             ('op', equals('delete')),
             ('bot', check_dict_only([
-                ('email', check_string),
                 ('user_id', check_int),
             ])),
         ])
@@ -2326,7 +2317,6 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_bot')),
             ('op', equals('update')),
             ('bot', check_dict_only([
-                ('email', check_string),
                 ('user_id', check_int),
                 ('services', check_list(check_dict_only([
                     ('base_url', check_url),
@@ -2352,7 +2342,6 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_bot')),
             ('op', equals('remove')),
             ('bot', check_dict_only([
-                ('email', check_string),
                 ('full_name', check_string),
                 ('user_id', check_int),
             ])),
