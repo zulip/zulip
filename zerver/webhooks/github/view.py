@@ -276,6 +276,16 @@ def get_status_body(payload: Dict[str, Any]) -> str:
         status
     )
 
+def get_pull_request_ready_for_review_body(payload: Dict[str, Any],
+                                           include_title: Optional[bool]=False) -> str:
+
+    message = "**{sender}** has marked [PR #{pr_number}]({pr_url}) as ready for review."
+    return message.format(
+        sender = get_sender_name(payload),
+        pr_number = payload['pull_request']['number'],
+        pr_url = payload['pull_request']['html_url']
+    )
+
 def get_pull_request_review_body(payload: Dict[str, Any],
                                  include_title: Optional[bool]=False) -> str:
     title = "for #{} {}".format(
@@ -456,6 +466,7 @@ EVENT_FUNCTION_MAPPER = {
     'page_build': get_page_build_body,
     'ping': get_ping_body,
     'public': get_public_body,
+    'pull_request_ready_for_review': get_pull_request_ready_for_review_body,
     'pull_request_review': get_pull_request_review_body,
     'pull_request_review_comment': get_pull_request_review_comment_body,
     'pull_request_review_requested': get_pull_request_review_requested_body,
@@ -510,6 +521,8 @@ def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Optional[
             return 'closed_pull_request'
         if action == 'review_requested':
             return '{}_{}'.format(event, action)
+        if action == 'ready_for_review':
+            return 'pull_request_ready_for_review'
         # Unsupported pull_request events
         if action in ('labeled', 'unlabeled', 'review_request_removed'):
             return None

@@ -263,6 +263,10 @@ class GithubWebhookTest(WebhookTestCase):
         expected_message = "eeshangarg unassigned [PR #1](https://github.com/zulip-test-org/helloworld/pull/1)."
         self.send_and_test_stream_message('pull_request__unassigned', 'helloworld / PR #1 Mention that Zulip rocks!', expected_message)
 
+    def test_pull_request_ready_for_review_msg(self) -> None:
+        expected_message = "**Hypro999** has marked [PR #2](https://github.com/Hypro999/temp-test-github-webhook/pull/2) as ready for review."
+        self.send_and_test_stream_message('pull_request__ready_for_review', 'temp-test-github-webhook / PR #2 Test', expected_message)
+
     def test_pull_request_review_requested_msg(self) -> None:
         expected_message = "**eeshangarg** requested [showell](https://github.com/showell) for a review on [PR #1](https://github.com/eeshangarg/Scheduler/pull/1)."
         self.send_and_test_stream_message('pull_request__review_requested', 'Scheduler / PR #1 This is just a test commit', expected_message)
