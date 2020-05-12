@@ -1244,20 +1244,27 @@ div.focused_table {
     }
 }
 
-#inline_topic_edit,
-#message_edit_topic {
+#inline_topic_edit {
     margin-bottom: 5px;
+}
+
+#message_edit_topic {
+    margin: 0 5px 5px 0;
+}
+
+.message_edit_header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
 }
 
 .select_edit_stream {
     margin-bottom: 5px !important;
-}
-
-.edit-controls .fa-angle-right {
-    font-size: 0.9em;
-    -webkit-text-stroke: 0.05em;
-    position: relative;
-    margin: 0px 5px;
+    border-left: 0px;
+    padding-left: 0px;
+    border-radius: 0px 3px 3px 0px;
+    margin-left: -11px;
+    text-indent: 10px;
 }
 
 #inline_topic_edit.header-v {

@@ -46,9 +46,14 @@ function update_lock_icon_for_stream(stream_name) {
 // color look like the stream being used.
 // (In particular, if there's a color associated with it,
 //  have that color be reflected here too.)
-exports.decorate_stream_bar = function (stream_name, element) {
+exports.decorate_stream_bar = function (stream_name, element, is_compose) {
+    if (stream_name === undefined) {
+        return false;
+    }
     const color = stream_data.get_color(stream_name);
-    update_lock_icon_for_stream(stream_name);
+    if (is_compose) {
+        update_lock_icon_for_stream(stream_name);
+    }
     element.css('background-color', color)
         .removeClass(stream_color.color_classes)
         .addClass(stream_color.get_color_class(color));
