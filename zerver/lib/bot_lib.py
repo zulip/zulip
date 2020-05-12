@@ -29,6 +29,7 @@ def get_bot_handler(service_name: str) -> Any:
         return None
     bot_module_name = 'zulip_bots.bots.%s.%s' % (configured_service, configured_service)
     bot_module: Any = importlib.import_module(bot_module_name)
+    bot_handler.react('thumbs_up')
     return bot_module.handler_class()
 
 
