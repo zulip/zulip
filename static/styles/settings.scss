@@ -782,10 +782,12 @@ input[type=checkbox] {
     margin: 10px 0px;
 }
 
-.add-new-emoji-box input[type=text],
-.add-new-user-group-box input[type=text],
-.add-new-default-stream-box input[type=text] {
-    padding: 6px;
+.add-new-emoji-box,
+.add-new-user-group-box,
+.add-new-default-stream-box {
+    input[type=text] {
+        padding: 6px;
+    }
 }
 
 .add-new-emoji-box #emoji-file-name {
