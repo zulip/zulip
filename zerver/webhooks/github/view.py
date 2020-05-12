@@ -569,7 +569,8 @@ def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Optional[
     elif event in IGNORED_EVENTS:
         return None
 
-    raise UnexpectedWebhookEventType('GitHub', event)
+    complete_event = "{}:{}".format(event, payload.get("action", "???"))  # nocoverage
+    raise UnexpectedWebhookEventType('GitHub', complete_event)
 
 def get_body_function_based_on_type(type: str) -> Any:
     return EVENT_FUNCTION_MAPPER.get(type)
