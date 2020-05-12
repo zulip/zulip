@@ -460,6 +460,10 @@ input[type=checkbox] {
     margin-bottom: 10px;
 }
 
+.admin-realm-form .subsection-header h3 {
+    display: inline;
+}
+
 #settings_page {
     .icon-button {
         border-radius: 5px;
@@ -570,10 +574,6 @@ input[type=checkbox] {
 
 .inline-block.organization-permissions-parent div:first-of-type {
     margin-top: 10px;
-}
-
-.admin-realm-form .subsection-header h3 {
-    display: inline;
 }
 
 #default_language {
