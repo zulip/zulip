@@ -1055,10 +1055,10 @@ input[type=checkbox] {
     list-style-type: none;
     margin: auto;
     background-color: hsl(0, 0%, 100%);
-}
 
-#attachments_list:empty {
-    padding: 10px;
+    &:empty {
+        padding: 10px;
+    }
 }
 
 #alert_words_list {
