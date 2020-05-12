@@ -82,8 +82,7 @@ li.show-more-topics {
 #stream_filters {
     overflow: visible;
     /* The -1px here prevents the scrollbar from going above the top of the container */
-    margin-top: -1px;
-    margin-bottom: 10px;
+    margin: -1px 10px 10px;
     padding: 0;
     font-weight: normal;
 
@@ -99,7 +98,7 @@ li.show-more-topics {
                 padding-top: 2px;
                 padding-right: 0px;
                 padding-bottom: 2px;
-                padding-left: $topic_indent;
+                padding-left: calc($left_col_size - 3px);
             }
         }
     }
@@ -115,7 +114,7 @@ li.show-more-topics {
     .subscription_block {
         padding: 0px;
         margin-right: 25px;
-        margin-left: $far_left_gutter_size;
+        margin-left: 2px;
         display: flex;
         justify-content: space-between;
         align-items: center;
