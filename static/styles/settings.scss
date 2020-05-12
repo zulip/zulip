@@ -165,6 +165,10 @@ h3 .fa-question-circle-o {
     margin-top: 24px;
 }
 
+.table tbody {
+    border-bottom: 1px solid hsl(0, 0%, 87%);
+}
+
 .table.table-condensed.table-striped {
     margin: 0px;
 }
@@ -174,10 +178,6 @@ h3 .fa-question-circle-o {
     word-wrap: break-word;
     white-space: pre-wrap;
     white-space: normal;
-}
-
-.table tbody {
-    border-bottom: 1px solid hsl(0, 0%, 87%);
 }
 
 .table-condensed td {
