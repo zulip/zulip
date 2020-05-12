@@ -80,7 +80,7 @@ zrequire('stream_data');
 zrequire('settings_account');
 zrequire('settings_org');
 zrequire('settings_ui');
-zrequire('settings_list_widget');
+zrequire('dropdown_list_widget');
 
 run_test('unloaded', () => {
     // This test mostly gets us line coverage, and makes
@@ -795,8 +795,8 @@ run_test('set_up', () => {
         upload_realm_icon = f;
     };
 
-    const settings_list_widget_backup = settings_list_widget;
-    settings_list_widget = () => {  // eslint-disable-line no-native-reassign
+    const dropdown_list_widget_backup = dropdown_list_widget;
+    dropdown_list_widget = () => {  // eslint-disable-line no-native-reassign
         return {
             render: noop,
             update: noop,
@@ -840,7 +840,7 @@ run_test('set_up', () => {
     test_parse_time_limit();
     test_discard_changes_button(discard_changes);
 
-    settings_list_widget = settings_list_widget_backup;  // eslint-disable-line no-native-reassign
+    dropdown_list_widget = dropdown_list_widget_backup;  // eslint-disable-line no-native-reassign
 });
 
 run_test('test get_organization_settings_options', () => {
@@ -1022,7 +1022,7 @@ run_test('misc', () => {
         return arr;
     };
 
-    // Set stubs for settings_list_widget:
+    // Set stubs for dropdown_list_widget:
     const widget_settings = ['realm_notifications_stream_id',
                              'realm_signup_notifications_stream_id',
                              'realm_default_code_block_language'];
