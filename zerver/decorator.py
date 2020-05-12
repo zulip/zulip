@@ -827,18 +827,16 @@ def zulip_otp_required(view: Any=None,
 
     return decorator if (view is None) else decorator(view)
 
-def add_google_analytics_context(context: Dict[str, Any]) -> None:
-    if settings.GOOGLE_ANALYTICS_ID is not None:  # nocoverage
-        context.setdefault("page_params", {})["google_analytics_id"] = settings.GOOGLE_ANALYTICS_ID
-
 def add_google_analytics(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         response = view_func(request, *args, **kwargs)
         if isinstance(response, SimpleTemplateResponse):
-            if response.context_data is None:
-                response.context_data = {}
-            add_google_analytics_context(response.context_data)
+            if settings.GOOGLE_ANALYTICS_ID is not None:  # nocoverage
+                if response.context_data is None:
+                    response.context_data = {}
+                params = response.context_data.setdefault("page_params", {})
+                params["google_analytics_id"] = settings.GOOGLE_ANALYTICS_ID
         elif response.status_code == 200:  # nocoverage
             raise TypeError("add_google_analytics requires a TemplateResponse")
         return response

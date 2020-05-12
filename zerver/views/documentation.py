@@ -4,12 +4,13 @@ from django.views.generic import TemplateView
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
 from django.template import loader
+from django.utils.decorators import method_decorator
 
 import os
 import random
 import re
 
-from zerver.decorator import add_google_analytics_context
+from zerver.decorator import add_google_analytics
 from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, HubotIntegration, \
     WebhookIntegration
 from zerver.lib.request import has_request_variables, REQ
@@ -124,9 +125,9 @@ class MarkdownDirectoryView(ApiURLView):
         add_api_uri_context(api_uri_context, self.request)
         api_uri_context["run_content_validators"] = True
         context["api_uri_context"] = api_uri_context
-        add_google_analytics_context(context)
         return context
 
+    @method_decorator(add_google_analytics)
     def get(self, request: HttpRequest, article: str="") -> HttpResponse:
         (path, http_status) = self.get_path(article)
         result = super().get(self, article=article)
@@ -172,8 +173,11 @@ class IntegrationView(ApiURLView):
         context: Dict[str, Any] = super().get_context_data(**kwargs)
         add_integrations_context(context)
         add_integrations_open_graph_context(context, self.request)
-        add_google_analytics_context(context)
         return context
+
+    @method_decorator(add_google_analytics)
+    def get(self, request: HttpRequest, path_name: str) -> HttpResponse:
+        return super().get(self, request, path_name)
 
 
 @has_request_variables
