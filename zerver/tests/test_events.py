@@ -2109,7 +2109,6 @@ class EventsRegisterTest(ZulipTestCase):
                     ('default_events_register_stream', check_none_or(check_string)),
                     ('default_all_public_streams', check_bool),
                     ('avatar_url', check_string),
-                    ('owner', check_string),
                     ('owner_id', check_int),
                     ('services', check_services),
                 ])),
@@ -2303,7 +2302,6 @@ class EventsRegisterTest(ZulipTestCase):
                 ('default_events_register_stream', check_none_or(check_string)),
                 ('default_all_public_streams', check_bool),
                 ('avatar_url', check_string),
-                ('owner', check_string),
                 ('owner_id', check_int),
                 ('services', check_services),
             ])),
@@ -2375,7 +2373,6 @@ class EventsRegisterTest(ZulipTestCase):
                 ('default_events_register_stream', check_none_or(check_string)),
                 ('default_all_public_streams', check_bool),
                 ('avatar_url', check_string),
-                ('owner', check_none_or(check_string)),
                 ('owner_id', check_none_or(check_int)),
                 ('services', check_list(check_dict_only([
                     ('base_url', check_url),
