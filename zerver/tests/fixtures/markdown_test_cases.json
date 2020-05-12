@@ -743,13 +743,13 @@
     {
       "name": "timestamp_bugdown_only",
       "input": "!time(Jun 5th 2017, 10:30PM)",
-      "expected_output": "<p><span class=\"timestamp\" value=\"1496701800\">Jun 5th 2017, 10:30PM</span></p>",
+      "expected_output": "<p><span class=\"timestamp\" data-timestamp=\"1496701800\">Jun 5th 2017, 10:30PM</span></p>",
       "marked_expected_output": "<p><span class=\"timestamp\">Jun 5th 2017, 10:30PM</span></p>"
     },
     {
       "name": "timestamp_bugdown_and_marked",
       "input": "!time(31 Dec 2017)",
-      "expected_output": "<p><span class=\"timestamp\" value=\"1514678400\">31 Dec 2017</span></p>"
+      "expected_output": "<p><span class=\"timestamp\" data-timestamp=\"1514678400\">31 Dec 2017</span></p>"
     },
     {
       "name": "timestamp_invalid_input",
@@ -759,7 +759,7 @@
     {
       "name": "timestamp_timezone",
       "input": "!time(31 Dec 2017 5:30 am IST)",
-      "expected_output": "<p><span class=\"timestamp\" value=\"1514678400\">31 Dec 2017 5:30 am IST</span></p>",
+      "expected_output": "<p><span class=\"timestamp\" data-timestamp=\"1514678400\">31 Dec 2017 5:30 am IST</span></p>",
       "marked_expected_output": "<p><span class=\"timestamp\">31 Dec 2017 5:30 am IST</span></p>"
     },
     {
@@ -770,7 +770,7 @@
     {
       "name": "timestamp_unix",
       "input": "!time(1496701800)",
-      "expected_output": "<p><span class=\"timestamp\" value=\"1496701800\">1496701800</span></p>"
+      "expected_output": "<p><span class=\"timestamp\" data-timestamp=\"1496701800\">1496701800</span></p>"
     },
     {
       "name": "tex_inline",

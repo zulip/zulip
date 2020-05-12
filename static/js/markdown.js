@@ -314,7 +314,7 @@ function handleTimestamp(time) {
     // Generate HTML
     let timestring = '<span class="timestamp"';
     if (istimevalid) {
-        timestring += ' value="' + timeobject.unix() + '"';
+        timestring += ' data-timestamp="' + timeobject.unix() + '"';
     }
     timestring += '>' + _.escape(time) + '</span>';
     return timestring;

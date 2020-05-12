@@ -1231,7 +1231,7 @@ class Timestamp(markdown.inlinepatterns.Pattern):
         if timestamp:
             if timestamp.tzinfo:
                 timestamp = timestamp - timestamp.utcoffset()
-            span.set('value', timestamp.strftime("%s"))
+            span.set('data-timestamp', timestamp.strftime("%s"))
         # Set text to initial input, so even if parsing fails, the data remains intact.
         span.text = markdown.util.AtomicString(match.group('time'))
         return span
