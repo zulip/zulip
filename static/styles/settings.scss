@@ -1904,16 +1904,18 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     width: 100px;
 }
 
-.required-text:empty::after {
-    content: attr(data-empty);
-    display: block;
+.required-text {
+    &:empty::after {
+        content: attr(data-empty);
+        display: block;
 
-    font-style: italic;
-    color: hsl(0, 0%, 67%);
-}
+        font-style: italic;
+        color: hsl(0, 0%, 67%);
+    }
 
-.required-text.thick:empty::after {
-    width: 100%;
+    &.thick:empty::after {
+        width: 100%;
+    }
 }
 
 #payload_url_inputbox input[type=text] {
