@@ -1850,10 +1850,10 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 @media (max-height: 530px) {
     #settings_page .sidebar .sidebar-bottom-anchor {
         position: static;
-    }
 
-    #settings_page .sidebar .sidebar-bottom-anchor .border-top {
-        border: none;
+        .border-top {
+            border: none;
+        }
     }
 }
 
@@ -1866,27 +1866,31 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 }
 
 @media (max-width: 700px) {
-    #settings_page .settings-header.mobile {
-        display: block;
-    }
+    #settings_page {
+        .settings-header.mobile {
+            display: block;
+        }
 
-    #settings_page .content-wrapper .settings-header {
-        display: none;
-    }
+        .content-wrapper {
+            .settings-header {
+                display: none;
+            }
 
-    #settings_page .content-wrapper #settings_content {
-        height: 100%;
-    }
+            #settings_content {
+                height: 100%;
+            }
 
-    #settings_page .content-wrapper.right {
-        top: 47px;
-    }
+            &.right {
+                top: 47px;
+            }
+        }
 
-    #settings_page .sidebar {
-        float: left;
-        position: relative;
-        width: 250px;
-        height: 100%;
+        .sidebar {
+            float: left;
+            position: relative;
+            width: 250px;
+            height: 100%;
+        }
     }
 }
 
