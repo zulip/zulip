@@ -279,6 +279,12 @@ in Zulip development conversations.  In general, our goal is to
 minimize the set of terminology listed here by giving elements
 self-explanatory names.
 
+* **bankruptcy**: When a user has been off Zulip for several days and
+    has hundreds of unread messages, they are prompted for whether
+    they want to mark all their unread messages as read.  This is
+    called "declaring bankruptcy" (in reference to the concept in
+    finance).
+
 * **chevron**: A small downward-facing arrow next to a message's
     timestamp, offering contextual options, e.g., "Reply", "Mute [this
     topic]", or "Link to this conversation". To avoid visual clutter,
@@ -312,9 +318,3 @@ self-explanatory names.
     whether a message has been starred, or by whom.
 
 * **subject**: What the codebase calls a "topic" in many places.
-
-* **bankruptcy**: When a user has been off Zulip for several days and
-    has hundreds of unread messages, they are prompted for whether
-    they want to mark all their unread messages as read.  This is
-    called "declaring bankruptcy" (in reference to the concept in
-    finance).
