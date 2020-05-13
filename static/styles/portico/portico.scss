@@ -1346,10 +1346,10 @@ input.new-organization-button {
     background-color: hsl(0, 0%, 100%);
     box-shadow: 0 0 4px hsl(163, 43%, 46%);
     font-size: 18px;
-}
 
-.error_page .errorbox.config-error {
-    max-width: 750px;
+    &.config-error {
+        max-width: 750px;
+    }
 }
 
 .error_page p {
