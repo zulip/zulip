@@ -412,6 +412,7 @@ exports.register_stream_handlers = function () {
     // Choose custom color
     $('body').on('click', '.custom_color', function (e) {
         update_spectrum($(e.target).closest('.streams_popover'), function (colorpicker) {
+            $('.colorpicker-container').show();
             colorpicker.spectrum("destroy");
             colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options_full);
             // In theory this should clean up the old color picker,
