@@ -74,7 +74,6 @@
     "webpack4-bundle-tracker": "^0.0.1-beta",
     "winchan": "^0.2.1",
     "xdate": "^0.8.2",
-    "zulip-js": "^2.0.8",
     "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
@@ -105,7 +104,8 @@
     "typescript": "^3.5.1",
     "vnu-jar": "^20.1.2",
     "webpack-dev-server": "^3.5.1",
-    "yarn-deduplicate": "^2.0.0"
+    "yarn-deduplicate": "^2.0.0",
+    "zulip-js": "^2.0.8"
   },
   "scripts": {
     "postinstall": "rm -rf ./var/webpack-cache",
