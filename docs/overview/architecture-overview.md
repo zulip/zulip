@@ -15,8 +15,9 @@ guide](../overview/directory-structure.md)).
 mobile Zulip client supporting both iOS and Android, written in
 JavaScript with React Native, and [Zulip
 Desktop](https://github.com/zulip/zulip-desktop) is the official Zulip
-desktop client for macOS, Linux, and Windows.  We also have an alpha
-[Zulip Terminal](https://github.com/zulip/zulip-terminal) project.
+desktop client for macOS, Linux, and Windows.
+[Zulip Terminal](https://github.com/zulip/zulip-terminal) is our
+official terminal-based client.
 
 We also maintain several separate repositories for integrations and
 other glue code: [Python API
