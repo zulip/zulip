@@ -53,7 +53,7 @@ The rest of this guide describes how each of these sections works.
 ### Description
 
 At the top of any REST endpoint documentation page, you'll want to
-explain what the endpoint does in clear English. Including important
+explain what the endpoint does in clear English. Include
 notes on how to use it correctly or what it's good or bad for, with
 links to any alternative endpoints the user might want to consider.
 These sections should almost always contain a link to the
