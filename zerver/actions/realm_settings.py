@@ -14,6 +14,7 @@ from zerver.actions.message_delete import do_delete_messages_by_sender
 from zerver.actions.user_groups import update_users_in_full_members_system_group
 from zerver.actions.user_settings import do_delete_avatar_image
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
+from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.send_email import FromAddress, send_email_to_admins
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.upload import delete_message_attachments
@@ -21,15 +22,19 @@ from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.models import (
     ArchivedAttachment,
     Attachment,
+    Message,
     Realm,
     RealmAuditLog,
     RealmAuthenticationMethod,
     RealmReactivationStatus,
     RealmUserDefault,
+    Recipient,
     ScheduledEmail,
     Stream,
+    Subscription,
     UserProfile,
     active_user_ids,
+    get_realm,
 )
 from zerver.tornado.django_api import send_event
 
@@ -373,6 +378,32 @@ def do_scrub_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
         user.email = scrubbed_email
         user.delivery_email = scrubbed_email
         user.save(update_fields=["full_name", "email", "delivery_email"])
+
+    internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+    # We could more simply obtain the Message list by just doing
+    # Message.objects.filter(sender__realm=internal_realm, realm=realm), but it's
+    # more secure against bugs that may cause Message.realm to be incorrect for some
+    # cross-realm messages to also determine the actual Recipients - to prevent
+    # deletion of excessive messages.
+    all_recipient_ids_in_realm = (
+        list(Stream.objects.filter(realm=realm).values_list("recipient_id", flat=True))
+        + list(UserProfile.objects.filter(realm=realm).values_list("recipient_id", flat=True))
+        + list(
+            Subscription.objects.filter(
+                recipient__type=Recipient.HUDDLE, user_profile__realm=realm
+            ).values_list("recipient_id", flat=True)
+        )
+    )
+    cross_realm_bot_message_ids = list(
+        Message.objects.filter(
+            # Filtering by both message.recipient and message.realm is more robust for ensuring
+            # no messages belonging to another realm will be deleted due to some bugs.
+            sender__realm=internal_realm,
+            recipient_id__in=all_recipient_ids_in_realm,
+            realm=realm,
+        ).values_list("id", flat=True)
+    )
+    move_messages_to_archive(cross_realm_bot_message_ids)
 
     do_remove_realm_custom_profile_fields(realm)
     do_delete_all_realm_attachments(realm)
