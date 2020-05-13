@@ -28,7 +28,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                         <input id="id_team_name" class="required" type="text"
                           placeholder="Acme or Aκμή"
                           value="{% if form.realm_name.value() %}{{ form.realm_name.value() }}{% endif %}"
-                          name="realm_name" maxlength={{ MAX_REALM_NAME_LENGTH }} required />
+                          name="realm_name" maxlength="{{ MAX_REALM_NAME_LENGTH }}" required />
                     </div>
                     <label for="id_team_name" class="inline-block label-title">{{ _('Organization name') }}</label>
                     {% if form.realm_name.errors %}
@@ -63,7 +63,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                               class="{% if root_domain_landing_page %}required{% endif %} subdomain" type="text"
                               placeholder="acme"
                               value="{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}{% endif %}"
-                              name="realm_subdomain" maxlength={{ MAX_REALM_SUBDOMAIN_LENGTH }}
+                              name="realm_subdomain" maxlength="{{ MAX_REALM_SUBDOMAIN_LENGTH }}"
                               {% if root_domain_landing_page %}required{% endif %} />
                             <label for="id_team_subdomain" class="realm_subdomain_label">.{{ external_host }}</label>
                             <p id="id_team_subdomain_error_client" class="error help-inline text-error"></p>
@@ -124,7 +124,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     {% else %}
                         <input id="id_full_name" class="required" type="text" name="full_name"
                           value="{% if full_name %}{{ full_name }}{% elif form.full_name.value() %}{{ form.full_name.value() }}{% endif %}"
-                          maxlength={{ MAX_NAME_LENGTH }} placeholder="{% trans %}Full name or 名前{% endtrans %}" required />
+                          maxlength="{{ MAX_NAME_LENGTH }}" placeholder="{% trans %}Full name or 名前{% endtrans %}" required />
                         <label for="id_full_name" class="inline-block label-title">{{ _('Full name') }}</label>
                         {% if form.full_name.errors %}
                             {% for error in form.full_name.errors %}
@@ -151,7 +151,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 <div class="input-box">
                     <input id="id_password" class="required" type="password" name="password"
                       value="{% if form.password.value() %}{{ form.password.value() }}{% endif %}"
-                      maxlength={{ MAX_PASSWORD_LENGTH }}
+                      maxlength="{{ MAX_PASSWORD_LENGTH }}"
                       data-min-length="{{password_min_length}}"
                       data-min-guesses="{{password_min_guesses}}" required />
                     <label for="id_password" class="inline-block">{{ _('Password') }}</label>
