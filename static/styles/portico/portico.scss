@@ -1284,18 +1284,18 @@ input.new-organization-button {
 
 .center-block .control-group {
     margin-bottom: 10px;
-}
 
-.center-block .control-group label {
-    width: 100%;
-    display: block;
-    margin: 0;
-    text-align: left;
-}
+    label {
+        width: 100%;
+        display: block;
+        margin: 0;
+        text-align: left;
+    }
 
-.center-block .control-group .controls {
-    margin: 0;
-    text-align: left;
+    .controls {
+        margin: 0;
+        text-align: left;
+    }
 }
 
 .center-block #send_confirm input[type=text] {
