@@ -264,6 +264,12 @@ html {
     }
 }
 
+.help .markdown {
+    background-color: hsl(0, 0%, 100%);
+    width: calc(100vw - 300px);
+    height: calc(100vh - 59px);
+}
+
 .help-center ol,
 .portico-landing.integrations ol {
     margin-left: 0;
@@ -1312,12 +1318,6 @@ input.new-organization-button {
         font-size: 16px;
         font-weight: 300;
     }
-}
-
-.help .markdown {
-    background-color: hsl(0, 0%, 100%);
-    width: calc(100vw - 300px);
-    height: calc(100vh - 59px);
 }
 
 .error_page {
