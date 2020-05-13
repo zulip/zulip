@@ -1275,39 +1275,39 @@ input.new-organization-button {
 .center-block {
     text-align: left;
     display: inline-block;
-}
 
-.center-block .pitch {
-    width: 100%;
-    margin-bottom: 20px;
-}
-
-.center-block .control-group {
-    margin-bottom: 10px;
-
-    label {
+    .pitch {
         width: 100%;
-        display: block;
-        margin: 0;
-        text-align: left;
+        margin-bottom: 20px;
     }
 
-    .controls {
-        margin: 0;
-        text-align: left;
+    .control-group {
+        margin-bottom: 10px;
+
+        label {
+            width: 100%;
+            display: block;
+            margin: 0;
+            text-align: left;
+        }
+
+        .controls {
+            margin: 0;
+            text-align: left;
+        }
     }
-}
 
-.center-block #send_confirm input[type=text] {
-    margin-top: 20px;
-}
+    #send_confirm input[type=text] {
+        margin-top: 20px;
+    }
 
-.center-block .button {
-    margin-top: 20px;
-    padding: 5px 10px;
-    border-radius: 2px;
-    font-size: 16px;
-    font-weight: 300;
+    .button {
+        margin-top: 20px;
+        padding: 5px 10px;
+        border-radius: 2px;
+        font-size: 16px;
+        font-weight: 300;
+    }
 }
 
 .help .markdown {
