@@ -1212,47 +1212,49 @@ input.new-organization-button {
     }
 }
 
-.input-group.margin {
-    margin: 10px 0px;
-}
-
-.input-group .progress {
-    margin: 0;
-    margin-top: 5px;
-    display: inline-block;
-}
-
-/* --- new settings styling --- */
-.input-group input[type=radio],
-.input-group input[type=checkbox] {
-    margin: 0 10px 0 0;
-}
-
-.input-group input[type=radio] {
-    position: relative;
-    top: 8px;
-}
-
-.input-group label {
-    margin: 0;
-    padding: 5px 0px;
-
-    &.inline-block {
-        /* eyeballing off-centered aesth. */
-        margin-top: 1px;
+.input-group {
+    &.margin {
+        margin: 10px 0px;
     }
-}
 
-.input-group.radio {
-    margin-left: 25px;
-}
+    .progress {
+        margin: 0;
+        margin-top: 5px;
+        display: inline-block;
+    }
 
-.input-group.grid {
-    padding: 10px 0px;
-    border-bottom: 1px solid hsl(0, 0%, 87%);
+    /* --- new settings styling --- */
+    input[type=radio],
+    input[type=checkbox] {
+        margin: 0 10px 0 0;
+    }
 
-    label.inline-block {
-        width: 200px;
+    input[type=radio] {
+        position: relative;
+        top: 8px;
+    }
+
+    label {
+        margin: 0;
+        padding: 5px 0px;
+
+        &.inline-block {
+            /* eyeballing off-centered aesth. */
+            margin-top: 1px;
+        }
+    }
+
+    &.radio {
+        margin-left: 25px;
+    }
+
+    &.grid {
+        padding: 10px 0px;
+        border-bottom: 1px solid hsl(0, 0%, 87%);
+
+        label.inline-block {
+            width: 200px;
+        }
     }
 }
 
