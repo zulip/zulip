@@ -498,6 +498,12 @@ html_rules: List["Rule"] = whitespace_rules + prose_style_rules + [
      'exclude': {"templates/analytics/support.html"},
      'good_lines': ['<input class="stream-list-filter" type="text" placeholder="{{ _(\'Search streams\') }}" />'],
      'bad_lines': ['<input placeholder="foo">']},
+    {'pattern': '={',
+     # TODO: Improve the Apple auth patterns so we can remove this.
+     'exclude_pattern': 'appleid.cdn-apple.com/appleid/button',
+     'description': "Likely missing quoting in HTML attribute",
+     'good_lines': ['<a href="{{variable}}">'],
+     'bad_lines': ['<a href={{variable}}>']},
     {'pattern': "placeholder='[^{]",
      'description': "`placeholder` value should be translatable.",
      'good_lines': ['<input class="stream-list-filter" type="text" placeholder="{{ _(\'Search streams\') }}" />'],
