@@ -1247,13 +1247,13 @@ input.new-organization-button {
     margin-left: 25px;
 }
 
-.input-group.grid label.inline-block {
-    width: 200px;
-}
-
 .input-group.grid {
     padding: 10px 0px;
     border-bottom: 1px solid hsl(0, 0%, 87%);
+
+    label.inline-block {
+        width: 200px;
+    }
 }
 
 .center-container {
