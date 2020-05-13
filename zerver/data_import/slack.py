@@ -378,7 +378,7 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int,
             realm["zerver_stream"].append(stream)
 
             slack_default_channels = ['general', 'random']
-            if channel['name'] in slack_default_channels:
+            if channel['name'] in slack_default_channels and not stream['deactivated']:
                 defaultstream = build_defaultstream(realm_id, stream_id,
                                                     defaultstream_id)
                 realm["zerver_defaultstream"].append(defaultstream)
