@@ -168,29 +168,33 @@ html {
     line-height: 1.5;
     margin-bottom: 0px;
     border-bottom: 1px solid hsla(0, 0, 100%, .6);
-}
 
-.help .sidebar h1:not(:first-of-type) {
-    margin-top: 20px;
-}
+    &:not(:first-of-type) {
+        margin-top: 20px;
+    }
 
-.help .sidebar h1:first-of-type,
-.help .sidebar h1.home-link {
-    border-bottom: none;
-}
+    &:first-of-type,
+    &.home-link {
+        border-bottom: none;
+    }
 
+    &.home-link {
+        font-size: 1em;
+        margin-bottom: 17px;
 
-.help .sidebar h1.home-link {
-    font-size: 1em;
-    margin-bottom: 17px;
+        a::before {
+            display: inline-block;
+            font: normal normal normal 14px/1 FontAwesome;
+            font-size: inherit;
 
-    a::before {
-        display: inline-block;
-        font: normal normal normal 14px/1 FontAwesome;
-        font-size: inherit;
+            content: "\f0d9";
+            margin-right: 10px;
+        }
+    }
 
-        content: "\f0d9";
-        margin-right: 10px;
+    a {
+        color: inherit;
+        display: block;
     }
 }
 
@@ -238,8 +242,7 @@ html {
     cursor: pointer;
 }
 
-.help .sidebar li a,
-.help .sidebar h1 a {
+.help .sidebar li a {
     color: inherit;
     display: block;
 }
