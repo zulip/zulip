@@ -207,18 +207,18 @@ html {
 
 .help .sidebar.slide h2 {
     cursor: pointer;
-}
 
-.help .sidebar.slide h2::before {
-    display: block;
-    font: normal normal normal 14px/1 FontAwesome;
-    font-size: inherit;
+    &::before {
+        display: block;
+        font: normal normal normal 14px/1 FontAwesome;
+        font-size: inherit;
 
-    content: "\f107";
-    margin-right: 5px;
-    float: right;
+        content: "\f107";
+        margin-right: 5px;
+        float: right;
 
-    opacity: 0.5;
+        opacity: 0.5;
+    }
 }
 
 .help .sidebar ul {
