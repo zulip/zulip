@@ -156,111 +156,111 @@ html {
     color: hsl(0, 0%, 100%);
 
     -webkit-overflow-scrolling: touch;
-}
 
-.help .sidebar .content {
-    padding: 10px 20px;
-}
-
-.help .sidebar h1 {
-    font-weight: 400;
-    font-size: 1.25em;
-    line-height: 1.5;
-    margin-bottom: 0px;
-    border-bottom: 1px solid hsla(0, 0, 100%, .6);
-
-    &:not(:first-of-type) {
-        margin-top: 20px;
+    .content {
+        padding: 10px 20px;
     }
 
-    &:first-of-type,
-    &.home-link {
-        border-bottom: none;
+    h1 {
+        font-weight: 400;
+        font-size: 1.25em;
+        line-height: 1.5;
+        margin-bottom: 0px;
+        border-bottom: 1px solid hsla(0, 0, 100%, .6);
+
+        &:not(:first-of-type) {
+            margin-top: 20px;
+        }
+
+        &:first-of-type,
+        &.home-link {
+            border-bottom: none;
+        }
+
+        &.home-link {
+            font-size: 1em;
+            margin-bottom: 17px;
+
+            a::before {
+                display: inline-block;
+                font: normal normal normal 14px/1 FontAwesome;
+                font-size: inherit;
+
+                content: "\f0d9";
+                margin-right: 10px;
+            }
+        }
+
+        a {
+            color: inherit;
+            display: block;
+        }
     }
 
-    &.home-link {
-        font-size: 1em;
-        margin-bottom: 17px;
+    h2 {
+        font-weight: 400;
+        font-size: 1.2em;
+        line-height: 1.05;
+        margin-bottom: 5px;
+    }
 
-        a::before {
-            display: inline-block;
+    &.slide h2 {
+        cursor: pointer;
+
+        &::before {
+            display: block;
             font: normal normal normal 14px/1 FontAwesome;
             font-size: inherit;
 
-            content: "\f0d9";
-            margin-right: 10px;
+            content: "\f107";
+            margin-right: 5px;
+            float: right;
+
+            opacity: 0.5;
+        }
+    }
+
+    ul {
+        margin: 5px 0px 10px 12px;
+    }
+
+    &.slide ul {
+        margin-left: 19px;
+        display: none;
+    }
+
+    li {
+        list-style-type: none;
+        font-size: 0.95em;
+        font-weight: 400;
+        line-height: 1.7;
+
+        cursor: pointer;
+
+        a {
+            color: inherit;
+            display: block;
         }
     }
 
     a {
-        color: inherit;
-        display: block;
-    }
-}
+        &.highlighted {
+            background-color: hsl(152, 40%, 42%);
 
-.help .sidebar h2 {
-    font-weight: 400;
-    font-size: 1.2em;
-    line-height: 1.05;
-    margin-bottom: 5px;
-}
+            /* Extend highlight to entire width of sidebar, not just link area */
+            /* This has been changed from "+" to "- -" because of issue #8403.
+               If the issue has been fixed, please change this back to "+" again. */
+            width: calc(100% + 20px);
+            margin-left: -40px;
+            padding-left: 40px;
+        }
 
-.help .sidebar.slide h2 {
-    cursor: pointer;
-
-    &::before {
-        display: block;
-        font: normal normal normal 14px/1 FontAwesome;
-        font-size: inherit;
-
-        content: "\f107";
-        margin-right: 5px;
-        float: right;
-
-        opacity: 0.5;
-    }
-}
-
-.help .sidebar ul {
-    margin: 5px 0px 10px 12px;
-}
-
-.help .sidebar.slide ul {
-    margin-left: 19px;
-    display: none;
-}
-
-.help .sidebar li {
-    list-style-type: none;
-    font-size: 0.95em;
-    font-weight: 400;
-    line-height: 1.7;
-
-    cursor: pointer;
-
-    a {
-        color: inherit;
-        display: block;
-    }
-}
-
-.help .sidebar a {
-    &.highlighted {
-        background-color: hsl(152, 40%, 42%);
-
-        /* Extend highlight to entire width of sidebar, not just link area */
-        /* This has been changed from "+" to "- -" because of issue #8403.
-           If the issue has been fixed, please change this back to "+" again. */
-        width: calc(100% + 20px);
-        margin-left: -40px;
-        padding-left: 40px;
-    }
-
-    &:active,
-    &:hover,
-    &:focus,
-    &:visited {
-        outline: none;
+        &:active,
+        &:hover,
+        &:focus,
+        &:visited {
+            outline: none;
+        }
     }
 }
 
@@ -1440,12 +1440,14 @@ input.new-organization-button {
         padding: 0;
     }
 
-    .help .sidebar .content:not(.show) {
-        visibility: hidden;
-    }
+    .help .sidebar {
+        .content:not(.show) {
+            visibility: hidden;
+        }
 
-    .help .sidebar:not(.show) a.highlighted {
-        background-color: transparent;
+        &:not(.show) a.highlighted {
+            background-color: transparent;
+        }
     }
 }
 
