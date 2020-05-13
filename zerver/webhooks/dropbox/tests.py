@@ -20,8 +20,13 @@ class DropboxHookTests(WebhookTestCase):
     def test_verification_request(self) -> None:
         self.subscribe(self.test_user, self.STREAM_NAME)
         get_params = {'stream_name': self.STREAM_NAME,
-                      'challenge': '9B2SVL4orbt5DxLMqJHI6pOTipTqingt2YFMIO0g06E',
                       'api_key': get_api_key(self.test_user)}
         result = self.client_get(self.url, get_params)
+        self.assert_json_error(result, "Missing 'challenge' argument", 400)
 
+        get_params['challenge'] = '9B2SVL4orbt5DxLMqJHI6pOTipTqingt2YFMIO0g06E'
+        result = self.client_get(self.url, get_params)
+
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result["Content-Type"], "text/plain; charset=UTF-8")
         self.assert_in_response('9B2SVL4orbt5DxLMqJHI6pOTipTqingt2YFMIO0g06E', result)
