@@ -237,11 +237,11 @@ html {
     line-height: 1.7;
 
     cursor: pointer;
-}
 
-.help .sidebar li a {
-    color: inherit;
-    display: block;
+    a {
+        color: inherit;
+        display: block;
+    }
 }
 
 .help .sidebar a.highlighted {
