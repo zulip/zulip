@@ -21,7 +21,11 @@ paths will be familiar to Django developers.
   [Django models](https://docs.djangoproject.com/en/1.8/topics/db/models/)
   file.  Defines Zulip's database tables.
 
-* `zerver/lib/actions.py` Most code doing writes to user-facing database tables.
+* `zerver/lib/*.py` Most library code.
+
+* `zerver/lib/actions.py` Much of our code that writes to user-facing
+   database tables lives here, for legacy reasons, but we have moved
+   some of its former responsibilities to other library files.
 
 * `zerver/views/*.py` Most [Django views](https://docs.djangoproject.com/en/1.8/topics/http/views/).
 
@@ -31,8 +35,6 @@ paths will be familiar to Django developers.
 * `zerver/tornado/views.py` Tornado views.
 
 * `zerver/worker/queue_processors.py` [Queue workers](../subsystems/queuing.md).
-
-* `zerver/lib/*.py` Most library code.
 
 * `zerver/lib/bugdown/` [Backend Markdown processor](../subsystems/markdown.md).
 
