@@ -706,7 +706,6 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
             receives_online_notifications(user_profile)):
         return
 
-    user_profile = get_user_profile_by_id(user_profile_id)
     try:
         (message, user_message) = access_message(user_profile, missed_message['message_id'])
     except JsonableError:
