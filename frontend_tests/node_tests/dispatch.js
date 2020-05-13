@@ -980,19 +980,16 @@ with_overrides(function (override) {
     assert_same(page_params.realm_email_address_visibility, 3);
 
     event = event_fixtures.realm__update_notifications_stream_id;
-    override('settings_org.notifications_stream_widget', { render: noop });
     dispatch(event);
     assert_same(page_params.realm_notifications_stream_id, 42);
     page_params.realm_notifications_stream_id = -1;  // make sure to reset for future tests
 
     event = event_fixtures.realm__update_signup_notifications_stream_id;
-    override('settings_org.signup_notifications_stream_widget', { render: noop });
     dispatch(event);
     assert_same(page_params.realm_signup_notifications_stream_id, 41);
     page_params.realm_signup_notifications_stream_id = -1; // make sure to reset for future tests
 
     event = event_fixtures.realm__update_default_code_block_language;
-    override('settings_org.default_code_language_widget', { render: noop });
     dispatch(event);
     assert_same(page_params.realm_default_code_block_language, 'javascript');
 

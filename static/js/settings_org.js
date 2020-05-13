@@ -386,6 +386,15 @@ exports.sync_realm_settings = function (property) {
         return;
     }
 
+    const value = page_params[`realm_${property}`];
+    if (property === 'notifications_stream_id') {
+        exports.notifications_stream_widget.render(value);
+    } else if (property === 'signup_notifications_stream_id') {
+        exports.signup_notifications_stream_widget.render(value);
+    } else if (property === 'default_code_block_language') {
+        exports.default_code_language_widget.render(value);
+    }
+
     if (property === 'message_content_edit_limit_seconds') {
         property = 'message_content_edit_limit_minutes';
     } else if (property === 'allow_message_editing') {
