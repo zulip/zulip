@@ -60,8 +60,8 @@ These sections should almost always contain a link to the
 documentation of the relevant feature in `/help/`.
 
 We plan to migrate to storing this description content in the
-`description` field in `zulip.yaml`; currently, the `description`
-section in `zulip.yaml` is not used for anything.
+`description` field in `zerver/openapi/zulip.yaml`; currently, the
+`description` section in `zulip.yaml` is not used for anything.
 
 ### Usage examples
 
