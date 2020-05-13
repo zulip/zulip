@@ -11,6 +11,11 @@ from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
+from zerver.actions.message_send import (
+    internal_send_huddle_message,
+    internal_send_private_message,
+    internal_send_stream_message,
+)
 from zerver.actions.realm_settings import (
     do_add_deactivated_redirect,
     do_change_realm_org_type,
@@ -45,6 +50,7 @@ from zerver.models import (
     UserProfile,
     get_realm,
     get_stream,
+    get_system_bot,
     get_user_profile_by_id,
 )
 
@@ -1455,6 +1461,7 @@ class ScrubRealmTest(ZulipTestCase):
     def test_scrub_realm(self) -> None:
         zulip = get_realm("zulip")
         lear = get_realm("lear")
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
 
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
@@ -1462,6 +1469,8 @@ class ScrubRealmTest(ZulipTestCase):
 
         cordelia = self.lear_user("cordelia")
         king = self.lear_user("king")
+
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id)
 
         create_stream_if_needed(lear, "Shakespeare")
 
@@ -1476,6 +1485,18 @@ class ScrubRealmTest(ZulipTestCase):
             self.send_stream_message(othello, "Scotland")
             self.send_stream_message(cordelia, "Shakespeare")
             self.send_stream_message(king, "Shakespeare")
+
+        internal_send_stream_message(
+            notification_bot, get_stream("Scotland", zulip), "test", "test"
+        )
+        internal_send_private_message(notification_bot, othello, "test")
+        internal_send_huddle_message(zulip, notification_bot, [othello.email, iago.email], "test")
+
+        internal_send_stream_message(
+            notification_bot, get_stream("Shakespeare", lear), "test", "test"
+        )
+        internal_send_private_message(notification_bot, king, "test")
+        internal_send_huddle_message(lear, notification_bot, [cordelia.email, king.email], "test")
 
         Attachment.objects.filter(realm=zulip).delete()
         Attachment.objects.filter(realm=lear).delete()
@@ -1497,8 +1518,9 @@ class ScrubRealmTest(ZulipTestCase):
 
         self.assertEqual(Message.objects.filter(sender__in=[iago, othello]).count(), 10)
         self.assertEqual(Message.objects.filter(sender__in=[cordelia, king]).count(), 10)
-        self.assertEqual(UserMessage.objects.filter(user_profile__in=[iago, othello]).count(), 20)
-        self.assertEqual(UserMessage.objects.filter(user_profile__in=[cordelia, king]).count(), 20)
+        self.assertEqual(Message.objects.filter(sender=notification_bot).count(), 6)
+        self.assertEqual(UserMessage.objects.filter(user_profile__in=[iago, othello]).count(), 25)
+        self.assertEqual(UserMessage.objects.filter(user_profile__in=[cordelia, king]).count(), 25)
 
         self.assertNotEqual(CustomProfileField.objects.filter(realm=zulip).count(), 0)
 
@@ -1507,8 +1529,9 @@ class ScrubRealmTest(ZulipTestCase):
 
         self.assertEqual(Message.objects.filter(sender__in=[iago, othello]).count(), 0)
         self.assertEqual(Message.objects.filter(sender__in=[cordelia, king]).count(), 10)
+        self.assertEqual(Message.objects.filter(sender=notification_bot).count(), 3)
         self.assertEqual(UserMessage.objects.filter(user_profile__in=[iago, othello]).count(), 0)
-        self.assertEqual(UserMessage.objects.filter(user_profile__in=[cordelia, king]).count(), 20)
+        self.assertEqual(UserMessage.objects.filter(user_profile__in=[cordelia, king]).count(), 25)
 
         self.assertEqual(Attachment.objects.filter(realm=zulip).count(), 0)
         self.assertEqual(Attachment.objects.filter(realm=lear).count(), 2)
