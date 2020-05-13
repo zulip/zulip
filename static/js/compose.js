@@ -354,7 +354,6 @@ exports.send_message = function send_message(request) {
 };
 
 exports.enter_with_preview_open = function () {
-    exports.clear_preview_area();
     if (page_params.enter_sends) {
         // If enter_sends is enabled, we attempt to send the message
         exports.finish();
@@ -365,6 +364,7 @@ exports.enter_with_preview_open = function () {
 };
 
 exports.finish = function () {
+    exports.clear_preview_area();
     exports.clear_invites();
     exports.clear_private_stream_alert();
     notifications.clear_compose_notifications();
