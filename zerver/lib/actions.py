@@ -209,6 +209,7 @@ from zerver.models import (
     get_huddle_recipient,
     get_huddle_user_ids,
     get_old_unclaimed_attachments,
+    get_realm,
     get_stream,
     get_stream_by_id_in_realm,
     get_stream_cache_key,
@@ -820,11 +821,31 @@ def do_scrub_realm(realm: Realm) -> None:
         user.delivery_email = scrubbed_email
         user.save(update_fields=["full_name", "email", "delivery_email"])
 
+    internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+    all_recipient_ids_in_realm = (
+        list(Stream.objects.filter(realm=realm).values_list('recipient_id', flat=True)) +
+        list(UserProfile.objects.filter(realm=realm).values_list('recipient_id', flat=True)) +
+        list(
+            Subscription.objects.filter(recipient__type=Recipient.HUDDLE, user_profile__realm=realm)
+            .values_list('recipient_id', flat=True)
+        )
+    )
+    cross_realm_bot_message_ids = list(
+        Message.objects.filter(sender__realm=internal_realm, recipient_id__in=all_recipient_ids_in_realm)
+        .values_list('id', flat=True))
+    move_messages_to_archive(cross_realm_bot_message_ids)
+
     do_remove_realm_custom_profile_fields(realm)
     Attachment.objects.filter(realm=realm).delete()
 
     RealmAuditLog.objects.create(realm=realm, event_time=timezone_now(),
                                  event_type=RealmAuditLog.REALM_SCRUBBED)
+
+    remaining_messages_count = Message.objects.filter(recipient_id__in=all_recipient_ids_in_realm).count()
+    if remaining_messages_count:
+        raise AssertionError(
+            f"{remaining_messages_count} messages left undeleted while scrubbing realm {realm}"
+        )
 
 def do_deactivate_user(user_profile: UserProfile,
                        acting_user: Optional[UserProfile]=None,
