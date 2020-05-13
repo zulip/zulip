@@ -153,6 +153,9 @@ from outside.
   files.  However, one can configure Zulip to store these in a cloud
   storage service like Amazon S3 instead.
 
+Note that we do not use `nginx` in the development environment, opting
+for a simple Tornado-based proxy instead.
+
 ### Supervisor
 
 We use [supervisord](http://supervisord.org/) to start server processes,
