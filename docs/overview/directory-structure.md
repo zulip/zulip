@@ -91,6 +91,10 @@ Django context (i.e. with database access).
   production deployment site (e.g. scripts to change a value or
   deactivate a user properly).
 
+* `zilencer/management/commands/` includes some dev-specific
+   commands such as `populate_db`, which are not included in
+   the production distribution.
+
 ---------------------------------------------------------------
 
 ### Scripts
