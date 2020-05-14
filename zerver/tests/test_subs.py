@@ -65,6 +65,7 @@ from zerver.lib.actions import (
     can_access_stream_user_ids,
     validate_user_access_to_subscribers_helper,
     get_average_weekly_stream_traffic, round_to_2_significant_digits,
+    do_change_stream_post_policy,
 )
 
 from zerver.views.streams import (
@@ -2594,75 +2595,36 @@ class SubscriptionAPITest(ZulipTestCase):
     def test_subscribe_to_stream_post_policy_admins_stream(self) -> None:
         """
         Members can subscribe to streams where only admins can post
-        but not create those streams, only realm admins can
         """
         member = self.example_user("AARON")
-        result = self.common_subscribe_to_streams(member, ["general"])
+        stream = self.make_stream('stream1')
+        do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_ADMINS)
+        result = self.common_subscribe_to_streams(member, ["stream1"])
         self.assert_json_success(result)
 
-        streams_raw = [{
-            'name': 'new_stream',
-            'stream_post_policy': Stream.STREAM_POST_POLICY_ADMINS,
-        }]
-        with self.assertRaisesRegex(
-                JsonableError, "User cannot create a stream with these settings."):
-            list_to_streams(streams_raw, member, autocreate=True)
-
-        admin = self.example_user("iago")
-        result = list_to_streams(streams_raw, admin, autocreate=True)
-        self.assert_length(result[0], 0)
-        self.assert_length(result[1], 1)
-        self.assertEqual(result[1][0].name, 'new_stream')
-        self.assertTrue(result[1][0].stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS)
+        json = result.json()
+        self.assertEqual(json["subscribed"], {member.email: ["stream1"]})
+        self.assertEqual(json["already_subscribed"], {})
 
     def test_subscribe_to_stream_post_policy_restrict_new_members_stream(self) -> None:
         """
-        New members can subscribe to streams where they can neither post
-        nor create those streams, only realm admins can can.
+        New members can subscribe to streams where they can not post
         """
         new_member_email = self.nonreg_email('test')
         self.register(new_member_email, "test")
         new_member = self.nonreg_user('test')
 
         do_set_realm_property(new_member.realm, 'waiting_period_threshold', 10)
-        streams_raw = [{
-            'name': 'new_stream',
-            'stream_post_policy': Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS,
-        }]
-
-        # new members cannot create STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS streams.
         self.assertTrue(new_member.is_new_member)
-        with self.assertRaisesRegex(
-                JsonableError, "User cannot create a stream with these settings."):
-            list_to_streams(streams_raw, new_member, autocreate=True)
 
-        # Non admins can create STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS streams.
-        # However, they must not be a new user.
-        non_admin = self.example_user("AARON")
-        non_admin.date_joined = timezone_now() - timedelta(days=11)
-        non_admin.save()
-        self.assertFalse(non_admin.is_new_member)
-        self.assertFalse(non_admin.is_realm_admin)
-        result = list_to_streams(streams_raw, non_admin, autocreate=True)
-        self.assert_length(result[0], 0)
-        self.assert_length(result[1], 1)
-        self.assertEqual(result[1][0].name, 'new_stream')
-        self.assertTrue(result[1][0].stream_post_policy == Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS)
+        stream = self.make_stream('stream1')
+        do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS)
+        result = self.common_subscribe_to_streams(new_member, ["stream1"])
+        self.assert_json_success(result)
 
-        streams_raw = [{
-            'name': 'newer_stream',
-            'stream_post_policy': Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS,
-        }]
-
-        # Admins can create STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS streams,
-        # irrespective of whether they are new members or not.
-        admin = self.example_user("iago")
-        self.assertTrue(admin.is_realm_admin)
-        result = list_to_streams(streams_raw, admin, autocreate=True)
-        self.assert_length(result[0], 0)
-        self.assert_length(result[1], 1)
-        self.assertEqual(result[1][0].name, 'newer_stream')
-        self.assertTrue(result[1][0].stream_post_policy == Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS)
+        json = result.json()
+        self.assertEqual(json["subscribed"], {new_member.email: ["stream1"]})
+        self.assertEqual(json["already_subscribed"], {})
 
     def test_guest_user_subscribe(self) -> None:
         """Guest users cannot subscribe themselves to anything"""
