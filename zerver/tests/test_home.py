@@ -1,4 +1,5 @@
 import calendar
+from datetime import timedelta
 import lxml.html
 import ujson
 
@@ -818,12 +819,22 @@ class HomeTest(ZulipTestCase):
                           "flag": "read"})
 
         # Manually process the UserActivity
-        activity_time = calendar.timegm(timezone_now().timetuple())
+        now = timezone_now()
+        activity_time = calendar.timegm(now.timetuple())
         user_activity_event = {'user_profile_id': hamlet.id,
                                'client': 'test-client',
                                'query': 'update_message_flags',
                                'time': activity_time}
-        UserActivityWorker().consume_batch([user_activity_event])
+
+        yesterday = now - timedelta(days=1)
+        activity_time_2 = calendar.timegm(yesterday.timetuple())
+        user_activity_event_2 = {'user_profile_id': hamlet.id,
+                                 'client': 'test-client-2',
+                                 'query': 'update_message_flags',
+                                 'time': activity_time_2}
+        UserActivityWorker().consume_batch([user_activity_event, user_activity_event_2])
+
+        # verify furthest_read_time is last activity time, irrespective of client
         furthest_read_time = get_furthest_read_time(hamlet)
         self.assertGreaterEqual(furthest_read_time, activity_time)
 
