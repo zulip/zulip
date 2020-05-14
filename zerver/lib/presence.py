@@ -146,22 +146,6 @@ def get_presence_for_user(user_profile_id: int,
 
 
 def get_status_dict_by_realm(realm_id: int, slim_presence: bool = False) -> Dict[str, Dict[str, Any]]:
-    user_profile_ids = UserProfile.objects.filter(
-        realm_id=realm_id,
-        is_active=True,
-        is_bot=False
-    ).order_by('id').values_list('id', flat=True)
-
-    user_profile_ids = list(user_profile_ids)
-    if not user_profile_ids:  # nocoverage
-        # This conditional is necessary because query_for_ids
-        # throws an exception if passed an empty list.
-        #
-        # It's not clear this condition is actually possible,
-        # though, because it shouldn't be possible to end up with
-        # a realm with 0 active users.
-        return {}
-
     two_weeks_ago = timezone_now() - datetime.timedelta(weeks=2)
     query = UserPresence.objects.filter(
         realm_id=realm_id,
@@ -185,6 +169,16 @@ def get_status_dict_by_realm(realm_id: int, slim_presence: bool = False) -> Dict
         'user_id',
         flat=True
     )
+
+    user_profile_ids = [presence_row['user_profile__id'] for presence_row in presence_rows]
+    if len(user_profile_ids) == 0:
+        # This conditional is necessary because query_for_ids
+        # throws an exception if passed an empty list.
+        #
+        # It's not clear this condition is actually possible,
+        # though, because it shouldn't be possible to end up with
+        # a realm with 0 active users.
+        return {}
 
     mobile_query = query_for_ids(
         query=mobile_query,
