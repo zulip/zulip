@@ -302,6 +302,25 @@ Check [randscape](http://github.com/github/hello-world/runs/4) completed (succes
 """.strip()
         self.send_and_test_stream_message('check_run__completed', expected_topic, expected_message)
 
+    def test_team_edited_description(self) -> None:
+        expected_topic = "team Testing"
+        expected_message = """\
+**Hypro999** changed the team description to:
+```quote
+A temporary team so that I can get some webhook fixtures!
+```"""
+        self.send_and_test_stream_message('team__edited_description', expected_topic, expected_message)
+
+    def test_team_edited_name(self) -> None:
+        expected_topic = "team Testing Team"
+        expected_message = """Team `Testing` was renamed to `Testing Team`."""
+        self.send_and_test_stream_message('team__edited_name', expected_topic, expected_message)
+
+    def test_team_edited_privacy(self) -> None:
+        expected_topic = "team Testing Team"
+        expected_message = """Team visibility changed to `secret`"""
+        self.send_and_test_stream_message('team__edited_privacy_secret', expected_topic, expected_message)
+
     @patch('zerver.webhooks.github.view.check_send_webhook_message')
     def test_check_run_in_progress_ignore(
             self, check_send_webhook_message_mock: MagicMock) -> None:

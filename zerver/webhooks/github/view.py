@@ -235,6 +235,22 @@ def get_add_team_body(payload: Dict[str, Any]) -> str:
         payload['team']['name']
     )
 
+def get_team_body(payload: Dict[str, Any]) -> str:
+    changes = payload["changes"]
+    if "description" in changes:
+        actor = payload["sender"]["login"]
+        new_description = payload["team"]["description"]
+        return "**{}** changed the team description to:\n```quote\n{}\n```".format(actor, new_description)
+    if "name" in changes:
+        original_name = changes["name"]["from"]
+        new_name = payload["team"]["name"]
+        return "Team `{}` was renamed to `{}`.".format(original_name, new_name)
+    if "privacy" in changes:
+        new_visibility = payload["team"]["privacy"]
+        return "Team visibility changed to `{}`".format(new_visibility)
+    else:  # nocoverage
+        raise UnexpectedWebhookEventType("GitHub", "Team Edited: {}".format(changes.keys()))
+
 def get_release_body(payload: Dict[str, Any]) -> str:
     data = {
         'user_name': get_sender_name(payload),
@@ -433,6 +449,8 @@ def get_subject_based_on_type(payload: Dict[str, Any], event: str) -> str:
         )
     elif event == 'membership':
         return "{} organization".format(payload['organization']['login'])
+    elif event == 'team':
+        return "team {}".format(payload['team']['name'])
     elif event == 'push_commits':
         return TOPIC_WITH_BRANCH_TEMPLATE.format(
             repo=get_repository_name(payload),
@@ -452,7 +470,6 @@ def get_subject_based_on_type(payload: Dict[str, Any], event: str) -> str:
     return get_repository_name(payload)
 
 EVENT_FUNCTION_MAPPER = {
-    'team_add': get_add_team_body,
     'commit_comment': get_commit_comment_body,
     'closed_pull_request': get_closed_pull_request_body,
     'create': partial(get_create_or_delete_body, action='created'),
@@ -481,6 +498,8 @@ EVENT_FUNCTION_MAPPER = {
     'repository': get_repository_body,
     'star': get_star_body,
     'status': get_status_body,
+    'team': get_team_body,
+    'team_add': get_add_team_body,
     'watch': get_watch_body,
 }
 
