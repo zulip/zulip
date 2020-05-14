@@ -165,13 +165,8 @@ function create_stream() {
     data.invite_only = JSON.stringify(invite_only);
     data.history_public_to_subscribers = JSON.stringify(history_public_to_subscribers);
 
-    let stream_post_policy = parseInt($('#stream_creation_form input[name=stream-post-policy]:checked').val(), 10);
+    const stream_post_policy = parseInt($('#stream_creation_form input[name=stream-post-policy]:checked').val(), 10);
 
-    // Because the stream_post_policy field is hidden when non-administrators create streams,
-    // we need to set the default value here.
-    if (isNaN(stream_post_policy)) {
-        stream_post_policy = stream_data.stream_post_policy_values.everyone.code;
-    }
     data.stream_post_policy = JSON.stringify(stream_post_policy);
 
     const announce = stream_data.realm_has_notifications_stream() &&
