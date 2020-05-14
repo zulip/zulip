@@ -97,11 +97,14 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
             topic = 'disputes'
             body = default_body() + '. Current status: {status}.'.format(
                 status=object_['status'].replace('_', ' '))
-        if resource == 'refund':  # nocoverage
+        if resource == 'refund':
             topic = 'refunds'
-            body = 'A {resource} for a {charge} of {amount} was updated.'.format(
+            body = 'A {resource} for a {charge} of {amount} {currency} was updated.'.format(
                 resource=linkified_id(object_['id'], lower=True),
-                charge=linkified_id(object_['charge'], lower=True), amount=object_['amount'])
+                charge=linkified_id(object_['charge'], lower=True),
+                amount=object_['amount'],
+                currency=object_['currency'].upper()
+            )
     if category == 'checkout_beta':  # nocoverage
         # Not sure what this is
         raise NotImplementedEventType()
