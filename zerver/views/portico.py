@@ -26,7 +26,7 @@ def apps_view(request: HttpRequest, _: str) -> HttpResponse:
 def plans_view(request: HttpRequest) -> HttpResponse:
     realm = get_realm_from_request(request)
     realm_plan_type = 0
-    free_trial_months = settings.FREE_TRIAL_MONTHS
+    free_trial_days = settings.FREE_TRIAL_DAYS
     if realm is not None:
         realm_plan_type = realm.plan_type
         if realm.plan_type == Realm.SELF_HOSTED and settings.PRODUCTION:
@@ -36,7 +36,7 @@ def plans_view(request: HttpRequest) -> HttpResponse:
     return TemplateResponse(
         request,
         "zerver/plans.html",
-        context={"realm_plan_type": realm_plan_type, 'free_trial_months': free_trial_months},
+        context={"realm_plan_type": realm_plan_type, 'free_trial_days': free_trial_days},
     )
 
 @add_google_analytics
