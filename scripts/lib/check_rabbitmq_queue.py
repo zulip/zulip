@@ -77,7 +77,8 @@ def analyze_queue_stats(queue_name: str, stats: Dict[str, Any],
         # 50).
         return dict(status=CRITICAL,
                     name=queue_name,
-                    message='queue appears to be stuck, last update %s' % (stats['update_time'],))
+                    message='queue appears to be stuck, last update %s, queue size %s' % (
+                        stats['update_time'], queue_count_rabbitmqctl))
 
     current_size = stats['current_queue_size']
     average_consume_time = stats['recent_average_consume_time']
