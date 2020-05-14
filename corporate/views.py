@@ -146,7 +146,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         'min_invoiced_licenses': max(seat_count, MIN_INVOICED_LICENSES),
         'default_invoice_days_until_due': DEFAULT_INVOICE_DAYS_UNTIL_DUE,
         'plan': "Zulip Standard",
-        "free_trial_months": settings.FREE_TRIAL_MONTHS,
+        "free_trial_days": settings.FREE_TRIAL_DAYS,
         'page_params': {
             'seat_count': seat_count,
             'annual_price': 8000,

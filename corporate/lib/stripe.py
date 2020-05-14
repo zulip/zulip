@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from functools import wraps
 import logging
@@ -291,7 +291,7 @@ def compute_plan_parameters(
     if automanage_licenses:
         next_invoice_date = add_months(billing_cycle_anchor, 1)
     if free_trial:
-        period_end = add_months(billing_cycle_anchor, settings.FREE_TRIAL_MONTHS)
+        period_end = billing_cycle_anchor + timedelta(days=settings.FREE_TRIAL_DAYS)
         next_invoice_date = period_end
     return billing_cycle_anchor, next_invoice_date, period_end, price_per_license
 
@@ -302,7 +302,7 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
     realm = user.realm
     customer = update_or_create_stripe_customer(user, stripe_token=stripe_token)
     charge_automatically = stripe_token is not None
-    free_trial = settings.FREE_TRIAL_MONTHS not in (None, 0)
+    free_trial = settings.FREE_TRIAL_DAYS not in (None, 0)
 
     if get_current_plan_by_customer(customer) is not None:
         # Unlikely race condition from two people upgrading (clicking "Make payment")
