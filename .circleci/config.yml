@@ -96,7 +96,10 @@ aliases:
      name: upload coverage report
      command: |
        . /srv/zulip-py3-venv/bin/activate
-       pip install codecov && codecov \
+       # codecov version is fixed here, since future versions of it
+       # use "find" for locating files which is buggy on some platforms.
+       # See https://github.com/codecov/codecov-python/issues/250
+       pip install codecov==2.0.15 && codecov \
          || echo "Error in uploading coverage reports to codecov.io."
 
   - &build_production
