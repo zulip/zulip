@@ -95,11 +95,20 @@ aliases:
     run:
      name: upload coverage report
      command: |
+       # codecov requires `.coverage` file to be stored in pwd for
+       # uploading coverage results.
+       mv /home/circleci/zulip/var/.coverage /home/circleci/zulip/.coverage
+
        . /srv/zulip-py3-venv/bin/activate
-       # codecov version is fixed here, since future versions of it
-       # use "find" for locating files which is buggy on some platforms.
-       # See https://github.com/codecov/codecov-python/issues/250
-       pip install codecov==2.0.15 && codecov \
+       # TODO: Check that the next release of codecov doesn't
+       # throw find error.
+       # codecov==2.0.16 introduced a bug which uses "find"
+       # for locating files which is buggy on some platforms.
+       # It was fixed via https://github.com/codecov/codecov-python/pull/217
+       # and should get automatically fixed here once it's released.
+       # We cannot pin the version here because we need the latest version for uploading files.
+       # see https://community.codecov.io/t/http-400-while-uploading-to-s3-with-python-codecov-from-travis/1428/7
+       pip install codecov && codecov \
          || echo "Error in uploading coverage reports to codecov.io."
 
   - &build_production

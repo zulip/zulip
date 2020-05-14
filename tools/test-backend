@@ -216,6 +216,10 @@ def main() -> None:
     parser.add_argument('--verbose-coverage', dest='verbose_coverage',
                         action="store_true",
                         default=False, help='Enable verbose print of coverage report.')
+    parser.add_argument('--no-cov-cleanup', dest='no_cov_cleanup',
+                        action='store_true',
+                        default=False,
+                        help="Do not clean generated coverage files.")
 
     parser.add_argument('--parallel', dest='processes',
                         type=int,
@@ -354,10 +358,12 @@ def main() -> None:
     assert_provisioning_status_ok(options.force)
 
     if options.coverage:
-        import atexit
         import coverage
-        cov = coverage.Coverage(config_file="tools/coveragerc", concurrency='multiprocessing')
-        atexit.register(lambda: cov.erase())  # Ensure the data file gets cleaned up at the end.
+        cov = coverage.Coverage(data_suffix="", config_file="tools/coveragerc", concurrency='multiprocessing')
+        # Do not clean .coverage file in CircleCi job so that coverage data can be uploaded.
+        if not options.no_cov_cleanup:
+            import atexit
+            atexit.register(lambda: cov.erase())  # Ensure the data file gets cleaned up at the end.
         cov.start()
     if options.profile:
         import cProfile
@@ -407,7 +413,6 @@ def main() -> None:
         cov.stop()
         cov.save()
         cov.combine()
-        cov.data_suffix = False  # Disable suffix so that filename is .coverage
         cov.save()
         if options.verbose_coverage:
             print("Printing coverage data")
