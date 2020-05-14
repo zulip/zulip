@@ -26,7 +26,7 @@ import argparse
 import base64
 import subprocess
 from typing import Any, Dict, Optional
-from urllib.parse import urlencode
+from urllib.parse import urlencode, parse_qsl
 
 import requests
 import ujson
@@ -104,9 +104,14 @@ def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, 
                              config: ScreenshotConfig) -> bool:
     # Delete all messages, so new message is the only one it's message group
     Message.objects.filter(sender=bot).delete()
+    json_fixture = fixture_path.endswith('.json')
 
     with open(fixture_path) as f:
-        data = ujson.load(f)
+        if json_fixture:
+            data = ujson.load(f)
+        else:
+            data = f.read().strip()
+
     _, fixture_name = split_fixture_path(fixture_path)
     headers = get_requests_headers(integration.name, fixture_name)
     if config.custom_headers:
@@ -122,11 +127,23 @@ def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, 
     params = {'api_key': bot.api_key, 'stream': stream}
     if config.extra_params:
         params.update(config.extra_params)
-    if config.payload_as_query_param:
+
+    extra_args = {}
+    if not json_fixture:
+        # We overwrite any params in fixture with our params. stream name, for
+        # example, may be defined in the fixture.
+        parsed_params = dict(parse_qsl(data))
+        parsed_params.update(params)
+        params = parsed_params
+
+    elif config.payload_as_query_param:
         params[config.payload_param_name] = ujson.dumps(data)
 
+    else:
+        extra_args = {'json': data}
+
     url = '{}?{}'.format(url, urlencode(params))
-    extra_args = {'json': data} if not config.payload_as_query_param else {}
+
     try:
         response = requests.post(url=url, headers=headers, **extra_args)
     except requests.exceptions.ConnectionError:
