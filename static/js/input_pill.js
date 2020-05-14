@@ -225,6 +225,13 @@ exports.create = function (opts) {
         items: function () {
             return store.pills.map(pill => pill.item);
         },
+
+        createPillonPaste: function () {
+            if (typeof store.createPillonPaste === "function") {
+                return store.createPillonPaste();
+            }
+            return true;
+        },
     };
 
     (function events() {
@@ -331,7 +338,9 @@ exports.create = function (opts) {
             // insert text manually
             document.execCommand("insertText", false, text);
 
-            funcs.insertManyPills(store.$input.text().trim());
+            if (funcs.createPillonPaste()) {
+                funcs.insertManyPills(store.$input.text().trim());
+            }
         });
 
         // when the "×" is clicked on a pill, it should delete that pill and then
@@ -373,6 +382,10 @@ exports.create = function (opts) {
 
         onPillRemove: function (callback) {
             store.removePillFunction = callback;
+        },
+
+        createPillonPaste: function (callback) {
+            store.createPillonPaste = callback;
         },
 
         clear: funcs.removeAllPills.bind(funcs),

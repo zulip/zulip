@@ -8,6 +8,10 @@ exports.initialize = function () {
     exports.widget.onPillRemove(function () {
         search.narrow_or_search_for_term();
     });
+
+    exports.widget.createPillonPaste(function () {
+        return false;
+    });
 };
 
 window.search_pill_widget = exports;
