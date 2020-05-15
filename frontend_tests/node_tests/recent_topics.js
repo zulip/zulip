@@ -207,4 +207,17 @@ run_test('basic assertions', () => {
     assert.equal(Array.from(all_topics.keys()).toString(),
                  '1:topic-7,1:topic-3,1:topic-1,1:topic-6,1:topic-5,1:topic-4,1:topic-2');
     verify_topic_data(all_topics, stream1, topic7, id, true, 0, true);
+
+    // unmute topic7
+    rt.update_topic_is_muted(stream1, topic7, false);
+    all_topics = rt.get();
+    verify_topic_data(all_topics, stream1, topic7, id, true, 0, false);
+
+    // mute topic7
+    rt.update_topic_is_muted(stream1, topic7, true);
+    all_topics = rt.get();
+    verify_topic_data(all_topics, stream1, topic7, id, true, 0, true);
+
+    // a topic gets muted which we are not tracking
+    assert.equal(rt.update_topic_is_muted(stream1, "topic-10", true), false);
 });
