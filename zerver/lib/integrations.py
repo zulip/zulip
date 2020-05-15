@@ -101,6 +101,13 @@ class Integration:
 
         return None
 
+    def get_bot_avatar_path(self) -> Optional[str]:
+        if self.logo_path is not None:
+            name = os.path.splitext(os.path.basename(self.logo_path))[0]
+            return self.DEFAULT_BOT_AVATAR_PATH.format(name=name)
+
+        return None
+
     def get_logo_url(self) -> Optional[str]:
         if self.logo_path is not None:
             return staticfiles_storage.url(self.logo_path)

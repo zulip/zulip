@@ -19,6 +19,14 @@ class IntegrationsTestCase(ZulipTestCase):
         self.assertEqual(fixture_path, 'zerver/webhooks/airbrake/fixtures/error_message.json')
         self.assertEqual(image_path, 'static/images/integrations/ci/002.png')
 
+    def test_get_bot_avatar_path(self) -> None:
+        integration = INTEGRATIONS['alertmanager']
+        self.assertEqual(integration.get_bot_avatar_path(), 'images/integrations/bot_avatars/prometheus.png')
+
+        # New instance with logo parameter not set
+        integration = WebhookIntegration('alertmanager', ['misc'])
+        self.assertIsNone(integration.get_bot_avatar_path())
+
     def test_no_missing_doc_screenshot_config(self) -> None:
         webhook_names = {webhook.name for webhook in WEBHOOK_INTEGRATIONS}
         webhooks_with_screenshot_config = set(DOC_SCREENSHOT_CONFIG.keys())

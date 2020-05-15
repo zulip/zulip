@@ -21,7 +21,7 @@ import cairosvg
 from PIL import Image
 
 from zerver.lib.upload import resize_avatar, DEFAULT_AVATAR_SIZE
-from zerver.lib.integrations import Integration, WEBHOOK_INTEGRATIONS
+from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.lib.storage import static_path
 
 def create_square_image(png: bytes) -> bytes:
@@ -38,7 +38,7 @@ def create_square_image(png: bytes) -> bytes:
     new_img.save(out, format='png')
     return out.getvalue()
 
-def create_integration_bot_avatar(logo_path: str) -> None:
+def create_integration_bot_avatar(logo_path: str, bot_avatar_path: str) -> None:
     if logo_path.endswith('.svg'):
         avatar = cairosvg.svg2png(
             url=logo_path, output_width=DEFAULT_AVATAR_SIZE, output_height=DEFAULT_AVATAR_SIZE)
@@ -48,9 +48,6 @@ def create_integration_bot_avatar(logo_path: str) -> None:
         square_image = create_square_image(image)
         avatar = resize_avatar(square_image)
 
-    name = os.path.splitext(os.path.basename(logo_path))[0]
-    bot_avatar_path = os.path.join(
-        ZULIP_PATH, 'static', Integration.DEFAULT_BOT_AVATAR_PATH.format(name=name))
     os.makedirs(os.path.dirname(bot_avatar_path), exist_ok=True)
     with open(bot_avatar_path, 'wb') as f:
         f.write(avatar)
@@ -58,15 +55,19 @@ def create_integration_bot_avatar(logo_path: str) -> None:
 def generate_integration_bots_avatars(check_missing: bool=False) -> None:
     missing = set()
     for webhook in WEBHOOK_INTEGRATIONS:
-        logo_path = webhook.get_logo_path()
-        if not logo_path:
+        if not webhook.logo_path:
             continue
+
+        bot_avatar_path = webhook.get_bot_avatar_path()
+        if bot_avatar_path is None:
+            continue
+
+        bot_avatar_path = os.path.join(ZULIP_PATH, 'static', bot_avatar_path)
         if check_missing:
-            bot_avatar_path = static_path(webhook.DEFAULT_BOT_AVATAR_PATH.format(name=webhook.name))
             if not os.path.isfile(bot_avatar_path):
                 missing.add(webhook.name)
         else:
-            create_integration_bot_avatar(static_path(logo_path))
+            create_integration_bot_avatar(static_path(webhook.logo_path), bot_avatar_path)
 
     if missing:
         print('ERROR: Bot avatars are missing for these webhooks: {}.\n'
