@@ -445,9 +445,7 @@ exports.initialize_everything = function () {
     overlays.initialize();
     invite.initialize();
     timerender.initialize();
-    if (!page_params.search_pills_enabled) {
-        tab_bar.initialize();
-    }
+    tab_bar.initialize();
     server_events.initialize();
     user_status.initialize(user_status_params);
     compose_pm_pill.initialize();
