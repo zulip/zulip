@@ -34,6 +34,15 @@ exports.process_message = function (msg) {
     return true;
 };
 
+exports.update_topic_is_muted = function (stream_id, topic, is_muted) {
+    const key = stream_id + ":" + topic;
+    if (!topics.has(key)) {
+        return false;
+    }
+    const topic_data = topics.get(stream_id + ":" + topic);
+    topic_data.muted = is_muted;
+};
+
 function get_sorted_topics() {
     // Sort all recent topics by last message time.
     return new Map(Array.from(topics.entries()).sort(function (a, b) {
