@@ -51,7 +51,8 @@ class zulip_ops::zmirror_personals {
 
   # TODO: Do the rest of our setup, which includes at least:
   # Building patched libzephyr4-krb5 from davidben's roost branch and installing that
+  #  (https://github.com/davidben/zephyr/commit/252258d38ebd0e79b261db336c1f74f261b77128)
   #  (to add ZLoadSession/ZDumpSession).
   # Building python-zephyr after cloning it from https://github.com/ebroder/python-zephyr
-  #  (patched with tabbott's branch to add dump_session and load_session using the above)
+  #  (Patched with https://github.com/ebroder/python-zephyr/commit/d00cca474ed361439e68246e2687cdc4ea906de3)
 }
