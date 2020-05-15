@@ -20,6 +20,7 @@ logger = logging.getLogger('zulip.retention')
 log_to_file(logger, settings.RETENTION_LOG_PATH)
 
 MESSAGE_BATCH_SIZE = 1000
+TRANSACTION_DELETION_BLOCK_SIZE = 100
 
 models_with_message_key: List[Dict[str, Any]] = [
     {
@@ -522,9 +523,14 @@ def restore_all_data_from_archive(restore_manual_transactions: bool=True) -> Non
 def clean_archived_data() -> None:
     logger.info("Cleaning old archive data.")
     check_date = timezone_now() - timedelta(days=settings.ARCHIVED_DATA_VACUUMING_DELAY_DAYS)
-    #  Appropriate archived objects will get deleted through the on_delete=CASCADE property:
-    transactions = ArchiveTransaction.objects.filter(timestamp__lt=check_date)
-    count = transactions.count()
-    transactions.delete()
+    # Associated archived objects will get deleted through the on_delete=CASCADE property:
+    count = 0
+    transaction_ids = list(ArchiveTransaction.objects.filter(
+        timestamp__lt=check_date).values_list("id", flat=True))
+    while len(transaction_ids) > 0:
+        transaction_block = transaction_ids[0:TRANSACTION_DELETION_BLOCK_SIZE]
+        transaction_ids = transaction_ids[TRANSACTION_DELETION_BLOCK_SIZE:]
+        ArchiveTransaction.objects.filter(id__in=transaction_block).delete()
+        count += len(transaction_block)
 
     logger.info("Deleted %s old ArchiveTransactions.", count)
