@@ -210,9 +210,7 @@ if options.all:
         for screenshot_config in screenshot_configs:
             generate_screenshot_from_config(integration_name, screenshot_config)
 
-else:
-    if not options.fixture:
-        parser.error("Please specify the fixture filename")
+elif options.fixture:
     config = dict(fixture_name=options.fixture, use_basic_auth=options.use_basic_auth,
                   custom_headers=options.custom_headers,
                   payload_as_query_param=options.payload_as_query_param)
@@ -226,3 +224,15 @@ else:
         config['payload_param_name'] = options.payload_param_name
     screenshot_config = ScreenshotConfig(**config)
     generate_screenshot_from_config(options.integration, screenshot_config)
+
+elif options.integration in DOC_SCREENSHOT_CONFIG:
+    configs = DOC_SCREENSHOT_CONFIG[options.integration]
+    for screenshot_config in configs:
+        generate_screenshot_from_config(options.integration, screenshot_config)
+
+else:
+    parser.error(
+        "Could not find configuration for integration. "
+        "You can specify a fixture file to use, using the --fixture flag. "
+        "Or add a configuration to zerver.lib.integrations.DOC_SCREENSHOT_CONFIG"
+    )
