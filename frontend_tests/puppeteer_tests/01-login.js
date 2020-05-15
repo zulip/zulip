@@ -1,5 +1,5 @@
-const puppeteer = require("puppeteer");
 const assert = require("assert");
+const common = require('../puppeteer_lib/common');
 const test_credentials = require('../../var/casper/test_credentials.js').test_credentials;
 const realm_url = "http://zulip.zulipdev.com:9981/";
 
@@ -23,25 +23,15 @@ async function log_out(page) {
 }
 
 async function run() {
-    const browser = await puppeteer.launch({
-        args: [
-            '--window-size=1400,1024',
-            '--no-sandbox', '--disable-setuid-sandbox',
-        ],
-        defaultViewport: null,
-        headless: true,
-    });
-    const page = await browser.newPage();
+    const page = await common.get_page(realm_url + 'login/');
     try {
-        await page.setViewport({ width: 1280, height: 1024 });
-        await page.goto(realm_url + 'login/');
         await log_in(page, test_credentials.default_user);
         await log_out(page);
     } catch (e) {
         console.log(e);
         process.exit(1);
     } finally {
-        await browser.close();
+        common.browser.close();
     }
 }
 run();
