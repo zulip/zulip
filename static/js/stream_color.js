@@ -72,9 +72,7 @@ exports.update_stream_color = function (sub, color, opts) {
         update_historical_message_color(sub.name, color);
     }
     update_stream_sidebar_swatch_color(stream_id, color);
-    if (!page_params.search_pills_enabled) {
-        tab_bar.colorize_tab_bar();
-    }
+    tab_bar.colorize_tab_bar();
 };
 
 function picker_do_change_color(color) {
