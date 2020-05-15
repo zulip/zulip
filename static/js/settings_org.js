@@ -386,6 +386,15 @@ exports.sync_realm_settings = function (property) {
         return;
     }
 
+    const value = page_params[`realm_${property}`];
+    if (property === 'notifications_stream_id') {
+        exports.notifications_stream_widget.render(value);
+    } else if (property === 'signup_notifications_stream_id') {
+        exports.signup_notifications_stream_widget.render(value);
+    } else if (property === 'default_code_block_language') {
+        exports.default_code_language_widget.render(value);
+    }
+
     if (property === 'message_content_edit_limit_seconds') {
         property = 'message_content_edit_limit_minutes';
     } else if (property === 'allow_message_editing') {
@@ -549,18 +558,20 @@ exports.init_dropdown_widgets = () => {
             };
             return item;
         }),
-        subsection: 'notifications',
+        on_update: () => {
+            exports.save_discard_widget_status_handler($(`#org-notifications`));
+        },
         default_text: i18n.t("Disabled"),
         render_text: (x) => {return `#${x}`;},
         null_value: -1,
     };
-    exports.notifications_stream_widget = settings_list_widget(
+    exports.notifications_stream_widget = dropdown_list_widget(
         Object.assign({setting_name: 'realm_notifications_stream_id'},
                       notification_stream_options));
-    exports.signup_notifications_stream_widget = settings_list_widget(
+    exports.signup_notifications_stream_widget = dropdown_list_widget(
         Object.assign({setting_name: 'realm_signup_notifications_stream_id'},
                       notification_stream_options));
-    exports.default_code_language_widget = settings_list_widget({
+    exports.default_code_language_widget = dropdown_list_widget({
         setting_name: 'realm_default_code_block_language',
         data: Object.keys(pygments_data.langs).map(x => {
             return {
@@ -568,7 +579,9 @@ exports.init_dropdown_widgets = () => {
                 value: x,
             };
         }),
-        subsection: 'other-settings',
+        on_update: () => {
+            exports.save_discard_widget_status_handler($(`#org-other-settings`));
+        },
         default_text: i18n.t("No language set"),
     });
 };

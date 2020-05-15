@@ -28,9 +28,13 @@ Usually, this involves a few steps:
   If you cannot find a SVG graphic of the logo, please find and include a PNG
   image of the logo instead.
 
-* Finally, generate a message sent by the integration and take a
-  screenshot of the message to provide an example message in the
-  documentation.
+* Run `tools/setup/generate_integration_bots_avatars.py` to generate a smaller
+  version of the image added in the previous step. This smaller image will be
+  used as the bot avatar in the documentation screenshot that will be generated
+  in the next step.
+
+* Finally, generate a message sent by the integration and take a screenshot of
+  the message to provide an example message in the documentation.
 
   If your new integration is an incoming webhook integration, you can generate
   the screenshot using `tools/generate-integration-docs-screenshot`:

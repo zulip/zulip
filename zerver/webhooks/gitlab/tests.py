@@ -547,6 +547,23 @@ class GitlabHookTests(WebhookTestCase):
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
+    def test_job_hook_event(self) -> None:
+        expected_topic = "gitlab_test / gitlab-script-trigger"
+        expected_message = "Build test from test stage was created."
+        self.send_and_test_stream_message(
+            'job_hook__build_created',
+            expected_topic,
+            expected_message)
+
+    def test_job_hook_event_topic(self) -> None:
+        self.url = self.build_webhook_url(topic="provided topic")
+        expected_topic = "provided topic"
+        expected_message = "[[gitlab_test](http://192.168.64.1:3005/gitlab-org/gitlab-test)] Build test from test stage was created."
+        self.send_and_test_stream_message(
+            'job_hook__build_created',
+            expected_topic,
+            expected_message)
+
     def test_system_push_event_message(self) -> None:
         expected_topic = "gitlab / master"
         expected_message = "John Smith [pushed](http://test.example.com/gitlab/gitlab/compare/95790bf891e76fee5e1747ab589903a6a1f80f22...da1560886d4f094c3e6c9ef40349f7d38b5d27d7) 1 commit to branch master. Commits by Test User (1).\n\n* Add simple search to projects in public area ([c5feabd](https://test.example.com/gitlab/gitlab/-/commit/c5feabde2d8cd023215af4d2ceeb7a64839fc428))"

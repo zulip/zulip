@@ -362,3 +362,22 @@ ul {
     background-color: hsla(0, 70%, 87%, 0.7);
     color: hsl(0, 100%, 50%);
 }
+
+.topic_stream_edit_header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+
+    #select_stream_id {
+        margin-bottom: 5px !important;
+        border-left: 0px;
+        padding-left: 0px;
+        border-radius: 0px 3px 3px 0px;
+        // Extra 1px for post-selection boundry
+        margin: 0 5px 0 -11px;
+        text-indent: 10px;
+    }
+    .inline_topic_edit {
+        margin-left: 5px !important;
+    }
+}

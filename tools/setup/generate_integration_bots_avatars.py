@@ -69,9 +69,10 @@ def generate_integration_bots_avatars(check_missing: bool=False) -> None:
             create_integration_bot_avatar(static_path(logo_path))
 
     if missing:
-        print('Bot avatars are missing for these webhooks: {}.\n'
-              'Run ./tools/setup/generate_integration_bots_avatars.py '
-              'to generate them.'.format(', '.join(missing)))
+        print('ERROR: Bot avatars are missing for these webhooks: {}.\n'
+              'ERROR: Run ./tools/setup/generate_integration_bots_avatars.py '
+              'to generate them.\nERROR: Commit the newly generated avatars to '
+              'the repository.'.format(', '.join(missing)))
         sys.exit(1)
 
 if __name__ == '__main__':

@@ -104,13 +104,12 @@ exports.toggle_pin_to_top_stream = function (sub) {
     stream_edit.set_stream_property(sub, 'pin_to_top', !sub.pin_to_top);
 };
 
+let subscribed_only = true;
+
 exports.is_subscribed_stream_tab_active = function () {
     // Returns true if "Subscribed" tab in stream settings is open
     // otherwise false.
-    if ($("#subscriptions_table .search-container .tab-switcher .first").hasClass("selected")) {
-        return true;
-    }
-    return false;
+    return subscribed_only;
 };
 
 exports.update_stream_name = function (sub, new_name) {
@@ -453,7 +452,6 @@ exports.filter_table = function (query) {
     ui.get_scroll_element($(".streams-list")).scrollTop(streams_list_scrolltop);
 };
 
-let subscribed_only = true;
 let sort_order = "by-stream-name";
 
 exports.get_search_params = function () {

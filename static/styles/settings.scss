@@ -1,5 +1,9 @@
 label {
     margin: 0;
+
+    .fa-question-circle-o {
+        left: 2px;
+    }
 }
 
 label,
@@ -18,10 +22,6 @@ h3 {
             opacity: 1;
         }
     }
-}
-
-label .fa-question-circle-o {
-    left: 2px;
 }
 
 h3 .fa-question-circle-o {
@@ -97,24 +97,21 @@ h3 .fa-question-circle-o {
     }
 }
 
-.user-avatar-section,
-.realm-logo-section,
-.realm-icon-section {
-    position: relative;
-}
-
 .realm-logo-block {
     margin-bottom: 10px;
 }
 
 .user-avatar-section {
     float: right;
-}
 
-.user-avatar-section .avatar-controls {
-    margin-top: 20px;
+    .avatar-controls {
+        margin-top: 20px;
+        box-shadow: none;
+    }
 
-    box-shadow: none;
+    .inline-block {
+        box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
+    }
 }
 
 .realm-icon-section {
@@ -122,17 +119,16 @@ h3 .fa-question-circle-o {
     display: inline-block;
 }
 
-.user-avatar-section .inline-block,
-.realm-logo-section .inline-block,
-.realm-icon-section .inline-block {
-    margin: 5px 20px 0px 0px;
-    vertical-align: top;
+.user-avatar-section,
+.realm-logo-section,
+.realm-icon-section {
+    position: relative;
 
-    border-radius: 4px;
-}
-
-.user-avatar-section .inline-block {
-    box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
+    .inline-block {
+        margin: 5px 20px 0px 0px;
+        vertical-align: top;
+        border-radius: 4px;
+    }
 }
 
 #change_email_modal {
@@ -188,8 +184,14 @@ h3 .fa-question-circle-o {
     vertical-align: middle;
 }
 
-#settings_content table + .progressive-table-wrapper table tr.user_row td:first-of-type {
-    width: 20%;
+#settings_content {
+    table + .progressive-table-wrapper table tr.user_row td:first-of-type {
+        width: 20%;
+    }
+
+    .admin-table-wrapper table.admin_profile_fields_table tr td {
+        width: 28%;
+    }
 }
 
 #uploaded_files_table > tr > td:nth-of-type(1),
@@ -215,11 +217,13 @@ td .button {
     opacity: 0.9;
 }
 
-.email-change-form .settings-info-icon,
-.user-name-section .settings-info-icon {
-    position: relative;
-    top: 2px;
-    left: 1px;
+.email-change-form,
+.user-name-section {
+    .settings-info-icon {
+        position: relative;
+        top: 2px;
+        left: 1px;
+    }
 }
 
 .settings-section {
@@ -359,9 +363,11 @@ td .button {
     }
 }
 
-#admin-user-list .table tr:first-of-type td,
-#admin-bot-list .table tr:first-of-type td {
-    border-top: none;
+#admin-user-list,
+#admin-bot-list {
+    .table tr:first-of-type td {
+        border-top: none;
+    }
 }
 
 .dynamic-input {
@@ -372,35 +378,35 @@ td .button {
     border-radius: 3px;
     transition: box-shadow 0.3s ease;
     min-width: 208px;
-}
 
-.dynamic-input:hover {
-    outline: none;
-    box-shadow: 0px 0px 4px hsla(199, 79%, 56%, 1.0);
-}
+    &:hover {
+        outline: none;
+        box-shadow: 0px 0px 4px hsla(199, 79%, 56%, 1.0);
+    }
 
-.dynamic-input div,
-.dynamic-input label {
-    display: inline-block;
-    margin: 0;
-}
+    div,
+    label {
+        display: inline-block;
+        margin: 0;
+    }
 
-.dynamic-input div {
-    margin-right: -2px;
-}
+    div {
+        margin-right: -2px;
 
-.dynamic-input [contenteditable=true] {
-    outline: none;
-}
+        &:empty::after {
+            content: "username";
+            color: hsl(0, 0%, 67%);
+        }
+    }
 
-.dynamic-input div:empty::after {
-    content: "username";
-    color: hsl(0, 0%, 67%);
-}
+    &.bot_user_name div:empty::after {
+        content: "bot_user_name";
+        color: hsl(0, 0%, 67%);
+    }
 
-.dynamic-input.bot_user_name div:empty::after {
-    content: "bot_user_name";
-    color: hsl(0, 0%, 67%);
+    [contenteditable=true] {
+        outline: none;
+    }
 }
 
 .button,
@@ -408,12 +414,14 @@ td .button {
     margin: 0 0 20px 0;
 }
 
-.input-group.thinner {
-    margin: 10px 0px;
-}
+.input-group {
+    .thinner {
+        margin: 10px 0px;
+    }
 
-.input-group label.checkbox + label {
-    cursor: pointer;
+    label.checkbox + label {
+        cursor: pointer;
+    }
 }
 
 .dependent-block {
@@ -429,8 +437,14 @@ td .button {
     margin: 0px;
 }
 
-input[type=checkbox] + .inline-block {
-    margin-left: 10px;
+input[type=checkbox] {
+    + .inline-block {
+        margin-left: 10px;
+    }
+
+    .inline-block {
+        margin: -2px 0px 0px 0px;
+    }
 }
 
 .allow-subdomains,
@@ -557,10 +571,6 @@ input[type=checkbox] + .inline-block {
 #realm-icon-section {
     border-radius: 5px;
     box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
-}
-
-input[type=checkbox].inline-block {
-    margin: -2px 0px 0px 0px;
 }
 
 .remove-attachment {
@@ -803,10 +813,6 @@ input[type=checkbox].inline-block {
 
 .grey-box .wrapper {
     margin: 10px 0px;
-}
-
-#settings_content .admin-table-wrapper table.admin_profile_fields_table tr td {
-    width: 28%;
 }
 
 .admin_profile_fields_table,
@@ -1682,30 +1688,6 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     overflow-y: auto;
     margin-top: 0;
     display: block;
-}
-
-input[type=text]#settings_search {
-    width: calc(100% - 10px - 2px);
-    margin: 0px;
-
-    color: hsl(0, 0%, 33%);
-    font-size: 0.9rem;
-    padding: 3px 5px;
-    outline: none;
-    border: 1px solid hsl(0, 0%, 87%);
-    border-radius: 4px;
-}
-
-input[type=text]:focus#settings_search {
-    box-shadow: none;
-    border: 1px solid hsl(0, 0%, 73%);
-
-    border-bottom: 1px solid hsl(0, 0%, 87%);
-}
-
-input[type=text]#settings_search {
-    width: calc(100% - 10px - 2px);
-    margin: 0px;
 }
 
 #settings_page .sidebar ul {

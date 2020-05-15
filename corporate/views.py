@@ -20,9 +20,9 @@ from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
     stripe_get_customer, get_latest_seat_count, \
     process_initial_upgrade, sign_string, \
     unsign_string, BillingError, do_change_plan_status, do_replace_payment_source, \
-    MIN_INVOICED_LICENSES, DEFAULT_INVOICE_DAYS_UNTIL_DUE, \
+    MIN_INVOICED_LICENSES, MAX_INVOICED_LICENSES, DEFAULT_INVOICE_DAYS_UNTIL_DUE, \
     start_of_next_billing_cycle, renewal_amount, \
-    make_end_of_cycle_updates_if_needed
+    make_end_of_cycle_updates_if_needed, downgrade_now
 from corporate.models import CustomerPlan, get_current_plan_by_customer, \
     get_customer_by_realm, get_current_plan_by_realm
 
@@ -49,11 +49,19 @@ def check_upgrade_parameters(
             raise BillingError('autopay with no card')
 
     min_licenses = seat_count
+    max_licenses = None
     if billing_modality == 'send_invoice':
         min_licenses = max(seat_count, MIN_INVOICED_LICENSES)
+        max_licenses = MAX_INVOICED_LICENSES
+
     if licenses is None or licenses < min_licenses:
         raise BillingError('not enough licenses',
                            _("You must invoice for at least {} users.").format(min_licenses))
+
+    if max_licenses is not None and licenses > max_licenses:
+        message = _("Invoices with more than {} licenses can't be processed from this page. To complete "
+                    "the upgrade, please contact {}.").format(max_licenses, settings.ZULIP_ADMINISTRATOR)
+        raise BillingError('too many licenses', message)
 
 # Should only be called if the customer is being charged automatically
 def payment_method_string(stripe_customer: stripe.Customer) -> str:
@@ -138,6 +146,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         'min_invoiced_licenses': max(seat_count, MIN_INVOICED_LICENSES),
         'default_invoice_days_until_due': DEFAULT_INVOICE_DAYS_UNTIL_DUE,
         'plan': "Zulip Standard",
+        "free_trial_months": settings.FREE_TRIAL_MONTHS,
         'page_params': {
             'seat_count': seat_count,
             'annual_price': 8000,
@@ -175,6 +184,8 @@ def billing_home(request: HttpRequest) -> HttpResponse:
                 CustomerPlan.STANDARD: 'Zulip Standard',
                 CustomerPlan.PLUS: 'Zulip Plus',
             }[plan.tier]
+            free_trial = plan.status == CustomerPlan.FREE_TRIAL
+            downgrade_at_end_of_cycle = plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
             licenses = last_ledger_entry.licenses
             licenses_used = get_latest_seat_count(user.realm)
             # Should do this in javascript, using the user's timezone
@@ -190,6 +201,8 @@ def billing_home(request: HttpRequest) -> HttpResponse:
             context.update({
                 'plan_name': plan_name,
                 'has_active_plan': True,
+                'free_trial': free_trial,
+                'downgrade_at_end_of_cycle': downgrade_at_end_of_cycle,
                 'licenses': licenses,
                 'licenses_used': licenses_used,
                 'renewal_date': renewal_date,
@@ -198,6 +211,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
                 'charge_automatically': charge_automatically,
                 'publishable_key': STRIPE_PUBLISHABLE_KEY,
                 'stripe_email': stripe_customer.email,
+                'CustomerPlan': CustomerPlan,
             })
 
     return render(request, 'corporate/billing.html', context=context)
@@ -206,9 +220,20 @@ def billing_home(request: HttpRequest) -> HttpResponse:
 @has_request_variables
 def change_plan_status(request: HttpRequest, user: UserProfile,
                        status: int=REQ("status", validator=check_int)) -> HttpResponse:
+    assert(status in [CustomerPlan.ACTIVE, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE, CustomerPlan.ENDED])
+
     plan = get_current_plan_by_realm(user.realm)
     assert(plan is not None)  # for mypy
-    do_change_plan_status(plan, status)
+
+    if status == CustomerPlan.ACTIVE:
+        assert(plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE)
+        do_change_plan_status(plan, status)
+    elif status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
+        assert(plan.status == CustomerPlan.ACTIVE)
+        do_change_plan_status(plan, status)
+    elif status == CustomerPlan.ENDED:
+        assert(plan.status == CustomerPlan.FREE_TRIAL)
+        downgrade_now(user.realm)
     return json_success()
 
 @require_billing_access

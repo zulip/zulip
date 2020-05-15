@@ -187,7 +187,7 @@ exports.initialize_kitchen_sink_stuff = function () {
     });
 
     $("#stream_message_recipient_stream").on('blur', function () {
-        compose_actions.decorate_stream_bar(this.value);
+        ui_util.decorate_stream_bar(this.value, $("#stream-message .message_header_stream"), true);
     });
 
     $(window).on('blur', function () {

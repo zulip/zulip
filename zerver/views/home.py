@@ -7,7 +7,6 @@ from django.shortcuts import redirect, render
 from django.utils import translation
 from django.utils.cache import patch_cache_control
 
-from zerver.context_processors import latest_info_context
 from zerver.decorator import zulip_login_required
 from zerver.forms import ToSForm
 from zerver.models import Message, Stream, UserProfile, \
@@ -25,6 +24,7 @@ from zerver.lib.utils import statsd, generate_random_token
 from zerver.views.compatibility import is_outdated_desktop_app, \
     is_unsupported_browser
 from zerver.views.messages import get_latest_update_message_flag_activity
+from zerver.views.portico import hello_view
 from two_factor.utils import default_device
 
 import calendar
@@ -145,7 +145,7 @@ def home(request: HttpRequest) -> HttpResponse:
     if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
         return home_real(request)
 
-    return render(request, 'zerver/hello.html', latest_info_context())
+    return hello_view(request)
 
 @zulip_login_required
 def home_real(request: HttpRequest) -> HttpResponse:

@@ -1115,7 +1115,7 @@ def post_process_limited_query(rows: List[Any],
 
 def get_latest_update_message_flag_activity(user_profile: UserProfile) -> Optional[UserActivity]:
     return UserActivity.objects.filter(user_profile=user_profile,
-                                       query='update_message_flags').last()
+                                       query='update_message_flags').order_by("last_visit").last()
 
 # NOTE: If this function name is changed, add the new name to the
 # query in get_latest_update_message_flag_activity

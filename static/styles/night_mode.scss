@@ -231,11 +231,12 @@ on a dark background, and don't change the dark labels dark either. */
     .top-navbar-border {
         border-color: hsla(0, 0%, 0%, 0.6);
     }
-    #tab_bar #tab_list .sub_count::before {
-        background: hsla(0, 0%, 100%, 0.5);
-    }
-    #tab_bar #tab_list .sub_count::after {
-        background: hsla(0, 0%, 100%, 0.5);
+
+    #tab_bar #tab_list .sub_count {
+        &::before,
+        &::after {
+            color: hsla(0, 0%, 100%, 0.5);
+        }
     }
 
     #tab_bar #tab_list span:nth-last-child(2):hover + .search_closed {

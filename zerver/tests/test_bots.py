@@ -181,7 +181,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                     default_events_register_stream=None,
                     default_all_public_streams=False,
                     services=[],
-                    owner=hamlet.email,
+                    owner_id=hamlet.id,
                 ),
             ),
             event['event']
@@ -314,10 +314,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                          default_events_register_stream=None,
                          default_all_public_streams=False,
                          services=[],
-                         # Important: This is the product-facing
-                         # email, not the delivery email, for this
-                         # user.  TODO: Migrate this to an integer ID.
-                         owner=user.email)
+                         owner_id=user.id)
             ),
             event['event']
         )
@@ -417,7 +414,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                     default_events_register_stream=None,
                     default_all_public_streams=False,
                     services=[],
-                    owner=user_profile.email,
+                    owner_id=user_profile.id,
                 ),
             ),
             event['event']
@@ -492,7 +489,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                     default_events_register_stream='Denmark',
                     default_all_public_streams=False,
                     services=[],
-                    owner=user_profile.email,
+                    owner_id=user_profile.id,
                 ),
             ),
             event['event']

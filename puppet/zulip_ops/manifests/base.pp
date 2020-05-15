@@ -31,7 +31,7 @@ class zulip_ops::base {
     # Useful tools in a production environment
     'screen',
     'strace',
-    'host',
+    'bind9-host',
     'git',
     'nagios-plugins-contrib',
   ]

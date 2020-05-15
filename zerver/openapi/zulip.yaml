@@ -589,9 +589,13 @@ paths:
           containing string email addresses.
 
           **Changes**: Support for using user/stream IDs was added in Zulip 2.0.0.
-        schema:
-          type: string
-        example: [9, 10]
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+            example: [9, 10]
         required: true
       - $ref: '#/components/parameters/Topic'
       - $ref: '#/components/parameters/Content'
@@ -1282,8 +1286,6 @@ paths:
                              "is_active": true,
                              "email": "hamlet@zulip.com"
                           }
-
-
                     }
 
     patch:
@@ -1302,10 +1304,11 @@ paths:
         in: query
         description: |
           The user's full name.
-        schema:
-          type: string
-          format: json
-        example: NewName
+        content:
+          application/json:
+            schema:
+              type: string
+            example: NewName
         required: false
       - name: is_admin
         in: query
@@ -2616,10 +2619,11 @@ paths:
         in: query
         description: |
           Notification sound name.
-        schema:
-          type: string
-          format: json
-        example: ding
+        content:
+          application/json:
+            schema:
+              type: string
+            example: ding
       - name: enable_desktop_notifications
         in: query
         description: |
@@ -2967,19 +2971,21 @@ paths:
         in: query
         description: |
           The new description for the stream.
-        schema:
-          type: string
-          format: json
-        example: "This stream is related to football dicsussions."
+        content:
+          application/json:
+            schema:
+              type: string
+            example: This stream is related to football dicsussions.
         required: false
       - name: new_name
         in: query
         description: |
           The new name for the stream.
-        schema:
-          type: string
-          format: json
-        example: "Italy"
+        content:
+          application/json:
+            schema:
+              type: string
+            example: Italy
         required: false
       - name: is_private
         in: query
@@ -3260,7 +3266,7 @@ paths:
       parameters:
       - $ref: '#/components/parameters/Narrow'
       - $ref: '#/components/parameters/Event_types'
-        example: event_types=['message']
+        example: ['message']
       security:
       - basicAuth: []
       responses:

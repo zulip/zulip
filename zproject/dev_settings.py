@@ -56,7 +56,6 @@ EXTERNAL_URI_SCHEME = "http://"
 EMAIL_GATEWAY_PATTERN = "%s@" + EXTERNAL_HOST.split(':')[0]
 NOTIFICATION_BOT = "notification-bot@zulip.com"
 ERROR_BOT = "error-bot@zulip.com"
-# SLOW_QUERY_LOGS_STREAM = "errors"
 EMAIL_GATEWAY_BOT = "emailgateway@zulip.com"
 PHYSICAL_ADDRESS = "Zulip Headquarters, 123 Octo Stream, South Pacific Ocean"
 EXTRA_INSTALLED_APPS = ["zilencer", "analytics", "corporate"]
@@ -156,6 +155,7 @@ THUMBNAIL_IMAGES = True
 SEARCH_PILLS_ENABLED = bool(os.getenv('SEARCH_PILLS_ENABLED', False))
 
 BILLING_ENABLED = True
+FREE_TRIAL_MONTHS = None
 
 # Test Custom TOS template rendering
 TERMS_OF_SERVICE = 'corporate/terms.md'

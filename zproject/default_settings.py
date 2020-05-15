@@ -86,7 +86,6 @@ ERROR_REPORTING = True
 BROWSER_ERROR_REPORTING = False
 LOGGING_SHOW_MODULE = False
 LOGGING_SHOW_PID = False
-SLOW_QUERY_LOGS_STREAM: Optional[str] = None
 
 # File uploads and avatars
 DEFAULT_AVATAR_URI = '/static/images/default-avatar.png'
@@ -364,8 +363,13 @@ ARCHIVED_DATA_VACUUMING_DELAY_DAYS = 7
 # are available to all realms.
 BILLING_ENABLED = False
 
+FREE_TRIAL_MONTHS = None
+
 # Automatically catch-up soft deactivated users when running the
 # `soft-deactivate-users` cron. Turn this off if the server has 10Ks of
 # users, and you would like to save some disk space. Soft-deactivated
 # returning users would still be caught-up normally.
 AUTO_CATCH_UP_SOFT_DEACTIVATED_USERS = True
+
+# Enables Google Analytics on selected portico pages.
+GOOGLE_ANALYTICS_ID: Optional[str] = None

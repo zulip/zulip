@@ -474,7 +474,6 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_bot')),
             ('op', equals('update')),
             ('bot', check_dict_only([
-                ('email', check_string),
                 ('user_id', check_int),
                 (field_name, check),
             ])),
@@ -1247,6 +1246,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('user_id', check_int),
                 ('email', check_string),
                 ('avatar_url', check_none_or(check_string)),
+                ('avatar_version', check_int),
                 ('full_name', check_string),
                 ('is_admin', check_bool),
                 ('is_bot', check_bool),
@@ -1273,6 +1273,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('user_id', check_int),
                 ('email', check_string),
                 ('avatar_url', check_none_or(check_string)),
+                ('avatar_version', check_int),
                 ('full_name', check_string),
                 ('is_active', check_bool),
                 ('is_admin', check_bool),
@@ -1530,11 +1531,11 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_user')),
             ('op', equals('update')),
             ('person', check_dict_only([
-                ('email', check_string),
-                ('user_id', check_int),
                 ('avatar_url', check_string),
                 ('avatar_url_medium', check_string),
+                ('avatar_version', check_int),
                 ('avatar_source', check_string),
+                ('user_id', check_int),
             ])),
         ])
         events = self.do_test(
@@ -1547,11 +1548,11 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_user')),
             ('op', equals('update')),
             ('person', check_dict_only([
-                ('email', check_string),
-                ('user_id', check_int),
+                ('avatar_source', check_string),
                 ('avatar_url', check_none_or(check_string)),
                 ('avatar_url_medium', check_none_or(check_string)),
-                ('avatar_source', check_string),
+                ('avatar_version', check_int),
+                ('user_id', check_int),
             ])),
         ])
         events = self.do_test(
@@ -1565,7 +1566,6 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_user')),
             ('op', equals('update')),
             ('person', check_dict_only([
-                ('email', check_string),
                 ('full_name', check_string),
                 ('user_id', check_int),
             ])),
@@ -1587,11 +1587,11 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_user')),
             ('op', equals('update')),
             ('person', check_dict_only([
-                ('email', check_string),
-                ('user_id', check_int),
+                ('avatar_source', check_string),
                 ('avatar_url', check_string),
                 ('avatar_url_medium', check_string),
-                ('avatar_source', check_string),
+                ('avatar_version', check_int),
+                ('user_id', check_int),
             ])),
         ])
         do_set_realm_property(self.user_profile.realm, "email_address_visibility",
@@ -1831,7 +1831,6 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_user')),
             ('op', equals('update')),
             ('person', check_dict_only([
-                ('email', check_string),
                 ('is_admin', check_bool),
                 ('user_id', check_int),
             ])),
@@ -1902,7 +1901,6 @@ class EventsRegisterTest(ZulipTestCase):
                 ('type', equals('realm_user')),
                 ('op', equals('update')),
                 ('person', check_dict_only([
-                    ('email', check_string),
                     ('user_id', check_int),
                     ('timezone', check_string),
                 ])),
@@ -2109,7 +2107,7 @@ class EventsRegisterTest(ZulipTestCase):
                     ('default_events_register_stream', check_none_or(check_string)),
                     ('default_all_public_streams', check_bool),
                     ('avatar_url', check_string),
-                    ('owner', check_string),
+                    ('owner_id', check_int),
                     ('services', check_services),
                 ])),
             ])
@@ -2254,7 +2252,6 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_bot')),
             ('op', equals('update')),
             ('bot', check_dict_only([
-                ('email', check_string),
                 ('user_id', check_int),
                 ('owner_id', check_int),
             ])),
@@ -2273,7 +2270,6 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_bot')),
             ('op', equals('delete')),
             ('bot', check_dict_only([
-                ('email', check_string),
                 ('user_id', check_int),
             ])),
         ])
@@ -2302,7 +2298,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('default_events_register_stream', check_none_or(check_string)),
                 ('default_all_public_streams', check_bool),
                 ('avatar_url', check_string),
-                ('owner', check_string),
+                ('owner_id', check_int),
                 ('services', check_services),
             ])),
         ])
@@ -2321,7 +2317,6 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_bot')),
             ('op', equals('update')),
             ('bot', check_dict_only([
-                ('email', check_string),
                 ('user_id', check_int),
                 ('services', check_list(check_dict_only([
                     ('base_url', check_url),
@@ -2347,7 +2342,6 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_bot')),
             ('op', equals('remove')),
             ('bot', check_dict_only([
-                ('email', check_string),
                 ('full_name', check_string),
                 ('user_id', check_int),
             ])),
@@ -2373,7 +2367,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('default_events_register_stream', check_none_or(check_string)),
                 ('default_all_public_streams', check_bool),
                 ('avatar_url', check_string),
-                ('owner', check_none_or(check_string)),
+                ('owner_id', check_none_or(check_int)),
                 ('services', check_list(check_dict_only([
                     ('base_url', check_url),
                     ('interface', check_int),
@@ -3696,7 +3690,7 @@ class FetchQueriesTest(ZulipTestCase):
                     client_gravatar=False,
                 )
 
-        self.assert_length(queries, 32)
+        self.assert_length(queries, 30)
 
         expected_counts = dict(
             alert_words=1,
@@ -3707,7 +3701,7 @@ class FetchQueriesTest(ZulipTestCase):
             message=1,
             muted_topics=1,
             pointer=0,
-            presence=3,
+            presence=1,
             realm=0,
             realm_bot=1,
             realm_domains=1,

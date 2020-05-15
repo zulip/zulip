@@ -1,16 +1,8 @@
 const settings_data = require("./settings_data");
+const user_dropdown = require("./user_dropdown");
 const render_admin_user_list = require("../templates/admin_user_list.hbs");
-const render_bot_owner_select = require("../templates/bot_owner_select.hbs");
 const render_admin_human_form = require('../templates/admin_human_form.hbs');
 const render_admin_bot_form = require('../templates/admin_bot_form.hbs');
-
-const meta = {
-    loaded: false,
-};
-
-exports.reset = function () {
-    meta.loaded = false;
-};
 
 const section = {
     active: {},
@@ -36,6 +28,14 @@ function sort_email(a, b) {
     );
 }
 
+function sort_bot_email(a, b) {
+    function email(bot) {
+        return (bot.display_email || '').toLowerCase();
+    }
+
+    return compare_a_b(email(a), email(b));
+}
+
 function sort_role(a, b) {
     function role(user) {
         if (user.is_admin) { return 0; }
@@ -46,18 +46,8 @@ function sort_role(a, b) {
 }
 
 function sort_bot_owner(a, b) {
-    function owner_name(item) {
-        const owner = people.get_bot_owner_user(item);
-
-        if (!owner) {
-            return '';
-        }
-
-        if (!owner.full_name) {
-            return '';
-        }
-
-        return owner.full_name.toLowerCase();
+    function owner_name(bot) {
+        return (bot.bot_owner_full_name || '').toLowerCase();
     }
 
     return compare_a_b(
@@ -127,54 +117,22 @@ function get_status_field() {
     }
 }
 
-
-exports.update_user_data = function (user_id, new_data) {
-    if (!meta.loaded) {
-        return;
-    }
-
-    const user_row = get_user_info_row(user_id);
-
-    if (new_data.full_name !== undefined) {
-        // Update the full name in the table
-        user_row.find(".user_name").text(new_data.full_name);
-    }
-
-    if (new_data.owner !== undefined) {
-        // Update the bot owner in the table
-        user_row.find(".owner").text(new_data.owner);
-    }
-
-    if (new_data.is_active !== undefined) {
-        if (new_data.is_active === false) {
-            // Deactivate the user/bot in the table
-            update_view_on_deactivate(user_row);
-        } else {
-            // Reactivate the user/bot in the table
-            update_view_on_reactivate(user_row);
-        }
-    }
-
-    if (new_data.is_admin !== undefined || new_data.is_guest !== undefined) {
-        user_row.find(".user_role").text(people.get_user_type(user_id));
-    }
-};
-
 function failed_listing_users(xhr) {
     loading.destroy_indicator($('#subs_page_loading_indicator'));
     const status = get_status_field();
-    ui_report.error(i18n.t("Error listing users or bots"), xhr, status);
+    ui_report.error(i18n.t("Error listing users"), xhr, status);
 }
 
 function populate_users(realm_people_data) {
     let active_users = [];
     let deactivated_users = [];
-    let bots = [];
+
     for (const user of realm_people_data.members) {
-        user.is_active_human = user.is_active && !user.is_bot;
         if (user.is_bot) {
-            bots.push(user);
-        } else if (user.is_active) {
+            continue;
+        }
+
+        if (user.is_active) {
             active_users.push(user);
         } else {
             deactivated_users.push(user);
@@ -183,11 +141,9 @@ function populate_users(realm_people_data) {
 
     active_users = _.sortBy(active_users, 'full_name');
     deactivated_users = _.sortBy(deactivated_users, 'full_name');
-    bots = _.sortBy(bots, 'full_name');
 
     section.active.create_table(active_users);
     section.deactivated.create_table(deactivated_users);
-    section.bots.create_table(bots);
 }
 
 function reset_scrollbar($sel) {
@@ -196,7 +152,28 @@ function reset_scrollbar($sel) {
     };
 }
 
-function bot_info(bot_user) {
+function bot_owner_full_name(owner_id) {
+    if (!owner_id) {
+        return;
+    }
+
+    const bot_owner = people.get_by_user_id(owner_id);
+    if (!bot_owner) {
+        return;
+    }
+
+    return bot_owner.full_name;
+}
+
+function bot_info(bot_user_id) {
+    const bot_user = bot_data.get(bot_user_id);
+
+    if (!bot_user) {
+        return;
+    }
+
+    const owner_id = bot_user.owner_id;
+
     const info = {};
 
     info.is_bot = true;
@@ -205,16 +182,14 @@ function bot_info(bot_user) {
     info.is_active = bot_user.is_active;
     info.user_id = bot_user.user_id;
     info.full_name = bot_user.full_name;
-    info.bot_owner_id = bot_user.bot_owner_id;
+    info.bot_owner_id = owner_id;
 
     // Convert bot type id to string for viewing to the users.
     info.bot_type = settings_bots.type_id_to_string(bot_user.bot_type);
 
-    const bot_owner = people.get_bot_owner_user(bot_user);
+    info.bot_owner_full_name = bot_owner_full_name(owner_id);
 
-    if (bot_owner) {
-        info.bot_owner_full_name = bot_owner.full_name;
-    } else {
+    if (!info.bot_owner_full_name) {
         info.no_owner = true;
         info.bot_owner_full_name = i18n.t("No owner");
     }
@@ -262,26 +237,29 @@ function human_info(person) {
     return info;
 }
 
-section.bots.create_table = (bots) => {
+section.bots.create_table = () => {
     const $bots_table = $("#admin_bots_table");
-    list_render.create($bots_table, bots, {
+    const bot_user_ids = bot_data.all_user_ids();
+
+    list_render.create($bots_table, bot_user_ids, {
         name: "admin_bot_list",
-        modifier: function (bot_user) {
-            const info = bot_info(bot_user);
-            return render_admin_user_list(info);
-        },
+        get_item: bot_info,
+        modifier: render_admin_user_list,
         filter: {
             element: $bots_table.closest(".settings-section").find(".search"),
             predicate: function (item, value) {
+                if (!item) {
+                    return false;
+                }
                 return item.full_name.toLowerCase().includes(value) ||
-                item.email.toLowerCase().includes(value);
+                item.display_email.toLowerCase().includes(value);
             },
             onupdate: reset_scrollbar($bots_table),
         },
         parent_container: $("#admin-bot-list").expectOne(),
         init_sort: ['alphabetic', 'full_name'],
         sort_fields: {
-            email: sort_email,
+            email: sort_bot_email,
             bot_owner: sort_bot_owner,
         },
     });
@@ -341,6 +319,43 @@ section.deactivated.create_table = (deactivated_users) => {
     $("#admin_deactivated_users_table").show();
 };
 
+exports.update_user_data = function (user_id, new_data) {
+    const user_row = get_user_info_row(user_id);
+
+    if (user_row.length === 0) {
+        return;
+    }
+
+    if (new_data.full_name !== undefined) {
+        // Update the full name in the table
+        user_row.find(".user_name").text(new_data.full_name);
+    }
+
+    if (new_data.owner_id !== undefined) {
+        // TODO: Linkify the owner name to match the
+        //       formatting of the list. Ideally we can
+        //       make this whole function simpler
+        //       by re-rendering the entire row via
+        //       the list widget.
+        const owner_name = bot_owner_full_name(new_data.owner_id);
+        user_row.find(".owner").text(owner_name);
+    }
+
+    if (new_data.is_active !== undefined) {
+        if (new_data.is_active === false) {
+            // Deactivate the user/bot in the table
+            update_view_on_deactivate(user_row);
+        } else {
+            // Reactivate the user/bot in the table
+            update_view_on_reactivate(user_row);
+        }
+    }
+
+    if (new_data.is_admin !== undefined || new_data.is_guest !== undefined) {
+        user_row.find(".user_role").text(people.get_user_type(user_id));
+    }
+};
+
 function start_data_load() {
     loading.make_indicator($('#admin_page_users_loading_indicator'), {text: 'Loading...'});
     loading.make_indicator($('#admin_page_bots_loading_indicator'), {text: 'Loading...'});
@@ -354,7 +369,7 @@ function start_data_load() {
         url: '/json/users',
         idempotent: true,
         timeout: 10 * 1000,
-        success: exports.on_load_success,
+        success: populate_users,
         error: failed_listing_users,
     });
 }
@@ -436,13 +451,18 @@ function open_bot_form(person) {
     modal_container.empty().append(div);
     overlays.open_modal('#admin-bot-form');
 
-    // NOTE: building `users_list` is quite expensive!
-    const users_list = people.get_active_humans();
-    const owner_select = $(render_bot_owner_select({users_list: users_list}));
-    owner_select.val(bot_data.get(person.user_id).owner || "");
-    modal_container.find(".edit_bot_owner_container").append(owner_select);
+    // NOTE: building `owner_dropdown` is quite expensive!
+    const owner_id = bot_data.get(person.user_id).owner_id;
+    const owner_dropdown = user_dropdown.create(owner_id);
 
-    return div;
+    modal_container.find(
+        ".edit_bot_owner_container"
+    ).append(owner_dropdown.elem);
+
+    return {
+        modal: div,
+        owner_dropdown: owner_dropdown,
+    };
 }
 
 function confirm_deactivation(row, user_id, status_field) {
@@ -594,7 +614,9 @@ function handle_bot_form(tbody, status_field) {
             return;
         }
 
-        const modal = open_bot_form(bot);
+        const ret = open_bot_form(bot);
+        const modal = ret.modal;
+        const owner_dropdown = ret.owner_dropdown;
 
         modal.find('.submit_bot_change').on("click", function (e) {
             e.preventDefault();
@@ -607,9 +629,9 @@ function handle_bot_form(tbody, status_field) {
                 full_name: full_name.val(),
             };
 
-            const owner_select_value = modal.find('.bot_owner_select').val();
-            if (owner_select_value) {
-                data.bot_owner_id = people.get_by_email(owner_select_value).user_id;
+            const human_user_id = owner_dropdown.get_user_id();
+            if (human_user_id) {
+                data.bot_owner_id = human_user_id;
             }
 
             settings_ui.do_settings_change(channel.patch, url, data, status_field);
@@ -617,12 +639,6 @@ function handle_bot_form(tbody, status_field) {
         });
     });
 }
-
-exports.on_load_success = function (realm_people_data) {
-    meta.loaded = true;
-
-    populate_users(realm_people_data);
-};
 
 section.active.handle_events = () => {
     const tbody = $('#admin_users_table').expectOne();
@@ -652,11 +668,15 @@ section.bots.handle_events = () => {
     handle_bot_form(tbody, status_field);
 };
 
-exports.set_up = function () {
+exports.set_up_humans = function () {
     start_data_load();
     section.active.handle_events();
     section.deactivated.handle_events();
+};
+
+exports.set_up_bots = function () {
     section.bots.handle_events();
+    section.bots.create_table();
 };
 
 window.settings_users = exports;

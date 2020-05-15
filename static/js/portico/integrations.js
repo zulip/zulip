@@ -1,3 +1,4 @@
+import * as google_analytics from './google-analytics.js';
 import blueslip from './../blueslip';
 
 import { path_parts } from './landing-page';
@@ -72,6 +73,7 @@ function update_path() {
     }
 
     window.history.pushState(state, '', next_path);
+    google_analytics.config({page_path: next_path});
 }
 
 function update_categories() {
@@ -306,6 +308,7 @@ function dispatch(action, payload) {
 
     case 'LOAD_PATH':
         render(get_state_from_path());
+        google_analytics.config({page_path: window.location.pathname});
         break;
 
     default:

@@ -10,15 +10,19 @@
                 <span class="send-status-close">&times;</span>
                 <span class="error-msg"></span>
             </div>
-            <select name="select_stream_id" class="inline_select_topic_edit" id="select_stream_id">
-                <option value="">{{t "Select a stream" }}</option>
-                {{#each available_streams}}
-                <option value="{{ this.stream_id }}">#{{this.name}}</option>
-                {{/each}}
-            </select>
-            <input name="new_topic_name" type="text" class="inline_topic_edit" value="{{topic_name}}">
-            <input name="old_topic_name" type="hidden" class="inline_topic_edit" value="{{topic_name}}">
-            <input name="current_stream_id" type="hidden" value="{{current_stream_id}}">
+            <div class="topic_stream_edit_header">
+                <div class="stream_header_colorblock"></div>
+                <select name="select_stream_id" class="inline_select_topic_edit" id="select_stream_id">
+                    <option value="">{{t "Select a stream" }}</option>
+                    {{#each available_streams}}
+                    <option value="{{ this.stream_id }}">#{{this.name}}</option>
+                    {{/each}}
+                </select>
+                <i class="fa fa-angle-right" aria-hidden="true"></i>
+                <input name="new_topic_name" type="text" class="inline_topic_edit" value="{{topic_name}}">
+                <input name="old_topic_name" type="hidden" class="inline_topic_edit" value="{{topic_name}}">
+                <input name="current_stream_id" type="hidden" value="{{current_stream_id}}">
+            </div>
         </form>
         <div class="topic_edit_spinner"></div>
     </div>

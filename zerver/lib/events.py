@@ -54,7 +54,7 @@ from zerver.lib.user_status import get_user_info_dict
 from zerver.tornado.event_queue import request_event_queue, get_user_events
 from zerver.models import (
     Client, Message, Realm, UserProfile, UserMessage,
-    get_user_profile_by_id, realm_filters_for_realm,
+    realm_filters_for_realm,
     custom_profile_fields_for_realm, get_realm_domains,
     get_default_stream_groups, CustomProfileField, Stream
 )
@@ -467,20 +467,21 @@ def apply_event(state: Dict[str, Any],
             state['realm_bots'].append(event['bot'])
 
         if event['op'] == 'remove':
-            email = event['bot']['email']
+            user_id = event['bot']['user_id']
             for bot in state['realm_bots']:
-                if bot['email'] == email:
+                if bot['user_id'] == user_id:
                     bot['is_active'] = False
 
         if event['op'] == 'delete':
             state['realm_bots'] = [item for item
-                                   in state['realm_bots'] if item['email'] != event['bot']['email']]
+                                   in state['realm_bots'] if item['user_id'] != event['bot']['user_id']]
 
         if event['op'] == 'update':
             for bot in state['realm_bots']:
-                if bot['email'] == event['bot']['email']:
+                if bot['user_id'] == event['bot']['user_id']:
                     if 'owner_id' in event['bot']:
-                        bot['owner'] = get_user_profile_by_id(event['bot']['owner_id']).email
+                        bot_owner_id = event['bot']['owner_id']
+                        bot['owner_id'] = bot_owner_id
                     else:
                         bot.update(event['bot'])
 

@@ -96,11 +96,6 @@ class SlackImporter(ZulipTestCase):
             get_slack_api_data(slack_user_list_url, "members", token=token)
         self.assertEqual(invalid.exception.args, ('Error accessing Slack API: invalid_auth',),)
 
-        token = 'xoxe-invalid-token'
-        with self.assertRaises(Exception) as invalid:
-            get_slack_api_data(slack_user_list_url, "members", token=token)
-        self.assertTrue(invalid.exception.args[0].startswith("Invalid Slack legacy token.\n"))
-
         with self.assertRaises(Exception) as invalid:
             get_slack_api_data(slack_user_list_url, "members")
         self.assertEqual(invalid.exception.args, ('Slack token missing in kwargs',),)
@@ -429,9 +424,11 @@ class SlackImporter(ZulipTestCase):
             | set(test_added_mpims.keys())
 
         self.assertDictEqual(test_added_channels, added_channels)
-        # zerver defaultstream already tested in helper functions
+        # zerver defaultstream already tested in helper functions.
+        # Note that the `random` stream is archived and thus should
+        # not be created as a DefaultStream.
         self.assertEqual(realm["zerver_defaultstream"],
-                         [{'id': 0, 'realm': 3, 'stream': 0}, {'id': 1, 'realm': 3, 'stream': 1}])
+                         [{'id': 0, 'realm': 3, 'stream': 1}])
 
         self.assertDictEqual(test_added_mpims, added_mpims)
         self.assertDictEqual(test_dm_members, dm_members)

@@ -39,7 +39,8 @@ def get_body(payload: Dict[str, Any]) -> str:
 
 def get_status(payload: Dict[str, Any]) -> str:
     status = payload['status']
-    if payload['previous'] and payload['previous']['status'] == FAILED_STATUS and status == FAILED_STATUS:
+    previous = payload.get('previous', None)
+    if previous and previous['status'] == FAILED_STATUS and status == FAILED_STATUS:
         return 'is still failing'
     if status == 'success':
         return 'succeeded'

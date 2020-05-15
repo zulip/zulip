@@ -94,8 +94,10 @@ function init_email_clipboard() {
 }
 
 function load_medium_avatar(user, elt) {
-    const user_avatar_url = "avatar/" + user.user_id + "/medium";
+    const avatar_path = "avatar/" + user.user_id + "/medium?v=" + user.avatar_version;
+    const user_avatar_url = new URL(avatar_path, window.location.href);
     const sender_avatar_medium = new Image();
+
     sender_avatar_medium.src = user_avatar_url;
     $(sender_avatar_medium).on("load", function () {
         elt.css("background-image", "url(" + $(this).attr("src") + ")");

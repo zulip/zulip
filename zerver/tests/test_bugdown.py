@@ -38,6 +38,7 @@ from zerver.models import (
     Realm,
     RealmEmoji,
     RealmFilter,
+    UserMessage,
     UserProfile,
     UserGroup,
 )
@@ -1727,6 +1728,37 @@ class BugdownTest(ZulipTestCase):
                          '</p>' % (support.id, backend.id))
 
         self.assertEqual(msg.mentions_user_group_ids, {support.id, backend.id})
+
+    def test_user_group_mention_edit(self) -> None:
+        sender_user_profile = self.example_user('hamlet')
+        user_profile = self.example_user('othello')
+        self.create_user_group_for_test('support')
+        self.login('hamlet')
+
+        msg_id = self.send_stream_message(sender_user_profile,
+                                          "Denmark",
+                                          topic_name="editing",
+                                          content='test')
+
+        def update_message_and_check_flag(content: str, mentioned: bool) -> None:
+            result = self.client_patch("/json/messages/" + str(msg_id), {
+                'message_id': msg_id, 'content': content
+            })
+            self.assert_json_success(result)
+            um = UserMessage.objects.get(
+                user_profile_id=user_profile.id,
+                message_id=msg_id,
+            )
+            if mentioned:
+                self.assertIn('mentioned', um.flags_list())
+            else:
+                self.assertNotIn('mentioned', um.flags_list())
+
+        update_message_and_check_flag("@*support*", True)
+        update_message_and_check_flag("@*support-invalid* edited", False)
+        update_message_and_check_flag("@*support* edited", True)
+        update_message_and_check_flag("edited", False)
+        update_message_and_check_flag("@*support*", True)
 
     def test_user_group_mention_invalid(self) -> None:
         sender_user_profile = self.example_user('othello')

@@ -1,4 +1,5 @@
 import calendar
+from datetime import timedelta
 import lxml.html
 import ujson
 
@@ -251,7 +252,7 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(set(result["Cache-Control"].split(", ")),
                          {"must-revalidate", "no-store", "no-cache"})
 
-        self.assert_length(queries, 44)
+        self.assert_length(queries, 42)
         self.assert_length(cache_mock.call_args_list, 5)
 
         html = result.content.decode('utf-8')
@@ -278,7 +279,7 @@ class HomeTest(ZulipTestCase):
             'email',
             'full_name',
             'is_active',
-            'owner',
+            'owner_id',
             'services',
             'user_id',
         ]
@@ -317,7 +318,7 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
                 self.assertEqual(result.status_code, 200)
                 self.assert_length(cache_mock.call_args_list, 6)
-            self.assert_length(queries, 42)
+            self.assert_length(queries, 40)
 
     @slow("Creates and subscribes 10 users in a loop.  Should use bulk queries.")
     def test_num_queries_with_streams(self) -> None:
@@ -349,7 +350,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries2:
             result = self._get_home_page()
 
-        self.assert_length(queries2, 39)
+        self.assert_length(queries2, 37)
 
         # Do a sanity check that our new streams were in the payload.
         html = result.content.decode('utf-8')
@@ -567,7 +568,7 @@ class HomeTest(ZulipTestCase):
                 if field == 'realm_bots':
                     self.assertNotIn('is_bot', rec)
                     self.assertIn('is_active', rec)
-                    self.assertIn('owner', rec)
+                    self.assertIn('owner_id', rec)
                 else:
                     self.assertIn('is_bot', rec)
                     self.assertNotIn('is_active', rec)
@@ -604,6 +605,7 @@ class HomeTest(ZulipTestCase):
 
         self.assertEqual(sorted(cross_bots, key=by_email), sorted([
             dict(
+                avatar_version=email_gateway_bot.avatar_version,
                 bot_owner_id=None,
                 bot_type=1,
                 email=email_gateway_bot.email,
@@ -616,6 +618,7 @@ class HomeTest(ZulipTestCase):
                 is_guest=False
             ),
             dict(
+                avatar_version=email_gateway_bot.avatar_version,
                 bot_owner_id=None,
                 bot_type=1,
                 email=notification_bot.email,
@@ -628,6 +631,7 @@ class HomeTest(ZulipTestCase):
                 is_guest=False
             ),
             dict(
+                avatar_version=email_gateway_bot.avatar_version,
                 bot_owner_id=None,
                 bot_type=1,
                 email=welcome_bot.email,
@@ -815,12 +819,22 @@ class HomeTest(ZulipTestCase):
                           "flag": "read"})
 
         # Manually process the UserActivity
-        activity_time = calendar.timegm(timezone_now().timetuple())
+        now = timezone_now()
+        activity_time = calendar.timegm(now.timetuple())
         user_activity_event = {'user_profile_id': hamlet.id,
                                'client': 'test-client',
                                'query': 'update_message_flags',
                                'time': activity_time}
-        UserActivityWorker().consume_batch([user_activity_event])
+
+        yesterday = now - timedelta(days=1)
+        activity_time_2 = calendar.timegm(yesterday.timetuple())
+        user_activity_event_2 = {'user_profile_id': hamlet.id,
+                                 'client': 'test-client-2',
+                                 'query': 'update_message_flags',
+                                 'time': activity_time_2}
+        UserActivityWorker().consume_batch([user_activity_event, user_activity_event_2])
+
+        # verify furthest_read_time is last activity time, irrespective of client
         furthest_read_time = get_furthest_read_time(hamlet)
         self.assertGreaterEqual(furthest_read_time, activity_time)
 

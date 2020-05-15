@@ -1244,9 +1244,27 @@ div.focused_table {
     }
 }
 
-#inline_topic_edit,
-#message_edit_topic {
+#inline_topic_edit {
     margin-bottom: 5px;
+}
+
+#message_edit_topic {
+    margin: 0 5px 5px 0;
+}
+
+.message_edit_header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.select_edit_stream {
+    margin-bottom: 5px !important;
+    border-left: 0px;
+    padding-left: 0px;
+    border-radius: 0px 3px 3px 0px;
+    margin-left: -11px;
+    text-indent: 10px;
 }
 
 #inline_topic_edit.header-v {
@@ -1265,6 +1283,7 @@ div.focused_table {
 #message_edit_topic:focus {
     outline: none;
 }
+
 
 .message_edit_topic_propagate {
     display: inline-block;
@@ -1492,29 +1511,26 @@ div.focused_table {
             .fa.fa-user-o {
                 margin-left: 0px;
             }
-            &::before {
-                content: "";
+
+            &::before,
+            &::after {
+                content: "|";
                 position: absolute;
-                left: -5px;
                 top: 25%;
-                width: 1px;
                 height: 50%;
-                background: hsl(0, 0%, 88%);
+                color: hsl(0, 0%, 88%);
+                font-size: 20px;
                 @media (max-width: 500px) {
                     top: 10%;
                 }
             }
+
+            &::before {
+                left: -5px;
+            }
+
             &::after {
-                content: "";
-                position: absolute;
                 right: -5px;
-                top: 25%;
-                width: 1px;
-                height: 50%;
-                background: hsl(0, 0%, 88%);
-                @media (max-width: 500px) {
-                    top: 10%;
-                }
             }
         }
 

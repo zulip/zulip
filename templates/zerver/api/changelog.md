@@ -10,6 +10,28 @@ below features are supported.
 
 ## Changes in Zulip 2.2
 
+**Feature level 7**
+* [`GET /events`](/api/get-events-from-queue): `realm_user` and
+  `realm_bot` events no longer contain an `email` field to identify
+  the user; use the `user_id` field instead.  Previously, some (but
+  not all) events of these types contained an `email` key in addition to
+  to `user_id`) for identifying the modified user.
+
+**Feature level 6**
+* [`GET /events`](/api/get-events-from-queue): `realm_user` events to
+  update a user's avatar now include the `avatar_version` field, which
+  is important for correctly refetching medium-size avatar images when
+  the user's avatar changes.
+* [`GET /users`](/api/get-all-users) and [`GET
+  /users/{user_id}`](/api/get-user): User objects now contain the
+  `avatar_version` field as well.
+
+**Feature level 5**
+* [`GET /events`](/api/get-events-from-queue): `realm_bot` events,
+  sent when changes are made to bot users, now contain an
+  integer-format `owner_id` field, replacing the `owner` field (which
+  was an email address).
+
 **Feature level 4**
 
 * `jitsi_server_url`, `development_environment`, `server_generation`,

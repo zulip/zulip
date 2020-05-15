@@ -138,6 +138,16 @@ Billing method: send invoice"""
             content_type="application/x-www-form-urlencoded"
         )
 
+    def test_refund_event(self) -> None:
+        expected_topic = "refunds"
+        expected_message = "A [refund](https://dashboard.stripe.com/refunds/re_1Gib6ZHLwdCOCoR7VrzCnXlj) for a [charge](https://dashboard.stripe.com/charges/ch_1Gib61HLwdCOCoR71rnkccye) of 30000000 INR was updated."
+        self.send_and_test_stream_message('refund_event', expected_topic, expected_message)
+
+    def test_pseudo_refund_event(self) -> None:
+        expected_topic = "refunds"
+        expected_message = "A [refund](https://dashboard.stripe.com/refunds/pyr_abcde12345ABCDF) for a [payment](https://dashboard.stripe.com/payments/py_abcde12345ABCDG) of 1234 EUR was updated."
+        self.send_and_test_stream_message('pseudo_refund_event', expected_topic, expected_message)
+
     @patch('zerver.webhooks.stripe.view.check_send_webhook_message')
     def test_account_updated_without_previous_attributes_ignore(
             self, check_send_webhook_message_mock: MagicMock) -> None:
