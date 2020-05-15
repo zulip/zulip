@@ -12,7 +12,7 @@ const return_true = () => true;
 const return_false = () => false;
 
 set_global('$', global.make_zjquery());
-set_global('narrow_state', {});
+set_global('narrow_state', {filter: return_false});
 set_global('search_suggestion', {});
 set_global('ui_util', {
     change_tab_to: noop,
@@ -283,7 +283,7 @@ run_test('initizalize', () => {
 
 run_test('initiate_search', () => {
     let is_searchbox_focused = false;
-    $('#search_query').focus = () => {
+    $('#search_arrows').focus = () => {
         is_searchbox_focused = true;
     };
     search.initiate_search();

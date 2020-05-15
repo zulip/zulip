@@ -166,8 +166,11 @@ exports.open_search_bar_and_close_narrow_description = function () {
 };
 
 exports.close_search_bar_and_open_narrow_description = function () {
-    $(".navbar-search").removeClass("expanded");
-    $("#tab_list").removeClass("hidden");
+    const filter = narrow_state.filter();
+    if (!(filter && !filter.is_common_narrow())) {
+        $(".navbar-search").removeClass("expanded");
+        $("#tab_list").removeClass("hidden");
+    }
 };
 
 window.tab_bar = exports;
