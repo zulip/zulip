@@ -41,7 +41,8 @@ page can be easily identified in it's respective JavaScript file. -->
                 {% else %}
                     {% if password_auth_enabled %}
                         <form name="login_form" id="login_form" method="post" class="login-form"
-                          action="{{ url('django.contrib.auth.views.login') }}?next={{ next }}">
+                          action="{{ url('django.contrib.auth.views.login') }}">
+                            <input type="hidden" name="next" value="{{ next }}">
 
                             {% if two_factor_authentication_enabled %}
                             {{ wizard.management_form }}

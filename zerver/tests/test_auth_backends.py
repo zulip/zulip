@@ -2108,7 +2108,7 @@ class TestDevAuthBackend(ZulipTestCase):
         with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
             result = self.client_post('/accounts/login/local/', data)
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, 'http://zulip.testserver')
+        self.assertEqual(result.url, 'http://zulip.testserver/')
         self.assert_logged_in_user_id(user_profile.id)
         self.assertIn('otp_device_id', list(self.client.session.keys()))
 
@@ -2120,7 +2120,7 @@ class TestDevAuthBackend(ZulipTestCase):
 
         res = do_local_login('/accounts/login/local/')
         self.assertEqual(res.status_code, 302)
-        self.assertEqual(res.url, 'http://zulip.testserver')
+        self.assertEqual(res.url, 'http://zulip.testserver/')
 
         res = do_local_login('/accounts/login/local/?next=/user_uploads/path_to_image')
         self.assertEqual(res.status_code, 302)
