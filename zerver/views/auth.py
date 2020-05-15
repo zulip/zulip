@@ -326,9 +326,12 @@ def create_response_for_otp_flow(key: str, otp: str, user_profile: UserProfile,
 
 @log_view_func
 @has_request_variables
-def remote_user_sso(request: HttpRequest,
-                    mobile_flow_otp: Optional[str]=REQ(default=None),
-                    desktop_flow_otp: Optional[str]=REQ(default=None)) -> HttpResponse:
+def remote_user_sso(
+    request: HttpRequest,
+    mobile_flow_otp: Optional[str] = REQ(default=None),
+    desktop_flow_otp: Optional[str] = REQ(default=None),
+    next: str = REQ(default="/"),
+) -> HttpResponse:
     subdomain = get_subdomain(request)
     try:
         realm: Optional[Realm] = get_realm(subdomain)
@@ -359,13 +362,12 @@ def remote_user_sso(request: HttpRequest,
     else:
         user_profile = authenticate(remote_user=remote_user, realm=realm)
 
-    redirect_to = request.GET.get('next', '')
     email = remote_user_to_email(remote_user)
     data_dict = ExternalAuthDataDict(
         email=email,
         mobile_flow_otp=mobile_flow_otp,
         desktop_flow_otp=desktop_flow_otp,
-        redirect_to=redirect_to
+        redirect_to=next
     )
     if realm:
         data_dict["subdomain"] = realm.subdomain
@@ -417,9 +419,15 @@ def remote_user_jwt(request: HttpRequest) -> HttpResponse:
 
     return login_or_register_remote_user(request, result)
 
-def oauth_redirect_to_root(request: HttpRequest, url: str,
-                           sso_type: str, is_signup: bool=False,
-                           extra_url_params: Dict[str, str]={}) -> HttpResponse:
+@has_request_variables
+def oauth_redirect_to_root(
+    request: HttpRequest,
+    url: str,
+    sso_type: str,
+    is_signup: bool=False,
+    extra_url_params: Dict[str, str]={},
+    next: Optional[str] = REQ(default=None),
+) -> HttpResponse:
     main_site_uri = settings.ROOT_DOMAIN_URI + url
     if settings.SOCIAL_AUTH_SUBDOMAIN is not None and sso_type == 'social':
         main_site_uri = (settings.EXTERNAL_URI_SCHEME +
@@ -445,7 +453,6 @@ def oauth_redirect_to_root(request: HttpRequest, url: str,
     if desktop_flow_otp is not None:
         params['desktop_flow_otp'] = desktop_flow_otp
 
-    next = request.GET.get('next')
     if next:
         params['next'] = next
 
@@ -627,7 +634,9 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
 
         realm = get_realm_from_request(self.request)
         redirect_to = realm.uri if realm else '/'
-        context['next'] = self.request.GET.get('next', redirect_to)
+        context['next'] = self.request.POST.get(
+            'next', self.request.GET.get('next', redirect_to),
+        )
         return context
 
     def done(self, form_list: List[Form], **kwargs: Any) -> HttpResponse:
@@ -648,7 +657,10 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
         with patch.object(settings, 'LOGIN_REDIRECT_URL', realm_uri):
             return super().done(form_list, **kwargs)
 
-def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
+@has_request_variables
+def login_page(
+    request: HttpRequest, next: str = REQ(default="/"), **kwargs: Any,
+) -> HttpResponse:
     # To support previewing the Zulip login pages, we have a special option
     # that disables the default behavior of redirecting logged-in users to the
     # logged-in app.
@@ -669,6 +681,7 @@ def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
         return redirect_to_deactivation_notice()
 
     extra_context = kwargs.pop('extra_context', {})
+    extra_context["next"] = next
     if dev_auth_enabled() and kwargs.get("template_name") == "zerver/dev_login.html":
         if 'new_realm' in request.POST:
             try:
@@ -740,7 +753,11 @@ def start_two_factor_auth(request: HttpRequest,
     return two_fa_view(request, **kwargs)
 
 @csrf_exempt
-def dev_direct_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
+@has_request_variables
+def dev_direct_login(
+    request: HttpRequest,
+    next: str = REQ(default="/"),
+) -> HttpResponse:
     # This function allows logging in without a password and should only be called
     # in development environments.  It may be called if the DevAuthBackend is included
     # in settings.AUTHENTICATION_BACKENDS
@@ -756,7 +773,6 @@ def dev_direct_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
         return redirect_to_config_error('dev')
     do_login(request, user_profile)
 
-    next = request.GET.get('next', '')
     redirect_to = get_safe_redirect_to(next, user_profile.realm.uri)
     return HttpResponseRedirect(redirect_to)
 
