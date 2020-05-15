@@ -17,15 +17,14 @@
                     <div id="searchbox">
                         <div id="tab_bar" class="notdisplayed">
                         </div>
-                        <span class="search_icon" ><i class="fa fa-search" aria-hidden="true"></i></span>
                         <form id="searchbox_form" class="form-search navbar-search">
                             <div id="search_arrows" class="pill-container input-append">
+                                <span class="search_icon search_open" ><i class="fa fa-search" aria-hidden="true"></i></span>
                                 <div contenteditable="true" class="input search-query input-block-level" id="search_query" type="text" placeholder="{{ _('Search') }}"
                                   autocomplete="off" aria-label="{{ _('Search') }}" title="{{ _('Search') }} (/)"> </div>
+                                <button class="btn search_button" type="button" id="search_exit" aria-label="{{ _('Exit search') }}"><i class="fa fa-remove" aria-hidden="true"></i></button>
                             </div>
                         </form>
-                        {# Start the button off disabled since there is no active search #}
-                        <button class="btn search_button" type="button" id="search_exit" disabled="disabled" aria-label="{{ _('Exit search') }}"><i class="fa fa-remove" aria-hidden="true"></i></button>
                     </div>
                     {% else %}
                     <div id="searchbox_legacy">
@@ -33,10 +32,10 @@
                         </div>
                         <form id="searchbox_form" class="form-search navbar-search">
                             <div id="search_arrows" class="input-append">
+                                <span class="search_icon search_open" ><i class="fa fa-search" aria-hidden="true"></i></span>
                                 <input class="search-query input-block-level" id="search_query" type="text" placeholder="{{ _('Search') }}"
                                   autocomplete="off" aria-label="{{ _('Search') }}" title="{{ _('Search') }} (/)"/>
                                 <button class="btn search_button" type="button" id="search_exit" aria-label="{{ _('Exit search') }}"><i class="fa fa-remove" aria-hidden="true"></i></button>
-                                <span class="search_icon search_open" ><i class="fa fa-search" aria-hidden="true"></i></span>
                             </div>
                         </form>
                     </div>

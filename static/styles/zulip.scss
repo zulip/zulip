@@ -1595,7 +1595,8 @@ div.focused_table {
     }
 }
 
-#searchbox {
+#searchbox,
+#searchbox_legacy {
     width: 100%;
     height: 40px;
 
@@ -1647,14 +1648,14 @@ div.focused_table {
         line-height: 40px;
     }
 
-    #search_query:focus {
+    #search_arrows:focus {
         box-shadow: inset 0px 0px 0px 2px hsl(204, 20%, 74%);
     }
 
     .search_button,
     .search_button[disabled]:hover {
         position: absolute;
-        right: 2px;
+        right: 20px;
         top: 6px;
         background: none;
         border-radius: 0px;
@@ -1678,6 +1679,7 @@ div.focused_table {
     }
 
     .search_icon {
+        position: absolute;
         display: table;
         height: 100%;
         color: hsl(0, 0%, 80%);
@@ -1685,12 +1687,7 @@ div.focused_table {
         padding: 0 10px;
         font-size: 20px;
         z-index: 5;
-        float: left;
-
-        i {
-            display: table-cell;
-            vertical-align: middle;
-        }
+        left: 0px;
     }
 
     .search_icon:hover {
@@ -1699,8 +1696,14 @@ div.focused_table {
     }
 
     #search_arrows {
+        padding-left: 30px;
         font-size: 90%;
         letter-spacing: normal;
+    }
+
+    .pill-container {
+        border: none;
+        padding: 0px;
     }
 
     @media (min-width: 500px) {
@@ -1717,103 +1720,6 @@ div.focused_table {
                 top: 0;
             }
         }
-    }
-}
-
-#searchbox_legacy {
-    width: 100%;
-    height: 40px;
-
-    .navbar-search:not(.expanded) {
-        display: none;
-    }
-
-    .navbar-search.expanded {
-        overflow: hidden;
-        margin-top: 0px;
-        right: 2;
-        width: calc(100% - 2px);
-        position: absolute;
-        .search_button {
-            display: inline;
-            margin-right: 16px;
-        }
-    }
-
-    .input-append {
-        position: relative;
-        width: 100%;
-
-        .fa-search {
-            padding: 0px;
-            font-size: 20px;
-            position: absolute;
-            left: 10px;
-            top: 10px;
-            z-index: 5;
-        }
-
-        .fa-search:not(.deactivated) {
-            cursor: pointer;
-        }
-    }
-
-    #search_query {
-        width: 100%;
-        font-size: 16px;
-        height: 40px;
-        padding: 0px;
-        padding-left: 35px;
-        padding-right: 40px;
-        border: none;
-        border-radius: 0px;
-        font-family: 'Source Sans Pro';
-        font-weight: 300;
-        line-height: 27px;
-    }
-
-    #search_query:focus {
-        box-shadow: inset 0px 0px 0px 2px hsl(204, 20%, 74%);
-    }
-
-    .search_button,
-    .search_button[disabled]:hover {
-        position: absolute;
-        right: 2px;
-        top: 6px;
-        background: none;
-        border-radius: 0px;
-        border: none;
-        height: 30px;
-        text-align: center;
-        padding: 4px;
-        color: hsl(0, 0%, 80%);
-        font-size: 18px;
-        box-shadow: none;
-        text-shadow: none;
-        z-index: 5;
-    }
-
-    .search_button:hover {
-        color: hsl(0, 0%, 0%);
-    }
-
-    .search_button[disabled] {
-        visibility: hidden;
-    }
-
-    #search_arrows {
-        /* Bootstrap wants font-size: 0 to eliminate space between
-       the buttons.  We need to inherit the font size, so we
-       remove the button gap by adjusting "letter" spacing. */
-        font-size: 90%;
-        letter-spacing: -.3em;
-    }
-
-    #search_arrows input {
-        /* Chrome and Firefox do this already via default browser stylesheet;
-       but Opera needs this to avoid smushed letters in the search box. */
-        letter-spacing: normal;
     }
 }
 
@@ -2602,7 +2508,8 @@ select.inline_select_topic_edit {
     }
 
     .top-navbar-container,
-    #searchbox_legacy .navbar-search.expanded {
+    #searchbox_legacy .navbar-search.expanded,
+    #searchbox .navbar-search.expanded {
         width: calc(100% - 91px);
     }
 
@@ -2615,7 +2522,8 @@ select.inline_select_topic_edit {
             right: 72px;
         }
         .top-navbar-border,
-        #searchbox_legacy .navbar-search.expanded {
+        #searchbox_legacy .navbar-search.expanded,
+        #searchbox .navbar-search.expanded {
             width: calc(100% - 50px);
         }
     }
@@ -2691,7 +2599,8 @@ select.inline_select_topic_edit {
     // todo: Figure out why this has to be different
     // from above at this width and resolve it
     // #searchbox_legacy .navbar-search.expanded,
-    #searchbox_legacy .navbar-search.expanded {
+    #searchbox_legacy .navbar-search.expanded,
+    #searchbox .navbar-search.expanded {
         width: calc(100% - 131px);
     }
 
@@ -2706,7 +2615,8 @@ select.inline_select_topic_edit {
         .top-navbar-border {
             width: calc(100% - 75px);
         }
-        #searchbox_legacy .navbar-search.expanded {
+        #searchbox_legacy .navbar-search.expanded,
+        #searchbox .navbar-search.expanded {
             width: calc(100% - 90px);
         }
     }
