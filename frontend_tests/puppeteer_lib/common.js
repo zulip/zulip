@@ -1,8 +1,10 @@
+const path = require('path');
 const puppeteer = require('puppeteer');
 
 class CommonUtils {
     constructor() {
         this.browser = null;
+        this.screenshot_id = 0;
     }
 
     async ensure_browser() {
@@ -27,6 +29,19 @@ class CommonUtils {
         }
 
         return page;
+    }
+
+    async screenshot(page, name = null) {
+        if (name === null) {
+            name = `${this.screenshot_id}`;
+            this.screenshot_id += 1;
+        }
+
+        const root_dir = path.resolve(__dirname, '../../');
+        const screenshot_path = path.join(root_dir, 'var/puppeteer', `${name}.png`);
+        await page.screenshot({
+            path: screenshot_path,
+        });
     }
 
     async run_test(test_function) {
