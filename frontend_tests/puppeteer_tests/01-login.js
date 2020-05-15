@@ -22,10 +22,10 @@ async function log_out(page) {
     assert(page.url().includes('accounts/login/'));
 }
 
-async function run() {
+async function login_tests() {
     const page = await common.get_page(realm_url + 'login/');
     await log_in(page, test_credentials.default_user);
     await log_out(page);
 }
 
-common.run_test(run);
+common.run_test(login_tests);
