@@ -1,4 +1,4 @@
-const puppeteer = require("puppeteer");
+const common = require('../puppeteer_lib/common');
 const assert = require("assert");
 
 const email = 'alice@test.example.com';
@@ -7,22 +7,14 @@ const organization_name = 'Awesome Organization';
 const host = "zulipdev.com:9981";
 
 async function run() {
-    const browser = await puppeteer.launch({
-        args: [
-            '--window-size=1400,1024',
-            '--no-sandbox', '--disable-setuid-sandbox',
-        ],
-        defaultViewport: null,
-        headless: true,
-    });
     try {
-        const page = await browser.newPage();
-        await page.setViewport({ width: 1280, height: 1024 });
-        await page.goto('http://' + host + '/new/');
+        const page = await common.get_page('http://' + host + '/new/');
+
         // submit the email for realm creation.
         await page.waitForSelector('#email');
         await page.type('#email', email);
         await page.$eval('#send_confirm', form => form.submit());
+
         // Make sure onfirmation email is sent.
         assert(page.url().includes('/accounts/new/send_confirm/' + email));
 
@@ -51,12 +43,12 @@ async function run() {
 
         // Check if realm is created and user is logged in by checking if
         // element of id `lightbox_overlay` exists.
-        await page.waitForSelector('#lightbox_overlay');  // if element doesn't exist,timeout error raises.
+        await page.waitForSelector('#lightbox_overlay');  // if element doesn't exist,timeout error raises
     } catch (e) {
         console.log(e);
         process.exit(1);
     } finally {
-        await browser.close();
+        common.browser.close();
     }
 }
 
