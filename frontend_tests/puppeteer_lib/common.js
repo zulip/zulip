@@ -28,6 +28,18 @@ class CommonUtils {
 
         return page;
     }
+
+    async run_test(test_function) {
+        try {
+            await test_function();
+        } catch (e) {
+            console.log(e);
+            await this.browser.close();
+            process.exit(1);
+        } finally {
+            this.browser.close();
+        }
+    }
 }
 
 const common = new CommonUtils();

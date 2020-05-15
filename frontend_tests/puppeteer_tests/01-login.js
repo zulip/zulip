@@ -24,14 +24,8 @@ async function log_out(page) {
 
 async function run() {
     const page = await common.get_page(realm_url + 'login/');
-    try {
-        await log_in(page, test_credentials.default_user);
-        await log_out(page);
-    } catch (e) {
-        console.log(e);
-        process.exit(1);
-    } finally {
-        common.browser.close();
-    }
+    await log_in(page, test_credentials.default_user);
+    await log_out(page);
 }
-run();
+
+common.run_test(run);
