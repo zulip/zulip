@@ -72,6 +72,16 @@ body.night-mode {
         }
     }
 
+    ul.topics_popover {
+        .admin-separator {
+            &::before,
+            &::after {
+                color: hsl(212, 28%, 18%);
+                opacity: 0.2;
+            }
+        }
+    }
+
     /* this one is because in the app we have blue and in night-mode it should be white. */
     .popover a {
         color: inherit;
