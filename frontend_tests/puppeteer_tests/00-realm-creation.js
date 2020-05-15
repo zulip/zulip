@@ -6,7 +6,7 @@ const subdomain = 'testsubdomain';
 const organization_name = 'Awesome Organization';
 const host = "zulipdev.com:9981";
 
-async function run() {
+async function realm_creation_tests() {
     const page = await common.get_page('http://' + host + '/new/');
 
     // submit the email for realm creation.
@@ -45,4 +45,4 @@ async function run() {
     await page.waitForSelector('#lightbox_overlay');  // if element doesn't exist,timeout error raises
 }
 
-common.run_test(run);
+common.run_test(realm_creation_tests);
