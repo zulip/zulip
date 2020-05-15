@@ -77,10 +77,8 @@ class Integration:
                 )
         self.categories = list(map((lambda c: CATEGORIES[c]), categories))
 
-        if logo is None:
-            self.logo_url = self.get_logo_url()
-        else:
-            self.logo_url = staticfiles_storage.url(logo)
+        self.logo_path = logo if logo is not None else self.get_logo_path()
+        self.logo_url = self.get_logo_url()
 
         if display_name is None:
             display_name = name.title()
@@ -104,9 +102,8 @@ class Integration:
         return None
 
     def get_logo_url(self) -> Optional[str]:
-        logo_path = self.get_logo_path()
-        if logo_path is not None:
-            return staticfiles_storage.url(logo_path)
+        if self.logo_path is not None:
+            return staticfiles_storage.url(self.logo_path)
 
         return None
 
