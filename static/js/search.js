@@ -192,7 +192,7 @@ exports.focus_search = function () {
 
 exports.initiate_search = function () {
     if (page_params.search_pills_enabled) {
-        $('#search_query').focus();
+        $('#search_arrows').focus();
     } else {
         tab_bar.open_search_bar_and_close_narrow_description();
         $('#search_query').typeahead('lookup').select();
