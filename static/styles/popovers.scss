@@ -111,6 +111,37 @@ ul {
         margin-right: 3px;
     }
 
+    &.topics_popover {
+        .topic-name {
+            text-align: center;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+
+        .admin-separator {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            font-size: 10px;
+
+            &::before,
+            &::after {
+                content: '';
+                flex: 1;
+                border-top: 1px solid hsl(0, 0%, 93%);
+                border-bottom: 1px solid hsl(0, 0%, 100%);
+            }
+
+            &::before {
+                margin-right: 8px;
+            }
+
+            &::after {
+                margin-left: 8px;
+            }
+        }
+    }
+
     &.remind_me_popover .remind_icon {
         text-align: center;
     }
