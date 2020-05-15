@@ -129,7 +129,7 @@ COMMON_DEPENDENCIES = [
     "libxcb-dri3-0",
     "libgbm1",
     "libxss1",
-    "fonts-liberation",
+    "fonts-freefont-ttf",
     "libappindicator1",
     "xdg-utils"
     # Puppeteer dependencies end here.
