@@ -1,5 +1,6 @@
 class zulip::memcached {
   include zulip::sasl_modules
+  include zulip::systemd_daemon_reload
 
   $memcached_packages = $::osfamily ? {
     'debian' => [ 'memcached', 'sasl2-bin' ],
@@ -47,6 +48,24 @@ class zulip::memcached {
     source  => 'puppet:///modules/zulip/sasl2/memcached.conf',
     notify  => Service[memcached],
   }
+  file { '/etc/systemd/system/memcached.service.d':
+    ensure => directory,
+  }
+  file { '/etc/systemd/system/memcached.service.d/zulip-fix-sasl.conf':
+    require => File['/etc/systemd/system/memcached.service.d'],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    content => "\
+# https://bugs.launchpad.net/ubuntu/+source/memcached/+bug/1878721
+[Service]
+Environment=SASL_CONF_PATH=/etc/sasl2
+",
+    notify  => [
+      Class['zulip::systemd_daemon_reload'],
+      Service['memcached'],
+    ],
+  }
   file { '/etc/memcached.conf':
     ensure  => file,
     require => [
@@ -61,5 +80,6 @@ class zulip::memcached {
   service { 'memcached':
     ensure    => running,
     subscribe => File['/etc/memcached.conf'],
+    require   => Class['zulip::systemd_daemon_reload'];
   }
 }
