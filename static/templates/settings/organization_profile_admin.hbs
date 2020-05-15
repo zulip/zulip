@@ -5,9 +5,7 @@
         <div id="org-org-profile" class="org-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Organization profile" }}
-                    <a href="/help/create-your-organization-profile" target="_blank">
-                        <i class="fa fa-question-circle-o" aria-hidden="true"></i>
-                    </a>
+                    {{> ../help_link_widget link="/help/create-your-organization-profile" }}
                 </h3>
                 {{> settings_save_discard_widget section_name="org-profile" }}
             </div>
@@ -54,9 +52,7 @@
 
         <div class="subsection-header">
             <h3>{{t "Organization logo" }}
-                <a href="/help/create-your-organization-profile#add-a-wide-logo" target="_blank">
-                    <i class="fa fa-question-circle-o" aria-hidden="true"></i>
-                </a>
+                {{> ../help_link_widget link="/help/create-your-organization-profile#add-a-wide-logo" }}
             </h3>
             {{> upgrade_tip_widget }}
         </div>
