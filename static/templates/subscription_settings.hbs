@@ -67,9 +67,7 @@
             <div class="stream-email-box" {{#unless sub.email_address}}style="display: none;"{{/unless}}>
                 <label class="sub_settings_title">
                     {{t "Email address" }}
-                    <a href="/help/message-a-stream-by-email" target="_blank">
-                        <i class="fa fa-question-circle-o" aria-hidden="true"></i>
-                    </a>
+                    {{> help_link_widget link="/help/message-a-stream-by-email" }}
                 </label>
                 <div class="stream-email">
                     <span class="email-address">{{sub.email_address}}</span>
