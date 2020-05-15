@@ -105,14 +105,17 @@ def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, 
     # Delete all messages, so new message is the only one it's message group
     Message.objects.filter(sender=bot).delete()
     json_fixture = fixture_path.endswith('.json')
-
-    with open(fixture_path) as f:
-        if json_fixture:
-            data = ujson.load(f)
-        else:
-            data = f.read().strip()
-
     _, fixture_name = split_fixture_path(fixture_path)
+
+    if fixture_name:
+        with open(fixture_path) as f:
+            if json_fixture:
+                data = ujson.load(f)
+            else:
+                data = f.read().strip()
+    else:
+        data = ''
+
     headers = get_requests_headers(integration.name, fixture_name)
     if config.custom_headers:
         headers.update(config.custom_headers)
@@ -129,7 +132,7 @@ def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, 
         params.update(config.extra_params)
 
     extra_args = {}
-    if not json_fixture:
+    if not json_fixture and data:
         # We overwrite any params in fixture with our params. stream name, for
         # example, may be defined in the fixture.
         parsed_params = dict(parse_qsl(data))
