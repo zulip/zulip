@@ -14,7 +14,7 @@ class YoHookTests(WebhookTestCase):
         """
         cordelia = self.example_user('cordelia')
         self.url = self.build_webhook_url(
-            email=cordelia.email,
+            email=cordelia.delivery_email,
             username="IAGO",
             user_ip="127.0.0.1"
         )
