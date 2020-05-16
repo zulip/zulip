@@ -210,6 +210,14 @@ exports.stream_notification_settings = [
     "wildcard_mentions_notify",
 ];
 
+exports.topic_follow_notification_settings = [
+    "enable_topic_follow_desktop_notifications",
+    "enable_topic_follow_audible_notifications",
+    "enable_topic_follow_push_notifications",
+    "enable_topic_follow_email_notifications",
+    "enable_topic_follow_wildcard_mentions_notify",
+];
+
 const pm_mention_notification_settings = [
     "enable_desktop_notifications",
     "enable_sounds",
@@ -246,7 +254,8 @@ const other_notification_settings = desktop_notification_settings.concat(
 
 exports.all_notification_settings = other_notification_settings.concat(
     pm_mention_notification_settings,
-    exports.stream_notification_settings
+    exports.stream_notification_settings,
+    exports.topic_follow_notification_settings
 );
 
 exports.all_notifications = () => ({
@@ -260,6 +269,11 @@ exports.all_notifications = () => ({
             label: i18n.t("PMs, mentions, and alerts"),
             notification_settings: settings_notifications.get_notifications_table_row_data(
                 pm_mention_notification_settings),
+        },
+        {
+            label: i18n.t("Followed topics"),
+            notification_settings: settings_notifications.get_notifications_table_row_data(
+                exports.topic_follow_notification_settings),
         },
     ],
     settings: {

@@ -3441,6 +3441,34 @@ paths:
         schema:
           type: boolean
         example: true
+      - name: enable_topic_follow_desktop_notifications
+        in: query
+        description: |
+          Enable visual desktop notifications for followed topic messages.
+        schema:
+          type: boolean
+        example: false
+      - name: enable_topic_follow_email_notifications
+        in: query
+        description: |
+          Enable email notifications for followed topic messages.
+        schema:
+          type: boolean
+        example: false
+      - name: enable_topic_follow_push_notifications
+        in: query
+        description: |
+          Enable mobile notifications for followed topic messages.
+        schema:
+          type: boolean
+        example: false
+      - name: enable_topic_follow_audible_notifications
+        in: query
+        description: |
+          Enable audible desktop notifications for followed topic messages.
+        schema:
+          type: boolean
+        example: false
       - name: notification_sound
         in: query
         description: |
@@ -3525,6 +3553,14 @@ paths:
         schema:
           type: boolean
         example: true
+      - name: enable_topic_follow_wildcard_mentions_notify
+        in: query
+        description: |
+          Whether wildcard mentions (E.g. @**all**) sent in followed topics
+          should send notifications like a personal mention.
+        schema:
+          type: boolean
+        example: false
       - name: desktop_icon_count_display
         in: query
         description: |
