@@ -37,7 +37,9 @@ def get_display_email_address(user_profile: UserProfile, realm: Realm) -> str:
     return user_profile.delivery_email
 
 def get_role_for_new_user(invited_as: int, realm_creation: bool=False) -> int:
-    if invited_as == PreregistrationUser.INVITE_AS['REALM_ADMIN'] or realm_creation:
+    if realm_creation:
+        return UserProfile.ROLE_REALM_OWNER
+    elif invited_as == PreregistrationUser.INVITE_AS['REALM_ADMIN']:
         return UserProfile.ROLE_REALM_ADMINISTRATOR
     elif invited_as == PreregistrationUser.INVITE_AS['GUEST_USER']:
         return UserProfile.ROLE_GUEST
