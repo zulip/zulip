@@ -750,14 +750,11 @@ td.pointer {
 }
 
 .messagebox {
+    position: relative;
     word-wrap: break-word;
     cursor: pointer;
     vertical-align: top;
     border: none;
-}
-
-.messagebox {
-    position: relative;
 }
 
 .messagebox:hover .message_controls {
