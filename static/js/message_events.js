@@ -221,6 +221,7 @@ exports.update_messages = function update_messages(events) {
                 }
             }
 
+            const messages_to_rerender = [];
             for (const id of event.message_ids) {
                 const msg = message_store.get(id);
                 if (msg === undefined) {
@@ -265,10 +266,11 @@ exports.update_messages = function update_messages(events) {
                     // remove the message from the current/narrowed message list.
                     const cur_row = current_msg_list.get_row(id);
                     if (cur_row !== undefined) {
-                        current_msg_list.remove_and_rerender([{id: id}]);
+                        messages_to_rerender.push({id: id});
                     }
                 }
             }
+            current_msg_list.remove_and_rerender(messages_to_rerender);
         }
 
         if (event.orig_content !== undefined) {
