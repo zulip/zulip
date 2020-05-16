@@ -132,23 +132,6 @@ exports.exit_search = function () {
     }
 };
 
-exports.update_stream_name = function (new_name) {
-    const stream_name = $(".stream a");
-    if (stream_name !== undefined) {
-        stream_name.text(new_name);
-    }
-};
-
-exports.update_stream_description = function () {
-    // TODO: Implement this properly.  Really, this and update_stream
-    // name should just do a full rerender of the tab_tab component;
-    // they're rare events and that rendering is cheap.
-
-    // TODO: Do similar rerenders for stream privacy or subscriber
-    // count changes.
-    return;
-};
-
 exports.initialize = function () {
     exports.render_title_area();
 
@@ -161,6 +144,9 @@ exports.initialize = function () {
 };
 
 exports.render_title_area = function () {
+    // TODO: Implement rerendering for stream privacy or subscriber
+    // count changes. We simply need to call this function in the
+    // appropriate places.
     const filter = narrow_state.filter();
     build_tab_bar(filter);
 };
