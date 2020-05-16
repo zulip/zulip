@@ -68,50 +68,48 @@ function append_and_display_tab_bar(tab_bar_data) {
     }
 }
 
+function bind_tab_bar_handlers() {
+    $("#tab_list span:nth-last-child(2)").on("click", function (e) {
+        if (document.getSelection().type === "Range") {
+            // Allow copy/paste to work normally without interference.
+            return;
+        }
+
+        // Let links behave normally, ie, do nothing if <a>
+        if ($(e.target).closest("a").length === 0) {
+            exports.open_search_bar_and_close_narrow_description();
+            search.initiate_search();
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    });
+
+    const color = $(".search_closed").css("color");
+    const night_mode_color = $(".nightmode .closed_icon").css("color");
+
+    // make sure that hover plays nicely with whether search is being
+    // opened or not.
+    $(".narrow_description > a").hover(function () {
+        if (night_mode_color) {
+            $(".search_closed").css("color", night_mode_color);
+        } else {
+            $(".search_closed").css("color", color);
+        }
+    }, function () {
+        $(".search_closed").css("color", "");
+    });
+}
+
 function build_tab_bar(filter) {
     // This makes sure we don't waste time appending tab_bar on a template where it's never used
     if (filter && !filter.is_common_narrow()) {
         exports.open_search_bar_and_close_narrow_description();
     } else {
         const tab_bar_data = make_tab_data(filter);
+
         append_and_display_tab_bar(tab_bar_data);
 
-        $(".search_closed").on("click", function (e) {
-            exports.open_search_bar_and_close_narrow_description();
-            search.initiate_search();
-            e.preventDefault();
-            e.stopPropagation();
-        });
-
-        $("#tab_list span:nth-last-child(2)").on("click", function (e) {
-            if (document.getSelection().type === "Range") {
-                // Allow copy/paste to work normally without interference.
-                return;
-            }
-
-            // Let links behave normally, ie, do nothing if <a>
-            if ($(e.target).closest("a").length === 0) {
-                exports.open_search_bar_and_close_narrow_description();
-                search.initiate_search();
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        });
-
-        const color = $(".search_closed").css("color");
-        const night_mode_color = $(".nightmode .closed_icon").css("color");
-
-        // make sure that hover plays nicely with whether search is being
-        // opened or not.
-        $(".narrow_description > a").hover(function () {
-            if (night_mode_color) {
-                $(".search_closed").css("color", night_mode_color);
-            } else {
-                $(".search_closed").css("color", color);
-            }
-        }, function () {
-            $(".search_closed").css("color", "");
-        });
+        bind_tab_bar_handlers();
 
         exports.close_search_bar_and_open_narrow_description();
     }
@@ -158,7 +156,7 @@ exports.initialize = function () {
     const filter = narrow_state.filter();
     build_tab_bar(filter);
 
-    // register navbar click handlers
+    // register searchbar click handler
     $('#search_exit').on("click", function (e) {
         tab_bar.exit_search();
         e.preventDefault();
