@@ -438,8 +438,9 @@ class Realm(models.Model):
         notifications to all administrator users.
         """
         # TODO: Change return type to QuerySet[UserProfile]
-        return UserProfile.objects.filter(realm=self, role=UserProfile.ROLE_REALM_ADMINISTRATOR,
-                                          is_active=True)
+        return UserProfile.objects.filter(realm=self, is_active=True,
+                                          role__in=[UserProfile.ROLE_REALM_ADMINISTRATOR,
+                                                    UserProfile.ROLE_REALM_OWNER])
 
     def get_human_admin_users(self) -> QuerySet:
         """Use this in contexts where we want only human users with
@@ -447,9 +448,9 @@ class Realm(models.Model):
         realm's administrators (bots don't have real email addresses).
         """
         # TODO: Change return type to QuerySet[UserProfile]
-        return UserProfile.objects.filter(realm=self, is_bot=False,
-                                          role=UserProfile.ROLE_REALM_ADMINISTRATOR,
-                                          is_active=True)
+        return UserProfile.objects.filter(realm=self, is_bot=False, is_active=True,
+                                          role__in=[UserProfile.ROLE_REALM_ADMINISTRATOR,
+                                                    UserProfile.ROLE_REALM_OWNER])
 
     def get_active_users(self) -> Sequence['UserProfile']:
         # TODO: Change return type to QuerySet[UserProfile]
@@ -869,7 +870,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # future roles to be inserted between currently adjacent
     # roles. These constants appear in RealmAuditLog.extra_data, so
     # changes to them will require a migration of RealmAuditLog.
-    # ROLE_REALM_OWNER = 100
+    ROLE_REALM_OWNER = 100
     ROLE_REALM_ADMINISTRATOR = 200
     # ROLE_MODERATOR = 300
     ROLE_MEMBER = 400
@@ -1105,7 +1106,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     @property
     def is_realm_admin(self) -> bool:
-        return self.role == UserProfile.ROLE_REALM_ADMINISTRATOR
+        return self.role == UserProfile.ROLE_REALM_ADMINISTRATOR or \
+            self.role == UserProfile.ROLE_REALM_OWNER
 
     @is_realm_admin.setter
     def is_realm_admin(self, value: bool) -> None:
@@ -1115,6 +1117,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             # We need to be careful to not accidentally change
             # ROLE_GUEST to ROLE_MEMBER here.
             self.role = UserProfile.ROLE_MEMBER
+
+    @property
+    def is_realm_owner(self) -> bool:
+        return self.role == UserProfile.ROLE_REALM_OWNER
 
     @property
     def is_guest(self) -> bool:
