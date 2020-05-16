@@ -10,10 +10,11 @@
                 <span class="send-status-close">&times;</span>
                 <span class="error-msg"></span>
             </div>
+            <p>Select a stream below or change topic name.</p>
             <div class="topic_stream_edit_header">
                 <div class="stream_header_colorblock"></div>
                 <select name="select_stream_id" class="inline_select_topic_edit" id="select_stream_id">
-                    <option value="">{{t "Select a stream" }}</option>
+                    <option value="{{ current_stream_id }}">#{{ current_stream_name }}</option>
                     {{#each available_streams}}
                     <option value="{{ this.stream_id }}">#{{this.name}}</option>
                     {{/each}}
