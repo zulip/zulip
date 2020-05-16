@@ -280,11 +280,6 @@ p.n-margin {
     background-color: hsl(0, 0%, 100%);
 }
 
-.app-main {
-    height: 100%;
-    min-height: 100%;
-}
-
 .fixed-app {
     width: 100%;
     position: fixed;
@@ -308,6 +303,11 @@ p.n-margin {
     position: absolute;
     right: 0px;
     top: 0px;
+}
+
+.app-main {
+    height: 100%;
+    min-height: 100%;
 }
 
 .app-main .column-left .left-sidebar,
