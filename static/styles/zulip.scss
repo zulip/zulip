@@ -184,12 +184,12 @@ p.n-margin {
     animation-name: fadeInMessage;
     animation-duration: 1s;
     animation-iteration-count: 1;
-}
 
-.fade-in-message .message_edit_notice {
-    animation-name: fadeInEditNotice;
-    animation-duration: 1s;
-    animation-iteration-count: 1;
+    .message_edit_notice {
+        animation-name: fadeInEditNotice;
+        animation-duration: 1s;
+        animation-iteration-count: 1;
+    }
 }
 
 .message_edit_notice_hover:hover {
