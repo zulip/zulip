@@ -611,10 +611,10 @@ td.pointer {
     font-size: 14px;
     position: relative;
     max-width: calc(100% - 50px);
-}
 
-.sender-status .message_edit_notice {
-    line-height: 18px;
+    .message_edit_notice {
+        line-height: 18px;
+    }
 }
 
 .message_edit_notice {
