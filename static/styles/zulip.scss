@@ -920,14 +920,6 @@ td.pointer {
     border-radius: 0;
 }
 
-.bookend_tr + .summary_row .message_header {
-    border-top-right-radius: 3px;
-}
-
-.bookend_tr + .summary_row .summary_colorblock {
-    border-top-left-radius: 3px;
-}
-
 .summary_row.last_message .message_header {
     border-bottom-right-radius: 3px;
     box-shadow:
@@ -938,6 +930,14 @@ td.pointer {
 
 .summary_row.last_message .summary_colorblock {
     border-bottom-left-radius: 3px;
+}
+
+.bookend_tr + .summary_row .message_header {
+    border-top-right-radius: 3px;
+}
+
+.bookend_tr + .summary_row .summary_colorblock {
+    border-top-left-radius: 3px;
 }
 
 .copy-paste-text {
