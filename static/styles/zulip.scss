@@ -755,26 +755,26 @@ td.pointer {
     cursor: pointer;
     vertical-align: top;
     border: none;
-}
 
-.messagebox:hover .message_controls {
-    .empty-star {
-        opacity: 0.4;
+    &:hover .message_controls {
+        .empty-star {
+            opacity: 0.4;
+        }
+
+        .empty-star:hover {
+            cursor: pointer;
+            opacity: 1;
+        }
+
+        > div {
+            opacity: 1;
+            pointer-events: all;
+        }
     }
 
-    .empty-star:hover {
-        cursor: pointer;
-        opacity: 1;
+    .message_top_line {
+        position: relative;
     }
-
-    > div {
-        opacity: 1;
-        pointer-events: all;
-    }
-}
-
-.messagebox .message_top_line {
-    position: relative;
 }
 
 .message_header {
