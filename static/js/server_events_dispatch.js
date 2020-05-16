@@ -286,13 +286,11 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 stream_data.remove_default_stream(stream.stream_id);
                 if (page_params.realm_notifications_stream_id === stream.stream_id) {
                     page_params.realm_notifications_stream_id = -1;
-                    settings_org.render_notifications_stream_ui(
-                        page_params.realm_notifications_stream_id, 'notifications');
+                    settings_org.sync_realm_settings('notifications_stream_id');
                 }
                 if (page_params.realm_signup_notifications_stream_id === stream.stream_id) {
                     page_params.realm_signup_notifications_stream_id = -1;
-                    settings_org.render_notifications_stream_ui(
-                        page_params.realm_signup_notifications_stream_id, 'signup_notifications');
+                    settings_org.sync_realm_settings('signup_notifications_stream_id');
                 }
             }
         }

@@ -1221,7 +1221,6 @@ with_overrides(function (override) {
         assert_same(args.stream_id, 42);
 
         override('stream_list.remove_sidebar_row', noop);
-        override('settings_org.render_notifications_stream_ui', noop);
         page_params.realm_notifications_stream_id = 42;
         dispatch(event);
         assert_same(page_params.realm_notifications_stream_id, -1);
