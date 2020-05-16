@@ -478,16 +478,22 @@ exports.fixtures = {
         setting: true,
     },
 
-    update_display_settings__night_mode: {
+    update_display_settings__color_scheme_automatic: {
         type: 'update_display_settings',
-        setting_name: 'night_mode',
-        setting: true,
+        setting_name: 'color_scheme',
+        setting: 1,
     },
 
-    update_display_settings__night_mode_false: {
+    update_display_settings__color_scheme_dark: {
         type: 'update_display_settings',
-        setting_name: 'night_mode',
-        setting: false,
+        setting_name: 'color_scheme',
+        setting: 2,
+    },
+
+    update_display_settings__color_scheme_light: {
+        type: 'update_display_settings',
+        setting_name: 'color_scheme',
+        setting: 3,
     },
 
     update_display_settings__starred_message_counts: {

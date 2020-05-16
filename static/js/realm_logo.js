@@ -1,3 +1,5 @@
+const settings_config = require("./settings_config");
+
 exports.build_realm_logo_widget = function (upload_function, is_night) {
     let logo_section_id = '#realm-day-logo-upload-widget';
     let logo_source = page_params.realm_logo_source;
@@ -73,7 +75,11 @@ exports.rerender = function () {
         $("#realm-night-logo-upload-widget .image-block").attr("src", page_params.realm_night_logo_url);
     }
 
-    if (page_params.night_mode && page_params.realm_night_logo_source !== 'D') {
+    if (page_params.color_scheme === settings_config.color_scheme_values.night.code &&
+        page_params.realm_night_logo_source !== 'D' ||
+        page_params.color_scheme === settings_config.color_scheme_values.automatic.code &&
+        page_params.realm_night_logo_source !== 'D' &&
+        (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         $("#realm-logo").attr("src", page_params.realm_night_logo_url);
     } else {
         $("#realm-logo").attr("src", page_params.realm_logo_url);

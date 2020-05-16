@@ -29,7 +29,8 @@
         {% endblock %}
     </head>
 
-    <body {% if night_mode %}class="night-mode"{% endif %}>
+    <body {% if color_scheme == 1 %} class="color-scheme-automatic"
+  {% elif color_scheme == 2 %} class="night-mode" {% endif %}>
         {% block content %}
         {% endblock %}
 

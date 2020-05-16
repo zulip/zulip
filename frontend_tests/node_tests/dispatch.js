@@ -692,20 +692,30 @@ with_overrides(function (override) {
     $("body").fadeIn  = (secs) => { assert_same(secs, 300); };
 
     global.with_stub(function (stub) {
-        event = event_fixtures.update_display_settings__night_mode;
-        page_params.night_mode = false;
+        event = event_fixtures.update_display_settings__color_scheme_dark;
+        page_params.color_scheme = 1;
         override('night_mode.enable', stub.f); // automatically checks if called
         override('realm_logo.rerender', noop);
         dispatch(event);
-        assert_same(page_params.night_mode, true);
+        assert(page_params.color_scheme, 2);
     });
 
     global.with_stub(function (stub) {
-        event = event_fixtures.update_display_settings__night_mode_false;
-        page_params.night_mode = true;
+        event = event_fixtures.update_display_settings__color_scheme_light;
+        page_params.color_scheme = 1;
         override('night_mode.disable', stub.f); // automatically checks if called
+        override('realm_logo.rerender', noop);
         dispatch(event);
-        assert(!page_params.night_mode);
+        assert(page_params.color_scheme, 3);
+    });
+
+    global.with_stub(function (stub) {
+        event = event_fixtures.update_display_settings__color_scheme_automatic;
+        page_params.color_scheme = 2;
+        override('night_mode.default_preference_checker', stub.f); // automatically checks if called
+        override('realm_logo.rerender', noop);
+        dispatch(event);
+        assert(page_params.color_scheme, 1);
     });
 
     global.with_stub(function (stub) {

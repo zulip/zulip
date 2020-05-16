@@ -999,10 +999,18 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     dense_mode: bool = models.BooleanField(default=True)
     fluid_layout_width: bool = models.BooleanField(default=False)
     high_contrast_mode: bool = models.BooleanField(default=False)
-    night_mode: bool = models.BooleanField(default=False)
     translate_emoticons: bool = models.BooleanField(default=False)
     twenty_four_hour_time: bool = models.BooleanField(default=False)
     starred_message_counts: bool = models.BooleanField(default=False)
+    COLOR_SCHEME_AUTOMATIC = 1
+    COLOR_SCHEME_NIGHT = 2
+    COLOR_SCHEME_LIGHT = 3
+    COLOR_SCHEME_CHOICES = [
+        COLOR_SCHEME_AUTOMATIC,
+        COLOR_SCHEME_NIGHT,
+        COLOR_SCHEME_LIGHT
+    ]
+    color_scheme = models.PositiveSmallIntegerField(default=COLOR_SCHEME_AUTOMATIC)
 
     # UI setting controlling Zulip's behavior of demoting in the sort
     # order and graying out streams with no recent traffic.  The
@@ -1069,6 +1077,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     # Define the types of the various automatically managed properties
     property_types = dict(
+        color_scheme=int,
         default_language=str,
         demote_inactive_streams=int,
         dense_mode=bool,
@@ -1076,7 +1085,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         fluid_layout_width=bool,
         high_contrast_mode=bool,
         left_side_userlist=bool,
-        night_mode=bool,
         starred_message_counts=bool,
         timezone=str,
         translate_emoticons=bool,

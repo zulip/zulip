@@ -165,7 +165,8 @@ def update_display_settings_backend(
         starred_message_counts: Optional[bool]=REQ(validator=check_bool, default=None),
         fluid_layout_width: Optional[bool]=REQ(validator=check_bool, default=None),
         high_contrast_mode: Optional[bool]=REQ(validator=check_bool, default=None),
-        night_mode: Optional[bool]=REQ(validator=check_bool, default=None),
+        color_scheme: Optional[int]=REQ(validator=check_int_in(
+            UserProfile.COLOR_SCHEME_CHOICES), default=None),
         translate_emoticons: Optional[bool]=REQ(validator=check_bool, default=None),
         default_language: Optional[str]=REQ(validator=check_string, default=None),
         left_side_userlist: Optional[bool]=REQ(validator=check_bool, default=None),

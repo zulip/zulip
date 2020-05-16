@@ -27,6 +27,21 @@ exports.demote_inactive_streams_values = {
     },
 };
 
+exports.color_scheme_values = {
+    automatic: {
+        code: 1,
+        description: i18n.t("Automatic"),
+    },
+    night: {
+        code: 2,
+        description: i18n.t("Night mode"),
+    },
+    day: {
+        code: 3,
+        description: i18n.t("Day mode"),
+    },
+};
+
 exports.twenty_four_hour_time_values = {
     twenty_four_hour_clock: {
         value: true,
@@ -42,7 +57,6 @@ exports.get_all_display_settings = () => ({
     settings: {
         user_display_settings: [
             "dense_mode",
-            "night_mode",
             "high_contrast_mode",
             "left_side_userlist",
             "starred_message_counts",

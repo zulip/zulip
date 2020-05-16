@@ -1019,11 +1019,12 @@ class UserProfileTest(ZulipTestCase):
         iago = self.example_user("iago")
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
+        hamlet.color_scheme = UserProfile.COLOR_SCHEME_LIGHT
 
         cordelia.default_language = "de"
         cordelia.emojiset = "twitter"
         cordelia.timezone = "America/Phoenix"
-        cordelia.night_mode = True
+        cordelia.color_scheme = UserProfile.COLOR_SCHEME_NIGHT
         cordelia.enable_offline_email_notifications = False
         cordelia.enable_stream_push_notifications = True
         cordelia.enter_sends = False
@@ -1054,9 +1055,9 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(cordelia.timezone, "America/Phoenix")
         self.assertEqual(hamlet.timezone, "")
 
-        self.assertEqual(iago.night_mode, True)
-        self.assertEqual(cordelia.night_mode, True)
-        self.assertEqual(hamlet.night_mode, False)
+        self.assertEqual(iago.color_scheme, UserProfile.COLOR_SCHEME_NIGHT)
+        self.assertEqual(cordelia.color_scheme, UserProfile.COLOR_SCHEME_NIGHT)
+        self.assertEqual(hamlet.color_scheme, UserProfile.COLOR_SCHEME_LIGHT)
 
         self.assertEqual(iago.enable_offline_email_notifications, False)
         self.assertEqual(cordelia.enable_offline_email_notifications, False)

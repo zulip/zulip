@@ -29,6 +29,8 @@ exports.set_up = function () {
 
     $("#demote_inactive_streams").val(page_params.demote_inactive_streams);
 
+    $("#color_scheme").val(page_params.color_scheme);
+
     $("#twenty_four_hour_time").val(JSON.stringify(page_params.twenty_four_hour_time));
 
     $(".emojiset_choice[value=" + page_params.emojiset + "]").prop("checked", true);
@@ -79,6 +81,11 @@ exports.set_up = function () {
 
     $('#demote_inactive_streams').change(function () {
         const data = {demote_inactive_streams: this.value};
+        change_display_setting(data, '#display-settings-status');
+    });
+
+    $('#color_scheme').change(function () {
+        const data = {color_scheme: this.value};
         change_display_setting(data, '#display-settings-status');
     });
 
@@ -146,7 +153,6 @@ exports.update_page = function () {
     $("#left_side_userlist").prop('checked', page_params.left_side_userlist);
     $("#default_language_name").text(page_params.default_language_name);
     $("#translate_emoticons").prop('checked', page_params.translate_emoticons);
-    $("#night_mode").prop('checked', page_params.night_mode);
     $("#twenty_four_hour_time").val(JSON.stringify(page_params.twenty_four_hour_time));
 
     // TODO: Set emojiset selector here.
