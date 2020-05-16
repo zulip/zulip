@@ -59,6 +59,10 @@ def check_last_admin(user_profile: UserProfile) -> bool:
     admins = set(user_profile.realm.get_human_admin_users())
     return user_profile.is_realm_admin and not user_profile.is_bot and len(admins) == 1
 
+def check_last_owner(user_profile: UserProfile) -> bool:
+    owners = set(user_profile.realm.get_human_owner_users())
+    return user_profile.is_realm_owner and not user_profile.is_bot and len(owners) == 1
+
 def deactivate_bot_backend(request: HttpRequest, user_profile: UserProfile,
                            bot_id: int) -> HttpResponse:
     target = access_bot_by_id(user_profile, bot_id)
@@ -89,8 +93,10 @@ def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id
     target = access_user_by_id(user_profile, user_id, allow_deactivated=True, allow_bots=True)
 
     if role is not None and target.role != role:
-        if target.role == UserProfile.ROLE_REALM_ADMINISTRATOR and check_last_admin(user_profile):
-            return json_error(_('Cannot remove the only organization administrator'))
+        if target.role == UserProfile.ROLE_REALM_OWNER and check_last_owner(user_profile):
+            return json_error(_('The owner permission cannot be removed from the only organization owner.'))
+        if UserProfile.ROLE_REALM_OWNER in [role, target.role] and not user_profile.is_realm_owner:
+            return json_error(_('Only organization owners can add or remove the owner permission.'))
         do_change_user_role(target, role)
 
     if (full_name is not None and target.full_name != full_name and

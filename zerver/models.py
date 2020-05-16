@@ -874,6 +874,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     role: int = models.PositiveSmallIntegerField(default=ROLE_MEMBER, db_index=True)
 
     ROLE_TYPES = [
+        ROLE_REALM_OWNER,
         ROLE_REALM_ADMINISTRATOR,
         ROLE_MEMBER,
         ROLE_GUEST,

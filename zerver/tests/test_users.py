@@ -119,12 +119,73 @@ class PermissionTest(ZulipTestCase):
         result = self.client_patch(f'/json/users/{invalid_user_id}', {})
         self.assert_json_error(result, 'No such user')
 
+    def test_owner_api(self) -> None:
+        self.login('iago')
+
+        desdemona = self.example_user('desdemona')
+        othello = self.example_user('othello')
+        iago = self.example_user('iago')
+        realm = iago.realm
+
+        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER)
+
+        result = self.client_get('/json/users')
+        self.assert_json_success(result)
+        members = result.json()['members']
+        iago_dict = find_dict(members, 'email', iago.email)
+        self.assertTrue(iago_dict['is_owner'])
+        othello_dict = find_dict(members, 'email', othello.email)
+        self.assertFalse(othello_dict['is_owner'])
+
+        req = dict(role=UserProfile.ROLE_REALM_OWNER)
+        events: List[Mapping[str, Any]] = []
+        with tornado_redirected_to_list(events):
+            result = self.client_patch(f'/json/users/{othello.id}', req)
+        self.assert_json_success(result)
+        owner_users = realm.get_human_owner_users()
+        self.assertTrue(othello in owner_users)
+        person = events[0]['event']['person']
+        self.assertEqual(person['user_id'], othello.id)
+        self.assertEqual(person['role'], UserProfile.ROLE_REALM_OWNER)
+
+        req = dict(role=UserProfile.ROLE_MEMBER)
+        events = []
+        with tornado_redirected_to_list(events):
+            result = self.client_patch(f'/json/users/{othello.id}', req)
+        self.assert_json_success(result)
+        owner_users = realm.get_human_owner_users()
+        self.assertFalse(othello in owner_users)
+        person = events[0]['event']['person']
+        self.assertEqual(person['user_id'], othello.id)
+        self.assertEqual(person['role'], UserProfile.ROLE_MEMBER)
+
+        # Cannot take away from last owner
+        self.login('desdemona')
+        req = dict(role=UserProfile.ROLE_MEMBER)
+        events = []
+        with tornado_redirected_to_list(events):
+            result = self.client_patch(f'/json/users/{iago.id}', req)
+        self.assert_json_success(result)
+        owner_users = realm.get_human_owner_users()
+        self.assertFalse(iago in owner_users)
+        person = events[0]['event']['person']
+        self.assertEqual(person['user_id'], iago.id)
+        self.assertEqual(person['role'], UserProfile.ROLE_MEMBER)
+        with tornado_redirected_to_list([]):
+            result = self.client_patch(f'/json/users/{desdemona.id}', req)
+        self.assert_json_error(result, 'The owner permission cannot be removed from the only organization owner.')
+
+        do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.login('iago')
+        with tornado_redirected_to_list([]):
+            result = self.client_patch(f'/json/users/{desdemona.id}', req)
+        self.assert_json_error(result, 'Only organization owners can add or remove the owner permission.')
+
     def test_admin_api(self) -> None:
         self.login('desdemona')
 
         hamlet = self.example_user('hamlet')
         othello = self.example_user('othello')
-        iago = self.example_user('iago')
         desdemona = self.example_user('desdemona')
         realm = hamlet.realm
 
@@ -161,22 +222,6 @@ class PermissionTest(ZulipTestCase):
         person = events[0]['event']['person']
         self.assertEqual(person['user_id'], othello.id)
         self.assertEqual(person['role'], UserProfile.ROLE_MEMBER)
-
-        # Cannot take away from last admin
-        self.login('iago')
-        req = dict(role=ujson.dumps(UserProfile.ROLE_MEMBER))
-        events = []
-        with tornado_redirected_to_list(events):
-            result = self.client_patch(f'/json/users/{desdemona.id}', req)
-        self.assert_json_success(result)
-        admin_users = realm.get_human_admin_users()
-        self.assertFalse(desdemona in admin_users)
-        person = events[0]['event']['person']
-        self.assertEqual(person['user_id'], desdemona.id)
-        self.assertEqual(person['role'], UserProfile.ROLE_MEMBER)
-        with tornado_redirected_to_list([]):
-            result = self.client_patch(f'/json/users/{iago.id}', req)
-        self.assert_json_error(result, 'Cannot remove the only organization administrator')
 
         # Make sure only admins can patch other user's info.
         self.login('othello')
@@ -430,6 +475,100 @@ class PermissionTest(ZulipTestCase):
 
         person = events[0]['event']['person']
         self.assertEqual(person['user_id'], polonius.id)
+        self.assertEqual(person['role'], UserProfile.ROLE_REALM_ADMINISTRATOR)
+
+    def test_change_owner_to_guest(self) -> None:
+        self.login("desdemona")
+        iago = self.example_user("iago")
+        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER)
+        self.assertFalse(iago.is_guest)
+        self.assertTrue(iago.is_realm_owner)
+
+        # Test changing a user from owner to guest and revoking owner status
+        iago = self.example_user("iago")
+        self.assertFalse(iago.is_guest)
+        req = dict(role=UserProfile.ROLE_GUEST)
+        events: List[Mapping[str, Any]] = []
+        with tornado_redirected_to_list(events):
+            result = self.client_patch('/json/users/{}'.format(iago.id), req)
+        self.assert_json_success(result)
+
+        iago = self.example_user("iago")
+        self.assertTrue(iago.is_guest)
+        self.assertFalse(iago.is_realm_owner)
+
+        person = events[0]['event']['person']
+        self.assertEqual(person['user_id'], iago.id)
+        self.assertEqual(person['role'], UserProfile.ROLE_GUEST)
+
+    def test_change_guest_to_owner(self) -> None:
+        desdemona = self.example_user("desdemona")
+        self.login_user(desdemona)
+        polonius = self.example_user("polonius")
+        self.assertTrue(polonius.is_guest)
+        self.assertFalse(polonius.is_realm_owner)
+
+        # Test changing a user from guest to admin and revoking guest status
+        polonius = self.example_user("polonius")
+        self.assertFalse(polonius.is_realm_owner)
+        req = dict(role=UserProfile.ROLE_REALM_OWNER)
+        events: List[Mapping[str, Any]] = []
+        with tornado_redirected_to_list(events):
+            result = self.client_patch('/json/users/{}'.format(polonius.id), req)
+        self.assert_json_success(result)
+
+        polonius = self.example_user("polonius")
+        self.assertFalse(polonius.is_guest)
+        self.assertTrue(polonius.is_realm_owner)
+
+        person = events[0]['event']['person']
+        self.assertEqual(person['user_id'], polonius.id)
+        self.assertEqual(person['role'], UserProfile.ROLE_REALM_OWNER)
+
+    def test_change_admin_to_owner(self) -> None:
+        desdemona = self.example_user("desdemona")
+        self.login_user(desdemona)
+        iago = self.example_user("iago")
+        self.assertTrue(iago.is_realm_admin)
+        self.assertFalse(iago.is_realm_owner)
+
+        # Test changing a user from admin to owner and revoking admin status
+        iago = self.example_user("iago")
+        self.assertFalse(iago.is_realm_owner)
+        req = dict(role=UserProfile.ROLE_REALM_OWNER)
+        events: List[Mapping[str, Any]] = []
+        with tornado_redirected_to_list(events):
+            result = self.client_patch('/json/users/{}'.format(iago.id), req)
+        self.assert_json_success(result)
+
+        iago = self.example_user("iago")
+        self.assertTrue(iago.is_realm_owner)
+
+        person = events[0]['event']['person']
+        self.assertEqual(person['user_id'], iago.id)
+        self.assertEqual(person['role'], UserProfile.ROLE_REALM_OWNER)
+
+    def test_change_owner_to_admin(self) -> None:
+        desdemona = self.example_user("desdemona")
+        self.login_user(desdemona)
+        iago = self.example_user("iago")
+        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER)
+        self.assertTrue(iago.is_realm_owner)
+
+        # Test changing a user from admin to owner and revoking admin status
+        iago = self.example_user("iago")
+        self.assertTrue(iago.is_realm_owner)
+        req = dict(role=UserProfile.ROLE_REALM_ADMINISTRATOR)
+        events: List[Mapping[str, Any]] = []
+        with tornado_redirected_to_list(events):
+            result = self.client_patch('/json/users/{}'.format(iago.id), req)
+        self.assert_json_success(result)
+
+        iago = self.example_user("iago")
+        self.assertFalse(iago.is_realm_owner)
+
+        person = events[0]['event']['person']
+        self.assertEqual(person['user_id'], iago.id)
         self.assertEqual(person['role'], UserProfile.ROLE_REALM_ADMINISTRATOR)
 
     def test_admin_user_can_change_profile_data(self) -> None:
