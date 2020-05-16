@@ -454,6 +454,11 @@ class Realm(models.Model):
         # TODO: Change return type to QuerySet[UserProfile]
         return UserProfile.objects.filter(realm=self, is_active=True).select_related()
 
+    def get_human_owner_users(self) -> QuerySet:
+        return UserProfile.objects.filter(realm=self, is_bot=False,
+                                          role=UserProfile.ROLE_REALM_OWNER,
+                                          is_active=True)
+
     def get_bot_domain(self) -> str:
         return get_fake_email_domain()
 
@@ -873,6 +878,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     role: int = models.PositiveSmallIntegerField(default=ROLE_MEMBER, db_index=True)
 
     ROLE_TYPES = [
+        ROLE_REALM_OWNER,
         ROLE_REALM_ADMINISTRATOR,
         ROLE_MEMBER,
         ROLE_GUEST,

@@ -3878,23 +3878,21 @@ class DeactivateUserTest(ZulipTestCase):
         password = initial_password(email)
         self.assert_login_failure(email, password=password)
 
-    def test_do_not_deactivate_final_admin(self) -> None:
-        user = self.example_user('iago')
-        user_2 = self.example_user('desdemona')
-        do_change_user_role(user_2, UserProfile.ROLE_MEMBER)
-        self.assertFalse(user_2.is_realm_admin)
+    def test_do_not_deactivate_final_owner(self) -> None:
+        user = self.example_user('desdemona')
+        user_2 = self.example_user('iago')
         self.login_user(user)
         self.assertTrue(user.is_active)
         result = self.client_delete('/json/users/me')
-        self.assert_json_error(result, "Cannot deactivate the only organization administrator.")
-        user = self.example_user('iago')
+        self.assert_json_error(result, "Cannot deactivate the only organization owner.")
+        user = self.example_user('desdemona')
         self.assertTrue(user.is_active)
-        self.assertTrue(user.is_realm_admin)
-        do_change_user_role(user_2, UserProfile.ROLE_REALM_ADMINISTRATOR)
-        self.assertTrue(user_2.is_realm_admin)
+        self.assertTrue(user.is_realm_owner)
+        do_change_user_role(user_2, UserProfile.ROLE_REALM_OWNER)
+        self.assertTrue(user_2.is_realm_owner)
         result = self.client_delete('/json/users/me')
         self.assert_json_success(result)
-        do_change_user_role(user, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(user, UserProfile.ROLE_REALM_OWNER)
 
     def test_do_not_deactivate_final_user(self) -> None:
         realm = get_realm('zulip')
