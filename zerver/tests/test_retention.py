@@ -511,6 +511,19 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         restore_all_data_from_archive()
         self._verify_restored_data(msg_ids, usermsg_ids)
 
+    def test_move_messages_to_archive_with_realm_argument(self) -> None:
+        realm = get_realm("zulip")
+        msg_ids = [self.send_personal_message(self.sender, self.recipient)
+                   for i in range(0, 3)]
+        usermsg_ids = self._get_usermessage_ids(msg_ids)
+
+        self._assert_archive_empty()
+        move_messages_to_archive(message_ids=msg_ids, realm=realm)
+        self._verify_archive_data(msg_ids, usermsg_ids)
+
+        archive_transaction = ArchiveTransaction.objects.last()
+        self.assertEqual(archive_transaction.realm, realm)
+
     def test_stream_messages_archiving(self) -> None:
         msg_ids = [self.send_stream_message(self.sender, "Verona")
                    for i in range(0, 3)]
@@ -534,6 +547,31 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
 
         with self.assertRaises(Message.DoesNotExist):
             move_messages_to_archive(message_ids=msg_ids)
+
+    def test_archiving_messages_multiple_realms(self) -> None:
+        """
+        Verifies that move_messages_to_archive works correctly
+        if called on messages in multiple realms.
+        """
+        iago = self.example_user("iago")
+        othello = self.example_user("othello")
+
+        cordelia = self.lear_user("cordelia")
+        king = self.lear_user("king")
+
+        zulip_msg_ids = [self.send_personal_message(iago, othello)
+                         for i in range(0, 3)]
+        leary_msg_ids = [self.send_personal_message(cordelia, king)
+                         for i in range(0, 3)]
+        msg_ids = zulip_msg_ids + leary_msg_ids
+        usermsg_ids = self._get_usermessage_ids(msg_ids)
+
+        self._assert_archive_empty()
+        move_messages_to_archive(message_ids=msg_ids)
+        self._verify_archive_data(msg_ids, usermsg_ids)
+
+        restore_all_data_from_archive()
+        self._verify_restored_data(msg_ids, usermsg_ids)
 
     def test_archiving_messages_with_attachment(self) -> None:
         self._create_attachments()

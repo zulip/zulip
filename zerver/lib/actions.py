@@ -4600,7 +4600,7 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
             (event, message_id_to_notifiable_users.get(message.id, []))
         )
 
-    move_messages_to_archive(message_ids)
+    move_messages_to_archive(message_ids, realm=realm)
     for event, users_to_notify in events_and_users_to_notify:
         # TODO: Figure out some kind of bulk event that we could send just one of?
         send_event(realm, event, users_to_notify)

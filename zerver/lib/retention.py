@@ -380,7 +380,8 @@ def get_realms_and_streams_for_archiving() -> List[Tuple[Realm, List[Stream]]]:
     return [(realm_id_to_realm[realm_id], realm_id_to_streams_list[realm_id])
             for realm_id in realm_id_to_realm]
 
-def move_messages_to_archive(message_ids: List[int], chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
+def move_messages_to_archive(message_ids: List[int], realm: Optional[Realm]=None,
+                             chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
     query = SQL("""
     INSERT INTO zerver_archivedmessage ({dst_fields}, archive_transaction_id)
         SELECT {src_fields}, {archive_transaction_id}
@@ -394,6 +395,7 @@ def move_messages_to_archive(message_ids: List[int], chunk_size: int=MESSAGE_BAT
         query,
         type=ArchiveTransaction.MANUAL,
         message_ids=Literal(tuple(message_ids)),
+        realm=realm,
         chunk_size=chunk_size,
     )
 
