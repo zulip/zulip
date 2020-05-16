@@ -222,11 +222,7 @@ def deactivate_user(client: Client) -> None:
     # {code_example|start}
     # Deactivate a user
     user_id = 8
-    url = 'users/' + str(user_id)
-    result = client.call_endpoint(
-        url=url,
-        method='DELETE',
-    )
+    result = client.deactivate_user_by_id(user_id)
     # {code_example|end}
     validate_against_openapi_schema(result, '/users/{user_id}', 'delete', '200')
 
