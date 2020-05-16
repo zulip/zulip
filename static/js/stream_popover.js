@@ -549,6 +549,11 @@ exports.register_topic_handlers = function () {
     });
 
     $('body').on('click', '#do_move_topic_button', function (e) {
+        function show_error_msg(msg) {
+            $("#topic_stream_edit_form_error .error-msg").text(msg);
+            $("#topic_stream_edit_form_error").show();
+        }
+
         const params = $('#move_topic_form').serializeArray().reduce(function (obj, item) {
             obj[item.name] = item.value;
             return obj;
@@ -608,8 +613,7 @@ exports.register_topic_handlers = function () {
                 }
             },
             error: function (xhr) {
-                $("#topic_stream_edit_form_error .error-msg").text(xhr.responseJSON.msg);
-                $("#topic_stream_edit_form_error").show();
+                show_error_msg(xhr.responseJSON.msg);
             },
         });
         e.preventDefault();
