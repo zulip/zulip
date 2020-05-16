@@ -115,16 +115,18 @@ p.n-margin {
     width: 24px;
     height: 24px;
     margin: 0 auto 12px;
-}
 
-.top-messages-logo svg circle {
-    fill: hsl(0, 0%, 27%);
-    stroke: hsl(0, 0%, 27%);
-}
+    svg {
+        circle {
+            fill: hsl(0, 0%, 27%);
+            stroke: hsl(0, 0%, 27%);
+        }
 
-.top-messages-logo svg path {
-    fill: hsl(0, 0%, 100%);
-    stroke: hsl(0, 0%, 100%);
+        path {
+            fill: hsl(0, 0%, 100%);
+            stroke: hsl(0, 0%, 100%);
+        }
+    }
 }
 
 #feedback_container {
