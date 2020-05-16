@@ -64,14 +64,14 @@
                     </li>
                 </ul>
             </div>
-            <div class="stream-email-box" {{#unless sub.email_address}}style="display: none;"{{/unless}}>
-                <label class="sub_settings_title">
-                    {{t "Email address" }}
-                    {{> help_link_widget link="/help/message-a-stream-by-email" }}
-                </label>
-                <div class="stream-email">
-                    <span class="email-address">{{sub.email_address}}</span>
-                </div>
+        </div>
+        <div class="stream-email-box" {{#unless sub.email_address}}style="display: none;"{{/unless}}>
+            <label class="sub_settings_title">
+                {{t "Email address" }}
+                {{> help_link_widget link="/help/message-a-stream-by-email" }}
+            </label>
+            <div class="stream-email">
+                <span class="email-address">{{sub.email_address}}</span>
             </div>
         </div>
         {{#with sub}}
