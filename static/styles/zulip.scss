@@ -795,6 +795,10 @@ td.pointer {
     margin-bottom: 10px;
 }
 
+.message_list .stream_label {
+    margin-left: 0px;
+}
+
 .floating_recipient .recipient_row {
     border-top: 1px solid hsl(0, 0%, 88%);
 }
@@ -818,10 +822,6 @@ td.pointer {
 .stream_label .invite-stream-icon {
     font-size: 12px;
     line-height: 17px;
-}
-
-.message_list .stream_label {
-    margin-left: 0px;
 }
 
 .stream_label:hover {
