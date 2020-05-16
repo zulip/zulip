@@ -1,4 +1,4 @@
-const render_tab_bar = require('../templates/tab_bar.hbs');
+const make_tab_bar_template = require('../templates/tab_bar.hbs');
 const rendered_markdown = require('./rendered_markdown');
 
 function get_sub_count(current_stream) {
@@ -55,8 +55,8 @@ exports.colorize_tab_bar = function () {
 function display_tab_bar(tab_bar_data) {
     const tab_bar = $("#tab_bar");
     tab_bar.empty();
-    const rendered = render_tab_bar(tab_bar_data);
-    tab_bar.append(rendered);
+    const tab_bar_template = make_tab_bar_template(tab_bar_data);
+    tab_bar.append(tab_bar_template);
     if (tab_bar_data.stream_settings_link) {
         exports.colorize_tab_bar();
     }
