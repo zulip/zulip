@@ -350,22 +350,24 @@ label {
 }
 
 /* List of text-like input types taken from Bootstrap */
-input[type="text"],
-input[type="password"],
-input[type="datetime"],
-input[type="datetime-local"],
-input[type="date"],
-input[type="month"],
-input[type="time"],
-input[type="week"],
-input[type="number"],
-input[type="email"],
-input[type="url"],
-input[type="search"],
-input[type="tel"],
-input[type="color"] {
-    font-size: inherit;
-    height: 1.4em;
+input {
+    &[type="text"],
+    &[type="password"],
+    &[type="datetime"],
+    &[type="datetime-local"],
+    &[type="date"],
+    &[type="month"],
+    &[type="time"],
+    &[type="week"],
+    &[type="number"],
+    &[type="email"],
+    &[type="url"],
+    &[type="search"],
+    &[type="tel"],
+    &[type="color"] {
+        font-size: inherit;
+        height: 1.4em;
+    }
 }
 
 li,
