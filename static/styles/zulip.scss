@@ -148,22 +148,22 @@ p.n-margin {
 
     transition-property: top, bottom;
     transition-duration: 0.5s;
-}
 
-#feedback_container.show {
-    top: 50px;
-}
+    &.show {
+        top: 50px;
+    }
 
-#feedback_container h3 {
-    font-size: 16pt;
-    margin-top: 2px;
-}
+    h3 {
+        font-size: 16pt;
+        margin-top: 2px;
+    }
 
-#feedback_container .exit-me {
-    font-size: 30pt;
-    font-weight: 200;
-    margin: 5px 0px 0px 10px;
-    cursor: pointer;
+    .exit-me {
+        font-size: 30pt;
+        font-weight: 200;
+        margin: 5px 0px 0px 10px;
+        cursor: pointer;
+    }
 }
 
 @keyframes pulse {
