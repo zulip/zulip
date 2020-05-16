@@ -308,27 +308,27 @@ p.n-margin {
 .app-main {
     height: 100%;
     min-height: 100%;
-}
 
-.app-main .column-left .left-sidebar,
-.app-main .column-right .right-sidebar {
-    position: fixed;
-    margin-top: 50px;
-    z-index: 100;
-}
+    .column-left .left-sidebar,
+    .column-right .right-sidebar {
+        position: fixed;
+        margin-top: 50px;
+        z-index: 100;
+    }
 
-.app-main .column-left .left-sidebar {
-    width: 242px;
-    padding-left: 0px;
-}
+    .column-left .left-sidebar {
+        width: 242px;
+        padding-left: 0px;
+    }
 
-.app-main .column-right .right-sidebar {
-    padding-left: 10px;
-    width: 240px;
-}
+    .column-right .right-sidebar {
+        padding-left: 10px;
+        width: 240px;
+    }
 
-.app-main .column-middle {
-    min-height: 100%;
+    .column-middle {
+        min-height: 100%;
+    }
 }
 
 .column-middle {
