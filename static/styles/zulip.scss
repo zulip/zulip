@@ -936,12 +936,14 @@ td.pointer {
     }
 }
 
-.bookend_tr + .summary_row .message_header {
-    border-top-right-radius: 3px;
-}
+.bookend_tr + .summary_row {
+    .message_header {
+        border-top-right-radius: 3px;
+    }
 
-.bookend_tr + .summary_row .summary_colorblock {
-    border-top-left-radius: 3px;
+    .summary_colorblock {
+        border-top-left-radius: 3px;
+    }
 }
 
 .copy-paste-text {
