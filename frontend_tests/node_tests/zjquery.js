@@ -54,6 +54,10 @@ run_test('basics', () => {
     assert.equal(widget.attr('data-department-id'), 77);
     assert.equal(widget.data('department-id'), 77);
 
+    widget.data('department-name', 'hr');
+    assert.equal(widget.attr('data-department-name'), 'hr');
+    assert.equal(widget.data('department-name'), 'hr');
+
     widget.html('<b>hello</b>');
     assert.equal(widget.html(), '<b>hello</b>');
 
