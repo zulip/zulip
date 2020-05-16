@@ -1026,6 +1026,7 @@ td.pointer {
 
 .message-header-contents {
     border-right: 1px solid hsl(0, 0%, 88%);
+    background-color: hsl(0, 0%, 88%);
 }
 
 .mention .messagebox {
@@ -2002,10 +2003,6 @@ div.floating_recipient {
 
 #floating_recipient_bar {
     top: 50px;
-}
-
-.message-header-contents {
-    background-color: hsl(0, 0%, 88%);
 }
 
 #bottom_whitespace {
