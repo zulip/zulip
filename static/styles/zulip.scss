@@ -838,48 +838,48 @@ td.pointer {
     border-width: 0px;
     position: relative;
     text-decoration: none;
-}
 
-.stream_label .invite-stream-icon {
-    font-size: 12px;
-    line-height: 17px;
-}
+    .invite-stream-icon {
+        font-size: 12px;
+        line-height: 17px;
+    }
 
-.stream_label:hover {
-    color: inherit !important;
-    text-decoration: none;
-}
+    &:hover {
+        color: inherit !important;
+        text-decoration: none;
+    }
 
-.stream_label::after {
-    left: 100%;
-    top: 50%;
-    content: " ";
-    height: 0px;
-    width: 0px;
-    position: absolute;
-    pointer-events: none;
-    margin-top: -11px;
-    border-style: solid;
-    border-width: 11px 0 11px 5px;
-    border-color: inherit;
-    z-index: 2;
-    transform: scale(.9999);
-}
+    &::after {
+        left: 100%;
+        top: 50%;
+        content: " ";
+        height: 0px;
+        width: 0px;
+        position: absolute;
+        pointer-events: none;
+        margin-top: -11px;
+        border-style: solid;
+        border-width: 11px 0 11px 5px;
+        border-color: inherit;
+        z-index: 2;
+        transform: scale(.9999);
+    }
 
-.stream_label::before {
-    left: 100%;
-    top: 50%;
-    content: " ";
-    height: 0px;
-    width: 0px;
-    position: absolute;
-    pointer-events: none;
-    margin-top: -14px;
-    border-style: solid;
-    border-width: 14px 0 14px 6px;
-    border-color: hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) transparent;
-    z-index: 1;
-    transform: scale(.9999);
+    &::before {
+        left: 100%;
+        top: 50%;
+        content: " ";
+        height: 0px;
+        width: 0px;
+        position: absolute;
+        pointer-events: none;
+        margin-top: -14px;
+        border-style: solid;
+        border-width: 14px 0 14px 6px;
+        border-color: hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) transparent;
+        z-index: 1;
+        transform: scale(.9999);
+    }
 }
 
 .stream_topic {
