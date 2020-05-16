@@ -1400,6 +1400,30 @@ paths:
                         "result": "error"
                     }
 
+  /users/{user_id}/reactivate:
+    post:
+      description: |
+        [Reactivates a
+        user](https://zulipchat.com/help/deactivate-or-reactivate-a-user)
+        given their user ID.
+
+        `POST {{ api_url }}/v1/users/{user_id}/reactivate`
+      parameters:
+      - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - example:
+                    {
+                      "msg": "",
+                      "result": "success",
+                    }
+
   /users/{email}/presence:
     get:
       description: |
