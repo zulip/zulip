@@ -158,11 +158,11 @@ class StreamWithIDDoesNotExistError(JsonableError):
 
 class CannotDeactivateLastUserError(JsonableError):
     code = ErrorCode.CANNOT_DEACTIVATE_LAST_USER
-    data_fields = ['is_last_admin', 'entity']
+    data_fields = ['is_last_owner', 'entity']
 
-    def __init__(self, is_last_admin: bool) -> None:
-        self.is_last_admin = is_last_admin
-        self.entity = _("organization administrator") if is_last_admin else _("user")
+    def __init__(self, is_last_owner: bool) -> None:
+        self.is_last_owner = is_last_owner
+        self.entity = _("organization owner") if is_last_owner else _("user")
 
     @staticmethod
     def msg_format() -> str:

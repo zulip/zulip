@@ -42,22 +42,18 @@ from zproject.backends import check_password_strength
 def deactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
                             user_id: int) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id)
-    if check_last_admin(target):
-        return json_error(_('Cannot deactivate the only organization administrator'))
+    if check_last_owner(target):
+        return json_error(_('Cannot deactivate the only organization owner'))
     return _deactivate_user_profile_backend(request, user_profile, target)
 
 def deactivate_user_own_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     if UserProfile.objects.filter(realm=user_profile.realm, is_active=True).count() == 1:
-        raise CannotDeactivateLastUserError(is_last_admin=False)
-    if user_profile.is_realm_admin and check_last_admin(user_profile):
-        raise CannotDeactivateLastUserError(is_last_admin=True)
+        raise CannotDeactivateLastUserError(is_last_owner=False)
+    if user_profile.is_realm_owner and check_last_owner(user_profile):
+        raise CannotDeactivateLastUserError(is_last_owner=True)
 
     do_deactivate_user(user_profile, acting_user=user_profile)
     return json_success()
-
-def check_last_admin(user_profile: UserProfile) -> bool:
-    admins = set(user_profile.realm.get_human_admin_users())
-    return user_profile.is_realm_admin and not user_profile.is_bot and len(admins) == 1
 
 def check_last_owner(user_profile: UserProfile) -> bool:
     owners = set(user_profile.realm.get_human_owner_users())
