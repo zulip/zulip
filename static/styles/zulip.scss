@@ -749,6 +749,17 @@ td.pointer {
     }
 }
 
+.messagebox {
+    word-wrap: break-word;
+    cursor: pointer;
+    vertical-align: top;
+    border: none;
+}
+
+.messagebox {
+    position: relative;
+}
+
 .messagebox:hover .message_controls {
     .empty-star {
         opacity: 0.4;
@@ -763,6 +774,10 @@ td.pointer {
         opacity: 1;
         pointer-events: all;
     }
+}
+
+.messagebox .message_top_line {
+    position: relative;
 }
 
 .message_header {
@@ -985,10 +1000,6 @@ td.pointer {
 /* Base color backgrounds for messageboxes,
    private messages, mentions, and unread messages */
 
-.messagebox {
-    position: relative;
-}
-
 .message_header_private_message .message-header-contents {
     background-color: hsla(192, 19%, 75%, 0.2);
     box-shadow: inset 1px 1px 0px hsl(0, 0%, 88%);
@@ -1008,10 +1019,6 @@ td.pointer {
 
 .mention .messagebox {
     background-color: hsl(8, 94%, 94%);
-}
-
-.messagebox .message_top_line {
-    position: relative;
 }
 
 .recipient_row .message_row:first-child .unread_marker {
@@ -1348,14 +1355,6 @@ div.focused_table {
 
 .message_length_controller:hover {
     text-decoration: underline;
-}
-
-/* CSS for the message box */
-.messagebox {
-    word-wrap: break-word;
-    cursor: pointer;
-    vertical-align: top;
-    border: none;
 }
 
 .messagebox-content {
