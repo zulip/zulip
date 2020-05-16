@@ -52,7 +52,7 @@ exports.colorize_tab_bar = function () {
     $("#tab_list .fa-lock").css('color', stream_light);
 };
 
-function display_tab_bar(tab_bar_data) {
+function append_and_display_title_area(tab_bar_data) {
     const tab_bar = $("#tab_bar");
     tab_bar.empty();
     const rendered = render_tab_bar(tab_bar_data);
@@ -74,7 +74,7 @@ function build_tab_bar(filter) {
         exports.open_search_bar_and_close_narrow_description();
     } else {
         const tab_bar_data = make_tab_data(filter);
-        display_tab_bar(tab_bar_data);
+        append_and_display_title_area(tab_bar_data);
 
         $(".search_closed").on("click", function (e) {
             exports.open_search_bar_and_close_narrow_description();
