@@ -158,10 +158,10 @@ exports.update_stream_description = function (sub, description, rendered_descrip
     // Update stream settings
     stream_edit.update_stream_description(sub);
 
-    // Update navbar stream description if needed
+    // Update navbar if needed
     const filter = narrow_state.filter();
     if (filter && filter.operands("stream")[0] === sub.name) {
-        tab_bar.update_stream_description(sub.rendered_description);
+        tab_bar.render_tab_bar();
     }
 };
 
