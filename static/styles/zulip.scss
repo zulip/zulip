@@ -679,10 +679,6 @@ td.pointer {
     display: none;
 }
 
-.private-message .alert-msg {
-    background-color: hsl(192, 20%, 95%);
-}
-
 .status-time {
     top: 8px !important;
 }
@@ -1012,6 +1008,10 @@ td.pointer {
         background-color: hsla(192, 19%, 75%, 0.2);
         box-shadow: inset 1px 1px 0px hsl(0, 0%, 88%);
     }
+}
+
+.private-message .alert-msg {
+    background-color: hsl(192, 20%, 95%);
 }
 
 .private-message .messagebox,
