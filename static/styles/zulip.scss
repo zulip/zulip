@@ -575,6 +575,30 @@ td.pointer {
     width: auto;
 }
 
+.include-sender .message_time {
+    top: -4px;
+}
+
+.include-sender .alert-msg {
+    top: -3px;
+}
+
+.include-sender .message_controls {
+    top: -3px;
+}
+
+.include-sender .message_top_line {
+    margin-top: 6px;
+}
+
+.include-sender .message_content:not(:empty) {
+    margin-top: -18px;
+}
+
+.include-sender .message_edit {
+    margin-top: -14px;
+}
+
 .sender-status .message_edit_notice {
     line-height: 18px;
 }
@@ -589,10 +613,6 @@ td.pointer {
     left: 0px;
     top: 16px;
     user-select: none;
-}
-
-.include-sender .message_time {
-    top: -4px;
 }
 
 .message_time {
@@ -630,10 +650,6 @@ td.pointer {
 
 .private-message .alert-msg {
     background-color: hsl(192, 20%, 95%);
-}
-
-.include-sender .alert-msg {
-    top: -3px;
 }
 
 .status-time {
@@ -716,10 +732,6 @@ td.pointer {
         opacity: 1;
         pointer-events: all;
     }
-}
-
-.include-sender .message_controls {
-    top: -3px;
 }
 
 .message_header {
@@ -1138,10 +1150,6 @@ a.dark_background:hover,
     position: relative;
 }
 
-.include-sender .message_top_line {
-    margin-top: 6px;
-}
-
 .small {
     font-size: 80%;
 }
@@ -1186,10 +1194,6 @@ div.message_table {
 
 div.focused_table {
     display: block;
-}
-
-.include-sender .message_content:not(:empty) {
-    margin-top: -18px;
 }
 
 .message_content {
@@ -2439,10 +2443,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 .date_row span::after {
     left: 0.5em;
     margin-right: -50%;
-}
-
-.include-sender .message_edit {
-    margin-top: -14px;
 }
 
 .message_edit {
