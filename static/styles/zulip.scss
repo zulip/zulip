@@ -805,6 +805,23 @@ td.pointer {
     border-top: 1px solid hsl(0, 0%, 88%);
 }
 
+.floating_recipient .recipient_row_date.hide-date {
+    display: block;
+}
+
+/*
+   We can't collapse the floating recipient bar yet, so this is
+   just a temporary hack.
+*/
+.floating_recipient .messages-collapse {
+    display: none;
+}
+
+.floating_recipient .message_header_private_message {
+    border-bottom: 0px;
+    border-left: 0px;
+}
+
 .stream_label {
     display: inline-block;
     padding: 4px 6px 3px 6px;
@@ -888,10 +905,6 @@ td.pointer {
     display: none;
 }
 
-.floating_recipient .recipient_row_date.hide-date {
-    display: block;
-}
-
 .recipient_bar_icon {
     padding-left: 2px;
     padding-right: 2px;
@@ -942,14 +955,6 @@ td.pointer {
     cursor: pointer;
 }
 
-/*
-   We can't collapse the floating recipient bar yet, so this is
-   just a temporary hack.
-*/
-.floating_recipient .messages-collapse {
-    display: none;
-}
-
 @keyframes rotate {
     from {
         transform: rotate(0deg);
@@ -978,11 +983,6 @@ td.pointer {
     100% {
         transform: translateX(0px);
     }
-}
-
-.floating_recipient .message_header_private_message {
-    border-bottom: 0px;
-    border-left: 0px;
 }
 
 .message_header_private_message .message_label_clickable {
