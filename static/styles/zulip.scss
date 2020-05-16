@@ -480,21 +480,23 @@ strong {
     display: inline;
 }
 
-.tooltip.in {
-    font-size: 12px;
-    line-height: 1.3;
+.tooltip {
+    &.in {
+        font-size: 12px;
+        line-height: 1.3;
 
-    opacity: 1;
-}
+        opacity: 1;
 
-.tooltip.in.left {
-    margin-left: -12px;
-    margin-top: 3px;
-}
+        &.left {
+            margin-left: -12px;
+            margin-top: 3px;
+        }
+    }
 
-.tooltip .tooltip-inner {
-    background-color: hsla(0, 0%, 7%, 0.8);
-    padding: 3px 5px;
+    .tooltip-inner {
+        background-color: hsla(0, 0%, 7%, 0.8);
+        padding: 3px 5px;
+    }
 }
 
 .buddy_list_tooltip_content {
