@@ -565,38 +565,40 @@ td.pointer {
     transition: all 3s ease-in-out;
 }
 
-.include-sender .message_edit_notice {
-    display: inline-block;
-    vertical-align: top;
-    line-height: 14px;
-    margin-left: 0px;
-    position: static;
-    padding: 0px;
-    width: auto;
-}
+.include-sender {
+    .message_edit_notice {
+        display: inline-block;
+        vertical-align: top;
+        line-height: 14px;
+        margin-left: 0px;
+        position: static;
+        padding: 0px;
+        width: auto;
+    }
 
-.include-sender .message_time {
-    top: -4px;
-}
+    .message_time {
+        top: -4px;
+    }
 
-.include-sender .alert-msg {
-    top: -3px;
-}
+    .alert-msg {
+        top: -3px;
+    }
 
-.include-sender .message_controls {
-    top: -3px;
-}
+    .message_controls {
+        top: -3px;
+    }
 
-.include-sender .message_top_line {
-    margin-top: 6px;
-}
+    .message_top_line {
+        margin-top: 6px;
+    }
 
-.include-sender .message_content:not(:empty) {
-    margin-top: -18px;
-}
+    .message_content:not(:empty) {
+        margin-top: -18px;
+    }
 
-.include-sender .message_edit {
-    margin-top: -14px;
+    .message_edit {
+        margin-top: -14px;
+    }
 }
 
 .sender-status .message_edit_notice {
