@@ -232,26 +232,14 @@ def update_user(client: Client) -> None:
     # {code_example|start}
     # Change a user's full name.
     user_id = 10
-    full_name = "New Name"
-    url = 'users/' + str(user_id)
-    result = client.call_endpoint(
-        url=url,
-        method='PATCH',
-        request={'full_name': json.dumps(full_name)}
-    )
+    result = client.update_user_by_id(user_id, full_name = "New Name")
     # {code_example|end}
     validate_against_openapi_schema(result, '/users/{user_id}', 'patch', '200')
 
     # {code_example|start}
     # Change value of the custom profile field with ID 9.
     user_id = 8
-    profile_data = [{'id': 9, 'value': 'some data'}]
-    url = 'users/' + str(user_id)
-    result = client.call_endpoint(
-        url=url,
-        method='PATCH',
-        request={'profile_data': json.dumps(profile_data)}
-    )
+    result = client.update_user_by_id(user_id, profile_data = [{'id': 9, 'value': 'some data'}])
     # {code_example|end}
     validate_against_openapi_schema(result, '/users/{user_id}', 'patch', '400')
 
