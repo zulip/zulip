@@ -159,6 +159,13 @@ p.n-margin {
     margin-top: 2px;
 }
 
+#feedback_container .exit-me {
+    font-size: 30pt;
+    font-weight: 200;
+    margin: 5px 0px 0px 10px;
+    cursor: pointer;
+}
+
 @keyframes pulse {
     0% {
         box-shadow: 0px 0px 30px hsla(0, 0%, 0%, 0.35);
@@ -187,13 +194,6 @@ p.n-margin {
 
 .message_edit_notice_hover:hover {
     opacity: 1.0;
-}
-
-#feedback_container .exit-me {
-    font-size: 30pt;
-    font-weight: 200;
-    margin: 5px 0px 0px 10px;
-    cursor: pointer;
 }
 
 .header {
