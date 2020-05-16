@@ -61,6 +61,7 @@ class HomeTest(ZulipTestCase):
             "bot_types",
             "can_create_streams",
             "can_subscribe_other_users",
+            "color_scheme",
             "cross_realm_bots",
             "custom_profile_field_types",
             "custom_profile_fields",
@@ -117,7 +118,6 @@ class HomeTest(ZulipTestCase):
             "narrow_stream",
             "needs_tutorial",
             "never_subscribed",
-            "night_mode",
             "notification_sound",
             "password_min_guesses",
             "password_min_length",
@@ -761,34 +761,34 @@ class HomeTest(ZulipTestCase):
     def test_compute_navbar_logo_url(self) -> None:
         user_profile = self.example_user("hamlet")
 
-        page_params = {"night_mode": True}
+        page_params = {"color_scheme": user_profile.COLOR_SCHEME_NIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
                          "/static/images/logo/zulip-org-logo.png?version=0")
 
-        page_params = {"night_mode": False}
+        page_params = {"color_scheme": user_profile.COLOR_SCHEME_LIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
                          "/static/images/logo/zulip-org-logo.png?version=0")
 
         do_change_logo_source(user_profile.realm, Realm.LOGO_UPLOADED, night=False)
-        page_params = {"night_mode": True}
+        page_params = {"color_scheme": user_profile.COLOR_SCHEME_NIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
                          f"/user_avatars/{user_profile.realm_id}/realm/logo.png?version=2")
 
-        page_params = {"night_mode": False}
+        page_params = {"color_scheme": user_profile.COLOR_SCHEME_LIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
                          f"/user_avatars/{user_profile.realm_id}/realm/logo.png?version=2")
 
         do_change_logo_source(user_profile.realm, Realm.LOGO_UPLOADED, night=True)
-        page_params = {"night_mode": True}
+        page_params = {"color_scheme": user_profile.COLOR_SCHEME_NIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
                          f"/user_avatars/{user_profile.realm_id}/realm/night_logo.png?version=2")
 
-        page_params = {"night_mode": False}
+        page_params = {"color_scheme": user_profile.COLOR_SCHEME_LIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
                          f"/user_avatars/{user_profile.realm_id}/realm/logo.png?version=2")
@@ -796,12 +796,12 @@ class HomeTest(ZulipTestCase):
         # This configuration isn't super supported in the UI and is a
         # weird choice, but we have a test for it anyway.
         do_change_logo_source(user_profile.realm, Realm.LOGO_DEFAULT, night=False)
-        page_params = {"night_mode": True}
+        page_params = {"color_scheme": user_profile.COLOR_SCHEME_NIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
                          f"/user_avatars/{user_profile.realm_id}/realm/night_logo.png?version=2")
 
-        page_params = {"night_mode": False}
+        page_params = {"color_scheme": user_profile.COLOR_SCHEME_LIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
                          "/static/images/logo/zulip-org-logo.png?version=0")

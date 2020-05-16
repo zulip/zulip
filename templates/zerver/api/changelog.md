@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 2.2
 
+**Feature level 21**
+
+* `PATCH /settings/display`: Replaced the `night_mode` boolean with
+  `color_scheme` as part of supporting automatic night theme detection.
+
 **Feature level 20**
 
 * Added support for inviting users as organization owners to the

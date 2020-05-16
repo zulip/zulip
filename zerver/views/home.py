@@ -129,7 +129,7 @@ def get_bot_types(user_profile: Optional[UserProfile]) -> List[Dict[str, object]
     return bot_types
 
 def compute_navbar_logo_url(page_params: Dict[str, Any]) -> str:
-    if page_params["night_mode"] and page_params["realm_night_logo_source"] != Realm.LOGO_DEFAULT:
+    if page_params["color_scheme"] == 2 and page_params["realm_night_logo_source"] != Realm.LOGO_DEFAULT:
         navbar_logo_url = page_params["realm_night_logo_url"]
     else:
         navbar_logo_url = page_params["realm_logo_url"]
@@ -315,13 +315,13 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     csp_nonce = generate_random_token(48)
     if user_profile is not None:
-        night_mode = user_profile.night_mode
+        color_scheme = user_profile.color_scheme
         is_guest = user_profile.is_guest
         is_realm_owner = user_profile.is_realm_owner
         is_realm_admin = user_profile.is_realm_admin
         show_webathena = user_profile.realm.webathena_enabled
     else:  # nocoverage
-        night_mode = False
+        color_scheme = UserProfile.COLOR_SCHEME_AUTOMATIC
         is_guest = False
         is_realm_admin = False
         is_realm_owner = False
@@ -342,7 +342,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                'is_owner': is_realm_owner,
                                'is_admin': is_realm_admin,
                                'is_guest': is_guest,
-                               'night_mode': night_mode,
+                               'color_scheme': color_scheme,
                                'navbar_logo_url': navbar_logo_url,
                                'show_webathena': show_webathena,
                                'embedded': narrow_stream is not None,

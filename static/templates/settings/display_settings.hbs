@@ -21,6 +21,14 @@
             <h3 class="inline-block">{{t "Display settings" }}</h3>
             <div class="alert-notification" id="display-settings-status"></div>
 
+            <div class="input-group">
+                <label for="color_scheme" class="dropdown-title">{{t "Color scheme" }}
+                </label>
+                <select name="color_scheme" id="color_scheme">
+                    {{> dropdown_options_widget option_values=color_scheme_values}}
+                </select>
+            </div>
+
             {{#each display_settings.settings.user_display_settings}}
             {{> settings_checkbox
               setting_name=this

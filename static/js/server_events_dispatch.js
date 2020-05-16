@@ -1,3 +1,5 @@
+const settings_config = require("./settings_config");
+
 exports.dispatch_normal_event = function dispatch_normal_event(event) {
     const noop = function () {};
     switch (event.type) {
@@ -395,13 +397,13 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
 
     case 'update_display_settings': {
         const user_display_settings = [
+            'color_scheme',
             'default_language',
             'demote_inactive_streams',
             'dense_mode',
             'emojiset',
             'fluid_layout_width',
             'high_contrast_mode',
-            'night_mode',
             'left_side_userlist',
             'timezone',
             'twenty_four_hour_time',
@@ -433,14 +435,17 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             $("body").toggleClass("less_dense_mode");
             $("body").toggleClass("more_dense_mode");
         }
-        if (event.setting_name === 'night_mode') {
+        if (event.setting_name === 'color_scheme') {
             $("body").fadeOut(300);
             setTimeout(function () {
-                if (event.setting === true) {
+                if (event.setting === settings_config.color_scheme_values.night.code) {
                     night_mode.enable();
                     realm_logo.rerender();
-                } else {
+                } else if (event.setting === settings_config.color_scheme_values.day.code) {
                     night_mode.disable();
+                    realm_logo.rerender();
+                } else {
+                    night_mode.default_preference_checker();
                     realm_logo.rerender();
                 }
                 $("body").fadeIn(300);
