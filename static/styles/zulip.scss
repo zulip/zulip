@@ -642,23 +642,25 @@ td.pointer {
     transition: background-color 1.5s ease-in, color 1.5s ease-in;
 }
 
-#message-edit-history .message_time {
-    position: static;
-}
+#message-edit-history {
+    .message_time {
+        position: static;
+    }
 
-#message-edit-history .message_author {
-    position: relative;
-}
+    .message_author {
+        position: relative;
+    }
 
-#message-edit-history .author_details {
-    display: block;
-    font-size: 12px;
-    padding: 1px;
-    text-align: right;
-}
+    .author_details {
+        display: block;
+        font-size: 12px;
+        padding: 1px;
+        text-align: right;
+    }
 
-#message-edit-history .messagebox-content {
-    padding: 0px 10px;
+    .messagebox-content {
+        padding: 0px 10px;
+    }
 }
 
 /* The way this overrides the menus with a background-color and a high
