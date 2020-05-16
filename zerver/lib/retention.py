@@ -191,9 +191,10 @@ def move_expired_personal_and_huddle_messages_to_archive(realm: Realm,
         chunk_size=chunk_size,
     )
 
-    # Archive cross-realm personal messages to users in the realm:
-    # Note: Cross-realm huddle message aren't handled yet, they remain an issue
-    # that should be addressed.
+    # Archive cross-realm personal messages to users in the realm.
+    # We don't archive cross-realm huddle messages via retention policy,
+    # as they're essentially non-existant and the query to deal with them
+    # would be unnecessary complexity and waste of database time.
     query = SQL("""
     INSERT INTO zerver_archivedmessage ({dst_fields}, archive_transaction_id)
         SELECT {src_fields}, {archive_transaction_id}
