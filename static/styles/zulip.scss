@@ -646,6 +646,21 @@ td.pointer {
     position: static;
 }
 
+#message-edit-history .message_author {
+    position: relative;
+}
+
+#message-edit-history .author_details {
+    display: block;
+    font-size: 12px;
+    padding: 1px;
+    text-align: right;
+}
+
+#message-edit-history .messagebox-content {
+    padding: 0px 10px;
+}
+
 /* The way this overrides the menus with a background-color and a high
    z-index is kinda hacky, and requires some annoying color-matching,
    but it works. */
@@ -1305,17 +1320,6 @@ div.focused_table {
     max-width: 100%;
 }
 
-#message-edit-history .message_author {
-    position: relative;
-}
-
-#message-edit-history .author_details {
-    display: block;
-    font-size: 12px;
-    padding: 1px;
-    text-align: right;
-}
-
 .message_content.condensed {
     max-height: 8.5em;
     min-height: 0em;
@@ -1354,10 +1358,6 @@ div.focused_table {
 
 .messagebox-content {
     padding: 4px 115px 1px 10px;
-}
-
-#message-edit-history .messagebox-content {
-    padding: 0px 10px;
 }
 
 .last_message .messagebox-content {
