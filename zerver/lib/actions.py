@@ -249,6 +249,7 @@ def realm_user_count(realm: Realm) -> int:
 
 def realm_user_count_by_role(realm: Realm) -> Dict[str, Any]:
     human_counts = {UserProfile.ROLE_REALM_ADMINISTRATOR: 0,
+                    UserProfile.ROLE_REALM_OWNER: 0,
                     UserProfile.ROLE_MEMBER: 0,
                     UserProfile.ROLE_GUEST: 0}
     for value_dict in list(UserProfile.objects.filter(

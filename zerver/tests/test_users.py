@@ -90,12 +90,21 @@ class PermissionTest(ZulipTestCase):
     def test_get_admin_users(self) -> None:
         user_profile = self.example_user('hamlet')
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
+        self.assertFalse(user_profile.is_realm_owner)
         admin_users = user_profile.realm.get_human_admin_users()
         self.assertFalse(user_profile in admin_users)
         admin_users = user_profile.realm.get_admin_users_and_bots()
         self.assertFalse(user_profile in admin_users)
 
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.assertFalse(user_profile.is_realm_owner)
+        admin_users = user_profile.realm.get_human_admin_users()
+        self.assertTrue(user_profile in admin_users)
+        admin_users = user_profile.realm.get_admin_users_and_bots()
+        self.assertTrue(user_profile in admin_users)
+
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER)
+        self.assertTrue(user_profile.is_realm_owner)
         admin_users = user_profile.realm.get_human_admin_users()
         self.assertTrue(user_profile in admin_users)
         admin_users = user_profile.realm.get_admin_users_and_bots()
