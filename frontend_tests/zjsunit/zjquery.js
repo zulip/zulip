@@ -165,7 +165,7 @@ exports.make_new_elem = function (selector, opts) {
                 if (data_val === undefined) {
                     return;
                 }
-                return JSON.parse(data_val);
+                return data_val;
             }
             attrs.set('data-' + name, val);
             return self;
