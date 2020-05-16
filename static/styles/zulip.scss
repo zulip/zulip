@@ -211,44 +211,44 @@ p.n-margin {
 
 #panels {
     font-size: 1rem;
-}
 
-#panels .alert {
-    margin: 0;
-    padding-top: 12px;
-    padding-bottom: 12px;
+    .alert {
+        margin: 0;
+        padding-top: 12px;
+        padding-bottom: 12px;
 
-    border: none;
-    border-radius: 0;
+        border: none;
+        border-radius: 0;
 
-    text-align: center;
-    text-shadow: none;
-    color: hsl(0, 0%, 100%);
-}
+        text-align: center;
+        text-shadow: none;
+        color: hsl(0, 0%, 100%);
 
-#panels .alert.alert-info {
-    background-color: hsl(170, 46%, 54%);
-}
+        &.alert-info {
+            background-color: hsl(170, 46%, 54%);
 
-#panels .alert.alert-info.red {
-    background-color: hsl(0, 46%, 54%);
-}
+            &.red {
+                background-color: hsl(0, 46%, 54%);
+            }
+        }
 
-#panels .alert .close {
-    line-height: 24px;
-}
+        .close {
+            line-height: 24px;
+        }
 
-#panels .alert .alert-link {
-    color: hsl(169, 100%, 88%);
-    font-weight: 600;
-}
+        .alert-link {
+            color: hsl(169, 100%, 88%);
+            font-weight: 600;
+        }
 
-#panels .alert.red .alert-link {
-    color: hsl(0, 100%, 88%);
-}
+        &.red .alert-link {
+            color: hsl(0, 100%, 88%);
+        }
 
-#panels .alert .buttons .alert-link {
-    margin: 0px 5px;
+        .buttons .alert-link {
+            margin: 0px 5px;
+        }
+    }
 }
 
 .app {
