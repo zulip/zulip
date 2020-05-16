@@ -413,22 +413,24 @@ li,
     font-size: 115%;
 }
 
-.header-main .logo {
-    display: inline-block;
-    font-size: 120%;
-    font-weight: 900;
-    text-shadow: none;
-    color: hsl(0, 0%, 100%);
-    font-variant: small-caps;
-    letter-spacing: 2px;
-    line-height: 18px;
-    text-decoration: none;
-    position: relative;
-}
+.header-main {
+    .logo {
+        display: inline-block;
+        font-size: 120%;
+        font-weight: 900;
+        text-shadow: none;
+        color: hsl(0, 0%, 100%);
+        font-variant: small-caps;
+        letter-spacing: 2px;
+        line-height: 18px;
+        text-decoration: none;
+        position: relative;
+    }
 
-.header-main .logoimage {
-    height: 40px;
-    width: auto;
+    .logoimage {
+        height: 40px;
+        width: auto;
+    }
 }
 
 #user-settings-avatar {
