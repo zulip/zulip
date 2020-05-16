@@ -511,10 +511,10 @@ strong {
     margin-left: 6px;
     opacity: 0.5;
     cursor: pointer;
-}
 
-#message_edit_tooltip:hover {
-    opacity: 1.0;
+    &:hover {
+        opacity: 1.0;
+    }
 }
 
 .message-edit-tooltip-inner {
