@@ -1924,6 +1924,11 @@ div.focused_table {
         opacity: 1;
         text-shadow: none;
     }
+
+    li.dropdown li.divider {
+        margin-left: 15px;
+        margin-right: 15px;
+    }
 }
 
 nav .column-left {
