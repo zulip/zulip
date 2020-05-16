@@ -1337,6 +1337,8 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod):
     # it should be False.
     full_name_validated = False
 
+    standard_relay_params = settings.SOCIAL_AUTH_FIELDS_STORED_IN_SESSION + ['next']
+
     def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
         """This is a small wrapper around the core `auth_complete` method of
         python-social-auth, designed primarily to prevent 500s for
@@ -1488,8 +1490,6 @@ class GoogleAuthBackend(SocialAuthMixin, GoogleOAuth2):
 @external_auth_method
 class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     auth_backend_name = "SAML"
-    standard_relay_params = ["subdomain", "multiuse_object_key", "mobile_flow_otp", "desktop_flow_otp",
-                             "next", "is_signup"]
     REDIS_EXPIRATION_SECONDS = 60 * 15
     SAMLRESPONSE_PARSING_EXCEPTIONS = (OneLogin_Saml2_Error, binascii.Error, XMLSyntaxError)
     name = "saml"
