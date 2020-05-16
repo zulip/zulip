@@ -45,10 +45,18 @@ class CommonUtils {
     }
 
     async run_test(test_function) {
+        // Pass a page instance to test so we can take
+        // a screenshot of it when the test fails.
+        const page = await this.get_page();
         try {
-            await test_function();
+            await test_function(page);
         } catch (e) {
             console.log(e);
+
+            // Take a screenshot, and increment the screenshot_id.
+            await this.screenshot(page, `failure-${this.screenshot_id}`);
+            this.screenshot_id += 1;
+
             await this.browser.close();
             process.exit(1);
         } finally {

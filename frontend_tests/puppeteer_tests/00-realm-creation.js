@@ -6,8 +6,8 @@ const subdomain = 'testsubdomain';
 const organization_name = 'Awesome Organization';
 const host = "zulipdev.com:9981";
 
-async function realm_creation_tests() {
-    const page = await common.get_page('http://' + host + '/new/');
+async function realm_creation_tests(page) {
+    await page.goto('http://' + host + '/new/');
 
     // submit the email for realm creation.
     await page.waitForSelector('#email');

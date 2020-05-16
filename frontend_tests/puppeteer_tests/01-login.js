@@ -22,8 +22,8 @@ async function log_out(page) {
     assert(page.url().includes('accounts/login/'));
 }
 
-async function login_tests() {
-    const page = await common.get_page(realm_url + 'login/');
+async function login_tests(page) {
+    await page.goto(realm_url + 'login/');
     await log_in(page, test_credentials.default_user);
     await log_out(page);
 }
