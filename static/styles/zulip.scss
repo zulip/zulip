@@ -901,10 +901,10 @@ td.pointer {
     padding: 3px 11px 2px 10px;
     height: 17px;
     line-height: 17px;
-}
 
-.recipient_row_date.hide-date {
-    display: none;
+    &.hide-date {
+        display: none;
+    }
 }
 
 .recipient_bar_icon {
