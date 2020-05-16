@@ -912,24 +912,28 @@ td.pointer {
     padding-right: 2px;
 }
 
-.summary_row .message_header {
-    padding: 5px 0px 4px 5px;
-}
+.summary_row {
+    .message_header {
+        padding: 5px 0px 4px 5px;
+    }
 
-.summary_row .message_header {
-    border-radius: 0;
-}
+    .message_header {
+        border-radius: 0;
+    }
 
-.summary_row.last_message .message_header {
-    border-bottom-right-radius: 3px;
-    box-shadow:
-        inset 0px 2px 1px -2px hsl(0, 0%, 20%),
-        inset -2px 0px 1px -2px hsl(0, 0%, 20%),
-        inset 0px -2px 1px -2px hsl(0, 0%, 20%);
-}
+    &.last_message {
+        .message_header {
+            border-bottom-right-radius: 3px;
+            box-shadow:
+                inset 0px 2px 1px -2px hsl(0, 0%, 20%),
+                inset -2px 0px 1px -2px hsl(0, 0%, 20%),
+                inset 0px -2px 1px -2px hsl(0, 0%, 20%);
+        }
 
-.summary_row.last_message .summary_colorblock {
-    border-bottom-left-radius: 3px;
+        .summary_colorblock {
+            border-bottom-left-radius: 3px;
+        }
+    }
 }
 
 .bookend_tr + .summary_row .message_header {
