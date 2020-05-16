@@ -273,8 +273,9 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
     // streams in the future.
     const available_streams = stream_data.subscribed_subs()
         .filter(s => s.stream_id !== current_stream_id);
+    const current_stream_name = stream_data.maybe_get_stream_name(current_stream_id);
     const args = {
-        available_streams, topic_name, current_stream_id,
+        available_streams, topic_name, current_stream_id, current_stream_name,
         notify_new_thread: message_edit.notify_new_thread_default,
         notify_old_thread: message_edit.notify_old_thread_default,
     };
@@ -284,8 +285,7 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
     $("#move-a-topic-modal-holder").html(render_move_topic_to_stream(args));
 
     const stream_header_colorblock = $(".topic_stream_edit_header").find(".stream_header_colorblock");
-    const stream_name = stream_data.maybe_get_stream_name(current_stream_id);
-    ui_util.decorate_stream_bar(stream_name, stream_header_colorblock, false);
+    ui_util.decorate_stream_bar(current_stream_name, stream_header_colorblock, false);
     $("#select_stream_id").change(function () {
         const stream_name = stream_data.maybe_get_stream_name(parseInt(this.value, 10));
         ui_util.decorate_stream_bar(stream_name, stream_header_colorblock, false);
@@ -566,6 +566,12 @@ exports.register_topic_handlers = function () {
         send_notification_to_new_thread = send_notification_to_new_thread === 'on';
         send_notification_to_old_thread = send_notification_to_old_thread === 'on';
         current_stream_id = parseInt(current_stream_id, 10);
+
+        if (current_stream_id === parseInt(select_stream_id, 10) &&
+            new_topic_name.toLowerCase() === old_topic_name.toLowerCase()) {
+            show_error_msg("Please select a different stream or change topic name.");
+            return false;
+        }
 
         // The API endpoint for editing messages to change their
         // content, topic, or stream requires a message ID.
