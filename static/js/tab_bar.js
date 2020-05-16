@@ -153,8 +153,7 @@ exports.update_stream_description = function () {
 };
 
 exports.initialize = function () {
-    const filter = narrow_state.filter();
-    build_tab_bar(filter);
+    exports.render_tab_bar();
 
     // register searchbar click handler
     $('#search_exit').on("click", function (e) {
@@ -162,6 +161,11 @@ exports.initialize = function () {
         e.preventDefault();
         e.stopPropagation();
     });
+};
+
+exports.render_tab_bar = function () {
+    const filter = narrow_state.filter();
+    build_tab_bar(filter);
 };
 
 exports.open_search_bar_and_close_narrow_description = function () {
