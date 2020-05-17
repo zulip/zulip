@@ -4,9 +4,12 @@ Emoji seem like a simple idea, but there's actually a ton of
 complexity that goes into an effective emoji implementation.  This
 document discusses a number of these issues.
 
-Currently, Zulip uses the Noto (Android) emoji set, but we are close
-to being able to support the user choosing which emoji set they want
-to use.
+Currently, Zulip supports these four display formats for emoji:
+
+* Google modern
+* Google classic
+* Twitter
+* Plain text
 
 ## Emoji codes
 
