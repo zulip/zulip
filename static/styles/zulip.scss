@@ -1116,9 +1116,11 @@ td.pointer {
     font-weight: 700;
 }
 
-.sender_name_hovered .sender_name,
-.sender_name_hovered .sender_name-in-status {
-    color: hsl(200, 100%, 40%);
+.sender_name_hovered {
+    .sender_name,
+    .sender_name-in-status {
+        color: hsl(200, 100%, 40%);
+    }
 }
 
 .message_sender i.zulip-icon.bot,
