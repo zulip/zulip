@@ -18,7 +18,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import ceiling_to_day, \
     ceiling_to_hour, datetime_to_timestamp
 from zerver.lib.actions import do_create_multiuse_invite_link, \
-    do_send_realm_reactivation_email, do_change_is_admin
+    do_send_realm_reactivation_email
 from zerver.models import Client, get_realm, MultiuseInvite
 
 class TestStatsEndpoint(ZulipTestCase):
@@ -403,8 +403,8 @@ class TestSupportEndpoint(ZulipTestCase):
         def check_hamlet_user_query_result(result: HttpResponse) -> None:
             self.assert_in_success_response(['<span class="label">user</span>\n', '<h3>King Hamlet</h3>',
                                              '<b>Email</b>: hamlet@zulip.com', '<b>Is active</b>: True<br>',
-                                             '<b>Admins</b>: iago@zulip.com, othello@zulip.com\n',
-                                             'class="copy-button" data-copytext="iago@zulip.com, othello@zulip.com"'
+                                             '<b>Admins</b>: desdemona@zulip.com, iago@zulip.com\n',
+                                             'class="copy-button" data-copytext="desdemona@zulip.com, iago@zulip.com"'
                                              ], result)
 
         def check_zulip_realm_query_result(result: HttpResponse) -> None:
@@ -463,9 +463,6 @@ class TestSupportEndpoint(ZulipTestCase):
                                              '<b>Link</b>: http://zulip.testserver/reactivate/',
                                              '<b>Expires in</b>: 1\xa0day'
                                              ], result)
-
-        othello = self.example_user('othello')
-        do_change_is_admin(othello, True)
 
         self.login('cordelia')
 

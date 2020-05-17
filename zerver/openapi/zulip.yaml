@@ -3693,7 +3693,7 @@ components:
         The target user's ID.
       schema:
         type: integer
-      example: 11
+      example: 12
       required: true
     StreamPostPolicy:
       name: stream_post_policy

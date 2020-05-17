@@ -134,7 +134,9 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(events[0]['event']['type'], 'stream')
         self.assertEqual(events[0]['event']['op'], 'create')
         # Send private stream creation event to only realm admins.
-        self.assertEqual(events[0]['users'], [self.example_user("iago").id])
+        self.assertEqual(len(events[0]['users']), 2)
+        self.assertTrue(self.example_user("iago").id in events[0]['users'])
+        self.assertTrue(self.example_user("desdemona").id in events[0]['users'])
         self.assertEqual(events[0]['event']['streams'][0]['name'], "Private stream")
 
         new_streams, existing_streams = create_streams_if_needed(
@@ -2496,7 +2498,7 @@ class SubscriptionAPITest(ZulipTestCase):
         )
 
         self.assertNotIn(self.example_user('polonius').id, add_peer_event['users'])
-        self.assertEqual(len(add_peer_event['users']), 10)
+        self.assertEqual(len(add_peer_event['users']), 11)
         self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
         self.assertEqual(add_peer_event['event']['user_id'], self.user_profile.id)
@@ -2528,7 +2530,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # We don't send a peer_add event to othello
         self.assertNotIn(user_profile.id, add_peer_event['users'])
         self.assertNotIn(self.example_user('polonius').id, add_peer_event['users'])
-        self.assertEqual(len(add_peer_event['users']), 10)
+        self.assertEqual(len(add_peer_event['users']), 11)
         self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
         self.assertEqual(add_peer_event['event']['user_id'], user_profile.id)
@@ -2569,7 +2571,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # We don't send a peer_add event to othello, but we do send peer_add event to
         # all realm admins.
         self.assertNotIn(user_profile.id, add_peer_event['users'])
-        self.assertEqual(len(add_peer_event['users']), 2)
+        self.assertEqual(len(add_peer_event['users']), 3)
         self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
         self.assertEqual(add_peer_event['event']['user_id'], user_profile.id)
@@ -2582,8 +2584,8 @@ class SubscriptionAPITest(ZulipTestCase):
         with tornado_redirected_to_list(events):
             bulk_add_subscriptions([new_stream], [self.example_user("iago")])
 
-        self.assert_length(events, 2)
-        create_event, add_event = events
+        self.assert_length(events, 3)
+        create_event, add_event, add_peer_event = events
         self.assertEqual(create_event['event']['type'], 'stream')
         self.assertEqual(create_event['event']['op'], 'create')
         self.assertEqual(create_event['users'], [])
@@ -2591,6 +2593,11 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(add_event['event']['type'], 'subscription')
         self.assertEqual(add_event['event']['op'], 'add')
         self.assertEqual(add_event['users'], [self.example_user("iago").id])
+
+        self.assertEqual(len(add_peer_event['users']), 1)
+        self.assertEqual(add_peer_event['event']['type'], 'subscription')
+        self.assertEqual(add_peer_event['event']['op'], 'peer_add')
+        self.assertEqual(add_peer_event['event']['user_id'], self.example_user("iago").id)
 
     def test_subscribe_to_stream_post_policy_admins_stream(self) -> None:
         """
