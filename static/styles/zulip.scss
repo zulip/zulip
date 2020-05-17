@@ -1062,12 +1062,14 @@ td.pointer {
     height: 100%;
 }
 
-.last_message .unread_marker {
-    bottom: 0;
-}
+.last_message {
+    .unread_marker {
+        bottom: 0;
+    }
 
-.last_message .messagebox-content {
-    padding-bottom: 1px;
+    .messagebox-content {
+        padding-bottom: 1px;
+    }
 }
 
 .unread .unread_marker {
