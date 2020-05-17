@@ -234,7 +234,7 @@ multiple servers.  We do have a few, however:
   of every request; this simplifies correctly implementing our goal of
   not repeatedly fetching the "display recipient" (e.g. stream name)
   for each message in the `GET /messages` codebase.
-* Caches of various data, like the SourceMap object, that are
+* Caches of various data, like the `SourceMap` object, that are
   expensive to construct, not needed for most requests, and don't
   change once a Zulip server has been deployed in production.
 
