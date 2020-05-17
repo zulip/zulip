@@ -1062,7 +1062,7 @@ class OpenAPIRegexTest(ZulipTestCase):
         assert(match_against_openapi_regex('/users/23/subscriptions/21') ==
                '/users/{user_id}/subscriptions/{stream_id}')
         assert(match_against_openapi_regex('/users/iago@zulip.com/presence') ==
-               '/users/{email}/presence')
+               '/users/{email_or_id}/presence')
         assert(match_against_openapi_regex('/messages/23') ==
                '/messages/{message_id}')
         assert(match_against_openapi_regex('/realm/emoji/realm_emoji_1') ==

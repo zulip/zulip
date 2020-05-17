@@ -2347,6 +2347,7 @@ def get_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfile:
     return UserProfile.objects.select_related().get(id=uid, realm=realm)
 
 def get_active_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfile:
+    """Variant of get_user_profile_by_id_in_realm that excludes deactivated users."""
     user_profile = get_user_profile_by_id_in_realm(uid, realm)
     if not user_profile.is_active:
         raise UserProfile.DoesNotExist()

@@ -62,11 +62,16 @@ class OpenAPISpec():
         # such as email they must be substituted with proper regex.
 
         email_regex = r'([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})'
+        email_or_id_regex = r'(([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5}))|([0-9]*)'
         self.regex_dict = {}
         for key in self.data['paths']:
             if '{' not in key:
                 continue
             regex_key = '^' + key + '$'
+            # Email or Id arguments include email and
+            # end with id so find and replace them with
+            # email_or_id_regex
+            regex_key = re.sub(r'{[^}]*email[^}]*id}', email_or_id_regex, regex_key)
             # Numeric arguments have id at their end
             # so find such arguments and replace them with numeric
             # regex

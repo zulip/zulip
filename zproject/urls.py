@@ -149,7 +149,7 @@ v1_api_and_json_patterns = [
           'POST': 'zerver.views.users.create_user_backend'}),
     path('users/<int:user_id>/reactivate', rest_dispatch,
          {'POST': 'zerver.views.users.reactivate_user_backend'}),
-    re_path(r'^users/(?!me/)(?P<email>[^/]*)/presence$', rest_dispatch,
+    re_path(r'^users/(?!me/)(?P<email_or_id>[^/]*)/presence$', rest_dispatch,
             {'GET': 'zerver.views.presence.get_presence_backend'}),
     path('users/<int:user_id>', rest_dispatch,
          {'GET': 'zerver.views.users.get_members_backend',

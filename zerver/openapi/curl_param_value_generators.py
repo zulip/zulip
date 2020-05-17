@@ -171,7 +171,7 @@ def delete_event_queue() -> Dict[str, object]:
         "last_event_id": response["last_event_id"],
     }
 
-@openapi_param_value_generator(["/users/{email}/presence:get"])
+@openapi_param_value_generator(["/users/{email_or_id}/presence:get"])
 def get_user_presence() -> Dict[str, object]:
     iago = helpers.example_user("iago")
     client = Client.objects.create(name="curl-test-client-3")
