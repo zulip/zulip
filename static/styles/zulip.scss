@@ -1046,14 +1046,14 @@ td.pointer {
     z-index: 1;
     bottom: 1px;
     transition: all 0.3s ease-out;
-}
 
-.unread_marker.slow_fade {
-    transition: all 2s ease-out;
-}
+    &.slow_fade {
+        transition: all 2s ease-out;
+    }
 
-.unread_marker.fast_fade {
-    transition: all 0.3s ease-out;
+    &.fast_fade {
+        transition: all 0.3s ease-out;
+    }
 }
 
 .unread-marker-fill {
