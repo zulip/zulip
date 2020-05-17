@@ -1096,10 +1096,10 @@ td.pointer {
     height: 0px;
     vertical-align: top;
     position: relative;
-}
 
-.message_sender i.zulip-icon.bot {
-    font-size: 12px;
+    i.zulip-icon.bot {
+        font-size: 12px;
+    }
 }
 
 .sender_name {
