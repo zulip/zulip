@@ -104,13 +104,13 @@ that if an item is in the cache, the body of `get_user` (above) is
 never called.  This means some things that might seem like clever code
 reuse are actually a really bad idea.  For example:
 
-* Adding a `get_active_user` function that uses the same cache key
-  function as `get_user`, with a different query that filters our
-  deactivated users.  If one calls `get_active_user` to access a
-  deactivated user, the right thing will happen, but if you call
+* Don't add a `get_active_user` function that uses the same cache key
+  function as `get_user` (but with a different query that filters our
+  deactivated users).  If one called `get_active_user` to access a
+  deactivated user, the right thing would happen, but if you called
   `get_user` to access that user first, then the `get_active_user`
-  function will happily return the user from the cache, without ever
-  doing your more limited query.
+  function would happily return the user from the cache, without ever
+  doing your more restrictive query.
 
 So remember: Use separate cache key functions for different data sets,
 even if they feature the same objects.
