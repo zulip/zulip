@@ -1066,6 +1066,10 @@ td.pointer {
     bottom: 0;
 }
 
+.last_message .messagebox-content {
+    padding-bottom: 1px;
+}
+
 .unread .unread_marker {
     transition: all 0.3s ease-out;
     opacity: 1;
@@ -1371,10 +1375,6 @@ div.focused_table {
 
 .messagebox-content {
     padding: 4px 115px 1px 10px;
-}
-
-.last_message .messagebox-content {
-    padding-bottom: 1px;
 }
 
 .bookend {
