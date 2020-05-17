@@ -14,25 +14,8 @@
 {tab|js}
 
 More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
-```js
-const zulip = require('zulip-js');
 
-// The user for this zuliprc file must be an organization administrator.
-const config = {
-    zuliprc: 'zuliprc-admin',
-};
-
-zulip(config).then((client) => {
-    // Create a user
-    const params = {
-        email: 'newbie@zulip.com',
-        password: 'temp',
-        full_name: 'New User',
-        short_name: 'newbie'
-    };
-    client.users.create(params).then(console.log);
-});
-```
+{generate_code_example(javascript)|/users:post|example(admin_config=True)}
 
 {tab|curl}
 
