@@ -238,6 +238,7 @@ class Command(BaseCommand):
                 ("King Hamlet", "hamlet@zulip.com"),
                 ("aaron", "AARON@zulip.com"),
                 ("Polonius", "polonius@zulip.com"),
+                ("Desdemona", "desdemona@zulip.com"),
             ]
 
             # For testing really large batches:
@@ -280,6 +281,9 @@ class Command(BaseCommand):
             do_change_is_admin(iago, True)
             iago.is_staff = True
             iago.save(update_fields=['is_staff'])
+
+            desdemona = get_user_by_delivery_email("desdemona@zulip.com", zulip_realm)
+            do_change_is_admin(desdemona, True)
 
             guest_user = get_user_by_delivery_email("polonius@zulip.com", zulip_realm)
             guest_user.role = UserProfile.ROLE_GUEST
@@ -356,6 +360,7 @@ class Command(BaseCommand):
                     'prospero@zulip.com': ['Verona', 'Denmark', 'Scotland', 'Venice'],
                     'ZOE@zulip.com': ['Verona', 'Denmark', 'Scotland', 'Venice', 'Rome'],
                     'polonius@zulip.com': ['Verona'],
+                    'desdemona@zulip.com': ['Verona', 'Denmark', 'Venice'],
                 }
 
                 for profile in profiles:
