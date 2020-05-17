@@ -1077,17 +1077,19 @@ td.pointer {
     opacity: 1;
 }
 
-.selected_message .messagebox {
-    z-index: 1;
-}
+.selected_message {
+    .messagebox {
+        z-index: 1;
+    }
 
-.selected_message .messagebox-content {
-    box-shadow:
-        inset 0px 0px 0px 2px hsl(215, 47%, 50%),
-        -1px -1px 0px 0px hsl(215, 47%, 50%),
-        1px 1px 0px 0px hsl(215, 47%, 50%),
-        -1px 1px 0px 0px hsl(215, 47%, 50%),
-        1px -1px 0px 0px hsl(215, 47%, 50%);
+    .messagebox-content {
+        box-shadow:
+            inset 0px 0px 0px 2px hsl(215, 47%, 50%),
+            -1px -1px 0px 0px hsl(215, 47%, 50%),
+            1px 1px 0px 0px hsl(215, 47%, 50%),
+            -1px 1px 0px 0px hsl(215, 47%, 50%),
+            1px -1px 0px 0px hsl(215, 47%, 50%);
+    }
 }
 
 .message_sender {
