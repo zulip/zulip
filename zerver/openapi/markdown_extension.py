@@ -1,6 +1,7 @@
 import re
 import json
 import inspect
+import subprocess
 
 from django.conf import settings
 
@@ -34,6 +35,22 @@ import zulip
 
 # The user for this zuliprc file must be an organization administrator
 client = zulip.Client(config_file="~/zuliprc-admin")
+
+"""
+
+JS_CLIENT_CONFIG = """
+const Zulip = require('zulip-js');
+
+// Pass the path to your zuliprc file here.
+const config = { zuliprc: 'zuliprc' };
+
+"""
+
+JS_CLIENT_ADMIN_CONFIG = """
+const Zulip = require('zulip-js');
+
+// The user for this zuliprc file must be an organization administrator.
+const config = { zuliprc: 'zuliprc-admin' };
 
 """
 
@@ -106,6 +123,29 @@ def render_python_code_example(function: str, admin_config: Optional[bool]=False
     code_example.append('\n')
     code_example.append('```')
 
+    return code_example
+
+def render_javascript_code_example(function: str, admin_config: Optional[bool]=False,
+                                   **kwargs: Any) -> List[str]:
+    output = subprocess.check_output(
+        args=['node', 'zerver/openapi/javascript_examples.js', 'generate-example', function],
+        universal_newlines=True,
+    )
+    function_source_lines = output.splitlines()
+    if admin_config:
+        config = JS_CLIENT_ADMIN_CONFIG.splitlines()
+    else:
+        config = JS_CLIENT_CONFIG.splitlines()
+
+    snippet = function_source_lines
+
+    code_example = []
+    code_example.append('```js')
+    code_example.extend(config)
+    for line in snippet:
+        # Strip newlines
+        code_example.append(line.rstrip())
+    code_example.append('```')
     return code_example
 
 def curl_method_arguments(endpoint: str, method: str,
@@ -269,6 +309,11 @@ SUPPORTED_LANGUAGES: Dict[str, Any] = {
     },
     'curl': {
         'render': render_curl_example
+    },
+    'javascript': {
+        'client_config': JS_CLIENT_CONFIG,
+        'admin_config': JS_CLIENT_ADMIN_CONFIG,
+        'render': render_javascript_code_example,
     }
 }
 
