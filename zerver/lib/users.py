@@ -228,7 +228,7 @@ def get_accounts_for_email(email: str) -> List[Dict[str, Optional[str]]]:
                                                                   realm__deactivated=False,
                                                                   is_bot=False).order_by('date_joined')
     return [{"realm_name": profile.realm.name,
-             "string_id": profile.realm.string_id,
+             "realm_id": profile.realm.id,
              "full_name": profile.full_name,
              "avatar": avatar_url(profile)}
             for profile in profiles]
