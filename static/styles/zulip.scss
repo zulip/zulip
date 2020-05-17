@@ -1098,6 +1098,10 @@ td.pointer {
     position: relative;
 }
 
+.message_sender i.zulip-icon.bot {
+    font-size: 12px;
+}
+
 .sender_name {
     display: inline-block;
     font-weight: 700;
@@ -1122,10 +1126,6 @@ td.pointer {
     color: hsl(180, 5%, 74%);
     vertical-align: top;
     padding: 0 2px;
-}
-
-.message_sender i.zulip-icon.bot {
-    font-size: 12px;
 }
 
 .popover_info i.zulip-icon.bot {
