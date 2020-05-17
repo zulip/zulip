@@ -542,7 +542,7 @@ css_rules = RuleList(
 )
 
 prose_style_rules: List["Rule"] = [
-    {'pattern': r'[^\/\#\-"]([jJ]avascript)',  # exclude usage in hrefs/divs
+    {'pattern': r'^[^{].*?[^\/\#\-"]([jJ]avascript)',  # exclude usage in hrefs/divs/custom-markdown
      'exclude': {"docs/documentation/api.md"},
      'description': "javascript should be spelled JavaScript"},
     {'pattern': r'''[^\/\-\."'\_\=\>]([gG]ithub)[^\.\-\_"\<]''',  # exclude usage in hrefs/divs
