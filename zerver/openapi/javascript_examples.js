@@ -88,8 +88,19 @@ const ExamplesHandler = function () {
     };
 };
 
-const {main} = ExamplesHandler();
+const {main, add_example} = ExamplesHandler();
 
 // Declare all the examples below.
+
+add_example('create_user', '/users:post', 200, async (client) => {
+    const params = {
+        email: 'newbie@zulip.com',
+        password: 'temp',
+        full_name: 'New User',
+        short_name: 'newbie',
+    };
+
+    return await client.users.create(params);
+});
 
 main();
