@@ -31,7 +31,7 @@ cause problems if run in other situations.  If you're not sure, it's
 worth reading the documentation (or the code, usually available at
 `zerver/management/commands/`; they're generally very simple programs).
 
-### Accessing an organization's realm ID
+### Accessing an organization's `string_id`
 
 Since Zulip supports hosting multiple organizations on a single
 server, many management commands require you specify which
