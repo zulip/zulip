@@ -88,7 +88,7 @@ which is ideal for handling a large number of open requests.  Details
 on Tornado are available in the
 [architecture overview](../overview/architecture-overview.md), but in short it
 is good at holding open a large number of connections for a long time.
-The complete system is about 1500 lines of code in `zerver/tornado/`,
+The complete system is about 2000 lines of code in `zerver/tornado/`,
 primarily `zerver/tornado/event_queue.py`.
 
 Zulip's event delivery system is based on "long-polling"; basically
