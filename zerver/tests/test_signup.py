@@ -2775,7 +2775,9 @@ class UserSignUpTest(InviteUserBase):
                                          "selected >\n                            Zulip Dev",
                                          "We just need you to do one last thing."], result)
 
-        result = self.submit_reg_form_for_user(email, password, source_realm="zulip",
+        realm_id = get_realm("zulip").id
+
+        result = self.submit_reg_form_for_user(email, password, source_realm=realm_id,
                                                HTTP_HOST=subdomain + ".testserver")
 
         hamlet_in_lear = get_user(email, lear_realm)
