@@ -62,6 +62,31 @@ const {main, add_example} = ExamplesHandler();
 
 // Declare all the examples below.
 
+add_example('send_message', '/messages:post', 200, async (client) => {
+    // {code_example|start}
+    // Send a stream message
+    let params = {
+        to: 'Denmark',
+        type: 'stream',
+        topic: 'Castle',
+        content: 'I come not, friends, to steal away your hearts.',
+    };
+    const result_1 = await client.messages.send(params);
+    // {code_example|end}
+
+    // {code_example|start}
+    // Send a private message
+    const user_id = 9;
+    params = {
+        to: [user_id],
+        type: 'private',
+        content: 'With mirth and laughter let old wrinkles come.',
+    };
+    const result_2 = await client.messages.send(params);
+    // {code_example|end}
+    return [result_1, result_2];
+});
+
 add_example('create_user', '/users:post', 200, async (client) => {
     // {code_example|start}
     const params = {
