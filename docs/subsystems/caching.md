@@ -123,7 +123,7 @@ mutable state, one needs to do something to ensure that the Python
 processes don't end up fetching stale data from the cache after a
 write to the database.
 
-We handle this using Django's fancy
+We handle this using Django's longstanding
 [post_save signals][post-save-signals] feature.  Django signals let
 you configure some code to run every time Django does something (for
 `post_save`, right after any write to the database using Django's
