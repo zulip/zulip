@@ -603,11 +603,11 @@ def send_message(client: Client) -> int:
     assert result['result'] == 'success'
     assert result['raw_content'] == request['content']
 
-    ensure_users([9], ['hamlet'])
+    ensure_users([10], ['hamlet'])
 
     # {code_example|start}
     # Send a private message
-    user_id = 9
+    user_id = 10
     request = {
         "type": "private",
         "to": [user_id],
@@ -896,12 +896,12 @@ def get_stream_topics(client: Client, stream_id: int) -> None:
 
 @openapi_test_function("/typing:post")
 def set_typing_status(client: Client) -> None:
-    ensure_users([9, 10], ['hamlet', 'iago'])
+    ensure_users([10, 11], ['hamlet', 'iago'])
 
     # {code_example|start}
     # The user has started to type in the group PM with Iago and Polonius
-    user_id1 = 9
-    user_id2 = 10
+    user_id1 = 10
+    user_id2 = 11
 
     request = {
         'op': 'start',
@@ -914,8 +914,8 @@ def set_typing_status(client: Client) -> None:
 
     # {code_example|start}
     # The user has finished typing in the group PM with Iago and Polonius
-    user_id1 = 9
-    user_id2 = 10
+    user_id1 = 10
+    user_id2 = 11
 
     request = {
         'op': 'stop',
@@ -969,13 +969,13 @@ def remove_alert_words(client: Client) -> None:
 
 @openapi_test_function("/user_groups/create:post")
 def create_user_group(client: Client) -> None:
-    ensure_users([6, 7, 8, 9], ['aaron', 'zoe', 'cordelia', 'hamlet'])
+    ensure_users([6, 7, 8, 10], ['aaron', 'zoe', 'cordelia', 'hamlet'])
 
     # {code_example|start}
     request = {
         'name': 'marketing',
         'description': 'The marketing team.',
-        'members': [6, 7, 8, 9],
+        'members': [6, 7, 8, 10],
     }
 
     result = client.create_user_group(request)
@@ -1008,12 +1008,12 @@ def remove_user_group(client: Client, group_id: int) -> None:
 
 @openapi_test_function("/user_groups/{group_id}/members:post")
 def update_user_group_members(client: Client, group_id: int) -> None:
-    ensure_users([8, 9, 10], ['cordelia', 'hamlet', 'iago'])
+    ensure_users([8, 10, 11], ['cordelia', 'hamlet', 'iago'])
 
     request = {
         'group_id': group_id,
-        'delete': [8, 9],
-        'add': [10]
+        'delete': [8, 10],
+        'add': [11]
     }
 
     result = client.update_user_group_members(request)

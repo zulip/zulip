@@ -128,22 +128,20 @@ class PermissionTest(ZulipTestCase):
         self.assert_json_error(result, 'No such user')
 
     def test_admin_api(self) -> None:
-        self.login('hamlet')
+        self.login('desdemona')
 
         hamlet = self.example_user('hamlet')
         othello = self.example_user('othello')
         iago = self.example_user('iago')
+        desdemona = self.example_user('desdemona')
         realm = hamlet.realm
-
-        # Make hamlet an additional admin
-        do_change_is_admin(hamlet, True)
 
         # Make sure we see is_admin flag in /json/users
         result = self.client_get('/json/users')
         self.assert_json_success(result)
         members = result.json()['members']
-        hamlet_dict = find_dict(members, 'email', hamlet.email)
-        self.assertTrue(hamlet_dict['is_admin'])
+        desdemona_dict = find_dict(members, 'email', desdemona.email)
+        self.assertTrue(desdemona_dict['is_admin'])
         othello_dict = find_dict(members, 'email', othello.email)
         self.assertFalse(othello_dict['is_admin'])
 
@@ -177,12 +175,12 @@ class PermissionTest(ZulipTestCase):
         req = dict(is_admin=ujson.dumps(False))
         events = []
         with tornado_redirected_to_list(events):
-            result = self.client_patch('/json/users/{}'.format(hamlet.id), req)
+            result = self.client_patch('/json/users/{}'.format(desdemona.id), req)
         self.assert_json_success(result)
         admin_users = realm.get_human_admin_users()
-        self.assertFalse(hamlet in admin_users)
+        self.assertFalse(desdemona in admin_users)
         person = events[0]['event']['person']
-        self.assertEqual(person['user_id'], hamlet.id)
+        self.assertEqual(person['user_id'], desdemona.id)
         self.assertEqual(person['is_admin'], False)
         with tornado_redirected_to_list([]):
             result = self.client_patch('/json/users/{}'.format(iago.id), req)
@@ -1016,9 +1014,8 @@ class ActivateTest(ZulipTestCase):
         self.assertTrue(user.is_active)
 
     def test_api_with_nonexistent_user(self) -> None:
-        admin = self.example_user('othello')
-        do_change_is_admin(admin, True)
-        self.login('othello')
+        admin = self.example_user('desdemona')
+        self.login_user(admin)
 
         # Cannot deactivate a user with the bot api
         result = self.client_delete('/json/bots/{}'.format(self.example_user("hamlet").id))

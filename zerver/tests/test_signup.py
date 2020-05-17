@@ -3717,6 +3717,9 @@ class DeactivateUserTest(ZulipTestCase):
 
     def test_do_not_deactivate_final_admin(self) -> None:
         user = self.example_user('iago')
+        user_2 = self.example_user('desdemona')
+        do_change_is_admin(user_2, False)
+        self.assertFalse(user_2.is_realm_admin)
         self.login_user(user)
         self.assertTrue(user.is_active)
         result = self.client_delete('/json/users/me')
@@ -3724,7 +3727,6 @@ class DeactivateUserTest(ZulipTestCase):
         user = self.example_user('iago')
         self.assertTrue(user.is_active)
         self.assertTrue(user.is_realm_admin)
-        user_2 = self.example_user('hamlet')
         do_change_is_admin(user_2, True)
         self.assertTrue(user_2.is_realm_admin)
         result = self.client_delete('/json/users/me')
@@ -3733,6 +3735,7 @@ class DeactivateUserTest(ZulipTestCase):
 
     def test_do_not_deactivate_final_user(self) -> None:
         realm = get_realm('zulip')
+        do_change_is_admin(self.example_user("desdemona"), False)
         UserProfile.objects.filter(realm=realm).exclude(
             role=UserProfile.ROLE_REALM_ADMINISTRATOR).update(is_active=False)
         user = self.example_user("iago")
