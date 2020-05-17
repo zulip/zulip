@@ -297,8 +297,13 @@
         unicode-bidi: embed;
         direction: ltr;
         white-space: pre-wrap;
-        padding: 0px 4px;
+        padding: 0px;
+        padding-right: 4px;
         background-color: hsl(0, 0%, 100%);
+    }
+
+    pre {
+        line-height: 15px;
     }
 
     .code-section {
