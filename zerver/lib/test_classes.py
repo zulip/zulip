@@ -417,7 +417,7 @@ class ZulipTestCase(TestCase):
             from_confirmation: Optional[str]='', full_name: Optional[str]=None,
             timezone: Optional[str]='', realm_in_root_domain: Optional[str]=None,
             default_stream_groups: Optional[List[str]]=[],
-            source_realm: Optional[int]=0, **kwargs: Any) -> HttpResponse:
+            source_realm: Optional[str]='0', **kwargs: Any) -> HttpResponse:
         """
         Stage two of the two-step registration process.
 
