@@ -15,7 +15,9 @@ function get_formatted_sub_count(current_stream) {
 }
 
 function make_tab_data(filter) {
-    const tab_data = {};
+    const tab_data = {
+        stream_narrow: false,
+    };
     if (filter === undefined) {
         return {
             title: 'All messages',
@@ -25,6 +27,7 @@ function make_tab_data(filter) {
     tab_data.title = filter.get_title();
     tab_data.icon = filter.get_icon();
     if (tab_data.icon === 'hashtag' || tab_data.icon === 'lock') {
+        tab_data.stream_narrow = true;
         const stream = filter.operands("stream")[0];
         const current_stream  = stream_data.get_sub_by_name(stream);
         if (current_stream) {
