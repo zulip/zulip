@@ -123,12 +123,14 @@ cause time-related bugs that are hard to catch with a test suite, or bugs
 that only show up during daylight savings time.
 
 Good ways to make timezone-aware datetimes are below. We import `timezone`
-function as `from django.utils.timezone import now as timezone_now` and
-`from django.utils.timezone import utc as timezone_utc`. When Django is not
-available, `timezone_utc` should be replaced with `pytz.utc` below.
-* `timezone_now()` when Django is available, such as in `zerver/`.
-* `datetime.now(tz=pytz.utc)` when Django is not available, such as for bots
-  and scripts.
+functions as `from django.utils.timezone import now as timezone_now` and
+`from django.utils.timezone import utc as timezone_utc`.
+
+Use:
+* `timezone_now()` to get a datetime when Django is available, such as
+  in `zerver/`.
+* `datetime.now(tz=pytz.utc)` when Django is not available, such as
+  for bots and scripts.
 * `datetime.fromtimestamp(timestamp, tz=timezone_utc)` if creating a
   datetime from a timestamp. This is also available as
   `zerver.lib.timestamp.timestamp_to_datetime`.
