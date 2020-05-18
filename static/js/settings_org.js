@@ -566,10 +566,16 @@ exports.init_dropdown_widgets = () => {
         null_value: -1,
     };
     exports.notifications_stream_widget = dropdown_list_widget(
-        Object.assign({widget_name: 'realm_notifications_stream_id'},
+        Object.assign({
+            widget_name: 'realm_notifications_stream_id',
+            value: page_params.realm_notifications_stream_id,
+        },
                       notification_stream_options));
     exports.signup_notifications_stream_widget = dropdown_list_widget(
-        Object.assign({widget_name: 'realm_signup_notifications_stream_id'},
+        Object.assign({
+            widget_name: 'realm_signup_notifications_stream_id',
+            value: page_params.realm_signup_notifications_stream_id,
+        },
                       notification_stream_options));
     exports.default_code_language_widget = dropdown_list_widget({
         widget_name: 'realm_default_code_block_language',
@@ -579,6 +585,7 @@ exports.init_dropdown_widgets = () => {
                 value: x,
             };
         }),
+        value: page_params.realm_default_code_block_language,
         on_update: () => {
             exports.save_discard_widget_status_handler($(`#org-other-settings`));
         },

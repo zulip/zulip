@@ -1,12 +1,19 @@
 const DropdownListWidget = function (opts) {
-    opts = Object.assign({
-        null_value: null,
-        render_text: (item_name) => item_name,
-        on_update: () => {},
-    }, opts);
-    opts.container_id = `${opts.widget_name}_widget`;
-    opts.value_id = `id_${opts.widget_name}`;
-    opts.value = opts.value || page_params[opts.widget_name];
+    const init = () => {
+        // Run basic sanity checks on opts, and set up sane defaults.
+        opts = Object.assign({
+            null_value: null,
+            render_text: (item_name) => item_name,
+            on_update: () => {},
+        }, opts);
+        opts.container_id = `${opts.widget_name}_widget`;
+        opts.value_id = `id_${opts.widget_name}`;
+        if (opts.value === undefined) {
+            opts.value = opts.null_value;
+            blueslip.warn('dropdown-list-widget: Called without a default value; using null value');
+        }
+    };
+    init();
 
     const render_dropdown_list = require("../templates/settings/dropdown_list.hbs");
 

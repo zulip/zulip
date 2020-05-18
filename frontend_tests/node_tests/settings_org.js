@@ -1035,6 +1035,8 @@ run_test('misc', () => {
         };
     });
 
+    // We do not define any settings we need in page_params yet, but we don't need to for this test.
+    blueslip.expect('warn', 'dropdown-list-widget: Called without a default value; using null value', 3);
     settings_org.init_dropdown_widgets();
 
     let setting_name = 'realm_notifications_stream_id';
