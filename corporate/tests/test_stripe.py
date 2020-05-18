@@ -223,18 +223,36 @@ class Kandra:  # nocoverage: TODO
 class StripeTestCase(ZulipTestCase):
     def setUp(self, *mocks: Mock) -> None:
         super().setUp()
-        # This test suite is not robust to users being added in populate_db. The following
-        # hack ensures get_latest_seat_count is fixed, even as populate_db changes.
         reset_emails_in_zulip_realm()
         realm = get_realm('zulip')
-        seat_count = get_latest_seat_count(realm)
-        assert(seat_count >= 6)
-        for user in UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False) \
-                                       .exclude(role=UserProfile.ROLE_GUEST).exclude(email__in=[
-                                           self.example_email('hamlet'),
-                                           self.example_email('iago')])[:seat_count-6]:
-            user.is_active = False
-            user.save(update_fields=['is_active'])
+
+        # Explicitly limit our active users to 6 regular users,
+        # to make seat_count less prone to changes in our test data.
+        # We also keep a guest user and a bot to make the data
+        # slightly realistic.
+        active_emails = [
+            self.example_email('AARON'),
+            self.example_email('cordelia'),
+            self.example_email('hamlet'),
+            self.example_email('iago'),
+            self.example_email('othello'),
+            self.example_email('prospero'),
+            self.example_email('polonius'),  # guest
+            self.example_email('default_bot'),  # bot
+        ]
+
+        # Deactivate all users that aren't in our whitelist.
+        UserProfile.objects.exclude(email__in=active_emails).update(is_active=False)
+
+        # sanity check our 8 expected users are active
+        self.assertEqual(
+            UserProfile.objects.filter(realm=realm, is_active=True).count(),
+            8
+        )
+
+        # Our seat count excludes our guest user and bot, and
+        # we want this to be predictable for certain tests with
+        # arithmetic calculations.
         self.assertEqual(get_latest_seat_count(realm), 6)
         self.seat_count = 6
         self.signed_seat_count, self.salt = sign_string(str(self.seat_count))
