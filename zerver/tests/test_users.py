@@ -856,7 +856,7 @@ class UserProfileTest(ZulipTestCase):
             for account in accounts:
                 realm = user.realm
                 if account["avatar"] == avatar_url(user) and account["full_name"] == user.full_name \
-                        and account["realm_name"] == realm.name and account["string_id"] == realm.string_id:
+                        and account["realm_name"] == realm.name and account["realm_id"] == realm.id:
                     return
             raise AssertionError("Account not found")
 
