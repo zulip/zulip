@@ -36,25 +36,39 @@ to read secrets from `/etc/zulip/secrets.conf`.
 
 ## Dangerous constructs
 
-### Misuse of database queries
+### Too many database queries
 
 Look out for Django code like this:
 
-    [Foo.objects.get(id=bar.x.id)
-    for bar in Bar.objects.filter(...)
-    if  bar.baz < 7]
+    bars = Bar.objects.filter(...)
+    for bar in bars:
+        foo = bar.foo
+        # Make use of foo
 
-This will make one database query for each `Bar`, which is slow in
-production (but not in local testing!). Instead of a list comprehension,
-write a single query using Django's [QuerySet
-API](https://docs.djangoproject.com/en/dev/ref/models/querysets/).
+...because it equates to:
+
+    bars = Bar.objects.filter(...)
+    for bar in bars:
+        foo = Foo.objects.get(id=bar.foo.id)
+        # Make use of foo
+
+...which makes a database query for every Bar.  While this may be fast
+locally in development, it may be quite slow in production!  Instead,
+tell Django's [QuerySet
+API](https://docs.djangoproject.com/en/dev/ref/models/querysets/) to
+_prefetch_ the data in the initial query:
+
+    bars = Bar.objects.filter(...).select_related()
+    for bar in bars:
+        foo = bar.foo  # This doesn't take another query, now!
+        # Make use of foo
 
 If you can't rewrite it as a single query, that's a sign that something
 is wrong with the database schema. So don't defer this optimization when
 performing schema changes, or else you may later find that it's
 impossible.
 
-### UserProfile.objects.get() / Client.objects.get / etc.
+### UserProfile.objects.get() / Client.objects.get() / etc.
 
 In our Django code, never do direct `UserProfile.objects.get(email=foo)`
 database queries. Instead always use `get_user_profile_by_{email,id}`.
@@ -62,9 +76,9 @@ There are 3 reasons for this:
 
 1.  It's guaranteed to correctly do a case-inexact lookup
 2.  It fetches the user object from remote cache, which is faster
-3.  It always fetches a UserProfile object which has been queried using
-    .select\_related(), and thus will perform well when one later
-    accesses related models like the Realm.
+3.  It always fetches a UserProfile object which has been queried
+    using `.select_related()` (see above!), and thus will perform well
+    when one later accesses related models like the Realm.
 
 Similarly we have `get_client` and `get_stream` functions to fetch those
 commonly accessed objects via remote cache.
