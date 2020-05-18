@@ -13,7 +13,7 @@ set_global('list_render', _list_render);
 run_test('basic_functions', () => {
     let updated_value;
     const opts = {
-        setting_name: 'my_setting',
+        widget_name: 'my_setting',
         data: ['one', 'two', 'three'].map(x => ({name: x, value: x})),
         value: 'one',
         on_update: (val) => { updated_value = val; },
