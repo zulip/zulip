@@ -4,16 +4,16 @@ const DropdownListWidget = function (opts) {
         render_text: (item_name) => item_name,
         on_update: () => {},
     }, opts);
-    opts.container_id = `${opts.setting_name}_widget`;
-    opts.value_id = `id_${opts.setting_name}`;
-    opts.value = opts.value || page_params[opts.setting_name];
+    opts.container_id = `${opts.widget_name}_widget`;
+    opts.value_id = `id_${opts.widget_name}`;
+    opts.value = opts.value || page_params[opts.widget_name];
 
     const render_dropdown_list = require("../templates/settings/dropdown_list.hbs");
 
     const render = (value) => {
         $(`#${opts.container_id} #${opts.value_id}`).data("value", value);
 
-        const elem = $(`#${opts.container_id} #${opts.setting_name}_name`);
+        const elem = $(`#${opts.container_id} #${opts.widget_name}_name`);
 
         if (!value || value === opts.null_value) {
             elem.text(opts.default_text);
@@ -37,7 +37,7 @@ const DropdownListWidget = function (opts) {
 
     const register_event_handlers = () => {
         $(`#${opts.container_id} .dropdown-list-body`).on("click keypress", ".list_item", function (e) {
-            const setting_elem = $(this).closest(`.${opts.setting_name}_setting`);
+            const setting_elem = $(this).closest(`.${opts.widget_name}_setting`);
             if (e.type === "keypress") {
                 if (e.which === 13) {
                     setting_elem.find(".dropdown-menu").dropdown("toggle");
@@ -60,7 +60,7 @@ const DropdownListWidget = function (opts) {
         const dropdown_toggle = $(`#${opts.container_id} .dropdown-toggle`);
 
         list_render.create(dropdown_list_body, opts.data, {
-            name: `${opts.setting_name}_list`,
+            name: `${opts.widget_name}_list`,
             modifier: function (item) {
                 return render_dropdown_list({ item: item });
             },
