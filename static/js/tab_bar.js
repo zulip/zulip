@@ -17,6 +17,7 @@ function get_formatted_sub_count(current_stream) {
 function make_tab_data(filter) {
     const tab_data = {
         stream_narrow: false,
+        stream_is_known: false,
     };
     if (filter === undefined) {
         return {
@@ -31,15 +32,11 @@ function make_tab_data(filter) {
         const stream = filter.operands("stream")[0];
         const current_stream  = stream_data.get_sub_by_name(stream);
         if (current_stream) {
+            tab_data.stream_is_known = true;
             tab_data.rendered_narrow_description = current_stream.rendered_description;
             tab_data.sub_count = get_sub_count(current_stream);
             tab_data.formatted_sub_count = get_formatted_sub_count(current_stream);
             tab_data.stream_settings_link = "#streams/" + current_stream.stream_id + "/" + current_stream.name;
-        } else {
-            tab_data.title = 'Unknown Stream';
-            tab_data.sub_count = '0';
-            tab_data.formatted_sub_count = '0';
-            tab_data.rendered_narrow_description = "This stream does not exist or is private.";
         }
     }
     return tab_data;
