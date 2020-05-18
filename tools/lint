@@ -89,7 +89,16 @@ def run() -> None:
                                   description="Checks commit messages for common formatting errors."
                                   "(config: .gitlint)")
 
-    semgrep_command = ["semgrep", "--config=./tools/semgrep.yml", "--error"]
+    semgrep_command = ["semgrep", "--config=./tools/semgrep.yml", "--error",
+                       # This option is dangerous in the context of running
+                       # semgrep-as-a-service on untrusted user code, since it
+                       # causes Python code in the rules configuration to be
+                       # executed.  From our standpoint, it is required for
+                       # `pattern-where-python` rules, and there's no real
+                       # security impact, since if you can put arbitrary code
+                       # into zulip.git, you can run arbitrary code in a Zulip
+                       # development environment anyway.
+                       "--dangerously-allow-arbitrary-code-execution-from-rules"]
     linter_config.external_linter('semgrep-py', [*semgrep_command, "--lang=python"], ['py'],
                                   fix_arg='--autofix',
                                   description="Syntactic Grep (semgrep) Code Search Tool "

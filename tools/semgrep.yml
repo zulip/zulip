@@ -52,27 +52,13 @@ rules:
 
   - id: logging-format
     languages: [python]
-    pattern-either:
-      - pattern: logging.debug(... % ...)
-      - pattern: logging.debug(... .format(...))
-      - pattern: logger.debug(... % ...)
-      - pattern: logger.debug(... .format(...))
-      - pattern: logging.info(... % ...)
-      - pattern: logging.info(... .format(...))
-      - pattern: logger.info(... % ...)
-      - pattern: logger.info(... .format(...))
-      - pattern: logging.warning(... % ...)
-      - pattern: logging.warning(... .format(...))
-      - pattern: logger.warning(... % ...)
-      - pattern: logger.warning(... .format(...))
-      - pattern: logging.error(... % ...)
-      - pattern: logging.error(... .format(...))
-      - pattern: logger.error(... % ...)
-      - pattern: logger.error(... .format(...))
-      - pattern: logging.critical(... % ...)
-      - pattern: logging.critical(... .format(...))
-      - pattern: logger.critical(... % ...)
-      - pattern: logger.critical(... .format(...))
+    patterns:
+      - pattern-either:
+          - pattern: logging.$Y(... % ...)
+          - pattern: logging.$Y(... .format(...))
+          - pattern: logger.$Y(... % ...)
+          - pattern: logger.$Y(... .format(...))
+      - pattern-where-python: "vars['$Y'] in ['debug', 'info', 'warning', 'error', 'critical']"
     severity: ERROR
     message: "Pass format arguments to logging (https://docs.python.org/3/howto/logging.html#optimization)"
 
