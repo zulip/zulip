@@ -715,6 +715,7 @@ def missedmessage_hook(user_profile_id: int, client: ClientDescriptor, last_for_
         # stream_push_notify is set in process_message_event.
         stream_push_notify = event.get('stream_push_notify', False)
         stream_email_notify = event.get('stream_email_notify', False)
+        mentioned_group = event.get('mentioned_group')
         wildcard_mention_notify = (event.get('wildcard_mention_notify', False) and
                                    'read' not in flags and 'wildcard_mentioned' in flags)
 
@@ -736,7 +737,8 @@ def missedmessage_hook(user_profile_id: int, client: ClientDescriptor, last_for_
         maybe_enqueue_notifications(user_profile_id, message_id, private_message, mentioned,
                                     wildcard_mention_notify, stream_push_notify,
                                     stream_email_notify, stream_name,
-                                    always_push_notify, idle, already_notified)
+                                    always_push_notify, idle, already_notified,
+                                    mentioned_group)
 
 def receiver_is_off_zulip(user_profile_id: int) -> bool:
     # If a user has no message-receiving event queues, they've got no open zulip
@@ -752,7 +754,8 @@ def maybe_enqueue_notifications(user_profile_id: int, message_id: int, private_m
                                 stream_push_notify: bool,
                                 stream_email_notify: bool, stream_name: Optional[str],
                                 always_push_notify: bool, idle: bool,
-                                already_notified: Dict[str, bool]) -> Dict[str, bool]:
+                                already_notified: Dict[str, bool],
+                                mentioned_group: Optional[int]) -> Dict[str, bool]:
     """This function has a complete unit test suite in
     `test_enqueue_notifications` that should be expanded as we add
     more features here."""
@@ -772,6 +775,7 @@ def maybe_enqueue_notifications(user_profile_id: int, message_id: int, private_m
         else:
             raise AssertionError("Unknown notification trigger!")
         notice['stream_name'] = stream_name
+        notice['mentioned_group'] = mentioned_group
         if not already_notified.get("push_notified"):
             queue_json_publish("missedmessage_mobile_notifications", notice)
             notified['push_notified'] = True
@@ -793,6 +797,7 @@ def maybe_enqueue_notifications(user_profile_id: int, message_id: int, private_m
         else:
             raise AssertionError("Unknown notification trigger!")
         notice['stream_name'] = stream_name
+        notice['mentioned_group'] = mentioned_group
         if not already_notified.get("email_notified"):
             queue_json_publish("missedmessage_emails", notice, lambda notice: None)
             notified['email_notified'] = True
@@ -890,6 +895,7 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
         mentioned = 'mentioned' in flags and 'read' not in flags
         stream_push_notify = user_data.get('stream_push_notify', False)
         stream_email_notify = user_data.get('stream_email_notify', False)
+        mentioned_group = user_data.get('mentioned_group')
         wildcard_mention_notify = (user_data.get('wildcard_mention_notify', False) and
                                    'wildcard_mentioned' in flags and 'read' not in flags)
 
@@ -904,7 +910,8 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
                                                  mentioned,
                                                  wildcard_mention_notify,
                                                  stream_push_notify, stream_email_notify,
-                                                 stream_name, always_push_notify, idle, {})
+                                                 stream_name, always_push_notify, idle, {},
+                                                 mentioned_group)
             result['stream_push_notify'] = stream_push_notify
             result['stream_email_notify'] = stream_email_notify
             result['wildcard_mention_notify'] = wildcard_mention_notify
@@ -1113,6 +1120,7 @@ def maybe_enqueue_notifications_for_message_update(user_profile_id: UserProfile,
         always_push_notify=always_push_notify,
         idle=idle,
         already_notified={},
+        mentioned_group=None,
     )
 
 def process_notification(notice: Mapping[str, Any]) -> None:

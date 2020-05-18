@@ -45,6 +45,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.lib.timezone import get_timezone
+from zerver.lib.user_groups import create_user_group
 from zerver.models import (
     MAX_MESSAGE_LENGTH,
     MAX_TOPIC_NAME_LENGTH,
@@ -1221,6 +1222,36 @@ class StreamMessagesTest(ZulipTestCase):
                                  content="test @**Iago** rules")
         message = most_recent_message(user_profile)
         assert(UserMessage.objects.get(user_profile=user_profile, message=message).flags.mentioned.is_set)
+
+    @mock.patch("zerver.lib.actions.send_event")
+    def test_user_group_mentions(self, mock_send_event: mock.MagicMock) -> None:
+        iago = self.example_user('iago')
+        hamlet = self.example_user('hamlet')
+        zoe = self.example_user("ZOE")
+
+        user_group_a = create_user_group('user_group_a', [iago], get_realm('zulip'))
+        user_group_b = create_user_group('user_group_b', [iago, hamlet, zoe], get_realm('zulip'))
+        self.subscribe(iago, 'Denmark')
+        self.subscribe(hamlet, 'Denmark')
+
+        self.send_stream_message(self.example_user('cordelia'), 'Denmark',
+                                 content='Hi, @*user_group_a* @*user_group_b* @**Zoe**')
+
+        # Extract the send_event call and look for the `mentioned_group`
+        # property in the notified user arguments.
+        for call_args in mock_send_event.call_args_list:
+            (_, arg_event, notified_users_arg) = call_args[0]
+            if arg_event['type'] == 'message':
+                for user_arg in notified_users_arg:
+                    if user_arg['id'] == zoe.id:
+                        self.assertEqual(user_arg['mentioned_group'], None)
+                        self.assertEqual(user_arg['flags'], ['mentioned'])
+                    if user_arg['id'] == iago.id:
+                        self.assertEqual(user_arg['mentioned_group'], user_group_a.id)
+                        self.assertEqual(user_arg['flags'], ['mentioned'])
+                    if user_arg['id'] == hamlet.id:
+                        self.assertEqual(user_arg['mentioned_group'], user_group_b.id)
+                        self.assertEqual(user_arg['flags'], ['mentioned'])
 
     def test_is_private_flag(self) -> None:
         user_profile = self.example_user('iago')

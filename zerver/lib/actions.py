@@ -1460,10 +1460,25 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
         message['message'].rendered_content_version = markdown_version
         links_for_embed |= message['message'].links_for_preview
 
-        # Add members of the mentioned user groups into `mentions_user_ids`.
+        user_group_mentions: Dict[int, int] = dict()
+        # Add members of the mentioned user groups into `user_group_mentions`.
         for group_id in message['message'].mentions_user_group_ids:
             members = message['mention_data'].get_group_members(group_id)
-            message['message'].mentions_user_ids.update(members)
+            for member in members:
+                if member in message['message'].mentions_user_ids:
+                    # If a user's mentioned multiple ways, we use
+                    # the highest priority i.e. personal over user group.
+                    continue
+                if member in user_group_mentions:
+                    # If multiple user groups are mentioned, we prefer the
+                    # user group with the least members for email/mobile
+                    # notifications.
+                    previous_group_id = user_group_mentions[member]
+                    previous_group_members = message['mention_data'].get_group_members(previous_group_id)
+                    if len(previous_group_members) < len(members):
+                        continue  # nocoverage
+                user_group_mentions[member] = group_id
+        message['user_group_mentions'] = user_group_mentions
 
         # Only send data to Tornado about wildcard mentions if message
         # rendering determined the message had an actual wildcard
@@ -1510,6 +1525,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
                 stream_email_user_ids = message['stream_email_user_ids'],
                 mentioned_user_ids=mentioned_user_ids,
                 mark_as_read=mark_as_read,
+                user_group_mentions=message['user_group_mentions']
             )
 
             for um in user_messages:
@@ -1584,6 +1600,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
                 stream_push_notify=(user_id in message['stream_push_user_ids']),
                 stream_email_notify=(user_id in message['stream_email_user_ids']),
                 wildcard_mention_notify=(user_id in message['wildcard_mention_user_ids']),
+                mentioned_group=message['user_group_mentions'].get(user_id)
             )
             for user_id in user_ids
         ]
@@ -1661,7 +1678,8 @@ def create_user_messages(message: Message,
                          stream_push_user_ids: AbstractSet[int],
                          stream_email_user_ids: AbstractSet[int],
                          mentioned_user_ids: AbstractSet[int],
-                         mark_as_read: Sequence[int] = []) -> List[UserMessageLite]:
+                         mark_as_read: Sequence[int] = [],
+                         user_group_mentions: Mapping[int, int]={}) -> List[UserMessageLite]:
     ums_to_create = []
     for user_profile_id in um_eligible_user_ids:
         um = UserMessageLite(
@@ -1683,7 +1701,7 @@ def create_user_messages(message: Message,
             um.flags |= UserMessage.flags.read
         if wildcard:
             um.flags |= UserMessage.flags.wildcard_mentioned
-        if um.user_profile_id in mentioned_user_ids:
+        if um.user_profile_id in mentioned_user_ids or um.user_profile_id in user_group_mentions:
             um.flags |= UserMessage.flags.mentioned
         if um.user_profile_id in ids_with_alert_words:
             um.flags |= UserMessage.flags.has_alert_word
