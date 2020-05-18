@@ -90,11 +90,22 @@ Don't use Django model objects as keys in sets/dictionaries -- you will
 get unexpected behavior when dealing with objects obtained from
 different database queries:
 
-For example,
-`UserProfile.objects.only("id").get(id=17) in set([UserProfile.objects.get(id=17)])`
-is False
+For example, the following will, surprisingly, fail:
 
-You should work with the IDs instead.
+```
+# Bad example -- will raise!
+obj: UserProfile = get_user_profile_by_id(17)
+some_objs = UserProfile.objects.get(id=17)
+assert obj in set([some_objs])
+```
+
+You should work with the IDs instead:
+
+```
+obj: UserProfile = get_user_profile_by_id(17)
+some_objs = UserProfile.objects.get(id=17)
+assert obj.id in set([o.id for i in some_objs])
+```
 
 ### user\_profile.save()
 
