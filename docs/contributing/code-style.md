@@ -193,11 +193,11 @@ Remember to
 they are in HTML templates or JavaScript/TypeScript editing the HTML (e.g. error
 messages).
 
-### State and logs files
+### Paths to state or log files
 
-When writing out state of log files, always declare the path with
-`zulip_path` in `zproject/settings.py`, which will do the right thing
-in both development and production.
+When writing out state or log files, always pass an absolute path
+through `zulip_path` (found in `zproject/settings.py`), which will do
+the right thing in both development and production.
 
 ## JS array/object manipulation
 
