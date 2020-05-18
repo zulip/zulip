@@ -241,13 +241,20 @@ class StripeTestCase(ZulipTestCase):
             self.example_email('default_bot'),  # bot
         ]
 
-        # Deactivate all users that aren't in our whitelist.
-        UserProfile.objects.exclude(email__in=active_emails).update(is_active=False)
+        # Deactivate all users in our realm that aren't in our whitelist.
+        UserProfile.objects.filter(realm_id=realm.id).exclude(email__in=active_emails).update(is_active=False)
 
         # sanity check our 8 expected users are active
         self.assertEqual(
             UserProfile.objects.filter(realm=realm, is_active=True).count(),
             8
+        )
+
+        # Make sure we have active users outside our realm (to make
+        # sure relevant queries restrict on realm).
+        self.assertEqual(
+            UserProfile.objects.exclude(realm=realm).filter(is_active=True).count(),
+            10
         )
 
         # Our seat count excludes our guest user and bot, and
