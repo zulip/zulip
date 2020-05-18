@@ -80,8 +80,9 @@ There are 3 reasons for this:
     using `.select_related()` (see above!), and thus will perform well
     when one later accesses related models like the Realm.
 
-Similarly we have `get_client` and `get_stream` functions to fetch those
-commonly accessed objects via remote cache.
+Similarly we have `get_client` and `access_stream_by_id` /
+`access_stream_by_name` functions to fetch those commonly accessed
+objects via remote cache.
 
 ### Using Django model objects as keys in sets/dicts
 
