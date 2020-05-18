@@ -1433,7 +1433,7 @@ div.focused_table {
         .hidden {
             display: none;
         }
-        span {
+        & > span {
             white-space: nowrap;
             list-style-type: none;
             display: inline-block;
