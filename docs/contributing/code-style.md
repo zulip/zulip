@@ -107,15 +107,6 @@ some_objs = UserProfile.objects.get(id=17)
 assert obj.id in set([o.id for i in some_objs])
 ```
 
-### user\_profile.save()
-
-You should always pass the update\_fields keyword argument to .save()
-when modifying an existing Django model object. By default, .save() will
-overwrite every value in the column, which results in lots of race
-conditions where unrelated changes made by one thread can be
-accidentally overwritten by another thread that fetched its UserProfile
-object before the first thread wrote out its change.
-
 ### Using raw saves to update important model objects
 
 In most cases, we already have a function in zerver/lib/actions.py with
