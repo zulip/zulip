@@ -10,10 +10,12 @@
         {{/if}}
     </span>
     {{#if sub_count}}
-    <span class="sub_count" data-toggle="tooltip" title="{{sub_count}} users are subscribed to #{{title}}"><i class="fa fa-user-o"></i>{{formatted_sub_count}}</span>
-    {{/if}}
-    {{#if rendered_narrow_description}}
-    <span class="narrow_description rendered_markdown" data-toggle="tooltip">{{rendered_markdown rendered_narrow_description}}</span>
+        <span class="sub_count" data-toggle="tooltip" title="{{sub_count}} users are subscribed to #{{title}}"><i class="fa fa-user-o"></i>{{formatted_sub_count}}</span>
+        {{#if rendered_narrow_description}}
+        <span class="narrow_description rendered_markdown" data-toggle="tooltip">{{rendered_markdown rendered_narrow_description}}</span>
+        {{else}}
+        <span class="narrow_description rendered_markdown" data-toggle="tooltip">{{t "(no description)"}}</span>
+        {{/if}}
     {{/if}}
     <span class="search_icon search_closed" ><i class="fa fa-search" aria-hidden="true"></i></span>
 </span>
