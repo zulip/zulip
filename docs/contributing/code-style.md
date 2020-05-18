@@ -292,10 +292,6 @@ type changes in the future.
 -   For string formatting, use `x % (y,)` rather than `x % y`, to avoid
     ambiguity if `y` happens to be a tuple.
 
-### Tests
-
-All significant new features should come with tests. See testing.
-
 ### Third party code
 
 See [our docs on dependencies](../subsystems/dependencies.md) for discussion of
