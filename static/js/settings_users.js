@@ -238,7 +238,9 @@ function human_info(person) {
 }
 
 section.bots.create_table = () => {
+    loading.make_indicator($('#admin_page_bots_loading_indicator'), {text: 'Loading...'});
     const $bots_table = $("#admin_bots_table");
+    $bots_table.hide();
     const bot_user_ids = bot_data.all_user_ids();
 
     list_render.create($bots_table, bot_user_ids, {
@@ -265,7 +267,7 @@ section.bots.create_table = () => {
     });
 
     loading.destroy_indicator($('#admin_page_bots_loading_indicator'));
-    $("#admin_bots_table").show();
+    $bots_table.show();
 };
 
 section.active.create_table = (active_users) => {
@@ -358,11 +360,9 @@ exports.update_user_data = function (user_id, new_data) {
 
 function start_data_load() {
     loading.make_indicator($('#admin_page_users_loading_indicator'), {text: 'Loading...'});
-    loading.make_indicator($('#admin_page_bots_loading_indicator'), {text: 'Loading...'});
     loading.make_indicator($('#admin_page_deactivated_users_loading_indicator'), {text: 'Loading...'});
     $("#admin_deactivated_users_table").hide();
     $("#admin_users_table").hide();
-    $("#admin_bots_table").hide();
 
     // Populate users and bots tables
     channel.get({
