@@ -253,8 +253,17 @@ def main(options: argparse.Namespace) -> int:
         dev_template_db_status = DEV_DATABASE.template_status()
         if options.is_force or dev_template_db_status == 'needs_rebuild':
             run(["tools/setup/postgres-init-dev-db"])
-            run(["tools/rebuild-dev-database"])
-            DEV_DATABASE.write_new_db_digest()
+            if options.skip_dev_db_build:
+                # We don't need to build the manual development
+                # database on CircleCI for running tests, so we can
+                # just leave it as a template db and save a minute.
+                #
+                # Important: We don't write a digest as that would
+                # incorrectly claim that we ran migrations.
+                pass
+            else:
+                run(["tools/rebuild-dev-database"])
+                DEV_DATABASE.write_new_db_digest()
         elif dev_template_db_status == 'run_migrations':
             DEV_DATABASE.run_db_migrations()
         elif dev_template_db_status == 'current':
@@ -326,6 +335,11 @@ if __name__ == "__main__":
                         dest='is_build_release_tarball_only',
                         default=False,
                         help="Provision for test suite with production settings.")
+
+    parser.add_argument('--skip-dev-db-build', action='store_true',
+                        dest='skip_dev_db_build',
+                        default=False,
+                        help="Don't run migrations on dev database.")
 
     options = parser.parse_args()
     sys.exit(main(options))
