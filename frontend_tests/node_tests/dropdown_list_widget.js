@@ -10,6 +10,16 @@ const _list_render = {
 };
 set_global('list_render', _list_render);
 
+const setup_zjquery_data = (name) => {
+    $.clear_all_elements();
+    const input_group = $(".input_group");
+    const reset_button = $('.dropdown_list_reset_button');
+    input_group.set_find_results('.dropdown_list_reset_button', reset_button);
+    $(`#${name}_widget #${name}_name`).closest = () => input_group;
+    const $widget = $(`#${name}_widget #${name}_name`);
+    return {reset_button, $widget};
+};
+
 run_test('basic_functions', () => {
     let updated_value;
     const opts = {
@@ -21,11 +31,7 @@ run_test('basic_functions', () => {
         render_text: (text) => `rendered: ${text}`,
     };
 
-    const input_group = $(".input_group");
-    const reset_button = $('.dropdown_list_reset_button');
-    input_group.set_find_results('.dropdown_list_reset_button', reset_button);
-    $("#my_setting_widget #my_setting_name").closest = () => input_group;
-    const $widget = $("#my_setting_widget #my_setting_name");
+    const {reset_button, $widget} = setup_zjquery_data(opts.widget_name);
 
     const widget = dropdown_list_widget(opts);
 
@@ -44,4 +50,19 @@ run_test('basic_functions', () => {
     assert.equal(widget.value(), '');
     assert.equal(updated_value, null);
     assert(!reset_button.visible());
+});
+
+run_test('no_default_value', () => {
+    const opts = {
+        widget_name: 'my_setting',
+        data: ['one', 'two', 'three'].map(x => ({name: x, value: x})),
+        default_text: i18n.t("not set"),
+        render_text: (text) => `rendered: ${text}`,
+        null_value: 'null-value',
+    };
+
+    blueslip.expect('warn', 'dropdown-list-widget: Called without a default value; using null value');
+    setup_zjquery_data(opts.widget_name);
+    const widget = dropdown_list_widget(opts);
+    assert.equal(widget.value(), 'null-value');
 });
