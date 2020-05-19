@@ -4308,11 +4308,11 @@ def update_to_dict_cache(changed_messages: List[Message]) -> List[int]:
     messages)."""
     items_for_remote_cache = {}
     message_ids = []
-    for changed_message in changed_messages:
-        message_ids.append(changed_message.id)
-        key = to_dict_cache_key_id(changed_message.id)
-        value = MessageDict.to_dict_uncached(changed_message)
-        items_for_remote_cache[key] = (value,)
+    changed_messages_to_dict = MessageDict.to_dict_uncached(changed_messages)
+    for msg_id, msg in changed_messages_to_dict.items():
+        message_ids.append(msg_id)
+        key = to_dict_cache_key_id(msg_id)
+        items_for_remote_cache[key] = (msg,)
 
     cache_set_many(items_for_remote_cache)
     return message_ids

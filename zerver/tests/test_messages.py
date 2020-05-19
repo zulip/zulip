@@ -1313,7 +1313,7 @@ class MessageDictTest(ZulipTestCase):
                 apply_markdown: bool,
                 client_gravatar: bool) -> Dict[str, Any]:
             msg = reload_message(msg_id)
-            unhydrated_dict = MessageDict.to_dict_uncached_helper(msg)
+            unhydrated_dict = MessageDict.to_dict_uncached_helper([msg])[0]
             # The next step mutates the dict in place
             # for performance reasons.
             MessageDict.post_process_dicts(
@@ -1492,7 +1492,7 @@ class MessageDictTest(ZulipTestCase):
             return Message.objects.get(id=msg_id)
 
         def assert_topic_links(links: List[str], msg: Message) -> None:
-            dct = MessageDict.to_dict_uncached_helper(msg)
+            dct = MessageDict.to_dict_uncached_helper([msg])[0]
             self.assertEqual(dct[TOPIC_LINKS], links)
 
         # Send messages before and after saving the realm filter from each user.
@@ -2687,10 +2687,10 @@ class EditMessageTest(ZulipTestCase):
 
         # Check number of queries performed
         with queries_captured() as queries:
-            for msg in messages:
-                MessageDict.to_dict_uncached(msg)
-        # 3 query for realm_id, reactions & submessage per message = 6
-        self.assertEqual(len(queries), 6)
+            MessageDict.to_dict_uncached(messages)
+        # 1 query for realm_id per message = 2
+        # 1 query each for reactions & submessage for all messages = 2
+        self.assertEqual(len(queries), 4)
 
     def test_save_message(self) -> None:
         """This is also tested by a client test, but here we can verify
