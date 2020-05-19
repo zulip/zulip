@@ -1,5 +1,4 @@
 const settings_data = require("./settings_data");
-const user_dropdown = require("./user_dropdown");
 const render_admin_user_list = require("../templates/admin_user_list.hbs");
 const render_admin_human_form = require('../templates/admin_human_form.hbs');
 const render_admin_bot_form = require('../templates/admin_bot_form.hbs');
@@ -453,15 +452,19 @@ function open_bot_form(person) {
 
     // NOTE: building `owner_dropdown` is quite expensive!
     const owner_id = bot_data.get(person.user_id).owner_id;
-    const owner_dropdown = user_dropdown.create(owner_id);
 
-    modal_container.find(
-        ".edit_bot_owner_container"
-    ).append(owner_dropdown.elem);
+    const users_list = people.get_active_humans();
+    const opts = {
+        widget_name: 'edit_bot_owner',
+        data: users_list.map(u => ({name: u.full_name, value: u.user_id.toString()})),
+        default_text: i18n.t("No owner"),
+        value: owner_id,
+    };
+    const owner_widget = dropdown_list_widget(opts);
 
     return {
         modal: div,
-        owner_dropdown: owner_dropdown,
+        owner_widget,
     };
 }
 
@@ -614,9 +617,7 @@ function handle_bot_form(tbody, status_field) {
             return;
         }
 
-        const ret = open_bot_form(bot);
-        const modal = ret.modal;
-        const owner_dropdown = ret.owner_dropdown;
+        const {modal, owner_widget} = open_bot_form(bot);
 
         modal.find('.submit_bot_change').on("click", function (e) {
             e.preventDefault();
@@ -629,7 +630,7 @@ function handle_bot_form(tbody, status_field) {
                 full_name: full_name.val(),
             };
 
-            const human_user_id = owner_dropdown.get_user_id();
+            const human_user_id = owner_widget.value();
             if (human_user_id) {
                 data.bot_owner_id = human_user_id;
             }
