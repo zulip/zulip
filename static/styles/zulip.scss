@@ -1930,21 +1930,23 @@ div.focused_table {
     color: inherit;
 }
 
-.typeahead.dropdown-menu .active {
-    color: hsl(0, 0%, 100%);
-}
+.typeahead.dropdown-menu {
+    .active {
+        color: hsl(0, 0%, 100%);
 
-.typeahead.dropdown-menu .active .unsubscribed_icon {
-    display: block;
-    float: right;
-    margin-top: 5px;
-    margin-right: -12px;
-    font-size: 0.8em;
-    color: hsl(96, 7%, 73%);
-}
+        .unsubscribed_icon {
+            display: block;
+            float: right;
+            margin-top: 5px;
+            margin-right: -12px;
+            font-size: 0.8em;
+            color: hsl(96, 7%, 73%);
+        }
+    }
 
-.typeahead.dropdown-menu .unsubscribed_icon {
-    display: none;
+    .unsubscribed_icon {
+        display: none;
+    }
 }
 
 .typeahead-image {
