@@ -70,8 +70,8 @@ We display usage examples in three languages: Python, JavaScript and
 Python and `curl` documentation; `JavaScript` is optional as we don't
 consider that API library to be fully supported.  The examples are
 defined using a special Markdown extension
-(`zerver/lib/bugdown/api_code_examples.py`).  To use this extension,
-one writes a Markdown file block that looks something like this:
+(`zerver/openapi/markdown_extension.py`).  To use this extension, one
+writes a Markdown file block that looks something like this:
 
 ```
 {start_tabs}
