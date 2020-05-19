@@ -2158,15 +2158,15 @@ div.floating_recipient {
 
 #user-checkboxes {
     margin-top: 10px;
-}
 
-#user-checkboxes .checkbox {
-    display: block;
-}
+    .checkbox {
+        display: block;
 
-#user-checkboxes .checkbox input[type=checkbox] {
-    margin: 5px 0px;
-    float: none;
+        input[type=checkbox] {
+            margin: 5px 0px;
+            float: none;
+        }
+    }
 }
 
 #stream-checkboxes {
