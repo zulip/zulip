@@ -41,7 +41,7 @@ def message_cache_items(items_for_remote_cache: Dict[str, Tuple[bytes]],
     commented out for a while.
     '''
     key = to_dict_cache_key_id(message.id)
-    value = MessageDict.to_dict_uncached(message)
+    value = MessageDict.to_dict_uncached([message])[message.id]
     items_for_remote_cache[key] = (value,)
 
 def user_cache_items(items_for_remote_cache: Dict[str, Tuple[UserProfile]],
