@@ -171,7 +171,7 @@ def stringify_message_dict(message_dict: Dict[str, Any]) -> bytes:
 
 @cache_with_key(to_dict_cache_key, timeout=3600*24)
 def message_to_dict_json(message: Message) -> bytes:
-    return MessageDict.to_dict_uncached(message)
+    return MessageDict.to_dict_uncached([message])[message.id]
 
 def save_message_rendered_content(message: Message, content: str) -> str:
     rendered_content = render_markdown(message, content, realm=message.get_realm())
@@ -263,10 +263,6 @@ class MessageDict:
         del obj['sender_is_mirror_dummy']
 
     @staticmethod
-    def to_dict_uncached(message: Message) -> bytes:
-        dct = MessageDict.to_dict_uncached_helper(message)
-        return stringify_message_dict(dct)
-
     def sew_submessages_and_reactions_to_msgs(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         msg_ids = [msg['id'] for msg in messages]
         submessages = SubMessage.get_raw_db_rows(msg_ids)
@@ -276,26 +272,37 @@ class MessageDict:
         return sew_messages_and_reactions(messages, reactions)
 
     @staticmethod
-    def to_dict_uncached_helper(message: Message) -> Dict[str, Any]:
-        return MessageDict.build_message_dict(
-            message = message,
-            message_id = message.id,
-            last_edit_time = message.last_edit_time,
-            edit_history = message.edit_history,
-            content = message.content,
-            topic_name = message.topic_name(),
-            date_sent = message.date_sent,
-            rendered_content = message.rendered_content,
-            rendered_content_version = message.rendered_content_version,
-            sender_id = message.sender.id,
-            sender_realm_id = message.sender.realm_id,
-            sending_client_name = message.sending_client.name,
-            recipient_id = message.recipient.id,
-            recipient_type = message.recipient.type,
-            recipient_type_id = message.recipient.type_id,
-            reactions = Reaction.get_raw_db_rows([message.id]),
-            submessages = SubMessage.get_raw_db_rows([message.id]),
-        )
+    def to_dict_uncached(messages: List[Message]) -> Dict[int, bytes]:
+        messages_dict = MessageDict.to_dict_uncached_helper(messages)
+        encoded_messages = {msg['id']: stringify_message_dict(msg) for msg in messages_dict}
+        return encoded_messages
+
+    @staticmethod
+    def to_dict_uncached_helper(messages: List[Message]) -> List[Dict[str, Any]]:
+        message_dicts = [
+            MessageDict.build_message_dict(
+                message = message,
+                message_id = message.id,
+                last_edit_time = message.last_edit_time,
+                edit_history = message.edit_history,
+                content = message.content,
+                topic_name = message.topic_name(),
+                date_sent = message.date_sent,
+                rendered_content = message.rendered_content,
+                rendered_content_version = message.rendered_content_version,
+                sender_id = message.sender.id,
+                sender_realm_id = message.sender.realm_id,
+                sending_client_name = message.sending_client.name,
+                recipient_id = message.recipient.id,
+                recipient_type = message.recipient.type,
+                recipient_type_id = message.recipient.type_id,
+            ) for message in messages
+        ]
+
+        # We do bulk query for reactions and submessages to avoid
+        # running queries for them in a loop.
+        MessageDict.sew_submessages_and_reactions_to_msgs(message_dicts)
+        return message_dicts
 
     @staticmethod
     def get_raw_db_rows(needed_ids: List[int]) -> List[Dict[str, Any]]:
@@ -363,8 +370,8 @@ class MessageDict:
             recipient_id: int,
             recipient_type: int,
             recipient_type_id: int,
-            reactions: List[Dict[str, Any]],
-            submessages: List[Dict[str, Any]]
+            reactions: List[Dict[str, Any]]=[],
+            submessages: List[Dict[str, Any]]=[]
     ) -> Dict[str, Any]:
 
         obj = dict(
