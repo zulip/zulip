@@ -1237,6 +1237,11 @@ div.message_table {
     z-index: 2;
 }
 
+.message_row .date_row {
+    /* We only want padding for the date rows between recipient blocks */
+    padding-bottom: 0px;
+}
+
 div.focused_table {
     display: block;
 }
@@ -2393,11 +2398,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 .date_row {
     text-align: center;
     padding-bottom: 10px;
-}
-
-.message_row .date_row {
-    /* We only want padding for the date rows between recipient blocks */
-    padding-bottom: 0px;
 }
 
 .date_row {
