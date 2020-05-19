@@ -2565,6 +2565,15 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 }
 
+.user_popover_email:hover .email_tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+.user_popover_email i.hide_copy_icon {
+    display: none;
+}
+
 .email_copied,
 .user_popover_email i:hover {
     color: hsl(170, 48%, 54%);
@@ -2601,15 +2610,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
         border-color: transparent;
         border-bottom: hsl(0, 0%, 30%) solid 7px;
     }
-}
-
-.user_popover_email:hover .email_tooltip {
-    visibility: visible;
-    opacity: 1;
-}
-
-.user_popover_email i.hide_copy_icon {
-    display: none;
 }
 
 .hotkey-hint {
