@@ -303,7 +303,10 @@ type changes in the future.
 
 ### Tests
 
-All significant new features should come with tests. See testing.
+Clear, readable code is important for [tests](../testing/testing.md);
+familiarize yourself with our testing frameworks so that you can write
+clean, readable tests.  Comments about anything subtle about what is
+being verified are appreciated.
 
 ### Third party code
 
