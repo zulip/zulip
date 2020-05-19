@@ -494,7 +494,7 @@ class Realm(models.Model):
 
     def ensure_not_on_limited_plan(self) -> None:
         if self.plan_type == Realm.LIMITED:
-            raise JsonableError(_("Feature unavailable on your current plan."))
+            raise JsonableError(self.UPGRADE_TEXT_STANDARD)
 
     @property
     def subdomain(self) -> str:
