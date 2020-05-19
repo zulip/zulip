@@ -1965,38 +1965,42 @@ div.focused_table {
     text-align: center;
 }
 
-nav .column-left {
-    text-align: center;
-}
+nav {
+    .column-left {
+        text-align: center;
 
-nav .column-left .nav-logo {
-    display: inline-block;
-    vertical-align: top;
-    margin-top: 8px;
-    height: 25px;
-    max-width: 200px;
-}
+        .nav-logo {
+            display: inline-block;
+            vertical-align: top;
+            margin-top: 8px;
+            height: 25px;
+            max-width: 200px;
+        }
 
-nav .column-left .company-name {
-    display: inline-block;
-    vertical-align: top;
-    text-transform: uppercase;
-    margin-top: 12px;
-    margin-left: 8px;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: hsl(170, 48%, 54%);
-    letter-spacing: 0.1em;
-    cursor: pointer;
-}
+        .company-name {
+            display: inline-block;
+            vertical-align: top;
+            text-transform: uppercase;
+            margin-top: 12px;
+            margin-left: 8px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: hsl(170, 48%, 54%);
+            letter-spacing: 0.1em;
+            cursor: pointer;
+        }
+    }
 
-nav a.no-style:hover {
-    text-decoration: none;
-    cursor: pointer;
-}
+    a {
+        &.no-style:hover {
+            text-decoration: none;
+            cursor: pointer;
+        }
 
-nav a .no-style {
-    text-decoration: none;
+        .no-style {
+            text-decoration: none;
+        }
+    }
 }
 
 .modal-bg {
