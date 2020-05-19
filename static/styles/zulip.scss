@@ -1375,10 +1375,10 @@ div.focused_table {
     margin-right: 35px;
     /* to make message-uncollapse easier */
     margin-top: 10px;
-}
 
-.message_length_controller:hover {
-    text-decoration: underline;
+    &:hover {
+        text-decoration: underline;
+    }
 }
 
 .messagebox-content {
