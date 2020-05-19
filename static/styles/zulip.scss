@@ -39,6 +39,11 @@ a {
     cursor: pointer;
 }
 
+a.message_label_clickable:hover {
+    cursor: pointer;
+    color: hsl(200, 100%, 40%);
+}
+
 .no-select {
     user-select: none;
 }
@@ -1135,11 +1140,6 @@ td.pointer {
 }
 
 .actions_hover:hover {
-    color: hsl(200, 100%, 40%);
-}
-
-a.message_label_clickable:hover {
-    cursor: pointer;
     color: hsl(200, 100%, 40%);
 }
 
