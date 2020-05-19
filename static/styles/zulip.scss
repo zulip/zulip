@@ -1934,10 +1934,6 @@ div.focused_table {
     color: hsl(0, 0%, 100%);
 }
 
-.typeahead.dropdown-menu .unsubscribed_icon {
-    display: none;
-}
-
 .typeahead.dropdown-menu .active .unsubscribed_icon {
     display: block;
     float: right;
@@ -1945,6 +1941,10 @@ div.focused_table {
     margin-right: -12px;
     font-size: 0.8em;
     color: hsl(96, 7%, 73%);
+}
+
+.typeahead.dropdown-menu .unsubscribed_icon {
+    display: none;
 }
 
 .typeahead-image {
