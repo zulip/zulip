@@ -1220,13 +1220,6 @@ a.dark_background:hover,
     color: hsl(0, 0%, 73%);
 }
 
-div.message_table {
-    border-collapse: separate;
-    margin-left: auto;
-    display: none;
-    width: 100%;
-}
-
 .message_row {
     position: relative;
     border-left: 1px solid hsla(0, 0%, 0%, 0.10);
@@ -1240,10 +1233,6 @@ div.message_table {
         /* We only want padding for the date rows between recipient blocks */
         padding-bottom: 0px;
     }
-}
-
-div.focused_table {
-    display: block;
 }
 
 .message_content {
@@ -2007,12 +1996,6 @@ nav {
     background-color: hsl(0, 0%, 98%);
 }
 
-div.floating_recipient {
-    border-collapse: separate;
-    width: 100%;
-    position: relative;
-}
-
 #floating_recipient_bar {
     top: 50px;
 }
@@ -2224,18 +2207,37 @@ div.floating_recipient {
     }
 }
 
-div.topic_edit_spinner {
-    display: inline-block;
-    width: 18px;
-    height: 18px;
-    margin-top: -1px;
-    padding: 2px;
-    vertical-align: middle;
-}
+div {
+    &.message_table {
+        border-collapse: separate;
+        margin-left: auto;
+        display: none;
+        width: 100%;
+    }
 
-div.topic_edit_spinner .loading_indicator_spinner {
-    width: 14px;
-    height: 14px;
+    &.focused_table {
+        display: block;
+    }
+
+    &.floating_recipient {
+        border-collapse: separate;
+        width: 100%;
+        position: relative;
+    }
+
+    &.topic_edit_spinner {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        margin-top: -1px;
+        padding: 2px;
+        vertical-align: middle;
+
+        .loading_indicator_spinner {
+            width: 14px;
+            height: 14px;
+        }
+    }
 }
 
 #do_delete_message_spinner {
