@@ -2253,12 +2253,12 @@ div.topic_edit_spinner .loading_indicator_spinner {
     outline: 0;
 }
 
-.modal-body {
-    max-height: 60vh;
-}
-
 .modal form {
     margin-bottom: 0px;
+}
+
+.modal-body {
+    max-height: 60vh;
 }
 
 #invite-user .modal-header {
