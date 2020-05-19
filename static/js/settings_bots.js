@@ -1,4 +1,3 @@
-const user_dropdown = require("./user_dropdown");
 const render_bot_avatar_row = require('../templates/bot_avatar_row.hbs');
 const render_edit_bot = require('../templates/edit_bot.hbs');
 const render_settings_edit_embedded_bot_service = require("../templates/settings/edit_embedded_bot_service.hbs");
@@ -404,9 +403,13 @@ exports.set_up = function () {
         const image = li.find(".image");
         const errors = form.find('.bot_edit_errors');
 
-        const owner_dropdown = user_dropdown.create(bot.owner_id);
-        const owner_select_div = $('#edit_bot_modal .select-form');
-        owner_select_div.append(owner_dropdown.elem);
+        const opts = {
+            widget_name: 'bot_owner',
+            data: users_list.map(u => ({name: u.full_name, value: u.user_id.toString()})),
+            default_text: i18n.t("No owner"),
+            value: bot.owner_id,
+        };
+        const owner_widget = dropdown_list_widget(opts);
 
         const service = bot_data.get_services(bot_id)[0];
         if (bot.bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {
@@ -433,7 +436,7 @@ exports.set_up = function () {
                 const type = form.attr('data-type');
 
                 const full_name = form.find('.edit_bot_name').val();
-                const bot_owner_id = owner_dropdown.get_user_id();
+                const bot_owner_id = owner_widget.value();
                 const file_input = $(".edit_bot_form").find('.edit_bot_avatar_file_input');
                 const spinner = form.find('.edit_bot_spinner');
                 const edit_button = form.find('.edit_bot_button');
