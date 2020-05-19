@@ -2667,6 +2667,31 @@ class EditMessageTest(ZulipTestCase):
                 ujson.loads(msg.edit_history)
             )
 
+    def test_query_count_on_to_dict_uncached(self) -> None:
+        # `to_dict_uncached` method is used by the mechanisms
+        # tested in this class. Hence, its performance is tested here.
+        # Generate 2 messages
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        stream_name = "public_stream"
+        self.subscribe(user, stream_name)
+        message_one_id = self.send_stream_message(user,
+                                                  stream_name, "Message one")
+        later_subscribed_user = self.example_user("cordelia")
+        self.subscribe(later_subscribed_user, stream_name)
+        message_two_id = self.send_stream_message(user,
+                                                  stream_name, "Message two")
+        message_ids = [message_one_id, message_two_id]
+        messages = [Message.objects.select_related().get(id=message_id)
+                    for message_id in message_ids]
+
+        # Check number of queries performed
+        with queries_captured() as queries:
+            for msg in messages:
+                MessageDict.to_dict_uncached(msg)
+        # 3 query for realm_id, reactions & submessage per message = 6
+        self.assertEqual(len(queries), 6)
+
     def test_save_message(self) -> None:
         """This is also tested by a client test, but here we can verify
         the cache against the database"""
