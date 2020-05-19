@@ -887,11 +887,14 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         # We expect to go through the "choose email" screen here,
         # because there won't be an existing user account we can
         # auto-select for the user.
-        result = self.social_auth_test(account_data_dict,
-                                       expect_choose_email_screen=True,
-                                       subdomain='zulip')
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "/login/?is_deactivated=true")
+        with mock.patch('zproject.backends.logging.info') as m:
+            result = self.social_auth_test(account_data_dict,
+                                           expect_choose_email_screen=True,
+                                           subdomain='zulip')
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, "/login/?is_deactivated=true")
+            m.assert_called_with("Failed login attempt for deactivated account: %s@%s",
+                                 user_profile.id, 'zulip')
         # TODO: verify whether we provide a clear error message
 
     def test_social_auth_invalid_realm(self) -> None:
