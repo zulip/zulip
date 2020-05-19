@@ -2484,25 +2484,25 @@ div {
 #message_edit_form {
     margin-bottom: 10px;
     cursor: default;
-}
 
-#message_edit_form .edit-controls {
-    margin-left: 0px;
-    margin-top: 0px;
-}
+    .edit-controls {
+        margin-left: 0px;
+        margin-top: 0px;
+    }
 
-#message_edit_form textarea {
-    width: 100%;
-    min-width: 206px;
-    box-sizing: border-box;
-}
+    textarea {
+        width: 100%;
+        min-width: 206px;
+        box-sizing: border-box;
+    }
 
-#message_edit_form .control-group.no-margin {
-    margin-bottom: 0px;
-}
+    .control-group.no-margin {
+        margin-bottom: 0px;
+    }
 
-#message_edit_form .action-buttons {
-    margin: 10px 0px;
+    .action-buttons {
+        margin: 10px 0px;
+    }
 }
 
 #topic_edit_form {
