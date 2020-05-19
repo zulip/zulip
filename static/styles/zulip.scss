@@ -2270,41 +2270,43 @@ div {
     max-width: 96%;
 }
 
-#invite-user .modal-header {
-    padding: 7px 15px;
-    border-color: hsl(0, 0%, 87%);
-}
+#invite-user {
+    .modal-header {
+        padding: 7px 15px;
+        border-color: hsl(0, 0%, 87%);
 
-#invite-user .modal-header .exit {
-    font-size: 1.5rem;
-    font-weight: 600;
-    background-color: transparent;
-    border: none;
-    position: absolute;
-    top: 6px;
-    right: 5px;
-    color: hsl(0, 0%, 67%);
-}
+        .exit {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background-color: transparent;
+            border: none;
+            position: absolute;
+            top: 6px;
+            right: 5px;
+            color: hsl(0, 0%, 67%);
+        }
+    }
 
-#invite-user .overlay-content {
-    position: relative;
-    width: 500px;
-    border-radius: 4px;
-}
+    .overlay-content {
+        position: relative;
+        width: 500px;
+        border-radius: 4px;
+    }
 
-#invite-user .modal-body {
-    margin-bottom: 58px;
-    position: relative;
-}
+    .modal-body {
+        margin-bottom: 58px;
+        position: relative;
+    }
 
-#invite-user .modal-footer {
-    position: absolute;
-    bottom: 0px;
-    width: calc(100% - 30px);
-}
+    .modal-footer {
+        position: absolute;
+        bottom: 0px;
+        width: calc(100% - 30px);
+    }
 
-#invite-user .invite-stream-controls {
-    margin-top: 5px;
+    .invite-stream-controls {
+        margin-top: 5px;
+    }
 }
 
 #invite_status {
