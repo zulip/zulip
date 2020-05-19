@@ -143,6 +143,7 @@ def is_user_active(user_profile: UserProfile, return_data: Optional[Dict[str, An
                 # Record whether it's a mirror dummy account
                 return_data['is_mirror_dummy'] = True
             return_data['inactive_user'] = True
+            return_data['inactive_user_id'] = user_profile.id
         return False
     if user_profile.realm.deactivated:
         if return_data is not None:
@@ -1055,6 +1056,7 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
         return_data["invalid_realm"] = True
         return None
     return_data["realm_id"] = realm.id
+    return_data["realm_string_id"] = realm.string_id
 
     if not auth_enabled_helper([backend.auth_backend_name], realm):
         return_data["auth_backend_disabled"] = True
@@ -1224,6 +1226,8 @@ def social_auth_finish(backend: Any,
         return HttpResponseRedirect(reverse('zerver.views.registration.find_account'))
 
     if inactive_user:
+        logging.info("Failed login attempt for deactivated account: %s@%s",
+                     return_data['inactive_user_id'], return_data['realm_string_id'])
         return redirect_deactivated_user_to_login()
 
     if auth_backend_disabled or inactive_realm or no_verified_email or email_not_associated:
