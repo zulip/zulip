@@ -2416,20 +2416,20 @@ div {
 
 .date_row {
     padding-left: 2px;
-}
 
-.date_row .date-direction {
-    display: inline-block;
-    padding-right: 5px;
-}
+    .date-direction {
+        display: inline-block;
+        padding-right: 5px;
+    }
 
-.date_row .date-line {
-    display: inline-block;
-    vertical-align: middle;
-    width: 33%;
-    border-top: 1px solid hsl(0, 0%, 88%);
-    border-bottom: 1px solid hsl(0, 0%, 100%);
-    margin: 0px 5px 0px 5px;
+    .date-line {
+        display: inline-block;
+        vertical-align: middle;
+        width: 33%;
+        border-top: 1px solid hsl(0, 0%, 88%);
+        border-bottom: 1px solid hsl(0, 0%, 100%);
+        margin: 0px 5px 0px 5px;
+    }
 }
 
 .sub-unsub-message span,
