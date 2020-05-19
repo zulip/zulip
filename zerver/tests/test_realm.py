@@ -687,6 +687,7 @@ class RealmTest(ZulipTestCase):
     def test_message_retention_days(self) -> None:
         self.login('iago')
         realm = get_realm('zulip')
+        self.assertEqual(realm.plan_type, Realm.SELF_HOSTED)
 
         req = dict(message_retention_days=ujson.dumps(0))
         result = self.client_patch('/json/realm', req)
@@ -711,6 +712,10 @@ class RealmTest(ZulipTestCase):
         self.assert_json_error(
             result, "Available on Zulip Standard. Upgrade to access.")
 
+        do_change_plan_type(realm, Realm.STANDARD)
+        req = dict(message_retention_days=ujson.dumps(10))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_success(result)
 
 class RealmAPITest(ZulipTestCase):
 
