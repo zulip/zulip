@@ -2261,6 +2261,13 @@ div.topic_edit_spinner .loading_indicator_spinner {
     max-height: 60vh;
 }
 
+#invitee_emails {
+    min-height: 40px;
+    max-height: 300px;
+    width: 96%;
+    max-width: 96%;
+}
+
 #invite-user .modal-header {
     padding: 7px 15px;
     border-color: hsl(0, 0%, 87%);
@@ -2275,13 +2282,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     top: 6px;
     right: 5px;
     color: hsl(0, 0%, 67%);
-}
-
-#invitee_emails {
-    min-height: 40px;
-    max-height: 300px;
-    width: 96%;
-    max-width: 96%;
 }
 
 #invite-user .overlay-content {
@@ -2299,6 +2299,10 @@ div.topic_edit_spinner .loading_indicator_spinner {
     position: absolute;
     bottom: 0px;
     width: calc(100% - 30px);
+}
+
+#invite-user .invite-stream-controls {
+    margin-top: 5px;
 }
 
 #invite_status {
@@ -2336,10 +2340,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 #generate_multiuse_invite_button {
     position: relative;
     top: 1px;
-}
-
-#invite-user .invite-stream-controls {
-    margin-top: 5px;
 }
 
 .settings-dropdown-caret {
