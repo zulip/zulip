@@ -723,10 +723,6 @@ input[type=checkbox] {
     border: none;
 }
 
-.dropdown-list-widget button {
-    margin: 0px 5px;
-}
-
 .control-label-disabled {
     color: hsl(0, 0%, 82%);
 }
@@ -1677,17 +1673,23 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     top: 5px;
 }
 
-.dropdown-list-widget .dropdown-search > input[type=text] {
-    margin: 9px;
-}
+.dropdown-list-widget {
+    button {
+        margin: 0px 5px;
+    }
 
-.dropdown-list-widget .dropdown-list-body {
-    position: relative;
-    height: auto;
-    max-height: 200px;
-    overflow-y: auto;
-    margin-top: 0;
-    display: block;
+    .dropdown-search > input[type=text] {
+        margin: 9px;
+    }
+
+    .dropdown-list-body {
+        position: relative;
+        height: auto;
+        max-height: 200px;
+        overflow-y: auto;
+        margin-top: 0;
+        display: block;
+    }
 }
 
 #settings_page .sidebar ul {
