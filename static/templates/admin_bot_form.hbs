@@ -17,6 +17,11 @@
                 </div>
                 <div class="input-group edit_bot_owner_container">
                     <label for="bot_owner_select">{{t "Owner" }}</label>
+                    {{> settings/dropdown_list_widget
+                      widget_name="edit_bot_owner"
+                      list_placeholder=(t 'Filter users')
+                      reset_button_text=(t '[Remove owner]')
+                      label="" }}
                 </div>
             </form>
         </div>

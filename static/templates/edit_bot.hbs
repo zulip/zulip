@@ -18,8 +18,11 @@
             </div>
             <div class="edit-bot-owner">
                 <label for="bot_owner_select">{{t "Owner" }}</label>
-                <div class="select-form">
-                </div>
+                {{> settings/dropdown_list_widget
+                  widget_name="bot_owner"
+                  list_placeholder=(t 'Filter users')
+                  reset_button_text=(t '[Remove owner]')
+                  label="" }}
             </div>
             <div id="service_data">
             </div>
