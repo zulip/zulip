@@ -2870,7 +2870,7 @@ select.inline_select_topic_edit {
 
     .message_controls {
         width: 56px;
-        right: -10px;
+        right: 40px;
         top: 0px;
     }
 
@@ -2884,10 +2884,6 @@ select.inline_select_topic_edit {
     .message_time {
         left: auto;
         right: -5px;
-    }
-
-    .message_controls {
-        right: 40px;
     }
 
     .sender_name {
