@@ -1321,6 +1321,18 @@ div.focused_table {
     margin-bottom: 5px;
 }
 
+#inline_topic_edit.header-v {
+    height: 18px;
+    display: inline-block;
+    padding: 0px 3px;
+    vertical-align: baseline;
+
+    line-height: 0px;
+    font-size: 14px;
+
+    box-shadow: none;
+}
+
 #message_edit_topic {
     margin: 0 5px 5px 0;
 }
@@ -1338,18 +1350,6 @@ div.focused_table {
     border-radius: 0px 3px 3px 0px;
     margin-left: -11px;
     text-indent: 10px;
-}
-
-#inline_topic_edit.header-v {
-    height: 18px;
-    display: inline-block;
-    padding: 0px 3px;
-    vertical-align: baseline;
-
-    line-height: 0px;
-    font-size: 14px;
-
-    box-shadow: none;
 }
 
 #inline_topic_edit:focus,
