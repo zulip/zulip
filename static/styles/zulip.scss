@@ -2704,25 +2704,25 @@ select.inline_select_topic_edit {
 
     .column-left {
         display: none;
-    }
 
-    .column-left.expanded {
-        display: block;
-        position: absolute;
-        float: none;
-        left: 0px;
-        top: 0px;
-    }
+        &.expanded {
+            display: block;
+            position: absolute;
+            float: none;
+            left: 0px;
+            top: 0px;
 
-    .column-left.expanded .left-sidebar {
-        background-color: hsla(0, 0%, 100%, 1.0);
-        box-shadow: 0px 2px 3px 0px hsla(0, 0%, 0%, 0.1);
-        border-right: 1px solid hsl(0, 0%, 87%);
-        margin-top: 40px;
-        padding-top: 10px;
-        height: 100%;
-        padding-left: 10px;
-        width: 250px;
+            .left-sidebar {
+                background-color: hsla(0, 0%, 100%, 1.0);
+                box-shadow: 0px 2px 3px 0px hsla(0, 0%, 0%, 0.1);
+                border-right: 1px solid hsl(0, 0%, 87%);
+                margin-top: 40px;
+                padding-top: 10px;
+                height: 100%;
+                padding-left: 10px;
+                width: 250px;
+            }
+        }
     }
 
     body,
