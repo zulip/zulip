@@ -2251,10 +2251,10 @@ div.topic_edit_spinner .loading_indicator_spinner {
     /* Bootstrap uses tabindex=-1 on modals for focus and ESC handling,
        so avoid the outline it causes */
     outline: 0;
-}
 
-.modal form {
-    margin-bottom: 0px;
+    form {
+        margin-bottom: 0px;
+    }
 }
 
 .modal-body {
