@@ -267,6 +267,14 @@ class MessageDict:
         dct = MessageDict.to_dict_uncached_helper(message)
         return stringify_message_dict(dct)
 
+    def sew_submessages_and_reactions_to_msgs(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        msg_ids = [msg['id'] for msg in messages]
+        submessages = SubMessage.get_raw_db_rows(msg_ids)
+        sew_messages_and_submessages(messages, submessages)
+
+        reactions = Reaction.get_raw_db_rows(msg_ids)
+        return sew_messages_and_reactions(messages, reactions)
+
     @staticmethod
     def to_dict_uncached_helper(message: Message) -> Dict[str, Any]:
         return MessageDict.build_message_dict(
@@ -310,12 +318,7 @@ class MessageDict:
             'sender__realm_id',
         ]
         messages = Message.objects.filter(id__in=needed_ids).values(*fields)
-
-        submessages = SubMessage.get_raw_db_rows(needed_ids)
-        sew_messages_and_submessages(messages, submessages)
-
-        reactions = Reaction.get_raw_db_rows(needed_ids)
-        return sew_messages_and_reactions(messages, reactions)
+        return MessageDict.sew_submessages_and_reactions_to_msgs(messages)
 
     @staticmethod
     def build_dict_from_raw_db_row(row: Dict[str, Any]) -> Dict[str, Any]:
