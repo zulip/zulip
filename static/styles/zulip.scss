@@ -1207,15 +1207,15 @@ a.dark_background:hover,
     cursor: pointer;
 }
 
+.actions_hovered .actions_link {
+    text-decoration: underline;
+}
+
 .info {
     display: inline-block;
     position: relative;
     font-size: 15px;
     color: hsl(0, 0%, 73%);
-}
-
-.actions_hovered .actions_link {
-    text-decoration: underline;
 }
 
 div.message_table {
