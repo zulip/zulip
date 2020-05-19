@@ -1371,7 +1371,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         self.login_user(user_profile)
         with get_test_image_file(self.correct_files[0][0]) as fp:
             result = self.client_post("/json/realm/logo", {'file': fp, 'night': ujson.dumps(self.night)})
-        self.assert_json_error(result, 'Feature unavailable on your current plan.')
+        self.assert_json_error(result, 'Available on Zulip Standard. Upgrade to access.')
 
     def test_get_default_logo(self) -> None:
         self.login('hamlet')

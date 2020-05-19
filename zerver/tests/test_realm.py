@@ -709,7 +709,7 @@ class RealmTest(ZulipTestCase):
         req = dict(message_retention_days=ujson.dumps(10))
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(
-            result, "Feature unavailable on your current plan.")
+            result, "Available on Zulip Standard. Upgrade to access.")
 
 
 class RealmAPITest(ZulipTestCase):
