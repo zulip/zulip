@@ -947,7 +947,7 @@ run_test('misc', () => {
     page_params.is_admin = false;
 
     const stub_notification_disable_parent = $.create('<stub notification_disable parent');
-    stub_notification_disable_parent.set_find_results('.dropdown_list_reset_button',
+    stub_notification_disable_parent.set_find_results('.dropdown_list_reset_button:not([disabled])',
                                                       $.create('<disable link>'));
 
     page_params.realm_name_changes_disabled = false;
@@ -1027,7 +1027,7 @@ run_test('misc', () => {
                              'realm_signup_notifications_stream_id',
                              'realm_default_code_block_language'];
     const dropdown_list_parent = $.create(`<list parent>`);
-    dropdown_list_parent.set_find_results('.dropdown_list_reset_button', $.create('<disable button>'));
+    dropdown_list_parent.set_find_results('.dropdown_list_reset_button:not([disabled])', $.create('<disable button>'));
     widget_settings.forEach(name => {
         const elem = $.create(`#${name}_widget #${name}_name`);
         elem.closest = () => {

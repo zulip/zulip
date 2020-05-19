@@ -1676,6 +1676,19 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 .dropdown-list-widget {
     button {
         margin: 0px 5px;
+
+        &.dropdown_list_reset_button {
+            // Prevent night mode from overriding background.
+            background: unset !important;
+            border: none;
+
+            &:disabled {
+                display: none;
+            }
+        }
+        &:disabled i {
+            display: none;
+        }
     }
 
     .dropdown-search > input[type=text] {

@@ -25,7 +25,7 @@ const DropdownListWidget = function (opts) {
         if (!value || value === opts.null_value) {
             elem.text(opts.default_text);
             elem.addClass("text-warning");
-            elem.closest('.input-group').find('.dropdown_list_reset_button').hide();
+            elem.closest('.input-group').find('.dropdown_list_reset_button:not([disabled])').hide();
             return;
         }
 
@@ -34,7 +34,7 @@ const DropdownListWidget = function (opts) {
         const text = opts.render_text(item.name);
         elem.text(text);
         elem.removeClass('text-warning');
-        elem.closest('.input-group').find('.dropdown_list_reset_button').show();
+        elem.closest('.input-group').find('.dropdown_list_reset_button:not([disabled])').show();
     };
 
     const update = (value) => {
@@ -55,8 +55,9 @@ const DropdownListWidget = function (opts) {
             const value = $(this).attr('data-value');
             update(value);
         });
-        $(`#${opts.container_id} .dropdown_list_reset_button`).click(function () {
+        $(`#${opts.container_id} .dropdown_list_reset_button`).click(function (e) {
             update(opts.null_value);
+            e.preventDefault();
         });
     };
 
