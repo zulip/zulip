@@ -1044,7 +1044,7 @@ with_overrides(function (override) {
     global.with_stub(function (bot_stub) {
         global.with_stub(function (admin_stub) {
             override('bot_data.add', bot_stub.f);
-            override('settings_users.update_user_data', admin_stub.f);
+            override('settings_users.update_bot_data', admin_stub.f);
             dispatch(event);
             const args = bot_stub.get_args('bot');
             assert_same(args.bot, event.bot);
@@ -1057,7 +1057,7 @@ with_overrides(function (override) {
     global.with_stub(function (bot_stub) {
         global.with_stub(function (admin_stub) {
             override('bot_data.deactivate', bot_stub.f);
-            override('settings_users.update_user_data', admin_stub.f);
+            override('settings_users.update_bot_data', admin_stub.f);
             dispatch(event);
             const args = bot_stub.get_args('user_id');
             assert_same(args.user_id, event.bot.user_id);
@@ -1070,7 +1070,7 @@ with_overrides(function (override) {
     global.with_stub(function (bot_stub) {
         global.with_stub(function (admin_stub) {
             override('bot_data.del', bot_stub.f);
-            override('settings_users.update_user_data', admin_stub.f);
+            override('settings_users.update_bot_data', admin_stub.f);
             dispatch(event);
             const args = bot_stub.get_args('bot_id');
             assert_same(args.bot_id, event.bot.user_id);
@@ -1083,7 +1083,7 @@ with_overrides(function (override) {
     global.with_stub(function (bot_stub) {
         global.with_stub(function (admin_stub) {
             override('bot_data.update', bot_stub.f);
-            override('settings_users.update_user_data', admin_stub.f);
+            override('settings_users.update_bot_data', admin_stub.f);
 
             dispatch(event);
 
@@ -1093,7 +1093,6 @@ with_overrides(function (override) {
 
             args = admin_stub.get_args('update_user_id', 'update_bot_data');
             assert_same(args.update_user_id, event.bot.user_id);
-            assert_same(args.update_bot_data, event.bot);
         });
     });
 });
