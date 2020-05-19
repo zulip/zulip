@@ -1201,14 +1201,16 @@ a.dark_background:hover,
     font-size: 60%;
 }
 
-.actions_hovered .message_time,
-.actions_hovered .info {
-    color: hsl(200, 100%, 40%);
-    cursor: pointer;
-}
+.actions_hovered {
+    .message_time,
+    .info {
+        color: hsl(200, 100%, 40%);
+        cursor: pointer;
+    }
 
-.actions_hovered .actions_link {
-    text-decoration: underline;
+    .actions_link {
+        text-decoration: underline;
+    }
 }
 
 .info {
