@@ -2667,10 +2667,10 @@ select.inline_select_topic_edit {
     .nav .dropdown-menu {
         min-width: 180px;
         box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
-    }
 
-    .nav .dropdown-menu::after {
-        right: 10px;
+        &::after {
+            right: 10px;
+        }
     }
 
     .column-middle {
