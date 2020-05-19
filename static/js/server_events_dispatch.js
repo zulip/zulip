@@ -187,18 +187,15 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
     case 'realm_bot':
         if (event.op === 'add') {
             bot_data.add(event.bot);
-            settings_users.update_user_data(event.bot.user_id, event.bot);
         } else if (event.op === 'remove') {
             bot_data.deactivate(event.bot.user_id);
             event.bot.is_active = false;
-            settings_users.update_user_data(event.bot.user_id, event.bot);
         } else if (event.op === 'delete') {
             bot_data.del(event.bot.user_id);
-            settings_users.update_user_data(event.bot.user_id, event.bot);
         } else if (event.op === 'update') {
             bot_data.update(event.bot.user_id, event.bot);
-            settings_users.update_user_data(event.bot.user_id, event.bot);
         }
+        settings_users.update_bot_data(event.bot.user_id);
         break;
 
     case 'realm_emoji':

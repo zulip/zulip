@@ -236,16 +236,19 @@ function human_info(person) {
     return info;
 }
 
+let bot_list_widget;
+
 section.bots.create_table = () => {
     loading.make_indicator($('#admin_page_bots_loading_indicator'), {text: 'Loading...'});
     const $bots_table = $("#admin_bots_table");
     $bots_table.hide();
     const bot_user_ids = bot_data.all_user_ids();
 
-    list_render.create($bots_table, bot_user_ids, {
+    bot_list_widget = list_render.create($bots_table, bot_user_ids, {
         name: "admin_bot_list",
         get_item: bot_info,
         modifier: render_admin_user_list,
+        html_selector: (item) => `tr[data-user-id='${item}']`,
         filter: {
             element: $bots_table.closest(".settings-section").find(".search"),
             predicate: function (item, value) {
@@ -320,6 +323,10 @@ section.deactivated.create_table = (deactivated_users) => {
     $("#admin_deactivated_users_table").show();
 };
 
+exports.update_bot_data = function (bot_user_id) {
+    bot_list_widget.render_item(bot_user_id);
+};
+
 exports.update_user_data = function (user_id, new_data) {
     const user_row = get_user_info_row(user_id);
 
@@ -330,16 +337,6 @@ exports.update_user_data = function (user_id, new_data) {
     if (new_data.full_name !== undefined) {
         // Update the full name in the table
         user_row.find(".user_name").text(new_data.full_name);
-    }
-
-    if (new_data.owner_id !== undefined) {
-        // TODO: Linkify the owner name to match the
-        //       formatting of the list. Ideally we can
-        //       make this whole function simpler
-        //       by re-rendering the entire row via
-        //       the list widget.
-        const owner_name = bot_owner_full_name(new_data.owner_id);
-        user_row.find(".owner").text(owner_name);
     }
 
     if (new_data.is_active !== undefined) {
