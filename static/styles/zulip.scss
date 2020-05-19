@@ -2554,6 +2554,11 @@ div.topic_edit_spinner .loading_indicator_spinner {
     overflow: hidden;
     transition: all 0.4s ease;
 
+    &:hover .email_tooltip {
+        visibility: visible;
+        opacity: 1;
+    }
+
     .tooltip_holder {
         display: none;
         position: absolute;
@@ -2562,16 +2567,11 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
     i {
         cursor: pointer;
+
+        &.hide_copy_icon {
+            display: none;
+        }
     }
-}
-
-.user_popover_email:hover .email_tooltip {
-    visibility: visible;
-    opacity: 1;
-}
-
-.user_popover_email i.hide_copy_icon {
-    display: none;
 }
 
 .email_copied,
