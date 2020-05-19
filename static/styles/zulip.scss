@@ -1231,15 +1231,15 @@ div.message_table {
     position: relative;
     border-left: 1px solid hsla(0, 0%, 0%, 0.10);
     border-right: 1px solid hsla(0, 0%, 0%, 0.10);
-}
 
-.message_row.selected_message {
-    z-index: 2;
-}
+    &.selected_message {
+        z-index: 2;
+    }
 
-.message_row .date_row {
-    /* We only want padding for the date rows between recipient blocks */
-    padding-bottom: 0px;
+    .date_row {
+        /* We only want padding for the date rows between recipient blocks */
+        padding-bottom: 0px;
+    }
 }
 
 div.focused_table {
