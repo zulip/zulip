@@ -15,7 +15,6 @@ from zerver.lib.actions import (
     do_set_realm_property,
     do_deactivate_realm,
     do_reactivate_realm,
-    check_realm_has_non_limited_plan,
 )
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.request import has_request_variables, REQ, JsonableError
@@ -129,7 +128,7 @@ def update_realm(
                 third_party_service="Zoom"))
 
     if message_retention_days is not None:
-        check_realm_has_non_limited_plan(realm)
+        realm.ensure_not_on_limited_plan()
 
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.
