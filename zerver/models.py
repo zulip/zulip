@@ -35,6 +35,7 @@ from zerver.lib.types import Validator, ExtendedValidator, \
     ProfileDataElement, ProfileData, RealmUserValidator, \
     ExtendedFieldElement, UserFieldElement, FieldElement, \
     DisplayRecipientT
+from zerver.lib.exceptions import JsonableError
 
 from bitfield import BitField
 from bitfield.types import BitHandler
@@ -490,6 +491,10 @@ class Realm(models.Model):
         if used_space is None:
             return 0
         return used_space
+
+    def ensure_not_on_limited_plan(self) -> None:
+        if self.plan_type == Realm.LIMITED:
+            raise JsonableError(_("Feature unavailable on your current plan."))
 
     @property
     def subdomain(self) -> str:
