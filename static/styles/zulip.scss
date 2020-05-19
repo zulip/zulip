@@ -2794,16 +2794,18 @@ select.inline_select_topic_edit {
         margin-top: 31px;
     }
 
-    .column-left.expanded .left-sidebar {
-        padding: 0px;
-    }
+    .column-left.expanded {
+        .left-sidebar {
+            padding: 0px;
 
-    .column-left.expanded .left-sidebar #streams_header {
-        padding-right: 10px;
-    }
+            #streams_header {
+                padding-right: 10px;
+            }
+        }
 
-    .column-left.expanded .narrows_panel {
-        margin-top: 10px;
+        .narrows_panel {
+            margin-top: 10px;
+        }
     }
 
     .search_closed .fa-search {
