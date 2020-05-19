@@ -1,7 +1,6 @@
 import re
 import json
 import inspect
-import subprocess
 
 from django.conf import settings
 
@@ -16,6 +15,7 @@ from zerver.openapi.openapi import get_openapi_fixture, openapi_spec, get_openap
 MACRO_REGEXP = re.compile(
     r'\{generate_code_example(\(\s*(.+?)\s*\))*\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+)\s*\))?\}')
 PYTHON_EXAMPLE_REGEX = re.compile(r'\# \{code_example\|\s*(.+?)\s*\}')
+JS_EXAMPLE_REGEX = re.compile(r'\/\/ \{code_example\|\s*(.+?)\s*\}')
 MACRO_REGEXP_DESC = re.compile(r'\{generate_api_description(\(\s*(.+?)\s*\))}')
 
 PYTHON_CLIENT_CONFIG = """
@@ -127,25 +127,40 @@ def render_python_code_example(function: str, admin_config: Optional[bool]=False
 
 def render_javascript_code_example(function: str, admin_config: Optional[bool]=False,
                                    **kwargs: Any) -> List[str]:
-    output = subprocess.check_output(
-        args=['node', 'zerver/openapi/javascript_examples.js', 'generate-example', function],
-        universal_newlines=True,
-    )
-    function_source_lines = output.splitlines()
+    function_source_lines = []
+    with open('zerver/openapi/javascript_examples.js') as f:
+        parsing = False
+        for line in f:
+            if line.startswith("}"):
+                parsing = False
+            if parsing:
+                function_source_lines.append(line.rstrip())
+            if line.startswith("add_example(") and function in line:
+                parsing = True
+
+    snippets = extract_code_example(function_source_lines, [], JS_EXAMPLE_REGEX)
+
     if admin_config:
         config = JS_CLIENT_ADMIN_CONFIG.splitlines()
     else:
         config = JS_CLIENT_CONFIG.splitlines()
 
-    snippet = function_source_lines
-
     code_example = []
     code_example.append('```js')
     code_example.extend(config)
-    for line in snippet:
-        # Strip newlines
-        code_example.append(line.rstrip())
+    for snippet in snippets:
+        code_example.append("Zulip(config).then(async (client) => {")
+        for line in snippet:
+            result = re.search('const result.*=(.*);', line)
+            if result:
+                line = "    return{};".format(result.group(1))
+            # Strip newlines
+            code_example.append(line.rstrip())
+        code_example.append("}).then(console.log).catch(console.err);")
+        code_example.append(" ")
+
     code_example.append('```')
+
     return code_example
 
 def curl_method_arguments(endpoint: str, method: str,
