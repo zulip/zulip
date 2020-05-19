@@ -1969,11 +1969,6 @@ nav .column-left {
     text-align: center;
 }
 
-nav a.no-style:hover {
-    text-decoration: none;
-    cursor: pointer;
-}
-
 nav .column-left .nav-logo {
     display: inline-block;
     vertical-align: top;
@@ -1992,6 +1987,11 @@ nav .column-left .company-name {
     font-weight: 600;
     color: hsl(170, 48%, 54%);
     letter-spacing: 0.1em;
+    cursor: pointer;
+}
+
+nav a.no-style:hover {
+    text-decoration: none;
     cursor: pointer;
 }
 
