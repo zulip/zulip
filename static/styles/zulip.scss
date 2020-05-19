@@ -1254,22 +1254,22 @@ div.focused_table {
     display: block;
     position: relative;
     overflow: hidden;
-}
 
-.message_content:empty {
-    display: none;
-}
+    &:empty {
+        display: none;
+    }
 
-.message_content.condensed {
-    max-height: 8.5em;
-    min-height: 0em;
-    overflow: hidden;
-}
+    &.condensed {
+        max-height: 8.5em;
+        min-height: 0em;
+        overflow: hidden;
+    }
 
-.message_content.collapsed {
-    max-height: 0em;
-    min-height: 0em;
-    overflow: hidden;
+    &.collapsed {
+        max-height: 0em;
+        min-height: 0em;
+        overflow: hidden;
+    }
 }
 
 .rtl {
