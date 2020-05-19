@@ -1909,20 +1909,20 @@ div.focused_table {
     top: 30px;
     min-width: 180px;
     box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
-}
 
-.nav .dropdown-menu::after {
-    position: absolute;
-    width: 0px;
-    height: 0px;
-    top: -7px;
-    right: 10px;
-    display: inline-block;
-    border-right: 7px solid transparent;
-    border-bottom: 7px solid hsl(0, 0%, 67%);
-    border-left: 7px solid transparent;
-    content: '';
-    z-index: 10;
+    &::after {
+        position: absolute;
+        width: 0px;
+        height: 0px;
+        top: -7px;
+        right: 10px;
+        display: inline-block;
+        border-right: 7px solid transparent;
+        border-bottom: 7px solid hsl(0, 0%, 67%);
+        border-left: 7px solid transparent;
+        content: '';
+        z-index: 10;
+    }
 }
 
 .nav .dropdown-menu a,
