@@ -2634,24 +2634,24 @@ select.inline_select_topic_edit {
 
     .column-right {
         display: none;
-    }
 
-    .column-right.expanded {
-        display: block;
-        position: absolute;
-        float: none;
-        right: 15px;
-        top: 0px;
-    }
+        &.expanded {
+            display: block;
+            position: absolute;
+            float: none;
+            right: 15px;
+            top: 0px;
 
-    .column-right.expanded .right-sidebar {
-        background-color: hsla(0, 0%, 100%, 1.0);
-        box-shadow: 0px -2px 3px 0px hsla(0, 0%, 0%, 0.1);
-        border-left: 1px solid hsl(0, 0%, 87%);
-        margin-top: 40px;
-        padding: 10px 15px 0px 15px;
-        height: 100%;
-        right: 0px;
+            .right-sidebar {
+                background-color: hsla(0, 0%, 100%, 1.0);
+                box-shadow: 0px -2px 3px 0px hsla(0, 0%, 0%, 0.1);
+                border-left: 1px solid hsl(0, 0%, 87%);
+                margin-top: 40px;
+                padding: 10px 15px 0px 15px;
+                height: 100%;
+                right: 0px;
+            }
+        }
     }
 
     .header-main .column-right {
