@@ -1412,10 +1412,10 @@ div.focused_table {
 .home-error-bar {
     margin-top: 5px;
     display: none;
-}
 
-.home-error-bar .alert {
-    margin-bottom: auto;
+    .alert {
+        margin-bottom: auto;
+    }
 }
 
 .streamname {
