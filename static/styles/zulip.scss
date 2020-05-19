@@ -1319,18 +1319,18 @@ div.focused_table {
 
 #inline_topic_edit {
     margin-bottom: 5px;
-}
 
-#inline_topic_edit.header-v {
-    height: 18px;
-    display: inline-block;
-    padding: 0px 3px;
-    vertical-align: baseline;
+    &.header-v {
+        height: 18px;
+        display: inline-block;
+        padding: 0px 3px;
+        vertical-align: baseline;
 
-    line-height: 0px;
-    font-size: 14px;
+        line-height: 0px;
+        font-size: 14px;
 
-    box-shadow: none;
+        box-shadow: none;
+    }
 }
 
 #message_edit_topic {
