@@ -96,6 +96,41 @@ function update_narrow_title(filter) {
 
 exports.narrow_title = "home";
 exports.activate = function (raw_operators, opts) {
+    /* Main entrypoint for switching to a new view / message list.
+       Note that for historical reasons related to the current
+       client-side caching structure, the "All messages"/home_msg_list
+       view is reached via `narrow.deactivate()`.
+
+       The name is based on "narrowing to a subset of the user's
+       messages.".  Supported parameters:
+
+       raw_operators: Narrowing/search operators; used to construct
+       a Filter object that decides which messages belong in the
+       view.  Required (See the above note on how `home_msg_list` works)
+
+       All other options are encoded via the `opts` dictionary:
+
+       * trigger: Optional parameter used mainly for logging and some
+         custom UI behavior for certain buttons.  Generally aim to
+         have this be unique for each UI widget that can trigger narrowing.
+
+       * change_hash: Whether this narrow should change the URL
+         fragment ("hash") in the URL bar.  Should be true unless the
+         URL is already correct (E.g. because the hashchange logic
+         itself is triggering the change of view).
+
+       * then_select_id: If the caller wants us to do the narrow
+         centered on a specific message ID ("anchor" in the API
+         parlance), specify that here.  Useful both when the user
+         clicks on a specific message; implied by a `near:` operator.
+
+       * then_select_offset: Offset from the top of the page in pixels
+         at which to place the then_select_id message following
+         rendering.  Important to avoid what would otherwise feel like
+         visual glitches after clicking on a specific message's headig
+         or rerendering due to server-side changes.
+    */
+
     const start_time = new Date();
     const was_narrowed_already = narrow_state.active();
     // most users aren't going to send a bunch of a out-of-narrow messages
@@ -752,6 +787,18 @@ function handle_post_narrow_deactivate_processes() {
 }
 
 exports.deactivate = function () {
+    /*
+      Switches current_msg_list from narrowed_msg_list to
+      home_msg_list ("All messages"), ending the current narrow.  This
+      is a very fast operation, because we keep home_msg_list's data
+      cached and updated in the DOM at all times, making it suitable
+      for rapid access via keyboard shortcuts.
+
+      Long-term, we will likely want to make `home_msg_list` not
+      special in any way, and instead just have a generic
+      message_list_data structure caching system that happens to have
+      home_msg_list in it.
+     */
     search.clear_search_form();
     if (narrow_state.filter() === undefined) {
         return;
