@@ -48,7 +48,7 @@ with open('/etc/zulip/nginx_sharding.conf.tmp', 'w') as nginx_sharding_conf_f, \
                 host = shard
             else:
                 host = "{}.{}".format(shard, external_host)
-            assert host not in shard_map
+            assert host not in shard_map, "host %s duplicated" % (host,)
             shard_map[host] = int(port)
             write_realm_nginx_config_line(nginx_sharding_conf_f, host, port)
         nginx_sharding_conf_f.write('\n')
