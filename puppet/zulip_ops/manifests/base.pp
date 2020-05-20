@@ -19,7 +19,7 @@ class zulip_ops::base {
     # Needed for zulip-ec2-configure-network-interfaces
     'python3-six',
     'python-six',
-    'python3-boto',
+    'python3-boto3',
     'python-boto', # needed for postgres_common too
     'python3-netifaces',
     'python-netifaces',
