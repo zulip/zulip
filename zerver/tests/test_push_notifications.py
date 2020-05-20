@@ -57,6 +57,7 @@ from zerver.lib.remote_server import (
 from zerver.lib.request import JsonableError
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.user_groups import create_user_group
 from zerver.models import (
     Message,
     PushDeviceToken,
@@ -700,6 +701,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         missed_message = {
             'message_id': message.id,
             'trigger': 'private_message',
+            'mentioned_group': None,
         }
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=''), \
                 mock.patch('zerver.lib.remote_server.requests.request',
@@ -755,6 +757,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             'user_profile_id': self.user_profile.id,
             'message_id': message.id,
             'trigger': 'private_message',
+            'mentioned_group': None,
         }
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=''), \
                 mock.patch('zerver.lib.remote_server.requests.request',
@@ -797,6 +800,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         missed_message = {
             'message_id': message.id,
             'trigger': 'private_message',
+            'mentioned_group': None,
         }
         handle_push_notification(user_profile.id, missed_message)
         mock_push_notifications.assert_called_once()
@@ -813,6 +817,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         missed_message = {
             'message_id': message.id,
             'trigger': 'private_message',
+            'mentioned_group': None,
         }
         # Now, delete the message the normal way
         do_delete_messages(user_profile.realm, [message])
@@ -838,6 +843,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         missed_message = {
             'message_id': message.id,
             'trigger': 'private_message',
+            'mentioned_group': None,
         }
         # Now delete the message forcefully, so it just doesn't exist.
         message.delete()
@@ -863,6 +869,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         missed_message = {
             'message_id': message.id,
             'trigger': 'private_message',
+            'mentioned_group': None,
         }
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=True), \
                 mock.patch('zerver.lib.push_notifications.get_message_payload_apns',
@@ -898,6 +905,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         missed_message = {
             'message_id': message.id,
             'trigger': 'private_message',
+            'mentioned_group': None,
         }
         with mock.patch('zerver.lib.push_notifications.get_message_payload_apns',
                         return_value={'apns': True}), \
@@ -1018,7 +1026,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         self.make_stream('public_stream')
         sender = self.example_user('iago')
         message_id = self.send_stream_message(sender, "public_stream", "test")
-        missed_message = {'message_id': message_id}
+        missed_message = {'message_id': message_id, 'mentioned_group': None}
         with mock.patch('zerver.lib.push_notifications.logger.error') as mock_logger, \
                 mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value = True) as mock_push_notifications:
             handle_push_notification(self.user_profile.id, missed_message)
@@ -1043,6 +1051,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         missed_message = {
             'message_id': message_id,
             'trigger': 'stream_push_notify',
+            'mentioned_group': None,
         }
 
         android_devices = list(
@@ -1231,7 +1240,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         )
         message = Message.objects.get(id=message_id)
         message.trigger = 'private_message'
-        payload = get_message_payload_apns(user_profile, message)
+        payload = get_message_payload_apns(user_profile, message, None)
         expected = {
             'alert': {
                 'title': 'King Hamlet',
@@ -1263,7 +1272,7 @@ class TestGetAPNsPayload(PushNotificationTest):
             [self.example_user('othello'), self.example_user('cordelia')])
         message = Message.objects.get(id=message_id)
         message.trigger = 'private_message'
-        payload = get_message_payload_apns(user_profile, message)
+        payload = get_message_payload_apns(user_profile, message, None)
         expected = {
             'alert': {
                 'title': 'Cordelia Lear, King Hamlet, Othello, the Moor of Venice',
@@ -1297,7 +1306,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         message = self.get_message(Recipient.STREAM, stream.id)
         message.trigger = 'push_stream_notify'
         message.stream_name = 'Verona'
-        payload = get_message_payload_apns(self.sender, message)
+        payload = get_message_payload_apns(self.sender, message, None)
         expected = {
             'alert': {
                 'title': '#Verona > Test Topic',
@@ -1329,7 +1338,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         message = self.get_message(Recipient.STREAM, stream.id)
         message.trigger = 'mentioned'
         message.stream_name = 'Verona'
-        payload = get_message_payload_apns(user_profile, message)
+        payload = get_message_payload_apns(user_profile, message, None)
         expected = {
             'alert': {
                 'title': '#Verona > Test Topic',
@@ -1355,13 +1364,47 @@ class TestGetAPNsPayload(PushNotificationTest):
         }
         self.assertDictEqual(payload, expected)
 
+    def test_get_message_payload_apns_user_group_mention(self) -> None:
+        user_profile = self.example_user("othello")
+        user_group = create_user_group('test_user_group', [user_profile], get_realm('zulip'))
+        stream = Stream.objects.filter(name='Verona').get()
+        message = self.get_message(Recipient.STREAM, stream.id)
+        message.trigger = 'mentioned'
+        message.stream_name = 'Verona'
+        mentioned_group = user_group.id
+        payload = get_message_payload_apns(user_profile, message, mentioned_group)
+        expected = {
+            'alert': {
+                'title': '#Verona > Test Topic',
+                'subtitle': 'King Hamlet mentioned @test_user_group:',
+                'body': message.content,
+            },
+            'sound': 'default',
+            'badge': 0,
+            'custom': {
+                'zulip': {
+                    'message_ids': [message.id],
+                    'recipient_type': 'stream',
+                    'sender_email': self.sender.email,
+                    'sender_id': self.sender.id,
+                    "stream": get_display_recipient(message.recipient),
+                    "topic": message.topic_name(),
+                    'server': settings.EXTERNAL_HOST,
+                    'realm_id': self.sender.realm.id,
+                    'realm_uri': self.sender.realm.uri,
+                    "user_id": user_profile.id,
+                }
+            }
+        }
+        self.assertDictEqual(payload, expected)
+
     def test_get_message_payload_apns_stream_wildcard_mention(self) -> None:
         user_profile = self.example_user("othello")
         stream = Stream.objects.filter(name='Verona').get()
         message = self.get_message(Recipient.STREAM, stream.id)
         message.trigger = 'wildcard_mentioned'
         message.stream_name = 'Verona'
-        payload = get_message_payload_apns(user_profile, message)
+        payload = get_message_payload_apns(user_profile, message, None)
         expected = {
             'alert': {
                 'title': '#Verona > Test Topic',
@@ -1395,7 +1438,7 @@ class TestGetAPNsPayload(PushNotificationTest):
             [self.example_user('othello'), self.example_user('cordelia')])
         message = Message.objects.get(id=message_id)
         message.trigger = 'private_message'
-        payload = get_message_payload_apns(user_profile, message)
+        payload = get_message_payload_apns(user_profile, message, None)
         expected = {
             'alert': {
                 'title': 'Cordelia Lear, King Hamlet, Othello, the Moor of Venice',
