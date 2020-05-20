@@ -85,7 +85,7 @@ def exit_if_droplet_exists(my_token: str, username: str, recreate: bool) -> None
     manager = digitalocean.Manager(token=my_token)
     my_droplets = manager.get_all_droplets()
     for droplet in my_droplets:
-        if droplet.name == "{}.zulipdev.org".format(username):
+        if droplet.name.lower() == "{}.zulipdev.org".format(username):
             if not recreate:
                 print("Droplet for user {} already exists. Pass --recreate if you "
                       "need to recreate the droplet.".format(username))
@@ -229,38 +229,39 @@ if __name__ == '__main__':
 
     # get command line arguments
     args = parser.parse_args()
-    print("Creating Zulip developer environment for GitHub user {}...".format(args.username))
+    username = args.username.lower()
+    print("Creating Zulip developer environment for GitHub user {}...".format(username))
 
     # get config details
     config = get_config()
 
     # see if droplet already exists for this user
-    user_exists(username=args.username)
+    user_exists(username=username)
 
     # grab user's public keys
-    public_keys = get_keys(username=args.username)
+    public_keys = get_keys(username=username)
 
     # now make sure the user has forked zulip/zulip
-    fork_exists(username=args.username)
+    fork_exists(username=username)
 
     api_token = config['digitalocean']['api_token']
     # does the droplet already exist?
-    exit_if_droplet_exists(my_token=api_token, username=args.username, recreate=args.recreate)
+    exit_if_droplet_exists(my_token=api_token, username=username, recreate=args.recreate)
 
     # set user_data
-    user_data = set_user_data(username=args.username, userkey_dicts=public_keys)
+    user_data = set_user_data(username=username, userkey_dicts=public_keys)
 
     # create droplet
     ip_address = create_droplet(my_token=api_token,
                                 template_id=template_id,
-                                username=args.username,
+                                username=username,
                                 tags=args.tags,
                                 user_data=user_data)
 
     # create dns entry
-    create_dns_record(my_token=api_token, username=args.username, ip_address=ip_address)
+    create_dns_record(my_token=api_token, username=username, ip_address=ip_address)
 
     # print completion message
-    print_completion(username=args.username)
+    print_completion(username=username)
 
     sys.exit(1)
