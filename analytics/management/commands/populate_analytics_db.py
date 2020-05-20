@@ -11,10 +11,11 @@ from analytics.lib.fixtures import generate_time_series_data
 from analytics.lib.time_utils import time_range
 from analytics.models import BaseCount, FillState, InstallationCount, \
     RealmCount, StreamCount, UserCount
-from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_change_is_admin
+from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_change_user_role
 from zerver.lib.create_user import create_user
 from zerver.lib.timestamp import floor_to_day
-from zerver.models import Client, Realm, Recipient, Stream, Subscription
+from zerver.models import Client, Realm, Recipient, Stream, Subscription, \
+    UserProfile
 
 
 class Command(BaseCommand):
@@ -59,7 +60,7 @@ class Command(BaseCommand):
             shylock = create_user('shylock@analytics.ds', 'Shylock', realm,
                                   full_name='Shylock', short_name='shylock',
                                   is_realm_admin=True)
-        do_change_is_admin(shylock, True)
+        do_change_user_role(shylock, UserProfile.ROLE_REALM_ADMINISTRATOR)
         stream = Stream.objects.create(
             name='all', realm=realm, date_created=installation_time)
         recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)

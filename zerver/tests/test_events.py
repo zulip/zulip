@@ -44,8 +44,7 @@ from zerver.lib.actions import (
     do_change_full_name,
     do_change_icon_source,
     do_change_logo_source,
-    do_change_is_admin,
-    do_change_is_guest,
+    do_change_user_role,
     do_change_notification_settings,
     do_change_plan_type,
     do_change_realm_domain,
@@ -1477,7 +1476,7 @@ class EventsRegisterTest(ZulipTestCase):
                                        "This is group1", streams)
         group = lookup_default_stream_groups(["group1"], self.user_profile.realm)[0]
 
-        do_change_is_guest(self.user_profile, True)
+        do_change_user_role(self.user_profile, UserProfile.ROLE_GUEST)
         venice_stream = get_stream("Venice", self.user_profile.realm)
         self.do_test(lambda: do_add_streams_to_default_stream_group(self.user_profile.realm,
                                                                     group, [venice_stream]),
@@ -1502,7 +1501,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.assert_on_error(error)
 
     def test_default_streams_events_guest(self) -> None:
-        do_change_is_guest(self.user_profile, True)
+        do_change_user_role(self.user_profile, UserProfile.ROLE_GUEST)
         stream = get_stream("Scotland", self.user_profile.realm)
         self.do_test(lambda: do_add_default_stream(stream),
                      state_change_expected = False, num_events=0)
@@ -1836,9 +1835,9 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
 
-        do_change_is_admin(self.user_profile, False)
-        for is_admin in [True, False]:
-            events = self.do_test(lambda: do_change_is_admin(self.user_profile, is_admin))
+        do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER)
+        for role in [UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_MEMBER]:
+            events = self.do_test(lambda: do_change_user_role(self.user_profile, role))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
@@ -2833,7 +2832,7 @@ class EventsRegisterTest(ZulipTestCase):
             ]))),
         ])
 
-        do_change_is_admin(self.user_profile, True)
+        do_change_user_role(self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.login_user(self.user_profile)
 
         with mock.patch('zerver.lib.export.do_export_realm',
@@ -2900,7 +2899,7 @@ class EventsRegisterTest(ZulipTestCase):
             ]))),
         ])
 
-        do_change_is_admin(self.user_profile, True)
+        do_change_user_role(self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.login_user(self.user_profile)
 
         with mock.patch('zerver.lib.export.do_export_realm',
@@ -2931,7 +2930,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
     # Admin users have access to all bots in the realm_bots field
     def test_realm_bots_admin(self) -> None:
         user_profile = self.example_user('hamlet')
-        do_change_is_admin(user_profile, True)
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.assertTrue(user_profile.is_realm_admin)
         result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
         self.assertTrue(len(result['realm_bots']) > 2)

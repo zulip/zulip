@@ -5,7 +5,7 @@ from zerver.lib.actions import do_create_user, do_deactivate_user, \
     do_change_user_delivery_email, do_change_avatar_fields, do_change_bot_owner, \
     do_regenerate_api_key, do_change_tos_version, \
     bulk_add_subscriptions, bulk_remove_subscriptions, get_streams_traffic, \
-    do_change_is_admin, do_change_is_guest, do_deactivate_realm, do_reactivate_realm
+    do_change_user_role, do_deactivate_realm, do_reactivate_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import RealmAuditLog, get_client, get_realm, UserProfile
 from analytics.models import StreamCount
@@ -53,10 +53,10 @@ class TestRealmAuditLog(ZulipTestCase):
         realm = get_realm('zulip')
         now = timezone_now()
         user_profile = self.example_user("hamlet")
-        do_change_is_admin(user_profile, True)
-        do_change_is_admin(user_profile, False)
-        do_change_is_guest(user_profile, True)
-        do_change_is_guest(user_profile, False)
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
+        do_change_user_role(user_profile, UserProfile.ROLE_GUEST)
+        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
         for event in RealmAuditLog.objects.filter(
                 event_type=RealmAuditLog.USER_ROLE_CHANGED,
                 realm=realm, modified_user=user_profile,
