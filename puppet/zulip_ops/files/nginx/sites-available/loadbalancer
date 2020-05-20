@@ -116,10 +116,10 @@ server {
 }
 
 server {
-    listen chat.hl7.org:443 http2;
-    server_name chat.hl7.org;
-    ssl_certificate /etc/letsencrypt/live/chat.hl7.org/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/chat.hl7.org/privkey.pem;
+    listen chat.fhir.org:443 http2;
+    server_name chat.fhir.org;
+    ssl_certificate /etc/letsencrypt/live/chat.fhir.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/chat.fhir.org/privkey.pem;
 
     location / {
         proxy_pass https://prod;
