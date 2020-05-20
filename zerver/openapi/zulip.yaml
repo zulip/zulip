@@ -1451,6 +1451,8 @@ paths:
 
   /users/{user_id}/reactivate:
     post:
+      operationId: reactivate_user
+      tags: ["users"]
       description: |
         [Reactivates a
         user](https://zulipchat.com/help/deactivate-or-reactivate-a-user)
