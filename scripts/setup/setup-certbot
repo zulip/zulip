@@ -81,23 +81,28 @@ case "$method" in
         ;;
 esac
 
+# Check for a supported OS release.
+if [ -f /etc/os-release ]; then
+    os_info="$(. /etc/os-release; printf '%s\n' "$ID" "$ID_LIKE")"
+    { read -r os_id; read -r os_id_like|| true; } <<< "$os_info"
+fi
+
 set -x
 
-CERTBOT_PATH="/usr/local/sbin/certbot-auto"
-# For reference https://certbot.eff.org/all-instructions/#debian-other-nginx
-wget -q https://dl.eff.org/certbot-auto -O "$CERTBOT_PATH"
-chmod a+x "$CERTBOT_PATH"
+case " $os_id $os_id_like " in
+    *' debian '*)
+        apt-get install -y certbot
+        ;;
+    *' rhel '*)
+        yum install -y certbot
+        ;;
+esac
 
-# First, we install the OS packages with --quiet, to suppress `apt`
-# prompting the user for input.  This can't be part of the same
-# invocation as gets the certs, since `certonly --quiet --force-interactive`
-# rejects the Certbot ToS, causing Certbot to fail.
-"$CERTBOT_PATH" --os-packages-only --quiet
 # We don't use --no-interactive, because certbot needs to ask the user
 # to agree to the Let's Encrypt Subscriber Agreement (aka ToS).
 # Passing --force-interactive suppresses a warning, but also brings up
 # an annoying prompt we stifle with --no-eff-email.
-"$CERTBOT_PATH" certonly "${method_args[@]}" \
+certbot certonly "${method_args[@]}" \
                 "${HOSTNAMES[@]}" -m "$EMAIL" \
                 $agree_tos \
                 "${deploy_hook[@]}" \
