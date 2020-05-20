@@ -15,7 +15,8 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.openapi.openapi import (
     get_openapi_fixture, get_openapi_parameters,
     validate_against_openapi_schema, to_python_type,
-    SchemaError, openapi_spec, get_openapi_paths
+    SchemaError, openapi_spec, get_openapi_paths,
+    OpenAPISpec, OPENAPI_SPEC_PATH
 )
 from zerver.lib.request import arguments_map
 
@@ -965,3 +966,20 @@ class TestCurlExampleGeneration(ZulipTestCase):
             '```'
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
+
+class OpenAPIAttributesTest(ZulipTestCase):
+    def test_attributes(self) -> None:
+        EXCLUDE = ["/real-time"]
+        VALID_TAGS = ["users", "server_and_organizations", "authentication",
+                      "real_time_events", "streams", "messages", "users",
+                      "webhooks"]
+        openapi_spec = OpenAPISpec(OPENAPI_SPEC_PATH).spec()["paths"]
+        for path in openapi_spec:
+            if path in EXCLUDE:
+                continue
+            for method in openapi_spec[path]:
+                # Check if every file has an operationId
+                assert("operationId" in openapi_spec[path][method])
+                assert("tags" in openapi_spec[path][method])
+                tag = openapi_spec[path][method]["tags"][0]
+                assert(tag in VALID_TAGS)
