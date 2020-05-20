@@ -35,7 +35,7 @@ from zerver.models import (
     Stream, Subscription, flush_per_request_caches, get_system_bot,
 )
 from zerver.lib.actions import (
-    do_change_is_admin,
+    do_change_user_role,
     get_stream,
     do_create_default_stream_group,
     do_add_default_stream,
@@ -3718,7 +3718,7 @@ class DeactivateUserTest(ZulipTestCase):
     def test_do_not_deactivate_final_admin(self) -> None:
         user = self.example_user('iago')
         user_2 = self.example_user('desdemona')
-        do_change_is_admin(user_2, False)
+        do_change_user_role(user_2, UserProfile.ROLE_MEMBER)
         self.assertFalse(user_2.is_realm_admin)
         self.login_user(user)
         self.assertTrue(user.is_active)
@@ -3727,15 +3727,15 @@ class DeactivateUserTest(ZulipTestCase):
         user = self.example_user('iago')
         self.assertTrue(user.is_active)
         self.assertTrue(user.is_realm_admin)
-        do_change_is_admin(user_2, True)
+        do_change_user_role(user_2, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.assertTrue(user_2.is_realm_admin)
         result = self.client_delete('/json/users/me')
         self.assert_json_success(result)
-        do_change_is_admin(user, True)
+        do_change_user_role(user, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
     def test_do_not_deactivate_final_user(self) -> None:
         realm = get_realm('zulip')
-        do_change_is_admin(self.example_user("desdemona"), False)
+        do_change_user_role(self.example_user("desdemona"), UserProfile.ROLE_MEMBER)
         UserProfile.objects.filter(realm=realm).exclude(
             role=UserProfile.ROLE_REALM_ADMINISTRATOR).update(is_active=False)
         user = self.example_user("iago")

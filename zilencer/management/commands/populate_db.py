@@ -16,7 +16,7 @@ from django.utils.timezone import timedelta as timezone_timedelta
 import pylibmc
 
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, check_add_realm_emoji, \
-    do_change_is_admin, do_send_messages, do_update_user_custom_profile_data_if_changed, \
+    do_change_user_role, do_send_messages, do_update_user_custom_profile_data_if_changed, \
     try_add_realm_custom_profile_field, try_add_realm_default_custom_profile_field
 from zerver.lib.bulk_create import bulk_create_streams
 from zerver.lib.cache import cache_set
@@ -278,12 +278,12 @@ class Command(BaseCommand):
             create_users(zulip_realm, names, tos_version=settings.TOS_VERSION)
 
             iago = get_user_by_delivery_email("iago@zulip.com", zulip_realm)
-            do_change_is_admin(iago, True)
+            do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR)
             iago.is_staff = True
             iago.save(update_fields=['is_staff'])
 
             desdemona = get_user_by_delivery_email("desdemona@zulip.com", zulip_realm)
-            do_change_is_admin(desdemona, True)
+            do_change_user_role(desdemona, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
             guest_user = get_user_by_delivery_email("polonius@zulip.com", zulip_realm)
             guest_user.role = UserProfile.ROLE_GUEST
