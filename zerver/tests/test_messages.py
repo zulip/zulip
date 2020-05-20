@@ -15,7 +15,7 @@ from zerver.lib.actions import (
     check_send_stream_message,
     create_mirror_user_if_needed,
     do_add_alert_words,
-    do_change_is_admin,
+    do_change_is_api_super_user,
     do_change_stream_invite_only,
     do_change_stream_post_policy,
     do_claim_attachments,
@@ -1167,7 +1167,7 @@ class StreamMessagesTest(ZulipTestCase):
         user = self.mit_user('starnine')
         self.subscribe(user, 'Verona')
 
-        do_change_is_admin(user, True, 'api_super_user')
+        do_change_is_api_super_user(user, True)
         result = self.api_post(user, "/api/v1/messages", {"type": "stream",
                                                           "to": "Verona",
                                                           "sender": self.mit_email("sipbtest"),
@@ -1178,7 +1178,7 @@ class StreamMessagesTest(ZulipTestCase):
                                subdomain="zephyr")
         self.assert_json_success(result)
 
-        do_change_is_admin(user, False, 'api_super_user')
+        do_change_is_api_super_user(user, False)
         result = self.api_post(user, "/api/v1/messages", {"type": "stream",
                                                           "to": "Verona",
                                                           "sender": self.mit_email("sipbtest"),

@@ -33,7 +33,7 @@ from zerver.lib.actions import (
     get_recipient_info,
     do_deactivate_user,
     do_reactivate_user,
-    do_change_is_admin,
+    do_change_user_role,
     do_create_user,
     do_set_realm_property,
 )
@@ -60,23 +60,6 @@ def find_dict(lst: Iterable[Dict[K, V]], k: K, v: V) -> Dict[K, V]:
     raise AssertionError('Cannot find element in list where key %s == %s' % (k, v))
 
 class PermissionTest(ZulipTestCase):
-    def test_do_change_is_admin(self) -> None:
-        """
-        Ensures change_is_admin raises an AssertionError when invalid permissions
-        are provided to it.
-        """
-
-        # this should work fine
-        user_profile = self.example_user('hamlet')
-        do_change_is_admin(user_profile, True)
-
-        # this should work a-ok as well
-        do_change_is_admin(user_profile, True, permission='administer')
-
-        # this should "fail" with an AssertionError
-        with self.assertRaises(AssertionError):
-            do_change_is_admin(user_profile, True, permission='totally-not-valid-perm')
-
     def test_role_setters(self) -> None:
         user_profile = self.example_user('hamlet')
 
@@ -106,13 +89,13 @@ class PermissionTest(ZulipTestCase):
 
     def test_get_admin_users(self) -> None:
         user_profile = self.example_user('hamlet')
-        do_change_is_admin(user_profile, False)
+        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
         admin_users = user_profile.realm.get_human_admin_users()
         self.assertFalse(user_profile in admin_users)
         admin_users = user_profile.realm.get_admin_users_and_bots()
         self.assertFalse(user_profile in admin_users)
 
-        do_change_is_admin(user_profile, True)
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         admin_users = user_profile.realm.get_human_admin_users()
         self.assertTrue(user_profile in admin_users)
         admin_users = user_profile.realm.get_admin_users_and_bots()
@@ -121,7 +104,7 @@ class PermissionTest(ZulipTestCase):
     def test_updating_non_existent_user(self) -> None:
         self.login('hamlet')
         admin = self.example_user('hamlet')
-        do_change_is_admin(admin, True)
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
         invalid_user_id = 1000
         result = self.client_patch('/json/users/{}'.format(invalid_user_id), {})
@@ -406,7 +389,7 @@ class PermissionTest(ZulipTestCase):
         iago = self.example_user("iago")
         self.login_user(iago)
         hamlet = self.example_user("hamlet")
-        do_change_is_admin(hamlet, True)
+        do_change_user_role(hamlet, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.assertFalse(hamlet.is_guest)
         self.assertTrue(hamlet.is_realm_admin)
 
@@ -654,7 +637,7 @@ class AdminCreateUserTest(ZulipTestCase):
         admin = self.example_user('hamlet')
         realm = admin.realm
         self.login_user(admin)
-        do_change_is_admin(admin, True)
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
         result = self.client_post("/json/users", dict())
         self.assert_json_error(result, "Missing 'email' argument")
@@ -997,7 +980,7 @@ class ActivateTest(ZulipTestCase):
 
     def test_api(self) -> None:
         admin = self.example_user('othello')
-        do_change_is_admin(admin, True)
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.login('othello')
 
         user = self.example_user('hamlet')
@@ -1042,7 +1025,7 @@ class ActivateTest(ZulipTestCase):
 
     def test_api_with_insufficient_permissions(self) -> None:
         non_admin = self.example_user('othello')
-        do_change_is_admin(non_admin, False)
+        do_change_user_role(non_admin, UserProfile.ROLE_MEMBER)
         self.login('othello')
 
         # Cannot deactivate a user with the users api

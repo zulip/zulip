@@ -13,7 +13,7 @@ from typing import List, Optional
 
 from zerver.lib.email_notifications import fix_emojis, handle_missedmessage_emails, \
     enqueue_welcome_emails, relative_to_full_url
-from zerver.lib.actions import do_change_notification_settings, do_change_is_admin
+from zerver.lib.actions import do_change_notification_settings, do_change_user_role
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.send_email import FromAddress, send_custom_email
 from zerver.models import (
@@ -91,7 +91,7 @@ class TestCustomEmails(ZulipTestCase):
 
     def test_send_custom_email_admins_only(self) -> None:
         admin_user = self.example_user('hamlet')
-        do_change_is_admin(admin_user, True)
+        do_change_user_role(admin_user, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
         non_admin_user = self.example_user('cordelia')
 

@@ -9,11 +9,11 @@ from django.conf import settings
 from zerver.decorator import require_realm_admin, require_member_or_admin
 from zerver.forms import CreateUserForm, PASSWORD_TOO_WEAK_ERROR
 from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
-    do_change_is_admin, do_change_default_all_public_streams, \
+    do_change_user_role, do_change_default_all_public_streams, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
     do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key, \
     check_change_full_name, notify_created_bot, do_update_outgoing_webhook_service, \
-    do_update_bot_config_data, check_change_bot_full_name, do_change_is_guest, \
+    do_update_bot_config_data, check_change_bot_full_name, \
     do_update_user_custom_profile_data_if_changed, check_remove_custom_profile_field_value
 from zerver.lib.avatar import avatar_url, get_gravatar_url
 from zerver.lib.bot_config import set_bot_config
@@ -95,13 +95,22 @@ def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id
             ((is_admin is None and target.is_realm_admin) or is_admin)):
         return json_error(_("Guests cannot be organization administrators"))
 
+    role = None
     if is_admin is not None and target.is_realm_admin != is_admin:
         if not is_admin and check_last_admin(user_profile):
             return json_error(_('Cannot remove the only organization administrator'))
-        do_change_is_admin(target, is_admin)
+        role = UserProfile.ROLE_MEMBER
+        if is_admin:
+            role = UserProfile.ROLE_REALM_ADMINISTRATOR
 
     if is_guest is not None and target.is_guest != is_guest:
-        do_change_is_guest(target, is_guest)
+        if is_guest:
+            role = UserProfile.ROLE_GUEST
+        if role is None:
+            role = UserProfile.ROLE_MEMBER
+
+    if role is not None and target.role != role:
+        do_change_user_role(target, role)
 
     if (full_name is not None and target.full_name != full_name and
             full_name.strip() != ""):

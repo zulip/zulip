@@ -3421,60 +3421,32 @@ def do_change_default_all_public_streams(user_profile: UserProfile, value: bool,
                                  )),
                    bot_owner_user_ids(user_profile))
 
-def do_change_is_admin(user_profile: UserProfile, value: bool,
-                       permission: str='administer') -> None:
-    # TODO: This function and do_change_is_guest should be merged into
-    # a single do_change_user_role function in a future refactor.
-    if permission == "administer":
-        old_value = user_profile.role
-        if value:
-            user_profile.role = UserProfile.ROLE_REALM_ADMINISTRATOR
-        else:
-            user_profile.role = UserProfile.ROLE_MEMBER
-        user_profile.save(update_fields=["role"])
-    elif permission == "api_super_user":
-        user_profile.is_api_super_user = value
-        user_profile.save(update_fields=["is_api_super_user"])
-    else:
-        raise AssertionError("Invalid admin permission")
-
-    if permission == 'administer':
-        RealmAuditLog.objects.create(
-            realm=user_profile.realm, modified_user=user_profile,
-            event_type=RealmAuditLog.USER_ROLE_CHANGED, event_time=timezone_now(),
-            extra_data=ujson.dumps({
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: UserProfile.ROLE_REALM_ADMINISTRATOR,
-                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-            }))
-        event = dict(type="realm_user", op="update",
-                     person=dict(user_id=user_profile.id,
-                                 is_admin=value))
-        send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
-
-def do_change_is_guest(user_profile: UserProfile, value: bool) -> None:
-    # TODO: This function and do_change_is_admin should be merged into
-    # a single do_change_user_role function in a future refactor.
+def do_change_user_role(user_profile: UserProfile, value: int) -> None:
     old_value = user_profile.role
-    if value:
-        user_profile.role = UserProfile.ROLE_GUEST
-    else:
-        user_profile.role = UserProfile.ROLE_MEMBER
+    user_profile.role = value
     user_profile.save(update_fields=["role"])
-
     RealmAuditLog.objects.create(
         realm=user_profile.realm, modified_user=user_profile,
         event_type=RealmAuditLog.USER_ROLE_CHANGED, event_time=timezone_now(),
         extra_data=ujson.dumps({
             RealmAuditLog.OLD_VALUE: old_value,
-            RealmAuditLog.NEW_VALUE: UserProfile.ROLE_GUEST,
+            RealmAuditLog.NEW_VALUE: value,
             RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
         }))
-    event = dict(type="realm_user", op="update",
-                 person=dict(user_id=user_profile.id,
-                             is_guest=value))
-    send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+    if UserProfile.ROLE_REALM_ADMINISTRATOR in [old_value, value]:
+        event = dict(type="realm_user", op="update",
+                     person=dict(user_id=user_profile.id,
+                                 is_admin=value == UserProfile.ROLE_REALM_ADMINISTRATOR))
+        send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+    if UserProfile.ROLE_GUEST in [old_value, value]:
+        event = dict(type="realm_user", op="update",
+                     person=dict(user_id=user_profile.id,
+                                 is_guest=value == UserProfile.ROLE_GUEST))
+        send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
+def do_change_is_api_super_user(user_profile: UserProfile, value: bool) -> None:
+    user_profile.is_api_super_user = value
+    user_profile.save(update_fields=["is_api_super_user"])
 
 def do_change_stream_invite_only(stream: Stream, invite_only: bool,
                                  history_public_to_subscribers: Optional[bool]=None) -> None:
