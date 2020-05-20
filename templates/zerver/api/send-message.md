@@ -75,7 +75,7 @@ file.
 
 #### Return values
 
-* `id`: The ID of the newly created message
+{generate_return_values_table|zulip.yaml|/messages:post}
 
 #### Example response
 A typical successful JSON response may look like:

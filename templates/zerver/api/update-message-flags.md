@@ -117,7 +117,7 @@ zulip(config).then((client) => {
 
 #### Return values
 
-* `messages`: An array with the IDs of the modified messages.
+{generate_return_values_table|zulip.yaml|/messages/flags:post}
 
 #### Example response
 

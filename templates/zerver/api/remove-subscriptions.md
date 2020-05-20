@@ -55,11 +55,7 @@ administrative privileges.
 
 #### Return values
 
-* `removed`: A list of the names of streams which were unsubscribed from as
-  a result of the query.
-
-* `not_removed`: A list of the names of streams that the user is already
-  unsubscribed from, and hence doesn't need to be unsubscribed.
+{generate_return_values_table|zulip.yaml|/users/me/subscriptions:delete}
 
 #### Example response
 

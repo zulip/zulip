@@ -23,7 +23,7 @@
 
 #### Return values
 
-* `id`: The numeric ID assigned to this filter.
+{generate_return_values_table|zulip.yaml|/realm/filters:post}
 
 #### Example response
 

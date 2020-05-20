@@ -42,7 +42,7 @@ zulip(config).then((client) => {
 
 #### Return values
 
-* `stream_id`: The ID of the given stream.
+{generate_return_values_table|zulip.yaml|/get_stream_id:get}
 
 #### Example response
 
