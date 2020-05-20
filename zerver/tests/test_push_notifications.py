@@ -62,6 +62,7 @@ from zerver.lib.request import JsonableError
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
+from zerver.lib.user_groups import create_user_group
 from zerver.models import (
     Message,
     PushDeviceToken,
@@ -1612,6 +1613,40 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "realm_uri": self.sender.realm.uri,
                     "user_id": user_profile.id,
                 },
+            },
+        }
+        self.assertDictEqual(payload, expected)
+
+    def test_get_message_payload_apns_user_group_mention(self) -> None:
+        user_profile = self.example_user("othello")
+        user_group = create_user_group("test_user_group", [user_profile], get_realm("zulip"))
+        stream = Stream.objects.filter(name="Verona").get()
+        message = self.get_message(Recipient.STREAM, stream.id)
+        message.trigger = "mentioned"
+        message.stream_name = "Verona"
+        mentioned_user_group_id = user_group.id
+        payload = get_message_payload_apns(user_profile, message, mentioned_user_group_id)
+        expected = {
+            "alert": {
+                "title": "#Verona > Test topic",
+                "subtitle": "King Hamlet mentioned @test_user_group:",
+                "body": message.content,
+            },
+            "sound": "default",
+            "badge": 0,
+            "custom": {
+                "zulip": {
+                    "message_ids": [message.id],
+                    "recipient_type": "stream",
+                    "sender_email": self.sender.email,
+                    "sender_id": self.sender.id,
+                    "stream": get_display_recipient(message.recipient),
+                    "topic": message.topic_name(),
+                    "server": settings.EXTERNAL_HOST,
+                    "realm_id": self.sender.realm.id,
+                    "realm_uri": self.sender.realm.uri,
+                    "user_id": user_profile.id,
+                }
             },
         }
         self.assertDictEqual(payload, expected)

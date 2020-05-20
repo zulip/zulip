@@ -22,6 +22,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message, bulk_access_messages_expect_usermessage, huddle_users
 from zerver.lib.remote_server import send_json_to_push_bouncer, send_to_push_bouncer
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.user_groups import access_user_group_by_id
 from zerver.models import (
     ArchivedMessage,
     Message,
@@ -702,12 +703,20 @@ def get_apns_alert_title(message: Message) -> str:
     return message.sender.full_name
 
 
-def get_apns_alert_subtitle(message: Message) -> str:
+def get_apns_alert_subtitle(
+    user_profile: UserProfile, message: Message, mentioned_user_group_id: Optional[int] = None
+) -> str:
     """
     On an iOS notification, this is the second bolded line.
     """
     if message.trigger == "mentioned":
-        return _("{full_name} mentioned you:").format(full_name=message.sender.full_name)
+        if mentioned_user_group_id is not None:
+            user_group = access_user_group_by_id(mentioned_user_group_id, user_profile)
+            return _("{full_name} mentioned @{user_group_name}:").format(
+                full_name=message.sender.full_name, user_group_name=user_group.name
+            )
+        else:
+            return _("{full_name} mentioned you:").format(full_name=message.sender.full_name)
     elif message.trigger == "wildcard_mentioned":
         return _("{full_name} mentioned everyone:").format(full_name=message.sender.full_name)
     elif message.recipient.type == Recipient.PERSONAL:
@@ -744,7 +753,9 @@ def get_apns_badge_count_future(
     )
 
 
-def get_message_payload_apns(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
+def get_message_payload_apns(
+    user_profile: UserProfile, message: Message, mentioned_user_group_id: Optional[int] = None
+) -> Dict[str, Any]:
     """A `message` payload for iOS, via APNs."""
     zulip_data = get_message_payload(user_profile, message)
     zulip_data.update(
@@ -757,7 +768,7 @@ def get_message_payload_apns(user_profile: UserProfile, message: Message) -> Dic
         apns_data = {
             "alert": {
                 "title": get_apns_alert_title(message),
-                "subtitle": get_apns_alert_subtitle(message),
+                "subtitle": get_apns_alert_subtitle(user_profile, message, mentioned_user_group_id),
                 "body": content,
             },
             "sound": "default",
@@ -909,7 +920,9 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
 
     message.trigger = missed_message["trigger"]
 
-    apns_payload = get_message_payload_apns(user_profile, message)
+    apns_payload = get_message_payload_apns(
+        user_profile, message, missed_message.get("mentioned_user_group_id")
+    )
     gcm_payload, gcm_options = get_message_payload_gcm(user_profile, message)
     logger.info("Sending push notifications to mobile clients for user %s", user_profile_id)
 
