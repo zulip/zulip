@@ -280,8 +280,7 @@ class ImportExportTest(ZulipTestCase):
         result['realm_icons_dir_records'] = read_file(os.path.join('realm_icons', 'records.json'))
         return result
 
-    def _setup_export_files(self) -> Tuple[str, str, str, bytes]:
-        realm = Realm.objects.get(string_id='zulip')
+    def _setup_export_files(self, realm: Realm) -> Tuple[str, str, str, bytes]:
         message = Message.objects.all()[0]
         user_profile = message.sender
         url = upload_message_file('dummy.txt', len(b'zulip!'), 'text/plain', b'zulip!', user_profile)
@@ -322,6 +321,8 @@ class ImportExportTest(ZulipTestCase):
         message.sender.avatar_source = 'U'
         message.sender.save()
 
+        realm.refresh_from_db()
+
         return attachment_path_id, emoji_path, original_avatar_path_id, test_image
 
     """
@@ -330,7 +331,7 @@ class ImportExportTest(ZulipTestCase):
 
     def test_export_files_from_local(self) -> None:
         realm = Realm.objects.get(string_id='zulip')
-        path_id, emoji_path, original_avatar_path_id, test_image = self._setup_export_files()
+        path_id, emoji_path, original_avatar_path_id, test_image = self._setup_export_files(realm)
         full_data = self._export_realm(realm)
 
         data = full_data['attachment']
@@ -388,7 +389,7 @@ class ImportExportTest(ZulipTestCase):
             settings.S3_AVATAR_BUCKET)
 
         realm = Realm.objects.get(string_id='zulip')
-        attachment_path_id, emoji_path, original_avatar_path_id, test_image = self._setup_export_files()
+        attachment_path_id, emoji_path, original_avatar_path_id, test_image = self._setup_export_files(realm)
         full_data = self._export_realm(realm)
 
         data = full_data['attachment']
@@ -1013,10 +1014,8 @@ class ImportExportTest(ZulipTestCase):
                                                                                type_id=huddle_object.id).id)
 
     def test_import_files_from_local(self) -> None:
-
         realm = Realm.objects.get(string_id='zulip')
-        self._setup_export_files()
-        realm.refresh_from_db()
+        self._setup_export_files(realm)
 
         self._export_realm(realm)
 
@@ -1078,8 +1077,7 @@ class ImportExportTest(ZulipTestCase):
             settings.S3_AVATAR_BUCKET)
 
         realm = Realm.objects.get(string_id='zulip')
-        self._setup_export_files()
-        realm.refresh_from_db()
+        self._setup_export_files(realm)
 
         self._export_realm(realm)
         with self.settings(BILLING_ENABLED=False):
@@ -1162,7 +1160,7 @@ class ImportExportTest(ZulipTestCase):
         realm = get_realm('zulip')
         do_change_plan_type(realm, Realm.LIMITED)
 
-        self._setup_export_files()
+        self._setup_export_files(realm)
         self._export_realm(realm)
 
         with patch('logging.info'):
