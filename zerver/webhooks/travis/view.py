@@ -12,6 +12,7 @@ from zerver.models import UserProfile
 
 GOOD_STATUSES = ['Passed', 'Fixed']
 BAD_STATUSES = ['Failed', 'Broken', 'Still Failing', 'Errored', 'Canceled']
+PENDING_STATUSES = ['Pending']
 
 MESSAGE_TEMPLATE = (
     'Author: {}\n'
@@ -37,6 +38,8 @@ def api_travis_webhook(request: HttpRequest, user_profile: UserProfile,
         emoji = ':thumbs_up:'
     elif message_status in BAD_STATUSES:
         emoji = ':thumbs_down:'
+    elif message_status in PENDING_STATUSES:
+        emoji = ':arrows_counterclockwise:'
     else:
         emoji = "(No emoji specified for status '{}'.)".format(message_status)
 
