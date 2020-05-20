@@ -15,6 +15,7 @@ class zulip::base {
         '15.10' => 'wily',
         '16.04' => 'xenial',
         '18.04' => 'bionic',
+        '20.04' => 'focal',
       }
       $base_packages = [
         # Accurate time is essential
@@ -67,6 +68,7 @@ class zulip::base {
     'xenial'  => '9.5',
     'bionic'  => '10',
     'CentOS7' => '10',
+    'focal'   => '12',
   })
 
   $normal_queues = [
