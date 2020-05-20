@@ -167,7 +167,8 @@ page_params.realm_filters = [];
 page_params.starred_messages = [];
 page_params.presences = [];
 
-$('#tab_bar').append = () => {};
+const $tab_bar = $.create('#tab_bar');
+$tab_bar.append = () => {};
 upload.setup_upload = () => {};
 
 server_events.home_view_loaded = () => true;
@@ -186,6 +187,9 @@ count_stub.set_find_results('.value', value_stub);
 $(".top_left_starred_messages").set_find_results('.count', count_stub);
 
 $("#tab_list .stream").length = 0;
+
+// set find results doesn't work here since we call .empty() in the code.
+$tab_bar.find = () => false;
 
 compose.compute_show_video_chat_button = () => {};
 $("#below-compose-content .video_link").toggle = () => {};

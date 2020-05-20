@@ -27,6 +27,7 @@ import "../search_util.js";
 import "../keydown_util.js";
 import "../lightbox_canvas.js";
 import "../rtl.js";
+import "../rendered_markdown.js";
 import "../lazy_set.js";
 import "../fold_dict.ts";
 import "../scroll_util.js";
