@@ -991,9 +991,9 @@ class ImportExportTest(ZulipTestCase):
 
         self._export_realm(realm)
 
-        with patch('logging.info'):
-            do_import_realm(os.path.join(settings.TEST_WORKER_DIR, 'test-export'),
-                            'test-zulip')
+        with self.settings(BILLING_ENABLED=False):
+            with patch('logging.info'):
+                do_import_realm(os.path.join(settings.TEST_WORKER_DIR, 'test-export'), 'test-zulip')
         imported_realm = Realm.objects.get(string_id='test-zulip')
 
         # Test attachments
@@ -1053,9 +1053,9 @@ class ImportExportTest(ZulipTestCase):
         realm.refresh_from_db()
 
         self._export_realm(realm)
-        with patch('logging.info'):
-            do_import_realm(os.path.join(settings.TEST_WORKER_DIR, 'test-export'),
-                            'test-zulip')
+        with self.settings(BILLING_ENABLED=False):
+            with patch('logging.info'):
+                do_import_realm(os.path.join(settings.TEST_WORKER_DIR, 'test-export'), 'test-zulip')
         imported_realm = Realm.objects.get(string_id='test-zulip')
         with open(get_test_image_file('img.png').name, 'rb') as f:
             test_image_data = f.read()
