@@ -14,19 +14,20 @@ setup_path()
 
 from scripts.lib.zulip_tools import get_config_file
 
-def print_shard(f: Any, host: str, port: str) -> None:
+def write_realm_nginx_config_line(f: Any, host: str, port: str) -> None:
     f.write("""if ($host = '%s') {
     set $tornado_server http://tornado%s;
 }\n""" % (host, port))
 
-# Basic system to do Tornado sharding.  Writes two output files:
+# Basic system to do Tornado sharding.  Writes two output .tmp files that need
+# to be renamed to the following files to finalize the changes:
 # * /etc/zulip/nginx_sharding.conf; nginx needs to be reloaded after changing.
 # * /etc/zulip/sharding.json; supervisor Django process needs to be reloaded
 # after changing.  TODO: We can probably make this live-reload by statting the file.
 #
 # TODO: Restructure this to automatically generate a sharding layout.
-with open('/etc/zulip/nginx_sharding.conf', 'w') as nginx_sharding_conf_f, \
-        open('/etc/zulip/sharding.json', 'w') as sharding_json_f:
+with open('/etc/zulip/nginx_sharding.conf.tmp', 'w') as nginx_sharding_conf_f, \
+        open('/etc/zulip/sharding.json.tmp', 'w') as sharding_json_f:
 
     config_file = get_config_file()
     if not config_file.has_section("tornado_sharding"):
@@ -49,9 +50,7 @@ with open('/etc/zulip/nginx_sharding.conf', 'w') as nginx_sharding_conf_f, \
                 host = "{}.{}".format(shard, external_host)
             assert host not in shard_map
             shard_map[host] = int(port)
-            print_shard(nginx_sharding_conf_f, host, port)
-            if shard in ['zephyr', 'recurse']:
-                print_shard(nginx_sharding_conf_f, shard + ".zulipstaging.com", port)
+            write_realm_nginx_config_line(nginx_sharding_conf_f, host, port)
         nginx_sharding_conf_f.write('\n')
 
     sharding_json_f.write(json.dumps(shard_map) + '\n')
