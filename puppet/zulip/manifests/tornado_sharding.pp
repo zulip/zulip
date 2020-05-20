@@ -1,4 +1,4 @@
-class zulip::sharding {
+class zulip::tornado_sharding {
   include zulip::base
   include zulip::common
   include zulip::nginx
