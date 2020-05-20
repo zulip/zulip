@@ -101,6 +101,7 @@ EXEMPT_FILES = {
     'static/js/reload.js',
     'static/js/reload_state.js',
     'static/js/reminder.js',
+    'static/js/rendered_markdown.js',
     'static/js/resize.js',
     'static/js/rows.js',
     'static/js/scroll_bar.js',
