@@ -1338,10 +1338,11 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod):
         try:
             # Call the auth_complete method of social_core.backends.oauth.BaseOAuth2
             return super().auth_complete(*args, **kwargs)  # type: ignore[misc] # monkey-patching
-        except AuthFailed as e:
+        except (AuthFailed, HTTPError) as e:
             # When a user's social authentication fails (e.g. because
             # they did something funny with reloading in the middle of
-            # the flow), don't throw a 500, just send them back to the
+            # the flow or the IdP is unreliable and returns a bad http response),
+            # don't throw a 500, just send them back to the
             # login page and record the event at the info log level.
             logging.info(str(e))
             return None
