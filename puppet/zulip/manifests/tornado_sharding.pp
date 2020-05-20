@@ -14,9 +14,8 @@ class zulip::tornado_sharding {
   # the sharding script afterwards and puppet shouldn't overwrite them.
   file { '/etc/zulip/nginx_sharding.conf':
     ensure  => file,
-    require => User['zulip'],
-    owner   => 'zulip',
-    group   => 'zulip',
+    owner   => 'root',
+    group   => 'root',
     mode    => '0640',
     notify  => Service['nginx'],
     content => "set \$tornado_server http://tornado;\n",
