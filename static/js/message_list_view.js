@@ -111,29 +111,54 @@ function clear_group_date_divider(group) {
     group.group_date_divider_html = undefined;
 }
 
-function clear_message_date_divider(msg) {
-    // see update_message_date_divider for how
-    // these get set
-    msg.want_date_divider = false;
-    msg.date_divider_html = undefined;
+function clear_message_divider(msg) {
+    msg.want_divider = false;
+    msg.divider_properties = {
+        unread_marker: false,
+        time_above: undefined,
+        time_below: undefined,
+    };
 }
 
-function update_message_date_divider(opts) {
+function update_message_divider(opts) {
     const prev_msg_container = opts.prev_msg_container;
     const curr_msg_container = opts.curr_msg_container;
+    const filter = opts.list.data.filter;
 
-    if (!prev_msg_container || same_day(curr_msg_container, prev_msg_container)) {
-        clear_message_date_divider(curr_msg_container);
+    clear_message_divider(curr_msg_container); // Reset to defaults
+    let want_divider = curr_msg_container.want_divider; // false
+    const divider_properties = curr_msg_container.divider_properties; // default
+
+    if (!prev_msg_container) {
         return;
     }
 
-    const prev_time = new XDate(prev_msg_container.msg.timestamp * 1000);
-    const curr_time = new XDate(curr_msg_container.msg.timestamp * 1000);
-    const today = new XDate();
+    if (!same_day(curr_msg_container, prev_msg_container)) {
+        want_divider = true;
 
-    curr_msg_container.want_date_divider = true;
-    curr_msg_container.date_divider_html =
-        timerender.render_date(curr_time, prev_time, today)[0].outerHTML;
+        const prev_time = new XDate(prev_msg_container.msg.timestamp * 1000);
+        const curr_time = new XDate(curr_msg_container.msg.timestamp * 1000);
+        const today = new XDate();
+
+        divider_properties.time_above = timerender.render_now(prev_time, today).time_str;
+        divider_properties.time_below = timerender.render_now(curr_time, today).time_str;
+    }
+
+    // Our unread message dividers, as currently conceived, don't really make sense in
+    // interleaved narrows, since we could have read messages after unread messages in
+    // those contexts.
+    // As a result, we currently don't offer these "New messages" notices in those views.
+    const is_topic = filter.has_operator('stream') && filter.has_operator('topic');
+    const is_pm = filter.has_operator('pm-with') || filter.has_operator('group-pm-with');
+    const should_have_unread_divider = !prev_msg_container.msg.unread &&
+                                     curr_msg_container.msg.unread;
+    if ((is_topic || is_pm) && should_have_unread_divider) {
+        want_divider = true;
+        divider_properties.unread_marker = true;
+    }
+
+    curr_msg_container.want_divider = want_divider;
+    curr_msg_container.divider_properties = divider_properties;
 }
 
 function set_timestr(message_container) {
@@ -298,7 +323,8 @@ MessageListView.prototype = {
             if (same_recipient(prev, message_container) && self.collapse_messages &&
                 prev.msg.historical === message_container.msg.historical) {
                 add_message_container_to_group(message_container);
-                update_message_date_divider({
+                update_message_divider({
+                    list: self.list,
                     prev_msg_container: prev,
                     curr_msg_container: message_container,
                 });
@@ -308,7 +334,7 @@ MessageListView.prototype = {
                 add_message_container_to_group(message_container);
 
                 update_group_date_divider(current_group, message_container, prev);
-                clear_message_date_divider(message_container);
+                clear_message_divider(message_container);
 
                 message_container.include_recipient = true;
                 message_container.subscribed = false;
@@ -340,8 +366,8 @@ MessageListView.prototype = {
             message_container.include_sender = true;
             if (!message_container.include_recipient &&
                 !prev.status_message &&
-                same_day(prev, message_container) &&
-                same_sender(prev, message_container)) {
+                same_sender(prev, message_container) &&
+                !message_container.want_divider) {
                 message_container.include_sender = false;
             }
 
@@ -426,6 +452,7 @@ MessageListView.prototype = {
         let second_group;
         let curr_msg_container;
         let prev_msg_container;
+        const self = this;
 
         if (where === 'top') {
             first_group = _.last(new_message_groups);
@@ -445,12 +472,13 @@ MessageListView.prototype = {
 
         const was_joined = this.join_message_groups(first_group, second_group);
         if (was_joined) {
-            update_message_date_divider({
+            update_message_divider({
                 prev_msg_container: prev_msg_container,
                 curr_msg_container: curr_msg_container,
+                list: self.list,
             });
         } else {
-            clear_message_date_divider(curr_msg_container);
+            clear_message_divider(curr_msg_container);
         }
 
         if (where === 'top') {

@@ -1,0 +1,19 @@
+<div class="date_row no-select{{#if divider_properties.unread_marker}} unread_divider{{/if}}" {{#if msg/is_stream}}style="box-shadow: inset 2px 0px 0px 0px {{background_color}}, -1px 0px 0px 0px {{background_color}};"{{/if}}>
+    <span>
+        {{#if divider_properties.time_above}}
+        <i class="date-direction fa fa-caret-up"></i>
+        {{{divider_properties.time_above}}}
+        <hr class="date-line">
+        {{/if}}
+        {{#if divider_properties.unread_marker}}
+            NEW MESSAGES
+            {{#if divider_properties.time_below}}
+            <hr class="date-line">
+            {{/if}}
+        {{/if}}
+        {{#if divider_properties.time_below}}
+        <i class="date-direction fa fa-caret-down"></i>
+        {{{divider_properties.time_below}}}
+        {{/if}}
+    </span>
+</div>

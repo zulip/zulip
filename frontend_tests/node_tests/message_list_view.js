@@ -7,6 +7,7 @@ zrequire('FetchStatus', 'js/fetch_status');
 zrequire('MessageListData', 'js/message_list_data');
 zrequire('MessageListView', 'js/message_list_view');
 zrequire('message_list');
+zrequire('stream_data');
 
 const noop = function () {};
 
@@ -23,6 +24,12 @@ set_global('timerender', {
             return [{outerHTML: String(time1.getTime())}];
         }
         return [{outerHTML: String(time1.getTime()) + ' - ' + String(time2.getTime())}];
+    },
+    render_now: function (time) {
+        // The render_now function actually takes two parameters
+        // But for the sake of this test, one's enough since the
+        // other parameter is just the refernce date (mostly "today")
+        return {time_str: time};
     },
     stringify_time: function (time) {
         if (page_params.twenty_four_hour_time) {
@@ -164,6 +171,18 @@ run_test('merge_message_groups', () => {
         list.list = {
             unsubscribed_bookend_content: function () {},
             subscribed_bookend_content: function () {},
+            data: new MessageListData({filter: new Filter([
+                {
+                    negated: false,
+                    operator: 'stream',
+                    operand: 'Test Stream 1',
+                },
+                {
+                    negated: false,
+                    operator: 'topic',
+                    operand: 'Test Subject 1',
+                },
+            ])}),
         };
         return list;
     }
@@ -307,7 +326,7 @@ run_test('merge_message_groups', () => {
         assert.deepEqual(result.rerender_groups, []);
         assert.deepEqual(result.append_messages, [message2]);
         assert.deepEqual(result.rerender_messages_next_same_sender, [message1]);
-        assert(list._message_groups[0].message_containers[1].want_date_divider);
+        assert(list._message_groups[0].message_containers[1].want_divider);
     }());
 
     (function test_append_message_historical() {
@@ -459,9 +478,14 @@ run_test('merge_message_groups', () => {
         const result = list.merge_message_groups([message_group2], 'top');
 
         // We should have a group date divider within the single recipient block.
-        assert.equal(
-            message_group2.message_containers[1].date_divider_html,
-            '900000000 - 1000000');
+        assert.deepEqual(
+            message_group2.message_containers[1].divider_properties,
+            {
+                unread_marker: false,
+                time_above: new XDate(1000000),
+                time_below: new XDate(900000000),
+            }
+        );
         assert_message_groups_list_equal(
             list._message_groups,
             [message_group2]);
