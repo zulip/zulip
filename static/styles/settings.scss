@@ -362,6 +362,73 @@ td .button {
     .tip::before {
         content: "\f0a2";
     }
+
+    #admin_page_users_loading_indicator,
+    #attachments_loading_indicator,
+    #admin_page_deactivated_users_loading_indicator,
+    #admin_page_bots_loading_indicator {
+        margin: 0 auto;
+    }
+
+    .loading_indicator_text {
+        font-size: 12px;
+        font-weight: 400;
+        vertical-align: middle;
+        line-height: 20px;
+        display: inline-block;
+        float: none;
+        margin-top: 9px;
+    }
+
+    .loading_indicator_spinner {
+        width: 30%;
+        height: 30px;
+        margin-top: 7px;
+        vertical-align: middle;
+        display: inline-block;
+    }
+
+    .realm-icon-section {
+        .loading_indicator_text,
+        .loading_indicator_text {
+            font-size: 14px;
+            font-weight: 400;
+            vertical-align: middle;
+            line-height: 20px;
+            display: inline-block;
+            float: none;
+            margin-top: 0px;
+            margin-left: -12px;
+        }
+
+        .loading_indicator_spinner,
+        .loading_indicator_spinner {
+            width: 10%;
+            height: 16px;
+            margin-top: 2px;
+            vertical-align: middle;
+            display: inline-block;
+        }
+    }
+
+    #default_language {
+        text-decoration: none;
+    }
+
+    #default_language_modal {
+        table {
+            width: 90%;
+            margin-top: 20px;
+        }
+
+        td {
+            padding-left: 80px;
+        }
+    }
+
+    .inline {
+        display: inline !important;
+    }
 }
 
 #admin-user-list,
