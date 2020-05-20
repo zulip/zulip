@@ -12,7 +12,7 @@ as well as a format that's compatible with
 [Slack's outgoing webhook API][slack-outgoing-webhook], which can help
 with porting an existing Slack integration to work with Zulip.
 
-[zulip-botserver]: https://zulipchat.com/api/deploying-bots#zulip-botserver
+[zulip-botserver]: /api/deploying-bots#zulip-botserver
 [slack-outgoing-webhook]: https://api.slack.com/custom-integrations/outgoing-webhooks
 
 To register an outgoing webhook:

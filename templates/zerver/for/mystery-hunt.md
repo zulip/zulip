@@ -36,7 +36,7 @@ self-hosted installation.
 
 **Can I integrate Zulip with my current puzzlehunting software?**
 
-Yup. Zulip has a well thought out [API](https://zulipchat.com/api/), and
+Yup. Zulip has a well thought out [API](/api/), and
 it’s easy to write bots that send things into or out of Zulip.
 
 **Where can I test it out?**
