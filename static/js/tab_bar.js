@@ -1,4 +1,5 @@
 const render_tab_bar = require('../templates/tab_bar.hbs');
+const rendered_markdown = require('./rendered_markdown');
 
 function get_sub_count(current_stream) {
     const sub_count = current_stream.subscriber_count;
@@ -60,6 +61,11 @@ function display_tab_bar(tab_bar_data) {
         exports.colorize_tab_bar();
     }
     tab_bar.removeClass('notdisplayed');
+    const content = tab_bar.find('span.rendered_markdown');
+    if (content) {
+        // Update syntax like stream names, emojis, mentions, timestamps.
+        rendered_markdown.update_elements(content);
+    }
 }
 
 function build_tab_bar(filter) {
