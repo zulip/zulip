@@ -61,8 +61,8 @@ def parse_language_and_options(input_str: Optional[str]) -> Tuple[str, Dict[str,
         return (language, options)
     return (language, {})
 
-def extract_code_example(source: List[str], snippet: List[str],
-                         example_regex: Pattern[str]) -> List[str]:
+def extract_code_example(source: List[str], snippet: List[Any],
+                         example_regex: Pattern[str]) -> List[Any]:
     start = -1
     end = -1
     for line in source:
@@ -77,7 +77,7 @@ def extract_code_example(source: List[str], snippet: List[str],
     if (start == -1 and end == -1):
         return snippet
 
-    snippet.extend(source[start + 1: end])
+    snippet.append(source[start + 1: end])
     source = source[end + 1:]
     return extract_code_example(source, snippet, example_regex)
 
@@ -91,15 +91,16 @@ def render_python_code_example(function: str, admin_config: Optional[bool]=False
     else:
         config = PYTHON_CLIENT_CONFIG.splitlines()
 
-    snippet = extract_code_example(function_source_lines, [], PYTHON_EXAMPLE_REGEX)
+    snippets = extract_code_example(function_source_lines, [], PYTHON_EXAMPLE_REGEX)
 
     code_example = []
     code_example.append('```python')
     code_example.extend(config)
 
-    for line in snippet:
-        # Remove one level of indentation and strip newlines
-        code_example.append(line[4:].rstrip())
+    for snippet in snippets:
+        for line in snippet:
+            # Remove one level of indentation and strip newlines
+            code_example.append(line[4:].rstrip())
 
     code_example.append('print(result)')
     code_example.append('\n')
