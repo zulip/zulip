@@ -23,7 +23,7 @@
 
 #### Return values
 
-* `raw_content`: The raw content of the message.
+{generate_return_values_table|zulip.yaml|/messages/{message_id}:get}
 
 #### Example response
 

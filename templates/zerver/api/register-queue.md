@@ -87,9 +87,7 @@ zulip(config).then((client) => {
 
 #### Return values
 
-* `queue_id`: The ID of the queue that has been allocated for your client.
-* `last_event_id`: The initial value of `last_event_id` to pass to
-  `GET /api/v1/events`.
+{generate_return_values_table|zulip.yaml|/register:post}
 
 #### Example response
 
