@@ -95,6 +95,13 @@ class zulip::nginx {
     mode   => '0650'
   }
 
+  $auto_renew = zulipconf('cerbot', 'auto_renew', '')
+  if $auto_renew == 'yes' {
+    package { 'certbot':
+      ensure => 'installed',
+    }
+  }
+
   file { ['/var/lib/zulip', '/var/lib/zulip/certbot-webroot']:
     ensure => 'directory',
     owner  => 'zulip',
