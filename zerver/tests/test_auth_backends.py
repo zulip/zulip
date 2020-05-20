@@ -19,6 +19,7 @@ import mock
 import re
 import datetime
 import time
+import requests
 
 from zerver.lib.actions import (
     do_create_user,
@@ -1350,6 +1351,12 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
     def test_social_auth_complete(self) -> None:
         with mock.patch('social_core.backends.oauth.BaseOAuth2.process_error',
                         side_effect=AuthFailed('Not found')):
+            result = self.client_get(reverse('social:complete', args=[self.backend.name]))
+            self.assertEqual(result.status_code, 302)
+            self.assertIn('login', result.url)
+
+        with mock.patch('social_core.backends.oauth.BaseOAuth2.auth_complete',
+                        side_effect=requests.exceptions.HTTPError):
             result = self.client_get(reverse('social:complete', args=[self.backend.name]))
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
