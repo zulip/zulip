@@ -121,7 +121,7 @@ exports.activate = function (raw_operators, opts) {
 
        * then_select_id: If the caller wants us to do the narrow
          centered on a specific message ID ("anchor" in the API
-         parlance), specify that here.  Useful both when the user
+         parlance), specify that here.  Useful e.g. when the user
          clicks on a specific message; implied by a `near:` operator.
 
        * then_select_offset: Offset from the top of the page in pixels
