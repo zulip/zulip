@@ -28,15 +28,6 @@ const backend_only_markdown_re = [
     /[^\s]*(?:twitter|youtube).com\/[^\s]*/,
 ];
 
-// Helper function to update a mentioned user's name.
-exports.set_name_in_mention_element = function (element, name) {
-    if ($(element).hasClass('silent')) {
-        $(element).text(name);
-    } else {
-        $(element).text("@" + name);
-    }
-};
-
 exports.translate_emoticons_to_names = (text) => {
     // Translates emoticons in a string to their colon syntax.
     let translated = text;
