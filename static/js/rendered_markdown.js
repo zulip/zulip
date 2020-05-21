@@ -1,3 +1,14 @@
+/*
+    rendered_markdown
+
+    This module provies a single function 'update_elements' to
+    update any renamed users/streams/groups etc. and other
+    dynamic parts of our rendered messages.
+
+    Use this module wherever some markdown rendered content
+    is being displayed.
+*/
+
 function get_user_id_for_mention_button(elem) {
     const user_id_string = $(elem).attr('data-user-id');
     // Handle legacy markdown that was rendered before we cut
