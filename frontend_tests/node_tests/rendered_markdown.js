@@ -151,3 +151,22 @@ run_test('stream-links', () => {
     assert.equal($stream.text(), `#${stream.name}`);
     assert.equal($stream_topic.text(), `#${stream.name} > topic name`);
 });
+
+run_test('emoji', () => {
+    // Setup
+    const $content = get_content_element();
+    const $emoji = $.create('.emoji');
+    $emoji.attr('title', 'tada');
+    let called = false;
+    $emoji.replaceWith = (f) => {
+        const text = f.call($emoji);
+        assert.equal(':tada:', text);
+        called = true;
+    };
+    $content.set_find_results('.emoji', $emoji);
+    page_params.emojiset = 'text';
+
+    rm.update_elements($content);
+
+    assert(called);
+});
