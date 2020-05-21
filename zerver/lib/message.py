@@ -279,30 +279,40 @@ class MessageDict:
 
     @staticmethod
     def to_dict_uncached_helper(messages: List[Message]) -> List[Dict[str, Any]]:
-        message_dicts = [
-            MessageDict.build_message_dict(
-                message = message,
-                message_id = message.id,
-                last_edit_time = message.last_edit_time,
-                edit_history = message.edit_history,
-                content = message.content,
-                topic_name = message.topic_name(),
-                date_sent = message.date_sent,
-                rendered_content = message.rendered_content,
-                rendered_content_version = message.rendered_content_version,
-                sender_id = message.sender.id,
-                sender_realm_id = message.sender.realm_id,
-                sending_client_name = message.sending_client.name,
-                recipient_id = message.recipient.id,
-                recipient_type = message.recipient.type,
-                recipient_type_id = message.recipient.type_id,
-            ) for message in messages
-        ]
+        # Near duplicate of the build_message_dict + get_raw_db_rows
+        # code path that accepts already fetched Message objects
+        # rather than message IDs.
 
-        # We do bulk query for reactions and submessages to avoid
-        # running queries for them in a loop.
-        MessageDict.sew_submessages_and_reactions_to_msgs(message_dicts)
-        return message_dicts
+        # TODO: We could potentially avoid this database query in
+        # common cases by optionally passing through the
+        # stream_realm_id through the code path from do_send_messages
+        # (where we've already fetched the data).  It would involve
+        # somewhat messy plumbing, but would probably be worth it.
+        def get_rendering_realm_id(message: Message) -> int:
+            if message.recipient.type == Recipient.STREAM:
+                return Stream.objects.get(id=message.recipient.type_id).realm_id
+            return message.sender.realm_id
+
+        message_rows = [{
+            'id': message.id,
+            DB_TOPIC_NAME: message.topic_name(),
+            "date_sent": message.date_sent,
+            "last_edit_time": message.last_edit_time,
+            "edit_history": message.edit_history,
+            "content": message.content,
+            "rendered_content": message.rendered_content,
+            "rendered_content_version": message.rendered_content_version,
+            "recipient_id": message.recipient.id,
+            "recipient__type": message.recipient.type,
+            "recipient__type_id": message.recipient.type_id,
+            "rendering_realm_id": get_rendering_realm_id(message),
+            "sender_id": message.sender.id,
+            "sending_client__name": message.sending_client.name,
+            "sender__realm_id": message.sender.realm_id,
+        } for message in messages]
+
+        MessageDict.sew_submessages_and_reactions_to_msgs(message_rows)
+        return [MessageDict.build_dict_from_raw_db_row(row) for row in message_rows]
 
     @staticmethod
     def get_raw_db_rows(needed_ids: List[int]) -> List[Dict[str, Any]]:
@@ -334,7 +344,6 @@ class MessageDict:
         all the relevant fields populated
         '''
         return MessageDict.build_message_dict(
-            message = None,
             message_id = row['id'],
             last_edit_time = row['last_edit_time'],
             edit_history = row['edit_history'],
@@ -346,6 +355,7 @@ class MessageDict:
             sender_id = row['sender_id'],
             sender_realm_id = row['sender__realm_id'],
             sending_client_name = row['sending_client__name'],
+            rendering_realm_id = row.get('rendering_realm_id', row['sender__realm_id']),
             recipient_id = row['recipient_id'],
             recipient_type = row['recipient__type'],
             recipient_type_id = row['recipient__type_id'],
@@ -355,7 +365,6 @@ class MessageDict:
 
     @staticmethod
     def build_message_dict(
-            message: Optional[Message],
             message_id: int,
             last_edit_time: Optional[datetime.datetime],
             edit_history: Optional[str],
@@ -367,11 +376,12 @@ class MessageDict:
             sender_id: int,
             sender_realm_id: int,
             sending_client_name: str,
+            rendering_realm_id: int,
             recipient_id: int,
             recipient_type: int,
             recipient_type_id: int,
-            reactions: List[Dict[str, Any]]=[],
-            submessages: List[Dict[str, Any]]=[]
+            reactions: List[Dict[str, Any]],
+            submessages: List[Dict[str, Any]],
     ) -> Dict[str, Any]:
 
         obj = dict(
@@ -388,18 +398,8 @@ class MessageDict:
         obj['sender_realm_id'] = sender_realm_id
 
         # Render topic_links with the stream's realm instead of the
-        # user's realm; this is important for messages sent by
+        # sender's realm; this is important for messages sent by
         # cross-realm bots like NOTIFICATION_BOT.
-        #
-        # TODO: We could potentially avoid this database query in
-        # common cases by optionally passing through the
-        # stream_realm_id through the code path from do_send_messages
-        # (where we've already fetched the data).  It would involve
-        # somewhat messy plumbing, but would probably be worth it.
-        rendering_realm_id = sender_realm_id
-        if message and recipient_type == Recipient.STREAM:
-            rendering_realm_id = Stream.objects.get(id=recipient_type_id).realm_id
-
         obj[TOPIC_LINKS] = bugdown.topic_links(rendering_realm_id, topic_name)
 
         if last_edit_time is not None:
@@ -408,18 +408,17 @@ class MessageDict:
             obj['edit_history'] = ujson.loads(edit_history)
 
         if Message.need_to_render_content(rendered_content, rendered_content_version, bugdown.version):
-            if message is None:
-                # We really shouldn't be rendering objects in this method, but there is
-                # a scenario where we upgrade the version of bugdown and fail to run
-                # management commands to re-render historical messages, and then we
-                # need to have side effects.  This method is optimized to not need full
-                # blown ORM objects, but the bugdown renderer is unfortunately highly
-                # coupled to Message, and we also need to persist the new rendered content.
-                # If we don't have a message object passed in, we get one here.  The cost
-                # of going to the DB here should be overshadowed by the cost of rendering
-                # and updating the row.
-                # TODO: see #1379 to eliminate bugdown dependencies
-                message = Message.objects.select_related().get(id=message_id)
+            # We really shouldn't be rendering objects in this method, but there is
+            # a scenario where we upgrade the version of bugdown and fail to run
+            # management commands to re-render historical messages, and then we
+            # need to have side effects.  This method is optimized to not need full
+            # blown ORM objects, but the bugdown renderer is unfortunately highly
+            # coupled to Message, and we also need to persist the new rendered content.
+            # If we don't have a message object passed in, we get one here.  The cost
+            # of going to the DB here should be overshadowed by the cost of rendering
+            # and updating the row.
+            # TODO: see #1379 to eliminate bugdown dependencies
+            message = Message.objects.select_related().get(id=message_id)
 
             assert message is not None  # Hint for mypy.
             # It's unfortunate that we need to have side effects on the message
