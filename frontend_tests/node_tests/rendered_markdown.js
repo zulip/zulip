@@ -1,6 +1,7 @@
 const rm = zrequire('rendered_markdown');
 zrequire('people');
 zrequire('user_groups');
+zrequire('stream_data');
 set_global('$', global.make_zjquery());
 
 set_global('rtl', {
@@ -36,6 +37,16 @@ const group_other = {
 user_groups.initialize({
     realm_user_groups: [group_me, group_other],
 });
+
+const stream = {
+    subscribed: true,
+    color: 'yellow',
+    name: 'test',
+    stream_id: 3,
+    is_muted: true,
+    invite_only: false,
+};
+stream_data.add_sub(stream);
 
 const $array = (array) => {
     const each = (func) => {
@@ -115,4 +126,28 @@ run_test('user-group-mention', () => {
     assert($group_me.hasClass('user-mention-me'));
     assert.equal($group_me.text(), `@${group_me.name}`);
     assert.equal($group_other.text(), `@${group_other.name}`);
+});
+
+run_test('stream-links', () => {
+    // Setup
+    const $content = get_content_element();
+    const $stream = $.create('a.stream');
+    $stream.set_find_results('.highlight', false);
+    $stream.attr('data-stream-id', stream.stream_id);
+    const $stream_topic = $.create('a.stream-topic');
+    $stream_topic.set_find_results('.highlight', false);
+    $stream_topic.attr('data-stream-id', stream.stream_id);
+    $stream_topic.text('#random>topic name');
+    $content.set_find_results('a.stream', $array([$stream]));
+    $content.set_find_results('a.stream-topic', $array([$stream_topic]));
+
+    // Initial asserts
+    assert.equal($stream.text(), 'never-been-set');
+    assert.equal($stream_topic.text(), '#random>topic name');
+
+    rm.update_elements($content);
+
+    // Final asserts
+    assert.equal($stream.text(), `#${stream.name}`);
+    assert.equal($stream_topic.text(), `#${stream.name} > topic name`);
 });
