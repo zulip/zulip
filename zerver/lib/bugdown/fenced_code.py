@@ -161,7 +161,7 @@ def generic_handler(processor: Any, output: MutableSequence[str],
                     default_language: Optional[str]=None) -> BaseHandler:
     if lang in ('quote', 'quoted'):
         return QuoteHandler(processor, output, fence, default_language)
-    elif lang in ('math', 'tex', 'latex'):
+    elif lang == 'math':
         return TexHandler(processor, output, fence)
     else:
         return CodeHandler(processor, output, fence, lang, run_content_validators)
