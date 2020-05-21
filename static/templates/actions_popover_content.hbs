@@ -3,8 +3,7 @@
     {{#if should_display_edit_and_view_source}}
     <li>
         <a href="#" class="popover_edit_message" data-message-id="{{message_id}}">
-            {{! Can consider https://fontawesome.com/v4.7.0/icon/file-code-o when we upgrade to font awesome 4.}}
-            <i class="{{#if use_edit_icon}}fa fa-pencil{{else}}fa fa-file-text-o{{/if}}" aria-hidden="true"></i> {{editability_menu_item}}
+            <i class="{{#if use_edit_icon}}fa fa-pencil{{else}}fa fa-file-code-o{{/if}}" aria-hidden="true"></i> {{editability_menu_item}}
         </a>
     </li>
     {{/if}}
