@@ -31,7 +31,7 @@ content.
     [disabled by an organization administrator](/help/disable-message-edit-history).
 
 If you don't see the pencil (<i class="fa fa-pencil"></i>) icon, the message content
-can no longer be edited. You should see a file (<i class="fa fa-file-text-o"></i>)
+can no longer be edited. You should see a file (<i class="fa fa-file-code-o"></i>)
 icon instead. Clicking the file icon will allow you to view the
 [Markdown source](/help/view-the-markdown-source-of-a-message) of the message, or
 [edit the topic](/help/change-the-topic-of-a-message).
