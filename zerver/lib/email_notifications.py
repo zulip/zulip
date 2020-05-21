@@ -1,5 +1,6 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/notifications.html
 
+import math
 import re
 from collections import defaultdict
 from datetime import timedelta
@@ -30,6 +31,7 @@ from zerver.lib.url_encoding import (
     stream_narrow_url,
     topic_narrow_url,
 )
+from zerver.lib.user_groups import access_user_group_by_id, get_user_group_members
 from zerver.models import (
     Message,
     Recipient,
@@ -354,6 +356,45 @@ def get_narrow_url(
         return topic_narrow_url(user_profile.realm, stream, message.topic_name())
 
 
+def get_mentioned_user_group_name(
+    messages: List[Dict[str, Any]], user_profile: UserProfile
+) -> Optional[str]:
+    """Returns the user group name to display in the email notification
+    if user group(s) are mentioned.
+
+    This implements the same algorithm as get_user_group_mentions_data
+    in zerver/lib/notification_data.py, but we're passed a list of
+    messages instead.
+    """
+    for message in messages:
+        if message["mentioned_user_group_id"] is None and message["trigger"] == "mentioned":
+            # The user has also been personally mentioned, so that gets prioritized.
+            return None
+
+    # These IDs are those of the smallest user groups mentioned in each message.
+    mentioned_user_group_ids = [
+        message["mentioned_user_group_id"]
+        for message in messages
+        if message["mentioned_user_group_id"] is not None
+    ]
+
+    # We now want to calculate the name of the smallest user group mentioned among
+    # all these messages.
+    smallest_user_group_size = math.inf
+    smallest_user_group_name = None
+    for user_group_id in mentioned_user_group_ids:
+        current_user_group = access_user_group_by_id(user_group_id, user_profile)
+        current_user_group_size = len(get_user_group_members(current_user_group))
+
+        if current_user_group_size < smallest_user_group_size:
+            # If multiple user groups are mentioned, we prefer the
+            # user group with the least members.
+            smallest_user_group_size = current_user_group_size
+            smallest_user_group_name = current_user_group.name
+
+    return smallest_user_group_name
+
+
 def message_content_allowed_in_missedmessage_emails(user_profile: UserProfile) -> bool:
     return (
         user_profile.realm.message_content_allowed_in_email_notifications
@@ -398,12 +439,15 @@ def do_send_missedmessage_events_reply_in_zulip(
         realm_name_in_notifications=user_profile.realm_name_in_notifications,
     )
 
+    mentioned_user_group_name = get_mentioned_user_group_name(missed_messages, user_profile)
     triggers = [message["trigger"] for message in missed_messages]
     unique_triggers = set(triggers)
+
     context.update(
         mention="mentioned" in unique_triggers or "wildcard_mentioned" in unique_triggers,
         stream_email_notify="stream_email_notify" in unique_triggers,
         mention_count=triggers.count("mentioned") + triggers.count("wildcard_mentioned"),
+        mentioned_user_group_name=mentioned_user_group_name,
     )
 
     # If this setting (email mirroring integration) is enabled, only then
@@ -532,7 +576,13 @@ def do_send_missedmessage_events_reply_in_zulip(
 def handle_missedmessage_emails(
     user_profile_id: int, missed_email_events: Iterable[Dict[str, Any]]
 ) -> None:
-    message_ids = {event.get("message_id"): event.get("trigger") for event in missed_email_events}
+    message_ids = {
+        event.get("message_id"): {
+            "trigger": event.get("trigger"),
+            "mentioned_user_group_id": event.get("mentioned_user_group_id"),
+        }
+        for event in missed_email_events
+    }
 
     user_profile = get_user_profile_by_id(user_profile_id)
     if not receives_offline_email_notifications(user_profile):
@@ -587,9 +637,13 @@ def handle_missedmessage_emails(
     for bucket_tup, ignored_max_id in bucket_tups:
         unique_messages = {}
         for m in messages_by_bucket[bucket_tup]:
+            message_info = message_ids.get(m.id)
             unique_messages[m.id] = dict(
                 message=m,
-                trigger=message_ids.get(m.id),
+                trigger=message_info["trigger"] if message_info else None,
+                mentioned_user_group_id=message_info.get("mentioned_user_group_id")
+                if message_info is not None
+                else None,
             )
         do_send_missedmessage_events_reply_in_zulip(
             user_profile,

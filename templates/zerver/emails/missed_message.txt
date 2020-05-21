@@ -22,7 +22,11 @@ See {{ alert_notif_url }} for more details.
 
 --
 {% if mention %}
+{% if mentioned_user_group_name %}
+{% trans %}You are receiving this because @{{ mentioned_user_group_name }} was mentioned in {{ realm_name }}.{% endtrans %}
+{% else %}
 {% trans %}You are receiving this because you were mentioned in {{ realm_name }}.{% endtrans %}
+{% endif %}
 {% elif stream_email_notify %}
 {% trans %}You are receiving this because you have email notifications enabled for this stream.{% endtrans %}
 {% endif %}
