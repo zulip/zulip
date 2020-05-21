@@ -17,6 +17,7 @@ to allow you to easily format your messages.
 * [Emoji and emoticons](#emoji-and-emoticons)
 * [Mentions](#mentions)
 * [Status messages](#status-messages)
+* [Mention a time](#mention-a-time)
 * [Tables](#tables)
 * [Paragraphs and lines](#paragraphs-and-lines)
 
@@ -205,6 +206,28 @@ Silent mention: @_**Polonius** (@_ instead of @)
 ```
 
 ![](/static/images/help/markdown-status.png)
+
+## Mention a time
+
+When collaborating with people in another timezone, you often need to
+express a specific time clearly. Rather than typing out your timezone
+and having everyone translate the time in their heads, in Zulip, you
+can mention a time, and it'll be displayed to each user in their own
+timezone (just like the timestamps on Zulip messages).
+
+A date picker will appear once you type `!time`.
+
+```
+Our next meeting is scheduled for !time(2020-05-28T13:30:00+05:30)
+```
+
+A person in San Francisco will see:
+
+> Our next meeting is scheduled for *Thu, May 28 2020, 1:00 AM*.
+
+While someone in India will see:
+
+> Our next meeting is scheduled for *Thu, May 28 2020, 1:30 PM*.
 
 ## Tables
 
