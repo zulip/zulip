@@ -134,6 +134,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         'settings_comments_path': settings_comments_path,
         'platform': platform,
         'allow_search_engine_indexing': allow_search_engine_indexing,
+        'landing_page_navbar_message': settings.LANDING_PAGE_NAVBAR_MESSAGE,
     }
 
     context['OPEN_GRAPH_URL'] = '%s%s' % (realm_uri, request.path)

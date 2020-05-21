@@ -365,6 +365,10 @@ BILLING_ENABLED = False
 
 FREE_TRIAL_DAYS = None
 
+# Custom message (supports HTML) to be shown in the navbar of landing pages. Used mainly for
+# making announcements.
+LANDING_PAGE_NAVBAR_MESSAGE: Optional[str] = None
+
 # Automatically catch-up soft deactivated users when running the
 # `soft-deactivate-users` cron. Turn this off if the server has 10Ks of
 # users, and you would like to save some disk space. Soft-deactivated
