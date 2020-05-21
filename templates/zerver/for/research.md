@@ -75,7 +75,7 @@ Zulip’s topic-based threading model solves these problems:
   of an ongoing conversation or like one's sticking one's neck out.
 
 See our page [for open source projects](/for/open-source) for more
-discussion of Zulip for open communities.
+discussion of Zulip for large open communities.
 
 ------------------------------------------
 
@@ -98,35 +98,6 @@ a display math block.  Zulip's LaTeX rendering is powered by
 table](https://katex.org/docs/support_table.html) is a helpful
 resource.
 
-### Moderation suite.
-
-Moderation is a big part of making an open community work. Zulip was built
-for open communities from the beginning and comes with many
-[moderation features](/help/moderating-open-organizations) out of the
-box.
-
-In addition, Zulip's threading makes it easy for a small group of busy
-moderators to skim every thread and notice if there's anything that
-needs their attention.
-
-### Open invitations.
-
-Allow anyone to [join without an
-invitation](/help/allow-anyone-to-join-without-an-invitation).  You
-can also link to your Zulip with a [badge](/help/linking-to-zulip) in
-any associated source code repositories.
-
-### Video call integration
-
-With a single click, you create a [video call](/help/start-a-call),
-making it convenient to do a quick call to hash out an idea.
-
-### Import from Slack, Mattermost, or Gitter.
-
-Import your existing organization from [Slack](/help/import-from-slack),
-[Mattermost](/help/import-from-mattermost), or
-[Gitter](/help/import-from-gitter).
-
 ### Syntax highlighting.
 
 [Full Markdown support](/help/format-your-message-using-markdown), including
@@ -145,44 +116,42 @@ record in emails, notes, talk slides, or anywhere else. Zulip’s
 topic-based threading helps keep conversations coherent and organized
 so they are useful for posterity.
 
-### Hundreds of integrations.
+### Video call integration
 
-Get events from GitHub, Travis CI, JIRA, and
-[hundreds of other tools](/integrations) right in Zulip. Topics give each
-issue its own place for discussion.
+With a single click, you create a [video call](/help/start-a-call),
+making it convenient to do a quick call to hash out an idea.
 
-### Scales to 10,000s of members.
+### Import from Slack, Mattermost, or Gitter.
 
-Zulip is designed to perform well in common use cases for public
-discussio groups, with features like [soft
-deactivation](https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#soft-deactivation)
-to make message delivery efficient even when sending to a stream with
-10,000s of inactive subscribers.
+Import your existing organization from [Slack](/help/import-from-slack),
+[Mattermost](/help/import-from-mattermost), or
+[Gitter](/help/import-from-gitter).
+
+### Moderation suite.
+
+Moderation is a big part of making an open community work. Zulip was built
+for open communities from the beginning and comes with many
+[moderation features](/help/moderating-open-organizations) out of the
+box.
+
+In addition, Zulip's threading makes it easy for a small group of busy
+moderators to skim every thread and notice if there's anything that
+needs their attention.
+
+### Open invitations.
+
+Allow anyone to [join without an
+invitation](/help/allow-anyone-to-join-without-an-invitation).  You
+can also link to your Zulip with a [badge](/help/linking-to-zulip) in
+any associated source code repositories.
 
 ### Full-text search of all public history.
 
 Zulip’s [full-text search](/help/search-for-messages) supports
 searching the organization’s entire public history via the
 `streams:public` search operator, allowing Zulip to provide all the
-benefits of a searchable forum or mailing list.
-
-### Public archive.
-
-Allow search engines to index your chat, with a read-only view of your
-public streams. Zulip’s topic-based threading keeps conversations coherent
-and organized, enabling a meaningful archive indexed by search engines.
-
-Currently implemented as an [out-of-tree
-tool](https://github.com/zulip/zulip-archive), though a native feature
-built into the Zulip server is coming soon.  This archive tool allows
-you to preserve your conversation history in a static HTML archive for
-posterity.
-
-### Logged-out public access (coming soon).
-
-[Coming soon](https://github.com/zulip/zulip/issues/13172): Allow
-users to read and search public stream history in Zulip’s UI without
-first creating an account.
+benefits of a searchable forum or mailing list.  New collaborators can
+easily find relevant past discussions.
 
 ### Quality data export.
 
