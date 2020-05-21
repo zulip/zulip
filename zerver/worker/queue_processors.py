@@ -539,7 +539,9 @@ class TestWorker(QueueProcessingWorker):
 class FetchLinksEmbedData(QueueProcessingWorker):
     def consume(self, event: Mapping[str, Any]) -> None:
         for url in event['urls']:
+            start_time = time.time()
             url_preview.get_link_embed_data(url)
+            logging.info("Time spent on get_link_embed_data for %s: %s", url, time.time() - start_time)
 
         message = Message.objects.get(id=event['message_id'])
         # If the message changed, we will run this task after updating the message
