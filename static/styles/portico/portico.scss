@@ -1766,3 +1766,22 @@ input.new-organization-button {
 .unsupported_browser_page {
     padding-bottom: 80px;
 }
+
+#navbar-custom-message {
+    font-size: 1rem;
+    background-color: hsl(177, 52%, 55%);
+    background: linear-gradient(145deg, hsl(191, 56%, 55%), hsl(169, 65%, 42%));
+    font-weight: 600;
+    text-align: center;
+    position: relative;
+    top: -40px;
+    margin-left: calc(50% - 50vw);
+    width: 100vw;
+    padding: 10px;
+    border-bottom: 1px solid hsl(177, 52%, 55%);
+
+    a {
+        color: hsl(0, 0%, 100%);
+        text-decoration: underline;
+    }
+}
