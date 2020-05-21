@@ -40,10 +40,21 @@ exports.down = function (with_centering) {
 };
 
 exports.to_home = function () {
-    message_viewport.set_last_movement_direction(-1);
-    const first_id = current_msg_list.first().id;
-    current_msg_list.select_id(first_id, {then_scroll: true,
-                                          from_scroll: true});
+    if (message_list.all.fetch_status.has_found_oldest()) {
+        message_viewport.set_last_movement_direction(-1);
+        const first_id = current_msg_list.first().id;
+        current_msg_list.select_id(first_id, {then_scroll: true,
+                                              from_scroll: true});
+    } else {
+        const raw_operators = [
+            {operator: '', operand: ''},
+        ];
+        const opts = {
+            trigger: 'home_key',
+            then_select_id: 'oldest',
+        };
+        narrow.activate(raw_operators, opts);
+    }
 };
 
 exports.to_end = function () {

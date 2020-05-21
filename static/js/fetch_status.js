@@ -39,6 +39,10 @@ const FetchStatus = function () {
         return !loading_newer && !found_newest;
     };
 
+    self.has_found_oldest = function () {
+        return found_oldest;
+    };
+
     self.has_found_newest = function () {
         return found_newest;
     };
