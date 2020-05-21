@@ -87,7 +87,7 @@ exports.process_fenced_code = function (content) {
                 };
             }
 
-            if (lang === 'math' || lang === 'tex' || lang === 'latex') {
+            if (lang === 'math') {
                 return {
                     handle_line: function (line) {
                         if (line === fence) {
