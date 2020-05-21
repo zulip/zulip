@@ -594,15 +594,6 @@ run_test('katex_throws_unexpected_exceptions', () => {
     markdown.apply_markdown(message);
 });
 
-run_test('misc_helpers', () => {
-    const elem = $('.user-mention');
-    markdown.set_name_in_mention_element(elem, 'Aaron');
-    assert.equal(elem.text(), '@Aaron');
-    elem.addClass('silent');
-    markdown.set_name_in_mention_element(elem, 'Aaron, but silent');
-    assert.equal(elem.text(), 'Aaron, but silent');
-});
-
 run_test('translate_emoticons_to_names', () => {
     // Simple test
     const test_text = 'Testing :)';

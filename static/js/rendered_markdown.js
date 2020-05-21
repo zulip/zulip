@@ -33,6 +33,15 @@ function get_user_group_id_for_mention_button(elem) {
     return;
 }
 
+// Helper function to update a mentioned user's name.
+exports.set_name_in_mention_element = function (element, name) {
+    if ($(element).hasClass('silent')) {
+        $(element).text(name);
+    } else {
+        $(element).text("@" + name);
+    }
+};
+
 exports.update_elements = (content) => {
     // Set the rtl class if the text has an rtl direction
     if (rtl.get_direction(content.text()) === 'rtl') {
@@ -56,7 +65,7 @@ exports.update_elements = (content) => {
             if (person !== undefined) {
                 // Note that person might be undefined in some
                 // unpleasant corner cases involving data import.
-                markdown.set_name_in_mention_element(this, person.full_name);
+                exports.set_name_in_mention_element(this, person.full_name);
             }
         }
     });
