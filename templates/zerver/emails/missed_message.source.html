@@ -26,7 +26,11 @@
 <div class="email-preferences">
     &mdash;<br>
     {% if mention %}
+    {% if mentioned_group_name %}
+    {% trans %}You are receiving this because @{{ mentioned_group_name }} was mentioned in {{ realm_name }}.{% endtrans %}
+    {% else %}
     {% trans %}You are receiving this because you were mentioned in {{ realm_name }}.{% endtrans %}<br>
+    {% endif %}
     {% elif stream_email_notify %}
     {% trans %}You are receiving this because you have email notifications enabled for this stream.{% endtrans %}<br>
     {% endif %}

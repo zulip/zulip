@@ -1,7 +1,7 @@
 import random
 import re
 from email.headerregistry import Address
-from typing import List, Sequence
+from typing import List, Optional, Sequence
 from unittest.mock import patch
 
 import ldap
@@ -20,6 +20,7 @@ from zerver.lib.email_notifications import (
 )
 from zerver.lib.send_email import FromAddress, send_custom_email
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.user_groups import create_user_group
 from zerver.models import ScheduledEmail, UserProfile, get_realm, get_stream
 
 
@@ -222,12 +223,13 @@ class TestMissedMessages(ZulipTestCase):
                     send_as_user: bool, verify_html_body: bool=False,
                     show_message_content: bool=True,
                     verify_body_does_not_include: Sequence[str]=[],
-                    trigger: str='') -> None:
+                    trigger: str='', mentioned_group: Optional[int]=None) -> None:
         othello = self.example_user('othello')
         hamlet = self.example_user('hamlet')
         tokens = self._get_tokens()
         with patch('zerver.lib.email_mirror.generate_missed_message_token', side_effect=tokens):
-            handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id, 'trigger': trigger}])
+            handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id, 'trigger': trigger,
+                                                     'mentioned_group': mentioned_group}])
         if settings.EMAIL_GATEWAY_PATTERN != "":
             reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (t,) for t in tokens]
             reply_to_emails = [str(Address(display_name="Zulip", addr_spec=address)) for address in reply_to_addresses]
@@ -525,6 +527,57 @@ class TestMissedMessages(ZulipTestCase):
         self.assertEqual(len(mail.outbox), 0)
         handle_missedmessage_emails(iago.id, [{'message_id': msg_id}])
         self.assertEqual(len(mail.outbox), 0)
+
+    def test_smaller_user_group_mention_priority(self) -> None:
+        hamlet = self.example_user('hamlet')
+        othello = self.example_user('othello')
+        cordelia = self.example_user("cordelia")
+
+        user_group_a = create_user_group('user_group_a', [hamlet], get_realm('zulip'))
+        user_group_b = create_user_group('user_group_b', [hamlet, cordelia], get_realm('zulip'))
+
+        msg_a_id = self.send_stream_message(othello, "Denmark", '@*user_group_a*')
+        msg_b_id = self.send_stream_message(othello, "Denmark", '@*user_group_b*')
+
+        handle_missedmessage_emails(hamlet.id, [
+            {'message_id': msg_a_id, 'trigger': 'mentioned',
+             'mentioned_group': user_group_a.id},
+            {'message_id': msg_b_id, 'trigger': 'mentioned',
+             'mentioned_group': user_group_b.id},
+        ])
+
+        expected_email_include = [
+            "Othello, the Moor of Venice: @*user_group_a* @*user_group_b* -- ",
+            "You are receiving this because @user_group_a was mentioned in Zulip Dev."
+        ]
+
+        for text in expected_email_include:
+            self.assertIn(text, self.normalize_string(mail.outbox[0].body))
+
+    def test_personal_over_user_group_mention_priority(self) -> None:
+        hamlet = self.example_user('hamlet')
+        othello = self.example_user('othello')
+
+        test_user_group = create_user_group('test_user_group', [hamlet],
+                                            get_realm('zulip'))
+
+        msg_a_id = self.send_stream_message(othello, "Denmark", '@*test_user_group*')
+        msg_b_id = self.send_stream_message(othello, "Denmark", '@**King Hamlet**')
+
+        handle_missedmessage_emails(hamlet.id, [
+            {'message_id': msg_a_id, 'trigger': 'mentioned',
+             'mentioned_group': test_user_group.id},
+            {'message_id': msg_b_id, 'trigger': 'mentioned',
+             'mentioned_group': None},
+        ])
+
+        expected_email_include = [
+            "Othello, the Moor of Venice: @*test_user_group* @**King Hamlet** -- ",
+            "You are receiving this because you were mentioned in Zulip Dev."
+        ]
+
+        for text in expected_email_include:
+            self.assertIn(text, self.normalize_string(mail.outbox[0].body))
 
     def test_realm_name_in_notifications(self) -> None:
         # Test with realm_name_in_notifications for hamlet disabled.
