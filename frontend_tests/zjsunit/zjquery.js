@@ -199,6 +199,12 @@ exports.make_new_elem = function (selector, opts) {
             if (child) {
                 return child;
             }
+            if (child === false) {
+                // This is deliberately set to simulate missing find results.
+                // Return an empty array, the most common check is
+                // if ($.find().length) { //success }
+                return [];
+            }
             if (opts.silent) {
                 return self;
             }
