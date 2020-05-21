@@ -557,6 +557,8 @@ i18n_urls = [
     url(r'^why-zulip/$', zerver.views.portico.landing_view, {'template_name': 'zerver/why-zulip.html'}),
     url(r'^for/open-source/$', zerver.views.portico.landing_view,
         {'template_name': 'zerver/for-open-source.html'}),
+    url(r'^for/research/$', zerver.views.portico.landing_view,
+        {'template_name': 'zerver/for-research.html'}),
     url(r'^for/companies/$', zerver.views.portico.landing_view,
         {'template_name': 'zerver/for-companies.html'}),
     url(r'^for/working-groups-and-communities/$', zerver.views.portico.landing_view,
