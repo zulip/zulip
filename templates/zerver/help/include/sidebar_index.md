@@ -35,6 +35,7 @@
 * [Quote and reply](/help/quote-and-reply)
 * [Mention a user or group](/help/mention-a-user-or-group)
 * [Edit or delete a message](/help/edit-or-delete-a-message)
+* [Send timestamps](/help/send-timestamps)
 * [Message a stream by email](/help/message-a-stream-by-email)
 
 ## Reading messages

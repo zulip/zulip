@@ -16,6 +16,7 @@ to allow you to easily format your messages.
 * [Emoji and emoticons](#emoji-and-emoticons)
 * [Mentions](#mentions)
 * [Status messages](#status-messages)
+* [Timestamps](#timestamps)
 * [Tables](#tables)
 * [Paragraphs and lines](#paragraphs-and-lines)
 
@@ -182,6 +183,16 @@ Silent mention: @_**Polonius** (@_ instead of @)
 ```
 
 ![](/static/images/help/markdown-status.png)
+
+## Timestamps
+
+Learn more about timestamps [here](/help/send-timestamps).
+
+```
+Let's have the next meeting on !time(2020-05-28T13:30:00+05:30)
+```
+
+![](/static/images/help/markdown-timestamp.png)
 
 ## Tables
 
