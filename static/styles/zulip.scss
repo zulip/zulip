@@ -1133,7 +1133,8 @@ td.pointer {
 }
 
 .on_hover_topic_edit,
-.on_hover_topic_mute {
+.on_hover_topic_mute,
+.on_hover_topic_read {
     opacity: 0.2;
 }
 
@@ -1143,7 +1144,8 @@ td.pointer {
 
 .on_hover_topic_edit,
 .always_visible_topic_edit,
-.on_hover_topic_mute {
+.on_hover_topic_mute,
+.on_hover_topic_read {
     &:hover {
         cursor: pointer;
         opacity: 1.0;
