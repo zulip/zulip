@@ -421,6 +421,11 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: hsla(0, 0%, 0%, 0.2);
     }
 
+    .table-hover tbody tr:hover td,
+    .table-hover tbody tr:hover th {
+        background-color: hsla(0, 0%, 0%, 0.5);
+    }
+
     .table-striped tbody tr:nth-child(odd) td {
         background-color: hsl(212, 28%, 18%);
     }
