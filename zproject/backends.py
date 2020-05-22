@@ -39,6 +39,8 @@ from django.utils.translation import ugettext as _
 from lxml.etree import XMLSyntaxError
 from requests import HTTPError
 from onelogin.saml2.errors import OneLogin_Saml2_Error
+from onelogin.saml2.response import OneLogin_Saml2_Response
+
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
 from social_core.backends.azuread import AzureADOAuth2
@@ -1484,6 +1486,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     standard_relay_params = ["subdomain", "multiuse_object_key", "mobile_flow_otp", "desktop_flow_otp",
                              "next", "is_signup"]
     REDIS_EXPIRATION_SECONDS = 60 * 15
+    SAMLRESPONSE_PARSING_EXCEPTIONS = (OneLogin_Saml2_Error, binascii.Error, XMLSyntaxError)
     name = "saml"
     # Organization which go through the trouble of setting up SAML are most likely
     # to have it as their main authentication method, so it seems appropriate to have
@@ -1537,7 +1540,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         # RelayState, which is used as a key into our redis data store
         # for fetching the actual parameters after the IdP has
         # returned a successful authentication.
-        params_to_relay = ["idp"] + self.standard_relay_params
+        params_to_relay = self.standard_relay_params
         request_data = self.strategy.request_data().dict()
         data_to_relay = {
             key: request_data[key] for key in params_to_relay if key in request_data
@@ -1565,6 +1568,30 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
         return data
 
+    @classmethod
+    def get_issuing_idp(cls, SAMLResponse: str) -> Optional[str]:
+        """
+        Given a SAMLResponse, returns which of the configured IdPs is declared as the issuer.
+        This value MUST NOT be trusted as the true issuer!
+        The signatures are not validated, so it can be tampered with by the user.
+        That's not a problem for this function,
+        and true validation happens later in the underlying libraries, but it's important
+        to note this detail. The purpose of this function is merely as a helper to figure out which
+        of the configured IdPs' information to use for parsing and validating the response.
+        """
+        try:
+            resp = OneLogin_Saml2_Response(settings={}, response=SAMLResponse)
+            issuers = resp.get_issuers()
+        except cls.SAMLRESPONSE_PARSING_EXCEPTIONS as e:
+            logging.info("Error while parsing SAMLResponse: %s: %s", e.__class__.__name__, e)
+            return None
+
+        for idp_name, idp_config in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
+            if idp_config['entity_id'] in issuers:
+                return idp_name
+
+        return None
+
     def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
         """
         Additional ugly wrapping on top of auth_complete in SocialAuthMixin.
@@ -1589,11 +1616,19 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         if relayed_params is None:
             return None
 
-        idp_name = relayed_params.get("idp")
+        SAMLResponse = self.strategy.request_data().get('SAMLResponse')
+        if SAMLResponse is None:
+            logging.info("/complete/saml/: No SAMLResponse in request.")
+            return None
+
+        idp_name = self.get_issuing_idp(SAMLResponse)
+        if idp_name is None:
+            logging.info("/complete/saml/: No valid IdP as issuer of the SAMLResponse.")
+            return None
+
         subdomain = relayed_params.get("subdomain")
-        if idp_name is None or subdomain is None:
-            error_msg = "Missing idp or subdomain value in relayed_params in SAML auth_complete: %s"
-            logging.info(error_msg, dict(subdomain=subdomain, idp=idp_name))
+        if subdomain is None:
+            logging.info("/complete/saml/: Missing subdomain value in relayed_params.")
             return None
 
         idp_valid = self.validate_idp_for_subdomain(idp_name, subdomain)
@@ -1617,7 +1652,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
             # Call the auth_complete method of SocialAuthMixIn
             result = super().auth_complete(*args, **kwargs)
-        except (OneLogin_Saml2_Error, binascii.Error, XMLSyntaxError) as e:
+        except self.SAMLRESPONSE_PARSING_EXCEPTIONS as e:
             # These can be raised if SAMLResponse is missing or badly formatted.
             logging.info("/complete/saml/: %s: %s", e.__class__.__name__, e)
             # Fall through to returning None.
