@@ -90,3 +90,8 @@ only post to public streams if they are subscribed.
 
 &#10038; [Configurable](/help/stream-sending-policy), but at minimum
 must be subscribed to the stream.
+
+## Related articles
+
+* [Roles and permissions](/help/roles-and-permissions)
+* [Stream sending policy](/help/stream-sending-policy)

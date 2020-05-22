@@ -11,6 +11,11 @@ There are several roles in a Zulip organization.
 * **Guest**: Can only access streams they've been added to. Cannot create
   new streams.
 
+For details of the access control model, see [Stream
+permissions](/help/stream-permissions).  You can decide what role to
+invite a user as when you [send them an
+invitation](/help/invite-new-users#send-invitations).
+
 ## Billing and guests
 
 Guests are only available on Zulip on-premise and on paid plans for Zulip
@@ -36,3 +41,4 @@ Cloud. There are two kinds of guest for billing purposes:
 ## Related articles
 
 * [Stream permissions](/help/stream-permissions)
+* [Inviting new users](/help/invite-new-users)
