@@ -609,6 +609,26 @@ run_test('message_methods', () => {
 
     assert.equal(people.small_avatar_url_for_person(maria),
                  'https://secure.gravatar.com/avatar/md5-athens@example.com?d=identicon&s=50');
+
+    assert.deepEqual(people.sender_info_with_small_avatar_urls_for_sender_ids([30]), [
+        {
+            avatar_url_small: 'https://secure.gravatar.com/avatar/md5-me@example.com?d=identicon&s=50',
+            email: 'me@example.com',
+            full_name: 'Me the Third',
+            is_admin: false,
+            is_bot: false,
+            is_guest: false,
+            profile_data: {
+                3: {
+                    rendered_value: '<p>Field value</p>',
+                    value: 'Field value',
+                },
+            },
+            timezone: 'US/Pacific',
+            user_id: 30,
+        },
+    ]);
+
     let message = {
         type: 'private',
         display_recipient: [
