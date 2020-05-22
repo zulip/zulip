@@ -15,6 +15,7 @@ function process_newly_read_message(message, options) {
         message_list.narrowed.show_message_as_read(message, options);
     }
     notifications.close_notification(message);
+    recent_topics.update_topic_unread_count(message);
 }
 
 exports.process_read_messages_event = function (message_ids) {
