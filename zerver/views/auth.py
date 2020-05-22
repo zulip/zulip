@@ -218,6 +218,7 @@ def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> Ht
     # maybe_send_to_registration doesn't take these arguments, so delete them.
     kwargs.pop('subdomain', None)
     kwargs.pop('redirect_to', None)
+    kwargs.pop('is_realm_creation', None)
 
     kwargs["password_required"] = False
     return maybe_send_to_registration(request, **kwargs)
@@ -247,6 +248,7 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
     # Otherwise, the user has successfully authenticated to an
     # account, and we need to do the right thing depending whether
     # or not they're using the mobile OTP flow or want a browser session.
+    is_realm_creation = result.data_dict.get('is_realm_creation')
     mobile_flow_otp = result.data_dict.get('mobile_flow_otp')
     desktop_flow_otp = result.data_dict.get('desktop_flow_otp')
     if mobile_flow_otp is not None:
@@ -256,7 +258,11 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
 
     do_login(request, user_profile)
 
-    redirect_to = get_safe_redirect_to(result.data_dict.get('redirect_to', ''), user_profile.realm.uri)
+    redirect_to = result.data_dict.get('redirect_to', '')
+    if is_realm_creation is not None and settings.FREE_TRIAL_DAYS not in [None, 0]:
+        redirect_to = "{}?onboarding=true".format(reverse('corporate.views.initial_upgrade'))
+
+    redirect_to = get_safe_redirect_to(redirect_to, user_profile.realm.uri)
     return HttpResponseRedirect(redirect_to)
 
 def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile,

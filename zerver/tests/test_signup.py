@@ -2150,7 +2150,51 @@ class RealmCreationTest(ZulipTestCase):
                                                HTTP_HOST=string_id + ".testserver")
         self.assertEqual(result.status_code, 302)
 
+        result = self.client_get(result.url, subdomain=string_id)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, 'http://zuliptest.testserver')
+
         # Make sure the realm is created
+        realm = get_realm(string_id)
+        self.assertEqual(realm.string_id, string_id)
+        self.assertEqual(get_user(email, realm).realm, realm)
+
+        self.assertEqual(realm.name, realm_name)
+        self.assertEqual(realm.subdomain, string_id)
+
+    @override_settings(OPEN_REALM_CREATION=True, FREE_TRIAL_DAYS=30)
+    def test_create_realm_during_free_trial(self) -> None:
+        password = "test"
+        string_id = "zuliptest"
+        email = "user1@test.com"
+        realm_name = "Test"
+
+        with self.assertRaises(Realm.DoesNotExist):
+            get_realm(string_id)
+
+        result = self.client_post('/new/', {'email': email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+            "/accounts/new/send_confirm/%s" % (email,)))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        result = self.submit_reg_form_for_user(email, password,
+                                               realm_subdomain = string_id,
+                                               realm_name=realm_name,
+                                               HTTP_HOST=string_id + ".testserver")
+        self.assertEqual(result.status_code, 302)
+
+        result = self.client_get(result.url, subdomain=string_id)
+        self.assertEqual(result.url, 'http://zuliptest.testserver/upgrade/?onboarding=true')
+
+        result = self.client_get(result.url, subdomain=string_id)
+        self.assert_in_success_response(["Or start with Zulip Limited (Free) plan"], result)
+
         realm = get_realm(string_id)
         self.assertEqual(realm.string_id, string_id)
         self.assertEqual(get_user(email, realm).realm, realm)
