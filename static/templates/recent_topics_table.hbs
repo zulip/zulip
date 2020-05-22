@@ -1,2 +1,15 @@
-<table>
+<table class="table table-responsive table-hover">
+    <thead>
+        <tr>
+            <th>{{t 'Unread' }}</th>
+            <th>{{t 'Stream' }}</th>
+            <th>{{t 'Topic' }}</th>
+            <th>{{t 'Actions' }}</th>
+            <th>{{t 'Participants' }}</th>
+            <th>{{t 'Last message' }}</th>
+        </tr>
+    </thead>
+    {{#each recent_topics}}
+    {{> recent_topic_row}}
+    {{/each}}
 </table>

@@ -528,10 +528,20 @@ exports.make_zjquery = function (opts) {
         };
     };
 
+    fn.after = function (s) {
+        return s;
+    };
+    fn.before = function (s) {
+        return s;
+    };
+
     zjquery.fn = fn;
 
     zjquery.clear_all_elements = function () {
         elems.clear();
+    };
+    zjquery.escapeSelector = function (s) {
+        return s;
     };
 
     return zjquery;
