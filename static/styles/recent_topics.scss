@@ -56,5 +56,18 @@
         margin: 0px;
         padding: 15px;
         overflow: auto;
+
+        thead {
+            background-color: hsl(0, 0%, 27%);
+            color: hsl(0, 0%, 100%);
+        }
+
+        .recent_topic_unread_count {
+            text-align: center;
+            // width is kept less than width of
+            // header text "Unread" so, that final width
+            // is set to header's width.
+            width: 1px;
+        }
     }
 }
