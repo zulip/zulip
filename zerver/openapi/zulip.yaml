@@ -222,7 +222,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/BadEventQueueIdError'
     delete:
-      operationId: deregister
+      operationId: delete_queue
       tags: ["real_time_events"]
       description: |
         Delete a previously registered queue.
@@ -1483,7 +1483,7 @@ paths:
 
   /users/{user_id}:
     get:
-      operationId: get_user_by_id
+      operationId: get_user
       tags: ["users"]
       description: |
         Fetch details for a single user in the organization.
@@ -1639,7 +1639,7 @@ paths:
                     }
 
     delete:
-      operationId: deactivate_user_by_id
+      operationId: deactivate_user
       tags: ["users"]
       description: |
         [Deactivates a
@@ -1788,7 +1788,7 @@ paths:
                     }
   /users/me:
     get:
-      operationId: get_profile
+      operationId: get_own_user
       tags: ["users"]
       description: |
         Get basic data about the user/bot that requests this endpoint.
@@ -2010,7 +2010,7 @@ paths:
                     }
   /users/me/subscriptions:
     get:
-      operationId: list_subscriptions
+      operationId: get_subscriptions
       tags: ["streams"]
       description: |
         Get all streams that the user is subscribed to.
@@ -2525,7 +2525,7 @@ paths:
 
   /realm/emoji:
     get:
-      operationId: get_realm_emoji
+      operationId: get_custom_emoji
       tags: ["server_and_organizations"]
       description: |
         Get all the custom emoji in the user's organization.
@@ -2689,7 +2689,7 @@ paths:
                     }
   /realm/filters:
     get:
-      operationId: get_realm_filters
+      operationId: get_linkifiers
       tags: ["server_and_organizations"]
       description: |
         List all of an organization's configured
@@ -2736,7 +2736,7 @@ paths:
                         "result": "success"
                     }
     post:
-      operationId: add_realm_filter
+      operationId: add_linkifier
       tags: ["server_and_organizations"]
       description: |
         Configure [linkifiers](/help/add-a-custom-linkification-filter),
@@ -2786,7 +2786,7 @@ paths:
                     }
   /realm/filters/{filter_id}:
     delete:
-      operationId: remove_realm_filter
+      operationId: remove_linkifier
       tags: ["server_and_organizations"]
       description: |
         Remove [linkifiers](/help/add-a-custom-linkification-filter), regular
@@ -2812,7 +2812,7 @@ paths:
                 $ref: '#/components/schemas/JsonSuccess'
   /register:
     post:
-      operationId: register
+      operationId: register_queue
       tags: ["real_time_events"]
       description: |
         This powerful endpoint can be used to register a Zulip "event queue"
