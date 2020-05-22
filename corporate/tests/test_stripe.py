@@ -625,6 +625,11 @@ class StripeTest(StripeTestCase):
                     'Visa ending in 4242',
                     'Update card']:
                 self.assert_in_response(substring, response)
+            self.assert_not_in_success_response(["Go to your Zulip organization"], response)
+
+            with patch('corporate.views.timezone_now', return_value=self.now):
+                response = self.client_get("/billing/?onboarding=true")
+                self.assert_in_success_response(["Go to your Zulip organization"], response)
 
             with patch('corporate.lib.stripe.get_latest_seat_count', return_value=12):
                 update_license_ledger_if_needed(realm, self.now)
@@ -1052,6 +1057,33 @@ class StripeTest(StripeTestCase):
         response = self.client_get("/billing/")
         self.assertEqual(response.status_code, 302)
         self.assertEqual('/upgrade/', response.url)
+
+    def test_redirect_for_upgrade_page(self) -> None:
+        user = self.example_user("iago")
+        self.login_user(user)
+        # No Customer yet;
+        response = self.client_get("/upgrade/")
+        self.assertEqual(response.status_code, 200)
+
+        # Customer, but no CustomerPlan;
+        customer = Customer.objects.create(realm=user.realm, stripe_customer_id='cus_123')
+        response = self.client_get("/upgrade/")
+        self.assertEqual(response.status_code, 200)
+
+        CustomerPlan.objects.create(customer=customer, billing_cycle_anchor=timezone_now(),
+                                    billing_schedule=CustomerPlan.ANNUAL, tier=CustomerPlan.STANDARD)
+        response = self.client_get("/upgrade/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/billing/")
+
+        with self.settings(FREE_TRIAL_DAYS=30):
+            response = self.client_get("/upgrade/")
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.url, "/billing/")
+
+            response = self.client_get("/upgrade/?onboarding=true")
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.url, "/billing/?onboarding=true")
 
     def test_get_latest_seat_count(self) -> None:
         realm = get_realm("zulip")

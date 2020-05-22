@@ -920,6 +920,7 @@ ExternalAuthDataDict = TypedDict('ExternalAuthDataDict', {
     'full_name': str,
     'email': str,
     'is_signup': bool,
+    'is_realm_creation': bool,
     'redirect_to': str,
     'mobile_flow_otp': Optional[str],
     'desktop_flow_otp': Optional[str],

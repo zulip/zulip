@@ -129,7 +129,10 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
     user = request.user
     customer = get_customer_by_realm(user.realm)
     if customer is not None and get_current_plan_by_customer(customer) is not None:
-        return HttpResponseRedirect(reverse('corporate.views.billing_home'))
+        billing_page_url = reverse('corporate.views.billing_home')
+        if request.GET.get("onboarding") is not None:
+            billing_page_url = "{}?onboarding=true".format(billing_page_url)
+        return HttpResponseRedirect(billing_page_url)
 
     percent_off = Decimal(0)
     if customer is not None and customer.default_discount is not None:
@@ -147,6 +150,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         'default_invoice_days_until_due': DEFAULT_INVOICE_DAYS_UNTIL_DUE,
         'plan': "Zulip Standard",
         "free_trial_days": settings.FREE_TRIAL_DAYS,
+        "onboarding": request.GET.get("onboarding") is not None,
         'page_params': {
             'seat_count': seat_count,
             'annual_price': 8000,
@@ -212,6 +216,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
                 'publishable_key': STRIPE_PUBLISHABLE_KEY,
                 'stripe_email': stripe_customer.email,
                 'CustomerPlan': CustomerPlan,
+                'onboarding': request.GET.get("onboarding") is not None,
             })
 
     return render(request, 'corporate/billing.html', context=context)

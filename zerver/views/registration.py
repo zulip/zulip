@@ -343,7 +343,8 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             # Because for realm creation, registration happens on the
             # root domain, we need to log them into the subdomain for
             # their new realm.
-            return redirect_and_log_into_subdomain(ExternalAuthResult(user_profile=user_profile))
+            return redirect_and_log_into_subdomain(ExternalAuthResult(user_profile=user_profile,
+                                                                      data_dict={'is_realm_creation': True}))
 
         # This dummy_backend check below confirms the user is
         # authenticating to the correct subdomain.
