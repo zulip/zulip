@@ -1543,10 +1543,32 @@ class SAMLAuthBackendTest(SocialAuthBase):
             result = self.client_post('/complete/saml/',  post_params)
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
-            m.assert_called_with(
-                # OneLogin_Saml2_Error exception:
-                "SAML Response not found, Only supported HTTP_POST Binding"
-            )
+            m.assert_called_once()
+
+        # Now test bad SAMLResponses.
+        with mock.patch('zproject.backends.logging.info') as m:
+            relay_state = SAMLAuthBackend.put_data_in_redis({"idp": "test_idp", "subdomain": "zulip"})
+            post_params = {"RelayState": relay_state, 'SAMLResponse': ''}
+            result = self.client_post('/complete/saml/',  post_params)
+            self.assertEqual(result.status_code, 302)
+            self.assertIn('login', result.url)
+            m.assert_called_once()
+
+        with mock.patch('zproject.backends.logging.info') as m:
+            relay_state = SAMLAuthBackend.put_data_in_redis({"idp": "test_idp", "subdomain": "zulip"})
+            post_params = {"RelayState": relay_state, 'SAMLResponse': 'b'}
+            result = self.client_post('/complete/saml/',  post_params)
+            self.assertEqual(result.status_code, 302)
+            self.assertIn('login', result.url)
+            m.assert_called_once()
+
+        with mock.patch('zproject.backends.logging.info') as m:
+            relay_state = SAMLAuthBackend.put_data_in_redis({"idp": "test_idp", "subdomain": "zulip"})
+            post_params = {"RelayState": relay_state, 'SAMLResponse': 'dGVzdA=='}  # base64 encoded 'test'
+            result = self.client_post('/complete/saml/',  post_params)
+            self.assertEqual(result.status_code, 302)
+            self.assertIn('login', result.url)
+            m.assert_called_once()
 
         with mock.patch('zproject.backends.logging.info') as m:
             relay_state = SAMLAuthBackend.put_data_in_redis({"idp": "test_idp", "subdomain": "zulip"})

@@ -12,6 +12,7 @@
 # call the authenticate methods of all backends registered in
 # settings.AUTHENTICATION_BACKENDS that have a function signature
 # matching the args/kwargs passed in the authenticate() call.
+import binascii
 import copy
 import logging
 import magic
@@ -35,6 +36,7 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpRequest
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import ugettext as _
+from lxml.etree import XMLSyntaxError
 from requests import HTTPError
 from onelogin.saml2.errors import OneLogin_Saml2_Error
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
@@ -1615,9 +1617,9 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
             # Call the auth_complete method of SocialAuthMixIn
             result = super().auth_complete(*args, **kwargs)
-        except OneLogin_Saml2_Error as e:
-            # This will be raised if SAMLResponse is missing.
-            logging.info(str(e))
+        except (OneLogin_Saml2_Error, binascii.Error, XMLSyntaxError) as e:
+            # These can be raised if SAMLResponse is missing or badly formatted.
+            logging.info("/complete/saml/: %s: %s", e.__class__.__name__, e)
             # Fall through to returning None.
         finally:
             if result is None:
