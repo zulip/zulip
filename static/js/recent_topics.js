@@ -1,6 +1,9 @@
 const render_recent_topics_body = require('../templates/recent_topics_table.hbs');
 const render_recent_topic_row = require('../templates/recent_topic_row.hbs');
 const topics = new Map(); // Key is stream-id:topic.
+// Sets the number of avatars to display.
+// Rest of the avatars, if present, are displayed as {+x}
+const MAX_AVATAR = 4;
 
 exports.process_messages = function (messages) {
     // Since a complete re-render is expensive, we
@@ -77,6 +80,12 @@ function format_topic(topic_data) {
     const last_msg_time = timerender.last_seen_status_from_date(time);
     const unread_count = unread.unread_topic_counter.get(stream_id, topic);
     const hidden = muting.is_topic_muted(stream_id, topic);
+
+    // Display in most recent sender first order
+    const all_senders = recent_senders.get_topic_recent_senders(stream_id, topic);
+    const senders = all_senders.slice(-MAX_AVATAR);
+    const senders_info = people.sender_info_with_small_avatar_urls_for_sender_ids(senders);
+
     return {
         stream_id: stream_id,
         stream: stream,
@@ -86,6 +95,8 @@ function format_topic(topic_data) {
         stream_url: hash_util.by_stream_uri(stream_id),
         topic_url: hash_util.by_stream_topic_uri(stream_id, topic),
         hidden: hidden,
+        senders: senders_info,
+        count_senders: Math.max(0, all_senders.length - MAX_AVATAR),
     };
 }
 

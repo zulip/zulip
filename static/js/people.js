@@ -605,6 +605,16 @@ exports.small_avatar_url_for_person = function (person) {
     return gravatar_url_for_email(person.email);
 };
 
+exports.sender_info_with_small_avatar_urls_for_sender_ids = function (sender_ids) {
+    const senders_info = [];
+    for (const id of sender_ids) {
+        const sender = {...exports.get_by_user_id(id)};
+        sender.avatar_url_small = exports.small_avatar_url_for_person(sender);
+        senders_info.push(sender);
+    }
+    return senders_info;
+};
+
 exports.small_avatar_url = function (message) {
     // Try to call this function in all places where we need 25px
     // avatar images, so that the browser can help

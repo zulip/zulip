@@ -17,6 +17,18 @@
         <i class="fa fa-check-circle on_hover_topic_read recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}"></i>
     </td>
     <td class='recent_topic_users'>
+        <ul class="recent_avatars">
+            {{#if count_senders}}
+            <li class="recent_avatars_item">
+                <span class="recent_avatars_others">+{{count_senders}}</span>
+            </li>
+            {{/if}}
+            {{#each senders}}
+            <li class="recent_avatars_item" title="{{this.full_name}}">
+                <img src="{{this.avatar_url_small}}" class="recent_avatars_img" />
+            </li>
+            {{/each}}
+        </ul>
     </td>
     <td class="recent_topic_timestamp">
         {{ last_msg_time }}

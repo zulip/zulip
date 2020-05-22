@@ -69,5 +69,44 @@
             // is set to header's width.
             width: 1px;
         }
+
+        .recent_avatars {
+            display: inline-flex; /* Causes LI items to display in row. */
+            list-style-type: none;
+            margin: auto; /* Centers vertically / horizontally in flex container. */
+            height: 15px !important;
+
+            /*
+                By using the row-reverse layout, the visual ordering will be opposite of
+                the DOM ordering. This will allows us to stack the items in the opposite
+                direction of the natural stacking order without having to mess with the
+                zIndex value. The MAJOR DOWNSIDE is that the HTML itself now reads
+                backwards, which super janky.
+            */
+            flex-direction: row-reverse;
+        }
+
+        .recent_avatars_item {
+            height: 18px;
+            margin: 0px 0px 0px 0px;
+            padding: 0px 0px 0px 0px;
+            position: relative;
+            min-width: 18px;
+        }
+
+        .recent_avatars_img,
+        .recent_avatars_others {
+            border: 1px solid hsl(221.1, 23.5%, 15.9%);
+            border-left: 0 !important;
+            border-radius: 6px;
+            color: hsl(0, 0%, 100%);
+            display: block;
+            height: 18px;
+            text-align: center;
+        }
+
+        .recent_avatars_others {
+            background-color: hsl(205.2, 76.5%, 50%);
+        }
     }
 }
