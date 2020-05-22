@@ -152,6 +152,11 @@ exports.update_topic_is_muted = function (stream_id, topic, is_muted) {
     return true;
 };
 
+exports.update_topic_unread_count = function (message) {
+    const topic_key = message.stream_id + ":" + message.topic;
+    exports.inplace_rerender(topic_key);
+};
+
 exports.complete_rerender = function () {
     // NOTE: This function is grows expensive with
     // number of topics. Only call when necessary.
