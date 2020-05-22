@@ -19,7 +19,7 @@
             <div class="main">
                 <h1>🚀 {% trans %}Upgrade to {{ plan }}{% endtrans %}</h1>
                 {% if free_trial_days %}
-                <div class="alert alert-info">
+                <div id="free-trial-alert-message" class="alert alert-info">
                     Upgrade now to start your {{ free_trial_days }} day Free Trial of Zulip Standard.
                 </div>
                 {% endif %}

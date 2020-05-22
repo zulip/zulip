@@ -162,6 +162,7 @@ run_test("autopay_form_fields", () => {
     assert(document.querySelector("input[name=csrfmiddlewaretoken]"));
 
     assert(document.querySelector("#zulip-limited-section"));
+    assert(document.querySelector("#free-trial-alert-message"));
 });
 
 run_test("invoice_form_fields", () => {
@@ -183,4 +184,5 @@ run_test("invoice_form_fields", () => {
     assert(document.querySelector("input[name=csrfmiddlewaretoken]"));
 
     assert(document.querySelector("#zulip-limited-section"));
+    assert(document.querySelector("#free-trial-alert-message"));
 });
