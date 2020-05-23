@@ -57,6 +57,11 @@
         padding: 15px;
         overflow: hidden !important;
 
+        .fa-check-square-o,
+        .fa-square-o {
+            padding: 0 2px 0 2px;
+        }
+
         .tableFixHead {
             padding: 10px;
             padding-top: 0px !important;
