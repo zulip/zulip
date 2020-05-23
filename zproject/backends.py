@@ -16,6 +16,7 @@ import binascii
 import copy
 import logging
 import magic
+import ujson
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union, \
     cast
@@ -64,6 +65,7 @@ from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.request import JsonableError
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.lib.redis_utils import get_redis_client, get_dict_from_redis, put_dict_in_redis
+from zerver.lib.subdomains import get_subdomain
 from zerver.models import CustomProfileField, DisposableEmailError, DomainNotAllowedForRealmError, \
     EmailContainsPlusError, PreregistrationUser, UserProfile, Realm, custom_profile_fields_for_realm, \
     get_user_profile_by_id, remote_user_to_email, \
@@ -1549,7 +1551,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         data_to_relay = {
             key: request_data[key] for key in params_to_relay if key in request_data
         }
-        relay_state = self.put_data_in_redis(data_to_relay)
+        relay_state = ujson.dumps({"state_token": self.put_data_in_redis(data_to_relay)})
 
         return auth.login(return_to=relay_state)
 
@@ -1565,10 +1567,6 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         if key.startswith('saml_token_'):
             # Safety if statement, to not allow someone to poke around arbitrary redis keys here.
             data = get_dict_from_redis(redis_client, "saml_token_{token}", key)
-        if data is None:
-            # TODO: We will need some sort of user-facing message
-            # about the authentication session having expired here.
-            logging.info("SAML authentication failed: bad RelayState token.")
 
         return data
 
@@ -1596,6 +1594,46 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
         return None
 
+    def get_relayed_params(self) -> Dict[str, Any]:
+        request_data = self.strategy.request_data()
+        if 'RelayState' not in request_data:
+            return {}
+
+        relay_state = request_data['RelayState']
+        try:
+            data = ujson.loads(relay_state)
+            if 'state_token' in data:
+                # SP-initiated sign in. We stored relevant information in the first
+                # step of the flow
+                return self.get_data_from_redis(data['state_token']) or {}
+            else:
+                # IdP-initiated sign in. Right now we only support transporting subdomain through json in
+                # RelayState, but this format is nice in that it allows easy extensibility here.
+                return {'subdomain': data.get('subdomain')}
+        except (ValueError, TypeError):
+            return {}
+
+    def choose_subdomain(self, relayed_params: Dict[str, Any]) -> Optional[str]:
+        subdomain = relayed_params.get("subdomain")
+        if subdomain is not None:
+            return subdomain
+
+        # If not specified otherwise, the intended subdomain for this
+        # authentication attempt is the subdomain of the request.
+        request_subdomain = get_subdomain(self.strategy.request)
+        try:
+            # We only want to do a basic sanity-check here for whether
+            # this subdomain has a realm one could try to authenticate
+            # to.  True validation of whether the realm is active, the
+            # IdP is appropriate for the subdomain, etc. happens
+            # elsewhere in the flow and we shouldn't duplicate such
+            # logic here.
+            get_realm(request_subdomain)
+        except Realm.DoesNotExist:
+            return None
+        else:
+            return request_subdomain
+
     def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
         """
         Additional ugly wrapping on top of auth_complete in SocialAuthMixin.
@@ -1610,19 +1648,18 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             and then change the RelayState param to the idp_name, because that's what
             SAMLAuth.auth_complete() expects.
         """
-        if 'RelayState' not in self.strategy.request_data():
-            logging.info("SAML authentication failed: missing RelayState.")
-            return None
-
-        # Set the relevant params that we transported in the RelayState:
-        redis_key = self.strategy.request_data()['RelayState']
-        relayed_params = self.get_data_from_redis(redis_key)
-        if relayed_params is None:
-            return None
-
         SAMLResponse = self.strategy.request_data().get('SAMLResponse')
         if SAMLResponse is None:
             logging.info("/complete/saml/: No SAMLResponse in request.")
+            return None
+
+        relayed_params = self.get_relayed_params()
+
+        subdomain = self.choose_subdomain(relayed_params)
+        if subdomain is None:
+            error_msg = "/complete/saml/: Can't figure out subdomain for this authentication request. " + \
+                "relayed_params: %s"
+            logging.info(error_msg, relayed_params)
             return None
 
         idp_name = self.get_issuing_idp(SAMLResponse)
@@ -1630,21 +1667,18 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             logging.info("/complete/saml/: No valid IdP as issuer of the SAMLResponse.")
             return None
 
-        subdomain = relayed_params.get("subdomain")
-        if subdomain is None:
-            logging.info("/complete/saml/: Missing subdomain value in relayed_params.")
-            return None
-
         idp_valid = self.validate_idp_for_subdomain(idp_name, subdomain)
         if not idp_valid:
-            error_msg = "User authenticated with IdP %s but this provider is not " + \
-                        "enabled for this realm %s."
+            error_msg = "/complete/saml/: Authentication request with IdP %s but this provider is not " + \
+                        "enabled for this subdomain %s."
             logging.info(error_msg, idp_name, subdomain)
             return None
 
         result = None
         try:
-            for param, value in relayed_params.items():
+            params = relayed_params.copy()
+            params['subdomain'] = subdomain
+            for param, value in params.items():
                 if param in self.standard_relay_params:
                     self.strategy.session_set(param, value)
 

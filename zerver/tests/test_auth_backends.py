@@ -1424,7 +1424,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         parsed_url = urllib.parse.urlparse(result.url)
         relay_state = urllib.parse.parse_qs(parsed_url.query)['RelayState'][0]
         # Make sure params are getting encoded into RelayState:
-        data = SAMLAuthBackend.get_data_from_redis(relay_state)
+        data = SAMLAuthBackend.get_data_from_redis(ujson.loads(relay_state)['state_token'])
         if next:
             self.assertEqual(data['next'], next)
         if is_signup:
@@ -1512,7 +1512,9 @@ class SAMLAuthBackendTest(SocialAuthBase):
                     mock.patch('zproject.backends.logging.info') as m:
                 # This mock causes AuthFailed to be raised.
                 saml_response = self.generate_saml_response(self.email, self.name)
-                relay_state = SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"})
+                relay_state = ujson.dumps(dict(
+                    state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"})
+                ))
                 post_params = {"SAMLResponse": saml_response, "RelayState": relay_state}
                 result = self.client_post('/complete/saml/',  post_params)
                 self.assertEqual(result.status_code, 302)
@@ -1525,7 +1527,9 @@ class SAMLAuthBackendTest(SocialAuthBase):
                             side_effect=AuthStateForbidden('State forbidden')), \
                     mock.patch('zproject.backends.logging.warning') as m:
                 saml_response = self.generate_saml_response(self.email, self.name)
-                relay_state = SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"})
+                relay_state = ujson.dumps(dict(
+                    state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"})
+                ))
                 post_params = {"SAMLResponse": saml_response, "RelayState": relay_state}
                 result = self.client_post('/complete/saml/',  post_params)
                 self.assertEqual(result.status_code, 302)
@@ -1540,12 +1544,14 @@ class SAMLAuthBackendTest(SocialAuthBase):
             result = self.client_get('/complete/saml/')
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
-            m.assert_called_with("SAML authentication failed: missing RelayState.")
+            m.assert_called_with("/complete/saml/: No SAMLResponse in request.")
 
         # Check that POSTing the RelayState, but with missing SAMLResponse,
         # doesn't cause errors either:
         with mock.patch('zproject.backends.logging.info') as m:
-            relay_state = SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"})
+            relay_state = ujson.dumps(dict(
+                state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"})
+            ))
             post_params = {"RelayState": relay_state}
             result = self.client_post('/complete/saml/',  post_params)
             self.assertEqual(result.status_code, 302)
@@ -1554,7 +1560,9 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
         # Now test bad SAMLResponses.
         with mock.patch('zproject.backends.logging.info') as m:
-            relay_state = SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"})
+            relay_state = ujson.dumps(dict(
+                state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"})
+            ))
             post_params = {"RelayState": relay_state, 'SAMLResponse': ''}
             result = self.client_post('/complete/saml/',  post_params)
             self.assertEqual(result.status_code, 302)
@@ -1562,7 +1570,9 @@ class SAMLAuthBackendTest(SocialAuthBase):
             m.assert_called()
 
         with mock.patch('zproject.backends.logging.info') as m:
-            relay_state = SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"})
+            relay_state = ujson.dumps(dict(
+                state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"})
+            ))
             post_params = {"RelayState": relay_state, 'SAMLResponse': 'b'}
             result = self.client_post('/complete/saml/',  post_params)
             self.assertEqual(result.status_code, 302)
@@ -1570,36 +1580,31 @@ class SAMLAuthBackendTest(SocialAuthBase):
             m.assert_called()
 
         with mock.patch('zproject.backends.logging.info') as m:
-            relay_state = SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"})
+            relay_state = ujson.dumps(dict(
+                state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"})
+            ))
             post_params = {"RelayState": relay_state, 'SAMLResponse': 'dGVzdA=='}  # base64 encoded 'test'
             result = self.client_post('/complete/saml/',  post_params)
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
             m.assert_called()
 
-        with mock.patch('zproject.backends.logging.info') as m:
-            relay_state = SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"})
-            relay_state = relay_state[:-1]  # Break the token by removing the last character
-            post_params = {"RelayState": relay_state}
-            result = self.client_post('/complete/saml/',  post_params)
-            self.assertEqual(result.status_code, 302)
-            self.assertIn('login', result.url)
-            m.assert_called_with("SAML authentication failed: bad RelayState token.")
-
     def test_social_auth_complete_no_subdomain(self) -> None:
         with mock.patch('zproject.backends.logging.info') as m:
-            relay_state = SAMLAuthBackend.put_data_in_redis({})
-            post_params = {"RelayState": relay_state,
+            post_params = {"RelayState": '',
                            'SAMLResponse': self.generate_saml_response(email=self.example_email("hamlet"),
                                                                        name="King Hamlet")}
-            result = self.client_post('/complete/saml/',  post_params)
+            with mock.patch.object(SAMLAuthBackend, 'choose_subdomain', return_value=None):
+                result = self.client_post('/complete/saml/',  post_params)
             self.assertEqual(result.status_code, 302)
             self.assertEqual('/login/', result.url)
-            self.assertIn("/complete/saml/: Missing subdomain value in relayed_params.",
+            self.assertIn("/complete/saml/: Can't figure out subdomain for this authentication request",
                           m.call_args.args[0])
 
     def test_social_auth_complete_wrong_issuing_idp(self) -> None:
-        relay_state = SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"})
+        relay_state = ujson.dumps(dict(
+            state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"})
+        ))
         saml_response = self.generate_saml_response(email=self.example_email("hamlet"),
                                                     name="King Hamlet")
 
@@ -1626,7 +1631,9 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
         with mock.patch('zproject.backends.logging.info') as m, \
                 mock.patch.object(SAMLAuthBackend, 'get_issuing_idp', return_value='test_idp'):
-            relay_state = SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"})
+            relay_state = ujson.dumps(dict(
+                state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"})
+            ))
             post_params = {"RelayState": relay_state, 'SAMLResponse': 'dGVzdA=='}
             result = self.client_post('/complete/saml/',  post_params)
             self.assertEqual(result.status_code, 302)
@@ -1720,7 +1727,8 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual('/login/', result.url)
         m.assert_called_with(
-            "User authenticated with IdP %s but this provider is not enabled for this realm %s.",
+            '/complete/saml/: Authentication request with IdP %s but this provider is not enabled ' +
+            'for this subdomain %s.',
             "test_idp", "zephyr",
         )
 
@@ -1760,6 +1768,104 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 "SAML_REQUIRE_LIMIT_TO_SUBDOMAINS is enabled and the following " +
                 "IdPs don't have limit_to_subdomains specified and will be ignored: " +
                 "['test_idp']")
+
+    def test_idp_initiated_signin_subdomain_specified(self) -> None:
+        post_params = {
+            "RelayState": '{"subdomain": "zulip"}',
+            "SAMLResponse": self.generate_saml_response(email=self.email, name=self.name)
+        }
+
+        with mock.patch.object(OneLogin_Saml2_Response, 'is_valid', return_value=True):
+            # We're not able to generate valid signatures in tests, so we need the mock.
+            result = self.client_post('/complete/saml/',  post_params)
+
+        data = load_subdomain_token(result)
+        self.assertEqual(data['email'], self.example_email("hamlet"))
+        self.assertEqual(data['full_name'], self.name)
+        self.assertEqual(data['subdomain'], 'zulip')
+        self.assertEqual(result.status_code, 302)
+        parsed_url = urllib.parse.urlparse(result.url)
+        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
+                                 parsed_url.path)
+        self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
+
+        self.client_get(uri)
+        self.assert_logged_in_user_id(self.example_user("hamlet").id)
+
+    def test_choose_subdomain_invalid_subdomain_specified(self) -> None:
+        post_params = {
+            "RelayState": '{"subdomain": "invalid"}',
+            "SAMLResponse": self.generate_saml_response(email=self.email, name=self.name)
+        }
+
+        with mock.patch.object(OneLogin_Saml2_Response, 'is_valid', return_value=True):
+            # We're not able to generate valid signatures in tests, so we need the mock.
+            result = self.client_post('/complete/saml/',  post_params)
+
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, "/accounts/find/")
+
+    def test_idp_initiated_signin_subdomain_implicit(self) -> None:
+        post_params = {
+            "RelayState": '',
+            "SAMLResponse": self.generate_saml_response(email=self.email, name=self.name)
+        }
+
+        with mock.patch.object(OneLogin_Saml2_Response, 'is_valid', return_value=True):
+            # We're not able to generate valid signatures in tests, so we need the mock.
+            result = self.client_post('http://zulip.testserver/complete/saml/',  post_params)
+
+        data = load_subdomain_token(result)
+        self.assertEqual(data['email'], self.example_email("hamlet"))
+        self.assertEqual(data['full_name'], self.name)
+        self.assertEqual(data['subdomain'], 'zulip')
+        self.assertEqual(result.status_code, 302)
+        parsed_url = urllib.parse.urlparse(result.url)
+        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
+                                 parsed_url.path)
+        self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
+
+        self.client_get(uri)
+        self.assert_logged_in_user_id(self.example_user("hamlet").id)
+
+    def test_idp_initiated_signin_subdomain_implicit_no_relaystate_param(self) -> None:
+        post_params = {
+            "SAMLResponse": self.generate_saml_response(email=self.email, name=self.name)
+        }
+
+        with mock.patch.object(OneLogin_Saml2_Response, 'is_valid', return_value=True):
+            # We're not able to generate valid signatures in tests, so we need the mock.
+            result = self.client_post('http://zulip.testserver/complete/saml/',  post_params)
+
+        data = load_subdomain_token(result)
+        self.assertEqual(data['email'], self.example_email("hamlet"))
+        self.assertEqual(data['full_name'], self.name)
+        self.assertEqual(data['subdomain'], 'zulip')
+        self.assertEqual(result.status_code, 302)
+        parsed_url = urllib.parse.urlparse(result.url)
+        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
+                                 parsed_url.path)
+        self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
+
+        self.client_get(uri)
+        self.assert_logged_in_user_id(self.example_user("hamlet").id)
+
+    def test_idp_initiated_signin_subdomain_implicit_invalid(self) -> None:
+        post_params = {
+            "RelayState": '',
+            "SAMLResponse": self.generate_saml_response(email=self.email, name=self.name)
+        }
+
+        with mock.patch("logging.info") as m:
+            with mock.patch('zproject.backends.get_subdomain', return_value='invalid'):
+                # Due to the quirks of our test setup, get_subdomain on all these `some_subdomain.testserver`
+                # requests returns 'zulip', so we need to mock it here.
+                result = self.client_post('http://invalid.testserver/complete/saml/',  post_params)
+
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual('/login/', result.url)
+            self.assertIn("/complete/saml/: Can't figure out subdomain for this authentication request",
+                          m.call_args.args[0])
 
 class GitHubAuthBackendTest(SocialAuthBase):
     __unittest_skip__ = False
