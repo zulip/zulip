@@ -197,6 +197,8 @@ exports.complete_rerender = function () {
     // This functions takes around 1ms per topic to process.
     const rendered_body = render_recent_topics_body({
         recent_topics: format_all_topics(),
+        filter_participated: filters.has('participated'),
+        filter_unread: filters.has('unread'),
     });
     $('#recent_topics_table').html(rendered_body);
 

@@ -199,6 +199,8 @@ run_test("test_recent_topics_launch", () => {
     // since they are generated in external libraries
     // and are not to be tested here.
     const expected = {
+        filter_participated: false,
+        filter_unread: false,
         recent_topics: [
             {
                 stream_id: 1,
@@ -349,6 +351,8 @@ run_test('test_filter_all', () => {
 run_test('test_filter_unread', () => {
     // Tests rerender of all topics when filter changes to "unread".
     const expected =   {
+        filter_participated: false,
+        filter_unread: true,
         recent_topics: [
             {
                 count_senders: 0,
@@ -453,6 +457,7 @@ run_test('test_filter_unread', () => {
     rt.set_filter('unread');
 
     // Unselect "unread" filter by clicking twice.
+    expected.filter_unread = false;
     expected.recent_topics[6].hidden = false;
     rt.set_filter('unread');
 
@@ -463,6 +468,8 @@ run_test('test_filter_unread', () => {
 run_test('test_filter_participated', () => {
     // Tests rerender of all topics when filter changes to "unread".
     const expected =   {
+        filter_participated: true,
+        filter_unread: false,
         recent_topics: [
             {
                 count_senders: 0,
@@ -568,6 +575,7 @@ run_test('test_filter_participated', () => {
 
     expected.recent_topics[3].hidden = false;
     expected.recent_topics[4].hidden = false;
+    expected.filter_participated = false;
     rt.set_filter('all');
 });
 
