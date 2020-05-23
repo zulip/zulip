@@ -768,9 +768,7 @@ exports.edit_last_sent_message = function () {
     });
 };
 
-exports.show_history = function (message) {
-    $('#message-history').html('');
-    $('#message-edit-history').modal("show");
+exports.get_and_render_message_history = function (message) {
     channel.get({
         url: "/json/messages/" + message.id + "/history",
         data: {message_id: JSON.stringify(message.id)},
@@ -816,7 +814,7 @@ exports.show_history = function (message) {
 
                 content_edit_history.push(item);
             }
-
+            $('#message-history').attr('data-message-id', message.id);
             $('#message-history').html(render_message_edit_history({
                 edited_messages: content_edit_history,
             }));
@@ -826,6 +824,12 @@ exports.show_history = function (message) {
                             $("#message-history-error"));
         },
     });
+};
+
+exports.show_history = function (message) {
+    $('#message-history').html('');
+    $('#message-edit-history').modal("show");
+    exports.get_and_render_message_history(message);
 };
 
 function hide_delete_btn_show_spinner(deleting) {

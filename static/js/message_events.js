@@ -319,6 +319,10 @@ exports.update_messages = function update_messages(events) {
             recent_senders.process_topic_edit(...args);
             recent_topics.process_topic_edit(...args);
         }
+
+        if ($('#message-edit-history').hasClass('in') && msg.id === parseInt($('#message-history').attr('data-message-id'), 10)) {
+            message_edit.get_and_render_message_history(msg);
+        }
     }
 
     // If a topic was edited, we re-render the whole view to get any
