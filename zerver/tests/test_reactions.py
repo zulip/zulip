@@ -3,7 +3,9 @@ from django.http import HttpResponse
 from typing import Any, Dict, List, Mapping
 from unittest import mock
 
+from zerver.lib.cache import to_dict_cache_key_id, cache_get
 from zerver.lib.emoji import emoji_name_to_emoji_code
+from zerver.lib.message import extract_message_dict
 from zerver.lib.request import JsonableError
 from zerver.lib.test_helpers import tornado_redirected_to_list
 from zerver.lib.test_classes import ZulipTestCase
@@ -77,6 +79,35 @@ class ReactionEmojiTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
         self.assertTrue(base_query.filter(emoji_name=reaction_info['emoji_name']).exists())
+
+    def test_cached_reaction_data(self) -> None:
+        """
+        Formatted reactions data is saved in cache.
+        """
+        sender = self.example_user("hamlet")
+        reaction_info = {
+            'emoji_name': 'smile'
+        }
+        result = self.api_post(sender, '/api/v1/messages/1/reactions',
+                               reaction_info)
+
+        self.assert_json_success(result)
+        self.assertEqual(200, result.status_code)
+        key = to_dict_cache_key_id(1)
+        message = extract_message_dict(cache_get(key)[0])
+
+        expected_reaction_data = [{
+            'emoji_name': 'smile',
+            'emoji_code': '263a',
+            'reaction_type': 'unicode_emoji',
+            'user': {
+                'email': 'user10@zulip.testserver',
+                'id': 10,
+                'full_name': 'King Hamlet'
+            },
+            'user_id': 10
+        }]
+        self.assertEqual(expected_reaction_data, message['reactions'])
 
     def test_zulip_emoji(self) -> None:
         """
