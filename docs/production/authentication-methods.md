@@ -135,6 +135,25 @@ found at `https://yourzulipdomain.example.com/saml/metadata.xml`. You
 can use this for verifying your configuration or provide it to your
 IdP.
 
+### IdP-initiated SSO
+
+If you want to enable IDP-initiated SSO, there are two options:
+
+1. If the IdP is meant only for authenticating to a single Zulip
+   organization and is the only SAML IdP for the organization, then
+   things are easy. You only need to make sure that the SSO URL you
+   gave to your IdP is on your organization's subdomain,
+   (e.g. `https://yourzuliporganization.example.com/complete/saml/`)
+   rather than using the subdomain from the SOCIAL_AUTH_SUBDOMAIN setting.
+
+1. If the above simple way is not an option for you, you'll need to
+   configure a `RelayState` with your IdP to send in IdP-initiated sign in requests.
+   It will convey information about which organization to log the user into.
+   If your organization's URL is `https://yourzuliporganization.example.com`,
+   the `RelayState` should be `{"subdomain": "yourzuliporganization"}`.
+   If the organization is on the root domain, use the empty string:
+   `{"subdomain": ""}`.
+
 ```eval_rst
 .. _ldap:
 ```
