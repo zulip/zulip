@@ -57,6 +57,27 @@
         padding: 15px;
         overflow: auto;
 
+        #recent_topics_filter_buttons {
+            margin: 0 10px 0 10px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+
+        #recent_topics_search {
+            margin: 0 0 10px 0px;
+            flex-grow: 1;
+        }
+
+        .btn-recent-filters {
+            border-radius: 40px;
+            margin: 0 5px 10px 0;
+        }
+
+        .btn-recent-selected {
+            background-color: hsl(0, 11%, 93%);
+        }
+
         thead {
             background-color: hsl(0, 0%, 27%);
             color: hsl(0, 0%, 100%);

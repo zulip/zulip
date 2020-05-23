@@ -4,6 +4,7 @@ const topics = new Map(); // Key is stream-id:topic.
 // Sets the number of avatars to display.
 // Rest of the avatars, if present, are displayed as {+x}
 const MAX_AVATAR = 4;
+let filters = new Set();
 
 exports.process_messages = function (messages) {
     // Since a complete re-render is expensive, we
@@ -78,8 +79,16 @@ function format_topic(topic_data) {
     const topic = last_msg.topic;
     const time = new XDate(last_msg.timestamp * 1000);
     const last_msg_time = timerender.last_seen_status_from_date(time);
+
+    // We hide the row according to filters or if it's muted.
+    let hidden = muting.is_topic_muted(stream_id, topic);
     const unread_count = unread.unread_topic_counter.get(stream_id, topic);
-    const hidden = muting.is_topic_muted(stream_id, topic);
+    if (unread_count === 0 && filters.has('unread')) {
+        hidden = true;
+    }
+    if (!topic_data.participated && filters.has('participated')) {
+        hidden = true;
+    }
 
     // Display in most recent sender first order
     const all_senders = recent_senders.get_topic_recent_senders(stream_id, topic);
@@ -168,6 +177,20 @@ exports.update_topic_unread_count = function (message) {
     exports.inplace_rerender(topic_key);
 };
 
+exports.set_filter = function (filter) {
+    const filter_elem = $('#recent_topics_filter_buttons')
+        .find('[data-filter="' + filter + '"]');
+
+    if (filter === 'all' && filters.size !== 0) {
+        filters = new Set();
+    } else if (filter_elem.hasClass('btn-recent-selected')) {
+        filters.delete(filter);
+    } else {
+        filters.add(filter);
+    }
+    exports.complete_rerender();
+};
+
 exports.complete_rerender = function () {
     // NOTE: This function is grows expensive with
     // number of topics. Only call when necessary.
@@ -176,6 +199,18 @@ exports.complete_rerender = function () {
         recent_topics: format_all_topics(),
     });
     $('#recent_topics_table').html(rendered_body);
+
+    if (filters.size === 0) {
+        $('#recent_topics_filter_buttons')
+            .find('[data-filter="all"]')
+            .addClass('btn-recent-selected');
+    } else {
+        for (const filter of filters) {
+            $('#recent_topics_filter_buttons')
+                .find('[data-filter="' + filter + '"]')
+                .addClass('btn-recent-selected');
+        }
+    }
 };
 
 exports.launch = function () {

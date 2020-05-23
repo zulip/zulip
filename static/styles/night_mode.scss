@@ -401,6 +401,17 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: hsla(0, 0%, 0%, 0.2);
     }
 
+
+    .btn-recent-filters {
+        background-color: hsl(0, 0%, 26%);
+        border-color: hsl(0, 0%, 0%);
+        color: hsl(0, 0%, 100%);
+    }
+
+    .btn-recent-selected {
+        background-color: hsl(0, 0%, 0%) !important;
+    }
+
     thead,
     .drafts-container .drafts-header,
     .recent_topics_container .recent_topics_header,
