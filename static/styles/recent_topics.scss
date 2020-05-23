@@ -55,7 +55,21 @@
     .recent_topics_table {
         margin: 0px;
         padding: 15px;
-        overflow: auto;
+        overflow: hidden !important;
+
+        .tableFixHead {
+            padding: 10px;
+            padding-top: 0px !important;
+            overflow-y: auto;
+            max-height: 100%;
+        }
+        .tableFixHead thead th {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background-color: hsl(0, 0%, 27%);
+            color: hsl(0, 0%, 100%);
+        }
 
         #recent_topics_filter_buttons {
             margin: 0 10px 0 10px;
@@ -76,11 +90,6 @@
 
         .btn-recent-selected {
             background-color: hsl(0, 11%, 93%);
-        }
-
-        thead {
-            background-color: hsl(0, 0%, 27%);
-            color: hsl(0, 0%, 100%);
         }
 
         .recent_topic_unread_count {
