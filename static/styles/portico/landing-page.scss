@@ -23,6 +23,14 @@ h3 {
     line-height: 1.2;
 }
 
+h1 {
+    font-size: 2em;
+}
+
+h2 {
+    font-size: 1.8em;
+}
+
 p {
     margin: 10px 0px;
     font-weight: normal;
@@ -64,14 +72,6 @@ a {
     &.silver {
         text-decoration: underline;
     }
-}
-
-h1 {
-    font-size: 2em;
-}
-
-h2 {
-    font-size: 1.8em;
 }
 
 span a:hover,
