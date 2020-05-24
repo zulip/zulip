@@ -1,6 +1,7 @@
 <div class="subscription_settings" data-stream-id="{{sub.stream_id}}">
     <div class="inner-box">
         <div class="alert stream_change_property_info"></div>
+
         {{#with sub}}
         <div class="stream-header">
             {{> subscription_privacy
@@ -13,7 +14,6 @@
                 <span class="checkmark" data-finish-editing=".stream-name-editable">✓</span>
                 {{/if}}
             </div>
-            <div id="stream_change_property_status{{stream_id}}" class="alert-notification"></div>
             <div class="button-group">
                 {{#if is_admin}}
                 <button class="button small rounded btn-danger deactivate" type="button" name="delete_button" title="{{t 'Delete stream'}}"> <i class="fa fa-trash-o" aria-hidden="true"></i></button>
@@ -40,10 +40,14 @@
             <a class="change-stream-privacy" {{#unless can_change_stream_permissions}}style="display: none;"{{/unless}}>[{{t "Change" }}]</a>
         </div>
         {{/with}}
+
         <div class="regular_subscription_settings collapse {{#sub.subscribed}}in{{/sub.subscribed}}">
-            <label class="sub_settings_title">
-                {{t "Personal settings" }}
-            </label>
+            <div id="personal_settings_label_container">
+                <label class="sub_settings_title inline-block">
+                    {{t "Personal settings" }}
+                </label>
+                <div id="stream_change_property_status{{sub.stream_id}}" class="alert-notification"></div>
+            </div>
             <div class="subscription-config">
                 <ul class="grey-box">
                     {{#each settings}}
