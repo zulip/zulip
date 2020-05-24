@@ -187,14 +187,14 @@ button {
 .silver {
     color: hsl(0, 0%, 100%) !important;
     opacity: 0.8;
-}
 
-.silver:hover {
-    opacity: 1;
-}
+    &:hover {
+        opacity: 1;
+    }
 
-.silver.bold {
-    font-weight: 600;
+    &.bold {
+        font-weight: 600;
+    }
 }
 
 /* -- navbar styling -- */
