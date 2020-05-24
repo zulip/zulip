@@ -39,6 +39,15 @@ a:visited {
     color: hsl(170, 47%, 33%);
 }
 
+a {
+    position: relative;
+    cursor: pointer;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
 a.arrow::after {
     content: " ";
     display: inline-block;
@@ -55,21 +64,16 @@ a.arrow::after {
     margin-left: 5px;
 }
 
+a.silver {
+    text-decoration: underline;
+}
+
 h1 {
     font-size: 2em;
 }
 
 h2 {
     font-size: 1.8em;
-}
-
-a {
-    position: relative;
-    cursor: pointer;
-}
-
-a:hover {
-    text-decoration: none;
 }
 
 span a:hover,
@@ -202,10 +206,6 @@ nav .brand.logo {
 
 nav.white {
     background-color: hsl(0, 0%, 100%);
-}
-
-a.silver {
-    text-decoration: underline;
 }
 
 .silver {
