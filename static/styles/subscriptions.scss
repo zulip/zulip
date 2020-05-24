@@ -995,9 +995,13 @@ form#add_new_subscription {
         }
     }
 
+    #personal_settings_label_container {
+        margin-bottom: 5px;
+    }
+
     .alert-notification:not(:empty) {
-        margin-top: -5px;
-        margin-left: unset;
+        vertical-align: unset;
+        margin-top: 10px;
     }
 
     .loading_indicator_text {
