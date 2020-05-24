@@ -388,6 +388,14 @@
     }
 }
 
+@media (min-width: 750px) and (max-width: 1033px) {
+    .new-style {
+        .stream_sorter_toggle {
+            margin-left: unset;
+        }
+    }
+}
+
 .stream_header_colorblock {
     /* box-shadow: 0px 2px 3px hsl(0, 0%, 80%); */
     box-shadow: inset 0px 2px 1px -2px hsl(0, 0%, 20%), inset 2px 0px 1px -2px hsl(0, 0%, 20%);
