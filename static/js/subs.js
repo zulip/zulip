@@ -95,9 +95,9 @@ exports.active_stream = function () {
     }
 };
 
-exports.toggle_home = function (sub) {
+exports.toggle_home = function (sub, status_element) {
     stream_muting.update_is_muted(sub, !sub.is_muted);
-    stream_edit.set_stream_property(sub, 'is_muted', sub.is_muted);
+    stream_edit.set_stream_property(sub, 'is_muted', sub.is_muted, status_element);
 };
 
 exports.toggle_pin_to_top_stream = function (sub) {
