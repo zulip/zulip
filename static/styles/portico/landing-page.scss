@@ -33,37 +33,37 @@ ul {
     font-weight: normal;
 }
 
-a,
-a:hover,
-a:visited {
-    color: hsl(170, 47%, 33%);
-}
-
 a {
     position: relative;
     cursor: pointer;
-}
+    color: hsl(170, 47%, 33%);
 
-a:hover {
-    text-decoration: none;
-}
-
-a.arrow {
-    &::after {
-        content: " ";
-        display: inline-block;
-        position: relative;
-        height: 17px;
-        width: 17px;
-        top: 3px;
-        background-image: url(/static/images/landing-page/arrow.png);
-        background-size: 100%;
-        margin-left: 5px;
+    &:hover,
+    &:visited {
+        color: hsl(170, 47%, 33%);
     }
-}
 
-a.silver {
-    text-decoration: underline;
+    &:hover {
+        text-decoration: none;
+    }
+
+    &.arrow {
+        &::after {
+            content: " ";
+            display: inline-block;
+            position: relative;
+            height: 17px;
+            width: 17px;
+            top: 3px;
+            background-image: url(/static/images/landing-page/arrow.png);
+            background-size: 100%;
+            margin-left: 5px;
+        }
+    }
+
+    &.silver {
+        text-decoration: underline;
+    }
 }
 
 h1 {
