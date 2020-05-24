@@ -160,6 +160,7 @@ function Filter(operators) {
             if (sub) {
                 this._stream_name = sub.name;
                 this._is_stream_private = sub.invite_only;
+                this._is_web_public = sub.is_web_public;
             }
         }
     }
@@ -529,6 +530,8 @@ Filter.prototype = {
         case 'stream':
             if (this._is_stream_private) {
                 return 'lock';
+            } else if (this._is_web_public) {
+                return 'globe';
             }
             return 'hashtag';
         case 'is-private':
