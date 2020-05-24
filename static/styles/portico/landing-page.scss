@@ -89,16 +89,18 @@ ol a:hover {
     align-items: center;
 }
 
-.float.left {
-    float: left;
-}
+.float {
+    &.left {
+        float: left;
+    }
 
-.float.right {
-    float: right;
-}
+    &.right {
+        float: right;
+    }
 
-.float.clear {
-    clear: both;
+    &.clear {
+        clear: both;
+    }
 }
 
 .small {
