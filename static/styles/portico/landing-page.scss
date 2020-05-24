@@ -48,20 +48,18 @@ a:hover {
     text-decoration: none;
 }
 
-a.arrow::after {
-    content: " ";
-    display: inline-block;
-    position: relative;
-
-    height: 17px;
-    width: 17px;
-
-    top: 3px;
-
-    background-image: url(/static/images/landing-page/arrow.png);
-    background-size: 100%;
-
-    margin-left: 5px;
+a.arrow {
+    &::after {
+        content: " ";
+        display: inline-block;
+        position: relative;
+        height: 17px;
+        width: 17px;
+        top: 3px;
+        background-image: url(/static/images/landing-page/arrow.png);
+        background-size: 100%;
+        margin-left: 5px;
+    }
 }
 
 a.silver {
