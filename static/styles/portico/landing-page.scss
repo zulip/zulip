@@ -123,10 +123,6 @@ ol a:hover {
     font-weight: 600;
 }
 
-.silver.bold {
-    font-weight: 600;
-}
-
 .padded-content {
     padding: 50px;
 }
@@ -188,6 +184,19 @@ button {
     }
 }
 
+.silver {
+    color: hsl(0, 0%, 100%) !important;
+    opacity: 0.8;
+}
+
+.silver:hover {
+    opacity: 1;
+}
+
+.silver.bold {
+    font-weight: 600;
+}
+
 /* -- navbar styling -- */
 
 nav {
@@ -206,15 +215,6 @@ nav .brand.logo {
 
 nav.white {
     background-color: hsl(0, 0%, 100%);
-}
-
-.silver {
-    color: hsl(0, 0%, 100%) !important;
-    opacity: 0.8;
-}
-
-.silver:hover {
-    opacity: 1;
 }
 
 nav.white li a,
