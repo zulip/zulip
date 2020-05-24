@@ -2011,16 +2011,16 @@ div.floating_recipient {
     font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
 }
 
-#loading_more_messages_indicator {
+#loading_older_messages_indicator {
     margin: 10px;
 }
 
-#loading_more_messages_indicator_box_container {
+#loading_older_messages_indicator_box_container {
     position: absolute;
     left: 50%;
 }
 
-#loading_more_messages_indicator_box {
+#loading_older_messages_indicator_box {
     position: relative;
     left: -50%;
     top: -43px;
