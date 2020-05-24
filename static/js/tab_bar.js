@@ -25,7 +25,7 @@ function make_tab_data(filter) {
     }
     tab_data.title = filter.get_title();
     tab_data.icon = filter.get_icon();
-    if (tab_data.icon === 'hashtag' || tab_data.icon === 'lock') {
+    if (['hashtag', 'lock', 'globe'].includes(tab_data.icon)) {
         const stream = filter.operands("stream")[0];
         const current_stream  = stream_data.get_sub_by_name(stream);
         if (current_stream) {
@@ -50,6 +50,7 @@ exports.colorize_tab_bar = function () {
     const stream_light = colorspace.getHexColor(colorspace.getDecimalColor(color_for_stream));
     $("#tab_list .fa-hashtag").css('color', stream_light);
     $("#tab_list .fa-lock").css('color', stream_light);
+    $("#tab_list .fa-globe").css('color', stream_light);
 };
 
 function append_and_display_title_area(tab_bar_data) {

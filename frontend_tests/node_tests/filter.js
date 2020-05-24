@@ -1318,6 +1318,15 @@ function make_private_sub(name, stream_id) {
     global.stream_data.add_sub(sub);
 }
 
+function make_web_public_sub(name, stream_id) {
+    const sub = {
+        name: name,
+        stream_id: stream_id,
+        is_web_public: true,
+    };
+    global.stream_data.add_sub(sub);
+}
+
 run_test('navbar_helpers', () => {
     // make sure title has names separated with correct delimiters
     function properly_separated_names(names) {
@@ -1369,6 +1378,8 @@ run_test('navbar_helpers', () => {
     const stream_operator = [{ operator: 'stream', operand: 'foo'}];
     make_private_sub('psub', '22');
     const private_stream_operator = [{ operator: 'stream', operand: 'psub'}];
+    make_web_public_sub('webPublicSub', '12'); // capitalized just to try be tricky and robust.
+    const web_public_stream_operator = [{ operator: 'stream', operand: 'webPublicSub'}];
     const pm_with = [{ operator: 'pm-with', operand: 'joe@example.com'}];
     const group_pm = [{ operator: 'pm-with', operand: 'joe@example.com,STEVE@foo.com'}];
     const group_pm_including_missing_person = [{ operator: 'pm-with', operand: 'joe@example.com,STEVE@foo.com,sally@doesnotexist.com'}];
@@ -1436,6 +1447,13 @@ run_test('navbar_helpers', () => {
             icon: 'lock',
             title: 'psub',
             redirect_url_with_search: '/#narrow/stream/22-psub',
+        },
+        {
+            operator: web_public_stream_operator,
+            is_common_narrow: true,
+            icon: 'globe',
+            title: 'webPublicSub',
+            redirect_url_with_search: '/#narrow/stream/12-webPublicSub',
         },
         {
             operator: pm_with,
