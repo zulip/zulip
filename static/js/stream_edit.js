@@ -311,7 +311,7 @@ function stream_is_muted_clicked(e) {
     const sub_settings = exports.settings_for_sub(sub);
     const notification_checkboxes = sub_settings.find(".sub_notification_setting");
 
-    subs.toggle_home(sub);
+    subs.toggle_home(sub, `#stream_change_property_status${sub.stream_id}`);
 
     if (!sub.is_muted) {
         sub_settings.find(".mute-note").addClass("hide-mute-note");
