@@ -630,7 +630,7 @@ paths:
                     id:
                       type: integer
                       description: |
-                        The ID assigned to the message sent.
+                        The unique ID assigned to the sent message.
                 - example:
                     {
                         "msg": "",
