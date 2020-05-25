@@ -83,7 +83,10 @@ export default (env?: string): webpack.Configuration[] => {
                 // scss loader
                 {
                     test: /\.scss$/,
-                    include: resolve(__dirname, '../static/styles'),
+                    include: [
+                        resolve(__dirname, '../static/styles'),
+                        resolve(__dirname, '../static/third'),
+                    ],
                     use: [
                         {
                             loader: MiniCssExtractPlugin.loader,
