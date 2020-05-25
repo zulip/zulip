@@ -100,7 +100,7 @@ exports.sidebar_popover_colorpicker_options_full = {
     showInput: true,
     flat: true,
     cancelText: "",
-    chooseText: "choose",
+    chooseText: "Confirm",
     palette: stream_color_palette,
     change: picker_do_change_color,
 };
