@@ -658,6 +658,9 @@ exports.register_click_handlers = function () {
     });
 
     $("#main_div").on("click", ".reaction_button", function (e) {
+        if (!click_handlers.are_msg_controls_clickable) {
+            return;
+        }
         e.stopPropagation();
 
         const message_id = rows.get_message_id(this);

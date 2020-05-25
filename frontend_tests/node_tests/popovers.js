@@ -9,6 +9,7 @@ zrequire('buddy_data');
 zrequire('user_status');
 zrequire('feature_flags');
 zrequire('message_edit');
+zrequire('click_handlers');
 
 const noop =  function () {};
 $.fn.popover = noop; // this will get wrapped by our code

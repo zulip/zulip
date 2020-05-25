@@ -4,6 +4,13 @@ const util = require("./util");
 const render_buddy_list_tooltip = require('../templates/buddy_list_tooltip.hbs');
 const render_buddy_list_tooltip_content = require('../templates/buddy_list_tooltip_content.hbs');
 
+// On touchscreens, if the message control buttons are not visible,
+// a single click on a message box shouldn't trigger their click
+// listeners. Following two values check whether the buttons are
+// visible to users once a messagebox `touchstart` event is fired.
+let is_star_clickable = true;
+exports.are_msg_controls_clickable = true;
+
 exports.initialize = function () {
 
     // MESSAGE CLICKING
@@ -23,6 +30,8 @@ exports.initialize = function () {
         };
 
         $("#main_div").on("touchstart", ".messagebox", function () {
+            is_star_clickable = $(this).find('.star').css('pointer-events') !== 'none' || !util.is_mobile;
+            exports.are_msg_controls_clickable = $(this).find('.actions_hover').css('pointer-events') !== 'none' || !util.is_mobile;
             meta.touchdown = true;
             meta.invalid = false;
             const id = rows.id($(this).closest(".message_row"));
@@ -128,6 +137,9 @@ exports.initialize = function () {
     }
 
     $("#main_div").on("click", ".star", function (e) {
+        if (!is_star_clickable) {
+            return;
+        }
         e.stopPropagation();
         popovers.hide_all();
 
@@ -237,6 +249,9 @@ exports.initialize = function () {
     // MESSAGE EDITING
 
     $('body').on('click', '.edit_content_button', function (e) {
+        if (!exports.are_msg_controls_clickable) {
+            return;
+        }
         const row = current_msg_list.get_row(rows.id($(this).closest(".message_row")));
         current_msg_list.select_id(rows.id(row));
         message_edit.start(row);

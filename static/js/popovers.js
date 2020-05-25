@@ -716,6 +716,9 @@ exports.set_suppress_scroll_hide = function () {
 
 exports.register_click_handlers = function () {
     $("#main_div").on("click", ".actions_hover", function (e) {
+        if (!click_handlers.are_msg_controls_clickable) {
+            return;
+        }
         const row = $(this).closest(".message_row");
         e.stopPropagation();
         exports.toggle_actions_popover(this, rows.id(row));
