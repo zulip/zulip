@@ -284,7 +284,8 @@ jobs:
           # Must be relative path from root
           paths:
             - zulip-server-test.tar.gz
-            - success-http-headers.txt
+            - success-http-headers-bionic.txt
+            - success-http-headers-focal.txt
             - production-install
             - production
             - production-extract-tarball
@@ -327,7 +328,14 @@ jobs:
           at: /tmp
 
       - *create_cache_directories
-      - *do_bionic_hack
+
+      - run:
+          name: do memcached hack
+          command: |
+            # Temporary hack till memcached upstream is updated in Focal.
+            # https://bugs.launchpad.net/ubuntu/+source/memcached/+bug/1878721
+            echo "export SASL_CONF_PATH=/etc/sasl2" | sudo tee - a /etc/default/memcached
+
       - *production_extract_tarball
       - *restore_cache_package_json
       - *install_production
@@ -351,6 +359,6 @@ workflows:
       - "bionic-production-install":
             requires:
                 - "bionic-production-build"
-      # - "focal-production-install":
-      #       requires:
-      #           - "bionic-production-build"
+      - "focal-production-install":
+            requires:
+                - "bionic-production-build"
