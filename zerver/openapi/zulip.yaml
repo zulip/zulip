@@ -2276,6 +2276,40 @@ paths:
                       type: array
                       items:
                         type: object
+                        properties:
+                          color:
+                            type: string
+                            description: |
+                              The hex value of the user's personal display color for the stream.
+                          is_muted:
+                            type: boolean
+                            description: |
+                              Whether the stream is [muted](/help/mute-a-stream).
+
+                              **Changes**: Prior to Zulip 2.1, this feature was
+                              represented by the more confusingly named `in_home_view` (with the
+                              opposite value, `in_home_view=!is_muted`); for
+                              backwards-compatibility, modern Zulip still accepts that value.
+                          pin_to_top:
+                            type: boolean
+                            description: |
+                              Whether to pin the stream at the top of the stream list.
+                          desktop_notifications:
+                            type: boolean
+                            description: |
+                              Whether to show desktop notifications for all messages sent to the stream.
+                          audible_notifications:
+                            type: boolean
+                            description: |
+                              Whether to play a sound notification for all messages sent to the stream.
+                          push_notifications:
+                            type: boolean
+                            description: |
+                              Whether to trigger a mobile push notification for all messages sent to the stream.
+                          email_notifications:
+                            type: boolean
+                            description: |
+                              Whether to trigger an email notification for all messages sent to the stream.
                       description: |
                         The same `subscription_data` object sent by the client for the request.
                 - example:
