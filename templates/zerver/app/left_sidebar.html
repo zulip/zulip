@@ -74,12 +74,12 @@
             </div>
             <div id="stream-filters-container" class="scrolling_list" data-simplebar>
                 <ul id="stream_filters" class="filters"></ul>
-                {% if show_add_streams %}
-                <div id="add-stream-link">
-                    <a href="#streams/all"><i class="fa fa-plus-circle" aria-hidden="true"></i>{{ _('Add streams') }}</a>
-                </div>
-                {% endif %}
             </div>
         </div>
+        {% if show_add_streams %}
+        <div id="add-stream-link">
+            <a href="#streams/all"><i class="fa fa-plus-circle" aria-hidden="true"></i>{{ _('Add streams') }}</a>
+        </div>
+        {% endif %}
     </div>
 </div>

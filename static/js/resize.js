@@ -42,7 +42,8 @@ function get_new_heights() {
         - parseInt($(".narrows_panel").css("marginTop"), 10)
         - parseInt($(".narrows_panel").css("marginBottom"), 10)
         - $("#global_filters").safeOuterHeight(true)
-        - $("#streams_header").safeOuterHeight(true);
+        - $("#streams_header").safeOuterHeight(true)
+        - $('#add-stream-link').safeOuterHeight(true);
 
     // Don't let us crush the stream sidebar completely out of view
     res.stream_filters_max_height = Math.max(80, res.stream_filters_max_height);
@@ -89,6 +90,7 @@ function left_userlist_get_new_heights() {
                                 - $("#global_filters").safeOuterHeight(true)
                                 - $("#streams_header").safeOuterHeight(true)
                                 - $("#userlist-header").safeOuterHeight(true)
+                                - $('#add-stream-link').safeOuterHeight(true)
                                 - $("#user_search_section").safeOuterHeight(true)
                                 - parseInt(stream_filters.css("marginBottom"), 10);
 
