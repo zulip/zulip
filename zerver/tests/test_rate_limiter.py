@@ -184,8 +184,12 @@ class TornadoInMemoryRateLimiterBackendTest(RateLimiterBackendBase):
     def test_used_in_tornado(self) -> None:
         user_profile = self.example_user("hamlet")
         with self.settings(RUNNING_INSIDE_TORNADO=True):
-            obj = RateLimitedUser(user_profile)
+            obj = RateLimitedUser(user_profile, domain='api_by_user')
         self.assertEqual(obj.backend, TornadoInMemoryRateLimiterBackend)
+
+        with self.settings(RUNNING_INSIDE_TORNADO=True):
+            obj = RateLimitedUser(user_profile, domain='some_domain')
+        self.assertEqual(obj.backend, RedisRateLimiterBackend)
 
     def test_block_access(self) -> None:
         obj = self.create_object('test', [(2, 5), ])
