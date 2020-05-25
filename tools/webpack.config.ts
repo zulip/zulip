@@ -95,7 +95,14 @@ export default (env?: string): webpack.Configuration[] => {
                         {
                             loader: 'css-loader',
                             options: {
-                                importLoaders: 1,
+                                importLoaders: 2,
+                                sourceMap: true,
+                            },
+                        },
+                        {
+                            loader: 'sass-loader',
+                            options: {
+                                implementation: require('sass'),
                                 sourceMap: true,
                             },
                         },
