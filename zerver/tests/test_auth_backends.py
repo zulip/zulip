@@ -1437,6 +1437,10 @@ class SAMLAuthBackendTest(SocialAuthBase):
         # a perfectly valid SAMLResponse for the purpose of these tests would be too complex,
         # and we simply use one loaded from a fixture file.
         with mock.patch.object(OneLogin_Saml2_Response, 'is_valid', return_value=True):
+            # We are simulating a cross-domain POST request here. Session is a Lax cookie, meaning
+            # it won't be sent by the browser in this request. To simulate that effect with the django
+            # test client, we flush the session before the request.
+            self.client.session.flush()
             result = self.client_post(self.AUTH_FINISH_URL, post_params, **headers)
 
         return result
