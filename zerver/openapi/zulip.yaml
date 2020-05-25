@@ -2958,6 +2958,24 @@ paths:
                       type: array
                       items:
                         type: object
+                        properties:
+                          stream_id:
+                            type: integer
+                            description: |
+                              The unique ID of a stream.
+                          name:
+                            type: string
+                            description: |
+                              The name of a stream.
+                          description:
+                            type: string
+                            description: |
+                              A short description of a stream.
+                          invite-only:
+                            type: string
+                            description: |
+                              Specifies whether a stream is private or not.
+                              Only people who have been invited can access a private stream.
                       description: |
                         A list of `stream` objects, which contain a `description`, a `name`,
                         their `stream_id` and whether they are `invite_only` or not.
