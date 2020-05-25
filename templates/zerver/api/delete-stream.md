@@ -23,10 +23,6 @@
 
 ## Response
 
-#### Return values
-
-* `stream_id`: The ID of a stream.
-
 #### Example response
 
 A typical successful JSON response may look like:
