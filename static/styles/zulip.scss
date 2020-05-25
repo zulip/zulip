@@ -2518,9 +2518,24 @@ select.inline_select_topic_edit {
     margin: 0;
 }
 
-// Hide the up and down arrows in the Flatpickr datepicker year
-.flatpickr-months .numInputWrapper span {
-    display: none;
+.flatpickr-calendar {
+    .numInputWrapper {
+        margin-left: 5px;
+        margin-right: 5px;
+
+        // Override background from flatpickr's theme.
+        &:hover {
+            background-color: transparent !important;
+        }
+
+        // Hide the up and down arrows in the Flatpickr datepicker year
+        span {
+            display: none;
+        }
+        input {
+            margin: 0;
+        }
+    }
 }
 
 /* This max-width must be synced with message_viewport.is_narrow */
