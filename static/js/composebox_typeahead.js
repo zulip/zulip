@@ -528,6 +528,29 @@ exports.get_stream_topic_data = (hacky_this) => {
     return opts;
 };
 
+function format_stream_topic_suggestion(item) {
+    // #stream_name>topic_name.
+    return `#${stream_data.maybe_get_stream_name(item.stream_id)}>${item.topic}`;
+}
+
+function filtered_topics(topics, query) {
+    return topics.filter((item) => item.topic.startsWith(query.toLowerCase()));
+}
+
+function compare_topics(a, b) {
+    return a.topic.localeCompare(b.topic);
+}
+
+function get_filtred_sorted_topics_for_stream(query) {
+    const topics = Array.from(recent_topics.get().keys()).map((topic) => ({
+        stream_id: parseInt(topic.split(":")[0], 10),
+        topic: topic.split(":").pop(),
+        is_topic_item: true,
+    }));
+
+    return filtered_topics(topics, query).sort(compare_topics);
+}
+
 exports.get_sorted_filtered_items = function (query) {
     /*
         This is just a "glue" function to work
@@ -571,7 +594,15 @@ exports.get_sorted_filtered_items = function (query) {
         return exports.filter_and_sort_mentions(big_results.is_silent, token, opts);
     }
 
-    return exports.filter_and_sort_candidates(completing, big_results, token);
+    const result = exports.filter_and_sort_candidates(completing, big_results, token);
+
+    // When the user types #query we want to also
+    // suggests recent topics that matches the query.
+    if (completing === "stream") {
+        const topics_result = get_filtred_sorted_topics_for_stream(token);
+        return [...result, ...topics_result];
+    }
+    return result;
 };
 
 exports.filter_and_sort_candidates = function (completing, candidates, token) {
@@ -745,6 +776,9 @@ exports.content_highlighter = function (item) {
         return typeahead_helper.render_typeahead_item({
             primary: item.text,
         });
+    } else if (this.completing === "stream" && item.is_topic_item) {
+        const text_to_render = format_stream_topic_suggestion(item);
+        return typeahead_helper.render_typeahead_item({primary: text_to_render});
     } else if (this.completing === "stream") {
         return typeahead_helper.render_stream(item);
     } else if (this.completing === "syntax") {
@@ -847,19 +881,24 @@ exports.content_typeahead_selected = function (item, event) {
             " ";
     } else if (this.completing === "stream") {
         beginning = beginning.substring(0, beginning.length - this.token.length - 1);
-        if (beginning.endsWith("#*")) {
-            beginning = beginning.substring(0, beginning.length - 2);
-        }
-        beginning += "#**" + item.name;
-        if (event && event.key === ">") {
-            // Normally, one accepts typeahead with `tab` or `enter`, but when completing
-            // stream typeahead, we allow `>`, the delimiter for stream+topic mentions,
-            // as a completion that automatically sets up stream+topic typeahead for you.
-            beginning += ">";
+
+        if (item.is_topic_item) {
+            beginning += `#**${format_stream_topic_suggestion(item).substring(1)}**`;
         } else {
-            beginning += "** ";
+            if (beginning.endsWith("#*")) {
+                beginning = beginning.substring(0, beginning.length - 2);
+            }
+            beginning += "#**" + item.name;
+            if (event && event.key === ">") {
+                // Normally, one accepts typeahead with `tab` or `enter`, but when completing
+                // stream typeahead, we allow `>`, the delimiter for stream+topic mentions,
+                // as a completion that automatically sets up stream+topic typeahead for you.
+                beginning += ">";
+            } else {
+                beginning += "** ";
+            }
+            compose.warn_if_private_stream_is_linked(item);
         }
-        compose.warn_if_private_stream_is_linked(item);
     } else if (this.completing === "syntax") {
         // Isolate the end index of the triple backticks/tildes, including
         // possibly a space afterward

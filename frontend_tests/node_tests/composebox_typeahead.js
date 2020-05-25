@@ -14,6 +14,7 @@ zrequire("composebox_typeahead");
 zrequire("recent_senders");
 zrequire("settings_org");
 const settings_config = zrequire("settings_config");
+zrequire("recent_topics");
 set_global("md5", (s) => "md5-" + s);
 
 // To be eliminated in next commit:
@@ -471,6 +472,27 @@ run_test("content_typeahead_selected", () => {
     fake_this.token = "swed";
     actual_value = ct.content_typeahead_selected.call(fake_this, sweden_stream);
     expected_value = "#**Sweden** ";
+    assert.equal(actual_value, expected_value);
+
+    // topics in stream query
+    fake_this.query = "#to";
+    fake_this.token = "to";
+    const topic = {stream_id: 1, topic: "topic", is_topic_item: true};
+
+    actual_value = ct.content_typeahead_selected.call(fake_this, topic);
+    expected_value = "#**Sweden>topic**";
+    assert.equal(actual_value, expected_value);
+
+    fake_this.query = "Hello #to";
+    fake_this.token = "to";
+    actual_value = ct.content_typeahead_selected.call(fake_this, topic);
+    expected_value = "Hello #**Sweden>topic**";
+    assert.equal(actual_value, expected_value);
+
+    fake_this.query = "Hello #**Denmark** #to";
+    fake_this.token = "to";
+    actual_value = ct.content_typeahead_selected.call(fake_this, topic);
+    expected_value = "Hello #**Denmark** #**Sweden>topic**";
     assert.equal(actual_value, expected_value);
 
     // syntax
@@ -1405,6 +1427,18 @@ run_test("content_highlighter", () => {
     fake_this = {completing: "something-else"};
     assert(!ct.content_highlighter.call(fake_this));
 
+    // Verify that it calls 'render_typeahead_item'
+    // when completing stream but rendering a topic item.
+    const topic = {stream_id: 1, topic: "topic", is_topic_item: true};
+
+    fake_this = {completing: "stream"};
+    let th_render_typeahead_item_called_completing_stream = false;
+    typeahead_helper.render_typeahead_item = function (item) {
+        assert.deepEqual(item, {primary: "#Sweden>topic"});
+        th_render_typeahead_item_called_completing_stream = true;
+    };
+    ct.content_highlighter.call(fake_this, topic);
+
     // Verify that all stub functions have been called.
     assert(th_render_typeahead_item_called);
     assert(th_render_person_called);
@@ -1412,6 +1446,7 @@ run_test("content_highlighter", () => {
     assert(th_render_stream_called);
     assert(th_render_typeahead_item_called);
     assert(th_render_slash_command_called);
+    assert(th_render_typeahead_item_called_completing_stream);
 });
 
 run_test("filter_and_sort_mentions (normal)", () => {
@@ -1545,4 +1580,65 @@ run_test("message people", () => {
     results = ct.get_person_suggestions("Ha", opts);
     // harry is excluded since it has been deactivated.
     assert.deepEqual(results, [hamletcharacters, hal]);
+});
+
+run_test("topic_suggestion_for_streams_query", () => {
+    ct.get_candidates = () => [denmark_stream, sweden_stream, netherland_stream];
+
+    ct.get_stream_topic_data = () => {};
+
+    const fake_this = {
+        query: "",
+        $element: {},
+    };
+
+    fake_this.completing = "stream";
+
+    const get_topic_item = (stream_id, topic) => ({
+        stream_id,
+        topic,
+        is_topic_item: true,
+    });
+
+    function assert_topic_for_stream_matches(input, expected) {
+        const returned = ct.get_sorted_filtered_items.call(fake_this, input);
+        assert.deepEqual(returned, expected);
+    }
+
+    const topic1 = get_topic_item(1, "topic about sweden");
+    const topic2 = get_topic_item(1, "denmark topic");
+    const topic3 = get_topic_item(2, "topic in another stream");
+
+    const topics = new Map();
+
+    const add_topic = (topic) => {
+        topics.set(topic.stream_id + ":" + topic.topic, {});
+    };
+
+    add_topic(topic1);
+    add_topic(topic2);
+    add_topic(topic3);
+
+    recent_topics.get = () => topics;
+
+    fake_this.query = "#topic";
+    fake_this.token = "topic";
+    assert_topic_for_stream_matches("#topic", [topic1, topic3]);
+
+    // Test if it prioritizes streams instead of topics.
+    fake_this.query = "#denmark";
+    fake_this.token = "denmark";
+    assert_topic_for_stream_matches("#denmark", [denmark_stream, topic2]);
+
+    // Test if it sort the topics result
+    const topic4 = get_topic_item(2, "denmark");
+    add_topic(topic4);
+    const topic5 = get_topic_item(2, "denmark a");
+    add_topic(topic5);
+    assert_topic_for_stream_matches("#denmark", [denmark_stream, topic4, topic5, topic2]);
+
+    // Test if it doesn't break anything when no topic is founded.
+    fake_this.query = "#sweden";
+    fake_this.token = "sweden";
+    assert_topic_for_stream_matches("#sweden", [sweden_stream]);
 });
