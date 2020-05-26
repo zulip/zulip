@@ -1,4 +1,5 @@
 const render_group_pms = require('../templates/group_pms.hbs');
+const huddle_data = require("./huddle_data");
 
 /*
     Helpers for detecting user activity and managing user idle states
@@ -25,8 +26,6 @@ exports.client_is_active = document.hasFocus && document.hasFocus();
 // if this was a server-initiated-reload to avoid counting a
 // server-initiated reload as user activity.
 exports.new_user_input = true;
-
-const huddle_timestamps = new Map();
 
 function update_pm_count_in_dom(count_span, value_span, count) {
     const li = count_span.parents('li');
@@ -96,34 +95,13 @@ exports.update_dom_with_unread_counts = function (counts) {
 };
 
 exports.process_loaded_messages = function (messages) {
-    let need_resize = false;
-
-    for (const message of messages) {
-        const huddle_string = people.huddle_string(message);
-
-        if (huddle_string) {
-            const old_timestamp = huddle_timestamps.get(huddle_string);
-
-            if (!old_timestamp || old_timestamp < message.timestamp) {
-                huddle_timestamps.set(huddle_string, message.timestamp);
-                need_resize = true;
-            }
-        }
-    }
+    const need_resize = huddle_data.process_loaded_messages(messages);
 
     exports.update_huddles();
 
     if (need_resize) {
         resize.resize_page_components(); // big hammer
     }
-};
-
-exports.get_huddles = function () {
-    let huddles = Array.from(huddle_timestamps.keys());
-    huddles = _.sortBy(huddles, function (huddle) {
-        return huddle_timestamps.get(huddle);
-    });
-    return huddles.reverse();
 };
 
 function huddle_split(huddle) {
@@ -236,7 +214,7 @@ exports.update_huddles = function () {
         return;
     }
 
-    const huddles = exports.get_huddles().slice(0, 10);
+    const huddles = huddle_data.get_huddles().slice(0, 10);
 
     if (huddles.length === 0) {
         hide_huddles();

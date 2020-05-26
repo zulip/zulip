@@ -10,6 +10,8 @@ const settings_config = zrequire('settings_config');
 page_params.realm_email_address_visibility =
     settings_config.email_address_visibility_values.admins_only.code;
 
+const huddle_data = zrequire('huddle_data');
+
 zrequire('typeahead_helper');
 set_global('Handlebars', global.make_handlebars());
 zrequire('Filter', 'js/filter');
@@ -281,12 +283,6 @@ run_test('group_suggestions', () => {
         return;
     };
 
-    set_global('activity', {
-        get_huddles: function () {
-            return [];
-        },
-    });
-
     // Entering a comma in a pm-with query should immediately generate
     // suggestions for the next person.
     let query = 'pm-with:bob@zulip.com,';
@@ -388,11 +384,22 @@ run_test('group_suggestions', () => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    set_global('activity', {
-        get_huddles: function () {
-            return ['42,101', '42,101,103'];
-        },
-    });
+    function message(user_ids, timestamp) {
+        return {
+            type: 'private',
+            display_recipient: user_ids.map((id) => {
+                return {
+                    id: id,
+                };
+            }),
+            timestamp: timestamp,
+        };
+    }
+
+    huddle_data.process_loaded_messages([
+        message([bob.user_id, ted.user_id], 99),
+        message([bob.user_id, ted.user_id, jeff.user_id], 98),
+    ]);
 
     // Simulate a past huddle which should now prioritize ted over alice
     query = 'pm-with:bob@zulip.com,';

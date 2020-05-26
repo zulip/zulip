@@ -1,4 +1,5 @@
 const settings_data = require("./settings_data");
+const huddle_data = require("./huddle_data");
 
 exports.max_num_of_search_results = 12;
 
@@ -53,7 +54,7 @@ function compare_by_huddle(huddle) {
     });
 
     // Construct dict for all huddles, so we can lookup each's recency
-    const huddles = activity.get_huddles();
+    const huddles = huddle_data.get_huddles();
     const huddle_dict = new Map();
     for (const [i, huddle] of huddles.entries()) {
         huddle_dict.set(huddle, i + 1);
