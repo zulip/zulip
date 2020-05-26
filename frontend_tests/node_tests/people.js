@@ -317,19 +317,42 @@ run_test('basics', () => {
         [me, isaac]);
 });
 
+run_test('test_is_person_active', () => {
+    // A cross realm bot is only added to cross_realm_dict if the initialize()
+    // function is called, as there isn't a function exclusively dedicated to
+    // populate cross_realm_dict.
+    const params = {
+        realm_users: [],
+        realm_non_active_users: [],
+        cross_realm_bots: [welcome_bot],
+    };
+    people.initialize(me.user_id, params);
+    people.add_active_user(maria);
+    people.add_active_user(linus);
+
+    // Invalid ID
+    blueslip.expect('error', 'No user found.');
+    people.is_person_active(1000001);
+
+    blueslip.expect('error', 'Called is_person_active with a cross realm bot.');
+    people.is_person_active(welcome_bot.user_id);
+
+    assert.equal(people.is_person_active(maria.user_id), true);
+
+    people.deactivate(linus);
+    assert.equal(people.is_person_active(linus.user_id), false);
+});
+
 run_test('check_active_non_active_users', () => {
     let active_users = people.get_realm_users();
     let non_active_users = people.get_non_active_realm_users();
-    assert.equal(active_users.length, 3);
-    assert.equal(non_active_users.length, 0);
+    assert.equal(active_users.length, 4);
+    assert.equal(non_active_users.length, 1);
 
     people.add_active_user(maria);
     people.add_active_user(linus);
     active_users = people.get_realm_users();
     assert.equal(active_users.length, 5);
-    // Invalid ID
-    blueslip.expect('error', 'No user found.');
-    people.is_person_active(1000001);
     assert.equal(people.is_person_active(maria.user_id), true);
     assert.equal(people.is_person_active(linus.user_id), true);
 

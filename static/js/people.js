@@ -1072,6 +1072,10 @@ exports.is_person_active = (user_id) => {
         blueslip.error("No user found.", user_id);
     }
 
+    if (cross_realm_dict.has(user_id)) {
+        blueslip.error("Called is_person_active with a cross realm bot.", user_id);
+    }
+
     return active_user_dict.has(user_id);
 };
 
