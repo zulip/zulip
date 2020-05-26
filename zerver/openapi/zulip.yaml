@@ -1118,7 +1118,7 @@ paths:
                         A list of `user` objects, each containing details about a user in the
                         organization.
                       items:
-                        type: object
+                        $ref: '#/components/schemas/User'
                 - example:
                     {
                        "msg": "",
@@ -1282,9 +1282,7 @@ paths:
                 - $ref: '#/components/schemas/JsonSuccess'
                 - properties:
                     user:
-                      type: object
-                      description: |
-                        A dictionary containing the requested user's details.
+                      $ref: '#/components/schemas/User'
                 - example:
                     {
                        "msg": "",
@@ -3558,6 +3556,68 @@ components:
         `/fetch_api_key` or `/dev_fetch_api_key` endpoints.
 
   schemas:
+    User:
+      type: object
+      description: |
+        A dictionary containing basic data on a given Zulip user.
+      properties:
+        email:
+          type: string
+          description: |
+            The Zulip API email address of the user or bot.
+
+            If you do not have permission to view the email address of the target user,
+            this will be a fake email address that is usable for the Zulip API but nothing else.
+        is_bot:
+         type: boolean
+         description: |
+           A boolean specifying whether the user is a bot or full account.
+        avatar_url:
+          type: string
+          nullable: true
+          description: |
+            URL for the the user's avatar.  Will be `null` if the `client_gravatar`
+            query parameter was set to `True` and the user's avatar is hosted by
+            the Gravatar provider (i.e. the user has never uploaded an avatar).
+        full_name:
+          type: string
+          description: |
+            Full name of the user or bot, used for all display purposes.
+        is_admin:
+          type: boolean
+          description: |
+            A boolean specifying whether the user is an organization administrator.
+        bot_type:
+          type: integer
+          nullable: true
+          description: |
+            `null` if the user isn't a bot. `1` for a `Generic` bot.
+            `2` for an `Incoming webhook` bot. `3` for an `Outgoing webhook` bot.
+            `4` for an `Embedded` bot.
+        user_id:
+          type: integer
+          description: |
+            The unique ID of the user.
+        bot_owner_id:
+          type: string
+          nullable: true
+          description: |
+            If the user is a bot (i.e. `is_bot` is `True`), `bot_owner_id`
+            is user ID of the user who owns the bot (usually the creator).
+
+            May be null for some legacy bots that do not have an owner.
+        is_active:
+          type: boolean
+          description: |
+            A boolean specifying whether the user account has been deactivated.
+        is_guest:
+          type: boolean
+          description: |
+            A boolean specifying whether the user is a guest user.
+        timezone:
+          type: string
+          description: |
+            The time zone of the user.
     JsonResponse:
       type: object
       properties:
