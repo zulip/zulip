@@ -576,7 +576,7 @@ exports.initialize = function () {
         function invite_success(data) {
             text_box.val('');
 
-            if (data.subscribed.hasOwnProperty(principal)) {
+            if (Object.prototype.hasOwnProperty.call(data.subscribed, principal)) {
                 stream_subscription_info_elem.text(i18n.t("Subscribed successfully!"));
                 // The rest of the work is done via the subscription -> add event we will get
             } else {

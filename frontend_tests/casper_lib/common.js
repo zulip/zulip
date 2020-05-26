@@ -170,7 +170,7 @@ exports.check_form = function (form_selector, expected, test_name) {
     var values = casper.getFormValues(form_selector);
     var k;
     for (k in expected) {
-        if (expected.hasOwnProperty(k)) {
+        if (Object.prototype.hasOwnProperty.call(expected, k)) {
             casper.test.assertEqual(values[k], expected[k],
                                     test_name ? test_name + ": " + k : undefined);
         }
