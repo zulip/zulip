@@ -59,18 +59,6 @@ exports.get = function () {
     return get_sorted_topics();
 };
 
-exports.process_topic_edit = function (old_stream_id, old_topic, new_topic, new_stream_id) {
-    // See `recent_senders.process_topic_edit` for
-    // logic behind this and important notes on use of this function.
-    topics.delete(old_stream_id + ':' + old_topic);
-
-    const old_topic_msgs = message_util.get_messages_in_topic(old_stream_id, old_topic);
-    exports.process_messages(old_topic_msgs);
-
-    new_stream_id = new_stream_id || old_stream_id;
-    const new_topic_msgs = message_util.get_messages_in_topic(new_stream_id, new_topic);
-    exports.process_messages(new_topic_msgs);
-};
 
 function format_topic(topic_data) {
     const last_msg = message_store.get(topic_data.last_msg_id);
@@ -127,6 +115,20 @@ function get_topic_row(topic_key) {
     // topic_key = stream_id + ":" + topic
     return $("#" + $.escapeSelector("recent_topic:" + topic_key));
 }
+
+exports.process_topic_edit = function (old_stream_id, old_topic, new_topic, new_stream_id) {
+    // See `recent_senders.process_topic_edit` for
+    // logic behind this and important notes on use of this function.
+    topics.delete(old_stream_id + ':' + old_topic);
+    get_topic_row(old_stream_id + ':' + old_topic).remove();
+
+    const old_topic_msgs = message_util.get_messages_in_topic(old_stream_id, old_topic);
+    exports.process_messages(old_topic_msgs);
+
+    new_stream_id = new_stream_id || old_stream_id;
+    const new_topic_msgs = message_util.get_messages_in_topic(new_stream_id, new_topic);
+    exports.process_messages(new_topic_msgs);
+};
 
 exports.inplace_rerender = function (topic_key) {
     // We remove topic from the UI and reinsert it.
