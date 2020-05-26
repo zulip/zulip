@@ -3394,33 +3394,6 @@ nav li {
         float: right;
     }
 
-    .portico-header .content > ul::before {
-        content: "Zulip";
-        display: block;
-        margin-top: 20px;
-        padding-top: 5px;
-        margin-left: 10px;
-
-        width: 100px;
-        height: 40px;
-
-        font-size: 1.5rem;
-        line-height: 30px;
-        text-align: right;
-        color: hsl(0, 0%, 27%);
-
-        background-size: 40px auto;
-        background-image: url(/static/images/zulip-logo.svg);
-        background-repeat: no-repeat;
-    }
-
-    .portico-header .dropdown ul {
-        width: 100%;
-        height: auto;
-        margin: 42px 0 0 0;
-        font-size: 0.8em;
-    }
-
     nav .content {
         > ul.show {
             outline-color: hsla(203, 43%, 22%, 0.7);
@@ -3481,6 +3454,33 @@ nav li {
                 font-weight: 400;
             }
         }
+    }
+
+    .portico-header .content > ul::before {
+        content: "Zulip";
+        display: block;
+        margin-top: 20px;
+        padding-top: 5px;
+        margin-left: 10px;
+
+        width: 100px;
+        height: 40px;
+
+        font-size: 1.5rem;
+        line-height: 30px;
+        text-align: right;
+        color: hsl(0, 0%, 27%);
+
+        background-size: 40px auto;
+        background-image: url(/static/images/zulip-logo.svg);
+        background-repeat: no-repeat;
+    }
+
+    .portico-header .dropdown ul {
+        width: 100%;
+        height: auto;
+        margin: 42px 0 0 0;
+        font-size: 0.8em;
     }
 
     nav ul li,
