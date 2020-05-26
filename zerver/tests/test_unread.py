@@ -25,7 +25,7 @@ from zerver.lib.test_classes import (
 )
 from zerver.lib.topic_mutes import add_topic_mute
 
-import mock
+from unittest import mock
 import ujson
 
 class PointerTest(ZulipTestCase):

@@ -68,7 +68,7 @@ from zerver.decorator import do_two_factor_login
 from zerver.tornado.event_queue import clear_client_event_queues_for_testing
 
 import base64
-import mock
+from unittest import mock
 import os
 import re
 import ujson

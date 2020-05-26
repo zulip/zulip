@@ -8,7 +8,7 @@ from django.core import mail
 from django.test import override_settings
 from django_auth_ldap.config import LDAPSearch
 from email.utils import formataddr
-from mock import patch
+from unittest.mock import patch
 from typing import List, Optional
 
 from zerver.lib.email_notifications import fix_emojis, handle_missedmessage_emails, \

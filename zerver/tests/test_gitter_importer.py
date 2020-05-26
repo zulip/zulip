@@ -17,7 +17,7 @@ from zerver.data_import.gitter import (
 import ujson
 import logging
 import os
-import mock
+from unittest import mock
 from typing import Any
 
 class GitterImporter(ZulipTestCase):

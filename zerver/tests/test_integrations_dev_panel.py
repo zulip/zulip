@@ -1,5 +1,5 @@
 import ujson
-from mock import MagicMock, patch
+from unittest.mock import MagicMock, patch
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_user, get_realm, Message, Stream
 

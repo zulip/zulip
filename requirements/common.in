@@ -68,9 +68,6 @@ PyJWT
 # Needed for including other markdown files for user docs
 markdown-include
 
-# Needed for mock objects in decorators
-mock
-
 # Needed to access rabbitmq
 pika
 

@@ -13,7 +13,7 @@ from zerver.lib.utils import generate_random_token
 
 from typing import Dict, List, Tuple, Type
 
-import mock
+from unittest import mock
 import time
 
 RANDOM_KEY_PREFIX = generate_random_token(32)

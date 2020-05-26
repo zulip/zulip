@@ -117,7 +117,7 @@ from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
 
 import datetime
-import mock
+from unittest import mock
 from operator import itemgetter
 import time
 import ujson

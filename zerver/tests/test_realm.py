@@ -1,7 +1,7 @@
 import datetime
 import ujson
 import re
-import mock
+from unittest import mock
 from email.utils import parseaddr
 
 from django.conf import settings

@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 from typing import Any, Dict, List
 
 from django.test import TestCase

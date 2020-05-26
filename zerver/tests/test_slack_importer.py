@@ -55,8 +55,8 @@ import ujson
 import logging
 import shutil
 import os
-import mock
-from mock import ANY, call
+from unittest import mock
+from unittest.mock import ANY, call
 from typing import Any, Dict, List, Set, Tuple, Iterator
 
 def remove_folder(path: str) -> None:

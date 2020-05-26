@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 import ujson
 from typing import Any, Callable, Dict, Optional
 from requests.exceptions import ConnectionError

@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 from typing import Any, Dict
 
 from django.test import override_settings

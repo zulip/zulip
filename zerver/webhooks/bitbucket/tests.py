@@ -1,6 +1,6 @@
 from typing import Dict, Union
 
-from mock import MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
 

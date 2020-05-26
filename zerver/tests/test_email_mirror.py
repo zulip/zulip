@@ -53,7 +53,7 @@ from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 
 import ujson
-import mock
+from unittest import mock
 import os
 from django.conf import settings
 

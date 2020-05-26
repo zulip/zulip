@@ -58,7 +58,7 @@ def init_fakeldap(directory: Optional[Dict[str, Dict[str, List[str]]]]=None) -> 
     # avoids the expensive import of the mock module (slow
     # because its dependency pbr uses pkgresources, which is
     # really slow to import.)
-    import mock
+    from unittest import mock
     from fakeldap import MockLDAP
 
     # Silent `django_auth_ldap` logger in dev mode to avoid

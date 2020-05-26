@@ -379,10 +379,6 @@ matrix-client==0.3.2 \
     --hash=sha256:2855a2614a177db66f9bc3ba38cbd2876041456f663c334f72a160ab6bb11c49 \
     --hash=sha256:dce3ccb8665df0d519f08e07a16e6d3f9fab3a947df4b7a7c4bb26573d68f2d5 \
     # via zulip
-mock==3.0.5 \
-    --hash=sha256:83657d894c90d5681d62155c82bda9c1187827525880eda8ff5df4ec813437c3 \
-    --hash=sha256:d157e52d4e5b938c550f39eb2fd15610db062441a9c2747d3dbfa9298211d0f8 \
-    # via -r requirements/common.in
 oauthlib==3.1.0 \
     --hash=sha256:bee41cc35fcca6e988463cacc3bcb8a96224f470ca547e697b604cc697b2f889 \
     --hash=sha256:df884cd6cbe20e32633f1db1072e9356f53638e4361bef4e8b03c9127c9328ea \
@@ -581,7 +577,7 @@ requests[security]==2.23.0 \
 six==1.14.0 \
     --hash=sha256:236bdbdce46e6e6a3d61a337c0f8b763ca1e8717c03b369e87a7ec7ce1319c0a \
     --hash=sha256:8f3cd2e254d8f793e7f3d6d9df77b92252b52637291d0f0da013c76ea2724b6c \
-    # via -r requirements/common.in, argon2-cffi, cryptography, django-bitfield, hypchat, isodate, libthumbor, mock, prompt-toolkit, pyopenssl, python-dateutil, qrcode, social-auth-app-django, social-auth-core, talon, traitlets, twilio, zulip
+    # via -r requirements/common.in, argon2-cffi, cryptography, django-bitfield, hypchat, isodate, libthumbor, prompt-toolkit, pyopenssl, python-dateutil, qrcode, social-auth-app-django, social-auth-core, talon, traitlets, twilio, zulip
 social-auth-app-django==3.1.0 \
     --hash=sha256:6d0dd18c2d9e71ca545097d57b44d26f59e624a12833078e8e52f91baf849778 \
     --hash=sha256:9237e3d7b6f6f59494c3b02e0cce6efc69c9d33ad9d1a064e3b2318bcbe89ae3 \

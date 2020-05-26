@@ -3,8 +3,8 @@ import os
 import re
 from datetime import timedelta
 from email.utils import parseaddr
-import mock
-from mock import MagicMock, patch, call
+from unittest import mock
+from unittest.mock import MagicMock, patch, call
 from typing import List, Dict, Any, Optional
 
 from django.conf import settings

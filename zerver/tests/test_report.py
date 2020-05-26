@@ -6,7 +6,7 @@ from zerver.lib.test_classes import (
 )
 from zerver.lib.utils import statsd
 
-import mock
+from unittest import mock
 import ujson
 
 def fix_params(raw_params: Dict[str, Any]) -> Dict[str, str]:

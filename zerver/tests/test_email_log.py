@@ -1,5 +1,5 @@
 import os
-import mock
+from unittest import mock
 from django.conf import settings
 
 from zerver.lib.test_classes import ZulipTestCase

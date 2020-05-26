@@ -21,7 +21,7 @@ from zerver.models import (
 )
 
 import DNS
-import mock
+from unittest import mock
 import time
 
 class MITNameTest(ZulipTestCase):

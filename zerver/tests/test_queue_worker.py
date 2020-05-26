@@ -5,7 +5,7 @@ import smtplib
 
 from django.conf import settings
 from django.test import override_settings
-from mock import patch, MagicMock
+from unittest.mock import patch, MagicMock
 from typing import Any, Callable, Dict, List, Mapping, Tuple
 
 from zerver.lib.email_mirror import RateLimitedRealmMirror

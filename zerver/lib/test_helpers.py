@@ -42,7 +42,7 @@ if TYPE_CHECKING:
     from zerver.lib.test_classes import ZulipTestCase, MigrationsTestCase
 
 import collections
-import mock
+from unittest import mock
 import os
 import re
 import sys

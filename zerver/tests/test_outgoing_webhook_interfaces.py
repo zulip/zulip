@@ -1,6 +1,6 @@
 from typing import cast, Any, Dict
 
-import mock
+from unittest import mock
 import json
 import requests
 
