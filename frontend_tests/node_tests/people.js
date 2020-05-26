@@ -555,11 +555,11 @@ run_test('concat_huddle', () => {
         '301,302,303,304'
     );
 
-    // This is broken, but reflects the current
-    // state of the code.  We need a numerical sort.
+    // IMPORTANT: we always want to sort
+    // ids numerically to create huddle strings.
     assert.equal(
         people.concat_huddle(user_ids, 99),
-        '301,302,303,99'
+        '99,301,302,303'
     );
 });
 

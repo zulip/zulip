@@ -360,7 +360,8 @@ exports.concat_huddle = function (user_ids, user_id) {
         The only logic we're encapsulating here is
         how to encode huddles.
     */
-    return user_ids.concat(user_id).sort().join(',');
+    const sorted_ids = sort_numerically([...user_ids, user_id]);
+    return sorted_ids.join(',');
 };
 
 exports.pm_lookup_key = function (user_ids_string) {
