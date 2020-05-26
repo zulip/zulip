@@ -270,18 +270,18 @@ nav .content {
 
 nav .logo {
     top: 7px;
-}
 
-nav .logo span {
-    position: relative;
-    left: 5px;
-    top: 1px;
-    color: hsl(0, 0%, 100%);
-    font-weight: 600;
-    vertical-align: top;
-    text-transform: uppercase;
-    font-size: 1.2rem;
-    letter-spacing: 0.1em;
+    span {
+        position: relative;
+        left: 5px;
+        top: 1px;
+        color: hsl(0, 0%, 100%);
+        font-weight: 600;
+        vertical-align: top;
+        text-transform: uppercase;
+        font-size: 1.2rem;
+        letter-spacing: 0.1em;
+    }
 }
 
 nav .brand-logo {
@@ -2958,10 +2958,10 @@ nav ul li.active::after {
         display: block;
         margin: 0 auto;
         text-align: center;
-    }
 
-    nav .logo span {
-        color: hsl(0, 0%, 100%);
+        span {
+            color: hsl(0, 0%, 100%);
+        }
     }
 
     nav ul {
