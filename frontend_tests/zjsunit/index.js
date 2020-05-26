@@ -63,9 +63,8 @@ global.stub_templates = handlebars.stub_templates;
 const noop = function () {};
 
 // Set up fake module.hot
-// eslint-disable-next-line no-native-reassign
-module = require('module');
-module.prototype.hot = {
+const Module = require('module');
+Module.prototype.hot = {
     accept: noop,
 };
 
