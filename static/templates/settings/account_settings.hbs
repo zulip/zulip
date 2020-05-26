@@ -39,7 +39,7 @@
             {{#if page_params.two_fa_enabled }}
             <p for="two_factor_auth" class="inline-block title">
                 {{t "Two factor authentication" }}: {{#if page_params.two_fa_enabled_user }}{{t "Enabled" }}{{else}}{{t "Disabled" }}{{/if}}
-                <a target="_blank" id="two_factor_auth" href="/account/two_factor/" title="{{t 'Setup two factor authentication' }}">[{{t "Setup" }}]</a>
+                <a target="_blank" rel="noopener noreferrer" id="two_factor_auth" href="/account/two_factor/" title="{{t 'Setup two factor authentication' }}">[{{t "Setup" }}]</a>
             </p>
             {{/if}}
 
@@ -99,7 +99,7 @@
                             <label for="old_password" class="title">{{t "Old password" }}</label>
                             <input type="password" autocomplete="off" name="old_password" id="old_password" class="w-200 inline-block" value="" />
                             <div class="info">
-                                <a href="/accounts/password/reset/" class="sea-green" target="_blank">{{t "Forgotten it?" }}</a>
+                                <a href="/accounts/password/reset/" class="sea-green" target="_blank" rel="noopener noreferrer">{{t "Forgotten it?" }}</a>
                             </div>
 
                         </div>
@@ -160,7 +160,7 @@
                         &times;
                     </span>
                     <div id="user-avatar-source">
-                        <a href="https://en.gravatar.com/" target="_blank">{{t "Avatar from Gravatar" }}</a>
+                        <a href="https://en.gravatar.com/" target="_blank" rel="noopener noreferrer">{{t "Avatar from Gravatar" }}</a>
                     </div>
                 </div>
                 <input type="file" name="user_avatar_file_input" class="notvisible" id="user_avatar_file_input" value="{{t 'Upload profile picture' }}" />

@@ -5,7 +5,7 @@
         <div id="org-org-profile" class="org-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Organization profile" }}
-                    <a href="/help/create-your-organization-profile" target="_blank">
+                    <a href="/help/create-your-organization-profile" target="_blank" rel="noopener noreferrer">
                         <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                     </a>
                 </h3>
@@ -45,20 +45,20 @@
                   id="realm_icon_delete_button">{{t 'Delete profile picture' }}</button>
             </div>
         </div>
-        <a href="/login/?preview=true" target="_blank" class="button rounded sea-green w-200 block" id="id_org_profile_preview">
+        <a href="/login/?preview=true" target="_blank" rel="noopener noreferrer" class="button rounded sea-green w-200 block" id="id_org_profile_preview">
             {{t 'Preview organization profile' }}
             <i class="fa fa-external-link" aria-hidden="true" title="{{t 'Preview organization profile' }}"></i>
         </a>
 
         <div class="subsection-header">
             <h3>{{t "Organization logo" }}
-                <a href="/help/create-your-organization-profile#add-a-wide-logo" target="_blank">
+                <a href="/help/create-your-organization-profile#add-a-wide-logo" target="_blank" rel="noopener noreferrer">
                     <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                 </a>
             </h3>
             <div>
                 {{#unless plan_includes_wide_organization_logo}}
-                <a href="/upgrade" class="upgrade-tip" target="_blank">
+                <a href="/upgrade" class="upgrade-tip" target="_blank" rel="noopener noreferrer">
                     {{upgrade_text_for_wide_organization_logo}}
                 </a>
                 {{/unless}}

@@ -1,8 +1,8 @@
 <span class="label">realm</span>
 <h3><img src="{{ realm_icon_url(realm) }}" class="support-realm-icon"> {{ realm.name }}</h3>
-<b>URL</b>: <a target="_blank" href="{{ realm.uri }}">{{ realm.uri }}</a> |
-<a target="_blank" href="/stats/realm/{{ realm.string_id }}/">stats</a> |
-<a target="_blank" href="/realm_activity/{{ realm.string_id }}/">activity</a><br>
+<b>URL</b>: <a target="_blank" rel="noopener noreferrer" href="{{ realm.uri }}">{{ realm.uri }}</a> |
+<a target="_blank" rel="noopener noreferrer" href="/stats/realm/{{ realm.string_id }}/">stats</a> |
+<a target="_blank" rel="noopener noreferrer" href="/realm_activity/{{ realm.string_id }}/">activity</a><br>
 <b>Date created</b>: {{ realm.date_created|timesince }} ago<br>
 <b>Admins</b>: {{ realm_admin_emails(realm) }}
 <a title="Copy emails" class="copy-button" data-copytext="{{ realm_admin_emails(realm) }}">
