@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import Any, Dict, List, Mapping, Optional, Type
 
-import mock
+from unittest import mock
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
 

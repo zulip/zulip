@@ -44,7 +44,7 @@ from zerver.models import (
 )
 
 import copy
-import mock
+from unittest import mock
 import os
 import ujson
 import re

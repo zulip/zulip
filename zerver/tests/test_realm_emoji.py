@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 
 from zerver.lib.actions import do_create_realm, do_create_user, \
     check_add_realm_emoji

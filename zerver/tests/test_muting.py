@@ -1,7 +1,7 @@
 from django.utils.timezone import now as timezone_now
 from datetime import timedelta, datetime
 from typing import Any, Dict
-import mock
+from unittest import mock
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.stream_topic import StreamTopicTarget

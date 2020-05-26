@@ -8,7 +8,7 @@ from typing import List, Iterator
 import glob
 import argparse
 import contextlib
-import mock
+from unittest import mock
 import os
 import shlex
 import sys

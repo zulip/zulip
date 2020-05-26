@@ -48,7 +48,7 @@ import ujson
 from PIL import Image
 
 from io import StringIO
-import mock
+from unittest import mock
 import os
 import io
 import shutil

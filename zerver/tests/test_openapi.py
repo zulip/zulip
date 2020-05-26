@@ -1,6 +1,6 @@
 import re
 import sys
-import mock
+from unittest import mock
 import inspect
 from typing import Dict, Any, Set, Union, List, Callable, Tuple, Optional, Iterable, Mapping, Sequence
 from unittest.mock import patch, MagicMock

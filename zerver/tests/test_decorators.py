@@ -1,5 +1,5 @@
 import base64
-import mock
+from unittest import mock
 import re
 import os
 from collections import defaultdict

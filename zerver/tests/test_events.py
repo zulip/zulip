@@ -147,7 +147,7 @@ from zerver.tornado.event_queue import (
 )
 from zerver.tornado.views import get_events
 
-import mock
+from unittest import mock
 import time
 import ujson
 

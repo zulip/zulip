@@ -1,6 +1,6 @@
 import ujson
 import logging
-import mock
+from unittest import mock
 import requests
 
 from typing import Any, Optional

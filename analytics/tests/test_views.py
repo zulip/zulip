@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-import mock
+from unittest import mock
 from django.utils.timezone import utc
 from django.http import HttpResponse
 import ujson

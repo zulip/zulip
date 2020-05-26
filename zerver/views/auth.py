@@ -616,7 +616,7 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
         # LOGIN_REDIRECT_URL setting.  But until then, it works.  We
         # import mock.patch here because mock has an expensive import
         # process involving pbr -> pkgresources (which is really slow).
-        from mock import patch
+        from unittest.mock import patch
         with patch.object(settings, 'LOGIN_REDIRECT_URL', realm_uri):
             return super().done(form_list, **kwargs)
 

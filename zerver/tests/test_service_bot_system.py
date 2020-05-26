@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 from typing import Any, Union, Mapping, Callable
 
 from django.conf import settings

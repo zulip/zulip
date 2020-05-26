@@ -1,5 +1,5 @@
 import datetime
-import mock
+from unittest import mock
 import time
 from typing import List
 

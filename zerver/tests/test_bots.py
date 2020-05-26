@@ -4,7 +4,7 @@ import ujson
 
 from django.core import mail
 from django.test import override_settings
-from mock import patch, MagicMock
+from unittest.mock import patch, MagicMock
 from typing import Any, Dict, List, Mapping, Optional
 
 from zerver.lib.actions import do_change_stream_invite_only, do_deactivate_user, \

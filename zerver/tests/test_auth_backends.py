@@ -15,7 +15,7 @@ import responses
 
 import ldap
 import jwt
-import mock
+from unittest import mock
 import re
 import datetime
 import time
@@ -1598,8 +1598,10 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 result = self.client_post('/complete/saml/',  post_params)
             self.assertEqual(result.status_code, 302)
             self.assertEqual('/login/', result.url)
-            self.assertIn("/complete/saml/: Can't figure out subdomain for this authentication request",
-                          m.call_args.args[0])
+            m.assert_called_once_with(
+                "/complete/saml/: Can't figure out subdomain for this authentication request. relayed_params: %s",
+                {},
+            )
 
     def test_social_auth_complete_wrong_issuing_idp(self) -> None:
         relay_state = ujson.dumps(dict(
@@ -1619,8 +1621,9 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 result = self.client_post('/complete/saml/',  post_params)
                 self.assertEqual(result.status_code, 302)
                 self.assertEqual('/login/', result.url)
-                self.assertIn("/complete/saml/: No valid IdP as issuer of the SAMLResponse.",
-                              m.call_args.args[0])
+                m.assert_called_once_with(
+                    "/complete/saml/: No valid IdP as issuer of the SAMLResponse.",
+                )
 
     def test_social_auth_complete_valid_get_idp_bad_samlresponse(self) -> None:
         """
@@ -1864,8 +1867,10 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
             self.assertEqual(result.status_code, 302)
             self.assertEqual('/login/', result.url)
-            self.assertIn("/complete/saml/: Can't figure out subdomain for this authentication request",
-                          m.call_args.args[0])
+            m.assert_called_once_with(
+                "/complete/saml/: Can't figure out subdomain for this authentication request. relayed_params: %s",
+                {},
+            )
 
 class GitHubAuthBackendTest(SocialAuthBase):
     __unittest_skip__ = False

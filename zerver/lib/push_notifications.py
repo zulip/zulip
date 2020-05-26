@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemotePushDeviceToken
 else:  # nocoverage  -- Not convenient to add test for this.
-    from mock import Mock
+    from unittest.mock import Mock
     RemotePushDeviceToken = Mock()  # type: ignore[misc] # https://github.com/JukkaL/mypy/issues/1188
 
 DeviceToken = Union[PushDeviceToken, RemotePushDeviceToken]

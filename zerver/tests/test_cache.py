@@ -1,6 +1,6 @@
 from django.conf import settings
 
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 from typing import Any, List, Dict, Optional
 
 from zerver.apps import flush_cache

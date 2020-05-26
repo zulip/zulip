@@ -1,6 +1,6 @@
 from typing import Any
 
-import mock
+from unittest import mock
 import ujson
 from django.test import TestCase
 from django.utils import translation

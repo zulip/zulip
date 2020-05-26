@@ -1,5 +1,5 @@
 from types import SimpleNamespace
-from mock import MagicMock, patch
+from unittest.mock import MagicMock, patch
 from typing import Dict
 
 from django.http import HttpRequest
