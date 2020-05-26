@@ -240,15 +240,15 @@ nav.white .brand-logo path {
     stroke: hsl(0, 0%, 100%) !important;
 }
 
+nav.white .hamburger {
+    fill: hsl(0, 0%, 27%);
+}
+
 nav .hamburger {
     display: none;
     fill: hsl(0, 0%, 100%);
     cursor: pointer;
     margin-top: 3px;
-}
-
-nav.white .hamburger {
-    fill: hsl(0, 0%, 27%);
 }
 
 nav .content {
