@@ -11,7 +11,10 @@
         <div id="password_confirmation">
             <form id="api_key_form">
                 <p>{{t "Please re-enter your password to confirm your identity." }}
-                    <a href="/accounts/password/reset/" target="_blank">{{t "Never had one? Forgotten it?" }}</a></p>
+                    <a href="/accounts/password/reset/" target="_blank" rel="noopener noreferrer">
+                        {{t "Never had one? Forgotten it?" }}
+                    </a>
+                </p>
                 <div class="control-group">
                     <label for="password" class="control-label">{{t "Current password" }}</label>
                     <input type="password" autocomplete="off" name="password" id="get_api_key_password" value="" />

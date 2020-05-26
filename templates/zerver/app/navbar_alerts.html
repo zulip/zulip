@@ -21,7 +21,7 @@
         <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}">&times;</span>
         <div data-step="1">
             {% trans %}Zulip needs to send email to confirm users' addresses and send notifications.{% endtrans %}
-            <a class="alert-link" href="https://zulip.readthedocs.io/en/latest/production/email.html" target="_blank">
+            <a class="alert-link" href="https://zulip.readthedocs.io/en/latest/production/email.html" target="_blank" rel="noopener noreferrer">
                 {% trans %}See how to configure email.{% endtrans %}
             </a>
         </div>
@@ -42,7 +42,7 @@
         <div data-step="1">
             {% trans apps_page_link="https://zulip.com/apps" %}
             You are using an old version of the Zulip desktop app with known security bugs.
-            <a class="alert-link" href="{{ apps_page_link }}" target="_blank">
+            <a class="alert-link" href="{{ apps_page_link }}" target="_blank" rel="noopener noreferrer">
                 Download the latest version.
             </a>
             {% endtrans %}

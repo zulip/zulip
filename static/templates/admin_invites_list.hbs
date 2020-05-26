@@ -2,7 +2,11 @@
 <tr class="invite_row">
     <td>
         {{#if is_multiuse}}
-        <span class="email"><a href="{{link_url}}" target="_blank">{{t 'Invite link'}}</a></span>
+        <span class="email">
+            <a href="{{link_url}}" target="_blank" rel="noopener noreferrer">
+                {{t 'Invite link'}}
+            </a>
+        </span>
         {{else}}
         <span class="email">{{email}}</span>
         {{/if}}

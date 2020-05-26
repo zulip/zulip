@@ -9,7 +9,7 @@
 
     {{#unless is_guest}}
         <p>
-            {{#tr this}}User groups allow you to <a href="/help/mention-a-user-or-group" target="_blank">mention</a> multiple users at once. When you mention a user group, everyone in the group is notified as if they were individually mentioned.{{/tr}}
+            {{#tr this}}User groups allow you to <a href="/help/mention-a-user-or-group" target="_blank" rel="noopener noreferrer">mention</a> multiple users at once. When you mention a user group, everyone in the group is notified as if they were individually mentioned.{{/tr}}
         </p>
         {{#if (or is_admin (eq realm_user_group_edit_policy USER_GROUP_EDIT_POLICY_MEMBERS))}}
         <form class="form-horizontal admin-user-group-form">
