@@ -21,7 +21,7 @@ const alice = {
 };
 
 people.init();
-people.add(alice);
+people.add_active_user(alice);
 people.is_my_user_id = () => false;
 
 function set_filter(terms) {

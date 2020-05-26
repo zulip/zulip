@@ -59,7 +59,7 @@ const me = {
 
 function initialize() {
     people.init();
-    people.add(me);
+    people.add_active_user(me);
     people.initialize_current_user(me.user_id);
 }
 
@@ -73,7 +73,7 @@ run_test('updates', () => {
         user_id: 32,
         full_name: 'Isaac Newton',
     };
-    people.add(isaac);
+    people.add_active_user(isaac);
 
     user_events.update_person({user_id: isaac.user_id, is_guest: true});
     person = people.get_by_email(isaac.email);
@@ -174,7 +174,7 @@ run_test('updates', () => {
         is_bot: true,
         bot_owner_id: isaac.id,
     };
-    people.add(test_bot);
+    people.add_active_user(test_bot);
 
     user_events.update_person({user_id: test_bot.user_id, bot_owner_id: me.user_id});
     person = people.get_by_email(test_bot.email);

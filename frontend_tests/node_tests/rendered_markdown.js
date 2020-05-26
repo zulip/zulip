@@ -22,8 +22,8 @@ const cordelia = {
     full_name: 'Cordelia',
 };
 people.init();
-people.add(iago);
-people.add(cordelia);
+people.add_active_user(iago);
+people.add_active_user(cordelia);
 people.initialize_current_user(iago.user_id);
 
 const group_me = {

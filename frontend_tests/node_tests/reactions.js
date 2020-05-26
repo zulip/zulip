@@ -67,9 +67,9 @@ const cali = {
     user_id: 7,
     full_name: 'Cali',
 };
-people.add(alice);
-people.add(bob);
-people.add(cali);
+people.add_active_user(alice);
+people.add_active_user(bob);
+people.add_active_user(cali);
 
 const message = {
     id: 1001,
@@ -754,4 +754,3 @@ run_test('process_reaction_click errors', () => {
     blueslip.expect('error', 'Data integrity problem for reaction bad-local-id (message some-msg-id)');
     reactions.process_reaction_click('some-msg-id', 'bad-local-id');
 });
-

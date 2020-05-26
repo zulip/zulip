@@ -31,7 +31,7 @@ const alice = {
     user_id: 10,
     full_name: 'Alice Smith',
 };
-people.add(alice);
+people.add_active_user(alice);
 
 run_test('get_items', () => {
     const alice_li = $.create('alice stub');
@@ -112,7 +112,7 @@ run_test('big_list', () => {
             user_id: 100 + i,
             full_name: 'Somebody ' + i,
         };
-        people.add(person);
+        people.add_active_user(person);
         user_ids.push(person.user_id);
     });
 

@@ -31,7 +31,7 @@ const me = {
 };
 
 // set up user data
-people.add(me);
+people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
 function contains_sub(subs, sub) {
@@ -181,9 +181,9 @@ run_test('subscribers', () => {
         full_name: 'George',
         user_id: 103,
     };
-    people.add(fred);
-    people.add(not_fred);
-    people.add(george);
+    people.add_active_user(fred);
+    people.add_active_user(not_fred);
+    people.add_active_user(george);
 
     function potential_subscriber_ids() {
         const users = stream_data.potential_subscribers(sub);
@@ -221,7 +221,7 @@ run_test('subscribers', () => {
         full_name: 'Brutus',
         user_id: 104,
     };
-    people.add(brutus);
+    people.add_active_user(brutus);
     assert(!stream_data.is_user_subscribed('Rome', brutus.user_id));
 
     // add
@@ -608,7 +608,7 @@ run_test('get_subscriber_count', () => {
         full_name: 'Fred',
         user_id: 101,
     };
-    people.add(fred);
+    people.add_active_user(fred);
     stream_data.add_subscriber('India', 102);
     assert.equal(stream_data.get_subscriber_count('India'), 1);
     const george = {
@@ -616,7 +616,7 @@ run_test('get_subscriber_count', () => {
         full_name: 'George',
         user_id: 103,
     };
-    people.add(george);
+    people.add_active_user(george);
     stream_data.add_subscriber('India', 103);
     assert.equal(stream_data.get_subscriber_count('India'), 2);
 

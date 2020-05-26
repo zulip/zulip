@@ -122,12 +122,12 @@ const bob = {
     full_name: 'Bob',
 };
 
-people.add(new_user);
-people.add(me);
+people.add_active_user(new_user);
+people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
-people.add(alice);
-people.add(bob);
+people.add_active_user(alice);
+people.add_active_user(bob);
 
 run_test('validate_stream_message_address_info', () => {
     const sub = {
@@ -264,7 +264,7 @@ run_test('validate', () => {
 
     assert.equal($('#compose-error-msg').html(), i18n.t('Please specify at least one valid recipient', {}));
 
-    people.add(bob);
+    people.add_active_user(bob);
     compose_state.private_message_recipient('bob@example.com');
     assert(compose.validate());
 

@@ -20,11 +20,11 @@ const bob = {
     full_name: 'Bob',
 };
 
-people.add(me);
+people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
-people.add(alice);
-people.add(bob);
+people.add_active_user(alice);
+people.add_active_user(bob);
 
 run_test('set_focused_recipient', () => {
     const sub = {

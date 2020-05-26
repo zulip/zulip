@@ -7,7 +7,7 @@ zrequire('alert_words');
 
 alert_words.initialize(params);
 
-people.add({
+people.add_active_user({
     email: 'tester@zulip.com',
     full_name: 'Tester von Tester',
     user_id: 42,

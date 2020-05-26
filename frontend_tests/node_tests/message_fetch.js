@@ -46,7 +46,7 @@ const alice = {
     user_id: 7,
     full_name: 'Alice',
 };
-people.add(alice);
+people.add_active_user(alice);
 
 resize.resize_bottom_whitespace = noop;
 server_events.home_view_loaded = noop;

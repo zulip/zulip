@@ -35,8 +35,8 @@ run_test('narrowing', () => {
         full_name: 'Bob Patel',
     };
 
-    people.add(alice);
-    people.add(bob);
+    people.add_active_user(alice);
+    people.add_active_user(bob);
 
     pm_expanded = false;
     filter = new Filter([

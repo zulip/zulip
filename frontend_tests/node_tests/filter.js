@@ -26,9 +26,9 @@ const steve = {
     full_name: 'steve',
 };
 
-people.add(me);
-people.add(joe);
-people.add(steve);
+people.add_active_user(me);
+people.add_active_user(joe);
+people.add_active_user(steve);
 people.initialize_current_user(me.user_id);
 
 function assert_same_operators(result, terms) {

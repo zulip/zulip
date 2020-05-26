@@ -17,7 +17,7 @@ const george = {
     full_name: 'George',
     user_id: 103,
 };
-people.add(george);
+people.add_active_user(george);
 
 const frontend = {
     subscribed: false,
