@@ -217,10 +217,12 @@ nav.white {
     background-color: hsl(0, 0%, 100%);
 }
 
-nav.white li a,
-nav.white li a:hover,
-nav.white li a:visited {
-    color: hsl(0, 0%, 27%);
+nav.white li {
+    a,
+    a:hover,
+    a:visited {
+        color: hsl(0, 0%, 27%);
+    }
 }
 
 nav.white ul li.active::after {
