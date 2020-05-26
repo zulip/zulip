@@ -9,12 +9,7 @@ $left_col_size: 19px;
 $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
 
 #left-sidebar {
-    #group-pm-list {
-        display: none;
-    }
-
-    #user-list,
-    #group-pm-list {
+    #user-list {
         padding-left: 10px;
     }
 }

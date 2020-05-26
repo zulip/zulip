@@ -1,4 +1,4 @@
-const list_selectors = ["#group-pm-list", "#stream_filters", "#global_filters", "#user_presences"];
+const list_selectors = ["#stream_filters", "#global_filters", "#user_presences"];
 
 exports.inside_list = function (e) {
     const $target = $(e.target);

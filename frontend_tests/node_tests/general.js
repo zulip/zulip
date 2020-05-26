@@ -416,7 +416,7 @@ run_test('insert_message', () => {
 
     assert.equal(message_store.get(new_message.id), undefined);
 
-    helper.redirect('activity', 'process_loaded_messages');
+    helper.redirect('huddle_data', 'process_loaded_messages');
     helper.redirect('message_util', 'add_new_messages');
     helper.redirect('notifications', 'received_messages');
     helper.redirect('resize', 'resize_page_components');
@@ -433,9 +433,9 @@ run_test('insert_message', () => {
     // the code invokes various objects when a new message
     // comes in:
     assert.deepEqual(helper.events, [
+        'huddle_data.process_loaded_messages',
         'message_util.add_new_messages',
         'message_util.add_new_messages',
-        'activity.process_loaded_messages',
         'unread_ui.update_unread_counts',
         'resize.resize_page_components',
         'unread_ops.process_visible',

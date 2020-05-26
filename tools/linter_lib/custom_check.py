@@ -626,8 +626,6 @@ html_rules: List["Rule"] = whitespace_rules + prose_style_rules + [
          'templates/zerver/app/markdown_help.html',
          # 5xx page doesn't have external CSS
          'static/html/5xx.html',
-         # Group PMs color is dynamically calculated
-         'static/templates/group_pms.hbs',
 
          # exclude_pattern above handles color, but have other issues:
          'static/templates/draft.hbs',
