@@ -1705,12 +1705,14 @@ paths:
                 - properties:
                     topics:
                       type: array
+                      description: |
+                        An array of `topic` objects.
                       items:
                         type: object
                         properties:
                           max_id:
                             description: |
-                              The ID of the last message sent to the topic.
+                              The message ID of the last message sent to this topic.
                             type: number
                           name:
                             description: |
