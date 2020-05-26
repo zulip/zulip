@@ -1809,12 +1809,17 @@ paths:
                     max_message_id:
                       type: integer
                       description: |
-                        NA.
+                        The integer ID of the last message received by your account.
+
+                        **Deprecated**.  We plan to remove this in favor of recommending
+                        using `GET /messages` with `anchor="newest"`.
                       example: 30
                     pointer:
                       type: integer
                       description: |
-                        NA
+                        The integer ID of the message that the pointer is currently on.
+
+                        **Deprecated**.  We plan to remove the `pointer` as a concept in Zulip.
                       example: -1
                     short_name:
                       type: string
