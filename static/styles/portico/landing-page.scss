@@ -207,140 +207,139 @@ nav {
     padding: 40px;
 
     z-index: 4;
-}
 
-nav .brand.logo {
-    text-decoration: none;
-}
+    .brand.logo {
+        text-decoration: none;
+    }
 
-nav.white {
-    background-color: hsl(0, 0%, 100%);
+    &.white {
+        background-color: hsl(0, 0%, 100%);
 
-    li {
-        a,
-        a:hover,
-        a:visited {
-            color: hsl(0, 0%, 27%);
+        li {
+            a,
+            a:hover,
+            a:visited {
+                color: hsl(0, 0%, 27%);
+            }
+        }
+
+        ul {
+            li {
+                &.active {
+                    &::after {
+                        color: hsl(0, 0%, 27%);
+                    }
+                }
+            }
+        }
+
+        .brand.logo {
+            span {
+                color: hsl(0, 0%, 27%);
+            }
+
+            circle {
+                fill: hsl(0, 0%, 27%) !important;
+            }
+
+            path {
+                fill: hsl(0, 0%, 100%) !important;
+                stroke: hsl(0, 0%, 100%) !important;
+            }
+        }
+
+        .hamburger {
+            fill: hsl(0, 0%, 27%);
         }
     }
 
+    .hamburger {
+        display: none;
+        fill: hsl(0, 0%, 100%);
+        cursor: pointer;
+        margin-top: 3px;
+    }
+
+    .content {
+        margin: 0 5px 0 10px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .logo {
+        top: 7px;
+
+        span {
+            position: relative;
+            left: 5px;
+            top: 1px;
+            color: hsl(0, 0%, 100%);
+            font-weight: 600;
+            vertical-align: top;
+            text-transform: uppercase;
+            font-size: 1.2rem;
+            letter-spacing: 0.1em;
+        }
+    }
+
+    .brand-logo {
+        width: 25px;
+    }
+
     ul {
+        float: right;
+        list-style-type: none;
+        font-weight: 400;
+        margin: 0;
+        padding: 0;
+
+        outline: 1000px solid;
+        outline-color: transparent;
+
+        cursor: pointer;
+        transition: outline-color 0.2s ease;
+
+        .exit {
+            display: none;
+            user-select: none;
+        }
+
         li {
+            position: relative;
+            display: inline-block;
+            margin: 10px;
+
+            color: hsl(0, 0%, 100%);
+
+            opacity: 0.7;
+            transition: all 0.2s ease;
+
+            &.active,
+            &:hover {
+                opacity: 1;
+            }
+
             &.active {
                 &::after {
-                    color: hsl(0, 0%, 27%);
+                    content: "v";
+                    position: absolute;
+                    bottom: -15px;
+                    left: calc(50% - 4px);
+                    font-weight: 100;
+                    transform: scaleX(2) scaleY(0.5);
                 }
             }
         }
     }
 
-    .brand.logo {
-        span {
-            color: hsl(0, 0%, 27%);
-        }
-
-        circle {
-            fill: hsl(0, 0%, 27%) !important;
-        }
-
-        path {
-            fill: hsl(0, 0%, 100%) !important;
-            stroke: hsl(0, 0%, 100%) !important;
-        }
-    }
-
-    .hamburger {
-        fill: hsl(0, 0%, 27%);
-    }
-}
-
-
-nav .hamburger {
-    display: none;
-    fill: hsl(0, 0%, 100%);
-    cursor: pointer;
-    margin-top: 3px;
-}
-
-nav .content {
-    margin: 0 5px 0 10px;
-    position: relative;
-    z-index: 2;
-}
-
-nav .logo {
-    top: 7px;
-
-    span {
-        position: relative;
-        left: 5px;
-        top: 1px;
-        color: hsl(0, 0%, 100%);
-        font-weight: 600;
-        vertical-align: top;
-        text-transform: uppercase;
-        font-size: 1.2rem;
-        letter-spacing: 0.1em;
-    }
-}
-
-nav .brand-logo {
-    width: 25px;
-}
-
-nav ul {
-    float: right;
-    list-style-type: none;
-    font-weight: 400;
-    margin: 0;
-    padding: 0;
-
-    outline: 1000px solid;
-    outline-color: transparent;
-
-    cursor: pointer;
-    transition: outline-color 0.2s ease;
-
-    .exit {
-        display: none;
-        user-select: none;
-    }
-
     li {
-        position: relative;
-        display: inline-block;
-        margin: 10px;
-
-        color: hsl(0, 0%, 100%);
-
-        opacity: 0.7;
-        transition: all 0.2s ease;
-
-        &.active,
-        &:hover {
-            opacity: 1;
+        a,
+        a:hover,
+        a:visited {
+            text-decoration: none;
+            color: hsl(0, 0%, 100%);
+            font-size: 1.05em;
         }
-
-        &.active {
-            &::after {
-                content: "v";
-                position: absolute;
-                bottom: -15px;
-                left: calc(50% - 4px);
-                font-weight: 100;
-                transform: scaleX(2) scaleY(0.5);
-            }
-        }
-    }
-}
-
-nav li {
-    a,
-    a:hover,
-    a:visited {
-        text-decoration: none;
-        color: hsl(0, 0%, 100%);
-        font-size: 1.05em;
     }
 }
 
@@ -2949,36 +2948,38 @@ nav li {
         padding-top: 170px;
     }
 
-    nav.white {
-        padding-bottom: 40px;
-    }
-
-    nav .logo {
-        float: none;
-        display: block;
-        margin: 0 auto;
-        text-align: center;
-
-        span {
-            color: hsl(0, 0%, 100%);
+    nav {
+        &.white {
+            padding-bottom: 40px;
         }
-    }
 
-    nav ul {
-        display: block;
-        margin: 20px auto 0 auto;
-        float: none;
-        text-align: center;
-    }
+        .logo {
+            float: none;
+            display: block;
+            margin: 0 auto;
+            text-align: center;
 
-    nav svg.brand-logo circle {
-        fill: hsl(0, 0%, 100%) !important;
-        stroke: hsl(0, 0%, 100%) !important;
-    }
+            span {
+                color: hsl(0, 0%, 100%);
+            }
+        }
 
-    nav svg.brand-logo path {
-        fill: hsl(182, 34%, 47%) !important;
-        stroke: hsl(182, 34%, 47%) !important;
+        ul {
+            display: block;
+            margin: 20px auto 0 auto;
+            float: none;
+            text-align: center;
+        }
+
+        svg.brand-logo circle {
+            fill: hsl(0, 0%, 100%) !important;
+            stroke: hsl(0, 0%, 100%) !important;
+        }
+
+        svg.brand-logo path {
+            fill: hsl(182, 34%, 47%) !important;
+            stroke: hsl(182, 34%, 47%) !important;
+        }
     }
 
     .portico-landing.features-app section .headliner .image {
@@ -3190,11 +3191,11 @@ nav li {
         padding-left: 50px;
         padding-right: 50px;
         width: calc(100% - 100px);
-    }
 
-    nav .hamburger {
-        position: relative;
-        z-index: 10;
+        .hamburger {
+            position: relative;
+            z-index: 10;
+        }
     }
 
     .portico-landing.features-app section.hero {
@@ -3379,79 +3380,80 @@ nav li {
         height: 450px;
     }
 
-    nav ul {
-        margin-top: 0px;
-        text-align: left;
-    }
-
-    nav .content {
-        display: inline-block;
-        z-index: 11;
-    }
-
-    nav .hamburger {
-        display: inline-block;
-        float: right;
-    }
-
-    nav .content {
-        > ul.show {
-            outline-color: hsla(203, 43%, 22%, 0.7);
-        }
-    }
-
-    nav ul {
-        position: fixed;
-        float: none;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        width: 300px;
-        padding-left: 30px;
-
-        background-color: hsl(0, 0%, 100%);
-        transform: translate(-350px, 0px);
-
-
-        box-shadow: 0px 0px 80px hsla(0, 0%, 0%, 0.12);
-
-        transition: all 0.5s ease;
-
-        &.show {
-            transform: translate(0px, 0px);
+    nav {
+        ul {
+            margin-top: 0px;
+            text-align: left;
         }
 
-        .exit {
-            display: block;
-            position: absolute;
-            top: 10px;
-            right: 25px;
-
-            font-weight: 100;
-            font-size: 3em;
-            color: initial;
+        .content {
+            display: inline-block;
+            z-index: 11;
         }
 
-        li {
-            display: block;
-            font-size: 1.5em;
-            font-weight: 300;
-            line-height: 1.5;
+        .hamburger {
+            display: inline-block;
+            float: right;
+        }
 
-            &:first-of-type {
-                margin-top: 20px;
+        .content {
+            > ul.show {
+                outline-color: hsla(203, 43%, 22%, 0.7);
+            }
+        }
+
+        ul {
+            position: fixed;
+            float: none;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 300px;
+            padding-left: 30px;
+
+            background-color: hsl(0, 0%, 100%);
+            transform: translate(-350px, 0px);
+
+            box-shadow: 0px 0px 80px hsla(0, 0%, 0%, 0.12);
+
+            transition: all 0.5s ease;
+
+            &.show {
+                transform: translate(0px, 0px);
             }
 
-            &.active {
-                &::after {
-                    content: ">";
-                    transform: scale(1, 1);
-                    bottom: auto;
-                    left: -25px;
-                    font-weight: 400;
+            .exit {
+                display: block;
+                position: absolute;
+                top: 10px;
+                right: 25px;
+
+                font-weight: 100;
+                font-size: 3em;
+                color: initial;
+            }
+
+            li {
+                display: block;
+                font-size: 1.5em;
+                font-weight: 300;
+                line-height: 1.5;
+
+                &:first-of-type {
+                    margin-top: 20px;
                 }
 
-                font-weight: 400;
+                &.active {
+                    &::after {
+                        content: ">";
+                        transform: scale(1, 1);
+                        bottom: auto;
+                        left: -25px;
+                        font-weight: 400;
+                    }
+
+                    font-weight: 400;
+                }
             }
         }
     }
