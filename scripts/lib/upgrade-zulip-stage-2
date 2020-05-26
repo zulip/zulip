@@ -43,7 +43,7 @@ os_version = distro_info['VERSION_ID']
 
 if (vendor, os_version) in UNSUPPORTED_DISTROS:
     # Link to documentation for how to correctly upgrade the OS.
-    logging.critical("Unsupported platform: {} {}".format(vendor, os_version))
+    logging.critical("Unsupported platform: %s %s", vendor, os_version)
     logging.info("Sorry! The support for your OS has been discontinued.\n"
                  "Please upgrade your OS to a supported release first.\n"
                  "See https://zulip.readthedocs.io/en/latest/production/"
