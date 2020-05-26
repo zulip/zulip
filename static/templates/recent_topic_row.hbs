@@ -7,6 +7,9 @@
         {{/if}}
     </td>
     <td class="recent_topic_stream">
+        <span id="stream_sidebar_privacy_swatch_{{stream_id}}" class="stream-privacy filter-icon" style="color: {{stream_color}}">
+            {{> stream_privacy }}
+        </span>
         <a href="{{stream_url}}">{{stream}}</a>
     </td>
     <td class="recent_topic_name">
