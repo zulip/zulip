@@ -318,15 +318,6 @@ nav ul li {
     transition: all 0.2s ease;
 }
 
-nav li a,
-nav li a:hover,
-nav li a:visited {
-    text-decoration: none;
-    color: hsl(0, 0%, 100%);
-
-    font-size: 1.05em;
-}
-
 nav ul li.active,
 nav ul li:hover {
     opacity: 1;
@@ -343,6 +334,16 @@ nav ul li.active::after {
 
     transform: scaleX(2) scaleY(0.5);
 }
+
+nav li a,
+nav li a:hover,
+nav li a:visited {
+    text-decoration: none;
+    color: hsl(0, 0%, 100%);
+
+    font-size: 1.05em;
+}
+
 
 /* -- main panel styling -- */
 .portico-landing {
@@ -3421,6 +3422,12 @@ nav ul li.active::after {
         font-size: 0.8em;
     }
 
+    nav .content {
+        > ul.show {
+            outline-color: hsla(203, 43%, 22%, 0.7);
+        }
+    }
+
     nav ul {
         position: fixed;
         float: none;
@@ -3441,12 +3448,6 @@ nav ul li.active::after {
 
     nav ul.show {
         transform: translate(0px, 0px);
-    }
-
-    nav .content {
-        > ul.show {
-            outline-color: hsla(203, 43%, 22%, 0.7);
-        }
     }
 
     nav ul .exit {
