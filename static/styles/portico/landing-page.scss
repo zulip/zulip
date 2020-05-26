@@ -2960,15 +2960,15 @@ nav ul li.active::after {
         text-align: center;
     }
 
+    nav .logo span {
+        color: hsl(0, 0%, 100%);
+    }
+
     nav ul {
         display: block;
         margin: 20px auto 0 auto;
         float: none;
         text-align: center;
-    }
-
-    nav .logo span {
-        color: hsl(0, 0%, 100%);
     }
 
     nav svg.brand-logo circle {
