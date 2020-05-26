@@ -3443,8 +3443,10 @@ nav ul li.active::after {
         transform: translate(0px, 0px);
     }
 
-    nav .content > ul.show {
-        outline-color: hsla(203, 43%, 22%, 0.7);
+    nav .content {
+        > ul.show {
+            outline-color: hsla(203, 43%, 22%, 0.7);
+        }
     }
 
     nav ul .exit {
