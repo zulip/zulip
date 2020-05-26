@@ -337,16 +337,13 @@ function round_to_percentages(values, total) {
 // Last label will turn into "Other" if time_series data has a label not in labels
 function compute_summary_chart_data(time_series_data, num_steps, labels_) {
     const data = new Map();
-    for (const key in time_series_data) {
-        if (!time_series_data.hasOwnProperty(key)) {
-            continue;
-        }
-        if (time_series_data[key].length < num_steps) {
-            num_steps = time_series_data[key].length;
+    for (const [key, array] of Object.entries(time_series_data)) {
+        if (array.length < num_steps) {
+            num_steps = array.length;
         }
         let sum = 0;
         for (let i = 1; i <= num_steps; i += 1) {
-            sum += time_series_data[key][time_series_data[key].length - i];
+            sum += array[array.length - i];
         }
         data.set(key, sum);
     }

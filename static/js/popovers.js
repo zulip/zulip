@@ -42,11 +42,7 @@ function elem_to_user_id(elem) {
     };
 
     // add back all shallow properties of $.fn.popover to the new proxied version.
-    for (const x in popover) {
-        if (popover.hasOwnProperty(x)) {
-            $.fn.popover[x] = popover[x];
-        }
-    }
+    Object.assign($.fn.popover, popover);
 }($.fn.popover));
 
 function copy_email_handler(e) {
