@@ -86,6 +86,8 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     if settings.ZILENCER_ENABLED:
         apps_page_url = '/apps/'
 
+    apps_page_web = 'https://zulipchat.com/accounts/go/'
+
     user_is_authenticated = False
     if hasattr(request, 'user') and hasattr(request.user, 'is_authenticated'):
         user_is_authenticated = request.user.is_authenticated
@@ -120,6 +122,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         'realm_icon': realm_icon,
         'root_domain_uri': settings.ROOT_DOMAIN_URI,
         'apps_page_url': apps_page_url,
+        'apps_page_web': apps_page_web,
         'open_realm_creation': settings.OPEN_REALM_CREATION,
         'development_environment': settings.DEVELOPMENT,
         'support_email': FromAddress.SUPPORT,
