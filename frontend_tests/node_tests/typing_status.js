@@ -267,8 +267,7 @@ run_test('basics', () => {
     };
 
     // stub functions to see how may time they are called
-    for (const method in call_count) {
-        if (!call_count.hasOwnProperty(method)) { continue; }
+    for (const method of Object.keys(call_count)) {
         typing_status.__Rewire__(method, function () {
             call_count[method] += 1;
         });

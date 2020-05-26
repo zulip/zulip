@@ -21,7 +21,7 @@ function maybe_add_narrowed_messages(messages, msg_list) {
             const elsewhere_messages = [];
 
             for (const elem of messages) {
-                if (data.messages.hasOwnProperty(elem.id)) {
+                if (Object.prototype.hasOwnProperty.call(data.messages, elem.id)) {
                     util.set_match_data(elem, data.messages[elem.id]);
                     new_messages.push(elem);
                 } else {
