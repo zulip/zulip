@@ -796,7 +796,7 @@ run_test('set_up', () => {
     };
 
     const dropdown_list_widget_backup = dropdown_list_widget;
-    dropdown_list_widget = () => {  // eslint-disable-line no-native-reassign
+    window.dropdown_list_widget = () => {
         return {
             render: noop,
             update: noop,
@@ -840,7 +840,7 @@ run_test('set_up', () => {
     test_parse_time_limit();
     test_discard_changes_button(discard_changes);
 
-    dropdown_list_widget = dropdown_list_widget_backup;  // eslint-disable-line no-native-reassign
+    window.dropdown_list_widget = dropdown_list_widget_backup;
 });
 
 run_test('test get_organization_settings_options', () => {
