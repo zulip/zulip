@@ -1,6 +1,6 @@
 from typing import Any, Dict, Mapping, Union
 
-import mock
+from unittest import mock
 
 from django.utils.timezone import now as timezone_now
 

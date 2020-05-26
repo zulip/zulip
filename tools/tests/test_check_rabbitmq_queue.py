@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 from unittest import TestCase
 
 from scripts.lib.check_rabbitmq_queue import (

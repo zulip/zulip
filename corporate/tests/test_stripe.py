@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
 from functools import wraps
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 import operator
 import os
 import re

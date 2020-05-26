@@ -11,7 +11,7 @@ from zerver.models import CustomProfileField, \
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 import ujson
 
-import mock
+from unittest import mock
 
 class CustomProfileFieldTestCase(ZulipTestCase):
     def setUp(self) -> None:

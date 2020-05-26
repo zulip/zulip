@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.views.compatibility import find_mobile_os, version_lt, is_outdated_desktop_app

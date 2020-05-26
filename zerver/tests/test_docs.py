@@ -1,6 +1,6 @@
 import os
 import ujson
-import mock
+from unittest import mock
 from urllib.parse import urlsplit
 
 from django.conf import settings

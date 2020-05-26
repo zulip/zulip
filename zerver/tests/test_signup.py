@@ -9,7 +9,7 @@ from django.test import TestCase, override_settings
 from django.utils.timezone import now as timezone_now
 from django.core.exceptions import ValidationError
 
-from mock import patch, MagicMock
+from unittest.mock import patch, MagicMock
 from zerver.lib.test_helpers import (
     avatar_disk_path,
     get_test_image_file,

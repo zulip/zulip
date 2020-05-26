@@ -1,7 +1,7 @@
 from django.conf import settings
 
 from moto import mock_s3_deprecated
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 import logging
 
 from zerver.lib.upload import upload_message_file, resize_emoji

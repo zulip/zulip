@@ -1,6 +1,6 @@
 from datetime import timedelta
 from django.utils.timezone import now as timezone_now
-import mock
+from unittest import mock
 
 from typing import Any, Dict
 from zerver.lib.actions import do_deactivate_user

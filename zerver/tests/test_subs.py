@@ -79,7 +79,7 @@ from zerver.lib.message import (
 from zerver.lib.stream_recipient import StreamRecipientMap
 
 from datetime import timedelta
-import mock
+from unittest import mock
 import random
 import ujson
 

@@ -2,8 +2,8 @@ from contextlib import contextmanager
 import datetime
 import itertools
 import requests
-import mock
-from mock import call
+from unittest import mock
+from unittest.mock import call
 from typing import Any, Dict, List, Optional
 
 import base64

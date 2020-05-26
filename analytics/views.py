@@ -54,7 +54,7 @@ if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteInstallationCount, RemoteRealmCount, \
         RemoteZulipServer
 else:
-    from mock import Mock
+    from unittest.mock import Mock
     RemoteInstallationCount = Mock()  # type: ignore[misc] # https://github.com/JukkaL/mypy/issues/1188
     RemoteZulipServer = Mock()  # type: ignore[misc] # https://github.com/JukkaL/mypy/issues/1188
     RemoteRealmCount = Mock()  # type: ignore[misc] # https://github.com/JukkaL/mypy/issues/1188

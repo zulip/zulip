@@ -49,7 +49,7 @@ from zerver.views.messages import (
 from zerver.lib.streams import create_streams_if_needed
 
 from typing import Dict, Mapping, List, Sequence, Tuple, Union, Any, Optional
-import mock
+from unittest import mock
 import os
 import ujson
 

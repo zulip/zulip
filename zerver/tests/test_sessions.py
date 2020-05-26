@@ -19,7 +19,7 @@ from zerver.models import (
 
 from zerver.lib.test_classes import ZulipTestCase
 
-import mock
+from unittest import mock
 
 class TestSessions(ZulipTestCase):
 

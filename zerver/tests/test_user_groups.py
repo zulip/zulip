@@ -1,5 +1,5 @@
 import ujson
-import mock
+from unittest import mock
 
 from zerver.lib.actions import (
     ensure_stream,

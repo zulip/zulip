@@ -1,5 +1,5 @@
-import mock
-from mock import MagicMock, patch
+from unittest import mock
+from unittest.mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
 

@@ -47,7 +47,7 @@ from zerver.lib.logging_util import log_to_file
 if settings.ZILENCER_ENABLED:
     from zilencer.models import get_remote_server_by_uuid, RemoteZulipServer
 else:  # nocoverage # Hack here basically to make impossible code paths compile
-    from mock import Mock
+    from unittest.mock import Mock
     get_remote_server_by_uuid = Mock()
     RemoteZulipServer = Mock()  # type: ignore[misc] # https://github.com/JukkaL/mypy/issues/1188
 

@@ -6,7 +6,7 @@ import ujson
 from django.conf import settings
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
-from mock import patch
+from unittest.mock import patch
 import urllib
 from typing import Any, Dict
 from zerver.lib.actions import (

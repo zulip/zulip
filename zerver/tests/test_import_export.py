@@ -3,7 +3,7 @@ from django.conf import settings
 import os
 import ujson
 
-from mock import patch
+from unittest.mock import patch
 from typing import Any, Dict, List, Set, Optional, Tuple, Callable, \
     FrozenSet
 from django.db.models import Q

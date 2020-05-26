@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.redis_utils import get_redis_client, get_dict_from_redis, put_dict_in_redis, \
