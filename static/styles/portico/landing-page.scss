@@ -316,24 +316,21 @@ nav ul li {
 
     opacity: 0.7;
     transition: all 0.2s ease;
-}
 
-nav ul li.active,
-nav ul li:hover {
-    opacity: 1;
-}
+    &.active,
+    &:hover {
+        opacity: 1;
+    }
 
-nav ul li.active {
-    &::after {
-        content: "v";
-
-        position: absolute;
-        bottom: -15px;
-        left: calc(50% - 4px);
-
-        font-weight: 100;
-
-        transform: scaleX(2) scaleY(0.5);
+    &.active {
+        &::after {
+            content: "v";
+            position: absolute;
+            bottom: -15px;
+            left: calc(50% - 4px);
+            font-weight: 100;
+            transform: scaleX(2) scaleY(0.5);
+        }
     }
 }
 
@@ -3463,34 +3460,33 @@ nav li a:visited {
         color: initial;
     }
 
-    nav ul li:first-of-type {
-        margin-top: 20px;
-    }
-
     nav ul li {
         display: block;
-
         font-size: 1.5em;
         font-weight: 300;
         line-height: 1.5;
+
+        &:first-of-type {
+            margin-top: 20px;
+        }
+
+        &.active {
+            &::after {
+                content: ">";
+                transform: scale(1, 1);
+                bottom: auto;
+                left: -25px;
+                font-weight: 400;
+            }
+
+            font-weight: 400;
+        }
     }
 
     nav ul li,
     nav ul li a,
     .portico-header .dropdown-pill .realm-name {
         color: hsl(0, 0%, 27%) !important;
-    }
-
-    nav ul li.active {
-        &::after {
-            content: ">";
-            transform: scale(1, 1);
-            bottom: auto;
-            left: -25px;
-            font-weight: 400;
-        }
-
-        font-weight: 400;
     }
 
     .portico-landing.apps .main ul.sidebar {
