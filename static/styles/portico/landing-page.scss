@@ -215,44 +215,45 @@ nav .brand.logo {
 
 nav.white {
     background-color: hsl(0, 0%, 100%);
-}
 
-nav.white li {
-    a,
-    a:hover,
-    a:visited {
-        color: hsl(0, 0%, 27%);
-    }
-}
-
-nav.white ul {
     li {
-        &.active {
-            &::after {
-                color: hsl(0, 0%, 27%);
+        a,
+        a:hover,
+        a:visited {
+            color: hsl(0, 0%, 27%);
+        }
+    }
+
+    ul {
+        li {
+            &.active {
+                &::after {
+                    color: hsl(0, 0%, 27%);
+                }
             }
         }
     }
-}
 
-nav.white .brand.logo {
-    span {
-        color: hsl(0, 0%, 27%);
+    .brand.logo {
+        span {
+            color: hsl(0, 0%, 27%);
+        }
+
+        circle {
+            fill: hsl(0, 0%, 27%) !important;
+        }
+
+        path {
+            fill: hsl(0, 0%, 100%) !important;
+            stroke: hsl(0, 0%, 100%) !important;
+        }
     }
 
-    circle {
-        fill: hsl(0, 0%, 27%) !important;
-    }
-
-    path {
-        fill: hsl(0, 0%, 100%) !important;
-        stroke: hsl(0, 0%, 100%) !important;
+    .hamburger {
+        fill: hsl(0, 0%, 27%);
     }
 }
 
-nav.white .hamburger {
-    fill: hsl(0, 0%, 27%);
-}
 
 nav .hamburger {
     display: none;
