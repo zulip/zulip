@@ -389,7 +389,7 @@ run_test('group_suggestions', () => {
 
     set_global('activity', {
         get_huddles: function () {
-            return ['101,42', '101,103,42'];
+            return ['42,101', '42,101,103'];
         },
     });
 
