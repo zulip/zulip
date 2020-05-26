@@ -201,7 +201,7 @@ const matches = [
 ];
 
 for (const person of matches) {
-    people.add(person);
+    people.add_active_user(person);
 }
 
 function get_typeahead_result(query, current_stream, current_topic) {

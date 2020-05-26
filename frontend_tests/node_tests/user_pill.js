@@ -32,8 +32,8 @@ const isaac_item = {
 };
 
 run_test('setup', () => {
-    people.add(alice);
-    people.add(isaac);
+    people.add_active_user(alice);
+    people.add_active_user(isaac);
 });
 
 run_test('create_item', () => {

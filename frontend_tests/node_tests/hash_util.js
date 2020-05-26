@@ -15,7 +15,7 @@ const hamlet = {
     full_name: 'Hamlet',
 };
 
-people.add(hamlet);
+people.add_active_user(hamlet);
 
 const frontend = {
     stream_id: 99,

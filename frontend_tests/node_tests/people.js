@@ -44,7 +44,7 @@ const isaac = {
 
 function initialize() {
     people.init();
-    people.add(me);
+    people.add_active_user(me);
     people.initialize_current_user(me.user_id);
 }
 
@@ -217,7 +217,7 @@ run_test('basics', () => {
     assert(!people.is_valid_full_name_and_user_id(full_name, 32));
     assert.equal(people.get_user_id_from_name(full_name), undefined);
 
-    people.add(isaac);
+    people.add_active_user(isaac);
 
     assert.equal(
         people.get_actual_name_from_user_id(32),
@@ -255,7 +255,7 @@ run_test('basics', () => {
     assert.equal(people.is_active_user_for_popover(isaac.user_id), false);
     assert.equal(people.is_valid_email_for_compose(isaac.email), false);
 
-    people.add(bot_botson);
+    people.add_active_user(bot_botson);
     assert.equal(people.is_active_user_for_popover(bot_botson.user_id), true);
 
     assert.equal(
@@ -308,12 +308,45 @@ run_test('basics', () => {
     assert.equal(people.is_my_user_id(undefined), false);
 
     // Reactivating issac
-    people.add(isaac);
+    people.add_active_user(isaac);
     const active_humans = people.get_active_humans();
     assert.equal(active_humans.length, 2);
     assert.deepEqual(
         active_humans.sort((p) => p.user_id),
         [me, isaac]);
+});
+
+run_test('check_active_non_active_users', () => {
+    let active_users = people.get_realm_users();
+    let non_active_users = people.get_non_active_realm_users();
+    assert.equal(active_users.length, 3);
+    assert.equal(non_active_users.length, 0);
+
+    people.add_active_user(maria);
+    people.add_active_user(linus);
+    active_users = people.get_realm_users();
+    assert.equal(active_users.length, 5);
+    // Invalid ID
+    blueslip.expect('error', 'No user found.');
+    people.is_person_active(1000001);
+    assert.equal(people.is_person_active(maria.user_id), true);
+    assert.equal(people.is_person_active(linus.user_id), true);
+
+    people.deactivate(maria);
+    non_active_users = people.get_non_active_realm_users();
+    active_users = people.get_realm_users();
+    assert.equal(non_active_users.length, 1);
+    assert.equal(active_users.length, 4);
+    assert.equal(people.is_person_active(maria.user_id), false);
+
+    people.deactivate(linus);
+    people.add_active_user(maria);
+    non_active_users = people.get_non_active_realm_users();
+    active_users = people.get_realm_users();
+    assert.equal(non_active_users.length, 1);
+    assert.equal(active_users.length, 4);
+    assert.equal(people.is_person_active(maria.user_id), true);
+    assert.equal(people.is_person_active(linus.user_id), false);
 });
 
 run_test('pm_lookup_key', () => {
@@ -343,7 +376,7 @@ run_test('bot_custom_profile_data', () => {
     // If this test fails, then try opening organization settings > bots
     // http://localhost:9991/#organization/bot-list-admin
     // and then try to edit any of the bots.
-    people.add(bot_botson);
+    people.add_active_user(bot_botson);
     assert.equal(people.get_custom_profile_data(bot_botson.user_id, 3), null);
 });
 
@@ -374,10 +407,10 @@ run_test('user_timezone', () => {
 run_test('user_type', () => {
     people.init();
 
-    people.add(me);
-    people.add(realm_admin);
-    people.add(guest);
-    people.add(bot_botson);
+    people.add_active_user(me);
+    people.add_active_user(realm_admin);
+    people.add_active_user(guest);
+    people.add_active_user(bot_botson);
     assert.equal(people.get_user_type(me.user_id), i18n.t('Member'));
     assert.equal(people.get_user_type(realm_admin.user_id), i18n.t('Administrator'));
     assert.equal(people.get_user_type(guest.user_id), i18n.t('Guest'));
@@ -398,7 +431,7 @@ run_test('get_by_user_id', () => {
         user_id: 42,
         full_name: 'Mary',
     };
-    people.add(person);
+    people.add_active_user(person);
     person = people.get_by_email('mary@example.com');
     assert.equal(person.full_name, 'Mary');
     person = people.get_by_user_id(42);
@@ -432,9 +465,9 @@ run_test('set_custom_profile_field_data', () => {
 initialize();
 
 run_test('get_people_for_stream_create', () => {
-    people.add(alice1);
-    people.add(bob);
-    people.add(alice2);
+    people.add_active_user(alice1);
+    people.add_active_user(bob);
+    people.add_active_user(alice2);
     assert.equal(people.get_active_human_count(), 4);
 
     const others = people.get_people_for_stream_create();
@@ -460,12 +493,12 @@ run_test('recipient_counts', () => {
 });
 
 run_test('filtered_users', () => {
-    people.add(charles);
-    people.add(maria);
-    people.add(ashton);
-    people.add(linus);
-    people.add(noah);
-    people.add(plain_noah);
+    people.add_active_user(charles);
+    people.add_active_user(maria);
+    people.add_active_user(ashton);
+    people.add_active_user(linus);
+    people.add_active_user(noah);
+    people.add_active_user(plain_noah);
 
     const search_term = 'a';
     const users = people.get_people_for_stream_create();
@@ -510,8 +543,8 @@ run_test('filtered_users', () => {
 people.init();
 
 run_test('multi_user_methods', () => {
-    people.add(emp401);
-    people.add(emp402);
+    people.add_active_user(emp401);
+    people.add_active_user(emp402);
 
     // The order of user_ids is relevant here.
     assert.equal(emp401.user_id, 401);
@@ -566,8 +599,8 @@ run_test('concat_huddle', () => {
 initialize();
 
 run_test('message_methods', () => {
-    people.add(charles);
-    people.add(maria);
+    people.add_active_user(charles);
+    people.add_active_user(maria);
 
     // We don't rely on Maria to have all flags set explicitly--
     // undefined values are just treated as falsy.
@@ -644,7 +677,7 @@ run_test('message_methods', () => {
 
     // Test sender_is_bot
     const bot = bot_botson;
-    people.add(bot);
+    people.add_active_user(bot);
 
     message = { sender_id: bot.user_id };
     assert.equal(people.sender_is_bot(message), true);
@@ -656,7 +689,7 @@ run_test('message_methods', () => {
     assert.equal(people.sender_is_bot(message), false);
 
     // Test sender_is_guest
-    people.add(guest);
+    people.add_active_user(guest);
 
     message = { sender_id: guest.user_id };
     assert.equal(people.sender_is_guest(message), true);
@@ -711,7 +744,7 @@ run_test('maybe_incr_recipient_count', () => {
     const maria_recip = {
         id: maria.user_id,
     };
-    people.add(maria);
+    people.add_active_user(maria);
 
     let message = {
         type: 'private',
@@ -754,7 +787,7 @@ run_test('maybe_incr_recipient_count', () => {
 });
 
 run_test('slugs', () => {
-    people.add(debbie);
+    people.add_active_user(debbie);
 
     const slug = people.emails_to_slug(debbie.email);
     assert.equal(slug, '501-debbie71');
@@ -777,7 +810,7 @@ run_test('get_people_for_search_bar', () => {
             full_name: 'James Jones',
             user_id: 1000 + i,
         };
-        people.add(person);
+        people.add_active_user(person);
     }
 
     const big_results = people.get_people_for_search_bar('James');
@@ -808,7 +841,7 @@ run_test('updates', () => {
         user_id: user_id,
         full_name: 'Foo Barson',
     };
-    people.add(person);
+    people.add_active_user(person);
 
     // Do sanity checks on our data.
     assert.equal(people.get_by_email(old_email).user_id, user_id);
@@ -843,8 +876,8 @@ run_test('updates', () => {
 initialize();
 
 run_test('update_email_in_reply_to', () => {
-    people.add(charles);
-    people.add(maria);
+    people.add_active_user(charles);
+    people.add_active_user(maria);
 
     let reply_to = '    charles@example.com,   athens@example.com';
     assert.equal(
@@ -866,8 +899,8 @@ run_test('update_email_in_reply_to', () => {
 initialize();
 
 run_test('track_duplicate_full_names', () => {
-    people.add(maria);
-    people.add(stephen1);
+    people.add_active_user(maria);
+    people.add_active_user(stephen1);
 
     assert(!people.is_duplicate_full_name('Stephen King'));
     assert.equal(
@@ -876,7 +909,7 @@ run_test('track_duplicate_full_names', () => {
     );
 
     // Now duplicate the Stephen King name.
-    people.add({...stephen2});
+    people.add_active_user({...stephen2});
 
     // For duplicate names we won't try to guess which
     // user_id the person means; the UI should use
@@ -901,9 +934,9 @@ run_test('track_duplicate_full_names', () => {
 initialize();
 
 run_test('get_mention_syntax', () => {
-    people.add(stephen1);
-    people.add(stephen2);
-    people.add(maria);
+    people.add_active_user(stephen1);
+    people.add_active_user(stephen2);
+    people.add_active_user(maria);
 
     assert(people.is_duplicate_full_name('Stephen King'));
 
@@ -1035,8 +1068,8 @@ run_test('is_valid_full_name_and_user_id', () => {
 });
 
 run_test('emails_strings_to_user_ids_array', function () {
-    people.add(steven);
-    people.add(maria);
+    people.add_active_user(steven);
+    people.add_active_user(maria);
 
     let user_ids = people.emails_strings_to_user_ids_array(`${steven.email},${maria.email}`);
     assert.deepEqual(user_ids, [steven.user_id, maria.user_id]);
@@ -1047,8 +1080,8 @@ run_test('emails_strings_to_user_ids_array', function () {
 });
 
 run_test('get_visible_email', function () {
-    people.add(steven);
-    people.add(maria);
+    people.add_active_user(steven);
+    people.add_active_user(maria);
 
     let email = people.get_visible_email(steven);
     assert.equal(email, steven.delivery_email);
@@ -1066,9 +1099,9 @@ run_test('get_active_message_people', function () {
         ];
     };
 
-    people.add(steven);
-    people.add(maria);
-    people.add(alice1);
+    people.add_active_user(steven);
+    people.add_active_user(maria);
+    people.add_active_user(alice1);
 
     let active_message_people = people.get_active_message_people();
     assert.deepEqual(active_message_people, [steven, maria, alice1]);

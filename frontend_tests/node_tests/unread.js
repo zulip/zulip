@@ -20,7 +20,7 @@ const me = {
     user_id: 30,
     full_name: 'Me Myself',
 };
-people.add(me);
+people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
 const social = {
@@ -399,7 +399,7 @@ run_test('private_messages', () => {
         user_id: 999,
         full_name: 'Any Body',
     };
-    people.add(anybody);
+    people.add_active_user(anybody);
 
     const message = {
         id: 15,
@@ -430,14 +430,14 @@ run_test('private_messages', () => {
         user_id: 101,
         full_name: 'Alice',
     };
-    people.add(alice);
+    people.add_active_user(alice);
 
     const bob = {
         email: 'bob@example.com',
         user_id: 102,
         full_name: 'Bob',
     };
-    people.add(bob);
+    people.add_active_user(bob);
 
     assert.equal(unread.num_unread_for_person(alice.user_id.toString()), 0);
     assert.equal(unread.num_unread_for_person(bob.user_id.toString()), 0);

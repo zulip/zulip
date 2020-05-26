@@ -116,7 +116,7 @@ const test_user = {
 };
 
 people.init();
-people.add(test_user);
+people.add_active_user(test_user);
 
 const test_message = {
     sender_id: test_user.user_id,

@@ -23,7 +23,7 @@ const isaac = {
 };
 
 assert(!people.is_known_user_id(isaac.user_id));
-people.add(isaac);
+people.add_active_user(isaac);
 assert(people.is_known_user_id(isaac.user_id));
 
 // The `people`object is a very fundamental object in the
@@ -37,7 +37,7 @@ const me = {
     user_id: 31,
     full_name: 'Me Myself',
 };
-people.add(me);
+people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
 // Let's look at stream_data next, and we will start by putting

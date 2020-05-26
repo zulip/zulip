@@ -75,8 +75,8 @@ const e = {
 
 function initialize_people() {
     people.init();
-    people.add(me);
-    people.add(alice);
+    people.add_active_user(me);
+    people.add_active_user(alice);
     people.initialize_current_user(me.user_id);
 }
 

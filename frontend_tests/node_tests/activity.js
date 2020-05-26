@@ -122,13 +122,13 @@ const zoe = {
     full_name: 'Zoe Yang',
 };
 
-people.add(alice);
-people.add(fred);
-people.add(jill);
-people.add(mark);
-people.add(norbert);
-people.add(zoe);
-people.add(me);
+people.add_active_user(alice);
+people.add_active_user(fred);
+people.add_active_user(jill);
+people.add_active_user(mark);
+people.add_active_user(norbert);
+people.add_active_user(zoe);
+people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
 const real_update_huddles = activity.update_huddles;
@@ -647,7 +647,7 @@ run_test('insert_fred_then_alice_then_rename', () => {
         user_id: fred.user_id,
         full_name: "Aaron",
     };
-    people.add(fred_with_new_name);
+    people.add_active_user(fred_with_new_name);
 
     const alice_stub = $.create('alice-first');
     buddy_list_add(alice.user_id, alice_stub);
@@ -660,7 +660,7 @@ run_test('insert_fred_then_alice_then_rename', () => {
     assert(appended_html.indexOf('data-user-id="2"') > 0);
 
     // restore old Fred data
-    people.add(fred);
+    people.add_active_user(fred);
 });
 
 // Reset jquery here.

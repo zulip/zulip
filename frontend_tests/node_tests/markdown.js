@@ -59,39 +59,39 @@ const cordelia = {
     user_id: 101,
     email: 'cordelia@zulip.com',
 };
-people.add(cordelia);
+people.add_active_user(cordelia);
 
-people.add({
+people.add_active_user({
     full_name: 'Leo',
     user_id: 102,
     email: 'leo@zulip.com',
 });
 
-people.add({
+people.add_active_user({
     full_name: 'Bobby <h1>Tables</h1>',
     user_id: 103,
     email: 'bobby@zulip.com',
 });
 
-people.add({
+people.add_active_user({
     full_name: 'Mark Twin',
     user_id: 104,
     email: 'twin1@zulip.com',
 });
 
-people.add({
+people.add_active_user({
     full_name: 'Mark Twin',
     user_id: 105,
     email: 'twin2@zulip.com',
 });
 
-people.add({
+people.add_active_user({
     full_name: 'Brother of Bobby|123',
     user_id: 106,
     email: 'bobby2@zulip.com',
 });
 
-people.add({
+people.add_active_user({
     full_name: "& & &amp;",
     user_id: 107,
     email: "ampampamp@zulip.com",

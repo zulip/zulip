@@ -27,7 +27,7 @@ const alice = {
     full_name: 'Alice Patel',
 };
 
-people.add(alice);
+people.add_active_user(alice);
 
 const denmark = {
     subscribed: false,

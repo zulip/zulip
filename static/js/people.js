@@ -1043,7 +1043,7 @@ exports._add_user = function add(person) {
     people_by_name_dict.set(person.full_name, person);
 };
 
-exports.add = function (person) {
+exports.add_active_user = function (person) {
     active_user_dict.set(person.user_id, person);
     exports._add_user(person);
 };
@@ -1241,7 +1241,7 @@ exports.is_my_user_id = function (user_id) {
 
 exports.initialize = function (my_user_id, params) {
     for (const person of params.realm_users) {
-        exports.add(person);
+        exports.add_active_user(person);
     }
 
     for (const person of params.realm_non_active_users) {

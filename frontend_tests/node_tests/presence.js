@@ -48,12 +48,12 @@ const bot = {
     is_bot: true,
 };
 
-people.add(me);
-people.add(alice);
-people.add(fred);
-people.add(sally);
-people.add(zoe);
-people.add(bot);
+people.add_active_user(me);
+people.add_active_user(alice);
+people.add_active_user(fred);
+people.add_active_user(sally);
+people.add_active_user(zoe);
+people.add_active_user(bot);
 people.initialize_current_user(me.user_id);
 
 run_test('my user', () => {

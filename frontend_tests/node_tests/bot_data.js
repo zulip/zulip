@@ -19,8 +19,8 @@ const fred = {
     user_id: 3,
 };
 
-people.add(me);
-people.add(fred);
+people.add_active_user(me);
+people.add_active_user(fred);
 people.initialize_current_user(me.user_id);
 
 const bot_data_params = {

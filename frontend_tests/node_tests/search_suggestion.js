@@ -62,11 +62,11 @@ const noop = () => {};
 
 function init() {
     people.init();
-    people.add(bob);
-    people.add(me);
-    people.add(ted);
-    people.add(alice);
-    people.add(jeff);
+    people.add_active_user(bob);
+    people.add_active_user(me);
+    people.add_active_user(ted);
+    people.add_active_user(alice);
+    people.add_active_user(jeff);
 
     people.initialize_current_user(me.user_id);
 }
@@ -993,7 +993,7 @@ function people_suggestion_setup() {
         user_id: 201,
         full_name: 'Ted Smith',
     };
-    people.add(ted);
+    people.add_active_user(ted);
 
     const bob = {
         email: 'bob@zulip.com',
@@ -1001,13 +1001,13 @@ function people_suggestion_setup() {
         full_name: 'Bob Térry',
     };
 
-    people.add(bob);
+    people.add_active_user(bob);
     const alice = {
         email: 'alice@zulip.com',
         user_id: 203,
         full_name: 'Alice Ignore',
     };
-    people.add(alice);
+    people.add_active_user(alice);
 
     stream_topic_history.reset();
 }

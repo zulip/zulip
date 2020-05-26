@@ -55,14 +55,14 @@ function make_people() {
             full_name: `Human ${i}`,
             email: `person${i}@example.com`,
         };
-        people.add(person);
+        people.add_active_user(person);
     }
 
-    people.add(bot);
-    people.add(bot_with_owner);
-    people.add(selma);
-    people.add(me);
-    people.add(old_user);
+    people.add_active_user(bot);
+    people.add_active_user(bot_with_owner);
+    people.add_active_user(selma);
+    people.add_active_user(me);
+    people.add_active_user(old_user);
 
     people.initialize_current_user(me.user_id);
 }

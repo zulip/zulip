@@ -59,11 +59,11 @@ const jeff =
 
 function init() {
     people.init();
-    people.add(bob);
-    people.add(me);
-    people.add(ted);
-    people.add(alice);
-    people.add(jeff);
+    people.add_active_user(bob);
+    people.add_active_user(me);
+    people.add_active_user(ted);
+    people.add_active_user(alice);
+    people.add_active_user(jeff);
 
     people.initialize_current_user(me.user_id);
 }
@@ -987,9 +987,9 @@ run_test('people_suggestions', () => {
         user_id: 203,
         full_name: 'Alice Ignore',
     };
-    people.add(ted);
-    people.add(bob);
-    people.add(alice);
+    people.add_active_user(ted);
+    people.add_active_user(bob);
+    people.add_active_user(alice);
 
 
     stream_topic_history.reset();
