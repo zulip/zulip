@@ -60,8 +60,8 @@ function compare_by_huddle(huddle) {
     }
 
     return function (person1, person2) {
-        const huddle1 = huddle.concat(person1.user_id).sort().join(',');
-        const huddle2 = huddle.concat(person2.user_id).sort().join(',');
+        const huddle1 = people.concat_huddle(huddle, person1.user_id);
+        const huddle2 = people.concat_huddle(huddle, person2.user_id);
 
         // If not in the dict, assign an arbitrarily high index
         const score1 = huddle_dict.get(huddle1) || huddles.length + 1;

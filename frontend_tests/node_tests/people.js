@@ -538,6 +538,33 @@ run_test('multi_user_methods', () => {
 
 initialize();
 
+run_test('concat_huddle', () => {
+    /*
+        We assume that user_ids passed in
+        to concat_huddle have already been
+        validated, so we don't need actual
+        people for these tests to pass.
+
+        That may change in the future.
+    */
+
+    const user_ids = [303, 301, 302];
+
+    assert.equal(
+        people.concat_huddle(user_ids, 304),
+        '301,302,303,304'
+    );
+
+    // This is broken, but reflects the current
+    // state of the code.  We need a numerical sort.
+    assert.equal(
+        people.concat_huddle(user_ids, 99),
+        '301,302,303,99'
+    );
+});
+
+initialize();
+
 run_test('message_methods', () => {
     people.add(charles);
     people.add(maria);
