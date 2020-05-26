@@ -18,6 +18,7 @@
         "module": "ES6",
         "esModuleInterop": true,
         "moduleResolution": "node",
+        "resolveJsonModule": true,
         "sourceMap": true,
 
         /* Strict type-checking */
