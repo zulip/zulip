@@ -6,21 +6,18 @@
     text-decoration: none;
 }
 
-#group-pms li:hover,
 #user_presences li:hover,
 #user_presences li.highlighted_user {
     background-color: hsl(93, 19%, 88%);
 }
 
-#buddy_list_wrapper,
-#group-pms {
+#buddy_list_wrapper {
     position: relative;
     margin-left: 0;
     overflow: auto;
 }
 
-#user_presences,
-#group-pms {
+#user_presences {
     list-style-position: inside; /* Draw the bullets inside our box */
 }
 
@@ -63,8 +60,7 @@
     }
 }
 
-#user_presences li,
-#group-pms li {
+#user_presences li {
     list-style-type: none;
 
     border-radius: 4px;
@@ -72,13 +68,7 @@
     padding-right: 15px;
 }
 
-#group-pm-title {
-    margin: 10px 0px 0px 0px;
-    display: inline-block;
-}
-
-#user_presences .user_circle,
-#group-pms .user_circle_fraction {
+#user_presences .user_circle {
     width: 8px;
     height: 8px;
     margin-top: 0px;
@@ -88,8 +78,7 @@
     display: block;
 }
 
-#user_presences a,
-#group-pms a {
+#user_presences a {
     color: inherit;
     margin-left: 0px;
 }
@@ -100,12 +89,6 @@
     margin-left: 5px;
 }
 
-.group-pms-sidebar-entry .selectable_sidebar_block {
-    display: flex;
-    width: 100%;
-}
-
-.group-pm-link,
 .user-presence-link,
 .user_sidebar_entry .selectable_sidebar_block {
     overflow: hidden;
@@ -126,24 +109,17 @@
     opacity: 0.5;
 }
 
-.group-pm-link {
-    width: calc(100% - 60px);
-    display: inline-block;
-}
-
 .selectable_sidebar_block {
     cursor: pointer;
 }
 
-.group-pms-sidebar-entry,
 .user_sidebar_entry {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
 }
 
-.user_sidebar_entry .count,
-.group-pms-sidebar-entry .count {
+.user_sidebar_entry .count {
     float: right;
     padding: 0 4px;
     background-color: hsl(105, 2%, 50%);
@@ -162,10 +138,6 @@
 
 .user_sidebar_entry .count {
     display: none;
-}
-
-.group-pms-sidebar-entry .count {
-    margin-right: 16px;
 }
 
 .user_sidebar_entry.user-with-count .count {
@@ -193,16 +165,7 @@
     padding-bottom: 9px;
 }
 
-#group-pm-list {
-    display: none;
-}
-
-#group-pm-list.show {
-    display: block;
-}
-
-#userlist-header,
-#group-pm-header {
+#userlist-header {
     margin-right: 10px;
 }
 

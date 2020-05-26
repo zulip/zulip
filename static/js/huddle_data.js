@@ -1,8 +1,6 @@
 const huddle_timestamps = new Map();
 
 exports.process_loaded_messages = function (messages) {
-    let need_resize = false;
-
     for (const message of messages) {
         const huddle_string = people.huddle_string(message);
 
@@ -11,12 +9,9 @@ exports.process_loaded_messages = function (messages) {
 
             if (!old_timestamp || old_timestamp < message.timestamp) {
                 huddle_timestamps.set(huddle_string, message.timestamp);
-                need_resize = true;
             }
         }
     }
-
-    return need_resize;
 };
 
 exports.get_huddles = function () {

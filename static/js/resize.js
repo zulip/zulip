@@ -27,25 +27,6 @@ function size_blocks(blocks, usable_height) {
     }
 }
 
-function set_user_list_heights(res, usable_height, buddy_list_wrapper, group_pms) {
-    // Calculate these heights:
-    //    res.buddy_list_wrapper_max_height
-    //    res.group_pms_max_height
-    const blocks = [
-        {
-            real_height: ui.get_scroll_element(buddy_list_wrapper).prop('scrollHeight'),
-        },
-        {
-            real_height: ui.get_scroll_element(group_pms).prop('scrollHeight'),
-        },
-    ];
-
-    size_blocks(blocks, usable_height);
-
-    res.buddy_list_wrapper_max_height = blocks[0].max_height;
-    res.group_pms_max_height = blocks[1].max_height;
-}
-
 function get_new_heights() {
     const res = {};
     const viewport_height = message_viewport.height();
@@ -67,8 +48,6 @@ function get_new_heights() {
     res.stream_filters_max_height = Math.max(80, res.stream_filters_max_height);
 
     // RIGHT SIDEBAR
-    const buddy_list_wrapper = $('#buddy_list_wrapper').expectOne();
-    const group_pms = $('#group-pms').expectOne();
 
     // Calculate our top offset, which should typically be 50px,
     // even though we sometimes split that as 40px of margin
@@ -92,20 +71,9 @@ function get_new_heights() {
         - $("#userlist-header").safeOuterHeight(true)
         - $("#user_search_section").safeOuterHeight(true)
         - invite_user_link_height
-        - parseInt(group_pms.css("marginTop"), 10)
-        - parseInt(group_pms.css("marginBottom"), 10)
-        - $("#group-pm-header").safeOuterHeight(true)
         - $("#sidebar-keyboard-shortcuts").safeOuterHeight(true);
 
-    // set these
-    // res.buddy_list_wrapper_max_height
-    // res.group_pms_max_height
-    set_user_list_heights(
-        res,
-        usable_height,
-        buddy_list_wrapper,
-        group_pms
-    );
+    res.buddy_list_wrapper_max_height = Math.max(80, usable_height);
 
     return res;
 }
@@ -154,7 +122,6 @@ function left_userlist_get_new_heights() {
 
     res.stream_filters_max_height = blocks[0].max_height;
     res.buddy_list_wrapper_max_height = blocks[1].max_height;
-    res.group_pms_max_height = 0;
 
     return res;
 }
@@ -246,8 +213,6 @@ exports.resize_sidebars = function () {
     const h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
 
     $("#buddy_list_wrapper").css('max-height', h.buddy_list_wrapper_max_height);
-    $("#group-pms").css('max-height', h.group_pms_max_height);
-
     $("#stream-filters-container").css('max-height', h.stream_filters_max_height);
 
     return h;

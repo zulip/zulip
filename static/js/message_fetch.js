@@ -1,3 +1,5 @@
+const huddle_data = require("./huddle_data");
+
 const consts = {
     backfill_idle_time: 10 * 1000,
     error_retry_time: 5000,
@@ -46,7 +48,7 @@ function process_result(data, opts) {
         message_util.add_old_messages(messages, opts.msg_list);
     }
 
-    activity.process_loaded_messages(messages);
+    huddle_data.process_loaded_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
     recent_topics.process_messages(messages);

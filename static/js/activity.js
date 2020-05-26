@@ -1,6 +1,3 @@
-const render_group_pms = require('../templates/group_pms.hbs');
-const huddle_data = require("./huddle_data");
-
 /*
     Helpers for detecting user activity and managing user idle states
 */
@@ -42,41 +39,16 @@ function update_pm_count_in_dom(count_span, value_span, count) {
     value_span.text(count);
 }
 
-function update_group_count_in_dom(count_span, value_span, count) {
-    const li = count_span.parent();
-
-    if (count === 0) {
-        count_span.hide();
-        li.removeClass("group-with-count");
-        value_span.text('');
-        return;
-    }
-
-    count_span.show();
-    li.addClass("group-with-count");
-    value_span.text(count);
-}
-
 function get_pm_list_item(user_id) {
     return buddy_list.find_li({
         key: user_id,
     });
 }
 
-function get_group_list_item(user_ids_string) {
-    return $("li.group-pms-sidebar-entry[data-user-ids='" + user_ids_string + "']");
-}
-
 function set_pm_count(user_ids_string, count) {
     const count_span = get_pm_list_item(user_ids_string).find('.count');
     const value_span = count_span.find('.value');
     update_pm_count_in_dom(count_span, value_span, count);
-}
-
-function set_group_count(user_ids_string, count) {
-    const count_span = get_group_list_item(user_ids_string).find('.count');
-    const value_span = count_span.find('.value');
-    update_group_count_in_dom(count_span, value_span, count);
 }
 
 exports.update_dom_with_unread_counts = function (counts) {
@@ -88,57 +60,8 @@ exports.update_dom_with_unread_counts = function (counts) {
         const is_pm = !user_ids_string.includes(',');
         if (is_pm) {
             set_pm_count(user_ids_string, count);
-        } else {
-            set_group_count(user_ids_string, count);
         }
     }
-};
-
-exports.process_loaded_messages = function (messages) {
-    const need_resize = huddle_data.process_loaded_messages(messages);
-
-    exports.update_huddles();
-
-    if (need_resize) {
-        resize.resize_page_components(); // big hammer
-    }
-};
-
-function huddle_split(huddle) {
-    return huddle.split(',').map(s => parseInt(s, 10));
-}
-
-exports.full_huddle_name = function (huddle) {
-    const user_ids = huddle_split(huddle);
-
-    const names = user_ids.map(user_id => {
-        const person = people.get_by_user_id(user_id);
-        return person.full_name;
-    });
-
-    return names.join(', ');
-};
-
-exports.short_huddle_name = function (huddle) {
-    const user_ids = huddle_split(huddle);
-
-    const num_to_show = 3;
-    let names = user_ids.map(user_id => {
-        const person = people.get_by_user_id(user_id);
-        return person.full_name;
-    });
-
-    names = _.sortBy(names, function (name) { return name.toLowerCase(); });
-    names = names.slice(0, num_to_show);
-    const others = user_ids.length - num_to_show;
-
-    if (others === 1) {
-        names.push("+ 1 other");
-    } else if (others >= 2) {
-        names.push("+ " + others + " others");
-    }
-
-    return names.join(', ');
 };
 
 function mark_client_idle() {
@@ -186,8 +109,6 @@ exports.build_user_sidebar = function () {
     });
     finish();
 
-    resize.resize_page_components();
-
     return user_ids; // for testing
 };
 
@@ -200,45 +121,6 @@ function do_update_users_for_search() {
 }
 
 const update_users_for_search = _.throttle(do_update_users_for_search, 50);
-
-function show_huddles() {
-    $('#group-pm-list').addClass("show");
-}
-
-function hide_huddles() {
-    $('#group-pm-list').removeClass("show");
-}
-
-exports.update_huddles = function () {
-    if (page_params.realm_presence_disabled) {
-        return;
-    }
-
-    const huddles = huddle_data.get_huddles().slice(0, 10);
-
-    if (huddles.length === 0) {
-        hide_huddles();
-        return;
-    }
-
-    const group_pms = huddles.map(huddle => ({
-        user_ids_string: huddle,
-        name: exports.full_huddle_name(huddle),
-        href: hash_util.huddle_with_uri(huddle),
-        fraction_present: buddy_data.huddle_fraction_present(huddle),
-        short_name: exports.short_huddle_name(huddle),
-    }));
-
-    const html = render_group_pms({group_pms: group_pms});
-    ui.get_content_element($('#group-pms')).html(html);
-
-    for (const user_ids_string of huddles) {
-        const count = unread.num_unread_for_person(user_ids_string);
-        set_group_count(user_ids_string, count);
-    }
-
-    show_huddles();
-};
 
 exports.compute_active_status = function () {
     // The overall algorithm intent for the `status` field is to send
@@ -333,7 +215,6 @@ exports.initialize = function () {
     exports.set_cursor_and_filter();
 
     exports.build_user_sidebar();
-    exports.update_huddles();
 
     buddy_list.start_scroll_handler();
 
@@ -351,7 +232,6 @@ exports.initialize = function () {
 exports.update_presence_info = function (user_id, info, server_time) {
     presence.update_info_from_event(user_id, info, server_time);
     exports.redraw_user(user_id);
-    exports.update_huddles();
     pm_list.update_private_messages();
 };
 
@@ -370,7 +250,6 @@ exports.on_revoke_away = function (user_id) {
 exports.redraw = function () {
     exports.build_user_sidebar();
     exports.user_cursor.redraw();
-    exports.update_huddles();
     pm_list.update_private_messages();
 };
 
