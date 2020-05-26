@@ -20,7 +20,8 @@ class TestRealmAuditLog(ZulipTestCase):
     def check_role_count_schema(self, role_counts: Dict[str, Any]) -> None:
         for key in [UserProfile.ROLE_REALM_ADMINISTRATOR,
                     UserProfile.ROLE_MEMBER,
-                    UserProfile.ROLE_GUEST]:
+                    UserProfile.ROLE_GUEST,
+                    UserProfile.ROLE_REALM_OWNER]:
             # str(key) since json keys are always strings, and ujson.dumps will have converted
             # the UserProfile.role values into strings
             self.assertTrue(isinstance(role_counts[RealmAuditLog.ROLE_COUNT_HUMANS][str(key)], int))
@@ -57,6 +58,10 @@ class TestRealmAuditLog(ZulipTestCase):
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
         do_change_user_role(user_profile, UserProfile.ROLE_GUEST)
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER)
+        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
+        old_values_seen = set()
+        new_values_seen = set()
         for event in RealmAuditLog.objects.filter(
                 event_type=RealmAuditLog.USER_ROLE_CHANGED,
                 realm=realm, modified_user=user_profile,
@@ -65,6 +70,12 @@ class TestRealmAuditLog(ZulipTestCase):
             self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
             self.assertIn(RealmAuditLog.OLD_VALUE, extra_data)
             self.assertIn(RealmAuditLog.NEW_VALUE, extra_data)
+            old_values_seen.add(extra_data[RealmAuditLog.OLD_VALUE])
+            new_values_seen.add(extra_data[RealmAuditLog.NEW_VALUE])
+        self.assertEqual(old_values_seen, {UserProfile.ROLE_GUEST, UserProfile.ROLE_MEMBER,
+                                           UserProfile.ROLE_REALM_ADMINISTRATOR,
+                                           UserProfile.ROLE_REALM_OWNER})
+        self.assertEqual(old_values_seen, new_values_seen)
 
     def test_change_password(self) -> None:
         now = timezone_now()
