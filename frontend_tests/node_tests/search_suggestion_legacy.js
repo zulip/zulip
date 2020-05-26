@@ -22,6 +22,12 @@ const search = zrequire('search_suggestion');
 
 search.max_num_of_search_results = 15;
 
+const me = {
+    email: 'myself@zulip.com',
+    full_name: 'Me Myself',
+    user_id: 41,
+};
+
 const bob = {
     email: 'bob@zulip.com',
     full_name: 'Bob Roberts',
@@ -31,7 +37,8 @@ const bob = {
 function init() {
     people.init();
     people.add(bob);
-    people.initialize_current_user(bob.user_id);
+    people.add(me);
+    people.initialize_current_user(me.user_id);
 }
 init();
 
@@ -114,6 +121,7 @@ run_test('private_suggestions', () => {
         "is:private",
         "pm-with:alice@zulip.com",
         "pm-with:bob@zulip.com",
+        "pm-with:myself@zulip.com",
         "pm-with:ted@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -323,11 +331,11 @@ run_test('group_suggestions', () => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    // Do not suggest "bob@zulip.com" (the name of the current user)
-    query = 'pm-with:ted@zulip.com,bo';
+    // Do not suggest "myself@zulip.com" (the name of the current user)
+    query = 'pm-with:ted@zulip.com,my';
     suggestions = search.get_suggestions_legacy(query);
     expected = [
-        "pm-with:ted@zulip.com,bo",
+        "pm-with:ted@zulip.com,my",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -422,13 +430,14 @@ run_test('group_suggestions', () => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    // bob,ted,jeff is already an existing huddle, but if we start with just bob,
+    // bob,ted,jeff is already an existing huddle, but if we start with just jeff,
     // then don't prioritize ted over alice because it doesn't complete the full huddle.
     query = 'pm-with:jeff@zulip.com,';
     suggestions = search.get_suggestions_legacy(query);
     expected = [
         "pm-with:jeff@zulip.com,",
         "pm-with:jeff@zulip.com,alice@zulip.com",
+        "pm-with:jeff@zulip.com,bob@zulip.com",
         "pm-with:jeff@zulip.com,ted@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -466,7 +475,7 @@ run_test('empty_query_suggestions', () => {
         "is:mentioned",
         "is:alerted",
         "is:unread",
-        "sender:bob@zulip.com",
+        "sender:myself@zulip.com",
         "stream:devel",
         "stream:office",
         'has:link',
@@ -484,7 +493,7 @@ run_test('empty_query_suggestions', () => {
     assert.equal(describe('is:mentioned'), '@-mentions');
     assert.equal(describe('is:alerted'), 'Alerted messages');
     assert.equal(describe('is:unread'), 'Unread messages');
-    assert.equal(describe('sender:bob@zulip.com'), 'Sent by me');
+    assert.equal(describe('sender:myself@zulip.com'), 'Sent by me');
     assert.equal(describe('has:link'), 'Messages with one or more link');
     assert.equal(describe('has:image'), 'Messages with one or more image');
     assert.equal(describe('has:attachment'), 'Messages with one or more attachment');
@@ -681,15 +690,15 @@ run_test('sent_by_me_suggestions', () => {
 
     let query = '';
     let suggestions = search.get_suggestions_legacy(query);
-    assert(suggestions.strings.includes('sender:bob@zulip.com'));
-    assert.equal(suggestions.lookup_table.get('sender:bob@zulip.com').description,
+    assert(suggestions.strings.includes('sender:myself@zulip.com'));
+    assert.equal(suggestions.lookup_table.get('sender:myself@zulip.com').description,
                  'Sent by me');
 
     query = 'sender';
     suggestions = search.get_suggestions_legacy(query);
     let expected = [
         "sender",
-        "sender:bob@zulip.com",
+        "sender:myself@zulip.com",
         "sender:",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -698,7 +707,7 @@ run_test('sent_by_me_suggestions', () => {
     suggestions = search.get_suggestions_legacy(query);
     expected = [
         "-sender",
-        "-sender:bob@zulip.com",
+        "-sender:myself@zulip.com",
         "-sender:",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -707,7 +716,7 @@ run_test('sent_by_me_suggestions', () => {
     suggestions = search.get_suggestions_legacy(query);
     expected = [
         "from",
-        "from:bob@zulip.com",
+        "from:myself@zulip.com",
         "from:",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -716,7 +725,7 @@ run_test('sent_by_me_suggestions', () => {
     suggestions = search.get_suggestions_legacy(query);
     expected = [
         "-from",
-        "-from:bob@zulip.com",
+        "-from:myself@zulip.com",
         "-from:",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -739,7 +748,7 @@ run_test('sent_by_me_suggestions', () => {
     suggestions = search.get_suggestions_legacy(query);
     expected = [
         "sent",
-        "sender:bob@zulip.com",
+        "sender:myself@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -747,7 +756,7 @@ run_test('sent_by_me_suggestions', () => {
     suggestions = search.get_suggestions_legacy(query);
     expected = [
         "-sent",
-        "-sender:bob@zulip.com",
+        "-sender:myself@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -755,7 +764,7 @@ run_test('sent_by_me_suggestions', () => {
     suggestions = search.get_suggestions_legacy(query);
     expected = [
         "stream:Denmark topic:Denmark1 sent",
-        "stream:Denmark topic:Denmark1 sender:bob@zulip.com",
+        "stream:Denmark topic:Denmark1 sender:myself@zulip.com",
         "stream:Denmark topic:Denmark1",
         "stream:Denmark",
     ];
@@ -765,7 +774,7 @@ run_test('sent_by_me_suggestions', () => {
     suggestions = search.get_suggestions_legacy(query);
     expected = [
         "is:starred sender:m",
-        "is:starred sender:bob@zulip.com",
+        "is:starred sender:myself@zulip.com",
         "is:starred",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -1073,7 +1082,7 @@ run_test('operator_suggestions', () => {
     expected = [
         '-s',
         '-streams:public',
-        '-sender:bob@zulip.com',
+        '-sender:myself@zulip.com',
         '-stream:',
         '-sender:',
     ];
@@ -1083,7 +1092,7 @@ run_test('operator_suggestions', () => {
     suggestions = search.get_suggestions_legacy(query);
     expected = [
         'stream:Denmark is:alerted -f',
-        'stream:Denmark is:alerted -from:bob@zulip.com',
+        'stream:Denmark is:alerted -from:myself@zulip.com',
         'stream:Denmark is:alerted -from:',
         'stream:Denmark is:alerted',
         'stream:Denmark',
