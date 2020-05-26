@@ -35,12 +35,37 @@ const bob = {
     user_id: 42,
 };
 
+const ted =
+{
+    email: 'ted@zulip.com',
+    user_id: 101,
+    full_name: 'Ted Smith',
+};
+
+const alice =
+{
+    email: 'alice@zulip.com',
+    user_id: 102,
+    full_name: 'Alice Ignore',
+};
+
+const jeff =
+{
+    email: 'jeff@zulip.com',
+    user_id: 103,
+    full_name: 'Jeff Zoolipson',
+};
+
 const noop = () => {};
 
 function init() {
     people.init();
     people.add(bob);
     people.add(me);
+    people.add(ted);
+    people.add(alice);
+    people.add(jeff);
+
     people.initialize_current_user(me.user_id);
 }
 init();
@@ -103,29 +128,13 @@ run_test('private_suggestions', () => {
         return;
     };
 
-    const ted =
-    {
-        email: 'ted@zulip.com',
-        user_id: 101,
-        full_name: 'Ted Smith',
-    };
-
-    const alice =
-    {
-        email: 'alice@zulip.com',
-        user_id: 102,
-        full_name: 'Alice Ignore',
-    };
-
-    people.add(ted);
-    people.add(alice);
-
     let query = 'is:private';
     let suggestions = get_suggestions('', query);
     let expected = [
         "is:private",
         "pm-with:alice@zulip.com",
         "pm-with:bob@zulip.com",
+        "pm-with:jeff@zulip.com",
         "pm-with:myself@zulip.com",
         "pm-with:ted@zulip.com",
     ];
@@ -277,31 +286,6 @@ run_test('group_suggestions', () => {
             return [];
         },
     });
-
-    const ted =
-    {
-        email: 'ted@zulip.com',
-        user_id: 101,
-        full_name: 'Ted Smith',
-    };
-
-    const alice =
-    {
-        email: 'alice@zulip.com',
-        user_id: 102,
-        full_name: 'Alice Ignore',
-    };
-
-    const jeff =
-    {
-        email: 'jeff@zulip.com',
-        user_id: 103,
-        full_name: 'Jeff Zoolipson',
-    };
-
-    people.add(ted);
-    people.add(alice);
-    people.add(jeff);
 
     // Entering a comma in a pm-with query should immediately generate
     // suggestions for the next person.
@@ -598,6 +582,9 @@ run_test('check_is_suggestions', () => {
         'is:mentioned',
         'is:alerted',
         'is:unread',
+        'sender:alice@zulip.com',
+        'pm-with:alice@zulip.com',
+        'group-pm-with:alice@zulip.com',
         'has:image',
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -813,9 +800,12 @@ run_test('sent_by_me_suggestions', () => {
     base_query = 'is:starred';
     suggestions = get_suggestions(base_query, query);
     expected = [
-        "sender:",
-        "sender:myself@zulip.com",
-        "sender:bob@zulip.com",
+        'sender:',
+        'sender:myself@zulip.com',
+        'sender:alice@zulip.com',
+        'sender:bob@zulip.com',
+        'sender:jeff@zulip.com',
+        'sender:ted@zulip.com',
     ];
     assert.deepEqual(suggestions.strings, expected);
 });
@@ -845,7 +835,10 @@ run_test('topic_suggestions', () => {
     stream_topic_history.reset();
     suggestions = get_suggestions('', 'te');
     expected = [
-        "te",
+        'te',
+        'sender:ted@zulip.com',
+        'pm-with:ted@zulip.com',
+        'group-pm-with:ted@zulip.com',
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -863,9 +856,12 @@ run_test('topic_suggestions', () => {
 
     suggestions = get_suggestions('', 'te');
     expected = [
-        "te",
-        "stream:office topic:team",
-        "stream:office topic:test",
+        'te',
+        'sender:ted@zulip.com',
+        'pm-with:ted@zulip.com',
+        'group-pm-with:ted@zulip.com',
+        'stream:office topic:team',
+        'stream:office topic:test',
     ];
     assert.deepEqual(suggestions.strings, expected);
 
