@@ -1585,12 +1585,13 @@ paths:
                     max_message_id:
                       type: integer
                       description: |
-                        NA.
+                        The integer ID of the message that the pointer is currently on.
                       example: 30
                     pointer:
                       type: integer
                       description: |
-                        NA
+                        The integer ID of the last message by the user/bot with
+                        the given profile.
                       example: -1
                     short_name:
                       type: string
