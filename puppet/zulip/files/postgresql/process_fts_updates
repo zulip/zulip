@@ -48,8 +48,10 @@ else:
     logger.setLevel(logging.DEBUG)
 
 def update_fts_columns(cursor: psycopg2.extensions.cursor) -> int:
-    cursor.execute("SELECT id, message_id FROM fts_update_log LIMIT %s;" % (
-        BATCH_SIZE,))
+    cursor.execute(
+        "SELECT id, message_id FROM fts_update_log LIMIT %s;",
+        [BATCH_SIZE],
+    )
     ids = []
     for (id, message_id) in cursor.fetchall():
         if USING_PGROONGA:
