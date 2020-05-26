@@ -352,6 +352,17 @@ function sorted_other_user_ids(user_ids) {
     return user_ids;
 }
 
+exports.concat_huddle = function (user_ids, user_id) {
+    /*
+        We assume user_ids and user_id have already
+        been validated by the caller.
+
+        The only logic we're encapsulating here is
+        how to encode huddles.
+    */
+    return user_ids.concat(user_id).sort().join(',');
+};
+
 exports.pm_lookup_key = function (user_ids_string) {
     /*
         The server will sometimes include our own user id
