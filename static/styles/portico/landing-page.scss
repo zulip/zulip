@@ -334,16 +334,15 @@ nav ul {
     }
 }
 
-
-nav li a,
-nav li a:hover,
-nav li a:visited {
-    text-decoration: none;
-    color: hsl(0, 0%, 100%);
-
-    font-size: 1.05em;
+nav li {
+    a,
+    a:hover,
+    a:visited {
+        text-decoration: none;
+        color: hsl(0, 0%, 100%);
+        font-size: 1.05em;
+    }
 }
-
 
 /* -- main panel styling -- */
 .portico-landing {
