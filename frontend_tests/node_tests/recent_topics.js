@@ -6,6 +6,15 @@ set_global('$', global.make_zjquery({
 set_global('hashchange', {
     exit_overlay: () => {},
 });
+set_global('stream_data', {
+    get_sub: () => {
+        return {
+            color: "",
+            invite_only: false,
+            is_web_public: true,
+        };
+    },
+});
 set_global('overlays', {
     open_overlay: (opts) => {
         overlays.close_callback = opts.on_close;
@@ -195,12 +204,15 @@ function generate_topic_data(topic_info_array) {
         data.push({
             count_senders: 0,
             hidden: hidden,
+            invite_only: false,
+            is_web_public: true,
             last_msg_time: 'Just now',
             senders: [
                 1,
                 2,
             ],
             stream: 'stream' + stream_id,
+            stream_color: '',
             stream_id: stream_id,
             stream_url: 'https://www.example.com',
             topic: topic,

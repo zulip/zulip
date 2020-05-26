@@ -76,6 +76,7 @@ function format_topic(topic_data) {
     const last_msg = message_store.get(topic_data.last_msg_id);
     const stream = last_msg.stream;
     const stream_id = last_msg.stream_id;
+    const stream_info = stream_data.get_sub(stream);
     const topic = last_msg.topic;
     const time = new XDate(last_msg.timestamp * 1000);
     const last_msg_time = timerender.last_seen_status_from_date(time);
@@ -96,12 +97,17 @@ function format_topic(topic_data) {
     const senders_info = people.sender_info_with_small_avatar_urls_for_sender_ids(senders);
 
     return {
+        // stream info
         stream_id: stream_id,
         stream: stream,
+        stream_color: stream_info.color,
+        invite_only: stream_info.invite_only,
+        is_web_public: stream_info.is_web_public,
+        stream_url: hash_util.by_stream_uri(stream_id),
+
         topic: topic,
         unread_count: unread_count,
         last_msg_time: last_msg_time,
-        stream_url: hash_util.by_stream_uri(stream_id),
         topic_url: hash_util.by_stream_topic_uri(stream_id, topic),
         hidden: hidden,
         senders: senders_info,
