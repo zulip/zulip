@@ -225,8 +225,14 @@ nav.white li {
     }
 }
 
-nav.white ul li.active::after {
-    color: hsl(0, 0%, 27%);
+nav.white ul {
+    li {
+        &.active {
+            &::after {
+                color: hsl(0, 0%, 27%);
+            }
+        }
+    }
 }
 
 nav.white .brand.logo {
