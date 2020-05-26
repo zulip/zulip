@@ -3192,6 +3192,11 @@ nav li {
         width: calc(100% - 100px);
     }
 
+    nav .hamburger {
+        position: relative;
+        z-index: 10;
+    }
+
     .portico-landing.features-app section.hero {
         padding: 50px;
     }
@@ -3278,11 +3283,6 @@ nav li {
 
     .portico-landing.hello .features .col-2 {
         width: 100%;
-    }
-
-    nav .hamburger {
-        position: relative;
-        z-index: 10;
     }
 
     .portico-landing.features-app section {
