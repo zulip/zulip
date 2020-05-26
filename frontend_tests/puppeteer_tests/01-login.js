@@ -19,7 +19,11 @@ async function log_out(page) {
     await page.click(menu_selector);
     await page.waitForSelector(logout_selector);
     await page.click(logout_selector);
-    assert(page.url().includes('accounts/login/'));
+
+    // Wait for a email input in login page so we know login
+    // page is loaded. Then check that we are at the login url.
+    await page.waitForSelector('input[name="username"]');
+    assert(page.url().includes('/login/'));
 }
 
 async function login_tests(page) {
