@@ -24,6 +24,10 @@ set_global('ui_report', {
 set_global('activity', {});
 set_global('channel', {});
 set_global('document', 'document-stub');
+set_global('message_scroll', {
+    show_loading_newer: noop,
+    hide_loading_newer: noop,
+});
 set_global('message_util', {});
 set_global('message_store', {});
 set_global('narrow_state', {});
@@ -310,6 +314,8 @@ run_test('loading_newer', () => {
 
         message_fetch.maybe_load_newer_messages({
             msg_list: msg_list,
+            show_loading: noop,
+            hide_loading: noop,
         });
 
         test_dup_new_fetch(msg_list);

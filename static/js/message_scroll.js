@@ -1,6 +1,7 @@
 let actively_scrolling = false;
 
 let loading_older_messages_indicator_showing = false;
+let loading_newer_messages_indicator_showing = false;
 exports.show_loading_older = function () {
     if (!loading_older_messages_indicator_showing) {
         loading.make_indicator($('#loading_older_messages_indicator'),
@@ -17,8 +18,27 @@ exports.hide_loading_older = function () {
     }
 };
 
+exports.show_loading_newer = function () {
+    if (!loading_newer_messages_indicator_showing) {
+        $(".bottom-messages-logo").show();
+        loading.make_indicator($('#loading_newer_messages_indicator'),
+                               {abs_positioned: true});
+        loading_newer_messages_indicator_showing = true;
+        floating_recipient_bar.hide();
+    }
+};
+
+exports.hide_loading_newer = function () {
+    if (loading_newer_messages_indicator_showing) {
+        $(".bottom-messages-logo").hide();
+        loading.destroy_indicator($("#loading_newer_messages_indicator"));
+        loading_newer_messages_indicator_showing = false;
+    }
+};
+
 exports.hide_indicators = function () {
     exports.hide_loading_older();
+    exports.hide_loading_newer();
 };
 
 exports.actively_scrolling = function () {
@@ -51,6 +71,8 @@ exports.scroll_finished = function () {
     if (message_viewport.at_bottom()) {
         message_fetch.maybe_load_newer_messages({
             msg_list: current_msg_list,
+            show_loading: exports.show_loading_newer,
+            hide_loading: exports.hide_loading_newer,
         });
     }
 

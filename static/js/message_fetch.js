@@ -311,6 +311,7 @@ exports.maybe_load_newer_messages = function (opts) {
         return;
     }
 
+    opts.show_loading();
     const anchor = exports.get_frontfill_anchor(msg_list).toFixed();
 
     exports.load_messages({
@@ -318,6 +319,9 @@ exports.maybe_load_newer_messages = function (opts) {
         num_before: 0,
         num_after: consts.forward_batch_size,
         msg_list: msg_list,
+        cont: function () {
+            opts.hide_loading();
+        },
     });
 };
 
@@ -347,6 +351,7 @@ exports.initialize = function () {
         }
 
         if (data.found_newest) {
+            message_scroll.hide_loading_newer();
             server_events.home_view_loaded();
             exports.start_backfilling_messages();
             return;
@@ -357,6 +362,7 @@ exports.initialize = function () {
         const messages = data.messages;
         const latest_id = messages[messages.length - 1].id;
 
+        message_scroll.show_loading_newer();
         exports.load_messages({
             anchor: latest_id.toFixed(),
             num_before: 0,
