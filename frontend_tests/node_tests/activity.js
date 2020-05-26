@@ -2,6 +2,8 @@ set_global('$', global.make_zjquery());
 
 let filter_key_handlers;
 
+const huddle_data = zrequire('huddle_data');
+
 const _page_params = {
     realm_users: [],
     user_id: 999,
@@ -212,7 +214,7 @@ run_test('process_loaded_messages', () => {
 
     const user_ids_string1 = people.emails_strings_to_user_ids_string(huddle1);
     const user_ids_string2 = people.emails_strings_to_user_ids_string(huddle2);
-    assert.deepEqual(activity.get_huddles(), [user_ids_string2, user_ids_string1]);
+    assert.deepEqual(huddle_data.get_huddles(), [user_ids_string2, user_ids_string1]);
 });
 
 run_test('full_huddle_name', () => {
@@ -742,18 +744,18 @@ run_test('update_huddles_and_redraw', () => {
     li.set_find_results('.count', count);
     count.set_parent(li);
 
-    const real_get_huddles = activity.get_huddles;
-    activity.get_huddles = () => ['1,2'];
+    const real_get_huddles = huddle_data.get_huddles;
+    huddle_data.get_huddles = () => ['1,2'];
     activity.update_huddles = real_update_huddles;
     activity.redraw();
     assert.equal($('#group-pm-list').hasClass('show'), false);
     page_params.realm_presence_disabled = false;
     activity.redraw();
     assert.equal($('#group-pm-list').hasClass('show'), true);
-    activity.get_huddles = () => [];
+    huddle_data.get_huddles = () => [];
     activity.redraw();
     assert.equal($('#group-pm-list').hasClass('show'), false);
-    activity.get_huddles = real_get_huddles;
+    huddle_data.get_huddles = real_get_huddles;
     activity.update_huddles = function () {};
 });
 
