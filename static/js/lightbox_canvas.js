@@ -215,7 +215,7 @@ const funcs = {
         const w = canvas.width * meta.zoom;
         const h = canvas.height * meta.zoom;
 
-        canvas.width = canvas.width;
+        context.clearRect(0, 0, canvas.width, canvas.height);
         context.imageSmoothingEnabled = false;
 
         context.drawImage(meta.image, x, y, w, h);
