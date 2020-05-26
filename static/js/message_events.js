@@ -1,4 +1,6 @@
 const util = require("./util");
+const huddle_data = require("./huddle_data");
+
 function maybe_add_narrowed_messages(messages, msg_list) {
     const ids = [];
 
@@ -58,6 +60,7 @@ exports.insert_new_messages = function insert_new_messages(messages, sent_by_thi
     messages = messages.map(message_store.add_message_metadata);
 
     unread.process_loaded_messages(messages);
+    huddle_data.process_loaded_messages(messages);
 
     // message_list.all is a data-only list that we use to populate
     // other lists, so we always update this
@@ -89,8 +92,6 @@ exports.insert_new_messages = function insert_new_messages(messages, sent_by_thi
         // will filter out any not sent by us.
         notifications.notify_local_mixes(messages, need_user_to_scroll);
     }
-
-    activity.process_loaded_messages(messages);
 
     unread_ui.update_unread_counts();
     resize.resize_page_components();

@@ -413,16 +413,6 @@ exports.initialize = function () {
         $(".tooltip").remove();
     });
 
-    $('#group-pms').expectOne().on('click', '.selectable_sidebar_block', function (e) {
-        const user_ids_string = $(e.target).parents('li').attr('data-user-ids');
-        const emails = people.user_ids_string_to_emails_string(user_ids_string);
-        narrow.by('pm-with', emails, {trigger: 'sidebar'});
-        e.preventDefault();
-        e.stopPropagation();
-        popovers.hide_all();
-        $(".tooltip").remove();
-    });
-
     function do_render_buddy_list_tooltip(elem, title_data) {
         elem.tooltip({
             template: render_buddy_list_tooltip(),
@@ -454,7 +444,7 @@ exports.initialize = function () {
     });
 
     // PM LIST TOOLTIPS
-    $("body").on('mouseenter', '#pm_user_status, #group_pms_right_sidebar', function (e) {
+    $("body").on('mouseenter', '#pm_user_status', function (e) {
         $(".tooltip").remove();
         e.stopPropagation();
         const elem = $(e.currentTarget);
@@ -466,7 +456,7 @@ exports.initialize = function () {
         do_render_buddy_list_tooltip(elem, title_data);
     });
 
-    $("body").on('mouseleave', '#pm_user_status, #group_pms_right_sidebar', function (e) {
+    $("body").on('mouseleave', '#pm_user_status', function (e) {
         e.stopPropagation();
         $(e.currentTarget).tooltip('destroy');
     });
@@ -496,7 +486,7 @@ exports.initialize = function () {
     // MISC
 
     (function () {
-        const sel = ["#group-pm-list", "#stream_filters", "#global_filters", "#user_presences"].join(", ");
+        const sel = ["#stream_filters", "#global_filters", "#user_presences"].join(", ");
 
         $(sel).on("click", "a", function () {
             this.blur();

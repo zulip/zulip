@@ -292,7 +292,6 @@ exports.initialize_kitchen_sink_stuff = function () {
 
     if (page_params.realm_presence_disabled) {
         $("#user-list").hide();
-        $("#group-pm-list").hide();
     }
 };
 
