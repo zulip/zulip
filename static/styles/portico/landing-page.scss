@@ -300,39 +300,40 @@ nav ul {
 
     cursor: pointer;
     transition: outline-color 0.2s ease;
-}
 
-nav ul .exit {
-    display: none;
-    user-select: none;
-}
-
-nav ul li {
-    position: relative;
-    display: inline-block;
-    margin: 10px;
-
-    color: hsl(0, 0%, 100%);
-
-    opacity: 0.7;
-    transition: all 0.2s ease;
-
-    &.active,
-    &:hover {
-        opacity: 1;
+    .exit {
+        display: none;
+        user-select: none;
     }
 
-    &.active {
-        &::after {
-            content: "v";
-            position: absolute;
-            bottom: -15px;
-            left: calc(50% - 4px);
-            font-weight: 100;
-            transform: scaleX(2) scaleY(0.5);
+    li {
+        position: relative;
+        display: inline-block;
+        margin: 10px;
+
+        color: hsl(0, 0%, 100%);
+
+        opacity: 0.7;
+        transition: all 0.2s ease;
+
+        &.active,
+        &:hover {
+            opacity: 1;
+        }
+
+        &.active {
+            &::after {
+                content: "v";
+                position: absolute;
+                bottom: -15px;
+                left: calc(50% - 4px);
+                font-weight: 100;
+                transform: scaleX(2) scaleY(0.5);
+            }
         }
     }
 }
+
 
 nav li a,
 nav li a:hover,
@@ -3443,43 +3444,43 @@ nav li a:visited {
         box-shadow: 0px 0px 80px hsla(0, 0%, 0%, 0.12);
 
         transition: all 0.5s ease;
-    }
 
-    nav ul.show {
-        transform: translate(0px, 0px);
-    }
-
-    nav ul .exit {
-        display: block;
-        position: absolute;
-        top: 10px;
-        right: 25px;
-
-        font-weight: 100;
-        font-size: 3em;
-        color: initial;
-    }
-
-    nav ul li {
-        display: block;
-        font-size: 1.5em;
-        font-weight: 300;
-        line-height: 1.5;
-
-        &:first-of-type {
-            margin-top: 20px;
+        &.show {
+            transform: translate(0px, 0px);
         }
 
-        &.active {
-            &::after {
-                content: ">";
-                transform: scale(1, 1);
-                bottom: auto;
-                left: -25px;
-                font-weight: 400;
+        .exit {
+            display: block;
+            position: absolute;
+            top: 10px;
+            right: 25px;
+
+            font-weight: 100;
+            font-size: 3em;
+            color: initial;
+        }
+
+        li {
+            display: block;
+            font-size: 1.5em;
+            font-weight: 300;
+            line-height: 1.5;
+
+            &:first-of-type {
+                margin-top: 20px;
             }
 
-            font-weight: 400;
+            &.active {
+                &::after {
+                    content: ">";
+                    transform: scale(1, 1);
+                    bottom: auto;
+                    left: -25px;
+                    font-weight: 400;
+                }
+
+                font-weight: 400;
+            }
         }
     }
 
