@@ -8,6 +8,7 @@ let people_dict;
 let people_by_name_dict;
 let people_by_user_id_dict;
 let active_user_dict;
+let non_active_user_dict;
 let cross_realm_dict;
 let pm_recipient_count_dict;
 let duplicate_full_name_data;
@@ -28,6 +29,7 @@ exports.init = function () {
     // in our realm, but it excludes non-active users and
     // cross-realm bots.
     active_user_dict = new Map();
+    non_active_user_dict = new Map();
     cross_realm_dict = new Map(); // keyed by user_id
     pm_recipient_count_dict = new Map();
 
@@ -733,6 +735,18 @@ exports.get_active_humans = function () {
     return humans;
 };
 
+exports.get_non_active_humans = function () {
+    const humans = [];
+
+    for (const user of non_active_user_dict.values()) {
+        if (!user.is_bot) {
+            humans.push(user);
+        }
+    }
+
+    return humans;
+};
+
 exports.get_active_human_count = function () {
     let count = 0;
     for (const person of active_user_dict.values()) {
@@ -746,6 +760,10 @@ exports.get_active_human_count = function () {
 exports.get_active_user_ids = function () {
     // This includes active users and active bots.
     return Array.from(active_user_dict.keys());
+};
+
+exports.get_non_active_realm_users = function () {
+    return Array.from(non_active_user_dict.values());
 };
 
 exports.is_cross_realm_email = function (email) {
@@ -1046,6 +1064,15 @@ exports._add_user = function add(person) {
 exports.add_active_user = function (person) {
     active_user_dict.set(person.user_id, person);
     exports._add_user(person);
+    non_active_user_dict.delete(person.user_id);
+};
+
+exports.is_person_active = (user_id) => {
+    if (!people_by_user_id_dict.has(user_id)) {
+        blueslip.error("No user found.", user_id);
+    }
+
+    return active_user_dict.has(user_id);
 };
 
 exports.add_cross_realm_user = function (person) {
@@ -1060,6 +1087,7 @@ exports.deactivate = function (person) {
     // structures, because deactivated users can be part
     // of somebody's PM list.
     active_user_dict.delete(person.user_id);
+    non_active_user_dict.set(person.user_id, person);
 };
 
 exports.report_late_add = function (user_id, email) {
@@ -1245,6 +1273,7 @@ exports.initialize = function (my_user_id, params) {
     }
 
     for (const person of params.realm_non_active_users) {
+        non_active_user_dict.set(person.user_id, person);
         exports._add_user(person);
     }
 
