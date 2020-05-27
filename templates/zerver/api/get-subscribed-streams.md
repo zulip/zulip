@@ -64,7 +64,7 @@ You may pass the `include_subscribers` query parameter as follows:
     * `pin_to_top`: A boolean specifying whether the given stream has been pinned
       to the top.
     * `email_address`: Email address of the given stream.
-    * `in_home_view`: Whether the given stream is muted or not. Muted streams do
+    * `is_muted`: Whether the given stream is muted or not. Muted streams do
       not count towards your total unread count and thus, do not show up in
       `All messages` view (previously known as `Home` view).
     * `color`: Stream color.
