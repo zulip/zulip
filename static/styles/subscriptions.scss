@@ -851,15 +851,17 @@ form#add_new_subscription {
             }
         }
 
-        .deactivate,
-        .subscribe-button {
-            float: right;
-            margin-top: -5px;
-            margin-right: 5px;
-        }
 
         .button-group {
             float: right;
+            margin-top: -5px;
+
+            .subscribe-button,
+            #preview-stream-button,
+            .deactivate {
+                margin-right: 5px;
+                text-decoration: none;
+            }
         }
 
         .subscribe-button.unsubscribed {
@@ -888,12 +890,6 @@ form#add_new_subscription {
         margin-bottom: 5px;
     }
 
-    #preview-stream-button {
-        float: right;
-        margin-top: -5px;
-        margin-right: 5px;
-        text-decoration: none;
-    }
 
     .editable-section {
         position: relative;
