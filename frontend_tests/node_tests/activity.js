@@ -52,6 +52,7 @@ const _stream_popover = {
 };
 
 const _resize = {
+    resize_sidebars: () => {},
     resize_page_components: () => {},
 };
 
