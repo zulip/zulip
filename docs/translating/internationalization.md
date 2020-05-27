@@ -56,6 +56,11 @@ to understand when implementing an internationalized application:
   all languages.  German is a good test case, as it has a lot of long
   words, as is Japanese (as character-based languages use a lot less
   width).
+* This is more about how i18n tooling works, but in code, the
+  translation function must be passed the string to translate, not a
+  variable containing the target string.  Otherwise, the parsers that
+  extract the strings in a project to send to translators will not
+  find your string.
 
 There's a lot of other interesting differences that are important for
 i18n (e.g. Zulip has a "Full Name" field rather than "First Name" and
