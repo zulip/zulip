@@ -204,6 +204,10 @@ jobs:
           destination: casper
 
       - store_artifacts:
+          path: ./var/puppeteer/
+          destination: puppeteer
+
+      - store_artifacts:
           path: ../../../tmp/zulip-test-event-log/
           destination: test-reports
 
