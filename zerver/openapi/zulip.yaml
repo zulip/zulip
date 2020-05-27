@@ -812,6 +812,41 @@ paths:
                       type: array
                       items:
                         type: object
+                        properties:
+                          topic:
+                            type: string
+                            description: |
+                              the topic for the message.
+                          content:
+                            type: string
+                            description: |
+                              the body of the message.
+                          rendered_content:
+                            type: string
+                            description: |
+                              the already rendered, HTML version of `content`.
+                          prev_content:
+                            type: string
+                            description: |
+                              the body of the message before being edited.
+                          prev_rendered_content:
+                            type: string
+                            description: |
+                              the already rendered, HTML version of
+                              `prev_content`.
+                          user_id:
+                            type: integer
+                            description: |
+                              the ID of the user that made the edit.
+                          content_html_diff:
+                            type: string
+                            description: |
+                              an HTML diff between this version of the message
+                              and the previous one.
+                          timestamp:
+                            type: integer
+                            description: |
+                              the UNIX timestamp for this editing.
                       description: |
                         A chronologically sorted array of `snapshot`
                         objects, each one with the values of the
