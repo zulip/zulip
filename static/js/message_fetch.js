@@ -103,7 +103,6 @@ function get_messages_success(data, opts) {
     }
 
     process_result(data, opts);
-    resize.resize_bottom_whitespace();
 }
 
 // This function modifies the data.narrow filters to use user IDs

@@ -22,9 +22,6 @@ const _document = {
 const _drafts = {
     delete_draft_after_send: noop,
 };
-const _resize = {
-    resize_bottom_whitespace: noop,
-};
 
 const _sent_messages = {
     start_tracking_message: noop,
@@ -42,7 +39,6 @@ set_global('drafts', _drafts);
 set_global('navigator', _navigator);
 set_global('notifications', _notifications);
 set_global('reminder', _reminder);
-set_global('resize', _resize);
 set_global('sent_messages', _sent_messages);
 
 set_global('local_message', {});
@@ -52,6 +48,7 @@ set_global('stream_edit', {});
 set_global('markdown', {});
 set_global('loading', {});
 set_global('page_params', {});
+set_global('resize', {});
 set_global('subs', {});
 set_global('ui_util', {});
 
