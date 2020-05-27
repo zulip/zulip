@@ -2225,6 +2225,40 @@ paths:
                       description: |
                         An object that contains `emoji` objects, each identified with their
                         emoji ID as the key.
+                      properties:
+                        id:
+                          type: integer
+                          description: |
+                            The ID for this emoji, same as the object's key.
+                        name:
+                          type: string
+                          description: |
+                            The user-friendly name for this emoji. Users in the organization
+                            can use this emoji by writing this name between colons (`:name:`).
+                        source_url:
+                          type: string
+                          description: |
+                            The path relative to the organization's URL where the
+                            emoji's image can be found.
+                        deactivated:
+                          type: string
+                          description: |
+                            Whether the emoji has been deactivated or not.
+                        author:
+                          description: |
+                            An object describing the user who created the custom emoji,
+                            with the following fields:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                              description: The creator's user ID.
+                            email:
+                              type: string
+                              description: The creator's email address.
+                            full_name:
+                              type: string
+                              description: The creator's full name.
                 - example:
                     {
                         "result": "success",
