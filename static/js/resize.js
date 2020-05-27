@@ -72,8 +72,6 @@ function get_new_heights() {
 
     const usable_height = viewport_height
         - parseInt($("#right-sidebar").css("marginTop"), 10)
-        - parseInt(buddy_list_wrapper.css("marginTop"), 10)
-        - parseInt(buddy_list_wrapper.css("marginBottom"), 10)
         - $("#userlist-header").safeOuterHeight(true)
         - $("#user_search_section").safeOuterHeight(true)
         - invite_user_link_height
@@ -124,9 +122,7 @@ function left_userlist_get_new_heights() {
                                 - $("#streams_header").safeOuterHeight(true)
                                 - $("#userlist-header").safeOuterHeight(true)
                                 - $("#user_search_section").safeOuterHeight(true)
-                                - parseInt(stream_filters.css("marginBottom"), 10)
-                                - parseInt(buddy_list_wrapper.css("marginTop"), 10)
-                                - parseInt(buddy_list_wrapper.css("marginBottom"), 10);
+                                - parseInt(stream_filters.css("marginBottom"), 10);
 
     const blocks = [
         {
