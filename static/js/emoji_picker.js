@@ -109,10 +109,9 @@ exports.generate_emoji_picker_data = function (realm_emojis) {
     for (const [category, codepoints] of Object.entries(emoji_codes.emoji_catalog)) {
         const emojis = [];
         for (const codepoint of codepoints) {
-            if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
-                const emoji_dict = emoji.emojis_by_name.get(
-                    emoji_codes.codepoint_to_name[codepoint]
-                );
+            const name = emoji.get_emoji_name(codepoint);
+            if (name !== undefined) {
+                const emoji_dict = emoji.emojis_by_name.get(name);
                 if (emoji_dict !== undefined && emoji_dict.is_realm_emoji !== true) {
                     emojis.push(emoji_dict);
                 }
@@ -123,8 +122,9 @@ exports.generate_emoji_picker_data = function (realm_emojis) {
 
     const popular = [];
     for (const codepoint of typeahead.popular_emojis) {
-        if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
-            const emoji_dict = emoji.emojis_by_name.get(emoji_codes.codepoint_to_name[codepoint]);
+        const name = emoji.get_emoji_name(codepoint);
+        if (name !== undefined) {
+            const emoji_dict = emoji.emojis_by_name.get(name);
             if (emoji_dict !== undefined) {
                 popular.push(emoji_dict);
             }
