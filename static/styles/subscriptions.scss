@@ -461,7 +461,7 @@ form#add_new_subscription {
     }
 
     .right {
-        width: calc(50% - -1px);
+        width: calc(50% + 1px);
 
         .nothing-selected {
             display: block;

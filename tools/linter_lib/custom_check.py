@@ -498,10 +498,6 @@ bash_rules = RuleList(
 css_rules = RuleList(
     langs=['css', 'scss'],
     rules=[
-        {'pattern': r'calc\([^+]+\+[^+]+\)',
-         'description': "Avoid using calc with '+' operator. See #8403 : in CSS.",
-         'good_lines': ["width: calc(20% - -14px);"],
-         'bad_lines': ["width: calc(20% + 14px);"]},
         {'pattern': r'^[^:]*:\S[^:]*;$',
          'description': "Missing whitespace after : in CSS",
          'good_lines': ["background-color: white;", "text-size: 16px;"],
