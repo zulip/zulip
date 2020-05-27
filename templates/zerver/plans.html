@@ -85,10 +85,10 @@
                                     <a href='/upgrade' class="button black-current-value" type="button">
                                         Current plan
                                     </a>
-                                    {% elif realm_plan_type == 2 %}
-                                    <a href="/upgrade" class="button green">
+                                    {% elif realm_plan_type == 0 %}
+                                    <a href="/new" class="button green">
                                         {% if free_trial_days %}
-                                        Start {{ free_trial_days }} day Free Trial
+                                        Start {{ free_trial_days }} day free trial
                                         {% else %}
                                         Buy Standard
                                         {% endif %}
@@ -96,7 +96,7 @@
                                     {% else %}
                                     <a href="/upgrade" class="button green">
                                         {% if free_trial_days %}
-                                        Start {{ free_trial_days }} day Free Trial
+                                        Start {{ free_trial_days }} day free trial
                                         {% else %}
                                         Buy Standard
                                         {% endif %}
