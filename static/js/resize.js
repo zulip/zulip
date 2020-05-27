@@ -195,7 +195,7 @@ exports.resize_stream_filters_container = function (h) {
     $("#stream-filters-container").css('max-height', h.stream_filters_max_height);
 };
 
-exports.resize_page_components = function () {
+exports.resize_sidebars = function () {
     let sidebar;
 
     if (page_params.left_side_userlist) {
@@ -228,12 +228,17 @@ exports.resize_page_components = function () {
 
     const h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
 
-    exports.resize_bottom_whitespace(h);
     $("#buddy_list_wrapper").css('max-height', h.buddy_list_wrapper_max_height);
     $("#group-pms").css('max-height', h.group_pms_max_height);
 
     $("#stream-filters-container").css('max-height', h.stream_filters_max_height);
 
+    return h;
+};
+
+exports.resize_page_components = function () {
+    const h = exports.resize_sidebars();
+    exports.resize_bottom_whitespace(h);
     panels.resize_app();
 };
 
