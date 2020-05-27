@@ -415,6 +415,9 @@ class Realm(models.Model):
 
         ret: Dict[str, bool] = {}
         supported_backends = [backend.__class__ for backend in supported_auth_backends()]
+        # `authentication_methods` is a bitfield.types.BitHandler, not
+        # a true dict; since it is still python2- and python3-compat,
+        # `iteritems` is its method to iterate over its contents.
         for k, v in self.authentication_methods.iteritems():
             backend = AUTH_BACKEND_NAME_MAP[k]
             if backend in supported_backends:
