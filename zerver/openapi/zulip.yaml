@@ -1738,6 +1738,31 @@ paths:
                       description: |
                         An object containing the presence details for every client the user has
                         logged into.
+                      additionalProperties:
+                        type: object
+                        properties:
+                          timestamp:
+                            type: integer
+                            description: |
+                              when this update was received; if the timestamp
+                              is more than a few minutes in the past, the user is offline.
+                          status:
+                            type: string
+                            description: |
+                              either `active` or `idle`: whether the user had
+                              recently interacted with Zulip at the time in the timestamp
+                              (this distinguishes orange vs. green dots in the Zulip web
+                              UI; orange/idle means we don't know whether the user is
+                              actually at their computer or just left the Zulip app open
+                              on their desktop).
+                        description: |
+                          `{client_name}` or `aggregated`: the keys for these objects are
+                          the names of the different clients where this user is logged in,
+                          like `website`, `ZulipDesktop`, `ZulipTerminal`, or
+                          `ZulipMobile`. There is also an `aggregated` key, which matches
+                          the contents of the object that has been updated most
+                          recently. For most applications, you'll just want to look at the
+                          `aggregated` key.
                 - example:
                     {
                         "presence": {
