@@ -3,7 +3,9 @@
         <button type="button" class="close close-privacy-modal" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
         <h3 id="stream_privacy_modal_label">{{t "Change stream permissions for #" }}{{ stream_name }}<span class="email"></span></h3>
     </div>
-    {{> stream_types }}
+    <div class="modal-body">
+        {{> stream_types }}
+    </div>
     <div class="modal-footer">
         <button class="button rounded close-privacy-modal" data-dismiss="modal">{{t "Cancel" }}</button>
         <button class="button rounded btn-danger" id="change-stream-privacy-button"

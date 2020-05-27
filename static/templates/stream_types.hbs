@@ -1,67 +1,69 @@
-<ul class="grey-box">
+<div class="input-group">
     <h4>{{t 'Who can access the stream?'}}
         {{> help_link_widget link="/help/stream-permissions" }}
     </h4>
-    <li>
+    <div class="radio-input-parent">
+        <input type="radio" name="privacy" value="public" {{#if is_public}}checked{{/if}} />
         <label class="radio">
-            <input type="radio" name="privacy" value="public" {{#if is_public}}checked{{/if}} />
             {{t '<b>Public:</b> anyone can join; anyone can view complete message history without joining' }}
         </label>
-    </li>
-    <li>
+    </div>
+    <div class="radio-input-parent">
+        <input type="radio" name="privacy" value="invite-only-public-history" {{#if is_private_with_public_history}}checked{{/if}} />
         <label class="radio">
-            <input type="radio" name="privacy" value="invite-only-public-history" {{#if is_private_with_public_history}}checked{{/if}} />
             {{t '<b>Private, shared history:</b> must be invited by a member; new members can view complete message history; hidden from non-administrator users' }}
         </label>
-    </li>
-    <li>
+    </div>
+    <div class="radio-input-parent">
+        <input type="radio" name="privacy" value="invite-only" {{#if is_private}}checked{{/if}} />
         <label class="radio">
-            <input type="radio" name="privacy" value="invite-only" {{#if is_private}}checked{{/if}} />
             {{t '<b>Private, protected history:</b> must be invited by a member; new members can only see messages sent after they join; hidden from non-administrator users' }}
         </label>
-    </li>
+    </div>
+</div>
+
+<div class="input-group">
     <h4>{{t 'Who can post to the stream?'}}
         {{> help_link_widget link="/help/stream-sending-policy" }}
     </h4>
     {{#each stream_post_policy_values}}
-    <li>
+    <div class="radio-input-parent">
+        <input type="radio" name="stream-post-policy" value="{{ this.code }}" {{#if (eq this.code ../stream_post_policy) }}checked{{/if}} />
         <label class="radio">
-            <input type="radio" name="stream-post-policy" value="{{ this.code }}" {{#if (eq this.code ../stream_post_policy) }}checked{{/if}} />
             {{ this.description }}
         </label>
-    </li>
+    </div>
     {{/each}}
-    {{#if (or is_owner is_stream_edit)}}
-    <h4>{{t "Message retention for stream" }}
-        {{> help_link_widget link="/help/message-retention-policy" }}
-    </h4>
+</div>
+
+{{#if (or is_owner is_stream_edit)}}
+<div>
+    <h4>{{t "Message retention for stream" }}</h4>
 
     {{> settings/upgrade_tip_widget}}
 
-    <li>
-        <div class="input-group inline-block">
-            <label for="stream_message_retention_setting" class="dropdown-title">{{t "Message retention period" }}
-                <i class="fa fa-info-circle settings-info-icon realm_allow_message_deleting_tooltip" data-toggle="tooltip" aria-hidden="true" title="{{t 'Only owners can change stream message retention policy.' }}"></i>
-            </label>
-            <select name="stream_message_retention_setting"
-              class="stream_message_retention_setting" class="prop-element"
-              {{#if disable_message_retention_setting}}disabled{{/if}}>
-                <option value="realm_default">{{t 'Use organization level settings '}}{{realm_message_retention_setting}} </option>
-                <option value="forever">{{t 'Retain forever' }}</option>
-                <option value="retain_for_period">{{t 'Retain for N days after posting' }}</option>
-            </select>
+    <div class="input-group inline-block message-retention-setting-group">
+        <label for="stream_message_retention_setting" class="dropdown-title">{{t "Message retention period" }}
+            <i class="fa fa-info-circle settings-info-icon realm_allow_message_deleting_tooltip" data-toggle="tooltip" aria-hidden="true" title="{{t 'Only owners can change stream message retention policy.' }}"></i>
+        </label>
+        <select name="stream_message_retention_setting"
+          class="stream_message_retention_setting" class="prop-element"
+          {{#if disable_message_retention_setting}}disabled{{/if}}>
+            <option value="realm_default">{{t 'Use organization level settings '}}{{realm_message_retention_setting}} </option>
+            <option value="forever">{{t 'Retain forever' }}</option>
+            <option value="retain_for_period">{{t 'Retain for N days after posting' }}</option>
+        </select>
 
-            <div class="dependent-inline-block stream-message-retention-days-input">
-                <label class="inline-block">
-                    {{t 'N' }}:
-                </label>
-                <input type="text" autocomplete="off"
-                  name="stream-message-retention-days"
-                  class="stream-message-retention-days"
-                  value="{{ stream_message_retention_days }}"
-                  {{#if disable_message_retention_setting}}disabled{{/if}}/>
-            </div>
+        <div class="dependent-inline-block stream-message-retention-days-input">
+            <label class="inline-block">
+                {{t 'N' }}:
+            </label>
+            <input type="text" autocomplete="off"
+              name="stream-message-retention-days"
+              class="stream-message-retention-days"
+              value="{{ stream_message_retention_days }}"
+              {{#if disable_message_retention_setting}}disabled{{/if}}/>
         </div>
-    </li>
-    {{/if}}
-</ul>
+    </div>
+</div>
+{{/if}}

@@ -591,16 +591,6 @@ form#add_new_subscription {
         margin-bottom: 20px;
     }
 
-    #make-invite-only {
-        .radio {
-            margin: 5px;
-        }
-
-        .grey-box .checkbox {
-            margin: 5px;
-        }
-    }
-
     #announce-new-stream {
         margin-top: 10px;
 
@@ -1019,61 +1009,58 @@ form#add_new_subscription {
     }
 }
 
-ul.grey-box {
-    #stream_privacy_modal & {
-        border-style: none;
-    }
-
+#subscription_overlay ul.grey-box {
     li {
-        #stream_privacy_modal &,
-        #subscription_overlay & {
-            border-bottom: 1px solid hsl(0, 0%, 87%);
-            padding: 5px 0px;
-        }
+        border-bottom: 1px solid hsl(0, 0%, 87%);
+        padding: 5px 0px;
 
         input[type=checkbox] {
-            #stream_privacy_modal & {
-                margin-top: 4px;
-            }
-
-            #subscription_overlay & {
-                margin-top: 0px;
-            }
+            margin-top: 0px;
         }
 
         &:last-of-type {
-            #stream_privacy_modal &,
-            #subscription_overlay & {
-                border-bottom: none;
-            }
+            border-bottom: none;
         }
 
         .sp-replacer {
-            #stream_privacy_modal &,
-            #subscription_overlay & {
-                box-shadow: none;
-            }
+            box-shadow: none;
         }
 
         input[type=radio] {
-            #stream_privacy_modal &,
-            #subscription_overlay & {
-                margin-right: 5px;
+            margin-right: 5px;
+        }
+    }
+}
+
+#stream_privacy_modal,
+.stream-creation-body {
+    .input-group {
+
+        margin-bottom: 10px;
+
+        .radio-input-parent {
+            padding: 5px 0;
+
+            input[type="radio"] {
+                margin: 0 0 1px 0;
+            }
+
+            label.radio {
+                display: inline;
+                padding-left: 8px;
             }
         }
 
-        input[type=text] {
-            width: 5ch;
-            text-align: right;
-        }
+        &.message-retention-setting-group {
+            input {
+                width: 5ch;
+                text-align: right;
+            }
 
-        label.dropdown-title {
-            display: block;
-        }
-
-        select {
-            width: auto;
-            margin-bottom: 0px;
+            select {
+                width: auto;
+                margin-bottom: 0px;
+            }
         }
     }
 }
