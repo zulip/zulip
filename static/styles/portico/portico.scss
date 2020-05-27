@@ -250,7 +250,7 @@ html {
     /* Extend highlight to entire width of sidebar, not just link area */
     /* This has been changed from "+" to "- -" because of issue #8403.
        If the issue has been fixed, please change this back to "+" again. */
-    width: calc(100% - -20px);
+    width: calc(100% + 20px);
     margin-left: -40px;
     padding-left: 40px;
 }
@@ -845,7 +845,7 @@ a.bottom-signup-button {
 
 .contributors-list {
     margin-left: -40px;
-    width: calc(100% - -80px);
+    width: calc(100% + 80px);
 }
 
 .contributors {
@@ -1000,7 +1000,7 @@ input#terminal:checked ~ #tab-terminal {
 .login-form {
     margin: auto;
     /* plus input padding. */
-    width: calc(300px - -28px);
+    width: calc(300px + 28px);
     margin-bottom: 10px;
 }
 
