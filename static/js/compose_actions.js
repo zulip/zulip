@@ -114,7 +114,6 @@ exports.complete_starting_tasks = function (msg_type, opts) {
     compose_fade.start_compose(msg_type);
     ui_util.decorate_stream_bar(opts.stream, $("#stream-message .message_header_stream"), true);
     $(document).trigger($.Event('compose_started.zulip', opts));
-    resize.resize_bottom_whitespace();
     exports.update_placeholder_text(opts);
 };
 
@@ -244,7 +243,6 @@ exports.cancel = function () {
     }
     hide_box();
     $("#compose_close").hide();
-    resize.resize_bottom_whitespace();
     clear_box();
     notifications.clear_compose_notifications();
     compose.abort_xhr();

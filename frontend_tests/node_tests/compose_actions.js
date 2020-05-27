@@ -63,10 +63,6 @@ set_global('drafts', {
     update_draft: noop,
 });
 
-set_global('resize', {
-    resize_bottom_whitespace: noop,
-});
-
 set_global('narrow_state', {
     set_compose_defaults: noop,
 });

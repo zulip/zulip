@@ -93,7 +93,6 @@ exports.initialize = function () {
     });
     $('#gear-menu a[data-toggle="tab"]').on('shown', function (e) {
         const target_tab = $(e.target).attr('href');
-        resize.resize_bottom_whitespace();
         // Hide all our error messages when switching tabs
         $('.alert').removeClass("show");
 
