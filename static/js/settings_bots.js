@@ -64,8 +64,7 @@ function is_local_part(value, element) {
 }
 
 exports.type_id_to_string = function (type_id) {
-    const name = page_params.bot_types.find(bot_type => bot_type.type_id === type_id).name;
-    return i18n.t(name);
+    return page_params.bot_types.find(bot_type => bot_type.type_id === type_id).name;
 };
 
 exports.render_bots = function () {

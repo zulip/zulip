@@ -75,10 +75,7 @@ exports.clear_all_everyone_warnings = function () {
 };
 
 function show_sending_indicator(whats_happening) {
-    if (whats_happening === undefined) {
-        whats_happening = 'Sending...';
-    }
-    $("#sending-indicator").html(i18n.t(whats_happening));
+    $("#sending-indicator").text(whats_happening);
     $("#sending-indicator").show();
 }
 
@@ -647,9 +644,9 @@ exports.validate = function () {
     $("#compose-send-button").attr('disabled', 'disabled').blur();
     const message_content = compose_state.message_content();
     if (reminder.is_deferred_delivery(message_content)) {
-        show_sending_indicator('Scheduling...');
+        show_sending_indicator(i18n.t('Scheduling...'));
     } else {
-        show_sending_indicator();
+        show_sending_indicator(i18n.t('Sending...'));
     }
 
     if (/^\s*$/.test(message_content)) {

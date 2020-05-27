@@ -225,7 +225,7 @@ run_test('validate', () => {
 
     reminder.is_deferred_delivery = () => true;
     compose.validate();
-    assert.equal($('#sending-indicator').html(), 'translated: Scheduling...');
+    assert.equal($('#sending-indicator').text(), 'translated: Scheduling...');
     reminder.is_deferred_delivery = noop;
 
     add_content_to_compose_box();
