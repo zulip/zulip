@@ -134,6 +134,10 @@ exports.show = function (opts) {
     opts.populate(meta.$container.find('.feedback_content'));
 
     animate.fadeIn();
+
+    // Focus the undo button so users can easily close it
+    // with the `Enter` key.
+    $('.feedback_undo').focus();
 };
 
 window.feedback_widget = exports;
