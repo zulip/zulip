@@ -1,5 +1,3 @@
-const emoji_codes = require("../generated/emoji/emoji_codes.json");
-
 function do_narrow_action(action) {
     action(current_msg_list.selected_id(), {trigger: 'hotkey'});
     return true;
@@ -731,7 +729,7 @@ exports.process_hotkey = function (e, hotkey) {
     case 'thumbs_up_emoji': { // '+': reacts with thumbs up emoji on selected message
         // Use canonical name.
         const thumbs_up_emoji_code = '1f44d';
-        const canonical_name = emoji_codes.codepoint_to_name[thumbs_up_emoji_code];
+        const canonical_name = emoji.get_emoji_name(thumbs_up_emoji_code);
         reactions.toggle_emoji_reaction(msg.id, canonical_name);
         return true;
     }

@@ -1,4 +1,3 @@
-const emoji_codes = require("../generated/emoji/emoji_codes.json");
 const render_message_reaction = require('../templates/message_reaction.hbs');
 
 exports.view = {}; // function namespace
@@ -103,12 +102,14 @@ exports.toggle_emoji_reaction = function (message_id, emoji_name) {
             reaction_info.reaction_type = 'realm_emoji';
         }
         reaction_info.emoji_code = emoji.active_realm_emojis.get(emoji_name).id;
-    } else if (emoji_codes.name_to_codepoint.hasOwnProperty(emoji_name)) {
-        reaction_info.reaction_type = 'unicode_emoji';
-        reaction_info.emoji_code = emoji_codes.name_to_codepoint[emoji_name];
     } else {
-        blueslip.warn('Bad emoji name: ' + emoji_name);
-        return;
+        const codepoint = emoji.get_emoji_codepoint(emoji_name);
+        if (codepoint === undefined) {
+            blueslip.warn('Bad emoji name: ' + emoji_name);
+            return;
+        }
+        reaction_info.reaction_type = 'unicode_emoji';
+        reaction_info.emoji_code = codepoint;
     }
 
     update_ui_and_send_reaction_ajax(message_id, reaction_info);

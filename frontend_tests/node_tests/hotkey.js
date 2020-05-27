@@ -32,6 +32,7 @@ set_global('$', global.make_zjquery());
 $.fn.keydown = noop;
 $.fn.keypress = noop;
 
+zrequire('emoji');
 const hotkey = zrequire('hotkey');
 zrequire('common');
 

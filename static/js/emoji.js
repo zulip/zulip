@@ -35,16 +35,13 @@ const emoticon_translations = (() => {
     */
 
     const translations = [];
-    for (const emoticon in emoji_codes.emoticon_conversions) {
-        if (emoji_codes.emoticon_conversions.hasOwnProperty(emoticon)) {
-            const replacement_text = emoji_codes.emoticon_conversions[emoticon];
-            const regex = new RegExp('(' + util.escape_regexp(emoticon) + ')', 'g');
+    for (const [emoticon, replacement_text] of Object.entries(emoji_codes.emoticon_conversions)) {
+        const regex = new RegExp('(' + util.escape_regexp(emoticon) + ')', 'g');
 
-            translations.push({
-                regex: regex,
-                replacement_text: replacement_text,
-            });
-        }
+        translations.push({
+            regex: regex,
+            replacement_text: replacement_text,
+        });
     }
 
     return translations;
@@ -60,12 +57,16 @@ const zulip_emoji = {
 
 exports.get_emoji_name = (codepoint) => {
     // get_emoji_name('1f384') === 'holiday_tree'
-    return emoji_codes.codepoint_to_name[codepoint];
+    if (Object.prototype.hasOwnProperty.call(emoji_codes.codepoint_to_name, codepoint)) {
+        return emoji_codes.codepoint_to_name[codepoint];
+    }
 };
 
 exports.get_emoji_codepoint = (emoji_name) => {
     // get_emoji_codepoint('avocado') === '1f951'
-    return emoji_codes.name_to_codepoint[emoji_name];
+    if (Object.prototype.hasOwnProperty.call(emoji_codes.name_to_codepoint, emoji_name)) {
+        return emoji_codes.name_to_codepoint[emoji_name];
+    }
 };
 
 exports.get_realm_emoji_url = (emoji_name) => {
@@ -147,19 +148,17 @@ exports.build_emoji_data = function (realm_emojis) {
 
     for (const codepoints of Object.values(emoji_codes.emoji_catalog)) {
         for (const codepoint of codepoints) {
-            if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
-                const emoji_name = exports.get_emoji_name(codepoint);
-                if (!exports.emojis_by_name.has(emoji_name)) {
-                    const emoji_dict = {
-                        name: emoji_name,
-                        display_name: emoji_name,
-                        aliases: exports.default_emoji_aliases.get(codepoint),
-                        is_realm_emoji: false,
-                        emoji_code: codepoint,
-                        has_reacted: false,
-                    };
-                    exports.emojis_by_name.set(emoji_name, emoji_dict);
-                }
+            const emoji_name = exports.get_emoji_name(codepoint);
+            if (emoji_name !== undefined && !exports.emojis_by_name.has(emoji_name)) {
+                const emoji_dict = {
+                    name: emoji_name,
+                    display_name: emoji_name,
+                    aliases: exports.default_emoji_aliases.get(codepoint),
+                    is_realm_emoji: false,
+                    emoji_code: codepoint,
+                    has_reacted: false,
+                };
+                exports.emojis_by_name.set(emoji_name, emoji_dict);
             }
         }
     }
@@ -169,11 +168,11 @@ exports.get_canonical_name = function (emoji_name) {
     if (exports.active_realm_emojis.has(emoji_name)) {
         return emoji_name;
     }
-    if (!emoji_codes.name_to_codepoint.hasOwnProperty(emoji_name)) {
+    const codepoint = exports.get_emoji_codepoint(emoji_name);
+    if (codepoint === undefined) {
         blueslip.error("Invalid emoji name: " + emoji_name);
         return;
     }
-    const codepoint = exports.get_emoji_codepoint(emoji_name);
 
     return exports.get_emoji_name(codepoint);
 };
