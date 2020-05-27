@@ -45,8 +45,9 @@ function add_alert_word(alert_word) {
         url: '/json/users/me/alert_words',
         data: {alert_words: JSON.stringify(words_to_be_added)},
         success: function () {
-            const message = "Alert word \"" + words_to_be_added + "\" added successfully!";
-            update_alert_word_status(i18n.t(message), false);
+            const message = i18n.t('Alert word "__word__" added successfully!',
+                                   {word: words_to_be_added[0]});
+            update_alert_word_status(message, false);
             $('#create_alert_word_name').val('');
         },
         error: function () {
