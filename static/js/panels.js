@@ -2,9 +2,13 @@ const util = require("./util");
 const resize_app = function () {
     const panels_height = $("#panels").height();
     $("body > .app").height("calc(100% - " + panels_height + "px)");
-    // the floating recipient bar is usually positioned 10px below the
-    // header, so add that to the panels height to get the new `top` value.
-    $("#floating_recipient_bar").css("top", panels_height + $(".header").height() + 10 + "px");
+
+    // the floating recipient bar is usually positioned right below
+    // the `.header` element (including padding).
+    const frb_top = panels_height
+                    + $('.header').height()
+                    + parseInt($(".header").css("paddingBottom"), 10);
+    $("#floating_recipient_bar").css("top", frb_top + "px");
 };
 
 exports.resize_app = resize_app;
