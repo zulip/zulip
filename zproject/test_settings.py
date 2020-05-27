@@ -228,3 +228,5 @@ RATE_LIMITING_RULES = {
     'authenticate_by_username': [],
     'password_reset_form_by_email': [],
 }
+
+FREE_TRIAL_DAYS = None

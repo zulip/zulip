@@ -155,7 +155,6 @@ THUMBNAIL_IMAGES = True
 SEARCH_PILLS_ENABLED = bool(os.getenv('SEARCH_PILLS_ENABLED', False))
 
 BILLING_ENABLED = True
-FREE_TRIAL_DAYS = None
 LANDING_PAGE_NAVBAR_MESSAGE = None
 
 # Test Custom TOS template rendering
