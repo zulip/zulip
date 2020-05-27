@@ -82,16 +82,16 @@ function picker_do_change_color(color) {
     const hex_color = color.toHexString();
     subs.set_color(stream_id, hex_color);
 }
-subscriptions_table_colorpicker_options.change = picker_do_change_color;
+subscriptions_table_colorpicker_options.move = picker_do_change_color;
 
 exports.sidebar_popover_colorpicker_options = {
-    clickoutFiresChange: true,
+    clickoutFiresChange: false,
     showPaletteOnly: true,
     showPalette: true,
     showInput: true,
     flat: true,
     palette: stream_color_palette,
-    change: picker_do_change_color,
+    move: picker_do_change_color,
 };
 
 exports.sidebar_popover_colorpicker_options_full = {
@@ -102,7 +102,7 @@ exports.sidebar_popover_colorpicker_options_full = {
     cancelText: "",
     chooseText: i18n.t("Confirm"),
     palette: stream_color_palette,
-    change: picker_do_change_color,
+    move: picker_do_change_color,
 };
 
 let lightness_threshold;
