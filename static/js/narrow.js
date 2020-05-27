@@ -593,6 +593,22 @@ exports.stream_cycle_forward = function () {
     exports.activate_stream_for_cycle_hotkey(stream_name);
 };
 
+exports.no_unreads_alert = function (rendered_html) {
+    if (feedback_widget.is_open()) {
+        feedback_widget.dismiss();
+        return;
+    }
+
+    feedback_widget.show({
+        populate: function (container) {
+            container.html(rendered_html);
+        },
+        on_undo: function () {},
+        title_text: i18n.t("Alert"),
+        undo_button_text: i18n.t("Ok!"),
+    });
+};
+
 exports.narrow_to_next_topic = function () {
     const curr_info = {
         stream: narrow_state.stream(),
@@ -605,6 +621,8 @@ exports.narrow_to_next_topic = function () {
     );
 
     if (!next_narrow) {
+        const html_text = i18n.t('<p>No unread topics left!</p>');
+        exports.no_unreads_alert(html_text);
         return;
     }
 
@@ -623,6 +641,8 @@ exports.narrow_to_next_pm_string = function () {
     const next_pm = topic_generator.get_next_unread_pm_string(curr_pm);
 
     if (!next_pm) {
+        const html_text = i18n.t('<p>No unread PMs left!</p>');
+        exports.no_unreads_alert(html_text);
         return;
     }
 
