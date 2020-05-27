@@ -260,35 +260,6 @@ run_test('short_huddle_name', () => {
 
 });
 
-run_test('huddle_fraction_present', () => {
-    let huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
-    huddle = people.emails_strings_to_user_ids_string(huddle);
-
-    let presence_info = new Map();
-    presence_info.set(alice.user_id, { status: 'active' }); // counts as present
-    presence_info.set(fred.user_id, { status: 'idle' }); // doest not count as present
-    // jill not in list
-    presence_info.set(mark.user_id, { status: 'offline' }); // does not count
-    presence.presence_info = presence_info;
-
-    assert.equal(
-        buddy_data.huddle_fraction_present(huddle),
-        0.5);
-
-    huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
-    huddle = people.emails_strings_to_user_ids_string(huddle);
-    presence_info = new Map();
-    presence_info.set(alice.user_id, { status: 'idle' });
-    presence_info.set(fred.user_id, { status: 'idle' }); // does not count as present
-    // jill not in list
-    presence_info.set(mark.user_id, { status: 'offline' }); // does not count
-    presence.presence_info = presence_info;
-
-    assert.equal(
-        buddy_data.huddle_fraction_present(huddle),
-        undefined);
-});
-
 presence.presence_info = new Map();
 presence.presence_info.set(alice.user_id, { status: activity.IDLE });
 presence.presence_info.set(fred.user_id, { status: activity.ACTIVE });
