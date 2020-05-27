@@ -1,6 +1,6 @@
 <div class="subscription_settings" data-stream-id="{{sub.stream_id}}">
     <div class="inner-box">
-        <div class="alert stream_change_property_info"></div>
+        <div class="alert stream_change_property_info alert-notification"></div>
 
         {{#with sub}}
         <div class="stream-header">
@@ -8,13 +8,12 @@
               invite_only=invite_only
               is_web_public=is_web_public }}
             <div class="stream-name">
-                <span title="{{name}}" class="stream-name-editable editable-section" >{{name}}</span>
-                {{#if can_change_name_description}}
-                <span class="editable" data-make-editable=".stream-name-editable"></span>
-                <span class="checkmark" data-finish-editing=".stream-name-editable">✓</span>
-                {{/if}}
+                <span class="sub-stream-name" title="{{name}}">{{name}}</span>
             </div>
             <div class="button-group">
+                <button id="open_stream_info_modal" class="button rounded small btn-warning" title="{{t 'Change stream info' }}">
+                    <i class="fa fa-pencil" aria-hidden="true"></i>
+                </button>
                 <div class="sub_unsub_button_wrapper inline-block">
                     <button class="button small rounded subscribe-button sub_unsub_button {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button" {{#if should_display_subscription_button}}title="{{t 'Toggle subscription'}} (S)" {{else}}disabled="disabled"{{/if}}>
                         {{#if subscribed }}{{#tr oneself }}Unsubscribe{{/tr}}{{else}}{{#tr oneself }}Subscribe{{/tr}}{{/if}}</button>
@@ -26,11 +25,9 @@
             </div>
         </div>
         <div class="stream-description">
-            <span class="stream-description-editable editable-section description rendered_markdown" data-no-description="{{t 'No description.' }}">{{rendered_markdown rendered_description}}</span>
-            {{#if can_change_name_description}}
-            <span class="editable" data-make-editable=".stream-description-editable"></span>
-            <span class="checkmark" data-finish-editing=".stream-description-editable">✓</span>
-            {{/if}}
+            <span class="sub-stream-description rendered_markdown" data-no-description="{{t 'No description.' }}">
+                {{rendered_markdown rendered_description}}
+            </span>
         </div>
         <div class="subscription-type">
             <div class="subscription-type-text">

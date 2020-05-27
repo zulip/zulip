@@ -1,4 +1,5 @@
 const util = require("./util");
+const render_change_stream_info_modal = require("../templates/change_stream_info_modal.hbs");
 const render_settings_deactivation_stream_modal = require("../templates/settings/deactivation_stream_modal.hbs");
 const render_stream_member_list_entry = require('../templates/stream_member_list_entry.hbs');
 const render_subscription_settings = require('../templates/subscription_settings.hbs');
@@ -116,7 +117,7 @@ function get_stream_id(target) {
     if (target.constructor !== jQuery) {
         target = $(target);
     }
-    const row = target.closest(".stream-row, .subscription_settings");
+    const row = target.closest(".stream-row, .subscription_settings, .save-button");
     return parseInt(row.attr("data-stream-id"), 10);
 }
 
@@ -170,13 +171,13 @@ function get_subscriber_list(sub_row) {
 exports.update_stream_name = function (sub, new_name) {
     const sub_settings = exports.settings_for_sub(sub);
     sub_settings.find(".email-address").text(sub.email_address);
-    sub_settings.find(".stream-name-editable").text(new_name);
+    sub_settings.find(".sub-stream-name").text(new_name);
 };
 
 exports.update_stream_description = function (sub) {
     const stream_settings = exports.settings_for_sub(sub);
     stream_settings.find('input.description').val(sub.description);
-    stream_settings.find('.stream-description-editable').html(
+    stream_settings.find('.sub-stream-description').html(
         util.clean_user_content_links(sub.rendered_description)
     );
 };
@@ -511,73 +512,6 @@ function change_stream_privacy(e) {
     });
 }
 
-exports.change_stream_name = function (e) {
-    e.preventDefault();
-    const sub_settings = $(e.target).closest('.subscription_settings');
-    const stream_id = get_stream_id(e.target);
-    const new_name_box = sub_settings.find('.stream-name-editable');
-    const new_name = $.trim(new_name_box.text());
-    $(".stream_change_property_info").hide();
-
-    channel.patch({
-        // Stream names might contain unsafe characters so we must encode it first.
-        url: "/json/streams/" + stream_id,
-        data: {new_name: JSON.stringify(new_name)},
-        success: function () {
-            new_name_box.val('');
-            ui_report.success(i18n.t("The stream has been renamed!"), $(".stream_change_property_info"));
-        },
-        error: function (xhr) {
-            new_name_box.text(stream_data.maybe_get_stream_name(stream_id));
-            ui_report.error(i18n.t("Error"), xhr, $(".stream_change_property_info"));
-        },
-    });
-};
-
-exports.set_raw_description = function (target, destination) {
-    const sub_settings = $(target).closest('.subscription_settings');
-    const sub = get_sub_for_target(sub_settings);
-    if (!sub) {
-        blueslip.error('set_raw_description() fails');
-        return;
-    }
-    destination.text(sub.description);
-};
-
-exports.change_stream_description = function (e) {
-    e.preventDefault();
-
-    const sub_settings = $(e.target).closest('.subscription_settings');
-    const sub = get_sub_for_target(sub_settings);
-    if (!sub) {
-        blueslip.error('change_stream_description() fails');
-        return;
-    }
-
-    const stream_id = sub.stream_id;
-    const description = sub_settings.find('.stream-description-editable').text().trim();
-    $(".stream_change_property_info").hide();
-
-    channel.patch({
-        // Description might contain unsafe characters so we must encode it first.
-        url: '/json/streams/' + stream_id,
-        data: {
-            description: JSON.stringify(description),
-        },
-        success: function () {
-            // The event from the server will update the rest of the UI
-            ui_report.success(i18n.t("The stream description has been updated!"),
-                              $(".stream_change_property_info"));
-        },
-        error: function (xhr) {
-            sub_settings.find('.stream-description-editable').html(
-                util.clean_user_content_links(sub.rendered_description)
-            );
-            ui_report.error(i18n.t("Error"), xhr, $(".stream_change_property_info"));
-        },
-    });
-};
-
 exports.delete_stream = function (stream_id, alert_element, stream_row) {
     channel.del({
         url: '/json/streams/' + stream_id,
@@ -638,7 +572,51 @@ exports.initialize = function () {
     $("#subscriptions_table").on('click', '#change-stream-privacy-button',
                                  change_stream_privacy);
 
-    $("#subscriptions_table").on('click', '.close-privacy-modal', function (e) {
+    $("#subscriptions_table").on("click", '#open_stream_info_modal', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const stream_id = get_stream_id(e.target);
+        const stream = stream_data.get_sub_by_id(stream_id);
+        const template_data = {
+            stream_id: stream_id,
+            stream_name: stream.name,
+            stream_description: stream.description,
+        };
+        const change_stream_info_modal = render_change_stream_info_modal(template_data);
+        $("#change_stream_info_modal").remove();
+        $("#subscriptions_table").append(change_stream_info_modal);
+        overlays.open_modal('#change_stream_info_modal');
+    });
+
+    $("#subscriptions_table").on("keypress", '#change_stream_description', function (e) {
+        // Stream descriptions can not be multiline, so disable enter key
+        // to prevent new line
+        if (e.keyCode === 13) {
+            return false;
+        }
+    });
+
+    $("#subscriptions_table").on("click", '#save_stream_info', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const sub = get_sub_for_target(e.currentTarget);
+
+        const url = `/json/streams/${sub.stream_id}`;
+        const data = {};
+        const new_name = $("#change_stream_name").val().trim();
+        if (new_name !== sub.name) {
+            data.new_name = JSON.stringify(new_name);
+        }
+        const new_description = $("#change_stream_description").val().trim();
+        if (new_description !== sub.description) {
+            data.description = JSON.stringify(new_description);
+        }
+        const status_element = $(".stream_change_property_info");
+        overlays.close_modal("#change_stream_info_modal");
+        settings_ui.do_settings_change(channel.patch, url, data, status_element);
+    });
+
+    $("#subscriptions_table").on('click', '.close-privacy-modal, .close-change-stream-info-modal', function (e) {
         // Re-enable background mouse events when we close the modal
         // via the "x" in the corner.  (The other modal-close code
         // paths call `overlays.close_modal`, rather than using

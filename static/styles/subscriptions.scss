@@ -760,13 +760,6 @@ form#add_new_subscription {
     }
 }
 
-#subscription_overlay .stream-description .stream-description-editable:empty::after,
-.stream-row .sub-info-box .description:empty::after {
-    content: attr(data-no-description);
-    font-style: italic;
-    color: hsl(0, 0%, 67%);
-}
-
 #subscription_overlay {
     #stream-creation {
         max-height: calc(100% - 102px);
@@ -832,20 +825,14 @@ form#add_new_subscription {
             white-space: nowrap;
             max-width: 260px;
 
-            .stream-name-editable {
+            .sub-stream-name {
                 display: block;
                 max-width: 20ch;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 float: left;
             }
-
-            .stream-name-edit-box {
-                text-overflow: clip;
-                border-style: groove;
-            }
         }
-
 
         .button-group {
             float: right;
@@ -883,52 +870,6 @@ form#add_new_subscription {
     .stream-description {
         font-size: 0.9em;
         margin-bottom: 5px;
-    }
-
-
-    .editable-section {
-        position: relative;
-        display: inline;
-        min-width: 10px;
-        max-width: 100%;
-
-        &[contenteditable=true] {
-            display: inline-block;
-            vertical-align: top;
-            color: hsl(170, 48%, 54%);
-
-            &:focus {
-                outline: none;
-            }
-        }
-    }
-
-    .editable {
-        position: relative;
-        top: -1px;
-        margin-left: 5px;
-        color: hsl(0, 0%, 67%);
-        cursor: pointer;
-        font-size: 1.4rem;
-        font-weight: 300;
-
-        transition: all 0.3s ease;
-
-        &:empty::before {
-            content: "\f040";
-            font-family: "FontAwesome";
-            font-size: 0.8rem;
-            font-weight: normal;
-        }
-
-        &:not(:empty) {
-            position: relative;
-            top: 2px;
-        }
-
-        &:hover {
-            color: hsl(0, 0%, 27%);
-        }
     }
 
     .checkmark {
@@ -1053,6 +994,13 @@ form#add_new_subscription {
                 margin-bottom: 0px;
             }
         }
+    }
+}
+#change_stream_info_modal {
+    #change_stream_description {
+        width: 80%;
+        max-width: 500px;
+        box-sizing: border-box;
     }
 }
 
