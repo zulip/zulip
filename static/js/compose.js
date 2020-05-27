@@ -275,7 +275,6 @@ function clear_compose_box() {
     $("#compose-send-status").hide(0);
     $("#compose-send-button").prop('disabled', false);
     $("#sending-indicator").hide();
-    resize.resize_bottom_whitespace();
 }
 
 exports.clear_compose_box = clear_compose_box;

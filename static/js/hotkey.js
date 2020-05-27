@@ -773,9 +773,6 @@ exports.process_keydown = function (e) {
 
 $(document).keydown(function (e) {
     if (exports.process_keydown(e)) {
-        // TODO: We should really move this resize code
-        // so it only executes as part of navigation actions.
-        resize.resize_bottom_whitespace();
         e.preventDefault();
     }
 });

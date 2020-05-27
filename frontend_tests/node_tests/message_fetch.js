@@ -35,7 +35,6 @@ set_global('notifications', {
     hide_or_show_history_limit_message: () => {},
 });
 set_global('pm_list', {});
-set_global('resize', {});
 set_global('server_events', {});
 set_global('stream_list', {
     maybe_scroll_narrow_into_view: () => {},
@@ -48,7 +47,6 @@ const alice = {
 };
 people.add_active_user(alice);
 
-resize.resize_bottom_whitespace = noop;
 server_events.home_view_loaded = noop;
 
 function stub_message_view(list) {
