@@ -499,6 +499,190 @@ paths:
                       type: array
                       items:
                         type: object
+                - properties:
+                    anchor:
+                      type: integer
+                      description: |
+                        The same `anchor` specified in the request (or the computed one, if
+                        `use_first_unread_anchor` is `true`).
+                    found_newest:
+                      type: boolean
+                      description: |
+                        Whether the `messages` list includes the very newest messages matching
+                        the narrow (used by clients that paginate their requests to decide
+                        whether there are more messages to fetch).
+                    found_oldest:
+                      type: boolean
+                      description: |
+                        Whether the `messages` list includes the very oldest messages matching
+                        the narrow (used by clients that paginate their requests to decide
+                        whether there are more messages to fetch).
+                    found_anchor:
+                      type: boolean
+                      description: |
+                        Whether the anchor message is included in the
+                        response. If the message with the ID specified
+                        in the request does not exist or did not match
+                        the narrow, this will be false.
+                    history_limited:
+                      type: boolean
+                      description: |
+                        Whether the message history was limited due to
+                        plan restrictions. This flag is set to `true`
+                        only when the oldest messages(`found_oldest`)
+                        matching the narrow is fetched.
+                    messages:
+                      type: array
+                      description: |
+                        an array of `message` objects, each containing the following
+                        fields:
+                      items:
+                        type: object
+                        properties:
+                          avatar_url:
+                            type: string
+                            description: |
+                              The URL of the user's avatar.
+                          client:
+                            type: string
+                            description: |
+                              A Zulip "client" string, describing what Zulip client
+                              sent the message.
+                          content:
+                            type: string
+                            description: |
+                              The content/body of the message.
+                          content_type:
+                            type: string
+                            description: |
+                              The HTTP `content_type` for the message content.  This
+                              will be `text/html` or `text/x-markdown`, depending on
+                              whether `apply_markdown` was set.
+                          display_recepient:
+                            oneOf:
+                            - type: string
+                            - type: array
+                              items:
+                                type: object
+                            description: |
+                              Data on the recipient of the message;
+                              either the name of a stream or a dictionary containing data on
+                              the users who received the message.
+                          flags:
+                            type: array
+                            description: |
+                              The user's [message flags][message-flags] for the message.
+                            items:
+                              type: string
+                          id:
+                            type: integer
+                            description: |
+                              The unique message ID.  Messages should always be
+                              displayed sorted by ID.
+                          is_me_message:
+                            type: boolean
+                            description: |
+                              Whether the message is a [/me status message][status-messages]
+                          reactions:
+                            type: array
+                            description: |
+                              Data on any reactions to the message.
+                            items:
+                              type: object
+                              properties:
+                                emoji_code:
+                                  type: integer
+                                  description: |
+                                    An encoded version of the emoji's unicode codepoint.
+                                emoji_name:
+                                  type: string
+                                  description: |
+                                    Name of the emoji.
+                                reaction_type:
+                                  type: string
+                                  description: |
+                                    If the reaction uses a [custom emoji](/help/add-custom-emoji),
+                                    `reaction_type` will be set to `realm_emoji`.
+                                user_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the user who added the reaction.
+                                    **Changes**: New in Zulip 2.2 (feature level 2). The `user`
+                                    object is deprecated and will be removed in the future.
+                                user:
+                                  type: object
+                                  description: |
+                                    Dictionary with data on the user who added the reaction, including
+                                    the user ID as the `id` field.  **Note**: In the [events
+                                    API](/api/get-events-from-queue), this `user` dictionary
+                                    confusing had the user ID in a field called `user_id`
+                                    instead.  We recommend ignoring fields other than the user
+                                    ID.  **Deprecated** and to be removed in a future release
+                                    once core clients have migrated to use the `user_id` field.
+                          recipient_id:
+                            type: integer
+                            description: |
+                              A unique ID for the set of users receiving the
+                              message (either a stream or group of users).  Useful primarily
+                              for hashing.
+                          sender_email:
+                            type: string
+                            description: |
+                              The email address of the message's sender.
+                          sender_full_name:
+                            type: string
+                            description: |
+                              The full name of the message's sender.
+                          sender_id:
+                            type: integer
+                            description: |
+                              The user ID of the message's sender.
+                          sender_realm_str:
+                            type: string
+                            description: |
+                              A string identifier for the realm the sender
+                              is in.
+                          sender_short_name:
+                            type: string
+                            description: |
+                              Reserved for future use.
+                          stream_id:
+                            type: integer
+                            description: |
+                              Only present for stream messages; the ID of the stream.
+                          subject:
+                            type: string
+                            description: |
+                             The `topic` of the message (only present for stream
+                             messages).  The name is a legacy holdover from when topics were
+                             called "subjects"
+                          topic_links:
+                            type: array
+                            items:
+                              type: string
+                            description: |
+                              Data on any links to be included in the `topic`
+                              line (these are generated by [custom linkification
+                              filters][linkification-filters] that match content in the
+                              message's topic.)  **Changes**: New in Zulip 2.2 (feature level
+                              1).  Previously, this field was called `subject_links`; clients
+                              are recommended to rename `subject_links` to `topic_links` if
+                              present for compatibility with older Zulip servers.
+                          submessages:
+                            type: array
+                            items:
+                              type: string
+                            description: |
+                              Data used for certain experimental Zulip integrations.
+                          timestamp:
+                            type: integer
+                            description: |
+                              The UNIX timestamp for when the message was sent,
+                              in UTC seconds.
+                          type:
+                            type: string
+                            description: |
+                              The type of the message: `stream` or `private`.
                 - example:
                     {
                         "anchor": 21,
