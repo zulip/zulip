@@ -1048,6 +1048,13 @@ exports.add = function (person) {
     exports._add_user(person);
 };
 
+exports.add_cross_realm_user = function (person) {
+    if (!people_dict.has(person.email)) {
+        exports._add_user(person);
+    }
+    cross_realm_dict.set(person.user_id, person);
+};
+
 exports.deactivate = function (person) {
     // We don't fully remove a person from all of our data
     // structures, because deactivated users can be part
@@ -1242,10 +1249,7 @@ exports.initialize = function (my_user_id, params) {
     }
 
     for (const person of params.cross_realm_bots) {
-        if (!people_dict.has(person.email)) {
-            exports._add_user(person);
-        }
-        cross_realm_dict.set(person.user_id, person);
+        exports.add_cross_realm_user(person);
     }
 
     exports.initialize_current_user(my_user_id);

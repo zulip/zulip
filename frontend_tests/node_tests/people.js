@@ -265,7 +265,7 @@ run_test('basics', () => {
 
     // Add our cross-realm bot.  It won't add to our human
     // count, and it has no owner.
-    people._add_user(welcome_bot);
+    people.add_cross_realm_user(welcome_bot);
     assert.equal(people.get_bot_owner_user(welcome_bot), undefined);
     assert.equal(people.get_active_human_count(), 1);
     assert.equal(
