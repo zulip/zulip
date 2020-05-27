@@ -35,6 +35,11 @@ async function realm_creation_tests(page) {
     // fill the form.
     await page.type('#id_team_name', organization_name);
     await page.type('#id_full_name', 'Alice');
+
+    // For some reason, page.click() does not work this perticular checkbox
+    // so use page.$eval here to call the .click method in the browser.
+    await page.$eval('#realm_in_root_domain', el => el.click());
+
     await page.type('#id_team_subdomain', subdomain);
     await page.type('#id_password', 'passwordwhichisnotreallycomplex');
     await page.click('#id_terms');
