@@ -3470,6 +3470,25 @@ paths:
                       type: array
                       items:
                         type: object
+                        properties:
+                          description:
+                            type: string
+                            description: |
+                              The human-readable description of the user group.
+                          id:
+                            type: integer
+                            description: |
+                              The user group's integer id.
+                          members:
+                            type: array
+                            description: |
+                              The integer User IDs of the user group members.
+                            items:
+                              type: integer
+                          name:
+                            type: string
+                            description: |
+                              User group name.
                       description: |
                         A list of `user_group` objects, which contain a `description`, a `name`,
                         their `id` and the list of members of the user group.
