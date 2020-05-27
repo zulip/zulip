@@ -1,51 +1,35 @@
 set_global('document', 'document-stub');
 set_global('$', global.make_zjquery());
 
+zrequire('emoji');
 zrequire('people');
 zrequire('reactions');
 
-set_global('emoji', {
-    all_realm_emojis: new Map(Object.entries({
+set_global('page_params', {
+    user_id: 5,
+    realm_emoji: {
         991: {
             id: '991',
-            emoji_name: 'realm_emoji',
-            emoji_url: 'TBD',
+            name: 'realm_emoji',
+            source_url: 'TBD',
             deactivated: false,
         },
         992: {
             id: '992',
-            emoji_name: 'inactive_realm_emoji',
-            emoji_url: 'TBD',
+            name: 'inactive_realm_emoji',
+            source_url: 'TBD',
             deactivated: true,
         },
         zulip: {
             id: 'zulip',
-            emoji_name: 'zulip',
-            emoji_url: 'TBD',
+            name: 'zulip',
+            source_url: 'TBD',
             deactivated: false,
-        },
-    })),
-    active_realm_emojis: new Map(Object.entries({
-        realm_emoji: {
-            id: '991',
-            emoji_name: 'realm_emoji',
-            emoji_url: 'TBD',
-        },
-        zulip: {
-            id: 'zulip',
-            emoji_name: 'zulip',
-            emoji_url: 'TBD',
-        },
-    })),
-    deactivated_realm_emojis: {
-        inactive_realm_emoji: {
-            emoji_name: 'inactive_realm_emoji',
-            emoji_url: 'TBD',
         },
     },
 });
 
-set_global('page_params', {user_id: 5});
+emoji.initialize();
 
 set_global('channel', {});
 set_global('emoji_picker', {
