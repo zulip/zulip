@@ -86,7 +86,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     if settings.ZILENCER_ENABLED:
         apps_page_url = '/apps/'
 
-    apps_page_web = settings.ROOT_DOMAIN_URI+'/accounts/go/'
+    apps_page_web = settings.ROOT_DOMAIN_URI + '/accounts/go/'
 
     user_is_authenticated = False
     if hasattr(request, 'user') and hasattr(request.user, 'is_authenticated'):
