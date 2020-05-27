@@ -532,15 +532,17 @@ casper.then(function () {
                         {keepFocus: true});
     }
 
-    // go down 2, up 3 (which is really 2), then down 2
+    // go down 2, up 3 (which is really 2), then down 3
     //    Iago
     //    Cordelia
+    //    Desdemona
     //    Hamlet
     arrow('Down');
     arrow('Down');
     arrow('Up');
     arrow('Up');
     arrow('Up'); // does nothing
+    arrow('Down');
     arrow('Down');
     arrow('Down');
 });
