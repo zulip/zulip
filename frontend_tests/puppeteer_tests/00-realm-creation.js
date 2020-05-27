@@ -29,6 +29,14 @@ async function realm_creation_tests(page) {
     const confirmation_url = 'http://' + host + '/accounts/do_confirm/' + confirmation_key;
     await page.goto(confirmation_url);
 
+    // We wait until the DOMContentLoaded event because we want the code
+    // that focuses the first input field to run before we run our tests to avoid
+    // flakes. Without waiting for DOMContentLoaded event, in rare cases, the
+    // first input is focused when we are typing something for other fields causing
+    // validation errors. The code for focusing the input is wrapped in jQuery
+    // $() calls which runs when DOMContentLoaded is fired.
+    await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
+
     // Make sure the realm creation page is loaded correctly by
     // checking the text in <p> tag under pitch class is as expected.
     await page.waitForSelector('.pitch');
