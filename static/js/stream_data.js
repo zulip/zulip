@@ -838,17 +838,17 @@ exports.sort_for_stream_settings = function (stream_ids, order) {
         return out;
     }
 
-    const orders = {
-        "by-stream-name": by_stream_name,
-        "by-subscriber-count": by_subscriber_count,
-        "by-weekly-traffic": by_weekly_traffic,
-    };
+    const orders = new Map([
+        ["by-stream-name", by_stream_name],
+        ["by-subscriber-count", by_subscriber_count],
+        ["by-weekly-traffic", by_weekly_traffic],
+    ]);
 
-    if (typeof order === "undefined" || !orders.hasOwnProperty(order)) {
+    if (order === undefined || !orders.has(order)) {
         order = "by-stream-name";
     }
 
-    stream_ids.sort(orders[order]);
+    stream_ids.sort(orders.get(order));
 };
 
 exports.get_streams_for_admin = function () {
