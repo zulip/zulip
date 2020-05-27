@@ -656,6 +656,16 @@ input[type=checkbox] {
     box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
 }
 
+#user-settings-avatar {
+    width: 200px;
+    height: 200px;
+}
+
+.realm-icon-section .avatar-icon-settings {
+    width: 100px;
+    height: 100px;
+}
+
 .remove-attachment {
     margin-right: 5px !important;
     font-size: 1.1em !important;
@@ -1174,20 +1184,21 @@ input[type=checkbox] {
     font-size: 1.2em;
 }
 
-#user-settings-avatar {
+.avatar-icon-settings {
     position: relative;
     border-radius: 5px;
     box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
-    width: 200px;
-    height: 200px;
+
 
     transition: all 0.3s ease;
 
+    #realm-icon-block,
     #user-avatar-block {
         background-size: 100%;
         height: 100%;
     }
 
+    #realm-icon-background,
     #user-avatar-background {
         content: '';
         background-color: hsl(0, 0%, 0%);
@@ -1199,17 +1210,26 @@ input[type=checkbox] {
         display: none;
     }
 
+    #realm_icon_delete_button,
     #user_avatar_delete_button {
         cursor: pointer;
         color: hsl(0, 0%, 75%);
         opacity: 0;
-        font-size: 3rem;
         position: absolute;
-        top: 10px; // 31.5px + 5px + 30px
+        top: 10px;
         right: 10px;
         z-index: 99;
     }
 
+    #realm_icon_delete_button {
+        font-size: 2rem;
+    }
+
+    #user_avatar_delete_button {
+        font-size: 3rem;
+    }
+
+    #realm_icon_delete_button:hover,
     #user_avatar_delete_button:hover {
         color: hsl(0, 0%, 100%);
     }
@@ -1218,18 +1238,28 @@ input[type=checkbox] {
         visibility: hidden;
     }
 
+    #realm_icon_delete_button:hover ~ #realm_icon_delete,
     #user_avatar_delete_button:hover ~ #user_avatar_delete {
         visibility: visible;
     }
 
+    #realm_icon_delete,
     #user_avatar_delete {
         color: hsl(0, 0%, 100%);
         font-size: 0.85rem;
         position: absolute;
-        top: 90px;
-        right: 40px;
         visibility: hidden;
         z-index: 99;
+    }
+
+    #user_avatar_delete {
+        top: 90px;
+        right: 40px;
+    }
+
+    #realm_icon_delete {
+        top: 40px;
+        right: 18px;
     }
 
     #user_avatar_upload_button {
@@ -1271,12 +1301,17 @@ input[type=checkbox] {
             cursor: pointer;
         }
 
+        #realm_icon_delete_button,
         #user_avatar_delete_button {
             opacity: 1;
         }
 
         #user_avatar_upload_button {
             opacity: 1;
+        }
+
+        #realm-icon-background {
+            display: block;
         }
     }
 }
@@ -1291,7 +1326,7 @@ input[type=checkbox] {
     }
 }
 
-#realm-settings-icon {
+#realm-icon-block {
     border-radius: 5px;
     box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
     width: 100px;
