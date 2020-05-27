@@ -12,7 +12,10 @@ async function realm_creation_tests(page) {
     // submit the email for realm creation.
     await page.waitForSelector('#email');
     await page.type('#email', email);
-    await page.$eval('#send_confirm', form => form.submit());
+    await Promise.all([
+        page.waitForNavigation(),
+        page.$eval('#send_confirm', form => form.submit()),
+    ]);
 
     // Make sure onfirmation email is sent.
     assert(page.url().includes('/accounts/new/send_confirm/' + email));
