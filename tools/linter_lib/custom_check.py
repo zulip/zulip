@@ -457,14 +457,14 @@ python_rules = RuleList(
          'description': 'Raise CommandError to exit with failure in management commands',
          },
         {'pattern': '.is_realm_admin =',
-         'description': 'Use do_change_is_admin function rather than setting UserProfile\'s is_realm_admin attribute directly.',
+         'description': 'Use do_change_user_role function rather than setting UserProfile\'s is_realm_admin attribute directly.',
          'exclude': {
              'zerver/migrations/0248_userprofile_role_start.py',
              'zerver/tests/test_users.py',
          },
          },
         {'pattern': '.is_guest =',
-         'description': 'Use do_change_is_guest function rather than setting UserProfile\'s is_guest attribute directly.',
+         'description': 'Use do_change_user_role function rather than setting UserProfile\'s is_guest attribute directly.',
          'exclude': {
              'zerver/migrations/0248_userprofile_role_start.py',
              'zerver/tests/test_users.py',
