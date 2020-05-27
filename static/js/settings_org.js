@@ -955,6 +955,19 @@ exports.build_page = function () {
         });
     });
 
+    function realm_icon_upload_complete() {
+        $('#upload_icon_spinner').css({visibility: 'hidden'});
+        $('#realm_icon_upload').show();
+        $('#realm_icon_delete_button').show();
+
+    }
+
+    function realm_icon_upload_start() {
+        $('#upload_icon_spinner').css({visibility: "visible"});
+        $('#realm_icon_upload').hide();
+        $('#realm_icon_delete_button').hide();
+    }
+
     function upload_realm_icon(file_input) {
         const form_data = new FormData();
 
@@ -965,9 +978,7 @@ exports.build_page = function () {
 
         const error_field = $("#realm_icon_file_input_error");
         error_field.hide();
-        const spinner = $("#upload_icon_spinner").expectOne();
-        loading.make_indicator(spinner, {text: i18n.t("Uploading profile picture.")});
-        $("#upload_icon_button_text").expectOne().hide();
+        realm_icon_upload_start();
 
         channel.post({
             url: '/json/realm/icon',
@@ -976,12 +987,10 @@ exports.build_page = function () {
             processData: false,
             contentType: false,
             success: function () {
-                loading.destroy_indicator($("#upload_icon_spinner"));
-                $("#upload_icon_button_text").expectOne().show();
+                realm_icon_upload_complete();
             },
             error: function (xhr) {
-                loading.destroy_indicator($("#upload_icon_spinner"));
-                $("#upload_icon_button_text").expectOne().show();
+                realm_icon_upload_complete();
                 ui_report.error("", xhr, error_field);
             },
         });

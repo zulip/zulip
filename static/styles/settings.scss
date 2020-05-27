@@ -1085,7 +1085,6 @@ input[type=checkbox] {
 }
 
 #upload_avatar_spinner,
-#upload_icon_spinner,
 .upload-logo-spinner {
     font-size: 14px;
     margin: auto;
@@ -1208,6 +1207,7 @@ input[type=checkbox] {
         z-index: 99;
         position: absolute;
         display: none;
+        cursor: pointer;
     }
 
     #realm_icon_delete_button,
@@ -1234,9 +1234,11 @@ input[type=checkbox] {
         color: hsl(0, 0%, 100%);
     }
 
+    #realm_icon_delete_button:hover ~ #realm_icon_upload,
     #user_avatar_delete_button:hover ~ #user_avatar_upload_button {
         visibility: hidden;
     }
+
 
     #realm_icon_delete_button:hover ~ #realm_icon_delete,
     #user_avatar_delete_button:hover ~ #user_avatar_delete {
@@ -1262,27 +1264,62 @@ input[type=checkbox] {
         right: 18px;
     }
 
+    #realm_icon_upload,
     #user_avatar_upload_button {
         cursor: pointer;
-        color: hsl(0, 0%, 85%);
-        opacity: 0;
         font-size: 0.85rem;
+        color: hsl(0, 0%, 85%);
         position: absolute;
-        top: 90px;
-        right: 20px;
         z-index: 99;
     }
 
+    #user_avatar_upload_button {
+        top: 90px;
+        right: 20px;
+        opacity: 0;
+    }
+
+    #realm_icon_upload {
+        top: 40px;
+        right: 18px;
+        visibility: hidden;
+    }
+
+    #realm_icon_upload:hover,
     #user_avatar_upload_button:hover {
         color: hsl(0, 0%, 100%);
     }
 
+    #upload_icon_spinner {
+        background-color: hsl(0, 0%, 10%);
+        font-size: 0.80rem;
+        width: 100%;
+        opacity: 0.8;
+        height: 100%;
+        position: absolute;
+        visibility: hidden;
+        z-index: 99;
+        cursor: pointer;
+    }
+
+    #realm-icon-spinner,
     #user-avatar-spinner {
         position: absolute;
+        z-index: 99;
+    }
+
+    #user-avatar-spinner {
+        display: none;
         top: 40%;
         right: 40%;
-        z-index: 99;
-        display: none;
+    }
+
+    #realm-icon-spinner {
+        width: 40px;
+        height: 40px;
+        top: 30%;
+        right: 30%;
+        display: block;
     }
 
     .guest-avatar::after {
@@ -1312,6 +1349,10 @@ input[type=checkbox] {
 
         #realm-icon-background {
             display: block;
+        }
+
+        #realm_icon_upload {
+            visibility: visible;
         }
     }
 }
