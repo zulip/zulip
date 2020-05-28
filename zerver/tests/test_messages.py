@@ -1474,8 +1474,8 @@ class MessageDictTest(ZulipTestCase):
         # senders in both the 'zulip' and 'lear' realms as well as
         # the notification bot.
         zulip_realm = get_realm('zulip')
-        url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
-        url = 'https://trac.zulip.net/ticket/123'
+        url_format_string = r"https://trac.example.com/ticket/%(id)s"
+        url = 'https://trac.example.com/ticket/123'
         topic_name = 'test #123'
 
         realm_filter = RealmFilter(realm=zulip_realm,
@@ -1484,7 +1484,7 @@ class MessageDictTest(ZulipTestCase):
         self.assertEqual(
             realm_filter.__str__(),
             '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
-            ' https://trac.zulip.net/ticket/%(id)s>')
+            ' https://trac.example.com/ticket/%(id)s>')
 
         def get_message(sender: UserProfile) -> Message:
             msg_id = self.send_stream_message(sender, 'Denmark', 'hello world', topic_name,
