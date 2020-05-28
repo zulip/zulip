@@ -291,11 +291,12 @@ def walk_tree(root: Element,
 
     return results
 
-class ElementFamily(NamedTuple):
-    grandparent: Optional[Element]
-    parent: Element
-    child: Element
-    in_blockquote: bool
+ElementFamily = NamedTuple('ElementFamily', [
+    ('grandparent', Optional[Element]),
+    ('parent', Element),
+    ('child', Element),
+    ('in_blockquote', bool),
+])
 
 T = TypeVar("T")
 
@@ -1527,9 +1528,10 @@ class BugdownListPreprocessor(markdown.preprocessors.Preprocessor):
 
     def run(self, lines: List[str]) -> List[str]:
         """ Insert a newline between a paragraph and ulist if missing """
-        class Fence(NamedTuple):
-            fence_str: str
-            is_code: bool
+        Fence = NamedTuple('Fence', [
+            ('fence_str', str),
+            ('is_code', bool),
+        ])
 
         inserts = 0
         in_code_fence: bool = False
