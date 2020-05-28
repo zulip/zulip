@@ -102,11 +102,11 @@
         }
 
         .recent_topic_unread_count {
-            text-align: center;
-            // width is kept less than width of
-            // header text "Unread" so, that final width
-            // is set to header's width.
-            width: 1px;
+            background-color: hsl(0, 0%, 89%);
+            float: right;
+            padding: 0.5px;
+            margin-right: 10px;
+            border-radius: 5px;
         }
 
         .recent_avatars {

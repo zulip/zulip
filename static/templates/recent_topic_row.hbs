@@ -1,11 +1,4 @@
 <tr id="recent_topic:{{stream_id}}:{{topic}}" {{#if hidden}}style="display:none;"{{/if}}>
-    <td class="recent_topic_unread_count">
-        {{#if unread_count}}
-        {{unread_count}}
-        {{else}}
-        <i class="fa fa-check-circle" title="{{t 'All messages read' }}" aria-hidden="true"></i>
-        {{/if}}
-    </td>
     <td class="recent_topic_stream">
         <span id="stream_sidebar_privacy_swatch_{{stream_id}}" class="stream-privacy filter-icon" style="color: {{stream_color}}">
             {{> stream_privacy }}
@@ -14,6 +7,7 @@
     </td>
     <td class="recent_topic_name">
         <a href="{{topic_url}}">{{topic}}</a>
+        {{#if unread_count}}<span class="recent_topic_unread_count">+{{unread_count}}</span>{{/if}}
     </td>
     <td class="recent_topic_actions">
         <i class="fa fa-bell-slash on_hover_topic_mute recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Mute topic' }}" role="button" tabindex="0" aria-label="{{t 'Mute topic' }}"></i>
