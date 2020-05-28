@@ -4,6 +4,22 @@ const DEFAULTS = {
     instances: new Map(),
 };
 
+
+// ----------------------------------------------------
+// This function describes (programatically) how to use
+// the list_render widget.
+// ----------------------------------------------------
+
+exports.validate_opts = (opts) => {
+    if (opts.html_selector && typeof opts.html_selector !== 'function') {
+        // We have an html_selector, but it is not a function.
+        // This is a programming error.
+        blueslip.error('html_selector should be a function.');
+        return false;
+    }
+    return true;
+};
+
 exports.get_filtered_items = (value, list, opts) => {
     /*
         This is used by the main object (see `create`),
@@ -107,6 +123,10 @@ exports.valid_filter_opts = (opts) => {
 exports.create = function ($container, list, opts) {
     if (!opts) {
         blueslip.error('Need opts to create widget.');
+        return;
+    }
+
+    if (!exports.validate_opts(opts)) {
         return;
     }
 
