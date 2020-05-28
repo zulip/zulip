@@ -273,10 +273,12 @@ function set_message_retention_setting_dropdown() {
 function set_org_join_restrictions_dropdown() {
     const value = get_property_value("realm_org_join_restrictions");
     $("#id_realm_org_join_restrictions").val(value);
-    change_element_block_display_property(
-        "allowed_domains_label",
-        value === "only_selected_domain",
-    );
+    const zero_domains_warning = $("#zero_domains_warning");
+    if (value === "only_selected_domain") {
+        zero_domains_warning.show();
+    } else {
+        zero_domains_warning.hide();
+    }
 }
 
 function set_message_content_in_email_notifications_visiblity() {
@@ -294,18 +296,21 @@ function set_digest_emails_weekday_visibility() {
 }
 
 exports.populate_realm_domains = function (realm_domains) {
-    if (!meta.loaded) {
+    if (!meta.loaded || !page_params.is_admin) {
         return;
     }
 
     const domains_list = realm_domains.map((realm_domain) =>
         realm_domain.allow_subdomains ? "*." + realm_domain.domain : realm_domain.domain,
     );
-    let domains = domains_list.join(", ");
-    if (domains.length === 0) {
-        domains = i18n.t("None");
+    const domains = domains_list.join(", ");
+    const zero_domains_warning = $("#zero_domains_warning");
+    const value = get_property_value("realm_org_join_restrictions");
+    if (domains.length === 0 && value === "only_selected_domain") {
+        zero_domains_warning.show();
+    } else {
+        zero_domains_warning.hide();
     }
-    $("#allowed_domains_label").text(i18n.t("Allowed domains: __domains__", {domains}));
 
     const realm_domains_table_body = $("#realm_domains_table tbody").expectOne();
     realm_domains_table_body.find("tr").remove();
@@ -906,22 +911,12 @@ exports.build_page = function () {
 
     $("#id_realm_org_join_restrictions").on("change", (e) => {
         const org_join_restrictions = e.target.value;
-        const node = $("#allowed_domains_label").parent();
+        const node = $("#zero_domains_warning").parent();
         if (org_join_restrictions === "only_selected_domain") {
             node.show();
-            if (page_params.realm_domains.length === 0) {
-                overlays.open_modal("#realm_domains_modal");
-            }
         } else {
             node.hide();
         }
-    });
-
-    $("#id_realm_org_join_restrictions").on("click", (e) => {
-        // This prevents the disappearance of modal when there are
-        // no allowed domains otherwise it gets closed due to
-        // the click event handler attached to `#settings_overlay_container`
-        e.stopPropagation();
     });
 
     function fade_status_element(elem) {

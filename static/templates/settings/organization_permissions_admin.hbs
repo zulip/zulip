@@ -45,11 +45,10 @@
                         <option value="only_selected_domain">{{t "Restrict to a list of domains" }}</option>
                     </select>
                 </div>
-                <div class="dependent-block">
-                    <p id="allowed_domains_label" class="inline-block"></p>
-                    {{#if is_admin }}
-                    <a data-toggle="modal" href="#realm_domains_modal">{{t "[Configure]" }}</a>
-                    {{/if}}
+                <div class="input-group">
+                    <h3>{{t "Allowed domains:" }}</h3>
+                    <p id="zero_domains_warning">There are no domains configured now. This'd restrict anyone from registering.</p>
+                    {{> realm_domains_table }}
                 </div>
             </div>
         </div>

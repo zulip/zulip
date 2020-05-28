@@ -98,6 +98,7 @@ run_test("unloaded", () => {
 });
 
 function simulate_realm_domains_table() {
+    page_params.is_admin = true;
     $("#realm_domains_table tbody").set_find_results("tr", $.create("realm-tr-stub"));
 
     let appended;
@@ -780,7 +781,7 @@ run_test("set_up", (override) => {
     );
     $("#enable_digest_emails_label").set_parent($.create("<stub digest setting checkbox>"));
     $("#id_realm_digest_weekday").set_parent($.create("<stub digest weekday setting dropdown>"));
-    $("#allowed_domains_label").set_parent($.create("<stub-allowed-domain-label-parent>"));
+    $("#zero_domains_warning").set_parent($.create("<stub zero domains warning parent>"));
     const waiting_period_parent_elem = $.create("waiting-period-parent-stub");
     $("#id_realm_waiting_period_threshold").set_parent(waiting_period_parent_elem);
 
