@@ -401,6 +401,10 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: hsla(0, 0%, 0%, 0.2);
     }
 
+    .recent_topic_unread_count {
+        background-color: hsl(0, 0%, 15%) !important;
+        color: hsl(0, 0%, 100%);
+    }
 
     .btn-recent-filters {
         background-color: hsl(0, 0%, 26%);
