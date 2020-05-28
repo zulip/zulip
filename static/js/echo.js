@@ -272,6 +272,7 @@ exports.reify_message_id = function (local_id, server_id) {
 
     message_store.reify_message_id(opts);
     notifications.reify_message_id(opts);
+    recent_topics.reify_message_id_if_available(opts);
 };
 
 exports.process_from_server = function (messages) {

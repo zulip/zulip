@@ -38,6 +38,10 @@ exports.process_message = function (msg, do_inplace_rerender) {
     const is_ours = people.is_my_user_id(msg.sender_id);
     const topic_data = topics.get(key);
     if (topic_data.last_msg_id < msg.id) {
+        // NOTE: This also stores locally echoed msg_id which
+        // has not been successfully received from the server.
+        // We store it now and reify it when response is available
+        // from server.
         topic_data.last_msg_id = msg.id;
     }
     topic_data.participated = is_ours || topic_data.participated;
@@ -46,6 +50,16 @@ exports.process_message = function (msg, do_inplace_rerender) {
         exports.inplace_rerender(key);
     }
     return true;
+};
+
+exports.reify_message_id_if_available = function (opts) {
+    for (const [, value] of topics.entries()) {
+        if (value.last_msg_id === opts.old_id) {
+            value.last_msg_id = opts.new_id;
+            return true;
+        }
+    }
+    return false;
 };
 
 function get_sorted_topics() {

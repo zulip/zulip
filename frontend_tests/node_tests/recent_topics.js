@@ -439,6 +439,46 @@ run_test('basic assertions', () => {
     assert.equal(rt.update_topic_is_muted(stream1, "topic-10", true), false);
 });
 
+run_test('test_reify_local_echo_message', () => {
+    const rt = zrequire('recent_topics');
+    rt.process_messages(messages);
+
+    rt.process_message({
+        stream_id: stream1,
+        id: 1000.01,
+        topic: topic7,
+        sender_id: sender1,
+        type: 'stream',
+    }, false);
+
+    assert.equal(rt.reify_message_id_if_available({
+        old_id: 1000.01,
+        new_id: 1001,
+    }), true);
+
+    rt.process_message({
+        stream_id: stream1,
+        id: 1001.01,
+        topic: topic7,
+        sender_id: sender1,
+        type: 'stream',
+    }, false);
+
+    // A new message arrived in the same topic before we could reify the message_id
+    rt.process_message({
+        stream_id: stream1,
+        id: 1003,
+        topic: topic7,
+        sender_id: sender1,
+        type: 'stream',
+    }, false);
+
+    assert.equal(rt.reify_message_id_if_available({
+        old_id: 1000.01,
+        new_id: 1001,
+    }), false);
+});
+
 run_test('test_topic_edit', () => {
     // NOTE: This test should always run in the end as it modified the messages data.
     const rt = zrequire('recent_topics');
