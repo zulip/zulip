@@ -27,7 +27,6 @@ exports.process_message = function (msg, do_inplace_rerender) {
     if (!topics.has(key)) {
         topics.set(key, {
             last_msg_id: -1,
-            starred: new Set(),
             participated: false,
         });
     }
@@ -36,9 +35,6 @@ exports.process_message = function (msg, do_inplace_rerender) {
     const topic_data = topics.get(key);
     if (topic_data.last_msg_id < msg.id) {
         topic_data.last_msg_id = msg.id;
-    }
-    if (msg.starred) {
-        topic_data.starred.add(msg.id);
     }
     topic_data.participated = is_ours || topic_data.participated;
 

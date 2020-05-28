@@ -108,7 +108,6 @@ messages[2] = {
     topic: topic2,
     sender_id: sender2,
     type: 'stream',
-    starred: true,
 };
 
 messages[3] = {
@@ -127,7 +126,6 @@ messages[4] = {
     topic: topic4,
     sender_id: sender2,
     type: 'stream',
-    starred: true,
 };
 
 messages[5] = {
@@ -176,11 +174,10 @@ messages[9] = {
 };
 
 function verify_topic_data(all_topics, stream, topic, last_msg_id,
-                           participated, starred_count) {
+                           participated) {
     const topic_data = all_topics.get(stream + ':' + topic);
     assert.equal(topic_data.last_msg_id, last_msg_id);
     assert.equal(topic_data.participated, participated);
-    assert.equal(topic_data.starred.size, starred_count);
 }
 
 run_test("test_recent_topics_launch", () => {
@@ -305,34 +302,14 @@ run_test('basic assertions', () => {
     assert.equal(Array.from(all_topics.keys()).toString(),
                  '1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1');
 
-    // participated but not starred
-    verify_topic_data(all_topics, stream1, topic1, messages[0].id, true, 0);
-
-    // starred and participated
-    verify_topic_data(all_topics, stream1, topic2, messages[2].id, true, 1);
+    // participated
+    verify_topic_data(all_topics, stream1, topic1, messages[0].id, true);
 
     // No message was sent by us.
-    verify_topic_data(all_topics, stream1, topic3, messages[3].id, false, 0);
+    verify_topic_data(all_topics, stream1, topic3, messages[3].id, false);
 
-    // Not participated but starred
-    verify_topic_data(all_topics, stream1, topic4, messages[4].id, false, 1);
-
-    // topic1 now starred
-    rt.process_message({
-        stream_id: stream1,
-        id: id += 1,
-        topic: topic1,
-        sender_id: sender1,
-        type: 'stream',
-        starred: true,
-    });
-
-    all_topics = rt.get();
-
-    assert.equal(Array.from(all_topics.keys()).toString(),
-                 '1:topic-1,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2');
-
-    verify_topic_data(all_topics, stream1, topic1, id, true, 1);
+    // Not participated
+    verify_topic_data(all_topics, stream1, topic4, messages[4].id, false);
 
     // topic3 now participated
     rt.process_message({
@@ -345,8 +322,8 @@ run_test('basic assertions', () => {
 
     all_topics = rt.get();
     assert.equal(Array.from(all_topics.keys()).toString(),
-                 '1:topic-3,1:topic-1,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-2');
-    verify_topic_data(all_topics, stream1, topic3, id, true, 0);
+                 '1:topic-3,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-2,1:topic-1');
+    verify_topic_data(all_topics, stream1, topic3, id, true);
 
     // Send new message to topic7 (muted)
     // The topic will be hidden when displayed
@@ -360,7 +337,7 @@ run_test('basic assertions', () => {
 
     all_topics = rt.get();
     assert.equal(Array.from(all_topics.keys()).toString(),
-                 '1:topic-7,1:topic-3,1:topic-1,1:topic-6,1:topic-5,1:topic-4,1:topic-2');
+                 '1:topic-7,1:topic-3,1:topic-6,1:topic-5,1:topic-4,1:topic-2,1:topic-1');
 
     // unmute topic7
     assert.equal(rt.update_topic_is_muted(stream1, topic7, false), true);
@@ -382,7 +359,7 @@ run_test('test_topic_edit', () => {
                  '1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1');
 
     ////////////////// test change topic //////////////////
-    verify_topic_data(all_topics, stream1, topic6, messages[8].id, true, 0);
+    verify_topic_data(all_topics, stream1, topic6, messages[8].id, true);
     assert.equal(all_topics.get(stream1 + ":" + topic8), undefined);
 
     // change topic of topic6 to topic8
@@ -391,11 +368,11 @@ run_test('test_topic_edit', () => {
     rt.process_topic_edit(stream1, topic6, topic8);
     all_topics = rt.get();
 
-    verify_topic_data(all_topics, stream1, topic8, messages[8].id, true, 0);
+    verify_topic_data(all_topics, stream1, topic8, messages[8].id, true);
     assert.equal(all_topics.get(stream1 + ":" + topic6), undefined);
 
     ////////////////// test stream change //////////////////
-    verify_topic_data(all_topics, stream1, topic1, messages[0].id, true, 0);
+    verify_topic_data(all_topics, stream1, topic1, messages[0].id, true);
     assert.equal(all_topics.get(stream2 + ":" + topic1), undefined);
 
     messages[0].stream_id = stream2;
@@ -403,10 +380,10 @@ run_test('test_topic_edit', () => {
     all_topics = rt.get();
 
     assert.equal(all_topics.get(stream1 + ":" + topic1), undefined);
-    verify_topic_data(all_topics, stream2, topic1, messages[0].id, true, 0);
+    verify_topic_data(all_topics, stream2, topic1, messages[0].id, true);
 
     ////////////////// test stream & topic change //////////////////
-    verify_topic_data(all_topics, stream2, topic1, messages[0].id, true, 0);
+    verify_topic_data(all_topics, stream2, topic1, messages[0].id, true);
     assert.equal(all_topics.get(stream3 + ":" + topic9), undefined);
 
     messages[0].stream_id = stream3;
@@ -415,5 +392,5 @@ run_test('test_topic_edit', () => {
     all_topics = rt.get();
 
     assert.equal(all_topics.get(stream2 + ":" + topic1), undefined);
-    verify_topic_data(all_topics, stream3, topic9, messages[0].id, true, 0);
+    verify_topic_data(all_topics, stream3, topic9, messages[0].id, true);
 });
