@@ -625,7 +625,7 @@ def get_realm_emoji_dicts(realm: Realm,
     from zerver.lib.emoji import get_emoji_url
 
     for realm_emoji in query.all():
-        author = None
+        author_id = None
         if realm_emoji.author:
             author_id = realm_emoji.author.id
         emoji_url = get_emoji_url(realm_emoji.file_name, realm_emoji.realm_id)
