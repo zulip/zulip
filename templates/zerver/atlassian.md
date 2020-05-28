@@ -66,6 +66,6 @@ chat model.
 ## Decide on a payment plan.
 
 See [zulipchat.com/plans](https://zulipchat.com/plans) for Cloud
-pricing, or email <support@zulipchat.com> for on-premise support
+pricing, or email <support@zulip.com> for on-premise support
 options. We also offer affordable paid installation help that includes
 installing and configuring Zulip.

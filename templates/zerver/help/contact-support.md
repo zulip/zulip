@@ -9,7 +9,7 @@ channels:
   to a couple days later, but Zulip's threading makes it easy for us
   to reply to every thread. Please read the community conventions
   (linked above) and choose a topic when starting a conversation.
-* We aim to reply to [email support](mailto:support@zulipchat.com)
+* We aim to reply to [email support](mailto:support@zulip.com)
   questions within a business day. Simple queries or requests for
   data imports generally receive faster replies.
 * GitHub [server](https://github.com/zulip/zulip/issues/new), web
@@ -29,5 +29,5 @@ organization.
 
 ## Billing and commercial questions
 
-We provide exclusively [email support](mailto:support@zulipchat.com)
+We provide exclusively [email support](mailto:support@zulip.com)
 for sales, billing, partnerships, and other commercial questions.

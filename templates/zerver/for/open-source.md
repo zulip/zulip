@@ -97,7 +97,7 @@ commercial offerings. This offer extends to any community involved in
 supporting free and open source software: development projects, foundations,
 meetups, hackathons, conference committees, and more. If you’re not sure
 whether your organization qualifies, send us an email at
-support@zulipchat.com.
+support@zulip.com.
 
 ### Moderation suite.
 

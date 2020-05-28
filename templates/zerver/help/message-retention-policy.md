@@ -19,7 +19,7 @@ Zulip's system supports:
 In Zulip Cloud, message retention policies are available on the Zulip
 Cloud Standard and Zulip Cloud Plus [plans](https://zulip.com/plans),
 as well as for the hundreds of communities with sponsored Cloud
-Standard hosting.  Contact support@zulipchat.com if you're on one of
+Standard hosting.  Contact support@zulip.com if you're on one of
 these plans and would like to enable it.
 
 ## Important details

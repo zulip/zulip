@@ -43,7 +43,7 @@ with lots of messages or uploaded files.
 
 {start_tabs}
 
-1. Email support@zulipchat.com with your zulipchat.com subdomain, asking for
+1. Email support@zulip.com with your zulipchat.com subdomain, asking for
    a full export with member consent. Email us from the same address that
    you use to sign in to Zulip.
 
@@ -72,7 +72,7 @@ import.
 This export is limited to paid Zulip Standard customers, though in rare
 cases may be available to other organizations in case of due legal process.
 
-To start this export, email support@zulipchat.com with your zulipchat.com
+To start this export, email support@zulip.com with your zulipchat.com
 subdomain, asking for a full export without member consent.
 
 You'll also need to email us evidence that you have authority to read
