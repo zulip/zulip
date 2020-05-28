@@ -88,7 +88,7 @@ like Category Theory).
 
 This free hosting is supported by (and is identical to)
 zulipchat.com’s commercial offerings.  If you’re not sure whether your
-organization qualifies, send us an email at support@zulipchat.com.
+organization qualifies, send us an email at support@zulip.com.
 
 ### Native LaTeX support powered by KaTeX
 

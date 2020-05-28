@@ -43,7 +43,7 @@ it’s easy to write bots that send things into or out of Zulip.
 
 [Click here](https://zulipchat.com/new) to create an organization; it
 only takes only about 30 seconds. If you decide to continue using it, just email
-support@zulipchat.com to tell us you’re a mystery hunt team.
+support@zulip.com to tell us you’re a mystery hunt team.
 
 **Where do I go for further information?**
 

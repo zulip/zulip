@@ -58,7 +58,7 @@ This step will also generate a different token starting with
 
 ### Import into zulipchat.com
 
-Email support@zulipchat.com with `slack_data.zip`, the Slack API token
+Email support@zulip.com with `slack_data.zip`, the Slack API token
 generated above, and your desired subdomain. Your imported organization will
 be hosted at `<subdomain>.zulipchat.com`.
 

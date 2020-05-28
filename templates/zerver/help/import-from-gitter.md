@@ -29,7 +29,7 @@ First, export your data from Gitter.
 
 ### Import into zulipchat.com
 
-Email support@zulipchat.com with `gitter_data.zip` and your desired
+Email support@zulip.com with `gitter_data.zip` and your desired
 subdomain. Your imported organization will be hosted at
 `<subdomain>.zulipchat.com`.
 

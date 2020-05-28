@@ -122,7 +122,7 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
 
 ### Import into zulipchat.com
 
-Email support@zulipchat.com with your exported archive,
+Email support@zulip.com with your exported archive,
 the name of the Mattermost team you want to import, and your desired Zulip
 subdomain. Your imported organization will be hosted at
 `<subdomain>.zulipchat.com`.

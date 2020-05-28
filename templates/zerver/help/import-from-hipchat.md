@@ -78,7 +78,7 @@ download the file.
 
 ### Import into zulipchat.com
 
-Email support@zulipchat.com with your exported archive and your desired Zulip
+Email support@zulip.com with your exported archive and your desired Zulip
 subdomain. Your imported organization will be hosted at
 `<subdomain>.zulipchat.com`.
 
