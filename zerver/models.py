@@ -633,7 +633,7 @@ def get_realm_emoji_dicts(realm: Realm,
                                       name=realm_emoji.name,
                                       source_url=emoji_url,
                                       deactivated=realm_emoji.deactivated,
-                                      author=author_id)
+                                      author_id=author_id)
     return d
 
 def get_realm_emoji_uncached(realm: Realm) -> Dict[str, Dict[str, Any]]:

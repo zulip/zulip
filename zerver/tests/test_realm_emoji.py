@@ -12,7 +12,7 @@ class RealmEmojiTest(ZulipTestCase):
         with get_test_image_file('img.png') as img_file:
             realm_emoji = check_add_realm_emoji(realm=author.realm,
                                                 name=name,
-                                                author=author_id,
+                                                author=author,
                                                 image_file=img_file)
             if realm_emoji is None:
                 raise Exception("Error creating test emoji.")   # nocoverage
@@ -42,7 +42,7 @@ class RealmEmojiTest(ZulipTestCase):
         content = result.json()
         self.assertEqual(len(content["emoji"]), 2)
         test_emoji = content["emoji"][str(realm_emoji.id)]
-        self.assertIsNone(test_emoji['author'])
+        self.assertIsNone(test_emoji['author_id'])
 
     def test_list_admins_only(self) -> None:
         # Test that realm emoji list is public and realm emojis
@@ -58,7 +58,7 @@ class RealmEmojiTest(ZulipTestCase):
         content = result.json()
         self.assertEqual(len(content["emoji"]), 2)
         test_emoji = content["emoji"][str(realm_emoji.id)]
-        self.assertIsNone(test_emoji['author'])
+        self.assertIsNone(test_emoji['author_id'])
 
     def test_upload(self) -> None:
         user = self.example_user('iago')
@@ -77,8 +77,9 @@ class RealmEmojiTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(len(content["emoji"]), 2)
         test_emoji = content["emoji"][str(realm_emoji.id)]
-        self.assertIn('author', test_emoji)
-        self.assertEqual(test_emoji['author']['email'], email)
+        self.assertIn('author_id', test_emoji)
+        author = UserProfile.objects.get(id = test_emoji['author_id'])
+        self.assertEqual(author.email, email)
 
     def test_realm_emoji_repr(self) -> None:
         realm_emoji = RealmEmoji.objects.get(name='green_tick')
