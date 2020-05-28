@@ -12,7 +12,7 @@ class RealmEmojiTest(ZulipTestCase):
         with get_test_image_file('img.png') as img_file:
             realm_emoji = check_add_realm_emoji(realm=author.realm,
                                                 name=name,
-                                                author=author,
+                                                author=author_id,
                                                 image_file=img_file)
             if realm_emoji is None:
                 raise Exception("Error creating test emoji.")   # nocoverage

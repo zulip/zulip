@@ -627,16 +627,13 @@ def get_realm_emoji_dicts(realm: Realm,
     for realm_emoji in query.all():
         author = None
         if realm_emoji.author:
-            author = {
-                'id': realm_emoji.author.id,
-                'email': realm_emoji.author.email,
-                'full_name': realm_emoji.author.full_name}
+            author_id = realm_emoji.author.id
         emoji_url = get_emoji_url(realm_emoji.file_name, realm_emoji.realm_id)
         d[str(realm_emoji.id)] = dict(id=str(realm_emoji.id),
                                       name=realm_emoji.name,
                                       source_url=emoji_url,
                                       deactivated=realm_emoji.deactivated,
-                                      author=author)
+                                      author=author_id)
     return d
 
 def get_realm_emoji_uncached(realm: Realm) -> Dict[str, Dict[str, Any]]:
