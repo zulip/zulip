@@ -74,6 +74,7 @@ set_global('current_msg_list', {rerender: noop});
 
 // We use blueslip to print the traceback
 set_global('blueslip', {
+    info: noop,
     error: function (msg, more_info, stack) {
         console.log("\nFailed to process an event:\n", more_info.event, "\n");
         const error = new Error();
@@ -1067,17 +1068,8 @@ with_overrides(function (override) {
     });
 
     event = event_fixtures.realm_bot__delete;
-    global.with_stub(function (bot_stub) {
-        global.with_stub(function (admin_stub) {
-            override('bot_data.del', bot_stub.f);
-            override('settings_users.update_bot_data', admin_stub.f);
-            dispatch(event);
-            const args = bot_stub.get_args('bot_id');
-            assert_same(args.bot_id, event.bot.user_id);
-
-            admin_stub.get_args('update_user_id', 'update_bot_data');
-        });
-    });
+    // We don't handle live updates for delete events, this is a noop.
+    dispatch(event);
 
     event = event_fixtures.realm_bot__update;
     global.with_stub(function (bot_stub) {
