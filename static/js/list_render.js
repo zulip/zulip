@@ -214,6 +214,32 @@ exports.create = function ($container, list, opts) {
         meta.offset += load_count;
     };
 
+    widget.render_item = (item) => {
+        if (!opts.html_selector) {
+            // We don't have any way to find the existing item.
+            return;
+        }
+        const html_item = meta.scroll_container.find(opts.html_selector(item));
+        if (!html_item) {
+            // We don't have the item in the current scroll container; it'll be
+            // rendered with updated data when it is scrolled to.
+            return;
+        }
+
+        if (opts.get_item) {
+            item = opts.get_item(item);
+        }
+        const html = opts.modifier(item);
+        if (typeof html !== 'string') {
+            blueslip.error('List item is not a string: ' + html);
+            return;
+        }
+
+        // At this point, we have asserted we have all the information to replace
+        // the html now.
+        html_item.replaceWith(html);
+    };
+
     widget.clear = function () {
         $container.html("");
         meta.offset = 0;
