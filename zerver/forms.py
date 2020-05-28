@@ -40,7 +40,7 @@ from two_factor.utils import totp_digits
 MIT_VALIDATION_ERROR = 'That user does not exist at MIT or is a ' + \
                        '<a href="https://ist.mit.edu/email-lists">mailing list</a>. ' + \
                        'If you want to sign up an alias for Zulip, ' + \
-                       '<a href="mailto:support@zulipchat.com">contact us</a>.'
+                       '<a href="mailto:support@zulip.com">contact us</a>.'
 WRONG_SUBDOMAIN_ERROR = "Your Zulip account is not a member of the " + \
                         "organization associated with this subdomain.  " + \
                         "Please contact your organization administrator with any questions."

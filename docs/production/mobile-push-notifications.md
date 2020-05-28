@@ -36,7 +36,7 @@ follows:
    This command will print the registration data it would send to the
    mobile push notifications service, ask you to accept the terms of
    service, and if you accept, register your server. If you have trouble,
-   email support@zulipchat.com with the output of this command.
+   email support@zulip.com with the output of this command.
 
 1. If you or your users have already set up the Zulip mobile app,
    you'll each need to log out and log back in again in order to start
@@ -146,7 +146,7 @@ and privacy in mind:
   by a small team of security expert engineers.
 
 If you have any questions about the security model, contact
-support@zulipchat.com.
+support@zulip.com.
 
 ## Submitting statistics
 

@@ -22,7 +22,7 @@ Zulip with various common SAML Identity Providers.
        `first_name` to `user.firstName`, and `last_name` to `user.lastName`.
 1. Assign the appropriate accounts in the "Assignments" tab. These are the users
    that will be able to log in to your Zulip organization.
-1. Send the following information to us at support@zulipchat.com:
+1. Send the following information to us at support@zulip.com:
      * The URL of your zulipchat-hosted organization.
      * The "Identity Provider metadata" provided by Okta for the application.
      * The name "X" that will be displayed on the "Log in with X" button in Zulip.
@@ -48,7 +48,7 @@ Zulip with various common SAML Identity Providers.
     Make sure to set the "Include in SAML assertion" flag on these parameters.
 
 1. The OneLogin side of configuration should be ready!
-   Send the following information to us at support@zulipchat.com:
+   Send the following information to us at support@zulip.com:
      * The URL of your zulipchat-hosted organization.
      * The issuer URL from the "SSO" section. It contains Identity Provider metadata that we will need.
      * The name "X" that will be displayed on the "Log in with X" button in Zulip.
