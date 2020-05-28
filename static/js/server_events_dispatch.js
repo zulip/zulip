@@ -191,7 +191,8 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             bot_data.deactivate(event.bot.user_id);
             event.bot.is_active = false;
         } else if (event.op === 'delete') {
-            bot_data.del(event.bot.user_id);
+            blueslip.info("ignoring bot deletion for live UI update");
+            break;
         } else if (event.op === 'update') {
             bot_data.update(event.bot.user_id, event.bot);
         }
