@@ -41,9 +41,20 @@ exports.down = function (with_centering) {
 
 exports.to_home = function () {
     message_viewport.set_last_movement_direction(-1);
+    message_fetch.load_messages({
+        anchor: 1,
+        num_before: 0,
+        num_after: 10,
+        msg_list: current_msg_list,
+        cont: function () {
+            const first_id = current_msg_list.first().id;
+            console.log("Actually, the first is", first_id);
+            current_msg_list.select_id(first_id, {then_scroll: true,
+                                                  from_scroll: true});
+        },
+    });
     const first_id = current_msg_list.first().id;
-    current_msg_list.select_id(first_id, {then_scroll: true,
-                                          from_scroll: true});
+    console.log("We originally think the first is", first_id);
 };
 
 exports.to_end = function () {
