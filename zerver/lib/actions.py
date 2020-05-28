@@ -5521,12 +5521,6 @@ def do_remove_realm_domain(realm_domain: RealmDomain, acting_user: Optional[User
     realm = realm_domain.realm
     domain = realm_domain.domain
     realm_domain.delete()
-    if RealmDomain.objects.filter(realm=realm).count() == 0 and realm.emails_restricted_to_domains:
-        # If this was the last realm domain, we mark the realm as no
-        # longer restricted to domain, because the feature doesn't do
-        # anything if there are no domains, and this is probably less
-        # confusing than the alternative.
-        do_set_realm_property(realm, 'emails_restricted_to_domains', False, acting_user=acting_user)
     event = dict(type="realm_domains", op="remove", domain=domain)
     send_event(realm, event, active_user_ids(realm.id))
 
