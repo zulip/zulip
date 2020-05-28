@@ -1,6 +1,6 @@
 from django import forms
 from django.conf import settings
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, password_validation
 from django.contrib.auth.forms import SetPasswordForm, AuthenticationForm, \
     PasswordResetForm
 from django.core.exceptions import ValidationError
@@ -194,6 +194,20 @@ class RealmCreationForm(forms.Form):
                                          email_is_not_disposable])
 
 class LoggingSetPasswordForm(SetPasswordForm):
+    new_password1 = forms.CharField(
+        label=_("New password"),
+        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
+        strip=False,
+        help_text=password_validation.password_validators_help_text_html(),
+        max_length=RegistrationForm.MAX_PASSWORD_LENGTH,
+    )
+    new_password2 = forms.CharField(
+        label=_("New password confirmation"),
+        strip=False,
+        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
+        max_length=RegistrationForm.MAX_PASSWORD_LENGTH,
+    )
+
     def clean_new_password1(self) -> str:
         new_password = self.cleaned_data['new_password1']
         if not check_password_strength(new_password):
