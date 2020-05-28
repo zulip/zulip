@@ -46,7 +46,7 @@ A good first test to read is
 
 Unlike the [casper unit tests](../testing/testing-with-casper.md),
 which use the `phantomjs` browser connected to a running Zulip
-deveopment server, our node unit tests don't have a browser, don't
+development server, our node unit tests don't have a browser, don't
 talk to a server, and generally don't use a complete virtual DOM (a
 handful of tests use the `jsdom` library for this purpose) because
 those slow down the tests a lot, and often don't add much value.
