@@ -39,7 +39,7 @@ def api_travis_webhook(request: HttpRequest, user_profile: UserProfile,
     elif message_status in BAD_STATUSES:
         emoji = ':thumbs_down:'
     elif message_status in PENDING_STATUSES:
-        emoji = ':arrows_counterclockwise:'
+        emoji = ':counterclockwise:'
     else:
         emoji = "(No emoji specified for status '{}'.)".format(message_status)
 
