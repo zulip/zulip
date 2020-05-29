@@ -9,7 +9,7 @@ from zerver.lib.exceptions import OrganizationAdministratorRequired
 from zerver.lib.request import JsonableError
 from zerver.lib.storage import static_path
 from zerver.lib.upload import upload_backend
-from zerver.models import Reaction, Realm, RealmEmoji, UserProfile
+from zerver.models import Reaction, Realm, RealmEmoji, UserProfile, get_realm_emoji_dicts
 
 emoji_codes_path = static_path("generated/emoji/emoji_codes.json")
 if not os.path.exists(emoji_codes_path):  # nocoverage
@@ -43,11 +43,20 @@ def translate_emoticons(text: str) -> str:
 
     return translated
 
-def emoji_name_to_emoji_code(realm: Realm, emoji_name: str) -> Tuple[str, str]:
-    realm_emojis = realm.get_active_emoji()
-    realm_emoji = realm_emojis.get(emoji_name)
+def emoji_name_to_emoji_code(realm: Realm, emoji_name: str,
+                             allow_deactivated: bool=False) -> Tuple[str, str]:
+    realm_emoji = None
+    if allow_deactivated:
+        realm_emojis = get_realm_emoji_dicts(realm)
+        for emoji in realm_emojis.values():
+            if emoji['name'] == emoji_name:
+                realm_emoji = emoji
+    else:
+        realm_emojis = realm.get_active_emoji()
+        realm_emoji = realm_emojis.get(emoji_name)
+
     if realm_emoji is not None:
-        return str(realm_emojis[emoji_name]['id']), Reaction.REALM_EMOJI
+        return str(realm_emoji['id']), Reaction.REALM_EMOJI
     if emoji_name == 'zulip':
         return emoji_name, Reaction.ZULIP_EXTRA_EMOJI
     if emoji_name in name_to_codepoint:
