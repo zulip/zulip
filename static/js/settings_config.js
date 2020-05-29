@@ -158,6 +158,21 @@ exports.msg_delete_limit_dropdown_values = time_limit_dropdown_values;
 
 exports.retain_message_forever = -1;
 
+exports.user_role_values = {
+    guest: {
+        code: 600,
+        description: i18n.t("Guest"),
+    },
+    member: {
+        code: 400,
+        description: i18n.t("Member"),
+    },
+    admin: {
+        code: 200,
+        description: i18n.t("Administrator"),
+    },
+};
+
 // NOTIFICATIONS
 
 exports.general_notifications_table_labels = {

@@ -880,6 +880,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     ROLE_GUEST = 600
     role: int = models.PositiveSmallIntegerField(default=ROLE_MEMBER, db_index=True)
 
+    ROLE_TYPES = [
+        ROLE_REALM_ADMINISTRATOR,
+        ROLE_MEMBER,
+        ROLE_GUEST,
+    ]
+
     # Whether the user has been "soft-deactivated" due to weeks of inactivity.
     # For these users we avoid doing UserMessage table work, as an optimization
     # for large Zulip organizations with lots of single-visit users.

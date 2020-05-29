@@ -1579,21 +1579,13 @@ paths:
               type: string
             example: NewName
         required: false
-      - name: is_admin
+      - name: role
         in: query
         description: |
-          Whether the target user is an administrator.
+          Role of user.
         schema:
-          type: boolean
-        example: false
-        required: false
-      - name: is_guest
-        in: query
-        description: |
-          Whether the target user is a guest.
-        schema:
-          type: boolean
-        example: true
+          type: integer
+        example: 400
         required: false
       - name: profile_data
         in: query

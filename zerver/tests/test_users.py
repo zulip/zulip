@@ -138,7 +138,7 @@ class PermissionTest(ZulipTestCase):
         self.assertFalse(othello_dict['is_admin'])
 
         # Giveth
-        req = dict(is_admin=ujson.dumps(True))
+        req = dict(role=ujson.dumps(UserProfile.ROLE_REALM_ADMINISTRATOR))
 
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
@@ -151,7 +151,7 @@ class PermissionTest(ZulipTestCase):
         self.assertEqual(person['is_admin'], True)
 
         # Taketh away
-        req = dict(is_admin=ujson.dumps(False))
+        req = dict(role=ujson.dumps(UserProfile.ROLE_MEMBER))
         events = []
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/users/{}'.format(othello.id), req)
@@ -164,7 +164,7 @@ class PermissionTest(ZulipTestCase):
 
         # Cannot take away from last admin
         self.login('iago')
-        req = dict(is_admin=ujson.dumps(False))
+        req = dict(role=ujson.dumps(UserProfile.ROLE_MEMBER))
         events = []
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/users/{}'.format(desdemona.id), req)
@@ -355,15 +355,7 @@ class PermissionTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         self.assertFalse(hamlet.is_guest)
 
-        # Test failure of making user both admin and guest
-        req = dict(is_guest=ujson.dumps(True), is_admin=ujson.dumps(True))
-        result = self.client_patch('/json/users/{}'.format(hamlet.id), req)
-        self.assert_json_error(result, 'Guests cannot be organization administrators')
-        self.assertFalse(hamlet.is_guest)
-        self.assertFalse(hamlet.is_realm_admin)
-        hamlet = self.example_user("hamlet")
-
-        req = dict(is_guest=ujson.dumps(True))
+        req = dict(role=ujson.dumps(UserProfile.ROLE_GUEST))
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/users/{}'.format(hamlet.id), req)
@@ -382,7 +374,7 @@ class PermissionTest(ZulipTestCase):
 
         polonius = self.example_user("polonius")
         self.assertTrue(polonius.is_guest)
-        req = dict(is_guest=ujson.dumps(False))
+        req = dict(role=ujson.dumps(UserProfile.ROLE_MEMBER))
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/users/{}'.format(polonius.id), req)
@@ -402,15 +394,10 @@ class PermissionTest(ZulipTestCase):
         self.assertFalse(hamlet.is_guest)
         self.assertTrue(hamlet.is_realm_admin)
 
-        # Test failure of making a admin to guest without revoking admin status
-        req = dict(is_guest=ujson.dumps(True))
-        result = self.client_patch('/json/users/{}'.format(hamlet.id), req)
-        self.assert_json_error(result, 'Guests cannot be organization administrators')
-
         # Test changing a user from admin to guest and revoking admin status
         hamlet = self.example_user("hamlet")
         self.assertFalse(hamlet.is_guest)
-        req = dict(is_admin=ujson.dumps(False), is_guest=ujson.dumps(True))
+        req = dict(role=ujson.dumps(UserProfile.ROLE_GUEST))
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/users/{}'.format(hamlet.id), req)
@@ -435,15 +422,10 @@ class PermissionTest(ZulipTestCase):
         self.assertTrue(polonius.is_guest)
         self.assertFalse(polonius.is_realm_admin)
 
-        # Test failure of making a guest to admin without revoking guest status
-        req = dict(is_admin=ujson.dumps(True))
-        result = self.client_patch('/json/users/{}'.format(polonius.id), req)
-        self.assert_json_error(result, 'Guests cannot be organization administrators')
-
         # Test changing a user from guest to admin and revoking guest status
         polonius = self.example_user("polonius")
         self.assertFalse(polonius.is_realm_admin)
-        req = dict(is_admin=ujson.dumps(True), is_guest=ujson.dumps(False))
+        req = dict(role=ujson.dumps(UserProfile.ROLE_REALM_ADMINISTRATOR))
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/users/{}'.format(polonius.id), req)
