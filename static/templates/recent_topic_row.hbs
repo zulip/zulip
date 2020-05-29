@@ -10,7 +10,11 @@
         {{#if unread_count}}<span class="recent_topic_unread_count">+{{unread_count}}</span>{{/if}}
     </td>
     <td class="recent_topic_actions">
+        {{#if topic_muted}}
+        <i class="fa fa-bell-slash on_hover_topic_unmute recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Unmute topic' }}" role="button" tabindex="0" aria-label="{{t 'Mute topic' }}"></i>
+        {{else}}
         <i class="fa fa-bell-slash on_hover_topic_mute recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Mute topic' }}" role="button" tabindex="0" aria-label="{{t 'Mute topic' }}"></i>
+        {{/if}}
         <i class="fa fa-check-circle on_hover_topic_read recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}"></i>
     </td>
     <td class='recent_topic_users'>

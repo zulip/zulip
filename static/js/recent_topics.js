@@ -88,7 +88,9 @@ function format_topic(topic_data) {
     // We only supply the data to the topic rows and let jquery
     // display / hide them according to filters instead of
     // doing complete re-render.
-    const muted = !!muting.is_topic_muted(stream_id, topic);
+    const topic_muted = !!muting.is_topic_muted(stream_id, topic);
+    const stream_muted = stream_data.is_muted(stream_id);
+    const muted = topic_muted || stream_muted;
     const unread_count = unread.unread_topic_counter.get(stream_id, topic);
 
     // Display in most recent sender first order
@@ -112,6 +114,7 @@ function format_topic(topic_data) {
         senders: senders_info,
         count_senders: Math.max(0, all_senders.length - MAX_AVATAR),
         muted: muted,
+        topic_muted: topic_muted,
         participated: topic_data.participated,
     };
 }
@@ -149,7 +152,7 @@ function is_row_hidden(data) {
         return true;
     } else if (!participated && filters.has('participated')) {
         return true;
-    } else if (muted) {
+    } else if (muted && !filters.has('muted')) {
         return true;
     }
     return false;
@@ -196,7 +199,7 @@ exports.inplace_rerender = function (topic_key) {
     }
 };
 
-exports.update_topic_is_muted = function (stream_id, topic, is_muted) {
+exports.update_topic_is_muted = function (stream_id, topic) {
     const key = stream_id + ":" + topic;
     if (!topics.has(key)) {
         // we receive mute request for a topic we are
@@ -204,11 +207,7 @@ exports.update_topic_is_muted = function (stream_id, topic, is_muted) {
         return false;
     }
 
-    if (is_muted) {
-        get_topic_row(key).hide();
-    } else {
-        get_topic_row(key).show();
-    }
+    exports.inplace_rerender(key);
     return true;
 };
 
@@ -262,6 +261,7 @@ exports.update_filters_view = function () {
     const rendered_filters = render_recent_topics_filters({
         filter_participated: filters.has('participated'),
         filter_unread: filters.has('unread'),
+        filter_muted: filters.has('muted'),
     });
     $("#recent_filters_group").html(rendered_filters);
 
@@ -297,6 +297,7 @@ exports.complete_rerender = function () {
         recent_topics: format_all_topics(),
         filter_participated: filters.has('participated'),
         filter_unread: filters.has('unread'),
+        filter_muted: filters.has('muted'),
     });
     $('#recent_topics_table').html(rendered_body);
     exports.update_filters_view();
