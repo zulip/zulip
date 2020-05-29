@@ -18,7 +18,7 @@ exports.process_messages = function (messages) {
     for (const msg of messages) {
         exports.process_message(msg, do_inplace_rerender);
     }
-    if (!do_inplace_rerender) {
+    if (!do_inplace_rerender && overlays.recent_topics_open()) {
         exports.complete_rerender();
     }
 };
@@ -47,7 +47,7 @@ exports.process_message = function (msg, do_inplace_rerender) {
     }
     topic_data.participated = is_ours || topic_data.participated;
 
-    if (do_inplace_rerender) {
+    if (do_inplace_rerender && overlays.recent_topics_open()) {
         exports.inplace_rerender(key);
     }
     return true;
@@ -213,8 +213,10 @@ exports.update_topic_is_muted = function (stream_id, topic, is_muted) {
 };
 
 exports.update_topic_unread_count = function (message) {
-    const topic_key = message.stream_id + ":" + message.topic;
-    exports.inplace_rerender(topic_key);
+    if (overlays.recent_topics_open()) {
+        const topic_key = message.stream_id + ":" + message.topic;
+        exports.inplace_rerender(topic_key);
+    }
 };
 
 exports.set_filter = function (filter) {
@@ -297,10 +299,11 @@ exports.complete_rerender = function () {
         filter_unread: filters.has('unread'),
     });
     $('#recent_topics_table').html(rendered_body);
-    show_selected_filters();
+    exports.update_filters_view();
 };
 
 exports.launch = function () {
+    recent_topics.complete_rerender();
     overlays.open_overlay({
         name: 'recent_topics',
         overlay: $('#recent_topics_overlay'),

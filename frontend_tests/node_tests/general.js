@@ -100,6 +100,7 @@ zrequire('recent_senders');
 zrequire('unread');
 zrequire('stream_topic_history');
 zrequire('recent_topics');
+zrequire('overlays');
 
 // And finally require the module that we will test directly:
 zrequire('message_store');
