@@ -335,6 +335,10 @@ section.deactivated.create_table = (deactivated_users) => {
 };
 
 exports.update_bot_data = function (bot_user_id) {
+    if (!bot_list_widget) {
+        return;
+    }
+
     bot_list_widget.render_item(bot_user_id);
 };
 
