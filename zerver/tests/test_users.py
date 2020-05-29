@@ -252,7 +252,7 @@ class PermissionTest(ZulipTestCase):
 
     def test_user_cannot_promote_to_admin(self) -> None:
         self.login('hamlet')
-        req = dict(is_admin=ujson.dumps(True))
+        req = dict(role=ujson.dumps(UserProfile.ROLE_REALM_ADMINISTRATOR))
         result = self.client_patch('/json/users/{}'.format(self.example_user('hamlet').id), req)
         self.assert_json_error(result, 'Insufficient permission')
 
