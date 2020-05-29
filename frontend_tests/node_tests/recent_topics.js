@@ -14,6 +14,11 @@ set_global('stream_data', {
             is_web_public: true,
         };
     },
+    is_muted: () => {
+        // We only test via muted topics for now.
+        // TODO: Make muted streams and test them.
+        return false;
+    },
 });
 set_global('overlays', {
     open_overlay: (opts) => {
@@ -257,6 +262,7 @@ function generate_topic_data(topic_info_array) {
             topic_url: 'https://www.example.com',
             unread_count: unread_count,
             muted: muted,
+            topic_muted: muted,
             participated: participated,
         });
     }
@@ -279,6 +285,7 @@ run_test("test_recent_topics_launch", () => {
     const expected = {
         filter_participated: false,
         filter_unread: false,
+        filter_muted: false,
         recent_topics: generate_topic_data([
             // stream_id, topic, unread_count, muted, participated
             [1, 'topic-7', 1, true, true],
@@ -337,6 +344,7 @@ run_test('test_filter_unread', () => {
     let expected =   {
         filter_participated: false,
         filter_unread: true,
+        filter_muted: false,
         recent_topics: generate_topic_data([
             // stream_id, topic, unread_count,  muted, participated
             [1, 'topic-7', 1, true, true],
@@ -436,12 +444,15 @@ run_test('test_filter_participated', () => {
     rt.set_filter('all');
 });
 
+// TODO: Add tests for filter_muted.
+
 run_test('test_search_keyword', () => {
     // TODO: Test search mechanism properly.
     // This is only intended to pass coverage currently.
     const expected =   {
         filter_participated: false,
         filter_unread: false,
+        filter_muted: false,
         recent_topics: generate_topic_data([
             // stream_id, topic, unread_count,  muted, participated
             [1, 'topic-7', 1, true, true],
@@ -548,14 +559,12 @@ run_test('basic assertions', () => {
     assert.equal(Array.from(all_topics.keys()).toString(),
                  '1:topic-7,1:topic-3,1:topic-6,1:topic-5,1:topic-4,1:topic-2,1:topic-1');
 
-    // unmute topic7
-    assert.equal(rt.update_topic_is_muted(stream1, topic7, false), true);
-
-    // mute topic7
-    assert.equal(rt.update_topic_is_muted(stream1, topic7, true), true);
-
+    // update_topic_is_muted now relies on external libraries completely
+    // so we don't need to check anythere here.
+    generate_topic_data([[1, topic1, 0, false, true]]);
+    assert.equal(rt.update_topic_is_muted(stream1, topic1), true);
     // a topic gets muted which we are not tracking
-    assert.equal(rt.update_topic_is_muted(stream1, "topic-10", true), false);
+    assert.equal(rt.update_topic_is_muted(stream1, "topic-10"), false);
 });
 
 run_test('test_reify_local_echo_message', () => {

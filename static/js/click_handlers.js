@@ -346,6 +346,13 @@ exports.initialize = function () {
         muting_ui.mute(stream_id, topic);
     });
 
+    $('body').on('click', '.on_hover_topic_unmute', function (e) {
+        e.stopPropagation();
+        const stream_id = parseInt($(e.currentTarget).attr('data-stream-id'), 10);
+        const topic = $(e.currentTarget).attr('data-topic-name');
+        muting_ui.unmute(stream_id, topic);
+    });
+
     // RECENT TOPICS
 
     $('body').on('click', '.on_hover_topic_read', function (e) {
