@@ -22,6 +22,9 @@ below features are supported.
 * [`GET /events`](/api/get-events-from-queue): `realm_user` events
   sent when a user's role changes now include `role` property, instead
   of the previous `is_guest` or `is_admin` booleans.
+* `GET /realm/emoji`: The user who uploaded a given custom emoji is
+  now indicated by an `author_id` field, replacing a previous `author`
+  object with unnecessary additional data.
 
 **Feature level 6**
 * [`GET /events`](/api/get-events-from-queue): `realm_user` events to

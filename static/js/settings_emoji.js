@@ -22,11 +22,11 @@ function can_admin_emoji(emoji) {
     if (page_params.is_admin) {
         return true;
     }
-    if (emoji.author === null) {
+    if (emoji.author_id === null) {
         // If we don't have the author information then only admin is allowed to disable that emoji.
         return false;
     }
-    if (!page_params.realm_add_emoji_by_admins_only && people.is_current_user(emoji.author.email)) {
+    if (!page_params.realm_add_emoji_by_admins_only && people.is_my_user_id(emoji.author_id)) {
         return true;
     }
     return false;
@@ -64,6 +64,15 @@ function sort_author_full_name(a, b) {
 exports.populate_emoji = function (emoji_data) {
     if (!meta.loaded) {
         return;
+    }
+
+    for (const emoji of Object.values(emoji_data)) {
+        // Add people.js data for the user here.
+        if (emoji.author_id !== null) {
+            emoji.author = people.get_by_user_id(emoji.author_id);
+        } else {
+            emoji.author = null;
+        }
     }
 
     const emoji_table = $('#admin_emoji_table').expectOne();
