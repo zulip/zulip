@@ -1,5 +1,4 @@
 #!/bin/sh
-umount /mnt
 
 LOCALDISK=/dev/nvme0n1
 
@@ -15,7 +14,3 @@ ln -s /srv/postgresql/ /var/lib
 
 # TODO use systemctl instead of pg_ctlcluster on CentOS
 pg_ctlcluster 9.5 main start
-
-# Disable /mnt line for /dev/xvdb
-umount /mnt
-sed -i 's|^/dev/xvdb|#/dev/xvdb|' /etc/fstab
