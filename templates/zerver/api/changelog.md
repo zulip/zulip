@@ -16,6 +16,9 @@ below features are supported.
   the user; use the `user_id` field instead.  Previously, some (but
   not all) events of these types contained an `email` key in addition to
   to `user_id`) for identifying the modified user.
+* `GET /realm/emoji`: The user who uploaded a given custom emoji is
+  now indicated by an `author_id` field, replacing a previous `author`
+  object with unnecessary additional data.
 
 **Feature level 6**
 * [`GET /events`](/api/get-events-from-queue): `realm_user` events to
