@@ -49,25 +49,8 @@ function get_new_heights() {
 
     // RIGHT SIDEBAR
 
-    // Calculate our top offset, which should typically be 50px,
-    // even though we sometimes split that as 40px of margin
-    // and 10px of padding, and other times its just 50px of
-    // margin.  (See the commit message for this comment for
-    // more history).
-
-    const top_offset = $('#right-sidebar').position().top * -1;
-
-    if (top_offset !== 0 && top_offset !== 50) {
-        // If somebody changes the CSS for the right-sidebar without
-        // re-testing this code, it might introduce subtle bugs.  I
-        // am only making it a warning, since I think we have some
-        // legacy media rules for really old screens that might trigger
-        // this.
-        blueslip.warn('Possibly unexpected `top` for #right-sidebar is: ' + top_offset);
-    }
-
     const usable_height = viewport_height
-        - top_offset
+        - parseInt($("#right-sidebar").css("marginTop"), 10)
         - $("#userlist-header").safeOuterHeight(true)
         - $("#user_search_section").safeOuterHeight(true)
         - invite_user_link_height
