@@ -1,7 +1,5 @@
 # Create a user
 
-{!api-admin-only.md!}
-
 {generate_api_description(/users:post)}
 
 ## Usage examples
