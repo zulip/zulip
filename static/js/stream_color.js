@@ -93,7 +93,7 @@ exports.sidebar_popover_colorpicker_options = {
 };
 
 exports.sidebar_popover_colorpicker_options_full = {
-    clickoutFiresChange: true,
+    clickoutFiresChange: false,
     showPalette: true,
     showInput: true,
     flat: true,
