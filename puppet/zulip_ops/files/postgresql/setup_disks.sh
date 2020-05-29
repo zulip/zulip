@@ -1,14 +1,28 @@
 #!/bin/sh
+set -x
+set -e
 
 LOCALDISK=/dev/nvme0n1
 
-mkfs.xfs $LOCALDISK
+if ! grep -q $LOCALDISK /etc/fstab; then
+    echo "$LOCALDISK   /srv  xfs    nofail,noatime 1 1" >> /etc/fstab
+fi
 
-echo "$LOCALDISK   /srv  xfs    nofail,noatime 1 1" >> /etc/fstab
-mount /srv
+if ! mountpoint -q /srv; then
+    mkfs.xfs $LOCALDISK
+    mount /srv
+fi
 
-service postgresql stop
-mv /var/lib/postgresql /srv
-ln -s /srv/postgresql/ /var/lib
+if [ ! -L /var/lib/postgresql ]; then
+    service postgresql stop
+    if [ -e /var/lib/postgresql ]; then
+        mv /var/lib/postgresql "/root/postgres-data-$(date +'%m-%d-%Y-%T')"
+    fi
+    ln -s /srv/postgresql/ /var/lib
+fi
 
-service postgresql start
+if [ ! -e "/srv/postgresql" ]; then
+    service postgresql stop
+    mkdir "/srv/postgresql"
+    chown postgres:postgres /srv/postgresql
+fi
