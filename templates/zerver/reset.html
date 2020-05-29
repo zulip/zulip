@@ -22,7 +22,7 @@
                             <label for="id_email" class="">{{ _('Email') }}</label>
                             {% if form.email.errors %}
                                 {% for error in form.email.errors %}
-                                <div class="alert alert-error">{{ error }}</div>
+                                <div class="portico-alert portico-alert-error">{{ error }}</div>
                                 {% endfor %}
                             {% endif %}
                         </div>

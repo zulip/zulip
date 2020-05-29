@@ -26,7 +26,7 @@
                 {% endif %}
 
                 {% if error_message %}
-                <div class="alert alert-danger" id="upgrade-error-message-box">
+                <div class="portico-alert alert-danger" id="upgrade-error-message-box">
                     {{ error_message }}
                 </div>
                 {% endif %}
@@ -51,7 +51,7 @@
                                 <h2>Zulip Standard free trial</h2>
                                 {% endif %}
                                 <div class="payment-schedule">
-                                    <div id="autopay-error" class="alert alert-danger"></div>
+                                    <div id="autopay-error" class="portico-alert alert-danger"></div>
                                     <h3>{{ _("Payment schedule") }}</h3>
                                     {% if free_trial_days %}
                                     <p>
@@ -154,13 +154,13 @@
                             </div>
                             <div id="autopay_loading_indicator"></div>
                         </div>
-                        <div id="autopay-success" class="alert alert-success">
+                        <div id="autopay-success" class="portico-alert alert-success">
                             Upgrade complete! The page will now reload.
                         </div>
                     </div>
 
                     <div class="tab-pane" id="invoice">
-                        <div id="invoice-error" class="alert alert-danger"></div>
+                        <div id="invoice-error" class="portico-alert alert-danger"></div>
                         <div id="invoice-input-section">
                             <form id="invoice-form" method="post">
                                 {% if onboarding and free_trial_days %}
@@ -214,7 +214,7 @@
                             </div>
                             <div id="invoice_loading_indicator"></div>
                         </div>
-                        <div id="invoice-success" class="alert alert-success">
+                        <div id="invoice-success" class="portico-alert alert-success">
                             Upgrade complete! The page will now reload.
                         </div>
                     </div>

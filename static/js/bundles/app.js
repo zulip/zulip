@@ -210,7 +210,7 @@ import "../../styles/components.scss";
 import "../../styles/app_components.scss";
 import "../../styles/rendered_markdown.scss";
 import "../../styles/zulip.scss";
-import "../../styles/alerts.scss";
+import "../../styles/common/alerts.scss";
 import "../../styles/settings.scss";
 import "../../styles/subscriptions.scss";
 import "../../styles/drafts.scss";
