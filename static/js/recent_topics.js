@@ -1,5 +1,6 @@
 const render_recent_topics_body = require('../templates/recent_topics_table.hbs');
 const render_recent_topic_row = require('../templates/recent_topic_row.hbs');
+const render_recent_topics_filters = require('../templates/recent_topics_filters.hbs');
 const topics = new Map(); // Key is stream-id:topic.
 // Sets the number of avatars to display.
 // Rest of the avatars, if present, are displayed as {+x}
@@ -84,14 +85,11 @@ function format_topic(topic_data) {
     const last_msg_time = timerender.last_seen_status_from_date(time);
 
     // We hide the row according to filters or if it's muted.
-    let hidden = muting.is_topic_muted(stream_id, topic);
+    // We only supply the data to the topic rows and let jquery
+    // display / hide them according to filters instead of
+    // doing complete re-render.
+    const muted = !!muting.is_topic_muted(stream_id, topic);
     const unread_count = unread.unread_topic_counter.get(stream_id, topic);
-    if (unread_count === 0 && filters.has('unread')) {
-        hidden = true;
-    }
-    if (!topic_data.participated && filters.has('participated')) {
-        hidden = true;
-    }
 
     // Display in most recent sender first order
     const all_senders = recent_senders.get_topic_recent_senders(stream_id, topic);
@@ -111,9 +109,10 @@ function format_topic(topic_data) {
         unread_count: unread_count,
         last_msg_time: last_msg_time,
         topic_url: hash_util.by_stream_topic_uri(stream_id, topic),
-        hidden: hidden,
         senders: senders_info,
         count_senders: Math.max(0, all_senders.length - MAX_AVATAR),
+        muted: muted,
+        participated: topic_data.participated,
     };
 }
 
@@ -144,6 +143,18 @@ exports.process_topic_edit = function (old_stream_id, old_topic, new_topic, new_
     exports.process_messages(new_topic_msgs);
 };
 
+function is_row_hidden(data) {
+    const {participated, muted, unreadCount} = data;
+    if (unreadCount === 0 && filters.has('unread')) {
+        return true;
+    } else if (!participated && filters.has('participated')) {
+        return true;
+    } else if (muted) {
+        return true;
+    }
+    return false;
+}
+
 exports.inplace_rerender = function (topic_key) {
     // We remove topic from the UI and reinsert it.
     // This makes sure we maintain the correct order
@@ -153,7 +164,7 @@ exports.inplace_rerender = function (topic_key) {
         return false;
     }
     const formatted_values = format_topic(topic_data);
-    const topic_row = get_topic_row(topic_key);
+    let topic_row = get_topic_row(topic_key);
     topic_row.remove();
 
     const rendered_row = render_recent_topic_row(formatted_values);
@@ -176,6 +187,13 @@ exports.inplace_rerender = function (topic_key) {
         get_topic_row(sorted_topic_keys[1]).before(rendered_row);
     }
     get_topic_row(sorted_topic_keys[topic_index - 1]).after(rendered_row);
+
+    topic_row = get_topic_row(topic_key);
+    if (is_row_hidden(topic_row.data())) {
+        topic_row.hide();
+    } else {
+        topic_row.show();
+    }
 };
 
 exports.update_topic_is_muted = function (stream_id, topic, is_muted) {
@@ -210,7 +228,63 @@ exports.set_filter = function (filter) {
     } else {
         filters.add(filter);
     }
-    exports.complete_rerender();
+};
+
+function show_selected_filters() {
+    if (filters.size === 0) {
+        $('#recent_topics_filter_buttons')
+            .find('[data-filter="all"]')
+            .addClass('btn-recent-selected');
+    } else {
+        for (const filter of filters) {
+            $('#recent_topics_filter_buttons')
+                .find('[data-filter="' + filter + '"]')
+                .addClass('btn-recent-selected');
+        }
+    }
+}
+
+exports.update_filters_view = function () {
+    const $rows = $('.recent_topics_table tr').slice(1);
+    const search_val = $('#recent_topics_search').val();
+    $rows.each(function () {
+        const row = $(this);
+        if (is_row_hidden(row.data())) {
+            row.hide();
+        } else {
+            row.show();
+        }
+    });
+    exports.search_keyword(search_val);
+
+    const rendered_filters = render_recent_topics_filters({
+        filter_participated: filters.has('participated'),
+        filter_unread: filters.has('unread'),
+    });
+    $("#recent_filters_group").html(rendered_filters);
+
+    show_selected_filters();
+};
+
+exports.search_keyword = function (keyword) {
+    if (keyword === "") {
+        return false;
+    }
+    // take all rows and slice off the header.
+    const $rows = $('.recent_topics_table tr').slice(1);
+    // split the search text around whitespace(s).
+    // eg: "Denamark recent" -> ["Denamrk", "recent"]
+    const search_keywords = $.trim(keyword).split(/\s+/);
+    // turn the search keywords into word boundry groups
+    // eg: ["Denamrk", "recent"] -> "^(?=.*\bDenmark\b)(?=.*\brecent\b).*$"
+    const val = '^(?=.*\\b' + search_keywords.join('\\b)(?=.*\\b') + ').*$';
+    const reg = RegExp(val, 'i'); // i for ignorecase
+    let text;
+
+    $rows.filter(function () {
+        text = $(this).text().replace(/\s+/g, ' ');
+        return !reg.test(text);
+    }).hide();
 };
 
 exports.complete_rerender = function () {
@@ -223,18 +297,7 @@ exports.complete_rerender = function () {
         filter_unread: filters.has('unread'),
     });
     $('#recent_topics_table').html(rendered_body);
-
-    if (filters.size === 0) {
-        $('#recent_topics_filter_buttons')
-            .find('[data-filter="all"]')
-            .addClass('btn-recent-selected');
-    } else {
-        for (const filter of filters) {
-            $('#recent_topics_filter_buttons')
-                .find('[data-filter="' + filter + '"]')
-                .addClass('btn-recent-selected');
-        }
-    }
+    show_selected_filters();
 };
 
 exports.launch = function () {

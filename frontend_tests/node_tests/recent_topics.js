@@ -199,11 +199,20 @@ messages[9] = {
 function generate_topic_data(topic_info_array) {
     // Since most of the fields are common, this function helps generate fixtures
     // with non common fields.
+    $.clear_all_elements();
     const data = [];
-    for (const [stream_id, topic, unread_count, hidden] of topic_info_array) {
+    for (const [stream_id, topic, unread_count, muted, participated] of topic_info_array) {
+        const topic_selector = $.create('#recent_topic:' + stream_id + ":" + topic);
+        topic_selector.data = function () {
+            return {
+                participated: participated,
+                muted: muted,
+                unreadCount: unread_count,
+            };
+        };
+
         data.push({
             count_senders: 0,
-            hidden: hidden,
             invite_only: false,
             is_web_public: true,
             last_msg_time: 'Just now',
@@ -218,6 +227,8 @@ function generate_topic_data(topic_info_array) {
             topic: topic,
             topic_url: 'https://www.example.com',
             unread_count: unread_count,
+            muted: muted,
+            participated: participated,
         });
     }
     return data;
@@ -238,14 +249,14 @@ run_test("test_recent_topics_launch", () => {
         filter_participated: false,
         filter_unread: false,
         recent_topics: generate_topic_data([
-            // stream_id, topic, unread_count, hidden
-            [1, 'topic-7', 1, true],
-            [1, 'topic-6', 1, false],
-            [1, 'topic-5', 1, false],
-            [1, 'topic-4', 1, false],
-            [1, 'topic-3', 1, false],
-            [1, 'topic-2', 1, false],
-            [1, 'topic-1', 0, false],
+            // stream_id, topic, unread_count, muted, participated
+            [1, 'topic-7', 1, true, true],
+            [1, 'topic-6', 1, false, true],
+            [1, 'topic-5', 1, false, true],
+            [1, 'topic-4', 1, false, false],
+            [1, 'topic-3', 1, false, false],
+            [1, 'topic-2', 1, false, true],
+            [1, 'topic-1', 0, false, true],
         ]),
     };
 
@@ -268,7 +279,7 @@ run_test("test_recent_topics_launch", () => {
 run_test('test_filter_all', () => {
     // Just tests inplace rerender of a message
     // in All topics filter.
-    let expected = generate_topic_data([[1, 'topic-1', 0, false]])[0];
+    let expected = generate_topic_data([[1, 'topic-1', 0, false, true]])[0];
 
     global.stub_templates(function (template_name, data) {
         assert.equal(template_name, 'recent_topic_row');
@@ -280,7 +291,7 @@ run_test('test_filter_all', () => {
     const rt = zrequire('recent_topics');
     rt.process_messages([messages[0]]);
 
-    expected = generate_topic_data([[1, 'topic-7', 1, true]])[0];
+    expected = generate_topic_data([[1, 'topic-7', 1, true, true]])[0];
 
     // topic is muted (=== hidden)
     rt.process_messages([messages[9]]);
@@ -292,14 +303,14 @@ run_test('test_filter_unread', () => {
         filter_participated: false,
         filter_unread: true,
         recent_topics: generate_topic_data([
-            // stream_id, topic, unread_count, hidden
-            [1, 'topic-7', 1, true],
-            [1, 'topic-6', 1, false],
-            [1, 'topic-5', 1, false],
-            [1, 'topic-4', 1, false],
-            [1, 'topic-3', 1, false],
-            [1, 'topic-2', 1, false],
-            [1, 'topic-1', 0, true],
+            // stream_id, topic, unread_count,  muted, participated
+            [1, 'topic-7', 1, true, true],
+            [1, 'topic-6', 1, false, true],
+            [1, 'topic-5', 1, false, true],
+            [1, 'topic-4', 1, false, false],
+            [1, 'topic-3', 1, false, false],
+            [1, 'topic-2', 1, false, true],
+            [1, 'topic-1', 0, false, true],
         ]),
     };
 
@@ -320,7 +331,6 @@ run_test('test_filter_unread', () => {
 
     // Unselect "unread" filter by clicking twice.
     expected.filter_unread = false;
-    expected.recent_topics[6].hidden = false;
     rt.set_filter('unread');
 
     // Now clicking "all" filter should have no change to expected data.
@@ -333,14 +343,14 @@ run_test('test_filter_participated', () => {
         filter_participated: true,
         filter_unread: false,
         recent_topics: generate_topic_data([
-            // stream_id, topic, unread_count, hidden
-            [1, 'topic-7', 1, true],
-            [1, 'topic-6', 1, false],
-            [1, 'topic-5', 1, false],
-            [1, 'topic-4', 1, true],
-            [1, 'topic-3', 1, true],
-            [1, 'topic-2', 1, false],
-            [1, 'topic-1', 0, false],
+            // stream_id, topic, unread_count,  muted, participated
+            [1, 'topic-7', 1, true, true],
+            [1, 'topic-6', 1, false, true],
+            [1, 'topic-5', 1, false, true],
+            [1, 'topic-4', 1, false, false],
+            [1, 'topic-3', 1, false, false],
+            [1, 'topic-2', 1, false, true],
+            [1, 'topic-1', 0, false, true],
         ]),
     };
 
@@ -359,8 +369,6 @@ run_test('test_filter_participated', () => {
     });
     rt.set_filter('participated');
 
-    expected.recent_topics[3].hidden = false;
-    expected.recent_topics[4].hidden = false;
     expected.filter_participated = false;
     rt.set_filter('all');
 });
@@ -492,6 +500,14 @@ run_test('test_topic_edit', () => {
     verify_topic_data(all_topics, stream1, topic6, messages[8].id, true);
     assert.equal(all_topics.get(stream1 + ":" + topic8), undefined);
 
+    let topic_selector = $.create('#recent_topic:' + stream1 + ":" + topic8);
+    topic_selector.data = function () {
+        return {
+            participated: true,
+            muted: false,
+            unreadCount: 1,
+        };
+    };
     // change topic of topic6 to topic8
     messages[7].topic = topic8;
     messages[8].topic = topic8;
@@ -505,6 +521,14 @@ run_test('test_topic_edit', () => {
     verify_topic_data(all_topics, stream1, topic1, messages[0].id, true);
     assert.equal(all_topics.get(stream2 + ":" + topic1), undefined);
 
+    topic_selector = $.create('#recent_topic:' + stream2 + ":" + topic1);
+    topic_selector.data = function () {
+        return {
+            participated: true,
+            muted: false,
+            unreadCount: 0,
+        };
+    };
     messages[0].stream_id = stream2;
     rt.process_topic_edit(stream1, topic1, topic1, stream2);
     all_topics = rt.get();
@@ -516,6 +540,14 @@ run_test('test_topic_edit', () => {
     verify_topic_data(all_topics, stream2, topic1, messages[0].id, true);
     assert.equal(all_topics.get(stream3 + ":" + topic9), undefined);
 
+    topic_selector = $.create('#recent_topic:' + stream3 + ":" + topic9);
+    topic_selector.data = function () {
+        return {
+            participated: false,
+            muted: false,
+            unreadCount: 1,
+        };
+    };
     messages[0].stream_id = stream3;
     messages[0].topic = topic9;
     rt.process_topic_edit(stream2, topic1, topic9, stream3);
