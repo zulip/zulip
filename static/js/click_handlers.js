@@ -367,6 +367,12 @@ exports.initialize = function () {
     // Wait for user to go idle before initiating search.
     }, 300));
 
+    $('body').on('click', '#recent_topics_search_clear', function (e) {
+        e.stopPropagation();
+        $('#recent_topics_search').val("");
+        recent_topics.update_filters_view();
+    });
+
     // RECIPIENT BARS
 
     function get_row_id_for_narrowing(narrow_link_elem) {
