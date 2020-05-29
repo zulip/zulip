@@ -44,16 +44,17 @@ async function realm_creation_tests(page) {
     assert(text_in_pitch === "We just need you to do one last thing.");
 
     // fill the form.
-    await page.type('#id_team_name', organization_name);
-    await page.type('#id_full_name', 'Alice');
-
-    // For some reason, page.click() does not work this perticular checkbox
+    const params = {
+        realm_name: organization_name,
+        realm_subdomain: subdomain,
+        full_name: 'Alice',
+        password: 'passwordwhichisnotreallycomplex',
+        terms: true,
+    };
+    // For some reason, page.click() does not work this for particular checkbox
     // so use page.$eval here to call the .click method in the browser.
     await page.$eval('#realm_in_root_domain', el => el.click());
-
-    await page.type('#id_team_subdomain', subdomain);
-    await page.type('#id_password', 'passwordwhichisnotreallycomplex');
-    await page.click('#id_terms');
+    await common.fill_form(page, '#registration', params);
     await page.$eval('#registration', form => form.submit());
 
     // Check if realm is created and user is logged in by checking if

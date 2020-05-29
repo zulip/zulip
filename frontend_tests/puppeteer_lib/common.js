@@ -46,12 +46,49 @@ class CommonUtils {
         });
     }
 
+    /**
+     * This function takes a params object whose fields
+     * are referenced by name attribute of an input field and
+     * the input as a key.
+     *
+     * For example to fill:
+     *  <form id="#demo">
+     *     <input type="text" name="username">
+     *     <input type="checkbox" name="terms">
+     *  </form>
+     *
+     * You can call:
+     * common.fill_form(page, '#demo', {
+     *     username: 'Iago',
+     *     terms: true
+     * });
+     */
+    async fill_form(page, form_selector, params) {
+        for (const name of Object.keys(params)) {
+            const name_selector = `${form_selector} [name="${name}"]`;
+            const value = params[name];
+            if (typeof value === "boolean") {
+                await page.$eval(name_selector, (el, value) => {
+                    if (el.checked !== value) {
+                        el.click();
+                    }
+                });
+            } else {
+                await page.type(name_selector, params[name]);
+            }
+        }
+    }
+
     async log_in(page, credentials) {
         console.log("Logging in");
         await page.goto(this.realm_url + 'login/');
         assert.equal(this.realm_url + 'login/', page.url());
-        await page.type('#id_username', credentials.username);
-        await page.type('#id_password', credentials.password);
+        // fill login form
+        const params = {
+            username: credentials.username,
+            password: credentials.password,
+        };
+        await this.fill_form(page, '#login_form', params);
         await page.$eval('#login_form', form => form.submit());
     }
 
