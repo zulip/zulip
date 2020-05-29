@@ -1,4 +1,5 @@
 const settings_data = require("./settings_data");
+const settings_config = require("./settings_config");
 const render_admin_user_list = require("../templates/admin_user_list.hbs");
 const render_admin_human_form = require('../templates/admin_human_form.hbs');
 const render_admin_bot_form = require('../templates/admin_bot_form.hbs');
@@ -64,6 +65,16 @@ function sort_last_active(a, b) {
 
 function get_user_info_row(user_id) {
     return $("tr.user_row[data-user-id='" + user_id + "']");
+}
+
+function set_user_role_dropdown(person) {
+    let role_value = settings_config.user_role_values.member.code;
+    if (person.is_admin) {
+        role_value = settings_config.user_role_values.admin.code;
+    } else if (person.is_guest) {
+        role_value = settings_config.user_role_values.guest.code;
+    }
+    $('#user-role-select').val(role_value);
 }
 
 function update_view_on_deactivate(row) {
@@ -377,14 +388,13 @@ function open_human_form(person) {
         user_id: user_id,
         email: person.email,
         full_name: person.full_name,
-        is_admin: person.is_admin,
-        is_guest: person.is_guest,
-        is_member: !person.is_admin && !person.is_guest,
+        user_role_values: settings_config.user_role_values,
     });
     const div = $(html);
     const modal_container = $('#user-info-form-modal-container');
     modal_container.empty().append(div);
     overlays.open_modal('#admin-human-form');
+    set_user_role_dropdown(person);
 
     const element = "#admin-human-form .custom-profile-field-form";
     $(element).html("");
@@ -587,15 +597,14 @@ function handle_human_form(tbody, status_field) {
             e.preventDefault();
             e.stopPropagation();
 
-            const user_role_select_value = modal.find('#user-role-select').val();
+            const role = parseInt(modal.find('#user-role-select').val().trim(), 10);
             const full_name = modal.find("input[name='full_name']");
             const profile_data = get_human_profile_data(fields_user_pills);
 
             const url = "/json/users/" + encodeURIComponent(user_id);
             const data = {
                 full_name: JSON.stringify(full_name.val()),
-                is_admin: JSON.stringify(user_role_select_value === 'admin'),
-                is_guest: JSON.stringify(user_role_select_value === 'guest'),
+                role: JSON.stringify(role),
                 profile_data: JSON.stringify(profile_data),
             };
 

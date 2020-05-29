@@ -1579,21 +1579,24 @@ paths:
               type: string
             example: NewName
         required: false
-      - name: is_admin
+      - name: role
         in: query
         description: |
-          Whether the target user is an administrator.
+          New [role](/help/roles-and-permissions) for the user.  Supported roles include:
+            * Organization owner: 100
+            * Organization administrator: 200
+            * Member: 400
+            * Guest: 600
+
+          Only organization owners can add or remove the owner permission.
+
+          The owner permission cannot be removed from the only organization owner.
+
+          **Changes**: New in Zulip 2.2 (feature level 8), replacing the previous
+          pair of `is_admin` and `is_guest` boolean parameters.
         schema:
-          type: boolean
-        example: false
-        required: false
-      - name: is_guest
-        in: query
-        description: |
-          Whether the target user is a guest.
-        schema:
-          type: boolean
-        example: true
+          type: integer
+        example: 400
         required: false
       - name: profile_data
         in: query

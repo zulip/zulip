@@ -24,7 +24,8 @@ from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.validator import check_bool, check_string, check_int, check_url, check_dict, check_list
+from zerver.lib.validator import check_bool, check_string, check_int, check_url, check_dict, check_list, \
+    check_int_in
 from zerver.lib.url_encoding import add_query_arg_to_redirect_url
 from zerver.lib.users import check_valid_bot_type, check_bot_creation_policy, \
     check_full_name, check_short_name, check_valid_interface_type, check_valid_bot_config, \
@@ -80,36 +81,16 @@ def reactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
 @has_request_variables
 def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id: int,
                         full_name: Optional[str]=REQ(default="", validator=check_string),
-                        is_admin: Optional[bool]=REQ(default=None, validator=check_bool),
-                        is_guest: Optional[bool]=REQ(default=None, validator=check_bool),
+                        role: Optional[int]=REQ(default=None, validator=check_int_in(
+                            UserProfile.ROLE_TYPES)),
                         profile_data: Optional[List[Dict[str, Union[int, str, List[int]]]]]=
                         REQ(default=None,
                             validator=check_list(check_dict([('id', check_int)])))) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, allow_deactivated=True, allow_bots=True)
 
-    # Historically, UserProfile had two fields, is_guest and is_realm_admin.
-    # This condition protected against situations where update_user_backend
-    # could cause both is_guest and is_realm_admin to be set.
-    # Once we update the frontend to just send a 'role' value, we can remove this check.
-    if (((is_guest is None and target.is_guest) or is_guest) and
-            ((is_admin is None and target.is_realm_admin) or is_admin)):
-        return json_error(_("Guests cannot be organization administrators"))
-
-    role = None
-    if is_admin is not None and target.is_realm_admin != is_admin:
-        if not is_admin and check_last_admin(user_profile):
-            return json_error(_('Cannot remove the only organization administrator'))
-        role = UserProfile.ROLE_MEMBER
-        if is_admin:
-            role = UserProfile.ROLE_REALM_ADMINISTRATOR
-
-    if is_guest is not None and target.is_guest != is_guest:
-        if is_guest:
-            role = UserProfile.ROLE_GUEST
-        if role is None:
-            role = UserProfile.ROLE_MEMBER
-
     if role is not None and target.role != role:
+        if target.role == UserProfile.ROLE_REALM_ADMINISTRATOR and check_last_admin(user_profile):
+            return json_error(_('Cannot remove the only organization administrator'))
         do_change_user_role(target, role)
 
     if (full_name is not None and target.full_name != full_name and
