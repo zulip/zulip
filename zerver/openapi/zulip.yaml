@@ -1543,6 +1543,8 @@ paths:
       operationId: create_user
       tags: ["users"]
       description: |
+        {!api-admin-only.md!}
+
         Create a new user account via the API.
 
         `POST {{ api_url }}/v1/users`
@@ -1679,6 +1681,8 @@ paths:
       operationId: update_user
       tags: ["users"]
       description: |
+        {!api-admin-only.md!}
+
         Administrative endpoint to update the details of another user in the organization.
 
         `PATCH {{ api_url }}/v1/users/{user_id}`
@@ -1761,6 +1765,8 @@ paths:
       operationId: deactivate_user
       tags: ["users"]
       description: |
+        {!api-admin-only.md!}
+
         [Deactivates a
         user](https://zulip.com/help/deactivate-or-reactivate-a-user)
         given their user ID.
@@ -1799,6 +1805,8 @@ paths:
       operationId: reactivate_user
       tags: ["users"]
       description: |
+        {!api-admin-only.md!}
+
         [Reactivates a
         user](https://zulip.com/help/deactivate-or-reactivate-a-user)
         given their user ID.

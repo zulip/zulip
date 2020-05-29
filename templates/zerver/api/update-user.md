@@ -1,7 +1,5 @@
 # Update a user
 
-{!api-admin-only.md!}
-
 {generate_api_description(/users/{user_id}:patch)}
 
 ## Usage examples

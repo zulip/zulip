@@ -128,7 +128,7 @@ def render_markdown_path(markdown_file_path: str,
             api_url=context["api_url"],
         )]
     if not any(doc in markdown_file_path for doc in docs_without_macros):
-        extensions = extensions + [md_macro_extension]
+        extensions = [md_macro_extension] + extensions
 
     md_engine = markdown.Markdown(extensions=extensions)
     md_engine.reset()
