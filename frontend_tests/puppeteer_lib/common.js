@@ -1,10 +1,12 @@
 const path = require('path');
 const puppeteer = require('puppeteer');
+const assert = require("assert");
 
 class CommonUtils {
     constructor() {
         this.browser = null;
         this.screenshot_id = 0;
+        this.realm_url = "http://zulip.zulipdev.com:9981/";
     }
 
     async ensure_browser() {
@@ -42,6 +44,31 @@ class CommonUtils {
         await page.screenshot({
             path: screenshot_path,
         });
+    }
+
+    async log_in(page, credentials) {
+        console.log("Logging in");
+        await page.goto(this.realm_url + 'login/');
+        assert.equal(this.realm_url + 'login/', page.url());
+        await page.type('#id_username', credentials.username);
+        await page.type('#id_password', credentials.password);
+        await page.$eval('#login_form', form => form.submit());
+    }
+
+    async log_out(page) {
+        await page.goto(this.realm_url);
+        const menu_selector = '#settings-dropdown';
+        const logout_selector = 'a[href="#logout"]';
+        console.log("Loggin out");
+        await page.waitForSelector(menu_selector, {visible: true});
+        await page.click(menu_selector);
+        await page.waitForSelector(logout_selector);
+        await page.click(logout_selector);
+
+        // Wait for a email input in login page so we know login
+        // page is loaded. Then check that we are at the login url.
+        await page.waitForSelector('input[name="username"]');
+        assert(page.url().includes('/login/'));
     }
 
     async run_test(test_function) {
