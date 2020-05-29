@@ -23,12 +23,17 @@ def generate_topics(num_topics: int) -> List[str]:
     for _ in itertools.repeat(None, num_single_word_topics):
         topics.append(random.choice(config["nouns"]))
 
+    # Embedded links in 5% of total topics.
+    num_embed_link_topics = num_topics // 20
+    for _ in itertools.repeat(None, num_embed_link_topics):
+        topics.append(random.choice(config["embedlinks"]))
+
     sentence = ["adjectives", "nouns", "connectors", "verbs", "adverbs"]
     for pos in sentence:
         # Add an empty string so that we can generate variable length topics.
         config[pos].append("")
 
-    for _ in itertools.repeat(None, num_topics - num_single_word_topics):
+    for _ in itertools.repeat(None, num_topics - num_single_word_topics - num_embed_link_topics):
         generated_topic = [random.choice(config[pos]) for pos in sentence]
         topic = " ".join(filter(None, generated_topic))
         topics.append(topic)

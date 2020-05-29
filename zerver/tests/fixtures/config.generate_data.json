@@ -17,6 +17,7 @@
 
       "emoji": [":thumbs_up:", ":thumbs_down:", ":shirt:", ":zulip:", ":tada:", ":earth_asia:",
         ":cop:", ":8ball:", ":boat:", ":egg:", ":heartpulse:", ":moon_ceremony:", ":cupid:", ":mag:"],
+      "embedlinks": ["https://zulipchat.com", "https://www.google.com", "https://www.youtube.com", "https://github.com", "https://twitter.com"],
       "links":
        ["https://zulip.readthedocs.io/en/latest/subsystems/emoji.html",
          "https://zulip.readthedocs.io/en/latest/subsystems/full-text-search.html",
