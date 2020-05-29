@@ -358,25 +358,12 @@ exports.initialize = function () {
     $('body').on('click', '.btn-recent-filters', function (e) {
         e.stopPropagation();
         recent_topics.set_filter(e.currentTarget.dataset.filter);
+        recent_topics.update_filters_view();
     });
 
     // Search for all table rows (this combines stream & topic names)
     $('body').on('keyup', '#recent_topics_search', _.debounce(function () {
-        // take all rows and slice off the header.
-        const $rows = $('.recent_topics_table tr').slice(1);
-        // split the search text around whitespace(s).
-        // eg: "Denamark recent" -> ["Denamrk", "recent"]
-        const search_keywords = $.trim($(this).val()).split(/\s+/);
-        // turn the search keywords into word boundry groups
-        // eg: ["Denamrk", "recent"] -> "^(?=.*\bDenmark\b)(?=.*\brecent\b).*$"
-        const val = '^(?=.*\\b' + search_keywords.join('\\b)(?=.*\\b') + ').*$';
-        const reg = RegExp(val, 'i'); // i for ignorecase
-        let text;
-
-        $rows.show().filter(function () {
-            text = $(this).text().replace(/\s+/g, ' ');
-            return !reg.test(text);
-        }).hide();
+        recent_topics.update_filters_view();
     // Wait for user to go idle before initiating search.
     }, 300));
 
