@@ -208,7 +208,7 @@ run_test('basics', () => {
 
     realm_persons = people.get_realm_users();
     assert.equal(realm_persons.length, 1);
-    assert.equal(people.get_active_human_count(), 1);
+    assert.equal(people.get_active_human_ids().length, 1);
 
     const full_name = 'Isaac Newton';
     const email = 'isaac@example.com';
@@ -251,7 +251,7 @@ run_test('basics', () => {
     people.deactivate(isaac);
     person = people.get_active_user_for_email(email);
     assert(!person);
-    assert.equal(people.get_non_active_humans().length, 1);
+    assert.equal(people.get_non_active_human_ids().length, 1);
     assert.equal(people.get_active_human_count(), 1);
     assert.equal(people.is_active_user_for_popover(isaac.user_id), false);
     assert.equal(people.is_valid_email_for_compose(isaac.email), false);
@@ -310,11 +310,11 @@ run_test('basics', () => {
 
     // Reactivating issac
     people.add_active_user(isaac);
-    const active_humans = people.get_active_humans();
+    const active_humans = people.get_active_human_ids();
     assert.equal(active_humans.length, 2);
     assert.deepEqual(
         active_humans.sort((p) => p.user_id),
-        [me, isaac]);
+        [me.user_id, isaac.user_id]);
 });
 
 run_test('check_active_non_active_users', () => {

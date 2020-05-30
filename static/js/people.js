@@ -723,28 +723,28 @@ exports.get_realm_users = function () {
     return Array.from(active_user_dict.values());
 };
 
-exports.get_active_humans = function () {
-    const humans = [];
+exports.get_active_human_ids = function () {
+    const human_ids = [];
 
     for (const user of active_user_dict.values()) {
         if (!user.is_bot) {
-            humans.push(user);
+            human_ids.push(user.user_id);
         }
     }
 
-    return humans;
+    return human_ids;
 };
 
-exports.get_non_active_humans = function () {
-    const humans = [];
+exports.get_non_active_human_ids = function () {
+    const human_ids = [];
 
     for (const user of non_active_user_dict.values()) {
         if (!user.is_bot) {
-            humans.push(user);
+            human_ids.push(user.user_id);
         }
     }
 
-    return humans;
+    return human_ids;
 };
 
 exports.get_active_human_count = function () {
