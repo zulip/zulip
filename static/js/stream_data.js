@@ -555,7 +555,7 @@ exports.all_topics_in_cache = function (sub) {
 
     // If the cache doesn't have the latest messages, we can't be sure
     // we have all topics.
-    if (!message_list.all.fetch_status.has_found_newest()) {
+    if (!message_list.all.data.fetch_status.has_found_newest()) {
         return false;
     }
 

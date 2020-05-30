@@ -66,12 +66,12 @@ function process_result(data, opts) {
 
 function get_messages_success(data, opts) {
     if (opts.num_before > 0) {
-        opts.msg_list.fetch_status.finish_older_batch({
+        opts.msg_list.data.fetch_status.finish_older_batch({
             found_oldest: data.found_oldest,
             history_limited: data.history_limited,
         });
         if (opts.msg_list === home_msg_list) {
-            message_list.all.fetch_status.finish_older_batch({
+            message_list.all.data.fetch_status.finish_older_batch({
                 found_oldest: data.found_oldest,
                 history_limited: data.history_limited,
             });
@@ -80,11 +80,11 @@ function get_messages_success(data, opts) {
     }
 
     if (opts.num_after > 0) {
-        opts.msg_list.fetch_status.finish_newer_batch({
+        opts.msg_list.data.fetch_status.finish_newer_batch({
             found_newest: data.found_newest,
         });
         if (opts.msg_list === home_msg_list) {
-            message_list.all.fetch_status.finish_newer_batch({
+            message_list.all.data.fetch_status.finish_newer_batch({
                 found_newest: data.found_newest,
             });
         }
@@ -166,16 +166,16 @@ exports.load_messages = function (opts) {
     }
 
     if (opts.num_before > 0) {
-        opts.msg_list.fetch_status.start_older_batch();
+        opts.msg_list.data.fetch_status.start_older_batch();
         if (opts.msg_list === home_msg_list) {
-            message_list.all.fetch_status.start_older_batch();
+            message_list.all.data.fetch_status.start_older_batch();
         }
     }
 
     if (opts.num_after > 0) {
-        opts.msg_list.fetch_status.start_newer_batch();
+        opts.msg_list.data.fetch_status.start_newer_batch();
         if (opts.msg_list === home_msg_list) {
-            message_list.all.fetch_status.start_newer_batch();
+            message_list.all.data.fetch_status.start_newer_batch();
         }
     }
 
@@ -267,7 +267,7 @@ exports.maybe_load_older_messages = function (opts) {
     // of your window, and you want to get messages older
     // than what the browsers originally fetched.
     const msg_list = opts.msg_list;
-    if (!msg_list.fetch_status.can_load_older_messages()) {
+    if (!msg_list.data.fetch_status.can_load_older_messages()) {
         // We may already be loading old messages or already
         // got the oldest one.
         return;
@@ -306,7 +306,7 @@ exports.maybe_load_newer_messages = function (opts) {
     // than what the browsers originally fetched.
     const msg_list = opts.msg_list;
 
-    if (!msg_list.fetch_status.can_load_newer_messages()) {
+    if (!msg_list.data.fetch_status.can_load_newer_messages()) {
         // We may already be loading new messages or already
         // got the newest one.
         return;

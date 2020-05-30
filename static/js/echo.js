@@ -154,7 +154,7 @@ exports.try_deliver_locally = function (message_request) {
         return;
     }
 
-    if (!current_msg_list.fetch_status.has_found_newest()) {
+    if (!current_msg_list.data.fetch_status.has_found_newest()) {
         // If the current message list doesn't yet have the latest
         // messages before the one we just sent, local echo would make
         // it appear as though there were no messages between what we

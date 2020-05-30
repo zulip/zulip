@@ -296,7 +296,7 @@ function simulate_narrow() {
 
 run_test('loading_newer', () => {
     function test_dup_new_fetch(msg_list) {
-        assert.equal(msg_list.fetch_status.can_load_newer_messages(), false);
+        assert.equal(msg_list.data.fetch_status.can_load_newer_messages(), false);
         message_fetch.maybe_load_newer_messages({
             msg_list: msg_list,
         });
@@ -346,7 +346,7 @@ run_test('loading_newer', () => {
             data: data,
         });
 
-        assert.equal(msg_list.fetch_status.can_load_newer_messages(), true);
+        assert.equal(msg_list.data.fetch_status.can_load_newer_messages(), true);
     }());
 
     (function test_home() {
@@ -385,14 +385,14 @@ run_test('loading_newer', () => {
             data: data[0],
         });
 
-        assert.equal(msg_list.fetch_status.can_load_newer_messages(), true);
+        assert.equal(msg_list.data.fetch_status.can_load_newer_messages(), true);
 
         test_happy_path({
             msg_list: msg_list,
             data: data[1],
         });
 
-        assert.equal(msg_list.fetch_status.can_load_newer_messages(), false);
+        assert.equal(msg_list.data.fetch_status.can_load_newer_messages(), false);
 
     }());
 

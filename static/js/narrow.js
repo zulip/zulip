@@ -493,7 +493,7 @@ exports.maybe_add_local_messages = function (opts) {
         // Without unread messages or a target ID, we're narrowing to
         // the very latest message or first unread if matching the narrow allows.
 
-        if (!message_list.all.fetch_status.has_found_newest()) {
+        if (!message_list.all.data.fetch_status.has_found_newest()) {
             // If message_list.all is not caught up, then we cannot
             // populate the latest messages for the target narrow
             // correctly from there, so we must go to the server.

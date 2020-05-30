@@ -7,6 +7,7 @@ set_global('resize', {
 });
 zrequire('stream_data');
 zrequire('Filter', 'js/filter');
+zrequire('FetchStatus', 'js/fetch_status');
 zrequire('MessageListData', 'js/message_list_data');
 zrequire('unread');
 zrequire('narrow');
@@ -163,8 +164,10 @@ run_test('basics', () => {
             assert.equal(msg_id, selected_id);
             return selected_message;
         },
-        fetch_status: {
-            has_found_newest: () => true,
+        data: {
+            fetch_status: {
+                has_found_newest: () => true,
+            },
         },
         empty: () => false,
         first: () => {

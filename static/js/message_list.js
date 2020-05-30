@@ -24,7 +24,6 @@ exports.MessageList = function (opts) {
     const collapse_messages = opts.collapse_messages;
     const table_name = opts.table_name;
     this.view = new MessageListView(this, table_name, collapse_messages);
-    this.fetch_status = FetchStatus();
     this.table_name = table_name;
     this.narrowed = this.table_name === "zfilt";
     this.num_appends = 0;

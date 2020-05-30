@@ -187,7 +187,7 @@ exports.hide_or_show_history_limit_message = function (msg_list) {
         return;
     }
 
-    if (msg_list.fetch_status.history_limited()) {
+    if (msg_list.data.fetch_status.history_limited()) {
         exports.show_history_limit_message();
     } else {
         exports.hide_history_limit_message();

@@ -83,8 +83,10 @@ run_test('is_complete_for_stream_id', () => {
 
     message_list.all = {
         empty: () => false,
-        fetch_status: {
-            has_found_newest: () => true,
+        data: {
+            fetch_status: {
+                has_found_newest: () => true,
+            },
         },
         first: () => {
             return {id: 5};
@@ -123,7 +125,7 @@ run_test('server_history', () => {
     const stream_id = sub.stream_id;
     stream_data.add_sub(sub);
 
-    message_list.all.fetch_status.has_found_newest = () => false;
+    message_list.all.data.fetch_status.has_found_newest = () => false;
 
     assert.equal(
         stream_topic_history.is_complete_for_stream_id(stream_id),
