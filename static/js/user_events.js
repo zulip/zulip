@@ -2,7 +2,7 @@
 // server_events.js simple while breaking some circular
 // dependencies that existed when this code was in people.js.
 // (We should do bot updates here too.)
-
+const settings_config = require('./settings_config');
 exports.update_person = function update(person) {
     const person_obj = people.get_by_user_id(person.user_id);
 
@@ -47,23 +47,19 @@ exports.update_person = function update(person) {
         }
     }
 
-    if (Object.prototype.hasOwnProperty.call(person, 'is_admin')) {
-        person_obj.is_admin = person.is_admin;
+    if (Object.prototype.hasOwnProperty.call(person, 'role')) {
+        person_obj.is_admin = person.role === settings_config.user_role_values.admin.code;
+        person_obj.is_guest = person.role === settings_config.user_role_values.guest.code;
         settings_users.update_user_data(person.user_id, person);
 
-        if (people.is_my_user_id(person.user_id)) {
-            page_params.is_admin = person.is_admin;
+        if (people.is_my_user_id(person.user_id) && page_params.is_admin !== person_obj.is_admin) {
+            page_params.is_admin = person_obj.is_admin;
             gear_menu.update_org_settings_menu_item();
             settings_linkifiers.maybe_disable_widgets();
             settings_org.maybe_disable_widgets();
             settings_profile_fields.maybe_disable_widgets();
             settings_streams.maybe_disable_widgets();
         }
-    }
-
-    if (Object.prototype.hasOwnProperty.call(person, 'is_guest')) {
-        person_obj.is_guest = person.is_guest;
-        settings_users.update_user_data(person.user_id, person);
     }
 
     if (Object.prototype.hasOwnProperty.call(person, 'avatar_url')) {

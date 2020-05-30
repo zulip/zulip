@@ -19,6 +19,9 @@ below features are supported.
 * [`PATCH /users/{user_id}`](/api/update-user): The `is_admin` and
   `is_guest` parameters were removed in favor of the more general
   `role` parameter for specifying a change in user role.
+* [`GET /events`](/api/get-events-from-queue): `realm_user` events
+  sent when a user's role changes now include `role` property, instead
+  of the previous `is_guest` or `is_admin` booleans.
 
 **Feature level 6**
 * [`GET /events`](/api/get-events-from-queue): `realm_user` events to

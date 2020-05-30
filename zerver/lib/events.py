@@ -48,7 +48,7 @@ from zerver.lib.actions import (
     get_owned_bot_dicts,
     get_available_notification_sounds,
 )
-from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data
+from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data, is_administrator_role
 from zerver.lib.user_groups import user_groups_in_realm_serialized
 from zerver.lib.user_status import get_user_info_dict
 from zerver.tornado.event_queue import request_event_queue, get_user_events
@@ -418,7 +418,11 @@ def apply_event(state: Dict[str, Any],
                     state['avatar_url'] = person['avatar_url']
                     state['avatar_url_medium'] = person['avatar_url_medium']
 
-                for field in ['is_admin', 'delivery_email', 'email', 'full_name']:
+                if 'role' in person:
+                    state['is_admin'] = is_administrator_role(person['role'])
+                    state['is_guest'] = person['role'] == UserProfile.ROLE_GUEST
+
+                for field in ['delivery_email', 'email', 'full_name']:
                     if field in person and field in state:
                         state[field] = person[field]
 
@@ -428,10 +432,10 @@ def apply_event(state: Dict[str, Any],
                 # realm.  This is ugly and probably better
                 # solved by removing the all-realm-bots data
                 # given to admin users from this flow.
-                if ('is_admin' in person and 'realm_bots' in state):
+                if ('role' in person and 'realm_bots' in state):
                     prev_state = state['raw_users'][user_profile.id]
                     was_admin = prev_state['is_admin']
-                    now_admin = person['is_admin']
+                    now_admin = is_administrator_role(person['role'])
 
                     if was_admin and not now_admin:
                         state['realm_bots'] = []
@@ -449,6 +453,9 @@ def apply_event(state: Dict[str, Any],
                 for field in p:
                     if field in person:
                         p[field] = person[field]
+                    if 'role' in person:
+                        p['is_admin'] = is_administrator_role(person['role'])
+                        p['is_guest'] = person['role'] == UserProfile.ROLE_GUEST
                     if 'custom_profile_field' in person:
                         custom_field_id = person['custom_profile_field']['id']
                         custom_field_new_value = person['custom_profile_field']['value']

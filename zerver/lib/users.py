@@ -127,6 +127,9 @@ def check_valid_interface_type(interface_type: Optional[int]) -> None:
     if interface_type not in Service.ALLOWED_INTERFACE_TYPES:
         raise JsonableError(_('Invalid interface type'))
 
+def is_administrator_role(role: int) -> bool:
+    return role in {UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER}
+
 def bulk_get_users(emails: List[str], realm: Optional[Realm],
                    base_query: 'QuerySet[UserProfile]'=None) -> Dict[str, UserProfile]:
     if base_query is None:

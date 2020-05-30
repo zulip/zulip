@@ -1830,7 +1830,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_user')),
             ('op', equals('update')),
             ('person', check_dict_only([
-                ('is_admin', check_bool),
+                ('role', check_int_in(UserProfile.ROLE_TYPES)),
                 ('user_id', check_int),
             ])),
         ])
