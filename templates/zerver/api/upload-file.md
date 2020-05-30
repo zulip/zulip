@@ -34,7 +34,7 @@ to 25MB.
 
 #### Return values
 
-* `uri`: The URI of the uploaded file.
+{generate_return_values_table|zulip.yaml|/user_uploads:post}
 
 #### Example response
 

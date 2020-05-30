@@ -11,6 +11,7 @@ from jinja2.exceptions import TemplateNotFound
 
 import zerver.lib.bugdown.fenced_code
 import zerver.lib.bugdown.api_arguments_table_generator
+import zerver.lib.bugdown.api_return_values_table_generator
 import zerver.openapi.markdown_extension
 import zerver.lib.bugdown.nested_code_blocks
 import zerver.lib.bugdown.tabbed_sections
@@ -106,6 +107,8 @@ def render_markdown_path(markdown_file_path: str,
                 run_content_validators=context.get('run_content_validators', False)
             ),
             zerver.lib.bugdown.api_arguments_table_generator.makeExtension(
+                base_path='templates/zerver/api/'),
+            zerver.lib.bugdown.api_return_values_table_generator.makeExtension(
                 base_path='templates/zerver/api/'),
             zerver.lib.bugdown.nested_code_blocks.makeExtension(),
             zerver.lib.bugdown.tabbed_sections.makeExtension(),

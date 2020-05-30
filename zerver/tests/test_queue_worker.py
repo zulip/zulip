@@ -87,11 +87,23 @@ class WorkerTest(ZulipTestCase):
 
         data = dict(
             user_profile_id = user.id,
-            client = 'ios',
+            client_id = get_client('ios').id,
             time = time.time(),
             query = 'send_message'
         )
         fake_client.queue.append(('user_activity', data))
+
+        # The block below adds an event using the old format,
+        # having the client name instead of id, to test the queue
+        # worker handles it correctly. That compatibility code can
+        # be deleted in a later release, and this test should then be cleaned up.
+        data_old_format = dict(
+            user_profile_id = user.id,
+            client = 'ios',
+            time = time.time(),
+            query = 'send_message'
+        )
+        fake_client.queue.append(('user_activity', data_old_format))
 
         with loopworker_sleep_mock:
             with simulated_queue_client(lambda: fake_client):
@@ -105,11 +117,11 @@ class WorkerTest(ZulipTestCase):
                     user_profile = user.id,
                     client = get_client('ios')
                 )
-                self.assertTrue(len(activity_records), 1)
-                self.assertTrue(activity_records[0].count, 1)
+                self.assertEqual(len(activity_records), 1)
+                self.assertEqual(activity_records[0].count, 2)
 
         # Now process the event a second time and confirm count goes
-        # up to 2.  Ideally, we'd use an event with a slightly never
+        # up. Ideally, we'd use an event with a slightly newer
         # time, but it's not really important.
         fake_client.queue.append(('user_activity', data))
         with loopworker_sleep_mock:
@@ -124,8 +136,8 @@ class WorkerTest(ZulipTestCase):
                     user_profile = user.id,
                     client = get_client('ios')
                 )
-                self.assertTrue(len(activity_records), 1)
-                self.assertTrue(activity_records[0].count, 2)
+                self.assertEqual(len(activity_records), 1)
+                self.assertEqual(activity_records[0].count, 3)
 
     def test_missed_message_worker(self) -> None:
         cordelia = self.example_user('cordelia')

@@ -39,19 +39,7 @@ zulip(config).then((client) => {
 
 #### Return values
 
-* `emoji`: An object that contains `emoji` objects, each identified with their
-    emoji ID as the key, and containing the following properties:
-    * `id`: The ID for this emoji, same as the object's key.
-    * `name`: The user-friendly name for this emoji. Users in the organization
-        can use this emoji by writing this name between colons (`:name:`).
-    * `source_url`: The path relative to the organization's URL where the
-        emoji's image can be found.
-    * `deactivated`: Whether the emoji has been deactivated or not.
-    * `author`: An object describing the user who created the custom emoji,
-        with the following fields:
-        * `id`: The creator's user ID.
-        * `email`: The creator's email address.
-        * `full_name`: The creator's full name.
+{generate_return_values_table|zulip.yaml|/realm/emoji:get}
 
 
 #### Example response

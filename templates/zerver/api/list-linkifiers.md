@@ -23,11 +23,7 @@
 
 #### Return values
 
-* `filters`: An array of tuples, each representing one of the
-  linkifiers set up in the organization. Each of these tuples contain the
-  pattern, the formatted URL and the filter's ID, in that order. See
-  the [Create linkifiers](/api/add-linkifiers) article for details on what
-  each field means.
+{generate_return_values_table|zulip.yaml|/realm/filters:get}
 
 #### Example response
 

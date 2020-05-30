@@ -41,11 +41,7 @@ This endpoint takes no arguments.
 
 #### Return values
 
-* `pointer`: The integer ID of the message that the pointer is currently on.
-* `max_message_id`: The integer ID of the last message by the user/bot with
-  the given profile.
-
-The rest of the return values are quite self-descriptive.
+{generate_return_values_table|zulip.yaml|/users/me:get}
 
 #### Example response
 

@@ -224,7 +224,7 @@ Botserver with SSL using an `nginx` or `Apache` reverse proxy and
 ### Troubleshooting
 
 1. Make sure the API key you're using is for an [Outgoing webhook
-   bot](https://zulipchat.com/api/outgoing-webhooks) and you've
+   bot](/api/outgoing-webhooks) and you've
    correctly configured the URL for your Botserver.
 
 1.  Your Botserver needs to be accessible from your Zulip server over

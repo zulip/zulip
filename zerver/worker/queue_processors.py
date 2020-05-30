@@ -347,10 +347,17 @@ class UserActivityWorker(LoopQueueProcessingWorker):
         for event in user_activity_events:
             user_profile_id = event["user_profile_id"]
 
-            if event["client"] not in self.client_id_map:
-                client = get_client(event["client"])
-                self.client_id_map[event["client"]] = client.id
-            client_id = self.client_id_map[event["client"]]
+            if "client_id" not in event:
+                # This is for compatibility with older events still stuck in the queue,
+                # that used the client name in event["client"] instead of having
+                # event["client_id"] directly.
+                # TODO: This can be deleted for release >= 2.3.
+                if event["client"] not in self.client_id_map:
+                    client = get_client(event["client"])
+                    self.client_id_map[event["client"]] = client.id
+                client_id = self.client_id_map[event["client"]]
+            else:
+                client_id = event["client_id"]
 
             key_tuple = (user_profile_id, client_id, event["query"])
             if key_tuple not in uncommitted_events:

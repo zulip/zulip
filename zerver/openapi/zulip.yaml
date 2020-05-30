@@ -152,7 +152,7 @@ paths:
                       type: array
                       description: |
                         An array of `event` objects (possibly zero-length if `dont_block` is
-                        set) of events with IDs newer than `last_event_id`. Event IDs are
+                        set) with IDs newer than `last_event_id`. Event IDs are
                         guaranteed to be increasing, but they are not guaranteed to be
                         consecutive.
                       items:
@@ -222,7 +222,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/BadEventQueueIdError'
     delete:
-      operationId: deregister
+      operationId: delete_queue
       tags: ["real_time_events"]
       description: |
         Delete a previously registered queue.
@@ -607,6 +607,7 @@ paths:
                                   type: integer
                                   description: |
                                     The ID of the user who added the reaction.
+
                                     **Changes**: New in Zulip 2.2 (feature level 2). The `user`
                                     object is deprecated and will be removed in the future.
                                 user:
@@ -1035,11 +1036,11 @@ paths:
                           timestamp:
                             type: integer
                             description: |
-                              the UNIX timestamp for this editing.
+                              the UNIX timestamp for this edit.
                       description: |
                         A chronologically sorted array of `snapshot`
                         objects, each one with the values of the
-                        message after the edition.
+                        message after the edit.
                 - example:
                     {
                         "message_history": [
@@ -1482,7 +1483,7 @@ paths:
 
   /users/{user_id}:
     get:
-      operationId: get_user_by_id
+      operationId: get_user
       tags: ["users"]
       description: |
         Fetch details for a single user in the organization.
@@ -1579,21 +1580,24 @@ paths:
               type: string
             example: NewName
         required: false
-      - name: is_admin
+      - name: role
         in: query
         description: |
-          Whether the target user is an administrator.
+          New [role](/help/roles-and-permissions) for the user.  Supported roles include:
+            * Organization owner: 100
+            * Organization administrator: 200
+            * Member: 400
+            * Guest: 600
+
+          Only organization owners can add or remove the owner permission.
+
+          The owner permission cannot be removed from the only organization owner.
+
+          **Changes**: New in Zulip 2.2 (feature level 8), replacing the previous
+          pair of `is_admin` and `is_guest` boolean parameters.
         schema:
-          type: boolean
-        example: false
-        required: false
-      - name: is_guest
-        in: query
-        description: |
-          Whether the target user is a guest.
-        schema:
-          type: boolean
-        example: true
+          type: integer
+        example: 400
         required: false
       - name: profile_data
         in: query
@@ -1635,7 +1639,7 @@ paths:
                     }
 
     delete:
-      operationId: deactivate_user_by_id
+      operationId: deactivate_user
       tags: ["users"]
       description: |
         [Deactivates a
@@ -1784,7 +1788,7 @@ paths:
                     }
   /users/me:
     get:
-      operationId: get_profile
+      operationId: get_own_user
       tags: ["users"]
       description: |
         Get basic data about the user/bot that requests this endpoint.
@@ -2006,7 +2010,7 @@ paths:
                     }
   /users/me/subscriptions:
     get:
-      operationId: list_subscriptions
+      operationId: get_subscriptions
       tags: ["streams"]
       description: |
         Get all streams that the user is subscribed to.
@@ -2521,7 +2525,7 @@ paths:
 
   /realm/emoji:
     get:
-      operationId: get_realm_emoji
+      operationId: get_custom_emoji
       tags: ["server_and_organizations"]
       description: |
         Get all the custom emoji in the user's organization.
@@ -2675,7 +2679,7 @@ paths:
                     }
   /realm/filters:
     get:
-      operationId: get_realm_filters
+      operationId: get_linkifiers
       tags: ["server_and_organizations"]
       description: |
         List all of an organization's configured
@@ -2722,7 +2726,7 @@ paths:
                         "result": "success"
                     }
     post:
-      operationId: add_realm_filter
+      operationId: add_linkifier
       tags: ["server_and_organizations"]
       description: |
         Configure [linkifiers](/help/add-a-custom-linkification-filter),
@@ -2772,7 +2776,7 @@ paths:
                     }
   /realm/filters/{filter_id}:
     delete:
-      operationId: remove_realm_filter
+      operationId: remove_linkifier
       tags: ["server_and_organizations"]
       description: |
         Remove [linkifiers](/help/add-a-custom-linkification-filter), regular
@@ -2798,7 +2802,7 @@ paths:
                 $ref: '#/components/schemas/JsonSuccess'
   /register:
     post:
-      operationId: register
+      operationId: register_queue
       tags: ["real_time_events"]
       description: |
         This powerful endpoint can be used to register a Zulip "event queue"
@@ -2948,10 +2952,18 @@ paths:
                     external_authentication_methods:
                       type: array
                       description: |
-                        List of dictionaries describing which external
-                        authentication methods are enabled and their
-                        parameters - most importantly the login url,
-                        display_name and display_icon.
+                        A list of dictionaries describing the available external
+                        authentication methods (E.g. Google, GitHub, or SAML)
+                        enabled for this organization. Each dictionary specifies
+                        the name and icon that should be displayed on the login
+                        buttons (`display_name` and `display_icon`, where
+                        `display_icon` can be `null`, if no icon is to be
+                        displayed), the URLs that should be accessed to initiate
+                        login/signup using the method (`login_url` and
+                        `signup_url`) and `name`, which is a unique, stable,
+                        machine-readable name for the authentication method.
+                        The list is sorted in the order in which these
+                        authentication methods should be displayed.
 
                         **Changes**: New in Zulip 2.1.
                       items:
@@ -2963,12 +2975,16 @@ paths:
                     zulip_feature_level:
                       type: integer
                       description: |
-                        An integer to indicate the features added to the server.
-                        The feature level increases monotonically; a value of N
-                        means the server supports all API features introduced
-                        before feature level N. This provides fine-grained
-                        distinctions among development versions in between major
-                        releases.
+                        An integer indicating what features are
+                        available on the server. The feature level increases monotonically;
+                        a value of N means the server supports all API features introduced
+                        before feature level N.  This is designed to provide a simple way
+                        for client apps to decide whether the server supports a given
+                        feature or API change.  See the [changelog](/api/changelog) for
+                        details on what each feature level means.
+
+                        **Changes**.  New in Zulip 2.2.  We recommend using an implied value
+                        of 0 for Zulip servers that do not send this field.
                     push_notifications_enabled:
                       type: boolean
                       description: |
@@ -2986,22 +3002,28 @@ paths:
                     require_email_format_usernames:
                       type: boolean
                       description: |
-                        Whether usernames should have an email address format. This is important if your server has [LDAP
-                        authentication](https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap-including-active-directory)
-                        enabled with a username and password combination.
+                        Whether all valid usernames for authentication to this
+                        organization will be email addresses. This is important
+                        for clients to know whether to do client side validation
+                        of email address format in a login prompt.
+
+                        This value will be false if the server has [LDAP
+                        authentication][ldap-auth] enabled with a username and
+                        password combination.
                     realm_uri:
                       type: string
                       description: |
-                        The organization's URI.
+                        The organization's canonical URL.
                     realm_name:
                       type: string
                       description: |
-                        The realm's name.
+                        The organization's name (for display purposes).
                     realm_icon:
                       type: string
                       description: |
-                        The URI of the organization's mobile icon (usually a square version of
-                        the logo).
+                        The URL for the organization's logo formatted as a square image,
+                        used for identifying the organization in small locations in the
+                        mobile and desktop apps.
                     realm_description:
                       type: string
                       description: |
@@ -3948,9 +3970,12 @@ components:
           type: integer
           nullable: true
           description: |
-            `null` if the user isn't a bot. `1` for a `Generic` bot.
-            `2` for an `Incoming webhook` bot. `3` for an `Outgoing webhook` bot.
-            `4` for an `Embedded` bot.
+            An integer describing the type of bot:
+            * `null` if the user isn't a bot.
+            * `1` for a `Generic` bot.
+            * `2` for an `Incoming webhook` bot.
+            * `3` for an `Outgoing webhook` bot.
+            * `4` for an `Embedded` bot.
         user_id:
           type: integer
           description: |
@@ -3959,10 +3984,15 @@ components:
           type: string
           nullable: true
           description: |
-            If the user is a bot (i.e. `is_bot` is `True`), `bot_owner_id`
-            is user ID of the user who owns the bot (usually the creator).
+            If the user is a bot (i.e. `is_bot` is `True`),
+            `bot_owner` is the user ID of the bot's owner (usually, whoever
+            created the bot).
 
-            May be null for some legacy bots that do not have an owner.
+            Will be null for legacy bots that do not have an owner.
+
+            **Changes**: New in Zulip 2.2 (feature level
+            1).  In previous versions, there was a `bot_owner` field
+            containing the email address of the bot's owner.
         is_active:
           type: boolean
           description: |

@@ -48,11 +48,7 @@ as URL query parameters, like so:
 
 #### Return values
 
-* `stream_id`: The unique ID of a stream.
-* `name`: The name of a stream.
-* `description`: A short description of a stream.
-* `invite-only`: Specifies whether a stream is private or not.
-  Only people who have been invited can access a private stream.
+{generate_return_values_table|zulip.yaml|/streams:get}
 
 #### Example response
 

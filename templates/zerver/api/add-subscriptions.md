@@ -63,16 +63,7 @@ the `principals` argument, like so:
 
 #### Return values
 
-* `subscribed`: A dictionary where the key is the email address of
-  the user/bot and the value is a list of the names of the streams
-  that were subscribed to as a result of the query.
-
-* `already_subscribed`: A dictionary where the key is the email address of
-  the user/bot and the value is a list of the names of the streams
-  that the user/bot is already subscribed to.
-
-* `unauthorized`: A list of names of streams that the requesting user/bot
-  was not authorized to subscribe to.
+{generate_return_values_table|zulip.yaml|/users/me/subscriptions:post}
 
 #### Example response
 

@@ -44,7 +44,7 @@ zulip(config).then((client) => {
 
 #### Return values
 
-* `rendered`: The rendered HTML.
+{generate_return_values_table|zulip.yaml|/messages/render:post}
 
 #### Example response
 

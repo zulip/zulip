@@ -112,7 +112,7 @@ GDPR:
   user's Zulip profile, which you can access from the right sidebar.
 * The [Zulip Cloud export](/help/export-your-organization) supports exporting
   all the data related to a Zulip user or organization.
-* The [Zulip REST API](https://zulipchat.com/api/rest) lets you
+* The [Zulip REST API](/api/rest) lets you
   automate your processes for handling GDPR requests.
 
 Contact [support@zulip.com](mailto:support@zulip.com) for
