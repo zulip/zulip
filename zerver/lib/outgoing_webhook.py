@@ -1,5 +1,6 @@
 from typing import Any, AnyStr, Dict, Optional
 
+import abc
 import requests
 import json
 import logging
@@ -18,12 +19,24 @@ from zerver.decorator import JsonableError
 
 from version import ZULIP_VERSION
 
-class OutgoingWebhookServiceInterface:
+class OutgoingWebhookServiceInterface(metaclass=abc.ABCMeta):
 
     def __init__(self, token: str, user_profile: UserProfile, service_name: str) -> None:
         self.token: str = token
         self.user_profile: UserProfile = user_profile
         self.service_name: str = service_name
+
+    @abc.abstractmethod
+    def build_bot_request(self, event: Dict[str, Any]) -> Optional[Any]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def send_data_to_server(self, base_url: str, request_data: Any) -> Response:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def process_success(self, response_json: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        raise NotImplementedError
 
 class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
