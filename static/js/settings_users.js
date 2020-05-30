@@ -464,10 +464,14 @@ function open_bot_form(person) {
     // NOTE: building `owner_dropdown` is quite expensive!
     const owner_id = bot_data.get(person.user_id).owner_id;
 
-    const users_list = people.get_active_humans();
+    const user_ids = people.get_active_human_ids();
+    const users_list = user_ids.map(user_id => ({
+        name: people.get_full_name(user_id),
+        value: user_id.toString(),
+    }));
     const opts = {
         widget_name: 'edit_bot_owner',
-        data: users_list.map(u => ({name: u.full_name, value: u.user_id.toString()})),
+        data: users_list,
         default_text: i18n.t("No owner"),
         value: owner_id,
     };

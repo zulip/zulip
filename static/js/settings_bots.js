@@ -391,7 +391,12 @@ exports.set_up = function () {
         const li = $(e.currentTarget).closest('li');
         const bot_id = parseInt(li.find('.bot_info').attr('data-user-id'), 10);
         const bot = bot_data.get(bot_id);
-        const users_list = people.get_active_humans();
+        const user_ids = people.get_active_human_ids();
+        const users_list = user_ids.map(user_id => ({
+            name: people.get_full_name(user_id),
+            value: user_id.toString(),
+        }));
+
         $("#edit_bot_modal").empty();
         $("#edit_bot_modal").append(render_edit_bot({
             bot: bot,
@@ -404,7 +409,7 @@ exports.set_up = function () {
 
         const opts = {
             widget_name: 'bot_owner',
-            data: users_list.map(u => ({name: u.full_name, value: u.user_id.toString()})),
+            data: users_list,
             default_text: i18n.t("No owner"),
             value: bot.owner_id,
         };
