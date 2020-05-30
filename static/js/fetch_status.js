@@ -7,6 +7,15 @@ const FetchStatus = function () {
     let found_oldest = false;
     let found_newest = false;
     let history_limited = false;
+    let expected_max_message_id = 0;
+
+    function max_id_for_messages(messages) {
+        let max_id = 0;
+        for (const msg of messages) {
+            max_id = Math.max(max_id, msg.id);
+        }
+        return max_id;
+    }
 
     self.start_older_batch = function (opts) {
         loading_older = true;
@@ -43,7 +52,11 @@ const FetchStatus = function () {
         }
     };
 
-    self.finish_newer_batch = function (opts) {
+    self.finish_newer_batch = function (messages, opts) {
+        const found_max_message_id = max_id_for_messages(messages);
+        if (opts.found_newest && expected_max_message_id > found_max_message_id) {
+            opts.found_newest = false;
+        }
         loading_newer = false;
         found_newest = opts.found_newest;
         if (opts.update_loading_indicator) {
@@ -57,6 +70,11 @@ const FetchStatus = function () {
 
     self.has_found_newest = function () {
         return found_newest;
+    };
+
+    self.update_expected_max_message_id = function (messages) {
+        expected_max_message_id = Math.max(expected_max_message_id,
+                                           max_id_for_messages(messages));
     };
 
     return self;

@@ -83,7 +83,7 @@ function get_messages_success(data, opts) {
     }
 
     if (opts.num_after > 0) {
-        opts.msg_list.data.fetch_status.finish_newer_batch({
+        opts.msg_list.data.fetch_status.finish_newer_batch(data.messages, {
             update_loading_indicator: update_loading_indicator,
             found_newest: data.found_newest,
         });
@@ -92,7 +92,7 @@ function get_messages_success(data, opts) {
             // the fetch_status data structure for message_list.all,
             // which is never rendered (and just used for
             // prepopulating narrowed views).
-            message_list.all.data.fetch_status.finish_newer_batch({
+            message_list.all.data.fetch_status.finish_newer_batch(data.messages, {
                 update_loading_indicator: false,
                 found_newest: data.found_newest,
             });

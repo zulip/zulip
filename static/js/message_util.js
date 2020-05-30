@@ -19,7 +19,16 @@ function add_messages(messages, msg_list, opts) {
 exports.add_old_messages = function (messages, msg_list) {
     return add_messages(messages, msg_list, {messages_are_new: false});
 };
+
 exports.add_new_messages = function (messages, msg_list) {
+    if (!msg_list.data.fetch_status.has_found_newest()) {
+        // We don't render newly received messages for the message list,
+        // if we haven't found the latest messages to be displayed in the
+        // narrow. Otherwise the new message would be rendered just after
+        // the previously fetched messages when that's inaccurate.
+        msg_list.data.fetch_status.update_expected_max_message_id(messages);
+        return;
+    }
     return add_messages(messages, msg_list, {messages_are_new: true});
 };
 
