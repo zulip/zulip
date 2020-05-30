@@ -148,7 +148,7 @@ class PermissionTest(ZulipTestCase):
         self.assertTrue(othello in admin_users)
         person = events[0]['event']['person']
         self.assertEqual(person['user_id'], othello.id)
-        self.assertEqual(person['is_admin'], True)
+        self.assertEqual(person['role'], UserProfile.ROLE_REALM_ADMINISTRATOR)
 
         # Taketh away
         req = dict(role=ujson.dumps(UserProfile.ROLE_MEMBER))
@@ -160,7 +160,7 @@ class PermissionTest(ZulipTestCase):
         self.assertFalse(othello in admin_users)
         person = events[0]['event']['person']
         self.assertEqual(person['user_id'], othello.id)
-        self.assertEqual(person['is_admin'], False)
+        self.assertEqual(person['role'], UserProfile.ROLE_MEMBER)
 
         # Cannot take away from last admin
         self.login('iago')
@@ -173,7 +173,7 @@ class PermissionTest(ZulipTestCase):
         self.assertFalse(desdemona in admin_users)
         person = events[0]['event']['person']
         self.assertEqual(person['user_id'], desdemona.id)
-        self.assertEqual(person['is_admin'], False)
+        self.assertEqual(person['role'], UserProfile.ROLE_MEMBER)
         with tornado_redirected_to_list([]):
             result = self.client_patch('/json/users/{}'.format(iago.id), req)
         self.assert_json_error(result, 'Cannot remove the only organization administrator')
@@ -366,7 +366,7 @@ class PermissionTest(ZulipTestCase):
         self.assertFalse(hamlet.can_access_all_realm_members())
         person = events[0]['event']['person']
         self.assertEqual(person['user_id'], hamlet.id)
-        self.assertTrue(person['is_guest'])
+        self.assertTrue(person['role'], UserProfile.ROLE_GUEST)
 
     def test_change_guest_to_regular_member(self) -> None:
         iago = self.example_user("iago")
@@ -384,7 +384,7 @@ class PermissionTest(ZulipTestCase):
         self.assertFalse(polonius.is_guest)
         person = events[0]['event']['person']
         self.assertEqual(person['user_id'], polonius.id)
-        self.assertFalse(person['is_guest'])
+        self.assertEqual(person['role'], UserProfile.ROLE_MEMBER)
 
     def test_change_admin_to_guest(self) -> None:
         iago = self.example_user("iago")
@@ -409,11 +409,7 @@ class PermissionTest(ZulipTestCase):
 
         person = events[0]['event']['person']
         self.assertEqual(person['user_id'], hamlet.id)
-        self.assertFalse(person['is_admin'])
-
-        person = events[1]['event']['person']
-        self.assertEqual(person['user_id'], hamlet.id)
-        self.assertTrue(person['is_guest'])
+        self.assertEqual(person['role'], UserProfile.ROLE_GUEST)
 
     def test_change_guest_to_admin(self) -> None:
         iago = self.example_user("iago")
@@ -437,7 +433,7 @@ class PermissionTest(ZulipTestCase):
 
         person = events[0]['event']['person']
         self.assertEqual(person['user_id'], polonius.id)
-        self.assertTrue(person['is_admin'])
+        self.assertEqual(person['role'], UserProfile.ROLE_REALM_ADMINISTRATOR)
 
     def test_admin_user_can_change_profile_data(self) -> None:
         realm = get_realm('zulip')

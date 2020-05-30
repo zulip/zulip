@@ -3438,21 +3438,9 @@ def do_change_user_role(user_profile: UserProfile, value: int) -> None:
             RealmAuditLog.NEW_VALUE: value,
             RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
         }))
-    if UserProfile.ROLE_REALM_ADMINISTRATOR in [old_value, value]:
-        event = dict(type="realm_user", op="update",
-                     person=dict(user_id=user_profile.id,
-                                 is_admin=value == UserProfile.ROLE_REALM_ADMINISTRATOR))
-        send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
-    if UserProfile.ROLE_GUEST in [old_value, value]:
-        event = dict(type="realm_user", op="update",
-                     person=dict(user_id=user_profile.id,
-                                 is_guest=value == UserProfile.ROLE_GUEST))
-        send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
-    if UserProfile.ROLE_REALM_OWNER in [old_value, value]:
-        event = dict(type="realm_user", op="update",
-                     person=dict(user_id=user_profile.id,
-                                 is_owner=value == UserProfile.ROLE_REALM_OWNER))
-        send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+    event = dict(type="realm_user", op="update",
+                 person=dict(user_id=user_profile.id, role=user_profile.role))
+    send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
 def do_change_is_api_super_user(user_profile: UserProfile, value: bool) -> None:
     user_profile.is_api_super_user = value

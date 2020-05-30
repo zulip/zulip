@@ -360,7 +360,7 @@ exports.update_user_data = function (user_id, new_data) {
         }
     }
 
-    if (new_data.is_admin !== undefined || new_data.is_guest !== undefined) {
+    if (new_data.role !== undefined) {
         user_row.find(".user_role").text(people.get_user_type(user_id));
     }
 };

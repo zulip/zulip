@@ -75,14 +75,14 @@ run_test('updates', () => {
     };
     people.add_active_user(isaac);
 
-    user_events.update_person({user_id: isaac.user_id, is_guest: true});
+    user_events.update_person({user_id: isaac.user_id, role: 600});
     person = people.get_by_email(isaac.email);
     assert(person.is_guest);
-    user_events.update_person({user_id: isaac.user_id, is_guest: false});
+    user_events.update_person({user_id: isaac.user_id, role: 400});
     person = people.get_by_email(isaac.email);
     assert(!person.is_guest);
 
-    user_events.update_person({user_id: isaac.user_id, is_admin: true});
+    user_events.update_person({user_id: isaac.user_id, role: 200});
     person = people.get_by_email(isaac.email);
     assert.equal(person.full_name, 'Isaac Newton');
     assert.equal(person.is_admin, true);
@@ -101,7 +101,7 @@ run_test('updates', () => {
     assert.equal(user_id, isaac.user_id);
     assert.equal(full_name, 'Sir Isaac');
 
-    user_events.update_person({user_id: me.user_id, is_admin: false});
+    user_events.update_person({user_id: me.user_id, role: 400});
     assert(!global.page_params.is_admin);
 
     user_events.update_person({user_id: me.user_id, full_name: 'Me V2'});

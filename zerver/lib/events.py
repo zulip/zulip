@@ -418,7 +418,11 @@ def apply_event(state: Dict[str, Any],
                     state['avatar_url'] = person['avatar_url']
                     state['avatar_url_medium'] = person['avatar_url_medium']
 
-                for field in ['is_admin', 'delivery_email', 'email', 'full_name']:
+                if 'role' in person:
+                    state['is_admin'] = person['role'] == UserProfile.ROLE_REALM_ADMINISTRATOR
+                    state['is_guest'] = person['role'] == UserProfile.ROLE_GUEST
+
+                for field in ['delivery_email', 'email', 'full_name']:
                     if field in person and field in state:
                         state[field] = person[field]
 
@@ -428,10 +432,10 @@ def apply_event(state: Dict[str, Any],
                 # realm.  This is ugly and probably better
                 # solved by removing the all-realm-bots data
                 # given to admin users from this flow.
-                if ('is_admin' in person and 'realm_bots' in state):
+                if ('role' in person and 'realm_bots' in state):
                     prev_state = state['raw_users'][user_profile.id]
                     was_admin = prev_state['is_admin']
-                    now_admin = person['is_admin']
+                    now_admin = person['role'] == UserProfile.ROLE_REALM_ADMINISTRATOR
 
                     if was_admin and not now_admin:
                         state['realm_bots'] = []
@@ -449,6 +453,9 @@ def apply_event(state: Dict[str, Any],
                 for field in p:
                     if field in person:
                         p[field] = person[field]
+                    if 'role' in person:
+                        p['is_admin'] = person['role'] == UserProfile.ROLE_REALM_ADMINISTRATOR
+                        p['is_guest'] = person['role'] == UserProfile.ROLE_GUEST
                     if 'custom_profile_field' in person:
                         custom_field_id = person['custom_profile_field']['id']
                         custom_field_new_value = person['custom_profile_field']['value']
