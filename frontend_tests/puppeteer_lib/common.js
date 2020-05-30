@@ -83,8 +83,12 @@ class CommonUtils {
         console.log("Logging in");
         await page.goto(this.realm_url + 'login/');
         assert.equal(this.realm_url + 'login/', page.url());
-        await page.type('#id_username', credentials.username);
-        await page.type('#id_password', credentials.password);
+        // fill login form
+        const params = {
+            username: credentials.username,
+            password: credentials.password,
+        };
+        await this.fill_form(page, '#login_form', params);
         await page.$eval('#login_form', form => form.submit());
     }
 
