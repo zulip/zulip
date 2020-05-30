@@ -70,7 +70,7 @@ run_test('basics', () => {
         found_newest: true,
         history_limited: true,
     };
-    fetch_status.finish_newer_batch(data);
+    fetch_status.finish_newer_batch([], data);
     fetch_status.finish_older_batch(data);
 
     has_found_oldest();
@@ -94,7 +94,7 @@ run_test('basics', () => {
         found_newest: false,
         history_limited: false,
     };
-    fetch_status.finish_newer_batch(data);
+    fetch_status.finish_newer_batch([], data);
     fetch_status.finish_older_batch(data);
 
     can_load_older();
@@ -147,7 +147,7 @@ run_test('basics', () => {
     can_load_older();
     blocked_newer();
 
-    fetch_status.finish_newer_batch({
+    fetch_status.finish_newer_batch([], {
         update_loading_indicator: true,
         found_newest: false,
     });
@@ -160,7 +160,7 @@ run_test('basics', () => {
     can_load_older();
     blocked_newer();
 
-    fetch_status.finish_newer_batch({
+    fetch_status.finish_newer_batch([], {
         update_loading_indicator: true,
         found_newest: true,
     });

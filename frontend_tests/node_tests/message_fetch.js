@@ -345,6 +345,23 @@ run_test('loading_newer', () => {
         });
 
         assert.equal(msg_list.data.fetch_status.can_load_newer_messages(), true);
+
+        // The server successfully responded with messages having id's from 500-599.
+        // We test for the case that this was the last batch of messages for the narrow
+        // so no more fetching should occur.
+        // And also while fetching for the above condition the server received a new message
+        // event, updating the last message's id for that narrow to 600 from 599.
+        data.resp.found_newest = true;
+        msg_list.data.fetch_status.update_expected_max_message_id([{id: 600}]);
+
+        test_happy_path({
+            msg_list: msg_list,
+            data: data,
+        });
+
+        // To handle this special case we should allow another fetch to occur,
+        // since the last message event's data had been discarded.
+        assert.equal(msg_list.data.fetch_status.can_load_newer_messages(), true);
     }());
 
     (function test_home() {
