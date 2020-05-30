@@ -246,7 +246,7 @@ class Command(BaseCommand):
             # functions somewhat realistic.  We'll still create 1000 users
             # like Extra222 User for some predicability.
             num_names = options['extra_users']
-            num_boring_names = 1000
+            num_boring_names = 300
 
             for i in range(min(num_names, num_boring_names)):
                 full_name = 'Extra%03d User' % (i,)
