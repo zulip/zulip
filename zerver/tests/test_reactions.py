@@ -384,12 +384,27 @@ class ReactionTest(ZulipTestCase):
 
         result = self.api_post(sender, '/api/v1/messages/1/reactions', reaction_info)
         self.assert_json_success(result)
+        result = self.api_post(sender, '/api/v1/messages/2/reactions', reaction_info)
+        self.assert_json_success(result)
+
+        base_query = Reaction.objects.filter(user_profile=sender)
 
         # Deactivate realm emoji.
         emoji.deactivated = True
         emoji.save(update_fields=['deactivated'])
+
         result = self.api_delete(sender, '/api/v1/messages/1/reactions', reaction_info)
         self.assert_json_success(result)
+        self.assertFalse(base_query.filter(emoji_name=reaction_info['emoji_name'],
+                                           message=Message.objects.get(id=1)).exists())
+
+        reaction_info = {
+            'emoji_name': 'green_tick'
+        }
+        result = self.api_delete(sender, '/api/v1/messages/2/reactions', reaction_info)
+        self.assert_json_success(result)
+        self.assertFalse(base_query.filter(emoji_name=reaction_info['emoji_name'],
+                                           message=Message.objects.get(id=2)).exists())
 
 class ReactionEventTest(ZulipTestCase):
     def test_add_event(self) -> None:
@@ -699,6 +714,29 @@ class DefaultEmojiReactionTests(EmojiReactionBase):
                                     emoji_name=reaction_info['emoji_name'],
                                     emoji_code='1f44d',
                                     reaction_type='unicode_emoji').exists(),
+        )
+
+    def test_delete_reaction_by_emoji_code(self) -> None:
+        hamlet = self.example_user('hamlet')
+        message = Message.objects.get(id=1)
+        Reaction.objects.create(user_profile=hamlet,
+                                message=message,
+                                emoji_name='+1',
+                                emoji_code='1f44d',
+                                reaction_type='unicode_emoji',
+                                )
+
+        reaction_info = {
+            'emoji_code': '1f44d'
+        }
+        result = self.api_delete(hamlet, '/api/v1/messages/1/reactions', reaction_info)
+        self.assert_json_success(result)
+        self.assertFalse(
+            Reaction.objects.filter(user_profile=hamlet,
+                                    message=message,
+                                    emoji_name='+1',
+                                    emoji_code='1f44d',
+                                    reaction_type='unicode_emoji').exists()
         )
 
     def test_react_historical(self) -> None:

@@ -10,6 +10,13 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature Level 33**
+
+* [`DELETE /messages/{message_id}/reactions`](/api/remove-reaction):
+  The `reaction_type` parameter is optional; the server will guess the
+  `reaction_type` if it is not specified (checking custom emoji, then
+  unicode emoji for any with the provided name).
+
 **Feature level 32**
 
 * [`GET /events`](/api/get-events): Added `op` field to

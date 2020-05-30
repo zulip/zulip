@@ -87,7 +87,7 @@ def add_reaction(request: HttpRequest, user_profile: UserProfile, message_id: in
 def remove_reaction(request: HttpRequest, user_profile: UserProfile, message_id: int,
                     emoji_name: Optional[str]=REQ(default=None),
                     emoji_code: Optional[str]=REQ(default=None),
-                    reaction_type: str=REQ(default="unicode_emoji")) -> HttpResponse:
+                    reaction_type: Optional[str]=REQ(default=None)) -> HttpResponse:
     message, user_message = access_message(user_profile, message_id)
 
     if emoji_code is None:
@@ -103,6 +103,18 @@ def remove_reaction(request: HttpRequest, user_profile: UserProfile, message_id:
         # corresponding code using the current data.
         emoji_code = emoji_name_to_emoji_code(message.sender.realm, emoji_name,
                                               allow_deactivated=True)[0]
+
+    # This handles the case where a reaction_type is not provided
+    # which is then guessed by the server from emoji_name (checking
+    # custom emoji, then unicode emoji for any). reaction_type
+    # defaults to "unicode_emoji" if emoji_name is not provided
+    # as well.
+    if reaction_type is None:
+        if emoji_name is None:
+            reaction_type = "unicode_emoji"
+        else:
+            reaction_type = emoji_name_to_emoji_code(message.sender.realm,
+                                                     emoji_name, allow_deactivated=True)[1]
 
     if not Reaction.objects.filter(user_profile=user_profile,
                                    message=message,
