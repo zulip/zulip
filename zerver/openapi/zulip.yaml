@@ -2628,6 +2628,40 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NonExistingStreamError'
+  /users/{user_id}/subscriptions/{stream_id}:
+    get:
+      operationId: get_subscription_status
+      tags: ["streams"]
+      description: |
+        Check whether a user is subscribed to a stream.
+
+        `GET {{ api_url }}/v1/users/{user_id}/subscriptions/{stream_id}`
+
+        **Changes**: New in Zulip 2.2 (feature level 11).
+      parameters:
+      - $ref: '#/components/parameters/UserId'
+        example: 7
+      - $ref: '#/components/parameters/StreamIdInPath'
+        example: 1
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    is_subscribed:
+                      type: boolean
+                      description: |
+                        Whether the user is subscribed to the stream.
+                - example:
+                    {
+                        "msg": "",
+                        "result": "success",
+                        "is_subscribed": false
+                    }
   /users/me/subscriptions/muted_topics:
     patch:
       operationId: mute_topic

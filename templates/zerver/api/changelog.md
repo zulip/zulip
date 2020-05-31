@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 2.2
 
+**Feature level 12**
+
+* [`GET users/{user_id}/subscriptions/{stream_id}`](/api/get-subscription-status):
+  New endpoint added for checking if another user is subscribed to a stream.
+
 **Feature level 11**
 
 * [`POST /register`](/api/register-queue): Added

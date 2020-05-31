@@ -1093,6 +1093,38 @@ class UserProfileTest(ZulipTestCase):
             get_user_by_id_in_realm_including_cross_realm(
                 hamlet.id, None)
 
+    def test_get_user_subscription_status(self) -> None:
+        self.login('hamlet')
+        iago = self.example_user('iago')
+        stream = get_stream('Rome', iago.realm)
+
+        # Invalid User ID.
+        result = self.client_get("/json/users/25/subscriptions/{}".format(stream.id))
+        self.assert_json_error(result, "No such user")
+
+        # Invalid Stream ID.
+        result = self.client_get("/json/users/{}/subscriptions/25".format(iago.id))
+        self.assert_json_error(result, "Invalid stream id")
+
+        result = ujson.loads(self.client_get("/json/users/{}/subscriptions/{}".format(iago.id, stream.id)).content)
+        self.assertFalse(result['is_subscribed'])
+
+        # Subscribe to the stream.
+        self.subscribe(iago, stream.name)
+        with queries_captured() as queries:
+            result = ujson.loads(self.client_get("/json/users/{}/subscriptions/{}".format(iago.id, stream.id)).content)
+
+        self.assert_length(queries, 7)
+        self.assertTrue(result['is_subscribed'])
+
+        # Logging in with a Guest user.
+        polonius = self.example_user("polonius")
+        self.login('polonius')
+        self.assertTrue(polonius.is_guest)
+
+        result = self.client_get("/json/users/{}/subscriptions/{}".format(iago.id, stream.id))
+        self.assert_json_error(result, "Invalid stream id")
+
 class ActivateTest(ZulipTestCase):
     def test_basics(self) -> None:
         user = self.example_user('hamlet')

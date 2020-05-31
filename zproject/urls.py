@@ -149,6 +149,8 @@ v1_api_and_json_patterns = [
         {'GET': 'zerver.views.users.get_members_backend',
          'PATCH': 'zerver.views.users.update_user_backend',
          'DELETE': 'zerver.views.users.deactivate_user_backend'}),
+    url(r'^users/(?P<user_id>[0-9]+)/subscriptions/(?P<stream_id>[0-9]+)$', rest_dispatch,
+        {'GET': 'zerver.views.users.get_subscription_backend'}),
     url(r'^bots$', rest_dispatch,
         {'GET': 'zerver.views.users.get_bots_backend',
          'POST': 'zerver.views.users.add_bot_backend'}),
