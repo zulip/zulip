@@ -22,7 +22,7 @@ from zerver.lib.exceptions import CannotDeactivateLastUserError
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_error, json_success
-from zerver.lib.streams import access_stream_by_name
+from zerver.lib.streams import access_stream_by_name, access_stream_by_id, subscribed_to_stream
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string, check_int, check_url, check_dict, check_list, \
     check_int_in
@@ -469,3 +469,15 @@ def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> Http
         result['max_message_id'] = messages[0].id
 
     return json_success(result)
+
+@has_request_variables
+def get_subscription_backend(request: HttpRequest, user_profile: UserProfile,
+                             user_id: int=REQ(validator=check_int, path_only=True),
+                             stream_id: int=REQ(validator=check_int, path_only=True)
+                             ) -> HttpResponse:
+    target_user = access_user_by_id(user_profile, user_id, read_only=True)
+    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+
+    subscription_status = {'is_subscribed': subscribed_to_stream(target_user, stream_id)}
+
+    return json_success(subscription_status)
