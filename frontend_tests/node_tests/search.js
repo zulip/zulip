@@ -40,6 +40,13 @@ run_test('update_button_visibility', () => {
     const search_query = $('#search_query');
     const search_button = $('.search_button');
 
+    search_query.is = return_false;
+    search_query.val('');
+    narrow_state.active = return_false;
+    search_button.prop('disabled', true);
+    search.update_button_visibility();
+    assert(search_button.prop('disabled'));
+
     search_query.is = return_true;
     search_query.val('');
     narrow_state.active = return_false;
@@ -62,7 +69,7 @@ run_test('update_button_visibility', () => {
     assert(!search_button.prop('disabled'));
 });
 
-run_test('initizalize', () => {
+run_test('initialize', () => {
     const search_query_box = $('#search_query');
     const searchbox_form = $('#searchbox_form');
     const search_button = $('.search_button');
@@ -135,6 +142,10 @@ run_test('initizalize', () => {
                 is_blurred = false;
                 is_append_search_string_called = false;
                 search_query_box.val(search_box_val);
+                Filter.parse = (search_string) => {
+                    assert.equal(search_string, search_box_val);
+                    return operators;
+                };
                 narrow.activate = (raw_operators, options) => {
                     assert.deepEqual(raw_operators, operators);
                     assert.deepEqual(options, {trigger: 'search'});
@@ -150,7 +161,8 @@ run_test('initizalize', () => {
                 operand: 'ver',
             }];
             _setup('ver');
-            opts.updater('ver');
+
+            assert.equal(opts.updater('ver'), 'ver');
             assert(!is_blurred);
             assert(is_append_search_string_called);
 
@@ -160,13 +172,15 @@ run_test('initizalize', () => {
                 operand: 'Verona',
             }];
             _setup('stream:Verona');
-            opts.updater('stream:Verona');
+
+            assert.equal(opts.updater('stream:Verona'), 'stream:Verona');
             assert(!is_blurred);
             assert(is_append_search_string_called);
 
             search.is_using_input_method = true;
             _setup('stream:Verona');
-            opts.updater('stream:Verona');
+
+            assert.equal(opts.updater('stream:Verona'), 'stream:Verona');
             assert(!is_blurred);
             assert(is_append_search_string_called);
         }
@@ -202,6 +216,10 @@ run_test('initizalize', () => {
             is_blurred = false;
             search_button.prop('disabled', false);
             search_query_box.val(search_box_val);
+            Filter.parse = (search_string) => {
+                assert.equal(search_string, search_box_val);
+                return operators;
+            };
             narrow.activate = (raw_operators, options) => {
                 assert.deepEqual(raw_operators, operators);
                 assert.deepEqual(options, {trigger: 'search'});
@@ -211,7 +229,11 @@ run_test('initizalize', () => {
             };
         };
 
-        operators = [];
+        operators = [{
+            negated: false,
+            operator: 'search',
+            operand: '',
+        }];
         _setup('');
 
         ev.which = 15;
@@ -233,11 +255,6 @@ run_test('initizalize', () => {
         func(ev);
         assert(is_blurred);
 
-        operators = [{
-            negated: false,
-            operator: 'search',
-            operand: 'ver',
-        }];
         _setup('ver');
         search.is_using_input_method = true;
         func(ev);

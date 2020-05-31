@@ -26,7 +26,9 @@ run_test('update_button_visibility', () => {
     search_query.is = return_false;
     search_query.val('');
     narrow_state.active = return_false;
-    search_button.prop('disabled', false);
+    search_button.prop('disabled', true);
+    search.update_button_visibility();
+    assert(search_button.prop('disabled'));
 
     search_query.is = return_true;
     search_query.val('');
