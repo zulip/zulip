@@ -490,6 +490,7 @@ def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[s
 
     return oauth_redirect_to_root(request, backend_url, 'social', extra_url_params=extra_url_params)
 
+@handle_desktop_flow
 def start_social_signup(request: HttpRequest, backend: str, extra_arg: Optional[str]=None
                         ) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
