@@ -282,10 +282,30 @@ run_test('initizalize', () => {
 });
 
 run_test('initiate_search', () => {
+    // open typeahead and select text when navbar is open
+    // this implicitly expects the code to used the chained
+    // function calls, which is something to keep in mind if
+    // this test ever fails unexpectedly.
+    let typeahead_forced_open = false;
+    let is_searchbox_text_selected = false;
     let is_searchbox_focused = false;
-    $('#search_arrows').focus = () => {
+    $('#search_query').focus = () => {
         is_searchbox_focused = true;
     };
+    $('#search_query').select = noop;
+    $('#search_query').typeahead = (lookup) => {
+        if (lookup === "lookup") {
+            typeahead_forced_open = true;
+            return {
+                select: () => {
+                    is_searchbox_text_selected = true;
+                },
+            };
+        }
+    };
+
     search.initiate_search();
+    assert(typeahead_forced_open);
+    assert(is_searchbox_text_selected);
     assert(is_searchbox_focused);
 });

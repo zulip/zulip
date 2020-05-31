@@ -193,11 +193,10 @@ exports.focus_search = function () {
 };
 
 exports.initiate_search = function () {
+    tab_bar.open_search_bar_and_close_narrow_description();
+    $('#search_query').typeahead('lookup').select();
     if (page_params.search_pills_enabled) {
-        $('#search_arrows').focus();
-    } else {
-        tab_bar.open_search_bar_and_close_narrow_description();
-        $('#search_query').typeahead('lookup').select();
+        $('#search_query').focus();
     }
 };
 
