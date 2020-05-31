@@ -216,7 +216,6 @@ def get_message_url(event: Dict[str, Any]) -> str:
     )
 
 def notify_bot_owner(event: Dict[str, Any],
-                     request_data: Dict[str, Any],
                      status_code: Optional[int]=None,
                      response_content: Optional[AnyStr]=None,
                      failure_message: Optional[str]=None,
@@ -246,7 +245,6 @@ def notify_bot_owner(event: Dict[str, Any],
     send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
 
 def request_retry(event: Dict[str, Any],
-                  request_data: Dict[str, Any],
                   failure_message: Optional[str]=None) -> None:
     def failure_processor(event: Dict[str, Any]) -> None:
         """
@@ -256,7 +254,7 @@ def request_retry(event: Dict[str, Any],
         """
         bot_user = get_user_profile_by_id(event['user_profile_id'])
         fail_with_message(event, "Bot is unavailable")
-        notify_bot_owner(event, request_data, failure_message=failure_message)
+        notify_bot_owner(event, failure_message=failure_message)
         logging.warning(
             "Maximum retries exceeded for trigger:%s event:%s",
             bot_user.email, event['command'],
@@ -309,7 +307,7 @@ def do_rest_call(base_url: str,
                              'response': response.content})
             failure_message = "Third party responded with %d" % (response.status_code,)
             fail_with_message(event, failure_message)
-            notify_bot_owner(event, request_data, response.status_code, response.content)
+            notify_bot_owner(event, response.status_code, response.content)
 
     except requests.exceptions.Timeout:
         logging.info(
@@ -317,13 +315,13 @@ def do_rest_call(base_url: str,
             event["command"], event['service_name'],
         )
         failure_message = "A timeout occurred."
-        request_retry(event, request_data, failure_message=failure_message)
+        request_retry(event, failure_message=failure_message)
 
     except requests.exceptions.ConnectionError:
         logging.info("Trigger event %s on %s resulted in a connection error. Retrying",
                      event["command"], event['service_name'])
         failure_message = "A connection error occurred. Is my bot server down?"
-        request_retry(event, request_data, failure_message=failure_message)
+        request_retry(event, failure_message=failure_message)
 
     except requests.exceptions.RequestException as e:
         response_message = ("An exception of type *%s* occurred for message `%s`! "
@@ -331,4 +329,4 @@ def do_rest_call(base_url: str,
                                 type(e).__name__, event["command"],))
         logging.exception("Outhook trigger failed:\n %s" % (e,))
         fail_with_message(event, response_message)
-        notify_bot_owner(event, request_data, exception=e)
+        notify_bot_owner(event, exception=e)
