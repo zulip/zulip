@@ -283,8 +283,8 @@ run_test("test_recent_topics_launch", () => {
     // since they are generated in external libraries
     // and are not to be tested here.
     const expected = {
-        filter_participated: false,
-        filter_unread: false,
+        filter_participated: true,
+        filter_unread: true,
         filter_muted: false,
         recent_topics: generate_topic_data([
             // stream_id, topic, unread_count, muted, participated
@@ -364,7 +364,6 @@ run_test('test_filter_unread', () => {
     });
     rt.process_messages(messages);
 
-    $('#recent_topics_filter_buttons').removeClass('btn-recent-selected');
     global.stub_templates(function (template_name, data) {
         if (template_name === 'recent_topics_table') {
             assert.deepEqual(data, expected);
@@ -375,7 +374,8 @@ run_test('test_filter_unread', () => {
         return '<recent_topics table stub>';
     });
 
-    rt.set_filter('unread');
+    // This will deselect participated and leave only unread selected.
+    rt.set_filter('participated');
     rt.update_filters_view();
     expected = generate_topic_data([[1, 'topic-1', 0, false, true]])[0];
 
@@ -419,7 +419,6 @@ run_test('test_filter_participated', () => {
     });
     rt.process_messages(messages);
 
-    $('#recent_topics_filter_buttons').removeClass('btn-recent-selected');
     global.stub_templates(function (template_name, data) {
         if (template_name === 'recent_topics_table') {
             assert.deepEqual(data, expected);
@@ -429,7 +428,7 @@ run_test('test_filter_participated', () => {
         }
         return '<recent_topics table stub>';
     });
-    rt.set_filter('participated');
+    rt.set_filter('unread');
     rt.update_filters_view();
     expected = generate_topic_data([[1, 'topic-4', 1, false, false]])[0];
 
@@ -450,8 +449,8 @@ run_test('test_search_keyword', () => {
     // TODO: Test search mechanism properly.
     // This is only intended to pass coverage currently.
     const expected =   {
-        filter_participated: false,
-        filter_unread: false,
+        filter_participated: true,
+        filter_unread: true,
         filter_muted: false,
         recent_topics: generate_topic_data([
             // stream_id, topic, unread_count,  muted, participated

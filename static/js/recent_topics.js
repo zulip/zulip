@@ -5,7 +5,8 @@ const topics = new Map(); // Key is stream-id:topic.
 // Sets the number of avatars to display.
 // Rest of the avatars, if present, are displayed as {+x}
 const MAX_AVATAR = 4;
-let filters = new Set();
+// This variable can be used to set default filters.
+let filters = new Set(['unread', 'participated']);
 
 exports.process_messages = function (messages) {
     // Since a complete re-render is expensive, we
