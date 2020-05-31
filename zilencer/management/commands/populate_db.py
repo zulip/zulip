@@ -253,17 +253,18 @@ class Command(BaseCommand):
                 names.append((full_name, 'extrauser%d@zulip.com' % (i,)))
 
             if num_names > num_boring_names:
-                fnames = ['Amber', 'Arpita', 'Bob', 'Cindy', 'Daniela', 'Dan', 'Dinesh',
-                          'Faye', 'François', 'George', 'Hank', 'Irene',
-                          'James', 'Janice', 'Jenny', 'Jill', 'John',
-                          'Kate', 'Katelyn', 'Kobe', 'Lexi', 'Manish', 'Mark', 'Matt', 'Mayna',
-                          'Michael', 'Pete', 'Peter', 'Phil', 'Phillipa', 'Preston',
-                          'Sally', 'Scott', 'Sandra', 'Steve', 'Stephanie',
-                          'Vera']
+                fnames = ['Amber', 'Arpita', 'Анш', 'Αναπρας', 'Bob',
+                          'Cindy', 'Симон', 'Daniela', 'Faye',
+                          'François', 'Gisela', 'Hank', 'Irene', 'Janice',
+                          'John', 'Jürgen', 'Kate', 'Katelyn', 'Kobe',
+                          'Lexi', 'Manish', 'Mark', 'Matt', 'Μαρταζα',
+                          'Pete', 'Peter', 'Phil', 'Sandra', 'Schmidt',
+                          'Steve', 'Stephanie', 'Vera', 'しどひ', 'انش']
                 mnames = ['de', 'van', 'von', 'Shaw', 'T.']
-                lnames = ['Adams', 'Agarwal', 'Beal', 'Benson', 'Bonita', 'Davis',
-                          'George', 'Harden', 'James', 'Jones', 'Johnson', 'Jordan',
-                          'Lee', 'Leonard', 'Singh', 'Smith', 'Patel', 'Towns', 'Wall']
+                lnames = ['Adams', 'Agarwal', 'Beal', 'Bonita', 'Davis',
+                          'George', 'Groß', 'Harden', 'James', 'Jones',
+                          'Lee', 'Leonard', 'Минтр', 'Müller', 'Singh', 'Patel',
+                          'Towns', 'Wall', 'ᏌᏦ', '湊蓮', 'ᎩᎭᏂᏕᎵᏩᎵ', 'خاندَلوال']
 
             for i in range(num_boring_names, num_names):
                 fname = random.choice(fnames) + str(i)
@@ -546,18 +547,18 @@ class Command(BaseCommand):
                     "sales": {"description": "For sales discussion"}
                 }
 
-                # Calculate the maximum number of digits in any extra stream's
-                # number, since a stream with name "Extra Stream 3" could show
-                # up after "Extra Stream 29". (Used later to pad numbers with
-                # 0s).
-                maximum_digits = len(str(options['extra_streams'] - 1))
+                # For testing really large batches:
+                # Create extra streams with semi realistic names to make search
+                # functions somewhat realistic.
+                streamname = ['24hrs', 'android', 'automated help', 'backend dev', 'bot',
+                              'checkins', 'code review', 'commits', 'Current User status', 'desktop',
+                              'development help', 'desktop', 'discussions', 'Django guide', 'GCI',
+                              'git test', 'GSoC archive', 'issues', 'live', 'markdown', 'mobile',
+                              'new members', 'provision', 'terminal testing', 'user guide', '测试',
+                              '冰未寒']
 
                 for i in range(options['extra_streams']):
-                    # Pad the number with 0s based on `maximum_digits`.
-                    number_str = str(i).zfill(maximum_digits)
-
-                    extra_stream_name = 'Extra Stream ' + number_str
-
+                    extra_stream_name = random.choice(streamname) + str(i)
                     zulip_stream_dict[extra_stream_name] = {
                         "description": "Auto-generated extra stream.",
                     }
