@@ -3093,7 +3093,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         user_profile = self.example_user('hamlet')
         email = user_profile.delivery_email
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
-            result = self.client_post('/accounts/login/sso/', REMOTE_USER=email)
+            result = self.client_get('/accounts/login/sso/', REMOTE_USER=email)
             self.assertEqual(result.status_code, 302)
             self.assert_logged_in_user_id(user_profile.id)
 
@@ -3102,13 +3102,13 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         user_profile = self.example_user('hamlet')
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',),
                            SSO_APPEND_DOMAIN='zulip.com'):
-            result = self.client_post('/accounts/login/sso/', REMOTE_USER=username)
+            result = self.client_get('/accounts/login/sso/', REMOTE_USER=username)
             self.assertEqual(result.status_code, 302)
             self.assert_logged_in_user_id(user_profile.id)
 
     def test_login_failure(self) -> None:
         email = self.example_email("hamlet")
-        result = self.client_post('/accounts/login/sso/', REMOTE_USER=email)
+        result = self.client_get('/accounts/login/sso/', REMOTE_USER=email)
         self.assertEqual(result.status_code, 302)
 
         result = self.client_get(result["Location"])
@@ -3118,7 +3118,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
     def test_login_failure_due_to_nonexisting_user(self) -> None:
         email = 'nonexisting@zulip.com'
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
-            result = self.client_post('/accounts/login/sso/', REMOTE_USER=email)
+            result = self.client_get('/accounts/login/sso/', REMOTE_USER=email)
             self.assertEqual(result.status_code, 200)
             self.assert_logged_in_user_id(None)
             self.assert_in_response("No account found for", result)
@@ -3126,12 +3126,12 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
     def test_login_failure_due_to_invalid_email(self) -> None:
         email = 'hamlet'
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
-            result = self.client_post('/accounts/login/sso/', REMOTE_USER=email)
+            result = self.client_get('/accounts/login/sso/', REMOTE_USER=email)
             self.assert_json_error_contains(result, "Enter a valid email address.", 400)
 
     def test_login_failure_due_to_missing_field(self) -> None:
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
-            result = self.client_post('/accounts/login/sso/')
+            result = self.client_get('/accounts/login/sso/')
             self.assertEqual(result.status_code, 302)
 
             result = self.client_get(result["Location"])
@@ -3141,8 +3141,8 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         email = self.example_email("hamlet")
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
             with mock.patch('zerver.views.auth.get_subdomain', return_value='acme'):
-                result = self.client_post('http://testserver:9080/accounts/login/sso/',
-                                          REMOTE_USER=email)
+                result = self.client_get('http://testserver:9080/accounts/login/sso/',
+                                         REMOTE_USER=email)
                 self.assertEqual(result.status_code, 200)
                 self.assert_logged_in_user_id(None)
                 self.assert_in_response("You need an invitation to join this organization.", result)
@@ -3151,8 +3151,8 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         email = self.example_email("hamlet")
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
             with mock.patch('zerver.views.auth.get_subdomain', return_value=''):
-                result = self.client_post('http://testserver:9080/accounts/login/sso/',
-                                          REMOTE_USER=email)
+                result = self.client_get('http://testserver:9080/accounts/login/sso/',
+                                         REMOTE_USER=email)
                 self.assertEqual(result.status_code, 200)
                 self.assert_logged_in_user_id(None)
                 self.assert_in_response("You need an invitation to join this organization.", result)
@@ -3163,7 +3163,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'):
             with self.settings(
                     AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
-                result = self.client_post('/accounts/login/sso/', REMOTE_USER=email)
+                result = self.client_get('/accounts/login/sso/', REMOTE_USER=email)
                 self.assertEqual(result.status_code, 302)
                 self.assert_logged_in_user_id(user_profile.id)
 
@@ -3177,24 +3177,24 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         mobile_flow_otp = '1234abcd' * 8
 
         # Verify that the right thing happens with an invalid-format OTP
-        result = self.client_post('/accounts/login/sso/',
-                                  dict(mobile_flow_otp="1234"),
-                                  REMOTE_USER=email,
-                                  HTTP_USER_AGENT = "ZulipAndroid")
+        result = self.client_get('/accounts/login/sso/',
+                                 dict(mobile_flow_otp="1234"),
+                                 REMOTE_USER=email,
+                                 HTTP_USER_AGENT = "ZulipAndroid")
         self.assert_logged_in_user_id(None)
         self.assert_json_error_contains(result, "Invalid OTP", 400)
 
-        result = self.client_post('/accounts/login/sso/',
-                                  dict(mobile_flow_otp="invalido" * 8),
-                                  REMOTE_USER=email,
-                                  HTTP_USER_AGENT = "ZulipAndroid")
+        result = self.client_get('/accounts/login/sso/',
+                                 dict(mobile_flow_otp="invalido" * 8),
+                                 REMOTE_USER=email,
+                                 HTTP_USER_AGENT = "ZulipAndroid")
         self.assert_logged_in_user_id(None)
         self.assert_json_error_contains(result, "Invalid OTP", 400)
 
-        result = self.client_post('/accounts/login/sso/',
-                                  dict(mobile_flow_otp=mobile_flow_otp),
-                                  REMOTE_USER=email,
-                                  HTTP_USER_AGENT = "ZulipAndroid")
+        result = self.client_get('/accounts/login/sso/',
+                                 dict(mobile_flow_otp=mobile_flow_otp),
+                                 REMOTE_USER=email,
+                                 HTTP_USER_AGENT = "ZulipAndroid")
         self.assertEqual(result.status_code, 302)
         redirect_url = result['Location']
         parsed_url = urllib.parse.urlparse(redirect_url)
@@ -3220,24 +3220,24 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         mobile_flow_otp = '1234abcd' * 8
 
         # Verify that the right thing happens with an invalid-format OTP
-        result = self.client_post('/accounts/login/sso/',
-                                  dict(mobile_flow_otp="1234"),
-                                  REMOTE_USER=remote_user,
-                                  HTTP_USER_AGENT = "ZulipAndroid")
+        result = self.client_get('/accounts/login/sso/',
+                                 dict(mobile_flow_otp="1234"),
+                                 REMOTE_USER=remote_user,
+                                 HTTP_USER_AGENT = "ZulipAndroid")
         self.assert_logged_in_user_id(None)
         self.assert_json_error_contains(result, "Invalid OTP", 400)
 
-        result = self.client_post('/accounts/login/sso/',
-                                  dict(mobile_flow_otp="invalido" * 8),
-                                  REMOTE_USER=remote_user,
-                                  HTTP_USER_AGENT = "ZulipAndroid")
+        result = self.client_get('/accounts/login/sso/',
+                                 dict(mobile_flow_otp="invalido" * 8),
+                                 REMOTE_USER=remote_user,
+                                 HTTP_USER_AGENT = "ZulipAndroid")
         self.assert_logged_in_user_id(None)
         self.assert_json_error_contains(result, "Invalid OTP", 400)
 
-        result = self.client_post('/accounts/login/sso/',
-                                  dict(mobile_flow_otp=mobile_flow_otp),
-                                  REMOTE_USER=remote_user,
-                                  HTTP_USER_AGENT = "ZulipAndroid")
+        result = self.client_get('/accounts/login/sso/',
+                                 dict(mobile_flow_otp=mobile_flow_otp),
+                                 REMOTE_USER=remote_user,
+                                 HTTP_USER_AGENT = "ZulipAndroid")
         self.assertEqual(result.status_code, 302)
         redirect_url = result['Location']
         parsed_url = urllib.parse.urlparse(redirect_url)
@@ -3262,21 +3262,21 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         desktop_flow_otp = '1234abcd' * 8
 
         # Verify that the right thing happens with an invalid-format OTP
-        result = self.client_post('/accounts/login/sso/',
-                                  dict(desktop_flow_otp="1234"),
-                                  REMOTE_USER=email)
+        result = self.client_get('/accounts/login/sso/',
+                                 dict(desktop_flow_otp="1234"),
+                                 REMOTE_USER=email)
         self.assert_logged_in_user_id(None)
         self.assert_json_error_contains(result, "Invalid OTP", 400)
 
-        result = self.client_post('/accounts/login/sso/',
-                                  dict(desktop_flow_otp="invalido" * 8),
-                                  REMOTE_USER=email)
+        result = self.client_get('/accounts/login/sso/',
+                                 dict(desktop_flow_otp="invalido" * 8),
+                                 REMOTE_USER=email)
         self.assert_logged_in_user_id(None)
         self.assert_json_error_contains(result, "Invalid OTP", 400)
 
-        result = self.client_post('/accounts/login/sso/',
-                                  dict(desktop_flow_otp=desktop_flow_otp),
-                                  REMOTE_USER=email)
+        result = self.client_get('/accounts/login/sso/',
+                                 dict(desktop_flow_otp=desktop_flow_otp),
+                                 REMOTE_USER=email)
         self.verify_desktop_flow_end_page(result, email, desktop_flow_otp)
 
     @override_settings(SEND_LOGIN_EMAILS=True)
@@ -3292,21 +3292,21 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         desktop_flow_otp = '1234abcd' * 8
 
         # Verify that the right thing happens with an invalid-format OTP
-        result = self.client_post('/accounts/login/sso/',
-                                  dict(desktop_flow_otp="1234"),
-                                  REMOTE_USER=remote_user)
+        result = self.client_get('/accounts/login/sso/',
+                                 dict(desktop_flow_otp="1234"),
+                                 REMOTE_USER=remote_user)
         self.assert_logged_in_user_id(None)
         self.assert_json_error_contains(result, "Invalid OTP", 400)
 
-        result = self.client_post('/accounts/login/sso/',
-                                  dict(desktop_flow_otp="invalido" * 8),
-                                  REMOTE_USER=remote_user)
+        result = self.client_get('/accounts/login/sso/',
+                                 dict(desktop_flow_otp="invalido" * 8),
+                                 REMOTE_USER=remote_user)
         self.assert_logged_in_user_id(None)
         self.assert_json_error_contains(result, "Invalid OTP", 400)
 
-        result = self.client_post('/accounts/login/sso/',
-                                  dict(desktop_flow_otp=desktop_flow_otp),
-                                  REMOTE_USER=remote_user)
+        result = self.client_get('/accounts/login/sso/',
+                                 dict(desktop_flow_otp=desktop_flow_otp),
+                                 REMOTE_USER=remote_user)
         self.verify_desktop_flow_end_page(result, email, desktop_flow_otp)
 
     def test_redirect_to(self) -> None:
@@ -3316,7 +3316,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
             user_profile = self.example_user('hamlet')
             email = user_profile.delivery_email
             with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
-                result = self.client_post('/accounts/login/sso/?next=' + next, REMOTE_USER=email)
+                result = self.client_get('/accounts/login/sso/?next=' + next, REMOTE_USER=email)
             return result
 
         res = test_with_redirect_to_param_set_as_next()
