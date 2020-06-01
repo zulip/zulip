@@ -74,6 +74,16 @@ set_global('list_render', {
             formatted_topics.push(opts.modifier(item));
             opts.filter.predicate(item);
         }
+        // Just for coverage, the mechanisms
+        // are tested in list_render
+        if (mapped_topic_values.length >= 2) {
+            opts.sort_fields.stream_sort(mapped_topic_values[0], mapped_topic_values[1]);
+            opts.sort_fields.stream_sort(mapped_topic_values[1], mapped_topic_values[0]);
+            opts.sort_fields.stream_sort(mapped_topic_values[0], mapped_topic_values[0]);
+            opts.sort_fields.topic_sort(mapped_topic_values[0], mapped_topic_values[1]);
+            opts.sort_fields.topic_sort(mapped_topic_values[1], mapped_topic_values[0]);
+            opts.sort_fields.topic_sort(mapped_topic_values[0], mapped_topic_values[0]);
+        }
         return list_render;
     },
     hard_redraw: noop,
@@ -88,6 +98,7 @@ set_global('list_render', {
 const stream1 = 1;
 const stream2 = 2;
 const stream3 = 3;
+const stream4 = 4;
 
 // Topics in the stream, all unread except topic1 & stream1.
 const topic1 = "topic-1";  // No Other sender & read.
@@ -99,6 +110,7 @@ const topic6 = "topic-6";  // other sender
 const topic7 = "topic-7";  // muted topic
 const topic8 = "topic-8";
 const topic9 = "topic-9";
+const topic10 = "topic-10";
 
 set_global('muting', {
     is_topic_muted: (stream_id, topic) => {
@@ -217,6 +229,16 @@ messages[9] = {
     stream: 'stream1',
     id: id += 1,
     topic: topic7,
+    sender_id: sender1,
+    type: 'stream',
+};
+
+// a message of stream4
+messages[10] = {
+    stream_id: stream4,
+    stream: 'stream4',
+    id: id += 1,
+    topic: topic10,
     sender_id: sender1,
     type: 'stream',
 };
@@ -355,6 +377,7 @@ run_test('test_filter_unread', () => {
 
     const row_data = generate_topic_data([
         // stream_id, topic, unread_count,  muted, participated
+        [4, 'topic-10', 1, false, true],
         [1, 'topic-7', 1, true, true],
         [1, 'topic-6', 1, false, true],
         [1, 'topic-5', 1, false, true],
@@ -420,6 +443,7 @@ run_test('test_filter_participated', () => {
 
     const row_data = generate_topic_data([
         // stream_id, topic, unread_count,  muted, participated
+        [4, 'topic-10', 1, false, true],
         [1, 'topic-7', 1, true, true],
         [1, 'topic-6', 1, false, true],
         [1, 'topic-5', 1, false, true],
@@ -499,19 +523,19 @@ run_test('basic assertions', () => {
     generate_topic_data([[1, 'topic-7', 1, false, true]]);
     rt.process_messages([messages[9]]);
     // Check for expected lengths.
-    // total 7 topics, 1 muted
-    assert.equal(all_topics.size, 7);
+    // total 8 topics, 1 muted
+    assert.equal(all_topics.size, 8);
     assert.equal(Array.from(all_topics.keys()).toString(),
-                 '1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1');
+                 '4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1');
 
     rt.process_message({
         type: 'private',
     });
 
     // Private msgs are not processed.
-    assert.equal(all_topics.size, 7);
+    assert.equal(all_topics.size, 8);
     assert.equal(Array.from(all_topics.keys()).toString(),
-                 '1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1');
+                 '4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1');
 
     // participated
     verify_topic_data(all_topics, stream1, topic1, messages[0].id, true);
@@ -533,7 +557,7 @@ run_test('basic assertions', () => {
 
     all_topics = rt.get();
     assert.equal(Array.from(all_topics.keys()).toString(),
-                 '1:topic-3,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-2,1:topic-1');
+                 '1:topic-3,4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-2,1:topic-1');
     verify_topic_data(all_topics, stream1, topic3, id, true);
 
     // Send new message to topic7 (muted)
@@ -548,7 +572,7 @@ run_test('basic assertions', () => {
 
     all_topics = rt.get();
     assert.equal(Array.from(all_topics.keys()).toString(),
-                 '1:topic-7,1:topic-3,1:topic-6,1:topic-5,1:topic-4,1:topic-2,1:topic-1');
+                 '1:topic-7,1:topic-3,4:topic-10,1:topic-6,1:topic-5,1:topic-4,1:topic-2,1:topic-1');
 
     // update_topic_is_muted now relies on external libraries completely
     // so we don't need to check anythere here.
@@ -607,7 +631,7 @@ run_test('test_topic_edit', () => {
 
     let all_topics = rt.get();
     assert.equal(Array.from(all_topics.keys()).toString(),
-                 '1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1');
+                 '4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1');
 
     ////////////////// test change topic //////////////////
     verify_topic_data(all_topics, stream1, topic6, messages[8].id, true);

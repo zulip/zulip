@@ -76,8 +76,6 @@
             position: sticky;
             top: 0;
             z-index: 1000;
-            background-color: hsl(0, 0%, 27%);
-            color: hsl(0, 0%, 100%);
         }
 
         #recent_topics_filter_buttons {
@@ -150,6 +148,43 @@
 
         .recent_avatars_others {
             background-color: hsl(205.2, 76.5%, 50%);
+        }
+
+        thead th {
+            background-color: inherit;
+            color: inherit;
+            border-top: 1px solid hsla(0, 0%, 0%, 0.2) !important;
+            border-bottom: 1px solid hsla(0, 0%, 0%, 0.2) !important;
+
+            &.active::after,
+            &[data-sort]:hover::after {
+                content: " \f0d8";
+                white-space: pre;
+                display: inline-block;
+                position: absolute;
+                padding-top: 3px;
+                font: normal normal normal 12px/1 FontAwesome;
+                font-size: inherit;
+            }
+
+            &.active {
+                opacity: 1;
+                transition: opacity 100ms ease-out;
+
+                &.descend::after {
+                    content: " \f0d7";
+                }
+            }
+
+            &[data-sort]:hover {
+                cursor: pointer;
+                background-color: hsla(0, 0%, 0%, 0.05);
+                transition: background-color 100ms ease-in-out;
+
+                &:not(.active)::after {
+                    opacity: 0.3;
+                }
+            }
         }
     }
 }

@@ -249,6 +249,29 @@ exports.update_filters_view = function () {
     topics_widget.hard_redraw();
 };
 
+
+function stream_sort(a, b) {
+    const a_stream = message_store.get(a.last_msg_id).stream;
+    const b_stream = message_store.get(b.last_msg_id).stream;
+    if (a_stream > b_stream) {
+        return 1;
+    } else if (a_stream === b_stream) {
+        return 0;
+    }
+    return -1;
+}
+
+function topic_sort(a, b) {
+    const a_topic = message_store.get(a.last_msg_id).topic;
+    const b_topic = message_store.get(b.last_msg_id).topic;
+    if (a_topic > b_topic) {
+        return 1;
+    } else if (a_topic === b_topic) {
+        return 0;
+    }
+    return -1;
+}
+
 exports.complete_rerender = function () {
     if (!overlays.recent_topics_open()) {
         return false;
@@ -272,6 +295,7 @@ exports.complete_rerender = function () {
 
     topics_widget = list_render.create(container, mapped_topic_values, {
         name: "recent_topics_table",
+        parent_container: $("#recent_topics_table"),
         modifier: function (item) {
             return render_recent_topic_row(format_topic(item));
         },
@@ -281,6 +305,10 @@ exports.complete_rerender = function () {
             predicate: function (topic_data) {
                 return !is_topic_hidden(topic_data);
             },
+        },
+        sort_fields: {
+            stream_sort: stream_sort,
+            topic_sort: topic_sort,
         },
         html_selector: get_topic_row,
     });
