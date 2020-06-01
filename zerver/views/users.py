@@ -467,6 +467,7 @@ def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> Http
                   email          = user_profile.email,
                   is_bot         = user_profile.is_bot,
                   is_admin       = user_profile.is_realm_admin,
+                  is_owner       = user_profile.is_realm_owner,
                   short_name     = user_profile.short_name)
 
     if not user_profile.is_bot:

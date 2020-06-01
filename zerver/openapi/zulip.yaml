@@ -1353,6 +1353,7 @@ paths:
                              "is_active": true,
                              "email": "AARON@zulip.com",
                              "is_admin": false,
+                             "is_owner": false,
                              "avatar_url": "https://secure.gravatar.com/avatar/818c212b9f8830dfef491b3f7da99a14?d=identicon&version=1",
                              "bot_type": null,
                              "timezone": "",
@@ -1401,6 +1402,7 @@ paths:
                              "bot_type": null,
                              "timezone": "",
                              "is_admin": false,
+                             "is_owner": false,
                              "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                              "is_active": true,
                              "email": "hamlet@zulip.com"
@@ -1414,6 +1416,7 @@ paths:
                              "is_active": true,
                              "avatar_url": "https://secure.gravatar.com/avatar/7328586831cdbb1627649bd857b1ee8c?d=identicon&version=1",
                              "is_admin": false,
+                             "is_owner": false,
                              "user_id": 23,
                              "bot_type": 1,
                              "timezone": "",
@@ -1550,6 +1553,7 @@ paths:
                              "bot_type": null,
                              "timezone": "",
                              "is_admin": false,
+                             "is_owner": false,
                              "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                              "is_active": true,
                              "email": "hamlet@zulip.com"
@@ -1830,6 +1834,14 @@ paths:
                       description: |
                         A boolean indicating if the requesting user is an admin.
                       example: true
+                    is_owner:
+                      type: boolean
+                      description: |
+                        A boolean indicating if the requesting user is
+                        an organization owner.
+
+                        **Changes**: New in Zulip 2.2 (feature level 8).
+                      example: false
                     is_bot:
                       type: boolean
                       description: |
@@ -1875,6 +1887,7 @@ paths:
                         "email": "iago@zulip.com",
                         "full_name": "Iago",
                         "is_admin": true,
+                        "is_owner": false,
                         "is_bot": false,
                         "max_message_id": 30,
                         "msg": "",
@@ -3966,6 +3979,13 @@ components:
           type: boolean
           description: |
             A boolean specifying whether the user is an organization administrator.
+        is_owner:
+          type: boolean
+          description: |
+            A boolean specifying whether the user is an organization owner.
+            If true, is_admin will also be true.
+
+            **Changes**: New in Zulip 2.2 (feature level 8).
         bot_type:
           type: integer
           nullable: true

@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 2.2
 
+**Feature level 8**
+* [`GET /users`](/api/get-all-users), [`GET /users/{user_id}`](/api/get-user)
+  and [`GET /users/me`](/api/get-profile): User objects now contain the
+  `is_owner` field as well.
+
 **Feature level 7**
 * [`GET /events`](/api/get-events-from-queue): `realm_user` and
   `realm_bot` events no longer contain an `email` field to identify
