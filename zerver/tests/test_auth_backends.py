@@ -3089,6 +3089,20 @@ class TestDevAuthBackend(ZulipTestCase):
         self.assertRedirects(response, reverse('config_error', kwargs={'error_category_name': 'dev'}))
 
 class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
+    def test_start_remote_user_sso(self) -> None:
+        result = self.client_get('/accounts/login/start/sso/?param1=value1&params=value2')
+        self.assertEqual(result.status_code, 302)
+
+        url = result.url
+        parsed_url = urllib.parse.urlparse(url)
+        self.assertEqual(parsed_url.path, '/accounts/login/sso/')
+        self.assertEqual(parsed_url.query, 'param1=value1&params=value2')
+
+    def test_start_remote_user_sso_with_desktop_app(self) -> None:
+        headers = dict(HTTP_USER_AGENT="ZulipElectron/5.0.0")
+        result = self.client_get('/accounts/login/start/sso/', **headers)
+        self.verify_desktop_flow_app_page(result)
+
     def test_login_success(self) -> None:
         user_profile = self.example_user('hamlet')
         email = user_profile.delivery_email

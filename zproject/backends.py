@@ -1035,8 +1035,8 @@ class ZulipRemoteUserBackend(RemoteUserBackend, ExternalAuthMethod):
             display_name="SSO",
             display_icon=cls.display_icon,
             # The user goes to the same URL for both login and signup:
-            login_url=reverse('login-sso'),
-            signup_url=reverse('login-sso'),
+            login_url=reverse('start-login-sso'),
+            signup_url=reverse('start-login-sso'),
         )]
 
 def redirect_deactivated_user_to_login() -> HttpResponseRedirect:
