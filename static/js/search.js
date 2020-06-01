@@ -66,14 +66,12 @@ exports.initialize = function () {
 
     search_query_box.typeahead({
         source: function (query) {
-            let suggestions;
+            let base_query = '';
             if (page_params.search_pills_enabled) {
-                const base_query = search_pill.get_search_string_for_current_filter(
+                base_query = search_pill.get_search_string_for_current_filter(
                     search_pill_widget.widget);
-                suggestions = search_suggestion.get_suggestions(base_query, query);
-            } else {
-                suggestions = search_suggestion.get_suggestions_legacy(query);
             }
+            const suggestions = search_suggestion.get_suggestions(base_query, query);
             // Update our global search_map hash
             search_map = suggestions.lookup_table;
             return suggestions.strings;

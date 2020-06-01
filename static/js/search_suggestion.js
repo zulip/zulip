@@ -609,29 +609,31 @@ function make_attacher(base) {
 
 exports.get_search_result = function (base_query, query) {
     let suggestion;
+    let all_operators;
 
-    // base_query_operators correspond to the existing pills. query_operators correspond
-    // to the operators for the query in the input. This query may contain one or more
-    // operators. e.g if `is:starred stream:Ver` was typed without selecting the typeahead
-    // or pressing enter in between i.e search pill for is:starred has not yet been added,
-    // then `base` should be equal to the default suggestion for `is:starred`. Thus the
-    // description of `is:starred` will act as a prefix in every suggestion.
+    // search_operators correspond to the operators for the query in the input.
+    // For search_pills_enabled, this includes just editable query where search pills
+    // have not been created yet.
+    // And for this disabled case, this includes the entire query entered in the searchbox.
+    // operators correspond to the operators for the entire query entered in the searchbox.
+    if (page_params.search_pills_enabled) {
+        all_operators = Filter.parse((base_query + " " + query).trim());
+    }
     const search_operators = Filter.parse(query);
-    const operators = Filter.parse((base_query + " " + query).trim());
     let last = {operator: '', operand: '', negated: false};
     if (search_operators.length > 0) {
         last = search_operators.slice(-1)[0];
-    } else {
-        // If query_operators = [] then last will remain
-        // {operator: '', operand: '', negated: false}; from above.
-        // `last` has not yet been added to operators/query_operators.
-        // The code below adds last to operators/query_operators
-        operators.push(last);
+    } else if (page_params.search_pills_enabled) {
+        // We push an empty term so that we can get suggestions
+        // on the empty string based on the base query which is
+        // calculated from the created search pills.
+        // Else search results are returned as if the user is still
+        // typing the non-editable last search pill.
+        all_operators.push(last);
         search_operators.push(last);
     }
 
     const person_suggestion_ops = ['sender', 'pm-with', 'from', 'group-pm'];
-    const operators_len = operators.length;
     const search_operators_len = search_operators.length;
 
     // Handle spaces in person name in new suggestions only. Checks if the last operator is 'search'
@@ -650,8 +652,10 @@ exports.get_search_result = function (base_query, query) {
                 operand: person_op.operand + ' ' + last.operand,
                 negated: person_op.negated,
             };
-            operators[operators_len - 2] = last;
-            operators.splice(-1, 1);
+            if (page_params.search_pills_enabled) {
+                all_operators[all_operators.length - 2] = last;
+                all_operators.splice(-1, 1);
+            }
             search_operators[search_operators_len - 2] = last;
             search_operators.splice(-1, 1);
         }
@@ -693,7 +697,10 @@ exports.get_search_result = function (base_query, query) {
         get_has_filter_suggestions,
     ];
 
-    const base_operators = operators.slice(0, -1);
+    if (!page_params.search_pills_enabled) {
+        all_operators = search_operators;
+    }
+    const base_operators = all_operators.slice(0, -1);
     const max_items = exports.max_num_of_search_results;
 
     for (const filterer of filterers) {
@@ -703,105 +710,19 @@ exports.get_search_result = function (base_query, query) {
         }
     }
 
-    return attacher.result.slice(0, max_items);
-};
-
-exports.get_search_result_legacy = function (query) {
-    let suggestion;
-
-    // Add an entry for narrow by operators.
-    const search_operators = Filter.parse(query);
-    let last = {operator: '', operand: '', negated: false};
-    if (search_operators.length > 0) {
-        last = search_operators.slice(-1)[0];
-    }
-
-    const person_suggestion_ops = ['sender', 'pm-with', 'from', 'group-pm'];
-    const search_operators_len = search_operators.length;
-
-    // Handle spaces in person name in new suggestions only. Checks if the last operator is 'search'
-    // and the second last operator in search_operators is one out of person_suggestion_ops.
-    // e.g for `sender:Ted sm`, initially last = {operator: 'search', operand: 'sm'....}
-    // and second last is {operator: 'sender', operand: 'sm'....}. If the second last operand
-    // is an email of a user, both of these operators remain unchanged. Otherwise search operator
-    // will be deleted and new last will become {operator:'sender', operand: 'Ted sm`....}.
-    if (search_operators_len > 1 &&
-        last.operator === 'search' &&
-        person_suggestion_ops.includes(search_operators[search_operators_len - 2].operator)) {
-        const person_op = search_operators[search_operators_len - 2];
-        if (!people.reply_to_to_user_ids_string(person_op.operand)) {
-            last = {
-                operator: person_op.operator,
-                operand: person_op.operand + ' ' + last.operand,
-                negated: person_op.negated,
-            };
-            search_operators[search_operators_len - 2] = last;
-            search_operators.splice(-1, 1);
-        }
-    }
-
-    const base = get_default_suggestion(search_operators.slice(0, -1));
-    const attacher = make_attacher(base);
-
-    // Display the default first
-    // `has` and `is` operators work only on predefined categories. Default suggestion
-    // is not displayed in that case. e.g. `messages with one or more abc` as
-    // a suggestion for `has:abc`does not make sense.
-    if (last.operator !== '' && last.operator !== 'has' && last.operator !== 'is') {
-        suggestion = get_default_suggestion(search_operators);
-        attacher.push(suggestion);
-    }
-
-    // only make one people_getter to avoid duplicate work
-    const people_getter = make_people_getter(last);
-
-    function get_people(flavor) {
-        return function (last, base_operators) {
-            return get_person_suggestions(people_getter, last, base_operators, flavor);
-        };
-    }
-
-    const filterers = [
-        get_streams_filter_suggestions,
-        get_is_filter_suggestions,
-        get_sent_by_me_suggestions,
-        get_stream_suggestions,
-        get_people('sender'),
-        get_people('pm-with'),
-        get_people('from'),
-        get_people('group-pm-with'),
-        get_group_suggestions,
-        get_topic_suggestions,
-        get_operator_suggestions,
-        get_has_filter_suggestions,
-    ];
-
-    const base_operators = search_operators.slice(0, -1);
-    const max_items = exports.max_num_of_search_results;
-
-    for (const filterer of filterers) {
+    if (!page_params.search_pills_enabled) {
+        // This is unique to the legacy search system.  With pills
+        // it is difficult to "suggest" a subset of operators,
+        // and there's a more natural mechanism under that paradigm,
+        // where the user just deletes one or more pills.  So you
+        // won't see this is in the new code.
         if (attacher.result.length < max_items) {
-            const suggestions = filterer(last, base_operators);
-            attacher.attach_many(suggestions);
+            const subset_suggestions = get_operator_subset_suggestions(search_operators);
+            attacher.concat(subset_suggestions);
         }
     }
 
-    // This is unique to the legacy search system.  With pills
-    // it is difficult to "suggest" a subset of operators,
-    // and there's a more natural mechanism under that paradigm,
-    // where the user just deletes one or more pills.  So you
-    // won't see this is in the new code.
-    if (attacher.result.length < max_items) {
-        const subset_suggestions = get_operator_subset_suggestions(search_operators);
-        attacher.concat(subset_suggestions);
-    }
-
     return attacher.result.slice(0, max_items);
-};
-
-exports.get_suggestions_legacy = function (query) {
-    const result = exports.get_search_result_legacy(query);
-    return exports.finalize_search_result(result);
 };
 
 exports.get_suggestions = function (base_query, query) {
