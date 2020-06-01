@@ -1,10 +1,11 @@
 zrequire('message_util');
 
+const noop = () => {};
 set_global('$', global.make_zjquery({
     silent: true,
 }));
 set_global('hashchange', {
-    exit_overlay: () => {},
+    exit_overlay: noop,
 });
 set_global('stream_data', {
     get_sub: () => {
@@ -64,6 +65,22 @@ set_global('hash_util', {
 set_global('recent_senders', {
     get_topic_recent_senders: () => { return [1, 2]; },
 });
+set_global('list_render', {
+    modifier: noop,
+    create: (container, mapped_topic_values, opts) => {
+        const formatted_topics = [];
+        list_render.modifier = opts.modifier;
+        for (const item of mapped_topic_values) {
+            formatted_topics.push(opts.modifier(item));
+            opts.filter.predicate(item);
+        }
+        return list_render;
+    },
+    hard_redraw: noop,
+    render_item: (item) => {
+        return list_render.modifier(item);
+    },
+});
 
 // Custom Data
 
@@ -111,28 +128,6 @@ set_global('message_store', {
         return messages[msg_id - 1];
     },
 });
-
-const $array = (array) => {
-    const each = (func) => {
-        array.forEach(e => {
-            func.call(e);
-        });
-    };
-    const filter = (func) => {
-        const passed_elements = [];
-        array.forEach(e => {
-            if (func.call(e)) {
-                passed_elements.push(e);
-            }
-        });
-        // FIX: return complete list as a jquery object
-        return passed_elements[0];
-    };
-    return {
-        each: each,
-        filter: filter,
-    };
-};
 
 let id = 0;
 
@@ -232,7 +227,6 @@ function generate_topic_data(topic_info_array) {
     $.clear_all_elements();
     const data = [];
     const selectors = [];
-    const rows_stub = $.create('.recent_topics_table tr');
 
     for (const [stream_id, topic, unread_count, muted, participated] of topic_info_array) {
         const topic_selector = $.create('#recent_topic:' + stream_id + ":" + topic);
@@ -266,8 +260,6 @@ function generate_topic_data(topic_info_array) {
             participated: participated,
         });
     }
-    rows_stub.each = $array(selectors).each;
-    rows_stub.filter = $array(selectors).filter;
     return data;
 }
 
@@ -286,16 +278,7 @@ run_test("test_recent_topics_launch", () => {
         filter_participated: true,
         filter_unread: true,
         filter_muted: false,
-        recent_topics: generate_topic_data([
-            // stream_id, topic, unread_count, muted, participated
-            [1, 'topic-7', 1, true, true],
-            [1, 'topic-6', 1, false, true],
-            [1, 'topic-5', 1, false, true],
-            [1, 'topic-4', 1, false, false],
-            [1, 'topic-3', 1, false, false],
-            [1, 'topic-2', 1, false, true],
-            [1, 'topic-1', 0, false, true],
-        ]),
+        search_val: '',
     };
 
     global.stub_templates(function (template_name, data) {
@@ -321,41 +304,66 @@ run_test("test_recent_topics_launch", () => {
 run_test('test_filter_all', () => {
     // Just tests inplace rerender of a message
     // in All topics filter.
-    let expected = generate_topic_data([[1, 'topic-1', 0, false, true]])[0];
-
+    const expected = {
+        filter_participated: false,
+        filter_unread: false,
+        filter_muted: false,
+        search_val: "",
+    };
+    let row_data;
+    let i;
     global.stub_templates(function (template_name, data) {
-        assert.equal(template_name, 'recent_topic_row');
-        assert.deepEqual(data, expected);
+        if (template_name === 'recent_topic_row') {
+            // All the row will be processed.
+            i -= 1;
+            assert.deepEqual(data, row_data[i]);
+        } else if (template_name === 'recent_topics_table') {
+            assert.deepEqual(data, expected);
+        }
         return '<recent_topics row stub>';
     });
 
     // topic is not muted
+    row_data = generate_topic_data([[1, 'topic-1', 0, false, true]]);
+    i = row_data.length;
     const rt = zrequire('recent_topics');
+    rt.set_filter('all');
     rt.process_messages([messages[0]]);
 
-    expected = generate_topic_data([[1, 'topic-7', 1, true, true]])[0];
-
+    row_data = row_data.concat(generate_topic_data([[1, 'topic-7', 1, true, true]]));
+    i = row_data.length;
     // topic is muted (=== hidden)
     rt.process_messages([messages[9]]);
+
+    // Test search
+    expected.search_val = "topic-1";
+    row_data = generate_topic_data([[1, 'topic-1', 0, false, true]]);
+    const search_element = $.create("#recent_topics_search");
+    search_element.val('topic-3');
+    i = row_data.length;
+    assert.equal(rt.inplace_rerender('1:topic-1'), true);
 });
 
 run_test('test_filter_unread', () => {
     // Tests rerender of all topics when filter changes to "unread".
-    let expected =   {
+    const expected = {
         filter_participated: false,
         filter_unread: true,
         filter_muted: false,
-        recent_topics: generate_topic_data([
-            // stream_id, topic, unread_count,  muted, participated
-            [1, 'topic-7', 1, true, true],
-            [1, 'topic-6', 1, false, true],
-            [1, 'topic-5', 1, false, true],
-            [1, 'topic-4', 1, false, false],
-            [1, 'topic-3', 1, false, false],
-            [1, 'topic-2', 1, false, true],
-            [1, 'topic-1', 0, false, true],
-        ]),
+        search_val: '',
     };
+
+    const row_data = generate_topic_data([
+        // stream_id, topic, unread_count,  muted, participated
+        [1, 'topic-7', 1, true, true],
+        [1, 'topic-6', 1, false, true],
+        [1, 'topic-5', 1, false, true],
+        [1, 'topic-4', 1, false, false],
+        [1, 'topic-3', 1, false, false],
+        [1, 'topic-2', 1, false, true],
+        [1, 'topic-1', 0, false, true],
+    ]);
+    let i = 0;
 
     const rt = zrequire('recent_topics');
 
@@ -363,25 +371,27 @@ run_test('test_filter_unread', () => {
         return '<recent_topics table stub>';
     });
     rt.process_messages(messages);
+    assert.equal(rt.inplace_rerender('1:topic-1'), true);
 
     global.stub_templates(function (template_name, data) {
-        if (template_name === 'recent_topics_table') {
-            assert.deepEqual(data, expected);
-        } else if (template_name === 'recent_topics_filters') {
-            assert.equal(data.filter_unread, expected.filter_unread);
-            assert.equal(data.filter_participated, expected.filter_participated);
-        }
+        assert.equal(template_name, 'recent_topics_filters');
+        assert.equal(data.filter_unread, expected.filter_unread);
+        assert.equal(data.filter_participated, expected.filter_participated);
         return '<recent_topics table stub>';
     });
 
     // This will deselect participated and leave only unread selected.
     rt.set_filter('participated');
     rt.update_filters_view();
-    expected = generate_topic_data([[1, 'topic-1', 0, false, true]])[0];
 
     global.stub_templates(function (template_name, data) {
-        assert.equal(template_name, 'recent_topic_row');
-        assert.deepEqual(data, expected);
+        if (template_name === 'recent_topic_row') {
+            // All the row will be processed.
+            assert.deepEqual(data, row_data[i]);
+            i += 1;
+        } else if (template_name === 'recent_topics_table') {
+            assert.deepEqual(data, expected);
+        }
         return '<recent_topics row stub>';
     });
     rt.process_messages([messages[0]]);
@@ -391,26 +401,34 @@ run_test('test_filter_unread', () => {
     $('#recent_topics_filter_buttons').addClass('btn-recent-selected');
     rt.set_filter('unread');
 
+    $('#recent_topics_filter_buttons').removeClass('btn-recent-selected');
+    // reselect "unread" filter
+    rt.set_filter('unread');
+
     // Now clicking "all" filter should have no change to expected data.
     rt.set_filter('all');
 });
 
 run_test('test_filter_participated', () => {
     // Tests rerender of all topics when filter changes to "unread".
-    let expected =   {
+    const expected = {
         filter_participated: true,
         filter_unread: false,
-        recent_topics: generate_topic_data([
-            // stream_id, topic, unread_count,  muted, participated
-            [1, 'topic-7', 1, true, true],
-            [1, 'topic-6', 1, false, true],
-            [1, 'topic-5', 1, false, true],
-            [1, 'topic-4', 1, false, false],
-            [1, 'topic-3', 1, false, false],
-            [1, 'topic-2', 1, false, true],
-            [1, 'topic-1', 0, false, true],
-        ]),
+        filter_muted: false,
+        search_val: '',
     };
+
+    const row_data = generate_topic_data([
+        // stream_id, topic, unread_count,  muted, participated
+        [1, 'topic-7', 1, true, true],
+        [1, 'topic-6', 1, false, true],
+        [1, 'topic-5', 1, false, true],
+        [1, 'topic-4', 1, false, false],
+        [1, 'topic-3', 1, false, false],
+        [1, 'topic-2', 1, false, true],
+        [1, 'topic-1', 0, false, true],
+    ]);
+    let i = 0;
 
     const rt = zrequire('recent_topics');
 
@@ -418,23 +436,33 @@ run_test('test_filter_participated', () => {
         return '<recent_topics table stub>';
     });
     rt.process_messages(messages);
+    assert.equal(rt.inplace_rerender('1:topic-4'), true);
+
+    // Set muted filter
+    rt.set_filter('muted');
+    assert.equal(rt.inplace_rerender('1:topic-7'), true);
+
+    // remove muted filter
+    rt.set_filter('muted');
 
     global.stub_templates(function (template_name, data) {
-        if (template_name === 'recent_topics_table') {
-            assert.deepEqual(data, expected);
-        } else if (template_name === 'recent_topics_filters') {
-            assert.equal(data.filter_unread, expected.filter_unread);
-            assert.equal(data.filter_participated, expected.filter_participated);
-        }
+        assert.equal(template_name, 'recent_topics_filters');
+        assert.equal(data.filter_unread, expected.filter_unread);
+        assert.equal(data.filter_participated, expected.filter_participated);
         return '<recent_topics table stub>';
     });
     rt.set_filter('unread');
     rt.update_filters_view();
-    expected = generate_topic_data([[1, 'topic-4', 1, false, false]])[0];
+
 
     global.stub_templates(function (template_name, data) {
-        assert.equal(template_name, 'recent_topic_row');
-        assert.deepEqual(data, expected);
+        if (template_name === 'recent_topic_row') {
+            // All the row will be processed.
+            assert.deepEqual(data, row_data[i]);
+            i += 1;
+        } else if (template_name === 'recent_topics_table') {
+            assert.deepEqual(data, expected);
+        }
         return '<recent_topics row stub>';
     });
     rt.process_messages([messages[4]]);
@@ -443,46 +471,9 @@ run_test('test_filter_participated', () => {
     rt.set_filter('all');
 });
 
-// TODO: Add tests for filter_muted.
-
-run_test('test_search_keyword', () => {
-    // TODO: Test search mechanism properly.
-    // This is only intended to pass coverage currently.
-    const expected =   {
-        filter_participated: true,
-        filter_unread: true,
-        filter_muted: false,
-        recent_topics: generate_topic_data([
-            // stream_id, topic, unread_count,  muted, participated
-            [1, 'topic-7', 1, true, true],
-            [1, 'topic-6', 1, false, true],
-            [1, 'topic-5', 1, false, true],
-            [1, 'topic-4', 1, false, false],
-            [1, 'topic-3', 1, false, false],
-            [1, 'topic-2', 1, false, true],
-            [1, 'topic-1', 0, false, true],
-        ]),
-    };
-
-    const rt = zrequire('recent_topics');
-
-    $('#recent_topics_filter_buttons').removeClass('btn-recent-selected');
-    global.stub_templates(function (template_name, data) {
-        if (template_name === 'recent_topics_table') {
-            assert.deepEqual(data, expected);
-        } else if (template_name === 'recent_topics_filters') {
-            assert.equal(data.filter_unread, expected.filter_unread);
-            assert.equal(data.filter_participated, expected.filter_participated);
-        }
-        return '<recent_topics table stub>';
-    });
-    rt.process_messages(messages);
-
-    rt.search_keyword('hello');
-});
-
 run_test('test_update_unread_count', () => {
     const rt = zrequire('recent_topics');
+    rt.set_filter('all');
     global.stub_templates(function () {
         return '<recent_topics table stub>';
     });
@@ -500,6 +491,7 @@ global.stub_templates(function () {
 
 run_test('basic assertions', () => {
     const rt = zrequire('recent_topics');
+    rt.set_filter('all');
     rt.process_messages(messages);
     let all_topics = rt.get();
 
@@ -568,6 +560,7 @@ run_test('basic assertions', () => {
 
 run_test('test_reify_local_echo_message', () => {
     const rt = zrequire('recent_topics');
+    rt.set_filter('all');
     rt.process_messages(messages);
 
     rt.process_message({
@@ -609,6 +602,7 @@ run_test('test_reify_local_echo_message', () => {
 run_test('test_topic_edit', () => {
     // NOTE: This test should always run in the end as it modified the messages data.
     const rt = zrequire('recent_topics');
+    rt.set_filter('all');
     rt.process_messages(messages);
 
     let all_topics = rt.get();

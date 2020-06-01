@@ -2,6 +2,7 @@ const render_recent_topics_body = require('../templates/recent_topics_table.hbs'
 const render_recent_topic_row = require('../templates/recent_topic_row.hbs');
 const render_recent_topics_filters = require('../templates/recent_topics_filters.hbs');
 const topics = new Map(); // Key is stream-id:topic.
+let topics_widget;
 // Sets the number of avatars to display.
 // Rest of the avatars, if present, are displayed as {+x}
 const MAX_AVATAR = 4;
@@ -9,22 +10,19 @@ const MAX_AVATAR = 4;
 let filters = new Set(['unread', 'participated']);
 
 exports.process_messages = function (messages) {
-    // Since a complete re-render is expensive, we
-    // only do it if there are more than 5 messages
-    // to process.
-    let do_inplace_rerender = true;
-    if (messages.length > 5) {
-        do_inplace_rerender = false;
-    }
+    // FIX: Currently, we do a complete_rerender everytime
+    // we process a new message.
+    // While this is inexpensive and handles all the cases itself,
+    // the UX can be bad if user wants to scroll down the list as
+    // the UI will be returned to the beginning of the list on every
+    // update.
     for (const msg of messages) {
-        exports.process_message(msg, do_inplace_rerender);
+        exports.process_message(msg);
     }
-    if (!do_inplace_rerender && overlays.recent_topics_open()) {
-        exports.complete_rerender();
-    }
+    exports.complete_rerender();
 };
 
-exports.process_message = function (msg, do_inplace_rerender) {
+exports.process_message = function (msg) {
     if (msg.type !== 'stream') {
         return false;
     }
@@ -46,11 +44,12 @@ exports.process_message = function (msg, do_inplace_rerender) {
         // from server.
         topic_data.last_msg_id = msg.id;
     }
+    // TODO: Add backend support for participated topics.
+    // Currently participated === Recently Participated
+    // i.e. Only those topics are participated for which we have the user's
+    // message fetched in the topic. Ideally we would want this to be attached
+    // to topic info fetched from backend, which is currently not a thing.
     topic_data.participated = is_ours || topic_data.participated;
-
-    if (do_inplace_rerender && overlays.recent_topics_open()) {
-        exports.inplace_rerender(key);
-    }
     return true;
 };
 
@@ -120,16 +119,9 @@ function format_topic(topic_data) {
     };
 }
 
-function format_all_topics() {
-    const topics_array = [];
-    for (const [, value] of exports.get()) {
-        topics_array.push(format_topic(value));
-    }
-    return topics_array;
-}
-
-function get_topic_row(topic_key) {
-    // topic_key = stream_id + ":" + topic
+function get_topic_row(topic_data) {
+    const msg = message_store.get(topic_data.last_msg_id);
+    const topic_key = msg.stream_id + ":" + msg.topic;
     return $("#" + $.escapeSelector("recent_topic:" + topic_key));
 }
 
@@ -137,7 +129,6 @@ exports.process_topic_edit = function (old_stream_id, old_topic, new_topic, new_
     // See `recent_senders.process_topic_edit` for
     // logic behind this and important notes on use of this function.
     topics.delete(old_stream_id + ':' + old_topic);
-    get_topic_row(old_stream_id + ':' + old_topic).remove();
 
     const old_topic_msgs = message_util.get_messages_in_topic(old_stream_id, old_topic);
     exports.process_messages(old_topic_msgs);
@@ -147,57 +138,59 @@ exports.process_topic_edit = function (old_stream_id, old_topic, new_topic, new_
     exports.process_messages(new_topic_msgs);
 };
 
-function is_row_hidden(data) {
-    const {participated, muted, unreadCount} = data;
+function topic_in_search_results(keyword, stream, topic) {
+    if (keyword === "") {
+        return true;
+    }
+    // split the search text around whitespace(s).
+    // eg: "Denamark recent" -> ["Denamrk", "recent"]
+    const search_keywords = $.trim(keyword).split(/\s+/);
+    // turn the search keywords into word boundry groups
+    // eg: ["Denamrk", "recent"] -> "^(?=.*\bDenmark\b)(?=.*\brecent\b).*$"
+    const val = '^(?=.*\\b' + search_keywords.join('\\b)(?=.*\\b') + ').*$';
+    const reg = RegExp(val, 'i'); // i for ignorecase
+    const text = (stream + " " + topic).replace(/\s+/g, ' ');
+    return reg.test(text);
+}
+
+function is_topic_hidden(topic_data) {
+    const msg = message_store.get(topic_data.last_msg_id);
+    const topic_muted = !!muting.is_topic_muted(msg.stream_id, msg.topic);
+    const stream_muted = stream_data.is_muted(msg.stream_id);
+    const muted = topic_muted || stream_muted;
+    const unreadCount = unread.unread_topic_counter.get(msg.stream_id, msg.topic);
+    const search_keyword = $("#recent_topics_search").val();
+
     if (unreadCount === 0 && filters.has('unread')) {
         return true;
-    } else if (!participated && filters.has('participated')) {
+    } else if (!topic_data.participated && filters.has('participated')) {
         return true;
     } else if (muted && !filters.has('muted')) {
+        return true;
+    } else if (!topic_in_search_results(search_keyword, msg.stream, msg.topic)) {
         return true;
     }
     return false;
 }
 
 exports.inplace_rerender = function (topic_key) {
-    // We remove topic from the UI and reinsert it.
-    // This makes sure we maintain the correct order
-    // of topics.
-    const topic_data = topics.get(topic_key);
-    if (topic_data === undefined) {
+    if (!overlays.recent_topics_open()) {
         return false;
     }
-    const formatted_values = format_topic(topic_data);
-    let topic_row = get_topic_row(topic_key);
-    topic_row.remove();
-
-    const rendered_row = render_recent_topic_row(formatted_values);
-
-    const sorted_topic_keys = Array.from(get_sorted_topics().keys());
-    const topic_index = sorted_topic_keys.findIndex(
-        function (key) {
-            if (key === topic_key) {
-                return true;
-            }
-            return false;
-        }
-    );
-
-    if (topic_index === 0) {
-        // Note: In this function length of sorted_topic_keys is always >= 2,
-        // since it is called after a complete_rerender has taken place.
-        // A complete_rerender only takes place after there is a topic to
-        // display. So, this can at min be the second topic we are dealing with.
-        get_topic_row(sorted_topic_keys[1]).before(rendered_row);
+    if (!topics.has(topic_key)) {
+        return false;
     }
-    get_topic_row(sorted_topic_keys[topic_index - 1]).after(rendered_row);
 
-    topic_row = get_topic_row(topic_key);
-    if (is_row_hidden(topic_row.data())) {
+    const topic_data = topics.get(topic_key);
+    topics_widget.render_item(topic_data);
+    const topic_row = get_topic_row(topic_data);
+
+    if (is_topic_hidden(topic_data)) {
         topic_row.hide();
     } else {
         topic_row.show();
     }
+    return true;
 };
 
 exports.update_topic_is_muted = function (stream_id, topic) {
@@ -213,10 +206,8 @@ exports.update_topic_is_muted = function (stream_id, topic) {
 };
 
 exports.update_topic_unread_count = function (message) {
-    if (overlays.recent_topics_open()) {
-        const topic_key = message.stream_id + ":" + message.topic;
-        exports.inplace_rerender(topic_key);
-    }
+    const topic_key = message.stream_id + ":" + message.topic;
+    exports.inplace_rerender(topic_key);
 };
 
 exports.set_filter = function (filter) {
@@ -247,65 +238,55 @@ function show_selected_filters() {
 }
 
 exports.update_filters_view = function () {
-    const $rows = $('.recent_topics_table tr').slice(1);
-    const search_val = $('#recent_topics_search').val();
-    $rows.each(function () {
-        const row = $(this);
-        if (is_row_hidden(row.data())) {
-            row.hide();
-        } else {
-            row.show();
-        }
-    });
-    exports.search_keyword(search_val);
-
     const rendered_filters = render_recent_topics_filters({
         filter_participated: filters.has('participated'),
         filter_unread: filters.has('unread'),
         filter_muted: filters.has('muted'),
     });
     $("#recent_filters_group").html(rendered_filters);
-
     show_selected_filters();
-};
 
-exports.search_keyword = function (keyword) {
-    if (keyword === "") {
-        return false;
-    }
-    // take all rows and slice off the header.
-    const $rows = $('.recent_topics_table tr').slice(1);
-    // split the search text around whitespace(s).
-    // eg: "Denamark recent" -> ["Denamrk", "recent"]
-    const search_keywords = $.trim(keyword).split(/\s+/);
-    // turn the search keywords into word boundry groups
-    // eg: ["Denamrk", "recent"] -> "^(?=.*\bDenmark\b)(?=.*\brecent\b).*$"
-    const val = '^(?=.*\\b' + search_keywords.join('\\b)(?=.*\\b') + ').*$';
-    const reg = RegExp(val, 'i'); // i for ignorecase
-    let text;
-
-    $rows.filter(function () {
-        text = $(this).text().replace(/\s+/g, ' ');
-        return !reg.test(text);
-    }).hide();
+    topics_widget.hard_redraw();
 };
 
 exports.complete_rerender = function () {
-    // NOTE: This function is grows expensive with
-    // number of topics. Only call when necessary.
-    // This functions takes around 1ms per topic to process.
+    if (!overlays.recent_topics_open()) {
+        return false;
+    }
+    // Prepare Header
     const rendered_body = render_recent_topics_body({
-        recent_topics: format_all_topics(),
         filter_participated: filters.has('participated'),
         filter_unread: filters.has('unread'),
         filter_muted: filters.has('muted'),
+        search_val: $("#recent_topics_search").val() || "",
     });
     $('#recent_topics_table').html(rendered_body);
-    exports.update_filters_view();
+    show_selected_filters();
+
+    // Show topics list
+    const container = $('.recent_topics_table table tbody');
+    container.empty();
+    const mapped_topic_values = Array.from(exports.get().values()).map(function (value) {
+        return value;
+    });
+
+    topics_widget = list_render.create(container, mapped_topic_values, {
+        name: "recent_topics_table",
+        modifier: function (item) {
+            return render_recent_topic_row(format_topic(item));
+        },
+        filter: {
+            // We use update_filters_view & is_topic_hidden to do all the
+            // filtering for us, which is called using click_handlers.
+            predicate: function (topic_data) {
+                return !is_topic_hidden(topic_data);
+            },
+        },
+        html_selector: get_topic_row,
+    });
 };
 
 exports.launch = function () {
-    recent_topics.complete_rerender();
     overlays.open_overlay({
         name: 'recent_topics',
         overlay: $('#recent_topics_overlay'),
@@ -313,6 +294,7 @@ exports.launch = function () {
             hashchange.exit_overlay();
         },
     });
+    recent_topics.complete_rerender();
 };
 
 window.recent_topics = exports;
