@@ -283,7 +283,7 @@ class Command(BaseCommand):
             iago.save(update_fields=['is_staff'])
 
             desdemona = get_user_by_delivery_email("desdemona@zulip.com", zulip_realm)
-            do_change_user_role(desdemona, UserProfile.ROLE_REALM_ADMINISTRATOR)
+            do_change_user_role(desdemona, UserProfile.ROLE_REALM_OWNER)
 
             guest_user = get_user_by_delivery_email("polonius@zulip.com", zulip_realm)
             guest_user.role = UserProfile.ROLE_GUEST

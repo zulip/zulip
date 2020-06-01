@@ -3899,10 +3899,9 @@ class DeactivateUserTest(ZulipTestCase):
 
     def test_do_not_deactivate_final_user(self) -> None:
         realm = get_realm('zulip')
-        do_change_user_role(self.example_user("desdemona"), UserProfile.ROLE_MEMBER)
         UserProfile.objects.filter(realm=realm).exclude(
-            role=UserProfile.ROLE_REALM_ADMINISTRATOR).update(is_active=False)
-        user = self.example_user("iago")
+            role=UserProfile.ROLE_REALM_OWNER).update(is_active=False)
+        user = self.example_user("desdemona")
         self.login_user(user)
         result = self.client_delete('/json/users/me')
         self.assert_json_error(result, "Cannot deactivate the only user.")
