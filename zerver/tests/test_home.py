@@ -614,6 +614,7 @@ class HomeTest(ZulipTestCase):
                 is_active=True,
                 is_bot=True,
                 is_admin=False,
+                is_owner=False,
                 is_cross_realm_bot=True,
                 is_guest=False
             ),
@@ -627,6 +628,7 @@ class HomeTest(ZulipTestCase):
                 is_active=True,
                 is_bot=True,
                 is_admin=False,
+                is_owner=False,
                 is_cross_realm_bot=True,
                 is_guest=False
             ),
@@ -640,6 +642,7 @@ class HomeTest(ZulipTestCase):
                 is_active=True,
                 is_bot=True,
                 is_admin=False,
+                is_owner=False,
                 is_cross_realm_bot=True,
                 is_guest=False
             ),

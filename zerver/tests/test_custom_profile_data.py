@@ -672,15 +672,15 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         expected_keys_for_iago = {
             "delivery_email",
-            "email", "user_id", "avatar_url", "avatar_version", "is_admin", "is_guest", "is_bot",
+            "email", "user_id", "avatar_url", "avatar_version", "is_admin", "is_guest", "is_bot", "is_owner",
             "full_name", "timezone", "is_active", "date_joined", "profile_data"}
         self.assertEqual(set(iago_raw_data.keys()), expected_keys_for_iago)
         self.assertNotEqual(iago_raw_data["profile_data"], {})
 
         expected_keys_for_test_bot = {
             "delivery_email",
-            "email", "user_id", "avatar_url", "avatar_version", "is_admin", "is_guest", "is_bot", "full_name",
-            "timezone", "is_active", "date_joined", "bot_type", "bot_owner_id"}
+            "email", "user_id", "avatar_url", "avatar_version", "is_admin", "is_guest", "is_bot", "is_owner",
+            "full_name", "timezone", "is_active", "date_joined", "bot_type", "bot_owner_id"}
         self.assertEqual(set(test_bot_raw_data.keys()), expected_keys_for_test_bot)
         self.assertEqual(test_bot_raw_data["bot_type"], 1)
         self.assertEqual(test_bot_raw_data["bot_owner_id"], iago_raw_data["user_id"])
@@ -697,8 +697,8 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.login('iago')
         expected_keys = {
             "result", "msg", "pointer", "client_id", "max_message_id", "user_id",
-            "avatar_url", "full_name", "email", "is_bot", "is_admin", "short_name",
-            "profile_data"}
+            "avatar_url", "full_name", "email", "is_bot", "is_admin", "is_owner",
+            "short_name", "profile_data"}
 
         url = "/json/users/me"
         response = self.client_get(url)
