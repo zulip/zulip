@@ -57,6 +57,14 @@
         padding: 15px;
         overflow: hidden !important;
 
+        a {
+            color: hsl(205, 47%, 42%);
+            text-decoration: none;
+            &:hover {
+                color: hsl(214, 40%, 58%);
+            }
+        }
+
         .required-text:empty::after {
             content: attr(data-empty);
             display: block;
@@ -79,10 +87,10 @@
             overflow-y: auto;
             max-height: 100%;
         }
-        .tableFixHead thead th {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+
+        .tableFixHead table {
+            // To keep border properties to the thead th.
+            border-collapse: separate;
         }
 
         #recent_topics_filter_buttons {
@@ -158,10 +166,13 @@
         }
 
         thead th {
-            background-color: inherit;
+            background-color: hsl(0, 0%, 100%);
             color: inherit;
             border-top: 1px solid hsla(0, 0%, 0%, 0.2) !important;
             border-bottom: 1px solid hsla(0, 0%, 0%, 0.2) !important;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
 
             &.active::after,
             &[data-sort]:hover::after {
@@ -185,7 +196,7 @@
 
             &[data-sort]:hover {
                 cursor: pointer;
-                background-color: hsla(0, 0%, 0%, 0.05);
+                background-color: hsla(0, 0%, 95%);
                 transition: background-color 100ms ease-in-out;
 
                 &:not(.active)::after {

@@ -407,13 +407,25 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .btn-recent-filters {
-        background-color: hsl(0, 0%, 26%);
+        background-color: hsl(211, 29%, 14%);
         border-color: hsl(0, 0%, 0%);
         color: hsl(0, 0%, 100%);
     }
 
-    .btn-recent-selected {
+    .btn-recent-selected,
+    .recent_topics_table thead th {
         background-color: hsl(0, 0%, 0%) !important;
+        &:hover {
+            background-color: hsl(211, 29%, 14%) !important;
+        }
+    }
+
+    .recent_topics_table td a {
+        color: hsl(206, 89%, 74%);
+        text-decoration: none;
+        &:hover {
+            color: hsl(208, 64%, 52%);
+        }
     }
 
     thead,
