@@ -426,6 +426,7 @@ i18n_urls = [
     url(r'^accounts/login/(google)/$', zerver.views.auth.start_social_login,
         name='login-social'),
 
+    url(r'^accounts/login/start/sso/$', zerver.views.auth.start_remote_user_sso, name='start-login-sso'),
     url(r'^accounts/login/sso/$', zerver.views.auth.remote_user_sso, name='login-sso'),
     url(r'^accounts/login/jwt/$', zerver.views.auth.remote_user_jwt, name='login-jwt'),
     url(r'^accounts/login/social/([\w,-]+)$', zerver.views.auth.start_social_login,

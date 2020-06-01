@@ -464,6 +464,17 @@ def handle_desktop_flow(func: ViewFuncT) -> ViewFuncT:
     return wrapper  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
 
 @handle_desktop_flow
+def start_remote_user_sso(request: HttpRequest) -> HttpResponse:
+    """
+    The purpose of this endpoint is to provide an initial step in the flow
+    on which we can handle the special behavior for the desktop app.
+    /accounts/login/sso may have Apache intercepting requests to it
+    to do authentication, so we need this additional endpoint.
+    """
+    query = request.META['QUERY_STRING']
+    return redirect(add_query_to_redirect_url(reverse('login-sso'), query))
+
+@handle_desktop_flow
 def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[str]=None
                        ) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
