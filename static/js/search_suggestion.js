@@ -510,6 +510,13 @@ function get_has_filter_suggestions(last, operators) {
                 {operator: 'has', operand: 'attachment'},
             ],
         },
+        {
+            search_string: 'has:reaction',
+            description: 'messages with one or more reaction',
+            invalid: [
+                {operator: 'has', operand: 'reaction'},
+            ],
+        },
     ];
     return get_special_filter_suggestions(last, operators, suggestions);
 }
