@@ -616,34 +616,34 @@ exports.get_search_result = function (base_query, query) {
     // or pressing enter in between i.e search pill for is:starred has not yet been added,
     // then `base` should be equal to the default suggestion for `is:starred`. Thus the
     // description of `is:starred` will act as a prefix in every suggestion.
-    const query_operators = Filter.parse(query);
+    const search_operators = Filter.parse(query);
     const operators = Filter.parse((base_query + " " + query).trim());
     let last = {operator: '', operand: '', negated: false};
-    if (query_operators.length > 0) {
-        last = query_operators.slice(-1)[0];
+    if (search_operators.length > 0) {
+        last = search_operators.slice(-1)[0];
     } else {
         // If query_operators = [] then last will remain
         // {operator: '', operand: '', negated: false}; from above.
         // `last` has not yet been added to operators/query_operators.
         // The code below adds last to operators/query_operators
         operators.push(last);
-        query_operators.push(last);
+        search_operators.push(last);
     }
 
     const person_suggestion_ops = ['sender', 'pm-with', 'from', 'group-pm'];
     const operators_len = operators.length;
-    const query_operators_len = query_operators.length;
+    const search_operators_len = search_operators.length;
 
-    // Handle spaces in person name in new suggestions only. Checks if the last operator is
-    // 'search' and the second last operator in query_operators is one out of person_suggestion_ops.
+    // Handle spaces in person name in new suggestions only. Checks if the last operator is 'search'
+    // and the second last operator in search_operators is one out of person_suggestion_ops.
     // e.g for `sender:Ted sm`, initially last = {operator: 'search', operand: 'sm'....}
     // and second last is {operator: 'sender', operand: 'sm'....}. If the second last operand
     // is an email of a user, both of these operators remain unchanged. Otherwise search operator
     // will be deleted and new last will become {operator:'sender', operand: 'Ted sm`....}.
-    if (query_operators_len > 1 &&
+    if (search_operators_len > 1 &&
         last.operator === 'search' &&
-        person_suggestion_ops.includes(query_operators[query_operators_len - 2].operator)) {
-        const person_op = query_operators[query_operators_len - 2];
+        person_suggestion_ops.includes(search_operators[search_operators_len - 2].operator)) {
+        const person_op = search_operators[search_operators_len - 2];
         if (!people.reply_to_to_user_ids_string(person_op.operand)) {
             last = {
                 operator: person_op.operator,
@@ -652,12 +652,12 @@ exports.get_search_result = function (base_query, query) {
             };
             operators[operators_len - 2] = last;
             operators.splice(-1, 1);
-            query_operators[query_operators_len - 2] = last;
-            query_operators.splice(-1, 1);
+            search_operators[search_operators_len - 2] = last;
+            search_operators.splice(-1, 1);
         }
     }
 
-    const base = get_default_suggestion(query_operators.slice(0, -1));
+    const base = get_default_suggestion(search_operators.slice(0, -1));
     const attacher = make_attacher(base);
 
     // Display the default first
@@ -665,7 +665,7 @@ exports.get_search_result = function (base_query, query) {
     // is not displayed in that case. e.g. `messages with one or more abc` as
     // a suggestion for `has:abc`does not make sense.
     if (last.operator !== '' && last.operator !== 'has' && last.operator !== 'is') {
-        suggestion = get_default_suggestion(query_operators);
+        suggestion = get_default_suggestion(search_operators);
         attacher.push(suggestion);
     }
 
