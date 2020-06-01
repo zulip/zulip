@@ -332,6 +332,7 @@ run_test('comma', () => {
 
     key_handler({
         keyCode: COMMA,
+        preventDefault: noop,
     });
 
     assert.deepEqual(widget.items(), [

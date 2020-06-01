@@ -283,19 +283,17 @@ exports.create = function (opts) {
                 }
             }
 
-            // users should not be able to type a comma if the last field doesn't
-            // validate.
+            // Typing of the comma is prevented if the last field doesn't validate,
+            // as well as when the new pill is created.
             if (char === KEY.COMMA) {
                 // if the pill is successful, it will create the pill and clear
                 // the input.
                 if (funcs.appendPill(store.$input.text().trim()) !== false) {
                     funcs.clear(store.$input[0]);
-                // otherwise it will prevent the typing of the comma because they
-                // cannot add another pill until this input is valid.
-                } else {
-                    e.preventDefault();
-                    return;
                 }
+                e.preventDefault();
+
+                return;
             }
         });
 

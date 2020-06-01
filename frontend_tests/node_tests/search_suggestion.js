@@ -1202,10 +1202,10 @@ run_test('multiple_operators_without_pills', () => {
     let suggestions = get_suggestions(base_query, query);
     let expected = [
         "is:private al",
-        "is:private is:alerted",
-        "is:private sender:alice@zulip.com",
-        "is:private pm-with:alice@zulip.com",
-        "is:private group-pm-with:alice@zulip.com",
+        "is:private, is:alerted",
+        "is:private, sender:alice@zulip.com",
+        "is:private, pm-with:alice@zulip.com",
+        "is:private, group-pm-with:alice@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
