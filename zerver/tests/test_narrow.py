@@ -402,6 +402,15 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='has', operand='link', negated=True)
         self._do_add_term_test(term, 'WHERE NOT has_link')
 
+    def test_add_term_using_has_operator_reaction_operand(self) -> None:
+        term = dict(operator='has', operand='reaction')
+        self._do_add_term_test(term, 'WHERE has_reaction')
+
+    def test_add_term_using_has_operator_reaction_operand_and_negated(
+            self) -> None:  # NEGATED
+        term = dict(operator='has', operand='reaction', negated=True)
+        self._do_add_term_test(term, 'WHERE NOT has_reaction')
+
     def test_add_term_using_has_operator_non_supported_operand_should_raise_error(self) -> None:
         term = dict(operator='has', operand='non_supported')
         self.assertRaises(BadNarrowOperator, self._build_query, term)

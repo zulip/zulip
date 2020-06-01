@@ -1737,6 +1737,9 @@ def do_add_reaction(user_profile: UserProfile, message: Message,
     reaction = Reaction(user_profile=user_profile, message=message,
                         emoji_name=emoji_name, emoji_code=emoji_code,
                         reaction_type=reaction_type)
+    if not message.has_reaction:
+        message.has_reaction = True
+        message.save(update_fields=["has_reaction"])
     try:
         reaction.save()
     except django.db.utils.IntegrityError:  # nocoverage
@@ -1754,6 +1757,9 @@ def do_remove_reaction(user_profile: UserProfile, message: Message,
                                        emoji_code=emoji_code,
                                        reaction_type=reaction_type).get()
     reaction.delete()
+    if not Reaction.objects.filter(message=message).exists():
+        message.has_reaction = False
+        message.save(update_fields=["has_reaction"])
     notify_reaction_update(user_profile, message, reaction, "remove")
 
 def do_send_typing_notification(
