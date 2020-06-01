@@ -469,11 +469,11 @@ exports.initialize_everything = function () {
     settings_panel_menu.initialize();
     settings_sections.initialize();
     settings_toggle.initialize();
-    hashchange.initialize();
     pointer.initialize();
     unread_ui.initialize();
     presence.initialize(presence_params);
     activity.initialize();
+    hashchange.initialize(); // Must happen after presence.initialize() and activity.initialize()
     emoji_picker.initialize();
     compose_fade.initialize();
     pm_list.initialize();
