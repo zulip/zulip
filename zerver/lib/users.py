@@ -310,7 +310,7 @@ def format_user_row(realm: Realm, acting_user: UserProfile, row: Dict[str, Any],
                                   medium=False,
                                   client_gravatar=client_gravatar,)
 
-    is_admin = row['role'] == UserProfile.ROLE_REALM_ADMINISTRATOR
+    is_admin = is_administrator_role(row['role'])
     is_guest = row['role'] == UserProfile.ROLE_GUEST
     is_bot = row['is_bot']
     # This format should align with get_cross_realm_dicts() and notify_created_user
