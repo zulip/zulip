@@ -421,6 +421,22 @@ def apply_event(state: Dict[str, Any],
                 if 'role' in person:
                     state['is_admin'] = is_administrator_role(person['role'])
                     state['is_guest'] = person['role'] == UserProfile.ROLE_GUEST
+                    # Recompute properties based on is_admin/is_guest
+                    state['can_create_streams'] = user_profile.can_create_streams()
+                    state['can_subscribe_other_users'] = user_profile.can_subscribe_other_users()
+
+                    # TODO: Probably rather than writing the perfect
+                    # live-update code for the case of racing with the
+                    # current user changing roles, we should just do a
+                    # full refetch.
+                    if 'never_subscribed' in state:
+                        subscriptions, unsubscribed, never_subscribed = gather_subscriptions_helper(
+                            user_profile, include_subscribers=include_subscribers)
+                        state['subscriptions'] = subscriptions
+                        state['unsubscribed'] = unsubscribed
+                        state['never_subscribed'] = never_subscribed
+                    if 'streams' in state:
+                        state['streams'] = do_get_streams(user_profile)
 
                 for field in ['delivery_email', 'email', 'full_name']:
                     if field in person and field in state:
