@@ -2,7 +2,7 @@
     <div id="recent_filters_group">
         {{> recent_topics_filters}}
     </div>
-    <input type="text" id="recent_topics_search" placeholder="{{t 'Search stream / topic' }}">
+    <input type="text" id="recent_topics_search" value="{{ search_val }}" placeholder="{{t 'Search stream / topic' }}">
     <button type="button" class="btn clear_search_button" id="recent_topics_search_clear">
         <i class="fa fa-remove" aria-hidden="true"></i>
     </button>
@@ -18,8 +18,7 @@
                 <th>{{t 'Last message' }}</th>
             </tr>
         </thead>
-        {{#each recent_topics}}
-        {{> recent_topic_row}}
-        {{/each}}
+        <tbody>
+        </tbody>
     </table>
 </div>
