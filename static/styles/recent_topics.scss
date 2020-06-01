@@ -57,6 +57,13 @@
         padding: 15px;
         overflow: hidden !important;
 
+        .required-text:empty::after {
+            content: attr(data-empty);
+            display: block;
+            font-style: italic;
+            color: hsl(0, 0%, 67%);
+        }
+
         .fa-check-square-o,
         .fa-square-o {
             padding: 0 2px 0 2px;
