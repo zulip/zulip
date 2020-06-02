@@ -13,7 +13,7 @@ exports.fetch_and_render_message_history = function (message) {
                 const time = new XDate(msg.timestamp * 1000);
                 const datestamp = time.toDateString();
                 const item = {
-                    timestamp: time.toString('h:mm TT'),
+                    timestamp: timerender.stringify_time(time),
                     display_date: time.toString("MMMM d, yyyy"),
                     show_date_row: datestamp !== prev_datestamp,
                 };
