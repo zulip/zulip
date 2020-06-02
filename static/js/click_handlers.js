@@ -784,12 +784,34 @@ exports.initialize = function () {
         $('#hotspot_' + hotspot_name + '_icon').remove();
     });
 
-    $('body').on('click', '.hotspot-button', function (e) {
+    $('body').on('click', '.hotspot-button.hotspot-confirm', function (e) {
         e.preventDefault();
         e.stopPropagation();
 
         hotspots.post_hotspot_as_read('intro_reply');
         hotspots.close_hotspot_icon($('#hotspot_intro_reply_icon'));
+    });
+
+    // skip
+    $('body').on('click', '.hotspot-skip', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if ($(this).is('#hotspot-intro')) {
+            hotspots.close_hotspot_icon($('#hotspot_intro_reply_icon'));
+            hotspots.post_hotspot_as_skip('intro_reply');
+        } else {
+            const overlay_name = $(this).closest('.hotspot.overlay').attr('id');
+
+            const hotspot_name = overlay_name
+                .replace('hotspot_', '')
+                .replace('_overlay', '');
+
+            overlays.close_overlay(overlay_name);
+            $('#hotspot_' + hotspot_name + '_icon').remove();
+
+            hotspots.post_hotspot_as_skip(hotspot_name);
+        }
     });
 
     // stop propagation

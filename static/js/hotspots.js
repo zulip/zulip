@@ -54,6 +54,26 @@ exports.post_hotspot_as_read = function (hotspot_name) {
     });
 };
 
+// checkpoint to track if current hotspot is found in HOTSPOT_LOCATIONS map
+let found = false;
+
+exports.post_hotspot_as_skip = function (hotspot_name) {
+    for (const key of HOTSPOT_LOCATIONS.keys()) {
+        if (key === hotspot_name) {
+            found = true;
+        }
+        if (found === true) {
+            channel.post({
+                url: '/json/users/me/hotspots',
+                data: { hotspot: JSON.stringify(key) },
+                error: function (err) {
+                    blueslip.error(err.responseText);
+                },
+            });
+        }
+    }
+};
+
 function place_icon(hotspot) {
     const element = $(hotspot.location.element);
     const icon = $('#hotspot_' + hotspot.name + '_icon');
@@ -246,6 +266,11 @@ function close_read_hotspots(new_hotspots) {
 }
 
 exports.load_new = function (new_hotspots) {
+    // don't load new hotspots if the user skips the tour
+    if (found === true) {
+        return;
+    }
+
     close_read_hotspots(new_hotspots);
     new_hotspots.forEach(function (hotspot) {
         hotspot.location = HOTSPOT_LOCATIONS.get(hotspot.name);

@@ -78,7 +78,7 @@
 
     .hotspot-popover {
         position: fixed;
-        width: 250px;
+        max-width: 320px;
         text-align: left;
         box-shadow: 0 5px 10px hsla(223, 4%, 54%, 0.2);
         border: 1px solid hsl(0, 0%, 80%);
@@ -188,6 +188,7 @@
         font-size: 1.15em;
         font-weight: 600;
         color: hsl(0, 0%, 100%);
+        display: inline;
     }
 
     .hotspot-popover-content {
@@ -208,7 +209,7 @@
         left: 4px;
     }
 
-    .hotspot-confirm {
+    .button-container {
         position: absolute;
         bottom: 15px;
         right: 15px;
@@ -219,7 +220,8 @@
     height: 83px;
 }
 
-.hotspot-confirm {
+.hotspot-confirm,
+.hotspot-skip {
     max-width: 125px;
     max-height: 70px;
     border: none;
@@ -234,6 +236,17 @@
 
     &:hover {
         background-color: hsl(164, 44%, 56%);
+    }
+}
+
+.hotspot-cross {
+    cursor: pointer;
+    float: right;
+    margin: 11px 0 0 0;
+    padding: 1px;
+
+    &:hover {
+        background-color: transparent;
     }
 }
 
@@ -258,7 +271,7 @@
     }
 
     .hotspot-confirm {
-        display: block;
+        display: inline-block;
     }
 
     .hotspot-inline-top .hotspot-title {

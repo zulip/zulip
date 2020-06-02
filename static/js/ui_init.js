@@ -286,6 +286,16 @@ exports.initialize_kitchen_sink_stuff = function () {
         $(this).tooltip('hide');
     });
 
+    $("body").on("mouseenter", ".hotspot-cross", function () {
+        $(this).show();
+        $(this).tooltip({placement: 'left'});
+        $(this).tooltip('show');
+    });
+
+    $("body").on("mouseleave", ".hotspot-cross", function () {
+        $(this).tooltip('hide');
+    });
+
     if (!page_params.realm_allow_message_editing) {
         $("#edit-message-hotkey-help").hide();
     }
