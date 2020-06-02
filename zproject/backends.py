@@ -57,6 +57,7 @@ from zerver.lib.actions import do_create_user, do_reactivate_user, do_deactivate
     do_update_user_custom_profile_data_if_changed
 from zerver.lib.avatar import is_avatar_new, avatar_url
 from zerver.lib.avatar_hash import user_avatar_content_hash
+from zerver.lib.create_user import get_role_for_new_user
 from zerver.lib.dev_ldap_directory import init_fakeldap
 from zerver.lib.email_validation import email_allowed_for_realm, \
     validate_email_not_already_in_realm
@@ -706,9 +707,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             invited_as = self._prereg_user.invited_as
             realm_creation = self._prereg_user.realm_creation
             opts['prereg_user'] = self._prereg_user
-            opts['is_realm_admin'] = (
-                invited_as == PreregistrationUser.INVITE_AS['REALM_ADMIN']) or realm_creation
-            opts['is_guest'] = invited_as == PreregistrationUser.INVITE_AS['GUEST_USER']
+            opts['role'] = get_role_for_new_user(invited_as, realm_creation)
             opts['realm_creation'] = realm_creation
             # TODO: Ideally, we should add a mechanism for the user
             # entering which default stream groups they've selected in

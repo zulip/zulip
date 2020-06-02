@@ -67,7 +67,7 @@ class AnalyticsTestCase(TestCase):
             return create_user(kwargs['email'], 'password', kwargs['realm'],
                                active=kwargs['is_active'],
                                full_name=kwargs['full_name'], short_name=kwargs['short_name'],
-                               is_realm_admin=True, **pass_kwargs)
+                               role=UserProfile.ROLE_REALM_ADMINISTRATOR, **pass_kwargs)
 
     def create_stream_with_recipient(self, **kwargs: Any) -> Tuple[Stream, Recipient]:
         self.name_counter += 1

@@ -1,7 +1,7 @@
 from django.contrib.auth.models import UserManager
 from django.utils.timezone import now as timezone_now
 from zerver.models import UserProfile, Recipient, Subscription, Realm, Stream, \
-    get_fake_email_domain
+    PreregistrationUser, get_fake_email_domain
 from zerver.lib.upload import copy_avatar
 from zerver.lib.hotspots import copy_hotpots
 from zerver.lib.utils import generate_api_key
@@ -35,6 +35,13 @@ def get_display_email_address(user_profile: UserProfile, realm: Realm) -> str:
     if not user_profile.email_address_is_realm_public():
         return "user%s@%s" % (user_profile.id, get_fake_email_domain())
     return user_profile.delivery_email
+
+def get_role_for_new_user(invited_as: int, realm_creation: bool=False) -> int:
+    if invited_as == PreregistrationUser.INVITE_AS['REALM_ADMIN'] or realm_creation:
+        return UserProfile.ROLE_REALM_ADMINISTRATOR
+    elif invited_as == PreregistrationUser.INVITE_AS['GUEST_USER']:
+        return UserProfile.ROLE_GUEST
+    return UserProfile.ROLE_MEMBER
 
 # create_user_profile is based on Django's User.objects.create_user,
 # except that we don't save to the database so it can used in
@@ -76,8 +83,7 @@ def create_user_profile(realm: Realm, email: str, password: Optional[str],
 
 def create_user(email: str, password: Optional[str], realm: Realm,
                 full_name: str, short_name: str, active: bool = True,
-                is_realm_admin: bool = False,
-                is_guest: bool = False,
+                role: Optional[int] = None,
                 bot_type: Optional[int] = None,
                 bot_owner: Optional[UserProfile] = None,
                 tos_version: Optional[str] = None, timezone: str = "",
@@ -90,14 +96,12 @@ def create_user(email: str, password: Optional[str], realm: Realm,
     user_profile = create_user_profile(realm, email, password, active, bot_type,
                                        full_name, short_name, bot_owner,
                                        is_mirror_dummy, tos_version, timezone)
-    if is_realm_admin:
-        user_profile.role = UserProfile.ROLE_REALM_ADMINISTRATOR
-    if is_guest:
-        user_profile.role = UserProfile.ROLE_GUEST
     user_profile.avatar_source = avatar_source
     user_profile.timezone = timezone
     user_profile.default_sending_stream = default_sending_stream
     user_profile.default_events_register_stream = default_events_register_stream
+    if role is not None:
+        user_profile.role = role
     # Allow the ORM default to be used if not provided
     if default_all_public_streams is not None:
         user_profile.default_all_public_streams = default_all_public_streams
