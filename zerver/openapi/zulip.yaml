@@ -1873,13 +1873,7 @@ paths:
                         The user's ID.
                       example: 1
                     profile_data:
-                      type: object
-                      description: |
-                        A dictionary containing custom profile field data for the user. Each entry
-                        maps the integer ID of a custom profile field in the organization to a
-                        dictionary containing the user's data for that field.  Generally the data
-                        includes just a single `value` key; for those custom profile fields
-                        supporting markdown, a `rendered_value` key will also be present.
+                      $ref: '#/components/schemas/profile_data'
                 - example:
                     {
                         "avatar_url": "https://secure.gravatar.com/avatar/af4f06322c177ef4e1e9b2c424986b54?d=identicon&version=1",
@@ -3090,6 +3084,47 @@ paths:
                       description: |
                         Each key-value pair in the object indicates whether the authentication
                         method is enabled on this server.
+                      properties:
+                        password:
+                          description: |
+                            Whether the user can authenticate using password.
+                          type: boolean
+                        dev:
+                          description: |
+                            Whether the user can authenticate using development api key.
+                          type: boolean
+                        email:
+                          description: |
+                            Whether the user can authenticate using email.
+                          type: boolean
+                        ldap:
+                          description: |
+                            Whether the user can authenticate using ldap.
+                          type: boolean
+                        remoteuser:
+                          description: |
+                            Whether the user can authenticate using remoteuser.
+                          type: boolean
+                        github:
+                          description: |
+                            Whether the user can authenticate using their github account.
+                          type: boolean
+                        azuread:
+                          description: |
+                            Whether the user can authenticate using their azuread account.
+                          type: boolean
+                        gitlab:
+                          description: |
+                            Whether the user can authenticate using their gitlab account.
+                          type: boolean
+                        google:
+                          description: |
+                            Whether the user can authenticate using their google account.
+                          type: boolean
+                        saml:
+                          description: |
+                            Whether the user can authenticate using saml.
+                          type: boolean
                     external_authentication_methods:
                       type: array
                       description: |
@@ -3109,6 +3144,28 @@ paths:
                         **Changes**: New in Zulip 2.1.
                       items:
                         type: object
+                        properties:
+                          name:
+                            type: string
+                            description: |
+                              Name of the authentication method.
+                          display_name:
+                            type: string
+                            description: |
+                              Display name of the authentication method.
+                          display_icon:
+                            type: string
+                            nullable: true
+                            description: |
+                              Link to the display icon of the method.
+                          login_url:
+                            type: string
+                            description: |
+                              Login url for authentication.
+                          signup_url:
+                            type: string
+                            description: |
+                              Signup url for authentication.
                     zulip_version:
                       type: string
                       description: |
@@ -4215,10 +4272,29 @@ components:
           description: |
             The time the user account was created.
         profile_data:
-          type: object
-          description: |
-            Object containing data on the user's personal values for the organization's
-            configured custom profile fields.
+          $ref: '#/components/schemas/profile_data'
+    profile_data:
+      type: object
+      description: |
+        A dictionary containing custom profile field data for the user. Each entry
+        maps the integer ID of a custom profile field in the organization to a
+        dictionary containing the user's data for that field.  Generally the data
+        includes just a single `value` key; for those custom profile fields
+        supporting markdown, a `rendered_value` key will also be present.
+      additionalProperties:
+        type: object
+        description: |
+          '{id}': Object with data about what value user filled in the custom
+                      profile field with id `id`.
+        properties:
+          value:
+            type: string
+            description: |
+              User's personal value in the custom profile field.
+          rendered_value:
+            type: string
+            description: |
+              `value` rendered in HTML.
     JsonResponse:
       type: object
       properties:
@@ -4337,12 +4413,26 @@ components:
               A dictionary where the key is the email address of the user/bot and the
               value is a list of the names of the streams that were subscribed to as a
               result of the query.
+            additionalProperties:
+              description: |
+                `{email_address}`: List of the names of the streams that were subscribed
+                 to as a result of the query.
+              type: array
+              items:
+                type: string
           already_subscribed:
             type: object
             description: |
               A dictionary where the key is the email address of the user/bot and the
               value is a list of the names of the streams that the user/bot is already
               subscribed to.
+            additionalProperties:
+              description: |
+                {email_address}`: List of the names of the streams that the user is
+                already subscribed to.
+              type: array
+              items:
+                type: string
           unauthorized:
             type: array
             items:
