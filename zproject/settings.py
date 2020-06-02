@@ -680,6 +680,7 @@ SOFT_DEACTIVATION_LOG_PATH = zulip_path("/var/log/zulip/soft_deactivation.log")
 TRACEMALLOC_DUMP_DIR = zulip_path("/var/log/zulip/tracemalloc")
 SCHEDULED_MESSAGE_DELIVERER_LOG_PATH = zulip_path("/var/log/zulip/scheduled_message_deliverer.log")
 RETENTION_LOG_PATH = zulip_path("/var/log/zulip/message_retention.log")
+AUTH_LOG_PATH = zulip_path("/var/log/zulip/auth.log")
 
 # The EVENT_LOGS feature is an ultra-legacy piece of code, which
 # originally logged all significant database changes for debugging.
@@ -752,6 +753,12 @@ LOGGING: Dict[str, Any] = {
             'filters': (['ZulipLimiter', 'require_debug_false', 'require_really_deployed']
                         if not DEBUG_ERROR_REPORTING else []),
             'formatter': 'default'
+        },
+        'auth_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.WatchedFileHandler',
+            'formatter': 'default',
+            'filename': AUTH_LOG_PATH,
         },
         'console': {
             'level': 'DEBUG',
@@ -889,6 +896,10 @@ LOGGING: Dict[str, Any] = {
         },
         'zerver.management.commands.deliver_scheduled_messages': {
             'level': 'DEBUG',
+        },
+        'zulip.auth': {
+            'level': 'DEBUG',
+            'handlers': DEFAULT_ZULIP_HANDLERS + ['auth_file']
         },
         'zulip.ldap': {
             'level': 'DEBUG',

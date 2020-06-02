@@ -244,6 +244,14 @@ class ZulipAuthMixin:
     from memcached before checking the database (avoiding a database
     query in most cases).
     """
+    name = "undefined"
+    _logger = None
+
+    @property
+    def logger(self) -> logging.Logger:
+        if self._logger is None:
+            self._logger = logging.getLogger(f"zulip.auth.{self.name}")
+        return self._logger
 
     def get_user(self, user_profile_id: int) -> Optional[UserProfile]:
         """Override the Django method for getting a UserProfile object from
@@ -1081,8 +1089,8 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
         if verified_emails_length == 0:
             # TODO: Provide a nice error message screen to the user
             # for this case, rather than just logging a warning.
-            logging.warning("Social auth (%s) failed because user has no verified emails",
-                            backend.auth_backend_name)
+            backend.logger.warning("Social auth (%s) failed because user has no verified emails",
+                                   backend.auth_backend_name)
             return_data["email_not_verified"] = True
             return None
 
@@ -1124,9 +1132,9 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
             # If a user edits the submit value for the choose email form, we might
             # end up with a wrong email associated with the account. The below code
             # takes care of that.
-            logging.warning("Social auth (%s) failed because user has no verified"
-                            " emails associated with the account",
-                            backend.auth_backend_name)
+            backend.logger.warning("Social auth (%s) failed because user has no verified"
+                                   " emails associated with the account",
+                                   backend.auth_backend_name)
             return_data["email_not_associated"] = True
             return None
 
@@ -1230,8 +1238,8 @@ def social_auth_finish(backend: Any,
         return HttpResponseRedirect(reverse('zerver.views.registration.find_account'))
 
     if inactive_user:
-        logging.info("Failed login attempt for deactivated account: %s@%s",
-                     return_data['inactive_user_id'], return_data['realm_string_id'])
+        backend.logger.info("Failed login attempt for deactivated account: %s@%s",
+                            return_data['inactive_user_id'], return_data['realm_string_id'])
         return redirect_deactivated_user_to_login()
 
     if auth_backend_disabled or inactive_realm or no_verified_email or email_not_associated:
@@ -1242,13 +1250,13 @@ def social_auth_finish(backend: Any,
     if invalid_email:
         # In case of invalid email, we will end up on registration page.
         # This seems better than redirecting to login page.
-        logging.warning(
+        backend.logger.warning(
             "%s got invalid email argument.", backend.auth_backend_name,
         )
         return None
 
     if auth_failed_reason:
-        logging.info(auth_failed_reason)
+        backend.logger.info(auth_failed_reason)
         return None
 
     # Structurally, all the cases where we don't have an authenticated
@@ -1354,12 +1362,12 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod):
             # the flow or the IdP is unreliable and returns a bad http response),
             # don't throw a 500, just send them back to the
             # login page and record the event at the info log level.
-            logging.info(str(e))
+            self.logger.info(str(e))
             return None
         except SocialAuthBaseException as e:
             # Other python-social-auth exceptions are likely
             # interesting enough that we should log a warning.
-            logging.warning(str(e))
+            self.logger.warning(str(e))
             return None
 
     @classmethod
@@ -1512,9 +1520,9 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
                 if 'limit_to_subdomains' not in idp_dict
             ]
             if idps_without_limit_to_subdomains:
-                logging.error("SAML_REQUIRE_LIMIT_TO_SUBDOMAINS is enabled and the following " +
-                              "IdPs don't have limit_to_subdomains specified and will be ignored: " +
-                              "%s" % (idps_without_limit_to_subdomains,))
+                self.logger.error("SAML_REQUIRE_LIMIT_TO_SUBDOMAINS is enabled and the following " +
+                                  "IdPs don't have limit_to_subdomains specified and will be ignored: " +
+                                  "%s" % (idps_without_limit_to_subdomains,))
                 for idp_name in idps_without_limit_to_subdomains:
                     del settings.SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name]
         super().__init__(*args, **kwargs)
@@ -1529,7 +1537,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         except KeyError as e:
             # If the above raise KeyError, it means invalid or no idp was specified,
             # we should log that and redirect to the login page.
-            logging.info("/login/saml/ : Bad idp param: KeyError: %s.", str(e))
+            self.logger.info("/login/saml/ : Bad idp param: KeyError: %s.", str(e))
             return reverse('zerver.views.auth.login_page',
                            kwargs = {'template_name': 'zerver/login.html'})
 
@@ -1583,7 +1591,8 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             resp = OneLogin_Saml2_Response(settings={}, response=SAMLResponse)
             issuers = resp.get_issuers()
         except cls.SAMLRESPONSE_PARSING_EXCEPTIONS as e:
-            logging.info("Error while parsing SAMLResponse: %s: %s", e.__class__.__name__, e)
+            logger = logging.getLogger(f"zulip.auth.{cls.name}")
+            logger.info("Error while parsing SAMLResponse: %s: %s", e.__class__.__name__, e)
             return None
 
         for idp_name, idp_config in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
@@ -1648,7 +1657,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         """
         SAMLResponse = self.strategy.request_data().get('SAMLResponse')
         if SAMLResponse is None:
-            logging.info("/complete/saml/: No SAMLResponse in request.")
+            self.logger.info("/complete/saml/: No SAMLResponse in request.")
             return None
 
         relayed_params = self.get_relayed_params()
@@ -1657,19 +1666,19 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         if subdomain is None:
             error_msg = "/complete/saml/: Can't figure out subdomain for this authentication request. " + \
                 "relayed_params: %s"
-            logging.info(error_msg, relayed_params)
+            self.logger.info(error_msg, relayed_params)
             return None
 
         idp_name = self.get_issuing_idp(SAMLResponse)
         if idp_name is None:
-            logging.info("/complete/saml/: No valid IdP as issuer of the SAMLResponse.")
+            self.logger.info("/complete/saml/: No valid IdP as issuer of the SAMLResponse.")
             return None
 
         idp_valid = self.validate_idp_for_subdomain(idp_name, subdomain)
         if not idp_valid:
             error_msg = "/complete/saml/: Authentication request with IdP %s but this provider is not " + \
                         "enabled for this subdomain %s."
-            logging.info(error_msg, idp_name, subdomain)
+            self.logger.info(error_msg, idp_name, subdomain)
             return None
 
         result = None
@@ -1690,7 +1699,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             result = super().auth_complete(*args, **kwargs)
         except self.SAMLRESPONSE_PARSING_EXCEPTIONS as e:
             # These can be raised if SAMLResponse is missing or badly formatted.
-            logging.info("/complete/saml/: %s: %s", e.__class__.__name__, e)
+            self.logger.info("/complete/saml/: %s: %s", e.__class__.__name__, e)
             # Fall through to returning None.
         finally:
             if result is None:
