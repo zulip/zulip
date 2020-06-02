@@ -10,7 +10,9 @@
         {{/if}}
     </span>
     {{#if sub_count}}
-        <span class="sub_count" data-toggle="tooltip" title="{{sub_count_tooltip_text}}"><i class="fa fa-user-o"></i>{{formatted_sub_count}}</span>
+        <a class="sub_count no-style" data-toggle="tooltip" title="{{sub_count_tooltip_text}}" href="{{stream_settings_link}}">
+            <i class="fa fa-user-o"></i>{{formatted_sub_count}}
+        </a>
         {{#if rendered_narrow_description}}
         <span class="narrow_description rendered_markdown" data-toggle="tooltip">{{rendered_markdown rendered_narrow_description}}</span>
         {{else}}
