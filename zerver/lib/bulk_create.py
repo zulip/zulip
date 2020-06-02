@@ -14,7 +14,7 @@ def bulk_create_users(realm: Realm,
                       bot_type: Optional[int]=None,
                       bot_owner: Optional[UserProfile]=None,
                       tos_version: Optional[str]=None,
-                      timezone: str="") -> None:
+                      timezone: str="", twenty_four_hour_time: Optional[bool]=None) -> None:
     """
     Creates and saves a UserProfile with the given email.
     Has some code based off of UserManage.create_user, but doesn't .save()
@@ -29,7 +29,8 @@ def bulk_create_users(realm: Realm,
         profile = create_user_profile(realm, email,
                                       initial_password(email), active, bot_type,
                                       full_name, short_name, bot_owner, False, tos_version,
-                                      timezone, tutorial_status=UserProfile.TUTORIAL_FINISHED,
+                                      timezone, twenty_four_hour_time,
+                                      tutorial_status=UserProfile.TUTORIAL_FINISHED,
                                       enter_sends=True)
         profiles_to_create.append(profile)
 

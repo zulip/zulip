@@ -2439,6 +2439,7 @@ class MessagePOSTTest(ZulipTestCase):
             kwargs['bot_owner'] = None
             kwargs['tos_version'] = None
             kwargs['timezone'] = timezone_now()
+            kwargs['twenty_four_hour_time'] = True
             create_user_profile(**kwargs).save()
             raise IntegrityError()
 

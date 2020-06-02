@@ -49,6 +49,10 @@ $(function () {
         unhighlight: highlight('success'),
     });
 
+    function Islocale24Hour() {
+        return !new Intl.DateTimeFormat(navigator.language, { hour: 'numeric' }).format(0).match(/\s/);
+    }
+
     if ($("#registration").length > 0) {
         // Check if there is no input field with errors.
         if ($('.help-inline:not(:empty)').length === 0) {
@@ -71,6 +75,11 @@ $(function () {
         }
 
         $("#timezone").val(moment.tz.guess());
+        if (Islocale24Hour()) {
+            $("#twenty_four_hour_time").val(true);
+        } else {
+            $("#twenty_four_hour_time").val(false);
+        }
     }
 
     // Code in this block will be executed when the /accounts/send_confirm

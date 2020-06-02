@@ -255,6 +255,12 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         timezone = ""
         if 'timezone' in request.POST and request.POST['timezone'] in get_all_timezones():
             timezone = request.POST['timezone']
+        twenty_four_hour_time = realm.default_twenty_four_hour_time
+        if 'twenty_four_hour_time' in request.POST:
+            if request.POST['twenty_four_hour_time']:
+                twenty_four_hour_time = True
+            else:
+                twenty_four_hour_time = False
 
         if 'source_realm' in request.POST and request.POST["source_realm"] != "on":
             source_profile = get_source_profile(email, request.POST["source_realm"])
@@ -342,6 +348,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                                           is_guest=is_guest,
                                           tos_version=settings.TOS_VERSION,
                                           timezone=timezone,
+                                          twenty_four_hour_time=twenty_four_hour_time,
                                           newsletter_data={"IP": request.META['REMOTE_ADDR']},
                                           default_stream_groups=default_stream_groups,
                                           source_profile=source_profile,
