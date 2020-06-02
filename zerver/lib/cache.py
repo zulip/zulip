@@ -606,7 +606,7 @@ def flush_used_upload_space_cache(sender: Any, **kwargs: Any) -> None:
 def to_dict_cache_key_id(message_id: int) -> str:
     return 'message_dict:%d' % (message_id,)
 
-def to_dict_cache_key(message: 'Message') -> str:
+def to_dict_cache_key(message: 'Message', realm_id: Optional[int]=None) -> str:
     return to_dict_cache_key_id(message.id)
 
 def open_graph_description_cache_key(content: Any, request: HttpRequest) -> str:

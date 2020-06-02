@@ -168,8 +168,8 @@ def stringify_message_dict(message_dict: Dict[str, Any]) -> bytes:
     return zlib.compress(ujson.dumps(message_dict).encode())
 
 @cache_with_key(to_dict_cache_key, timeout=3600*24)
-def message_to_dict_json(message: Message) -> bytes:
-    return MessageDict.to_dict_uncached([message])[message.id]
+def message_to_dict_json(message: Message, realm_id: Optional[int]=None) -> bytes:
+    return MessageDict.to_dict_uncached([message], realm_id)[message.id]
 
 def save_message_rendered_content(message: Message, content: str) -> str:
     rendered_content = render_markdown(message, content, realm=message.get_realm())
@@ -180,13 +180,13 @@ def save_message_rendered_content(message: Message, content: str) -> str:
 
 class MessageDict:
     @staticmethod
-    def wide_dict(message: Message) -> Dict[str, Any]:
+    def wide_dict(message: Message, realm_id: Optional[int]=None) -> Dict[str, Any]:
         '''
         The next two lines get the cacheable field related
         to our message object, with the side effect of
         populating the cache.
         '''
-        json = message_to_dict_json(message)
+        json = message_to_dict_json(message, realm_id)
         obj = extract_message_dict(json)
 
         '''
@@ -270,23 +270,23 @@ class MessageDict:
         return sew_messages_and_reactions(messages, reactions)
 
     @staticmethod
-    def to_dict_uncached(messages: List[Message]) -> Dict[int, bytes]:
-        messages_dict = MessageDict.to_dict_uncached_helper(messages)
+    def to_dict_uncached(messages: List[Message], realm_id: Optional[int]=None) -> Dict[int, bytes]:
+        messages_dict = MessageDict.to_dict_uncached_helper(messages, realm_id)
         encoded_messages = {msg['id']: stringify_message_dict(msg) for msg in messages_dict}
         return encoded_messages
 
     @staticmethod
-    def to_dict_uncached_helper(messages: List[Message]) -> List[Dict[str, Any]]:
+    def to_dict_uncached_helper(messages: List[Message],
+                                realm_id: Optional[int]=None) -> List[Dict[str, Any]]:
         # Near duplicate of the build_message_dict + get_raw_db_rows
         # code path that accepts already fetched Message objects
         # rather than message IDs.
 
-        # TODO: We could potentially avoid this database query in
-        # common cases by optionally passing through the
-        # stream_realm_id through the code path from do_send_messages
-        # (where we've already fetched the data).  It would involve
-        # somewhat messy plumbing, but would probably be worth it.
         def get_rendering_realm_id(message: Message) -> int:
+            # realm_id can differ among users, currently only possible
+            # with cross realm bots.
+            if realm_id is not None:
+                return realm_id
             if message.recipient.type == Recipient.STREAM:
                 return Stream.objects.get(id=message.recipient.type_id).realm_id
             return message.sender.realm_id
