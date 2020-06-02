@@ -2681,34 +2681,39 @@ paths:
                       description: |
                         An object that contains `emoji` objects, each identified with their
                         emoji ID as the key.
-                      properties:
-                        id:
-                          type: integer
-                          description: |
-                            The ID for this emoji, same as the object's key.
-                        name:
-                          type: string
-                          description: |
-                            The user-friendly name for this emoji. Users in the organization
-                            can use this emoji by writing this name between colons (`:name:`).
-                        source_url:
-                          type: string
-                          description: |
-                            The path relative to the organization's URL where the
-                            emoji's image can be found.
-                        deactivated:
-                          type: string
-                          description: |
-                            Whether the emoji has been deactivated or not.
-                        author_id:
-                          type: integer
-                          nullable: true
-                          description: |
-                            The user ID of the user who uploaded the custom emoji.
-                            Will be null if the uploader is unknown.
+                      additionalProperties:
+                        type: object
+                        description: |
+                          `{emoji_id}`: Object containing details about the emoji with
+                           the specified ID. It has the following properties:
+                        properties:
+                          id:
+                            type: string
+                            description: |
+                              The ID for this emoji, same as the object's key.
+                          name:
+                            type: string
+                            description: |
+                              The user-friendly name for this emoji. Users in the organization
+                              can use this emoji by writing this name between colons (`:name  :`).
+                          source_url:
+                            type: string
+                            description: |
+                              The path relative to the organization's URL where the
+                              emoji's image can be found.
+                          deactivated:
+                            type: boolean
+                            description: |
+                              Whether the emoji has been deactivated or not.
+                          author_id:
+                            type: integer
+                            nullable: true
+                            description: |
+                              The user ID of the user who uploaded the custom emoji.
+                              Will be null if the uploader is unknown.
 
-                            **Changes**: New in Zulip 2.2 (feature level 7).  Previously
-                            was accessible via and `author` object with an `id` field.
+                              **Changes**: New in Zulip 2.2 (feature level 7).  Previously
+                              was accessible via and `author` object with an `id` field.
                 - example:
                     {
                         "result": "success",
