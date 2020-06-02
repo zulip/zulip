@@ -112,21 +112,42 @@ def get_openapi_return_values(endpoint: str, method: str,
     response = response['properties']
     return response
 
+exclusion_list: List[str] = []
+
 def validate_against_openapi_schema(content: Dict[str, Any], endpoint: str,
                                     method: str, response: str) -> None:
     """Compare a "content" dict with the defined schema for a specific method
     in an endpoint.
     """
+    global exclusion_list
     schema = get_schema(endpoint, method, response)
+    # In a single response schema we do not have two keys with the same name.
+    # Hence exclusion list is declared globally
+    exclusion_list = (EXCLUDE_PROPERTIES.get(endpoint, {}).get(method, {}).get(response, []))
+    validate_object(content, schema)
 
-    exclusion_list = (EXCLUDE_PROPERTIES.get(endpoint, {}).get(method, {})
-                                        .get(response, []))
+def validate_array(content: List[Any], schema: Dict[str, Any]) -> None:
+    valid_types: List[type] = []
+    if 'oneOf' in schema['items']:
+        for valid_type in schema['items']['oneOf']:
+            valid_types.append(to_python_type(valid_type['type']))
+    else:
+        valid_types.append(to_python_type(schema['items']['type']))
+    for item in content:
+        if type(item) not in valid_types:
+            raise SchemaError('Wrong data type in array')
+        # We can directly check for objects and arrays as
+        # there are no mixed arrays consisting of objects
+        # and arrays.
+        if 'properties' in schema['items']:
+            validate_object(item, schema['items'])
+        if 'items' in schema['items']:
+            validate_array(item, schema['items'])
 
+def validate_object(content: Dict[str, Any], schema: Dict[str, Any]) -> None:
     for key, value in content.items():
-        # Ignore in the validation the keys in EXCLUDE_PROPERTIES
         if key in exclusion_list:
             continue
-
         # Check that the key is defined in the schema
         if key not in schema['properties']:
             raise SchemaError('Extraneous key "{}" in the response\'s '
@@ -135,14 +156,26 @@ def validate_against_openapi_schema(content: Dict[str, Any], endpoint: str,
         # Check that the types match
         expected_type = to_python_type(schema['properties'][key]['type'])
         actual_type = type(value)
+        # We have only define nullable property if it is nullable
+        if value is None and 'nullable' in schema['properties'][key]:
+            continue
         if expected_type is not actual_type:
             raise SchemaError('Expected type {} for key "{}", but actually '
                               'got {}'.format(expected_type, key, actual_type))
-
+        if expected_type is list:
+            validate_array(value, schema['properties'][key])
+        if 'properties' in schema['properties'][key]:
+            validate_object(value, schema['properties'][key])
+            continue
+        if 'additionalProperties' in schema['properties'][key]:
+            for child_keys in value:
+                validate_object(value[child_keys],
+                                schema['properties'][key]['additionalProperties'])
     # Check that at least all the required keys are present
-    for req_key in schema['required']:
-        if req_key not in content.keys():
-            raise SchemaError('Expected to find the "{}" required key')
+    if 'required' in schema:
+        for req_key in schema['required']:
+            if req_key not in content.keys():
+                raise SchemaError('Expected to find the "{}" required key')
 
 def to_python_type(py_type: str) -> type:
     """Transform an OpenAPI-like type to a Python one.
