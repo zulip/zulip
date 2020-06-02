@@ -974,6 +974,7 @@ class StreamAdminTest(ZulipTestCase):
     def attempt_unsubscribe_of_principal(self, query_count: int, is_admin: bool=False,
                                          is_subbed: bool=True, invite_only: bool=False,
                                          other_user_subbed: bool=True, using_legacy_emails: bool=False,
+                                         unsubscribe_multiple_users: bool=False,
                                          other_sub_users: Optional[List[UserProfile]]=None) -> HttpResponse:
 
         # Set up the main user, who is in most cases an admin.
@@ -991,15 +992,24 @@ class StreamAdminTest(ZulipTestCase):
         # Set up the principal to be unsubscribed.
         other_user_profile = self.example_user('cordelia')
         if using_legacy_emails:
-            principal = other_user_profile.email
+            principals = [other_user_profile.email]
         else:
-            principal = other_user_profile.id
+            principals = [other_user_profile.id]
+
+        if unsubscribe_multiple_users:
+            second_user_to_unsubscribe = self.example_user('prospero')
+            if using_legacy_emails:
+                principals.append(second_user_to_unsubscribe.email)
+            else:
+                principals.append(second_user_to_unsubscribe.id)
 
         # Subscribe the admin and/or principal as specified in the flags.
         if is_subbed:
             self.subscribe(user_profile, stream_name)
         if other_user_subbed:
             self.subscribe(other_user_profile, stream_name)
+            if unsubscribe_multiple_users:
+                self.subscribe(second_user_to_unsubscribe, stream_name)
         if other_sub_users:
             for user in other_sub_users:
                 self.subscribe(user, stream_name)
@@ -1008,7 +1018,7 @@ class StreamAdminTest(ZulipTestCase):
             result = self.client_delete(
                 "/json/users/me/subscriptions",
                 {"subscriptions": ujson.dumps([stream_name]),
-                 "principals": ujson.dumps([principal])})
+                 "principals": ujson.dumps(principals)})
         self.assert_length(queries, query_count)
 
         # If the removal succeeded, then assert that Cordelia is no longer subscribed.
@@ -1038,6 +1048,17 @@ class StreamAdminTest(ZulipTestCase):
             other_user_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
+        self.assertEqual(len(json["not_removed"]), 0)
+
+    def test_admin_remove_multiple_users_from_stream(self) -> None:
+        """
+        If you're an admin, you can remove multiple users from a stream,
+        """
+        result = self.attempt_unsubscribe_of_principal(
+            query_count=30, is_admin=True, is_subbed=True, invite_only=False,
+            other_user_subbed=True, unsubscribe_multiple_users=True)
+        json = self.assert_json_success(result)
+        self.assertEqual(len(json["removed"]), 2)
         self.assertEqual(len(json["not_removed"]), 0)
 
     def test_admin_remove_others_from_subbed_private_stream(self) -> None:
@@ -1077,6 +1098,14 @@ class StreamAdminTest(ZulipTestCase):
             other_user_subbed=True, using_legacy_emails=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
+        self.assertEqual(len(json["not_removed"]), 0)
+
+    def test_admin_remove_multiple_users_from_stream_legacy_emails(self) -> None:
+        result = self.attempt_unsubscribe_of_principal(
+            query_count=30, is_admin=True, is_subbed=True, invite_only=False,
+            other_user_subbed=True, unsubscribe_multiple_users=True, using_legacy_emails=True)
+        json = self.assert_json_success(result)
+        self.assertEqual(len(json["removed"]), 2)
         self.assertEqual(len(json["not_removed"]), 0)
 
     def test_create_stream_policy_setting(self) -> None:
