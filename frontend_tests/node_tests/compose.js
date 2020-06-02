@@ -1263,7 +1263,7 @@ run_test('on_events', () => {
         let invite_user_to_stream_called = false;
         stream_edit.invite_user_to_stream = function (email, sub, success) {
             invite_user_to_stream_called = true;
-            assert.equal(email, 'foo@bar.com');
+            assert.deepEqual(email, ['foo@bar.com']);
             assert.equal(sub, subscription);
             success();  // This will check success callback path.
         };
