@@ -264,7 +264,7 @@ def remove_subscriptions_backend(
                 removing_someone_else = principals[0] != user_profile.id
             else:
                 removing_someone_else = principals[0] != user_profile.email
-        else:  # nocoverage # TODO: Fix me.
+        else:
             removing_someone_else = True
 
     if removing_someone_else and not user_profile.is_realm_admin:
