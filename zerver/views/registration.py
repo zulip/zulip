@@ -12,8 +12,7 @@ from zerver.context_processors import get_realm_from_request, login_context
 from zerver.models import UserProfile, Realm, Stream, MultiuseInvite, \
     name_changes_disabled, email_to_username, \
     get_realm, get_user_by_delivery_email, get_default_stream_groups, DisposableEmailError, \
-    DomainNotAllowedForRealmError, get_source_profile, EmailContainsPlusError, \
-    PreregistrationUser
+    DomainNotAllowedForRealmError, get_source_profile, EmailContainsPlusError
 from zerver.lib.email_validation import email_allowed_for_realm, \
     validate_email_not_already_in_realm
 from zerver.lib.send_email import send_email, FromAddress
@@ -25,6 +24,7 @@ from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.decorator import require_post, \
     do_login
+from zerver.lib.create_user import get_role_for_new_user
 from zerver.lib.onboarding import send_initial_realm_messages, setup_realm_internal_bots
 from zerver.lib.sessions import get_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
@@ -88,8 +88,8 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
     email = prereg_user.email
     realm_creation = prereg_user.realm_creation
     password_required = prereg_user.password_required
-    is_realm_admin = prereg_user.invited_as == PreregistrationUser.INVITE_AS['REALM_ADMIN'] or realm_creation
-    is_guest = prereg_user.invited_as == PreregistrationUser.INVITE_AS['GUEST_USER']
+
+    role = get_role_for_new_user(prereg_user.invited_as, realm_creation)
 
     try:
         validators.validate_email(email)
@@ -338,8 +338,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         if user_profile is None:
             user_profile = do_create_user(email, password, realm, full_name, short_name,
                                           prereg_user=prereg_user,
-                                          is_realm_admin=is_realm_admin,
-                                          is_guest=is_guest,
+                                          role=role,
                                           tos_version=settings.TOS_VERSION,
                                           timezone=timezone,
                                           newsletter_data={"IP": request.META['REMOTE_ADDR']},

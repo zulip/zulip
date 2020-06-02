@@ -18,7 +18,7 @@ class Command(ZulipBaseCommand):
         name = '%02d-user' % (
             UserProfile.objects.filter(email__contains='user@').count(),)
         user = do_create_user('%s@%s.zulip.com' % (name, string_id),
-                              'password', realm, name, name, is_realm_admin=True)
+                              'password', realm, name, name, role=UserProfile.ROLE_REALM_ADMINISTRATOR)
         bulk_add_subscriptions([realm.signup_notifications_stream], [user])
 
         send_initial_realm_messages(realm)
