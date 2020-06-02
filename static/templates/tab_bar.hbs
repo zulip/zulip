@@ -10,7 +10,7 @@
         {{/if}}
     </span>
     {{#if sub_count}}
-        <span class="sub_count" data-toggle="tooltip" title="{{sub_count}} users are subscribed to #{{title}}"><i class="fa fa-user-o"></i>{{formatted_sub_count}}</span>
+        <span class="sub_count" data-toggle="tooltip" title="{{sub_count_tooltip_text}}"><i class="fa fa-user-o"></i>{{formatted_sub_count}}</span>
         {{#if rendered_narrow_description}}
         <span class="narrow_description rendered_markdown" data-toggle="tooltip">{{rendered_markdown rendered_narrow_description}}</span>
         {{else}}
