@@ -240,6 +240,7 @@ export default (env?: string): webpack.Configuration[] => {
         { path: "underscore/underscore.js", name: '_' },
         { path: "handlebars/dist/cjs/handlebars.runtime.js", name: 'Handlebars' },
         { path: "sortablejs/Sortable.js"},
+        { path: "screenfull/dist/screenfull.js"},
         { path: "winchan/winchan.js", name: 'WinChan'},
     ];
     config.module.rules.unshift(...getExposeLoaders(exposeOptions));

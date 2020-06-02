@@ -20,7 +20,7 @@
         <div id="user-display-settings">
             <h3 class="inline-block">{{t "Display settings" }}</h3>
             <div class="alert-notification" id="display-settings-status"></div>
-
+            <button id="fullscreen-button" type="button" class="btn btn-primary">toggle fullscreen</button>
             {{#each display_settings.settings.user_display_settings}}
             {{> settings_checkbox
               setting_name=this
