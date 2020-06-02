@@ -28,7 +28,7 @@ Our API documentation is defined by a few sets of files:
 
 This first section is focused on explaining how the API documentation
 system is put together; when actually documenting an endpoint, you'll
-want to also read the [Step by step guide][#step-by-step-guide].
+want to also read the [Step by step guide](#step-by-step-guide).
 
 ## How it works
 
