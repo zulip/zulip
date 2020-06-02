@@ -1362,7 +1362,7 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod):
             # the flow or the IdP is unreliable and returns a bad http response),
             # don't throw a 500, just send them back to the
             # login page and record the event at the info log level.
-            self.logger.info(str(e))
+            self.logger.info(f"{e.__class__.__name__}: {str(e)}")
             return None
         except SocialAuthBaseException as e:
             # Other python-social-auth exceptions are likely
