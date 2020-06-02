@@ -34,7 +34,7 @@ You might be interested in:
   [beginner-friendly issues][beginner-friendly].
 
 * **Contributing non-code**.
-  [Report an issue](https://zulip.readthedocs.io/en/latest/overview/contributing.html#reporting-issue),
+  [Report an issue](https://zulip.readthedocs.io/en/latest/overview/contributing.html#reporting-issues),
   [translate](https://zulip.readthedocs.io/en/latest/translating/translating.html) Zulip
   into your language,
   [write](https://zulip.readthedocs.io/en/latest/overview/contributing.html#zulip-outreach)
