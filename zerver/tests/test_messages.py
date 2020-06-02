@@ -1031,7 +1031,7 @@ class StreamMessagesTest(ZulipTestCase):
                 body=content,
             )
 
-        self.assert_length(queries, 15)
+        self.assert_length(queries, 14)
 
     def test_stream_message_dict(self) -> None:
         user_profile = self.example_user('iago')
@@ -2675,22 +2675,32 @@ class EditMessageTest(ZulipTestCase):
         self.login_user(user)
         stream_name = "public_stream"
         self.subscribe(user, stream_name)
-        message_one_id = self.send_stream_message(user,
-                                                  stream_name, "Message one")
-        later_subscribed_user = self.example_user("cordelia")
-        self.subscribe(later_subscribed_user, stream_name)
-        message_two_id = self.send_stream_message(user,
-                                                  stream_name, "Message two")
-        message_ids = [message_one_id, message_two_id]
+        message_ids = []
+        message_ids.append(self.send_stream_message(user,
+                                                    stream_name, "Message one"))
+        user_2 = self.example_user("cordelia")
+        self.subscribe(user_2, stream_name)
+        message_ids.append(self.send_stream_message(user_2,
+                                                    stream_name, "Message two"))
+        self.subscribe(self.notification_bot(), stream_name)
+        message_ids.append(self.send_stream_message(self.notification_bot(),
+                                                    stream_name, "Message three"))
         messages = [Message.objects.select_related().get(id=message_id)
                     for message_id in message_ids]
 
         # Check number of queries performed
         with queries_captured() as queries:
             MessageDict.to_dict_uncached(messages)
-        # 1 query for realm_id per message = 2
+        # 1 query for realm_id per message = 3
         # 1 query each for reactions & submessage for all messages = 2
-        self.assertEqual(len(queries), 4)
+        self.assertEqual(len(queries), 5)
+
+        realm_id = 2  # Fetched from stream object
+        # Check number of queries performed with realm_id
+        with queries_captured() as queries:
+            MessageDict.to_dict_uncached(messages, realm_id)
+        # 1 query each for reactions & submessage for all messages = 2
+        self.assertEqual(len(queries), 2)
 
     def test_save_message(self) -> None:
         """This is also tested by a client test, but here we can verify
@@ -3519,7 +3529,7 @@ class EditMessageTest(ZulipTestCase):
                 'propagate_mode': 'change_all',
                 'topic': 'new topic'
             })
-        self.assertEqual(len(queries), 54)
+        self.assertEqual(len(queries), 49)
 
         messages = get_topic_messages(user_profile, old_stream, "test")
         self.assertEqual(len(messages), 1)

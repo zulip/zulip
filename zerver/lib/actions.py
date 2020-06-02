@@ -1438,9 +1438,17 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
             do_widget_post_save_actions(message)
 
     for message in messages:
+        realm_id: Optional[int] = None
+        if message['message'].is_stream_message():
+            if message['stream'] is None:
+                stream_id = message['message'].recipient.type_id
+                message['stream'] = Stream.objects.select_related().get(id=stream_id)
+            assert message['stream'] is not None  # assert needed because stubs for django are missing
+            realm_id = message['stream'].realm_id
+
         # Deliver events to the real-time push system, as well as
         # enqueuing any additional processing triggered by the message.
-        wide_message_dict = MessageDict.wide_dict(message['message'])
+        wide_message_dict = MessageDict.wide_dict(message['message'], realm_id)
 
         user_flags = user_message_flags.get(message['message'].id, {})
         sender = message['message'].sender
@@ -1493,9 +1501,6 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
             # notify new_message request if it's a public stream,
             # ensuring that in the tornado server, non-public stream
             # messages are only associated to their subscribed users.
-            if message['stream'] is None:
-                stream_id = message['message'].recipient.type_id
-                message['stream'] = Stream.objects.select_related().get(id=stream_id)
             assert message['stream'] is not None  # assert needed because stubs for django are missing
             if message['stream'].is_public():
                 event['realm_id'] = message['stream'].realm_id
@@ -4272,12 +4277,12 @@ def update_user_message_flags(message: Message, ums: Iterable[UserMessage]) -> N
     for um in changed_ums:
         um.save(update_fields=['flags'])
 
-def update_to_dict_cache(changed_messages: List[Message]) -> List[int]:
+def update_to_dict_cache(changed_messages: List[Message], realm_id: Optional[int]=None) -> List[int]:
     """Updates the message as stored in the to_dict cache (for serving
     messages)."""
     items_for_remote_cache = {}
     message_ids = []
-    changed_messages_to_dict = MessageDict.to_dict_uncached(changed_messages)
+    changed_messages_to_dict = MessageDict.to_dict_uncached(changed_messages, realm_id)
     for msg_id, msg in changed_messages_to_dict.items():
         message_ids.append(msg_id)
         key = to_dict_cache_key_id(msg_id)
@@ -4478,7 +4483,11 @@ def do_update_message(user_profile: UserProfile, message: Message,
     # This does message.save(update_fields=[...])
     save_message_for_edit_use_case(message=message)
 
-    event['message_ids'] = update_to_dict_cache(changed_messages)
+    realm_id: Optional[int] = None
+    if stream_being_edited is not None:
+        realm_id = stream_being_edited.realm_id
+
+    event['message_ids'] = update_to_dict_cache(changed_messages, realm_id)
 
     def user_info(um: UserMessage) -> Dict[str, Any]:
         return {
