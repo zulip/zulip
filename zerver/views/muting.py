@@ -14,6 +14,7 @@ from zerver.lib.streams import (
     access_stream_for_unmute_topic_by_id,
     access_stream_for_unmute_topic_by_name,
     check_for_exactly_one_stream_arg,
+    subscribed_to_stream,
 )
 from zerver.lib.validator import check_int
 from zerver.models import UserProfile
@@ -29,7 +30,9 @@ def mute_topic(user_profile: UserProfile,
         assert stream_id is not None
         (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
 
-    if topic_is_muted(user_profile, stream.id, topic_name):
+    if not subscribed_to_stream(user_profile, stream.id):
+        return json_error(_("User has not subscribed to the stream"))
+    elif topic_is_muted(user_profile, stream.id, topic_name):
         return json_error(_("Topic already muted"))
 
     do_mute_topic(user_profile, stream, recipient, topic_name, date_muted)

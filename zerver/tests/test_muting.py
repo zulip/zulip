@@ -62,6 +62,8 @@ class MutedTopicsTests(ZulipTestCase):
         self.login_user(user)
 
         stream = get_stream('Verona', user.realm)
+        result = self.common_subscribe_to_streams(user, [stream.name])
+        self.assert_json_success(result)
 
         url = '/api/v1/users/me/subscriptions/muted_topics'
 

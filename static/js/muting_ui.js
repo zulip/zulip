@@ -1,5 +1,6 @@
 const render_muted_topic_ui_row = require('../templates/muted_topic_ui_row.hbs');
 const render_topic_muted = require('../templates/topic_muted.hbs');
+const render_stream_not_subscribed = require('../templates/stream_not_subscribed.hbs');
 
 function timestamp_ms() {
     return new Date().getTime();
@@ -93,6 +94,24 @@ exports.set_up_muted_topics_ui = function () {
 
 exports.mute = function (stream_id, topic) {
     const stream_name = stream_data.maybe_get_stream_name(stream_id);
+
+    if (!stream_data.is_subscribed(stream_name)){
+        feedback_widget.show({
+            populate: function (container) {
+                const rendered_html = render_stream_not_subscribed();
+                container.html(rendered_html);
+                container.find(".stream").text(stream_name);
+                container.find(".topic").text(topic);
+            },
+            on_undo: function () {
+                const sub = stream_data.get_sub(stream_name);
+                subs.sub_or_unsub(sub);
+            },
+            title_text: i18n.t("You have not subscribed"),
+            undo_button_text: i18n.t("Subscribe"),
+        });
+        return;
+    }
 
     stream_popover.hide_topic_popover();
     muting.add_muted_topic(stream_id, topic);
