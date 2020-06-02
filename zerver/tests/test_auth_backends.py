@@ -658,6 +658,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         self.backend = self.BACKEND_CLASS
         self.backend.strategy = DjangoStrategy(storage=BaseDjangoStorage())
         self.user_profile.backend = self.backend
+        self.logger_string = f'zulip.auth.{self.backend.name}'
 
         # This is a workaround for the fact that Python social auth
         # caches the set of authentication backends that are enabled
@@ -666,6 +667,9 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         # for details.
         from social_core.backends.utils import load_backends
         load_backends(settings.AUTHENTICATION_BACKENDS, force_load=True)
+
+    def logger_output(self, output_string: str, type: str) -> str:
+        return f'{type.upper()}:zulip.auth.{self.backend.name}:{output_string}'
 
     def register_extra_endpoints(self, requests_mock: responses.RequestsMock,
                                  account_data_dict: Dict[str, str],
@@ -887,14 +891,13 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         # We expect to go through the "choose email" screen here,
         # because there won't be an existing user account we can
         # auto-select for the user.
-        with mock.patch('zproject.backends.logging.info') as m:
+        with self.assertLogs(self.logger_string, level='INFO') as m:
             result = self.social_auth_test(account_data_dict,
                                            expect_choose_email_screen=True,
                                            subdomain='zulip')
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "/login/?is_deactivated=true")
-            m.assert_called_with("Failed login attempt for deactivated account: %s@%s",
-                                 user_profile.id, 'zulip')
+        self.assertEqual(m.output, [self.logger_output(f"Failed login attempt for deactivated account: {user_profile.id}@zulip", 'info')])
         # TODO: verify whether we provide a clear error message
 
     def test_social_auth_invalid_realm(self) -> None:
@@ -1367,7 +1370,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
     def test_social_auth_complete_when_base_exc_is_raised(self) -> None:
         with mock.patch('social_core.backends.oauth.BaseOAuth2.auth_complete',
                         side_effect=AuthStateForbidden('State forbidden')), \
-                mock.patch('zproject.backends.logging.warning'):
+                self.assertLogs(self.logger_string, level='WARNING'):
             result = self.client_get(reverse('social:complete', args=[self.backend.name]))
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
@@ -1509,7 +1512,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
     def test_social_auth_complete(self) -> None:
         with mock.patch.object(OneLogin_Saml2_Response, 'is_valid', return_value=True):
             with mock.patch.object(OneLogin_Saml2_Auth, 'is_authenticated', return_value=False), \
-                    mock.patch('zproject.backends.logging.info') as m:
+                    self.assertLogs(self.logger_string, level='INFO') as m:
                 # This mock causes AuthFailed to be raised.
                 saml_response = self.generate_saml_response(self.email, self.name)
                 relay_state = ujson.dumps(dict(
@@ -1519,13 +1522,14 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 result = self.client_post('/complete/saml/',  post_params)
                 self.assertEqual(result.status_code, 302)
                 self.assertIn('login', result.url)
-                m.assert_called_with("Authentication failed: SAML login failed: [] (None)")
+            self.assertEqual(m.output, [self.logger_output("AuthFailed: Authentication failed: SAML login failed: [] (None)",
+                                                           'info')])
 
     def test_social_auth_complete_when_base_exc_is_raised(self) -> None:
         with mock.patch.object(OneLogin_Saml2_Response, 'is_valid', return_value=True):
             with mock.patch('social_core.backends.saml.SAMLAuth.auth_complete',
                             side_effect=AuthStateForbidden('State forbidden')), \
-                    mock.patch('zproject.backends.logging.warning') as m:
+                    self.assertLogs(self.logger_string, level='WARNING') as m:
                 saml_response = self.generate_saml_response(self.email, self.name)
                 relay_state = ujson.dumps(dict(
                     state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"})
@@ -1534,21 +1538,21 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 result = self.client_post('/complete/saml/',  post_params)
                 self.assertEqual(result.status_code, 302)
                 self.assertIn('login', result.url)
-                m.assert_called_with("Wrong state parameter given.")
+            self.assertEqual(m.output, [self.logger_output("Wrong state parameter given.", 'warning')])
 
     def test_social_auth_complete_bad_params(self) -> None:
         # Simple GET for /complete/saml without the required parameters.
         # This tests the auth_complete wrapped in our SAMLAuthBackend,
         # ensuring it prevents this requests from causing an internal server error.
-        with mock.patch('zproject.backends.logging.info') as m:
+        with self.assertLogs(self.logger_string, level='INFO') as m:
             result = self.client_get('/complete/saml/')
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
-            m.assert_called_with("/complete/saml/: No SAMLResponse in request.")
+        self.assertEqual(m.output, [self.logger_output("/complete/saml/: No SAMLResponse in request.", 'info')])
 
         # Check that POSTing the RelayState, but with missing SAMLResponse,
         # doesn't cause errors either:
-        with mock.patch('zproject.backends.logging.info') as m:
+        with self.assertLogs(self.logger_string, level='INFO') as m:
             relay_state = ujson.dumps(dict(
                 state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"})
             ))
@@ -1556,10 +1560,10 @@ class SAMLAuthBackendTest(SocialAuthBase):
             result = self.client_post('/complete/saml/',  post_params)
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
-            m.assert_called_once_with('/complete/saml/: No SAMLResponse in request.')
+        self.assertEqual(m.output, [self.logger_output("/complete/saml/: No SAMLResponse in request.", 'info')])
 
         # Now test bad SAMLResponses.
-        with mock.patch('zproject.backends.logging.info') as m:
+        with self.assertLogs(self.logger_string, level='INFO') as m:
             relay_state = ujson.dumps(dict(
                 state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"})
             ))
@@ -1567,9 +1571,9 @@ class SAMLAuthBackendTest(SocialAuthBase):
             result = self.client_post('/complete/saml/',  post_params)
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
-            m.assert_called()
+        self.assertTrue(m.output != '')
 
-        with mock.patch('zproject.backends.logging.info') as m:
+        with self.assertLogs(self.logger_string, level='INFO') as m:
             relay_state = ujson.dumps(dict(
                 state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"})
             ))
@@ -1577,9 +1581,9 @@ class SAMLAuthBackendTest(SocialAuthBase):
             result = self.client_post('/complete/saml/',  post_params)
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
-            m.assert_called()
+        self.assertTrue(m.output != '')
 
-        with mock.patch('zproject.backends.logging.info') as m:
+        with self.assertLogs(self.logger_string, level='INFO') as m:
             relay_state = ujson.dumps(dict(
                 state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"})
             ))
@@ -1587,10 +1591,10 @@ class SAMLAuthBackendTest(SocialAuthBase):
             result = self.client_post('/complete/saml/',  post_params)
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
-            m.assert_called()
+        self.assertTrue(m.output != '')
 
     def test_social_auth_complete_no_subdomain(self) -> None:
-        with mock.patch('zproject.backends.logging.info') as m:
+        with self.assertLogs(self.logger_string, level='INFO') as m:
             post_params = {"RelayState": '',
                            'SAMLResponse': self.generate_saml_response(email=self.example_email("hamlet"),
                                                                        name="King Hamlet")}
@@ -1598,10 +1602,10 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 result = self.client_post('/complete/saml/',  post_params)
             self.assertEqual(result.status_code, 302)
             self.assertEqual('/login/', result.url)
-            m.assert_called_once_with(
-                "/complete/saml/: Can't figure out subdomain for this authentication request. relayed_params: %s",
-                {},
-            )
+        self.assertEqual(m.output, [self.logger_output(
+            "/complete/saml/: Can't figure out subdomain for this authentication request. relayed_params: %s" % ("{}",),
+            'info'
+        )])
 
     def test_social_auth_complete_wrong_issuing_idp(self) -> None:
         relay_state = ujson.dumps(dict(
@@ -1615,15 +1619,13 @@ class SAMLAuthBackendTest(SocialAuthBase):
         idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
         idps_dict['test_idp']['entity_id'] = 'https://different.idp.example.com/'
         with self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict):
-            with mock.patch('zproject.backends.logging.info') as m:
+            with self.assertLogs(self.logger_string, level='INFO') as m:
                 post_params = {"RelayState": relay_state,
                                "SAMLResponse": saml_response}
                 result = self.client_post('/complete/saml/',  post_params)
                 self.assertEqual(result.status_code, 302)
                 self.assertEqual('/login/', result.url)
-                m.assert_called_once_with(
-                    "/complete/saml/: No valid IdP as issuer of the SAMLResponse.",
-                )
+            self.assertEqual(m.output, [self.logger_output("/complete/saml/: No valid IdP as issuer of the SAMLResponse.", "info")])
 
     def test_social_auth_complete_valid_get_idp_bad_samlresponse(self) -> None:
         """
@@ -1632,7 +1634,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         validation in the underlying libraries.
         """
 
-        with mock.patch('zproject.backends.logging.info') as m, \
+        with self.assertLogs(self.logger_string, level='INFO') as m, \
                 mock.patch.object(SAMLAuthBackend, 'get_issuing_idp', return_value='test_idp'):
             relay_state = ujson.dumps(dict(
                 state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"})
@@ -1642,20 +1644,20 @@ class SAMLAuthBackendTest(SocialAuthBase):
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
 
-            m.assert_called_once()
+        self.assertTrue(m.output != '')
 
     def test_social_auth_saml_bad_idp_param_on_login_page(self) -> None:
-        with mock.patch('zproject.backends.logging.info') as m:
+        with self.assertLogs(self.logger_string, level='INFO') as m:
             result = self.client_get('/login/saml/')
             self.assertEqual(result.status_code, 302)
             self.assertEqual('/login/', result.url)
-            m.assert_called_with("/login/saml/ : Bad idp param: KeyError: %s.", "'idp'")
+        self.assertEqual(m.output, [self.logger_output("/login/saml/ : Bad idp param: KeyError: %s." % ("'idp'",), 'info')])
 
-        with mock.patch('zproject.backends.logging.info') as m:
+        with self.assertLogs(self.logger_string, level='INFO') as m:
             result = self.client_get('/login/saml/?idp=bad_idp')
             self.assertEqual(result.status_code, 302)
             self.assertEqual('/login/', result.url)
-            m.assert_called_with("/login/saml/ : Bad idp param: KeyError: %s.", "'bad_idp'")
+        self.assertEqual(m.output, [self.logger_output("/login/saml/ : Bad idp param: KeyError: %s." % ("'bad_idp'",), 'info')])
 
     def test_social_auth_invalid_email(self) -> None:
         """
@@ -1725,15 +1727,14 @@ class SAMLAuthBackendTest(SocialAuthBase):
         idps_dict['test_idp']['limit_to_subdomains'] = ['zulip', ]
         with self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict):
             account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
-            with mock.patch('zproject.backends.logging.info') as m:
+            with self.assertLogs(self.logger_string, level='INFO') as m:
                 result = self.social_auth_test(account_data_dict, subdomain='zephyr')
         self.assertEqual(result.status_code, 302)
         self.assertEqual('/login/', result.url)
-        m.assert_called_with(
-            '/complete/saml/: Authentication request with IdP %s but this provider is not enabled ' +
-            'for this subdomain %s.',
-            "test_idp", "zephyr",
-        )
+        self.assertEqual(m.output, [self.logger_output(
+            '/complete/saml/: Authentication request with IdP %s but this provider is not enabled '
+            'for this subdomain %s.' % ("test_idp", "zephyr"), 'info'
+        )])
 
     def test_social_auth_saml_login_bad_idp_arg(self) -> None:
         for action in ['login', 'register']:
@@ -1760,17 +1761,18 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
         with self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict,
                            SAML_REQUIRE_LIMIT_TO_SUBDOMAINS=True):
-            with mock.patch('logging.error') as mock_error:
+            with self.assertLogs(self.logger_string, level="ERROR") as m:
                 # Initialization of the backend should validate the configured IdPs
                 # with respect to the SAML_REQUIRE_LIMIT_TO_SUBDOMAINS setting and remove
                 # the non-compliant ones.
                 SAMLAuthBackend()
             self.assertEqual(list(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.keys()),
                              ['test_idp2', ])
-            mock_error.assert_called_with(
-                "SAML_REQUIRE_LIMIT_TO_SUBDOMAINS is enabled and the following " +
-                "IdPs don't have limit_to_subdomains specified and will be ignored: " +
-                "['test_idp']")
+        self.assertEqual(m.output, [self.logger_output(
+            "SAML_REQUIRE_LIMIT_TO_SUBDOMAINS is enabled and the following "
+            "IdPs don't have limit_to_subdomains specified and will be ignored: "
+            "['test_idp']", 'error'
+        )])
 
     def test_idp_initiated_signin_subdomain_specified(self) -> None:
         post_params = {
@@ -1859,7 +1861,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             "SAMLResponse": self.generate_saml_response(email=self.email, name=self.name)
         }
 
-        with mock.patch("logging.info") as m:
+        with self.assertLogs(self.logger_string, level='INFO') as m:
             with mock.patch('zproject.backends.get_subdomain', return_value='invalid'):
                 # Due to the quirks of our test setup, get_subdomain on all these `some_subdomain.testserver`
                 # requests returns 'zulip', so we need to mock it here.
@@ -1867,10 +1869,10 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
             self.assertEqual(result.status_code, 302)
             self.assertEqual('/login/', result.url)
-            m.assert_called_once_with(
-                "/complete/saml/: Can't figure out subdomain for this authentication request. relayed_params: %s",
-                {},
-            )
+        self.assertEqual(m.output, [self.logger_output(
+            "/complete/saml/: Can't figure out subdomain for this authentication request. relayed_params: %s" % {},
+            "info"
+        )])
 
 class GitHubAuthBackendTest(SocialAuthBase):
     __unittest_skip__ = False
@@ -1974,28 +1976,30 @@ class GitHubAuthBackendTest(SocialAuthBase):
                  verified=False,
                  primary=True),
         ]
-        with mock.patch('logging.warning') as mock_warning:
+        with self.assertLogs(self.logger_string, level='WARNING') as m:
             result = self.social_auth_test(account_data_dict,
                                            subdomain='zulip',
                                            email_data=email_data)
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "/login/")
-            mock_warning.assert_called_once_with(
-                "Social auth (%s) failed because user has no verified emails",
-                "GitHub",
-            )
+        self.assertEqual(m.output, [self.logger_output(
+            "Social auth (%s) failed because user has no verified emails" % ('GitHub',),
+            "warning"
+        )])
 
     @override_settings(SOCIAL_AUTH_GITHUB_TEAM_ID='zulip-webapp')
     def test_social_auth_github_team_not_member_failed(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
         with mock.patch('social_core.backends.github.GithubTeamOAuth2.user_data',
                         side_effect=AuthFailed('Not found')), \
-                mock.patch('logging.info') as mock_info:
+                self.assertLogs(self.logger_string, level='INFO') as mock_info:
             result = self.social_auth_test(account_data_dict,
                                            subdomain='zulip')
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "/login/")
-            mock_info.assert_called_once_with("GitHub user is not member of required team")
+        self.assertEqual(mock_info.output, [self.logger_output(
+            "GitHub user is not member of required team", 'info'
+        )])
 
     @override_settings(SOCIAL_AUTH_GITHUB_TEAM_ID='zulip-webapp')
     def test_social_auth_github_team_member_success(self) -> None:
@@ -2015,12 +2019,14 @@ class GitHubAuthBackendTest(SocialAuthBase):
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
         with mock.patch('social_core.backends.github.GithubOrganizationOAuth2.user_data',
                         side_effect=AuthFailed('Not found')), \
-                mock.patch('logging.info') as mock_info:
+                self.assertLogs(self.logger_string, level='INFO') as mock_info:
             result = self.social_auth_test(account_data_dict,
                                            subdomain='zulip')
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "/login/")
-            mock_info.assert_called_once_with("GitHub user is not member of required organization")
+        self.assertEqual(mock_info.output, [self.logger_output(
+            "GitHub user is not member of required organization", "info"
+        )])
 
     @override_settings(SOCIAL_AUTH_GITHUB_ORG_NAME='Zulip')
     def test_social_auth_github_organization_member_success(self) -> None:
@@ -2252,18 +2258,18 @@ class GitHubAuthBackendTest(SocialAuthBase):
             dict(email=account_data_dict["email"],
                  verified=True),
         ]
-        with mock.patch('logging.warning') as mock_warning:
+        with self.assertLogs(self.logger_string, level='WARNING') as m:
             result = self.social_auth_test(account_data_dict,
                                            subdomain='zulip',
                                            expect_choose_email_screen=True,
                                            email_data=email_data)
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "/login/")
-            mock_warning.assert_called_once_with(
-                "Social auth (%s) failed because user has no verified"
-                " emails associated with the account",
-                "GitHub",
-            )
+        self.assertEqual(m.output, [self.logger_output(
+            "Social auth (%s) failed because user has no verified"
+            " emails associated with the account" % ("GitHub",),
+            "warning"
+        )])
 
     def test_github_oauth2_email_not_associated(self) -> None:
         account_data_dict = dict(email='not-associated@zulip.com', name=self.name)
@@ -2276,18 +2282,18 @@ class GitHubAuthBackendTest(SocialAuthBase):
             dict(email="aaron@zulip.com",
                  verified=True),
         ]
-        with mock.patch('logging.warning') as mock_warning:
+        with self.assertLogs(self.logger_string, level='WARNING') as m:
             result = self.social_auth_test(account_data_dict,
                                            subdomain='zulip',
                                            expect_choose_email_screen=True,
                                            email_data=email_data)
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "/login/")
-            mock_warning.assert_called_once_with(
-                "Social auth (%s) failed because user has no verified"
-                " emails associated with the account",
-                "GitHub",
-            )
+        self.assertEqual(m.output, [self.logger_output(
+            "Social auth (%s) failed because user has no verified"
+            " emails associated with the account" % ("GitHub",),
+            "warning"
+        )])
 
     def test_github_unverified_email_with_existing_account(self) -> None:
         # check if a user is denied to login if the user manages to
@@ -2303,15 +2309,17 @@ class GitHubAuthBackendTest(SocialAuthBase):
                  verified=True,
                  primary=True)
         ]
-        with mock.patch('logging.warning') as mock_warning:
+        with self.assertLogs(self.logger_string, level='WARNING') as m:
             result = self.social_auth_test(account_data_dict,
                                            subdomain='zulip',
                                            expect_choose_email_screen=True,
                                            email_data=email_data)
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "/login/")
-            mock_warning.assert_called_once_with("Social auth (%s) failed because user has no verified"
-                                                 " emails associated with the account", "GitHub")
+        self.assertEqual(m.output, [self.logger_output(
+            "Social auth (%s) failed because user has no verified emails associated with the account" % ("GitHub",),
+            "warning"
+        )])
 
 class GitLabAuthBackendTest(SocialAuthBase):
     __unittest_skip__ = False
@@ -2353,15 +2361,15 @@ class GoogleAuthBackendTest(SocialAuthBase):
 
     def test_social_auth_email_not_verified(self) -> None:
         account_data_dict = dict(email=self.email, name=self.name)
-        with mock.patch('logging.warning') as mock_warning:
+        with self.assertLogs(self.logger_string, level='WARNING') as m:
             result = self.social_auth_test(account_data_dict,
                                            subdomain='zulip')
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "/login/")
-            mock_warning.assert_called_once_with(
-                "Social auth (%s) failed because user has no verified emails",
-                "Google",
-            )
+        self.assertEqual(m.output, [self.logger_output(
+            "Social auth (%s) failed because user has no verified emails" % ("Google",),
+            "warning"
+        )])
 
     def test_social_auth_mobile_success_legacy_url(self) -> None:
         mobile_flow_otp = '1234abcd' * 8
