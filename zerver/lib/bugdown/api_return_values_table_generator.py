@@ -67,8 +67,9 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
             if 'additionalProperties' in return_values[return_value]:
                 ans.append(self.render_desc(return_values[return_value]['additionalProperties']
                                             ['description'], spacing + 4))
-                ans += self.render_table(return_values[return_value]['additionalProperties']['properties'],
-                                         spacing + 8)
+                if 'properties' in return_values[return_value]['additionalProperties']:
+                    ans += self.render_table(return_values[return_value]['additionalProperties']
+                                             ['properties'], spacing + 8)
             if ('items' in return_values[return_value] and
                'properties' in return_values[return_value]['items']):
                 ans += self.render_table(return_values[return_value]['items']['properties'], spacing + 4)

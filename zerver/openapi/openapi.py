@@ -141,6 +141,12 @@ def validate_array(content: List[Any], schema: Dict[str, Any]) -> None:
         # and arrays.
         if 'properties' in schema['items']:
             validate_object(item, schema['items'])
+            continue
+        # If the object was not an opaque object then
+        # the continue statement above should have
+        # been executed.
+        if 'object' in valid_types:
+            raise SchemaError('Opaque object in array')
         if 'items' in schema['items']:
             validate_array(item, schema['items'])
 
@@ -169,8 +175,17 @@ def validate_object(content: Dict[str, Any], schema: Dict[str, Any]) -> None:
             continue
         if 'additionalProperties' in schema['properties'][key]:
             for child_keys in value:
+                if type(value[child_keys]) is list:
+                    validate_array(value[child_keys],
+                                   schema['properties'][key]['additionalProperties'])
+                    continue
                 validate_object(value[child_keys],
                                 schema['properties'][key]['additionalProperties'])
+            continue
+        # If the object is not opaque then continue statements
+        # will be executed above and this will be skipped
+        if expected_type is dict:
+            raise SchemaError('Opaque object "{}"'.format(key))
     # Check that at least all the required keys are present
     if 'required' in schema:
         for req_key in schema['required']:
