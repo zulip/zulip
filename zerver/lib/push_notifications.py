@@ -3,7 +3,7 @@ import binascii
 import logging
 import re
 import time
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import gcm
 import lxml.html
@@ -610,6 +610,19 @@ def get_apns_alert_subtitle(message: Message) -> str:
     # For group PMs, or regular messages to a stream, just use a colon to indicate this is the sender.
     return message.sender.full_name + ":"
 
+def get_apns_badge_count(user_profile: UserProfile, read_messages_ids: Optional[Sequence[int]]=[]) -> int:
+    return UserMessage.objects.filter(
+        user_profile=user_profile
+    ).extra(
+        where=[UserMessage.where_active_push_notification()]
+    ).exclude(
+        # If we've just marked some messages as read, they're still
+        # marked as having active notifications; we'll clear that flag
+        # only after we've sent that update to the devices.  So we need
+        # to exclude them explicitly from the count.
+        message_id__in=read_messages_ids
+    ).count()
+
 def get_message_payload_apns(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
     '''A `message` payload for iOS, via APNs.'''
     zulip_data = get_message_payload(user_profile, message)
@@ -625,7 +638,7 @@ def get_message_payload_apns(user_profile: UserProfile, message: Message) -> Dic
             'body': content,
         },
         'sound': 'default',
-        'badge': 0,  # TODO: set badge count in a better way
+        'badge': get_apns_badge_count(user_profile),
         'custom': {'zulip': zulip_data},
     }
     return apns_data
@@ -664,6 +677,18 @@ def get_remove_payload_gcm(
     gcm_options = {'priority': 'normal'}
     return gcm_payload, gcm_options
 
+def get_remove_payload_apns(user_profile: UserProfile, message_ids: List[int]) -> Dict[str, Any]:
+    zulip_data = get_base_payload(user_profile)
+    zulip_data.update({
+        'event': 'remove',
+        'zulip_message_ids': ','.join(str(id) for id in message_ids),
+    })
+    apns_data = {
+        'badge': get_apns_badge_count(user_profile, message_ids),
+        'custom': {'zulip': zulip_data},
+    }
+    return apns_data
+
 def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]) -> None:
     """This should be called when a message that had previously had a
     mobile push executed is read.  This triggers a mobile push notifica
@@ -674,17 +699,22 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
     user_profile = get_user_profile_by_id(user_profile_id)
     message_ids = bulk_access_messages_expect_usermessage(user_profile_id, message_ids)
     gcm_payload, gcm_options = get_remove_payload_gcm(user_profile, message_ids)
+    apns_payload = get_remove_payload_apns(user_profile, message_ids)
 
     if uses_notification_bouncer():
         send_notifications_to_bouncer(user_profile_id,
-                                      {},
+                                      apns_payload,
                                       gcm_payload,
                                       gcm_options)
     else:
         android_devices = list(PushDeviceToken.objects.filter(
             user=user_profile, kind=PushDeviceToken.GCM))
+        apple_devices = list(PushDeviceToken.objects.filter(
+            user=user_profile, kind=PushDeviceToken.APNS))
         if android_devices:
             send_android_push_notification(android_devices, gcm_payload, gcm_options)
+        if apple_devices:
+            send_apple_push_notification(user_profile_id, apple_devices, apns_payload)
 
     UserMessage.objects.filter(
         user_profile_id=user_profile_id,
