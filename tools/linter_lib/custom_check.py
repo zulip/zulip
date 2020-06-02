@@ -91,11 +91,11 @@ markdown_whitespace_rules = list([rule for rule in whitespace_rules if rule['pat
 
 
 js_rules = RuleList(
-    langs=['js'],
+    langs=['js', 'ts'],
     rules=[
         {'pattern': 'subject|SUBJECT',
-         'exclude': {'static/js/util.js',
-                     'frontend_tests/'},
+         'exclude': {'static/js/util.ts',
+                     'frontend_tests/', 'static/js/zulip.d.ts'},
          'exclude_pattern': 'emails',
          'description': 'avoid subject in JS code',
          'good_lines': ['topic_name'],

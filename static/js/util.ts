@@ -1,5 +1,7 @@
+import _ from 'underscore';
+
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
-export function random_int(min, max) {
+export function random_int(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
@@ -14,11 +16,13 @@ export function random_int(min, max) {
 //
 // Usage: lower_bound(array, value, [less])
 //        lower_bound(array, first, last, value, [less])
-export function lower_bound(array, arg1, arg2, arg3, arg4) {
-    let first;
-    let last;
-    let value;
-    let less;
+type LessFunc<T> = (a: T, b: number, c: number) => boolean;
+export function lower_bound<T>(array: T[], arg1: number, arg2?: number | LessFunc<T>,
+    arg3?: number, arg4?: LessFunc<T>): number {
+    let first: number;
+    let last: number;
+    let value: number;
+    let less: LessFunc<T>;
     if (arg3 === undefined) {
         first = 0;
         last = array.length;
@@ -44,7 +48,7 @@ export function lower_bound(array, arg1, arg2, arg3, arg4) {
             return 0;
         }
 
-        less = function (a, b) { return a < b; };
+        less = (a, b) => typeof a === 'number' && a < b;
     }
 
     let len = last - first;
@@ -64,26 +68,26 @@ export function lower_bound(array, arg1, arg2, arg3, arg4) {
     return first;
 }
 
-function lower_same(a, b) {
+function lower_same(a: string, b: string): boolean {
     return a.toLowerCase() === b.toLowerCase();
 }
 
-export function same_stream_and_topic(a, b) {
+export function same_stream_and_topic(a: Message, b: Message): boolean {
     // Streams and topics are case-insensitive.
     return a.stream_id === b.stream_id &&
         lower_same(a.topic, b.topic);
 }
 
-export function is_pm_recipient(user_id, message) {
+export function is_pm_recipient(user_id: number, message: Message): boolean {
     const recipients = message.to_user_ids.split(',');
     return recipients.includes(user_id.toString());
 }
 
-export function extract_pm_recipients(recipients) {
+export function extract_pm_recipients(recipients: string): string[] {
     return recipients.split(/\s*[,;]\s*/).filter((recipient) => recipient.trim() !== "");
 }
 
-export function same_recipient(a, b) {
+export function same_recipient(a: Message, b: Message): boolean {
     if (a === undefined || b === undefined) {
         return false;
     }
@@ -92,29 +96,29 @@ export function same_recipient(a, b) {
     }
 
     switch (a.type) {
-    case 'private':
-        if (a.to_user_ids === undefined) {
-            return false;
-        }
-        return a.to_user_ids === b.to_user_ids;
-    case 'stream':
-        return same_stream_and_topic(a, b);
+        case 'private':
+            if (a.to_user_ids === undefined) {
+                return false;
+            }
+            return a.to_user_ids === b.to_user_ids;
+        case 'stream':
+            return same_stream_and_topic(a, b);
     }
 
     // should never get here
     return false;
 }
 
-export function same_sender(a, b) {
+export function same_sender(a: Message, b: Message): boolean {
     return a !== undefined && b !== undefined &&
             a.sender_email.toLowerCase() === b.sender_email.toLowerCase();
 }
 
-export function normalize_recipients(recipients) {
+export function normalize_recipients(recipients_str: string): string {
     // Converts a string listing emails of message recipients
     // into a canonical formatting: emails sorted ASCIIbetically
     // with exactly one comma and no spaces between each.
-    recipients = recipients.split(',').map((s) => s.trim());
+    let recipients = recipients_str.split(',').map((s) => s.trim());
     recipients = recipients.map((s) => s.toLowerCase());
     recipients = recipients.filter((s) => s.length > 0);
     recipients.sort();
@@ -125,7 +129,7 @@ export function normalize_recipients(recipients) {
 // one by one until the decode succeeds.  This makes sense if
 // we are decoding input that the user is in the middle of
 // typing.
-export function robust_uri_decode(str) {
+export function robust_uri_decode(str: string): string {
     let end = str.length;
     while (end > 0) {
         try {
@@ -144,7 +148,8 @@ export function robust_uri_decode(str) {
 // doesn't support the ECMAScript Internationalization API
 // Specification, do a dumb string comparison because
 // String.localeCompare is really slow.
-export function make_strcmp() {
+type StrCmp = (a: string, b: string) => number;
+export function make_strcmp(): StrCmp {
     try {
         const collator = new Intl.Collator();
         return collator.compare;
@@ -152,20 +157,20 @@ export function make_strcmp() {
         // continue regardless of error
     }
 
-    return function util_strcmp(a, b) {
+    return function util_strcmp(a: string, b: string) {
         return a < b ? -1 : a > b ? 1 : 0;
     };
 }
 
 export const strcmp = make_strcmp();
 
-export function escape_regexp(string) {
+export function escape_regexp(string: string): string {
     // code from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
     // Modified to escape the ^ to appease jslint. :/
     return string.replace(/([.*+?\^=!:${}()|\[\]\/\\])/g, "\\$1");
 }
 
-export function array_compare(a, b) {
+export function array_compare(a: unknown[], b: unknown[]): boolean {
     if (a.length !== b.length) {
         return false;
     }
@@ -185,26 +190,31 @@ export function array_compare(a, b) {
  * You must supply a option to the constructor called compute_value
  * which should be a function that computes the uncached value.
  */
-const unassigned_value_sentinel = {};
-export class CachedValue {
-    constructor(opts) {
-        this._value = unassigned_value_sentinel;
+enum CachedValueState { Unassigned }
+interface CachedValueOpts<T> {
+    compute_value: () => T;
+}
+
+export class CachedValue<T> {
+    public compute_value: () => T;
+    private _value: T | CachedValueState = CachedValueState.Unassigned;
+    constructor(opts: CachedValueOpts<T>) {
         this.compute_value = opts.compute_value;
     }
 
-    get() {
-        if (this._value === unassigned_value_sentinel) {
+    get(): T {
+        if (this._value === CachedValueState.Unassigned) {
             this._value = this.compute_value();
         }
         return this._value;
     }
 
-    reset() {
-        this._value = unassigned_value_sentinel;
+    reset(): void {
+        this._value = CachedValueState.Unassigned;
     }
 }
 
-exports.find_wildcard_mentions = function (message_content) {
+export function find_wildcard_mentions(message_content: string): string {
     const mention = /(^|\s)(@\*{2}(all|everyone|stream)\*{2})($|\s)/.exec(message_content);
     if (mention === null) {
         return null;
@@ -212,10 +222,10 @@ exports.find_wildcard_mentions = function (message_content) {
     return mention[3];
 }
 
-export function move_array_elements_to_front(array, selected) {
+export function move_array_elements_to_front<T>(array: T[], selected: T[]): T[] {
     const selected_hash = new Set(selected);
-    const selected_elements = [];
-    const unselected_elements = [];
+    const selected_elements: T[] = [];
+    const unselected_elements: T[] = [];
     for (const element of array) {
         (selected_hash.has(element) ? selected_elements : unselected_elements).push(element);
     }
@@ -223,16 +233,16 @@ export function move_array_elements_to_front(array, selected) {
 }
 
 // check by the userAgent string if a user's client is likely mobile.
-export function is_mobile() {
+export function is_mobile(): boolean {
     const regex = "Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini";
     return new RegExp(regex, "i").test(window.navigator.userAgent);
 }
 
-function to_int(s) {
+function to_int(s: string): number {
     return parseInt(s, 10);
 }
 
-export function sorted_ids(ids) {
+export function sorted_ids(ids: string[]): number[] {
     // This mapping makes sure we are using ints, and
     // it also makes sure we don't mutate the list.
     let id_list = ids.map(to_int);
@@ -242,28 +252,28 @@ export function sorted_ids(ids) {
     return id_list;
 }
 
-export function set_match_data(target, source) {
+export function set_match_data(target: Message, source: Message): void {
     target.match_subject = source.match_subject;
     target.match_content = source.match_content;
 }
 
-export function get_match_topic(obj) {
+export function get_match_topic(obj: Message): string | undefined {
     return obj.match_subject;
 }
 
-export function get_draft_topic(obj) {
+export function get_draft_topic(obj: Message): string {
     // We will need to support subject for old drafts.
     return obj.topic || obj.subject || '';
 }
 
-export function get_reload_topic(obj) {
+export function get_reload_topic(obj: Message): string {
     // When we first upgrade to releases that have
     // topic=foo in the code, the user's reload URL
     // may still have subject=foo from the prior version.
     return obj.topic || obj.subject || '';
 }
 
-export function get_edit_event_topic(obj) {
+export function get_edit_event_topic(obj: Message): string {
     if (obj.topic === undefined) {
         return obj.subject;
     }
@@ -273,25 +283,27 @@ export function get_edit_event_topic(obj) {
     return obj.topic;
 }
 
-export function get_edit_event_orig_topic(obj) {
+// TODO: Add types for the event in server_dispatch module
+// and use it here and the get_edit_event_prev_topic below.
+export function get_edit_event_orig_topic(obj: any): unknown {
     return obj.orig_subject;
 }
 
-export function get_edit_event_prev_topic(obj) {
+export function get_edit_event_prev_topic(obj: any): unknown {
     return obj.prev_subject;
 }
 
-export function is_topic_synonym(operator) {
+export function is_topic_synonym(operator: string): boolean {
     return operator === 'subject';
 }
 
-export function convert_message_topic(message) {
+export function convert_message_topic(message: Message): void {
     if (message.topic === undefined) {
         message.topic = message.subject;
     }
 }
 
-export function clean_user_content_links(html) {
+export function clean_user_content_links(html: string): string {
     const content = new DOMParser().parseFromString(html, "text/html").body;
     for (const elt of content.getElementsByTagName("a")) {
         // Ensure that all external links have target="_blank"
@@ -339,7 +351,7 @@ export function clean_user_content_links(html) {
             title = url;
             legacy_title = href;
         }
-        elt.setAttribute("title", ["", legacy_title].includes(elt.title) ? title : `${title}\n${elt.title}`);
+        elt.setAttribute("title", ["", legacy_title].includes(elt.title) ? title.toString() : `${title}\n${elt.title}`);
     }
     return content.innerHTML;
 }
