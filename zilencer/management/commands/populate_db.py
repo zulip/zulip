@@ -326,11 +326,14 @@ class Command(BaseCommand):
             # Create public streams.
             stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
             stream_dict: Dict[str, Dict[str, Any]] = {
-                "Verona": {"description": "A city in Italy"},
-                "Denmark": {"description": "A Scandinavian country"},
+                "Verona": {"description": "A city in **Italy** famous for its artistic heritage \
+                            and ~~second~~ third largest in northeast Italy."},
+                "Denmark": {"description": "A Scandinavian ~~city~~ country officially \
+                            know as *Kingdom of Denmark*."},
                 "Scotland": {"description": "Located in the United Kingdom"},
                 "Venice": {"description": "A northeastern Italian city"},
-                "Rome": {"description": "Yet another Italian city", "is_web_public": True}
+                "Rome": {"description": "Yet another Italian city, know for its exceptional \
+                          *history*.", "is_web_public": True}
             }
 
             bulk_create_streams(zulip_realm, stream_dict)
@@ -538,11 +541,11 @@ class Command(BaseCommand):
                     "all": {"description": "For **everything**"},
                     "announce": {"description": "For announcements",
                                  'stream_post_policy': Stream.STREAM_POST_POLICY_ADMINS},
-                    "design": {"description": "For design"},
+                    "design": {"description": "For **design**"},
                     "support": {"description": "For support"},
                     "social": {"description": "For socializing"},
                     "test": {"description": "For testing `code`"},
-                    "errors": {"description": "For errors"},
+                    "errors": {"description": "For *errors*"},
                     "sales": {"description": "For sales discussion"}
                 }
 
@@ -559,7 +562,8 @@ class Command(BaseCommand):
                     extra_stream_name = 'Extra Stream ' + number_str
 
                     zulip_stream_dict[extra_stream_name] = {
-                        "description": "Auto-generated extra stream.",
+                        "description": "Auto-generated **extra** stream.\
+                                       These help ~~us~~ you out with testing large batches of streams.",
                     }
 
                 bulk_create_streams(zulip_realm, zulip_stream_dict)
