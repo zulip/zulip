@@ -10,7 +10,7 @@ function get_formatted_sub_count(current_stream) {
     let sub_count = get_sub_count(current_stream);
     if (sub_count >= 1000) {
         // parseInt() is used to floor the value of division to an integer
-        sub_count = parseInt(sub_count / 1000, 10) + "k";
+        sub_count = parseInt(sub_count / 1000, 10) + 'k';
     }
     return sub_count;
 }
@@ -19,7 +19,7 @@ function make_tab_data(filter) {
     const tab_data = {};
     if (filter === undefined) {
         return {
-            title: 'All messages',
+            title: i18n.t('All messages'),
             icon: 'home',
         };
     }
@@ -32,12 +32,15 @@ function make_tab_data(filter) {
             tab_data.rendered_narrow_description = current_stream.rendered_description;
             tab_data.sub_count = get_sub_count(current_stream);
             tab_data.formatted_sub_count = get_formatted_sub_count(current_stream);
+            // the "title" is passed as a variable and doesn't get translated (nor should it)
+            tab_data.sub_count_tooltip_text =
+            i18n.t("__count__ users are subscribed to #__title__", {count: tab_data.sub_count, title: tab_data.title});
             tab_data.stream_settings_link = "#streams/" + current_stream.stream_id + "/" + current_stream.name;
         } else {
-            tab_data.title = 'Unknown Stream';
+            tab_data.title = i18n.t('Unknown stream');
             tab_data.sub_count = '0';
             tab_data.formatted_sub_count = '0';
-            tab_data.rendered_narrow_description = "This stream does not exist or is private.";
+            tab_data.rendered_narrow_description = i18n.t("This stream does not exist or is private.");
         }
     }
     return tab_data;
