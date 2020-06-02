@@ -21,10 +21,12 @@ from zerver.lib.upload import upload_message_file
 from zerver.lib.send_email import FromAddress
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.exceptions import RateLimited
+from zerver.lib.topic import messages_for_topic
 from zerver.lib.message import truncate_body, truncate_topic
 from zerver.models import Stream, Recipient, MissedMessageEmailAddress, \
     get_display_recipient, \
-    Message, Realm, UserProfile, get_system_bot, get_user, get_stream_by_id_in_realm
+    Message, Realm, UserProfile, get_system_bot, get_user, get_stream_by_id_in_realm, \
+    MAX_TOPIC_NAME_LENGTH
 
 from zproject.backends import is_user_active
 
@@ -171,6 +173,11 @@ class ZulipEmailForwardUserError(ZulipEmailForwardError):
     pass
 
 def send_zulip(sender: UserProfile, stream: Stream, topic: str, content: str) -> None:
+    if (len(topic) > MAX_TOPIC_NAME_LENGTH):
+        if not (messages_for_topic(stream.recipient_id, topic).filter(
+                date_sent__gt = timezone_now() - timedelta(days=7)).exists()):
+            content = 'Subject: {}\n\n{}'.format(topic, content)
+
     internal_send_stream_message(
         stream.realm,
         sender,
