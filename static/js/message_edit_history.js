@@ -6,16 +6,18 @@ exports.fetch_and_render_message_history = function (message) {
         data: {message_id: JSON.stringify(message.id)},
         success: function (data) {
             const content_edit_history = [];
-            let prev_timestamp = null;
+            let prev_datestamp = null;
 
             for (const [index, msg] of data.message_history.entries()) {
-                // Format timestamp nicely for display
-                const timestamp = timerender.get_full_time(msg.timestamp);
+                // Format times and dates nicely for display
+                const time = new XDate(msg.timestamp * 1000);
+                const datestamp = time.toDateString();
                 const item = {
-                    timestamp: moment(timestamp).format("h:mm A"),
-                    display_date: moment(timestamp).format("MMMM D, YYYY"),
-                    show_date_row: !moment(timestamp).isSame(prev_timestamp, 'day'),
+                    timestamp: time.toString('h:mm TT'),
+                    display_date: time.toString("MMMM d, yyyy"),
+                    show_date_row: datestamp !== prev_datestamp,
                 };
+
                 if (msg.user_id) {
                     const person = people.get_by_user_id(msg.user_id);
                     item.edited_by = person.full_name;
@@ -43,7 +45,7 @@ exports.fetch_and_render_message_history = function (message) {
 
                 content_edit_history.push(item);
 
-                prev_timestamp = timestamp;
+                prev_datestamp = datestamp;
             }
             $('#message-history').attr('data-message-id', message.id);
             $('#message-history').html(render_message_edit_history({
