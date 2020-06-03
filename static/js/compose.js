@@ -998,7 +998,7 @@ exports.initialize = function () {
         if (email === undefined) {
             return;
         }
-
+        const user_id = people.get_user_id(email);
         function success() {
             const all_invites = $("#compose_invite_users");
             invite_row.remove();
@@ -1031,7 +1031,7 @@ exports.initialize = function () {
             return;
         }
 
-        stream_edit.invite_user_to_stream([email], sub, success, xhr_failure);
+        stream_edit.invite_user_to_stream([user_id], sub, success, xhr_failure);
     });
 
     $("#compose_invite_users").on('click', '.compose_invite_close', function (event) {

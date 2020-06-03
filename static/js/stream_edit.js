@@ -129,25 +129,25 @@ exports.update_stream_description = function (sub) {
     );
 };
 
-exports.invite_user_to_stream = function (emails, sub, success, failure) {
+exports.invite_user_to_stream = function (user_ids, sub, success, failure) {
     // TODO: use stream_id when backend supports it
     const stream_name = sub.name;
     return channel.post({
         url: "/json/users/me/subscriptions",
         data: {subscriptions: JSON.stringify([{name: stream_name}]),
-               principals: JSON.stringify(emails)},
+               principals: JSON.stringify(user_ids)},
         success: success,
         error: failure,
     });
 };
 
-exports.remove_user_from_stream = function (user_email, sub, success, failure) {
+exports.remove_user_from_stream = function (user_id, sub, success, failure) {
     // TODO: use stream_id when backend supports it
     const stream_name = sub.name;
     return channel.del({
         url: "/json/users/me/subscriptions",
         data: {subscriptions: JSON.stringify([stream_name]),
-               principals: JSON.stringify([user_email])},
+               principals: JSON.stringify([user_id])},
         success: success,
         error: failure,
     });
@@ -559,10 +559,6 @@ exports.initialize = function () {
         }
 
         const user_ids = user_pill.get_user_ids(exports.pill_widget);
-        const emails = user_ids.map(user_id => {
-            const person = people.get_by_user_id(user_id);
-            return person.email;
-        });
         const stream_subscription_info_elem = $('.stream_subscription_info').expectOne();
 
         function invite_success(data) {
@@ -586,7 +582,7 @@ exports.initialize = function () {
                 .addClass("text-error").removeClass("text-success");
         }
 
-        exports.invite_user_to_stream(emails, sub, invite_success, invite_failure);
+        exports.invite_user_to_stream(user_ids, sub, invite_success, invite_failure);
     });
 
     $("#subscriptions_table").on("submit", ".subscriber_list_remove form", function (e) {
@@ -594,7 +590,6 @@ exports.initialize = function () {
 
         const list_entry = $(e.target).closest("tr");
         const target_user_id = parseInt(list_entry.attr("data-subscriber-id"), 10);
-        const principal = people.get_by_user_id(target_user_id).email;
         const settings_row = $(e.target).closest('.subscription_settings');
 
         const sub = get_sub_for_target(settings_row);
@@ -622,7 +617,7 @@ exports.initialize = function () {
                 .addClass("text-error").removeClass("text-success");
         }
 
-        exports.remove_user_from_stream(principal, sub, removal_success,
+        exports.remove_user_from_stream(target_user_id, sub, removal_success,
                                         removal_failure);
     });
 
