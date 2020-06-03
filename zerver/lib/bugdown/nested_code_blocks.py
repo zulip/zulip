@@ -1,7 +1,7 @@
 from markdown.extensions import Extension
 from typing import Any, Dict, Optional, List, Tuple
 import markdown
-from xml.etree.cElementTree import Element
+from xml.etree.ElementTree import Element
 
 from zerver.lib.bugdown import walk_tree_with_family, ResultWithFamily
 

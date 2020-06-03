@@ -19,8 +19,8 @@ from io import StringIO
 import dateutil.parser
 import dateutil.tz
 from datetime import datetime
-import xml.etree.cElementTree as etree
-from xml.etree.cElementTree import Element
+import xml.etree.ElementTree as etree
+from xml.etree.ElementTree import Element
 import ahocorasick
 from hyperlink import parse
 
