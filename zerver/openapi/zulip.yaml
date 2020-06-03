@@ -1727,6 +1727,40 @@ paths:
                       "result": "success",
                     }
 
+  /users/{user_id}/subscription/{stream_id}:
+    get:
+      operationId: get_subscription_status
+      tags: ["users"]
+      description: |
+        Check whether a user with the given User ID is subscribed
+        to the stream with the given Stream ID.
+
+        `GET {{ api_url }}/v1/users/{user_id}/subscription/{stream_id}`
+      parameters:
+      - $ref: '#/components/parameters/UserId'
+        example: 7
+      - $ref: '#/components/parameters/StreamIdInPath'
+        example: 1
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    is_subscribed:
+                      type: boolean
+                      description: |
+                        Whether the user is subscribed to the stream.
+                - example:
+                    {
+                        "msg": "",
+                        "result": "success",
+                        "is_subscribed": false
+                    }
+
   /users/{email}/presence:
     get:
       operationId: get_user_presence

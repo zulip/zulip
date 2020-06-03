@@ -171,7 +171,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/users/me/presence',
         '/users/me/alert_words',
         '/users/me/status',
-        '/users/{user_id}/subscription/{stream_id}',
+
         #### These realm administration settings are valuable to document:
         # List all files uploaded by current user.  May want to add support
         # for a larger list available to administrators?
