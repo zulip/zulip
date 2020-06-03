@@ -23,10 +23,15 @@ exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
         first = 0;
         last = array.length;
         value = arg1;
-        less = arg2;
+        if (typeof arg2 !== 'number') {
+            less = arg2;
+        }
     } else {
         first = arg1;
-        last = arg2;
+        if (typeof arg2 === 'number') {
+            last = arg2;
+        }
+
         value = arg3;
         less = arg4;
     }
