@@ -909,6 +909,26 @@ paths:
           - change_all
           default: change_one
         example: change_all
+      - name: send_notification_to_old_thread
+        in: query
+        description: |
+          "Whether to send breadcrumb message in the old thread to
+           notify users where this thread was moved to."
+        schema:
+          type: boolean
+          default: true
+        allowEmptyValue: true
+        example: true
+      - name: send_notification_to_new_thread
+        in: query
+        description: |
+          "Whether to send breadcrumb message in the new thread to
+           notify users where this thread was moved from."
+        schema:
+          type: boolean
+          default: true
+        allowEmptyValue: true
+        example: true
       - $ref: '#/components/parameters/Content'
       - $ref: '#/components/parameters/StreamIdInQuery'
       responses:

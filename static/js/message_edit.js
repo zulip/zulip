@@ -6,6 +6,11 @@ const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
 const currently_echoing_messages = new Map();
 
+// constants defined to preserve choice of user
+// when moving topics.
+exports.NOTIFY_OLD_THREAD = true;
+exports.NOTIFY_NEW_THREAD = true;
+
 const editability_types = {
     NO: 1,
     NO_LONGER: 2,
@@ -283,6 +288,8 @@ function edit_message(row, raw_content) {
         available_streams: available_streams,
         stream_id: message.stream_id,
         stream_name: message.stream,
+        notify_new_thread: exports.NOTIFY_NEW_THREAD,
+        notify_old_thread: exports.NOTIFY_OLD_THREAD,
     }));
 
     const edit_obj = {form: form, raw_content: raw_content};
@@ -298,6 +305,7 @@ function edit_message(row, raw_content) {
     const message_edit_content = row.find('textarea.message_edit_content');
     const message_edit_topic = row.find('input.message_edit_topic');
     const message_edit_topic_propagate = row.find('select.message_edit_topic_propagate');
+    const message_edit_breadcrumb_messages = row.find('div.message_edit_breadcrumb_messages');
     const message_edit_countdown_timer = row.find('.message_edit_countdown_timer');
     const copy_message = row.find('.copy_message');
 
@@ -380,6 +388,7 @@ function edit_message(row, raw_content) {
                 if (message.type === 'stream') {
                     message_edit_topic.prop("readonly", "readonly");
                     message_edit_topic_propagate.hide();
+                    message_edit_breadcrumb_messages.hide();
                 }
                 // We don't go directly to a "TOPIC_ONLY" type state (with an active Save button),
                 // since it isn't clear what to do with the half-finished edit. It's nice to keep
@@ -424,6 +433,7 @@ function edit_message(row, raw_content) {
         const is_topic_edited = new_topic !== original_topic && new_topic !== "";
         const is_stream_edited = new_stream_id !== original_stream_id;
         message_edit_topic_propagate.toggle(is_topic_edited || is_stream_edited);
+        message_edit_breadcrumb_messages.toggle(is_stream_edited);
     }
 
     if (!message.locally_echoed) {
@@ -585,6 +595,37 @@ exports.save_inline_topic_edit = function (row) {
     });
 };
 
+function maybe_move_to_new_thread(opts) {
+    // We don't want to leave user with an empty narrow,
+    // so we move user to the new stream > topic, if the old
+    // thread is empty.
+    const num_msgs_in_old_thread =
+        message_util.get_messages_in_topic(opts.old_stream_id, opts.old_topic).length;
+    if (!(num_msgs_in_old_thread === 0 &&
+            narrow_state.stream() === stream_data.maybe_get_stream_name(opts.old_stream_id) &&
+            narrow_state.topic() === opts.old_topic)) {
+        return false;
+    }
+
+    // We try to use new stream and topic values from the request variables instead
+    // of directly using the ones stored in message to avoid possible race condition
+    // between webapp receiving the update event and updating it locally, and
+    // getting the updated message values here.
+    let new_stream_name = stream_data.maybe_get_stream_name(Number(opts.new_stream_id));
+    const message = message_store.get(opts.message_id);
+    if (new_stream_name === undefined) {
+        new_stream_name = message.stream;
+    }
+    if (opts.new_topic === undefined) {
+        opts.new_topic = message.topic;
+    }
+    const operators = [
+        {operator: 'stream', operand: new_stream_name},
+        {operator: 'topic', operand: opts.new_topic},
+    ];
+    narrow.activate(operators, {trigger: 'empty_narrow_after_moving_messages'});
+}
+
 exports.save_message_row_edit = function (row) {
     const msg_list = current_msg_list;
     let message_id = rows.id(row);
@@ -628,7 +669,13 @@ exports.save_message_row_edit = function (row) {
 
     if (topic_changed || stream_changed) {
         const selected_topic_propagation = row.find("select.message_edit_topic_propagate").val() || "change_later";
+        const send_notification_to_old_thread = row.find('.send_notification_to_old_thread').is(':checked');
+        const send_notification_to_new_thread = row.find('.send_notification_to_new_thread').is(':checked');
         request.propagate_mode = selected_topic_propagation;
+        request.send_notification_to_old_thread = send_notification_to_old_thread;
+        request.send_notification_to_new_thread = send_notification_to_new_thread;
+        exports.NOTIFY_OLD_THREAD = send_notification_to_old_thread;
+        exports.NOTIFY_NEW_THREAD = send_notification_to_new_thread;
         changed = true;
     }
 
@@ -694,6 +741,13 @@ exports.save_message_row_edit = function (row) {
                 delete message.local_edit_timestamp;
                 currently_echoing_messages.delete(message_id);
             }
+            maybe_move_to_new_thread({
+                old_stream_id: old_stream_id,
+                old_topic: old_topic,
+                new_stream_id: new_stream_id,
+                new_topic: new_topic,
+                message_id: message.id,
+            });
         },
         error: function (xhr) {
             if (msg_list === current_msg_list) {
@@ -904,12 +958,21 @@ exports.handle_narrow_deactivated = function () {
 };
 
 exports.move_topic_containing_message_to_stream =
-    function (message_id, new_stream_id, new_topic_name) {
+    function (message_id, new_stream_id, new_topic_name, send_notification_to_new_thread,
+              send_notification_to_old_thread) {
         const request = {
             stream_id: new_stream_id,
             propagate_mode: 'change_all',
             topic: new_topic_name,
+            send_notification_to_old_thread: send_notification_to_old_thread,
+            send_notification_to_new_thread: send_notification_to_new_thread,
         };
+        exports.NOTIFY_OLD_THREAD = send_notification_to_old_thread;
+        exports.NOTIFY_NEW_THREAD = send_notification_to_new_thread;
+        // For post processing results on sucess
+        const message = message_store.get(message_id);
+        const old_stream_id = message.stream_id;
+        const old_topic = message.topic;
         channel.patch({
             url: '/json/messages/' + message_id,
             data: request,
@@ -918,6 +981,13 @@ exports.move_topic_containing_message_to_stream =
                 // from server_events.js.
                 // TODO: This should probably remove a spinner and
                 // close the modal.
+                maybe_move_to_new_thread({
+                    old_stream_id: old_stream_id,
+                    old_topic: old_topic,
+                    new_stream_id: new_stream_id,
+                    new_topic: new_topic_name,
+                    message_id: message_id,
+                });
             },
             error: function (xhr) {
                 ui_report.error(i18n.t("Error moving the topic"), xhr,

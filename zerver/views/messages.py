@@ -1503,6 +1503,8 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
                            propagate_mode: Optional[str]=REQ(
                                default="change_one",
                                str_validator=check_string_in(PROPAGATE_MODE_VALUES)),
+                           send_notification_to_old_thread: bool=REQ(default=True, validator=check_bool),
+                           send_notification_to_new_thread: bool=REQ(default=True, validator=check_bool),
                            content: Optional[str]=REQ(default=None)) -> HttpResponse:
     if not user_profile.realm.allow_message_editing:
         return json_error(_("Your organization has turned off message editing"))
@@ -1607,6 +1609,8 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
 
     number_changed = do_update_message(user_profile, message, new_stream,
                                        topic_name, propagate_mode,
+                                       send_notification_to_old_thread,
+                                       send_notification_to_new_thread,
                                        content, rendered_content,
                                        prior_mention_user_ids,
                                        mention_user_ids, mention_data)
