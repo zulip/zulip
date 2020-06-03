@@ -11,7 +11,9 @@
     {{#unless is_bot}}
     <td>
         <span class="user_role">
-            {{#if is_admin}}
+            {{#if is_owner}}
+            {{t "Owner" }}
+            {{else if is_admin}}
             {{t "Administrator" }}
             {{else if is_guest}}
             {{t "Guest" }}

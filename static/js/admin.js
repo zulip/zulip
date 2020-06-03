@@ -60,6 +60,7 @@ exports.build_page = function () {
         realm_signup_notifications_stream_id: page_params.realm_signup_notifications_stream_id,
         is_admin: page_params.is_admin,
         is_guest: page_params.is_guest,
+        is_owner: page_params.is_owner,
         realm_icon_source: page_params.realm_icon_source,
         realm_icon_url: page_params.realm_icon_url,
         realm_logo_source: page_params.realm_logo_source,

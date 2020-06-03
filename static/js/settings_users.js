@@ -69,7 +69,9 @@ function get_user_info_row(user_id) {
 
 function set_user_role_dropdown(person) {
     let role_value = settings_config.user_role_values.member.code;
-    if (person.is_admin) {
+    if (person.is_owner) {
+        role_value = settings_config.user_role_values.owner.code;
+    } else if (person.is_admin) {
         role_value = settings_config.user_role_values.admin.code;
     } else if (person.is_guest) {
         role_value = settings_config.user_role_values.guest.code;
@@ -218,6 +220,7 @@ function human_info(person) {
     info.is_bot = false;
     info.is_admin = person.is_admin;
     info.is_guest = person.is_guest;
+    info.is_owner = person.is_owner;
     info.is_active = people.is_person_active(person.user_id);
     info.user_id = person.user_id;
     info.full_name = person.full_name;
@@ -378,12 +381,16 @@ function open_human_form(person) {
         email: person.email,
         full_name: person.full_name,
         user_role_values: settings_config.user_role_values,
+        disable_role_dropdown: person.is_owner && !page_params.is_owner,
     });
     const div = $(html);
     const modal_container = $('#user-info-form-modal-container');
     modal_container.empty().append(div);
     overlays.open_modal('#admin-human-form');
     set_user_role_dropdown(person);
+    if (!page_params.is_owner) {
+        $('#user-role-select').find('option[value=' + settings_config.user_role_values.owner.code + ']').hide();
+    }
 
     const element = "#admin-human-form .custom-profile-field-form";
     $(element).html("");

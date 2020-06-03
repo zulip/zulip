@@ -91,6 +91,11 @@ run_test('updates', () => {
     assert.equal(person.full_name, 'Isaac Newton');
     assert.equal(person.is_admin, true);
 
+    user_events.update_person({user_id: isaac.user_id,
+                               role: settings_config.user_role_values.owner.code});
+    assert.equal(person.is_admin, true);
+    assert.equal(person.is_owner, true);
+
     let user_id;
     let full_name;
     global.message_live_update.update_user_full_name = function (user_id_arg, full_name_arg) {
