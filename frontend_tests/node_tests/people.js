@@ -68,6 +68,7 @@ const realm_admin = {
     email: 'realm_admin@example.com',
     full_name: 'Realm Admin',
     user_id: 32,
+    is_owner: false,
     is_admin: true,
     is_guest: false,
     is_bot: false,
@@ -77,8 +78,19 @@ const guest = {
     email: 'guest@example.com',
     full_name: 'Guest User',
     user_id: 33,
+    is_owner: false,
     is_admin: false,
     is_guest: true,
+    is_bot: false,
+};
+
+const realm_owner = {
+    email: 'realm_owner@example.com',
+    full_name: 'Realm Owner',
+    user_id: 34,
+    is_owner: true,
+    is_admin: true,
+    is_guest: false,
     is_bot: false,
 };
 
@@ -402,10 +414,12 @@ run_test('user_type', () => {
     people.add_active_user(me);
     people.add_active_user(realm_admin);
     people.add_active_user(guest);
+    people.add_active_user(realm_owner);
     people.add_active_user(bot_botson);
     assert.equal(people.get_user_type(me.user_id), i18n.t('Member'));
     assert.equal(people.get_user_type(realm_admin.user_id), i18n.t('Administrator'));
     assert.equal(people.get_user_type(guest.user_id), i18n.t('Guest'));
+    assert.equal(people.get_user_type(realm_owner.user_id), i18n.t('Owner'));
     assert.equal(people.get_user_type(bot_botson.user_id), i18n.t('Bot'));
 });
 

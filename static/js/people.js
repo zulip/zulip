@@ -243,7 +243,9 @@ exports.get_user_time = function (user_id) {
 exports.get_user_type = function (user_id) {
     const user_profile = exports.get_by_user_id(user_id);
 
-    if (user_profile.is_admin) {
+    if (user_profile.is_owner) {
+        return i18n.t("Owner");
+    } else if (user_profile.is_admin) {
         return i18n.t("Administrator");
     } else if (user_profile.is_guest) {
         return i18n.t("Guest");

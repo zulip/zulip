@@ -171,6 +171,10 @@ exports.user_role_values = {
         code: 200,
         description: i18n.t("Administrator"),
     },
+    owner: {
+        code: 100,
+        description: i18n.t("Owner"),
+    },
 };
 
 // NOTIFICATIONS

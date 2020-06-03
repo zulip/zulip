@@ -48,9 +48,15 @@ exports.update_person = function update(person) {
     }
 
     if (Object.prototype.hasOwnProperty.call(person, 'role')) {
-        person_obj.is_admin = person.role === settings_config.user_role_values.admin.code;
+        person_obj.is_owner = person.role === settings_config.user_role_values.owner.code;
+        person_obj.is_admin = person.role === settings_config.user_role_values.admin.code
+            || person_obj.is_owner;
         person_obj.is_guest = person.role === settings_config.user_role_values.guest.code;
         settings_users.update_user_data(person.user_id, person);
+
+        if (people.is_my_user_id(person.user_id) && page_params.is_owner !== person_obj.is_owner) {
+            page_params.is_owner = person_obj.is_owner;
+        }
 
         if (people.is_my_user_id(person.user_id) && page_params.is_admin !== person_obj.is_admin) {
             page_params.is_admin = person_obj.is_admin;
