@@ -259,6 +259,8 @@ exports.create = function (opts) {
                         funcs.clear(e.target);
                         e.stopPropagation();
                     }
+                } else if (value.length === 0 && store.$parent.find(".pill").length > 0) {
+                    $('.subscriber_list_add form').submit();
                 }
 
                 return;
