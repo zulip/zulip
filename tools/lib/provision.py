@@ -388,7 +388,6 @@ def main(options: argparse.Namespace) -> "NoReturn":
     if is_circleci and not options.is_build_release_tarball_only:
         run_as_root(["service", "redis-server", "restart"])
         run_as_root(["service", "memcached", "restart"])
-    if is_circleci:
         run_as_root(["service", "rabbitmq-server", "restart"])
         run_as_root(["service", "postgresql", "restart"])
     elif "fedora" in os_families():
