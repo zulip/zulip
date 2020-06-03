@@ -129,7 +129,6 @@ PRIVACY_POLICY: Optional[str] = None
 TERMS_OF_SERVICE: Optional[str] = None
 
 # Security
-ENABLE_FILE_LINKS = False
 ENABLE_GRAVATAR = True
 INLINE_IMAGE_PREVIEW = True
 INLINE_URL_EMBED_PREVIEW = True

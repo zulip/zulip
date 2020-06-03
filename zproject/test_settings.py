@@ -138,9 +138,6 @@ if not CASPER_TESTS:
     set_loglevel('zerver.worker.queue_processors', 'WARNING')
     set_loglevel('stripe', 'WARNING')
 
-# Enable file:/// hyperlink support by default in tests
-ENABLE_FILE_LINKS = True
-
 # These settings are set dynamically in `zerver/lib/test_runner.py`:
 TEST_WORKER_DIR = ''
 # Allow setting LOCAL_UPLOADS_DIR in the environment so that the

@@ -367,10 +367,6 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2  # 2 weeks
 # can also be disabled in a realm's organization settings.
 #INLINE_URL_EMBED_PREVIEW = True
 
-# Controls whether or not Zulip will parse links starting with
-# "file:///" as a hyperlink (useful if you have e.g. an NFS share).
-ENABLE_FILE_LINKS = False
-
 # By default, files uploaded by users and profile pictures are stored
 # directly on the Zulip server.  You can configure files being instead
 # stored in Amazon S3 or another scalable data store here.  See docs at:

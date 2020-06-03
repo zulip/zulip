@@ -48,6 +48,7 @@ from unittest import mock
 import os
 import ujson
 import re
+import urllib
 
 from typing import cast, Any, Dict, List, Optional, Set, Tuple
 
@@ -408,7 +409,8 @@ class BugdownTest(ZulipTestCase):
                 self.assertEqual(converted, test['expected_output'])
 
         def replaced(payload: str, url: str, phrase: str='') -> str:
-            if url[:4] == 'http':
+            scheme, netloc, path, params, query, fragment = urllib.parse.urlparse(url)
+            if scheme:
                 href = url
             elif '@' in url:
                 href = 'mailto:' + url
@@ -424,19 +426,13 @@ class BugdownTest(ZulipTestCase):
                 except TypeError:
                     match = reference
                 converted = bugdown_convert(inline_url)
-                self.assertEqual(match, converted)
+                self.assertEqual(match, converted, "Original messsage: {}".format(inline_url))
 
     def test_inline_file(self) -> None:
         msg = 'Check out this file file:///Volumes/myserver/Users/Shared/pi.py'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>Check out this file <a href="file:///Volumes/myserver/Users/Shared/pi.py">file:///Volumes/myserver/Users/Shared/pi.py</a></p>')
-
-        bugdown.clear_state_for_testing()
-        with self.settings(ENABLE_FILE_LINKS=False):
-            realm = Realm.objects.create(string_id='file_links_test')
-            bugdown.maybe_update_markdown_engines(realm.id, False)
-            converted = bugdown.convert(msg, message_realm=realm)
-            self.assertEqual(converted, '<p>Check out this file file:///Volumes/myserver/Users/Shared/pi.py</p>')
+        expected = '<p>Check out this file <a href="file:///Volumes/myserver/Users/Shared/pi.py">file:///Volumes/myserver/Users/Shared/pi.py</a></p>'
+        self.assertEqual(converted, expected)
 
     def test_inline_bitcoin(self) -> None:
         msg = 'To bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa or not to bitcoin'

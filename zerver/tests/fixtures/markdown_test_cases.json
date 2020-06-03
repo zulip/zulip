@@ -1220,6 +1220,76 @@
       "quora http://generate.quora.net/render?width=700&from=-4hours&until=now&height=400&bgcolor=black&lineMode=connected&title=arb%20hint%20status&target=alias(ans.hintland.hand.arb.enhint_rate%2C%22enhint%20rate%22)&target=alias(ans.hintland.hand.arb.unhint_rate%2C%22unhint%20rate%22)&target=alias(ans.hintland.hand.arb.size%2C%22hint%20size%22)&target=alias(scale(ans.vagabond.dingarb_cube_count%2C10000)%2C%22cube%20count%20x%2010K%22)&target=alias(scale(hnumbers.time.ding.gegevens.query.count%2C10)%2C%22ding%20gegevens%20query%20count%20x%2010%22)&fgcolor=white&uniq=0.44046106841415167",
       "<p>quora %s</p>",
       "http://generate.quora.net/render?width=700&amp;from=-4hours&amp;until=now&amp;height=400&amp;bgcolor=black&amp;lineMode=connected&amp;title=arb%20hint%20status&amp;target=alias(ans.hintland.hand.arb.enhint_rate%2C%22enhint%20rate%22)&amp;target=alias(ans.hintland.hand.arb.unhint_rate%2C%22unhint%20rate%22)&amp;target=alias(ans.hintland.hand.arb.size%2C%22hint%20size%22)&amp;target=alias(scale(ans.vagabond.dingarb_cube_count%2C10000)%2C%22cube%20count%20x%2010K%22)&amp;target=alias(scale(hnumbers.time.ding.gegevens.query.count%2C10)%2C%22ding%20gegevens%20query%20count%20x%2010%22)&amp;fgcolor=white&amp;uniq=0.44046106841415167"
+    ],
+    [
+      "do not autolink custom schemes outside angle brackets: : custom://www.google.com.",
+      "<p>do not autolink custom schemes outside angle brackets: : custom://www.google.com.</p>",
+      ""
+    ],
+    [
+      "===================== TESTS FOR BRACKETED LINKS =====================",
+      "<p>===================== TESTS FOR BRACKETED LINKS =====================</p>",
+      ""
+    ],
+    [
+      "simple http link: <http://www.google.com>.",
+      "<p>simple http link: &lt;%s&gt;.</p>",
+      "http://www.google.com"
+    ],
+    [
+      "custom scheme: <irc://www.google.com>.",
+      "<p>custom scheme: &lt;%s&gt;.</p>",
+      "irc://www.google.com"
+    ],
+    [
+      "custom scheme: <random-but+totally.valid://any-text-here>.",
+      "<p>custom scheme: &lt;%s&gt;.</p>",
+      "random-but+totally.valid://any-text-here"
+    ],
+    [
+      "file urls: <file://any-text-here>.",
+      "<p>file urls: &lt;%s&gt;.</p>",
+      "file://any-text-here"
+    ],
+    [
+      "file urls: <file:///any-text-here>.",
+      "<p>file urls: &lt;%s&gt;.</p>",
+      "file:///any-text-here"
+    ],
+    [
+      "blocked custom scheme: <javascript://www.google.com>.",
+      "<p>blocked custom scheme: &lt;javascript://www.google.com&gt;.</p>",
+      ""
+    ],
+    [
+      "blocked custom scheme: <JaVaScRiPt://www.google.com>.",
+      "<p>blocked custom scheme: &lt;JaVaScRiPt://www.google.com&gt;.</p>",
+      ""
+    ],
+    [
+      "blocked custom scheme: <vbscript://www.google.com>.",
+      "<p>blocked custom scheme: &lt;vbscript://www.google.com&gt;.</p>",
+      ""
+    ],
+    [
+      "blocked custom scheme: <data:something://www.google.com>.",
+      "<p>blocked custom scheme: &lt;data:something://www.google.com&gt;.</p>",
+      ""
+    ],
+    [
+      "deviating from commonmark by rendering urls without scheme: <google.com>.",
+      "<p>deviating from commonmark by rendering urls without scheme: &lt;%s&gt;.</p>",
+      "google.com"
+    ],
+    [
+      "but scheme-less url with invalid tlds are ignored: <google.definitelynotatld>.",
+      "<p>but scheme-less url with invalid tlds are ignored: &lt;google.definitelynotatld&gt;.</p>",
+      ""
+    ],
+    [
+      "no data links: <data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==>.",
+      "<p>no data links: &lt;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==&gt;.</p>",
+      ""
     ]
   ]
 }

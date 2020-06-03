@@ -166,13 +166,13 @@ def get_web_link_regex() -> str:
         nested_paren_chunk = nested_paren_chunk % (paren_group,)
     nested_paren_chunk = nested_paren_chunk % (inner_paren_contents,)
 
-    file_links = r"| (?:file://(/[^/ ]*)+/?)" if settings.ENABLE_FILE_LINKS else r""
+    file_links = r"| (?:file://(/[^/ >]*)+/?)"
     REGEX = r"""
         (?<![^\s'"\(,:<])    # Start after whitespace or specified chars
                              # (Double-negative lookbehind to allow start-of-string)
         (?P<url>             # Main group
             (?:(?:           # Domain part
-                https?://[\w.:@-]+?   # If it has a protocol, anything goes.
+                [a-zA-Z][a-zA-Z0-9+.\-]*://[\w.:@-]+?   # If it has a protocol, anything goes.
                |(?:                   # Or, if not, be more strict to avoid false-positives
                     (?:[\w-]+\.)+     # One or more domain components, separated by dots
                     (?:%s)            # TLDs (filled in via format from tlds-alpha-by-domain.txt)
@@ -182,7 +182,7 @@ def get_web_link_regex() -> str:
                 %s           # zero-to-6 sets of paired parens
             )?)              # Path is optional
             | (?:[\w.-]+\@[\w.-]+\.[\w]+) # Email is separate, since it can't have a path
-            %s               # File path start with file:///, enable by setting ENABLE_FILE_LINKS=True
+            %s               # File path start with file:///
             | (?:bitcoin:[13][a-km-zA-HJ-NP-Z1-9]{25,34})  # Bitcoin address pattern, see https://mokagio.github.io/tech-journal/2014/11/21/regex-bitcoin.html
         )
         (?=                            # URL must be followed by (not included in group)
@@ -195,8 +195,8 @@ def get_web_link_regex() -> str:
 
 def clear_state_for_testing() -> None:
     # The link regex never changes in production, but our tests
-    # try out both sides of ENABLE_FILE_LINKS, so we need
-    # a way to clear it.
+    # try out multiple forms of the link regex, so we need a way
+    # to clear it.
     global LINK_REGEX
     LINK_REGEX = None
 
@@ -1375,7 +1375,7 @@ class Tex(markdown.inlinepatterns.Pattern):
             return span
 
 
-def sanitize_url(url: str) -> Optional[str]:
+def sanitize_url(url: str, bracketed_link: bool=False) -> Optional[str]:
     """
     Sanitize a url against xss attacks.
     See the docstring on markdown.inlinepatterns.LinkPattern.sanitize_url.
@@ -1413,7 +1413,11 @@ def sanitize_url(url: str) -> Optional[str]:
     # appears to have a netloc.  Additionally there are plenty of other
     # schemes that do weird things like launch external programs.  To be
     # on the safe side, we whitelist the scheme.
-    if scheme not in ('http', 'https', 'ftp', 'mailto', 'file', 'bitcoin'):
+    if not bracketed_link and scheme not in ('http', 'https', 'ftp', 'mailto', 'file', 'bitcoin'):
+        return None
+
+    # Even when being more liberal, ignore potentially insecure schemes.
+    if bracketed_link and (scheme in ('javascript', 'vbscript') or scheme.startswith('data')):
         return None
 
     # Upstream code scans path, parameters, and query for colon characters
@@ -1429,10 +1433,11 @@ def sanitize_url(url: str) -> Optional[str]:
     # Url passes all tests. Return url as-is.
     return urllib.parse.urlunparse((scheme, netloc, path, params, query, fragment))
 
-def url_to_a(db_data: Optional[DbData], url: str, text: Optional[str]=None) -> Union[Element, str]:
+def url_to_a(db_data: Optional[DbData], url: str, text: Optional[str]=None,
+             bracketed_link: bool=False) -> Union[Element, str]:
     a = markdown.util.etree.Element('a')
 
-    href = sanitize_url(url)
+    href = sanitize_url(url, bracketed_link=bracketed_link)
     if href is None:
         # Rejected by sanitize_url; render it as plain text.
         return url
@@ -1453,11 +1458,26 @@ class CompiledPattern(markdown.inlinepatterns.Pattern):
         self.compiled_re = compiled_re
         self.md = md
 
-class AutoLink(CompiledPattern):
-    def handleMatch(self, match: Match[str]) -> ElementStringNone:
+class CompiledInlineProcessor(markdown.inlinepatterns.InlineProcessor):
+    def __init__(self, compiled_re: Pattern, md: markdown.Markdown) -> None:
+        # This is similar to the superclass's small __init__ function,
+        # but we skip the compilation step and let the caller give us
+        # a compiled regex.
+        self.compiled_re = compiled_re
+        self.md = md
+
+class AutoLink(CompiledInlineProcessor):
+    def handleMatch(self, match: Match[str], data: str) -> Tuple[ElementStringNone, int, int]:
         url = match.group('url')
+        url_start = match.start('url')
+        url_end = match.end('url')
+        bracketed_link = (url_start > 0 and data[url_start - 1] == '<' and
+                          url_end < len(data) and data[url_end] == '>')
         db_data = self.markdown.zulip_db_data
-        return url_to_a(db_data, url)
+        el = url_to_a(db_data, url, bracketed_link=bracketed_link)
+        if el == url:
+            el = None  # No-op
+        return el, url_start, url_end
 
 class OListProcessor(sane_lists.SaneOListProcessor):
     def __init__(self, parser: Any) -> None:
