@@ -31,9 +31,9 @@ def get_language_list() -> List[Dict[str, Any]]:
         return languages['name_map']
 
 def get_language_list_for_templates(default_language: str) -> List[Dict[str, Dict[str, str]]]:
-    language_list = [l for l in get_language_list()
-                     if 'percent_translated' not in l or
-                        l['percent_translated'] >= 5.]
+    language_list = [lang for lang in get_language_list()
+                     if 'percent_translated' not in lang or
+                        lang['percent_translated'] >= 5.]
 
     formatted_list = []
     lang_len = len(language_list)
