@@ -253,6 +253,19 @@ def update_user(client: Client) -> None:
     # {code_example|end}
     validate_against_openapi_schema(result, '/users/{user_id}', 'patch', '400')
 
+@openapi_test_function("/users/{user_id}/subscription/{stream_id}:get")
+def get_subscription_status(client: Client) -> None:
+    # {code_example|start}
+    # Get the subscription status of the user for a stream.
+    user_id = 7
+    stream_id = 1
+    result = client.call_endpoint(
+        url='/users/{}/subscription/{}'.format(user_id, stream_id),
+        method='GET',
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/users/{user_id}/subscription/{stream_id}', 'get', '200')
+
 @openapi_test_function("/realm/filters:get")
 def get_realm_filters(client: Client) -> None:
 
@@ -1117,6 +1130,7 @@ def test_users(client: Client) -> None:
     deactivate_user(client)
     reactivate_user(client)
     update_user(client)
+    get_subscription_status(client)
     get_profile(client)
     update_notification_settings(client)
     upload_file(client)
