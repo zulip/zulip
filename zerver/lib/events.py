@@ -226,6 +226,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['can_subscribe_other_users'] = user_profile.can_subscribe_other_users()
         state['cross_realm_bots'] = list(get_cross_realm_dicts())
         state['is_admin'] = user_profile.is_realm_admin
+        state['is_owner'] = user_profile.is_realm_owner
         state['is_guest'] = user_profile.is_guest
         state['user_id'] = user_profile.id
         state['enter_sends'] = user_profile.enter_sends
@@ -419,6 +420,7 @@ def apply_event(state: Dict[str, Any],
 
                 if 'role' in person:
                     state['is_admin'] = is_administrator_role(person['role'])
+                    state['is_owner'] = person['role'] == UserProfile.ROLE_REALM_OWNER
                     state['is_guest'] = person['role'] == UserProfile.ROLE_GUEST
                     # Recompute properties based on is_admin/is_guest
                     state['can_create_streams'] = user_profile.can_create_streams()
@@ -470,6 +472,7 @@ def apply_event(state: Dict[str, Any],
                         p[field] = person[field]
                     if 'role' in person:
                         p['is_admin'] = is_administrator_role(person['role'])
+                        p['is_owner'] = person['role'] == UserProfile.ROLE_REALM_OWNER
                         p['is_guest'] = person['role'] == UserProfile.ROLE_GUEST
                     if 'custom_profile_field' in person:
                         custom_field_id = person['custom_profile_field']['id']

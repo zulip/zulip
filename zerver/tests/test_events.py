@@ -1839,6 +1839,29 @@ class EventsRegisterTest(ZulipTestCase):
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
+    def test_change_is_owner(self) -> None:
+        reset_emails_in_zulip_realm()
+
+        # Important: We need to refresh from the database here so that
+        # we don't have a stale UserProfile object with an old value
+        # for email being passed into this next function.
+        self.user_profile.refresh_from_db()
+
+        schema_checker = self.check_events_dict([
+            ('type', equals('realm_user')),
+            ('op', equals('update')),
+            ('person', check_dict_only([
+                ('role', check_int_in(UserProfile.ROLE_TYPES)),
+                ('user_id', check_int),
+            ])),
+        ])
+
+        do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER)
+        for role in [UserProfile.ROLE_REALM_OWNER, UserProfile.ROLE_MEMBER]:
+            events = self.do_test(lambda: do_change_user_role(self.user_profile, role))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
     def test_change_is_guest(self) -> None:
         reset_emails_in_zulip_realm()
 

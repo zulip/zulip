@@ -97,6 +97,7 @@ class HomeTest(ZulipTestCase):
             "insecure_desktop_app",
             "is_admin",
             "is_guest",
+            "is_owner",
             "jitsi_server_url",
             "language_list",
             "language_list_dbl_col",
