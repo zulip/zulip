@@ -218,11 +218,9 @@ def main(options: argparse.Namespace) -> int:
     else:
         print("No need to run `scripts/setup/inline_email_css.py`.")
 
-    if not options.is_production_test_suite:
-        # The following block is skipped for the production test
-        # suite, because that suite doesn't make use of these elements
-        # of the development environment (it just uses the development
-        # environment to build a release tarball).
+    if not options.is_build_release_tarball_only:
+        # The following block is skipped when we just need the development
+        # environment to build a release tarball.
 
         # Need to set up Django before using template_status
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
@@ -319,8 +317,8 @@ if __name__ == "__main__":
                         default=False,
                         help="Ignore all provisioning optimizations.")
 
-    parser.add_argument('--production-test-suite', action='store_true',
-                        dest='is_production_test_suite',
+    parser.add_argument('--build-release-tarball-only', action='store_true',
+                        dest='is_build_release_tarball_only',
                         default=False,
                         help="Provision for test suite with production settings.")
 
