@@ -6,6 +6,12 @@ const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
 const currently_echoing_messages = new Map();
 
+// These variables are designed to preserve the user's most recent
+// choices when editing a group of messages, to make it convenient to
+// move several topics in a row with the same settings.
+exports.notify_old_thread_default = true;
+exports.notify_new_thread_default = true;
+
 const editability_types = {
     NO: 1,
     NO_LONGER: 2,
@@ -283,6 +289,8 @@ function edit_message(row, raw_content) {
         available_streams: available_streams,
         stream_id: message.stream_id,
         stream_name: message.stream,
+        notify_new_thread: exports.notify_new_thread_default,
+        notify_old_thread: exports.notify_old_thread_default,
     }));
 
     const edit_obj = {form: form, raw_content: raw_content};
@@ -298,6 +306,7 @@ function edit_message(row, raw_content) {
     const message_edit_content = row.find('textarea.message_edit_content');
     const message_edit_topic = row.find('input.message_edit_topic');
     const message_edit_topic_propagate = row.find('select.message_edit_topic_propagate');
+    const message_edit_breadcrumb_messages = row.find('div.message_edit_breadcrumb_messages');
     const message_edit_countdown_timer = row.find('.message_edit_countdown_timer');
     const copy_message = row.find('.copy_message');
 
@@ -380,6 +389,7 @@ function edit_message(row, raw_content) {
                 if (message.type === 'stream') {
                     message_edit_topic.prop("readonly", "readonly");
                     message_edit_topic_propagate.hide();
+                    message_edit_breadcrumb_messages.hide();
                 }
                 // We don't go directly to a "TOPIC_ONLY" type state (with an active Save button),
                 // since it isn't clear what to do with the half-finished edit. It's nice to keep
@@ -424,6 +434,7 @@ function edit_message(row, raw_content) {
         const is_topic_edited = new_topic !== original_topic && new_topic !== "";
         const is_stream_edited = new_stream_id !== original_stream_id;
         message_edit_topic_propagate.toggle(is_topic_edited || is_stream_edited);
+        message_edit_breadcrumb_messages.toggle(is_stream_edited);
     }
 
     if (!message.locally_echoed) {
@@ -628,7 +639,13 @@ exports.save_message_row_edit = function (row) {
 
     if (topic_changed || stream_changed) {
         const selected_topic_propagation = row.find("select.message_edit_topic_propagate").val() || "change_later";
+        const send_notification_to_old_thread = row.find('.send_notification_to_old_thread').is(':checked');
+        const send_notification_to_new_thread = row.find('.send_notification_to_new_thread').is(':checked');
         request.propagate_mode = selected_topic_propagation;
+        request.send_notification_to_old_thread = send_notification_to_old_thread;
+        request.send_notification_to_new_thread = send_notification_to_new_thread;
+        exports.notify_old_thread_default = send_notification_to_old_thread;
+        exports.notify_new_thread_default = send_notification_to_new_thread;
         changed = true;
     }
 
@@ -904,12 +921,17 @@ exports.handle_narrow_deactivated = function () {
 };
 
 exports.move_topic_containing_message_to_stream =
-    function (message_id, new_stream_id, new_topic_name) {
+    function (message_id, new_stream_id, new_topic_name, send_notification_to_new_thread,
+              send_notification_to_old_thread) {
         const request = {
             stream_id: new_stream_id,
             propagate_mode: 'change_all',
             topic: new_topic_name,
+            send_notification_to_old_thread: send_notification_to_old_thread,
+            send_notification_to_new_thread: send_notification_to_new_thread,
         };
+        exports.notify_old_thread_default = send_notification_to_old_thread;
+        exports.notify_new_thread_default = send_notification_to_new_thread;
         channel.patch({
             url: '/json/messages/' + message_id,
             data: request,

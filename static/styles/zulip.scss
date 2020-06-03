@@ -1358,6 +1358,31 @@ div.focused_table {
     max-width: 100%;
 }
 
+.topic_move_breadcrumb_messages,
+.message_edit_breadcrumb_messages {
+    display: inline-block;
+    margin: 0 5px 5px 0 !important;
+    align-self: center;
+
+    label.checkbox {
+        margin-right: 0 !important;
+
+        input {
+            margin: 0;
+            vertical-align: baseline;
+        }
+    }
+
+    label {
+        display: inline-block;
+        margin-right: 10px;
+    }
+}
+
+.topic_move_breadcrumb_messages {
+    margin-top: 10px !important;
+}
+
 .message_length_controller {
     display: none;
     text-align: center;

@@ -3264,6 +3264,8 @@ class EditMessageTest(ZulipTestCase):
                 new_stream=None,
                 topic_name=topic_name,
                 propagate_mode="change_later",
+                send_notification_to_old_thread=False,
+                send_notification_to_new_thread=False,
                 content=None,
                 rendered_content=None,
                 prior_mention_user_ids=set(),
@@ -3539,6 +3541,68 @@ class EditMessageTest(ZulipTestCase):
         self.assertEqual(len(messages), 4)
         self.assertEqual(messages[3].content, "This topic was moved here from #**test move stream>test** by @_**Iago|%s**" % (user_profile.id,))
         self.assert_json_success(result)
+
+    def test_no_notify_move_message_to_stream(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test")
+
+        result = self.client_patch("/json/messages/" + str(msg_id), {
+            'message_id': msg_id,
+            'stream_id': new_stream.id,
+            'propagate_mode': 'change_all',
+            'send_notification_to_old_thread': 'false',
+            'send_notification_to_new_thread': 'false',
+        })
+
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assertEqual(len(messages), 0)
+
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assertEqual(len(messages), 3)
+
+    def test_notify_new_thread_move_message_to_stream(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test")
+
+        result = self.client_patch("/json/messages/" + str(msg_id), {
+            'message_id': msg_id,
+            'stream_id': new_stream.id,
+            'propagate_mode': 'change_all',
+            'send_notification_to_old_thread': 'false',
+            'send_notification_to_new_thread': 'true',
+        })
+
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assertEqual(len(messages), 0)
+
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assertEqual(len(messages), 4)
+        self.assertEqual(messages[3].content, "This topic was moved here from #**test move stream>test** by @_**Iago|%d**" % (user_profile.id,))
+
+    def test_notify_old_thread_move_message_to_stream(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test")
+
+        result = self.client_patch("/json/messages/" + str(msg_id), {
+            'message_id': msg_id,
+            'stream_id': new_stream.id,
+            'propagate_mode': 'change_all',
+            'send_notification_to_old_thread': 'true',
+            'send_notification_to_new_thread': 'false',
+        })
+
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(messages[0].content, "This topic was moved by @_**Iago|%s** to #**new stream>test**" % (user_profile.id,))
+
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assertEqual(len(messages), 3)
 
     def test_move_message_to_stream_to_private_stream(self) -> None:
         user_profile = self.example_user("iago")
@@ -4152,7 +4216,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
         realm_id = hamlet.realm.id
         rendered_content = render_markdown(msg, content)
         mention_data = bugdown.MentionData(realm_id, content)
-        do_update_message(hamlet, msg, None, None, "change_one", content,
+        do_update_message(hamlet, msg, None, None, "change_one", False, False, content,
                           rendered_content, set(), set(), mention_data=mention_data)
 
     def test_finds_link_after_edit(self) -> None:

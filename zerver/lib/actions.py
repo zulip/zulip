@@ -4188,7 +4188,9 @@ class MessageUpdateUserInfoResult(TypedDict):
 
 def notify_topic_moved_streams(user_profile: UserProfile,
                                old_stream: Stream, old_topic: str,
-                               new_stream: Stream, new_topic: Optional[str]) -> None:
+                               new_stream: Stream, new_topic: Optional[str],
+                               send_notification_to_old_thread: bool,
+                               send_notification_to_new_thread: bool) -> None:
     # Since moving content between streams is highly disruptive,
     # it's worth adding a couple tombstone messages showing what
     # happened.
@@ -4200,17 +4202,18 @@ def notify_topic_moved_streams(user_profile: UserProfile,
     user_mention = "@_**%s|%s**" % (user_profile.full_name, user_profile.id)
     old_topic_link = "#**%s>%s**" % (old_stream.name, old_topic)
     new_topic_link = "#**%s>%s**" % (new_stream.name, new_topic)
+    if send_notification_to_new_thread:
+        internal_send_stream_message(
+            new_stream.realm, sender, new_stream, new_topic,
+            _("This topic was moved here from %(old_location)s by %(user)s")
+            % dict(old_location=old_topic_link, user=user_mention))
 
-    internal_send_stream_message(
-        new_stream.realm, sender, new_stream, new_topic,
-        _("This topic was moved here from %(old_location)s by %(user)s")
-        % dict(old_location=old_topic_link, user=user_mention))
-
-    # Send a notification to the old stream that the topic was moved.
-    internal_send_stream_message(
-        old_stream.realm, sender, old_stream, old_topic,
-        _("This topic was moved by %(user)s to %(new_location)s")
-        % dict(user=user_mention, new_location=new_topic_link))
+    if send_notification_to_old_thread:
+        # Send a notification to the old stream that the topic was moved.
+        internal_send_stream_message(
+            old_stream.realm, sender, old_stream, old_topic,
+            _("This topic was moved by %(user)s to %(new_location)s")
+            % dict(user=user_mention, new_location=new_topic_link))
 
 def get_user_info_for_message_updates(message_id: int) -> MessageUpdateUserInfoResult:
 
@@ -4322,7 +4325,8 @@ def do_update_embedded_data(user_profile: UserProfile,
 @transaction.atomic
 def do_update_message(user_profile: UserProfile, message: Message,
                       new_stream: Optional[Stream], topic_name: Optional[str],
-                      propagate_mode: str, content: Optional[str],
+                      propagate_mode: str, send_notification_to_old_thread: bool,
+                      send_notification_to_new_thread: bool, content: Optional[str],
                       rendered_content: Optional[str], prior_mention_user_ids: Set[int],
                       mention_user_ids: Set[int], mention_data: Optional[bugdown.MentionData]=None) -> int:
     """
@@ -4527,7 +4531,8 @@ def do_update_message(user_profile: UserProfile, message: Message,
             stream_being_edited is not None):
         # Notify users that the topic was moved.
         notify_topic_moved_streams(user_profile, stream_being_edited, orig_topic_name,
-                                   new_stream, topic_name)
+                                   new_stream, topic_name, send_notification_to_old_thread,
+                                   send_notification_to_new_thread)
 
     return len(changed_messages)
 

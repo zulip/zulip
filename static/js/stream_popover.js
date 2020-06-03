@@ -273,7 +273,11 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
     // streams in the future.
     const available_streams = stream_data.subscribed_subs()
         .filter(s => s.stream_id !== current_stream_id);
-    const args = { available_streams, topic_name, current_stream_id };
+    const args = {
+        available_streams, topic_name, current_stream_id,
+        notify_new_thread: message_edit.notify_new_thread_default,
+        notify_old_thread: message_edit.notify_old_thread_default,
+    };
 
     exports.hide_topic_popover();
 
@@ -551,8 +555,11 @@ exports.register_topic_handlers = function () {
         }, {});
 
         const {old_topic_name, select_stream_id} = params;
-        let {current_stream_id, new_topic_name} = params;
+        let {current_stream_id, new_topic_name,
+             send_notification_to_new_thread, send_notification_to_old_thread} = params;
         new_topic_name = new_topic_name.trim();
+        send_notification_to_new_thread = send_notification_to_new_thread === 'on';
+        send_notification_to_old_thread = send_notification_to_old_thread === 'on';
         current_stream_id = parseInt(current_stream_id, 10);
 
         // The API endpoint for editing messages to change their
@@ -594,7 +601,9 @@ exports.register_topic_handlers = function () {
 
                 if (old_topic_name && select_stream_id) {
                     message_edit.move_topic_containing_message_to_stream(
-                        message_id, select_stream_id, new_topic_name);
+                        message_id, select_stream_id, new_topic_name,
+                        send_notification_to_new_thread,
+                        send_notification_to_old_thread);
                     $('#move_topic_modal').modal('hide');
                 }
             },

@@ -10,6 +10,8 @@ below features are supported.
 
 ## Changes in Zulip 2.2
 
+**Feature level 10**
+
 **Feature level 9**
 
 * [`POST users/me/subscriptions`](/api/add-subscriptions), [`DELETE
@@ -17,6 +19,9 @@ below features are supported.
   subscribe/unsubscribe, declared in the `principals` parameter, can
   now be referenced by user_id, rather than Zulip display email
   address.
+* [PATCH /messages/{message_id}](/api/update-message): Added
+  `send_notification_to_old_thread` and
+  `send_notification_to_new_thread` optional parameters.
 
 **Feature level 8**
 
