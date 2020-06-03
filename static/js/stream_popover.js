@@ -552,6 +552,7 @@ exports.register_topic_handlers = function () {
 
         const {old_topic_name, select_stream_id} = params;
         let {current_stream_id, new_topic_name} = params;
+        new_topic_name = new_topic_name.trim();
         current_stream_id = parseInt(current_stream_id, 10);
 
         // The API endpoint for editing messages to change their
