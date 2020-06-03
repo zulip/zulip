@@ -551,8 +551,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         desc = desc if desc is not None else ""
 
         # Update message.has_image attribute.
-        if 'message_inline_image' in class_attr and self.markdown.zulip_message:
-            self.markdown.zulip_message.has_image = True
+        if 'message_inline_image' in class_attr and self.md.zulip_message:
+            self.md.zulip_message.has_image = True
 
         if insertion_index is not None:
             div = Element("div")
@@ -669,7 +669,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return url
 
     def is_image(self, url: str) -> bool:
-        if not self.markdown.image_preview_enabled:
+        if not self.md.image_preview_enabled:
             return False
         parsed_url = urllib.parse.urlparse(url)
         # remove html urls which end with img extensions that can not be shorted
@@ -745,7 +745,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return None
 
     def youtube_id(self, url: str) -> Optional[str]:
-        if not self.markdown.image_preview_enabled:
+        if not self.md.image_preview_enabled:
             return None
         # Youtube video id extraction regular expression from https://pastebin.com/KyKAFv1s
         # Slightly modified to support URLs of the forms
@@ -780,7 +780,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return None
 
     def vimeo_id(self, url: str) -> Optional[str]:
-        if not self.markdown.image_preview_enabled:
+        if not self.md.image_preview_enabled:
             return None
         #(http|https)?:\/\/(www\.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/([^\/]*)\/videos\/|)(\d+)(?:|\/\?)
         # If it matches, match.group('id') is the video id.
@@ -887,7 +887,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             else:
                 current_node.tail = text
 
-        db_data = self.markdown.zulip_db_data
+        db_data = self.md.zulip_db_data
         current_index = 0
         for item in to_process:
             # The text we want to link starts in already linked text skip it
@@ -1068,10 +1068,10 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                                    if not found_url.family.in_blockquote}
 
         # Set has_link and similar flags whenever a message is processed by bugdown
-        if self.markdown.zulip_message:
-            self.markdown.zulip_message.has_link = len(found_urls) > 0
-            self.markdown.zulip_message.has_image = False  # This is updated in self.add_a
-            self.markdown.zulip_message.potential_attachment_path_ids = []
+        if self.md.zulip_message:
+            self.md.zulip_message.has_link = len(found_urls) > 0
+            self.md.zulip_message.has_image = False  # This is updated in self.add_a
+            self.md.zulip_message.potential_attachment_path_ids = []
 
             for url in unique_urls:
                 # Due to rewrite_local_links_to_relative, we need to
@@ -1082,14 +1082,14 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 parsed_url = urllib.parse.urlsplit(urllib.parse.urljoin("/", url))
                 host = parsed_url.netloc
 
-                if host != '' and host != self.markdown.zulip_realm.host:
+                if host != '' and host != self.md.zulip_realm.host:
                     continue
 
                 if not parsed_url.path.startswith("/user_uploads/"):
                     continue
 
                 path_id = parsed_url.path[len("/user_uploads/"):]
-                self.markdown.zulip_message.potential_attachment_path_ids.append(path_id)
+                self.md.zulip_message.potential_attachment_path_ids.append(path_id)
 
         if len(found_urls) == 0:
             return
@@ -1163,17 +1163,17 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 # is enabled, but URL previews are a beta feature and YouTube
                 # previews are pretty stable.
 
-            db_data = self.markdown.zulip_db_data
+            db_data = self.md.zulip_db_data
             if db_data and db_data['sent_by_bot']:
                 continue
 
-            if not self.markdown.url_embed_preview_enabled:
+            if not self.md.url_embed_preview_enabled:
                 continue
 
             try:
                 extracted_data = link_preview.link_embed_data_from_cache(url)
             except NotFoundInCache:
-                self.markdown.zulip_message.links_for_preview.add(url)
+                self.md.zulip_message.links_for_preview.add(url)
                 continue
 
             if extracted_data:
@@ -1195,7 +1195,7 @@ class Avatar(markdown.inlinepatterns.Pattern):
         email = email_address.strip().lower()
         profile_id = None
 
-        db_data = self.markdown.zulip_db_data
+        db_data = self.md.zulip_db_data
         if db_data is not None:
             user_dict = db_data['email_info'].get(email)
             if user_dict is not None:
@@ -1313,7 +1313,7 @@ class EmoticonTranslation(markdown.inlinepatterns.Pattern):
     """ Translates emoticons like `:)` into emoji like `:smile:`. """
 
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
-        db_data = self.markdown.zulip_db_data
+        db_data = self.md.zulip_db_data
         if db_data is None or not db_data['translate_emoticons']:
             return None
 
@@ -1338,11 +1338,11 @@ class Emoji(markdown.inlinepatterns.Pattern):
         name = orig_syntax[1:-1]
 
         active_realm_emoji: Dict[str, Dict[str, str]] = {}
-        db_data = self.markdown.zulip_db_data
+        db_data = self.md.zulip_db_data
         if db_data is not None:
             active_realm_emoji = db_data['active_realm_emoji']
 
-        if self.markdown.zulip_message and name in active_realm_emoji:
+        if self.md.zulip_message and name in active_realm_emoji:
             return make_realm_emoji(active_realm_emoji[name]['source_url'], orig_syntax)
         elif name == 'zulip':
             return make_realm_emoji('/static/generated/emoji/images/emoji/unicode/zulip.png', orig_syntax)
@@ -1458,22 +1458,22 @@ class CompiledPattern(markdown.inlinepatterns.Pattern):
 class AutoLink(CompiledPattern):
     def handleMatch(self, match: Match[str]) -> ElementStringNone:
         url = match.group('url')
-        db_data = self.markdown.zulip_db_data
+        db_data = self.md.zulip_db_data
         return url_to_a(db_data, url)
 
 class OListProcessor(sane_lists.SaneOListProcessor):
     def __init__(self, parser: Any) -> None:
-        parser.markdown.tab_length = 2
+        parser.md.tab_length = 2
         super().__init__(parser)
-        parser.markdown.tab_length = 4
+        parser.md.tab_length = 4
 
 class UListProcessor(sane_lists.SaneUListProcessor):
     """ Unordered lists, but with 2-space indent """
 
     def __init__(self, parser: Any) -> None:
-        parser.markdown.tab_length = 2
+        parser.md.tab_length = 2
         super().__init__(parser)
-        parser.markdown.tab_length = 4
+        parser.md.tab_length = 4
 
 class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
     """ Process unordered list blocks.
@@ -1486,9 +1486,9 @@ class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
         # HACK: Set the tab length to 2 just for the initialization of
         # this class, so that bulleted lists (and only bulleted lists)
         # work off 2-space indentation.
-        parser.markdown.tab_length = 2
+        parser.md.tab_length = 2
         super().__init__(parser)
-        parser.markdown.tab_length = 4
+        parser.md.tab_length = 4
 
 class HashHeaderProcessor(markdown.blockprocessors.HashHeaderProcessor):
     """ Process Hash Headers.
@@ -1593,7 +1593,7 @@ class RealmFilterPattern(markdown.inlinepatterns.Pattern):
         markdown.inlinepatterns.Pattern.__init__(self, self.pattern, markdown_instance)
 
     def handleMatch(self, m: Match[str]) -> Union[Element, str]:
-        db_data = self.markdown.zulip_db_data
+        db_data = self.md.zulip_db_data
         return url_to_a(db_data,
                         self.format_string % m.groupdict(),
                         m.group(OUTER_CAPTURE_GROUP))
@@ -1603,8 +1603,8 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
         match = m.group('match')
         silent = m.group('silent') == '_'
 
-        db_data = self.markdown.zulip_db_data
-        if self.markdown.zulip_message and db_data is not None:
+        db_data = self.md.zulip_db_data
+        if self.md.zulip_message and db_data is not None:
             if match.startswith("**") and match.endswith("**"):
                 name = match[2:-2]
             else:
@@ -1620,11 +1620,11 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
                 user = db_data['mention_data'].get_user_by_name(name)
 
             if wildcard:
-                self.markdown.zulip_message.mentions_wildcard = True
+                self.md.zulip_message.mentions_wildcard = True
                 user_id = "*"
             elif user:
                 if not silent:
-                    self.markdown.zulip_message.mentions_user_ids.add(user['id'])
+                    self.md.zulip_message.mentions_user_ids.add(user['id'])
                 name = user['full_name']
                 user_id = str(user['id'])
             else:
@@ -1647,12 +1647,12 @@ class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
     def handleMatch(self, m: Match[str]) -> Optional[Element]:
         match = m.group(2)
 
-        db_data = self.markdown.zulip_db_data
-        if self.markdown.zulip_message and db_data is not None:
+        db_data = self.md.zulip_db_data
+        if self.md.zulip_message and db_data is not None:
             name = extract_user_group(match)
             user_group = db_data['mention_data'].get_user_group(name)
             if user_group:
-                self.markdown.zulip_message.mentions_user_group_ids.add(user_group.id)
+                self.md.zulip_message.mentions_user_group_ids.add(user_group.id)
                 name = user_group.name
                 user_group_id = str(user_group.id)
             else:
@@ -1670,7 +1670,7 @@ class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
 
 class StreamPattern(CompiledPattern):
     def find_stream_by_name(self, name: Match[str]) -> Optional[Dict[str, Any]]:
-        db_data = self.markdown.zulip_db_data
+        db_data = self.md.zulip_db_data
         if db_data is None:
             return None
         stream = db_data['stream_names'].get(name)
@@ -1679,7 +1679,7 @@ class StreamPattern(CompiledPattern):
     def handleMatch(self, m: Match[str]) -> Optional[Element]:
         name = m.group('stream_name')
 
-        if self.markdown.zulip_message:
+        if self.md.zulip_message:
             stream = self.find_stream_by_name(name)
             if stream is None:
                 return None
@@ -1700,7 +1700,7 @@ class StreamPattern(CompiledPattern):
 
 class StreamTopicPattern(CompiledPattern):
     def find_stream_by_name(self, name: Match[str]) -> Optional[Dict[str, Any]]:
-        db_data = self.markdown.zulip_db_data
+        db_data = self.md.zulip_db_data
         if db_data is None:
             return None
         stream = db_data['stream_names'].get(name)
@@ -1710,7 +1710,7 @@ class StreamTopicPattern(CompiledPattern):
         stream_name = m.group('stream_name')
         topic_name = m.group('topic_name')
 
-        if self.markdown.zulip_message:
+        if self.md.zulip_message:
             stream = self.find_stream_by_name(stream_name)
             if stream is None or topic_name is None:
                 return None
@@ -1750,14 +1750,14 @@ class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
         return False
 
     def run(self, lines: Iterable[str]) -> Iterable[str]:
-        db_data = self.markdown.zulip_db_data
-        if self.markdown.zulip_message and db_data is not None:
+        db_data = self.md.zulip_db_data
+        if self.md.zulip_message and db_data is not None:
             # We check for alert words here, the set of which are
             # dependent on which users may see this message.
             #
             # Our caller passes in the list of possible_words.  We
             # don't do any special rendering; we just append the alert words
-            # we find to the set self.markdown.zulip_message.alert_words.
+            # we find to the set self.md.zulip_message.alert_words.
 
             realm_alert_words_automaton = db_data['realm_alert_words_automaton']
 
@@ -1766,7 +1766,7 @@ class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
                 for end_index, (original_value, user_ids) in realm_alert_words_automaton.iter(content):
                     if self.check_valid_start_position(content, end_index - len(original_value)) and \
                        self.check_valid_end_position(content, end_index + 1):
-                        self.markdown.zulip_message.user_ids_with_alert_words.update(user_ids)
+                        self.md.zulip_message.user_ids_with_alert_words.update(user_ids)
         return lines
 
 class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
@@ -1779,7 +1779,7 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
             return None  # no-op; the link is not processed.
 
         # Rewrite local links to be relative
-        db_data = self.markdown.zulip_db_data
+        db_data = self.md.zulip_db_data
         href = rewrite_local_links_to_relative(db_data, href)
 
         # Make changes to <a> tag attributes
