@@ -100,7 +100,7 @@ def standardize_headers(input_headers: Union[None, Dict[str, Any]]) -> Dict[str,
 
     for raw_header in input_headers:
         polished_header = raw_header.upper().replace("-", "_")
-        if polished_header not in["CONTENT_TYPE", "CONTENT_LENGTH"]:
+        if polished_header not in ["CONTENT_TYPE", "CONTENT_LENGTH"]:
             if not polished_header.startswith("HTTP_"):
                 polished_header = "HTTP_" + polished_header
         canonical_headers[polished_header] = str(input_headers[raw_header])

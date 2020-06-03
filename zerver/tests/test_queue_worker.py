@@ -560,6 +560,7 @@ class WorkerTest(ZulipTestCase):
         self.assertEqual(event["type"], 'unexpected behaviour')
 
         processed = []
+
         @queue_processors.assign_queue('unreliable_loopworker')
         class UnreliableLoopWorker(queue_processors.LoopQueueProcessingWorker):
             def consume_batch(self, events: List[Dict[str, Any]]) -> None:
