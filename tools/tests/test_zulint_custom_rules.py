@@ -1,3 +1,4 @@
+from io import StringIO
 import os
 
 from unittest.mock import patch
@@ -42,14 +43,14 @@ class TestRuleList(TestCase):
             pattern = rule['pattern']
             for line in rule.get('good_lines', []):
                 # create=True is superfluous when mocking built-ins in Python >= 3.5
-                with patch('builtins.open', return_value=iter((line+'\n\n').splitlines()), create=True, autospec=True):
+                with patch('builtins.open', return_value=StringIO(line + '\n\n'), create=True, autospec=True):
                     self.assertFalse(RuleList([], [rule]).custom_check_file('foo.bar', 'baz', ''),
                                      "The pattern '{}' matched the line '{}' while it shouldn't.".format(pattern, line))
 
             for line in rule.get('bad_lines', []):
                 # create=True is superfluous when mocking built-ins in Python >= 3.5
                 with patch('builtins.open',
-                           return_value=iter((line+'\n\n').splitlines()), create=True, autospec=True), patch('builtins.print'):
+                           return_value=StringIO(line + '\n\n'), create=True, autospec=True), patch('builtins.print'):
                     filename = list(rule.get('include_only', {'foo.bar'}))[0]
                     self.assertTrue(RuleList([], [rule]).custom_check_file(filename, 'baz', ''),
                                     "The pattern '{}' didn't match the line '{}' while it should.".format(pattern, line))
