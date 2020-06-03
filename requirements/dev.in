@@ -52,10 +52,10 @@ snakeviz
 python-digitalocean
 
 # Needed for updating the locked pip dependencies
-pip-tools
+pip-tools<5.1.2  # https://github.com/jazzband/pip-tools/issues/1155
 
 # zulip's linting framework - zulint
-https://github.com/zulip/zulint/archive/aaed679f1ad38b230090eadd3870b7682500f60c.zip#egg=zulint==0.0.1
+https://github.com/zulip/zulint/archive/166adddecb37c60c4f8e6e70fee6964b4c857e01.zip#egg=zulint==0.0.1
 
 -r mypy.in
 

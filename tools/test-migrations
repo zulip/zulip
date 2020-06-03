@@ -11,6 +11,7 @@ new_auto_named_migrations=$(./manage.py showmigrations \
            -e ' 0003_auto_20150817_1733' \
            -e ' 0002_auto_20150110_0810' \
            -e ' 0002_auto_20190420_0723' \
+           -e ' 0009_auto_20191118_0520' \
     | sed 's/\[[x ]\] /  /' \
  || true)
 if [ "$new_auto_named_migrations" != "" ]; then
