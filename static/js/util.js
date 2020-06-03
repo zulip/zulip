@@ -197,7 +197,7 @@ exports.CachedValue.prototype = {
 };
 
 exports.find_wildcard_mentions = function (message_content) {
-    const mention = message_content.match(/(^|\s)(@\*{2}(all|everyone|stream)\*{2})($|\s)/);
+    const mention = /(^|\s)(@\*{2}(all|everyone|stream)\*{2})($|\s)/.exec(message_content);
     if (mention === null) {
         return null;
     }
