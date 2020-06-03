@@ -303,6 +303,8 @@ class EmailAuthBackend(ZulipAuthMixin):
     Allows a user to sign in using an email/password pair.
     """
 
+    name = 'email'
+
     @rate_limit_auth
     def authenticate(self, request: Optional[HttpRequest]=None, *,
                      username: str, password: str,
@@ -397,6 +399,8 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
     library.  It's not a lot of code, and searching around in that
     file makes the flow for LDAP authentication clear.
     """
+
+    name = "ldap"
 
     def __init__(self) -> None:
         # Used to initialize a fake LDAP directly for both manual
@@ -870,6 +874,8 @@ def query_ldap(email: str) -> List[str]:
 class DevAuthBackend(ZulipAuthMixin):
     """Allow logging in as any user without a password.  This is used for
     convenience when developing Zulip, and is disabled in production."""
+
+    name = 'dev'
 
     def authenticate(self, request: Optional[HttpRequest]=None, *,
                      dev_auth_username: str, realm: Realm,
