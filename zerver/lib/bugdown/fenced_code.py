@@ -327,7 +327,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
 
         # Check for code hilite extension
         if not self.checked_for_codehilite:
-            for ext in self.markdown.registeredExtensions:
+            for ext in self.md.registeredExtensions:
                 if isinstance(ext, CodeHiliteExtension):
                     self.codehilite_conf = ext.config
                     break
@@ -373,7 +373,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         return "\n\n".join(tex_paragraphs)
 
     def placeholder(self, code: str) -> str:
-        return self.markdown.htmlStash.store(code)
+        return self.md.htmlStash.store(code)
 
     def _escape(self, txt: str) -> str:
         """ basic html escaping """
