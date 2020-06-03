@@ -11,6 +11,7 @@ below features are supported.
 ## Changes in Zulip 2.2
 
 **Feature level 9**
+
 * [`POST users/me/subscriptions`](/api/add-subscriptions), [`DELETE
   /users/me/subscriptions`](/api/remove-subscriptions): Other users to
   subscribe/unsubscribe, declared in the `principals` parameter, can
@@ -18,11 +19,13 @@ below features are supported.
   address.
 
 **Feature level 8**
+
 * [`GET /users`](/api/get-all-users), [`GET /users/{user_id}`](/api/get-user)
   and [`GET /users/me`](/api/get-profile): User objects now contain the
   `is_owner` field as well.
 
 **Feature level 7**
+
 * [`GET /events`](/api/get-events-from-queue): `realm_user` and
   `realm_bot` events no longer contain an `email` field to identify
   the user; use the `user_id` field instead.  Previously, some (but
@@ -39,6 +42,7 @@ below features are supported.
   object with unnecessary additional data.
 
 **Feature level 6**
+
 * [`GET /events`](/api/get-events-from-queue): `realm_user` events to
   update a user's avatar now include the `avatar_version` field, which
   is important for correctly refetching medium-size avatar images when
