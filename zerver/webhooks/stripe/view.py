@@ -166,11 +166,10 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
         else:
             body = default_body(update_blacklist=['lines', 'description', 'number', 'finalized_at',
                                                   'status_transitions', 'payment_intent'])
-        if event == 'created':  # nocoverage
+        if event == 'created':
             # Could potentially add link to invoice PDF here
-            body += ' ({reason})\nBilling method: {method}\nTotal: {total}\nAmount due: {due}'.format(
+            body += ' ({reason})\nTotal: {total}\nAmount due: {due}'.format(
                 reason=object_['billing_reason'].replace('_', ' '),
-                method=object_['billing'].replace('_', ' '),
                 total=amount_string(object_['total'], object_['currency']),
                 due=amount_string(object_['amount_due'], object_['currency']))
     if category == 'invoiceitem':

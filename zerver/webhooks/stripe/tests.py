@@ -118,6 +118,15 @@ Billing method: send invoice"""
         self.send_and_test_stream_message('invoice_payment_failed', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
+    def test_invoice_created(self) -> None:
+        expected_topic = "cus_HH97asvHvaYQYp"
+        expected_message = """
+[Invoice](https://dashboard.stripe.com/invoices/in_1GpmuuHLwdCOCoR7ghzQDQLW) created (manual)
+Total: 0.00 INR
+Amount due: 0.00 INR
+""".strip()
+        self.send_and_test_stream_message("invoice_created", expected_topic, expected_message)
+
     def test_invoiceitem_created(self) -> None:
         expected_topic = "cus_00000000000000"
         expected_message = "[Invoice item](https://dashboard.stripe.com/invoiceitems/ii_00000000000000) created for 10.00 CAD"
