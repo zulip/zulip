@@ -39,6 +39,7 @@
 * [Create a user](/api/create-user)
 * [Set "typing" status](/api/typing)
 * [Get user presence](/api/get-presence)
+* [Get user subscription status](/api/get-subscription-status)
 * [Get all user groups](/api/get-user-groups)
 * [Update notification settings](/api/update-notification-settings)
 * [Create a user group](/api/create-user-group)
