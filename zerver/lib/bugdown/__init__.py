@@ -20,7 +20,7 @@ import dateutil.parser
 import dateutil.tz
 from datetime import datetime
 import xml.etree.ElementTree as etree
-from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import Element, SubElement
 import ahocorasick
 from hyperlink import parse
 
@@ -521,7 +521,7 @@ class BacktickPattern(markdown.inlinepatterns.Pattern):
 
     def handleMatch(self, m: Match[str]) -> Union[str, Element]:
         if m.group(4):
-            el = markdown.util.etree.Element(self.tag)
+            el = Element(self.tag)
             # Modified to not strip whitespace
             el.text = markdown.util.AtomicString(m.group(4))
             return el
@@ -555,19 +555,19 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             self.markdown.zulip_message.has_image = True
 
         if insertion_index is not None:
-            div = markdown.util.etree.Element("div")
+            div = Element("div")
             root.insert(insertion_index, div)
         else:
-            div = markdown.util.etree.SubElement(root, "div")
+            div = SubElement(root, "div")
 
         div.set("class", class_attr)
-        a = markdown.util.etree.SubElement(div, "a")
+        a = SubElement(div, "a")
         a.set("href", link)
         if title is not None:
             a.set("title", title)
         if data_id is not None:
             a.set("data-id", data_id)
-        img = markdown.util.etree.SubElement(a, "img")
+        img = SubElement(a, "img")
         if settings.THUMBNAIL_IMAGES and (not already_thumbnailed) and user_uploads_or_external(url):
             # See docs/thumbnailing.md for some high-level documentation.
             #
@@ -584,11 +584,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             img.set("src", url)
 
         if class_attr == "message_inline_ref":
-            summary_div = markdown.util.etree.SubElement(div, "div")
-            title_div = markdown.util.etree.SubElement(summary_div, "div")
+            summary_div = SubElement(div, "div")
+            title_div = SubElement(summary_div, "div")
             title_div.set("class", "message_inline_image_title")
             title_div.text = title
-            desc_div = markdown.util.etree.SubElement(summary_div, "desc")
+            desc_div = SubElement(summary_div, "desc")
             desc_div.set("class", "message_inline_image_desc")
 
     def add_oembed_data(self, root: Element, link: str, extracted_data: Dict[str, Any]) -> bool:
@@ -623,7 +623,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             # Don't add an embed if an image is not found
             return
 
-        container = markdown.util.etree.SubElement(root, "div")
+        container = SubElement(root, "div")
         container.set("class", "message_embed")
 
         parsed_img_link = urllib.parse.urlparse(img_link)
@@ -632,25 +632,25 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             parsed_url = urllib.parse.urlparse(link)
             domain = '{url.scheme}://{url.netloc}/'.format(url=parsed_url)
             img_link = urllib.parse.urljoin(domain, img_link)
-        img = markdown.util.etree.SubElement(container, "a")
+        img = SubElement(container, "a")
         img.set("style", "background-image: url(" + img_link + ")")
         img.set("href", link)
         img.set("class", "message_embed_image")
 
-        data_container = markdown.util.etree.SubElement(container, "div")
+        data_container = SubElement(container, "div")
         data_container.set("class", "data-container")
 
         title = extracted_data.get('title')
         if title:
-            title_elm = markdown.util.etree.SubElement(data_container, "div")
+            title_elm = SubElement(data_container, "div")
             title_elm.set("class", "message_embed_title")
-            a = markdown.util.etree.SubElement(title_elm, "a")
+            a = SubElement(title_elm, "a")
             a.set("href", link)
             a.set("title", title)
             a.text = title
         description = extracted_data.get('description')
         if description:
-            description_elm = markdown.util.etree.SubElement(data_container, "div")
+            description_elm = SubElement(data_container, "div")
             description_elm.set("class", "message_embed_description")
             description_elm.text = description
 
@@ -876,7 +876,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 })
 
         to_process.sort(key=lambda x: x['start'])
-        p = current_node = markdown.util.etree.Element('p')
+        p = current_node = Element('p')
 
         def set_text(text: str) -> None:
             """
@@ -920,11 +920,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if res is None:
                 return None
             user: Dict[str, Any] = res['user']
-            tweet = markdown.util.etree.Element("div")
+            tweet = Element("div")
             tweet.set("class", "twitter-tweet")
-            img_a = markdown.util.etree.SubElement(tweet, 'a')
+            img_a = SubElement(tweet, 'a')
             img_a.set("href", url)
-            profile_img = markdown.util.etree.SubElement(img_a, 'img')
+            profile_img = SubElement(img_a, 'img')
             profile_img.set('class', 'twitter-avatar')
             # For some reason, for, e.g. tweet 285072525413724161,
             # python-twitter does not give us a
@@ -941,7 +941,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             p = self.twitter_text(text, urls, user_mentions, media)
             tweet.append(p)
 
-            span = markdown.util.etree.SubElement(tweet, 'span')
+            span = SubElement(tweet, 'span')
             span.text = "- %s (@%s)" % (user['name'], user['screen_name'])
 
             # Add image previews
@@ -960,11 +960,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                         break
 
                 media_url = '%s:%s' % (media_item['media_url_https'], size_name)
-                img_div = markdown.util.etree.SubElement(tweet, 'div')
+                img_div = SubElement(tweet, 'div')
                 img_div.set('class', 'twitter-image')
-                img_a = markdown.util.etree.SubElement(img_div, 'a')
+                img_a = SubElement(img_div, 'a')
                 img_a.set('href', media_item['url'])
-                img = markdown.util.etree.SubElement(img_a, 'img')
+                img = SubElement(img_a, 'img')
                 img.set('src', media_url)
 
             return tweet
@@ -1147,7 +1147,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     # This link is not actually a tweet known to twitter
                     continue
                 rendered_tweet_count += 1
-                div = markdown.util.etree.SubElement(root, "div")
+                div = SubElement(root, "div")
                 div.set("class", "inline-preview-twitter")
                 div.insert(0, twitter_data)
                 continue
@@ -1190,7 +1190,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
 class Avatar(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
-        img = markdown.util.etree.Element('img')
+        img = Element('img')
         email_address = match.group('email')
         email = email_address.strip().lower()
         profile_id = None
@@ -1219,7 +1219,7 @@ def possible_avatar_emails(content: str) -> Set[str]:
 
 class Timestamp(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
-        span = markdown.util.etree.Element('span')
+        span = Element('span')
         span.set('class', 'timestamp')
         timestamp = None
         try:
@@ -1285,7 +1285,7 @@ unicode_emoji_regex = '(?P<syntax>['\
 def make_emoji(codepoint: str, display_string: str) -> Element:
     # Replace underscore in emoji's title with space
     title = display_string[1:-1].replace("_", " ")
-    span = markdown.util.etree.Element('span')
+    span = Element('span')
     span.set('class', 'emoji emoji-%s' % (codepoint,))
     span.set('title', title)
     span.set('role', 'img')
@@ -1294,7 +1294,7 @@ def make_emoji(codepoint: str, display_string: str) -> Element:
     return span
 
 def make_realm_emoji(src: str, display_string: str) -> Element:
-    elt = markdown.util.etree.Element('img')
+    elt = Element('img')
     elt.set('src', src)
     elt.set('class', 'emoji')
     elt.set("alt", display_string)
@@ -1371,7 +1371,7 @@ class Tex(markdown.inlinepatterns.Pattern):
                 root = elem
             return root
         else:  # Something went wrong while rendering
-            span = markdown.util.etree.Element('span')
+            span = Element('span')
             span.set('class', 'tex-error')
             span.text = '$$' + match.group('body') + '$$'
             return span
@@ -1432,7 +1432,7 @@ def sanitize_url(url: str) -> Optional[str]:
     return urllib.parse.urlunparse((scheme, netloc, path, params, query, fragment))
 
 def url_to_a(db_data: Optional[DbData], url: str, text: Optional[str]=None) -> Union[Element, str]:
-    a = markdown.util.etree.Element('a')
+    a = Element('a')
 
     href = sanitize_url(url)
     if href is None:
@@ -1631,7 +1631,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
                 # Don't highlight @mentions that don't refer to a valid user
                 return None
 
-            el = markdown.util.etree.Element("span")
+            el = Element("span")
             el.set('data-user-id', user_id)
             text = "%s" % (name,)
             if silent:
@@ -1660,7 +1660,7 @@ class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
                 # group.
                 return None
 
-            el = markdown.util.etree.Element("span")
+            el = Element("span")
             el.set('class', 'user-group-mention')
             el.set('data-user-group-id', user_group_id)
             text = "@%s" % (name,)
@@ -1683,7 +1683,7 @@ class StreamPattern(CompiledPattern):
             stream = self.find_stream_by_name(name)
             if stream is None:
                 return None
-            el = markdown.util.etree.Element('a')
+            el = Element('a')
             el.set('class', 'stream')
             el.set('data-stream-id', str(stream['id']))
             # TODO: We should quite possibly not be specifying the
@@ -1714,7 +1714,7 @@ class StreamTopicPattern(CompiledPattern):
             stream = self.find_stream_by_name(stream_name)
             if stream is None or topic_name is None:
                 return None
-            el = markdown.util.etree.Element('a')
+            el = Element('a')
             el.set('class', 'stream-topic')
             el.set('data-stream-id', str(stream['id']))
             stream_url = encode_stream(stream['id'], stream_name)
