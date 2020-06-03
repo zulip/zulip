@@ -23,7 +23,6 @@ exports.fetch_and_render_message_history = function (message) {
                 if (index === 0) {
                     item.posted_or_edited = "Posted by";
                     item.body_to_render = msg.rendered_content;
-                    prev_timestamp = timestamp;
                     item.show_date_row = true;
                 } else if (msg.prev_topic && msg.prev_content) {
                     item.posted_or_edited = "Edited by";
@@ -46,6 +45,8 @@ exports.fetch_and_render_message_history = function (message) {
                 }
 
                 content_edit_history.push(item);
+
+                prev_timestamp = timestamp;
             }
             $('#message-history').attr('data-message-id', message.id);
             $('#message-history').html(render_message_edit_history({
