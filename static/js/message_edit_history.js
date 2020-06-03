@@ -14,6 +14,7 @@ exports.fetch_and_render_message_history = function (message) {
                 const item = {
                     timestamp: moment(timestamp).format("h:mm A"),
                     display_date: moment(timestamp).format("MMMM D, YYYY"),
+                    show_date_row: !moment(timestamp).isSame(prev_timestamp, 'day'),
                 };
                 if (msg.user_id) {
                     const person = people.get_by_user_id(msg.user_id);
@@ -23,18 +24,14 @@ exports.fetch_and_render_message_history = function (message) {
                 if (index === 0) {
                     item.posted_or_edited = "Posted by";
                     item.body_to_render = msg.rendered_content;
-                    // This will always be true because of `prev_timestamp = null` above.
-                    item.show_date_row = !moment(timestamp).isSame(prev_timestamp, 'day');
                 } else if (msg.prev_topic && msg.prev_content) {
                     item.posted_or_edited = "Edited by";
                     item.body_to_render = msg.content_html_diff;
-                    item.show_date_row = !moment(timestamp).isSame(prev_timestamp, 'day');
                     item.topic_edited = true;
                     item.prev_topic = msg.prev_topic;
                     item.new_topic = msg.topic;
                 } else if (msg.prev_topic) {
                     item.posted_or_edited = "Topic edited by";
-                    item.show_date_row = !moment(timestamp).isSame(prev_timestamp, 'day');
                     item.topic_edited = true;
                     item.prev_topic = msg.prev_topic;
                     item.new_topic = msg.topic;
@@ -42,7 +39,6 @@ exports.fetch_and_render_message_history = function (message) {
                     // just a content edit
                     item.posted_or_edited = "Edited by";
                     item.body_to_render = msg.content_html_diff;
-                    item.show_date_row = !moment(timestamp).isSame(prev_timestamp, 'day');
                 }
 
                 content_edit_history.push(item);
