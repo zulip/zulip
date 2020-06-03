@@ -1,8 +1,6 @@
-from typing import List, TYPE_CHECKING
+from typing import List
 
-from zulint.custom_rules import RuleList
-if TYPE_CHECKING:
-    from zulint.custom_rules import Rule
+from zulint.custom_rules import Rule, RuleList
 
 # Rule help:
 # By default, a rule applies to all files within the extension for which it is specified (e.g. all .py files)
