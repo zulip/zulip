@@ -1,7 +1,7 @@
 from markdown.extensions import Extension
 from typing import Any, Dict, Optional, List, Tuple
 import markdown
-from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import Element, SubElement
 
 from zerver.lib.bugdown import walk_tree_with_family, ResultWithFamily
 
@@ -50,15 +50,15 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
         return nested_code_blocks
 
     def get_codehilite_block(self, code_block_text: Optional[str]) -> Element:
-        div = markdown.util.etree.Element("div")
+        div = Element("div")
         div.set("class", "codehilite")
-        pre = markdown.util.etree.SubElement(div, "pre")
+        pre = SubElement(div, "pre")
         pre.text = code_block_text
         return div
 
     def replace_element(
             self, parent: Optional[Element],
-            replacement: markdown.util.etree.Element,
+            replacement: Element,
             element_to_replace: Element
     ) -> None:
         if parent is None:
