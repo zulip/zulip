@@ -16,6 +16,8 @@ below features are supported.
   `realm_community_topic_editing_limit_seconds` to the response, the
   time limit before community topic editing is forbidden.  A `null`
   value means no limit.
+* [`POST /register`](/api/register-queue): The response now contains a
+  `is_owner`, similar to the existing `is_admin` and `is_guest` fields.
 
 **Feature level 10**
 
