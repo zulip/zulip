@@ -898,9 +898,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             set_text(text[current_index:item['start']])
             current_index = item['end']
             if item['type'] != 'emoji':
-                current_node = elem = url_to_a(db_data, item['url'], item['text'])
+                elem = url_to_a(db_data, item['url'], item['text'])
+                assert isinstance(elem, Element)
             else:
-                current_node = elem = make_emoji(item['codepoint'], item['title'])
+                elem = make_emoji(item['codepoint'], item['title'])
+            current_node = elem
             p.append(elem)
 
         # Add any unused text
