@@ -159,6 +159,7 @@ EXEMPT_FILES = {
     'static/js/user_status_ui.js',
     'static/js/zcommand.js',
     'static/js/zform.js',
+    'static/js/zulip.d.ts',
     'static/js/zulip.js',
 }
 
