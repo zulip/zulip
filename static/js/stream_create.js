@@ -176,9 +176,7 @@ function create_stream() {
     // TODO: We can eliminate the user_ids -> principals conversion
     //       once we upgrade the backend to accept user_ids.
     const user_ids = get_principals();
-    const persons = user_ids.map(user_id => people.get_by_user_id(user_id)).filter(Boolean);
-    const principals = persons.map(person => person.email);
-    data.principals = JSON.stringify(principals);
+    data.principals = JSON.stringify(user_ids);
 
     loading.make_indicator($('#stream_creating_indicator'), {text: i18n.t('Creating stream...')});
 

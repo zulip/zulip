@@ -1261,10 +1261,16 @@ run_test('on_events', () => {
             name: 'test',
             subscribed: true,
         };
+        const mentioned = {
+            full_name: 'Foo Barson',
+            email: 'foo@bar.com',
+            user_id: 34,
+        };
+        people.add_active_user(mentioned);
         let invite_user_to_stream_called = false;
-        stream_edit.invite_user_to_stream = function (email, sub, success) {
+        stream_edit.invite_user_to_stream = function (user_ids, sub, success) {
             invite_user_to_stream_called = true;
-            assert.deepEqual(email, ['foo@bar.com']);
+            assert.deepEqual(user_ids, [mentioned.user_id]);
             assert.equal(sub, subscription);
             success();  // This will check success callback path.
         };
@@ -1286,7 +1292,7 @@ run_test('on_events', () => {
         $('#stream_message_recipient_stream').val('no-stream');
         helper.container.data = function (field) {
             assert.equal(field, 'useremail');
-            return 'foo@bar.com';
+            return mentioned.email;
         };
         $("#compose-textarea").select(noop);
         helper.target.prop('disabled', false);
