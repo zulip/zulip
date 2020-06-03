@@ -34,6 +34,7 @@ exports.fetch_and_render_message_history = function (message) {
                     item.new_topic = msg.topic;
                 } else if (msg.prev_topic) {
                     item.posted_or_edited = "Topic edited by";
+                    item.show_date_row = !moment(timestamp).isSame(prev_timestamp, 'day');
                     item.topic_edited = true;
                     item.prev_topic = msg.prev_topic;
                     item.new_topic = msg.topic;
