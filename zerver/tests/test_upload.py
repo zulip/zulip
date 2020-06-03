@@ -1511,8 +1511,8 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         )
 
         file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", emoji_path)
-        image_file.seek(0)
-        self.assertEqual(image_file.read(), open(file_path + ".original", "rb").read())
+        with get_test_image_file("img.png") as image_file, open(file_path + ".original", "rb") as original_file:
+            self.assertEqual(image_file.read(), original_file.read())
 
         resized_image = Image.open(open(file_path, "rb"))
         expected_size = (DEFAULT_EMOJI_SIZE, DEFAULT_EMOJI_SIZE)
