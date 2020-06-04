@@ -59,6 +59,11 @@ run_test('lower_bound', () => {
     assert.equal(util.lower_bound(arr, 10, compare), 0);
     assert.equal(util.lower_bound(arr, 15, compare), 1);
 
+    // Blueslip should throw an error when no less (compare) function
+    // is passed when non-number array is used.
+    blueslip.expect('error', 'less function not given for non-number array');
+    util.lower_bound(arr, 5);
+    blueslip.reset();
 });
 
 run_test('same_recipient', () => {

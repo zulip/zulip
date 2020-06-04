@@ -37,6 +37,13 @@ exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
     }
 
     if (less === undefined) {
+        // Throw and error and return 0 if no less function is passed
+        // and the array is not made up of numbers.
+        if (array.length !== 0 && typeof array[0] !== 'number') {
+            blueslip.error('less function not given for non-number array');
+            return 0;
+        }
+
         less = function (a, b) { return a < b; };
     }
 
