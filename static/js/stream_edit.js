@@ -313,6 +313,45 @@ function stream_is_muted_clicked(e) {
     }
 }
 
+function submit_subscriber_form(e) {
+    e.preventDefault();
+    const settings_row = $(e.target).closest('.subscription_settings');
+    const sub = get_sub_for_target(settings_row);
+    if (!sub) {
+        blueslip.error('.subscriber_list_add form submit fails');
+        return;
+    }
+
+    const user_ids = user_pill.get_user_ids(exports.pill_widget);
+    const emails = user_ids.map(user_id => {
+        const person = people.get_by_user_id(user_id);
+        return person.email;
+    });
+    const stream_subscription_info_elem = $('.stream_subscription_info').expectOne();
+
+    function invite_success(data) {
+        exports.pill_widget.clear();
+        if (!Object.entries(data.already_subscribed).length) {
+            stream_subscription_info_elem.text(i18n.t("Subscribed successfully!"));
+            // The rest of the work is done via the subscription -> add event we will get
+        } else {
+            stream_subscription_info_elem.text(i18n.t("User already subscribed."));
+            const already_subscribed_users = Object.keys(data.already_subscribed).join(', ');
+            stream_subscription_info_elem.text(i18n.t(
+                " __already_subscribed_users__ are already subscribed.", {already_subscribed_users: already_subscribed_users}));
+        }
+        stream_subscription_info_elem.addClass("text-success")
+            .removeClass("text-error");
+    }
+
+    function invite_failure(xhr) {
+        const error = JSON.parse(xhr.responseText);
+        stream_subscription_info_elem.text(error.msg)
+            .addClass("text-error").removeClass("text-success");
+    }
+    exports.invite_user_to_stream(emails, sub, invite_success, invite_failure);
+}
+
 exports.stream_setting_clicked = function (e) {
     if (e.currentTarget.id === 'sub_is_muted_setting') {
         return;
@@ -549,41 +588,8 @@ exports.initialize = function () {
     $("#subscriptions_table").on("click", ".sub_setting_checkbox",
                                  exports.stream_setting_clicked);
 
-    $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
-        e.preventDefault();
-        const settings_row = $(e.target).closest('.subscription_settings');
-        const sub = get_sub_for_target(settings_row);
-        if (!sub) {
-            blueslip.error('.subscriber_list_add form submit fails');
-            return;
-        }
-
-        const user_ids = user_pill.get_user_ids(exports.pill_widget);
-        const stream_subscription_info_elem = $('.stream_subscription_info').expectOne();
-
-        function invite_success(data) {
-            exports.pill_widget.clear();
-            if (!Object.entries(data.already_subscribed).length) {
-                stream_subscription_info_elem.text(i18n.t("Subscribed successfully!"));
-                // The rest of the work is done via the subscription -> add event we will get
-            } else {
-                stream_subscription_info_elem.text(i18n.t("User already subscribed."));
-                const already_subscribed_users = Object.keys(data.already_subscribed).join(', ');
-                stream_subscription_info_elem.text(i18n.t(
-                    " __already_subscribed_users__ are already subscribed.", {already_subscribed_users: already_subscribed_users}));
-            }
-            stream_subscription_info_elem.addClass("text-success")
-                .removeClass("text-error");
-        }
-
-        function invite_failure(xhr) {
-            const error = JSON.parse(xhr.responseText);
-            stream_subscription_info_elem.text(error.msg)
-                .addClass("text-error").removeClass("text-success");
-        }
-
-        exports.invite_user_to_stream(user_ids, sub, invite_success, invite_failure);
-    });
+    $("#subscriptions_table").on("submit", ".subscriber_list_add form",
+                                 submit_subscriber_form);
 
     $("#subscriptions_table").on("submit", ".subscriber_list_remove form", function (e) {
         e.preventDefault();
