@@ -136,8 +136,7 @@ exports.build_direct_upload_widget = function (
 
     function clear() {
         const control = get_file_input();
-        const new_control = control.clone(true);
-        control.replaceWith(new_control);
+        control.val('');
     }
 
     upload_button.on('drop', function (e) {
