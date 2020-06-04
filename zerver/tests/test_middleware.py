@@ -40,7 +40,7 @@ class SlowQueryTest(ZulipTestCase):
             mock_normal_logger.info.assert_called_once()
 
             logged_line = mock_slow_query_logger.info.call_args_list[0][0][0]
-            self.assertRegexpMatches(
+            self.assertRegex(
                 logged_line,
                 r"123\.456\.789\.012 GET     200 10\.\ds .* \(unknown via \?\)"
             )
