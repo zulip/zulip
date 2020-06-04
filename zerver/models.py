@@ -1491,7 +1491,7 @@ class MutedTopic(models.Model):
     # The default value for date_muted is a few weeks before tracking
     # of when topics were muted was first introduced.  It's designed
     # to be obviously incorrect so that users can tell it's backfilled data.
-    date_muted = models.DateTimeField(default=datetime.datetime(2020, 1, 1, 0, 0, 0, 0))
+    date_muted = models.DateTimeField(default=datetime.datetime(2020, 1, 1, 0, 0, tzinfo=datetime.timezone.utc))
 
     class Meta:
         unique_together = ('user_profile', 'stream', 'topic_name')
