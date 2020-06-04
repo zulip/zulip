@@ -906,6 +906,7 @@ exports.warn_if_mentioning_unsubscribed_user = function (mentioned) {
     }
 
     const email = mentioned.email;
+    const user_id = mentioned.user_id;
 
     if (mentioned.is_broadcast) {
         return; // don't check if @all/@everyone/@stream
@@ -916,12 +917,12 @@ exports.warn_if_mentioning_unsubscribed_user = function (mentioned) {
         const existing_invites_area = $('#compose_invite_users .compose_invite_user');
 
         const existing_invites = Array.from($(existing_invites_area), user_row => {
-            return $(user_row).data('useremail');
+            return parseInt($(user_row).data('user-id'), 10);
         });
 
-        if (!existing_invites.includes(email)) {
+        if (!existing_invites.includes(user_id)) {
             const context = {
-                email: email,
+                user_id: user_id,
                 name: mentioned.full_name,
                 can_subscribe_other_users: page_params.can_subscribe_other_users,
             };
@@ -994,11 +995,8 @@ exports.initialize = function () {
 
         const invite_row = $(event.target).parents('.compose_invite_user');
 
-        const email = $(invite_row).data('useremail');
-        if (email === undefined) {
-            return;
-        }
-        const user_id = people.get_user_id(email);
+        const user_id = parseInt($(invite_row).data('user-id'), 10);
+
         function success() {
             const all_invites = $("#compose_invite_users");
             invite_row.remove();
