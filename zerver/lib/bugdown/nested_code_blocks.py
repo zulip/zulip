@@ -64,8 +64,7 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
         if parent is None:
             return
 
-        children = parent.getchildren()
-        for index, child in enumerate(children):
+        for index, child in enumerate(parent):
             if child is element_to_replace:
                 parent.insert(index, replacement)
                 parent.remove(element_to_replace)

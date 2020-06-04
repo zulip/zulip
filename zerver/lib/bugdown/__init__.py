@@ -279,8 +279,8 @@ def walk_tree(root: Element,
 
     while queue:
         currElement = queue.popleft()
-        for child in currElement.getchildren():
-            if child.getchildren():
+        for child in currElement:
+            if child:
                 queue.append(child)
 
             result = processor(child)
@@ -324,8 +324,8 @@ def walk_tree_with_family(root: Element,
     queue = deque([ElementPair(parent=None, value=root)])
     while queue:
         currElementPair = queue.popleft()
-        for child in currElementPair.value.getchildren():
-            if child.getchildren():
+        for child in currElementPair.value:
+            if child:
                 queue.append(ElementPair(parent=currElementPair, value=child))
             result = processor(child)
             if result is not None:
@@ -1002,7 +1002,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
         elif parent.tag == 'p':
             parent_index = None
-            for index, uncle in enumerate(grandparent.getchildren()):
+            for index, uncle in enumerate(grandparent):
                 if uncle is parent:
                     parent_index = index
                     break
@@ -1017,7 +1017,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 self.add_a(grandparent, actual_url, url, title=title)
 
             # If link is alone in a paragraph, delete paragraph containing it
-            if (len(parent.getchildren()) == 1 and
+            if (len(parent) == 1 and
                     (not parent.text or parent.text == "\n") and
                     not ahref_element.tail and
                     url_eq_text):
@@ -1033,16 +1033,15 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # they are in correct (and not opposite) order by inserting after last
         # inline image from paragraph 'parent'
 
-        uncles = grandparent.getchildren()
         parent_links = [ele.attrib['href'] for ele in parent.iter(tag="a")]
         insertion_index = parent_index_in_grandparent
 
         while True:
             insertion_index += 1
-            if insertion_index >= len(uncles):
+            if insertion_index >= len(grandparent):
                 return insertion_index
 
-            uncle = uncles[insertion_index]
+            uncle = grandparent[insertion_index]
             inline_image_classes = ['message_inline_image', 'message_inline_ref']
             if (
                 uncle.tag != 'div' or
