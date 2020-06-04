@@ -1906,6 +1906,11 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
         margin: 9px;
     }
 
+    .dropdown-menu {
+        top: -7px; // -(margin+padding), both are set by bootstrap.
+        bottom: auto;
+    }
+
     .dropdown-list-body {
         position: relative;
         height: auto;

@@ -7,14 +7,6 @@
         <div id="user-name-form" data-user-id="{{user_id}}">
             <form class="form-horizontal name-setting">
                 <input type="hidden" name="is_full_name" value="true" />
-                <div class="input-group name_change_container">
-                    <label for="full_name">{{t "Full name" }}</label>
-                    <input type="text" autocomplete="off" name="full_name" value="{{ full_name }}" />
-                </div>
-                <div class="input-group email_change_container">
-                    <label for="email">{{t "Email" }}</label>
-                    <input type="text" autocomplete="off" name="email" value="{{ email }}" readonly/>
-                </div>
                 <div class="input-group edit_bot_owner_container">
                     <label for="bot_owner_select">{{t "Owner" }}</label>
                     {{> settings/dropdown_list_widget
@@ -22,6 +14,14 @@
                       list_placeholder=(t 'Filter users')
                       reset_button_text=(t '[Remove owner]')
                       label="" }}
+                </div>
+                <div class="input-group name_change_container">
+                    <label for="full_name">{{t "Full name" }}</label>
+                    <input type="text" autocomplete="off" name="full_name" value="{{ full_name }}" />
+                </div>
+                <div class="input-group email_change_container">
+                    <label for="email">{{t "Email" }}</label>
+                    <input type="text" autocomplete="off" name="email" value="{{ email }}" readonly/>
                 </div>
             </form>
         </div>
