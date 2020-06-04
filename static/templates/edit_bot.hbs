@@ -11,11 +11,6 @@
             <div class="edit_bot_email">{{bot.email}}</div>
         </div>
         <div class="edit-bot-form-box">
-            <div class="">
-                <label for="edit_bot_name">{{t "Full name" }}</label>
-                <input id="edit_bot_name" type="text" name="bot_name" class="edit_bot_name required" value="{{bot.full_name}}" maxlength=50 />
-                <div><label for="edit_bot_name" generated="true" class="text-error"></label></div>
-            </div>
             <div class="edit-bot-owner">
                 <label for="bot_owner_select">{{t "Owner" }}</label>
                 {{> settings/dropdown_list_widget
@@ -23,6 +18,11 @@
                   list_placeholder=(t 'Filter users')
                   reset_button_text=(t '[Remove owner]')
                   label="" }}
+            </div>
+            <div class="">
+                <label for="edit_bot_name">{{t "Full name" }}</label>
+                <input id="edit_bot_name" type="text" name="bot_name" class="edit_bot_name required" value="{{bot.full_name}}" maxlength=50 />
+                <div><label for="edit_bot_name" generated="true" class="text-error"></label></div>
             </div>
             <div id="service_data">
             </div>
