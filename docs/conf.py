@@ -334,4 +334,4 @@ def setup(app: Any) -> None:
     app.add_transform(AutoStructify)
 
     # overrides for wide tables in RTD theme
-    app.add_stylesheet('theme_overrides.css')  # path relative to _static
+    app.add_css_file('theme_overrides.css')  # path relative to _static
