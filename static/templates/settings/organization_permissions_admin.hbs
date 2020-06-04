@@ -8,6 +8,26 @@
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">
+                    <label for="realm_waiting_period_setting" class="dropdown-title">
+                        {{t "Waiting period before new members turn into full members" }}
+                        {{> ../help_link_widget link="/help/restrict-permissions-of-new-members" }}
+                    </label>
+                    <select name="realm_waiting_period_setting" id="id_realm_waiting_period_setting" class="prop-element">
+                        <option value="none">{{t "None" }}</option>
+                        <option value="three_days">{{t "3 days" }}</option>
+                        <option value="custom_days">{{t "Custom" }}</option>
+                    </select>
+                </div>
+                {{!-- This setting is hidden unless `custom_days` --}}
+                <div class="dependent-block">
+                    <label for="id_realm_waiting_period_threshold" class="inline-block">{{t "Waiting period (days)" }}:</label>
+                    <input type="text" id="id_realm_waiting_period_threshold"
+                      name="realm_waiting_period_threshold"
+                      class="admin-realm-time-limit-input prop-element"
+                      value="{{ realm_waiting_period_threshold }}"/>
+                </div>
+
+                <div class="input-group">
                     <label for="realm_user_invite_restriction" class="dropdown-title">{{t "Are invitations required for joining the organization?" }}</label>
                     <select name="realm_user_invite_restriction" id="id_realm_user_invite_restriction" class="prop-element">
                         <option value="no_invite_required">{{t "No.  Members and admins can send invitations." }}</option>
@@ -30,25 +50,6 @@
                     {{#if is_admin }}
                     <a data-toggle="modal" href="#realm_domains_modal">{{t "[Configure]" }}</a>
                     {{/if}}
-                </div>
-                <div class="input-group">
-                    <label for="realm_waiting_period_setting" class="dropdown-title">
-                        {{t "Waiting period before new members turn into full members" }}
-                        {{> ../help_link_widget link="/help/restrict-permissions-of-new-members" }}
-                    </label>
-                    <select name="realm_waiting_period_setting" id="id_realm_waiting_period_setting" class="prop-element">
-                        <option value="none">{{t "None" }}</option>
-                        <option value="three_days">{{t "3 days" }}</option>
-                        <option value="custom_days">{{t "Custom" }}</option>
-                    </select>
-                </div>
-                {{!-- This setting is hidden unless `custom_days` --}}
-                <div class="dependent-block">
-                    <label for="id_realm_waiting_period_threshold" class="inline-block">{{t "Waiting period (days)" }}:</label>
-                    <input type="text" id="id_realm_waiting_period_threshold"
-                      name="realm_waiting_period_threshold"
-                      class="admin-realm-time-limit-input prop-element"
-                      value="{{ realm_waiting_period_threshold }}"/>
                 </div>
             </div>
         </div>
