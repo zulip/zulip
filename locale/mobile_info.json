@@ -4,7 +4,7 @@
     "total": 213
   },
   "ca": {
-    "not_translated": 134,
+    "not_translated": 105,
     "total": 213
   },
   "cs": {
@@ -24,7 +24,7 @@
     "total": 213
   },
   "fa": {
-    "not_translated": 47,
+    "not_translated": 28,
     "total": 213
   },
   "fi": {
@@ -32,7 +32,7 @@
     "total": 213
   },
   "fr": {
-    "not_translated": 52,
+    "not_translated": 0,
     "total": 213
   },
   "gl": {
@@ -72,19 +72,19 @@
     "total": 213
   },
   "pl": {
-    "not_translated": 12,
+    "not_translated": 0,
     "total": 213
   },
   "pt": {
-    "not_translated": 52,
+    "not_translated": 35,
     "total": 213
   },
   "ro": {
-    "not_translated": 12,
+    "not_translated": 0,
     "total": 213
   },
   "ru": {
-    "not_translated": 12,
+    "not_translated": 0,
     "total": 213
   },
   "sr": {
@@ -96,11 +96,11 @@
     "total": 213
   },
   "tr": {
-    "not_translated": 12,
+    "not_translated": 0,
     "total": 213
   },
   "uk": {
-    "not_translated": 51,
+    "not_translated": 0,
     "total": 213
   },
   "zh_Hans": {
