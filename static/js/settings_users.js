@@ -228,6 +228,7 @@ function human_info(person) {
 
     info.can_modify = page_params.is_admin;
     info.is_current_user = people.is_my_user_id(person.user_id);
+    info.cannot_deactivate = info.is_current_user || person.is_owner && !page_params.is_owner;
     info.display_email = settings_data.email_for_user_settings(person);
 
     if (info.is_active) {
