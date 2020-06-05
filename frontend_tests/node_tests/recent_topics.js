@@ -317,6 +317,7 @@ run_test("test_recent_topics_launch", () => {
     rt.process_messages(messages);
 
     rt.launch();
+    assert.equal($("#recent_topics_search").is(":focus"), true);
     overlays.close_callback();
 
     // incorrect topic_key

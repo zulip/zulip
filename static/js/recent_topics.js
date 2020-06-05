@@ -323,6 +323,7 @@ exports.launch = function () {
         },
     });
     recent_topics.complete_rerender();
+    $("#recent_topics_search").focus();
 };
 
 window.recent_topics = exports;
