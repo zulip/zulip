@@ -263,11 +263,9 @@ on a dark background, and don't change the dark labels dark either. */
         color: hsl(0, 0%, 100%);
     }
 
-    #searchbox_legacy {
-        #tab_bar #tab_list .sub_count,
-        #tab_bar #tab_list .narrow_description {
-            color: hsla(0, 0%, 90%, 1);
-        }
+    #tab_bar #tab_list .sub_count,
+    #tab_bar #tab_list .narrow_description {
+        color: hsla(0, 0%, 90%, 1);
     }
 
     .overlay,
