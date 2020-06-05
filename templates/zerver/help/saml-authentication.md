@@ -34,18 +34,20 @@ Zulip with various common SAML Identity Providers.
 1. Make sure you have created your organization. We'll assume its URL is
    `https://<subdomain>.zulipchat.com` in the instructions below.
 1. Navigate to the Onelogin Applications page, and click "Add App".
-1. Search for the "OneLogin SAML Test (IdP)" app and select it.
+1. Search for the "SAML Test Connector (IdP w/ attr w/ sign response)" app and select it.
 1. Set a name and logo according to your preferences and click "Save". This doesn't affect anything in Zulip,
    but will be shown on your OneLogin Applications page.
 1. Go to the "Configuration" section:
-    * Set `https://<subdomain>.zulipchat.com/complete/saml/` as the SAML Consumer URL, SAML Recipient
+    * Leave the `RelayState` field empty.
+    * Set `https://zulipchat.com` as the Audience.
+    * Set `https://<subdomain>.zulipchat.com/complete/saml/` as the Recipient, ACS URL
       and ACS URL Validator.
-    * Set `https://zulipchat.com` as the SAML Audience.
-1. Go to the "Parameters" section and configure it to match the following screenshot:
+1. Go to the "Parameters" section. Ignore the pre-configured parameters that are already there
+   and add custom ones to match the following screenshot:
 
     ![](/static/images/help/onelogin_parameters.png)
 
-    Make sure to set the "Include in SAML assertion" flag on these parameters.
+    Make sure to set the "Include in SAML assertion" flag on them.
 
 1. The OneLogin side of configuration should be ready!
    Send the following information to us at support@zulip.com:
