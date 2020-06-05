@@ -670,14 +670,6 @@ exports.is_valid_bulk_emails_for_compose = function (emails) {
     });
 };
 
-exports.get_active_user_for_email = function (email) {
-    const person = exports.get_by_email(email);
-    if (!person) {
-        return;
-    }
-    return active_user_dict.get(person.user_id);
-};
-
 exports.is_active_user_for_popover = function (user_id) {
     // For popover menus, we include cross-realm bots as active
     // users.

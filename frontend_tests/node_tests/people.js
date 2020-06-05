@@ -233,12 +233,6 @@ run_test('basics', () => {
     let person = people.get_by_email(email);
     assert.equal(person.full_name, full_name);
 
-    person = people.get_active_user_for_email('nobody@example.com');
-    assert(!person);
-
-    person = people.get_active_user_for_email(email);
-    assert.equal(person.email, email);
-
     realm_persons = people.get_realm_users();
     assert.equal(realm_persons.length, 2);
 
@@ -249,8 +243,6 @@ run_test('basics', () => {
 
     // Now deactivate isaac
     people.deactivate(isaac);
-    person = people.get_active_user_for_email(email);
-    assert(!person);
     assert.equal(people.get_non_active_human_ids().length, 1);
     assert.equal(people.get_active_human_count(), 1);
     assert.equal(people.is_active_user_for_popover(isaac.user_id), false);
@@ -301,7 +293,6 @@ run_test('basics', () => {
 
     // Test undefined people
     assert.equal(people.is_cross_realm_email('unknown@example.com'), undefined);
-    assert.equal(people.get_active_user_for_email('unknown@example.com'), undefined);
 
     // Test is_my_user_id function
     assert.equal(people.is_my_user_id(me.user_id), true);
@@ -446,8 +437,6 @@ run_test('get_by_user_id', () => {
     // now it takes a full person object.  Note that deactivate()
     // won't actually make the user disappear completely.
     people.deactivate(person);
-    person = people.get_active_user_for_email('mary@example.com');
-    assert.equal(person, undefined);
     person = people.get_by_user_id(42);
     assert.equal(person.user_id, 42);
 });
@@ -846,7 +835,6 @@ run_test('updates', () => {
 
     // Do sanity checks on our data.
     assert.equal(people.get_by_email(old_email).user_id, user_id);
-    assert.equal(people.get_active_user_for_email(old_email).user_id, user_id);
     assert (!people.is_cross_realm_email(old_email));
 
     assert.equal(people.get_by_email(new_email), undefined);
@@ -856,7 +844,6 @@ run_test('updates', () => {
 
     // Now look up using the new email.
     assert.equal(people.get_by_email(new_email).user_id, user_id);
-    assert.equal(people.get_active_user_for_email(new_email).user_id, user_id);
     assert (!people.is_cross_realm_email(new_email));
 
     const all_people = get_all_persons();
@@ -981,7 +968,6 @@ run_test('initialize', () => {
     const my_user_id = 42;
     people.initialize(my_user_id, params);
 
-    assert.equal(people.get_active_user_for_email('alice@example.com').full_name, 'Alice');
     assert.equal(people.is_active_user_for_popover(17), true);
     assert(people.is_cross_realm_email('bot@example.com'));
     assert(people.is_valid_email_for_compose('bot@example.com'));
