@@ -4,8 +4,8 @@ import logging
 import re
 
 from email.header import decode_header, make_header
+from email.message import Message as EmailMessage
 from email.utils import getaddresses
-import email.message as message
 
 from django.conf import settings
 from django.utils.timezone import timedelta, now as timezone_now
@@ -72,7 +72,7 @@ def report_to_zulip(error_message: str) -> None:
         """~~~\n%s\n~~~""" % (error_message,)
     )
 
-def log_and_report(email_message: message.Message, error_message: str, to: Optional[str]) -> None:
+def log_and_report(email_message: EmailMessage, error_message: str, to: Optional[str]) -> None:
     recipient = to or "No recipient found"
     error_message = "Sender: {}\nTo: {}\n{}".format(email_message.get("From"),
                                                     recipient, error_message)
@@ -137,7 +137,7 @@ def create_missed_message_address(user_profile: UserProfile, message: Message) -
                                                           email_token=generate_missed_message_token())
     return str(mm_address)
 
-def construct_zulip_body(message: message.Message, realm: Realm, show_sender: bool=False,
+def construct_zulip_body(message: EmailMessage, realm: Realm, show_sender: bool=False,
                          include_quotes: bool=False, include_footer: bool=False,
                          prefer_text: bool=True) -> str:
     body = extract_body(message, include_quotes, prefer_text)
@@ -179,7 +179,7 @@ def send_zulip(sender: UserProfile, stream: Stream, topic: str, content: str) ->
         truncate_body(content),
         email_gateway=True)
 
-def get_message_part_by_type(message: message.Message, content_type: str) -> Optional[str]:
+def get_message_part_by_type(message: EmailMessage, content_type: str) -> Optional[str]:
     charsets = message.get_charsets()
 
     for idx, part in enumerate(message.walk()):
@@ -195,7 +195,7 @@ def get_message_part_by_type(message: message.Message, content_type: str) -> Opt
 
     return None
 
-def extract_body(message: message.Message, include_quotes: bool=False, prefer_text: bool=True) -> str:
+def extract_body(message: EmailMessage, include_quotes: bool=False, prefer_text: bool=True) -> str:
     plaintext_content = extract_plaintext_body(message, include_quotes)
     html_content = extract_html_body(message, include_quotes)
 
@@ -219,7 +219,7 @@ def extract_body(message: message.Message, include_quotes: bool=False, prefer_te
             return plaintext_content
 
 talon_initialized = False
-def extract_plaintext_body(message: message.Message, include_quotes: bool=False) -> Optional[str]:
+def extract_plaintext_body(message: EmailMessage, include_quotes: bool=False) -> Optional[str]:
     import talon
     global talon_initialized
     if not talon_initialized:
@@ -235,7 +235,7 @@ def extract_plaintext_body(message: message.Message, include_quotes: bool=False)
     else:
         return None
 
-def extract_html_body(message: message.Message, include_quotes: bool=False) -> Optional[str]:
+def extract_html_body(message: EmailMessage, include_quotes: bool=False) -> Optional[str]:
     import talon
     global talon_initialized
     if not talon_initialized:  # nocoverage
@@ -261,7 +261,7 @@ def filter_footer(text: str) -> str:
 
     return text.partition("--")[0].strip()
 
-def extract_and_upload_attachments(message: message.Message, realm: Realm) -> str:
+def extract_and_upload_attachments(message: EmailMessage, realm: Realm) -> str:
     user_profile = get_system_bot(settings.EMAIL_GATEWAY_BOT)
 
     attachment_links = []
@@ -297,7 +297,7 @@ def decode_stream_email_address(email: str) -> Tuple[Stream, Dict[str, bool]]:
 
     return stream, options
 
-def find_emailgateway_recipient(message: message.Message) -> str:
+def find_emailgateway_recipient(message: EmailMessage) -> str:
     # We can't use Delivered-To; if there is a X-Gm-Original-To
     # it is more accurate, so try to find the most-accurate
     # recipient list in descending priority order
@@ -330,7 +330,7 @@ def is_forwarded(subject: str) -> bool:
     reg = r"([\[\(] *)?\b(FWD?) *([-:;)\]][ :;\])-]*|$)|\]+ *$"
     return bool(re.match(reg, subject, flags=re.IGNORECASE))
 
-def process_stream_message(to: str, message: message.Message) -> None:
+def process_stream_message(to: str, message: EmailMessage) -> None:
     subject_header = handle_header_content(message.get("Subject", ""))
     subject = strip_from_subject(subject_header) or "(no topic)"
 
@@ -348,7 +348,7 @@ def process_stream_message(to: str, message: message.Message) -> None:
         stream.name, stream.realm.string_id,
     )
 
-def process_missed_message(to: str, message: message.Message) -> None:
+def process_missed_message(to: str, message: EmailMessage) -> None:
     mm_address = get_usable_missed_message_address(to)
     mm_address.increment_times_used()
 
@@ -396,7 +396,7 @@ def process_missed_message(to: str, message: message.Message) -> None:
         user_profile.id, recipient_str,
     )
 
-def process_message(message: message.Message, rcpt_to: Optional[str]=None) -> None:
+def process_message(message: EmailMessage, rcpt_to: Optional[str]=None) -> None:
     to: Optional[str] = None
 
     try:
