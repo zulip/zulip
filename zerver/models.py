@@ -80,6 +80,7 @@ from zerver.lib.cache import (
     user_profile_by_id_cache_key,
     user_profile_cache_key,
 )
+from zerver.lib.encryption import AESGCM_KEY_LENGTH_IN_BYTES
 from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -2525,6 +2526,10 @@ class AbstractPushDeviceToken(models.Model):
 class PushDeviceToken(AbstractPushDeviceToken):
     # The user whose device this is
     user = models.ForeignKey(UserProfile, db_index=True, on_delete=CASCADE)
+    # A symmetric key used for end-to-end encryption.
+    notification_encryption_key = models.BinaryField(
+        null=True, max_length=AESGCM_KEY_LENGTH_IN_BYTES
+    )
 
     class Meta:
         unique_together = ("user", "kind", "token")
