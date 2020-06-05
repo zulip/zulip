@@ -49,6 +49,9 @@ another.
 
 1. (Optional) Change the topic.
 
+1. Select whether you want automated notification messages to be sent
+   to the old location for the topic, new location for the topic, or both.
+
 1. Click **Move topic**.
 
 {end_tabs}
@@ -76,6 +79,9 @@ from a topic to another stream.
 **Change only this message topic**, **Change later messages to this topic**, and
 **Change previous and following messages to this topic**. Pick the appropriate
 option.
+
+1. Select whether you want automated notification messages to be sent
+   to the old location for the topic, new location for the topic, or both.
 
 1. Click **Save**.
 
