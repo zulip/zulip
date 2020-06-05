@@ -279,21 +279,7 @@ exports.set_up = function () {
     $("#account-settings-status").hide();
 
     const setup_api_key_modal = _.once(function () {
-        $('.account-settings-form').append(render_settings_api_key_modal());
-        $("#api_key_value").text("");
-        $("#show_api_key").hide();
-
-        if (page_params.realm_password_auth_enabled === false) {
-            // Skip the password prompt step, since the user doesn't have one.
-            $("#get_api_key_button").click();
-        }
-
-        $("#get_api_key_button").on("click", function (e) {
-            const data = {};
-            e.preventDefault();
-            e.stopPropagation();
-
-            data.password = $("#get_api_key_password").val();
+        function request_api_key(data) {
             channel.post({
                 url: '/json/fetch_api_key',
                 data: data,
@@ -313,7 +299,25 @@ exports.set_up = function () {
                     $("#api_key_modal").show();
                 },
             });
-        });
+        }
+
+        $('.account-settings-form').append(render_settings_api_key_modal());
+        $("#api_key_value").text("");
+        $("#show_api_key").hide();
+
+        if (page_params.realm_password_auth_enabled === false) {
+            // Skip the password prompt step, since the user doesn't have one.
+            request_api_key({});
+        } else {
+            $("#get_api_key_button").on("click", function (e) {
+                const data = {};
+                e.preventDefault();
+                e.stopPropagation();
+
+                data.password = $("#get_api_key_password").val();
+                request_api_key(data);
+            });
+        }
 
         $("#show_api_key").on("click", "button.regenerate_api_key", function (e) {
             channel.post({
