@@ -1,3 +1,4 @@
+import base64
 import os
 import smtplib
 import time
@@ -307,7 +308,7 @@ class WorkerTest(ZulipTestCase):
         stream_to_address = encode_email_address(stream)
         data = [
             dict(
-                message='\xf3test',
+                msg_base64=base64.b64encode(b'\xf3test').decode(),
                 time=time.time(),
                 rcpt_to=stream_to_address,
             ),
@@ -334,7 +335,7 @@ class WorkerTest(ZulipTestCase):
         stream_to_address = encode_email_address(stream)
         data = [
             dict(
-                message='\xf3test',
+                msg_base64=base64.b64encode(b'\xf3test').decode(),
                 time=time.time(),
                 rcpt_to=stream_to_address,
             ),
@@ -361,7 +362,7 @@ class WorkerTest(ZulipTestCase):
                 with self.settings(EMAIL_GATEWAY_PATTERN="%s@example.com"):
                     address = 'mm' + ('x' * 32) + '@example.com'
                     event = dict(
-                        message='\xf3test',
+                        msg_base64=base64.b64encode(b'\xf3test').decode(),
                         time=time.time(),
                         rcpt_to=address,
                     )
