@@ -1491,6 +1491,11 @@ class PushDeviceToken(AbstractPushDeviceToken):
 
     # The user whose device this is
     user: UserProfile = models.ForeignKey(UserProfile, db_index=True, on_delete=CASCADE)
+    # Encryption
+    #
+    # AESGCM.generate_key() generates a 16 byte long key which is converted to
+    # a url-safe base64 encoded string.
+    notification_encryption_key: Optional[str] = models.TextField(null=True)
 
     class Meta:
         unique_together = ("user", "kind", "token")

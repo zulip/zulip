@@ -32,6 +32,9 @@ class RemotePushDeviceToken(AbstractPushDeviceToken):
     server: RemoteZulipServer = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
     # The user id on the remote server for this device device this is
     user_id: int = models.BigIntegerField(db_index=True)
+    # encrypt_notifications represents whether notifications sent from
+    # the server are encrypted or not.
+    encrypt_notifications: bool = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ("server", "user_id", "kind", "token")
