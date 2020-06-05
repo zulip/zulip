@@ -5,7 +5,6 @@ import shutil
 import tempfile
 import urllib
 from contextlib import contextmanager
-from email.utils import parseaddr
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Set, Tuple, Union, cast
 from unittest import mock
 
@@ -473,7 +472,10 @@ class ZulipTestCase(TestCase):
             # This is a bit of a crude heuristic, but good enough for most tests.
             url_pattern = settings.EXTERNAL_HOST + r"(\S+)>"
         for message in reversed(outbox):
-            if email_address in parseaddr(message.to)[1]:
+            if any(
+                addr == email_address or addr.endswith(f" <{email_address}>")
+                for addr in message.to
+            ):
                 return re.search(url_pattern, message.body).groups()[0]
         else:
             raise AssertionError("Couldn't find a confirmation email.")

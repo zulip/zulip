@@ -1,6 +1,4 @@
 import datetime
-import re
-from email.utils import parseaddr
 
 from django.core import mail
 from django.utils.timezone import now
@@ -104,11 +102,11 @@ class EmailChangeTestCase(ZulipTestCase):
             'Verify your new email address',
         )
         body = email_message.body
-        from_email = email_message.from_email
         self.assertIn('We received a request to change the email', body)
-        self.assertIn('Zulip Account Security', from_email)
-        tokenized_no_reply_email = parseaddr(email_message.from_email)[1]
-        self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
+        self.assertRegex(
+            email_message.from_email,
+            fr"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
+        )
 
         activation_url = [s for s in body.split('\n') if s][2]
         response = self.client_get(activation_url)

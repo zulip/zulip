@@ -2,6 +2,7 @@
 import copy
 import datetime
 import email
+import email.policy
 import logging
 import os
 import signal
@@ -12,6 +13,7 @@ import time
 import urllib
 from abc import ABC, abstractmethod
 from collections import defaultdict, deque
+from email.message import EmailMessage
 from functools import wraps
 from threading import Timer
 from typing import (
@@ -552,6 +554,8 @@ class DigestWorker(QueueProcessingWorker):  # nocoverage
 class MirrorWorker(QueueProcessingWorker):
     def consume(self, event: Mapping[str, Any]) -> None:
         rcpt_to = event['rcpt_to']
+        msg = email.message_from_string(event["message"], policy=email.policy.default)
+        assert isinstance(msg, EmailMessage)  # https://github.com/python/typeshed/issues/2417
         if not is_missed_message_address(rcpt_to):
             # Missed message addresses are one-time use, so we don't need
             # to worry about emails to them resulting in message spam.
@@ -559,14 +563,12 @@ class MirrorWorker(QueueProcessingWorker):
             try:
                 rate_limit_mirror_by_realm(recipient_realm)
             except RateLimited:
-                msg = email.message_from_string(event["message"])
                 logger.warning("MirrorWorker: Rejecting an email from: %s "
                                "to realm: %s - rate limited.",
                                msg['From'], recipient_realm.name)
                 return
 
-        mirror_email(email.message_from_string(event["message"]),
-                     rcpt_to=rcpt_to)
+        mirror_email(msg, rcpt_to=rcpt_to)
 
 @assign_queue('test', queue_type="test")
 class TestWorker(QueueProcessingWorker):

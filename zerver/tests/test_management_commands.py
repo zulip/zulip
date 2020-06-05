@@ -2,7 +2,6 @@ import glob
 import os
 import re
 from datetime import timedelta
-from email.utils import parseaddr
 from typing import Any, Dict, List, Optional
 from unittest import mock
 from unittest.mock import MagicMock, call, patch
@@ -337,10 +336,10 @@ class TestPasswordRestEmail(ZulipTestCase):
     def test_if_command_sends_password_reset_email(self) -> None:
         call_command(self.COMMAND_NAME, users=self.example_email("iago"))
         from django.core.mail import outbox
-        from_email = outbox[0].from_email
-        self.assertIn("Zulip Account Security", from_email)
-        tokenized_no_reply_email = parseaddr(from_email)[1]
-        self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
+        self.assertRegex(
+            outbox[0].from_email,
+            fr"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
+        )
         self.assertIn("reset your password", outbox[0].body)
 
 class TestRealmReactivationEmail(ZulipTestCase):

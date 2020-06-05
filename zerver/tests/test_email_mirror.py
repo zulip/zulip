@@ -1,9 +1,8 @@
+import email.policy
 import os
 import subprocess
 from email import message_from_string
-from email.mime.image import MIMEImage
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+from email.message import EmailMessage, MIMEPart
 from typing import Any, Callable, Dict, Mapping, Optional
 from unittest import mock
 
@@ -215,7 +214,8 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
         stream_to_address = encode_email_address(stream)
 
-        incoming_valid_message = MIMEText('TestStreamEmailMessages Body')
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content('TestStreamEmailMessages Body')
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
@@ -239,7 +239,8 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
         stream_to_address = encode_email_address(stream)
 
-        incoming_valid_message = MIMEText('TestStreamEmailMessages Body')
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content('TestStreamEmailMessages Body')
 
         incoming_valid_message['Subject'] = ''
         incoming_valid_message['From'] = self.example_email('hamlet')
@@ -264,7 +265,8 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
         stream_to_address = encode_email_address(stream)
 
-        incoming_valid_message = MIMEText('TestStreamEmailMessages Body')
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content('TestStreamEmailMessages Body')
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
@@ -290,7 +292,8 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         stream_to_addresses = ["A.N. Other <another@example.org>",
                                f"Denmark <{encode_email_address(stream)}>"]
 
-        incoming_valid_message = MIMEText('TestStreamEmailMessages Body')
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content('TestStreamEmailMessages Body')
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
@@ -317,7 +320,8 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         parts[0] += "+show-sender"
         stream_to_address = '@'.join(parts)
 
-        incoming_valid_message = MIMEText('TestStreamEmailMessages Body')
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content('TestStreamEmailMessages Body')
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
         incoming_valid_message['To'] = stream_to_address
@@ -342,9 +346,10 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         parts[0] += "+show-sender"
         stream_to_address = '@'.join(parts)
 
-        incoming_valid_message = MIMEText('TestStreamEmailMessages Body')
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content('TestStreamEmailMessages Body')
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
-        incoming_valid_message['From'] = '=?utf-8?b?VGVzdCBVc2Vyw7PEhcSZIDxoYW1sZXRfxJlAenVsaXAuY29tPg==?='
+        incoming_valid_message['From'] = 'Test =?utf-8?b?VXNlcsOzxIXEmQ==?= <=?utf-8?q?hamlet=5F=C4=99?=@zulip.com>'
         incoming_valid_message['To'] = stream_to_address
         incoming_valid_message['Reply-to'] = self.example_email('othello')
 
@@ -371,7 +376,8 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         --
         Footer"""
 
-        incoming_valid_message = MIMEText(text)
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content(text)
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
         incoming_valid_message['To'] = stream_to_address
@@ -401,7 +407,8 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
         Quote"""
 
-        incoming_valid_message = MIMEText(text)
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content(text)
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
         incoming_valid_message['To'] = stream_to_address
@@ -422,15 +429,17 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         stream = get_stream("Denmark", user_profile.realm)
         stream_to_address = encode_email_address(stream)
 
-        incoming_valid_message = MIMEMultipart()
-        text_msg = MIMEText("Test body")
-        incoming_valid_message.attach(text_msg)
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("Test body")
         with open(os.path.join(settings.DEPLOY_ROOT, "static/images/default-avatar.png"), 'rb') as f:
             image_bytes = f.read()
 
-        attachment_msg = MIMEImage(image_bytes)
-        attachment_msg.add_header('Content-Disposition', 'attachment', filename="image.png")
-        incoming_valid_message.attach(attachment_msg)
+        incoming_valid_message.add_attachment(
+            image_bytes,
+            maintype="image",
+            subtype="png",
+            filename="image.png",
+        )
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
@@ -455,17 +464,18 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         stream = get_stream("Denmark", user_profile.realm)
         stream_to_address = encode_email_address(stream)
 
-        incoming_valid_message = MIMEMultipart()
-        text_msg = MIMEText("Test body")
-        incoming_valid_message.attach(text_msg)
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("Test body")
         with open(os.path.join(settings.DEPLOY_ROOT, "static/images/default-avatar.png"), 'rb') as f:
             image_bytes = f.read()
 
-        attachment_msg = MIMEImage(image_bytes)
         utf8_filename = "image_ąęó.png"
-        encoded_filename = "=?utf-8?b?aW1hZ2VfxIXEmcOzLnBuZw==?="
-        attachment_msg.add_header('Content-Disposition', 'attachment', filename=encoded_filename)
-        incoming_valid_message.attach(attachment_msg)
+        incoming_valid_message.add_attachment(
+            image_bytes,
+            maintype="image",
+            subtype="png",
+            filename=utf8_filename,
+        )
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
@@ -490,20 +500,21 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         stream = get_stream("Denmark", user_profile.realm)
         stream_to_address = encode_email_address(stream)
 
-        incoming_valid_message = MIMEMultipart()
-        text_msg = MIMEText("Test body")
-        incoming_valid_message.attach(text_msg)
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("Test body")
 
-        nested_multipart = MIMEMultipart()
-        nested_text_message = MIMEText("Nested text that should get skipped.")
-        nested_multipart.attach(nested_text_message)
+        nested_multipart = EmailMessage()
+        nested_multipart.set_content("Nested text that should get skipped.")
         with open(os.path.join(settings.DEPLOY_ROOT, "static/images/default-avatar.png"), 'rb') as f:
             image_bytes = f.read()
 
-        attachment_msg = MIMEImage(image_bytes)
-        attachment_msg.add_header('Content-Disposition', 'attachment', filename="image.png")
-        nested_multipart.attach(attachment_msg)
-        incoming_valid_message.attach(nested_multipart)
+        nested_multipart.add_attachment(
+            image_bytes,
+            maintype="image",
+            subtype="png",
+            filename="image.png",
+        )
+        incoming_valid_message.add_attachment(nested_multipart)
 
         incoming_valid_message['Subject'] = 'Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
@@ -528,13 +539,12 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         stream = get_stream("Denmark", user_profile.realm)
         stream_to_address = encode_email_address(stream)
 
-        incoming_valid_message = MIMEMultipart()
-        text_msg = MIMEText("Test body")
-        incoming_valid_message.attach(text_msg)
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("Test body")
         # Create an invalid attachment:
-        attachment_msg = MIMEMultipart()
+        attachment_msg = MIMEPart()
         attachment_msg.add_header('Content-Disposition', 'attachment', filename="some_attachment")
-        incoming_valid_message.attach(attachment_msg)
+        incoming_valid_message.add_attachment(attachment_msg)
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
@@ -559,11 +569,9 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         text = "Test message"
         html = "<html><body><b>Test html message</b></body></html>"
 
-        incoming_valid_message = MIMEMultipart()
-        text_message = MIMEText(text)
-        html_message = MIMEText(html, 'html')
-        incoming_valid_message.attach(text_message)
-        incoming_valid_message.attach(html_message)
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.add_alternative(text)
+        incoming_valid_message.add_alternative(html, subtype="html")
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
@@ -594,11 +602,9 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         # This should be correctly identified as empty html body:
         html = "<html><body></body></html>"
 
-        incoming_valid_message = MIMEMultipart()
-        text_message = MIMEText(text)
-        html_message = MIMEText(html, 'html')
-        incoming_valid_message.attach(text_message)
-        incoming_valid_message.attach(html_message)
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.add_alternative(text)
+        incoming_valid_message.add_alternative(html, subtype="html")
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
@@ -622,7 +628,8 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         stream_to_address = encode_email_address(stream)
 
         # empty body
-        incoming_valid_message = MIMEText('')
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content('')
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
@@ -640,9 +647,13 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         stream = get_stream("Denmark", user_profile.realm)
         stream_to_address = encode_email_address(stream)
         # No textual body
-        incoming_valid_message = MIMEMultipart()
+        incoming_valid_message = EmailMessage()
         with open(os.path.join(settings.DEPLOY_ROOT, "static/images/default-avatar.png"), 'rb') as f:
-            incoming_valid_message.attach(MIMEImage(f.read()))
+            incoming_valid_message.add_attachment(
+                f.read(),
+                maintype="image",
+                subtype="png",
+            )
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
@@ -664,7 +675,8 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         headers['Reply-To'] = self.example_email('othello')
 
         # empty body
-        incoming_valid_message = MIMEText('-- \nFooter')
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content('-- \nFooter')
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
@@ -697,7 +709,8 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         # token for looking up who did reply.
         mm_address = create_missed_message_address(user_profile, usermessage.message)
 
-        incoming_valid_message = MIMEText('TestMissedMessageEmailMessages Body')
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content('TestMissedMessageEmailMessages Body')
 
         incoming_valid_message['Subject'] = 'TestMissedMessageEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('othello')
@@ -736,7 +749,8 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         # token for looking up who did reply.
         mm_address = create_missed_message_address(user_profile, usermessage.message)
 
-        incoming_valid_message = MIMEText('TestMissedHuddleMessageEmailMessages Body')
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content('TestMissedHuddleMessageEmailMessages Body')
 
         incoming_valid_message['Subject'] = 'TestMissedHuddleMessageEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('cordelia')
@@ -782,7 +796,8 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
 
         mm_address = create_missed_message_address(user_profile, usermessage.message)
 
-        incoming_valid_message = MIMEText('TestMissedMessageEmailMessages Body')
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content('TestMissedMessageEmailMessages Body')
 
         incoming_valid_message['Subject'] = 'TestMissedMessageEmailMessages Subject'
         incoming_valid_message['From'] = user_profile.delivery_email
@@ -821,7 +836,8 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         usermessage.message.subject = "updated topic"
         usermessage.message.save(update_fields=["subject"])
 
-        incoming_valid_message = MIMEText('TestMissedMessageEmailMessages Body')
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content('TestMissedMessageEmailMessages Body')
 
         incoming_valid_message['Subject'] = 'TestMissedMessageEmailMessages Subject'
         incoming_valid_message['From'] = user_profile.delivery_email
@@ -858,7 +874,8 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
 
         do_deactivate_user(user_profile)
 
-        incoming_valid_message = MIMEText('TestMissedMessageEmailMessages Body')
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content('TestMissedMessageEmailMessages Body')
 
         incoming_valid_message['Subject'] = 'TestMissedMessageEmailMessages Subject'
         incoming_valid_message['From'] = user_profile.delivery_email
@@ -889,7 +906,8 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
 
         do_deactivate_realm(user_profile.realm)
 
-        incoming_valid_message = MIMEText('TestMissedMessageEmailMessages Body')
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content('TestMissedMessageEmailMessages Body')
 
         incoming_valid_message['Subject'] = 'TestMissedMessageEmailMessages Subject'
         incoming_valid_message['From'] = user_profile.delivery_email
@@ -918,7 +936,8 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         message = most_recent_message(user_profile)
 
         mm_address = create_missed_message_address(user_profile, message)
-        incoming_valid_message = MIMEText('TestMissedMessageEmailMessages Body')
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content('TestMissedMessageEmailMessages Body')
 
         incoming_valid_message['Subject'] = 'TestMissedMessageEmailMessages Subject'
         incoming_valid_message['From'] = user_profile.delivery_email
@@ -986,7 +1005,8 @@ class TestReplyExtraction(ZulipTestCase):
 
         Quote"""
 
-        incoming_valid_message = MIMEText(text)
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content(text)
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = user_profile.delivery_email
@@ -1036,7 +1056,8 @@ class TestReplyExtraction(ZulipTestCase):
         </html>
         """
 
-        incoming_valid_message = MIMEText(html, 'html')
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content(html, subtype="html")
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = user_profile.delivery_email
@@ -1208,7 +1229,8 @@ class TestStreamEmailMessagesSubjectStripping(ZulipTestCase):
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
         stream_to_address = encode_email_address(stream)
-        incoming_valid_message = MIMEText('TestStreamEmailMessages Body')
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content('TestStreamEmailMessages Body')
         incoming_valid_message['Subject'] = "Re: Fwd: Re: Test"
         incoming_valid_message['From'] = self.example_email('hamlet')
         incoming_valid_message['To'] = stream_to_address
@@ -1238,7 +1260,8 @@ class TestContentTypeUnspecifiedCharset(ZulipTestCase):
         message_as_string = self.fixture_data('1.txt', type='email')
         message_as_string = message_as_string.replace("Content-Type: text/plain; charset=\"us-ascii\"",
                                                       "Content-Type: text/plain")
-        incoming_message = message_from_string(message_as_string)
+        incoming_message = message_from_string(message_as_string, policy=email.policy.default)
+        assert isinstance(incoming_message, EmailMessage)  # https://github.com/python/typeshed/issues/2417
 
         user_profile = self.example_user('hamlet')
         self.login_user(user_profile)
@@ -1255,7 +1278,8 @@ class TestContentTypeUnspecifiedCharset(ZulipTestCase):
 
 class TestEmailMirrorProcessMessageNoValidRecipient(ZulipTestCase):
     def test_process_message_no_valid_recipient(self) -> None:
-        incoming_valid_message = MIMEText('Test Body')
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content('Test Body')
         incoming_valid_message['Subject'] = "Test Subject"
         incoming_valid_message['From'] = self.example_email('hamlet')
         incoming_valid_message['To'] = "address@wrongdomain, address@notzulip"
@@ -1277,7 +1301,8 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
         address_parts = stream_to_address.split('@')
         scrubbed_address = 'X'*len(address_parts[0]) + '@' + address_parts[1]
 
-        incoming_valid_message = MIMEText('Test Body')
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content('Test Body')
         incoming_valid_message['Subject'] = "Test Subject"
         incoming_valid_message['From'] = self.example_email('hamlet')
         incoming_valid_message['To'] = stream_to_address
@@ -1304,7 +1329,8 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
     @mock.patch('zerver.lib.email_mirror.logger.error')
     def test_log_and_report_no_errorbot(self, mock_error: mock.MagicMock) -> None:
         with self.settings(ERROR_BOT=None):
-            incoming_valid_message = MIMEText('Test Body')
+            incoming_valid_message = EmailMessage()
+            incoming_valid_message.set_content('Test Body')
             incoming_valid_message['Subject'] = "Test Subject"
             incoming_valid_message['From'] = self.example_email('hamlet')
             log_and_report(incoming_valid_message, "test error message", None)

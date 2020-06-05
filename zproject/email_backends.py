@@ -1,8 +1,7 @@
 import configparser
 import logging
 import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+from email.message import EmailMessage
 from typing import List
 
 from django.conf import settings
@@ -35,7 +34,7 @@ class EmailLogBackEnd(BaseEmailBackend):
         from_email = email.from_email
         to = get_forward_address()
 
-        msg = MIMEMultipart('alternative')
+        msg = EmailMessage()
         msg['Subject'] = email.subject
         msg['From'] = from_email
         msg['To'] = to
@@ -50,13 +49,13 @@ class EmailLogBackEnd(BaseEmailBackend):
         czo_email_images_base_uri = 'https://chat.zulip.org/static/images/emails'
         html = html.replace(localhost_email_images_base_uri, czo_email_images_base_uri)
 
-        msg.attach(MIMEText(text, 'plain'))
-        msg.attach(MIMEText(html, 'html'))
+        msg.add_alternative(text, subtype="plain")
+        msg.add_alternative(html, subtype="html")
 
         smtp = smtplib.SMTP(settings.EMAIL_HOST)
         smtp.starttls()
         smtp.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
-        smtp.sendmail(from_email, to, msg.as_string())
+        smtp.send_message(msg)
         smtp.quit()
 
     def log_email(self, email: EmailMultiAlternatives) -> None:
