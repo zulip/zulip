@@ -153,19 +153,19 @@ Python allows datetime objects to not have an associated timezone, which can
 cause time-related bugs that are hard to catch with a test suite, or bugs
 that only show up during daylight savings time.
 
-Good ways to make timezone-aware datetimes are below. We import `timezone`
-functions as `from django.utils.timezone import now as timezone_now` and
-`from django.utils.timezone import utc as timezone_utc`.
+Good ways to make timezone-aware datetimes are below. We import timezone
+libraries as `from datetime import datetime, timezone` and `from
+django.utils.timezone import now as timezone_now`.
 
 Use:
 * `timezone_now()` to get a datetime when Django is available, such as
   in `zerver/`.
-* `datetime.now(tz=pytz.utc)` when Django is not available, such as
+* `datetime.now(tz=timezone.utc)` when Django is not available, such as
   for bots and scripts.
-* `datetime.fromtimestamp(timestamp, tz=timezone_utc)` if creating a
+* `datetime.fromtimestamp(timestamp, tz=timezone.utc)` if creating a
   datetime from a timestamp. This is also available as
   `zerver.lib.timestamp.timestamp_to_datetime`.
-* `datetime.strptime(date_string, format).replace(tzinfo=timezone_utc)` if
+* `datetime.strptime(date_string, format).replace(tzinfo=timezone.utc)` if
   creating a datetime from a formatted string that is in UTC.
 
 Idioms that result in timezone-naive datetimes, and should be avoided, are

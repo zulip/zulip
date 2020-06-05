@@ -2,12 +2,12 @@ import os
 import time
 from argparse import ArgumentParser
 from typing import Any, Dict
+from datetime import timezone
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import now as timezone_now
-from django.utils.timezone import utc as timezone_utc
 
 from analytics.lib.counts import COUNT_STATS, logger, process_count_stat
 from scripts.lib.zulip_tools import ENDC, WARNING
@@ -60,11 +60,11 @@ class Command(BaseCommand):
 
         fill_to_time = parse_datetime(options['time'])
         if options['utc']:
-            fill_to_time = fill_to_time.replace(tzinfo=timezone_utc)
+            fill_to_time = fill_to_time.replace(tzinfo=timezone.utc)
         if fill_to_time.tzinfo is None:
             raise ValueError("--time must be timezone aware. Maybe you meant to use the --utc option?")
 
-        fill_to_time = floor_to_hour(fill_to_time.astimezone(timezone_utc))
+        fill_to_time = floor_to_hour(fill_to_time.astimezone(timezone.utc))
 
         if options['stat'] is not None:
             stats = [COUNT_STATS[options['stat']]]

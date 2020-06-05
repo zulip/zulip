@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple, Type
 
 from unittest import mock
@@ -8,7 +8,6 @@ from django.db import models
 from django.db.models import Sum
 from django.test import TestCase
 from django.utils.timezone import now as timezone_now
-from django.utils.timezone import utc as timezone_utc
 
 from analytics.lib.counts import COUNT_STATS, CountStat, get_count_stats, \
     DependentCountStat, LoggingCountStat, do_aggregate_to_summary_table, \
@@ -33,7 +32,7 @@ class AnalyticsTestCase(TestCase):
     MINUTE = timedelta(seconds = 60)
     HOUR = MINUTE * 60
     DAY = HOUR * 24
-    TIME_ZERO = datetime(1988, 3, 14).replace(tzinfo=timezone_utc)
+    TIME_ZERO = datetime(1988, 3, 14, tzinfo=timezone.utc)
     TIME_LAST_HOUR = TIME_ZERO - HOUR
 
     def setUp(self) -> None:

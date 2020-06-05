@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from functools import wraps
 from unittest.mock import Mock, patch
@@ -14,7 +14,6 @@ import responses
 from django.core import signing
 from django.urls.resolvers import get_resolver
 from django.http import HttpResponse
-from django.utils.timezone import utc as timezone_utc
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
@@ -265,9 +264,9 @@ class StripeTestCase(ZulipTestCase):
         self.signed_seat_count, self.salt = sign_string(str(self.seat_count))
         # Choosing dates with corresponding timestamps below 1500000000 so that they are
         # not caught by our timestamp normalization regex in normalize_fixture_data
-        self.now = datetime(2012, 1, 2, 3, 4, 5).replace(tzinfo=timezone_utc)
-        self.next_month = datetime(2012, 2, 2, 3, 4, 5).replace(tzinfo=timezone_utc)
-        self.next_year = datetime(2013, 1, 2, 3, 4, 5).replace(tzinfo=timezone_utc)
+        self.now = datetime(2012, 1, 2, 3, 4, 5, tzinfo=timezone.utc)
+        self.next_month = datetime(2012, 2, 2, 3, 4, 5, tzinfo=timezone.utc)
+        self.next_year = datetime(2013, 1, 2, 3, 4, 5, tzinfo=timezone.utc)
 
     def get_signed_seat_count_from_response(self, response: HttpResponse) -> Optional[str]:
         match = re.search(r'name=\"signed_seat_count\" value=\"(.+)\"', response.content.decode("utf-8"))
@@ -1552,24 +1551,24 @@ class RequiresBillingAccessTest(ZulipTestCase):
 
 class BillingHelpersTest(ZulipTestCase):
     def test_next_month(self) -> None:
-        anchor = datetime(2019, 12, 31, 1, 2, 3).replace(tzinfo=timezone_utc)
+        anchor = datetime(2019, 12, 31, 1, 2, 3, tzinfo=timezone.utc)
         period_boundaries = [
             anchor,
-            datetime(2020, 1, 31, 1, 2, 3).replace(tzinfo=timezone_utc),
+            datetime(2020, 1, 31, 1, 2, 3, tzinfo=timezone.utc),
             # Test that this is the 28th even during leap years
-            datetime(2020, 2, 28, 1, 2, 3).replace(tzinfo=timezone_utc),
-            datetime(2020, 3, 31, 1, 2, 3).replace(tzinfo=timezone_utc),
-            datetime(2020, 4, 30, 1, 2, 3).replace(tzinfo=timezone_utc),
-            datetime(2020, 5, 31, 1, 2, 3).replace(tzinfo=timezone_utc),
-            datetime(2020, 6, 30, 1, 2, 3).replace(tzinfo=timezone_utc),
-            datetime(2020, 7, 31, 1, 2, 3).replace(tzinfo=timezone_utc),
-            datetime(2020, 8, 31, 1, 2, 3).replace(tzinfo=timezone_utc),
-            datetime(2020, 9, 30, 1, 2, 3).replace(tzinfo=timezone_utc),
-            datetime(2020, 10, 31, 1, 2, 3).replace(tzinfo=timezone_utc),
-            datetime(2020, 11, 30, 1, 2, 3).replace(tzinfo=timezone_utc),
-            datetime(2020, 12, 31, 1, 2, 3).replace(tzinfo=timezone_utc),
-            datetime(2021, 1, 31, 1, 2, 3).replace(tzinfo=timezone_utc),
-            datetime(2021, 2, 28, 1, 2, 3).replace(tzinfo=timezone_utc)]
+            datetime(2020, 2, 28, 1, 2, 3, tzinfo=timezone.utc),
+            datetime(2020, 3, 31, 1, 2, 3, tzinfo=timezone.utc),
+            datetime(2020, 4, 30, 1, 2, 3, tzinfo=timezone.utc),
+            datetime(2020, 5, 31, 1, 2, 3, tzinfo=timezone.utc),
+            datetime(2020, 6, 30, 1, 2, 3, tzinfo=timezone.utc),
+            datetime(2020, 7, 31, 1, 2, 3, tzinfo=timezone.utc),
+            datetime(2020, 8, 31, 1, 2, 3, tzinfo=timezone.utc),
+            datetime(2020, 9, 30, 1, 2, 3, tzinfo=timezone.utc),
+            datetime(2020, 10, 31, 1, 2, 3, tzinfo=timezone.utc),
+            datetime(2020, 11, 30, 1, 2, 3, tzinfo=timezone.utc),
+            datetime(2020, 12, 31, 1, 2, 3, tzinfo=timezone.utc),
+            datetime(2021, 1, 31, 1, 2, 3, tzinfo=timezone.utc),
+            datetime(2021, 2, 28, 1, 2, 3, tzinfo=timezone.utc)]
         with self.assertRaises(AssertionError):
             add_months(anchor, -1)
         # Explicitly test add_months for each value of MAX_DAY_FOR_MONTH and
@@ -1586,9 +1585,9 @@ class BillingHelpersTest(ZulipTestCase):
 
     def test_compute_plan_parameters(self) -> None:
         # TODO: test rounding down microseconds
-        anchor = datetime(2019, 12, 31, 1, 2, 3).replace(tzinfo=timezone_utc)
-        month_later = datetime(2020, 1, 31, 1, 2, 3).replace(tzinfo=timezone_utc)
-        year_later = datetime(2020, 12, 31, 1, 2, 3).replace(tzinfo=timezone_utc)
+        anchor = datetime(2019, 12, 31, 1, 2, 3, tzinfo=timezone.utc)
+        month_later = datetime(2020, 1, 31, 1, 2, 3, tzinfo=timezone.utc)
+        year_later = datetime(2020, 12, 31, 1, 2, 3, tzinfo=timezone.utc)
         test_cases = [
             # TODO test with Decimal(85), not 85
             # TODO fix the mypy error by specifying the exact type

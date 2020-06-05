@@ -4,7 +4,7 @@ import re
 import time
 import urllib
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 from typing import Any, Callable, Dict, List, \
@@ -18,7 +18,7 @@ from django.db.models.query import QuerySet
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
 from django.shortcuts import render
 from django.template import loader
-from django.utils.timezone import now as timezone_now, utc as timezone_utc
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 from django.utils.timesince import timesince
 from django.core.validators import URLValidator
@@ -253,7 +253,7 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
                 start = realm.date_created
         if end is None:
             end = max(last_successful_fill(stat.property) or
-                      datetime.min.replace(tzinfo=timezone_utc) for stat in stats)
+                      datetime.min.replace(tzinfo=timezone.utc) for stat in stats)
 
         if start > end and (timezone_now() - start > MAX_TIME_FOR_FULL_ANALYTICS_GENERATION):
             logging.warning("User from realm %s attempted to access /stats, but the computed "

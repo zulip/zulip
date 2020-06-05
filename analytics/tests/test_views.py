@@ -1,8 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
 from unittest import mock
-from django.utils.timezone import utc
 from django.http import HttpResponse
 import ujson
 from django.utils.timezone import now as timezone_now
@@ -607,8 +606,8 @@ class TestGetChartDataHelpers(ZulipTestCase):
     # the only function that uses it at the moment
     def test_last_successful_fill(self) -> None:
         self.assertIsNone(last_successful_fill('non-existant'))
-        a_time = datetime(2016, 3, 14, 19).replace(tzinfo=utc)
-        one_hour_before = datetime(2016, 3, 14, 18).replace(tzinfo=utc)
+        a_time = datetime(2016, 3, 14, 19, tzinfo=timezone.utc)
+        one_hour_before = datetime(2016, 3, 14, 18, tzinfo=timezone.utc)
         fillstate = FillState.objects.create(property='property', end_time=a_time,
                                              state=FillState.DONE)
         self.assertEqual(last_successful_fill('property'), a_time)
@@ -631,9 +630,9 @@ class TestTimeRange(ZulipTestCase):
         HOUR = timedelta(hours=1)
         DAY = timedelta(days=1)
 
-        a_time = datetime(2016, 3, 14, 22, 59).replace(tzinfo=utc)
-        floor_hour = datetime(2016, 3, 14, 22).replace(tzinfo=utc)
-        floor_day = datetime(2016, 3, 14).replace(tzinfo=utc)
+        a_time = datetime(2016, 3, 14, 22, 59, tzinfo=timezone.utc)
+        floor_hour = datetime(2016, 3, 14, 22, tzinfo=timezone.utc)
+        floor_day = datetime(2016, 3, 14, tzinfo=timezone.utc)
 
         # test start == end
         self.assertEqual(time_range(a_time, a_time, CountStat.HOUR, None), [])

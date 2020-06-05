@@ -2,14 +2,13 @@ import datetime
 from typing import Any, Dict
 
 from django.core.management.base import BaseCommand, CommandParser
-from django.utils.timezone import utc
 
 from zerver.lib.statistics import seconds_usage_between
 from zerver.models import UserProfile
 
 
 def analyze_activity(options: Dict[str, Any]) -> None:
-    day_start = datetime.datetime.strptime(options["date"], "%Y-%m-%d").replace(tzinfo=utc)
+    day_start = datetime.datetime.strptime(options["date"], "%Y-%m-%d").replace(tzinfo=datetime.timezone.utc)
     day_end = day_start + datetime.timedelta(days=options["duration"])
 
     user_profile_query = UserProfile.objects.all()
