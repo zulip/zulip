@@ -2,9 +2,10 @@ import datetime
 import hashlib
 import logging
 import os
+from email.headerregistry import Address
 from email.parser import Parser
 from email.policy import default
-from email.utils import formataddr, parseaddr
+from email.utils import parseaddr
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 import ujson
@@ -61,7 +62,7 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
     assert (to_user_ids is None) ^ (to_emails is None)
     if to_user_ids is not None:
         to_users = [get_user_profile_by_id(to_user_id) for to_user_id in to_user_ids]
-        to_emails = [formataddr((to_user.full_name, to_user.delivery_email)) for to_user in to_users]
+        to_emails = [str(Address(display_name=to_user.full_name, addr_spec=to_user.delivery_email)) for to_user in to_users]
 
     context = {
         **context,
@@ -107,7 +108,7 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
     if from_address == FromAddress.support_placeholder:
         from_address = FromAddress.SUPPORT
 
-    from_email = formataddr((from_name, from_address))
+    from_email = str(Address(display_name=from_name, addr_spec=from_address))
     reply_to = None
     if reply_to_email is not None:
         reply_to = [reply_to_email]

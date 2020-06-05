@@ -1,6 +1,6 @@
 import random
 import re
-from email.utils import formataddr
+from email.headerregistry import Address
 from typing import List, Sequence
 from unittest.mock import patch
 
@@ -230,11 +230,11 @@ class TestMissedMessages(ZulipTestCase):
             handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id, 'trigger': trigger}])
         if settings.EMAIL_GATEWAY_PATTERN != "":
             reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (t,) for t in tokens]
-            reply_to_emails = [formataddr(("Zulip", address)) for address in reply_to_addresses]
+            reply_to_emails = [str(Address(display_name="Zulip", addr_spec=address)) for address in reply_to_addresses]
         else:
             reply_to_emails = ["noreply@testserver"]
         msg = mail.outbox[0]
-        from_email = formataddr(("Zulip missed messages", FromAddress.NOREPLY))
+        from_email = str(Address(display_name="Zulip missed messages", addr_spec=FromAddress.NOREPLY))
         self.assertEqual(len(mail.outbox), 1)
         if send_as_user:
             from_email = f'"{othello.full_name}" <{othello.email}>'

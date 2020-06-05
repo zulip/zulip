@@ -1,6 +1,5 @@
 import datetime
 import re
-from email.utils import parseaddr
 from typing import Any, Dict, List, Mapping
 from unittest import mock
 
@@ -244,10 +243,10 @@ class RealmTest(ZulipTestCase):
         do_send_realm_reactivation_email(realm)
         from django.core.mail import outbox
         self.assertEqual(len(outbox), 1)
-        from_email = outbox[0].from_email
-        tokenized_no_reply_email = parseaddr(from_email)[1]
-        self.assertIn("Zulip Account Security", from_email)
-        self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
+        self.assertRegex(
+            outbox[0].from_email,
+            fr"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
+        )
         self.assertIn('Reactivate your Zulip organization', outbox[0].subject)
         self.assertIn('Dear former administrators', outbox[0].body)
         admins = realm.get_human_admin_users()

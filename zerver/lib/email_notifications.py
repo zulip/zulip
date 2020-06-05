@@ -1,7 +1,7 @@
 import re
 from collections import defaultdict
 from datetime import timedelta
-from email.utils import formataddr
+from email.headerregistry import Address
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import html2text
@@ -347,7 +347,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     from zerver.lib.email_mirror import create_missed_message_address
     reply_to_address = create_missed_message_address(user_profile, missed_messages[0]['message'])
     if reply_to_address == FromAddress.NOREPLY:
-        reply_to_name = None
+        reply_to_name = ""
     else:
         reply_to_name = "Zulip"
 
@@ -435,7 +435,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         'to_user_ids': [user_profile.id],
         'from_name': from_name,
         'from_address': from_address,
-        'reply_to_email': formataddr((reply_to_name, reply_to_address)),
+        'reply_to_email': str(Address(display_name=reply_to_name, addr_spec=reply_to_address)),
         'context': context}
     queue_json_publish("email_senders", email_dict)
 

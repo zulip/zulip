@@ -1,8 +1,6 @@
 import logging
 import re
-from email.header import decode_header, make_header
-from email.message import Message as EmailMessage
-from email.utils import getaddresses
+from email.message import EmailMessage
 from typing import Dict, List, Optional, Tuple
 
 from django.conf import settings
@@ -167,16 +165,10 @@ def construct_zulip_body(message: EmailMessage, realm: Realm, show_sender: bool=
         body = '(No email body)'
 
     if show_sender:
-        sender = handle_header_content(message.get("From", ""))
+        sender = str(message.get("From", ""))
         body = f"From: {sender}\n{body}"
 
     return body
-
-def handle_header_content(content: str) -> str:
-    """
-    Deals with converting encoded headers to readable python string.
-    """
-    return str(make_header(decode_header(content)))
 
 ## Sending the Zulip ##
 
@@ -280,11 +272,7 @@ def extract_and_upload_attachments(message: EmailMessage, realm: Realm) -> str:
     attachment_links = []
     for part in message.walk():
         content_type = part.get_content_type()
-        encoded_filename = part.get_filename()
-        if not encoded_filename:
-            continue
-
-        filename = handle_header_content(encoded_filename)
+        filename = part.get_filename()
         if filename:
             attachment = part.get_payload(decode=True)
             if isinstance(attachment, bytes):
@@ -320,13 +308,11 @@ def find_emailgateway_recipient(message: EmailMessage) -> str:
     pattern_parts = [re.escape(part) for part in settings.EMAIL_GATEWAY_PATTERN.split('%s')]
     match_email_re = re.compile(".*?".join(pattern_parts))
 
-    header_addresses = [str(addr)
-                        for recipient_header in recipient_headers
-                        for addr in message.get_all(recipient_header, [])]
-
-    for addr_tuple in getaddresses(header_addresses):
-        if match_email_re.match(addr_tuple[1]):
-            return addr_tuple[1]
+    for header_name in recipient_headers:
+        for header_value in message.get_all(header_name, []):
+            for addr in header_value.addresses:
+                if match_email_re.match(addr.addr_spec):
+                    return addr.addr_spec
 
     raise ZulipEmailForwardError("Missing recipient in mirror email")
 
@@ -344,7 +330,7 @@ def is_forwarded(subject: str) -> bool:
     return bool(re.match(reg, subject, flags=re.IGNORECASE))
 
 def process_stream_message(to: str, message: EmailMessage) -> None:
-    subject_header = handle_header_content(message.get("Subject", ""))
+    subject_header = message.get("Subject", "")
     subject = strip_from_subject(subject_header) or "(no topic)"
 
     stream, options = decode_stream_email_address(to)

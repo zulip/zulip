@@ -1,5 +1,5 @@
 import datetime
-from email.utils import parseaddr
+from email.headerregistry import Address
 from typing import Any, Dict, Iterable, List, Mapping, Optional, TypeVar, Union
 from unittest import mock
 
@@ -1250,8 +1250,13 @@ class ActivateTest(ZulipTestCase):
         from django.core.mail import outbox
         self.assertEqual(len(outbox), 1)
         for message in outbox:
-            to_fields = [parseaddr(to_field)[1] for to_field in message.to]
-            self.assertEqual({hamlet.delivery_email, iago.delivery_email}, set(to_fields))
+            self.assertEqual(
+                set(message.to),
+                {
+                    str(Address(display_name=hamlet.full_name, addr_spec=hamlet.delivery_email)),
+                    str(Address(display_name=iago.full_name, addr_spec=iago.delivery_email)),
+                },
+            )
         self.assertEqual(ScheduledEmail.objects.count(), 0)
 
 class RecipientInfoTest(ZulipTestCase):

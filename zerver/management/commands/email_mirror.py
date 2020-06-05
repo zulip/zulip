@@ -18,8 +18,9 @@ recipient address and retrieve, forward, and archive the message.
 
 """
 import email
+import email.policy
 import logging
-from email.message import Message
+from email.message import EmailMessage
 from imaplib import IMAP4_SSL
 from typing import Any, Generator
 
@@ -40,7 +41,7 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 
 
-def get_imap_messages() -> Generator[Message, None, None]:
+def get_imap_messages() -> Generator[EmailMessage, None, None]:
     mbox = IMAP4_SSL(settings.EMAIL_GATEWAY_IMAP_SERVER, settings.EMAIL_GATEWAY_IMAP_PORT)
     mbox.login(settings.EMAIL_GATEWAY_LOGIN, settings.EMAIL_GATEWAY_PASSWORD)
     try:
@@ -51,7 +52,8 @@ def get_imap_messages() -> Generator[Message, None, None]:
                 status, msg_data = mbox.fetch(message_id, '(RFC822)')
                 assert isinstance(msg_data[0], tuple)
                 msg_as_bytes = msg_data[0][1]
-                message = email.message_from_bytes(msg_as_bytes)
+                message = email.message_from_bytes(msg_as_bytes, policy=email.policy.default)
+                assert isinstance(message, EmailMessage)  # https://github.com/python/typeshed/issues/2417
                 yield message
                 mbox.store(message_id, '+FLAGS', '\\Deleted')
             mbox.expunge()
