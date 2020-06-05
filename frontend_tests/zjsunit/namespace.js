@@ -93,6 +93,7 @@ exports.with_overrides = function (test_function) {
 
     const clobber_callbacks = [];
 
+    const reuse_error = 'ATTEMPTED TO REUSE OVERRIDDEN VALUE FROM PRIOR TEST';
     const override = function (name, f) {
         const parts = name.split('.');
         const module = parts[0];
@@ -108,12 +109,24 @@ exports.with_overrides = function (test_function) {
             // If you get a failure from this, you probably just
             // need to have your test do its own overrides and
             // not cherry-pick off of the prior test's setup.
-            global[module][func_name] =
-                'ATTEMPTED TO REUSE OVERRIDDEN VALUE FROM PRIOR TEST';
+            global[module][func_name] = reuse_error;
         });
     };
 
-    test_function(override);
+    // To stub function of a module that is not in window
+    // namespace. The first param, module, is the test module itself
+    // that requires the module to be stubbed. For example,
+    //      rewire_override(reload, 'activity.some_func', f): will
+    //      override the activity.reload function in the reload module,
+    //      which should be the module the test are written for.
+    function rewire_override(mod, name, f) {
+        exports.mock_module(mod, name, f);
+        clobber_callbacks.push(() => {
+            exports.mock_module(mod, name, reuse_error);
+        });
+    }
+
+    test_function(override, rewire_override);
 
     for (const f of clobber_callbacks) {
         f();
