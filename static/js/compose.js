@@ -740,7 +740,7 @@ exports.handle_keyup = function (event, textarea) {
     rtl.set_rtl_class_for_textarea(textarea);
 };
 
-exports.needs_subscribe_warning = function (email) {
+exports.needs_subscribe_warning = function (user_id) {
     // This returns true if all of these conditions are met:
     //  * the user is valid
     //  * the stream in the compose box is valid
@@ -755,7 +755,7 @@ exports.needs_subscribe_warning = function (email) {
     //  We expect the caller to already have verified that we're
     //  sending to a stream and trying to mention the user.
 
-    const user = people.get_active_user_for_email(email);
+    const user = people.get_by_user_id(user_id);
     const stream_name = compose_state.stream_name();
 
     if (!stream_name) {
@@ -774,7 +774,7 @@ exports.needs_subscribe_warning = function (email) {
         return false;
     }
 
-    if (stream_data.is_user_subscribed(stream_name, user.user_id)) {
+    if (stream_data.is_user_subscribed(stream_name, user_id)) {
         // If our user is already subscribed
         return false;
     }
@@ -905,14 +905,13 @@ exports.warn_if_mentioning_unsubscribed_user = function (mentioned) {
         return;
     }
 
-    const email = mentioned.email;
     const user_id = mentioned.user_id;
 
     if (mentioned.is_broadcast) {
         return; // don't check if @all/@everyone/@stream
     }
 
-    if (exports.needs_subscribe_warning(email)) {
+    if (exports.needs_subscribe_warning(user_id)) {
         const error_area = $("#compose_invite_users");
         const existing_invites_area = $('#compose_invite_users .compose_invite_user');
 
