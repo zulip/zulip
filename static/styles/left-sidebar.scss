@@ -366,6 +366,7 @@ li.top_left_starred_messages {
         padding-right: 0.25em;
         display: inline-block;
         width: 13px;
+        vertical-align: middle;
     }
 
     /*
@@ -379,29 +380,35 @@ li.top_left_starred_messages {
 }
 
 /*
-    The All Messages and Stream chevrons are
+    The All Messages and Stream ellipsis-v(vertical 3 dots) are
     pretty similar.
 */
 .all-messages-sidebar-menu-icon,
 .starred-messages-sidebar-menu-icon,
 .stream-sidebar-menu-icon {
-    top: 3px;
-    font-size: 0.8em;
+    top: 1px;
+    right: 0px;
+    font-size: 1.0em;
+    text-align: center;
+    padding: 0px 6px 0px 6px;
 }
 
 /*
-    For topic chevrons we use a slightly smaller
+    For topic ellipsis-v(vertical 3 dots) we use a slightly smaller
     font to show they're "lower" in the hierarchy,
     which also affects it positioning.
 */
 .topic-sidebar-menu-icon {
-    top: 1px;
-    font-size: 0.7em;
+    top: 0px;
+    right: 0px;
+    font-size: 0.9em;
+    text-align: center;
+    padding: 1px 6px 0px 6px;
 }
 
 /*
     When you hover over list items, we hover
-    the relevant chevrons in light gray.
+    the relevant ellipsis-v(vertical 3 dots) in light gray.
 */
 li.top_left_all_messages:hover .all-messages-sidebar-menu-icon,
 li.top_left_starred_messages:hover .starred-messages-sidebar-menu-icon,
