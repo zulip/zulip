@@ -45,7 +45,7 @@
     <td class="actions">
         <span class="user-status-settings">
             {{#if is_active}}
-            <button title="{{t 'Deactivate' }}" class="button rounded small deactivate btn-danger" {{#if is_current_user}}disabled="disabled"{{/if}}>
+            <button title="{{t 'Deactivate' }}" class="button rounded small deactivate btn-danger" {{#if cannot_deactivate}}disabled="disabled"{{/if}}>
                 <i class="fa fa-user-times" aria-hidden="true"></i>
             </button>
             {{else}}
