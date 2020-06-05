@@ -62,9 +62,9 @@ exports.same_stream_and_topic = function util_same_stream_and_topic(a, b) {
         lower_same(a.topic, b.topic);
 };
 
-exports.is_pm_recipient = function (email, message) {
-    const recipients = message.reply_to.toLowerCase().split(',');
-    return recipients.includes(email.toLowerCase());
+exports.is_pm_recipient = function (user_id, message) {
+    const recipients = message.to_user_ids.split(',');
+    return recipients.includes(user_id.toString());
 };
 
 exports.extract_pm_recipients = function (recipients) {

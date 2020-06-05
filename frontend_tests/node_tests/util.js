@@ -34,10 +34,10 @@ run_test('extract_pm_recipients', () => {
 });
 
 run_test('is_pm_recipient', () => {
-    const message = { reply_to: 'alice@example.com,bOb@exaMple.com,fred@example.com' };
-    assert(util.is_pm_recipient('alice@example.com', message));
-    assert(util.is_pm_recipient('bob@example.com', message));
-    assert(!util.is_pm_recipient('unknown@example.com', message));
+    const message = { to_user_ids: '31,32,33' };
+    assert(util.is_pm_recipient(31, message));
+    assert(util.is_pm_recipient(32, message));
+    assert(!util.is_pm_recipient(34, message));
 });
 
 run_test('lower_bound', () => {

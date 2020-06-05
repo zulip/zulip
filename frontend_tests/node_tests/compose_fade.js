@@ -55,10 +55,9 @@ run_test('set_focused_recipient', () => {
 
     compose_fade.set_focused_recipient('stream');
 
-    assert.equal(compose_fade.would_receive_message('me@example.com'), true);
-    assert.equal(compose_fade.would_receive_message('alice@example.com'), true);
-    assert.equal(compose_fade.would_receive_message('bob@example.com'), false);
-    assert.equal(compose_fade.would_receive_message('nonrealmuser@example.com'), true);
+    assert.equal(compose_fade.would_receive_message(me.user_id), true);
+    assert.equal(compose_fade.would_receive_message(alice.user_id), true);
+    assert.equal(compose_fade.would_receive_message(bob.user_id), false);
 
     const good_msg = {
         type: 'stream',
