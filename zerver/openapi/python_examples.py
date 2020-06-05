@@ -66,11 +66,12 @@ def add_subscriptions(client: Client) -> None:
     # {code_example|start}
     # To subscribe another user to a stream, you may pass in
     # the `principals` argument, like so:
+    user_id = 25
     result = client.add_subscriptions(
         streams=[
             {'name': 'new stream', 'description': 'New stream for testing'}
         ],
-        principals=['newbie@zulip.com']
+        principals=[user_id]
     )
     # {code_example|end}
     assert result['result'] == 'success'
