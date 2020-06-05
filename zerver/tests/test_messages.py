@@ -3512,12 +3512,14 @@ class EditMessageTest(ZulipTestCase):
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test")
 
-        result = self.client_patch("/json/messages/" + str(msg_id), {
-            'message_id': msg_id,
-            'stream_id': new_stream.id,
-            'propagate_mode': 'change_all',
-            'topic': 'new topic'
-        })
+        with queries_captured() as queries:
+            result = self.client_patch("/json/messages/" + str(msg_id), {
+                'message_id': msg_id,
+                'stream_id': new_stream.id,
+                'propagate_mode': 'change_all',
+                'topic': 'new topic'
+            })
+        self.assertEqual(len(queries), 54)
 
         messages = get_topic_messages(user_profile, old_stream, "test")
         self.assertEqual(len(messages), 1)
