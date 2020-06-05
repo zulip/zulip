@@ -17,7 +17,6 @@ from django.http import HttpResponse
 from django.db import transaction
 from django.db.models import F
 from django.utils.crypto import get_random_string
-from django.utils.timezone import utc as timezone_utc
 
 from analytics.lib.counts import CountStat, LoggingCountStat
 from analytics.models import InstallationCount, RealmCount
@@ -383,7 +382,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         self.assertEqual(len(tokens), 0)
 
 class AnalyticsBouncerTest(BouncerTestCase):
-    TIME_ZERO = datetime.datetime(1988, 3, 14).replace(tzinfo=timezone_utc)
+    TIME_ZERO = datetime.datetime(1988, 3, 14, tzinfo=datetime.timezone.utc)
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
     @mock.patch('zerver.lib.remote_server.requests.request')

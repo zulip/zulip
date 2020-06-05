@@ -15,10 +15,7 @@ class zulip::postgres_common {
         # Postgres Nagios check plugin
         'check-postgres',
         # Python modules used in our monitoring/worker threads
-        'python3-tz', # TODO: use a virtualenv instead
-        'python-tz', # TODO: use a virtualenv instead
         'python3-dateutil', # TODO: use a virtualenv instead
-        'python-dateutil', # TODO: use a virtualenv instead
       ]
       $postgres_user_reqs = [
         Package[$postgresql],
@@ -39,12 +36,8 @@ class zulip::postgres_common {
         # https://bucardo.org/check_postgres/
         # 'check-postgres',  # TODO
       ]
-      exec {'pip2_deps':
-        # Python modules used in our monitoring/worker threads
-        command => '/usr/bin/pip2 install pytz python-dateutil'
-      }
       exec {'pip3_deps':
-        command => 'python3 -m pip install pytz python-dateutil'
+        command => 'python3 -m pip install python-dateutil'
       }
       group { 'ssl-cert':
         ensure => present,

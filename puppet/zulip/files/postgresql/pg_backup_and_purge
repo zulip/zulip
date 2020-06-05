@@ -7,9 +7,8 @@ import shlex
 import subprocess
 import logging
 import dateutil.parser
-import pytz
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List
 
 logging.Formatter.converter = time.gmtime
@@ -48,7 +47,7 @@ if len(pg_data_paths) != 1:
 pg_data_path = pg_data_paths[0]
 run(['env-wal-e', 'backup-push', pg_data_path])
 
-now = datetime.now(tz=pytz.utc)
+now = datetime.now(tz=timezone.utc)
 with open('/var/lib/nagios_state/last_postgres_backup', 'w') as f:
     f.write(now.isoformat())
     f.write("\n")

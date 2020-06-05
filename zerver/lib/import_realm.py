@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 from django.db import connection
 from django.db.models import Max
-from django.utils.timezone import utc as timezone_utc, now as timezone_now
+from django.utils.timezone import now as timezone_now
 from typing import Any, Dict, List, Optional, Set, Tuple, \
     Iterable, cast
 
@@ -109,7 +109,7 @@ def fix_datetime_fields(data: TableData, table: TableName) -> None:
     for item in data[table]:
         for field_name in DATE_FIELDS[table]:
             if item[field_name] is not None:
-                item[field_name] = datetime.datetime.fromtimestamp(item[field_name], tz=timezone_utc)
+                item[field_name] = datetime.datetime.fromtimestamp(item[field_name], tz=datetime.timezone.utc)
 
 def fix_upload_links(data: TableData, message_table: TableName) -> None:
     """

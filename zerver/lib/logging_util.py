@@ -1,14 +1,13 @@
 # System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
 
 from django.utils.timezone import now as timezone_now
-from django.utils.timezone import utc as timezone_utc
 
 import hashlib
 import logging
 import threading
 import traceback
 from typing import Optional, Tuple
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from django.conf import settings
 from django.core.cache import cache
 from logging import Logger
@@ -28,7 +27,7 @@ class _RateLimitFilter:
     Adapted from https://djangosnippets.org/snippets/2242/.
 
     """
-    last_error = datetime.min.replace(tzinfo=timezone_utc)
+    last_error = datetime.min.replace(tzinfo=timezone.utc)
     # This thread-local variable is used to detect recursive
     # exceptions during exception handling (primarily intended for
     # when accessing the shared cache throws an exception).

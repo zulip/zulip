@@ -3,7 +3,6 @@ from typing import Any, Dict, List, Set, Tuple, Union
 from collections import defaultdict
 import datetime
 import logging
-import pytz
 
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
@@ -168,7 +167,7 @@ def handle_digest_email(user_profile_id: int, cutoff: float,
     user_profile = get_user_profile_by_id(user_profile_id)
 
     # Convert from epoch seconds to a datetime object.
-    cutoff_date = datetime.datetime.fromtimestamp(int(cutoff), tz=pytz.utc)
+    cutoff_date = datetime.datetime.fromtimestamp(int(cutoff), tz=datetime.timezone.utc)
 
     context = common_context(user_profile)
 

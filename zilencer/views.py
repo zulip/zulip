@@ -7,7 +7,6 @@ from django.core.validators import validate_email, URLValidator
 from django.db import IntegrityError, transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
-from django.utils.timezone import utc as timezone_utc
 from django.utils.translation import ugettext as _, ugettext as err_
 from django.views.decorators.csrf import csrf_exempt
 
@@ -224,7 +223,7 @@ def remote_server_post_analytics(request: HttpRequest,
         realm_id=row['realm'],
         remote_id=row['id'],
         server=server,
-        end_time=datetime.datetime.fromtimestamp(row['end_time'], tz=timezone_utc),
+        end_time=datetime.datetime.fromtimestamp(row['end_time'], tz=datetime.timezone.utc),
         subgroup=row['subgroup'],
         value=row['value']) for row in realm_counts]
     batch_create_table_data(server, RemoteRealmCount, row_objects)
@@ -233,7 +232,7 @@ def remote_server_post_analytics(request: HttpRequest,
         property=row['property'],
         remote_id=row['id'],
         server=server,
-        end_time=datetime.datetime.fromtimestamp(row['end_time'], tz=timezone_utc),
+        end_time=datetime.datetime.fromtimestamp(row['end_time'], tz=datetime.timezone.utc),
         subgroup=row['subgroup'],
         value=row['value']) for row in installation_counts]
     batch_create_table_data(server, RemoteInstallationCount, row_objects)
@@ -243,7 +242,7 @@ def remote_server_post_analytics(request: HttpRequest,
             realm_id=row['realm'],
             remote_id=row['id'],
             server=server,
-            event_time=datetime.datetime.fromtimestamp(row['event_time'], tz=timezone_utc),
+            event_time=datetime.datetime.fromtimestamp(row['event_time'], tz=datetime.timezone.utc),
             backfilled=row['backfilled'],
             extra_data=row['extra_data'],
             event_type=row['event_type']) for row in realmauditlog_rows]
