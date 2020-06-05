@@ -25,7 +25,8 @@ rules:
     languages: [python]
     severity: ERROR
     paths:
-      - directory: "zerver/views/"
+      include:
+        - zerver/views/
 
   - id: dont-import-models-in-migrations
     patterns:
@@ -42,13 +43,15 @@ rules:
     languages: [python]
     severity: ERROR
     paths:
-      - directory: "**/migrations"
-      - path-not: 'zerver/migrations/0032_verify_all_medium_avatar_images.py'
-      - path-not: 'zerver/migrations/0104_fix_unreads.py'
-      - path-not: 'zerver/migrations/0206_stream_rendered_description.py'
-      - path-not: 'zerver/migrations/0209_user_profile_no_empty_password.py'
-      - path-not: 'zerver/migrations/0260_missed_message_addresses_from_redis_to_db.py'
-      - path-not: 'pgroonga/migrations/0002_html_escape_subject.py'
+      include:
+        - "**/migrations"
+      exclude:
+        - zerver/migrations/0032_verify_all_medium_avatar_images.py
+        - zerver/migrations/0104_fix_unreads.py
+        - zerver/migrations/0206_stream_rendered_description.py
+        - zerver/migrations/0209_user_profile_no_empty_password.py
+        - zerver/migrations/0260_missed_message_addresses_from_redis_to_db.py
+        - pgroonga/migrations/0002_html_escape_subject.py
 
   - id: logging-format
     languages: [python]
