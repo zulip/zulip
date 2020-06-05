@@ -1,8 +1,9 @@
+import base64
 import email
 import email.policy
 import os
 from email.message import EmailMessage
-from typing import Dict, Optional
+from typing import Optional
 
 import ujson
 from django.conf import settings
@@ -70,10 +71,10 @@ Example:
         message = self._parse_email_fixture(full_fixture_path)
         self._prepare_message(message, realm, stream)
 
-        data: Dict[str, str] = {}
-        data['recipient'] = message['To'].addresses[0].addr_spec
-        data['msg_text'] = message.as_string()
-        mirror_email_message(data)
+        mirror_email_message(
+            message['To'].addresses[0].addr_spec,
+            base64.b64encode(message.as_bytes()).decode(),
+        )
 
     def _does_fixture_path_exist(self, fixture_path: str) -> bool:
         return os.path.exists(fixture_path)

@@ -421,8 +421,7 @@ def validate_to_address(rcpt_to: str) -> None:
     else:
         decode_stream_email_address(rcpt_to)
 
-def mirror_email_message(data: Dict[str, str]) -> Dict[str, str]:
-    rcpt_to = data['recipient']
+def mirror_email_message(rcpt_to: str, msg_base64: str) -> Dict[str, str]:
     try:
         validate_to_address(rcpt_to)
     except ZulipEmailForwardError as e:
@@ -434,8 +433,8 @@ def mirror_email_message(data: Dict[str, str]) -> Dict[str, str]:
     queue_json_publish(
         "email_mirror",
         {
-            "message": data['msg_text'],
             "rcpt_to": rcpt_to,
+            "msg_base64": msg_base64,
         },
     )
     return {"status": "success"}

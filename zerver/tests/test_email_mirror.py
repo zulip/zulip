@@ -1,3 +1,4 @@
+import base64
 import email.policy
 import os
 import subprocess
@@ -1148,26 +1149,24 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
                              mock_queue_json_publish: mock.Mock) -> HttpResponse:
         mail_template = self.fixture_data('simple.txt', type='email')
         mail = mail_template.format(stream_to_address=to_address, sender=sender.delivery_email)
+        msg_base64 = base64.b64encode(mail.encode()).decode()
 
         def check_queue_json_publish(queue_name: str,
                                      event: Mapping[str, Any],
                                      processor: Optional[Callable[[Any], None]]=None) -> None:
             self.assertEqual(queue_name, "email_mirror")
-            self.assertEqual(event, {"rcpt_to": to_address, "message": mail})
+            self.assertEqual(event, {"rcpt_to": to_address, "msg_base64": msg_base64})
             MirrorWorker().consume(event)
 
             self.assertEqual(self.get_last_message().content,
                              "This is a plain-text message for testing Zulip.")
 
         mock_queue_json_publish.side_effect = check_queue_json_publish
-        request_data = {
-            "recipient": to_address,
-            "msg_text": mail,
+        post_data = {
+            "rcpt_to": to_address,
+            "msg_base64": msg_base64,
+            "secret": settings.SHARED_SECRET,
         }
-        post_data = dict(
-            data=ujson.dumps(request_data),
-            secret=settings.SHARED_SECRET,
-        )
         return self.client_post('/email_mirror_message', post_data)
 
     def test_success_stream(self) -> None:
