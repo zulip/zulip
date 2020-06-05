@@ -60,6 +60,19 @@ def principal_to_user_profile(agent: UserProfile, principal: Union[str, int]) ->
         # principal to maybe give a better error message
         raise PrincipalError(principal)
 
+def check_if_removing_someone_else(user_profile: UserProfile,
+                                   principals: Optional[Union[List[str], List[int]]]) -> bool:
+    if principals is None or len(principals) == 0:
+        return False
+
+    if len(principals) > 1:
+        return True
+
+    if isinstance(principals[0], int):
+        return principals[0] != user_profile.id
+    else:
+        return principals[0] != user_profile.email
+
 @require_realm_admin
 def deactivate_stream_backend(request: HttpRequest,
                               user_profile: UserProfile,
@@ -256,16 +269,7 @@ def remove_subscriptions_backend(
             check_list(check_string), check_list(check_int)]), default=None),
 ) -> HttpResponse:
 
-    # TODO: Extract this as a function to improve readability
-    removing_someone_else = False
-    if principals is not None and len(principals) > 0:
-        if len(principals) == 1:
-            if isinstance(principals[0], int):
-                removing_someone_else = principals[0] != user_profile.id
-            else:
-                removing_someone_else = principals[0] != user_profile.email
-        else:
-            removing_someone_else = True
+    removing_someone_else = check_if_removing_someone_else(user_profile, principals)
 
     if removing_someone_else and not user_profile.is_realm_admin:
         # You can only unsubscribe other people from a stream if you are a realm
