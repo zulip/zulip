@@ -1065,7 +1065,7 @@ run_test('trigger_submit_compose_form', () => {
 });
 
 run_test('needs_subscribe_warning', () => {
-    people.get_active_user_for_email = function () {
+    people.get_by_user_id = function () {
         return;
     };
 
@@ -1082,17 +1082,15 @@ run_test('needs_subscribe_warning', () => {
     stream_data.add_sub(sub);
     assert.equal(compose.needs_subscribe_warning(), false);
 
-    people.get_active_user_for_email = function () {
+    people.get_by_user_id = function () {
         return {
-            user_id: 99,
             is_bot: true,
         };
     };
     assert.equal(compose.needs_subscribe_warning(), false);
 
-    people.get_active_user_for_email = function () {
+    people.get_by_user_id = function () {
         return {
-            user_id: 99,
             is_bot: false,
         };
     };
@@ -1136,9 +1134,9 @@ run_test('warn_if_mentioning_unsubscribed_user', () => {
     const checks = [
         (function () {
             let called;
-            compose.needs_subscribe_warning = function (email) {
+            compose.needs_subscribe_warning = function (user_id) {
                 called = true;
-                assert.equal(email, 'foo@bar.com');
+                assert.equal(user_id, 34);
                 return true;
             };
             return function () { assert(called); };
