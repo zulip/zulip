@@ -1,6 +1,6 @@
 const path = require('path');
 const puppeteer = require('puppeteer');
-const assert = require("assert");
+const assert = require("assert").strict;
 
 class CommonUtils {
     constructor() {
