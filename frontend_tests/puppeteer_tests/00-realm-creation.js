@@ -1,5 +1,5 @@
 const common = require('../puppeteer_lib/common');
-const assert = require("assert");
+const assert = require("assert").strict;
 
 const email = 'alice@test.example.com';
 const subdomain = 'testsubdomain';
