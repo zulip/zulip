@@ -314,7 +314,6 @@ function stream_is_muted_clicked(e) {
 }
 
 function submit_subscriber_form(e) {
-    e.preventDefault();
     const settings_row = $(e.target).closest('.subscription_settings');
     const sub = get_sub_for_target(settings_row);
     if (!sub) {
@@ -323,6 +322,10 @@ function submit_subscriber_form(e) {
     }
 
     const user_ids = user_pill.get_user_ids(exports.pill_widget);
+    if (user_ids.length === 0) {
+        return;
+    }
+
     const emails = user_ids.map(user_id => {
         const person = people.get_by_user_id(user_id);
         return person.email;
@@ -588,8 +591,18 @@ exports.initialize = function () {
     $("#subscriptions_table").on("click", ".sub_setting_checkbox",
                                  exports.stream_setting_clicked);
 
-    $("#subscriptions_table").on("submit", ".subscriber_list_add form",
-                                 submit_subscriber_form);
+    $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
+        if ($(this).find('.input').text().length === 0) {
+            submit_subscriber_form(e);
+            e.preventDefault();
+        }
+    });
+
+    $("#subscriptions_table").on("keydown", ".subscriber_list_add form", function (e) {
+        if (e.keyCode === 13 && $(this).find('.input').text().length === 0) {
+            submit_subscriber_form(e);
+        }
+    });
 
     $("#subscriptions_table").on("submit", ".subscriber_list_remove form", function (e) {
         e.preventDefault();
