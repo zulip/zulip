@@ -83,7 +83,7 @@ zrequire('buddy_list');
 zrequire('user_search');
 zrequire('user_status');
 zrequire('list_cursor');
-zrequire('activity');
+const activity = zrequire('activity');
 
 const me = {
     email: 'me@zulip.com',

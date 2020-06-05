@@ -7,7 +7,7 @@ set_global('page_params', {
 set_global('$', function () {
 });
 
-set_global('document', null);
+set_global('document', {});
 global.stub_out_jquery();
 
 zrequire('color_data');

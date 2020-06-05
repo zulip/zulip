@@ -871,12 +871,12 @@ with_overrides(function (override) {
     });
 });
 
-with_overrides(function (override) {
+with_overrides(function (override, rewire_override) {
     // presence
     const event = event_fixtures.presence;
 
     global.with_stub(function (stub) {
-        override('activity.update_presence_info', stub.f);
+        rewire_override(server_events_dispatch, 'activity.update_presence_info', stub.f);
         dispatch(event);
         const args = stub.get_args('user_id', 'presence', 'server_time');
         assert_same(args.user_id, event.user_id);
@@ -1536,11 +1536,11 @@ with_overrides(function (override) {
     });
 });
 
-with_overrides(function (override) {
+with_overrides(function (override, rewire_override) {
     // attachments
     let event = event_fixtures.user_status__set_away;
     global.with_stub(function (stub) {
-        override('activity.on_set_away', stub.f);
+        rewire_override(server_events_dispatch, 'activity.on_set_away', stub.f);
         dispatch(event);
         const args = stub.get_args('user_id');
         assert_same(args.user_id, 55);
@@ -1548,7 +1548,7 @@ with_overrides(function (override) {
 
     event = event_fixtures.user_status__revoke_away;
     global.with_stub(function (stub) {
-        override('activity.on_revoke_away', stub.f);
+        rewire_override(server_events_dispatch, 'activity.on_revoke_away', stub.f);
         dispatch(event);
         const args = stub.get_args('user_id');
         assert_same(args.user_id, 63);
@@ -1556,7 +1556,7 @@ with_overrides(function (override) {
 
     event = event_fixtures.user_status__set_status_text;
     global.with_stub(function (stub) {
-        override('activity.redraw_user', stub.f);
+        rewire_override(server_events_dispatch, 'activity.redraw_user', stub.f);
         dispatch(event);
         const args = stub.get_args('user_id');
         assert_same(args.user_id, test_user.user_id);

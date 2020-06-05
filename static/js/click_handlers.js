@@ -1,9 +1,10 @@
 const util = require("./util");
-// You won't find every click handler here, but it's a good place to start!
+const activity = require('./activity');
 
 const render_buddy_list_tooltip = require('../templates/buddy_list_tooltip.hbs');
 const render_buddy_list_tooltip_content = require('../templates/buddy_list_tooltip_content.hbs');
 
+// You won't find every click handler here, but it's a good place to start!
 exports.initialize = function () {
 
     // MESSAGE CLICKING

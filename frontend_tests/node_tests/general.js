@@ -178,7 +178,14 @@ run_test('filter', () => {
 
 // We have a "narrow" abstraction that sits roughly on top of the
 // "filter" abstraction.  If you are in a narrow, we track the
-// state with the narrow_state module.
+// state with the narrow_state module. We also call set_global method
+// to set document to {} which is used by activity.js imported in narrow_state
+// module and stub get_filter_text method on it because it's irrelvant for our
+// tests.
+
+set_global('document', {});
+const activity = zrequire('activity');
+activity.get_filter_text = () => {};
 
 zrequire('narrow_state');
 

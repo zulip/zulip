@@ -1,11 +1,12 @@
 set_global('$', global.make_zjquery());
+set_global('document', {});
 
 zrequire('people');
 const settings_config = zrequire('settings_config');
 zrequire('user_events');
 
-set_global('activity', {
-    redraw: function () {},
+mock_module(user_events, 'activity', {
+    redraw: () => {},
 });
 
 set_global('settings_linkifiers', {

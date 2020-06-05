@@ -6,7 +6,7 @@ const noop = function () {};
 
 set_global('Filter', noop);
 global.stub_out_jquery();
-set_global('document', null);
+set_global('document', {});
 
 zrequire('FetchStatus', 'js/fetch_status');
 zrequire('muting');

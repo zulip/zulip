@@ -34,7 +34,6 @@ set_global('resize', {});
 set_global('page_params', {});
 
 const ignore_modules = [
-    'activity',
     'click_handlers',
     'compose_pm_pill',
     'copy_and_paste',
@@ -62,10 +61,19 @@ const ignore_modules = [
     'unread_ui',
 ];
 
+// The module to ignore that do not depend on window.
+const ignore_modules_rewire = [
+    'activity',
+];
+
 for (const mod of ignore_modules) {
     set_global(mod, {
         initialize: () => {},
     });
+}
+
+for (const mod of ignore_modules_rewire) {
+    zrequire(mod).initialize = () => {};
 }
 
 emoji.emojis_by_name = new Map();

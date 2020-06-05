@@ -1,4 +1,6 @@
 const util = require("./util");
+const activity = require('./activity');
+
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
 function preserve_state(send_after_reload, save_pointer, save_narrow, save_compose) {
     if (!localstorage.supported()) {

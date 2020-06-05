@@ -1,4 +1,5 @@
 set_global('$', global.make_zjquery());
+set_global('document', {});
 
 zrequire('Filter', 'js/filter');
 zrequire('unread_ui');

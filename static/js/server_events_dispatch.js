@@ -1,3 +1,5 @@
+const activity = require('./activity');
+
 exports.dispatch_normal_event = function dispatch_normal_event(event) {
     const noop = function () {};
     switch (event.type) {

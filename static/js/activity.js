@@ -342,4 +342,3 @@ exports.get_filter_text = function () {
     return exports.user_filter.text();
 };
 
-window.activity = exports;
