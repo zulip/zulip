@@ -651,27 +651,6 @@ td.pointer {
     transition: background-color 1.5s ease-in, color 1.5s ease-in;
 }
 
-#message-edit-history {
-    .message_time {
-        position: static;
-    }
-
-    .message_author {
-        position: relative;
-    }
-
-    .author_details {
-        display: block;
-        font-size: 12px;
-        padding: 1px;
-        text-align: right;
-    }
-
-    .messagebox-content {
-        padding: 0px 10px;
-    }
-}
-
 /* The way this overrides the menus with a background-color and a high
    z-index is kinda hacky, and requires some annoying color-matching,
    but it works. */
