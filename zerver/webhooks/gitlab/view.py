@@ -282,7 +282,12 @@ def get_pipeline_event_body(payload: Dict[str, Any]) -> str:
             build.get('status'),
             artifact_string
         )
-    return "[Pipeline]({}) {} with build(s):\n{}.".format(pipeline_url, action, builds_status[:-1])
+    return "[Pipeline ({})]({}) {} with build(s):\n{}.".format(
+        payload['object_attributes'].get('id'),
+        pipeline_url,
+        action,
+        builds_status[:-1]
+    )
 
 def get_repo_name(payload: Dict[str, Any]) -> str:
     if 'project' in payload:
