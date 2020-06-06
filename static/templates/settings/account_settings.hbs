@@ -167,7 +167,7 @@
                         {{t 'Delete profile picture' }}
                     </span>
                     <object id="user-avatar-spinner" type="image/svg+xml" data="/static/images/tail-spin.svg"></object>
-                    <span id="user_avatar_upload_button" aria-label="{{t 'Upload new profile picture'}}" role="button" tabindex="0"
+                    <span id="user_avatar_upload_button" class="settings-page-upload-text" aria-label="{{t 'Upload new profile picture'}}" role="button" tabindex="0"
                       {{#if (and (not page_params.is_admin) page_params.realm_avatar_changes_disabled)}}style="display:none"{{/if}}>
                         {{t 'Upload new profile picture' }}
                     </span>
