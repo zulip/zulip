@@ -1,6 +1,7 @@
 const path = require('path');
 const puppeteer = require('puppeteer');
 const assert = require("assert").strict;
+const test_credentials = require('../../var/casper/test_credentials.js').test_credentials;
 
 class CommonUtils {
     constructor() {
@@ -79,10 +80,13 @@ class CommonUtils {
         }
     }
 
-    async log_in(page, credentials) {
+    async log_in(page, credentials = null) {
         console.log("Logging in");
         await page.goto(this.realm_url + 'login/');
         assert.equal(this.realm_url + 'login/', page.url());
+        if (credentials === null) {
+            credentials = test_credentials.default_user;
+        }
         // fill login form
         const params = {
             username: credentials.username,
