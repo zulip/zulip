@@ -717,6 +717,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
         audible_notifications: page_params.enable_stream_audible_notifications,
         push_notifications: page_params.enable_stream_push_notifications,
         email_notifications: page_params.enable_stream_email_notifications,
+        wildcard_mentions_notify: page_params.wildcard_mentions_notify,
         description: '',
         rendered_description: '',
         first_message_id: attrs.first_message_id,
