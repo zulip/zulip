@@ -6,7 +6,7 @@ exports.fetch_and_render_message_history = function (message) {
         data: {message_id: JSON.stringify(message.id)},
         success: function (data) {
             const content_edit_history = [];
-            let prev_timestamp;
+            let prev_timestamp = null;
 
             for (const [index, msg] of data.message_history.entries()) {
                 // Format timestamp nicely for display
@@ -23,7 +23,8 @@ exports.fetch_and_render_message_history = function (message) {
                 if (index === 0) {
                     item.posted_or_edited = "Posted by";
                     item.body_to_render = msg.rendered_content;
-                    item.show_date_row = true;
+                    // This will always be true because of `prev_timestamp = null` above.
+                    item.show_date_row = !moment(timestamp).isSame(prev_timestamp, 'day');
                 } else if (msg.prev_topic && msg.prev_content) {
                     item.posted_or_edited = "Edited by";
                     item.body_to_render = msg.content_html_diff;
