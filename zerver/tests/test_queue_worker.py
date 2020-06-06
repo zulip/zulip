@@ -58,8 +58,7 @@ class WorkerTest(ZulipTestCase):
                 callback(data)
             self.queue = []
 
-        def drain_queue(self, queue_name: str, json: bool) -> List[Event]:
-            assert json
+        def json_drain_queue(self, queue_name: str) -> List[Event]:
             events = [
                 dct
                 for (queue_name, dct)

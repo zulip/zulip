@@ -22,18 +22,17 @@ class TestQueueImplementation(ZulipTestCase):
     @override_settings(USING_RABBITMQ=True)
     def test_queue_basics(self) -> None:
         queue_client = get_queue_client()
-        queue_client.publish("test_suite", 'test_event')
+        queue_client.publish("test_suite", b"test_event\x00\xff")
 
         result = queue_client.drain_queue("test_suite")
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0], b'test_event')
+        self.assertEqual(result, [b"test_event\x00\xff"])
 
     @override_settings(USING_RABBITMQ=True)
     def test_queue_basics_json(self) -> None:
         queue_json_publish("test_suite", {"event": "my_event"})
 
         queue_client = get_queue_client()
-        result = queue_client.drain_queue("test_suite", json=True)
+        result = queue_client.json_drain_queue("test_suite")
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]['event'], 'my_event')
 
@@ -102,7 +101,7 @@ class TestQueueImplementation(ZulipTestCase):
                         throw_connection_error_once):
             queue_json_publish("test_suite", {"event": "my_event"})
 
-        result = queue_client.drain_queue("test_suite", json=True)
+        result = queue_client.json_drain_queue("test_suite")
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]['event'], 'my_event')
 

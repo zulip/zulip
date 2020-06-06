@@ -234,7 +234,7 @@ class LoopQueueProcessingWorker(QueueProcessingWorker):
     def start(self) -> None:  # nocoverage
         self.initialize_statistics()
         while True:
-            events = self.q.drain_queue(self.queue_name, json=True)
+            events = self.q.json_drain_queue(self.queue_name)
             self.do_consume(self.consume_batch, events)
             # To avoid spinning the CPU, we go to sleep if there's
             # nothing in the queue, or for certain queues with

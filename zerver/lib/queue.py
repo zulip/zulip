@@ -3,7 +3,7 @@ import logging
 import random
 import threading
 import time
-from typing import Any, Callable, Dict, List, Mapping, Optional, Set, Union
+from typing import Any, Callable, Dict, List, Mapping, Optional, Set
 
 from django.conf import settings
 import pika
@@ -107,7 +107,7 @@ class SimpleQueueClient:
             self.queues.add(queue_name)
         callback()
 
-    def publish(self, queue_name: str, body: str) -> None:
+    def publish(self, queue_name: str, body: bytes) -> None:
         def do_publish() -> None:
             self.channel.basic_publish(
                 exchange='',
@@ -119,16 +119,16 @@ class SimpleQueueClient:
 
         self.ensure_queue(queue_name, do_publish)
 
-    def json_publish(self, queue_name: str, body: Union[Mapping[str, Any], str]) -> None:
-        # Union because of zerver.middleware.write_log_line uses a str
+    def json_publish(self, queue_name: str, body: Mapping[str, Any]) -> None:
+        data = ujson.dumps(body).encode()
         try:
-            self.publish(queue_name, ujson.dumps(body))
+            self.publish(queue_name, data)
             return
         except pika.exceptions.AMQPConnectionError:
             self.log.warning("Failed to send to rabbitmq, trying to reconnect and send again")
 
         self._reconnect()
-        self.publish(queue_name, ujson.dumps(body))
+        self.publish(queue_name, data)
 
     def register_consumer(self, queue_name: str, consumer: Consumer) -> None:
         def wrapped_consumer(ch: BlockingChannel,
@@ -156,7 +156,7 @@ class SimpleQueueClient:
             callback(ujson.loads(body))
         self.register_consumer(queue_name, wrapped_callback)
 
-    def drain_queue(self, queue_name: str, json: bool=False) -> List[Dict[str, Any]]:
+    def drain_queue(self, queue_name: str) -> List[bytes]:
         "Returns all messages in the desired queue"
         messages = []
 
@@ -164,16 +164,17 @@ class SimpleQueueClient:
             while True:
                 (meta, _, message) = self.channel.basic_get(queue_name)
 
-                if not message:
+                if message is None:
                     break
 
                 self.channel.basic_ack(meta.delivery_tag)
-                if json:
-                    message = ujson.loads(message)
                 messages.append(message)
 
         self.ensure_queue(queue_name, opened)
         return messages
+
+    def json_drain_queue(self, queue_name: str) -> List[Dict[str, Any]]:
+        return list(map(ujson.loads, self.drain_queue(queue_name)))
 
     def queue_size(self) -> int:
         return len(self.channel._pending_events)
