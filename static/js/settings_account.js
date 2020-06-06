@@ -76,8 +76,7 @@ exports.update_avatar_change_display = function () {
 };
 
 function display_avatar_upload_complete() {
-    $('#user-avatar-background').css({display: 'none'});
-    $('#user-avatar-spinner').css({display: 'none'});
+    $('#avatar-spinner-background').css({visibility: 'hidden'});
     $('#user_avatar_upload_button').show();
     $('#user_avatar_delete_button').show();
 
@@ -85,8 +84,7 @@ function display_avatar_upload_complete() {
 
 function display_avatar_upload_started() {
     $("#user-avatar-source").hide();
-    $('#user-avatar-background').css({display: 'block'});
-    $('#user-avatar-spinner').css({display: 'block'});
+    $('#avatar-spinner-background').css({visibility: 'visible'});
     $('#user_avatar_upload_button').hide();
     $('#user_avatar_delete_button').hide();
 }

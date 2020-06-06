@@ -344,7 +344,7 @@ casper.then(function () {
             realm_icon_file_input: 'static/images/logo/zulip-icon-128x128.png',
         }, false);
         casper.click("#realm_icon_upload_button");
-        casper.waitWhileVisible("#upload_icon_spinner", function () {
+        casper.waitWhileVisible("#icon-spinner-background", function () {
             casper.test.assertExists('img#realm-icon-block[src^="/user_avatars/2/realm/icon.png?version=2"]');
             casper.test.assertEqual(casper.visible('#realm_icon_delete_button'), true);
         });
