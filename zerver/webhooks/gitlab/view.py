@@ -265,10 +265,22 @@ def get_pipeline_event_body(payload: Dict[str, Any]) -> str:
             project_homepage,
             build.get('id')
         )
-        builds_status += "* [{}]({}) - {}\n".format(
+        artifact_filename = build.get('artifacts_file', {}).get('filename', None)
+        if artifact_filename:
+            artifact_download_url = '{}/artifacts/download'.format(build_url)
+            artifact_browse_url = '{}/artifacts/browse'.format(build_url)
+            artifact_string = '  * built artifact: *{}* [[Browse]({})|[Download]({})]\n'.format(
+                artifact_filename,
+                artifact_browse_url,
+                artifact_download_url
+            )
+        else:
+            artifact_string = ''
+        builds_status += "* [{}]({}) - {}\n{}".format(
             build.get('name'),
             build_url,
-            build.get('status')
+            build.get('status'),
+            artifact_string
         )
     return "[Pipeline]({}) {} with build(s):\n{}.".format(pipeline_url, action, builds_status[:-1])
 

@@ -489,6 +489,16 @@ class GitlabHookTests(WebhookTestCase):
             HTTP_X_GITLAB_EVENT="Build Hook"
         )
 
+    def test_pipeline_succeeded_with_artifacts_event_message(self) -> None:
+        expected_topic = "onlysomeproject / test/links-in-zulip-pipeline-message"
+        expected_message = "[Pipeline](https://gitlab.example.com/group1/onlysomeproject/pipelines/22668) changed status to success with build(s):\n* [cleanup:cleanup docker image](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58592) - success\n* [pages](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58591) - success\n  * built artifact: *artifacts.zip* [[Browse](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58591/artifacts/browse)|[Download](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58591/artifacts/download)]\n* [black+pytest:future environment](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58590) - success\n* [docs:anaconda environment](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58589) - success\n  * built artifact: *sphinx-docs.zip* [[Browse](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58589/artifacts/browse)|[Download](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58589/artifacts/download)]\n* [pytest:current environment](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58588) - success\n* [black:current environment](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58587) - success\n* [setup:docker image](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58586) - success."
+
+        self.send_and_test_stream_message(
+            'pipeline_hook__pipline_succeeded_with_artifacts',
+            expected_topic,
+            expected_message
+        )
+
     def test_pipeline_succeeded_event_message(self) -> None:
         expected_topic = "my-awesome-project / master"
         expected_message = "[Pipeline](https://gitlab.com/TomaszKolek/my-awesome-project/pipelines/4414206) changed status to success with build(s):\n* [job_name2](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541113) - success\n* [job_name](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541112) - success."
