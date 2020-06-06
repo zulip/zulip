@@ -17,19 +17,20 @@
     .messagebox-content {
         padding: 0px 10px;
     }
+
+    .message_edit_history_content {
+        .highlight_text_inserted {
+            color: hsl(122, 72%, 30%);
+            background-color: hsl(120, 64%, 95%);
+        }
+
+        .highlight_text_deleted {
+            color: hsl(0, 100%, 50%);
+            background-color: hsl(7, 90%, 92%);
+            text-decoration: line-through;
+            word-break: break-all;
+        }
+    }
 }
 
-.rendered_markdown {
-    /* Highlighting for message edit history */
-    .highlight_text_inserted {
-        color: hsl(122, 72%, 30%);
-        background-color: hsl(120, 64%, 95%);
-    }
 
-    .highlight_text_deleted {
-        color: hsl(0, 100%, 50%);
-        background-color: hsl(7, 90%, 92%);
-        text-decoration: line-through;
-        word-break: break-all;
-    }
-}
