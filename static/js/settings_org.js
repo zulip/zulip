@@ -943,14 +943,14 @@ exports.build_page = function () {
     });
 
     function realm_icon_upload_complete() {
-        $('#upload_icon_spinner').css({visibility: 'hidden'});
+        $('#icon-spinner-background').css({visibility: 'hidden'});
         $('#realm_icon_upload').show();
         $('#realm_icon_delete_button').show();
 
     }
 
     function realm_icon_upload_start() {
-        $('#upload_icon_spinner').css({visibility: "visible"});
+        $('#icon-spinner-background').css({visibility: "visible"});
         $('#realm_icon_upload').hide();
         $('#realm_icon_delete_button').hide();
     }
