@@ -44,13 +44,13 @@ beautifulsoup4==4.9.1 \
     --hash=sha256:a6237df3c32ccfaee4fd201c8f5f9d9df619b93121d01353a64a73ce8c6ef9a8 \
     --hash=sha256:e718f2342e2e099b640a34ab782407b7b676f47ee272d6739e60b8ea23829f2c \
     # via -r requirements/common.in, pyoembed, zulip-bots
-boto3==1.13.21 \
-    --hash=sha256:45e851db4b4ea6cedc9e138f6aa93fedaa5a8e0ae6d8a3f893b3e27c6aff60c8 \
-    --hash=sha256:86de0882ba324ba4ced362b5c94491b8d126d378f2ee24d32486cb64b160a89f \
+boto3==1.13.24 \
+    --hash=sha256:5df1f3f84587b4d812f6f178031119b80920822b459bbb70ad49f431128655dc \
+    --hash=sha256:d19fb5b7f27c29a7a036e36888e9584132e2f8edfa6ef906ea5a712e3e29962c \
     # via -r requirements/common.in
-botocore==1.16.21 \
-    --hash=sha256:3837f15e9ec9fd395beb0fb840a5976655c8ebb83121a4612e26f21aad8da908 \
-    --hash=sha256:7bd43e2fdf579875e3d3073e25699f5e524cc36a1748c4aee7c9c626e3760b2b \
+botocore==1.16.24 \
+    --hash=sha256:17bc71415186efb86a25dd674f78064cdd85139485967d5a0741c7b83d62cf5b \
+    --hash=sha256:e44b11b1c47c06b0f6524b0ff1fa1cae5ddea4eb06f359e4a9730e8e881b397a \
     # via boto3, s3transfer
 cachetools==4.1.0 \
     --hash=sha256:1d057645db16ca7fe1f3bd953558897603d6f0b9c51ed9d11eb4d071ec4e2aab \
@@ -211,9 +211,9 @@ django-webpack4-loader==0.0.5 \
     --hash=sha256:baa043c4601ed763d161490e2888cf6aa93a2fd9b60681e6b19e35dc7fcb155d \
     --hash=sha256:be90257041170f39c025ff674c9064569c9303b464536488b6a6cedd8e3d28be \
     # via -r requirements/common.in
-django==2.2.12 \
-    --hash=sha256:69897097095f336d5aeef45b4103dceae51c00afa6d3ae198a2a18e519791b7a \
-    --hash=sha256:6ecd229e1815d4fc5240fc98f1cca78c41e7a8cd3e3f2eefadc4735031077916 \
+django==2.2.13 \
+    --hash=sha256:84f370f6acedbe1f3c41e1a02de44ac206efda3355e427139ecb785b5f596d80 \
+    --hash=sha256:e8fe3c2b2212dce6126becab7a693157f1a441a07b62ec994c046c76af5bb66d \
     # via -r requirements/common.in, django-auth-ldap, django-bitfield, django-formtools, django-otp, django-phonenumber-field, django-sendfile2, django-two-factor-auth
 docutils==0.15.2 \
     --hash=sha256:6c4f696463b79f1fb8ba0c594b63840ebd41f059e92b31957c46b74a4599b6d0 \
@@ -280,9 +280,9 @@ ijson==3.0.4 \
     --hash=sha256:d045d2cb728d4553b7eca0c9464888ea181dfa65e16dacf8b369fcd7757bc1fa \
     --hash=sha256:ee8544d2ca4f39ae6f920be72022bb7f3928639bc4767bd0299a44b2005df3fe \
     # via -r requirements/common.in
-importlib-metadata==1.6.0 \
-    --hash=sha256:2a688cbaa90e0cc587f1df48bdc97a6eadccdcd9c35fb3f976a09e3b5016d90f \
-    --hash=sha256:34513a8a0c4962bc66d35b359558fd8a5e10cd472d37aec5f66858addef32c1e \
+importlib-metadata==1.6.1 \
+    --hash=sha256:0505dd08068cfec00f53a74a0ad927676d7757da81b7436a6eefe4c7cf75c545 \
+    --hash=sha256:15ec6c0fd909e893e3a08b3a7c76ecb149122fb14b7efe1199ddd4c7c57ea958 \
     # via markdown
 ipython-genutils==0.2.0 \
     --hash=sha256:72dd37233799e619666c9f639a9da83c34013a73e8bbc79a7a6348d93c61fab8 \
@@ -403,9 +403,9 @@ pexpect==4.8.0 \
     --hash=sha256:0b48a55dcb3c05f3329815901ea4fc1537514d6ba867a152b581d69ae3710937 \
     --hash=sha256:fc65a43959d153d0114afe13997d439c22823a27cefceb5ff35c2178c6784c0c \
     # via ipython
-phonenumberslite==8.12.4 \
-    --hash=sha256:071ff1c6830233e57a1821d6dbb702c2d841a72fe4c9e6b6f087d566b532533e \
-    --hash=sha256:ddf2f33ccb221b16fe25a022978e45d25a7c31c2ad5c506ab92a640001d85847 \
+phonenumberslite==8.12.5 \
+    --hash=sha256:6e1d31d8a5ad1fe280c3f7ba5b9c08da82245d59946ee06856712ef704f59e19 \
+    --hash=sha256:7e101c2d0be6ead83e2706c355aaba236df97e9a7b78aed5bda5d4b0eee11178 \
     # via django-two-factor-auth
 pickleshare==0.7.5 \
     --hash=sha256:87683d47965c1da65cdacaf31c8441d12b8044cdec9aca500cd78fc2c683afca \
@@ -718,9 +718,9 @@ xmlsec==1.3.8 \
     --hash=sha256:e3fe3a1256135edec4a35508b577355baaad780a60f4bb34eec9f3281f27cabd \
     --hash=sha256:e6bcac5ee9cd0cb5aa2d4d1e14f3714c5a09185607828285179c2c94fcc083dc \
     # via python3-saml
-yamole==2.1.6 \
-    --hash=sha256:e9b9af803cd856517a5e0ce2a44820c49b7626c83117118a064622829aa8c5a7 \
-    --hash=sha256:ea094cc8acee25316c41ab515921253b8dff965e04ac68e922e11bf86aa1cee4 \
+yamole==2.1.7 \
+    --hash=sha256:cd37040d1b396d58ac5bd9864999b98700d37156b2e65d9498486874aee38fda \
+    --hash=sha256:f491345f18e9d4133eed196166136144e92bb4bad83e60d44ce5754adf130a36 \
     # via -r requirements/common.in
 zipp==3.1.0 \
     --hash=sha256:aa36550ff0c0b7ef7fa639055d797116ee891440eac1a56f378e2d3179e0320b \
