@@ -541,13 +541,16 @@ strong {
 li.actual-dropdown-menu i {
     /* In gear menu, make icons the same width so labels line up. */
     display: inline-block;
-    width: 14px;
+    width: 20px;
     text-align: center;
-    margin-right: 3px;
+    margin-right: 4px;
 }
 
 .settings-dropdown-cog {
-    padding-right: 14px;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 .message_area_padder {
@@ -1759,7 +1762,6 @@ div.focused_table {
 #navbar-buttons {
     white-space: nowrap;
     margin-left: 15px;
-    margin-top: 7px;
     display: inline-block;
     float: right;
 
@@ -1776,7 +1778,6 @@ div.focused_table {
             background-color: inherit;
             box-shadow: inherit;
             display: block;
-            position: absolute;
             right: 0px;
             top: 3px;
         }
@@ -2535,7 +2536,10 @@ select.inline_select_topic_edit {
     }
 
     .settings-dropdown-cog {
-        padding-right: 21px;
+        padding-left: 15px;
+        padding-right: 15px;
+        padding-top: 10px;
+        padding-bottom: 10px;
     }
 
     .column-middle {
@@ -2764,6 +2768,13 @@ select.inline_select_topic_edit {
         white-space: nowrap;
         text-overflow: ellipsis;
         line-height: 15px;
+    }
+
+    .settings-dropdown-cog {
+        padding-left: 15px;
+        padding-right: 15px;
+        padding-top: 5px;
+        padding-bottom: 5px;
     }
 
     #tab_bar_underpadding {
