@@ -4445,6 +4445,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
         assert stream_being_edited is not None
 
         edit_history_event['prev_stream'] = stream_being_edited.id
+        event[ORIG_TOPIC] = orig_topic_name
         message.recipient_id = new_stream.recipient_id
 
         event["new_stream_id"] = new_stream.id
