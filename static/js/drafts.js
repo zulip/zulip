@@ -20,6 +20,7 @@ import * as narrow from "./narrow";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as util from "./util";
 
@@ -107,6 +108,10 @@ export function snapshot_message() {
         message.private_message_recipient = recipient;
     } else {
         message.stream = compose_state.stream_name();
+        const sub = stream_data.get_sub(message.stream);
+        if (sub) {
+            message.stream_id = sub.stream_id;
+        }
         message.topic = compose_state.topic();
     }
     return message;
@@ -241,9 +246,17 @@ export function format_draft(draft) {
         // In case there is no stream for the draft, we need a
         // single space char for proper rendering of the stream label
         const space_string = new Handlebars.SafeString("&nbsp;");
-        const stream = draft.stream.length > 0 ? draft.stream : space_string;
+        let stream = draft.stream.length > 0 ? draft.stream : space_string;
+        if (draft.stream_id) {
+            const sub = sub_store.get(draft.stream_id);
+            if (sub && sub.name !== stream) {
+                stream = sub.name;
+                draft.stream = stream;
+                draft_model.editDraft(id, draft);
+            }
+        }
         let draft_topic = util.get_draft_topic(draft);
-        const draft_stream_color = stream_data.get_color(draft.stream);
+        const draft_stream_color = stream_data.get_color(stream);
 
         if (draft_topic === "") {
             draft_topic = compose.empty_topic_placeholder();
