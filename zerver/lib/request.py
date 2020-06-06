@@ -11,7 +11,7 @@ from zerver.lib.types import Validator, ViewFuncT
 
 from django.http import HttpRequest, HttpResponse
 
-from typing import Any, Callable, Dict, Generic, List, Optional, Type, TypeVar, Union, cast, overload
+from typing import Any, Callable, Dict, Generic, List, Optional, TypeVar, Union, cast, overload
 from typing_extensions import Literal
 
 class RequestConfusingParmsError(JsonableError):
@@ -64,7 +64,6 @@ class _REQ(Generic[ResultT]):
         self,
         whence: Optional[str] = None,
         *,
-        type: Type[ResultT] = Type[None],
         converter: Optional[Callable[[str], ResultT]] = None,
         default: Union[_NotSpecified, ResultT, None] = NotSpecified,
         validator: Optional[Validator] = None,
@@ -94,10 +93,6 @@ class _REQ(Generic[ResultT]):
 
         argument_type: pass 'body' to extract the parsed JSON
         corresponding to the request body
-
-        type: a hint to typing (using mypy) what the type of this parameter is.
-        Currently only typically necessary if default=None and the type cannot
-        be inferred in another way (eg. via converter).
 
         aliases: alternate names for the POST var
 
@@ -137,7 +132,6 @@ class _REQ(Generic[ResultT]):
 def REQ(
     whence: Optional[str] = ...,
     *,
-    type: Type[ResultT] = ...,
     converter: Callable[[str], ResultT],
     default: ResultT = ...,
     intentionally_undocumented: bool = ...,
@@ -152,7 +146,6 @@ def REQ(
 def REQ(
     whence: Optional[str] = ...,
     *,
-    type: Type[ResultT] = ...,
     default: ResultT = ...,
     validator: Validator,
     intentionally_undocumented: bool = ...,
@@ -167,7 +160,6 @@ def REQ(
 def REQ(
     whence: Optional[str] = ...,
     *,
-    type: Type[str] = ...,
     default: str = ...,
     str_validator: Optional[Validator] = ...,
     intentionally_undocumented: bool = ...,
@@ -182,7 +174,6 @@ def REQ(
 def REQ(
     whence: Optional[str] = ...,
     *,
-    type: Type[str] = ...,
     default: None,
     str_validator: Optional[Validator] = ...,
     intentionally_undocumented: bool = ...,
@@ -197,7 +188,6 @@ def REQ(
 def REQ(
     whence: Optional[str] = ...,
     *,
-    type: Type[ResultT] = ...,
     default: ResultT = ...,
     str_validator: Optional[Validator] = ...,
     argument_type: Literal["body"],
@@ -212,7 +202,6 @@ def REQ(
 def REQ(
     whence: Optional[str] = None,
     *,
-    type: Type[ResultT] = Type[None],
     converter: Optional[Callable[[str], ResultT]] = None,
     default: Union[_REQ._NotSpecified, ResultT] = _REQ.NotSpecified,
     validator: Optional[Validator] = None,
@@ -225,7 +214,6 @@ def REQ(
 ) -> ResultT:
     return cast(ResultT, _REQ(
         whence,
-        type=type,
         converter=converter,
         default=default,
         validator=validator,
