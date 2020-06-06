@@ -4,7 +4,7 @@ import itertools
 import requests
 from unittest import mock
 from unittest.mock import call
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterator, List, Optional
 
 import base64
 import os
@@ -617,7 +617,7 @@ class PushNotificationTest(BouncerTestCase):
         return message
 
     @contextmanager
-    def mock_apns(self) -> mock.MagicMock:
+    def mock_apns(self) -> Iterator[mock.MagicMock]:
         mock_apns = mock.Mock()
         with mock.patch('zerver.lib.push_notifications.get_apns_client') as mock_get:
             mock_get.return_value = mock_apns
