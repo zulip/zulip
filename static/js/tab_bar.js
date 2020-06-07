@@ -69,6 +69,13 @@ function append_and_display_title_area(tab_bar_data) {
 }
 
 function bind_title_area_handlers() {
+    $(".search_closed").on("click", function (e) {
+        exports.open_search_bar_and_close_narrow_description();
+        search.initiate_search();
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
     $("#tab_list span:nth-last-child(2)").on("click", function (e) {
         if (document.getSelection().type === "Range") {
             // Allow copy/paste to work normally without interference.
