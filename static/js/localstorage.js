@@ -152,8 +152,6 @@ const localstorage = function () {
         },
         set: function (version) {
             _data.VERSION = version;
-
-            return prototype;
         },
     });
 
