@@ -663,7 +663,7 @@ input[type=checkbox] {
     height: 200px;
 }
 
-.realm-icon-section .avatar-icon-settings {
+.realm-icon-section .avatar-icon-logo-settings {
     width: 100px;
     height: 100px;
 }
@@ -1185,7 +1185,7 @@ input[type=checkbox] {
     font-size: 1.2em;
 }
 
-.avatar-icon-settings {
+.avatar-icon-logo-settings {
     position: relative;
     border-radius: 5px;
     box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
@@ -1255,6 +1255,11 @@ input[type=checkbox] {
     #realm_icon_delete {
         top: 40px;
         right: 18px;
+    }
+
+    .realm_logo_delete {
+        top: 17px;
+        right: 80px;
     }
 
     .settings-page-upload-text {
