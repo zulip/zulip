@@ -97,6 +97,7 @@ zrequire('stream_topic_history');
 zrequire('stream_list');
 zrequire('message_flags');
 zrequire('message_store');
+zrequire('message_util');
 zrequire('people');
 zrequire('starred_messages');
 zrequire('user_status');
@@ -674,7 +675,7 @@ const event_fixtures = {
 
     delete_message: {
         type: 'delete_message',
-        message_id: 1337,
+        msg_id: 1337,
         message_type: "stream",
         stream_id: 99,
         topic: 'topic1',
@@ -1514,12 +1515,20 @@ with_overrides(function (override) {
     const event = event_fixtures.delete_message;
 
     override('stream_list.update_streams_sidebar', noop);
+    override('message_store.get', () => {
+        return {
+            id: 1337,
+            type: 'stream',
+            stream_id: 99,
+            topic: 'topic1',
+        };
+    });
     global.with_stub(function (stub) {
         override('unread_ops.process_read_messages_event', noop);
         override('ui.remove_message', stub.f);
         dispatch(event);
-        const args = stub.get_args('message_id');
-        assert_same(args.message_id, 1337);
+        const args = stub.get_args('msg_id');
+        assert_same(args.msg_id, 1337);
     });
     global.with_stub(function (stub) {
         override('unread_ops.process_read_messages_event', stub.f);
