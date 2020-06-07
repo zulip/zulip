@@ -183,6 +183,8 @@ exports.info_for = function (user_id) {
         href: hash_util.pm_with_uri(person.email),
         name: person.full_name,
         user_id: user_id,
+        is_admin: person.is_admin,
+        is_guest: person.is_guest,
         my_user_status: my_user_status,
         is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),
