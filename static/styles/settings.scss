@@ -1757,8 +1757,8 @@ input[type=checkbox] {
             }
         }
 
-        &.datepicker {
-            cursor: pointer;
+        .datepicker {
+            cursor: default;
         }
 
         .person_picker {

@@ -176,7 +176,9 @@ exports.append_custom_profile_fields = function (element_id, user_id) {
 exports.initialize_custom_date_type_fields = function (element_id) {
     $(element_id).find(".custom_user_field .datepicker").flatpickr({
         altInput: true,
-        altFormat: "F j, Y"});
+        altFormat: "F j, Y",
+        allowInput: true,
+    });
 
     $(element_id).find(".custom_user_field .datepicker").on("mouseenter", function () {
         if ($(this).val().length <= 0) {
