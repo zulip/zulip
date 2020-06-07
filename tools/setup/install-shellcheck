@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -eu
 
-version=0.7.0
+version=0.7.1
 tarball="shellcheck-v$version.linux.x86_64.tar.xz"
-sha256=39c501aaca6aae3f3c7fc125b3c3af779ddbe4e67e4ebdc44c2ae5cba76c847f
+sha256=64f17152d96d7ec261ad3086ed42d18232fcb65148b44571b564d688269d36c8
 
 check_version () {
     out="$(shellcheck --version 2>/dev/null)" && [[ "$out" = *"
@@ -15,7 +15,7 @@ if ! check_version; then
     tmpdir="$(mktemp -d)"
     trap 'rm -r "$tmpdir"' EXIT
     cd "$tmpdir"
-    wget -nv "https://storage.googleapis.com/shellcheck/$tarball"
+    wget -nv "https://github.com/koalaman/shellcheck/releases/download/v$version/$tarball"
     sha256sum -c <<< "$sha256 $tarball"
     tar -xJf "$tarball" --no-same-owner --strip-components=1 -C /usr/local/bin "shellcheck-v$version/shellcheck"
     check_version
