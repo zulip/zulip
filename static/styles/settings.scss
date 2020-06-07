@@ -98,6 +98,9 @@ h3 .fa-question-circle-o {
 }
 
 .realm-logo-block {
+    width: 220px;
+    height: 55px;
+    text-align: center;
     margin-bottom: 10px;
 }
 
@@ -1354,11 +1357,11 @@ input[type=checkbox] {
     max-width: 500px;
 }
 
-#night-logo-section .realm-logo-img {
+#night-logo-section .realm-logo-block {
     background-color: hsl(212, 28%, 18%);
 }
 
-#day-logo-section .realm-logo-img {
+#day-logo-section .realm-logo-block {
     background-color: hsla(0, 100%, 100%, 1);
 }
 
