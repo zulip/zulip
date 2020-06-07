@@ -55,7 +55,7 @@ python-digitalocean
 pip-tools<5.1.2  # https://github.com/jazzband/pip-tools/issues/1155
 
 # zulip's linting framework - zulint
-https://github.com/zulip/zulint/archive/166adddecb37c60c4f8e6e70fee6964b4c857e01.zip#egg=zulint==0.0.1
+https://github.com/zulip/zulint/archive/ec36c29cd0be07e30241fa0a5172dc594fcc7bb1.zip#egg=zulint==0.0.1
 
 -r mypy.in
 
