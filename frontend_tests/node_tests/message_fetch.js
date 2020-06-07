@@ -21,7 +21,7 @@ set_global('page_params', {
 set_global('ui_report', {
     hide_error: noop,
 });
-set_global('activity', {});
+
 set_global('channel', {});
 set_global('document', 'document-stub');
 set_global('message_scroll', {
@@ -114,10 +114,6 @@ function config_process_results(messages) {
     message_util.add_old_messages = function (new_messages, msg_list) {
         assert.deepEqual(new_messages, messages);
         msg_list.add_messages(new_messages);
-    };
-
-    activity.process_loaded_messages = function (arg) {
-        assert.deepEqual(arg, messages);
     };
 
     stream_list.update_streams_sidebar = noop;
