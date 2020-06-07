@@ -22,7 +22,25 @@ exports.zrequire = function (name, fn) {
     }
     delete require.cache[require.resolve(fn)];
     requires.push(fn);
-    return require(fn);
+
+    // The proxy below only effects modules that are not
+    // in window namespace, whose zrequire return
+    // value is used with exception of node_module zrequire.
+    return new Proxy(require(fn), {
+        set(target, prop, value) {
+            // We use rewire and set the value directly on to
+            // the module. Rewire only work for modules that
+            // are converted to ES6, or TS. Directly setting the
+            // value is required for commonjs modules that use exports.
+            // Doing both is harmless and has no side-effects.
+            target[prop] = value;
+            if ('__Rewire__' in target) {
+                target.__Rewire__(prop, value);
+            }
+
+            return value;
+        },
+    });
 };
 
 exports.clear_zulip_refs = function () {
