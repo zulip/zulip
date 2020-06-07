@@ -1282,6 +1282,11 @@ input[type=checkbox] {
         right: 18px;
     }
 
+    .realm_logo_upload {
+        top: 17px;
+        right: 80px;
+    }
+
     .settings-page-upload-text:hover {
         color: hsl(0, 0%, 100%);
     }
@@ -1315,6 +1320,17 @@ input[type=checkbox] {
     #realm-icon-spinner {
         width: 40px;
         height: 40px;
+        top: 30%;
+        right: 30%;
+    }
+
+    .upload-logo-spinner {
+        left: 0;
+    }
+
+    .realm-logo-spinner {
+        width: 45px;
+        height: 55px;
         top: 30%;
         right: 30%;
     }
