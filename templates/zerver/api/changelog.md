@@ -12,6 +12,9 @@ below features are supported.
 
 **Feature level 10**
 
+* [`GET users/me`](/api/get-profile): Added `avatar_version`, `is_guest`,
+  `is_active`, `timezone`, and `date_joined` fields to the User objects.
+
 **Feature level 9**
 
 * [`POST users/me/subscriptions`](/api/add-subscriptions), [`DELETE

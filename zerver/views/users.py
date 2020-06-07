@@ -458,32 +458,14 @@ def generate_client_id() -> str:
     return generate_random_token(32)
 
 def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    result = dict(pointer        = user_profile.pointer,
-                  client_id      = generate_client_id(),
-                  max_message_id = -1,
-                  user_id        = user_profile.id,
-                  avatar_url     = avatar_url(user_profile),
-                  full_name      = user_profile.full_name,
-                  email          = user_profile.email,
-                  is_bot         = user_profile.is_bot,
-                  is_admin       = user_profile.is_realm_admin,
-                  is_owner       = user_profile.is_realm_owner,
-                  short_name     = user_profile.short_name)
+    raw_user_data = get_raw_user_data(user_profile.realm, user_profile,
+                                      client_gravatar=False, target_user=user_profile)
+    result: Dict[str, Any] = raw_user_data[user_profile.id]
 
-    if not user_profile.is_bot:
-        custom_profile_field_values = user_profile.customprofilefieldvalue_set.all()
-        profile_data: Dict[int, Dict[str, Any]] = dict()
-        for profile_field in custom_profile_field_values:
-            if profile_field.field.is_renderable():
-                profile_data[profile_field.field_id] = {
-                    "value": profile_field.value,
-                    "rendered_value": profile_field.rendered_value
-                }
-            else:
-                profile_data[profile_field.field_id] = {
-                    "value": profile_field.value
-                }
-        result["profile_data"] = profile_data
+    result['client_id'] = generate_client_id()
+    result['short_name'] = user_profile.short_name
+    result['max_message_id'] = -1
+    result['pointer'] = user_profile.pointer
 
     messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[:1]
     if messages:
