@@ -942,20 +942,23 @@ exports.build_page = function () {
         });
     });
 
-    function realm_icon_upload_complete() {
-        $('#icon-spinner-background').css({visibility: 'hidden'});
-        $('#realm_icon_upload').show();
-        $('#realm_icon_delete_button').show();
+    function realm_icon_logo_upload_complete(spinner, upload_text, delete_button) {
+        spinner.css({visibility: 'hidden'});
+        upload_text.show();
+        delete_button.show();
 
     }
 
-    function realm_icon_upload_start() {
-        $('#icon-spinner-background').css({visibility: "visible"});
-        $('#realm_icon_upload').hide();
-        $('#realm_icon_delete_button').hide();
+    function realm_icon_logo_upload_start(spinner, upload_text, delete_button) {
+        spinner.css({visibility: "visible"});
+        upload_text.hide();
+        delete_button.hide();
     }
 
     function upload_realm_icon(file_input) {
+        const spinner = $('#icon-spinner-background');
+        const upload_text =  $('#realm_icon_upload');
+        const delete_button = $('#realm_icon_delete_button');
         const form_data = new FormData();
 
         form_data.append('csrfmiddlewaretoken', csrf_token);
@@ -965,7 +968,7 @@ exports.build_page = function () {
 
         const error_field = $("#realm_icon_file_input_error");
         error_field.hide();
-        realm_icon_upload_start();
+        realm_icon_logo_upload_start(spinner, upload_text, delete_button);
 
         channel.post({
             url: '/json/realm/icon',
@@ -974,10 +977,10 @@ exports.build_page = function () {
             processData: false,
             contentType: false,
             success: function () {
-                realm_icon_upload_complete();
+                realm_icon_logo_upload_complete(spinner, upload_text, delete_button);
             },
             error: function (xhr) {
-                realm_icon_upload_complete();
+                realm_icon_logo_upload_complete(spinner, upload_text, delete_button);
                 ui_report.error("", xhr, error_field);
             },
         });
@@ -989,7 +992,8 @@ exports.build_page = function () {
         const form_data = new FormData();
         let spinner;
         let error_field;
-        let button_text;
+        let upload_text;
+        let delete_button;
 
         form_data.append('csrfmiddlewaretoken', csrf_token);
         for (const [i, file] of Array.prototype.entries.call(file_input[0].files)) {
@@ -998,16 +1002,17 @@ exports.build_page = function () {
         if (night) {
             error_field = $("#night-logo-section .realm-logo-file-input-error");
             spinner = $("#night-logo-section .upload-logo-spinner");
-            button_text = $("#night-logo-section .upload-logo-button-text");
+            upload_text = $('#night-logo-section .realm_logo_upload');
+            delete_button = $('#night-logo-section .realm-logo-delete-button');
         } else {
             error_field = $("#day-logo-section .realm-logo-file-input-error");
             spinner = $("#day-logo-section .upload-logo-spinner");
-            button_text = $("#day-logo-section .upload-logo-button-text");
+            upload_text = $('#day-logo-section .realm_logo_upload');
+            delete_button = $('#day-logo-section .realm-logo-delete-button');
         }
         spinner.expectOne();
         error_field.hide();
-        button_text.expectOne().hide();
-        loading.make_indicator(spinner, {text: i18n.t("Uploading logo.")});
+        realm_icon_logo_upload_start(spinner, upload_text, delete_button);
         form_data.append('night', JSON.stringify(night));
         channel.post({
             url: '/json/realm/logo',
@@ -1016,12 +1021,10 @@ exports.build_page = function () {
             processData: false,
             contentType: false,
             success: function () {
-                loading.destroy_indicator(spinner);
-                button_text.expectOne().show();
+                realm_icon_logo_upload_complete(spinner, upload_text, delete_button);
             },
             error: function (xhr) {
-                loading.destroy_indicator(spinner);
-                button_text.expectOne().show();
+                realm_icon_logo_upload_complete(spinner, upload_text, delete_button);
                 ui_report.error("", xhr, error_field);
             },
         });
