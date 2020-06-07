@@ -164,7 +164,7 @@ exports.initialize = function () {
         const message_history_cancel_btn = $('#message-history-cancel');
 
         if (page_params.realm_allow_edit_history) {
-            message_edit.show_history(message);
+            message_edit_history.show_history(message);
             message_history_cancel_btn.focus();
         }
         e.stopPropagation();

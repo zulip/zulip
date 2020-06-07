@@ -1020,7 +1020,7 @@ exports.register_click_handlers = function () {
         const message_history_cancel_btn = $('#message-history-cancel');
 
         exports.hide_actions_popover();
-        message_edit.show_history(message);
+        message_edit_history.show_history(message);
         message_history_cancel_btn.focus();
         e.stopPropagation();
         e.preventDefault();
