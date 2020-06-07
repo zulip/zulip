@@ -698,7 +698,8 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
         expected_keys = {
             "result", "msg", "pointer", "client_id", "max_message_id", "user_id",
             "avatar_url", "full_name", "email", "is_bot", "is_admin", "is_owner",
-            "short_name", "profile_data"}
+            "short_name", "profile_data", "avatar_version", "timezone", "delivery_email",
+            "is_active", "is_guest", "date_joined"}
 
         url = "/json/users/me"
         response = self.client_get(url)

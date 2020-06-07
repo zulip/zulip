@@ -1836,6 +1836,16 @@ paths:
 
                         **Changes**: New in Zulip 2.1.0.
                       example: "x"
+                    avatar_version:
+                      type: integer
+                      description: |
+                        Version for the the user's avatar.  Used for cache-busting requests
+                        for the user's avatar.  Clients generally shouldn't need to use this;
+                        most avatar URLs sent by Zulip will already end with `?v={avatar_version}`.
+
+                        **Changes**: New in Zulip 2.2 (feature level 10). Previous
+                        versions do not return this field.
+                      example: 1
                     client_id:
                       type: string
                       description: |
@@ -1864,11 +1874,43 @@ paths:
 
                         **Changes**: New in Zulip 2.2 (feature level 8).
                       example: false
+                    is_guest:
+                      type: boolean
+                      description: |
+                        A boolean indicating if the requesting user is a guest.
+
+                        **Changes**: New in Zulip 2.2 (feature level 10). Previous
+                        versions do not return this field.
+                      example: false
                     is_bot:
                       type: boolean
                       description: |
                         A boolean indicating if the requesting user is a bot.
                       example: false
+                    is_active:
+                      type: boolean
+                      description: |
+                        A boolean specifying whether the user account has been deactivated.
+
+                        **Changes**: New in Zulip 2.2 (feature level 10). Previous
+                        versions do not return this field.
+                      example: true
+                    timezone:
+                      type: string
+                      description: |
+                        The time zone of the user.
+
+                        **Changes**: New in Zulip 2.2 (feature level 10). Previous
+                        versions do not return this field.
+                      example: ""
+                    date_joined:
+                      type: string
+                      description: |
+                        The time the user account was created.
+
+                        **Changes**: New in Zulip 2.2 (feature level 10). Previous
+                        versions do not return this field.
+                      example: "2019-10-20T07:50:53.728864+00:00"
                     max_message_id:
                       type: integer
                       description: |
@@ -1899,12 +1941,17 @@ paths:
                 - example:
                     {
                         "avatar_url": "https://secure.gravatar.com/avatar/af4f06322c177ef4e1e9b2c424986b54?d=identicon&version=1",
+                        "avatar_version": 1,
                         "client_id": "74c768b081076fdb3c4326256c17467e",
                         "email": "iago@zulip.com",
                         "full_name": "Iago",
                         "is_admin": true,
                         "is_owner": false,
+                        "is_guest": false,
                         "is_bot": false,
+                        "is_active": true,
+                        "timezone": "",
+                        "date_joined": "2019-10-20T07:50:53.728864+00:00",
                         "max_message_id": 30,
                         "msg": "",
                         "pointer": -1,

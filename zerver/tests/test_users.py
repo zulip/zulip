@@ -1379,6 +1379,7 @@ class GetProfileTest(ZulipTestCase):
         self.assertFalse(result['is_bot'])
         self.assertFalse(result['is_admin'])
         self.assertFalse(result['is_owner'])
+        self.assertFalse(result['is_guest'])
         self.assertFalse('delivery_email' in result)
         self.login('iago')
         result = ujson.loads(self.client_get('/json/users/me').content)
@@ -1388,6 +1389,7 @@ class GetProfileTest(ZulipTestCase):
         self.assertFalse(result['is_bot'])
         self.assertTrue(result['is_admin'])
         self.assertFalse(result['is_owner'])
+        self.assertFalse(result['is_guest'])
         self.login('desdemona')
         result = ujson.loads(self.client_get('/json/users/me').content)
         self.assertEqual(result['short_name'], 'desdemona')
@@ -1395,6 +1397,7 @@ class GetProfileTest(ZulipTestCase):
         self.assertFalse(result['is_bot'])
         self.assertTrue(result['is_admin'])
         self.assertTrue(result['is_owner'])
+        self.assertFalse(result['is_guest'])
 
         # Tests the GET ../users/{id} api endpoint.
         user = self.example_user('hamlet')
