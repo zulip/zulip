@@ -1552,6 +1552,38 @@ class MessageDictTest(ZulipTestCase):
         self.assert_json_error(
             result, "Invalid anchor")
 
+    def test_get_by_ids(self) -> None:
+        # Public messages
+        msg_id_1 = self.send_stream_message(self.example_user("hamlet"), "Denmark",
+                                            topic_name="programming", content="stronger")
+        msg_id_2 = self.send_stream_message(self.example_user("aaron"), "Denmark",
+                                            topic_name="programming", content="train")
+        message_list = [msg_id_1, msg_id_2]
+
+        # Private message
+        self.login("hamlet")
+        msg_id_3 = self.send_personal_message(
+            from_user=self.example_user("hamlet"),
+            to_user=self.example_user("cordelia"),
+            content="**before** edit",
+        )
+
+        result = self.client_get('/json/messages?anchor=first_unread&num_before=0&num_after=0&' +
+                                 'apply_markdown=false&message_id_list=' + ujson.dumps(message_list))
+        self.assertIn('stronger', result.json()['messages'][0]['content'])
+        self.assertIn('train', result.json()['messages'][1]['content'])
+
+        self.login("cordelia")
+        result = self.client_get('/json/messages?anchor=first_unread&num_before=0&num_after=0&' +
+                                 'apply_markdown=false&message_id_list=[99999]')
+        self.assertEqual(result.json()['messages'], [])
+
+        # It doesn't return a private message
+        self.login("othello")
+        result = self.client_get('/json/messages?anchor=first_unread&num_before=0&num_after=0&' +
+                                 'apply_markdown=false&message_id_list=' + ujson.dumps([msg_id_3]))
+        self.assertEqual(result.json()['messages'], [])
+
 class SewMessageAndReactionTest(ZulipTestCase):
     def test_sew_messages_and_reaction(self) -> None:
         sender = self.example_user('othello')

@@ -90,6 +90,9 @@ exports.initialize = function () {
             return;
         }
 
+        const prev_selected = $(".selected_message");
+        const first_row = $(prev_selected).closest(".message_row");
+
         const row = $(this).closest(".message_row");
         const id = rows.id(row);
 
@@ -98,10 +101,17 @@ exports.initialize = function () {
             return;
         }
 
-        current_msg_list.select_id(id);
-        compose_actions.respond_to_message({trigger: 'message click'});
-        e.stopPropagation();
-        popovers.hide_all();
+        if (e.ctrlKey) {
+            message_copy.select_message(this);
+        } else if (e.shiftKey) {
+            const final_row = $(this).closest(".message_row");
+            message_copy.select_until_message(first_row, final_row);
+        } else {
+            current_msg_list.select_id(id);
+            compose_actions.respond_to_message({trigger: 'message click'});
+            e.stopPropagation();
+            popovers.hide_all();
+        }
     };
 
     // if on normal non-mobile experience, a `click` event should run the message

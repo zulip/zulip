@@ -230,6 +230,7 @@
                 "markdown": false,
                 "marked": false,
                 "md5": false,
+                "message_copy": false,
                 "message_edit": false,
                 "message_events": false,
                 "message_fetch": false,

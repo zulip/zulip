@@ -11,6 +11,7 @@ const render_user_group_info_popover_content = require('../templates/user_group_
 const render_user_info_popover_content = require('../templates/user_info_popover_content.hbs');
 const render_user_info_popover_title = require('../templates/user_info_popover_title.hbs');
 const render_user_profile_modal = require("../templates/user_profile_modal.hbs");
+const render_messages_markdown = require("../templates/messages_markdown.hbs");
 
 let current_actions_popover_elem;
 let current_flatpickr_instance;
@@ -507,6 +508,42 @@ exports.toggle_actions_popover = function (element, id) {
     }
 };
 
+exports.toggle_messages_markdown = function (element, id) {
+    const last_popover_elem = current_actions_popover_elem;
+    exports.hide_all();
+    if (last_popover_elem !== undefined
+        && last_popover_elem.get()[0] === element) {
+        // We want it to be the case that a user can dismiss a popover
+        // by clicking on the same element that caused the popover.
+        return;
+    }
+
+    current_msg_list.select_id(id);
+    const actions_btn = $(current_msg_list.selected_row()).find(".actions_hover")[0];
+    $(element).closest('.message_row').toggleClass('has_popover has_actions_popover');
+    const elt = $(actions_btn);
+
+    if (elt.data('popover') === undefined) {
+        const message = current_msg_list.get(id);
+
+        const args = {
+            message_id: message.id,
+        };
+
+        const ypos = elt.offset().top;
+        elt.popover({
+            placement: message_viewport.height() - ypos < 220 ? 'top' : 'bottom',
+            title: "",
+            content: render_messages_markdown(args),
+            html: true,
+            trigger: "manual",
+        });
+        message_copy.copy_selected_messages(message.id);
+        elt.popover("show");
+        current_actions_popover_elem = elt;
+    }
+};
+
 exports.render_actions_remind_popover = function (element, id) {
     exports.hide_all();
     $(element).closest('.message_row').toggleClass('has_popover has_actions_popover');
@@ -968,6 +1005,22 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.flatpickr-calendar', function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $('body').on('click', '.copy_selected_messages', function (e) {
+        exports.hide_actions_popover();
+        const message_id = $(this).attr("data-message-id");
+        const row = $(".selected_message[zid='" + message_id + "']");
+        exports.toggle_messages_markdown(row, message_id);
+
+        setTimeout(function () {
+            // The Cliboard library works by focusing to a hidden textarea.
+            // We unfocus this so keyboard shortcuts, etc., will work again.
+            $(":focus").blur();
+        }, 0);
+
         e.stopPropagation();
         e.preventDefault();
     });

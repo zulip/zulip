@@ -455,6 +455,15 @@ paths:
           type: boolean
           default: false
         example: true
+      - name: message_id_list
+        in: query
+        description: An array containing the IDs of the target messages.
+        schema:
+          type: array
+          items:
+            type: integer
+        example: [5, 82, 95]
+        required: false
       responses:
         '200':
           description: Success.

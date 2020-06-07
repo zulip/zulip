@@ -98,6 +98,7 @@ import "../stream_create.js";
 import "../stream_edit.js";
 import "../subs.js";
 import "../message_edit.js";
+import "../message_copy.js";
 import "../condense.js";
 import "../resize.js";
 import "../list_render.js";

@@ -899,7 +899,8 @@ class TestCurlExampleGeneration(ZulipTestCase):
             '    --data-urlencode narrow=\'[{"operand": "Denmark", "operator": "stream"}]\' \\',
             "    -d 'client_gravatar=true' \\",
             "    -d 'apply_markdown=false' \\",
-            "    -d 'use_first_unread_anchor=true'",
+            "    -d 'use_first_unread_anchor=true' \\",
+            "    --data-urlencode message_id_list='[5, 82, 95]'",
             '```'
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
@@ -956,7 +957,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
 
     def test_generate_and_render_curl_example_with_excludes(self) -> None:
         generated_curl_example = self.curl_example("/messages", "GET",
-                                                   exclude=["client_gravatar", "apply_markdown"])
+                                                   exclude=["client_gravatar", "apply_markdown", "message_id_list"])
         expected_curl_example = [
             '```curl',
             'curl -sSX GET -G http://localhost:9991/api/v1/messages \\',

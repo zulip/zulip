@@ -775,7 +775,7 @@ def parse_anchor_value(anchor_val: Optional[str],
         return 0
     if anchor_val == "newest":
         return LARGER_THAN_MAX_MESSAGE_ID
-    if anchor_val == "first_unread":
+    if anchor_val == "first_unread" or anchor_val == "no_anchor":
         return None
     try:
         # We don't use `.isnumeric()` to support negative numbers for
@@ -800,11 +800,16 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
                          use_first_unread_anchor_val: bool=REQ('use_first_unread_anchor',
                                                                validator=check_bool, default=False),
                          client_gravatar: bool=REQ(validator=check_bool, default=False),
-                         apply_markdown: bool=REQ(validator=check_bool, default=True)) -> HttpResponse:
+                         apply_markdown: bool=REQ(validator=check_bool, default=True),
+                         message_id_list: List[int]=REQ(validator=check_list(check_int),
+                                                        default=[])) -> HttpResponse:
     anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
     if num_before + num_after > MAX_MESSAGES_PER_FETCH:
         return json_error(_("Too many messages requested (maximum %s).")
                           % (MAX_MESSAGES_PER_FETCH,))
+
+    # This enable a direct "search by ids" using the ids included in message_list.
+    message_by_ids = len(message_id_list) != 0
 
     if user_profile.realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
         # If email addresses are only available to administrators,
@@ -875,16 +880,20 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         num_after = 0
 
     first_visible_message_id = get_first_visible_message_id(user_profile.realm)
-    query = limit_query_to_range(
-        query=query,
-        num_before=num_before,
-        num_after=num_after,
-        anchor=anchor,
-        anchored_to_left=anchored_to_left,
-        anchored_to_right=anchored_to_right,
-        id_col=inner_msg_id_col,
-        first_visible_message_id=first_visible_message_id,
-    )
+
+    if (not message_by_ids):
+        query = limit_query_to_range(
+            query=query,
+            num_before=num_before,
+            num_after=num_after,
+            anchor=anchor,
+            anchored_to_left=anchored_to_left,
+            anchored_to_right=anchored_to_right,
+            id_col=inner_msg_id_col,
+            first_visible_message_id=first_visible_message_id,
+        )
+    else:
+        query = query.where(column("message_id").in_(message_id_list))
 
     main_query = alias(query)
     query = select(main_query.c, None, main_query).order_by(column("message_id").asc())
