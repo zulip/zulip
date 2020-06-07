@@ -4,7 +4,7 @@ set -eo pipefail
 ZULIP_PATH="$(dirname "$0")/../.."
 ZULIP_SRV="/srv"
 YARN_PACKAGE_JSON="$ZULIP_SRV/zulip-yarn/package.json"
-node_version=12.16.1
+node_version=12.18.0
 yarn_version=1.22.4
 nvm_version=0.35.3
 
