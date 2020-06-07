@@ -4448,6 +4448,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
         message.recipient_id = new_stream.recipient_id
 
         event["new_stream_id"] = new_stream.id
+        event[ORIG_TOPIC] = orig_topic_name
         event["propagate_mode"] = propagate_mode
 
     if topic_name is not None:

@@ -143,6 +143,7 @@ exports.update_messages = function update_messages(events) {
         const new_topic = util.get_edit_event_topic(event);
 
         const {new_stream_id} = event;
+        const new_stream = stream_data.get_sub_by_id(new_stream_id);
 
         // A topic edit may affect multiple messages, listed in
         // event.message_ids. event.message_id is still the first message
@@ -187,19 +188,24 @@ exports.update_messages = function update_messages(events) {
                     if (current_filter && current_filter.has_topic(stream_name, orig_topic)) {
                         let new_filter = current_filter;
                         if (new_filter && stream_changed) {
-                            // TODO: This logic doesn't handle the
-                            // case where we're a guest user and the
-                            // message moves to a stream we cannot
-                            // access, which would cause the
-                            // stream_data lookup here to fail.
-                            //
-                            // The fix is likely somewhat involved, so punting for now.
-                            const new_stream_name = stream_data.get_sub_by_id(new_stream_id).name;
-                            new_filter = new_filter.filter_with_new_params({
-                                operator: 'stream',
-                                operand: new_stream_name,
-                            });
-                            changed_narrow = true;
+                            if (new_stream === undefined) {
+                                // The new stream, where the messages were moved, isn't known
+                                // to the user possibly because it is a guest user.
+                                // Here we just narrow to the old stream, or unnarrow
+                                // from the old stream > topic.
+                                new_filter = new Filter([{
+                                    operator: 'stream',
+                                    operand: stream_name,
+                                }]);
+                                changed_narrow = true;
+                            } else {
+                                const new_stream_name = new_stream.name;
+                                new_filter = new_filter.filter_with_new_params({
+                                    operator: 'stream',
+                                    operand: new_stream_name,
+                                });
+                                changed_narrow = true;
+                            }
                         }
 
                         if (new_filter && topic_edited) {
@@ -247,10 +253,20 @@ exports.update_messages = function update_messages(events) {
                     msg.topic_links = event.topic_links;
                 }
                 if (stream_changed) {
-                    const new_stream_name = stream_data.get_sub_by_id(new_stream_id).name;
-                    msg.stream_id = event.new_stream_id;
-                    msg.stream = new_stream_name;
-                    msg.display_recipient = new_stream_name;
+                    if (new_stream === undefined) {
+                        // The messages were moved, but we treat this as a deletion of
+                        // messages since the new stream is not accessible to user and
+                        // the path for deletion is much cleaner.
+                        // TODO: Update method to delete messages in bulk, otherwise
+                        // UI will freeze till this loop finishes.
+                        message_util.delete_message(msg.id);
+                        continue;
+                    } else {
+                        const new_stream_name = new_stream.name;
+                        msg.stream_id = event.new_stream_id;
+                        msg.stream = new_stream_name;
+                        msg.display_recipient = new_stream_name;
+                    }
                 }
 
                 // Add the recent topics entry for the new stream/topics.
