@@ -1,5 +1,14 @@
 <div id="{{theme_mode}}-logo-section" class="realm-logo-section">
-    <div class="inline-block realm-logo-block">
+    <div class="inline-block avatar-icon-logo-settings realm-logo-block">
+        {{#if (and is_admin zulip_plan_is_not_limited)}}
+        <div class="settings-page-image-background"></div>
+        <span class="realm-logo-delete-button settings-page-delete-button" aria-label="{{t 'Delete organization logo'}}" role="button" tabindex="0">
+            &times;
+        </span>
+        <span class="settings-page-delete-text realm_logo_delete" aria-label="{{t 'Delete organization logo'}}" tabindex="0">
+            {{t 'Delete logo' }}
+        </span>
+        {{/if}}
         <img class="realm-logo-img" src="{{ logo_url }}"/>
         <input type="file" name="realm-logo-file-input"
           class="realm-logo-file-input notvisible" value="{{t 'Upload logo' }}"/>
@@ -11,9 +20,6 @@
         <button class="realm-logo-upload-button button rounded sea-green w-200 block input-size {{theme_mode}}-settings">
             <span class="upload-logo-button-text">{{t 'Upload new logo' }}</span>
             <span class="upload-logo-spinner"></span>
-        </button>
-        <button class="realm-logo-delete-button button rounded btn-danger w-200 m-t-10 block input-size">
-            {{t 'Delete logo' }}
         </button>
         {{/if}}
     </div>
