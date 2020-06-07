@@ -36,6 +36,7 @@ global.patch_builtin = namespace.set_global;
 global.zrequire = namespace.zrequire;
 global.stub_out_jquery = namespace.stub_out_jquery;
 global.with_overrides = namespace.with_overrides;
+global.mock_module = namespace.mock_module;
 
 global.window = new Proxy(global, {
     set: (obj, prop, value) => namespace.set_global(prop, value),

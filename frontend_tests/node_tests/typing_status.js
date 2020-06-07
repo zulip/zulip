@@ -268,7 +268,7 @@ run_test('basics', () => {
 
     // stub functions to see how may time they are called
     for (const method of Object.keys(call_count)) {
-        typing_status.__Rewire__(method, function () {
+        mock_module(typing_status, method, function () {
             call_count[method] += 1;
         });
     }

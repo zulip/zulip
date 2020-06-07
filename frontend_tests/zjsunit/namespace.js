@@ -119,3 +119,23 @@ exports.with_overrides = function (test_function) {
         f();
     }
 };
+
+// Usage:
+//     mock_module(people, 'activity', { <prop>: ... })
+// Note that, if you only need to mock a specific method
+// of the module/object do:
+//     mock_module(people, 'activity.<prop>', ...);
+// It can also mock top-level variables that are not exported.
+exports.mock_module = function (mod, parts, value) {
+    const [var_name, prop] = parts.split('.');
+    if (prop !== undefined) {
+        // This is for use when you don't want to override the
+        // whole module (or object) rather a specific method or
+        // property of a module.
+        const original = mod.__get__(var_name);
+        original[prop] = value;
+        mod.__Rewire__(var_name, original);
+    } else {
+        mod.__Rewire__(var_name, value);
+    }
+};
