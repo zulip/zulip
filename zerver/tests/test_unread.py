@@ -458,8 +458,9 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
     def get_mobile_push_notification_ids(self, user_profile: UserProfile) -> List[int]:
         return list(UserMessage.objects.filter(
             user_profile=user_profile,
-            flags=UserMessage.flags.active_mobile_push_notification).order_by(
-                "message_id").values_list("message_id", flat=True))
+        ).extra(
+            where=[UserMessage.where_active_push_notification()],
+        ).order_by("message_id").values_list("message_id", flat=True))
 
     @mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value=True)
     def test_track_active_mobile_push_notifications(self, mock_push_notifications: mock.MagicMock) -> None:
