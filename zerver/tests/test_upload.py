@@ -1392,13 +1392,13 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
     def test_get_default_logo(self) -> None:
         self.login('hamlet')
         realm = get_realm('zulip')
-        do_change_logo_source(realm, Realm.LOGO_UPLOADED, self.night)
+        do_change_logo_source(realm, Realm.LOGO_DEFAULT, self.night)
         response = self.client_get("/json/realm/logo", {'night': ujson.dumps(self.night)})
         redirect_url = response['Location']
-        self.assertEqual(redirect_url, get_realm_logo_url(realm, self.night) +
-                         f'&night={str(self.night).lower()}')
+        is_night_str = str(self.night).lower()
+        self.assertEqual(redirect_url, f"/static/images/logo/zulip-org-logo.png?version=0&night={is_night_str}")
 
-    def test_get_realm_logo(self) -> None:
+    def test_get_uploaded_logo(self) -> None:
         self.login('hamlet')
         realm = get_realm('zulip')
         do_change_logo_source(realm, Realm.LOGO_UPLOADED, self.night)
@@ -1406,6 +1406,23 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(get_realm_logo_url(realm, self.night) +
                                               f'&night={str(self.night).lower()}'))
+
+        is_night_str = str(self.night).lower()
+
+        if self.night:
+            file_name = "night_logo.png"
+        else:
+            file_name = "logo.png"
+        self.assertEqual(redirect_url, f"/user_avatars/{realm.id}/realm/{file_name}?version=2&night={is_night_str}")
+
+        do_change_plan_type(realm, Realm.LIMITED)
+        if self.night:
+            self.assertEqual(realm.night_logo_source, Realm.LOGO_UPLOADED)
+        else:
+            self.assertEqual(realm.logo_source, Realm.LOGO_UPLOADED)
+        response = self.client_get("/json/realm/logo", {'night': ujson.dumps(self.night)})
+        redirect_url = response['Location']
+        self.assertEqual(redirect_url, f"/static/images/logo/zulip-org-logo.png?version=0&night={is_night_str}")
 
     def test_valid_logos(self) -> None:
         """

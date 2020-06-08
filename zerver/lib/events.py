@@ -38,7 +38,7 @@ from zerver.lib.narrow import check_supported_events_narrow_filter, read_stop_wo
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.realm_icon import realm_icon_url
-from zerver.lib.realm_logo import get_realm_logo_url
+from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
 from zerver.lib.request import JsonableError
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
@@ -66,9 +66,9 @@ from zproject.backends import email_auth_enabled, password_auth_enabled
 
 def add_realm_logo_fields(state: Dict[str, Any], realm: Realm) -> None:
     state['realm_logo_url'] = get_realm_logo_url(realm, night = False)
-    state['realm_logo_source'] = realm.logo_source
+    state['realm_logo_source'] = get_realm_logo_source(realm, night = False)
     state['realm_night_logo_url'] = get_realm_logo_url(realm, night = True)
-    state['realm_night_logo_source'] = realm.night_logo_source
+    state['realm_night_logo_source'] = get_realm_logo_source(realm, night = True)
     state['max_logo_file_size'] = settings.MAX_LOGO_FILE_SIZE
 
 def always_want(msg_type: str) -> bool:
