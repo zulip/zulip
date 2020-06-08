@@ -248,6 +248,9 @@ def do_aggregate_to_summary_table(stat: CountStat, end_time: datetime,
 def do_increment_logging_stat(zerver_object: Union[Realm, UserProfile, Stream], stat: CountStat,
                               subgroup: Optional[Union[str, int, bool]], event_time: datetime,
                               increment: int=1) -> None:
+    if not increment:
+        return
+
     table = stat.data_collector.output_table
     if table == RealmCount:
         id_args = {'realm': zerver_object}
@@ -644,6 +647,16 @@ def get_count_stats(realm: Optional[Realm]=None) -> Dict[str, CountStat]:
         CountStat('active_users:is_bot:day',
                   sql_data_collector(RealmCount, count_user_by_realm_query(realm), (UserProfile, 'is_bot')),
                   CountStat.DAY, interval=TIMEDELTA_MAX),
+
+        # Messages read stats.  messages_read::hour is the total
+        # number of messages read, whereas
+        # messages_read_interactions::hour tries to count the total
+        # number of UI interactions resulting in messages being marked
+        # as read (imperfect because of batching of some request
+        # types, but less likely to be overwhelmed by a single bulk
+        # operation).
+        LoggingCountStat('messages_read::hour', UserCount, CountStat.HOUR),
+        LoggingCountStat('messages_read_interactions::hour', UserCount, CountStat.HOUR),
 
         # User Activity stats
         # Stats that measure user activity in the UserActivityInterval sense.

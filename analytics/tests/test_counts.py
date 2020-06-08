@@ -38,9 +38,12 @@ from zerver.lib.actions import (
     do_create_user,
     do_deactivate_user,
     do_invite_users,
+    do_mark_all_as_read,
+    do_mark_stream_messages_as_read,
     do_reactivate_user,
     do_resend_user_invite_email,
     do_revoke_user_invite,
+    do_update_message_flags,
     update_user_activity_interval,
 )
 from zerver.lib.create_user import create_user
@@ -1150,6 +1153,39 @@ class TestLoggingCountStats(AnalyticsTestCase):
         # Resending invite should cost you
         do_resend_user_invite_email(PreregistrationUser.objects.first())
         assertInviteCountEquals(6)
+
+    def test_messages_read_hour(self) -> None:
+        read_count_property = 'messages_read::hour'
+        interactions_property = 'messages_read_interactions::hour'
+
+        user1 = self.create_user()
+        user2 = self.create_user()
+        stream, recipient = self.create_stream_with_recipient()
+        self.subscribe(user1, stream.name)
+        self.subscribe(user2, stream.name)
+
+        self.send_personal_message(user1, user2)
+        client = get_client("website")
+        do_mark_all_as_read(user2, client)
+        self.assertEqual(1, UserCount.objects.filter(property=read_count_property)
+                         .aggregate(Sum('value'))['value__sum'])
+        self.assertEqual(1, UserCount.objects.filter(property=interactions_property)
+                         .aggregate(Sum('value'))['value__sum'])
+
+        self.send_stream_message(user1, stream.name)
+        self.send_stream_message(user1, stream.name)
+        do_mark_stream_messages_as_read(user2, client, stream)
+        self.assertEqual(3, UserCount.objects.filter(property=read_count_property)
+                         .aggregate(Sum('value'))['value__sum'])
+        self.assertEqual(2, UserCount.objects.filter(property=interactions_property)
+                         .aggregate(Sum('value'))['value__sum'])
+
+        message = self.send_stream_message(user2, stream.name)
+        do_update_message_flags(user1, client, 'add', 'read', [message])
+        self.assertEqual(4, UserCount.objects.filter(property=read_count_property)
+                         .aggregate(Sum('value'))['value__sum'])
+        self.assertEqual(3, UserCount.objects.filter(property=interactions_property)
+                         .aggregate(Sum('value'))['value__sum'])
 
 class TestDeleteStats(AnalyticsTestCase):
     def test_do_drop_all_analytics_tables(self) -> None:
