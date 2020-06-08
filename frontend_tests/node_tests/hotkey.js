@@ -164,7 +164,8 @@ run_test('basic_chars', () => {
         }
     }
 
-    function assert_mapping(c, func_name, shiftKey) {
+    function assert_mapping(c, func_name, opts = {}) {
+        const { shiftKey } = opts;
         stubbing(func_name, function () {
             assert(process(c, shiftKey));
         });
@@ -284,7 +285,7 @@ run_test('basic_chars', () => {
     assert_mapping('+', 'reactions.toggle_emoji_reaction');
     assert_mapping('-', 'condense.toggle_collapse');
     assert_mapping('r', 'compose_actions.respond_to_message');
-    assert_mapping('R', 'compose_actions.respond_to_message', true);
+    assert_mapping('R', 'compose_actions.respond_to_message', { shiftKey: true });
     assert_mapping('j', 'navigate.down');
     assert_mapping('J', 'navigate.page_down');
     assert_mapping('k', 'navigate.up');
@@ -293,7 +294,7 @@ run_test('basic_chars', () => {
     assert_mapping('S', 'narrow.by_topic');
     assert_mapping('u', 'popovers.show_sender_info');
     assert_mapping('i', 'popovers.open_message_menu');
-    assert_mapping(':', 'reactions.open_reactions_popover', true);
+    assert_mapping(':', 'reactions.open_reactions_popover', { shiftKey: true });
     assert_mapping('>', 'compose_actions.quote_and_reply');
     assert_mapping('e', 'message_edit.start');
 
@@ -306,7 +307,7 @@ run_test('basic_chars', () => {
     assert_mapping('v', 'lightbox.show_from_selected_message');
 
     global.emoji_picker.reactions_popped = return_true;
-    assert_mapping(':', 'emoji_picker.navigate', true);
+    assert_mapping(':', 'emoji_picker.navigate', { shiftKey: true });
     global.emoji_picker.reactions_popped = return_false;
 
     assert_mapping('G', 'navigate.to_end');
