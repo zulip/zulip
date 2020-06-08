@@ -31,7 +31,7 @@ page can be easily identified in it's respective JavaScript file -->
                         <h2>{{_('Owners') }}</h2>
                         {% if direct_owners %}
                             {% for direct_owner in direct_owners %}
-                            <p><input type="submit" formaction="{{ direct_owner.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}?next={{ next }}"
+                            <p><input type="submit" formaction="{{ direct_owner.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}"
                                       name="direct_email" class="btn-direct btn-admin" value="{{ direct_owner.delivery_email }}" /></p>
                             {% endfor %}
                         {% else %}
