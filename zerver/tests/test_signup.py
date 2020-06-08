@@ -1133,7 +1133,7 @@ earl-test@zulip.com""", ["Denmark"]))
         invitee_emails = ", ".join([str(i) for i in range(get_realm("zulip").max_invites - 1)])
         self.assert_json_error(self.invite(invitee_emails, ["Denmark"]),
                                "You do not have enough remaining invites. "
-                               "Please contact zulip-admin@example.com to have your limit raised. "
+                               "Please contact desdemona+admin@zulip.com to have your limit raised. "
                                "No invitations were sent.")
 
     def test_missing_or_invalid_params(self) -> None:

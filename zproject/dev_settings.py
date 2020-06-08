@@ -7,6 +7,8 @@ from typing import Set
 
 from .config import DEPLOY_ROOT
 
+ZULIP_ADMINISTRATOR = "desdemona+admin@zulip.com"
+
 # We want LOCAL_UPLOADS_DIR to be an absolute path so that code can
 # chdir without having problems accessing it.
 LOCAL_UPLOADS_DIR = os.path.join(DEPLOY_ROOT, 'var/uploads')

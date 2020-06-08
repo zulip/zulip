@@ -1040,7 +1040,7 @@ class StripeTest(StripeTestCase):
         self.login_user(hamlet)
         with patch("corporate.views.process_initial_upgrade", side_effect=Exception):
             response = self.upgrade(talk_to_stripe=False)
-        self.assert_json_error_contains(response, "Something went wrong. Please contact zulip-admin@example.com.")
+        self.assert_json_error_contains(response, "Something went wrong. Please contact desdemona+admin@zulip.com.")
         self.assertEqual(ujson.loads(response.content)['error_description'], 'uncaught exception during upgrade')
 
     def test_redirect_for_billing_home(self) -> None:
