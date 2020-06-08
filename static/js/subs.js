@@ -184,10 +184,13 @@ exports.update_stream_privacy = function (sub, values) {
     stream_ui_updates.update_add_subscriptions_elements(sub);
     stream_list.redraw_stream_privacy(sub);
 
-    // update the stream_params stored in the filter object if needed
+    // Update navbar stream name if needed
     const filter = narrow_state.filter();
     if (filter && filter.operands("stream")[0] === sub.name) {
+        // update the stream_params stored in the filter object
         filter.fix_stream_params();
+        // use these to update the navbar
+        tab_bar.render_title_area();
     }
 };
 
