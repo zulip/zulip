@@ -100,7 +100,7 @@ class OpenGraphTest(ZulipTestCase):
             '/help/logging-out',
             "Logging out (Zulip Help Center)",
             # Ideally we'd do something better here
-            ["We're here to help! Email us at zulip-admin@example.com with questions, feedback, or " +
+            ["We're here to help! Email us at desdemona+admin@zulip.com with questions, feedback, or " +
              "feature requests."],
             ["Click on the gear"])
 
@@ -123,7 +123,7 @@ class OpenGraphTest(ZulipTestCase):
             # Probably we should make this "Zulip Help Center"
             "No such article. (Zulip Help Center)",
             ["No such article. | We're here to help!",
-             "Email us at zulip-admin@example.com with questions, feedback, or feature requests."],
+             "Email us at desdemona+admin@zulip.com with questions, feedback, or feature requests."],
             [],
             # Test that our open graph logic doesn't throw a 500
             404)

@@ -24,8 +24,7 @@ from confirmation.models import RealmCreationKey, generate_realm_creation_url
 
 class TestCheckConfig(ZulipTestCase):
     def test_check_config(self) -> None:
-        with self.assertRaisesRegex(CommandError, "Error: You must set ZULIP_ADMINISTRATOR in /etc/zulip/settings.py."):
-            check_config()
+        check_config()
         with self.settings(REQUIRED_SETTINGS=[('asdf', 'not asdf')]):
             with self.assertRaisesRegex(CommandError, "Error: You must set asdf in /etc/zulip/settings.py."):
                 check_config()
