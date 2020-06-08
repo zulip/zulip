@@ -1,6 +1,6 @@
 # Code style and conventions
 
-One can summary Zulip's coding philosophy as a relentless focus on
+One can summarize Zulip's coding philosophy as a relentless focus on
 making the codebase easy to understand and difficult to make dangerous
 mistakes in.  The majority of work in any large software development
 project is understanding the existing code so one can debug or modify
@@ -16,7 +16,7 @@ better than writing a comment explaining how the bad interface works).
 
 This page documents code style policies that every Zulip developer
 should understand.  We aim for this document to be short and focused
-only on details that cannot be easily enforced another way (E.g.
+only on details that cannot be easily enforced another way (e.g.
 through linters, automated tests, subsystem design that makes classes
 of mistakes unlikely, etc.).  This approach minimizes the cognitive
 load of ensuring a consistent coding style for both contributors and
