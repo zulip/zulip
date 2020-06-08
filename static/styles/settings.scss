@@ -653,6 +653,7 @@ input[type=checkbox] {
 #realm-icon-section {
     border-radius: 5px;
     box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
+    z-index: 99;
 }
 
 #user-settings-avatar {
@@ -1344,6 +1345,15 @@ input[type=checkbox] {
     box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
     width: 100px;
     height: 100px;
+}
+
+#user-avatar-block {
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
+    width: 200px;
+    height: 200px;
+    top: 57px;
+    position: absolute;
 }
 
 .realm-logo-img {
