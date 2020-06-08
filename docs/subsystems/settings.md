@@ -69,11 +69,14 @@ In a production environment, we have:
   `zproject/settings.py`.
 
 * `zproject/settings.py` is the main Django settings file for Zulip.
-  It contains all the settings that are constant for all Zulip
+  It imports everything from `zproject/configured_settings.py`, and
+  contains all the settings that are constant for all Zulip
   installations (e.g. configuration for logging, static assets,
-  middleware, etc.).  It has a line `from prod_settings
-  import *`, which in a prod environment has the effect of importing
-  `/etc/zulip/settings.py` (via a symlink).
+  middleware, etc.).
+
+* `zproject/configured_settings.py` imports everything from
+  `zproject/default_settings.py`, then in a prod environment imports
+  `/etc/zulip/settings.py` via a symlink.
 
 * `zproject/default_settings.py` has the default values for the settings the
   user would set in `/etc/zulip/settings.py`.
