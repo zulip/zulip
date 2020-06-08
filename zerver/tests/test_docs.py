@@ -137,7 +137,6 @@ class DocPageTest(ZulipTestCase):
         self._test('/for/research/', 'for researchers')
         self._test('/for/companies/', 'in a company')
         self._test('/for/working-groups-and-communities/', 'standards bodies')
-        self._test('/for/mystery-hunt/', 'four SIPB alums')
         self._test('/security/', 'TLS encryption')
         self._test('/atlassian/', 'HipChat')
         self._test('/devlogin/', 'Normal users', landing_page=False)

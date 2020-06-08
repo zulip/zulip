@@ -77,6 +77,6 @@ class PorticoDocumentationSpider(BaseDocumentationSpider):
                   'http://localhost:9981/for/open-source',
                   'http://localhost:9981/for/companies',
                   'http://localhost:9981/for/working-groups-and-communities',
-                  'http://localhost:9981/for/mystery-hunt',
+                  'http://localhost:9981/for/research',
                   'http://localhost:9981/security']
     deny_domains: List[str] = []
