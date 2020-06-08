@@ -11,15 +11,15 @@ from zulint.custom_rules import Rule, RuleList
 # 'include_only': 'set([<path>, ...])' - includes only those files where <path> is a substring of the filepath.
 
 PYDELIMS = r'''"'()\[\]{}#\\'''
-PYREG = r"[^{}]".format(PYDELIMS)
+PYREG = fr"[^{PYDELIMS}]"
 PYSQ = r'"(?:[^"\\]|\\.)*"'
 PYDQ = r"'(?:[^'\\]|\\.)*'"
 PYLEFT = r"[(\[{]"
 PYRIGHT = r"[)\]}]"
 PYCODE = PYREG
 for depth in range(5):
-    PYGROUP = r"""(?:{}|{}|{}{}*{})""".format(PYSQ, PYDQ, PYLEFT, PYCODE, PYRIGHT)
-    PYCODE = r"""(?:{}|{})""".format(PYREG, PYGROUP)
+    PYGROUP = fr"""(?:{PYSQ}|{PYDQ}|{PYLEFT}{PYCODE}*{PYRIGHT})"""
+    PYCODE = fr"""(?:{PYREG}|{PYGROUP})"""
 
 FILES_WITH_LEGACY_SUBJECT = {
     # This basically requires a big DB migration:
@@ -305,7 +305,7 @@ python_rules = RuleList(
         {'pattern': r'''\WJsonableError\(["'].+\)''',
          'exclude': {'zerver/tests', 'zerver/views/development/'},
          'description': 'Argument to JsonableError should be a literal string enclosed by _()'},
-        {'pattern': r"""\b_\((?:\s|{}|{})*[^\s'")]""".format(PYSQ, PYDQ),
+        {'pattern': fr"""\b_\((?:\s|{PYSQ}|{PYDQ})*[^\s'")]""",
          'description': 'Called _() on a computed string',
          'exclude_line': {('zerver/lib/i18n.py', 'result = _(string)')},
          'good_lines': ["return json_error(_('No presence data for %s') % (target.email,))"],

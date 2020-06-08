@@ -116,7 +116,7 @@ class PermissionTest(ZulipTestCase):
         do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
         invalid_user_id = 1000
-        result = self.client_patch('/json/users/{}'.format(invalid_user_id), {})
+        result = self.client_patch(f'/json/users/{invalid_user_id}', {})
         self.assert_json_error(result, 'No such user')
 
     def test_admin_api(self) -> None:
@@ -142,7 +142,7 @@ class PermissionTest(ZulipTestCase):
 
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
-            result = self.client_patch('/json/users/{}'.format(othello.id), req)
+            result = self.client_patch(f'/json/users/{othello.id}', req)
         self.assert_json_success(result)
         admin_users = realm.get_human_admin_users()
         self.assertTrue(othello in admin_users)
@@ -154,7 +154,7 @@ class PermissionTest(ZulipTestCase):
         req = dict(role=ujson.dumps(UserProfile.ROLE_MEMBER))
         events = []
         with tornado_redirected_to_list(events):
-            result = self.client_patch('/json/users/{}'.format(othello.id), req)
+            result = self.client_patch(f'/json/users/{othello.id}', req)
         self.assert_json_success(result)
         admin_users = realm.get_human_admin_users()
         self.assertFalse(othello in admin_users)
@@ -167,7 +167,7 @@ class PermissionTest(ZulipTestCase):
         req = dict(role=ujson.dumps(UserProfile.ROLE_MEMBER))
         events = []
         with tornado_redirected_to_list(events):
-            result = self.client_patch('/json/users/{}'.format(desdemona.id), req)
+            result = self.client_patch(f'/json/users/{desdemona.id}', req)
         self.assert_json_success(result)
         admin_users = realm.get_human_admin_users()
         self.assertFalse(desdemona in admin_users)
@@ -175,12 +175,12 @@ class PermissionTest(ZulipTestCase):
         self.assertEqual(person['user_id'], desdemona.id)
         self.assertEqual(person['role'], UserProfile.ROLE_MEMBER)
         with tornado_redirected_to_list([]):
-            result = self.client_patch('/json/users/{}'.format(iago.id), req)
+            result = self.client_patch(f'/json/users/{iago.id}', req)
         self.assert_json_error(result, 'Cannot remove the only organization administrator')
 
         # Make sure only admins can patch other user's info.
         self.login('othello')
-        result = self.client_patch('/json/users/{}'.format(hamlet.id), req)
+        result = self.client_patch(f'/json/users/{hamlet.id}', req)
         self.assert_json_error(result, 'Insufficient permission')
 
     def test_admin_api_hide_emails(self) -> None:
@@ -261,7 +261,7 @@ class PermissionTest(ZulipTestCase):
         self.login('iago')
         hamlet = self.example_user('hamlet')
         req = dict(full_name=ujson.dumps(new_name))
-        result = self.client_patch('/json/users/{}'.format(hamlet.id), req)
+        result = self.client_patch(f'/json/users/{hamlet.id}', req)
         self.assert_json_success(result)
         hamlet = self.example_user('hamlet')
         self.assertEqual(hamlet.full_name, new_name)
@@ -355,7 +355,7 @@ class PermissionTest(ZulipTestCase):
         req = dict(role=ujson.dumps(UserProfile.ROLE_GUEST))
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
-            result = self.client_patch('/json/users/{}'.format(hamlet.id), req)
+            result = self.client_patch(f'/json/users/{hamlet.id}', req)
         self.assert_json_success(result)
 
         hamlet = self.example_user("hamlet")
@@ -374,7 +374,7 @@ class PermissionTest(ZulipTestCase):
         req = dict(role=ujson.dumps(UserProfile.ROLE_MEMBER))
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
-            result = self.client_patch('/json/users/{}'.format(polonius.id), req)
+            result = self.client_patch(f'/json/users/{polonius.id}', req)
         self.assert_json_success(result)
 
         polonius = self.example_user("polonius")
@@ -397,7 +397,7 @@ class PermissionTest(ZulipTestCase):
         req = dict(role=ujson.dumps(UserProfile.ROLE_GUEST))
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
-            result = self.client_patch('/json/users/{}'.format(hamlet.id), req)
+            result = self.client_patch(f'/json/users/{hamlet.id}', req)
         self.assert_json_success(result)
 
         hamlet = self.example_user("hamlet")
@@ -421,7 +421,7 @@ class PermissionTest(ZulipTestCase):
         req = dict(role=ujson.dumps(UserProfile.ROLE_REALM_ADMINISTRATOR))
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
-            result = self.client_patch('/json/users/{}'.format(polonius.id), req)
+            result = self.client_patch(f'/json/users/{polonius.id}', req)
         self.assert_json_success(result)
 
         polonius = self.example_user("polonius")
@@ -457,7 +457,7 @@ class PermissionTest(ZulipTestCase):
                 'value': fields[field_name],
             })
 
-        result = self.client_patch('/json/users/{}'.format(cordelia.id),
+        result = self.client_patch(f'/json/users/{cordelia.id}',
                                    {'profile_data': ujson.dumps(new_profile_data)})
         self.assert_json_success(result)
 
@@ -482,7 +482,7 @@ class PermissionTest(ZulipTestCase):
                 'value': field_value,
             })
 
-            result = self.client_patch('/json/users/{}'.format(cordelia.id),
+            result = self.client_patch(f'/json/users/{cordelia.id}',
                                        {'profile_data': ujson.dumps(new_profile_data)})
             self.assert_json_error(result, error_msg)
 
@@ -491,7 +491,7 @@ class PermissionTest(ZulipTestCase):
             'id': 9001,
             'value': ''
         }]
-        result = self.client_patch('/json/users/{}'.format(cordelia.id),
+        result = self.client_patch(f'/json/users/{cordelia.id}',
                                    {'profile_data': ujson.dumps(invalid_profile_data)})
         self.assert_json_error(result, 'Field id 9001 not found.')
 
@@ -500,7 +500,7 @@ class PermissionTest(ZulipTestCase):
             'id': 9001,
             'value': 'some data'
         }]
-        result = self.client_patch('/json/users/{}'.format(cordelia.id),
+        result = self.client_patch(f'/json/users/{cordelia.id}',
                                    {'profile_data': ujson.dumps(invalid_profile_data)})
         self.assert_json_error(result, 'Field id 9001 not found.')
 
@@ -515,7 +515,7 @@ class PermissionTest(ZulipTestCase):
                 'id': field.id,
                 'value': value,
             })
-        result = self.client_patch('/json/users/{}'.format(cordelia.id),
+        result = self.client_patch(f'/json/users/{cordelia.id}',
                                    {'profile_data': ujson.dumps(empty_profile_data)})
         self.assert_json_success(result)
         for field_dict in cordelia.profile_data:
@@ -544,7 +544,7 @@ class PermissionTest(ZulipTestCase):
                 'id': field.id,
                 'value': value,
             })
-        result = self.client_patch('/json/users/{}'.format(cordelia.id),
+        result = self.client_patch(f'/json/users/{cordelia.id}',
                                    {'profile_data': ujson.dumps(new_profile_data)})
         self.assert_json_success(result)
         for field_dict in cordelia.profile_data:
@@ -562,7 +562,7 @@ class PermissionTest(ZulipTestCase):
             'id': field.id,
             'value': "New hamlet Biography",
         })
-        result = self.client_patch('/json/users/{}'.format(hamlet.id),
+        result = self.client_patch(f'/json/users/{hamlet.id}',
                                    {'profile_data': ujson.dumps(new_profile_data)})
         self.assert_json_error(result, 'Insufficient permission')
 
@@ -586,7 +586,7 @@ class BulkCreateUserTest(ZulipTestCase):
         fred = get_user_by_delivery_email('fred@zulip.com', realm)
         self.assertEqual(
             fred.email,
-            'user{}@zulip.testserver'.format(fred.id)
+            f'user{fred.id}@zulip.testserver'
         )
 
         lisa = get_user_by_delivery_email('lisa@zulip.com', realm)
@@ -970,12 +970,12 @@ class ActivateTest(ZulipTestCase):
         user = self.example_user('hamlet')
         self.assertTrue(user.is_active)
 
-        result = self.client_delete('/json/users/{}'.format(user.id))
+        result = self.client_delete(f'/json/users/{user.id}')
         self.assert_json_success(result)
         user = self.example_user('hamlet')
         self.assertFalse(user.is_active)
 
-        result = self.client_post('/json/users/{}/reactivate'.format(user.id))
+        result = self.client_post(f'/json/users/{user.id}/reactivate')
         self.assert_json_success(result)
         user = self.example_user('hamlet')
         self.assertTrue(user.is_active)
@@ -990,7 +990,7 @@ class ActivateTest(ZulipTestCase):
 
         # Cannot deactivate a nonexistent user.
         invalid_user_id = 1000
-        result = self.client_delete('/json/users/{}'.format(invalid_user_id))
+        result = self.client_delete(f'/json/users/{invalid_user_id}')
         self.assert_json_error(result, 'No such user')
 
         result = self.client_delete('/json/users/{}'.format(self.example_user("webhook_bot").id))
@@ -999,12 +999,12 @@ class ActivateTest(ZulipTestCase):
         result = self.client_delete('/json/users/{}'.format(self.example_user("iago").id))
         self.assert_json_success(result)
 
-        result = self.client_delete('/json/users/{}'.format(admin.id))
+        result = self.client_delete(f'/json/users/{admin.id}')
         self.assert_json_error(result, 'Cannot deactivate the only organization administrator')
 
         # Cannot reactivate a nonexistent user.
         invalid_user_id = 1000
-        result = self.client_post('/json/users/{}/reactivate'.format(invalid_user_id))
+        result = self.client_post(f'/json/users/{invalid_user_id}/reactivate')
         self.assert_json_error(result, 'No such user')
 
     def test_api_with_insufficient_permissions(self) -> None:
@@ -1398,7 +1398,7 @@ class GetProfileTest(ZulipTestCase):
 
         # Tests the GET ../users/{id} api endpoint.
         user = self.example_user('hamlet')
-        result = ujson.loads(self.client_get('/json/users/{}'.format(user.id)).content)
+        result = ujson.loads(self.client_get(f'/json/users/{user.id}').content)
         self.assertEqual(result['user']['email'], user.email)
         self.assertEqual(result['user']['full_name'], user.full_name)
         self.assertIn("user_id", result['user'])
@@ -1407,14 +1407,14 @@ class GetProfileTest(ZulipTestCase):
         self.assertFalse(result['user']['is_admin'])
         self.assertFalse(result['user']['is_owner'])
 
-        result = ujson.loads(self.client_get('/json/users/{}?include_custom_profile_fields=true'.format(user.id)).content)
+        result = ujson.loads(self.client_get(f'/json/users/{user.id}?include_custom_profile_fields=true').content)
 
         self.assertIn('profile_data', result['user'])
-        result = self.client_get('/json/users/{}?'.format(30))
+        result = self.client_get(f'/json/users/{30}?')
         self.assert_json_error(result, "No such user")
 
         bot = self.example_user("default_bot")
-        result = ujson.loads(self.client_get('/json/users/{}'.format(bot.id)).content)
+        result = ujson.loads(self.client_get(f'/json/users/{bot.id}').content)
         self.assertEqual(result['user']['email'], bot.email)
         self.assertTrue(result['user']['is_bot'])
 

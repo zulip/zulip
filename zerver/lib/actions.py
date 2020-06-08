@@ -754,8 +754,8 @@ def do_scrub_realm(realm: Realm) -> None:
     for user in users:
         do_delete_messages_by_sender(user)
         do_delete_avatar_image(user)
-        user.full_name = "Scrubbed {}".format(generate_key()[:15])
-        scrubbed_email = "scrubbed-{}@{}".format(generate_key()[:15], realm.host)
+        user.full_name = f"Scrubbed {generate_key()[:15]}"
+        scrubbed_email = f"scrubbed-{generate_key()[:15]}@{realm.host}"
         user.email = scrubbed_email
         user.delivery_email = scrubbed_email
         user.save(update_fields=["full_name", "email", "delivery_email"])

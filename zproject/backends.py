@@ -192,7 +192,7 @@ class RateLimitedAuthenticationByUsername(RateLimitedObject):
         super().__init__()
 
     def key(self) -> str:
-        return "{}:{}".format(type(self).__name__, self.username)
+        return f"{type(self).__name__}:{self.username}"
 
     def rules(self) -> List[Tuple[int, int]]:
         return rate_limiting_rules
@@ -832,7 +832,7 @@ def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bo
         logger.info("Updated %s.", user_profile.delivery_email)
         return True
 
-    raise PopulateUserLDAPError("populate_user unexpectedly returned {}".format(updated_user))
+    raise PopulateUserLDAPError(f"populate_user unexpectedly returned {updated_user}")
 
 # Quick tool to test whether you're correctly authenticating to LDAP
 def query_ldap(email: str) -> List[str]:
@@ -842,7 +842,7 @@ def query_ldap(email: str) -> List[str]:
         try:
             ldap_username = backend.django_to_ldap_username(email)
         except ZulipLDAPExceptionNoMatchingLDAPUser as e:
-            values.append("No such user found: {}".format(e))
+            values.append(f"No such user found: {e}")
             return values
 
         ldap_attrs = _LDAPUser(backend, ldap_username).attrs
@@ -1738,7 +1738,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
                 continue
 
             saml_dict: ExternalAuthMethodDictT = dict(
-                name='saml:{}'.format(idp_name),
+                name=f'saml:{idp_name}',
                 display_name=idp_dict.get('display_name', cls.auth_backend_name),
                 display_icon=idp_dict.get('display_icon', cls.display_icon),
                 login_url=reverse('login-social-extra-arg', args=('saml', idp_name)),

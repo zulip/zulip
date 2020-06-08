@@ -68,7 +68,7 @@ def repo_comment_handler(payload: Dict[str, Any], action: str) -> List[Dict[str,
     commit_url += "commits/%s" % (sha,)
     message = payload["comment"]["text"]
     if action == "deleted their comment":
-        message = "~~{message}~~".format(message=message)
+        message = f"~~{message}~~"
     body = get_commits_comment_action_message(
         user_name=get_user_name(payload),
         action=action,
@@ -100,7 +100,7 @@ def repo_modified_handler(payload: Dict[str, Any]) -> List[Dict[str, str]]:
         new=new_name
     )  # As of writing this, the only change we'd be notified about is a name change.
     punctuation = '.' if new_name[-1] not in string.punctuation else ''
-    body = "{}{}".format(body, punctuation)
+    body = f"{body}{punctuation}"
     return [{"subject": subject_new, "body": body}]
 
 def repo_push_branch_data(payload: Dict[str, Any], change: Dict[str, Any]) -> Dict[str, str]:
@@ -217,7 +217,7 @@ def get_pr_opened_or_modified_body(payload: Dict[str, Any], action: str,
         else:
             body = PULL_REQUEST_OPENED_OR_MODIFIED_TEMPLATE_WITH_REVIEWERS.format(**parameters)
         punctuation = ':' if description else '.'
-        body = "{}{}".format(body, punctuation)
+        body = f"{body}{punctuation}"
         if description:
             body += '\n' + CONTENT_MESSAGE_TEMPLATE.format(message=description)
         return body
@@ -265,7 +265,7 @@ def get_pr_reassigned_body(payload: Dict[str, Any], include_title: Optional[bool
             url=pr["links"]["self"][0]["href"],
             title=pr["title"]
         )
-        message = "{}{}".format(message, punctuation)
+        message = f"{message}{punctuation}"
         return message
     if not include_title:
         return PULL_REQUEST_REASSIGNED_TEMPLATE.format(
@@ -305,7 +305,7 @@ def pr_comment_handler(payload: Dict[str, Any], action: str,
                              title=pr["title"])
     message = payload["comment"]["text"]
     if action == "deleted their comment on":
-        message = "~~{message}~~".format(message=message)
+        message = f"~~{message}~~"
     body = get_pull_request_event_message(
         user_name=get_user_name(payload),
         action=action,

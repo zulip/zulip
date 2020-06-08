@@ -61,7 +61,7 @@ def get_assigned_or_unassigned_pull_request_body(payload: Dict[str, Any],
         title=pull_request['title'] if include_title else None
     )
     if assignee is not None:
-        return "{} to {}.".format(base_message[:-1], assignee)
+        return f"{base_message[:-1]} to {assignee}."
     return base_message
 
 def get_closed_pull_request_body(payload: Dict[str, Any],
@@ -124,7 +124,7 @@ def get_issue_comment_body(payload: Dict[str, Any],
     if action == 'created':
         action = '[commented]'
     else:
-        action = '{} a [comment]'.format(action)
+        action = f'{action} a [comment]'
     action += '({}) on'.format(comment['html_url'])
 
     return get_issue_event_message(
@@ -167,7 +167,7 @@ def get_commit_comment_body(payload: Dict[str, Any]) -> str:
     comment = payload['comment']
     comment_url = comment['html_url']
     commit_url = comment_url.split('#', 1)[0]
-    action = '[commented]({})'.format(comment_url)
+    action = f'[commented]({comment_url})'
     return get_commits_comment_action_message(
         get_sender_name(payload),
         action,
@@ -214,7 +214,7 @@ def get_wiki_pages_body(payload: Dict[str, Any]) -> str:
             title=page['title'],
             url=page['html_url'],
         )
-    return "{}:\n{}".format(get_sender_name(payload), wiki_info.rstrip())
+    return f"{get_sender_name(payload)}:\n{wiki_info.rstrip()}"
 
 def get_watch_body(payload: Dict[str, Any]) -> str:
     return "{} starred [the repository]({}).".format(
@@ -240,16 +240,16 @@ def get_team_body(payload: Dict[str, Any]) -> str:
     if "description" in changes:
         actor = payload["sender"]["login"]
         new_description = payload["team"]["description"]
-        return "**{}** changed the team description to:\n```quote\n{}\n```".format(actor, new_description)
+        return f"**{actor}** changed the team description to:\n```quote\n{new_description}\n```"
     if "name" in changes:
         original_name = changes["name"]["from"]
         new_name = payload["team"]["name"]
-        return "Team `{}` was renamed to `{}`.".format(original_name, new_name)
+        return f"Team `{original_name}` was renamed to `{new_name}`."
     if "privacy" in changes:
         new_visibility = payload["team"]["privacy"]
-        return "Team visibility changed to `{}`".format(new_visibility)
+        return f"Team visibility changed to `{new_visibility}`"
     else:  # nocoverage
-        raise UnexpectedWebhookEventType("GitHub", "Team Edited: {}".format(changes.keys()))
+        raise UnexpectedWebhookEventType("GitHub", f"Team Edited: {changes.keys()}")
 
 def get_release_body(payload: Dict[str, Any]) -> str:
     data = {
@@ -273,7 +273,7 @@ def get_page_build_body(payload: Dict[str, Any]) -> str:
         'built': 'has finished building',
     }
 
-    action = actions.get(status, 'is {}'.format(status))
+    action = actions.get(status, f'is {status}')
     action.format(
         CONTENT_MESSAGE_TEMPLATE.format(message=build['error']['message'])
     )
@@ -465,7 +465,7 @@ def get_subject_based_on_type(payload: Dict[str, Any], event: str) -> str:
         if payload.get('repository') is None:
             return get_organization_name(payload)
     elif event == 'check_run':
-        return "{} / checks".format(get_repository_name(payload))
+        return f"{get_repository_name(payload)} / checks"
 
     return get_repository_name(payload)
 
@@ -545,7 +545,7 @@ def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Optional[
         if action == 'closed':
             return 'closed_pull_request'
         if action == 'review_requested':
-            return '{}_{}'.format(event, action)
+            return f'{event}_{action}'
         if action == 'ready_for_review':
             return 'pull_request_ready_for_review'
         # Unsupported pull_request events

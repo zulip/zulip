@@ -1103,23 +1103,23 @@ def support(request: HttpRequest) -> HttpResponse:
             new_discount = Decimal(new_discount)
             current_discount = get_discount_for_realm(realm)
             attach_discount_to_realm(realm, new_discount)
-            msg = "Discount of {} changed to {} from {} ".format(realm.name, new_discount, current_discount)
+            msg = f"Discount of {realm.name} changed to {new_discount} from {current_discount} "
             context["message"] = msg
 
         status = request.POST.get("status", None)
         if status is not None:
             if status == "active":
                 do_send_realm_reactivation_email(realm)
-                context["message"] = "Realm reactivation email sent to admins of {}.".format(realm.name)
+                context["message"] = f"Realm reactivation email sent to admins of {realm.name}."
             elif status == "deactivated":
                 do_deactivate_realm(realm, request.user)
-                context["message"] = "{} deactivated.".format(realm.name)
+                context["message"] = f"{realm.name} deactivated."
 
         scrub_realm = request.POST.get("scrub_realm", None)
         if scrub_realm is not None:
             if scrub_realm == "scrub_realm":
                 do_scrub_realm(realm)
-                context["message"] = "{} scrubbed.".format(realm.name)
+                context["message"] = f"{realm.name} scrubbed."
 
     query = request.GET.get("q", None)
     if query:
@@ -1135,7 +1135,7 @@ def support(request: HttpRequest) -> HttpResponse:
                 hostname = parse_result.hostname
                 assert hostname is not None
                 if parse_result.port:
-                    hostname = "{}:{}".format(hostname, parse_result.port)
+                    hostname = f"{hostname}:{parse_result.port}"
                 subdomain = get_subdomain_from_hostname(hostname)
                 try:
                     realms.add(get_realm(subdomain))
@@ -1295,13 +1295,13 @@ def realm_activity_link(realm_str: str) -> mark_safe:
 def realm_stats_link(realm_str: str) -> mark_safe:
     url_name = 'analytics.views.stats_for_realm'
     url = reverse(url_name, kwargs=dict(realm_str=realm_str))
-    stats_link = '<a href="{}"><i class="fa fa-pie-chart"></i>{}</a>'.format(url, realm_str)
+    stats_link = f'<a href="{url}"><i class="fa fa-pie-chart"></i>{realm_str}</a>'
     return mark_safe(stats_link)
 
 def remote_installation_stats_link(server_id: int, hostname: str) -> mark_safe:
     url_name = 'analytics.views.stats_for_remote_installation'
     url = reverse(url_name, kwargs=dict(remote_server_id=server_id))
-    stats_link = '<a href="{}"><i class="fa fa-pie-chart"></i>{}</a>'.format(url, hostname)
+    stats_link = f'<a href="{url}"><i class="fa fa-pie-chart"></i>{hostname}</a>'
     return mark_safe(stats_link)
 
 def realm_client_table(user_summaries: Dict[str, Dict[str, Dict[str, Any]]]) -> str:

@@ -1143,7 +1143,7 @@ class GetOldMessagesTest(ZulipTestCase):
             'emoji_name': reaction_name
         }
 
-        url = '/json/messages/{}/reactions'.format(message_id)
+        url = f'/json/messages/{message_id}/reactions'
         payload = self.client_post(url, reaction_info)
         self.assert_json_success(payload)
 
@@ -2667,7 +2667,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         stream = get_stream('Scotland', realm)
         recipient_id = stream.recipient.id
-        cond = "AND NOT (recipient_id = {scotland} AND upper(subject) = upper('golf'))".format(scotland=recipient_id)
+        cond = f"AND NOT (recipient_id = {recipient_id} AND upper(subject) = upper('golf'))"
         self.assertIn(cond, queries[0]['sql'])
 
         # Next, verify the use_first_unread_anchor setting invokes

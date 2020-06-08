@@ -139,9 +139,9 @@ class BotIntegration(Integration):
             self.logo_url = staticfiles_storage.url(logo)
 
         if display_name is None:
-            display_name = "{} Bot".format(name.title())  # nocoverage
+            display_name = f"{name.title()} Bot"  # nocoverage
         else:
-            display_name = "{} Bot".format(display_name)
+            display_name = f"{display_name} Bot"
         self.display_name = display_name
 
         if doc is None:
@@ -235,7 +235,7 @@ class HubotIntegration(Integration):
                  logo_alt: Optional[str]=None, git_url: Optional[str]=None,
                  legacy: bool=False) -> None:
         if logo_alt is None:
-            logo_alt = "{} logo".format(name.title())
+            logo_alt = f"{name.title()} logo"
         self.logo_alt = logo_alt
 
         if git_url is None:

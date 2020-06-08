@@ -141,9 +141,9 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
         return re.sub(r"\[(\S*)\]\((\S*)\)", r"\2", content)
 
     def append_sender_to_message(message_plain: str, message_html: str, sender: str) -> Tuple[str, str]:
-        message_plain = "{}: {}".format(sender, message_plain)
+        message_plain = f"{sender}: {message_plain}"
         message_soup = BeautifulSoup(message_html, "html.parser")
-        sender_name_soup = BeautifulSoup("<b>{}</b>: ".format(sender), "html.parser")
+        sender_name_soup = BeautifulSoup(f"<b>{sender}</b>: ", "html.parser")
         first_tag = message_soup.find()
         if first_tag.name == "p":
             first_tag.insert(0, sender_name_soup)

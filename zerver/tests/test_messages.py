@@ -796,7 +796,7 @@ class PersonalMessagesTest(ZulipTestCase):
             user_message = most_recent_usermessage(user_profile)
             self.assertEqual(
                 str(user_message),
-                '<UserMessage: recip / {} ([])>'.format(user_profile.email)
+                f'<UserMessage: recip / {user_profile.email} ([])>'
             )
 
     @slow("checks several profiles")
@@ -1409,7 +1409,7 @@ class MessageDictTest(ZulipTestCase):
         # extract messages.  Note that we increased this from 1ms to
         # 1.5ms to handle tests running in parallel being a bit
         # slower.
-        error_msg = "Number of ids: {}. Time delay: {}".format(num_ids, delay)
+        error_msg = f"Number of ids: {num_ids}. Time delay: {delay}"
         self.assertTrue(delay < 0.0015 * num_ids, error_msg)
         self.assert_length(queries, 7)
         self.assertEqual(len(rows), num_ids)
@@ -1959,14 +1959,14 @@ class MessagePOSTTest(ZulipTestCase):
             "content": "Test message",
             "client": "test suite",
             "to": ujson.dumps([othello.id])})
-        self.assert_json_error(result, "'{}' is no longer using Zulip.".format(othello.email))
+        self.assert_json_error(result, f"'{othello.email}' is no longer using Zulip.")
 
         result = self.client_post("/json/messages", {
             "type": "private",
             "content": "Test message",
             "client": "test suite",
             "to": ujson.dumps([othello.id, cordelia.id])})
-        self.assert_json_error(result, "'{}' is no longer using Zulip.".format(othello.email))
+        self.assert_json_error(result, f"'{othello.email}' is no longer using Zulip.")
 
     def test_invalid_type(self) -> None:
         """
@@ -2960,7 +2960,7 @@ class EditMessageTest(ZulipTestCase):
             topic_name='editing',
             content='This message has not been edited.')
 
-        result = self.client_get('/json/messages/{}/history'.format(msg_id))
+        result = self.client_get(f'/json/messages/{msg_id}/history')
 
         self.assert_json_success(result)
 
@@ -4158,7 +4158,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
     def test_claim_attachment(self) -> None:
         user_profile = self.example_user('hamlet')
         dummy_path_ids = self.setup_dummy_attachments(user_profile)
-        dummy_urls = ["http://zulip.testserver/user_uploads/{}".format(x) for x in dummy_path_ids]
+        dummy_urls = [f"http://zulip.testserver/user_uploads/{x}" for x in dummy_path_ids]
 
         # Send message referring the attachment
         self.subscribe(user_profile, "Denmark")
@@ -4178,17 +4178,17 @@ class MessageHasKeywordsTest(ZulipTestCase):
 
         # This message tries to claim the third attachment but fails because
         # Bugdown would not set has_attachments = True here.
-        body = "Link in code: `{}`".format(dummy_urls[2])
+        body = f"Link in code: `{dummy_urls[2]}`"
         self.send_stream_message(user_profile, "Denmark", body, "test")
         assert_attachment_claimed(dummy_path_ids[2], False)
 
         # Another scenario where we wouldn't parse the link.
-        body = "Link to not parse: .{}.`".format(dummy_urls[2])
+        body = f"Link to not parse: .{dummy_urls[2]}.`"
         self.send_stream_message(user_profile, "Denmark", body, "test")
         assert_attachment_claimed(dummy_path_ids[2], False)
 
         # Finally, claim attachment 3.
-        body = "Link: {}".format(dummy_urls[2])
+        body = f"Link: {dummy_urls[2]}"
         self.send_stream_message(user_profile, "Denmark", body, "test")
         assert_attachment_claimed(dummy_path_ids[2], True)
         assert_attachment_claimed(dummy_path_ids[1], False)
@@ -4255,7 +4255,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
     def test_has_attachment(self) -> None:
         hamlet = self.example_user('hamlet')
         dummy_path_ids = self.setup_dummy_attachments(hamlet)
-        dummy_urls = ["http://zulip.testserver/user_uploads/{}".format(x) for x in dummy_path_ids]
+        dummy_urls = [f"http://zulip.testserver/user_uploads/{x}" for x in dummy_path_ids]
         self.subscribe(hamlet, "Denmark")
 
         body = ("Files ...[zulip.txt]({}) {} {}").format(dummy_urls[0], dummy_urls[1], dummy_urls[2])
@@ -4267,24 +4267,24 @@ class MessageHasKeywordsTest(ZulipTestCase):
         self.assertFalse(msg.has_attachment)
         self.update_message(msg, body)
         self.assertTrue(msg.has_attachment)
-        self.update_message(msg, 'Link in code: `{}`'.format(dummy_urls[1]))
+        self.update_message(msg, f'Link in code: `{dummy_urls[1]}`')
         self.assertFalse(msg.has_attachment)
         # Test blockquotes
-        self.update_message(msg, '> {}'.format(dummy_urls[1]))
+        self.update_message(msg, f'> {dummy_urls[1]}')
         self.assertTrue(msg.has_attachment)
 
         # Additional test to check has_attachment is being set is due to the correct attachment.
-        self.update_message(msg, 'Outside: {}. In code: `{}`.'.format(dummy_urls[0], dummy_urls[1]))
+        self.update_message(msg, f'Outside: {dummy_urls[0]}. In code: `{dummy_urls[1]}`.')
         self.assertTrue(msg.has_attachment)
         self.assertTrue(msg.attachment_set.filter(path_id=dummy_path_ids[0]))
         self.assertEqual(msg.attachment_set.count(), 1)
 
-        self.update_message(msg, 'Outside: {}. In code: `{}`.'.format(dummy_urls[1], dummy_urls[0]))
+        self.update_message(msg, f'Outside: {dummy_urls[1]}. In code: `{dummy_urls[0]}`.')
         self.assertTrue(msg.has_attachment)
         self.assertTrue(msg.attachment_set.filter(path_id=dummy_path_ids[1]))
         self.assertEqual(msg.attachment_set.count(), 1)
 
-        self.update_message(msg, 'Both in code: `{} {}`.'.format(dummy_urls[1], dummy_urls[0]))
+        self.update_message(msg, f'Both in code: `{dummy_urls[1]} {dummy_urls[0]}`.')
         self.assertFalse(msg.has_attachment)
         self.assertEqual(msg.attachment_set.count(), 0)
 
@@ -4304,16 +4304,16 @@ class MessageHasKeywordsTest(ZulipTestCase):
             self.assertTrue(m.called)
             m.reset_mock()
 
-            self.update_message(msg, '[link](/user_uploads/{})'.format(dummy_path_ids[1]))
+            self.update_message(msg, f'[link](/user_uploads/{dummy_path_ids[1]})')
             self.assertTrue(m.called)
             m.reset_mock()
 
-            self.update_message(msg, '[new text link](/user_uploads/{})'.format(dummy_path_ids[1]))
+            self.update_message(msg, f'[new text link](/user_uploads/{dummy_path_ids[1]})')
             self.assertFalse(m.called)
             m.reset_mock()
 
             # It's not clear this is correct behavior
-            self.update_message(msg, '[link](user_uploads/{})'.format(dummy_path_ids[2]))
+            self.update_message(msg, f'[link](user_uploads/{dummy_path_ids[2]})')
             self.assertFalse(m.called)
             m.reset_mock()
 
@@ -4486,10 +4486,10 @@ class DeleteMessageTest(ZulipTestCase):
         self.login('iago')
         hamlet = self.example_user('hamlet')
         msg_id = self.send_stream_message(hamlet, "Scotland")
-        result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id + 1),
+        result = self.client_delete(f'/json/messages/{msg_id + 1}',
                                     {'message_id': msg_id})
         self.assert_json_error(result, "Invalid message(s)")
-        result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
+        result = self.client_delete(f'/json/messages/{msg_id}')
         self.assert_json_success(result)
 
     def test_delete_message_by_user(self) -> None:
@@ -4504,17 +4504,17 @@ class DeleteMessageTest(ZulipTestCase):
 
         def test_delete_message_by_admin(msg_id: int) -> HttpResponse:
             self.login('iago')
-            result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
+            result = self.client_delete(f'/json/messages/{msg_id}')
             return result
 
         def test_delete_message_by_owner(msg_id: int) -> HttpResponse:
             self.login('hamlet')
-            result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
+            result = self.client_delete(f'/json/messages/{msg_id}')
             return result
 
         def test_delete_message_by_other_user(msg_id: int) -> HttpResponse:
             self.login('cordelia')
-            result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
+            result = self.client_delete(f'/json/messages/{msg_id}')
             return result
 
         # Test if message deleting is not allowed(default).

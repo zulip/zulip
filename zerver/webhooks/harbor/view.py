@@ -101,7 +101,7 @@ def api_harbor_webhook(request: HttpRequest, user_profile: UserProfile,
             operator_username, user_profile.realm)
 
     if operator_profile:
-        operator_username = "@**{}**".format(operator_profile.full_name)  # nocoverage
+        operator_username = f"@**{operator_profile.full_name}**"  # nocoverage
 
     event = payload["type"]
     topic = payload["event_data"]["repository"]["repo_full_name"]

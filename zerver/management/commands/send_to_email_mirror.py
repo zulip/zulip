@@ -89,7 +89,7 @@ Example:
 
     def _parse_email_fixture(self, fixture_path: str) -> Message:
         if not self._does_fixture_path_exist(fixture_path):
-            raise CommandError('Fixture {} does not exist'.format(fixture_path))
+            raise CommandError(f'Fixture {fixture_path} does not exist')
 
         if fixture_path.endswith('.json'):
             message = self._parse_email_json_fixture(fixture_path)

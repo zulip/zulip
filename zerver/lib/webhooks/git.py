@@ -91,7 +91,7 @@ def get_push_commits_event_message(user_name: str, compare_url: Optional[str],
         committers_details = "{} ({})".format(*committers_items[0])
 
         for name, number_of_commits in committers_items[1:-1]:
-            committers_details = "{}, {} ({})".format(committers_details, name, number_of_commits)
+            committers_details = f"{committers_details}, {name} ({number_of_commits})"
 
         if len(committers_items) > 1:
             committers_details = "{} and {} ({})".format(committers_details, *committers_items[-1])
@@ -140,7 +140,7 @@ def get_pull_request_event_message(user_name: str, action: str, url: str, number
         'action': action,
         'type': type,
         'url': url,
-        'id': ' #{}'.format(number) if number is not None else '',
+        'id': f' #{number}' if number is not None else '',
         'title': title,
     }
 
@@ -162,19 +162,19 @@ def get_pull_request_event_message(user_name: str, action: str, url: str, number
 
         assignee_info = PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE.format(
             assignee=assignees_string)
-        main_message = "{} {}".format(main_message, assignee_info)
+        main_message = f"{main_message} {assignee_info}"
 
     elif assignee:
         assignee_info = PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE.format(
             assignee=assignee)
-        main_message = "{} {}".format(main_message, assignee_info)
+        main_message = f"{main_message} {assignee_info}"
 
     if target_branch and base_branch:
         branch_info = PULL_REQUEST_BRANCH_INFO_TEMPLATE.format(
             target=target_branch,
             base=base_branch
         )
-        main_message = "{} {}".format(main_message, branch_info)
+        main_message = f"{main_message} {branch_info}"
 
     punctuation = ':' if message else '.'
     if (assignees or assignee or (target_branch and base_branch) or (title is None)):
@@ -195,7 +195,7 @@ def get_setup_webhook_message(integration: str, user_name: Optional[str]=None) -
     content = SETUP_MESSAGE_TEMPLATE.format(integration=integration)
     if user_name:
         content += SETUP_MESSAGE_USER_PART.format(user_name=user_name)
-    content = "{}.".format(content)
+    content = f"{content}."
     return content
 
 def get_issue_event_message(user_name: str,
@@ -234,7 +234,7 @@ def get_push_tag_event_message(user_name: str,
     )
 
     if tag_name[-1] not in string.punctuation:
-        message = '{}.'.format(message)
+        message = f'{message}.'
 
     return message
 
@@ -250,7 +250,7 @@ def get_commits_comment_action_message(user_name: str,
         url=commit_url
     )
     punctuation = ':' if message else '.'
-    content = '{}{}'.format(content, punctuation)
+    content = f'{content}{punctuation}'
     if message:
         content += CONTENT_MESSAGE_TEMPLATE.format(
             message=message

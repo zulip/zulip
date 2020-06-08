@@ -71,7 +71,7 @@ def fixture_files_for_function(decorated_function: CallableT) -> List[str]:  # n
     decorated_function_name = decorated_function.__name__
     if decorated_function_name[:5] == 'test_':
         decorated_function_name = decorated_function_name[5:]
-    return sorted(['{}/{}'.format(STRIPE_FIXTURES_DIR, f) for f in os.listdir(STRIPE_FIXTURES_DIR)
+    return sorted([f'{STRIPE_FIXTURES_DIR}/{f}' for f in os.listdir(STRIPE_FIXTURES_DIR)
                    if f.startswith(decorated_function_name + '--')])
 
 def generate_and_save_stripe_fixture(decorated_function_name: str, mocked_function_name: str,
@@ -174,7 +174,7 @@ def normalize_fixture_data(decorated_function: CallableT,
         with open(fixture_file, "w") as f:
             f.write(file_content)
 
-MOCKED_STRIPE_FUNCTION_NAMES = ["stripe.{}".format(name) for name in [
+MOCKED_STRIPE_FUNCTION_NAMES = [f"stripe.{name}" for name in [
     "Charge.create", "Charge.list",
     "Coupon.create",
     "Customer.create", "Customer.retrieve", "Customer.save",
@@ -392,7 +392,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(stripe_charges[0].amount, 8000 * self.seat_count)
         # TODO: fix Decimal
         self.assertEqual(stripe_charges[0].description,
-                         "Upgrade to Zulip Standard, $80.0 x {}".format(self.seat_count))
+                         f"Upgrade to Zulip Standard, $80.0 x {self.seat_count}")
         self.assertEqual(stripe_charges[0].receipt_email, user.email)
         self.assertEqual(stripe_charges[0].statement_descriptor, "Zulip Standard")
         # Check Invoices in Stripe
@@ -775,7 +775,7 @@ class StripeTest(StripeTestCase):
                     'Zulip Standard', 'Free Trial', str(self.seat_count),
                     'You are using', '%s of %s licenses' % (self.seat_count, 123),
                     'Your plan will be upgraded to', 'March 2, 2012',
-                    '{:,.2f}'.format(80 * 123), 'Billed by invoice'
+                    f'{80 * 123:,.2f}', 'Billed by invoice'
             ]:
                 self.assert_in_response(substring, response)
 
@@ -983,13 +983,13 @@ class StripeTest(StripeTestCase):
                 upgrade_params['licenses'] = licenses
             response = self.upgrade(invoice=invoice, talk_to_stripe=False,
                                     del_args=del_args, **upgrade_params)
-            self.assert_json_error_contains(response, "at least {} users".format(min_licenses_in_response))
+            self.assert_json_error_contains(response, f"at least {min_licenses_in_response} users")
             self.assertEqual(ujson.loads(response.content)['error_description'], 'not enough licenses')
 
         def check_max_licenses_error(licenses: int) -> None:
             response = self.upgrade(invoice=True, talk_to_stripe=False,
                                     licenses=licenses)
-            self.assert_json_error_contains(response, "with more than {} licenses".format(MAX_INVOICED_LICENSES))
+            self.assert_json_error_contains(response, f"with more than {MAX_INVOICED_LICENSES} licenses")
             self.assertEqual(ujson.loads(response.content)['error_description'], 'too many licenses')
 
         def check_success(invoice: bool, licenses: Optional[int], upgrade_params: Dict[str, Any]={}) -> None:
@@ -1108,7 +1108,7 @@ class StripeTest(StripeTestCase):
         realm = Realm.objects.create(string_id='second', name='second')
         UserProfile.objects.create(realm=realm, email='member@second.com', pointer=-1)
         for i in range(5):
-            UserProfile.objects.create(realm=realm, email='guest{}@second.com'.format(i),
+            UserProfile.objects.create(realm=realm, email=f'guest{i}@second.com',
                                        pointer=-1, role=UserProfile.ROLE_GUEST)
         self.assertEqual(get_latest_seat_count(realm), 1)
         # Test 1 member and 6 guests

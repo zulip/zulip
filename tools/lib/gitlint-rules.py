@@ -98,7 +98,7 @@ def head_binary_search(key: Text, words: List[str]) -> str:
     while True:
         if lower > upper:
             # Should not happen
-            raise Exception("Cannot find imperative mood of {}".format(key))
+            raise Exception(f"Cannot find imperative mood of {key}")
 
         mid = (lower + upper) // 2
         imperative_form = words[mid]
@@ -156,7 +156,7 @@ class TitleMatchRegexAllowException(LineRule):
         regex = self.options['regex'].value
         pattern = re.compile(regex, re.UNICODE)
         if not pattern.search(title) and not title.startswith("Revert \""):
-            violation_msg = "Title does not match regex ({})".format(regex)
+            violation_msg = f"Title does not match regex ({regex})"
             return [RuleViolation(self.id, violation_msg, title)]
 
         return []

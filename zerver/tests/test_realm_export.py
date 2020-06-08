@@ -78,7 +78,7 @@ class RealmExportTest(ZulipTestCase):
                                event_type=RealmAuditLog.REALM_EXPORTED).count())
 
         # Finally, delete the file.
-        result = self.client_delete('/json/export/realm/{id}'.format(id=audit_log_entry.id))
+        result = self.client_delete(f'/json/export/realm/{audit_log_entry.id}')
         self.assert_json_success(result)
         with self.assertRaises(botocore.exceptions.ClientError):
             bucket.Object(path_id).load()
@@ -87,7 +87,7 @@ class RealmExportTest(ZulipTestCase):
         audit_log_entry.refresh_from_db()
         export_data = ujson.loads(audit_log_entry.extra_data)
         self.assertIn('deleted_timestamp', export_data)
-        result = self.client_delete('/json/export/realm/{id}'.format(id=audit_log_entry.id))
+        result = self.client_delete(f'/json/export/realm/{audit_log_entry.id}')
         self.assert_json_error(result, "Export already deleted")
 
         # Now try to delete a non-existent export.
@@ -137,7 +137,7 @@ class RealmExportTest(ZulipTestCase):
                                event_type=RealmAuditLog.REALM_EXPORTED).count())
 
         # Finally, delete the file.
-        result = self.client_delete('/json/export/realm/{id}'.format(id=audit_log_entry.id))
+        result = self.client_delete(f'/json/export/realm/{audit_log_entry.id}')
         self.assert_json_success(result)
         response = self.client_get(path_id)
         self.assertEqual(response.status_code, 404)
@@ -146,7 +146,7 @@ class RealmExportTest(ZulipTestCase):
         audit_log_entry.refresh_from_db()
         export_data = ujson.loads(audit_log_entry.extra_data)
         self.assertIn('deleted_timestamp', export_data)
-        result = self.client_delete('/json/export/realm/{id}'.format(id=audit_log_entry.id))
+        result = self.client_delete(f'/json/export/realm/{audit_log_entry.id}')
         self.assert_json_error(result, "Export already deleted")
 
         # Now try to delete a non-existent export.

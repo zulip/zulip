@@ -136,8 +136,8 @@ class LibratoWebhookHandler(LibratoWebhookParser):
             metric_name=metric_name, summary_function=summary_function, condition_type=condition_type,
             threshold=threshold)
         if duration:
-            content += " by {duration}s".format(duration=duration)
-        content += ", recorded at {recorded_at} UTC.".format(recorded_at=recorded_at)
+            content += f" by {duration}s"
+        content += f", recorded at {recorded_at} UTC."
         return content
 
 @api_key_only_webhook_view('Librato')

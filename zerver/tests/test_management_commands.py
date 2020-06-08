@@ -283,7 +283,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
 
         result = self.client_post(generated_link, {'email': email})
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(re.search('/accounts/new/send_confirm/{}$'.format(email),
+        self.assertTrue(re.search(f'/accounts/new/send_confirm/{email}$',
                                   result["Location"]))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started", result)
@@ -354,7 +354,7 @@ class TestSendToEmailMirror(ZulipTestCase):
         self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
 
-        call_command(self.COMMAND_NAME, "--fixture={}".format(fixture_path))
+        call_command(self.COMMAND_NAME, f"--fixture={fixture_path}")
         message = most_recent_message(user_profile)
 
         # last message should be equal to the body of the email in 1.txt
@@ -366,7 +366,7 @@ class TestSendToEmailMirror(ZulipTestCase):
         self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
 
-        call_command(self.COMMAND_NAME, "--fixture={}".format(fixture_path))
+        call_command(self.COMMAND_NAME, f"--fixture={fixture_path}")
         message = most_recent_message(user_profile)
 
         # last message should be equal to the body of the email in 1.json
@@ -378,7 +378,7 @@ class TestSendToEmailMirror(ZulipTestCase):
         self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark2")
 
-        call_command(self.COMMAND_NAME, "--fixture={}".format(fixture_path), "--stream=Denmark2")
+        call_command(self.COMMAND_NAME, f"--fixture={fixture_path}", "--stream=Denmark2")
         message = most_recent_message(user_profile)
 
         # last message should be equal to the body of the email in 1.txt
@@ -395,7 +395,7 @@ class TestConvertMattermostData(ZulipTestCase):
         with patch('zerver.management.commands.convert_mattermost_data.do_convert_data') as m:
             mm_fixtures = self.fixture_file_name("", "mattermost_fixtures")
             output_dir = self.make_import_output_dir("mattermost")
-            call_command(self.COMMAND_NAME, mm_fixtures, "--output={}".format(output_dir))
+            call_command(self.COMMAND_NAME, mm_fixtures, f"--output={output_dir}")
 
         m.assert_called_with(
             masking_content=False,
@@ -425,7 +425,7 @@ class TestExport(ZulipTestCase):
         do_add_reaction(self.example_user("hamlet"), message, "outbox", "1f4e4",  Reaction.UNICODE_EMOJI)
 
         with patch("zerver.management.commands.export.export_realm_wrapper") as m:
-            call_command(self.COMMAND_NAME, "-r=zulip", "--consent-message-id={}".format(message.id))
+            call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
             m.assert_called_once_with(realm=realm, public_only=False, consent_message_id=message.id,
                                       delete_after_upload=False, threads=mock.ANY, output_dir=mock.ANY,
                                       upload=False)
@@ -436,10 +436,10 @@ class TestExport(ZulipTestCase):
         message.last_edit_time = timezone_now()
         message.save()
         with self.assertRaisesRegex(CommandError, "Message was edited. Aborting..."):
-            call_command(self.COMMAND_NAME, "-r=zulip", "--consent-message-id={}".format(message.id))
+            call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
 
         message.last_edit_time = None
         message.save()
         do_add_reaction(self.mit_user("sipbtest"), message, "outbox", "1f4e4",  Reaction.UNICODE_EMOJI)
         with self.assertRaisesRegex(CommandError, "Users from a different realm reacted to message. Aborting..."):
-            call_command(self.COMMAND_NAME, "-r=zulip", "--consent-message-id={}".format(message.id))
+            call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")

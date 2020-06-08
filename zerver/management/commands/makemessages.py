@@ -71,7 +71,7 @@ class Command(makemessages.Command):
 
     xgettext_options = makemessages.Command.xgettext_options
     for func, tag in tags:
-        xgettext_options += ['--keyword={}:1,"{}"'.format(func, tag)]
+        xgettext_options += [f'--keyword={func}:1,"{tag}"']
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         super().add_arguments(parser)
@@ -241,7 +241,7 @@ class Command(makemessages.Command):
 
     def write_translation_strings(self, translation_strings: List[str]) -> None:
         for locale, output_path in zip(self.get_locales(), self.get_output_paths()):
-            self.stdout.write("[frontend] processing locale {}".format(locale))
+            self.stdout.write(f"[frontend] processing locale {locale}")
             try:
                 with open(output_path) as reader:
                     old_strings = json.load(reader)

@@ -216,7 +216,7 @@ def validate_cache_key(key: str) -> None:
     if not bool(re.fullmatch(r"([!-~])+", key)):
         raise InvalidCacheKeyException("Invalid characters in the cache key: " + key)
     if len(key) > MEMCACHED_MAX_KEY_LENGTH:
-        raise InvalidCacheKeyException("Cache key too long: {} Length: {}".format(key, len(key)))
+        raise InvalidCacheKeyException(f"Cache key too long: {key} Length: {len(key)}")
 
 def cache_set(key: str, val: Any, cache_name: Optional[str]=None, timeout: Optional[int]=None) -> None:
     final_key = KEY_PREFIX + key

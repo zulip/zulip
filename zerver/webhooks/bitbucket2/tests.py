@@ -14,35 +14,35 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_push_event(self) -> None:
         commit_info = '* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))'
-        expected_message = "kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 1 commit to branch master.\n\n{}".format(commit_info)
+        expected_message = f"kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 1 commit to branch master.\n\n{commit_info}"
         self.send_and_test_stream_message('push', self.EXPECTED_TOPIC_BRANCH_EVENTS, expected_message)
 
     def test_bitbucket2_on_push_commits_multiple_committers(self) -> None:
         commit_info = '* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))\n'
-        expected_message = """kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 3 commits to branch master. Commits by zbenjamin (2) and kolaszek (1).\n\n{}* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))""".format(commit_info*2)
+        expected_message = f"""kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 3 commits to branch master. Commits by zbenjamin (2) and kolaszek (1).\n\n{commit_info*2}* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))"""
         self.send_and_test_stream_message('push_multiple_committers', self.EXPECTED_TOPIC_BRANCH_EVENTS, expected_message)
 
     def test_bitbucket2_on_push_commits_multiple_committers_with_others(self) -> None:
         commit_info = '* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))\n'
-        expected_message = """kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 10 commits to branch master. Commits by james (3), Brendon (2), Tomasz (2) and others (3).\n\n{}* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))""".format(commit_info*9)
+        expected_message = f"""kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 10 commits to branch master. Commits by james (3), Brendon (2), Tomasz (2) and others (3).\n\n{commit_info*9}* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))"""
         self.send_and_test_stream_message('push_multiple_committers_with_others', self.EXPECTED_TOPIC_BRANCH_EVENTS, expected_message)
 
     def test_bitbucket2_on_push_commits_multiple_committers_filtered_by_branches(self) -> None:
         self.url = self.build_webhook_url(branches='master,development')
         commit_info = '* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))\n'
-        expected_message = """kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 3 commits to branch master. Commits by zbenjamin (2) and kolaszek (1).\n\n{}* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))""".format(commit_info*2)
+        expected_message = f"""kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 3 commits to branch master. Commits by zbenjamin (2) and kolaszek (1).\n\n{commit_info*2}* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))"""
         self.send_and_test_stream_message('push_multiple_committers', self.EXPECTED_TOPIC_BRANCH_EVENTS, expected_message)
 
     def test_bitbucket2_on_push_commits_multiple_committers_with_others_filtered_by_branches(self) -> None:
         self.url = self.build_webhook_url(branches='master,development')
         commit_info = '* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))\n'
-        expected_message = """kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 10 commits to branch master. Commits by james (3), Brendon (2), Tomasz (2) and others (3).\n\n{}* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))""".format(commit_info*9)
+        expected_message = f"""kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 10 commits to branch master. Commits by james (3), Brendon (2), Tomasz (2) and others (3).\n\n{commit_info*9}* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))"""
         self.send_and_test_stream_message('push_multiple_committers_with_others', self.EXPECTED_TOPIC_BRANCH_EVENTS, expected_message)
 
     def test_bitbucket2_on_push_event_filtered_by_branches(self) -> None:
         self.url = self.build_webhook_url(branches='master,development')
         commit_info = '* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))'
-        expected_message = "kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 1 commit to branch master.\n\n{}".format(commit_info)
+        expected_message = f"kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 1 commit to branch master.\n\n{commit_info}"
         self.send_and_test_stream_message('push', self.EXPECTED_TOPIC_BRANCH_EVENTS, expected_message)
 
     def test_bitbucket2_on_push_commits_above_limit_event(self) -> None:

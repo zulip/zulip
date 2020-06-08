@@ -831,7 +831,7 @@ class SlackImporter(ZulipTestCase):
 
         image_path = zerver_attachment[0]['path_id']
         self.assertIn('/SlackImportAttachment/', image_path)
-        expected_content = '[Apple](/user_uploads/{image_path})\n[banana](example.com/banana.zip)'.format(image_path=image_path)
+        expected_content = f'[Apple](/user_uploads/{image_path})\n[banana](example.com/banana.zip)'
         self.assertEqual(info['content'], expected_content)
 
         self.assertTrue(info['has_link'])

@@ -329,7 +329,7 @@ class ZulipTestCase(TestCase):
             return None
         else:
             self.assert_json_success(result)
-            bot_email = '{}-bot@zulip.testserver'.format(short_name)
+            bot_email = f'{short_name}-bot@zulip.testserver'
             bot_profile = get_user(bot_email, user_profile.realm)
             return bot_profile
 
@@ -865,7 +865,7 @@ class ZulipTestCase(TestCase):
         the attribute only for the specific test function that calls this method,
         and is isolated from other tests.
         """
-        dn = "uid={username},ou=users,dc=zulip,dc=com".format(username=username)
+        dn = f"uid={username},ou=users,dc=zulip,dc=com"
         if binary:
             with open(attr_value, "rb") as f:
                 # attr_value should be a path to the file with the binary data
@@ -884,7 +884,7 @@ class ZulipTestCase(TestCase):
         return self.example_user_ldap_username_map[username]
 
     def ldap_password(self, uid: str) -> str:
-        return "{}_ldap_password".format(uid)
+        return f"{uid}_ldap_password"
 
 class WebhookTestCase(ZulipTestCase):
     """
@@ -955,15 +955,15 @@ class WebhookTestCase(ZulipTestCase):
 
         has_arguments = kwargs or args
         if has_arguments and url.find('?') == -1:
-            url = "{}?".format(url)  # nocoverage
+            url = f"{url}?"  # nocoverage
         else:
-            url = "{}&".format(url)
+            url = f"{url}&"
 
         for key, value in kwargs.items():
-            url = "{}{}={}&".format(url, key, value)
+            url = f"{url}{key}={value}&"
 
         for arg in args:
-            url = "{}{}&".format(url, arg)
+            url = f"{url}{arg}&"
 
         return url[:-1] if has_arguments else url
 
@@ -995,7 +995,7 @@ class MigrationsTestCase(ZulipTestCase):  # nocoverage
 
     def setUp(self) -> None:
         assert self.migrate_from and self.migrate_to, \
-            "TestCase '{}' must define migrate_from and migrate_to properties".format(type(self).__name__)
+            f"TestCase '{type(self).__name__}' must define migrate_from and migrate_to properties"
         migrate_from: List[Tuple[str, str]] = [(self.app, self.migrate_from)]
         migrate_to: List[Tuple[str, str]] = [(self.app, self.migrate_to)]
         executor = MigrationExecutor(connection)

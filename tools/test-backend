@@ -169,7 +169,7 @@ class ZulipInternetBlockedError(Exception):
             "More details and advice are available here:"
             "https://zulip.readthedocs.io/en/latest/testing/testing.html#internet-access-inside-test-suites"
         )
-        msg = "{}\nResponses library error message: {}".format(zulip_msg, original_msg)
+        msg = f"{zulip_msg}\nResponses library error message: {original_msg}"
         super().__init__(msg)
 
 def main() -> None:
@@ -405,7 +405,7 @@ def main() -> None:
         missed_count = len(templates_not_rendered)
         print("\nError: %s templates have no tests!" % (missed_count,))
         for template in templates_not_rendered:
-            print('  {}'.format(template))
+            print(f'  {template}')
         print("See zerver/tests/test_templates.py for the exclude list.")
         failures = True
 
@@ -452,11 +452,11 @@ def main() -> None:
         prof.disable()
         with tempfile.NamedTemporaryFile(prefix='profile.data.', delete=False) as stats_file:
             prof.dump_stats(stats_file.name)
-            print("Profile data saved to {}".format(stats_file.name))
-            print("You can visualize it using e.g. `snakeviz {}`".format(shlex.quote(stats_file.name)))
+            print(f"Profile data saved to {stats_file.name}")
+            print(f"You can visualize it using e.g. `snakeviz {shlex.quote(stats_file.name)}`")
             print("Note: If you are using vagrant for development environment you will need to do:")
             print("1.) `vagrant ssh -- -L 8080:127.0.0.1:8080`")
-            print("2.) `snakeviz -s {}`".format(shlex.quote(stats_file.name)))
+            print(f"2.) `snakeviz -s {shlex.quote(stats_file.name)}`")
 
     if options.report_slow_tests:
         from zerver.lib.test_runner import report_slow_tests

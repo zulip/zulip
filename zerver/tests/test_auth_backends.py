@@ -491,7 +491,7 @@ class RateLimitAuthenticationTests(ZulipTestCase):
         salt = generate_random_token(32)
 
         def _mock_key(self: RateLimitedAuthenticationByUsername) -> str:
-            return "{}:{}".format(salt, original_key_method(self))
+            return f"{salt}:{original_key_method(self)}"
 
         def attempt_authentication(username: str, password: str) -> Optional[UserProfile]:
             request = HttpRequest()
@@ -1291,7 +1291,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         ldap_user_attr_map = {'full_name': 'cn'}
         account_data_dict = self.get_account_data_dict(email=email, name=name)
 
-        backend_path = 'zproject.backends.{}'.format(self.BACKEND_CLASS.__name__)
+        backend_path = f'zproject.backends.{self.BACKEND_CLASS.__name__}'
         with self.settings(
                 POPULATE_PROFILE_VIA_LDAP=True,
                 LDAP_APPEND_DOMAIN='zulip.com',
@@ -1333,7 +1333,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         ldap_user_attr_map = {'full_name': 'cn'}
         account_data_dict = self.get_account_data_dict(email=email, name=name)
 
-        backend_path = 'zproject.backends.{}'.format(self.BACKEND_CLASS.__name__)
+        backend_path = f'zproject.backends.{self.BACKEND_CLASS.__name__}'
         with self.settings(
                 POPULATE_PROFILE_VIA_LDAP=True,
                 LDAP_EMAIL_ATTR='mail',
@@ -1503,7 +1503,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             self.assertTrue(saml_auth_enabled())
             result = self.client_get("/saml/metadata.xml")
             self.assert_in_success_response(
-                ['entityID="{}"'.format(settings.SOCIAL_AUTH_SAML_SP_ENTITY_ID)], result
+                [f'entityID="{settings.SOCIAL_AUTH_SAML_SP_ENTITY_ID}"'], result
             )
 
     def test_social_auth_complete(self) -> None:
@@ -1737,17 +1737,17 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
     def test_social_auth_saml_login_bad_idp_arg(self) -> None:
         for action in ['login', 'register']:
-            result = self.client_get('/accounts/{}/social/saml'.format(action))
+            result = self.client_get(f'/accounts/{action}/social/saml')
             # Missing idp argument.
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, '/config-error/saml')
 
-            result = self.client_get('/accounts/{}/social/saml/nonexistent_idp'.format(action))
+            result = self.client_get(f'/accounts/{action}/social/saml/nonexistent_idp')
             # No such IdP is configured.
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, '/config-error/saml')
 
-            result = self.client_get('/accounts/{}/social/saml/'.format(action))
+            result = self.client_get(f'/accounts/{action}/social/saml/')
             # No matching url pattern.
             self.assertEqual(result.status_code, 404)
 
@@ -4327,7 +4327,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
 
         result = self.client_get(result.url)
         self.assert_in_response('action="/accounts/register/"', result)
-        self.assert_in_response('value="{}" name="key"'.format(confirmation_key), result)
+        self.assert_in_response(f'value="{confirmation_key}" name="key"', result)
 
     def test_sso_only_when_preregistration_user_exists(self) -> None:
         rf = RequestFactory()

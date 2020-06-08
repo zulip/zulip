@@ -1112,7 +1112,7 @@ def log_token_warning(token: str) -> None:
 def get_slack_api_data(slack_api_url: str, get_param: str, **kwargs: Any) -> Any:
     if not kwargs.get("token"):
         raise AssertionError("Slack token missing in kwargs")
-    data = requests.get("{}?{}".format(slack_api_url, urlencode(kwargs)))
+    data = requests.get(f"{slack_api_url}?{urlencode(kwargs)}")
 
     if data.status_code == requests.codes.ok:
         result = data.json()

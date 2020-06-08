@@ -124,7 +124,7 @@ class TabbedSectionsPreprocessor(Preprocessor):
                 # Wrapping the content in two newlines is necessary here.
                 # If we don't do this, the inner Markdown does not get
                 # rendered properly.
-                content='\n{}\n'.format(content))
+                content=f'\n{content}\n')
             tab_content_blocks.append(tab_content_block)
         return '\n'.join(tab_content_blocks)
 

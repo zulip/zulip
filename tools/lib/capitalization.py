@@ -167,7 +167,7 @@ COMPILED_IGNORED_PHRASES = [
 ]
 
 SPLIT_BOUNDARY = '?.!'  # Used to split string into sentences.
-SPLIT_BOUNDARY_REGEX = re.compile(r'[{}]'.format(SPLIT_BOUNDARY))
+SPLIT_BOUNDARY_REGEX = re.compile(fr'[{SPLIT_BOUNDARY}]')
 
 # Regexes which check capitalization in sentences.
 DISALLOWED_REGEXES = [re.compile(regex) for regex in [

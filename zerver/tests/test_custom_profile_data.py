@@ -150,7 +150,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertEqual(field.name, DEFAULT_EXTERNAL_ACCOUNTS['twitter']['name'])
         self.assertEqual(field.hint, DEFAULT_EXTERNAL_ACCOUNTS['twitter']['hint'])
 
-        result = self.client_delete("/json/realm/profile_fields/{}".format(field.id))
+        result = self.client_delete(f"/json/realm/profile_fields/{field.id}")
         self.assert_json_success(result)
 
         # Should also work without name or hint and only external field type and subtype data
@@ -161,13 +161,13 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         # Default external account field data cannot be updated
         field = CustomProfileField.objects.get(name="Twitter", realm=realm)
         result = self.client_patch(
-            "/json/realm/profile_fields/{}".format(field.id),
+            f"/json/realm/profile_fields/{field.id}",
             info={'name': 'Twitter username',
                   'field_type': CustomProfileField.EXTERNAL_ACCOUNT}
         )
         self.assert_json_error(result, 'Default custom field cannot be updated.')
 
-        result = self.client_delete("/json/realm/profile_fields/{}".format(field.id))
+        result = self.client_delete(f"/json/realm/profile_fields/{field.id}")
         self.assert_json_success(result)
 
     def test_create_external_account_field(self) -> None:
@@ -292,7 +292,7 @@ class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         self.assertTrue(self.custom_field_exists_in_realm(field.id))
         result = self.client_delete(
-            "/json/realm/profile_fields/{}".format(field.id))
+            f"/json/realm/profile_fields/{field.id}")
         self.assert_json_success(result)
         self.assertFalse(self.custom_field_exists_in_realm(field.id))
 
@@ -359,7 +359,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         field = CustomProfileField.objects.get(name="Phone number", realm=realm)
         result = self.client_patch(
-            "/json/realm/profile_fields/{}".format(field.id),
+            f"/json/realm/profile_fields/{field.id}",
             info={'name': '',
                   'field_type': CustomProfileField.SHORT_TEXT}
         )
@@ -367,7 +367,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         self.assertEqual(CustomProfileField.objects.count(), self.original_count)
         result = self.client_patch(
-            "/json/realm/profile_fields/{}".format(field.id),
+            f"/json/realm/profile_fields/{field.id}",
             info={'name': 'New phone number',
                   'field_type': CustomProfileField.SHORT_TEXT})
         self.assert_json_success(result)
@@ -378,14 +378,14 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertEqual(field.field_type, CustomProfileField.SHORT_TEXT)
 
         result = self.client_patch(
-            "/json/realm/profile_fields/{}".format(field.id),
+            f"/json/realm/profile_fields/{field.id}",
             info={'name': '*' * 41,
                   'field_type': CustomProfileField.SHORT_TEXT})
         msg = "name is too long (limit: 40 characters)"
         self.assert_json_error(result, msg)
 
         result = self.client_patch(
-            "/json/realm/profile_fields/{}".format(field.id),
+            f"/json/realm/profile_fields/{field.id}",
             info={'name': 'New phone number',
                   'hint': '*' * 81,
                   'field_type': CustomProfileField.SHORT_TEXT})
@@ -393,7 +393,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assert_json_error(result, msg)
 
         result = self.client_patch(
-            "/json/realm/profile_fields/{}".format(field.id),
+            f"/json/realm/profile_fields/{field.id}",
             info={'name': 'New phone number',
                   'hint': 'New contact number',
                   'field_type': CustomProfileField.SHORT_TEXT})
@@ -407,7 +407,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         field = CustomProfileField.objects.get(name="Favorite editor", realm=realm)
         result = self.client_patch(
-            "/json/realm/profile_fields/{}".format(field.id),
+            f"/json/realm/profile_fields/{field.id}",
             info={'name': 'Favorite editor',
                   'field_data': 'invalid'})
         self.assert_json_error(result, "Bad value for 'field_data': invalid")
@@ -417,7 +417,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             'emacs': {'order': '2', 'text': 'Emacs'},
         })
         result = self.client_patch(
-            "/json/realm/profile_fields/{}".format(field.id),
+            f"/json/realm/profile_fields/{field.id}",
             info={'name': 'Favorite editor',
                   'field_data': field_data})
         self.assert_json_error(result, "field_data is not a dict")
@@ -428,7 +428,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             'notepad': {'order': '3', 'text': 'Notepad'},
         })
         result = self.client_patch(
-            "/json/realm/profile_fields/{}".format(field.id),
+            f"/json/realm/profile_fields/{field.id}",
             info={'name': 'Favorite editor',
                   'field_data': field_data})
         self.assert_json_success(result)
@@ -445,7 +445,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertTrue(self.custom_field_exists_in_realm(field_1.id))
         self.assertTrue(self.custom_field_exists_in_realm(field_2.id))
         result = self.client_patch(
-            "/json/realm/profile_fields/{}".format(field_2.id),
+            f"/json/realm/profile_fields/{field_2.id}",
             info={'name': 'Phone', 'field_type': CustomProfileField.SHORT_TEXT})
         self.assert_json_error(
             result, 'A field with that label already exists.')
@@ -472,19 +472,19 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_update_invalid_short_text(self) -> None:
         field_name = "Phone number"
         self.assert_error_update_invalid_value(field_name, 't' * 201,
-                                               "{} is too long (limit: 50 characters)".format(field_name))
+                                               f"{field_name} is too long (limit: 50 characters)")
 
     def test_update_invalid_date(self) -> None:
         field_name = "Birthday"
         self.assert_error_update_invalid_value(field_name, "a-b-c",
-                                               "{} is not a date".format(field_name))
+                                               f"{field_name} is not a date")
         self.assert_error_update_invalid_value(field_name, 123,
-                                               "{} is not a string".format(field_name))
+                                               f"{field_name} is not a string")
 
     def test_update_invalid_url(self) -> None:
         field_name = "Favorite website"
         self.assert_error_update_invalid_value(field_name, "not URL",
-                                               "{} is not a URL".format(field_name))
+                                               f"{field_name} is not a URL")
 
     def test_update_invalid_user_field(self) -> None:
         field_name = "Mentor"
@@ -554,7 +554,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_update_invalid_choice_field(self) -> None:
         field_name = "Favorite editor"
         self.assert_error_update_invalid_value(field_name, "foobar",
-                                               "'foobar' is not a valid choice for '{}'.".format(field_name))
+                                               f"'foobar' is not a valid choice for '{field_name}'.")
 
     def test_update_choice_field_successfully(self) -> None:
         self.login('iago')

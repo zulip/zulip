@@ -59,10 +59,10 @@ def set_bot_config(bot_profile: UserProfile, key: str, value: str) -> None:
         obj.save()
 
 def load_bot_config_template(bot: str) -> Dict[str, str]:
-    bot_module_name = 'zulip_bots.bots.{}'.format(bot)
+    bot_module_name = f'zulip_bots.bots.{bot}'
     bot_module = importlib.import_module(bot_module_name)
     bot_module_path = os.path.dirname(bot_module.__file__)
-    config_path = os.path.join(bot_module_path, '{}.conf'.format(bot))
+    config_path = os.path.join(bot_module_path, f'{bot}.conf')
     if os.path.isfile(config_path):
         config = configparser.ConfigParser()
         with open(config_path) as conf:

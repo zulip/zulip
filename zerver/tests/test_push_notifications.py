@@ -559,8 +559,8 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 check_for_unwanted_data.first_call = False  # type: ignore[attr-defined]
             else:
                 # Test that we're respecting SYNCED_BILLING_EVENTS
-                self.assertIn('"event_type":{}'.format(RealmAuditLog.USER_REACTIVATED), str(args))
-                self.assertNotIn('"event_type":{}'.format(RealmAuditLog.REALM_LOGO_CHANGED), str(args))
+                self.assertIn(f'"event_type":{RealmAuditLog.USER_REACTIVATED}', str(args))
+                self.assertNotIn(f'"event_type":{RealmAuditLog.REALM_LOGO_CHANGED}', str(args))
                 # Test that we're respecting REALMAUDITLOG_PUSHED_FIELDS
                 self.assertIn('backfilled', str(args))
                 self.assertNotIn('modified_user', str(args))
@@ -1774,7 +1774,7 @@ class TestClearOnRead(ZulipTestCase):
 
         message_ids = [self.send_stream_message(self.example_user("iago"),
                                                 stream.name,
-                                                "yo {}".format(i))
+                                                f"yo {i}")
                        for i in range(n_msgs)]
         UserMessage.objects.filter(
             user_profile_id=hamlet.id,

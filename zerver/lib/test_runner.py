@@ -43,12 +43,12 @@ random_id_range_start = str(random.randint(1, 10000000))
 
 def get_database_id(worker_id: Optional[int]=None) -> str:
     if worker_id:
-        return "{}_{}".format(random_id_range_start, worker_id)
+        return f"{random_id_range_start}_{worker_id}"
     return random_id_range_start
 
 # The root directory for this run of the test suite.
 TEST_RUN_DIR = get_or_create_dev_uuid_var_path(
-    os.path.join('test-backend', 'run_{}'.format(get_database_id())))
+    os.path.join('test-backend', f'run_{get_database_id()}'))
 
 _worker_id = 0  # Used to identify the worker process.
 
@@ -165,7 +165,7 @@ class TextTestResult(runner.TextTestResult):
 
     def startTest(self, test: TestCase) -> None:
         TestResult.startTest(self, test)
-        self.stream.writeln("Running {}".format(full_test_name(test)))  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
+        self.stream.writeln(f"Running {full_test_name(test)}")  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
         self.stream.flush()  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
 
     def addSuccess(self, *args: Any, **kwargs: Any) -> None:
@@ -382,7 +382,7 @@ def check_import_error(test_name: str) -> None:
 def initialize_worker_path(worker_id: int) -> None:
     # Allow each test worker process to write to a unique directory
     # within `TEST_RUN_DIR`.
-    worker_path = os.path.join(TEST_RUN_DIR, 'worker_{}'.format(_worker_id))
+    worker_path = os.path.join(TEST_RUN_DIR, f'worker_{_worker_id}')
     os.makedirs(worker_path, exist_ok=True)
     settings.TEST_WORKER_DIR = worker_path
 

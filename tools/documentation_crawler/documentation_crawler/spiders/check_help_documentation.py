@@ -25,7 +25,7 @@ class UnusedImagesLinterSpider(BaseDocumentationSpider):
 
     def _is_external_url(self, url: str) -> bool:
         is_external = url.startswith('http') and self.start_urls[0] not in url
-        if self._has_extension(url) and 'localhost:9981/{}'.format(self.images_path) in url:
+        if self._has_extension(url) and f'localhost:9981/{self.images_path}' in url:
             self.static_images.add(basename(urlparse(url).path))
         return is_external or self._has_extension(url)
 

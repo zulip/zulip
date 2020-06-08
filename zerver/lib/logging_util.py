@@ -170,7 +170,7 @@ def find_log_origin(record: logging.LogRecord) -> str:
         # responsible for the request in the logs.
         from zerver.tornado.ioloop_logging import logging_data
         shard = logging_data.get('port', 'unknown')
-        logger_name = "{}:{}".format(logger_name, shard)
+        logger_name = f"{logger_name}:{shard}"
 
     return logger_name
 

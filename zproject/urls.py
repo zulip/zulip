@@ -699,7 +699,7 @@ for app_name in settings.EXTRA_INSTALLED_APPS:
     app_dir = os.path.join(settings.DEPLOY_ROOT, app_name)
     if os.path.exists(os.path.join(app_dir, 'urls.py')):
         urls += [url(r'^', include('%s.urls' % (app_name,)))]
-        i18n_urls += import_string("{}.urls.i18n_urlpatterns".format(app_name))
+        i18n_urls += import_string(f"{app_name}.urls.i18n_urlpatterns")
 
 # Tornado views
 urls += [

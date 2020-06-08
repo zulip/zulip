@@ -153,12 +153,12 @@ def add_integrations_open_graph_context(context: Dict[str, Any], request: HttpRe
 
     if path_name in INTEGRATIONS:
         integration = INTEGRATIONS[path_name]
-        context['OPEN_GRAPH_TITLE'] = 'Connect {name} to Zulip'.format(name=integration.display_name)
+        context['OPEN_GRAPH_TITLE'] = f'Connect {integration.display_name} to Zulip'
         context['OPEN_GRAPH_DESCRIPTION'] = description
 
     elif path_name in CATEGORIES:
         category = CATEGORIES[path_name]
-        context['OPEN_GRAPH_TITLE'] = 'Connect your {category} tools to Zulip'.format(category=category)
+        context['OPEN_GRAPH_TITLE'] = f'Connect your {category} tools to Zulip'
         context['OPEN_GRAPH_DESCRIPTION'] = description
 
     elif path_name == 'integrations':

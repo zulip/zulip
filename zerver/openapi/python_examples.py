@@ -97,7 +97,7 @@ def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> 
 
     stream_id = client.get_stream_id('private_stream')['stream_id']
     client.call_endpoint(
-        'streams/{}'.format(stream_id),
+        f'streams/{stream_id}',
         method='PATCH',
         request={'is_private': True}
     )
@@ -945,7 +945,7 @@ def upload_custom_emoji(client: Client) -> None:
     with open(emoji_path, 'rb') as fp:
         emoji_name = 'my_custom_emoji'
         result = client.call_endpoint(
-            'realm/emoji/{}'.format(emoji_name),
+            f'realm/emoji/{emoji_name}',
             method='POST',
             files=[fp]
         )
@@ -1064,8 +1064,8 @@ def test_against_fixture(result: Dict[str, Any], fixture: Dict[str, Any], check_
 
 def assertEqual(key: str, result: Dict[str, Any], fixture: Dict[str, Any]) -> None:
     if result[key] != fixture[key]:
-        first = "{key} = {value}".format(key=key, value=result[key])
-        second = "{key} = {value}".format(key=key, value=fixture[key])
+        first = f"{key} = {result[key]}"
+        second = f"{key} = {fixture[key]}"
         raise AssertionError("Actual and expected outputs do not match; showing diff:\n" +
                              mdiff.diff_strings(first, second))
     else:
@@ -1083,7 +1083,7 @@ def assertLength(result: Dict[str, Any], fixture: Dict[str, Any]) -> None:
 def assertIn(key: str, result: Dict[str, Any]) -> None:
     if key not in result.keys():
         raise AssertionError(
-            "The actual output does not contain the the key `{key}`.".format(key=key)
+            f"The actual output does not contain the the key `{key}`."
         )
     else:
         assert key in result

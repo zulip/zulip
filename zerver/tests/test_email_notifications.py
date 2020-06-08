@@ -700,8 +700,8 @@ class TestMissedMessages(ZulipTestCase):
             self.example_user('othello'), self.example_user('hamlet'),
             'Come and join us in #**Verona**.')
         stream_id = get_stream('Verona', get_realm('zulip')).id
-        href = "http://zulip.testserver/#narrow/stream/{stream_id}-Verona".format(stream_id=stream_id)
-        verify_body_include = ['<a class="stream" data-stream-id="5" href="{href}">#Verona</a'.format(href=href)]
+        href = f"http://zulip.testserver/#narrow/stream/{stream_id}-Verona"
+        verify_body_include = [f'<a class="stream" data-stream-id="5" href="{href}">#Verona</a']
         email_subject = 'PMs with Othello, the Moor of Venice'
         self._test_cases(msg_id, verify_body_include, email_subject, send_as_user=False, verify_html_body=True)
 

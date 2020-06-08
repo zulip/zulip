@@ -105,7 +105,7 @@ class TranslationTestCase(ZulipTestCase):
                      ]
 
         for lang, word in languages:
-            response = self.fetch('get', '/{}/integrations/'.format(lang), 200)
+            response = self.fetch('get', f'/{lang}/integrations/', 200)
             self.assert_in_response(word, response)
 
 

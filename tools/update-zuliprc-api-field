@@ -72,4 +72,4 @@ for zuliprc_path in zuliprc_paths_list:
         else:
             result = 'SUCCESS'
             reason = 'API key for user %s is already consistent' % (email,)
-    print('{}: {}: {}'.format(zuliprc_path, result, reason))
+    print(f'{zuliprc_path}: {result}: {reason}')

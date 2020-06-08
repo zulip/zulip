@@ -40,7 +40,7 @@ class TravisHookTests(WebhookTestCase):
         self.assertNotEqual(msg.topic_name(), self.TOPIC)
 
     def test_travis_pull_requests_are_not_ignored_when_applicable(self) -> None:
-        self.url = "{}&ignore_pull_requests=false".format(self.build_webhook_url())
+        self.url = f"{self.build_webhook_url()}&ignore_pull_requests=false"
         expected_message = ("Author: josh_mandel\nBuild status: Passed :thumbs_up:\n"
                             "Details: [changes](https://github.com/hl7-fhir/fhir-sv"
                             "n/compare/6dccb98bcfd9...6c457d366a31), [build log](ht"

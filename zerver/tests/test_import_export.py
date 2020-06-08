@@ -946,7 +946,7 @@ class ImportExportTest(ZulipTestCase):
 
         def get_user_mention(r: Realm) -> Set[Any]:
             mentioned_user = UserProfile.objects.get(delivery_email=self.example_email("hamlet"), realm=r)
-            data_user_id = 'data-user-id="{}"'.format(mentioned_user.id)
+            data_user_id = f'data-user-id="{mentioned_user.id}"'
             mention_message = get_stream_messages(r).get(rendered_content__contains=data_user_id)
             return mention_message.content
 
@@ -954,7 +954,7 @@ class ImportExportTest(ZulipTestCase):
 
         def get_stream_mention(r: Realm) -> Set[Any]:
             mentioned_stream = get_stream('Denmark', r)
-            data_stream_id = 'data-stream-id="{}"'.format(mentioned_stream.id)
+            data_stream_id = f'data-stream-id="{mentioned_stream.id}"'
             mention_message = get_stream_messages(r).get(rendered_content__contains=data_stream_id)
             return mention_message.content
 
@@ -962,7 +962,7 @@ class ImportExportTest(ZulipTestCase):
 
         def get_user_group_mention(r: Realm) -> Set[Any]:
             user_group = UserGroup.objects.get(realm=r, name='hamletcharacters')
-            data_usergroup_id = 'data-user-group-id="{}"'.format(user_group.id)
+            data_usergroup_id = f'data-user-group-id="{user_group.id}"'
             mention_message = get_stream_messages(r).get(rendered_content__contains=data_usergroup_id)
             return mention_message.content
 

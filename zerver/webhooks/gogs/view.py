@@ -19,7 +19,7 @@ from zerver.models import UserProfile
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_GOGS_EVENT")
 
 def get_issue_url(repo_url: str, issue_nr: int) -> str:
-    return "{}/issues/{}".format(repo_url, issue_nr)
+    return f"{repo_url}/issues/{issue_nr}"
 
 def format_push_event(payload: Dict[str, Any]) -> str:
 
@@ -89,7 +89,7 @@ def format_issue_comment_event(payload: Dict[str, Any], include_title: Optional[
     if action == 'created':
         action = '[commented]'
     else:
-        action = '{} a [comment]'.format(action)
+        action = f'{action} a [comment]'
     action += '({}) on'.format(comment['html_url'])
 
     return get_issue_event_message(

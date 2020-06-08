@@ -305,7 +305,7 @@ body:
 def full_webhook_client_name(raw_client_name: Optional[str]=None) -> Optional[str]:
     if raw_client_name is None:
         return None
-    return "Zulip{}Webhook".format(raw_client_name)
+    return f"Zulip{raw_client_name}Webhook"
 
 # Use this for webhook views that don't get an email passed in.
 def api_key_only_webhook_view(

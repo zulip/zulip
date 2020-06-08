@@ -131,7 +131,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
     if customer is not None and get_current_plan_by_customer(customer) is not None:
         billing_page_url = reverse('corporate.views.billing_home')
         if request.GET.get("onboarding") is not None:
-            billing_page_url = "{}?onboarding=true".format(billing_page_url)
+            billing_page_url = f"{billing_page_url}?onboarding=true"
         return HttpResponseRedirect(billing_page_url)
 
     percent_off = Decimal(0)
@@ -210,7 +210,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
                 'licenses': licenses,
                 'licenses_used': licenses_used,
                 'renewal_date': renewal_date,
-                'renewal_amount': '{:,.2f}'.format(renewal_cents / 100.),
+                'renewal_amount': f'{renewal_cents / 100.:,.2f}',
                 'payment_method': payment_method,
                 'charge_automatically': charge_automatically,
                 'publishable_key': STRIPE_PUBLISHABLE_KEY,

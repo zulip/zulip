@@ -22,7 +22,7 @@ def api_flock_webhook(request: HttpRequest, user_profile: UserProfile,
         message_body = payload["notification"]
 
     topic = 'Flock notifications'
-    body = "{}".format(message_body)
+    body = f"{message_body}"
 
     check_send_webhook_message(request, user_profile, topic, body)
 

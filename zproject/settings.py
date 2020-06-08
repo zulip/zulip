@@ -1050,7 +1050,7 @@ for idp_name, idp_dict in SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
     if 'x509cert_path' in idp_dict:
         path = idp_dict['x509cert_path']
     else:
-        path = "/etc/zulip/saml/idps/{}.crt".format(idp_name)
+        path = f"/etc/zulip/saml/idps/{idp_name}.crt"
     idp_dict['x509cert'] = get_from_file_if_exists(path)
 
 SOCIAL_AUTH_PIPELINE = [

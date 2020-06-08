@@ -122,7 +122,7 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
                     body += '\nEmail: {}'.format(object_['email'])
                 if object_['metadata']:  # nocoverage
                     for key, value in object_['metadata'].items():
-                        body += '\n{}: {}'.format(key, value)
+                        body += f'\n{key}: {value}'
         if resource == 'discount':
             body = 'Discount {verbed} ([{coupon_name}]({coupon_url})).'.format(
                 verbed=event.replace('_', ' '),
@@ -161,8 +161,8 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
             # We are taking advantage of logical AND short circuiting here since we need the else
             # statement below.
             object_id = object_['id']
-            invoice_link = 'https://dashboard.stripe.com/invoices/{}'.format(object_id)
-            body = '[Invoice]({invoice_link}) is now paid'.format(invoice_link=invoice_link)
+            invoice_link = f'https://dashboard.stripe.com/invoices/{object_id}'
+            body = f'[Invoice]({invoice_link}) is now paid'
         else:
             body = default_body(update_blacklist=['lines', 'description', 'number', 'finalized_at',
                                                   'status_transitions', 'payment_intent'])
@@ -200,11 +200,11 @@ def amount_string(amount: int, currency: str) -> str:
     if currency in zero_decimal_currencies:
         decimal_amount = str(amount)  # nocoverage
     else:
-        decimal_amount = '{:.02f}'.format(float(amount) * 0.01)
+        decimal_amount = f'{float(amount) * 0.01:.02f}'
 
     if currency == 'usd':  # nocoverage
         return '$' + decimal_amount
-    return decimal_amount + ' {}'.format(currency.upper())
+    return decimal_amount + f' {currency.upper()}'
 
 def linkified_id(object_id: str, lower: bool=False) -> str:
     names_and_urls: Dict[str, Tuple[str, Optional[str]]] = {
@@ -250,7 +250,7 @@ def linkified_id(object_id: str, lower: bool=False) -> str:
         name = name.lower()
     if url_prefix is None:  # nocoverage
         return name
-    return '[{}](https://dashboard.stripe.com/{}/{})'.format(name, url_prefix, object_id)
+    return f'[{name}](https://dashboard.stripe.com/{url_prefix}/{object_id})'
 
 def stringify(value: Any) -> str:
     if isinstance(value, int) and value > 1500000000 and value < 2000000000:

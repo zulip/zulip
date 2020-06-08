@@ -19,7 +19,7 @@ def start_server(logfile_name: str) -> Tuple[bool, str]:
     with open(logfile_name, 'rb', buffering=0) as logfile:
         for i in range(200):
             time.sleep(0.5)
-            print("{}. Polling run-dev...".format(i))
+            print(f"{i}. Polling run-dev...")
             new_data = logfile.read().decode()
             if new_data:
                 datalog.append(new_data)

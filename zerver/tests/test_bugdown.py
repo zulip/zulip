@@ -1580,7 +1580,7 @@ class BugdownTest(ZulipTestCase):
         cordelia = self.example_user('cordelia')
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
-        content = "@**Mark Twin|{}**, @**Mark Twin|{}** and @**Cordelia Lear**, hi.".format(twin1.id, twin2.id)
+        content = f"@**Mark Twin|{twin1.id}**, @**Mark Twin|{twin2.id}** and @**Cordelia Lear**, hi."
 
         self.assertEqual(render_markdown(msg, content),
                          '<p>'
@@ -1918,7 +1918,7 @@ class BugdownTest(ZulipTestCase):
         stream = Stream.objects.create(name='Stream #1234', realm=realm)
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         content = "#**Stream #1234**"
-        href = '/#narrow/stream/{stream_id}-Stream-.231234'.format(stream_id=stream.id)
+        href = f'/#narrow/stream/{stream.id}-Stream-.231234'
         self.assertEqual(
             render_markdown(msg, content),
             '<p><a class="stream" data-stream-id="{s.id}" href="{href}">#{s.name}</a></p>'.format(
@@ -2159,7 +2159,7 @@ class BugdownAvatarTestCase(ZulipTestCase):
         message = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
         user_profile = self.example_user('hamlet')
-        msg = '!avatar({})'.format(user_profile.email)
+        msg = f'!avatar({user_profile.email})'
         converted = bugdown.convert(msg, message=message)
         values = {'email': user_profile.email, 'id': user_profile.id}
         self.assertEqual(
@@ -2171,7 +2171,7 @@ class BugdownAvatarTestCase(ZulipTestCase):
         message = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
         email = 'fakeuser@example.com'
-        msg = '!avatar({})'.format(email)
+        msg = f'!avatar({email})'
         converted = bugdown.convert(msg, message=message)
         self.assertEqual(
             converted,

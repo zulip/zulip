@@ -72,7 +72,7 @@ def get_body_for_http_request(payload: Dict[str, Any]) -> str:
         description = DESC_TEMPLATE.format(description=payload['long_description'])
         body += description
     else:
-        body = '{}.'.format(body[:-1])
+        body = f'{body[:-1]}.'
 
     return body
 

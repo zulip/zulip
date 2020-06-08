@@ -257,7 +257,7 @@ class PasswordResetTest(ZulipTestCase):
             email, url_pattern=settings.EXTERNAL_HOST + r"(\S\S+)")
         result = self.client_get(password_reset_url)
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result.url.endswith('/{}/'.format(INTERNAL_RESET_URL_TOKEN)))
+        self.assertTrue(result.url.endswith(f'/{INTERNAL_RESET_URL_TOKEN}/'))
 
         final_reset_url = result.url
         result = self.client_get(final_reset_url)
@@ -593,7 +593,7 @@ class LoginTest(ZulipTestCase):
         reset_emails_in_zulip_realm()
 
         realm = get_realm("zulip")
-        stream_names = ["stream_{}".format(i) for i in range(40)]
+        stream_names = [f"stream_{i}" for i in range(40)]
         for stream_name in stream_names:
             stream = self.make_stream(stream_name, realm=realm)
             DefaultStream.objects.create(stream=stream, realm=realm)
@@ -1007,7 +1007,7 @@ class InviteUserTest(InviteUserBase):
         """
         self.login('hamlet')
         email = "alice-test@zulip.com"
-        invitee = "Alice Test <{}>".format(email)
+        invitee = f"Alice Test <{email}>"
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
         self.assertTrue(find_key_by_email(email))
         self.check_sent_emails([email], custom_from_name="Hamlet")
@@ -1020,7 +1020,7 @@ class InviteUserTest(InviteUserBase):
         self.login('hamlet')
         email = "alice-test@zulip.com"
         email2 = "bob-test@zulip.com"
-        invitee = "Alice Test <{}>, {}".format(email, email2)
+        invitee = f"Alice Test <{email}>, {email2}"
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
         self.assertTrue(find_key_by_email(email))
         self.assertTrue(find_key_by_email(email2))
@@ -1037,7 +1037,7 @@ class InviteUserTest(InviteUserBase):
         self.login('hamlet')
         email = "alice-test@zulip.com"
         email2 = "bob-test@zulip.com"
-        invitee = "Alice Test <{}>, {}".format(email, email2)
+        invitee = f"Alice Test <{email}>, {email2}"
         self.assert_json_error(self.invite(invitee, ["Denmark"]),
                                "Must be an organization administrator")
 
@@ -1090,7 +1090,7 @@ class InviteUserTest(InviteUserBase):
         second_msg = last_3_messages[1]
         self.assertEqual(second_msg.sender.email, "notification-bot@zulip.com")
         self.assertTrue(second_msg.content.startswith(
-            "alice_zulip.com <`{}`> accepted your".format(invitee_profile.email)
+            f"alice_zulip.com <`{invitee_profile.email}`> accepted your"
         ))
 
         # The second, from welcome-bot to the user who was invited.
@@ -1175,7 +1175,7 @@ earl-test@zulip.com""", ["Denmark"]))
         """
         self.login('hamlet')
         self.assert_json_error(self.invite("iago-test@zulip.com", ["NotARealStream"]),
-                               "Stream does not exist with id: {}. No invites were sent.".format(self.INVALID_STREAM_ID))
+                               f"Stream does not exist with id: {self.INVALID_STREAM_ID}. No invites were sent.")
         self.check_sent_emails([])
 
     def test_invite_existing_user(self) -> None:
@@ -1878,22 +1878,22 @@ class InviteeEmailsParserTests(TestCase):
         self.email3 = "email3@zulip.com"
 
     def test_if_emails_separated_by_commas_are_parsed_and_striped_correctly(self) -> None:
-        emails_raw = "{} ,{}, {}".format(self.email1, self.email2, self.email3)
+        emails_raw = f"{self.email1} ,{self.email2}, {self.email3}"
         expected_set = {self.email1, self.email2, self.email3}
         self.assertEqual(get_invitee_emails_set(emails_raw), expected_set)
 
     def test_if_emails_separated_by_newlines_are_parsed_and_striped_correctly(self) -> None:
-        emails_raw = "{}\n {}\n {} ".format(self.email1, self.email2, self.email3)
+        emails_raw = f"{self.email1}\n {self.email2}\n {self.email3} "
         expected_set = {self.email1, self.email2, self.email3}
         self.assertEqual(get_invitee_emails_set(emails_raw), expected_set)
 
     def test_if_emails_from_email_client_separated_by_newlines_are_parsed_correctly(self) -> None:
-        emails_raw = "Email One <{}>\nEmailTwo<{}>\nEmail Three<{}>".format(self.email1, self.email2, self.email3)
+        emails_raw = f"Email One <{self.email1}>\nEmailTwo<{self.email2}>\nEmail Three<{self.email3}>"
         expected_set = {self.email1, self.email2, self.email3}
         self.assertEqual(get_invitee_emails_set(emails_raw), expected_set)
 
     def test_if_emails_in_mixed_style_are_parsed_correctly(self) -> None:
-        emails_raw = "Email One <{}>,EmailTwo<{}>\n{}".format(self.email1, self.email2, self.email3)
+        emails_raw = f"Email One <{self.email1}>,EmailTwo<{self.email2}>\n{self.email3}"
         expected_set = {self.email1, self.email2, self.email3}
         self.assertEqual(get_invitee_emails_set(emails_raw), expected_set)
 
@@ -3018,7 +3018,7 @@ class UserSignUpTest(InviteUserBase):
         request.session = {}  # type: ignore[attr-defined]
         email = 'user@acme.com'
         form = HomepageForm({'email': email}, realm=realm)
-        self.assertIn("Your email address, {}, is not in one of the domains".format(email),
+        self.assertIn(f"Your email address, {email}, is not in one of the domains",
                       form.errors['email'][0])
 
     def test_failed_signup_due_to_disposable_email(self) -> None:
@@ -3052,7 +3052,7 @@ class UserSignUpTest(InviteUserBase):
         request.session = {}  # type: ignore[attr-defined]
         email = 'user@zulip.com'
         form = HomepageForm({'email': email}, realm=realm)
-        self.assertIn("Please request an invite for {} from".format(email),
+        self.assertIn(f"Please request an invite for {email} from",
                       form.errors['email'][0])
 
     def test_failed_signup_due_to_nonexistent_realm(self) -> None:
@@ -3856,10 +3856,10 @@ class UserSignUpTest(InviteUserBase):
         result = self.client_post('/devtools/register_realm/')
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].startswith(
-            'http://{}.testserver/accounts/login/subdomain'.format(string_id)))
+            f'http://{string_id}.testserver/accounts/login/subdomain'))
         result = self.client_get(result["Location"], subdomain=string_id)
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], 'http://{}.testserver'.format(string_id))
+        self.assertEqual(result["Location"], f'http://{string_id}.testserver')
 
         user_profile = UserProfile.objects.all().order_by("id").last()
         self.assert_logged_in_user_id(user_profile.id)
@@ -4041,7 +4041,7 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertEqual(len(outbox), 0)
 
     def test_find_team_more_than_ten_emails(self) -> None:
-        data = {'emails': ','.join(['hamlet-{}@zulip.com'.format(i) for i in range(11)])}
+        data = {'emails': ','.join([f'hamlet-{i}@zulip.com' for i in range(11)])}
         result = self.client_post('/accounts/find/', data)
         self.assertEqual(result.status_code, 200)
         self.assertIn("Please enter at most 10", result.content.decode('utf8'))

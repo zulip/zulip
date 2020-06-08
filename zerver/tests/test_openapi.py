@@ -332,7 +332,7 @@ so maybe we shouldn't mark it as intentionally undocumented in the urls.
         except AssertionError:  # nocoverage
             msg = "The following endpoints have been documented but can't be found in urls.py:"
             for undocumented_path in undocumented_paths:
-                msg += "\n + {}".format(undocumented_path)
+                msg += f"\n + {undocumented_path}"
             raise AssertionError(msg)
 
     def get_type_by_priority(self, types: Sequence[Union[type, Tuple[type, object]]]) -> Union[type, Tuple[type, object]]:
@@ -417,7 +417,7 @@ do not match the types declared in the implementation of {}.\n""".format(functio
                 if element[0] == vname:
                     fdvtype = element[1]
                     break
-        msg += "{:<10s}{:^30s}{:>10s}\n".format(vname, str(opvtype), str(fdvtype))
+        msg += f"{vname:<10s}{str(opvtype):^30s}{str(fdvtype):>10s}\n"
         raise AssertionError(msg)
 
     def check_argument_types(self, function: Callable[..., HttpResponse],

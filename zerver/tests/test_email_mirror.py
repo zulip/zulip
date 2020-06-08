@@ -73,11 +73,11 @@ class TestEncodeDecode(ZulipTestCase):
         stream_name = 'dev. help'
         stream = ensure_stream(realm, stream_name)
         email_address = encode_email_address(stream)
-        self.assertEqual(email_address, "dev-help.{}@testserver".format(stream.email_token))
+        self.assertEqual(email_address, f"dev-help.{stream.email_token}@testserver")
 
         # The default form of the email address (with an option - "include-footer"):
         token, options = decode_email_address(
-            "dev-help.{}.include-footer@testserver".format(stream.email_token)
+            f"dev-help.{stream.email_token}.include-footer@testserver"
         )
         self._assert_options(options, include_footer=True)
         self.assertEqual(token, stream.email_token)
@@ -85,7 +85,7 @@ class TestEncodeDecode(ZulipTestCase):
         # Using + instead of . as the separator is also supported for backwards compatibility,
         # since that was the original form of addresses that we used:
         token, options = decode_email_address(
-            "dev-help+{}+include-footer@testserver".format(stream.email_token)
+            f"dev-help+{stream.email_token}+include-footer@testserver"
         )
         self._assert_options(options, include_footer=True)
         self.assertEqual(token, stream.email_token)
@@ -164,8 +164,8 @@ class TestEncodeDecode(ZulipTestCase):
 
     def test_decode_prefer_text_options(self) -> None:
         stream = get_stream("Denmark", get_realm("zulip"))
-        address_prefer_text = "Denmark.{}.prefer-text@testserver".format(stream.email_token)
-        address_prefer_html = "Denmark.{}.prefer-html@testserver".format(stream.email_token)
+        address_prefer_text = f"Denmark.{stream.email_token}.prefer-text@testserver"
+        address_prefer_html = f"Denmark.{stream.email_token}.prefer-html@testserver"
 
         token, options = decode_email_address(address_prefer_text)
         self._assert_options(options, prefer_text=True)
@@ -301,7 +301,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
         # stream address is angle-addr within multiple addresses
         stream_to_addresses = ["A.N. Other <another@example.org>",
-                               "Denmark <{}>".format(encode_email_address(stream))]
+                               f"Denmark <{encode_email_address(stream)}>"]
 
         incoming_valid_message = MIMEText('TestStreamEmailMessages Body')
 
@@ -566,8 +566,8 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
-        stream_address = "Denmark.{}@testserver".format(stream.email_token)
-        stream_address_prefer_html = "Denmark.{}.prefer-html@testserver".format(stream.email_token)
+        stream_address = f"Denmark.{stream.email_token}@testserver"
+        stream_address_prefer_html = f"Denmark.{stream.email_token}.prefer-html@testserver"
 
         text = "Test message"
         html = "<html><body><b>Test html message</b></body></html>"
@@ -601,7 +601,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
-        stream_address_prefer_html = "Denmark.{}.prefer-html@testserver".format(stream.email_token)
+        stream_address_prefer_html = f"Denmark.{stream.email_token}.prefer-html@testserver"
 
         text = "Test message"
         # This should be correctly identified as empty html body:

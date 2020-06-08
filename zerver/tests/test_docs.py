@@ -103,7 +103,7 @@ class DocPageTest(ZulipTestCase):
         files = list(filter(_filter_func, files))
 
         for f in files:
-            endpoint = '/api/{}'.format(os.path.splitext(f)[0])
+            endpoint = f'/api/{os.path.splitext(f)[0]}'
             self._test(endpoint, '', doc_html_str=True)
 
     @slow("Tests dozens of endpoints, including generating lots of emails")
@@ -181,7 +181,7 @@ class DocPageTest(ZulipTestCase):
                    ])
 
         for integration in INTEGRATIONS.keys():
-            url = '/integrations/doc-html/{}'.format(integration)
+            url = f'/integrations/doc-html/{integration}'
             self._test(url, '', doc_html_str=True)
 
     def test_integration_pages_open_graph_metadata(self) -> None:
@@ -209,13 +209,13 @@ class DocPageTest(ZulipTestCase):
         # We don't need to test all the pages for 404
         for integration in list(INTEGRATIONS.keys())[5]:
             with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-                url = '/en/integrations/doc-html/{}'.format(integration)
+                url = f'/en/integrations/doc-html/{integration}'
                 result = self.client_get(url, subdomain="", follow=True)
                 self.assertEqual(result.status_code, 404)
                 result = self.client_get(url, subdomain="zephyr", follow=True)
                 self.assertEqual(result.status_code, 404)
 
-            url = '/en/integrations/doc-html/{}'.format(integration)
+            url = f'/en/integrations/doc-html/{integration}'
             result = self.client_get(url, subdomain="", follow=True)
             self.assertEqual(result.status_code, 404)
             result = self.client_get(url, subdomain="zephyr", follow=True)

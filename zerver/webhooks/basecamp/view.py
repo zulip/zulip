@@ -80,7 +80,7 @@ def get_verb(event: str, prefix: str) -> str:
 
 def add_punctuation_if_necessary(body: str, title: str) -> str:
     if title[-1] not in string.punctuation:
-        body = '{}.'.format(body)
+        body = f'{body}.'
     return body
 
 def get_document_body(event: str, payload: Dict[str, Any]) -> str:

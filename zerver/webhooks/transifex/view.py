@@ -23,11 +23,11 @@ def api_transifex_webhook(
     translated: Optional[int] = REQ(validator=check_int, default=None),
     reviewed: Optional[int] = REQ(validator=check_int, default=None),
 ) -> HttpResponse:
-    subject = "{} in {}".format(project, language)
+    subject = f"{project} in {language}"
     if translated:
-        body = "Resource {} fully translated.".format(resource)
+        body = f"Resource {resource} fully translated."
     elif reviewed:
-        body = "Resource {} fully reviewed.".format(resource)
+        body = f"Resource {resource} fully reviewed."
     else:
         raise UnexpectedWebhookEventType('Transifex', 'Unknown Event Type')
     check_send_webhook_message(request, user_profile, subject, body)

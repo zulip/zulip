@@ -99,7 +99,7 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
         print('\n\nWe will use loop mode for these tests:\n')
         for test_file in test_files:
             print('    ' + os.path.basename(test_file))
-        print('\nnumber of loops: {}\n'.format(loop_cnt))
+        print(f'\nnumber of loops: {loop_cnt}\n')
         print()
     else:
         loop_cnt = None
@@ -130,12 +130,12 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
     def run_loops(loop_cnt: int) -> None:
         while True:
             for trial in range(1, loop_cnt + 1):
-                print('\n\n\nSTARTING TRIAL {} / {}\n'.format(trial, loop_cnt))
+                print(f'\n\n\nSTARTING TRIAL {trial} / {loop_cnt}\n')
                 ret = run_tests()
                 if ret == 0:
-                    print('`\n\nSUCCESS! trial #{}\n\n'.format(trial))
+                    print(f'`\n\nSUCCESS! trial #{trial}\n\n')
                 else:
-                    print('\n\nFAIL! trial #{}\n'.format(trial))
+                    print(f'\n\nFAIL! trial #{trial}\n')
                     break
 
             while True:

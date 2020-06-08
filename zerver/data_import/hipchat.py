@@ -119,12 +119,12 @@ def convert_user_data(user_handler: UserHandler,
             if role == UserProfile.ROLE_GUEST:
                 # Hipchat guest users don't have emails, so
                 # we just fake them.
-                email = 'guest-{id}@example.com'.format(id=id)
+                email = f'guest-{id}@example.com'
                 delivery_email = email
             else:
                 # Hipchat sometimes doesn't export an email for deactivated users.
                 assert not is_active
-                email = delivery_email = "deactivated-{id}@example.com".format(id=id)
+                email = delivery_email = f"deactivated-{id}@example.com"
 
         # unmapped fields:
         #    title - Developer, Project Manager, etc.

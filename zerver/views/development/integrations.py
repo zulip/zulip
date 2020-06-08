@@ -96,7 +96,7 @@ def check_send_webhook_fixture_message(request: HttpRequest,
     try:
         custom_headers_dict = ujson.loads(custom_headers)
     except ValueError as ve:
-        return json_error("Custom HTTP headers are not in a valid JSON format. {}".format(ve))  # nolint
+        return json_error(f"Custom HTTP headers are not in a valid JSON format. {ve}")  # nolint
 
     response = send_webhook_fixture_message(url, body, is_json,
                                             custom_headers_dict)

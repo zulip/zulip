@@ -22,9 +22,9 @@ def dict_list_to_string(some_list: List[Any]) -> str:
         item_value = item.get('value')
         item_url = item.get('url')
         if item_type and item_value:
-            internal_template += "{} ({}), ".format(item_value, item_type)
+            internal_template += f"{item_value} ({item_type}), "
         elif item_type and item_url:
-            internal_template += "[{}]({}), ".format(item_type, item_url)
+            internal_template += f"[{item_type}]({item_url}), "
 
     internal_template = internal_template[:-2]
     return internal_template

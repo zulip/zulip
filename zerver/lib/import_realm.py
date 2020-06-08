@@ -333,7 +333,7 @@ def idseq(model_class: Any) -> str:
         return 'zerver_botuserstatedata_id_seq'
     elif model_class == BotConfigData:
         return 'zerver_botuserconfigdata_id_seq'
-    return '{}_id_seq'.format(model_class._meta.db_table)
+    return f'{model_class._meta.db_table}_id_seq'
 
 def allocate_ids(model_class: Any, count: int) -> List[int]:
     """

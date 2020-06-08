@@ -45,7 +45,7 @@ class UserHandler:
         user_id = self._new_mirror_user_id()
         short_name = name
         full_name = name
-        email = 'mirror-{user_id}@example.com'.format(user_id=user_id)
+        email = f'mirror-{user_id}@example.com'
         delivery_email = email
         avatar_source = 'G'
         date_joined = int(timezone_now().timestamp())

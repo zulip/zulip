@@ -164,9 +164,9 @@ class Command(ZulipBaseCommand):
                 if reaction.user_profile.realm != realm:
                     raise CommandError("Users from a different realm reacted to message. Aborting...")
 
-            print("\n\033[94mMessage content:\033[0m\n{}\n".format(message.content))
+            print(f"\n\033[94mMessage content:\033[0m\n{message.content}\n")
 
-            print("\033[94mNumber of users that reacted outbox:\033[0m {}\n".format(len(reactions)))
+            print(f"\033[94mNumber of users that reacted outbox:\033[0m {len(reactions)}\n")
 
         # Allows us to trigger exports separately from command line argument parsing
         export_realm_wrapper(realm=realm, output_dir=output_dir,

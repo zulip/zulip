@@ -233,7 +233,7 @@ def get_build_hook_event_body(payload: Dict[str, Any]) -> str:
     elif build_status == 'running':
         action = 'started'
     else:
-        action = 'changed status to {}'.format(build_status)
+        action = f'changed status to {build_status}'
     return "Build {} from {} stage {}.".format(
         payload.get('build_name'),
         payload.get('build_stage'),
@@ -251,7 +251,7 @@ def get_pipeline_event_body(payload: Dict[str, Any]) -> str:
     elif pipeline_status == 'running':
         action = 'started'
     else:
-        action = 'changed status to {}'.format(pipeline_status)
+        action = f'changed status to {pipeline_status}'
 
     project_homepage = get_project_homepage(payload)
     pipeline_url = '{}/pipelines/{}'.format(
@@ -267,8 +267,8 @@ def get_pipeline_event_body(payload: Dict[str, Any]) -> str:
         )
         artifact_filename = build.get('artifacts_file', {}).get('filename', None)
         if artifact_filename:
-            artifact_download_url = '{}/artifacts/download'.format(build_url)
-            artifact_browse_url = '{}/artifacts/browse'.format(build_url)
+            artifact_download_url = f'{build_url}/artifacts/download'
+            artifact_browse_url = f'{build_url}/artifacts/browse'
             artifact_string = '  * built artifact: *{}* [[Browse]({})|[Download]({})]\n'.format(
                 artifact_filename,
                 artifact_browse_url,
@@ -380,7 +380,7 @@ def get_body_based_on_event(event: str) -> Any:
 
 def get_subject_based_on_event(event: str, payload: Dict[str, Any]) -> str:
     if event == 'Push Hook':
-        return "{} / {}".format(get_repo_name(payload), get_branch_name(payload))
+        return f"{get_repo_name(payload)} / {get_branch_name(payload)}"
     elif event == 'Job Hook' or event == 'Build Hook':
         return "{} / {}".format(payload['repository'].get('name'), get_branch_name(payload))
     elif event == 'Pipeline Hook':

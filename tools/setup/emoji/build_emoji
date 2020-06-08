@@ -91,7 +91,7 @@ def main() -> None:
         with open(success_stamp, 'w') as f:
             f.close()
 
-    print("build_emoji: Using cached emojis from {}".format(source_emoji_dump))
+    print(f"build_emoji: Using cached emojis from {source_emoji_dump}")
     if os.path.lexists(TARGET_EMOJI_DUMP):
         os.remove(TARGET_EMOJI_DUMP)
     os.symlink(source_emoji_dump, TARGET_EMOJI_DUMP)
@@ -300,13 +300,13 @@ def setup_old_emoji_farm(cache_path: str,
 
     for name, codepoint in emoji_map.items():
         mapped_codepoint = REMAPPED_EMOJIS.get(codepoint, codepoint)
-        image_file_path = os.path.join(google_emoji_cache_path, '{}.png'.format(mapped_codepoint))
-        symlink_path = os.path.join(emoji_cache_path, '{}.png'.format(name))
+        image_file_path = os.path.join(google_emoji_cache_path, f'{mapped_codepoint}.png')
+        symlink_path = os.path.join(emoji_cache_path, f'{name}.png')
         os.symlink(image_file_path, symlink_path)
         try:
             # `emoji_map` contains duplicate entries for the same codepoint with different
             # names. So creation of symlink for <codepoint>.png may throw `FileExistsError`.
-            unicode_symlink_path = os.path.join(unicode_emoji_cache_path, '{}.png'.format(codepoint))
+            unicode_symlink_path = os.path.join(unicode_emoji_cache_path, f'{codepoint}.png')
             os.symlink(image_file_path, unicode_symlink_path)
         except FileExistsError:
             pass

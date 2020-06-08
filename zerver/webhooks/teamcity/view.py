@@ -122,7 +122,7 @@ def api_teamcity_webhook(request: HttpRequest, user_profile: UserProfile,
                          "Teamcity user '%s' or '%s'", teamcity_fullname, teamcity_shortname)
             return json_success()
 
-        body = "Your personal build for {}".format(body)
+        body = f"Your personal build for {body}"
         check_send_private_message(user_profile, request.client, teamcity_user, body)
 
         return json_success()

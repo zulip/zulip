@@ -23,18 +23,18 @@ class TestRuleList(TestCase):
             for path in rule.get('exclude', {}):
                 abs_path = os.path.abspath(os.path.join(ROOT_DIR, path))
                 self.assertTrue(os.path.exists(abs_path),
-                                "'{}' is neither an existing file, nor a directory. {}".format(path, CHECK_MESSAGE))
+                                f"'{path}' is neither an existing file, nor a directory. {CHECK_MESSAGE}")
 
             for line_tuple in rule.get('exclude_line', {}):
                 path = line_tuple[0]
                 abs_path = os.path.abspath(os.path.join(ROOT_DIR, path))
                 self.assertTrue(os.path.isfile(abs_path),
-                                "The file '{}' doesn't exist. {}".format(path, CHECK_MESSAGE))
+                                f"The file '{path}' doesn't exist. {CHECK_MESSAGE}")
 
             for path in rule.get('include_only', {}):
                 if not os.path.splitext(path)[1]:
                     self.assertTrue(path.endswith('/'),
-                                    "The path '{}' should end with '/'. {}".format(path, CHECK_MESSAGE))
+                                    f"The path '{path}' should end with '/'. {CHECK_MESSAGE}")
 
     def test_rule_patterns(self) -> None:
         """Verifies that the search regex specified in a custom rule actually matches
@@ -45,7 +45,7 @@ class TestRuleList(TestCase):
                 # create=True is superfluous when mocking built-ins in Python >= 3.5
                 with patch('builtins.open', return_value=StringIO(line + '\n\n'), create=True, autospec=True):
                     self.assertFalse(RuleList([], [rule]).custom_check_file('foo.bar', 'baz', ''),
-                                     "The pattern '{}' matched the line '{}' while it shouldn't.".format(pattern, line))
+                                     f"The pattern '{pattern}' matched the line '{line}' while it shouldn't.")
 
             for line in rule.get('bad_lines', []):
                 # create=True is superfluous when mocking built-ins in Python >= 3.5
@@ -53,4 +53,4 @@ class TestRuleList(TestCase):
                            return_value=StringIO(line + '\n\n'), create=True, autospec=True), patch('builtins.print'):
                     filename = list(rule.get('include_only', {'foo.bar'}))[0]
                     self.assertTrue(RuleList([], [rule]).custom_check_file(filename, 'baz', ''),
-                                    "The pattern '{}' didn't match the line '{}' while it should.".format(pattern, line))
+                                    f"The pattern '{pattern}' didn't match the line '{line}' while it should.")

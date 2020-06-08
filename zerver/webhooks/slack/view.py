@@ -23,7 +23,7 @@ def api_slack_webhook(request: HttpRequest, user_profile: UserProfile,
         return json_error(_('Error: channels_map_to_topics parameter other than 0 or 1'))
 
     if channels_map_to_topics == VALID_OPTIONS['SHOULD_BE_MAPPED']:
-        subject = "channel: {}".format(channel_name)
+        subject = f"channel: {channel_name}"
     else:
         stream = channel_name
         subject = _("Message from Slack")

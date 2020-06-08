@@ -432,7 +432,7 @@ class TestSupportEndpoint(ZulipTestCase):
 
         def check_preregistration_user_query_result(result: HttpResponse, email: str, invite: Optional[bool]=False) -> None:
             self.assert_in_success_response(['<span class="label">preregistration user</span>\n',
-                                             '<b>Email</b>: {}'.format(email),
+                                             f'<b>Email</b>: {email}',
                                              ], result)
             if invite:
                 self.assert_in_success_response(['<span class="label">invite</span>'], result)

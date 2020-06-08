@@ -34,7 +34,7 @@ def get_message_body(payload: Dict[str, Dict[str, Any]]) -> str:
         )
 
         if recipients_text:
-            recipients_text = "{}, and {}".format(recipients_text, text)
+            recipients_text = f"{recipients_text}, and {text}"
         else:
             recipients_text = text
 
@@ -47,8 +47,8 @@ def get_recipients_text(recipients: List[str]) -> str:
         recipients_text = "{}".format(*recipients)
     else:
         for recipient in recipients[:-1]:
-            recipients_text += "{}, ".format(recipient)
-        recipients_text += "and {}".format(recipients[-1])
+            recipients_text += f"{recipient}, "
+        recipients_text += f"and {recipients[-1]}"
 
     return recipients_text
 

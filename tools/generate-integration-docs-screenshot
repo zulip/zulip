@@ -47,9 +47,9 @@ from zerver.lib.storage import static_path
 def create_integration_bot(integration: WebhookIntegration, bot_name: Optional[str]=None) -> UserProfile:
     realm = get_realm('zulip')
     owner = get_user_by_delivery_email("iago@zulip.com", realm)
-    bot_email = "{}-bot@example.com".format(integration.name)
+    bot_email = f"{integration.name}-bot@example.com"
     if bot_name is None:
-        bot_name = "{} Bot".format(integration.name.capitalize())
+        bot_name = f"{integration.name.capitalize()} Bot"
     try:
         bot = UserProfile.objects.get(email=bot_email)
     except UserProfile.DoesNotExist:
@@ -123,13 +123,13 @@ def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, 
     if config.custom_headers:
         headers.update(config.custom_headers)
     if config.use_basic_auth:
-        credentials = base64.b64encode('{}:{}'.format(bot.email, bot.api_key).encode('utf8')).decode('utf8')
-        auth = 'basic {}'.format(credentials)
+        credentials = base64.b64encode(f'{bot.email}:{bot.api_key}'.encode('utf8')).decode('utf8')
+        auth = f'basic {credentials}'
         headers.update(dict(Authorization=auth))
 
     assert isinstance(bot.bot_owner, UserProfile)
     stream = integration.stream_name or 'devel'
-    url = "{}/{}".format(bot.bot_owner.realm.uri, integration.url)
+    url = f"{bot.bot_owner.realm.uri}/{integration.url}"
     params = {'api_key': bot.api_key, 'stream': stream}
     if config.extra_params:
         params.update(config.extra_params)
@@ -148,7 +148,7 @@ def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, 
     else:
         extra_args = {'json': data}
 
-    url = '{}?{}'.format(url, urlencode(params))
+    url = f'{url}?{urlencode(params)}'
 
     try:
         response = requests.post(url=url, headers=headers, **extra_args)
@@ -161,13 +161,13 @@ def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, 
         print('Failed to trigger webhook')
         return False
     else:
-        print('Triggered {} webhook'.format(integration.name))
+        print(f'Triggered {integration.name} webhook')
         return True
 
 def capture_last_message_screenshot(bot: UserProfile, image_path: str) -> None:
     message = Message.objects.filter(sender=bot).last()
     if message is None:
-        print('No message found for {}'.format(bot.full_name))
+        print(f'No message found for {bot.full_name}')
         return
     message_id = str(message.id)
     screenshot_script = os.path.join(TOOLS_DIR, 'message-screenshot.js')

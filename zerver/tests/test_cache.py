@@ -62,7 +62,7 @@ class CacheKeyValidationTest(ZulipTestCase):
 class CacheWithKeyDecoratorTest(ZulipTestCase):
     def test_cache_with_key_invalid_character(self) -> None:
         def invalid_characters_cache_key_function(user_id: int) -> str:
-            return 'CacheWithKeyDecoratorTest:invalid_character:ą:{}'.format(user_id)
+            return f'CacheWithKeyDecoratorTest:invalid_character:ą:{user_id}'
 
         @cache_with_key(invalid_characters_cache_key_function, timeout=1000)
         def get_user_function_with_bad_cache_keys(user_id: int) -> UserProfile:
@@ -101,7 +101,7 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
 
     def test_cache_with_key_good_key(self) -> None:
         def good_cache_key_function(user_id: int) -> str:
-            return 'CacheWithKeyDecoratorTest:good_cache_key:{}'.format(user_id)
+            return f'CacheWithKeyDecoratorTest:good_cache_key:{user_id}'
 
         @cache_with_key(good_cache_key_function, timeout=1000)
         def get_user_function_with_good_cache_keys(user_id: int) -> UserProfile:
@@ -125,7 +125,7 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
 
     def test_cache_with_key_none_values(self) -> None:
         def cache_key_function(user_id: int) -> str:
-            return 'CacheWithKeyDecoratorTest:test_cache_with_key_none_values:{}'.format(user_id)
+            return f'CacheWithKeyDecoratorTest:test_cache_with_key_none_values:{user_id}'
 
         @cache_with_key(cache_key_function, timeout=1000)
         def get_user_function_can_return_none(user_id: int) -> Optional[UserProfile]:
@@ -155,7 +155,7 @@ class GetCacheWithKeyDecoratorTest(ZulipTestCase):
         # we got the result from calling the function (None)
 
         def good_cache_key_function(user_id: int) -> str:
-            return 'CacheWithKeyDecoratorTest:good_cache_key:{}'.format(user_id)
+            return f'CacheWithKeyDecoratorTest:good_cache_key:{user_id}'
 
         @get_cache_with_key(good_cache_key_function)
         def get_user_function_with_good_cache_keys(user_id: int) -> Any:  # nocoverage
@@ -173,7 +173,7 @@ class GetCacheWithKeyDecoratorTest(ZulipTestCase):
 
     def test_get_cache_with_bad_key(self) -> None:
         def bad_cache_key_function(user_id: int) -> str:
-            return 'CacheWithKeyDecoratorTest:invalid_character:ą:{}'.format(user_id)
+            return f'CacheWithKeyDecoratorTest:invalid_character:ą:{user_id}'
 
         @get_cache_with_key(bad_cache_key_function)
         def get_user_function_with_bad_cache_keys(user_id: int) -> Any:  # nocoverage

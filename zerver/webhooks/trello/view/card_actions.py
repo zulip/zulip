@@ -114,7 +114,7 @@ def get_subject(payload: Mapping[str, Any]) -> str:
 def get_body(payload: Mapping[str, Any], action_type: str) -> str:
     message_body = ACTIONS_TO_FILL_BODY_MAPPER[action_type](payload, action_type)
     creator = payload['action']['memberCreator'].get('fullName')
-    return '{full_name} {rest}'.format(full_name=creator, rest=message_body)
+    return f'{creator} {message_body}'
 
 def get_added_checklist_body(payload: Mapping[str, Any], action_type: str) -> str:
     data = {

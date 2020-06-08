@@ -131,7 +131,7 @@ class OembedTestCase(ZulipTestCase):
 
     def test_autodiscovered_oembed_xml_format_html(self) -> None:
         iframe_content = '<iframe src="https://w.soundcloud.com/player"></iframe>'
-        html = '<![CDATA[{}]]>'.format(iframe_content)
+        html = f'<![CDATA[{iframe_content}]]>'
         stripped_html = strip_cdata(html)
         self.assertEqual(iframe_content, stripped_html)
 
@@ -299,7 +299,7 @@ class PreviewTestCase(ZulipTestCase):
             with mock.patch('requests.get', mocked_response):
                 FetchLinksEmbedData().consume(event)
 
-        embedded_link = '<a href="{}" title="The Rock">The Rock</a>'.format(url)
+        embedded_link = f'<a href="{url}" title="The Rock">The Rock</a>'
         msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertIn(embedded_link, msg.rendered_content)
 
@@ -327,7 +327,7 @@ class PreviewTestCase(ZulipTestCase):
         # Verify the initial message doesn't have the embedded links rendered
         msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertNotIn(
-            '<a href="{}" title="The Rock">The Rock</a>'.format(url),
+            f'<a href="{url}" title="The Rock">The Rock</a>',
             msg.rendered_content)
 
         # Mock the network request result so the test can be fast without Internet
@@ -367,7 +367,7 @@ class PreviewTestCase(ZulipTestCase):
             msg = Message.objects.select_related("sender").get(id=msg_id)
             # The content of the message has changed since the event for original_url has been created,
             # it should not be rendered. Another, up-to-date event will have been sent (edited_url).
-            self.assertNotIn('<a href="{}" title="The Rock">The Rock</a>'.format(original_url),
+            self.assertNotIn(f'<a href="{original_url}" title="The Rock">The Rock</a>',
                              msg.rendered_content)
             mocked_response_edited.assert_not_called()
 
@@ -377,7 +377,7 @@ class PreviewTestCase(ZulipTestCase):
                     # up-to-date event for edited_url.
                     queue_json_publish(*args, **kwargs)
                     msg = Message.objects.select_related("sender").get(id=msg_id)
-                    self.assertIn('<a href="{}" title="The Rock">The Rock</a>'.format(edited_url),
+                    self.assertIn(f'<a href="{edited_url}" title="The Rock">The Rock</a>',
                                   msg.rendered_content)
 
         with mock.patch('zerver.views.messages.queue_json_publish', wraps=wrapped_queue_json_publish) as patched:
@@ -388,7 +388,7 @@ class PreviewTestCase(ZulipTestCase):
 
     def test_get_link_embed_data(self) -> None:
         url = 'http://test.org/'
-        embedded_link = '<a href="{}" title="The Rock">The Rock</a>'.format(url)
+        embedded_link = f'<a href="{url}" title="The Rock">The Rock</a>'
 
         # When humans send, we should get embedded content.
         msg = self._send_message_with_test_org_url(sender=self.example_user('hamlet'))
@@ -659,8 +659,8 @@ class PreviewTestCase(ZulipTestCase):
             'message_realm_id': msg.sender.realm_id,
             'message_content': url}
 
-        mocked_data = {'html': '<iframe src="{}"></iframe>'.format(url),
-                       'oembed': True, 'type': 'video', 'image': '{}/image.png'.format(url)}
+        mocked_data = {'html': f'<iframe src="{url}"></iframe>',
+                       'oembed': True, 'type': 'video', 'image': f'{url}/image.png'}
         mocked_response = mock.Mock(side_effect=self.create_mock_response(url))
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
             with mock.patch('requests.get', mocked_response):

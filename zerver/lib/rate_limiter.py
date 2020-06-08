@@ -116,7 +116,7 @@ class RateLimitedUser(RateLimitedObject):
         super().__init__(backend=backend)
 
     def key(self) -> str:
-        return "{}:{}:{}".format(type(self).__name__, self.user.id, self.domain)
+        return f"{type(self).__name__}:{self.user.id}:{self.domain}"
 
     def rules(self) -> List[Tuple[int, int]]:
         # user.rate_limits are general limits, applicable to the domain 'api_by_user'
@@ -294,7 +294,7 @@ class TornadoInMemoryRateLimiterBackend(RateLimiterBackend):
 class RedisRateLimiterBackend(RateLimiterBackend):
     @classmethod
     def get_keys(cls, entity_key: str) -> List[str]:
-        return ["{}ratelimit:{}:{}".format(KEY_PREFIX, entity_key, keytype)
+        return [f"{KEY_PREFIX}ratelimit:{entity_key}:{keytype}"
                 for keytype in ['list', 'zset', 'block']]
 
     @classmethod

@@ -66,7 +66,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
         session_cookie = settings.SESSION_COOKIE_NAME
         session_key = self.client.session.session_key
         self.session_cookie = {
-            "Cookie": "{}={}".format(session_cookie, session_key)
+            "Cookie": f"{session_cookie}={session_key}"
         }
 
     def get_session_cookie(self) -> Dict[str, str]:
@@ -102,7 +102,7 @@ class EventsTestCase(TornadoWebTestCase):
             'last_event_id': -1,
         }
 
-        path = '/json/events?{}'.format(urllib.parse.urlencode(data))
+        path = f'/json/events?{urllib.parse.urlencode(data)}'
         self.client_get_async(path)
 
         def process_events() -> None:

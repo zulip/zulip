@@ -185,7 +185,7 @@ def validate_object(content: Dict[str, Any], schema: Dict[str, Any]) -> None:
         # If the object is not opaque then continue statements
         # will be executed above and this will be skipped
         if expected_type is dict:
-            raise SchemaError('Opaque object "{}"'.format(key))
+            raise SchemaError(f'Opaque object "{key}"')
     # Check that at least all the required keys are present
     if 'required' in schema:
         for req_key in schema['required']:

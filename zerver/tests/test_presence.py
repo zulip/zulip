@@ -498,7 +498,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
             }
         )
 
-        result = self.client_get("/json/users/{}/presence".format(user.email))
+        result = self.client_get(f"/json/users/{user.email}/presence")
         return result.json()
 
     def test_aggregated_info(self) -> None:

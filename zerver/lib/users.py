@@ -247,7 +247,7 @@ def validate_user_custom_profile_field(realm_id: int, field: CustomProfileField,
                                        value: Union[int, str, List[int]]) -> Optional[str]:
     validators = CustomProfileField.FIELD_VALIDATORS
     field_type = field.field_type
-    var_name = '{}'.format(field.name)
+    var_name = f'{field.name}'
     if field_type in validators:
         validator = validators[field_type]
         result = validator(var_name, value)

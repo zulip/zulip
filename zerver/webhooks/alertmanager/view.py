@@ -24,11 +24,11 @@ def api_alertmanager_webhook(request: HttpRequest, user_profile: UserProfile,
         name = labels.get(
             name_field, annotations.get(name_field, "(unknown)"))
         desc = labels.get(
-            desc_field, annotations.get(desc_field, "<missing field: {}>".format(desc_field)))
+            desc_field, annotations.get(desc_field, f"<missing field: {desc_field}>"))
 
         url = alert.get("generatorURL").replace("tab=1", "tab=0")
 
-        body = "{description} ([graph]({url}))".format(description=desc, url=url)
+        body = f"{desc} ([graph]({url}))"
         if name not in topics:
             topics[name] = {"firing": [], "resolved": []}
         topics[name][alert["status"]].append(body)
@@ -51,7 +51,7 @@ def api_alertmanager_webhook(request: HttpRequest, user_profile: UserProfile,
                     title=title,
                     message=messages[0])
             else:
-                message_list = "\n".join(["* {}".format(m) for m in messages])
+                message_list = "\n".join([f"* {m}" for m in messages])
                 body = "{icon} **{title}**\n{messages}".format(
                     icon=icon,
                     title=title,

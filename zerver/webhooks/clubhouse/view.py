@@ -310,7 +310,7 @@ def get_story_update_estimate_body(payload: Dict[str, Any]) -> str:
 
     new = action["changes"]["estimate"].get("new")
     if new:
-        kwargs["estimate"] = "{} points".format(new)
+        kwargs["estimate"] = f"{new} points"
     else:
         kwargs["estimate"] = "*Unestimated*"
 

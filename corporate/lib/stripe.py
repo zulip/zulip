@@ -283,7 +283,7 @@ def compute_plan_parameters(
         price_per_license = 800
         period_end = add_months(billing_cycle_anchor, 1)
     else:
-        raise AssertionError('Unknown billing_schedule: {}'.format(billing_schedule))
+        raise AssertionError(f'Unknown billing_schedule: {billing_schedule}')
     if discount is not None:
         # There are no fractional cents in Stripe, so round down to nearest integer.
         price_per_license = int(float(price_per_license * (1 - discount / 100)) + .00001)
@@ -326,12 +326,12 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
                 amount=price_per_license * licenses,
                 currency='usd',
                 customer=customer.stripe_customer_id,
-                description="Upgrade to Zulip Standard, ${} x {}".format(price_per_license/100, licenses),
+                description=f"Upgrade to Zulip Standard, ${price_per_license/100} x {licenses}",
                 receipt_email=user.delivery_email,
                 statement_descriptor='Zulip Standard')
             # Not setting a period start and end, but maybe we should? Unclear what will make things
             # most similar to the renewal case from an accounting perspective.
-            description = "Payment (Card ending in {})".format(cast(stripe.Card, stripe_charge.source).last4)
+            description = f"Payment (Card ending in {cast(stripe.Card, stripe_charge.source).last4})"
             stripe.InvoiceItem.create(
                 amount=price_per_license * licenses * -1,
                 currency='usd',
@@ -454,7 +454,7 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
             plan.invoiced_through = ledger_entry
             plan.invoicing_status = CustomerPlan.STARTED
             plan.save(update_fields=['invoicing_status', 'invoiced_through'])
-            idempotency_key: Optional[str] = 'ledger_entry:{}'.format(ledger_entry.id)
+            idempotency_key: Optional[str] = f'ledger_entry:{ledger_entry.id}'
             if settings.TEST_SUITE:
                 idempotency_key = None
             stripe.InvoiceItem.create(

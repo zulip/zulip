@@ -41,7 +41,7 @@ def api_travis_webhook(request: HttpRequest, user_profile: UserProfile,
     elif message_status in PENDING_STATUSES:
         emoji = ':counterclockwise:'
     else:
-        emoji = "(No emoji specified for status '{}'.)".format(message_status)
+        emoji = f"(No emoji specified for status '{message_status}'.)"
 
     body = MESSAGE_TEMPLATE.format(
         message['author_name'],

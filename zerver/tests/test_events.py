@@ -2803,7 +2803,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         hamlet = self.example_user("hamlet")
         self.subscribe(hamlet, "Denmark")
-        body = "First message ...[zulip.txt](http://{}".format(hamlet.realm.host) + data['uri'] + ")"
+        body = f"First message ...[zulip.txt](http://{hamlet.realm.host}" + data['uri'] + ")"
         events = self.do_test(
             lambda: self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test"),
             num_events=2)
@@ -2888,7 +2888,7 @@ class EventsRegisterTest(ZulipTestCase):
         audit_log_entry = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_EXPORTED).first()
         events = self.do_test(
-            lambda: self.client_delete('/json/export/realm/{id}'.format(id=audit_log_entry.id)),
+            lambda: self.client_delete(f'/json/export/realm/{audit_log_entry.id}'),
             state_change_expected=False, num_events=1)
         error = deletion_schema_checker('events[0]', events[0])
         self.assert_on_error(error)

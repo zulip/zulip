@@ -38,7 +38,7 @@ def api_gosquared_webhook(request: HttpRequest, user_profile: UserProfile,
         body = TRAFFIC_SPIKE_TEMPLATE.format(website_name=domain_name,
                                              website_url=acc_url,
                                              user_num=user_num)
-        topic = 'GoSquared - {website_name}'.format(website_name=domain_name)
+        topic = f'GoSquared - {domain_name}'
         check_send_webhook_message(request, user_profile, topic, body)
 
     # Live chat message event
@@ -47,7 +47,7 @@ def api_gosquared_webhook(request: HttpRequest, user_profile: UserProfile,
         # Only support non-private messages
         if not payload['message']['private']:
             session_title = payload['message']['session']['title']
-            topic = 'Live Chat Session - {}'.format(session_title)
+            topic = f'Live Chat Session - {session_title}'
             body = CHAT_MESSAGE_TEMPLATE.format(
                 status=payload['person']['status'],
                 name=payload['person']['_anon']['name'],

@@ -223,7 +223,7 @@ class NarrowBuilder:
                 if ord(c) >= 128:
                     # convert the character to hex postgres regex will take
                     # \uXXXX
-                    s[i] = '\\u{:0>4x}'.format(ord(c))
+                    s[i] = f'\\u{ord(c):0>4x}'
                 else:
                     s[i] = '\\' + c
         return ''.join(s)

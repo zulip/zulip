@@ -92,5 +92,5 @@ def get_language_translation_data(language: str) -> Dict[str, str]:
         with open(path) as reader:
             return ujson.load(reader)
     except FileNotFoundError:
-        print('Translation for {} not found at {}'.format(language, path))
+        print(f'Translation for {language} not found at {path}')
         return {}

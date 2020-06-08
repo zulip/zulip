@@ -228,7 +228,7 @@ def generate_password_reset_url(user_profile: UserProfile,
     uid = urlsafe_base64_encode(force_bytes(user_profile.id))
     endpoint = reverse('django.contrib.auth.views.password_reset_confirm',
                        kwargs=dict(uidb64=uid, token=token))
-    return "{}{}".format(user_profile.realm.uri, endpoint)
+    return f"{user_profile.realm.uri}{endpoint}"
 
 class ZulipPasswordResetForm(PasswordResetForm):
     def save(self,
@@ -319,7 +319,7 @@ class RateLimitedPasswordResetByEmail(RateLimitedObject):
         super().__init__()
 
     def key(self) -> str:
-        return "{}:{}".format(type(self).__name__, self.email)
+        return f"{type(self).__name__}:{self.email}"
 
     def rules(self) -> List[Tuple[int, int]]:
         return settings.RATE_LIMITING_RULES['password_reset_form_by_email']

@@ -68,26 +68,26 @@ def format_object(
             url: str = obj['html_url']
             if 'opbeat.com' not in url:
                 url = 'https://opbeat.com/' + url.lstrip('/')
-            message += '\n**[{}]({})**'.format(title_str, url)
+            message += f'\n**[{title_str}]({url})**'
         else:
-            message += '\n**{}**'.format(title_str)
+            message += f'\n**{title_str}**'
     for key_list in keys:
         if len(key_list) > 1:
             value = key_list[0].format(get_value(obj, key_list[1]))
-            message += '\n>{}'.format(value)
+            message += f'\n>{value}'
         else:
             key = key_list[0]
             key_raw = key.lstrip('!').lstrip('#').lstrip('"')
             if key_raw != 'html_url' and key_raw != 'subject' and ':' not in key_raw:
                 value = get_value(obj, key_raw)
                 if key.startswith('!'):
-                    message += '\n>{}'.format(value)
+                    message += f'\n>{value}'
                 elif key.startswith('#'):
-                    message += '\n{}'.format(value)
+                    message += f'\n{value}'
                 elif key.startswith('"'):
-                    message += '\n{}'.format(key_raw)
+                    message += f'\n{key_raw}'
                 else:
-                    message += '\n>{}: {}'.format(key, value)
+                    message += f'\n>{key}: {value}'
             if key == 'subject':
                 message = format_object(
                     obj['subject'], obj['subject_type'], message + '\n')

@@ -91,7 +91,7 @@ def make_message_chunk(message: str) -> str:
     returns an empty string.
     """
     # "Message" shouldn't be included if there is none supplied.
-    return "* **Message**: {}\n".format(message) if message != "" else ""
+    return f"* **Message**: {message}\n" if message != "" else ""
 
 
 def make_app_info_chunk(app_dict: Dict[str, str]) -> str:
@@ -103,7 +103,7 @@ def make_app_info_chunk(app_dict: Dict[str, str]) -> str:
     """
     app_name = app_dict['name']
     app_url = app_dict['url']
-    return "* **Application details**: [{}]({})\n".format(app_name, app_url)
+    return f"* **Application details**: [{app_name}]({app_url})\n"
 
 
 def notification_message_follow_up(payload: Dict[str, Any]) -> str:
@@ -127,7 +127,7 @@ def notification_message_follow_up(payload: Dict[str, Any]) -> str:
         # minute", where "FiveMinuteFollowUp" is "Five minute".
         prefix = followup_type[:len(followup_type) - 14] + " minute"
 
-    message += "{} {}:\n".format(prefix, followup_link_md)
+    message += f"{prefix} {followup_link_md}:\n"
 
     # Get the message of the error.
     payload_msg = payload['error']['message']
@@ -153,9 +153,9 @@ def notification_message_error_occurred(payload: Dict[str, Any]) -> str:
 
     # Stylize the message based on the event type of the error.
     if payload['eventType'] == "NewErrorOccurred":
-        message += "{}:\n".format("New {} occurred".format(error_link_md))
+        message += "{}:\n".format(f"New {error_link_md} occurred")
     elif payload['eventType'] == "ErrorReoccurred":
-        message += "{}:\n".format("{} reoccurred".format(error_link_md))
+        message += "{}:\n".format(f"{error_link_md} reoccurred")
 
     # Get the message of the error. This value can be empty (as in "").
     payload_msg = payload['error']['message']
@@ -192,7 +192,7 @@ def notification_message_error_occurred(payload: Dict[str, Any]) -> str:
         # We don't know what the keys and values beforehand, so we are forced
         # to iterate.
         for key in sorted(custom_data.keys()):
-            message += "* **{}**: {}\n".format(key, custom_data[key])
+            message += f"* **{key}**: {custom_data[key]}\n"
 
     message += make_app_info_chunk(payload['application'])
 

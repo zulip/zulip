@@ -153,7 +153,7 @@ def render_javascript_code_example(function: str, admin_config: Optional[bool]=F
         for line in snippet:
             result = re.search('const result.*=(.*);', line)
             if result:
-                line = "    return{};".format(result.group(1))
+                line = f"    return{result.group(1)};"
             # Strip newlines
             code_example.append(line.rstrip())
         code_example.append("}).then(console.log).catch(console.err);")
@@ -167,7 +167,7 @@ def curl_method_arguments(endpoint: str, method: str,
                           api_url: str) -> List[str]:
     # We also include the -sS verbosity arguments here.
     method = method.upper()
-    url = "{}/v1{}".format(api_url, endpoint)
+    url = f"{api_url}/v1{endpoint}"
     valid_methods = ["GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"]
     if method == "GET":
         # Then we need to make sure that each -d option translates to becoming
@@ -206,7 +206,7 @@ cURL example.""".format(endpoint, method, param_name)
             raise ValueError(msg)
         ordered_ex_val_str = json.dumps(example_value, sort_keys=True)
         if curl_argument:
-            return "    --data-urlencode {}='{}'".format(param_name, ordered_ex_val_str)
+            return f"    --data-urlencode {param_name}='{ordered_ex_val_str}'"
         return ordered_ex_val_str  # nocoverage
     else:
         example_value = param.get("example", DEFAULT_EXAMPLE[param_type])
@@ -215,7 +215,7 @@ cURL example.""".format(endpoint, method, param_name)
         if jsonify:
             example_value = json.dumps(example_value)
         if curl_argument:
-            return "    -d '{}={}'".format(param_name, example_value)
+            return f"    -d '{param_name}={example_value}'"
         return example_value
 
 def generate_curl_example(endpoint: str, method: str,

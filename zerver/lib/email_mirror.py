@@ -43,15 +43,15 @@ def redact_email_address(error_message: str) -> str:
         # Annotate basic info about the address before scrubbing:
         if is_missed_message_address(email_address):
             redacted_message = error_message.replace(email_address,
-                                                     "{} <Missed message address>".format(email_address))
+                                                     f"{email_address} <Missed message address>")
         else:
             try:
                 target_stream_id = decode_stream_email_address(email_address)[0].id
-                annotated_address = "{} <Address to stream id: {}>".format(email_address, target_stream_id)
+                annotated_address = f"{email_address} <Address to stream id: {target_stream_id}>"
                 redacted_message = error_message.replace(email_address, annotated_address)
             except ZulipEmailForwardError:
                 redacted_message = error_message.replace(email_address,
-                                                         "{} <Invalid address>".format(email_address))
+                                                         f"{email_address} <Invalid address>")
 
         # Scrub the address from the message, to the form XXXXX@example.com:
         string_to_scrub = address_match.groups()[0]
@@ -429,7 +429,7 @@ def mirror_email_message(data: Dict[str, str]) -> Dict[str, str]:
     except ZulipEmailForwardError as e:
         return {
             "status": "error",
-            "msg": "5.1.1 Bad destination mailbox address: {}".format(e)
+            "msg": f"5.1.1 Bad destination mailbox address: {e}"
         }
 
     queue_json_publish(
@@ -449,7 +449,7 @@ class RateLimitedRealmMirror(RateLimitedObject):
         super().__init__()
 
     def key(self) -> str:
-        return "{}:{}".format(type(self).__name__, self.realm.string_id)
+        return f"{type(self).__name__}:{self.realm.string_id}"
 
     def rules(self) -> List[Tuple[int, int]]:
         return settings.RATE_LIMITING_MIRROR_REALM_RULES

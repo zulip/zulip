@@ -348,7 +348,7 @@ def get_push_tag_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str:
 
 def append_punctuation(title: str, message: str) -> str:
     if title[-1] not in string.punctuation:
-        message = "{}.".format(message)
+        message = f"{message}."
 
     return message
 

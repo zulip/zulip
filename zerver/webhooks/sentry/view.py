@@ -78,7 +78,7 @@ def convert_lines_to_traceback_string(lines: Optional[List[str]]) -> str:
             if (line == ""):
                 traceback += "\n"
             else:
-                traceback += "     {}\n".format(line)
+                traceback += f"     {line}\n"
     return traceback
 
 

@@ -67,7 +67,7 @@ def add_block(block: Dict[str, Any], body: str) -> str:
             text = block["text"]
             while type(text) == dict:  # handle stuff like block["text"]["text"]
                 text = text["text"]
-            body += "\n\n{}".format(text)
+            body += f"\n\n{text}"
 
         if "accessory" in block:
             accessory = block["accessory"]

@@ -45,7 +45,7 @@ class IncludeCustomPreprocessor(IncludePreprocessor):
                         with open(filename, encoding=self.encoding) as r:
                             text = r.readlines()
                     except Exception as e:
-                        print('Warning: could not find file {}. Error: {}'.format(filename, e))
+                        print(f'Warning: could not find file {filename}. Error: {e}')
                         lines[loc] = INC_SYNTAX.sub('', line)
                         raise InvalidMarkdownIncludeStatement(m.group(0).strip())
 

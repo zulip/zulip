@@ -26,5 +26,5 @@ class Command(BaseCommand):
                 if m1['content'] != m2['content']:
                     changed_count += 1
                     self.stdout.write('Changed message id: {id}'.format(id=m1['id']))
-        self.stdout.write('Total messages: {count}'.format(count=total_count))
-        self.stdout.write('Changed messages: {count}'.format(count=changed_count))
+        self.stdout.write(f'Total messages: {total_count}')
+        self.stdout.write(f'Changed messages: {changed_count}')

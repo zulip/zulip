@@ -113,7 +113,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
 
             default = argument.get('schema', {}).get('default')
             if default is not None:
-                description += '\nDefaults to `{}`.'.format(json.dumps(default))
+                description += f'\nDefaults to `{json.dumps(default)}`.'
 
             # TODO: OpenAPI allows indicating where the argument goes
             # (path, querystring, form data...).  We should document this detail.

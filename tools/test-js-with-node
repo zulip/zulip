@@ -310,7 +310,7 @@ def enforce_proper_coverage(coverage_json: Any) -> bool:
             line_mapping = coverage_json[path]['statementMap']
             if check_line_coverage(relative_path, line_coverage, line_mapping, log=False):
                 coverage_not_enforced = True
-                print_error("{} unexpectedly has 100% line coverage.".format(relative_path))
+                print_error(f"{relative_path} unexpectedly has 100% line coverage.")
 
     if coverage_not_enforced:
         print()
@@ -332,7 +332,7 @@ if options.coverage and ret == 0:
 print()
 if ret == 0:
     if options.coverage:
-        reports_location = 'http://{}/node-coverage/index.html'.format(get_dev_host())
+        reports_location = f'http://{get_dev_host()}/node-coverage/index.html'
         print('View coverage reports at ' + CYAN + reports_location + ENDC)
 
     print(GREEN + "Test(s) passed. SUCCESS!" + ENDC)

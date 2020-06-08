@@ -769,7 +769,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def youtube_title(self, extracted_data: Dict[str, Any]) -> Optional[str]:
         title = extracted_data.get("title")
         if title is not None:
-            return "YouTube - {}".format(title)
+            return f"YouTube - {title}"
         return None
 
     def youtube_image(self, url: str) -> Optional[str]:
@@ -796,7 +796,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def vimeo_title(self, extracted_data: Dict[str, Any]) -> Optional[str]:
         title = extracted_data.get("title")
         if title is not None:
-            return "Vimeo - {}".format(title)
+            return f"Vimeo - {title}"
         return None
 
     def twitter_text(self, text: str,
@@ -1201,7 +1201,7 @@ class Avatar(markdown.inlinepatterns.Pattern):
                 profile_id = user_dict['id']
 
         img.set('class', 'message_body_gravatar')
-        img.set('src', '/avatar/{}?s=30'.format(profile_id or email))
+        img.set('src', f'/avatar/{profile_id or email}?s=30')
         img.set('title', email)
         img.set('alt', email)
         return img
@@ -1637,7 +1637,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
                 el.set('class', 'user-mention silent')
             else:
                 el.set('class', 'user-mention')
-                text = "@{}".format(text)
+                text = f"@{text}"
             el.text = markdown.util.AtomicString(text)
             return el
         return None
@@ -1691,8 +1691,8 @@ class StreamPattern(CompiledPattern):
             # provide more clarity to API clients.
             # Also do the same for StreamTopicPattern.
             stream_url = encode_stream(stream['id'], name)
-            el.set('href', '/#narrow/stream/{stream_url}'.format(stream_url=stream_url))
-            text = '#{stream_name}'.format(stream_name=name)
+            el.set('href', f'/#narrow/stream/{stream_url}')
+            text = f'#{name}'
             el.text = markdown.util.AtomicString(text)
             return el
         return None
@@ -1721,7 +1721,7 @@ class StreamTopicPattern(CompiledPattern):
             link = '/#narrow/stream/{stream_url}/topic/{topic_url}'.format(stream_url=stream_url,
                                                                            topic_url=topic_url)
             el.set('href', link)
-            text = '#{stream_name} > {topic_name}'.format(stream_name=stream_name, topic_name=topic_name)
+            text = f'#{stream_name} > {topic_name}'
             el.text = markdown.util.AtomicString(text)
             return el
         return None
