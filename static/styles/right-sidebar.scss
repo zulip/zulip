@@ -110,31 +110,28 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-}
 
-.user_sidebar_entry .count {
-    float: right;
-    padding: 0 4px;
-    background-color: hsl(105, 2%, 50%);
-    border-radius: 0px;
-    color: hsl(0, 0%, 100%);
-    font-size: 12px;
-    line-height: 14px;
-    height: 15px;
-    font-weight: normal;
-    letter-spacing: 0.6px;
-    position: relative;
-    top: 3px;
-    border-radius: 4px;
-    margin-left: 5px;
-}
+    .count {
+        float: right;
+        padding: 0 4px;
+        background-color: hsl(105, 2%, 50%);
+        border-radius: 0px;
+        color: hsl(0, 0%, 100%);
+        font-size: 12px;
+        line-height: 14px;
+        height: 15px;
+        font-weight: normal;
+        letter-spacing: 0.6px;
+        position: relative;
+        top: 3px;
+        border-radius: 4px;
+        margin-left: 5px;
+        display: none;
+    }
 
-.user_sidebar_entry .count {
-    display: none;
-}
-
-.user_sidebar_entry.user-with-count .count {
-    display: block;
+    &.user-with-count .count {
+        display: block;
+    }
 }
 
 #userlist-toggle {
