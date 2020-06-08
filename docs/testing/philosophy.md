@@ -24,9 +24,9 @@ designed to minimize the time spent manually testing or otherwise
 investigating whether changes are correct.
 
 For example, our [infrastructure for testing
-authentication](../development/authentication.md) using e.g. a mock
-LDAP database in both automated tests and the development environment
-make it relatively easy to refactor and improve this important part of
+authentication](../development/authentication.md) allows using a mock
+LDAP database in both automated tests and the development environment,
+making it much easier now to refactor and improve this important part of
 the product than it was when you needed to setup an LDAP server and
 populate it with some test data in order to test LDAP authentication.
 
