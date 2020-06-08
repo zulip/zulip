@@ -14,6 +14,8 @@ below features are supported.
 
 * [`GET users/me`](/api/get-profile): Added `avatar_version`, `is_guest`,
   `is_active`, `timezone`, and `date_joined` fields to the User objects.
+* [`GET users/me`](/api/get-profile): `client_id` and `short_name` fields
+  are removed from the User objects returned by this endpoint.
 
 **Feature level 9**
 

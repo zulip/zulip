@@ -1337,7 +1337,6 @@ class GetProfileTest(ZulipTestCase):
         self.assert_json_success(result)
         json = result.json()
 
-        self.assertIn("client_id", json)
         self.assertIn("max_message_id", json)
         self.assertIn("pointer", json)
 
@@ -1372,7 +1371,6 @@ class GetProfileTest(ZulipTestCase):
 
         self.login('hamlet')
         result = ujson.loads(self.client_get('/json/users/me').content)
-        self.assertEqual(result['short_name'], 'hamlet')
         self.assertEqual(result['email'], hamlet.email)
         self.assertEqual(result['full_name'], 'King Hamlet')
         self.assertIn("user_id", result)
@@ -1383,7 +1381,6 @@ class GetProfileTest(ZulipTestCase):
         self.assertFalse('delivery_email' in result)
         self.login('iago')
         result = ujson.loads(self.client_get('/json/users/me').content)
-        self.assertEqual(result['short_name'], 'iago')
         self.assertEqual(result['email'], iago.email)
         self.assertEqual(result['full_name'], 'Iago')
         self.assertFalse(result['is_bot'])
@@ -1392,7 +1389,6 @@ class GetProfileTest(ZulipTestCase):
         self.assertFalse(result['is_guest'])
         self.login('desdemona')
         result = ujson.loads(self.client_get('/json/users/me').content)
-        self.assertEqual(result['short_name'], 'desdemona')
         self.assertEqual(result['email'], desdemona.email)
         self.assertFalse(result['is_bot'])
         self.assertTrue(result['is_admin'])

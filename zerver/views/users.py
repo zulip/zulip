@@ -31,7 +31,7 @@ from zerver.lib.users import check_valid_bot_type, check_bot_creation_policy, \
     check_full_name, check_short_name, check_valid_interface_type, check_valid_bot_config, \
     access_bot_by_id, add_service, access_user_by_id, check_bot_name_available, \
     validate_user_custom_profile_data, get_raw_user_data, get_api_key
-from zerver.lib.utils import generate_api_key, generate_random_token
+from zerver.lib.utils import generate_api_key
 from zerver.models import UserProfile, Stream, Message, \
     get_user_by_delivery_email, Service, get_user_including_cross_realm, \
     DomainNotAllowedForRealmError, DisposableEmailError, get_user_profile_by_id_in_realm, \
@@ -454,16 +454,11 @@ def create_user_backend(request: HttpRequest, user_profile: UserProfile,
     do_create_user(email, password, realm, full_name, short_name)
     return json_success()
 
-def generate_client_id() -> str:
-    return generate_random_token(32)
-
 def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     raw_user_data = get_raw_user_data(user_profile.realm, user_profile,
                                       client_gravatar=False, target_user=user_profile)
     result: Dict[str, Any] = raw_user_data[user_profile.id]
 
-    result['client_id'] = generate_client_id()
-    result['short_name'] = user_profile.short_name
     result['max_message_id'] = -1
     result['pointer'] = user_profile.pointer
 
