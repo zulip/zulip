@@ -24,6 +24,10 @@ in bursts.
 
 - Logged in users may be logged out during this one-time upgrade to
   transition them to more secure session cookies.
+- The format of the `JWT_AUTH_KEYS` setting has changed to include an
+  [algorithms](https://pyjwt.readthedocs.io/en/latest/algorithms.html)
+  list: `{"subdomain": "key"}` becomes `{"subdomain": {"key": "key",
+  "algorithms": ["HS256"]}}`.
 
 **Full feature changelog:**
 
