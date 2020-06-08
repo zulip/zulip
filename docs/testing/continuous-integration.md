@@ -58,19 +58,19 @@ installer tooling.
 We run multiple jobs during a CircleCI build to run Zulip's test
 suites on our supported production platforms. They are currently:
 
-* bionic-backend-frontend-python3.6
-* focal-backend-python3.8
+* bionic-backend-frontend
+* focal-backend
 
 Each runs the Zulip backend test suites, using the indicated
-platform/OS and Python version.  As suggested by the names, only one
+platform/OS.  As suggested by the names, only one
 suite runs the frontend test suites, since those are not
 platform-dependent.
 
 Additionally, there a couple jobs designed to do an end-to-end test on
 Zulip's production installer:
 
-* bionic-production-build-python3.6
-* bionic-production-install-python3.6
+* bionic-production-build
+* bionic-production-install
 * xenial-legacy
 
 The `production-build` job builds a Zulip release tarball, which is
