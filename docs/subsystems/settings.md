@@ -27,7 +27,7 @@ from shareable configuration.
 Zulip uses the [Django settings
 system](https://docs.djangoproject.com/en/2.2/topics/settings/), which
 means that the settings files are Python programs that set a lot of
-variables with all-capital names like EMAIL_GATEWAY_PATTERN.  You can
+variables with all-capital names like `EMAIL_GATEWAY_PATTERN`.  You can
 access these anywhere in the Zulip Django code using e.g.:
 
 ```
@@ -82,7 +82,7 @@ In a development environment, we have `zproject/settings.py`, and
 additionally:
 
 * `zproject/dev_settings.py` has the settings for the Zulip development
-  environment; it mostly just imports prod_settings_template.py.
+  environment; it mostly just imports `prod_settings_template.py`.
 
 * `zproject/dev-secrets.conf` replaces `/etc/zulip/zulip-secrets.conf`.
 
@@ -137,9 +137,9 @@ process for adding a new realm setting to Zulip.
 So for example, the following server settings will eventually be
 replaced with realm settings:
 
-* NAME_CHANGES_DISABLED
-* INLINE_IMAGE_PREVIEW
-* ENABLE_GRAVATAR
+* `NAME_CHANGES_DISABLED`
+* `INLINE_IMAGE_PREVIEW`
+* `ENABLE_GRAVATAR`
 * Which authentication methods are allowed should probably appear in
   both places; in server settings indicating the capabilities of the
   server, and in the realm settings indicating which methods the realm
