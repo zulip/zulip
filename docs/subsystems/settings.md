@@ -69,10 +69,8 @@ In a production environment, we have:
   `zproject/settings.py`.
 
 * `zproject/settings.py` is the main Django settings file for Zulip.
-  It imports everything from `zproject/configured_settings.py`, and
-  contains all the settings that are constant for all Zulip
-  installations (e.g. configuration for logging, static assets,
-  middleware, etc.).
+  It imports everything from `zproject/configured_settings.py` and
+  `zproject/computed_settings.py`.
 
 * `zproject/configured_settings.py` imports everything from
   `zproject/default_settings.py`, then in a prod environment imports
@@ -80,6 +78,11 @@ In a production environment, we have:
 
 * `zproject/default_settings.py` has the default values for the settings the
   user would set in `/etc/zulip/settings.py`.
+
+* `zproject/computed_settings.py` contains all the settings that are
+  constant for all Zulip installations or computed as a function of
+  `zproject/configured_settings.py` (e.g. configuration for logging,
+  static assets, middleware, etc.).
 
 In a development environment, we have `zproject/settings.py`, and
 additionally:
