@@ -281,6 +281,18 @@ div[id^="message-edit-send-status"],
     background-color: hsla(152, 51%, 63%, 0.25);
     border: 1px solid hsla(0, 0%, 0%, 0.1);
     border-radius: 4px;
+
+    .close {
+        position: absolute;
+        right: 8px;
+        top: 4px;
+        font-size: 17px;
+        font-weight: bold;
+        color: hsl(0, 0%, 0%);
+        text-shadow: 0 1px 0 hsl(0, 0%, 100%);
+        opacity: .2;
+        filter: alpha(opacity=20);
+    }
 }
 
 .compose-notifications-content {
@@ -290,18 +302,6 @@ div[id^="message-edit-send-status"],
 
 .composition-area {
     position: relative;
-}
-
-#out-of-view-notification .close {
-    position: absolute;
-    right: 8px;
-    top: 4px;
-    font-size: 17px;
-    font-weight: bold;
-    color: hsl(0, 0%, 0%);
-    text-shadow: 0 1px 0 hsl(0, 0%, 100%);
-    opacity: .2;
-    filter: alpha(opacity=20);
 }
 
 textarea.new_message_textarea {
