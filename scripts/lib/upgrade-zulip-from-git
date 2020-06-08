@@ -20,6 +20,9 @@ remote_url = get_config(config_file, 'deployment', 'git_repo_url', "https://gith
 
 assert_running_as_root(strip_lib_from_paths=True)
 
+# make sure we have appropriate file permissions
+os.umask(0o22)
+
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s upgrade-zulip-from-git: %(message)s",
                     level=logging.INFO)
