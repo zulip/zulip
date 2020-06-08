@@ -10,6 +10,8 @@ if PRODUCTION:
 else:
     from .dev_settings import EXTERNAL_HOST, ZULIP_ADMINISTRATOR
 
+DEBUG = DEVELOPMENT
+
 # These settings are intended for the server admin to set.  We document them in
 # prod_settings_template.py, and in the initial /etc/zulip/settings.py on a new
 # install of the Zulip server.
