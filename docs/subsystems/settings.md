@@ -92,9 +92,12 @@ additionally:
 
 * `zproject/dev-secrets.conf` replaces `/etc/zulip/zulip-secrets.conf`.
 
-* `zproject/test_settings.py` has the (default) settings used for the
-  Zulip tests (both backend and Casper), which are applied on top of
-  the development environment settings.
+* `zproject/test_settings.py` imports everything from
+  `zproject/settings.py` and `zproject/test_extra_settings.py`.
+
+* `zproject/test_extra_settings.py` has the (default) settings used
+  for the Zulip tests (both backend and Casper), which are applied on
+  top of the development environment settings.
 
 When adding a new server setting to Zulip, you will typically add it
 in two or three places:
