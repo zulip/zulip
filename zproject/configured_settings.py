@@ -13,4 +13,7 @@ from .config import PRODUCTION
 if PRODUCTION:
     from .prod_settings import *  # isort: skip
 else:
+    # For the Dev VM environment, we use the same settings as the
+    # sample prod_settings.py file, with a few exceptions.
+    from .prod_settings_template import *  # isort: skip
     from .dev_settings import *  # isort: skip

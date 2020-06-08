@@ -1,9 +1,6 @@
-# For the Dev VM environment, we use the same settings as the
-# sample prod_settings.py file, with a few exceptions.
-from .prod_settings_template import *
 import os
 import pwd
-from typing import Set
+from typing import Optional, Set, Tuple
 
 from .config import DEPLOY_ROOT
 
@@ -43,7 +40,7 @@ ALLOWED_HOSTS = ['*']
 
 # Uncomment extra backends if you want to test with them.  Note that
 # for Google and GitHub auth you'll need to do some pre-setup.
-AUTHENTICATION_BACKENDS = (
+AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
     'zproject.backends.DevAuthBackend',
     'zproject.backends.EmailAuthBackend',
     'zproject.backends.GitHubAuthBackend',
