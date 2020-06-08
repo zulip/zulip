@@ -1,6 +1,12 @@
 const util = require("./util");
 const render_draft_table_body = require('../templates/draft_table_body.hbs');
 
+function set_count(count) {
+    const draft_count = count.toString();
+    $(".compose_drafts_button").text(i18n.t(
+        'Drafts (__draft_count__)', {draft_count: draft_count}));
+}
+
 const draft_model = (function () {
     const exports = {};
 
@@ -24,6 +30,7 @@ const draft_model = (function () {
 
     function save(drafts) {
         ls.set(KEY, drafts);
+        set_count(Object.keys(drafts).length);
     }
 
     exports.addDraft = function (draft) {
@@ -510,6 +517,8 @@ exports.initialize = function () {
     window.addEventListener("beforeunload", function () {
         exports.update_draft();
     });
+
+    set_count(Object.keys(draft_model.get()).length);
 
     $("#compose-textarea").focusout(exports.update_draft);
 
