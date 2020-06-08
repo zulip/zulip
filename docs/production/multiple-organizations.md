@@ -86,7 +86,7 @@ into the database.
 ### The root domain
 
 Most Zulip servers host a single Zulip organization on the root domain
-(i.e. `zulip.example.com`).  The way this is implemented internally
+(e.g. `zulip.example.com`).  The way this is implemented internally
 involves the organization having the empty string (`''`) as its
 "subdomain".
 
