@@ -151,9 +151,8 @@ exports.initialize = function () {
 };
 
 exports.render_title_area = function () {
-    // TODO: Implement rerendering for stream privacy or subscriber
-    // count changes. We simply need to call this function in the
-    // appropriate places.
+    // TODO: Implement rerendering for subscriber count changes.
+    // We simply need to call this function in the appropriate places.
     const filter = narrow_state.filter();
     build_tab_bar(filter);
 };
