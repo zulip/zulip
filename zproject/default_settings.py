@@ -170,7 +170,7 @@ DEVELOPMENT_LOG_EMAILS = DEVELOPMENT
 #    for dev and test environments; or
 #  * don't make sense to change on a typical production server with
 #    one or a handful of realms, though they might on an installation
-#    like zulipchat.com or to work around a problem on another server.
+#    like Zulip Cloud or to work around a problem on another server.
 
 # The following bots are optional system bots not enabled by
 # default.  The default ones are defined in INTERNAL_BOTS, in settings.py.
@@ -183,7 +183,7 @@ ERROR_BOT: Optional[str] = None
 NAGIOS_STAGING_SEND_BOT: Optional[str] = None
 NAGIOS_STAGING_RECEIVE_BOT: Optional[str] = None
 # SYSTEM_BOT_REALM would be a constant always set to 'zulip',
-# except that it isn't that on zulipchat.com.  We will likely do a
+# except that it isn't that on Zulip Cloud.  We will likely do a
 # migration and eliminate this parameter in the future.
 SYSTEM_BOT_REALM = 'zulipinternal'
 

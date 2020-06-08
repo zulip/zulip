@@ -60,7 +60,7 @@ though it's also possible to subclass some of the lower-level
 manifests defined in that directory if you want to customize.  A good
 example of doing this is in the
 [zulip_ops puppet configuration][zulipchat-puppet] that we use as part
-of managing chat.zulip.org and zulipchat.com.
+of managing chat.zulip.org and zulip.com.
 
 ### Using Zulip with Amazon RDS as the database
 

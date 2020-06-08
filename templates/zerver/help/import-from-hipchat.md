@@ -76,7 +76,7 @@ download the file.
 
 [cli-export]: https://confluence.atlassian.com/hipchatdc3/export-data-from-hipchat-data-center-913476832.html
 
-### Import into zulipchat.com
+### Import into Zulip Cloud
 
 Email support@zulip.com with your exported archive and your desired Zulip
 subdomain. Your imported organization will be hosted at

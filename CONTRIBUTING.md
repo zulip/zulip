@@ -214,7 +214,7 @@ if appropriate.
 
 **Reporting security issues**. Please do not report security issues
   publicly, including on public streams on chat.zulip.org. You can
-  email security@zulipchat.com.  We create a CVE for every security
+  email security@zulip.com.  We create a CVE for every security
   issue in our released software.
 
 ## User feedback

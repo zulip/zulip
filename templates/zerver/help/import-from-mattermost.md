@@ -120,7 +120,7 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
     ```
 {end_tabs}
 
-### Import into zulipchat.com
+### Import into Zulip Cloud
 
 Email support@zulip.com with your exported archive,
 the name of the Mattermost team you want to import, and your desired Zulip

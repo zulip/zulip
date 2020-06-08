@@ -284,8 +284,8 @@ class Realm(models.Model):
 
     UPGRADE_TEXT_STANDARD = _("Available on Zulip Standard. Upgrade to access.")
     # plan_type controls various features around resource/feature
-    # limitations for a Zulip organization on multi-tenant servers
-    # like zulipchat.com.
+    # limitations for a Zulip organization on multi-tenant installations
+    # like Zulip Cloud.
     SELF_HOSTED = 1
     LIMITED = 2
     STANDARD = 3
@@ -2632,7 +2632,7 @@ class AbstractRealmAuditLog(models.Model):
 
     event_type: int = models.PositiveSmallIntegerField()
 
-    # event_types synced from on-prem installations to zulipchat.com when
+    # event_types synced from on-prem installations to Zulip Cloud when
     # billing for mobile push notifications is enabled.  Every billing
     # event_type should have ROLE_COUNT populated in extra_data.
     SYNCED_BILLING_EVENTS = [

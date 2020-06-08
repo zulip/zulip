@@ -51,8 +51,8 @@ numerous dedicated [Zulip API](https://zulip.com/api) clients
 (e.g. bots).
 
 A server can host multiple Zulip *realms* (organizations), each on its
-own (sub)domain.  While most deployments host only one organization, some
-such as zulipchat.com host thousands.  Each organization is a private
+own (sub)domain.  While most installations host only one organization, some
+such as zulip.com host thousands.  Each organization is a private
 chamber with its own users, streams, customizations, and so on. This
 means that one person might be a user of multiple Zulip realms. The
 administrators of an organization have a great deal of control over

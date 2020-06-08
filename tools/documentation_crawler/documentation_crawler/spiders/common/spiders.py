@@ -63,7 +63,7 @@ class BaseDocumentationSpider(scrapy.Spider):
         self.log(response)
 
     def _is_external_link(self, url: str) -> bool:
-        if "zulip.readthedocs" in url or "zulipchat.com" in url or "zulip.org" in url:
+        if "zulip.readthedocs" in url or "zulip.com" in url or "zulip.org" in url:
             # We want CI to check any links to Zulip sites.
             return False
         if (len(url) > 4 and url[:4] == "file") or ("localhost" in url):

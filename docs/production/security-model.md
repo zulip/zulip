@@ -6,7 +6,7 @@ please feel free to ask questions in [#production
 help](https://chat.zulip.org/#narrow/stream/31-production-help) on the
 [Zulip community server](../contributing/chat-zulip-org.md) (or if you
 think you've found a security bug, please report it to
-security@zulipchat.com so we can do a responsible security
+security@zulip.com so we can do a responsible security
 announcement).
 
 ## Secure your Zulip server like your email server
@@ -243,9 +243,8 @@ strength allowed is controlled by two settings in
 ## Final notes and security response
 
 If you find some aspect of Zulip that seems inconsistent with this
-security model, please report it to security@zulipchat.com so that we
-can investigate and coordinate an appropriate security release if
-needed.
+security model, please report it to security@zulip.com so that we can
+investigate and coordinate an appropriate security release if needed.
 
 Zulip security announcements will be sent to
 zulip-announce@googlegroups.com, so you should subscribe if you are

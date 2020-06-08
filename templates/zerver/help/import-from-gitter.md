@@ -27,7 +27,7 @@ First, export your data from Gitter.
 
 {end_tabs}
 
-### Import into zulipchat.com
+### Import into Zulip Cloud
 
 Email support@zulip.com with `gitter_data.zip` and your desired
 subdomain. Your imported organization will be hosted at

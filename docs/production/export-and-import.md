@@ -235,7 +235,7 @@ replication. You can see the configuration in these files:
 * `puppet/zulip_ops/manifests/postgres_master.pp`
 * `puppet/zulip_ops/files/postgresql/*`
 
-We use this configuration for zulipchat.com, and it works well in
+We use this configuration for Zulip Cloud, and it works well in
 production, but it's not fully generic.  Contributions to make it a
 supported and documented option for other installations are
 appreciated.
@@ -302,16 +302,16 @@ archive of all the organization's uploaded files.
     * Ensure that the Zulip server you're importing into is running the same
       version of Zulip as the server you're exporting from.
 
-    * For exports from zulipchat.com, you need to [upgrade to
+    * For exports from Zulip Cloud (zulip.com), you need to [upgrade to
       master][upgrade-zulip-from-git], since we run run master on
-      zulipchat.com:
+      Zulip Cloud:
 
       ```
       /home/zulip/deployments/current/scripts/upgrade-zulip-from-git master
       ```
 
       It is not sufficient to be on the latest stable release, as
-      zulipchat.com runs pre-release versions of Zulip that are often
+      zulip.com runs pre-release versions of Zulip that are often
       several months of development ahead of the latest release.
 
     * Note that if your server has limited free RAM, you'll want to

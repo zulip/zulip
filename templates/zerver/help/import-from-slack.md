@@ -56,7 +56,7 @@ receive a zip file `slack_data.zip`.
 This step will also generate a different token starting with
 `xoxe-`; you don't need it.
 
-### Import into zulipchat.com
+### Import into Zulip Cloud
 
 Email support@zulip.com with `slack_data.zip`, the Slack API token
 generated above, and your desired subdomain. Your imported organization will

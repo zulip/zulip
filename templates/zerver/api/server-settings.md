@@ -34,7 +34,7 @@ response, for two reasons:
   might be missing some keys (in which case a client should assume the
   appropriate default).
 * If a `/server_settings` request is made to the root domain of a
-  multi-subdomain server, like the root domain of zulipchat.com, the settings
+  multi-subdomain server, like the root domain of zulip.com, the settings
   that are realm-specific are not known and thus not provided.
 
 #### Example response
