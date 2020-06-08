@@ -77,6 +77,8 @@ class AnalyticsTestCase(TestCase):
             kwargs[key] = kwargs.get(key, value)
         stream = Stream.objects.create(**kwargs)
         recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+        stream.recipient = recipient
+        stream.save(update_fields=["recipient"])
         return stream, recipient
 
     def create_huddle_with_recipient(self, **kwargs: Any) -> Tuple[Huddle, Recipient]:
