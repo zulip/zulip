@@ -336,12 +336,18 @@ jobs:
 
 workflows:
   version: 2
-  build:
+  "Ubuntu 16.04 Xenial (Python 3.5, legacy)":
+    jobs:
+      - "xenial-legacy"
+  "Ubuntu 18.04 Bionic (Python 3.6, backend+frontend)":
     jobs:
       - "bionic-backend-frontend-python3.6"
-      - "bionic-production-build-python3.6"
+  "Ubuntu 20.04 Focal (Python 3.8, backend)":
+    jobs:
       - "focal-backend-python3.8"
-      - "xenial-legacy"
+  "Production":
+    jobs:
+      - "bionic-production-build-python3.6"
       - "bionic-production-install-python3.6":
             requires:
                 - "bionic-production-build-python3.6"
