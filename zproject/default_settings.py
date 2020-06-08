@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from django_auth_ldap.config import LDAPSearch
+    from typing_extensions import TypedDict
 
 from .config import PRODUCTION, DEVELOPMENT, get_secret
 if PRODUCTION:
@@ -316,7 +317,14 @@ FIRST_TIME_TOS_TEMPLATE: Optional[str] = None
 STATSD_HOST = ''
 
 # Configuration for JWT auth.
-JWT_AUTH_KEYS: Dict[str, str] = {}
+if TYPE_CHECKING:
+    class JwtAuthKey(TypedDict):
+        key: str
+        # See https://pyjwt.readthedocs.io/en/latest/algorithms.html for a list
+        # of supported algorithms.
+        algorithms: List[str]
+
+JWT_AUTH_KEYS: Dict[str, "JwtAuthKey"] = {}
 
 # https://docs.djangoproject.com/en/2.2/ref/settings/#std:setting-SERVER_EMAIL
 # Django setting for what from address to use in error emails.

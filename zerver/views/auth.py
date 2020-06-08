@@ -381,14 +381,15 @@ def remote_user_sso(
 def remote_user_jwt(request: HttpRequest) -> HttpResponse:
     subdomain = get_subdomain(request)
     try:
-        auth_key = settings.JWT_AUTH_KEYS[subdomain]
+        key = settings.JWT_AUTH_KEYS[subdomain]["key"]
+        algorithms = settings.JWT_AUTH_KEYS[subdomain]["algorithms"]
     except KeyError:
         raise JsonableError(_("Auth key for this subdomain not found."))
 
     try:
         json_web_token = request.POST["json_web_token"]
         options = {'verify_signature': True}
-        payload = jwt.decode(json_web_token, auth_key, options=options)
+        payload = jwt.decode(json_web_token, key, algorithms=algorithms, options=options)
     except KeyError:
         raise JsonableError(_("No JSON web token passed in request"))
     except jwt.InvalidTokenError:
