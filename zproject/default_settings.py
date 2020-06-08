@@ -396,3 +396,6 @@ AUTO_CATCH_UP_SOFT_DEACTIVATED_USERS = True
 
 # Enables Google Analytics on selected portico pages.
 GOOGLE_ANALYTICS_ID: Optional[str] = None
+
+# This is overridden by dev_settings.py for droplets.
+IS_DEV_DROPLET = False
