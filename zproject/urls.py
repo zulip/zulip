@@ -570,8 +570,6 @@ i18n_urls = [
         {'template_name': 'zerver/for-companies.html'}),
     url(r'^for/working-groups-and-communities/$', zerver.views.portico.landing_view,
         {'template_name': 'zerver/for-working-groups-and-communities.html'}),
-    url(r'^for/mystery-hunt/$', zerver.views.portico.landing_view,
-        {'template_name': 'zerver/for-mystery-hunt.html'}),
     url(r'^security/$', zerver.views.portico.landing_view, {'template_name': 'zerver/security.html'}),
     url(r'^atlassian/$', zerver.views.portico.landing_view, {'template_name': 'zerver/atlassian.html'}),
 
