@@ -222,3 +222,15 @@ class Command(BaseCommand):
         insert_fixture_data(stat, stream_data, StreamCount)
         FillState.objects.create(property=stat.property, end_time=last_end_time,
                                  state=FillState.DONE)
+
+        stat = COUNT_STATS['messages_read::hour']
+        user_data = {
+            None: self.generate_fixture_data(stat, 7, 3, 2, .6, 8, holiday_rate=.1),
+        }
+        insert_fixture_data(stat, user_data, UserCount)
+        realm_data = {
+            None: self.generate_fixture_data(stat, 50, 35, 6, .6, 4)
+        }
+        insert_fixture_data(stat, realm_data, RealmCount)
+        FillState.objects.create(property=stat.property, end_time=last_end_time,
+                                 state=FillState.DONE)
