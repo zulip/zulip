@@ -36,6 +36,8 @@ if ! git diff --exit-code >/dev/null; then
     exit 1
 fi
 
+umask 022
+
 TMPDIR=$(mktemp -d)
 TARBALL=$TMPDIR/$prefix.tar
 BASEDIR=$(pwd)
