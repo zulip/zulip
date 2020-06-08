@@ -45,7 +45,7 @@ RHARCH="$(rpm -qf --queryformat="%{ARCH}" /etc/redhat-release)"
 PGVER=10
 if [ "$is_centos" = true ]; then
     # PostgreSQL $PGVER
-    yum localinstall -y "https://yum.postgresql.org/$PGVER/redhat/rhel-$RHVER-$RHARCH/pgdg-centos$PGVER-$PGVER-2.noarch.rpm"
+    yum localinstall -y "https://yum.postgresql.org/$PGVER/redhat/rhel-$RHVER-$RHARCH/pgdg-redhat-repo-latest.noarch.rpm"
 
     # PGroonga
     # https://pgroonga.github.io/install/centos.html
