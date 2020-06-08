@@ -11,7 +11,7 @@ will always be new bugs being introduced, that goal is impossible
 without an efficient and effective error reporting framework.
 
 We expect to in the future integrate a service like [Sentry][sentry]
-to make it easier for very large installations like zulipchat.com to
+to make it easier for very large installations like zulip.com to
 manage their exceptions and ensure they are all tracked down, but our
 default email-based system is great for small installations.
 

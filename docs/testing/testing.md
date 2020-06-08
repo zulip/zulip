@@ -155,5 +155,5 @@ aren't broken.  Those tests end up failing nondeterministically fairly
 often, which is unfortunate, but there's simply no other correct way
 to verify links other than attempting to access them.  The compromise
 we've implemented is that in CI, these tests only verify links to
-websites controlled by the Zulip project (zulipchat.com, our GitHub,
+websites controlled by the Zulip project (zulip.com, our GitHub,
 our ReadTheDocs), and not links to third-party websites.

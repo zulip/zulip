@@ -106,7 +106,7 @@ in bursts.
 - Fixed a couple missing translation tags.
 - Fixed "User groups" settings UI bug for administrators.
 - Fixed data import tool to reset resource limits after importing
-  data from a free plan organization on zulipchat.com.
+  data from a free plan organization on zulip.com.
 - Changed the SAML default signature algorithm to SHA-256, overriding
   the SHA-1 default used by python3-saml.
 

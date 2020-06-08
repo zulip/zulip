@@ -77,7 +77,7 @@ def session_cache_items(items_for_remote_cache: Dict[str, str],
     items_for_remote_cache[store.cache_key] = store.decode(session.session_data)
 
 def get_active_realm_ids() -> List[int]:
-    """For servers like zulipchat.com with a lot of realms, it only makes
+    """For installations like Zulip Cloud hosting a lot of realms, it only makes
     sense to do cache-filling work for realms that have any currently
     active users/clients.  Otherwise, we end up with every single-user
     trial organization that has ever been created costing us N streams

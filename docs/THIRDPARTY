@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: Zulip
-Upstream-Contact: Tim Abbott <tabbott@zulipchat.com>
+Upstream-Contact: Tim Abbott <tabbott@zulip.com>
 Source: https://zulip.com/
 Comment:
  Unless otherwise noted, the Zulip software is distributed under the Apache

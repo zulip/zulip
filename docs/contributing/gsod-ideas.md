@@ -288,7 +288,7 @@ they would really appreciate having a few 1-3 minute videos explaining
 the Zulip model and how to use Zulip efficiently to help train the
 rest of their organization on the benefits of Zulip.  We would hope to
 link to these videos prominently in the Zulip tutorial experience
-(both in-app and on zulipchat.com).  The core Zulip team has a pretty
+(both in-app and on the landing pages).  The core Zulip team has a pretty
 good idea of how to explain Zulip, but does not have significant
 experience creating videos, and we would love to work with someone
 skilled at doing screencast tutorials of software to create something

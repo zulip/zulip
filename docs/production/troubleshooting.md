@@ -203,7 +203,7 @@ the next section for details.
 ### Nagios configuration
 
 The complete Nagios configuration (sans secret keys) used to
-monitor zulipchat.com is available under `puppet/zulip_ops` in the
+monitor zulip.com is available under `puppet/zulip_ops` in the
 Zulip Git repository (those files are not installed in the release
 tarballs).
 

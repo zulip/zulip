@@ -500,7 +500,7 @@ upgrading to master, make sure you understand:
   thousands of changes not present in the latest release (all of which
   will be included in our next release).  There are probably some
   bugs.
-* We deploy master to chat.zulip.org and zulipchat.com on a regular
+* We deploy master to chat.zulip.org and zulip.com on a regular
   basis (often daily), so it's very important to the project that it
   be stable.  Most regressions will be minor UX issues or be fixed
   quickly, because we need them to be fixed.

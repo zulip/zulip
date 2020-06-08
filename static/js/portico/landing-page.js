@@ -151,8 +151,8 @@ const apps_events = function () {
 };
 
 const events = function () {
-    // get the location url like `zulipchat.com/features/`, cut off the trailing
-    // `/` and then split by `/` to get ["zulipchat.com", "features"], then
+    // get the location url like `zulip.com/features/`, cut off the trailing
+    // `/` and then split by `/` to get ["zulip.com", "features"], then
     // pop the last element to get the current section (eg. `features`).
     const location = window.location.pathname.replace(/\/#*$/, "").split(/\//).pop();
 
