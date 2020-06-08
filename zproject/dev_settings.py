@@ -5,11 +5,10 @@ import os
 import pwd
 from typing import Set
 
+from .config import DEPLOY_ROOT
+
 # We want LOCAL_UPLOADS_DIR to be an absolute path so that code can
-# chdir without having problems accessing it.  Unfortunately, this
-# means we need a duplicate definition of DEPLOY_ROOT with the one in
-# settings.py.
-DEPLOY_ROOT = os.path.realpath(os.path.dirname(os.path.dirname(__file__)))
+# chdir without having problems accessing it.
 LOCAL_UPLOADS_DIR = os.path.join(DEPLOY_ROOT, 'var/uploads')
 
 # We assume dev droplets are the only places where
