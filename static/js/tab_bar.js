@@ -114,7 +114,11 @@ function build_tab_bar(filter) {
         const tab_bar_data = make_tab_data(filter);
         append_and_display_title_area(tab_bar_data);
         bind_title_area_handlers();
-        exports.close_search_bar_and_open_narrow_description();
+        if (page_params.search_pills_enabled && $('#search_query').is(':focus')) {
+            exports.open_search_bar_and_close_narrow_description();
+        } else {
+            exports.close_search_bar_and_open_narrow_description();
+        }
     }
 }
 
