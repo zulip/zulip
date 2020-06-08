@@ -153,9 +153,9 @@ So, to summarize our approach to integration vs. unit testing:
 * While we aim to achieve test coverage of every significant code path
   in the Zulip server, which is commonly associated with unit testing,
   most of our tests are integration tests in the sense of sending a
-  complete HTTP API query to the Zulip server and checking both the
-  HTTP response and internal state of the server following the request
-  are correct.
+  complete HTTP API query to the Zulip server and checking that the
+  HTTP response and the internal state of the server following the request
+  are both correct.
 * Following the end-to-end principle in system design, where possible
   we write tests that execute a complete flow (e.g. registering a new
   Zulip account) rather than testing the implementations of individual
