@@ -17,3 +17,6 @@ else:
     # sample prod_settings.py file, with a few exceptions.
     from .prod_settings_template import *  # isort: skip
     from .dev_settings import *  # isort: skip
+
+# Do not add any code after these wildcard imports!  Add it to
+# computed_settings instead.
