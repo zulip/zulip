@@ -18,7 +18,6 @@ def check_pyflakes(files: List[str], options: argparse.Namespace) -> bool:
 
         ("settings.py", "settings import *' used; unable to detect undefined names"),
         ("settings.py", "'from .prod_settings_template import *' used; unable to detect undefined names"),
-        ("settings.py", "may be undefined, or defined from star imports"),
         ("settings.py", "settings.*' imported but unused"),
         ("settings.py", "'.prod_settings_template.*' imported but unused"),
 
