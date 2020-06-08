@@ -58,10 +58,15 @@ set_global('current_msg_list', {
 function return_true() { return true; }
 function return_false() { return false; }
 
-function stubbing(func_name_to_stub, test_function) {
-    global.with_overrides(function (override) {
+function stubbing(func_name_to_stub, test_function, rewire_stub = false) {
+    global.with_overrides(function (override, rewire_override) {
         global.with_stub(function (stub) {
-            override(func_name_to_stub, stub.f);
+            if (rewire_stub) {
+                rewire_override(hotkey, func_name_to_stub, stub.f);
+            } else {
+                override(func_name_to_stub, stub.f);
+            }
+
             test_function(stub);
         });
     });
@@ -165,10 +170,10 @@ run_test('basic_chars', () => {
     }
 
     function assert_mapping(c, func_name, opts = {}) {
-        const { shiftKey } = opts;
+        const { shiftKey, rewire } = opts;
         stubbing(func_name, function () {
             assert(process(c, shiftKey));
-        });
+        }, rewire);
     }
 
     function assert_unmapped(s) {
