@@ -225,7 +225,7 @@ def api_sentry_webhook(request: HttpRequest, user_profile: UserProfile,
         elif "issue" in data:
             subject, body = handle_issue_payload(payload["action"], data["issue"], payload["actor"])
         else:
-            raise UnexpectedWebhookEventType("Sentry", str((list(data.keys()))))
+            raise UnexpectedWebhookEventType("Sentry", str(list(data.keys())))
     else:
         subject, body = handle_deprecated_payload(payload)
 
