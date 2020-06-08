@@ -183,6 +183,12 @@ exports.update_stream_privacy = function (sub, values) {
     stream_ui_updates.update_subscribers_count(sub);
     stream_ui_updates.update_add_subscriptions_elements(sub);
     stream_list.redraw_stream_privacy(sub);
+
+    // update the stream_params stored in the filter object if needed
+    const filter = narrow_state.filter();
+    if (filter && filter.operands("stream")[0] === sub.name) {
+        filter.fix_stream_params();
+    }
 };
 
 exports.update_stream_post_policy = function (sub, new_value) {
