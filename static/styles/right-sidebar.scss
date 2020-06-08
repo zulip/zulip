@@ -158,10 +158,6 @@
     }
 }
 
-#userlist-header {
-    margin-right: 10px;
-}
-
 .right-sidebar-items:first-of-type #userlist-header {
     border-top: none;
 }
@@ -172,6 +168,7 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    margin-right: 10px;
 
     #userlist-title {
         margin: 0;
