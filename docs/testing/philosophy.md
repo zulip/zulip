@@ -32,8 +32,8 @@ populate it with some test data in order to test LDAP authentication.
 
 While not every part of Zulip has a great test suite, many components
 do, and for those components, the tests mean that new contributors can
-often make substantive changes to that component and have their
-changes that are more or less correct by the time they share their
+often make substantive changes and have them be
+more or less correct by the time they share the
 changes for code review.  More importantly, it means that maintainers
 save most of the time that would otherwise be spent verifying that the
 changes are simply correct, and instead focus on making sure that the
