@@ -71,7 +71,6 @@ function append_and_display_title_area(tab_bar_data) {
 
 function bind_title_area_handlers() {
     $(".search_closed").on("click", function (e) {
-        exports.open_search_bar_and_close_narrow_description();
         search.initiate_search();
         e.preventDefault();
         e.stopPropagation();
@@ -85,7 +84,6 @@ function bind_title_area_handlers() {
 
         // Let links behave normally, ie, do nothing if <a>
         if ($(e.target).closest("a").length === 0) {
-            exports.open_search_bar_and_close_narrow_description();
             search.initiate_search();
             e.preventDefault();
             e.stopPropagation();
