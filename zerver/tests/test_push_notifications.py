@@ -1615,8 +1615,8 @@ class TestNumPushDevicesForUser(PushNotificationTest):
                                           kind=PushDeviceToken.APNS)
         self.assertEqual(count, 2)
 
-class TestPushApi(ZulipTestCase):
-    def test_push_api(self) -> None:
+class TestPushApi(BouncerTestCase):
+    def test_push_api_error_handling(self) -> None:
         user = self.example_user('cordelia')
         self.login_user(user)
 
@@ -1643,9 +1643,31 @@ class TestPushApi(ZulipTestCase):
             result = self.client_delete(endpoint, {'token': 'abcd1234'})
             self.assert_json_error(result, 'Token does not exist')
 
-        # Add tokens
-        for endpoint, token in endpoints:
-            # Test that we can push twice
+            # Use push notification bouncer and try to remove non-existing tokens.
+            with self.settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com'), \
+                mock.patch('zerver.lib.remote_server.requests.request',
+                           side_effect=self.bounce_request) as remote_server_request:
+                result = self.client_delete(endpoint, {'token': 'abcd1234'})
+                self.assert_json_error(result, 'Token does not exist')
+                remote_server_request.assert_called_once()
+
+    def test_push_api_add_and_remove_device_tokens(self) -> None:
+        user = self.example_user('cordelia')
+        self.login_user(user)
+
+        no_bouncer_requests = [
+            ('/json/users/me/apns_device_token', 'apple-tokenaa'),
+            ('/json/users/me/android_gcm_reg_id', 'android-token-1'),
+        ]
+
+        bouncer_requests = [
+            ('/json/users/me/apns_device_token', 'apple-tokenbb'),
+            ('/json/users/me/android_gcm_reg_id', 'android-token-2'),
+        ]
+
+        # Add tokens without using push notification bouncer.
+        for endpoint, token in no_bouncer_requests:
+            # Test that we can push twice.
             result = self.client_post(endpoint, {'token': token})
             self.assert_json_success(result)
 
@@ -1656,16 +1678,58 @@ class TestPushApi(ZulipTestCase):
             self.assertEqual(len(tokens), 1)
             self.assertEqual(tokens[0].token, token)
 
-        # User should have tokens for both devices now.
-        tokens = list(PushDeviceToken.objects.filter(user=user))
-        self.assertEqual(len(tokens), 2)
+        with self.settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com'), \
+            mock.patch('zerver.lib.remote_server.requests.request',
+                       side_effect=self.bounce_request):
+            # Enable push notification bouncer and add tokens.
+            for endpoint, token in bouncer_requests:
+                # Test that we can push twice.
+                result = self.client_post(endpoint, {'token': token})
+                self.assert_json_success(result)
 
-        # Remove tokens
-        for endpoint, token in endpoints:
+                result = self.client_post(endpoint, {'token': token})
+                self.assert_json_success(result)
+
+                tokens = list(PushDeviceToken.objects.filter(user=user, token=token))
+                self.assertEqual(len(tokens), 1)
+                self.assertEqual(tokens[0].token, token)
+
+                tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id, token=token))
+                self.assertEqual(len(tokens), 1)
+                self.assertEqual(tokens[0].token, token)
+
+        # PushDeviceToken will include all the device tokens.
+        tokens = list(PushDeviceToken.objects.values_list('token', flat=True))
+        self.assertEqual(tokens, ['apple-tokenaa', 'android-token-1', 'apple-tokenbb', 'android-token-2'])
+
+        # RemotePushDeviceToken will only include tokens of
+        # the devices using push notification bouncer.
+        remote_tokens = list(RemotePushDeviceToken.objects.values_list('token', flat=True))
+        self.assertEqual(remote_tokens, ['apple-tokenbb', 'android-token-2'])
+
+        # Test removing tokens without using push notification bouncer.
+        for endpoint, token in no_bouncer_requests:
             result = self.client_delete(endpoint, {'token': token})
             self.assert_json_success(result)
             tokens = list(PushDeviceToken.objects.filter(user=user, token=token))
             self.assertEqual(len(tokens), 0)
+
+        # Use push notification bouncer and test removing device tokens.
+        # Tokens will be removed both locally and remotely.
+        with self.settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com'), \
+            mock.patch('zerver.lib.remote_server.requests.request',
+                       side_effect=self.bounce_request):
+            for endpoint, token in bouncer_requests:
+                result = self.client_delete(endpoint, {'token': token})
+                self.assert_json_success(result)
+                tokens = list(PushDeviceToken.objects.filter(user=user, token=token))
+                remote_tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id, token=token))
+                self.assertEqual(len(tokens), 0)
+                self.assertEqual(len(remote_tokens), 0)
+
+        # Verify that the above process indeed removed all the tokens we created.
+        self.assertEqual(RemotePushDeviceToken.objects.all().count(), 0)
+        self.assertEqual(PushDeviceToken.objects.all().count(), 0)
 
 class GCMParseOptionsTest(TestCase):
     def test_invalid_option(self) -> None:

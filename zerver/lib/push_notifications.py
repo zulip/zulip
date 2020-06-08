@@ -371,6 +371,23 @@ def add_push_device_token(user_profile: UserProfile,
     logger.info("Registering push device: %d %r %d %r",
                 user_profile.id, token_str, kind, ios_app_id)
 
+    # Regardless of whether we're using the push notifications
+    # bouncer, we want to store a PushDeviceToken record locally.
+    # These can be used to discern whether the user has any mobile
+    # devices configured, and is also where we will store encryption
+    # keys for mobile push notifications.
+    try:
+        with transaction.atomic():
+            PushDeviceToken.objects.create(
+                user_id=user_profile.id,
+                kind=kind,
+                token=token_str,
+                ios_app_id=ios_app_id,
+                # last_updated is to be renamed to date_created.
+                last_updated=timezone_now())
+    except IntegrityError:
+        pass
+
     # If we're sending things to the push notification bouncer
     # register this user with them here
     if uses_notification_bouncer():
@@ -387,21 +404,19 @@ def add_push_device_token(user_profile: UserProfile,
         logger.info("Sending new push device to bouncer: %r", post_data)
         # Calls zilencer.views.register_remote_push_device
         send_to_push_bouncer('POST', 'push/register', post_data)
-        return
-
-    try:
-        with transaction.atomic():
-            PushDeviceToken.objects.create(
-                user_id=user_profile.id,
-                kind=kind,
-                token=token_str,
-                ios_app_id=ios_app_id,
-                # last_updated is to be renamed to date_created.
-                last_updated=timezone_now())
-    except IntegrityError:
-        pass
 
 def remove_push_device_token(user_profile: UserProfile, token_str: str, kind: int) -> None:
+    try:
+        token = PushDeviceToken.objects.get(token=token_str, kind=kind, user=user_profile)
+        token.delete()
+    except PushDeviceToken.DoesNotExist:
+        # If we are using bouncer, don't raise the exception. It will
+        # be raised by the code below eventually. This is important
+        # during the transition period after upgrading to a version
+        # that stores local PushDeviceToken objects even when using
+        # the push notifications bouncer.
+        if not uses_notification_bouncer():
+            raise JsonableError(_("Token does not exist"))
 
     # If we're sending things to the push notification bouncer
     # unregister this user with them here
@@ -415,13 +430,6 @@ def remove_push_device_token(user_profile: UserProfile, token_str: str, kind: in
         }
         # Calls zilencer.views.unregister_remote_push_device
         send_to_push_bouncer("POST", "push/unregister", post_data)
-        return
-
-    try:
-        token = PushDeviceToken.objects.get(token=token_str, kind=kind, user=user_profile)
-        token.delete()
-    except PushDeviceToken.DoesNotExist:
-        raise JsonableError(_("Token does not exist"))
 
 def clear_push_device_tokens(user_profile_id: int) -> None:
     # Deletes all of a user's PushDeviceTokens.
