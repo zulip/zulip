@@ -2667,7 +2667,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         stream = get_stream('Scotland', realm)
         recipient_id = stream.recipient.id
-        cond = '''AND NOT (recipient_id = {scotland} AND upper(subject) = upper('golf'))'''.format(scotland=recipient_id)
+        cond = "AND NOT (recipient_id = {scotland} AND upper(subject) = upper('golf'))".format(scotland=recipient_id)
         self.assertIn(cond, queries[0]['sql'])
 
         # Next, verify the use_first_unread_anchor setting invokes
