@@ -84,11 +84,11 @@ particularly useful to academic research organizations (both formal
 organizations and online communities focused around research topics
 like Category Theory).
 
-### Free hosting at zulipchat.com.
+### Free hosting at zulip.com.
 
-This free hosting is supported by (and is identical to)
-zulipchat.com’s commercial offerings.  If you’re not sure whether your
-organization qualifies, send us an email at support@zulip.com.
+This free hosting is supported by (and is identical to) zulip.com’s
+commercial offerings.  If you’re not sure whether your organization
+qualifies, send us an email at support@zulip.com.
 
 ### Native LaTeX support powered by KaTeX
 
@@ -157,8 +157,8 @@ easily find relevant past discussions.
 
 Our high quality [export](/help/export-your-organization) and
 [import](https://zulip.readthedocs.io/en/latest/production/export-and-import.html)
-tools ensure you can always move from
-[zulipchat.com](https://zulipchat.com) hosting to your own servers.
+tools ensure you can always move from [Zulip Cloud](https://zulip.com)
+hosting to your own servers.
 
 ### Free and open source.
 

@@ -131,8 +131,8 @@ Important considerations for any changes are:
 Zulip's markdown processor's rendering supports a number of features
 that depend on realm-specific or user-specific data.  For example, the
 realm could have
-[Linkifiers](https://zulipchat.com/help/add-a-custom-linkification-filter)
-or [Custom emoji](https://zulipchat.com/help/add-custom-emoji)
+[Linkifiers](https://zulip.com/help/add-a-custom-linkification-filter)
+or [Custom emoji](https://zulip.com/help/add-custom-emoji)
 configured, and Zulip supports mentions for streams, users, and user
 groups (which depend on data like users' names, IDs, etc.).
 

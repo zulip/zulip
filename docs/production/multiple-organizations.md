@@ -46,9 +46,9 @@ things:
   [the notes on `SOCIAL_AUTH_SUBDOMAIN` below](#authentication).
 
 For servers hosting a large number of organizations, like
-[zulipchat.com](https://zulipchat.com), one can set
-`ROOT_DOMAIN_LANDING_PAGE = True` in `/etc/zulip/settings.py` so that
-the homepage for the server is a copy of the Zulip homepage.
+[zulip.com](https://zulip.com), one can set `ROOT_DOMAIN_LANDING_PAGE
+= True` in `/etc/zulip/settings.py` so that the homepage for the
+server is a copy of the Zulip homepage.
 
 ### SSL Certificates
 

@@ -6,7 +6,7 @@ guide to [sending outgoing email](../production/email.md). If you're trying to
 configure an email integration to receive incoming email (e.g. so that users
 can reply to missed message emails via email), you might be interested in
 our instructions for
-[setting up an email integration](https://zulipchat.com/integrations/doc/email).
+[setting up an email integration](https://zulip.com/integrations/doc/email).
 
 On to the documentation. Zulip's email system is fairly straightforward,
 with only a few things you need to know to get started.

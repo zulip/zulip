@@ -67,7 +67,7 @@ exports.show_error_for_unsupported_platform = function () {
         const error = "Hello! You're using the unsupported old Zulip desktop app," +
             " which is no longer developed. We recommend switching to the new, " +
             "modern desktop app, which you can download at " +
-            "<a href='https://zulipchat.com/apps'>zulipchat.com/apps</a>.";
+            "<a href='https://zulip.com/apps'>zulip.com/apps</a>.";
 
         ui_report.generic_embed_error(error);
     }

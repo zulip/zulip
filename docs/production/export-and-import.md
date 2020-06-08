@@ -31,7 +31,7 @@ service (or back):
   JSON files–a format shared by our [data
   import](#import-into-a-new-zulip-server) tools for third-party
   services like
-  [Slack](https://zulipchat.com/help/import-from-slack).
+  [Slack](https://zulip.com/help/import-from-slack).
 
   Like the backup tool, logical data exports must be imported on a
   Zulip server running the same version.  However, logical data

@@ -785,12 +785,12 @@ class StreamAdminTest(ZulipTestCase):
         # Verify that we don't render inline URL previews in this code path.
         with self.settings(INLINE_URL_EMBED_PREVIEW=True):
             result = self.client_patch('/json/streams/%d' % (stream_id,),
-                                       {'description': ujson.dumps('See https://zulipchat.com/team')})
+                                       {'description': ujson.dumps('See https://zulip.com/team')})
         self.assert_json_success(result)
         stream = get_stream('stream_name1', realm)
         self.assertEqual(
             stream.rendered_description,
-            '<p>See <a href="https://zulipchat.com/team">https://zulipchat.com/team</a></p>',
+            '<p>See <a href="https://zulip.com/team">https://zulip.com/team</a></p>',
         )
 
     def test_change_stream_description_requires_realm_admin(self) -> None:

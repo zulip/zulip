@@ -8,11 +8,11 @@ Welcome to the Zulip documentation!
 
 Welcome! Zulip's documentation is split into four parts:
 
-- `User documentation <https://zulipchat.com/help>`__, for users and
+- `User documentation <https://zulip.com/help>`__, for users and
   administrators of Zulip organizations.
 - `Installation documentation <production/install.html>`__, for
   installing and maintaining a production self-hosted Zulip installation.
-- `API documentation <https://zulipchat.com/api/>`__, for writing
+- `API documentation <https://zulip.com/api/>`__, for writing
   integrations or bots using the Zulip API.
 - `Contributor documentation <overview/contributing.html>`__, for
   developing the Zulip software, translating, submitting bug reports,

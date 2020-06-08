@@ -18,7 +18,7 @@
 {% else %}
 * {{ _('Email:') }} {{ email }}
 {% endif %}
-{% trans %}(you'll need these to sign in to the mobile and desktop apps (https://zulipchat.com/apps)){% endtrans %}
+{% trans %}(you'll need these to sign in to the mobile and desktop apps (https://zulip.com/apps)){% endtrans %}
 
 
 {% if is_realm_admin %}

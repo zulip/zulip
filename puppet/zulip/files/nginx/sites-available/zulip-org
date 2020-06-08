@@ -17,7 +17,7 @@ server {
     }
 
     location / {
-        rewrite ^/ https://zulipchat.com permanent;
+        rewrite ^/ https://zulip.com permanent;
     }
 }
 

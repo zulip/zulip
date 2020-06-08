@@ -234,7 +234,7 @@ should be formatted as a continuation of a numbered step.
 
 Our markdown processor supports easily creating a tab switcher widget
 design to easily show the instructions for different
-[platforms](https://zulipchat.com/help/logging-out) in user docs,
+[platforms](https://zulip.com/help/logging-out) in user docs,
 languages in API docs, etc.  To create a tab switcher, write:
 
     {start_tabs}
@@ -254,5 +254,5 @@ the tabs' labels are declared in
 
 This widget can also be used just to create a nice box around a set of
 instructions
-([example](https://zulipchat.com/help/deactivate-your-account)) by
+([example](https://zulip.com/help/deactivate-your-account)) by
 only declaring a single tab.

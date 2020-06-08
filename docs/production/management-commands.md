@@ -119,7 +119,7 @@ There are dozens of useful management commands under
 * `./manage.py change_user_email`: Change a user's email address.
 * `./manage.py knight`: Can toggle whether a user is an administrator
   (easier done [via the
-  UI](https://zulipchat.com/help/change-a-users-role)) or create an
+  UI](https://zulip.com/help/change-a-users-role)) or create an
   API super user bot (with `--permission=api_super_user`), which are
   needed for some content mirroring integrations.
 * `./manage.py export_single_user` does a limited version of the [main

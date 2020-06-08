@@ -177,7 +177,7 @@ you basically have to solve these problems:
 Zulip actually supports a bunch of integrations out-of-the-box that
 perform as **World Readers**.
 
-The [three different integration models](https://zulipchat.com/api/integrations-overview#sending-content-into-zulip)
+The [three different integration models](https://zulip.com/api/integrations-overview#sending-content-into-zulip)
 basically differ in where they perform the main functions of a
 **World Reader**.
 

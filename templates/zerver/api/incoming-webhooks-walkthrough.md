@@ -231,7 +231,7 @@ Common validators are available in `zerver/lib/validators.py`.
 
 For either one of the command line tools, first, you'll need to get an API key
 from the **Your bots** section of your Zulip user's Settings page. To test the webhook,
-you'll need to [create a bot](https://zulipchat.com/help/add-a-bot-or-integration) with
+you'll need to [create a bot](https://zulip.com/help/add-a-bot-or-integration) with
 the **Incoming Webhook** type. Replace `<api_key>` with your bot's API key in the examples
 presented below! This is how Zulip knows that the request was made by an authorized user.
 
@@ -405,7 +405,7 @@ DONE!
 ## Step 6: Create documentation
 
 Next, we add end-user documentation for our integration.  You
-can see the existing examples at <https://zulipchat.com/integrations>
+can see the existing examples at <https://zulip.com/integrations>
 or by accessing `/integrations` in your Zulip development environment.
 
 There are two parts to the end-user documentation on this page.

@@ -87,7 +87,7 @@ There are a few ways to see your translations in the Zulip UI:
   `http://localhost:9991/de/login/`.  This works for any part of the
   Zulip UI, including portico (logged-out) pages.
 * For Zulip's logged-in UI (i.e. the actual webapp), you can [pick the
-  language](https://zulipchat.com/help/change-your-language) in the
+  language](https://zulip.com/help/change-your-language) in the
   Zulip UI.
 * If your system has languages configured in your OS/browser, Zulip's
   portico (logged-out) pages will automatically use your configured

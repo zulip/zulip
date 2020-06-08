@@ -117,4 +117,4 @@ will search the full history of public streams in the organization for
 `keyword` (including messages sent before you joined and on public
 streams you're not subscribed to).
 
-[searching]: https://zulipchat.com/help/search-for-messages
+[searching]: https://zulip.com/help/search-for-messages

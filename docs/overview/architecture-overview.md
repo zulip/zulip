@@ -7,7 +7,7 @@ Key Codebases
 The main Zulip codebase is at <https://github.com/zulip/zulip>.  It
 contains the Zulip backend (written in Python 3.x and Django), the
 webapp (written in JavaScript and TypeScript) and our library of
-incoming webhook [integrations](https://zulipchat.com/integrations)
+incoming webhook [integrations](https://zulip.com/integrations)
 with other services and applications (see [the directory structure
 guide](../overview/directory-structure.md)).
 
@@ -44,10 +44,10 @@ Zulip is a real-time team chat application meant to provide a great
 experience for a wide range of organizations, from companies to
 volunteer projects to groups of friends, ranging in size from a small
 team to 10,000s of users.  It has [hundreds of
-features](https://zulipchat.com/features) both larger and small, and
+features](https://zulip.com/features) both larger and small, and
 supports dedicated apps for iOS, Android, Linux, Windows, and macOS,
 all modern web browsers, several cross-protocol chat clients, and
-numerous dedicated [Zulip API](https://zulipchat.com/api) clients
+numerous dedicated [Zulip API](https://zulip.com/api) clients
 (e.g. bots).
 
 A server can host multiple Zulip *realms* (organizations), each on its
@@ -59,7 +59,7 @@ administrators of an organization have a great deal of control over
 who can register an account, what permissions new users have, etc. For
 more on security considerations and options, see [the security model
 section](../production/security-model.md) and the [Zulip Help
-Center](https://zulipchat.com/help).
+Center](https://zulip.com/help).
 
 Components
 ----------

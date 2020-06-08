@@ -2,7 +2,7 @@
 
 This page covers how Zulip interacts with the EU's landmark GDPR
 legislation; you can read the
-[Zulip Cloud privacy policy](https://zulipchat.com/privacy) for our
+[Zulip Cloud privacy policy](https://zulip.com/privacy) for our
 general privacy policies.
 
 ## What is GDPR?

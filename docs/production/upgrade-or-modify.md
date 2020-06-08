@@ -129,7 +129,7 @@ help](https://chat.zulip.org/#narrow/stream/31-production-help) in the
 server](../contributing/chat-zulip-org.md) for best-effort help.
 Please include the relevant error output from the above logs in a
 [markdown code
-block](https://zulipchat.com/help/format-your-message-using-markdown#code)
+block](https://zulip.com/help/format-your-message-using-markdown#code)
 in any reports.
 
 ### Rolling back to a prior version
@@ -327,7 +327,7 @@ that fact:
 
 * Ideally, you'd reproduce the issue in an unmodified version (e.g. on
 [chat.zulip.org](../contributing/chat-zulip-org.md) or
-[zulipchat.com](https://zulipchat.com)).
+[zulip.com](https://zulip.com)).
 * Where that is difficult or you think it's very unlikely your changes
 are related to the issue, just mention your changes in the issue report.
 

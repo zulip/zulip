@@ -113,7 +113,7 @@ strength allowed is controlled by two settings in
     figure out whether a stream with that name exists, but cannot see any
     other details about the stream.
 
-  * See [Stream permissions](https://zulipchat.com/help/stream-permissions) for more details.
+  * See [Stream permissions](https://zulip.com/help/stream-permissions) for more details.
 
 * Zulip supports editing the content and topics of messages that have
   already been sent. As a general philosophy, our policies provide
@@ -128,7 +128,7 @@ strength allowed is controlled by two settings in
     any time by that administrator.
 
   * See
-    [Configuring message editing and deletion](https://zulipchat.com/help/configure-message-editing-and-deletion)
+    [Configuring message editing and deletion](https://zulip.com/help/configure-message-editing-and-deletion)
     for more details.
 
 ## Users and Bots
@@ -146,7 +146,7 @@ strength allowed is controlled by two settings in
   exceptions:
 
   * Administrators may get access to private messages via some types of
-    [data export](https://zulipchat.com/help/export-your-organization).
+    [data export](https://zulip.com/help/export-your-organization).
 
   * Administrators can change the ownership of a bot. If a bot is subscribed
     to a private stream, then an administrator can indirectly get access to
@@ -164,7 +164,7 @@ strength allowed is controlled by two settings in
   SSO system, since neither of those prevents authenticating with the
   user's API key or those of bots the user has created.  Instead, you
   should
-  [deactivate the user's account](https://zulipchat.com/help/deactivate-or-reactivate-a-user)
+  [deactivate the user's account](https://zulip.com/help/deactivate-or-reactivate-a-user)
   via Zulip's "Organization settings" interface.
 
 * The Zulip mobile apps authenticate to the server by sending the
