@@ -30,7 +30,7 @@ from zerver.lib.url_preview.preview import CACHE_NAME as PREVIEW_CACHE_NAME
 from zerver.lib.user_groups import create_user_group
 from zerver.lib.utils import generate_api_key
 from zerver.models import CustomProfileField, DefaultStream, Message, Realm, RealmAuditLog, \
-    RealmDomain, Recipient, Service, Stream, Subscription, \
+    RealmDomain, Reaction, Recipient, Service, Stream, Subscription, \
     UserMessage, UserPresence, UserProfile, Huddle, Client, \
     get_client, get_huddle, get_realm, get_stream, \
     get_user, get_user_by_delivery_email, get_user_profile_by_id
@@ -663,6 +663,7 @@ def generate_and_send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping
     random_max = 1000000
     recipients: Dict[int, Tuple[int, int, Dict[str, Any]]] = {}
     messages = []
+    messages_add_reaction = []
     while num_messages < tot_messages:
         saved_data: Dict[str, Any] = {}
         message = Message()
@@ -711,7 +712,7 @@ def generate_and_send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping
 
         message.date_sent = choose_date_sent(num_messages, tot_messages, options['threads'])
         messages.append(message)
-
+        messages_add_reaction.append(message)
         recipients[num_messages] = (message_type, message.recipient.id, saved_data)
         num_messages += 1
 
@@ -723,6 +724,15 @@ def generate_and_send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping
     if len(messages) > 0:
         # If there are unsent messages after exiting the loop, send them:
         send_messages(messages)
+
+    reactions_to_add = []
+    for rmessage in messages_add_reaction:
+        if random.random() > 0.9:
+            r = Reaction(user_profile=rmessage.sender, message=rmessage,
+                         emoji_name="+1", emoji_code="1f44d",
+                         reaction_type="unicode_emoji")
+            reactions_to_add.append(r)
+    Reaction.objects.bulk_create(reactions_to_add)
 
     return tot_messages
 
