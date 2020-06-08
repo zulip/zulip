@@ -112,7 +112,7 @@ class TestFollowupEmails(ZulipTestCase):
         email_data = ujson.loads(scheduled_emails[0].data)
         self.assertEqual(email_data["context"]["email"], self.example_email("hamlet"))
         self.assertEqual(email_data["context"]["is_realm_admin"], False)
-        self.assertEqual(email_data["context"]["getting_started_link"], "https://zulipchat.com")
+        self.assertEqual(email_data["context"]["getting_started_link"], "https://zulip.com")
         self.assertNotIn("ldap_username", email_data["context"])
 
         ScheduledEmail.objects.all().delete()

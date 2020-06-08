@@ -44,7 +44,7 @@ info:
   title: Zulip REST API
   description: Powerful open source group chat.
   contact:
-    url: https://zulipchat.com
+    url: https://zulip.com
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html

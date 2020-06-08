@@ -75,7 +75,7 @@ def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[Ze
     zerver_realmemoji, emoji_url_map = build_realmemoji(custom_emoji_list, realm_id)
     realm['zerver_realmemoji'] = zerver_realmemoji
 
-    # See https://zulipchat.com/help/set-default-streams-for-new-users
+    # See https://zulip.com/help/set-default-streams-for-new-users
     # for documentation on zerver_defaultstream
     realm['zerver_userprofile'] = zerver_userprofile
 

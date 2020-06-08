@@ -101,7 +101,7 @@ Here are a few common macros used to document Zulip's integrations:
   [the docs for Zulip's GitHub integration][GitHub].
 
 * `{!download-python-bindings.md!}` macro - Links to Zulip's
-  [API page](https://zulipchat.com/api/) to download and install Zulip's
+  [API page](https://zulip.com/api/) to download and install Zulip's
   API bindings. This macro is usually used in non-webhook integration docs under
   `templates/zerver/integrations/<integration_name>.md`. For an example
   rendering, see **Step 2** of
@@ -134,11 +134,11 @@ Here are a few common macros used to document Zulip's integrations:
     ```
 
     For an example rendering, see
-    [Zulip's Beanstalk integration](https://zulipchat.com/integrations/doc/beanstalk).
+    [Zulip's Beanstalk integration](https://zulip.com/integrations/doc/beanstalk).
 
-[GitHub]: https://zulipchat.com/integrations/doc/github
-[codebase]: https://zulipchat.com/integrations/doc/codebase
-[beanstalk]: https://zulipchat.com/integrations/doc/beanstalk
+[GitHub]: https://zulip.com/integrations/doc/github
+[codebase]: https://zulip.com/integrations/doc/codebase
+[beanstalk]: https://zulip.com/integrations/doc/beanstalk
 [1]: https://github.com/zulip/zulip/blob/708f3a4bb19c8e823c9ea1e577d360ac4229b199/zerver/lib/integrations.py#L78
 
 ## Writing guidelines
@@ -146,7 +146,7 @@ Here are a few common macros used to document Zulip's integrations:
 For the vast majority of integrations, you should just copy the docs for a
 similar integration and edit it. [Basecamp][basecamp] is a good one to copy.
 
-[basecamp]: https://zulipchat.com/integrations/doc/basecamp
+[basecamp]: https://zulip.com/integrations/doc/basecamp
 
 ### General writing guidelines
 

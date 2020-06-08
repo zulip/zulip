@@ -9,7 +9,7 @@ because it enables:
   into Zulip.
 * Integrating third-party services that can send email notifications
   into Zulip.  See the [integration
-  documentation](https://zulipchat.com/integrations/doc/email) for
+  documentation](https://zulip.com/integrations/doc/email) for
   details.
 
 Once this integration is configured, each stream will have a special

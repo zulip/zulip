@@ -9,7 +9,7 @@ Most configuration can be done by a realm administrator, on the web.
 For those settings, see [the documentation for realm
 administrators][realm-admin-docs].
 
-[realm-admin-docs]: https://zulipchat.com/help/getting-your-organization-started-with-zulip
+[realm-admin-docs]: https://zulip.com/help/getting-your-organization-started-with-zulip
 
 This page discusses additional configuration that a system
 administrator can do.  To change any of the following settings, edit

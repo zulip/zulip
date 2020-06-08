@@ -654,7 +654,7 @@ urls += [
 # Mobile-specific authentication URLs
 urls += [
     # Used as a global check by all mobile clients, which currently send
-    # requests to https://zulipchat.com/compatibility almost immediately after
+    # requests to https://zulip.com/compatibility almost immediately after
     # starting up.
     url(r'^compatibility$', zerver.views.compatibility.check_global_compatibility),
 ]

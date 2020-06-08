@@ -138,7 +138,7 @@ running the following as `root`:
 service nginx reload
 ```
 
-[desktop-certs]: https://zulipchat.com/help/custom-certificates
+[desktop-certs]: https://zulip.com/help/custom-certificates
 
 
 ## Troubleshooting

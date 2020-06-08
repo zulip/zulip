@@ -60,8 +60,8 @@ For subsequent logins, see [switching between organizations](/help/switching-bet
 Some ideas:
 
 * If you know your organization is hosted on
-  [zulipchat.com](https://zulipchat.com), go to
-  [find my account](https://zulipchat.com/accounts/find/) and enter the email
+  [zulip.com](https://zulip.com), go to [find my
+  account](https://zulip.com/accounts/find/) and enter the email
   address that you signed up with.
 
 * Try guessing the URL. Zulip URLs often look like `<name>.zulipchat.com`,

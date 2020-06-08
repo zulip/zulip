@@ -192,7 +192,7 @@ server-level setting is enabled by default, and the organization-level
 setting is disabled.  As a result, organization administrators can
 configure this feature entirely in the UI.  However, servers that had
 previously [enabled previews of linked
-websites](https://zulipchat.com/help/allow-image-link-previews) will
+websites](https://zulip.com/help/allow-image-link-previews) will
 lose the setting and need to re-enable it.
 - We rewrote the Google Authentication backend to use the
   `python-social-auth` system we use for other third-party
@@ -593,7 +593,7 @@ Zulip installations; it has minimal changes for existing servers.
 - Users can now configure email and mobile push notifications for
   all messages in a stream (useful for low-traffic
   streams/organizations), not just for messages mentioning them.
-- New [stream settings](https://zulipchat.com/help/stream-permissions)
+- New [stream settings](https://zulip.com/help/stream-permissions)
   control whether private stream subscribers can access history
   from before they joined, and allow configuring streams to only
   allow administrators to post.

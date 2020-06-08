@@ -18,7 +18,8 @@ existing services if (when) your server goes down.
 
 These instructions are only for experts.  If you're not an experienced
 Linux sysadmin, you will have a much better experience if you get a
-dedicated VM to install Zulip on instead (or [use zulipchat.com](https://zulipchat.com).
+dedicated VM to install Zulip on instead (or [use
+zulip.com](https://zulip.com).
 
 ### Nginx
 

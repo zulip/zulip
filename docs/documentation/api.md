@@ -1,7 +1,7 @@
 # Documenting REST API endpoints
 
 This document explains the system for documenting [Zulip's REST
-API](https://zulipchat.com/api/rest).  This documentation is an
+API](https://zulip.com/api/rest).  This documentation is an
 essential resource both for users and the developers of Zulip's mobile
 and terminal apps. We carefully designed a system for both displaying
 it and helping ensure it stays up to date as Zulip's API changes.
@@ -35,7 +35,7 @@ want to also read the [Step by step guide](#step-by-step-guide).
 To understand how this documentation system works, start by reading an
 existing doc file (`templates/zerver/api/render-message.md` is a good
 example; accessible live
-[here](https://zulipchat.com/api/render-message) or in the development
+[here](https://zulip.com/api/render-message) or in the development
 environment at `http://localhost:9991/api/render-message`).
 
 We highly recommend looking at those resources while reading this page.

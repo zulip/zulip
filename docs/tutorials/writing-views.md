@@ -20,7 +20,7 @@ A view in Zulip is everything that helps implement a server endpoint.
 Every path that the Zulip server supports (doesn't show a 404 page
 for) is a view. The obvious ones are those you can visit in your
 browser, for example
-[/integrations](https://zulipchat.com/integrations/), which shows the
+[/integrations](https://zulip.com/integrations/), which shows the
 integration documentation. These paths show up in the address bar of
 the browser. There are other views that are only seen by software,
 namely the API views. They are used to build the various clients that

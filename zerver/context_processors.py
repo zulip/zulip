@@ -82,7 +82,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         find_team_link_disabled = False
         allow_search_engine_indexing = True
 
-    apps_page_url = 'https://zulipchat.com/apps/'
+    apps_page_url = 'https://zulip.com/apps/'
     if settings.ZILENCER_ENABLED:
         apps_page_url = '/apps/'
 

@@ -32,5 +32,5 @@ to be your app's "Client Secret".
 
 This enables Zoom support in your Zulip server.  Finally, [configure
 Zoom as the video call
-provider](https://zulipchat.com/help/start-a-call) in the Zulip
+provider](https://zulip.com/help/start-a-call) in the Zulip
 organization(s) where you want to use it.

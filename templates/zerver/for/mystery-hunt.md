@@ -30,9 +30,9 @@ Yes! We provide free hosting for all MIT mystery hunt teams, student groups,
 and research groups.
 
 Besides being easy on the wallet, Zulip is also free (open source)
-software. We make it easy to export your data from a
-[zulipchat.com](https://zulipchat.com) hosted Zulip and import it into a
-self-hosted installation.
+software. We make it easy to export your data from [Zulip
+Cloud](https://zulip.com) and import it into a self-hosted
+installation.
 
 **Can I integrate Zulip with my current puzzlehunting software?**
 
@@ -41,7 +41,7 @@ it’s easy to write bots that send things into or out of Zulip.
 
 **Where can I test it out?**
 
-[Click here](https://zulipchat.com/new) to create an organization; it
+[Click here](https://zulip.com/new) to create an organization; it
 only takes only about 30 seconds. If you decide to continue using it, just email
 support@zulip.com to tell us you’re a mystery hunt team.
 

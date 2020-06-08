@@ -20,7 +20,7 @@ def apps_view(request: HttpRequest, _: str) -> HttpResponse:
                 }
             }
         )
-    return HttpResponseRedirect('https://zulipchat.com/apps/', status=301)
+    return HttpResponseRedirect('https://zulip.com/apps/', status=301)
 
 @add_google_analytics
 def plans_view(request: HttpRequest) -> HttpResponse:
@@ -30,7 +30,7 @@ def plans_view(request: HttpRequest) -> HttpResponse:
     if realm is not None:
         realm_plan_type = realm.plan_type
         if realm.plan_type == Realm.SELF_HOSTED and settings.PRODUCTION:
-            return HttpResponseRedirect('https://zulipchat.com/plans')
+            return HttpResponseRedirect('https://zulip.com/plans')
         if not request.user.is_authenticated:
             return redirect_to_login(next="plans")
     return TemplateResponse(
@@ -42,7 +42,7 @@ def plans_view(request: HttpRequest) -> HttpResponse:
 @add_google_analytics
 def team_view(request: HttpRequest) -> HttpResponse:
     if not settings.ZILENCER_ENABLED:
-        return HttpResponseRedirect('https://zulipchat.com/team/', status=301)
+        return HttpResponseRedirect('https://zulip.com/team/', status=301)
 
     try:
         with open(settings.CONTRIBUTOR_DATA_FILE_PATH) as f:

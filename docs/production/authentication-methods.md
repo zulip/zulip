@@ -269,7 +269,7 @@ Zulip by entering your email address and LDAP password on the Zulip
 login form.
 
 You may also want to configure Zulip's settings for [inviting new
-users](https://zulipchat.com/help/invite-new-users).  If LDAP is the
+users](https://zulip.com/help/invite-new-users).  If LDAP is the
 only enabled authentication method, the main use case for Zulip's
 invitation feature is selecting the initial streams for invited users
 (invited users will still need to use their LDAP password to create an
@@ -307,7 +307,7 @@ When using this feature, you may also want to
 since any such changes would be automatically overwritten on the sync
 run of `manage.py sync_ldap_user_data`.
 
-[restrict-name-changes]: https://zulipchat.com/help/restrict-name-and-email-changes
+[restrict-name-changes]: https://zulip.com/help/restrict-name-and-email-changes
 
 #### Synchronizing avatars
 
@@ -329,7 +329,7 @@ corresponding LDAP attribute is `linkedinProfile` then you just need
 to add `'custom_profile_field__linkedin_profile': 'linkedinProfile'`
 to the `AUTH_LDAP_USER_ATTR_MAP`.
 
-[custom-profile-fields]: https://zulipchat.com/help/add-custom-profile-fields
+[custom-profile-fields]: https://zulip.com/help/add-custom-profile-fields
 
 #### Automatically deactivating users with Active Directory
 
@@ -380,7 +380,7 @@ Other fields you may want to sync from LDAP include:
 * String fields like `default_language` (e.g. `en`) or `timezone`, if
   you have that data in the right format in your LDAP database.
 * [Coming soon][custom-profile-fields-ldap]: Support for syncing
-  [custom profile fields](https://zulipchat.com/help/add-custom-profile-fields)
+  [custom profile fields](https://zulip.com/help/add-custom-profile-fields)
   from your LDAP database.
 
 You can look at the [full list of fields][models-py] in the Zulip user

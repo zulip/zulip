@@ -14,7 +14,7 @@ Zulip with various common SAML Identity Providers.
    [Okta's documentation](https://developer.okta.com/docs/guides/saml-application-setup/overview/).
    Specify:
      * `https://<subdomain>.zulipchat.com/complete/saml/` for the "Single sign on URL"`.
-     * `https://zulipchat.com` for the "Audience URI (SP Entity ID)".
+     * `https://zulip.com` for the "Audience URI (SP Entity ID)".
      * Skip "Default RelayState".
      * Skip "Name ID format".
      * Set 'Email` for "Application username format".
@@ -39,7 +39,7 @@ Zulip with various common SAML Identity Providers.
    but will be shown on your OneLogin Applications page.
 1. Go to the "Configuration" section:
     * Leave the `RelayState` field empty.
-    * Set `https://zulipchat.com` as the Audience.
+    * Set `https://zulip.com` as the Audience.
     * Set `https://<subdomain>.zulipchat.com/complete/saml/` as the Recipient, ACS URL
       and ACS URL Validator.
 1. Go to the "Parameters" section. Ignore the pre-configured parameters that are already there

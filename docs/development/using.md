@@ -92,7 +92,7 @@ the development environment][authentication-dev-server].
 See the mobile project's documentation on [using a development server
 for mobile development][mobile-dev-server].
 
-[rest-api]: https://zulipchat.com/api/rest
+[rest-api]: https://zulip.com/api/rest
 [authentication-dev-server]: ./authentication.md
 [django-runserver]: https://docs.djangoproject.com/en/1.8/ref/django-admin/#runserver-port-or-address-port
 [new-feature-tutorial]: ../tutorials/new-feature-tutorial.md

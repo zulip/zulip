@@ -345,7 +345,7 @@ class AboutPageTest(ZulipTestCase):
         with self.settings(ZILENCER_ENABLED=False):
             result = self.client_get('/team/')
             self.assertEqual(result.status_code, 301)
-            self.assertEqual(result["Location"], "https://zulipchat.com/team/")
+            self.assertEqual(result["Location"], "https://zulip.com/team/")
 
     def test_split_by(self) -> None:
         """Utility function primarily used in authors page"""
@@ -402,14 +402,14 @@ class PlansPageTest(ZulipTestCase):
         with self.settings(PRODUCTION=True):
             result = self.client_get("/plans/", subdomain="zulip")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result["Location"], "https://zulipchat.com/plans")
+            self.assertEqual(result["Location"], "https://zulip.com/plans")
 
             self.login('iago')
 
             # SELF_HOSTED should hide the local plans page, even if logged in
             result = self.client_get("/plans/", subdomain="zulip")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result["Location"], "https://zulipchat.com/plans")
+            self.assertEqual(result["Location"], "https://zulip.com/plans")
 
         # But in the development environment, it renders a page
         result = self.client_get("/plans/", subdomain="zulip")
@@ -443,7 +443,7 @@ class AppsPageTest(ZulipTestCase):
         with self.settings(ZILENCER_ENABLED=False):
             result = self.client_get('/apps/')
         self.assertEqual(result.status_code, 301)
-        self.assertTrue(result['Location'] == 'https://zulipchat.com/apps/')
+        self.assertTrue(result['Location'] == 'https://zulip.com/apps/')
 
         with self.settings(ZILENCER_ENABLED=True):
             result = self.client_get('/apps/')

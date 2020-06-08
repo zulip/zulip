@@ -564,7 +564,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> Non
         context['getting_started_link'] = (user.realm.uri +
                                            '/help/getting-your-organization-started-with-zulip')
     else:
-        context['getting_started_link'] = "https://zulipchat.com"
+        context['getting_started_link'] = "https://zulip.com"
 
     # Imported here to avoid import cycles.
     from zproject.backends import email_belongs_to_ldap, ZulipLDAPAuthBackend

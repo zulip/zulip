@@ -61,7 +61,7 @@ Zulip only sends push notifications for private messages sent by other
 users and messages mentioning you).  A push notification should appear
 in the Android notification area.
 
-[mobile-notifications-always]: https://zulipchat.com/help/test-mobile-notifications
+[mobile-notifications-always]: https://zulip.com/help/test-mobile-notifications
 
 ## Updating your server's registration
 
@@ -96,7 +96,7 @@ forwarding service).
 ## Security and privacy
 
 Use of the push notification bouncer is subject to the
-[Zulipchat Terms of Service](https://zulipchat.com/terms/). By using
+[Zulipchat Terms of Service](https://zulip.com/terms/). By using
 push notifications, you agree to those terms.
 
 We've designed this push notification bouncer service with security

@@ -502,7 +502,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             ('Favorite food', 'long short text data'),
             ('Favorite editor', 'vim'),
             ('Birthday', '1909-3-5'),
-            ('Favorite website', 'https://zulipchat.com'),
+            ('Favorite website', 'https://zulip.com'),
             ('Mentor', [self.example_user("cordelia").id]),
             ('GitHub', 'zulip-mobile')
         ]

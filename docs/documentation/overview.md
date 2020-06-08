@@ -91,19 +91,19 @@ to do the things one does a lot in each type of documentation.
 ### General user documentation
 
 To learn more about Zulip's general user documentation,
-[visit it on zulipchat.com](https://zulipchat.com/help/) or
+[visit it on zulip.com](https://zulip.com/help/) or
 [read our guide on writing user documentation](user.md).
 
 ### Integrations documentation
 
 To learn more about Zulip's integrations documentation,
-[visit it on zulipchat.com](https://zulipchat.com/integrations/) or
+[visit it on zulip.com](https://zulip.com/integrations/) or
 [read our guide on writing user documentation](integrations.md).
 
 ### API documentation
 
 To learn more about Zulip's API documentation,
-[visit it on zulipchat.com](https://zulipchat.com/api/) or
+[visit it on zulip.com](https://zulip.com/api/) or
 [read our tutorial on writing user documentation](../documentation/api.md).
 
 ## Automated testing
