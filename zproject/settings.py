@@ -2,14 +2,22 @@
 ########################################################################
 # Here's how settings for the Zulip project work:
 #
+# * configured_settings.py imports default_settings.py, which contains
+#   default values for settings configurable in prod_settings.py.
+#
+# * configured_settings.py imports prod_settings.py, and any site-specific
+#   configuration belongs there.  The template for prod_settings.py is
+#   prod_settings_template.py.
+#
 # * settings.py contains non-site-specific and settings configuration
-# for the Zulip Django app.
-# * settings.py imports prod_settings.py, and any site-specific configuration
-# belongs there.  The template for prod_settings.py is prod_settings_template.py
+#   for the Zulip Django app.
 #
 # See https://zulip.readthedocs.io/en/latest/subsystems/settings.html for more information
 #
 ########################################################################
+
+from .configured_settings import *  # isort: skip
+
 from copy import deepcopy
 import os
 import time
@@ -80,22 +88,6 @@ GENERATE_STRIPE_FIXTURES = False
 # By using our own path for BOTO_CONFIG, we can cause boto to not
 # process /etc/boto.cfg.
 os.environ['BOTO_CONFIG'] = '/etc/zulip/boto.cfg'
-
-########################################################################
-# DEFAULT VALUES FOR SETTINGS
-########################################################################
-
-# For any settings that are not set in the site-specific configuration file
-# (/etc/zulip/settings.py in production, or dev_settings.py or test_settings.py
-# in dev and test), we want to initialize them to sane defaults.
-from .default_settings import *
-
-# Import variables like secrets from the prod_settings file
-# Import prod_settings after determining the deployment/machine type
-if PRODUCTION:
-    from .prod_settings import *
-else:
-    from .dev_settings import *
 
 # These are the settings that we will check that the user has filled in for
 # production deployments before starting the app.  It consists of a series

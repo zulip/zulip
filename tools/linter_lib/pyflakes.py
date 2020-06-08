@@ -21,6 +21,7 @@ def check_pyflakes(files: List[str], options: argparse.Namespace) -> bool:
 
         ("settings.py", "settings import *' used; unable to detect undefined names"),
         ("settings.py", "may be undefined, or defined from star imports"),
+        ("settings.py", "settings.*' imported but unused"),
 
         # Sphinx adds `tags` specially to the environment when running conf.py.
         ("docs/conf.py", "undefined name 'tags'"),
