@@ -166,7 +166,7 @@ aliases:
         fi
 
 jobs:
-  "bionic-backend-frontend-python3.6":
+  "bionic-backend-frontend":
     docker:
       # This is built from tools/circleci/images/bionic/Dockerfile .
       # Bionic ships with Python 3.6.
@@ -216,7 +216,7 @@ jobs:
       - *notify_failure_status
 
 
-  "focal-backend-python3.8":
+  "focal-backend":
       docker:
         # This is built from tools/circleci/images/focal/Dockerfile.
         # Focal ships with Python 3.8.2.
@@ -251,7 +251,7 @@ jobs:
       - *check_xenial_upgrade_error
       - *notify_failure_status
 
-  "bionic-production-build-python3.6":
+  "bionic-production-build":
     docker:
         # This is built from tools/circleci/images/bionic/Dockerfile .
         # Bionic ships with Python 3.6.
@@ -290,7 +290,7 @@ jobs:
             - production-extract-tarball
       - *notify_failure_status
 
-  "bionic-production-install-python3.6":
+  "bionic-production-install":
     docker:
         # This is built from tools/circleci/images/bionic/Dockerfile .
         # Bionic ships with Python 3.6.
@@ -299,7 +299,7 @@ jobs:
     working_directory: ~/zulip
 
     steps:
-      # Contains the built tarball from bionic-production-build-python3.6 job
+      # Contains the built tarball from bionic-production-build job
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: /tmp
@@ -312,7 +312,7 @@ jobs:
       - *save_cache_package_json
       - *notify_failure_status
 
-  "focal-production-install-python3.8":
+  "focal-production-install":
     docker:
         # This is built from tools/circleci/images/focal/Dockerfile.
         # Focal ships with Python 3.8.2.
@@ -321,7 +321,7 @@ jobs:
     working_directory: ~/zulip
 
     steps:
-      # Contains the built tarball from bionic-production-build-python3.6 job
+      # Contains the built tarball from bionic-production-build job
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: /tmp
@@ -341,16 +341,16 @@ workflows:
       - "xenial-legacy"
   "Ubuntu 18.04 Bionic (Python 3.6, backend+frontend)":
     jobs:
-      - "bionic-backend-frontend-python3.6"
+      - "bionic-backend-frontend"
   "Ubuntu 20.04 Focal (Python 3.8, backend)":
     jobs:
-      - "focal-backend-python3.8"
+      - "focal-backend"
   "Production":
     jobs:
-      - "bionic-production-build-python3.6"
-      - "bionic-production-install-python3.6":
+      - "bionic-production-build"
+      - "bionic-production-install":
             requires:
-                - "bionic-production-build-python3.6"
-      # - "focal-production-install-python3.8":
+                - "bionic-production-build"
+      # - "focal-production-install":
       #       requires:
-      #           - "bionic-production-build-python3.6"
+      #           - "bionic-production-build"
