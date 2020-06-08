@@ -629,7 +629,7 @@ class S3UploadBackend(ZulipUploadBackend):
         # We use the avatar bucket, because it's world-readable.
         bucket = get_bucket(session, settings.S3_AVATAR_BUCKET)
         key = bucket.Object(os.path.join("exports", generate_random_token(32),
-                            os.path.basename(tarball_path)))
+                                         os.path.basename(tarball_path)))
 
         key.upload_file(tarball_path, Callback=percent_callback)
 
