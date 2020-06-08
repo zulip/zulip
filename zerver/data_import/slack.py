@@ -163,7 +163,9 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
                                       user['profile']['avatar_hash'])
         build_avatar(user_id, realm_id, email, avatar_url, timestamp, avatar_list)
         role = UserProfile.ROLE_MEMBER
-        if get_admin(user):
+        if get_owner(user):
+            role = UserProfile.ROLE_REALM_OWNER
+        elif get_admin(user):
             role = UserProfile.ROLE_REALM_ADMINISTRATOR
         if get_guest(user):
             role = UserProfile.ROLE_GUEST
@@ -302,14 +304,15 @@ def build_avatar_url(slack_user_id: str, team_id: str, avatar_hash: str) -> str:
                                                              avatar_hash)
     return avatar_url
 
-def get_admin(user: ZerverFieldsT) -> bool:
-    admin = user.get('is_admin', False)
+def get_owner(user: ZerverFieldsT) -> bool:
     owner = user.get('is_owner', False)
     primary_owner = user.get('is_primary_owner', False)
 
-    if admin or owner or primary_owner:
-        return True
-    return False
+    return primary_owner or owner
+
+def get_admin(user: ZerverFieldsT) -> bool:
+    admin = user.get('is_admin', False)
+    return admin
 
 def get_guest(user: ZerverFieldsT) -> bool:
     restricted_user = user.get('is_restricted', False)
