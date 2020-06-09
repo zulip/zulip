@@ -28,16 +28,25 @@ def plans_view(request: HttpRequest) -> HttpResponse:
     realm = get_realm_from_request(request)
     realm_plan_type = 0
     free_trial_days = settings.FREE_TRIAL_DAYS
+    sponsorship_pending = False
+
     if realm is not None:
         realm_plan_type = realm.plan_type
         if realm.plan_type == Realm.SELF_HOSTED and settings.PRODUCTION:
             return HttpResponseRedirect('https://zulip.com/plans')
         if not request.user.is_authenticated:
             return redirect_to_login(next="plans")
+
+        if settings.CORPORATE_ENABLED:
+            from corporate.models import get_customer_by_realm
+            customer = get_customer_by_realm(realm)
+            if customer is not None:
+                sponsorship_pending = customer.sponsorship_pending
+
     return TemplateResponse(
         request,
         "zerver/plans.html",
-        context={"realm_plan_type": realm_plan_type, 'free_trial_days': free_trial_days},
+        context={"realm_plan_type": realm_plan_type, 'free_trial_days': free_trial_days, 'sponsorship_pending': sponsorship_pending},
     )
 
 @add_google_analytics

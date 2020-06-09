@@ -152,6 +152,9 @@
                 </div>
                 {% elif admin_access and not has_active_plan %}
                 <div class="tab-content">
+                    {% if sponsorship_pending %}
+                    <h3>Your organization has requested sponsored or discounted hosting.</h3>
+                    {% else %}
                     <center>
                         <p>
                             <h2>Your organization is on the <b>Zulip Free</b> plan.</h2>
@@ -163,6 +166,7 @@
                             </a>
                         </p>
                     </center>
+                    {% endif %}
                 </div>
                 <div class="support-link">
                     <p>

@@ -177,6 +177,7 @@
         display: none;
     }
 
+    #sponsorship-loading,
     #planchange-loading,
     #cardchange-loading,
     #invoice-loading,
@@ -186,7 +187,7 @@
         text-align: center;
     }
 
-
+    #sponsorship-success,
     #planchange-success,
     #cardchange-success,
     #invoice-success,
@@ -195,6 +196,7 @@
         display: none;
     }
 
+    #sponsorship-error,
     #planchange-error,
     #cardchange-error,
     #invoice-error,
@@ -224,6 +226,7 @@
         stroke: hsl(0, 0%, 100%);
     }
 
+    #sponsorship_loading_indicator,
     #planchange_loading_indicator,
     #cardchange_loading_indicator,
     #invoice_loading_indicator,
@@ -231,6 +234,7 @@
         margin: 10px auto;
     }
 
+    #sponsorship_loading_indicator_box_container,
     #planchange_loading_indicator_box_container,
     #cardchange_loading_indicator_box_container,
     #invoice_loading_indicator_box_container,
@@ -239,6 +243,7 @@
         left: 50%;
     }
 
+    #sponsorship_loading_indicator_box,
     #planchange_loading_indicator_box,
     #cardchange_loading_indicator_box,
     #invoice_loading_indicator_box,
@@ -250,6 +255,7 @@
         border-radius: 6px;
     }
 
+    #sponsorship_loading_indicator .loading_indicator_text,
     #planchange_loading_indicator .loading_indicator_text,
     #cardchange_loading_indicator .loading_indicator_text,
     #invoice_loading_indicator .loading_indicator_text,

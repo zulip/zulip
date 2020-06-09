@@ -1,6 +1,7 @@
 import logging
 from decimal import Decimal
 from typing import Any, Dict, Optional, Union
+from urllib.parse import urlencode, urljoin, urlunsplit
 
 import stripe
 from django.conf import settings
@@ -28,6 +29,7 @@ from corporate.lib.stripe import (
     start_of_next_billing_cycle,
     stripe_get_customer,
     unsign_string,
+    update_sponsorship_status,
 )
 from corporate.models import (
     CustomerPlan,
@@ -38,8 +40,9 @@ from corporate.models import (
 from zerver.decorator import require_billing_access, zulip_login_required
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
+from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.validator import check_int, check_string
-from zerver.models import UserProfile
+from zerver.models import UserProfile, get_realm
 
 billing_logger = logging.getLogger('corporate.stripe')
 
@@ -145,8 +148,9 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         return render(request, "404.html")
 
     user = request.user
+
     customer = get_customer_by_realm(user.realm)
-    if customer is not None and get_current_plan_by_customer(customer) is not None:
+    if customer is not None and (get_current_plan_by_customer(customer) is not None or customer.sponsorship_pending):
         billing_page_url = reverse('corporate.views.billing_home')
         if request.GET.get("onboarding") is not None:
             billing_page_url = f"{billing_page_url}?onboarding=true"
@@ -159,6 +163,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
     seat_count = get_latest_seat_count(user.realm)
     signed_seat_count, salt = sign_string(str(seat_count))
     context: Dict[str, Any] = {
+        'realm': user.realm,
         'publishable_key': STRIPE_PUBLISHABLE_KEY,
         'email': user.delivery_email,
         'seat_count': seat_count,
@@ -179,17 +184,71 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
     response = render(request, 'corporate/upgrade.html', context=context)
     return response
 
+@has_request_variables
+def sponsorship(request: HttpRequest, user: UserProfile,
+                organization_type: str=REQ("organization-type", validator=check_string),
+                website: str=REQ("website", validator=check_string),
+                description: str=REQ("description", validator=check_string)) -> HttpResponse:
+    realm = user.realm
+
+    requested_by = user.full_name
+
+    role_id_to_name_map = {
+        UserProfile.ROLE_REALM_OWNER: "Realm owner",
+        UserProfile.ROLE_REALM_ADMINISTRATOR: "Realm adminstrator",
+        UserProfile.ROLE_MEMBER: "Member",
+        UserProfile.ROLE_GUEST: "Guest"
+    }
+    user_role = role_id_to_name_map[user.role]
+
+    support_realm_uri = get_realm(settings.STAFF_SUBDOMAIN).uri
+    support_url = urljoin(support_realm_uri, urlunsplit(("", "", reverse('analytics.views.support'),
+                          urlencode({"q": realm.string_id}), "")))
+
+    context = {
+        "requested_by": requested_by,
+        "user_role": user_role,
+        "string_id": realm.string_id,
+        "support_url": support_url,
+        "organization_type": organization_type,
+        "website": website,
+        "description": description,
+    }
+    send_email(
+        "zerver/emails/sponsorship_request",
+        to_emails=[FromAddress.SUPPORT],
+        from_name=user.full_name,
+        from_address=user.delivery_email,
+        context=context,
+    )
+
+    update_sponsorship_status(realm, True)
+    user.is_billing_admin = True
+    user.save(update_fields=["is_billing_admin"])
+
+    return json_success()
+
 @zulip_login_required
 def billing_home(request: HttpRequest) -> HttpResponse:
     user = request.user
     customer = get_customer_by_realm(user.realm)
+    context: Dict[str, Any] = {}
+
     if customer is None:
         return HttpResponseRedirect(reverse('corporate.views.initial_upgrade'))
+
+    if customer.sponsorship_pending:
+        if user.has_billing_access:
+            context = {"admin_access": True, "sponsorship_pending": True}
+        else:
+            context = {"admin_access": False}
+        return render(request, 'corporate/billing.html', context=context)
+
     if not CustomerPlan.objects.filter(customer=customer).exists():
         return HttpResponseRedirect(reverse('corporate.views.initial_upgrade'))
 
-    if not user.is_realm_admin and not user.is_billing_admin:
-        context: Dict[str, Any] = {'admin_access': False}
+    if not user.has_billing_access:
+        context = {'admin_access': False}
         return render(request, 'corporate/billing.html', context=context)
 
     context = {

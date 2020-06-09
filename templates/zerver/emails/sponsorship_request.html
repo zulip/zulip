@@ -1,0 +1,24 @@
+{% extends "zerver/emails/email_base_messages.html" %}
+
+{% block content %}
+<b>Support URL</b>: <a href="{{ support_url }}">{{ support_url }}</a>
+
+<br><br>
+
+<b>Website</b>: <a href="{{ website }}">{{ website }}</a>
+
+<br><br>
+
+<b>Organization type</b>: {{ organization_type }}
+
+<br><br>
+
+<b>Description</b>:
+<br>
+{{ description }}
+
+<br><br>
+
+<b>Requested by</b>: {{ requested_by }} · <b>User role</b>: {{ user_role }} · <b>String ID</b>: {{ string_id }}
+
+{% endblock %}
