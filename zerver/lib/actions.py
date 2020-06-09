@@ -2573,9 +2573,7 @@ def bulk_get_subscriber_user_ids(stream_dicts: Iterable[Mapping[str, Any]],
     to optimize.)
     '''
 
-    id_list = ', '.join(str(recipient_id) for recipient_id in recipient_ids)
-
-    query = '''
+    query = SQL('''
         SELECT
             zerver_subscription.recipient_id,
             zerver_subscription.user_profile_id
@@ -2584,16 +2582,16 @@ def bulk_get_subscriber_user_ids(stream_dicts: Iterable[Mapping[str, Any]],
         INNER JOIN zerver_userprofile ON
             zerver_userprofile.id = zerver_subscription.user_profile_id
         WHERE
-            zerver_subscription.recipient_id in (%s) AND
+            zerver_subscription.recipient_id in %(recipient_ids)s AND
             zerver_subscription.active AND
             zerver_userprofile.is_active
         ORDER BY
             zerver_subscription.recipient_id,
             zerver_subscription.user_profile_id
-        ''' % (id_list,)
+        ''')
 
     cursor = connection.cursor()
-    cursor.execute(query)
+    cursor.execute(query, {"recipient_ids": tuple(recipient_ids)})
     rows = cursor.fetchall()
     cursor.close()
 
