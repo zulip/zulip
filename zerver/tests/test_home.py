@@ -134,6 +134,7 @@ class HomeTest(ZulipTestCase):
             "realm_bot_creation_policy",
             "realm_bot_domain",
             "realm_bots",
+            "realm_community_topic_editing_limit_seconds",
             "realm_create_stream_policy",
             "realm_default_code_block_language",
             "realm_default_external_accounts",

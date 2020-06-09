@@ -1,5 +1,7 @@
 set_global('document', null);
-set_global('page_params', {});
+set_global('page_params', {
+    realm_community_topic_editing_limit_seconds: 86400,
+});
 
 global.stub_out_jquery();
 
@@ -75,6 +77,7 @@ run_test('get_editability', () => {
         realm_allow_community_topic_editing: true,
         realm_allow_message_editing: true,
         realm_message_content_edit_limit_seconds: 0,
+        realm_community_topic_editing_limit_seconds: 86400,
         is_admin: false,
     };
     message.timestamp = current_timestamp - 60;

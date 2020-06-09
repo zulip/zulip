@@ -10,6 +10,13 @@ below features are supported.
 
 ## Changes in Zulip 2.2
 
+**Feature level 11**
+
+* [`POST /register`](/api/register-queue): Added
+  `realm_community_topic_editing_limit_seconds` to the response, the
+  time limit before community topic editing is forbidden.  A `null`
+  value means no limit.
+
 **Feature level 10**
 
 * [`GET users/me`](/api/get-profile): Added `avatar_version`, `is_guest`,
