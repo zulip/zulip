@@ -13,8 +13,6 @@ $(function () {
     // get_events completes.
     if (!page_params.needs_tutorial) {
         loading.make_indicator($('#page_loading_indicator'), {text: 'Loading...', abs_positioned: true});
-    } else if (!page_params.needs_tutorial) {
-        $('#first_run_message').show();
     }
 
     // This is an issue fix where in jQuery v3 the result of outerHeight on a node
