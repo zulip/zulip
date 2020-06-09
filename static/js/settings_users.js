@@ -137,11 +137,9 @@ function failed_listing_users() {
 function populate_users() {
     const active_user_ids = people.get_active_human_ids();
     let active_users = active_user_ids.map(user_id => people.get_by_user_id(user_id));
-    active_users = _.sortBy(active_users, 'full_name');
 
     const deactivated_user_ids = people.get_non_active_human_ids();
     let deactivated_users = deactivated_user_ids.map(user_id => people.get_by_user_id(user_id));
-    deactivated_users = _.sortBy(deactivated_users, 'full_name');
 
     if (active_user_ids.length === 0 && deactivated_user_ids.length === 0) {
         failed_listing_users();
