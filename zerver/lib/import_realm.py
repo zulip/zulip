@@ -1292,11 +1292,11 @@ def import_attachments(data: TableData) -> None:
     # better way to do this in Django 1.9 particularly.
     with connection.cursor() as cursor:
         sql_template = SQL('''
-            insert into {} ({}, {}) values %s
+            INSERT INTO {m2m_table_name} ({parent_id}, {child_id}) VALUES %s
         ''').format(
-            Identifier(m2m_table_name),
-            Identifier(parent_id),
-            Identifier(child_id),
+            m2m_table_name=Identifier(m2m_table_name),
+            parent_id=Identifier(parent_id),
+            child_id=Identifier(child_id),
         )
         tups = [(row[parent_id], row[child_id]) for row in m2m_rows]
         execute_values(cursor.cursor, sql_template, tups)
