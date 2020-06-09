@@ -127,30 +127,25 @@ function get_status_field() {
     }
 }
 
-function failed_listing_users(xhr) {
+function failed_listing_users() {
     loading.destroy_indicator($('#subs_page_loading_indicator'));
     const status = get_status_field();
-    ui_report.error(i18n.t("Error listing users"), xhr, status);
+    const user_id = people.my_current_user_id();
+    blueslip.error('Error while listing users for user_id ' + user_id, status);
 }
 
-function populate_users(realm_people_data) {
-    let active_users = [];
-    let deactivated_users = [];
-
-    for (const user of realm_people_data.members) {
-        if (user.is_bot) {
-            continue;
-        }
-
-        if (user.is_active) {
-            active_users.push(user);
-        } else {
-            deactivated_users.push(user);
-        }
-    }
-
+function populate_users() {
+    const active_user_ids = people.get_active_human_ids();
+    let active_users = active_user_ids.map(user_id => people.get_by_user_id(user_id));
     active_users = _.sortBy(active_users, 'full_name');
+
+    const deactivated_user_ids = people.get_non_active_human_ids();
+    let deactivated_users = deactivated_user_ids.map(user_id => people.get_by_user_id(user_id));
     deactivated_users = _.sortBy(deactivated_users, 'full_name');
+
+    if (active_user_ids.length === 0 && deactivated_user_ids.length === 0) {
+        failed_listing_users();
+    }
 
     section.active.create_table(active_users);
     section.deactivated.create_table(deactivated_users);
@@ -375,14 +370,7 @@ function start_data_load() {
     $("#admin_deactivated_users_table").hide();
     $("#admin_users_table").hide();
 
-    // Populate users and bots tables
-    channel.get({
-        url: '/json/users',
-        idempotent: true,
-        timeout: 10 * 1000,
-        success: populate_users,
-        error: failed_listing_users,
-    });
+    populate_users();
 }
 
 function open_human_form(person) {
