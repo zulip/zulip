@@ -711,16 +711,37 @@ class HomeTest(ZulipTestCase):
         self.assertIn('Billing', result_html)
 
         # billing admin, with CustomerPlan -> show billing link
-        user.role = UserProfile.ROLE_REALM_ADMINISTRATOR
+        user.role = UserProfile.ROLE_MEMBER
         user.is_billing_admin = True
         user.save(update_fields=['role', 'is_billing_admin'])
         result_html = self._get_home_page().content.decode('utf-8')
         self.assertIn('Billing', result_html)
 
+        # member, with CustomerPlan -> no billing link
+        user.is_billing_admin = False
+        user.save(update_fields=['is_billing_admin'])
+        result_html = self._get_home_page().content.decode('utf-8')
+        self.assertNotIn('Billing', result_html)
+
+        # guest, with CustomerPlan -> no billing link
+        user.role = UserProfile.ROLE_GUEST
+        user.save(update_fields=['role'])
+        result_html = self._get_home_page().content.decode('utf-8')
+        self.assertNotIn('Billing', result_html)
+
         # billing admin, but no CustomerPlan -> no billing link
+        user.role = UserProfile.ROLE_MEMBER
+        user.is_billing_admin = True
+        user.save(update_fields=['role', 'is_billing_admin'])
         CustomerPlan.objects.all().delete()
         result_html = self._get_home_page().content.decode('utf-8')
         self.assertNotIn('Billing', result_html)
+
+        # billing admin, with sponsorship pending -> show billing link
+        customer.sponsorship_pending = True
+        customer.save(update_fields=["sponsorship_pending"])
+        result_html = self._get_home_page().content.decode('utf-8')
+        self.assertIn('Billing', result_html)
 
         # billing admin, no customer object -> make sure it doesn't crash
         customer.delete()

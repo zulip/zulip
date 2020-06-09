@@ -559,6 +559,11 @@ def invoice_plans_as_needed(event_time: datetime=timezone_now()) -> None:
 def attach_discount_to_realm(realm: Realm, discount: Decimal) -> None:
     Customer.objects.update_or_create(realm=realm, defaults={'default_discount': discount})
 
+def update_sponsorship_status(realm: Realm, sponsorship_pending: bool) -> None:
+    customer, _ = Customer.objects.get_or_create(realm=realm)
+    customer.sponsorship_pending = sponsorship_pending
+    customer.save(update_fields=["sponsorship_pending"])
+
 def get_discount_for_realm(realm: Realm) -> Optional[Decimal]:
     customer = get_customer_by_realm(realm)
     if customer is not None:

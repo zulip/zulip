@@ -301,10 +301,14 @@ def home_real(request: HttpRequest) -> HttpResponse:
     show_plans = False
     if settings.CORPORATE_ENABLED and user_profile is not None:
         from corporate.models import Customer, CustomerPlan
-        if user_profile.is_billing_admin or user_profile.is_realm_admin:
+        if user_profile.has_billing_access:
             customer = Customer.objects.filter(realm=user_profile.realm).first()
-            if customer is not None and CustomerPlan.objects.filter(customer=customer).exists():
-                show_billing = True
+            if customer is not None:
+                if customer.sponsorship_pending:
+                    show_billing = True
+                elif CustomerPlan.objects.filter(customer=customer).exists():
+                    show_billing = True
+
         if user_profile.realm.plan_type == Realm.LIMITED:
             show_plans = True
 

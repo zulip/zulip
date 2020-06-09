@@ -1,4 +1,4 @@
-exports.create_ajax_request = function (url, form_name, stripe_token = null, numeric_inputs = []) {
+exports.create_ajax_request = function (url, form_name, stripe_token = null, numeric_inputs = [], redirect_to = "/billing") {
     const form = $("#" + form_name + "-form");
     const form_loading_indicator = "#" + form_name + "_loading_indicator";
     const form_input_section = "#" + form_name + "-input-section";
@@ -44,7 +44,7 @@ exports.create_ajax_request = function (url, form_name, stripe_token = null, num
                     location.hash = "";
                 }
             }
-            location.reload();
+            window.location.replace(redirect_to);
         },
         error: function (xhr) {
             $(form_loading).hide();
@@ -73,6 +73,18 @@ exports.update_charged_amount = function (prices, schedule) {
     $("#charged_amount").text(
         exports.format_money(page_params.seat_count * prices[schedule])
     );
+};
+
+exports.update_discount_details = function (organization_type) {
+    const discount_details = {
+        open_source: "Open source projects are eligible for fully sponsored (free) Zulip Standard.",
+        research: "Academic research organizations are eligible for fully sponsored (free) Zulip Standard.",
+        non_profit: "Nonprofits are eligible for an 85%-100% discount.",
+        event: "Events are eligible for fully sponsored (free) Zulip Standard.",
+        education: "Education use is eligible for an 85%-100% discount.",
+        other: "Your organization might be eligible for a discount or sponsorship.",
+    };
+    $("#sponsorship-discount-details").text(discount_details[organization_type]);
 };
 
 exports.show_license_section = function (license) {

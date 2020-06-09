@@ -45,7 +45,7 @@
                                     <a href="/new/" class="button green">
                                         Sign up now
                                     </a>
-                                    {% elif realm_plan_type == 2 %}
+                                    {% elif realm_plan_type == 2 or sponsorship_pending %}
                                     <div class="pricing-details"></div>
                                     <a href='/upgrade' class="button black-current-value" type="button">
                                         Current plan
@@ -92,6 +92,10 @@
                                         {% else %}
                                         Buy Standard
                                         {% endif %}
+                                    </a>
+                                    {% elif sponsorship_pending %}
+                                    <a href="/billing" class="button black-current-value" type="button">
+                                        Sponsorship pending
                                     </a>
                                     {% else %}
                                     <a href="/upgrade" class="button green">

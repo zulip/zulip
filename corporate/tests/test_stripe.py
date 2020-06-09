@@ -1068,6 +1068,48 @@ class StripeTest(StripeTestCase):
         self.assert_json_error_contains(response, "Something went wrong. Please contact desdemona+admin@zulip.com.")
         self.assertEqual(ujson.loads(response.content)['error_description'], 'uncaught exception during upgrade')
 
+    def test_request_sponsorship(self) -> None:
+        user = self.example_user("hamlet")
+        self.assertIsNone(get_customer_by_realm(user.realm))
+
+        self.login_user(user)
+
+        data = {
+            "organization-type": ujson.dumps("Open-source"),
+            "website": ujson.dumps("https://infinispan.org/"),
+            "description": ujson.dumps("Infinispan is a distributed in-memory key/value data store with optional schema."),
+        }
+        response = self.client_post("/json/billing/sponsorship", data)
+        self.assert_json_success(response)
+
+        customer = get_customer_by_realm(user.realm)
+        assert(customer is not None)
+        self.assertEqual(customer.sponsorship_pending, True)
+        from django.core.mail import outbox
+        self.assertEqual(len(outbox), 1)
+
+        for message in outbox:
+            self.assertEqual(len(message.to), 1)
+            self.assertEqual(message.to[0], "desdemona+admin@zulip.com")
+            self.assertEqual(message.subject, "Sponsorship request (Open-source) for zulip")
+            self.assertEqual(message.from_email, f'{user.full_name} <{user.delivery_email}>')
+            self.assertIn("User role: Member", message.body)
+            self.assertIn("Support URL: http://zulip.testserver/activity/support?q=zulip", message.body)
+            self.assertIn("Website: https://infinispan.org", message.body)
+            self.assertIn("Organization type: Open-source", message.body)
+            self.assertIn("Description:\nInfinispan is a distributed in-memory", message.body)
+
+        response = self.client_get("/upgrade/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/billing/")
+
+        response = self.client_get("/billing/")
+        self.assert_in_success_response(["Your organization has requested sponsored or discounted hosting."], response)
+
+        self.login_user(self.example_user("othello"))
+        response = self.client_get("/billing/")
+        self.assert_in_success_response(["You must be an organization administrator or a billing administrator to view this page."], response)
+
     def test_redirect_for_billing_home(self) -> None:
         user = self.example_user("iago")
         self.login_user(user)
@@ -1796,8 +1838,9 @@ class RequiresBillingAccessTest(ZulipTestCase):
         string_with_all_endpoints = str(get_resolver('corporate.urls').reverse_dict)
         json_endpoints = {word.strip("\"'()[],$") for word in string_with_all_endpoints.split()
                           if 'json/' in word}
-        # No need to test upgrade endpoint as it only requires user to be logged in.
+        # No need to test upgrade and sponsorship endpoints as they only require user to be logged in.
         json_endpoints.remove("json/billing/upgrade")
+        json_endpoints.remove("json/billing/sponsorship")
 
         self.assertEqual(len(json_endpoints), len(params))
 

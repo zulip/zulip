@@ -36,6 +36,11 @@ exports.initialize = () => {
         helpers.create_ajax_request("/json/billing/upgrade", "invoice", undefined, ["licenses"]);
     });
 
+    $("#sponsorship-button").on("click", function (e) {
+        e.preventDefault();
+        helpers.create_ajax_request("/json/billing/sponsorship", "sponsorship", undefined, undefined, "/");
+    });
+
     const prices = {};
     prices.annual = page_params.annual_price * (1 - page_params.percent_off / 100);
     prices.monthly = page_params.monthly_price * (1 - page_params.percent_off / 100);
@@ -46,6 +51,10 @@ exports.initialize = () => {
 
     $('input[type=radio][name=schedule]').on("change", function () {
         helpers.update_charged_amount(prices, this.value);
+    });
+
+    $('select[name=organization-type]').on("change", function () {
+        helpers.update_discount_details(this.value);
     });
 
     $("#autopay_annual_price").text(helpers.format_money(prices.annual));

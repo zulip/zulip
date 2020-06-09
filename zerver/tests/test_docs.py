@@ -8,6 +8,7 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
 
+from corporate.models import Customer
 from zerver.lib.integrations import INTEGRATIONS
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
@@ -387,11 +388,12 @@ class PlansPageTest(ZulipTestCase):
         sign_up_now = "Sign up now"
         buy_standard = "Buy Standard"
         current_plan = "Current plan"
+        sponsorship_pending = "Sponsorship pending"
 
         # Root domain
         result = self.client_get("/plans/", subdomain="")
         self.assert_in_success_response([sign_up_now, buy_standard], result)
-        self.assert_not_in_success_response([current_plan], result)
+        self.assert_not_in_success_response([current_plan, sponsorship_pending], result)
 
         realm = get_realm("zulip")
         realm.plan_type = Realm.SELF_HOSTED
@@ -412,24 +414,32 @@ class PlansPageTest(ZulipTestCase):
         # But in the development environment, it renders a page
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response([sign_up_now, buy_standard], result)
-        self.assert_not_in_success_response([current_plan], result)
+        self.assert_not_in_success_response([current_plan, sponsorship_pending], result)
 
         realm.plan_type = Realm.LIMITED
         realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response([current_plan, buy_standard], result)
-        self.assert_not_in_success_response([sign_up_now], result)
+        self.assert_not_in_success_response([sign_up_now, sponsorship_pending], result)
 
         realm.plan_type = Realm.STANDARD_FREE
         realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response([current_plan], result)
-        self.assert_not_in_success_response([sign_up_now, buy_standard], result)
+        self.assert_not_in_success_response([sign_up_now, buy_standard, sponsorship_pending], result)
 
         realm.plan_type = Realm.STANDARD
         realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response([current_plan], result)
+        self.assert_not_in_success_response([sign_up_now, buy_standard, sponsorship_pending], result)
+
+        realm.plan_type = Realm.LIMITED
+        realm.save()
+        Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_id", sponsorship_pending=True)
+        result = self.client_get("/plans/", subdomain="zulip")
+        self.assert_in_success_response([current_plan], result)
+        self.assert_in_success_response([current_plan, sponsorship_pending], result)
         self.assert_not_in_success_response([sign_up_now, buy_standard], result)
 
 class AppsPageTest(ZulipTestCase):

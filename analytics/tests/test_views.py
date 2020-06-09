@@ -10,6 +10,7 @@ from analytics.lib.counts import COUNT_STATS, CountStat
 from analytics.lib.time_utils import time_range
 from analytics.models import FillState, RealmCount, UserCount, last_successful_fill
 from analytics.views import rewrite_client_arrays, sort_by_totals, sort_client_labels
+from corporate.models import get_customer_by_realm
 from zerver.lib.actions import do_create_multiuse_invite_link, do_send_realm_reactivation_email
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_emails_in_zulip_realm
@@ -574,6 +575,35 @@ class TestSupportEndpoint(ZulipTestCase):
             result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}", "discount": "25"})
             m.assert_called_once_with(get_realm("lear"), 25)
             self.assert_in_success_response(["Discount of Lear &amp; Co. changed to 25 from None"], result)
+
+    def test_change_sponsorship_status(self) -> None:
+        lear_realm = get_realm("lear")
+        self.assertIsNone(get_customer_by_realm(lear_realm))
+
+        cordelia = self.example_user('cordelia')
+        self.login_user(cordelia)
+
+        result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}",
+                                                        "sponsorship_pending": "true"})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/login/")
+
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}",
+                                                        "sponsorship_pending": "true"})
+        self.assert_in_success_response(["Lear &amp; Co. marked as pending sponsorship."], result)
+        customer = get_customer_by_realm(lear_realm)
+        assert(customer is not None)
+        self.assertTrue(customer.sponsorship_pending)
+
+        result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}",
+                                                        "sponsorship_pending": "false"})
+        self.assert_in_success_response(["Lear &amp; Co. is no longer pending sponsorship."], result)
+        customer = get_customer_by_realm(lear_realm)
+        assert(customer is not None)
+        self.assertFalse(customer.sponsorship_pending)
 
     def test_activate_or_deactivate_realm(self) -> None:
         cordelia = self.example_user('cordelia')

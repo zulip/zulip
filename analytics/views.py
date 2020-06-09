@@ -70,7 +70,12 @@ from zerver.models import (
 from zerver.views.invite import get_invitee_emails_set
 
 if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import attach_discount_to_realm, get_discount_for_realm
+    from corporate.lib.stripe import (
+        attach_discount_to_realm,
+        get_customer_by_realm,
+        get_discount_for_realm,
+        update_sponsorship_status,
+    )
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteInstallationCount, RemoteRealmCount, RemoteZulipServer
@@ -1136,6 +1141,15 @@ def support(request: HttpRequest) -> HttpResponse:
                 do_deactivate_realm(realm, request.user)
                 context["message"] = f"{realm.name} deactivated."
 
+        sponsorship_pending = request.POST.get("sponsorship_pending", None)
+        if sponsorship_pending is not None:
+            if sponsorship_pending == "true":
+                update_sponsorship_status(realm, True)
+                context["message"] = f"{realm.name} marked as pending sponsorship."
+            elif sponsorship_pending == "false":
+                update_sponsorship_status(realm, False)
+                context["message"] = f"{realm.name} is no longer pending sponsorship."
+
         scrub_realm = request.POST.get("scrub_realm", None)
         if scrub_realm is not None:
             if scrub_realm == "scrub_realm":
@@ -1164,6 +1178,9 @@ def support(request: HttpRequest) -> HttpResponse:
                     pass
             except ValidationError:
                 pass
+
+        for realm in realms:
+            realm.customer = get_customer_by_realm(realm)
 
         context["realms"] = realms
 
