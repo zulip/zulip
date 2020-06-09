@@ -24,6 +24,7 @@ from django.utils.timesince import timesince
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 from jinja2 import Markup as mark_safe
+from psycopg2.sql import Composable, Literal, SQL
 
 from analytics.lib.counts import COUNT_STATS, CountStat
 from analytics.lib.time_utils import time_range
@@ -415,7 +416,7 @@ def dictfetchall(cursor: connection.cursor) -> List[Dict[str, Any]]:
 
 
 def get_realm_day_counts() -> Dict[str, Dict[str, str]]:
-    query = '''
+    query = SQL('''
         select
             r.string_id,
             (now()::date - date_sent::date) age,
@@ -436,7 +437,7 @@ def get_realm_day_counts() -> Dict[str, Dict[str, str]]:
         order by
             r.string_id,
             age
-    '''
+    ''')
     cursor = connection.cursor()
     cursor.execute(query)
     rows = dictfetchall(cursor)
@@ -476,7 +477,7 @@ def get_plan_name(plan_type: int) -> str:
 def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     now = timezone_now()
 
-    query = '''
+    query = SQL('''
         SELECT
             realm.string_id,
             realm.date_created,
@@ -578,7 +579,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
                     last_visit > now() - interval '2 week'
         )
         ORDER BY dau_count DESC, string_id ASC
-        '''
+        ''')
 
     cursor = connection.cursor()
     cursor.execute(query)
@@ -737,7 +738,7 @@ def sent_messages_report(realm: str) -> str:
         'Bots'
     ]
 
-    query = '''
+    query = SQL('''
         select
             series.day::date,
             humans.cnt,
@@ -787,7 +788,7 @@ def sent_messages_report(realm: str) -> str:
                 date_sent::date
         ) bots on
             series.day = bots.date_sent
-    '''
+    ''')
     cursor = connection.cursor()
     cursor.execute(query, [realm, realm])
     rows = cursor.fetchall()
@@ -796,7 +797,7 @@ def sent_messages_report(realm: str) -> str:
     return make_table(title, cols, rows)
 
 def ad_hoc_queries() -> List[Dict[str, str]]:
-    def get_page(query: str, cols: List[str], title: str,
+    def get_page(query: Composable, cols: List[str], title: str,
                  totals_columns: List[int]=[]) -> Dict[str, str]:
         cursor = connection.cursor()
         cursor.execute(query)
@@ -842,7 +843,7 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
     for mobile_type in ['Android', 'ZulipiOS']:
         title = '%s usage' % (mobile_type,)
 
-        query = '''
+        query = SQL('''
             select
                 realm.string_id,
                 up.id user_id,
@@ -854,11 +855,13 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
             join zerver_userprofile up on up.id = ua.user_profile_id
             join zerver_realm realm on realm.id = up.realm_id
             where
-                client.name like '%s'
+                client.name like {mobile_type}
             group by string_id, up.id, client.name
             having max(last_visit) > now() - interval '2 week'
             order by string_id, up.id, client.name
-        ''' % (mobile_type,)
+        ''').format(
+            mobile_type=Literal(mobile_type),
+        )
 
         cols = [
             'Realm',
@@ -874,7 +877,7 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
 
     title = 'Desktop users'
 
-    query = '''
+    query = SQL('''
         select
             realm.string_id,
             client.name,
@@ -889,7 +892,7 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
         group by string_id, client.name
         having max(last_visit) > now() - interval '2 week'
         order by string_id, client.name
-    '''
+    ''')
 
     cols = [
         'Realm',
@@ -904,7 +907,7 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
 
     title = 'Integrations by realm'
 
-    query = '''
+    query = SQL('''
         select
             realm.string_id,
             case
@@ -927,7 +930,7 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
         group by string_id, client_name
         having max(last_visit) > now() - interval '2 week'
         order by string_id, client_name
-    '''
+    ''')
 
     cols = [
         'Realm',
@@ -942,7 +945,7 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
 
     title = 'Integrations by client'
 
-    query = '''
+    query = SQL('''
         select
             case
                 when query like '%%external%%' then split_part(query, '/', 5)
@@ -965,7 +968,7 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
         group by client_name, string_id
         having max(last_visit) > now() - interval '2 week'
         order by client_name, string_id
-    '''
+    ''')
 
     cols = [
         'Client',
@@ -978,7 +981,7 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
 
     title = 'Remote Zulip servers'
 
-    query = '''
+    query = SQL('''
         with icount as (
             select
                 server_id,
@@ -1005,7 +1008,7 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
         left join icount on icount.server_id = rserver.id
         left join remote_push_devices on remote_push_devices.server_id = rserver.id
         order by max_value DESC NULLS LAST, push_user_count DESC NULLS LAST
-    '''
+    ''')
 
     cols = [
         'ID',
