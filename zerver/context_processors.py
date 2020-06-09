@@ -12,6 +12,7 @@ from zproject.backends import (
     require_email_format_usernames,
     auth_enabled_helper,
     AUTH_BACKEND_NAME_MAP,
+    AppleAuthBackend,
 )
 from zerver.decorator import get_client_name
 from zerver.lib.send_email import FromAddress
@@ -163,6 +164,7 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
         'password_auth_enabled': password_auth_enabled(realm),
         'any_social_backend_enabled': any_social_backend_enabled(realm),
         'two_factor_authentication_enabled': settings.TWO_FACTOR_AUTHENTICATION_ENABLED,
+        'apple_locale': AppleAuthBackend.get_apple_locale(request.LANGUAGE_CODE),
     }
 
     if realm is not None and realm.description:

@@ -547,6 +547,48 @@ to debug.
   sees the cookie, treats them as logged in, and proceeds to serve
   them the main app page normally.
 
+## Sign in with Apple
+
+Zulip supports using the web flow for Sign in with Apple on
+self-hosted servers.  To do so, you'll need to do the following:
+
+1. Visit [the Apple Developer site][apple-developer] and [Create a
+Services ID.][apple-create-services-id]. When prompted for a "Return
+URL", enter `https://zulip.example.com/complete/apple/` (using the
+domain for your server).
+
+1. Create a [Sign in with Apple private key][apple-create-private-key].
+
+1. Store the resulting private key at
+   `/etc/zulip/apple/zulip-private-key.key`.  Be sure to set
+   permissions correctly:
+
+   ```
+   chown -R zulip:zulip /etc/zulip/apple/
+   chmod 640 /etc/zulip/apple/zulip-private-key.key
+   ```
+
+1. Configure the "Apple authentication" section of
+  `/etc/zulip/settings.py`.  Use the "Services ID" as
+  `SOCIAL_AUTH_APPLE_SERVICES_ID`, "Bundle ID" as
+  `SOCIAL_AUTH_APPLE_BUNDLE_ID`, "Key ID" as `SOCIAL_AUTH_APPLE_KEY`
+  and "Team ID" as `SOCIAL_AUTH_APPLE_TEAM` in `settings.py` file.
+
+1. In the Apple developer site, configure the domains your Zulip
+server uses when sending outgoing email notifications (this is
+required for your Zulip server to deliver emails to the many Apple
+users who use their privacy-protecting forwarding service). See the
+"Email Relay Service" subsection of [this page][apple-get-started] for
+more information.  See Zulip's [outgoing email
+documentation][outgoing-email] for details on what From addresses
+Zulip uses when sending outgoing emails.
+
+[apple-create-services-id]: https://help.apple.com/developer-account/?lang=en#/dev1c0e25352
+[apple-developer]: https://developer.apple.com/account/resources/
+[apple-create-private-key]: https://help.apple.com/developer-account/?lang=en#/dev77c875b7e
+[apple-get-started]: https://developer.apple.com/sign-in-with-apple/get-started/
+[outgoing-email]: ../production/email.md
+
 ## Adding more authentication backends
 
 Adding an integration with any of the more than 100 authentication

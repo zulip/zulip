@@ -83,6 +83,26 @@ details worth understanding:
   ID as `social_auth_gitlab_key` and the Secret as
   `social_auth_gitlab_secret`.
 
+### Apple
+
+* Visit https://developer.apple.com/account/resources/,
+  Enable App ID and Create a Services ID with the instructions in
+  https://help.apple.com/developer-account/?lang=en#/dev1c0e25352 .
+  When prompted for a "Return URL", enter
+  `http://zulipdev.com:9991/complete/apple/` .
+
+* [Create a Sign in with Apple private key](https://help.apple.com/developer-account/?lang=en#/dev77c875b7e)
+
+* In `dev-secrets.conf`, set
+    * `social_auth_apple_services_id` to your
+      "Services ID" (eg. com.application.your).
+    * `social_auth_apple_bundle_id` to "Bundle ID". This is
+      only required if you are testing Apple auth on iOS.
+    * `social_auth_apple_key` to your "Key ID".
+    * `social_auth_apple_team` to your "Team ID".
+* Put the private key file you got from apple at the path
+  `zproject/dev_apple.key`.
+
 ### SAML
 
 * Sign up for a [developer Okta account](https://developer.okta.com/).

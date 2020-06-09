@@ -70,6 +70,14 @@ SAML_REQUIRE_LIMIT_TO_SUBDOMAINS = False
 # Historical name for SOCIAL_AUTH_GITHUB_KEY; still allowed in production.
 GOOGLE_OAUTH2_CLIENT_ID: Optional[str] = None
 
+# Apple:
+SOCIAL_AUTH_APPLE_SERVICES_ID = get_secret('social_auth_apple_services_id', development_only=True)
+SOCIAL_AUTH_APPLE_BUNDLE_ID = get_secret('social_auth_apple_bundle_id', development_only=True)
+SOCIAL_AUTH_APPLE_KEY = get_secret('social_auth_apple_key', development_only=True)
+SOCIAL_AUTH_APPLE_TEAM = get_secret('social_auth_apple_team', development_only=True)
+SOCIAL_AUTH_APPLE_SCOPE = ['name', 'email']
+SOCIAL_AUTH_APPLE_EMAIL_AS_USERNAME = True
+
 # Other auth
 SSO_APPEND_DOMAIN: Optional[str] = None
 

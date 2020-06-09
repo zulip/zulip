@@ -15,6 +15,7 @@
 import binascii
 import copy
 import logging
+import jwt
 import magic
 import ujson
 from abc import ABC, abstractmethod
@@ -37,6 +38,8 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpRequest
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import ugettext as _
+from jwt.algorithms import RSAAlgorithm
+from jwt.exceptions import PyJWTError
 from lxml.etree import XMLSyntaxError
 from requests import HTTPError
 from onelogin.saml2.errors import OneLogin_Saml2_Error
@@ -48,9 +51,11 @@ from social_core.backends.azuread import AzureADOAuth2
 from social_core.backends.gitlab import GitLabOAuth2
 from social_core.backends.base import BaseAuth
 from social_core.backends.google import GoogleOAuth2
+from social_core.backends.apple import AppleIdAuth
 from social_core.backends.saml import SAMLAuth
 from social_core.pipeline.partial import partial
-from social_core.exceptions import AuthFailed, SocialAuthBaseException
+from social_core.exceptions import AuthFailed, SocialAuthBaseException, \
+    AuthMissingParameter, AuthStateForbidden
 
 from zerver.decorator import client_is_exempt_from_rate_limiting
 from zerver.lib.actions import do_create_user, do_reactivate_user, do_deactivate_user, \
@@ -123,6 +128,9 @@ def github_auth_enabled(realm: Optional[Realm]=None) -> bool:
 
 def gitlab_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['GitLab'], realm)
+
+def apple_auth_enabled(realm: Optional[Realm]=None) -> bool:
+    return auth_enabled_helper(['Apple'], realm)
 
 def saml_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['SAML'], realm)
@@ -1168,9 +1176,17 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
     last_name = kwargs['details'].get('last_name', '')
     if full_name is None:
         if not first_name and not last_name:
-            # If we add support for any of the social auth backends that
-            # don't provide this feature, we'll need to add code here.
-            raise AssertionError("Social auth backend doesn't provide name")
+            # We need custom code here for any social auth backends
+            # that don't provide name details feature.
+            if (backend.name == 'apple'):
+                # Apple authentication provides the user's name only
+                # the very first time a user tries to login.  So if
+                # the user aborts login or otherwise is doing this the
+                # second time, we won't have any name data.  We handle
+                # this by setting full_name to be the empty string.
+                full_name = ""
+            else:
+                raise AssertionError("Social auth backend doesn't provide name")
 
     if full_name:
         return_data["full_name"] = full_name
@@ -1499,6 +1515,141 @@ class GoogleAuthBackend(SocialAuthMixin, GoogleOAuth2):
         if email_verified:
             verified_emails.append(details["email"])
         return verified_emails
+
+@external_auth_method
+class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
+    """
+    Authentication backend for "Sign in with Apple".  This supports two flows:
+    1. The web flow, usable in a browser, like our other social auth methods.
+       It is a slightly modified Oauth2 authorization flow, where the response
+       returning the access_token also contains a JWT id_token containing the user's
+       identity, signed with Apple's private keys.
+       https://developer.apple.com/documentation/sign_in_with_apple/tokenresponse
+    2. The native flow, intended for users on an Apple device.  In the native flow,
+       the device handles authentication of the user with Apple's servers and ends up
+       with the JWT id_token (like in the web flow).  The client-side details aren't
+       relevant to us; the app will simply provide the id_token to the server,
+       which can verify its signature and process it like in the web flow.
+
+    So far we only implement the web flow.
+    """
+    sort_order = 10
+    name = "apple"
+    auth_backend_name = "Apple"
+
+    # Apple only sends `name` in its response the first time a user
+    # tries to sign up, so we won't have it in consecutive attempts.
+    # But if Apple does send us the user's name, it will be validated,
+    # so it's appropriate to set full_name_validated here.
+    full_name_validated = True
+    REDIS_EXPIRATION_SECONDS = 60*10
+
+    @staticmethod
+    def get_apple_locale(django_language_code: str) -> str:
+        '''
+        Get the suitable apple supported locale with language code
+        for the Sign in / Continue with Apple buttons it provides.
+        '''
+        # The following is a list of locale values supported by Apple to send
+        # as params to URL which renders "Sign in with Apple" and "Continue with Apple"
+        # buttons. Gathered from
+        # https://developer.apple.com/documentation/signinwithapplejs/incorporating_sign_in_with_apple_into_other_platforms .
+        supported_locales = ['ar_SA', 'ca_ES', 'cs_CZ', 'da_DK', 'de_DE',
+                             'el_GR', 'en_US', 'es_ES', 'fi_FI', 'fr_FR',
+                             'hr_HR', 'hu_HU', 'id_ID', 'it_IT', 'iw_IL',
+                             'ja_JP', 'ko_KR', 'ms_MY', 'nl_NL', 'no_NO',
+                             'pl_PL', 'pt_PT', 'ro_RO', 'ru_RU', 'sk_SK',
+                             'sv_SE', 'th_TH', 'tr_TR', 'uk_UA', 'vi_VI',
+                             'zh_CN']
+        for locale in supported_locales:
+            if django_language_code in locale:
+                return locale
+        return 'en_US'
+
+    # This method replaces a method from python-social-auth; it is adapted to store
+    # the state_token data in redis.
+    def get_or_create_state(self) -> str:
+        '''Creates the Oauth2 state parameter in first step of the flow,
+        before redirecting the user to the IdP (aka Apple).
+
+        Apple will send the user back to us with a POST
+        request. Normally, we rely on being able to store certain
+        parameters in the user's session and use them after the
+        redirect.  But because we've configured our session cookies to
+        use the Django default of in SameSite Lax mode, the browser
+        won't send the session cookies to our server in delivering the
+        POST request coming from Apple.
+
+        To work around this, we replace python-social-auth's default
+        session-based storage with storing the parameters in redis
+        under a random token derived from the state. That will allow
+        us to validate the state and retrieve the params after the
+        redirect - by querying redis for the key derived from the
+        state sent in the POST redirect.
+        '''
+        request_data = self.strategy.request_data().dict()
+        data_to_store = {
+            key: request_data[key] for key in self.standard_relay_params
+            if key in request_data
+        }
+
+        # Generate a random string of 32 alphanumeric characters.
+        state = self.state_token()
+        put_dict_in_redis(redis_client, 'apple_auth_{token}',
+                          data_to_store, self.REDIS_EXPIRATION_SECONDS,
+                          token=state)
+        return state
+
+    # This method replaces a method from python-social-auth; it is
+    # adapted to retrieve the data stored in redis, transferring to
+    # the session so that it can be accessed by common
+    # python-social-auth code.
+    def validate_state(self) -> Optional[str]:
+        request_state = self.get_request_state()
+
+        if not request_state:
+            self.logger.info("Sign in with Apple failed: missing state parameter.")
+            raise AuthMissingParameter(self, 'state')
+
+        formatted_request_state = "apple_auth_" + request_state
+        redis_data = get_dict_from_redis(redis_client, "apple_auth_{token}",
+                                         formatted_request_state)
+        if redis_data is None:
+            self.logger.info("Sign in with Apple failed: bad state token.")
+            raise AuthStateForbidden(self)
+
+        for param, value in redis_data.items():
+            if param in self.standard_relay_params:
+                self.strategy.session_set(param, value)
+        return request_state
+
+    def decode_id_token(self, id_token: str) -> Dict[str, Any]:
+        '''Decode and validate JWT token from Apple and return payload including user data.
+
+        We override this method from upstream python-social-auth, for two reasons:
+        * To improve error handling (correctly raising AuthFailed; see comment below).
+        * To facilitate this to support the native flow, where
+          the Apple-generated id_token is signed for "Bundle ID"
+          audience instead of "Services ID".
+
+        It is likely that small upstream tweaks could make it possible
+        to make this function a thin wrapper around the upstream
+        method; we may want to submit a PR to achieve that.
+        '''
+        audience = self.setting("SERVICES_ID")
+
+        try:
+            kid = jwt.get_unverified_header(id_token).get('kid')
+            public_key = RSAAlgorithm.from_jwk(self.get_apple_jwk(kid))
+            decoded = jwt.decode(id_token, key=public_key,
+                                 audience=audience, algorithm="RS256")
+        except PyJWTError:
+            # Changed from upstream python-social-auth to raise
+            # AuthFailed, which is more appropriate than upstream's
+            # AuthCanceled, for this case.
+            raise AuthFailed(self, "Token validation failed")
+
+        return decoded
 
 @external_auth_method
 class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):

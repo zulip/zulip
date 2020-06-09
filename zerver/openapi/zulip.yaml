@@ -3177,6 +3177,10 @@ paths:
                           description: |
                             Whether the user can authenticate using their gitlab account.
                           type: boolean
+                        apple:
+                          description: |
+                            Whether the user can authenticate using their apple account.
+                          type: boolean
                         google:
                           description: |
                             Whether the user can authenticate using their google account.
