@@ -42,7 +42,6 @@ class HomeTest(ZulipTestCase):
             'Narrow to topic',
             'Next message',
             'Search streams',
-            'Welcome to Zulip',
             # Verify that the app styles get included
             'app-stubentry.js',
             'data-params',
