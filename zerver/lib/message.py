@@ -8,6 +8,7 @@ from django.utils.translation import ugettext as _
 from django.utils.timezone import now as timezone_now
 from django.db import connection
 from django.db.models import Sum
+from psycopg2.sql import SQL
 
 from analytics.lib.counts import COUNT_STATS, RealmCount
 
@@ -1147,7 +1148,7 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
     recipient_map = {}
     my_recipient_id = user_profile.recipient_id
 
-    query = '''
+    query = SQL('''
     SELECT
         subquery.recipient_id, MAX(subquery.message_id)
     FROM (
@@ -1161,11 +1162,11 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
         ON
             um.message_id = m.id
         WHERE
-            um.user_profile_id=%(user_profile_id)d AND
+            um.user_profile_id=%(user_profile_id)s AND
             um.flags & 2048 <> 0 AND
-            m.recipient_id <> %(my_recipient_id)d
+            m.recipient_id <> %(my_recipient_id)s
         ORDER BY message_id DESC
-        LIMIT %(conversation_limit)d)
+        LIMIT %(conversation_limit)s)
         UNION ALL
         (SELECT
             m.id AS message_id,
@@ -1177,21 +1178,20 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
         ON
             m.sender_id = sender_profile.id
         WHERE
-            m.recipient_id=%(my_recipient_id)d
+            m.recipient_id=%(my_recipient_id)s
         ORDER BY message_id DESC
-        LIMIT %(conversation_limit)d)
+        LIMIT %(conversation_limit)s)
     ) AS subquery
     GROUP BY subquery.recipient_id
-    ''' % dict(
-        user_profile_id=user_profile.id,
-        conversation_limit=RECENT_CONVERSATIONS_LIMIT,
-        my_recipient_id=my_recipient_id,
-    )
+    ''')
 
-    cursor = connection.cursor()
-    cursor.execute(query)
-    rows = cursor.fetchall()
-    cursor.close()
+    with connection.cursor() as cursor:
+        cursor.execute(query, {
+            "user_profile_id": user_profile.id,
+            "conversation_limit": RECENT_CONVERSATIONS_LIMIT,
+            "my_recipient_id": my_recipient_id,
+        })
+        rows = cursor.fetchall()
 
     # The resulting rows will be (recipient_id, max_message_id)
     # objects for all parties we've had recent (group?) private
