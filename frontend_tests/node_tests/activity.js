@@ -709,7 +709,7 @@ run_test('initialize', () => {
     assert(scroll_handler_started);
     assert(!activity.new_user_input);
     assert(!$('#zephyr-mirror-error').hasClass('show'));
-    assert(activity.client_is_active);
+    assert(activity.__get__('client_is_active'));
     $(window).idle = function (params) {
         params.onIdle();
     };

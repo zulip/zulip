@@ -105,7 +105,7 @@
                 "varsIgnorePattern": "print_elapsed_time|check_duplicate_ids"
             }
         ],
-        "no-use-before-define": "error",
+        "no-use-before-define": ["error", { "functions": false }],
         "no-useless-constructor": "error",
         // The Zulip codebase complies partially with the "no-useless-escape"
         // rule; only regex expressions haven't been updated yet.
