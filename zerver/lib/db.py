@@ -34,7 +34,7 @@ class TimeTrackingCursor(cursor):
         return wrapper_execute(self, super().execute, query, vars)
 
     def executemany(self, query: Query,
-                    vars: Iterable[Params]) -> 'TimeTrackingCursor':
+                    vars: Iterable[Params]) -> 'TimeTrackingCursor':  # nocoverage
         return wrapper_execute(self, super().executemany, query, vars)
 
 class TimeTrackingConnection(connection):

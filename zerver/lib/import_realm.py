@@ -12,6 +12,8 @@ from django.db.models import Max
 from django.utils.timezone import now as timezone_now
 from typing import Any, Dict, List, Optional, Set, Tuple, \
     Iterable, cast
+from psycopg2.extras import execute_values
+from psycopg2.sql import Identifier, SQL
 
 from analytics.models import RealmCount, StreamCount, UserCount
 from zerver.lib.actions import UserMessageLite, bulk_insert_ums, \
@@ -1289,12 +1291,15 @@ def import_attachments(data: TableData) -> None:
     # TODO: Do this the kosher Django way.  We may find a
     # better way to do this in Django 1.9 particularly.
     with connection.cursor() as cursor:
-        sql_template = '''
-            insert into %s (%s, %s) values(%%s, %%s);''' % (m2m_table_name,
-                                                            parent_id,
-                                                            child_id)
+        sql_template = SQL('''
+            insert into {} ({}, {}) values %s
+        ''').format(
+            Identifier(m2m_table_name),
+            Identifier(parent_id),
+            Identifier(child_id),
+        )
         tups = [(row[parent_id], row[child_id]) for row in m2m_rows]
-        cursor.executemany(sql_template, tups)
+        execute_values(cursor.cursor, sql_template, tups)
 
     logging.info('Successfully imported M2M table %s', m2m_table_name)
 
