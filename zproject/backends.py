@@ -47,6 +47,7 @@ from social_core.backends.gitlab import GitLabOAuth2
 from social_core.backends.google import GoogleOAuth2
 from social_core.backends.saml import SAMLAuth
 from social_core.exceptions import (
+    AuthCanceled,
     AuthFailed,
     AuthMissingParameter,
     AuthStateForbidden,
@@ -1540,10 +1541,9 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
     2. The native flow, intended for users on an Apple device.  In the native flow,
        the device handles authentication of the user with Apple's servers and ends up
        with the JWT id_token (like in the web flow).  The client-side details aren't
-       relevant to us; the app will simply provide the id_token to the server,
-       which can verify its signature and process it like in the web flow.
-
-    So far we only implement the web flow.
+       relevant to us; the app should simply send the id_token as a param to the
+       /complete/apple/ endpoint, together with native_flow=true and any other
+       appropriate params, such as mobile_flow_otp.
     """
     sort_order = 10
     name = "apple"
@@ -1577,6 +1577,9 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
             if django_language_code in locale:
                 return locale
         return 'en_US'
+
+    def is_native_flow(self) -> bool:
+        return self.strategy.request_data().get('native_flow', False)
 
     # This method replaces a method from python-social-auth; it is adapted to store
     # the state_token data in redis.
@@ -1612,11 +1615,12 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
                           token=state)
         return state
 
-    # This method replaces a method from python-social-auth; it is
-    # adapted to retrieve the data stored in redis, transferring to
-    # the session so that it can be accessed by common
-    # python-social-auth code.
     def validate_state(self) -> Optional[str]:
+        """
+        This method replaces a method from python-social-auth; it is
+        adapted to retrieve the data stored in redis, save it in
+        the session so that it can be accessed by the social pipeline.
+        """
         request_state = self.get_request_state()
 
         if not request_state:
@@ -1648,7 +1652,10 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
         to make this function a thin wrapper around the upstream
         method; we may want to submit a PR to achieve that.
         '''
-        audience = self.setting("SERVICES_ID")
+        if self.is_native_flow():
+            audience = self.setting("BUNDLE_ID")
+        else:
+            audience = self.setting("SERVICES_ID")
 
         try:
             kid = jwt.get_unverified_header(id_token).get('kid')
@@ -1662,6 +1669,42 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
             raise AuthFailed(self, "Token validation failed")
 
         return decoded
+
+    def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
+        if not self.is_native_flow():
+            # The default implementation in python-social-auth is the browser flow.
+            return super().auth_complete(*args, **kwargs)
+
+        # We handle the native flow on our own. The client sends id_token it obtained
+        # from Apple directly to /complete/apple/ (endpoint handled by this function),
+        # together with any other desired parameters from self.standard_relay_params.
+        # In the code below we make the necessary setup by saving appropriate values
+        # in the session before handing the rest of the process over to the superclass.
+        # In the web flow, the setup of the session is the result of the first part of the flow,
+        # before the user gets redirected to Apple. However, the native flow has only one part
+        # as the client simply makes a request to this endpoint.
+        request_data = self.strategy.request_data()
+        if 'id_token' not in request_data:
+            raise JsonableError(_("Missing id_token parameter"))
+
+        for param in self.standard_relay_params:
+            self.strategy.session_set(param, request_data.get(param))
+
+        # We should get the subdomain from the hostname of the request.
+        self.strategy.session_set('subdomain', get_subdomain(self.strategy.request))
+
+        try:
+            # Things are now ready to be handled by the superclass code. It will
+            # validate the id_token and push appropriate user data to the social pipeline.
+            result = self.do_auth(request_data['id_token'], *args, **kwargs)
+            return result
+        except (AuthFailed, AuthCanceled) as e:
+            # AuthFailed is a general "failure" exception from python-social-auth
+            # that we should convert to None return value here to avoid getting tracebacks.
+            # AuthCanceled is raised in the Apple backend implementation in PSA
+            # in certain cases, though AuthFailed would have been more correct.
+            logging.info("/complete/apple/: %s", str(e))
+            return None
 
 @external_auth_method
 class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
