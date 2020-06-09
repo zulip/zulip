@@ -175,8 +175,7 @@ def send_response_message(bot_id: str, message_info: Dict[str, Any], response_da
     client = get_client('OutgoingWebhookResponse')
 
     content = response_data.get('content')
-    if not content:
-        raise JsonableError(_("Missing content"))
+    assert content
 
     widget_content = response_data.get('widget_content')
 
@@ -278,7 +277,7 @@ def process_success_response(event: Dict[str, Any],
 
     content = success_data.get('content')
 
-    if content is None:
+    if content is None or content.strip() == "":
         return
 
     widget_content = success_data.get('widget_content')
