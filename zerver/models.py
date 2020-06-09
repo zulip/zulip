@@ -64,10 +64,9 @@ def query_for_ids(query: QuerySet, user_ids: List[int], field: str) -> QuerySet:
     guard against empty lists of user_ids.
     '''
     assert(user_ids)
-    value_list = ', '.join(str(int(user_id)) for user_id in user_ids)
-    clause = '%s in (%s)' % (field, value_list)
+    clause = f'{field} IN %s'
     query = query.extra(
-        where=[clause]
+        where=[clause], params=(tuple(user_ids),),
     )
     return query
 
@@ -1567,11 +1566,10 @@ def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]
         #
         # But chaining __in and __iexact doesn't work with Django's
         # ORM, so we have the following hack to construct the relevant where clause
-        upper_list = ", ".join(["UPPER(%s)"] * len(stream_names))
-        where_clause = "UPPER(zerver_stream.name::text) IN (%s)" % (upper_list,)
+        where_clause = "upper(zerver_stream.name::text) IN (SELECT upper(name) FROM unnest(%s) AS name)"
         return get_active_streams(realm.id).select_related().extra(
             where=[where_clause],
-            params=stream_names)
+            params=(list(stream_names),))
 
     def stream_name_to_cache_key(stream_name: str) -> str:
         return get_stream_cache_key(stream_name, realm.id)
