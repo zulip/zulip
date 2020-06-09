@@ -35,7 +35,9 @@ zulip(config).then((client) => {
 
 ## Arguments
 
-This endpoint takes no arguments.
+**Note**: The following arguments are all URL query parameters.
+
+{generate_api_arguments_table|zulip.yaml|/users/me:get}
 
 ## Response
 

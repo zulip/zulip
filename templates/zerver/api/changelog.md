@@ -10,6 +10,12 @@ below features are supported.
 
 ## Changes in Zulip 2.2
 
+**Feature level 13**
+
+* [`GET users/me`](/api/get-profile): Added `client_gravatar` and
+  `include_custom_profile_fields` paramters to make it consistent
+  with other user fetching endpoints.
+
 **Feature level 12**
 
 * [`GET users/{user_id}/subscriptions/{stream_id}`](/api/get-subscription-status):

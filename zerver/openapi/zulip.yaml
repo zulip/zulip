@@ -1824,6 +1824,9 @@ paths:
         Get basic data about the user/bot that requests this endpoint.
 
         `GET {{ api_url }}/v1/users/me`
+      parameters:
+      - $ref: '#/components/parameters/ClientGravatar'
+      - $ref: '#/components/parameters/IncludeCustomProfileFields'
       responses:
         '200':
           description: Success

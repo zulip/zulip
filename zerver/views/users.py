@@ -458,9 +458,20 @@ def create_user_backend(request: HttpRequest, user_profile: UserProfile,
     do_create_user(email, password, realm, full_name, short_name)
     return json_success()
 
-def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    raw_user_data = get_raw_user_data(user_profile.realm, user_profile,
-                                      client_gravatar=False, target_user=user_profile)
+@has_request_variables
+def get_profile_backend(request: HttpRequest, user_profile: UserProfile,
+                        include_custom_profile_fields: bool=REQ(validator=check_bool,
+                                                                default=False),
+                        client_gravatar: bool=REQ(validator=check_bool, default=False)) -> HttpResponse:
+    realm = user_profile.realm
+    if realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+        # If email addresses are only available to administrators,
+        # clients cannot compute gravatars, so we force-set it to false.
+        client_gravatar = False
+
+    raw_user_data = get_raw_user_data(user_profile.realm, user_profile, client_gravatar=client_gravatar,
+                                      target_user=user_profile,
+                                      include_custom_profile_fields=include_custom_profile_fields)
     result: Dict[str, Any] = raw_user_data[user_profile.id]
 
     result['max_message_id'] = -1

@@ -701,12 +701,18 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
             "avatar_version", "timezone", "delivery_email", "is_active", "is_guest",
             "date_joined"}
 
-        url = "/json/users/me"
+        url = "/json/users/me?include_custom_profile_fields=true"
         response = self.client_get(url)
         self.assertEqual(response.status_code, 200)
         raw_user_data = response.json()
         self.assertEqual(set(raw_user_data.keys()), expected_keys)
 
+        url = "/json/users/me"
+        response = self.client_get(url)
+        self.assertEqual(response.status_code, 200)
+        raw_user_data = response.json()
+        with self.assertRaises(KeyError):
+            raw_user_data["profile_data"]
 
 class ReorderCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_reorder(self) -> None:

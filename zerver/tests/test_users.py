@@ -1552,11 +1552,14 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(result['email'], hamlet.email)
         self.assertEqual(result['full_name'], 'King Hamlet')
         self.assertIn("user_id", result)
+        self.assertNotIn("profile_data", result)
         self.assertFalse(result['is_bot'])
         self.assertFalse(result['is_admin'])
         self.assertFalse(result['is_owner'])
         self.assertFalse(result['is_guest'])
         self.assertFalse('delivery_email' in result)
+        result = ujson.loads(self.client_get('/json/users/me?include_custom_profile_fields=true').content)
+        self.assertIn("profile_data", result)
         self.login('iago')
         result = ujson.loads(self.client_get('/json/users/me').content)
         self.assertEqual(result['email'], iago.email)
@@ -1638,6 +1641,22 @@ class GetProfileTest(ZulipTestCase):
             my_user['avatar_url'],
             avatar_url(hamlet),
         )
+
+    def test_get_avatar_url_for_profile(self) -> None:
+        reset_emails_in_zulip_realm()
+        self.login('hamlet')
+
+        hamlet = self.example_user('hamlet')
+        result = ujson.loads(self.client_get('/json/users/me').content)
+        self.assertEqual(result['avatar_url'], get_gravatar_url(hamlet.email, 1))
+
+        result = ujson.loads(self.client_get('/json/users/me?client_gravatar=true').content)
+        self.assertIsNone(result['avatar_url'])
+
+        do_set_realm_property(hamlet.realm, "email_address_visibility",
+                              Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
+        result = ujson.loads(self.client_get('/json/users/me?client_gravatar=true').content)
+        self.assertEqual(result['avatar_url'], get_gravatar_url(hamlet.email, 1))
 
 class FakeEmailDomainTest(ZulipTestCase):
     @override_settings(FAKE_EMAIL_DOMAIN="invaliddomain")
