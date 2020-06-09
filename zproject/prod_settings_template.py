@@ -121,6 +121,7 @@ AUTHENTICATION_BACKENDS = (
     # 'zproject.backends.GitHubAuthBackend',  # GitHub auth, setup below
     # 'zproject.backends.GitLabAuthBackend',  # GitLab auth, setup below
     # 'zproject.backends.AzureADAuthBackend',  # Microsoft Azure Active Directory auth, setup below
+    # 'zproject.backends.AppleAuthBackend',  # Apple auth, setup below
     # 'zproject.backends.SAMLAuthBackend', # SAML, setup below
     # 'zproject.backends.ZulipLDAPAuthBackend',  # LDAP, setup below
     # 'zproject.backends.ZulipRemoteUserBackend',  # Local SSO, setup docs on readthedocs
@@ -278,6 +279,17 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
     "givenName": "Support team",
     "emailAddress": ZULIP_ADMINISTRATOR,
 }
+
+########
+# Apple OAuth.
+#
+# To set up Sign In with Apple, you'll need to configure the below settings using the information at
+# https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#sign-in-with-apple
+#
+#SOCIAL_AUTH_APPLE_SERVICES_ID = "<your Services ID>"
+#SOCIAL_AUTH_APPLE_BUNDLE_ID = "<your Bundle ID>"
+#SOCIAL_AUTH_APPLE_TEAM = "<your Team ID>"
+#SOCIAL_AUTH_APPLE_KEY = "<your Key ID>"
 
 ########
 # Azure Active Directory OAuth.

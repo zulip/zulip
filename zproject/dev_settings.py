@@ -50,6 +50,7 @@ AUTHENTICATION_BACKENDS = (
     'zproject.backends.SAMLAuthBackend',
     # 'zproject.backends.AzureADAuthBackend',
     'zproject.backends.GitLabAuthBackend',
+    'zproject.backends.AppleAuthBackend',
 )
 
 EXTERNAL_URI_SCHEME = "http://"

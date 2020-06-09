@@ -1019,6 +1019,15 @@ SOCIAL_AUTH_FIELDS_STORED_IN_SESSION = ['subdomain', 'is_signup', 'mobile_flow_o
                                         'multiuse_object_key']
 SOCIAL_AUTH_LOGIN_ERROR_URL = '/login/'
 
+# CLIENT is required by PSA's internal implementation. We name it
+# SERVICES_ID to make things more readable in the configuration
+# and our own custom backend code.
+SOCIAL_AUTH_APPLE_CLIENT = SOCIAL_AUTH_APPLE_SERVICES_ID
+if PRODUCTION:
+    SOCIAL_AUTH_APPLE_SECRET = get_from_file_if_exists("/etc/zulip/apple/zulip-private-key.key")
+else:
+    SOCIAL_AUTH_APPLE_SECRET = get_from_file_if_exists("zproject/dev_apple.key")
+
 SOCIAL_AUTH_GITHUB_SECRET = get_secret('social_auth_github_secret')
 SOCIAL_AUTH_GITLAB_SECRET = get_secret('social_auth_gitlab_secret')
 SOCIAL_AUTH_GITHUB_SCOPE = ['user:email']

@@ -501,7 +501,7 @@ def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[s
         extra_url_params = {'idp': extra_arg}
 
     # TODO: Add AzureAD also.
-    if backend in ["github", "google", "gitlab"]:
+    if backend in ["github", "google", "gitlab", "apple"]:
         key_setting = "SOCIAL_AUTH_" + backend.upper() + "_KEY"
         secret_setting = "SOCIAL_AUTH_" + backend.upper() + "_SECRET"
         if not (getattr(settings, key_setting) and getattr(settings, secret_setting)):
@@ -986,6 +986,7 @@ def saml_sp_metadata(request: HttpRequest, **kwargs: Any) -> HttpResponse:  # no
 
 def config_error_view(request: HttpRequest, error_category_name: str) -> HttpResponse:
     contexts = {
+        'apple': {'social_backend_name': 'apple', 'has_markdown_file': True},
         'google': {'social_backend_name': 'google', 'has_markdown_file': True},
         'github': {'social_backend_name': 'github', 'has_markdown_file': True},
         'gitlab': {'social_backend_name': 'gitlab', 'has_markdown_file': True},

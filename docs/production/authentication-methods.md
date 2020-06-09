@@ -239,6 +239,33 @@ from the root of your Zulip installation.  If your configuration is
 working, that will output the full name for your user (and that user's
 email address, if it isn't the same as the "Zulip username").
 
+## Sign in with Apple
+
+To set up Sign in with Apple, you'll need to do the following:
+
+* Visit https://developer.apple.com/account/resources/ and [Create a Services ID.](https://help.apple.com/developer-account/?lang=en#/dev1c0e25352)
+When prompted for a "Return URL", enter `https://zulip.example.com/complete/apple/`
+replacing zulip.example.com with the domain of your server.
+
+* Create a [Sign in with Apple private key.](https://help.apple.com/developer-account/?lang=en#/dev77c875b7e)
+
+* You'll now have a "Services ID" (e.g.: com.application.your), a "key ID", a "Bundle ID"
+and a Private key file. Use the "Services ID" as `SOCIAL_AUTH_APPLE_SERVICES_ID`,
+"Bundle ID" as `SOCIAL_AUTH_APPLE_BUNDLE_ID`, "Key ID" as `SOCIAL_AUTH_APPLE_KEY` and
+"Team ID" as `SOCIAL_AUTH_APPLE_TEAM` in `settings.py` file.
+
+* Put the Private key file in zulip server in `/etc/zulip/apple/zulip-private-key.key`.
+Make sure to set proper permissions with the following commands
+
+```
+chown -R zulip:zulip /etc/zulip/apple/
+chmod 640 /etc/zulip/apple/zulip-private-key.key
+```
+
+* Register outbound domains with domains of emails configured in zulip server
+to send notifications in your apple developer account. See "Email Relay Service"
+subsection in https://developer.apple.com/sign-in-with-apple/get-started/ fot more info.
+
 **Active Directory**: Most Active Directory installations will use one
 of the following configurations:
 

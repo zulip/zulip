@@ -173,6 +173,15 @@ SOCIAL_AUTH_GITLAB_SECRET = "secret"
 SOCIAL_AUTH_GOOGLE_KEY = "key"
 SOCIAL_AUTH_GOOGLE_SECRET = "secret"
 SOCIAL_AUTH_SUBDOMAIN = 'auth'
+SOCIAL_AUTH_APPLE_SERVICES_ID = 'com.zulip.chat'
+SOCIAL_AUTH_APPLE_BUNDLE_ID = 'com.zulip.bundle.id'
+SOCIAL_AUTH_APPLE_CLIENT = 'com.zulip.chat'
+SOCIAL_AUTH_APPLE_KEY = 'KEYISKEY'
+SOCIAL_AUTH_APPLE_TEAM = 'TEAMSTRING'
+SOCIAL_AUTH_APPLE_SECRET = get_from_file_if_exists("zerver/tests/fixtures/apple/private_key.pem")
+
+APPLE_JWK = get_from_file_if_exists("zerver/tests/fixtures/apple/jwk")
+APPLE_ID_TOKEN_GENERATION_KEY = get_from_file_if_exists("zerver/tests/fixtures/apple/token_gen_private_key")
 
 VIDEO_ZOOM_CLIENT_ID = "client_id"
 VIDEO_ZOOM_CLIENT_SECRET = "client_secret"

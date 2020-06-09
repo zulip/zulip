@@ -699,6 +699,23 @@ button.login-social-button {
     }
 }
 
+/*
+We use the buttons provided by apple which has it's own text(Sign in/Continue with apple),
+we can get the buttons of our desired width and height. To make these consistent
+with other buttons, we get buttons of size 328x50 and the following
+sets the right width and height to make it look similar to our buttons.
+We set the font size to zero to hide the text we generate with `for` loop
+in login and register pages instead of having extra conditionals there.
+*/
+button#login_auth_button_apple,
+button#register_auth_button_apple {
+    width: 328px;
+    height: 50px;
+    background-size: auto 100%;
+    background-position: 0px 100%;
+    font-size: 0px;
+}
+
 #find-account-section {
     text-decoration: none;
     font-weight: 600;
