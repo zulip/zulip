@@ -186,7 +186,7 @@ custom configuration.
 ## Upgrading the operating system
 
 When you upgrade the operating system on which Zulip is installed
-(E.g. Ubuntu 16.04 Xenial to Ubuntu 18.04 Bionic), you need to take
+(E.g. Ubuntu 18.04 Bionic to Ubuntu 20.04 Focal), you need to take
 some additional steps to update your Zulip installation, documented
 below.
 
@@ -194,10 +194,10 @@ The steps are largely the same for the various OS upgrades aside from
 the versions of postgres, so you should be able to adapt these
 instructions for other supported platforms.
 
-### Upgrading from Ubuntu 16.04 Xenial to 18.04 Bionic
+### Upgrading from Ubuntu 18.04 Bionic to 20.04 Focal
 
-1. Upgrade your server to the latest Zulip `2.1.x` release, since
-   newer releases don't support Ubuntu 16.04 Xenial.
+1. Upgrade your server to the latest Zulip release (at least 2.2.0,
+   which adds support for Ubuntu Focal).
 
 2. As the Zulip user, stop the Zulip server and run the following
    to back up the system:
@@ -227,13 +227,13 @@ instructions for other supported platforms.
    match the new OS version:
 
     ```
-    touch /usr/share/postgresql/10/pgroonga_setup.sql.applied
+    touch /usr/share/postgresql/12/pgroonga_setup.sql.applied
     /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
-    pg_dropcluster 10 main --stop
+    pg_dropcluster 12 main --stop
     systemctl stop postgresql
-    pg_upgradecluster 9.5 main
-    pg_dropcluster 9.5 main
-    apt remove postgresql-9.5
+    pg_upgradecluster 10 main
+    pg_dropcluster 10 main
+    apt remove postgresql-10
     systemctl start postgresql
     systemctl restart memcached
     ```
@@ -254,15 +254,44 @@ That last command will finish by restarting your Zulip server; you
 should now be able to navigate to its URL and confirm everything is
 working correctly.
 
+### Upgrading from Ubuntu 16.04 Xenial to 18.04 Bionic
+
+1. Upgrade your server to the latest Zulip `2.1.x` release, since
+   newer releases don't support Ubuntu 16.04 Xenial.
+
+2. Same as for Bionic to Focal.
+
+3. Same as for Bionic to Focal.
+
+4. As root, upgrade the database installation and OS configuration to
+   match the new OS version:
+
+    ```
+    touch /usr/share/postgresql/10/pgroonga_setup.sql.applied
+    /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
+    pg_dropcluster 10 main --stop
+    systemctl stop postgresql
+    pg_upgradecluster 9.5 main
+    pg_dropcluster 9.5 main
+    apt remove postgresql-9.5
+    systemctl start postgresql
+    systemctl restart memcached
+    ```
+
+5. Same as for Bionic to Focal.
+
+That last command will finish by restarting your Zulip server; you
+should now be able to navigate to its URL and confirm everything is
+working correctly.
 
 ### Upgrading from Ubuntu 14.04 Trusty to 16.04 Xenial
 
 1. Upgrade your server to the latest Zulip `2.0.x` release, since newer
    releases don't support Ubuntu 14.04 Trusty.
 
-2. Same as for Xenial to Bionic.
+2. Same as for Bionic to Focal.
 
-3. Same as for Xenial to Bionic.
+3. Same as for Bionic to Focal.
 
 4. As root, upgrade the database installation and OS configuration to
 match the new OS version:
@@ -279,7 +308,7 @@ match the new OS version:
     service memcached restart
     ```
 
-5. Same as for Xenial to Bionic.
+5. Same as for Bionic to Focal.
 
 ### Upgrading from Debian Stretch to Debian Buster
 
