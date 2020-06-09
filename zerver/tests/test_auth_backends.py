@@ -5,7 +5,8 @@ import json
 import re
 import time
 import urllib
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
+from contextlib import contextmanager
+from typing import Any, Callable, Dict, Iterator, List, Optional, Sequence, Tuple
 from unittest import mock
 
 import jwt
@@ -1919,12 +1920,16 @@ class AppleAuthMixin:
     AUTH_FINISH_URL = "/complete/apple/"
     CONFIG_ERROR_URL = "/config-error/apple"
 
-    def generate_id_token(self, account_data_dict: Dict[str, str]) -> str:
+    def generate_id_token(self, account_data_dict: Dict[str, str], audience: Optional[str]=None) -> str:
         payload = account_data_dict
 
         # This setup is important because python-social-auth decodes `id_token`
         # with `SOCIAL_AUTH_APPLE_CLIENT` as the `audience`
         payload['aud'] = settings.SOCIAL_AUTH_APPLE_CLIENT
+
+        if audience is not None:
+            payload['aud'] = audience
+
         headers = {"kid": "SOMEKID"}
         private_key = settings.APPLE_ID_TOKEN_GENERATION_KEY
 
@@ -2058,6 +2063,153 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
             self.logger_output("Sign in with Apple failed: bad state token.", "info"),  # (2)
             self.logger_output("Wrong state parameter given.", "warning"),
         ])
+
+class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
+    __unittest_skip__ = False
+
+    SIGNUP_URL = '/complete/apple/'
+    LOGIN_URL = '/complete/apple/'
+
+    def prepare_login_url_and_headers(
+        self,
+        subdomain: Optional[str]=None,
+        mobile_flow_otp: Optional[str]=None,
+        desktop_flow_otp: Optional[str]=None,
+        is_signup: bool=False,
+        next: str='',
+        multiuse_object_key: str='',
+        alternative_start_url: Optional[str]=None,
+        id_token: Optional[str]=None,
+        *,
+        user_agent: Optional[str]=None,
+    ) -> Tuple[str, Dict[str, Any]]:
+        url, headers = super().prepare_login_url_and_headers(
+            subdomain, mobile_flow_otp, desktop_flow_otp, is_signup, next,
+            multiuse_object_key, alternative_start_url=alternative_start_url,
+            user_agent=user_agent,
+        )
+
+        params = {'native_flow': 'true'}
+
+        if id_token is not None:
+            params['id_token'] = id_token
+
+        if is_signup:
+            params['is_signup'] = '1'
+
+        if subdomain:
+            params['subdomain'] = subdomain
+
+        url += "&%s" % (urllib.parse.urlencode(params),)
+        return url, headers
+
+    def social_auth_test(self, account_data_dict: Dict[str, str],
+                         *, subdomain: Optional[str]=None,
+                         mobile_flow_otp: Optional[str]=None,
+                         desktop_flow_otp: Optional[str]=None,
+                         is_signup: bool=False,
+                         next: str='',
+                         multiuse_object_key: str='',
+                         alternative_start_url: Optional[str]=None,
+                         skip_id_token: bool=False,
+                         user_agent: Optional[str]=None,
+                         **extra_data: Any) -> HttpResponse:
+        """In Apple's native authentication flow, the client app authenticates
+        with Apple and receives the JWT id_token, before contacting
+        the Zulip server.  The app sends an appropriate request with
+        it to /complete/apple/ to get logged in.  See the backend
+        class for details.
+
+        As a result, we need a custom social_auth_test function that
+        effectively just does the second half of the flow (i.e. the
+        part after the redirect from this third-party authentication
+        provider) with a properly generated id_token.
+        """
+
+        if not skip_id_token:
+            id_token = self.generate_id_token(account_data_dict, settings.SOCIAL_AUTH_APPLE_BUNDLE_ID)
+        else:
+            id_token = None
+
+        url, headers = self.prepare_login_url_and_headers(
+            subdomain, mobile_flow_otp, desktop_flow_otp, is_signup, next,
+            multiuse_object_key, alternative_start_url=self.AUTH_FINISH_URL,
+            user_agent=user_agent, id_token=id_token,
+        )
+
+        with self.apple_jwk_url_mock():
+            result = self.client_get(url, **headers)
+
+        return result
+
+    @contextmanager
+    def apple_jwk_url_mock(self) -> Iterator[None]:
+        with responses.RequestsMock(assert_all_requests_are_fired=False) as requests_mock:
+            # The server fetches public keys for validating the id_token
+            # from Apple servers. We need to mock that URL to return our key,
+            # created for these tests.
+            requests_mock.add(
+                requests_mock.GET,
+                self.BACKEND_CLASS.JWK_URL,
+                status=200,
+                json=json.loads(settings.APPLE_JWK),
+            )
+            yield
+
+    def test_no_id_token_sent(self) -> None:
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+        result = self.social_auth_test(account_data_dict,
+                                       expect_choose_email_screen=False,
+                                       subdomain='zulip', next='/user_uploads/image',
+                                       skip_id_token=True)
+        self.assert_json_error(result, "Missing id_token parameter")
+
+    def test_social_auth_session_fields_cleared_correctly(self) -> None:
+        mobile_flow_otp = '1234abcd' * 8
+
+        def initiate_auth(mobile_flow_otp: Optional[str]=None) -> None:
+            url, headers = self.prepare_login_url_and_headers(subdomain='zulip',
+                                                              id_token='invalid',
+                                                              mobile_flow_otp=mobile_flow_otp)
+            result = self.client_get(url, **headers)
+            self.assertEqual(result.status_code, 302)
+
+        # Start Apple auth with mobile_flow_otp param. It should get saved into the session
+        # on SOCIAL_AUTH_SUBDOMAIN.
+        initiate_auth(mobile_flow_otp)
+        self.assertEqual(self.client.session['mobile_flow_otp'], mobile_flow_otp)
+
+        # Make a request without mobile_flow_otp param and verify the field doesn't persist
+        # in the session from the previous request.
+        initiate_auth()
+        self.assertEqual(self.client.session.get('mobile_flow_otp'), None)
+
+    def test_id_token_with_invalid_aud_sent(self) -> None:
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+        url, headers = self.prepare_login_url_and_headers(
+            subdomain='zulip', alternative_start_url=self.AUTH_FINISH_URL,
+            id_token=self.generate_id_token(account_data_dict, audience='com.different.app'),
+        )
+
+        with self.apple_jwk_url_mock(), mock.patch('logging.info') as mock_info:
+            result = self.client_get(url, **headers)
+            mock_info.assert_called_once_with('/complete/apple/: %s',
+                                              'Authentication failed: Token validation failed')
+        return result
+
+    def test_social_auth_desktop_success(self) -> None:
+        """
+        The desktop app doesn't use the native flow currently and the desktop app flow in its
+        current form happens in the browser, thus only the webflow is viable there.
+        """
+        pass
+
+    def test_social_auth_no_key(self) -> None:
+        """
+        The basic validation of server configuration is handled on the
+        /login/social/apple/ endpoint which isn't even a part of the native flow.
+        """
+        pass
 
 class GitHubAuthBackendTest(SocialAuthBase):
     __unittest_skip__ = False
