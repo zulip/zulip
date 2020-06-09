@@ -16,6 +16,7 @@ set_global('narrow_state', {filter: return_false});
 set_global('search_suggestion', {});
 set_global('ui_util', {
     change_tab_to: noop,
+    place_caret_at_end: noop,
 });
 set_global('narrow', {});
 
@@ -94,6 +95,7 @@ run_test('initialize', () => {
         assert.equal(opts.naturalSearch, true);
         assert.equal(opts.helpOnEmptyStrings, true);
         assert.equal(opts.matcher(), true);
+        assert.equal(opts.on_move(), true);
 
         {
             const search_suggestions = {

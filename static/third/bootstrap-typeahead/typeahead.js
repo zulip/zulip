@@ -28,6 +28,7 @@
  *   choice.
  *
  *   Our custom changes include all mentions of this.automated.
+ *   And also includes the blocks containing the is contenteditable condition.
  *
  * 2. Custom selection triggers:
  *
@@ -81,6 +82,7 @@
     this.fixed = this.options.fixed || false;
     this.automated = this.options.automated || this.automated;
     this.trigger_selection = this.options.trigger_selection || this.trigger_selection;
+    this.on_move = this.options.on_move;
     this.on_escape = this.options.on_escape;
     this.header = this.options.header || this.header;
 
@@ -99,15 +101,25 @@
 
   , select: function (e) {
       var val = this.$menu.find('.active').data('typeahead-value')
-      this.$element
-        .val(this.updater(val, e))
-        .change()
+      if (this.$element.is("[contenteditable]")) {
+        this.$element.html(this.updater(val, e)).change();
+        // Empty textContent after the change event handler
+        // converts the input text to html elements.
+        this.$element.html('');
+      } else {
+        this.$element.val(this.updater(val, e)).change();
+      }
+
       return this.hide()
     }
 
   , set_value: function () {
       var val = this.$menu.find('.active').data('typeahead-value')
-      this.$element.val(val)
+      this.$element.is("[contenteditable]") ? this.$element.html(val) : this.$element.val(val);
+
+      if (this.on_move) {
+        this.on_move();
+      }
     }
 
   , updater: function (item) {

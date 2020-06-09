@@ -103,6 +103,12 @@ exports.initialize = function () {
         stopAdvance: page_params.search_pills_enabled,
         advanceKeyCodes: [8],
 
+        on_move: function () {
+            if (page_params.search_pills_enabled) {
+                ui_util.place_caret_at_end(search_query_box[0]);
+                return true;
+            }
+        },
         // Use our custom typeahead `on_escape` hook to exit
         // the search bar as soon as the user hits Esc.
         on_escape: tab_bar.exit_search,
@@ -195,6 +201,7 @@ exports.initiate_search = function () {
     $('#search_query').typeahead('lookup').select();
     if (page_params.search_pills_enabled) {
         $('#search_query').focus();
+        ui_util.place_caret_at_end($('#search_query')[0]);
     }
 };
 
