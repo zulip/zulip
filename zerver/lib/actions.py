@@ -11,6 +11,8 @@ from django.utils.html import escape
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core.files import File
+from psycopg2.extras import execute_values
+from psycopg2.sql import SQL
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat, \
     RealmCount
 
@@ -1632,18 +1634,18 @@ def bulk_insert_ums(ums: List[UserMessageLite]) -> None:
     if not ums:
         return
 
-    vals = ','.join([
-        '(%d, %d, %d)' % (um.user_profile_id, um.message_id, um.flags)
+    vals = [
+        (um.user_profile_id, um.message_id, um.flags)
         for um in ums
-    ])
-    query = '''
+    ]
+    query = SQL('''
         INSERT into
             zerver_usermessage (user_profile_id, message_id, flags)
-        VALUES
-    ''' + vals
+        VALUES %s
+    ''')
 
     with connection.cursor() as cursor:
-        cursor.execute(query)
+        execute_values(cursor.cursor, query, vals)
 
 def do_add_submessage(realm: Realm,
                       sender_id: int,
