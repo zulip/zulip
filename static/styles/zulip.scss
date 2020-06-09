@@ -1620,7 +1620,7 @@ div.focused_table {
         position: absolute;
         .search_button {
             display: inline;
-            margin-right: 16px;
+            margin-right: 15px;
         }
     }
 
@@ -1663,7 +1663,7 @@ div.focused_table {
     .search_button,
     .search_button[disabled]:hover {
         position: absolute;
-        right: 20px;
+        right: 35px;
         top: 6px;
         background: none;
         border-radius: 0px;
@@ -1737,6 +1737,14 @@ div.focused_table {
     }
     #search_query {
         padding-left: 35px;
+    }
+    .search_button {
+        right: 0px;
+    }
+    .navbar-search.expanded {
+        .search_button {
+            margin-right: 14px;
+        }
     }
 }
 
