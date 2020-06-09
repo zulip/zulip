@@ -228,7 +228,7 @@ function human_info(person) {
     info.is_bot = false;
     info.is_admin = person.is_admin;
     info.is_guest = person.is_guest;
-    info.is_active = person.is_active;
+    info.is_active = people.is_person_active(person.user_id);
     info.user_id = person.user_id;
     info.full_name = person.full_name;
     info.bot_owner_id = person.bot_owner_id;
@@ -237,7 +237,7 @@ function human_info(person) {
     info.is_current_user = people.is_my_user_id(person.user_id);
     info.display_email = settings_data.email_for_user_settings(person);
 
-    if (person.is_active) {
+    if (info.is_active) {
         // TODO: We might just want to show this
         // for deactivated users, too, even though
         // it might usually just be undefined.
