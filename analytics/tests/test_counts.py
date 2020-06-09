@@ -8,6 +8,7 @@ from django.db import models
 from django.db.models import Sum
 from django.test import TestCase
 from django.utils.timezone import now as timezone_now
+from psycopg2.sql import SQL, Literal
 
 from analytics.lib.counts import COUNT_STATS, CountStat, get_count_stats, \
     DependentCountStat, LoggingCountStat, do_aggregate_to_summary_table, \
@@ -166,8 +167,13 @@ class AnalyticsTestCase(TestCase):
 
 class TestProcessCountStat(AnalyticsTestCase):
     def make_dummy_count_stat(self, property: str) -> CountStat:
-        query = """INSERT INTO analytics_realmcount (realm_id, value, property, end_time)
-                   VALUES (%s, 1, '%s', %%%%(time_end)s)""" % (self.default_realm.id, property)
+        query = lambda kwargs: SQL("""
+            INSERT INTO analytics_realmcount (realm_id, value, property, end_time)
+            VALUES ({default_realm_id}, 1, {property}, %(time_end)s)
+        """).format(
+            default_realm_id=Literal(self.default_realm.id),
+            property=Literal(property),
+        )
         return CountStat(property, sql_data_collector(RealmCount, query, None), CountStat.HOUR)
 
     def assertFillStateEquals(self, stat: CountStat, end_time: datetime,
@@ -265,8 +271,13 @@ class TestProcessCountStat(AnalyticsTestCase):
     def test_process_dependent_stat(self) -> None:
         stat1 = self.make_dummy_count_stat('stat1')
         stat2 = self.make_dummy_count_stat('stat2')
-        query = """INSERT INTO analytics_realmcount (realm_id, value, property, end_time)
-                   VALUES (%s, 1, '%s', %%%%(time_end)s)""" % (self.default_realm.id, 'stat3')
+        query = lambda kwargs: SQL("""
+            INSERT INTO analytics_realmcount (realm_id, value, property, end_time)
+            VALUES ({default_realm_id}, 1, {property}, %(time_end)s)
+        """).format(
+            default_realm_id=Literal(self.default_realm.id),
+            property=Literal('stat3'),
+        )
         stat3 = DependentCountStat('stat3', sql_data_collector(RealmCount, query, None),
                                    CountStat.HOUR,
                                    dependencies=['stat1', 'stat2'])
@@ -299,8 +310,13 @@ class TestProcessCountStat(AnalyticsTestCase):
         self.assertFillStateEquals(stat3, hour[2])
 
         # test daily dependent stat with hourly dependencies
-        query = """INSERT INTO analytics_realmcount (realm_id, value, property, end_time)
-                   VALUES (%s, 1, '%s', %%%%(time_end)s)""" % (self.default_realm.id, 'stat4')
+        query = lambda kwargs: SQL("""
+            INSERT INTO analytics_realmcount (realm_id, value, property, end_time)
+            VALUES ({default_realm_id}, 1, {property}, %(time_end)s)
+        """).format(
+            default_realm_id=Literal(self.default_realm.id),
+            property=Literal('stat4'),
+        )
         stat4 = DependentCountStat('stat4', sql_data_collector(RealmCount, query, None),
                                    CountStat.DAY,
                                    dependencies=['stat1', 'stat2'])
