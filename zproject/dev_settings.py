@@ -41,7 +41,7 @@ ALLOWED_HOSTS = ['*']
 
 # Uncomment extra backends if you want to test with them.  Note that
 # for Google and GitHub auth you'll need to do some pre-setup.
-AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
+AUTHENTICATION_BACKENDS = (
     'zproject.backends.DevAuthBackend',
     'zproject.backends.EmailAuthBackend',
     'zproject.backends.GitHubAuthBackend',
@@ -50,7 +50,7 @@ AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
     # 'zproject.backends.AzureADAuthBackend',
     'zproject.backends.GitLabAuthBackend',
     'zproject.backends.AppleAuthBackend',
-)
+)  # type: Tuple[str, ...]
 
 EXTERNAL_URI_SCHEME = "http://"
 EMAIL_GATEWAY_PATTERN = "%s@" + EXTERNAL_HOST.split(':')[0]
