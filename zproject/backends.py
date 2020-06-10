@@ -824,7 +824,11 @@ def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bo
     try:
         ldap_username = backend.django_to_ldap_username(user_profile.delivery_email)
     except ZulipLDAPExceptionNoMatchingLDAPUser:
-        if settings.LDAP_DEACTIVATE_NON_MATCHING_USERS:
+        if (
+            settings.ONLY_LDAP
+            if settings.LDAP_DEACTIVATE_NON_MATCHING_USERS is None
+            else settings.LDAP_DEACTIVATE_NON_MATCHING_USERS
+        ):
             do_deactivate_user(user_profile)
             logger.info("Deactivated non-matching user: %s", user_profile.delivery_email)
             return True

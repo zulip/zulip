@@ -935,10 +935,10 @@ POLL_TIMEOUT = 90 * 1000
 
 USING_APACHE_SSO = ('zproject.backends.ZulipRemoteUserBackend' in AUTHENTICATION_BACKENDS)
 
-if 'LDAP_DEACTIVATE_NON_MATCHING_USERS' not in vars():
-    LDAP_DEACTIVATE_NON_MATCHING_USERS = (
-        len(AUTHENTICATION_BACKENDS) == 1 and (AUTHENTICATION_BACKENDS[0] ==
-                                               "zproject.backends.ZulipLDAPAuthBackend"))
+ONLY_LDAP = False
+if len(AUTHENTICATION_BACKENDS) == 1 and (AUTHENTICATION_BACKENDS[0] ==
+                                          "zproject.backends.ZulipLDAPAuthBackend"):
+    ONLY_LDAP = True
 
 if len(AUTHENTICATION_BACKENDS) == 1 and (AUTHENTICATION_BACKENDS[0] ==
                                           "zproject.backends.ZulipRemoteUserBackend"):
