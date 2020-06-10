@@ -1,11 +1,11 @@
 import re
+from typing import Any, Callable, Dict, Tuple
 
 from django.conf import settings
 from django.utils.text import slugify
 
 from zerver.models import Stream
 
-from typing import Any, Callable, Dict, Tuple
 
 def default_option_handler_factory(address_option: str) -> Callable[[Dict[str, Any]], None]:
     def option_setter(options_dict: Dict[str, Any]) -> None:

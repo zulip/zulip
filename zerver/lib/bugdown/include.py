@@ -1,9 +1,9 @@
-import re
 import os
+import re
 from typing import Any, Dict, List
 
 import markdown
-from markdown_include.include import MarkdownInclude, IncludePreprocessor
+from markdown_include.include import IncludePreprocessor, MarkdownInclude
 
 from zerver.lib.exceptions import InvalidMarkdownIncludeStatement
 

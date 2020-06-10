@@ -1,16 +1,18 @@
+import os
 from urllib.parse import urlsplit
-from django.conf.urls import url
+
 from django.conf import settings
+from django.conf.urls import url
 from django.conf.urls.static import static
 from django.contrib.staticfiles.views import serve as staticfiles_serve
 from django.http import HttpRequest, HttpResponse
 from django.views.generic import TemplateView
-import os
 from django.views.static import serve
-import zerver.views.development.registration
+
 import zerver.views.auth
 import zerver.views.development.email_log
 import zerver.views.development.integrations
+import zerver.views.development.registration
 
 # These URLs are available only in the development environment
 

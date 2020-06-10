@@ -1,8 +1,6 @@
 # This file contains various helper functions used by `build_emoji` tool.
 # See docs/subsystems/emoji.md for details on how this system works.
-
 from collections import defaultdict
-
 from typing import Any, Dict, List
 
 # Emojisets that we currently support.

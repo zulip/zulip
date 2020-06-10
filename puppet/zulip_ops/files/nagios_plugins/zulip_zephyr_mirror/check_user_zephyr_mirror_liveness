@@ -24,9 +24,9 @@ sys.path.append('/home/zulip/deployments/current/zerver')
 
 django.setup()
 
-from zerver.models import UserActivity
+from typing import Any, Dict, Optional, Set
 
-from typing import Any, Dict, Set, Optional
+from zerver.models import UserActivity
 
 states: Dict[str, int] = {
     "OK": 0,

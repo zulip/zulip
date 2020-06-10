@@ -1,30 +1,26 @@
+import datetime
+import hashlib
+import logging
+import os
+from email.parser import Parser
+from email.policy import default
+from email.utils import formataddr, parseaddr
+from typing import Any, Dict, List, Mapping, Optional, Tuple
+
+import ujson
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.core.management import CommandError
 from django.template import loader
+from django.template.exceptions import TemplateDoesNotExist
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import override as override_language
 from django.utils.translation import ugettext as _
-from django.template.exceptions import TemplateDoesNotExist
-from scripts.setup.inline_email_css import inline_template
 
-from zerver.models import ScheduledEmail, get_user_profile_by_id, \
-    EMAIL_TYPES, Realm, UserProfile
-
-import datetime
-from email.utils import parseaddr, formataddr
-from email.parser import Parser
-from email.policy import default
-
-import logging
-import ujson
-import hashlib
-
-import os
-from typing import Any, Dict, List, Mapping, Optional, Tuple
-
-from zerver.lib.logging_util import log_to_file
 from confirmation.models import generate_key
+from scripts.setup.inline_email_css import inline_template
+from zerver.lib.logging_util import log_to_file
+from zerver.models import EMAIL_TYPES, Realm, ScheduledEmail, UserProfile, get_user_profile_by_id
 
 ## Logging setup ##
 

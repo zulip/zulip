@@ -1,7 +1,7 @@
 from django.conf import settings
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.utils.translation import ugettext as _
-from django.http import HttpResponse, HttpRequest
 
 from zerver.decorator import require_realm_admin
 from zerver.lib.actions import do_change_icon_source

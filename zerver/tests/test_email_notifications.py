@@ -1,27 +1,27 @@
-import ldap
 import random
 import re
-import ujson
+from email.utils import formataddr
+from typing import List, Optional
+from unittest.mock import patch
 
+import ldap
+import ujson
 from django.conf import settings
 from django.core import mail
 from django.test import override_settings
 from django_auth_ldap.config import LDAPSearch
-from email.utils import formataddr
-from unittest.mock import patch
-from typing import List, Optional
 
-from zerver.lib.email_notifications import fix_emojis, handle_missedmessage_emails, \
-    enqueue_welcome_emails, relative_to_full_url
 from zerver.lib.actions import do_change_notification_settings, do_change_user_role
-from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.send_email import FromAddress, send_custom_email
-from zerver.models import (
-    get_realm,
-    get_stream,
-    UserProfile,
-    ScheduledEmail,
+from zerver.lib.email_notifications import (
+    enqueue_welcome_emails,
+    fix_emojis,
+    handle_missedmessage_emails,
+    relative_to_full_url,
 )
+from zerver.lib.send_email import FromAddress, send_custom_email
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.models import ScheduledEmail, UserProfile, get_realm, get_stream
+
 
 class TestCustomEmails(ZulipTestCase):
     def test_send_custom_email_argument(self) -> None:

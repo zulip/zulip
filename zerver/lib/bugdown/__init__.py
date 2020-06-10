@@ -1,65 +1,76 @@
 # Zulip's main markdown implementation.  See docs/subsystems/markdown.md for
 # detailed documentation on our markdown syntax.
-from typing import (Any, Callable, Dict, Generic, Iterable, List,
-                    Optional, Set, Tuple, TypeVar, Union)
-from typing.re import Match, Pattern
-from typing_extensions import TypedDict
-
-import markdown
+import functools
+import html
 import logging
+import os
+import re
+import time
 import traceback
 import urllib
 import urllib.parse
-import re
-import os
-import html
-import time
-import functools
+from collections import defaultdict, deque
 from dataclasses import dataclass
+from datetime import datetime
 from io import StringIO
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    Iterable,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+)
+from typing.re import Match, Pattern
+from xml.etree import ElementTree as etree
+from xml.etree.ElementTree import Element, SubElement
+
+import ahocorasick
 import dateutil.parser
 import dateutil.tz
-from datetime import datetime
-import xml.etree.ElementTree as etree
-from xml.etree.ElementTree import Element, SubElement
-import ahocorasick
-from hyperlink import parse
-
-from collections import deque, defaultdict
-
+import markdown
 import requests
-
 from django.conf import settings
 from django.db.models import Q
+from hyperlink import parse
+from markdown.extensions import codehilite, nl2br, sane_lists, tables
+from typing_extensions import TypedDict
 
-from markdown.extensions import codehilite, nl2br, tables, sane_lists
+from zerver.lib import mention as mention
 from zerver.lib.bugdown import fenced_code
 from zerver.lib.bugdown.fenced_code import FENCE_RE
+from zerver.lib.cache import NotFoundInCache, cache_with_key
 from zerver.lib.camo import get_camo_url
-from zerver.lib.emoji import translate_emoticons, emoticon_regex, \
-    name_to_codepoint, codepoint_to_name
-from zerver.lib.mention import possible_mentions, \
-    possible_user_group_mentions, extract_user_group
-from zerver.lib.url_encoding import encode_stream, hash_util_encode
+from zerver.lib.emoji import (
+    codepoint_to_name,
+    emoticon_regex,
+    name_to_codepoint,
+    translate_emoticons,
+)
+from zerver.lib.exceptions import BugdownRenderingException
+from zerver.lib.mention import extract_user_group, possible_mentions, possible_user_group_mentions
+from zerver.lib.tex import render_tex
 from zerver.lib.thumbnail import user_uploads_or_external
-from zerver.lib.timeout import timeout, TimeoutExpired
-from zerver.lib.cache import cache_with_key, NotFoundInCache
+from zerver.lib.timeout import TimeoutExpired, timeout
+from zerver.lib.timezone import get_common_timezones
+from zerver.lib.url_encoding import encode_stream, hash_util_encode
 from zerver.lib.url_preview import preview as link_preview
 from zerver.models import (
-    all_realm_filters,
-    get_active_streams,
     MAX_MESSAGE_LENGTH,
     Message,
     Realm,
-    realm_filters_for_realm,
-    UserProfile,
     UserGroup,
     UserGroupMembership,
+    UserProfile,
+    all_realm_filters,
+    get_active_streams,
+    realm_filters_for_realm,
 )
-import zerver.lib.mention as mention
-from zerver.lib.tex import render_tex
-from zerver.lib.exceptions import BugdownRenderingException
-from zerver.lib.timezone import get_common_timezones
 
 ReturnT = TypeVar('ReturnT')
 

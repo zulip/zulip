@@ -1,21 +1,23 @@
+import os
 from unittest.mock import patch
 
-from analytics.models import RealmCount
-
-from django.utils.timezone import now as timezone_now
+import botocore.exceptions
+import ujson
 from django.conf import settings
+from django.utils.timezone import now as timezone_now
 
-from zerver.lib.test_classes import ZulipTestCase
+from analytics.models import RealmCount
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.test_helpers import use_s3_backend, create_s3_buckets, \
-    create_dummy_file, stdout_suppressed
-
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import (
+    create_dummy_file,
+    create_s3_buckets,
+    stdout_suppressed,
+    use_s3_backend,
+)
 from zerver.models import RealmAuditLog
 from zerver.views.realm_export import export_realm
 
-import os
-import ujson
-import botocore.exceptions
 
 class RealmExportTest(ZulipTestCase):
     """

@@ -1,20 +1,31 @@
-import os
-import dateutil.parser
 import logging
+import os
 import subprocess
-import ujson
+from typing import Any, Dict, List, Set, Tuple
 
+import dateutil.parser
+import ujson
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
-from typing import Any, Dict, List, Set, Tuple
 
-from zerver.models import UserProfile, Recipient
+from zerver.data_import.import_util import (
+    ZerverFieldsT,
+    build_avatar,
+    build_defaultstream,
+    build_message,
+    build_realm,
+    build_recipient,
+    build_stream,
+    build_subscription,
+    build_usermessages,
+    build_zerver_realm,
+    create_converted_data_files,
+    make_subscriber_map,
+    process_avatars,
+)
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
-from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
-    build_avatar, build_subscription, build_recipient, build_usermessages, \
-    build_defaultstream, process_avatars, build_realm, build_stream, \
-    build_message, create_converted_data_files, make_subscriber_map
+from zerver.models import Recipient, UserProfile
 
 # stubs
 GitterDataT = List[Dict[str, Any]]

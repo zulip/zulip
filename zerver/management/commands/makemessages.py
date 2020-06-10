@@ -29,8 +29,8 @@ https://stackoverflow.com/questions/2090717
 
 """
 import glob
-import json
 import itertools
+import json
 import os
 import re
 from argparse import ArgumentParser

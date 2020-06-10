@@ -1,24 +1,43 @@
+import inspect
 import re
 import sys
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Union,
+)
 from unittest import mock
-import inspect
-from typing import Dict, Any, Set, Union, List, Callable, Tuple, Optional, Iterable, Mapping, Sequence
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from django.http import HttpResponse
 
-import zerver.openapi.openapi as openapi
-from zerver.openapi.markdown_extension import generate_curl_example, \
-    render_curl_example, parse_language_and_options
-from zerver.lib.request import _REQ
+from zerver.lib.request import _REQ, arguments_map
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.openapi.openapi import (
-    get_openapi_fixture, get_openapi_parameters,
-    validate_against_openapi_schema, to_python_type,
-    SchemaError, openapi_spec, get_openapi_paths,
-    OpenAPISpec, OPENAPI_SPEC_PATH,
+from zerver.openapi import openapi as openapi
+from zerver.openapi.markdown_extension import (
+    generate_curl_example,
+    parse_language_and_options,
+    render_curl_example,
 )
-from zerver.lib.request import arguments_map
+from zerver.openapi.openapi import (
+    OPENAPI_SPEC_PATH,
+    OpenAPISpec,
+    SchemaError,
+    get_openapi_fixture,
+    get_openapi_parameters,
+    get_openapi_paths,
+    openapi_spec,
+    to_python_type,
+    validate_against_openapi_schema,
+)
 
 TEST_ENDPOINT = '/messages/{message_id}'
 TEST_METHOD = 'patch'
@@ -525,7 +544,7 @@ do not match the types declared in the implementation of {}.\n""".format(functio
         in code.
         """
 
-        import zproject.urls as urlconf
+        from zproject import urls as urlconf
 
         # We loop through all the API patterns, looking in particular
         # for those using the rest_dispatch decorator; we then parse

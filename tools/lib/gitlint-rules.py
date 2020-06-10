@@ -1,9 +1,9 @@
-from typing import Text, List
+import re
+from typing import List, Text
 
 from gitlint.git import GitCommit
-from gitlint.rules import LineRule, RuleViolation, CommitMessageTitle
 from gitlint.options import StrOption
-import re
+from gitlint.rules import CommitMessageTitle, LineRule, RuleViolation
 
 # Word list from https://github.com/m1foley/fit-commit
 # Copyright (c) 2015 Mike Foley

@@ -1,17 +1,17 @@
 import re
-import requests
+from typing import Any, Callable, Dict, Optional
+from typing.re import Match
 
+import magic
+import requests
 from django.conf import settings
 from django.utils.encoding import smart_text
-import magic
-from typing import Any, Optional, Dict, Callable
-from typing.re import Match
 
 from version import ZULIP_VERSION
 from zerver.lib.cache import cache_with_key, get_cache_with_key, preview_url_cache_key
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.url_preview.oembed import get_oembed_data
-from zerver.lib.url_preview.parsers import OpenGraphParser, GenericParser
+from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
 
 # FIXME: Should we use a database cache or a memcached in production? What if
 # opengraph data is changed for a site?

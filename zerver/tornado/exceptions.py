@@ -2,6 +2,7 @@ from django.utils.translation import ugettext as _
 
 from zerver.lib.exceptions import ErrorCode, JsonableError
 
+
 class BadEventQueueIdError(JsonableError):
     code = ErrorCode.BAD_EVENT_QUEUE_ID
     data_fields = ['queue_id']

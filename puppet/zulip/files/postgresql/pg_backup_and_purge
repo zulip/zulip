@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-
-import os
-import sys
 import glob
+import logging
+import os
 import shlex
 import subprocess
-import logging
-import dateutil.parser
+import sys
 import time
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List
+
+import dateutil.parser
 
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s")

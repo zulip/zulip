@@ -9,17 +9,17 @@ from django.template import Library, engines
 from django.utils.safestring import mark_safe
 from jinja2.exceptions import TemplateNotFound
 
-import zerver.lib.bugdown.fenced_code
 import zerver.lib.bugdown.api_arguments_table_generator
 import zerver.lib.bugdown.api_return_values_table_generator
-import zerver.openapi.markdown_extension
+import zerver.lib.bugdown.fenced_code
+import zerver.lib.bugdown.help_emoticon_translations_table
+import zerver.lib.bugdown.help_relative_links
+import zerver.lib.bugdown.help_settings_links
+import zerver.lib.bugdown.include
 import zerver.lib.bugdown.nested_code_blocks
 import zerver.lib.bugdown.tabbed_sections
-import zerver.lib.bugdown.help_settings_links
-import zerver.lib.bugdown.help_relative_links
-import zerver.lib.bugdown.help_emoticon_translations_table
-import zerver.lib.bugdown.include
-from zerver.lib.cache import ignore_unhashable_lru_cache, dict_to_items_tuple, items_tuple_to_dict
+import zerver.openapi.markdown_extension
+from zerver.lib.cache import dict_to_items_tuple, ignore_unhashable_lru_cache, items_tuple_to_dict
 
 register = Library()
 

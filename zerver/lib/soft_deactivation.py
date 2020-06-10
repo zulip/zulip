@@ -1,16 +1,24 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#soft-deactivation
-
-from zerver.lib.logging_util import log_to_file
-from collections import defaultdict
 import logging
+from collections import defaultdict
+from typing import Any, DefaultDict, Dict, List, Optional, Union
+
+from django.conf import settings
 from django.db import transaction
 from django.db.models import Max
-from django.conf import settings
 from django.utils.timezone import now as timezone_now
-from typing import DefaultDict, Dict, List, Optional, Union, Any
 
-from zerver.models import UserProfile, UserMessage, RealmAuditLog, \
-    Subscription, Message, Recipient, UserActivity, Realm
+from zerver.lib.logging_util import log_to_file
+from zerver.models import (
+    Message,
+    Realm,
+    RealmAuditLog,
+    Recipient,
+    Subscription,
+    UserActivity,
+    UserMessage,
+    UserProfile,
+)
 
 logger = logging.getLogger("zulip.soft_deactivation")
 log_to_file(logger, settings.SOFT_DEACTIVATION_LOG_PATH)

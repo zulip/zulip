@@ -1,8 +1,15 @@
 from unittest import mock
 
+from zerver.lib.redis_utils import (
+    MAX_KEY_LENGTH,
+    ZulipRedisKeyOfWrongFormatError,
+    ZulipRedisKeyTooLongError,
+    get_dict_from_redis,
+    get_redis_client,
+    put_dict_in_redis,
+)
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.redis_utils import get_redis_client, get_dict_from_redis, put_dict_in_redis, \
-    ZulipRedisKeyTooLongError, ZulipRedisKeyOfWrongFormatError, MAX_KEY_LENGTH
+
 
 class RedisUtilsTest(ZulipTestCase):
     key_format = "test_redis_utils_{token}"

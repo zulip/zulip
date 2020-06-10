@@ -1,10 +1,11 @@
 import re
+from typing import Any, Dict, List, Optional
 
+import markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
+
 from zerver.openapi.openapi import get_openapi_return_values
-from typing import Any, Dict, Optional, List
-import markdown
 
 REGEXP = re.compile(r'\{generate_return_values_table\|\s*(.+?)\s*\|\s*(.+)\s*\}')
 

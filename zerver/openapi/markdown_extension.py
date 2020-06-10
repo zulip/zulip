@@ -1,16 +1,15 @@
-import re
-import json
 import inspect
+import json
+import re
+from typing import Any, Dict, List, Optional, Pattern, Tuple
 
+import markdown
 from django.conf import settings
-
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
-from typing import Any, Dict, Optional, List, Tuple, Pattern
-import markdown
 
 import zerver.openapi.python_examples
-from zerver.openapi.openapi import get_openapi_fixture, openapi_spec, get_openapi_description
+from zerver.openapi.openapi import get_openapi_description, get_openapi_fixture, openapi_spec
 
 MACRO_REGEXP = re.compile(
     r'\{generate_code_example(\(\s*(.+?)\s*\))*\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+)\s*\))?\}')

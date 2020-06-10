@@ -2,12 +2,9 @@ from typing import Any, Dict, List
 
 from django.utils.timezone import now as timezone_now
 
-from zerver.data_import.import_util import (
-    build_user_profile,
-)
-from zerver.models import (
-    UserProfile,
-)
+from zerver.data_import.import_util import build_user_profile
+from zerver.models import UserProfile
+
 
 class UserHandler:
     '''

@@ -4,10 +4,9 @@
 Nagios plugin to check the difference between the primary and
 secondary Postgres servers' xlog location.
 """
-
 import configparser
-import subprocess
 import re
+import subprocess
 from typing import NoReturn
 
 states = {

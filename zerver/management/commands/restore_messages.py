@@ -3,8 +3,11 @@ from typing import Any
 from django.core.management.base import CommandParser
 
 from zerver.lib.management import ZulipBaseCommand
-from zerver.lib.retention import restore_all_data_from_archive, \
-    restore_data_from_archive, restore_data_from_archive_by_realm
+from zerver.lib.retention import (
+    restore_all_data_from_archive,
+    restore_data_from_archive,
+    restore_data_from_archive_by_realm,
+)
 from zerver.models import ArchiveTransaction
 
 

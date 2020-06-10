@@ -1,63 +1,53 @@
-import datetime
-import ujson
-import zlib
-import ahocorasick
 import copy
+import datetime
+import zlib
+from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
-from django.utils.translation import ugettext as _
-from django.utils.timezone import now as timezone_now
+import ahocorasick
+import ujson
 from django.db import connection
 from django.db.models import Sum
+from django.utils.timezone import now as timezone_now
+from django.utils.translation import ugettext as _
 from psycopg2.sql import SQL
+from typing_extensions import TypedDict
 
 from analytics.lib.counts import COUNT_STATS, RealmCount
-
+from zerver.lib import bugdown as bugdown
 from zerver.lib.avatar import get_avatar_field
-import zerver.lib.bugdown as bugdown
 from zerver.lib.cache import (
     cache_with_key,
     generic_bulk_cached_fetch,
     to_dict_cache_key,
     to_dict_cache_key_id,
 )
-from zerver.lib.display_recipient import UserDisplayRecipient, DisplayRecipientT, \
-    bulk_fetch_display_recipients
+from zerver.lib.display_recipient import (
+    DisplayRecipientT,
+    UserDisplayRecipient,
+    bulk_fetch_display_recipients,
+)
 from zerver.lib.request import JsonableError
-from zerver.lib.stream_subscription import (
-    get_stream_subscriptions_for_user,
-)
+from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.topic import (
-    DB_TOPIC_NAME,
-    MESSAGE__TOPIC,
-    TOPIC_LINKS,
-    TOPIC_NAME,
-)
-from zerver.lib.topic_mutes import (
-    build_topic_mute_checker,
-    topic_is_muted,
-)
-
+from zerver.lib.topic import DB_TOPIC_NAME, MESSAGE__TOPIC, TOPIC_LINKS, TOPIC_NAME
+from zerver.lib.topic_mutes import build_topic_mute_checker, topic_is_muted
 from zerver.models import (
-    get_display_recipient_by_id,
-    get_user_profile_by_id,
-    query_for_ids,
+    MAX_MESSAGE_LENGTH,
+    MAX_TOPIC_NAME_LENGTH,
     Message,
+    Reaction,
     Realm,
     Recipient,
     Stream,
     SubMessage,
     Subscription,
-    UserProfile,
     UserMessage,
-    Reaction,
+    UserProfile,
+    get_display_recipient_by_id,
+    get_user_profile_by_id,
     get_usermessage_by_message_id,
-    MAX_MESSAGE_LENGTH,
-    MAX_TOPIC_NAME_LENGTH,
+    query_for_ids,
 )
-
-from typing import Any, Dict, List, Optional, Set, Tuple, Sequence
-from typing_extensions import TypedDict
 
 RealmAlertWord = Dict[int, List[str]]
 

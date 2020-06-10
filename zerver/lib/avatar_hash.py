@@ -1,10 +1,10 @@
+import hashlib
+
 from django.conf import settings
 
 from zerver.lib.utils import make_safe_digest
-
 from zerver.models import UserProfile
 
-import hashlib
 
 def gravatar_hash(email: str) -> str:
     """Compute the Gravatar hash for an email address."""

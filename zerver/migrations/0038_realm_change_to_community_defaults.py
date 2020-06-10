@@ -1,6 +1,5 @@
 from django.db import migrations, models
 
-
 COMMUNITY = 2
 class Migration(migrations.Migration):
 

@@ -1,27 +1,31 @@
+from typing import Any, Dict, Optional
 from urllib.parse import urljoin
 
-from typing import Any, Dict, Optional
-from django.http import HttpRequest
 from django.conf import settings
+from django.http import HttpRequest
 
-from zerver.models import UserProfile, get_realm, Realm
+from version import (
+    LATEST_MAJOR_VERSION,
+    LATEST_RELEASE_ANNOUNCEMENT,
+    LATEST_RELEASE_VERSION,
+    ZULIP_VERSION,
+)
+from zerver.decorator import get_client_name
+from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
+from zerver.lib.realm_icon import get_realm_icon_url
+from zerver.lib.send_email import FromAddress
+from zerver.lib.subdomains import get_subdomain
+from zerver.models import Realm, UserProfile, get_realm
 from zproject.backends import (
+    AUTH_BACKEND_NAME_MAP,
+    AppleAuthBackend,
     any_social_backend_enabled,
+    auth_enabled_helper,
     get_external_method_dicts,
     password_auth_enabled,
     require_email_format_usernames,
-    auth_enabled_helper,
-    AUTH_BACKEND_NAME_MAP,
-    AppleAuthBackend,
 )
-from zerver.decorator import get_client_name
-from zerver.lib.send_email import FromAddress
-from zerver.lib.subdomains import get_subdomain
-from zerver.lib.realm_icon import get_realm_icon_url
-from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 
-from version import ZULIP_VERSION, LATEST_RELEASE_VERSION, LATEST_MAJOR_VERSION, \
-    LATEST_RELEASE_ANNOUNCEMENT
 
 def common_context(user: UserProfile) -> Dict[str, Any]:
     """Common context used for things like outgoing emails that don't

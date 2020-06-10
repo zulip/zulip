@@ -1,24 +1,21 @@
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
-
 from unittest import mock
-from django.http import HttpResponse
+
 import ujson
+from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from analytics.lib.counts import COUNT_STATS, CountStat
 from analytics.lib.time_utils import time_range
-from analytics.models import FillState, \
-    RealmCount, UserCount, last_successful_fill
-from analytics.views import rewrite_client_arrays, \
-    sort_by_totals, sort_client_labels
-from zerver.lib.test_helpers import reset_emails_in_zulip_realm
+from analytics.models import FillState, RealmCount, UserCount, last_successful_fill
+from analytics.views import rewrite_client_arrays, sort_by_totals, sort_client_labels
+from zerver.lib.actions import do_create_multiuse_invite_link, do_send_realm_reactivation_email
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.timestamp import ceiling_to_day, \
-    ceiling_to_hour, datetime_to_timestamp
-from zerver.lib.actions import do_create_multiuse_invite_link, \
-    do_send_realm_reactivation_email
-from zerver.models import Client, get_realm, MultiuseInvite
+from zerver.lib.test_helpers import reset_emails_in_zulip_realm
+from zerver.lib.timestamp import ceiling_to_day, ceiling_to_hour, datetime_to_timestamp
+from zerver.models import Client, MultiuseInvite, get_realm
+
 
 class TestStatsEndpoint(ZulipTestCase):
     def test_stats(self) -> None:

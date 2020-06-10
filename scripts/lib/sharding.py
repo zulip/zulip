@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import json
 import os
 import subprocess
@@ -13,6 +12,7 @@ from scripts.lib.setup_path import setup_path
 setup_path()
 
 from scripts.lib.zulip_tools import get_config_file
+
 
 def write_realm_nginx_config_line(f: Any, host: str, port: str) -> None:
     f.write("""if ($host = '{}') {{

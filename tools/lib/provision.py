@@ -1,28 +1,37 @@
 #!/usr/bin/env python3
-import os
-import sys
-import logging
 import argparse
+import hashlib
+import logging
+import os
 import platform
 import subprocess
-import hashlib
+import sys
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 sys.path.append(ZULIP_PATH)
-from scripts.lib.zulip_tools import run_as_root, ENDC, WARNING, \
-    get_dev_uuid_var_path, FAIL, os_families, parse_os_release, \
-    overwrite_symlink
+from typing import TYPE_CHECKING, List
+
+from scripts.lib.node_cache import NODE_MODULES_CACHE_PATH, setup_node_modules
 from scripts.lib.setup_venv import (
-    get_venv_dependencies, THUMBOR_VENV_DEPENDENCIES,
+    THUMBOR_VENV_DEPENDENCIES,
     YUM_THUMBOR_VENV_DEPENDENCIES,
+    get_venv_dependencies,
 )
-from scripts.lib.node_cache import setup_node_modules, NODE_MODULES_CACHE_PATH
+from scripts.lib.zulip_tools import (
+    ENDC,
+    FAIL,
+    WARNING,
+    get_dev_uuid_var_path,
+    os_families,
+    overwrite_symlink,
+    parse_os_release,
+    run_as_root,
+)
 from tools.setup import setup_venvs
 
-from typing import List, TYPE_CHECKING
 if TYPE_CHECKING:
     from typing import NoReturn
 

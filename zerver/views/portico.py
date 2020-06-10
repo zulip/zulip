@@ -1,12 +1,13 @@
+import ujson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
-import ujson
 
+from version import LATEST_DESKTOP_VERSION
 from zerver.context_processors import get_realm_from_request, latest_info_context
 from zerver.decorator import add_google_analytics, redirect_to_login
 from zerver.models import Realm
-from version import LATEST_DESKTOP_VERSION
+
 
 @add_google_analytics
 def apps_view(request: HttpRequest, _: str) -> HttpResponse:

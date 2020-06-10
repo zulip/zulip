@@ -2,8 +2,7 @@ import cProfile
 import logging
 import time
 import traceback
-from typing import Any, AnyStr, Dict, \
-    Iterable, List, MutableMapping, Optional
+from typing import Any, AnyStr, Dict, Iterable, List, MutableMapping, Optional
 
 from django.conf import settings
 from django.core.exceptions import DisallowedHost
@@ -17,15 +16,15 @@ from django.views.csrf import csrf_failure as html_csrf_failure
 
 from zerver.lib.bugdown import get_bugdown_requests, get_bugdown_time
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
-from zerver.lib.debug import maybe_tracemalloc_listen
 from zerver.lib.db import reset_queries
+from zerver.lib.debug import maybe_tracemalloc_listen
 from zerver.lib.exceptions import ErrorCode, JsonableError, RateLimited
 from zerver.lib.html_to_text import get_content_description
 from zerver.lib.rate_limiter import RateLimitResult
 from zerver.lib.response import json_error, json_response_from_error
 from zerver.lib.subdomains import get_subdomain
-from zerver.lib.utils import statsd
 from zerver.lib.types import ViewFuncT
+from zerver.lib.utils import statsd
 from zerver.models import Realm, flush_per_request_caches, get_realm
 
 logger = logging.getLogger('zulip.requests')

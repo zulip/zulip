@@ -6,6 +6,7 @@ from django.utils.html import escape
 
 from zerver.lib.cache import cache_with_key, open_graph_description_cache_key
 
+
 def html_to_text(content: str, tags: Optional[Dict[str, str]]=None) -> str:
     bs = BeautifulSoup(content, features='lxml')
     # Skip any admonition (warning) blocks, since they're

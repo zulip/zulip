@@ -1,10 +1,10 @@
 from unittest import mock
 
-from zerver.lib.actions import do_create_realm, do_create_user, \
-    check_add_realm_emoji
+from zerver.lib.actions import check_add_realm_emoji, do_create_realm, do_create_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
 from zerver.models import Realm, RealmEmoji, UserProfile, get_realm
+
 
 class RealmEmojiTest(ZulipTestCase):
 

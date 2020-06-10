@@ -1,11 +1,13 @@
-from django.http import HttpRequest, HttpResponse
 from typing import List
 
-from zerver.decorator import has_request_variables, REQ
+from django.http import HttpRequest, HttpResponse
+
+from zerver.decorator import REQ, has_request_variables
 from zerver.lib.actions import check_send_typing_notification
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_int, check_list
 from zerver.models import UserProfile
+
 
 @has_request_variables
 def send_notification_backend(

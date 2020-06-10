@@ -1,8 +1,10 @@
-from typing import (Dict, List)
+from typing import Dict, List
 
 from django.db import connection
 from psycopg2.sql import SQL
+
 from zerver.models import Recipient
+
 
 class StreamRecipientMap:
     '''

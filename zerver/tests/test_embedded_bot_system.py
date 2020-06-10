@@ -1,13 +1,17 @@
 from unittest.mock import patch
 
+import ujson
+
 from zerver.lib.bot_lib import EmbeddedBotQuitException
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
-    UserProfile, get_display_recipient,
-    get_service_profile, get_user, get_realm,
+    UserProfile,
+    get_display_recipient,
+    get_realm,
+    get_service_profile,
+    get_user,
 )
 
-import ujson
 
 class TestEmbeddedBotMessaging(ZulipTestCase):
     def setUp(self) -> None:

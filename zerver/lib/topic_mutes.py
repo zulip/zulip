@@ -1,24 +1,13 @@
-from typing import Any, Callable, Dict, List, Optional, Union
 import datetime
-
-from zerver.lib.topic import (
-    topic_match_sa,
-)
-from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.models import (
-    get_stream,
-    MutedTopic,
-    UserProfile,
-)
-from sqlalchemy.sql import (
-    and_,
-    column,
-    not_,
-    or_,
-    Selectable,
-)
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from django.utils.timezone import now as timezone_now
+from sqlalchemy.sql import Selectable, and_, column, not_, or_
+
+from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.topic import topic_match_sa
+from zerver.models import MutedTopic, UserProfile, get_stream
+
 
 def get_topic_mutes(user_profile: UserProfile) -> List[List[Union[str, float]]]:
     rows = MutedTopic.objects.filter(

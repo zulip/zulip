@@ -2,14 +2,15 @@
 import argparse
 import contextlib
 import os
-import sys
 import subprocess
+import sys
 from typing import Iterator
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # check for the venv
 from lib import sanity_check
+
 sanity_check.check_venv(__file__)
 
 parser = argparse.ArgumentParser()

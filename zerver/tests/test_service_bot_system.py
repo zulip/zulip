@@ -1,25 +1,16 @@
+from typing import Any, Callable, Mapping, Union
 from unittest import mock
-from typing import Any, Union, Mapping, Callable
 
+import ujson
 from django.conf import settings
 from django.test import override_settings
 
-from zerver.lib.actions import (
-    do_create_user,
-    get_service_bot_events,
-)
-from zerver.lib.bot_lib import StateHandler, EmbeddedBotHandler, \
-    EmbeddedBotEmptyRecipientsList
+from zerver.lib.actions import do_create_user, get_service_bot_events
+from zerver.lib.bot_config import ConfigError, load_bot_config_template, set_bot_config
+from zerver.lib.bot_lib import EmbeddedBotEmptyRecipientsList, EmbeddedBotHandler, StateHandler
 from zerver.lib.bot_storage import StateError
-from zerver.lib.bot_config import set_bot_config, ConfigError, load_bot_config_template
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import (
-    get_realm,
-    UserProfile,
-    Recipient,
-)
-
-import ujson
+from zerver.models import Recipient, UserProfile, get_realm
 
 BOT_TYPE_TO_QUEUE_NAME = {
     UserProfile.OUTGOING_WEBHOOK_BOT: 'outgoing_webhooks',

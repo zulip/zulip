@@ -1,21 +1,29 @@
-from typing import Any, Dict, List, Set, Tuple, Union
-
-from collections import defaultdict
 import datetime
 import logging
+from collections import defaultdict
+from typing import Any, Dict, List, Set, Tuple, Union
 
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import one_click_unsubscribe_link
-from zerver.lib.email_notifications import build_message_list
-from zerver.lib.send_email import send_future_email, FromAddress
-from zerver.lib.url_encoding import encode_stream
-from zerver.models import UserProfile, Recipient, Subscription, UserActivity, \
-    get_active_streams, get_user_profile_by_id, Realm, Message, RealmAuditLog
 from zerver.context_processors import common_context
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.email_notifications import build_message_list
 from zerver.lib.logging_util import log_to_file
+from zerver.lib.queue import queue_json_publish
+from zerver.lib.send_email import FromAddress, send_future_email
+from zerver.lib.url_encoding import encode_stream
+from zerver.models import (
+    Message,
+    Realm,
+    RealmAuditLog,
+    Recipient,
+    Subscription,
+    UserActivity,
+    UserProfile,
+    get_active_streams,
+    get_user_profile_by_id,
+)
 
 logger = logging.getLogger(__name__)
 log_to_file(logger, settings.DIGEST_LOG_PATH)

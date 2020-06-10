@@ -8,8 +8,7 @@ from django.utils.timezone import now as timezone_now
 
 from analytics.lib.counts import COUNT_STATS, CountStat
 from analytics.models import installation_epoch, last_successful_fill
-from zerver.lib.timestamp import TimezoneNotUTCException, floor_to_day, \
-    floor_to_hour, verify_UTC
+from zerver.lib.timestamp import TimezoneNotUTCException, floor_to_day, floor_to_hour, verify_UTC
 from zerver.models import Realm
 
 states = {

@@ -1,11 +1,16 @@
-from django.conf import settings
-
+import urllib
 from typing import Any, Dict, Optional
 
-from zerver.lib.avatar_hash import gravatar_hash, user_avatar_path_from_ids, user_avatar_content_hash
-from zerver.lib.upload import upload_backend, MEDIUM_AVATAR_SIZE
+from django.conf import settings
+
+from zerver.lib.avatar_hash import (
+    gravatar_hash,
+    user_avatar_content_hash,
+    user_avatar_path_from_ids,
+)
+from zerver.lib.upload import MEDIUM_AVATAR_SIZE, upload_backend
 from zerver.models import UserProfile
-import urllib
+
 
 def avatar_url(user_profile: UserProfile, medium: bool=False, client_gravatar: bool=False) -> Optional[str]:
 

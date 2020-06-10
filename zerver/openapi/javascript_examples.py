@@ -1,9 +1,11 @@
-import os
 import json
+import os
 import subprocess
 
 from zulip import Client
+
 from zerver.openapi.openapi import validate_against_openapi_schema
+
 
 def test_js_bindings(client: Client) -> None:
     os.environ['ZULIP_USERNAME'] = client.email

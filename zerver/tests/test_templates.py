@@ -1,9 +1,7 @@
 from django.template.loader import get_template
 
 from zerver.lib.exceptions import InvalidMarkdownIncludeStatement
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
+from zerver.lib.test_classes import ZulipTestCase
 
 
 class TemplateTestCase(ZulipTestCase):

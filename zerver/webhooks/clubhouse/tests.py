@@ -1,5 +1,4 @@
 import json
-
 from unittest.mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase

@@ -1,9 +1,11 @@
+from typing import Any, Dict, List, Optional
+
+import ujson
 from django.http import HttpResponse, HttpResponseNotAllowed
 from django.utils.translation import ugettext as _
-import ujson
 
-from typing import Optional, Any, Dict, List
 from zerver.lib.exceptions import JsonableError
+
 
 class HttpResponseUnauthorized(HttpResponse):
     status_code = 401

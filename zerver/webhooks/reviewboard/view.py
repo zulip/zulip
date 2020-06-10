@@ -5,9 +5,12 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import UnexpectedWebhookEventType, \
-    check_send_webhook_message, get_http_headers_from_filename, \
-    validate_extract_webhook_http_header
+from zerver.lib.webhooks.common import (
+    UnexpectedWebhookEventType,
+    check_send_webhook_message,
+    get_http_headers_from_filename,
+    validate_extract_webhook_http_header,
+)
 from zerver.models import UserProfile
 
 REVIEW_REQUEST_PUBLISHED = """

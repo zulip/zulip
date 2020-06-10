@@ -1,33 +1,37 @@
 import calendar
+import urllib
 from datetime import timedelta
+from typing import Any, Dict
+from unittest.mock import patch
+
 import lxml.html
 import ujson
-
 from django.conf import settings
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
-from unittest.mock import patch
-import urllib
-from typing import Any, Dict
-from zerver.lib.actions import (
-    do_create_user, do_change_logo_source,
-)
+
+from corporate.models import Customer, CustomerPlan
+from zerver.lib.actions import do_change_logo_source, do_create_user
 from zerver.lib.events import add_realm_logo_fields
-from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import (
-    queries_captured, get_user_messages,
-)
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import get_user_messages, queries_captured
 from zerver.lib.test_runner import slow
 from zerver.lib.users import compute_show_invites_and_add_streams
 from zerver.models import (
-    get_realm, get_stream, get_user, UserProfile,
-    flush_per_request_caches, DefaultStream, Realm,
-    get_system_bot, UserActivity,
+    DefaultStream,
+    Realm,
+    UserActivity,
+    UserProfile,
+    flush_per_request_caches,
+    get_realm,
+    get_stream,
+    get_system_bot,
+    get_user,
 )
 from zerver.views.home import compute_navbar_logo_url, get_furthest_read_time
-from corporate.models import Customer, CustomerPlan
 from zerver.worker.queue_processors import UserActivityWorker
+
 
 class HomeTest(ZulipTestCase):
     def test_home(self) -> None:

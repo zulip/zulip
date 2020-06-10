@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
+import argparse
 import os
 import sys
-import argparse
 
 # check for the venv
 from lib import sanity_check
+
 sanity_check.check_venv(__file__)
 
-from linter_lib.custom_check import python_rules, non_py_rules
-from zulint.command import add_default_linter_arguments, LinterConfig
 import random
+
+from zulint.command import LinterConfig, add_default_linter_arguments
+
+from linter_lib.custom_check import non_py_rules, python_rules
+
 
 def run() -> None:
     parser = argparse.ArgumentParser()
@@ -26,13 +30,10 @@ def run() -> None:
     root_dir = os.path.dirname(tools_dir)
     sys.path.insert(0, root_dir)
 
+    from tools.lib.test_script import assert_provisioning_status_ok
     from tools.linter_lib.exclude import EXCLUDED_FILES, PUPPET_CHECK_RULES_TO_EXCLUDE
-    from tools.linter_lib.pyflakes import check_pyflakes
     from tools.linter_lib.pep8 import check_pep8
-
-    from tools.lib.test_script import (
-        assert_provisioning_status_ok,
-    )
+    from tools.linter_lib.pyflakes import check_pyflakes
 
     os.chdir(root_dir)
 

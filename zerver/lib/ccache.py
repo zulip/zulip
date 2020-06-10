@@ -1,4 +1,6 @@
-from typing import Any, Dict, List, Optional
+import base64
+import struct
+from typing import Any, Dict, List, Optional, Union
 
 # This file is adapted from samples/shellinabox/ssh-krb-wrapper in
 # https://github.com/davidben/webathena, which has the following
@@ -26,9 +28,6 @@ from typing import Any, Dict, List, Optional
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import base64
-import struct
-from typing import Union
 
 def force_bytes(s: Union[str, bytes], encoding: str='utf-8') -> bytes:
     """converts a string to binary string"""

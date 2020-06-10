@@ -1,37 +1,29 @@
 import base64
-import dateutil
 import glob
-import hypchat
 import logging
 import os
 import re
 import shutil
 import subprocess
-import ujson
-
 from typing import Any, Callable, Dict, List, Optional, Set
 
+import dateutil
+import hypchat
+import ujson
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.utils import (
-    process_list_in_batches,
-)
-
-from zerver.models import (
-    RealmEmoji,
-    Recipient,
-    UserProfile,
-)
-
+from zerver.data_import.hipchat_attachment import AttachmentHandler
+from zerver.data_import.hipchat_user import UserHandler
 from zerver.data_import.import_util import (
+    SubscriberHandler,
     build_message,
+    build_personal_subscriptions,
+    build_public_stream_subscriptions,
     build_realm,
     build_realm_emoji,
     build_recipients,
     build_stream,
-    build_personal_subscriptions,
-    build_public_stream_subscriptions,
     build_stream_subscriptions,
     build_user_profile,
     build_zerver_realm,
@@ -39,12 +31,10 @@ from zerver.data_import.import_util import (
     make_subscriber_map,
     make_user_messages,
     write_avatar_png,
-    SubscriberHandler,
 )
-
-from zerver.data_import.hipchat_attachment import AttachmentHandler
-from zerver.data_import.hipchat_user import UserHandler
 from zerver.data_import.sequencer import NEXT_ID, IdMapper
+from zerver.lib.utils import process_list_in_batches
+from zerver.models import RealmEmoji, Recipient, UserProfile
 
 # stubs
 ZerverFieldsT = Dict[str, Any]

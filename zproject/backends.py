@@ -15,67 +15,81 @@
 import binascii
 import copy
 import logging
+from abc import ABC, abstractmethod
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union, cast
+
 import jwt
 import magic
 import ujson
-from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union, \
-    cast
-from typing_extensions import TypedDict
-from zxcvbn import zxcvbn
-
-from django_auth_ldap.backend import LDAPBackend, LDAPReverseEmailSearch, \
-    _LDAPUser, ldap_error
 from decorator import decorator
-
+from django.conf import settings
 from django.contrib.auth import authenticate, get_backends
 from django.contrib.auth.backends import RemoteUserBackend
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
-from django.dispatch import receiver, Signal
-from django.http import HttpResponse, HttpResponseRedirect, HttpRequest
+from django.dispatch import Signal, receiver
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import ugettext as _
+from django_auth_ldap.backend import LDAPBackend, LDAPReverseEmailSearch, _LDAPUser, ldap_error
 from jwt.algorithms import RSAAlgorithm
 from jwt.exceptions import PyJWTError
 from lxml.etree import XMLSyntaxError
-from requests import HTTPError
 from onelogin.saml2.errors import OneLogin_Saml2_Error
 from onelogin.saml2.response import OneLogin_Saml2_Response
-
-from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
-    GithubTeamOAuth2
-from social_core.backends.azuread import AzureADOAuth2
-from social_core.backends.gitlab import GitLabOAuth2
-from social_core.backends.base import BaseAuth
-from social_core.backends.google import GoogleOAuth2
+from requests import HTTPError
 from social_core.backends.apple import AppleIdAuth
+from social_core.backends.azuread import AzureADOAuth2
+from social_core.backends.base import BaseAuth
+from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, GithubTeamOAuth2
+from social_core.backends.gitlab import GitLabOAuth2
+from social_core.backends.google import GoogleOAuth2
 from social_core.backends.saml import SAMLAuth
+from social_core.exceptions import (
+    AuthFailed,
+    AuthMissingParameter,
+    AuthStateForbidden,
+    SocialAuthBaseException,
+)
 from social_core.pipeline.partial import partial
-from social_core.exceptions import AuthFailed, SocialAuthBaseException, \
-    AuthMissingParameter, AuthStateForbidden
+from typing_extensions import TypedDict
+from zxcvbn import zxcvbn
 
 from zerver.decorator import client_is_exempt_from_rate_limiting
-from zerver.lib.actions import do_create_user, do_reactivate_user, do_deactivate_user, \
-    do_update_user_custom_profile_data_if_changed
-from zerver.lib.avatar import is_avatar_new, avatar_url
+from zerver.lib.actions import (
+    do_create_user,
+    do_deactivate_user,
+    do_reactivate_user,
+    do_update_user_custom_profile_data_if_changed,
+)
+from zerver.lib.avatar import avatar_url, is_avatar_new
 from zerver.lib.avatar_hash import user_avatar_content_hash
 from zerver.lib.create_user import get_role_for_new_user
 from zerver.lib.dev_ldap_directory import init_fakeldap
-from zerver.lib.email_validation import email_allowed_for_realm, \
-    validate_email_not_already_in_realm
+from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.mobile_auth_otp import is_valid_otp
 from zerver.lib.rate_limiter import RateLimitedObject
+from zerver.lib.redis_utils import get_dict_from_redis, get_redis_client, put_dict_in_redis
 from zerver.lib.request import JsonableError
-from zerver.lib.users import check_full_name, validate_user_custom_profile_field
-from zerver.lib.redis_utils import get_redis_client, get_dict_from_redis, put_dict_in_redis
 from zerver.lib.subdomains import get_subdomain
-from zerver.models import CustomProfileField, DisposableEmailError, DomainNotAllowedForRealmError, \
-    EmailContainsPlusError, PreregistrationUser, UserProfile, Realm, custom_profile_fields_for_realm, \
-    get_user_profile_by_id, remote_user_to_email, \
-    email_to_username, get_realm, get_user_by_delivery_email, supported_auth_backends
+from zerver.lib.users import check_full_name, validate_user_custom_profile_field
+from zerver.models import (
+    CustomProfileField,
+    DisposableEmailError,
+    DomainNotAllowedForRealmError,
+    EmailContainsPlusError,
+    PreregistrationUser,
+    Realm,
+    UserProfile,
+    custom_profile_fields_for_realm,
+    email_to_username,
+    get_realm,
+    get_user_by_delivery_email,
+    get_user_profile_by_id,
+    remote_user_to_email,
+    supported_auth_backends,
+)
 
 redis_client = get_redis_client()
 
@@ -505,9 +519,10 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
     def sync_avatar_from_ldap(self, user: UserProfile, ldap_user: _LDAPUser) -> None:
         if 'avatar' in settings.AUTH_LDAP_USER_ATTR_MAP:
             # We do local imports here to avoid import loops
-            from zerver.lib.upload import upload_avatar_image
-            from zerver.lib.actions import do_change_avatar_fields
             from io import BytesIO
+
+            from zerver.lib.actions import do_change_avatar_fields
+            from zerver.lib.upload import upload_avatar_image
 
             avatar_attr_name = settings.AUTH_LDAP_USER_ATTR_MAP['avatar']
             if avatar_attr_name not in ldap_user.attrs:  # nocoverage
@@ -1236,8 +1251,7 @@ def social_auth_finish(backend: Any,
     comments below as well as login_or_register_remote_user in
     `zerver/views/auth.py` for the details on how that dispatch works.
     """
-    from zerver.views.auth import (login_or_register_remote_user,
-                                   redirect_and_log_into_subdomain)
+    from zerver.views.auth import login_or_register_remote_user, redirect_and_log_into_subdomain
 
     user_profile = kwargs['user_profile']
     return_data = kwargs['return_data']

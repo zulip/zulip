@@ -2,14 +2,15 @@
 
 # check for the venv
 from lib import sanity_check
-sanity_check.check_venv(__file__)
 
-from collections import defaultdict
-from typing import Any, Dict, List, Set
+sanity_check.check_venv(__file__)
 
 import html
 import os
 import pprint
+from collections import defaultdict
+from typing import Any, Dict, List, Set
+
 import ujson
 
 Call = Dict[str, Any]

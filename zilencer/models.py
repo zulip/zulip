@@ -2,8 +2,9 @@ import datetime
 
 from django.db import models
 
-from zerver.models import AbstractPushDeviceToken, AbstractRealmAuditLog
 from analytics.models import BaseCount
+from zerver.models import AbstractPushDeviceToken, AbstractRealmAuditLog
+
 
 def get_remote_server_by_uuid(uuid: str) -> 'RemoteZulipServer':
     return RemoteZulipServer.objects.get(uuid=uuid)

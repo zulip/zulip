@@ -1,63 +1,50 @@
+import os
 import subprocess
+from email import message_from_string
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from typing import Any, Callable, Dict, Mapping, Optional
+from unittest import mock
 
+import ujson
+from django.conf import settings
 from django.http import HttpResponse
 
-from zerver.lib.test_helpers import (
-    most_recent_message,
-    most_recent_usermessage,
-)
-
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-
-from zerver.models import (
-    get_display_recipient,
-    get_realm,
-    get_stream,
-    get_system_bot,
-    MissedMessageEmailAddress,
-    Recipient,
-    UserProfile,
-)
-
-from zerver.lib.actions import ensure_stream, do_deactivate_realm, do_deactivate_user
-
+from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, ensure_stream
 from zerver.lib.email_mirror import (
-    process_message,
-    process_missed_message,
+    ZulipEmailForwardError,
     create_missed_message_address,
+    filter_footer,
     get_missed_message_token_from_address,
-    strip_from_subject,
     is_forwarded,
     is_missed_message_address,
-    filter_footer,
     log_and_report,
+    process_message,
+    process_missed_message,
     redact_email_address,
-    ZulipEmailForwardError,
+    strip_from_subject,
 )
-
 from zerver.lib.email_mirror_helpers import (
     decode_email_address,
     encode_email_address,
     get_email_gateway_message_string_from_address,
 )
-
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.send_email import FromAddress
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import most_recent_message, most_recent_usermessage
+from zerver.models import (
+    MissedMessageEmailAddress,
+    Recipient,
+    UserProfile,
+    get_display_recipient,
+    get_realm,
+    get_stream,
+    get_system_bot,
+)
 from zerver.worker.queue_processors import MirrorWorker
 
-from email import message_from_string
-from email.mime.text import MIMEText
-from email.mime.image import MIMEImage
-from email.mime.multipart import MIMEMultipart
-
-import ujson
-from unittest import mock
-import os
-from django.conf import settings
-
-from typing import Any, Callable, Dict, Mapping, Optional
 
 class TestEncodeDecode(ZulipTestCase):
     def _assert_options(self, options: Dict[str, bool], show_sender: bool=False,

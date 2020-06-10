@@ -1,43 +1,83 @@
-from typing import Union, Optional, Dict, Any, List
+from typing import Any, Dict, List, Optional, Union
 
-from django.http import HttpRequest, HttpResponse
-
-from django.utils.translation import ugettext as _
-from django.shortcuts import redirect
 from django.conf import settings
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import redirect
+from django.utils.translation import ugettext as _
 
-from zerver.decorator import require_realm_admin, require_member_or_admin
-from zerver.forms import CreateUserForm, PASSWORD_TOO_WEAK_ERROR
-from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
-    do_change_user_role, do_change_default_all_public_streams, \
-    do_change_default_events_register_stream, do_change_default_sending_stream, \
-    do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key, \
-    check_change_full_name, notify_created_bot, do_update_outgoing_webhook_service, \
-    do_update_bot_config_data, check_change_bot_full_name, \
-    do_update_user_custom_profile_data_if_changed, check_remove_custom_profile_field_value
+from zerver.decorator import require_member_or_admin, require_realm_admin
+from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
+from zerver.lib.actions import (
+    check_change_bot_full_name,
+    check_change_full_name,
+    check_remove_custom_profile_field_value,
+    do_change_avatar_fields,
+    do_change_bot_owner,
+    do_change_default_all_public_streams,
+    do_change_default_events_register_stream,
+    do_change_default_sending_stream,
+    do_change_user_role,
+    do_create_user,
+    do_deactivate_user,
+    do_reactivate_user,
+    do_regenerate_api_key,
+    do_update_bot_config_data,
+    do_update_outgoing_webhook_service,
+    do_update_user_custom_profile_data_if_changed,
+    notify_created_bot,
+)
 from zerver.lib.avatar import avatar_url, get_gravatar_url
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.email_validation import email_allowed_for_realm
 from zerver.lib.exceptions import CannotDeactivateLastUserError
 from zerver.lib.integrations import EMBEDDED_BOTS
-from zerver.lib.request import has_request_variables, REQ
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
-from zerver.lib.streams import access_stream_by_name, access_stream_by_id, subscribed_to_stream
+from zerver.lib.streams import access_stream_by_id, access_stream_by_name, subscribed_to_stream
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.validator import check_bool, check_string, check_int, check_url, check_dict, check_list, \
-    check_int_in
 from zerver.lib.url_encoding import add_query_arg_to_redirect_url
-from zerver.lib.users import check_valid_bot_type, check_bot_creation_policy, \
-    check_full_name, check_short_name, check_valid_interface_type, check_valid_bot_config, \
-    access_bot_by_id, add_service, access_user_by_id, check_bot_name_available, \
-    validate_user_custom_profile_data, get_raw_user_data, get_api_key
+from zerver.lib.users import (
+    access_bot_by_id,
+    access_user_by_id,
+    add_service,
+    check_bot_creation_policy,
+    check_bot_name_available,
+    check_full_name,
+    check_short_name,
+    check_valid_bot_config,
+    check_valid_bot_type,
+    check_valid_interface_type,
+    get_api_key,
+    get_raw_user_data,
+    validate_user_custom_profile_data,
+)
 from zerver.lib.utils import generate_api_key
-from zerver.models import UserProfile, Stream, Message, \
-    get_user_by_delivery_email, Service, get_user_including_cross_realm, \
-    DomainNotAllowedForRealmError, DisposableEmailError, get_user_profile_by_id_in_realm, \
-    EmailContainsPlusError, get_user_by_id_in_realm_including_cross_realm, Realm, \
-    InvalidFakeEmailDomain
+from zerver.lib.validator import (
+    check_bool,
+    check_dict,
+    check_int,
+    check_int_in,
+    check_list,
+    check_string,
+    check_url,
+)
+from zerver.models import (
+    DisposableEmailError,
+    DomainNotAllowedForRealmError,
+    EmailContainsPlusError,
+    InvalidFakeEmailDomain,
+    Message,
+    Realm,
+    Service,
+    Stream,
+    UserProfile,
+    get_user_by_delivery_email,
+    get_user_by_id_in_realm_including_cross_realm,
+    get_user_including_cross_realm,
+    get_user_profile_by_id_in_realm,
+)
 from zproject.backends import check_password_strength
+
 
 def check_last_owner(user_profile: UserProfile) -> bool:
     owners = set(user_profile.realm.get_human_owner_users())

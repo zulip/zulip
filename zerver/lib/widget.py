@@ -1,7 +1,6 @@
-from typing import MutableMapping, Any, Optional, Tuple
-
-import re
 import json
+import re
+from typing import Any, MutableMapping, Optional, Tuple
 
 from zerver.models import SubMessage
 

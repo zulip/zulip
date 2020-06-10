@@ -3,13 +3,12 @@ import argparse
 import os
 import subprocess
 import sys
-
 from typing import Set
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ZULIP_PATH)
-from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, get_recent_deployments, \
-    may_be_perform_purging
+from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, get_recent_deployments, may_be_perform_purging
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(

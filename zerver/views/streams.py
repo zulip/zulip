@@ -1,39 +1,79 @@
-from typing import Any, Optional, Tuple, List, Set, Iterable, Mapping, Callable, Dict, \
-    Union
+from collections import defaultdict
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set, Tuple, Union
 
-from django.utils.translation import ugettext as _
+import ujson
 from django.conf import settings
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
 
-from zerver.lib.exceptions import JsonableError, ErrorCode
+from zerver.decorator import (
+    authenticated_json_post_view,
+    require_non_guest_user,
+    require_realm_admin,
+)
+from zerver.lib.actions import (
+    bulk_add_subscriptions,
+    bulk_remove_subscriptions,
+    do_add_default_stream,
+    do_add_streams_to_default_stream_group,
+    do_change_default_stream_group_description,
+    do_change_default_stream_group_name,
+    do_change_stream_description,
+    do_change_stream_invite_only,
+    do_change_stream_post_policy,
+    do_change_subscription_property,
+    do_create_default_stream_group,
+    do_deactivate_stream,
+    do_delete_messages,
+    do_get_streams,
+    do_remove_default_stream,
+    do_remove_default_stream_group,
+    do_remove_streams_from_default_stream_group,
+    do_rename_stream,
+    do_send_messages,
+    gather_subscriptions,
+    get_subscriber_emails,
+    internal_prep_private_message,
+    internal_prep_stream_message,
+)
+from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.request import REQ, has_request_variables
-from zerver.decorator import authenticated_json_post_view, \
-    require_realm_admin, require_non_guest_user
-from zerver.lib.actions import bulk_remove_subscriptions, \
-    do_change_subscription_property, internal_prep_private_message, \
-    internal_prep_stream_message, \
-    gather_subscriptions, \
-    bulk_add_subscriptions, do_send_messages, get_subscriber_emails, do_rename_stream, \
-    do_deactivate_stream, do_change_stream_invite_only, do_add_default_stream, \
-    do_change_stream_description, do_get_streams, \
-    do_remove_default_stream, do_change_stream_post_policy, do_delete_messages, \
-    do_create_default_stream_group, do_add_streams_to_default_stream_group, \
-    do_remove_streams_from_default_stream_group, do_remove_default_stream_group, \
-    do_change_default_stream_group_description, do_change_default_stream_group_name
-from zerver.lib.response import json_success, json_error
-from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
-    check_stream_name, check_stream_name_available, filter_stream_authorization, \
-    list_to_streams, access_stream_for_delete_or_update, access_default_stream_group_by_id
+from zerver.lib.response import json_error, json_success
+from zerver.lib.streams import (
+    access_default_stream_group_by_id,
+    access_stream_by_id,
+    access_stream_by_name,
+    access_stream_for_delete_or_update,
+    check_stream_name,
+    check_stream_name_available,
+    filter_stream_authorization,
+    list_to_streams,
+)
 from zerver.lib.topic import get_topic_history_for_stream, messages_for_topic
-from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
-    check_bool, check_variable_type, check_capped_string, check_color, check_dict_only, \
-    check_int_in, to_non_negative_int
-from zerver.models import UserProfile, Stream, Realm, UserMessage, \
-    get_system_bot, get_active_user, get_active_user_profile_by_id_in_realm
+from zerver.lib.validator import (
+    check_bool,
+    check_capped_string,
+    check_color,
+    check_dict,
+    check_dict_only,
+    check_int,
+    check_int_in,
+    check_list,
+    check_string,
+    check_variable_type,
+    to_non_negative_int,
+)
+from zerver.models import (
+    Realm,
+    Stream,
+    UserMessage,
+    UserProfile,
+    get_active_user,
+    get_active_user_profile_by_id_in_realm,
+    get_system_bot,
+)
 
-from collections import defaultdict
-import ujson
 
 class PrincipalError(JsonableError):
     code = ErrorCode.UNAUTHORIZED_PRINCIPAL

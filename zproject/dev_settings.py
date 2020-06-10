@@ -113,6 +113,7 @@ FAKE_LDAP_MODE = None  # type: Optional[str]
 if FAKE_LDAP_MODE:
     import ldap
     from django_auth_ldap.config import LDAPSearch
+
     # To understand these parameters, read the docs in
     # prod_settings_template.py and on ReadTheDocs.
     LDAP_APPEND_DOMAIN = None

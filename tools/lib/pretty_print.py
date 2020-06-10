@@ -1,13 +1,10 @@
+import subprocess
 from typing import Any, Dict, List
 
-from .template_parser import (
-    tokenize,
-    is_django_block_tag,
-)
+from zulint.printer import ENDC, GREEN
 
-from zulint.printer import GREEN, ENDC
+from .template_parser import is_django_block_tag, tokenize
 
-import subprocess
 
 def pretty_print_html(html: str, num_spaces: int = 4) -> str:
     # We use 1-based indexing for both rows and columns.

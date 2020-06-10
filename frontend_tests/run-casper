@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 import argparse
+import glob
+import os
+import shlex
 import subprocess
 import sys
-import os
-import glob
-import shlex
 
 #
 # In order to use remote casperjs debugging, pass the --remote-debug flag
@@ -64,12 +64,13 @@ sys.path.insert(0, ZULIP_PATH)
 
 # check for the venv
 from tools.lib import sanity_check
+
 sanity_check.check_venv(__file__)
+
+from typing import Iterable, List
 
 from tools.lib.test_script import assert_provisioning_status_ok, find_js_test_files
 from tools.lib.test_server import test_server_running
-
-from typing import Iterable, List
 
 assert_provisioning_status_ok(options.force)
 

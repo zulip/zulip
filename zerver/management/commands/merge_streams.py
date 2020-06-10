@@ -1,8 +1,11 @@
 from argparse import ArgumentParser
 from typing import Any, List
 
-from zerver.lib.actions import bulk_add_subscriptions, \
-    bulk_remove_subscriptions, do_deactivate_stream
+from zerver.lib.actions import (
+    bulk_add_subscriptions,
+    bulk_remove_subscriptions,
+    do_deactivate_stream,
+)
 from zerver.lib.cache import cache_delete_many, to_dict_cache_key_id
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Message, Subscription, get_stream

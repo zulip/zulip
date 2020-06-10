@@ -1,9 +1,8 @@
 import time
-from psycopg2.extensions import cursor, connection
-from psycopg2.sql import Composable
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence, TypeVar, Union
 
-from typing import Callable, Optional, Iterable, Any, Dict, List, Union, TypeVar, \
-    Mapping, Sequence
+from psycopg2.extensions import connection, cursor
+from psycopg2.sql import Composable
 
 CursorObj = TypeVar('CursorObj', bound=cursor)
 Query = Union[str, Composable]

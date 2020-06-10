@@ -1,9 +1,11 @@
-from django.conf import settings
-from django.http import HttpRequest
 import re
 from typing import Optional
 
+from django.conf import settings
+from django.http import HttpRequest
+
 from zerver.models import Realm, UserProfile
+
 
 def get_subdomain(request: HttpRequest) -> str:
 

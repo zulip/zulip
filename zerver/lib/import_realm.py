@@ -1,44 +1,71 @@
 import datetime
 import logging
 import os
-import ujson
 import shutil
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, cast
 
 import boto3
+import ujson
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.db import connection
 from django.db.models import Max
 from django.utils.timezone import now as timezone_now
-from typing import Any, Dict, List, Optional, Set, Tuple, \
-    Iterable, cast
 from psycopg2.extras import execute_values
-from psycopg2.sql import Identifier, SQL
+from psycopg2.sql import SQL, Identifier
 
 from analytics.models import RealmCount, StreamCount, UserCount
-from zerver.lib.actions import UserMessageLite, bulk_insert_ums, \
-    do_change_plan_type, do_change_avatar_fields
+from zerver.lib.actions import (
+    UserMessageLite,
+    bulk_insert_ums,
+    do_change_avatar_fields,
+    do_change_plan_type,
+)
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
-from zerver.lib.bulk_create import bulk_create_users, bulk_set_users_or_streams_recipient_fields
-from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.export import DATE_FIELDS, \
-    Record, TableData, TableName, Field, Path
-from zerver.lib.message import do_render_markdown
 from zerver.lib.bugdown import version as bugdown_version
-from zerver.lib.streams import render_stream_description
-from zerver.lib.upload import random_name, sanitize_name, \
-    guess_type, BadImageError
-from zerver.lib.utils import generate_api_key, process_list_in_batches
+from zerver.lib.bulk_create import bulk_create_users, bulk_set_users_or_streams_recipient_fields
+from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, TableName
+from zerver.lib.message import do_render_markdown
 from zerver.lib.parallel import run_parallel
-from zerver.lib.server_initialization import server_initialized, create_internal_realm
-from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
-    UserMessage, Subscription, Message, RealmEmoji, \
-    RealmDomain, Recipient, get_user_profile_by_id, \
-    UserPresence, UserActivity, UserActivityInterval, Reaction, \
-    CustomProfileField, CustomProfileFieldValue, RealmAuditLog, \
-    Attachment, get_system_bot, email_to_username, get_huddle_hash, \
-    UserHotspot, MutedTopic, Service, UserGroup, UserGroupMembership, \
-    BotStorageData, BotConfigData, DefaultStream, RealmFilter
+from zerver.lib.server_initialization import create_internal_realm, server_initialized
+from zerver.lib.streams import render_stream_description
+from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.upload import BadImageError, guess_type, random_name, sanitize_name
+from zerver.lib.utils import generate_api_key, process_list_in_batches
+from zerver.models import (
+    Attachment,
+    BotConfigData,
+    BotStorageData,
+    Client,
+    CustomProfileField,
+    CustomProfileFieldValue,
+    DefaultStream,
+    Huddle,
+    Message,
+    MutedTopic,
+    Reaction,
+    Realm,
+    RealmAuditLog,
+    RealmDomain,
+    RealmEmoji,
+    RealmFilter,
+    Recipient,
+    Service,
+    Stream,
+    Subscription,
+    UserActivity,
+    UserActivityInterval,
+    UserGroup,
+    UserGroupMembership,
+    UserHotspot,
+    UserMessage,
+    UserPresence,
+    UserProfile,
+    email_to_username,
+    get_huddle_hash,
+    get_system_bot,
+    get_user_profile_by_id,
+)
 
 realm_tables = [("zerver_defaultstream", DefaultStream, "defaultstream"),
                 ("zerver_realmemoji", RealmEmoji, "realmemoji"),
@@ -707,6 +734,7 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
 
     if processing_avatars:
         from zerver.lib.upload import upload_backend
+
         # Ensure that we have medium-size avatar images for every
         # avatar.  TODO: This implementation is hacky, both in that it
         # does get_user_profile_by_id for each user, and in that it

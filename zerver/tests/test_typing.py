@@ -1,17 +1,11 @@
-import ujson
-from typing import Any, Mapping, List
+from typing import Any, List, Mapping
 
-from zerver.lib.test_helpers import (
-    tornado_redirected_to_list,
-    queries_captured,
-)
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-from zerver.models import (
-    Huddle,
-    get_huddle_hash,
-)
+import ujson
+
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import queries_captured, tornado_redirected_to_list
+from zerver.models import Huddle, get_huddle_hash
+
 
 class TypingValidateOperatorTest(ZulipTestCase):
     def test_missing_parameter(self) -> None:

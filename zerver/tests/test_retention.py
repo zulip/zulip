@@ -5,25 +5,39 @@ from unittest import mock
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import internal_send_private_message, do_add_submessage, do_delete_messages
+from zerver.lib.actions import do_add_submessage, do_delete_messages, internal_send_private_message
+from zerver.lib.retention import (
+    archive_messages,
+    clean_archived_data,
+    get_realms_and_streams_for_archiving,
+    move_messages_to_archive,
+    restore_all_data_from_archive,
+)
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
 from zerver.lib.upload import create_attachment
-from zerver.models import (Message, Realm, Stream, ArchivedUserMessage, SubMessage,
-                           ArchivedMessage, Attachment, ArchivedAttachment, UserMessage,
-                           Reaction, ArchivedReaction, ArchivedSubMessage, ArchiveTransaction,
-                           get_realm, get_user_profile_by_email, get_stream, get_system_bot)
-from zerver.lib.retention import (
-    archive_messages,
-    move_messages_to_archive,
-    restore_all_data_from_archive,
-    clean_archived_data,
-    get_realms_and_streams_for_archiving,
+from zerver.models import (
+    ArchivedAttachment,
+    ArchivedMessage,
+    ArchivedReaction,
+    ArchivedSubMessage,
+    ArchivedUserMessage,
+    ArchiveTransaction,
+    Attachment,
+    Message,
+    Reaction,
+    Realm,
+    Stream,
+    SubMessage,
+    UserMessage,
+    get_realm,
+    get_stream,
+    get_system_bot,
+    get_user_profile_by_email,
 )
-from zerver.tornado.event_queue import send_event
-
 # Class with helper functions useful for testing archiving of reactions:
 from zerver.tests.test_reactions import EmojiReactionBase
+from zerver.tornado.event_queue import send_event
 
 ZULIP_REALM_DAYS = 30
 MIT_REALM_DAYS = 100

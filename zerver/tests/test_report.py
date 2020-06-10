@@ -1,13 +1,12 @@
 from typing import Any, Callable, Dict, Iterable, List, Tuple
+from unittest import mock
 
+import ujson
 from django.test import override_settings
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
+
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.utils import statsd
 
-from unittest import mock
-import ujson
 
 def fix_params(raw_params: Dict[str, Any]) -> Dict[str, str]:
     # A few of our few legacy endpoints need their

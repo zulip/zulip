@@ -1,6 +1,8 @@
 import re
 import traceback
+
 import DNS
+
 
 def compute_mit_user_fullname(email: str) -> str:
     try:

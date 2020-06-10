@@ -1,10 +1,15 @@
+from typing import Dict, Iterable, List
+
+import ahocorasick
 from django.db import transaction
 
-from zerver.models import UserProfile, Realm, AlertWord, flush_realm_alert_words
-from zerver.lib.cache import cache_with_key, realm_alert_words_cache_key, \
-    realm_alert_words_automaton_cache_key
-import ahocorasick
-from typing import Dict, Iterable, List
+from zerver.lib.cache import (
+    cache_with_key,
+    realm_alert_words_automaton_cache_key,
+    realm_alert_words_cache_key,
+)
+from zerver.models import AlertWord, Realm, UserProfile, flush_realm_alert_words
+
 
 @cache_with_key(realm_alert_words_cache_key, timeout=3600*24)
 def alert_words_in_realm(realm: Realm) -> Dict[int, List[str]]:

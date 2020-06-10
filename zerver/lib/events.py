@@ -1,20 +1,28 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
-
 import copy
-
-from django.utils.translation import ugettext as _
-from django.conf import settings
 from importlib import import_module
-from typing import (
-    Any, Callable, Dict, Iterable, Optional, Sequence, Set,
-)
+from typing import Any, Callable, Dict, Iterable, Optional, Sequence, Set
+
+from django.conf import settings
+from django.utils.translation import ugettext as _
 
 session_engine = import_module(settings.SESSION_ENGINE)
 
+from version import API_FEATURE_LEVEL, ZULIP_VERSION
+from zerver.lib.actions import (
+    default_stream_groups_to_dicts_sorted,
+    do_get_streams,
+    gather_subscriptions_helper,
+    get_available_notification_sounds,
+    get_default_streams_for_realm,
+    get_owned_bot_dicts,
+    streams_to_dicts_sorted,
+)
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
+from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.integrations import EMBEDDED_BOTS, WEBHOOK_INTEGRATIONS
 from zerver.lib.message import (
@@ -27,40 +35,34 @@ from zerver.lib.message import (
     remove_message_id_from_unread_mgs,
 )
 from zerver.lib.narrow import check_supported_events_narrow_filter, read_stop_words
-from zerver.lib.presence import (
-    get_presences_for_realm,
-    get_presence_for_user,
-)
+from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
 from zerver.lib.push_notifications import push_notifications_enabled
-from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_url
 from zerver.lib.request import JsonableError
+from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.topic_mutes import get_topic_mutes
-from zerver.lib.actions import (
-    do_get_streams,
-    get_default_streams_for_realm,
-    gather_subscriptions_helper,
-    streams_to_dicts_sorted,
-    default_stream_groups_to_dicts_sorted,
-    get_owned_bot_dicts,
-    get_available_notification_sounds,
-)
-from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data, is_administrator_role
 from zerver.lib.user_groups import user_groups_in_realm_serialized
 from zerver.lib.user_status import get_user_info_dict
-from zerver.tornado.event_queue import request_event_queue, get_user_events
+from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data, is_administrator_role
 from zerver.models import (
-    Client, Message, Realm, UserProfile, UserMessage,
+    Client,
+    CustomProfileField,
+    Message,
+    Realm,
+    Stream,
+    UserMessage,
+    UserProfile,
+    custom_profile_fields_for_realm,
+    get_default_stream_groups,
+    get_realm_domains,
     realm_filters_for_realm,
-    custom_profile_fields_for_realm, get_realm_domains,
-    get_default_stream_groups, CustomProfileField, Stream,
 )
+from zerver.tornado.event_queue import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
-from version import ZULIP_VERSION, API_FEATURE_LEVEL
-from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
+
 
 def add_realm_logo_fields(state: Dict[str, Any], realm: Realm) -> None:
     state['realm_logo_url'] = get_realm_logo_url(realm, night = False)

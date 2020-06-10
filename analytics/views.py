@@ -6,54 +6,75 @@ import urllib
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
-
-from typing import Any, Callable, Dict, List, \
-    Optional, Set, Tuple, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, Union
 
 import pytz
 from django.conf import settings
-from django.urls import reverse
+from django.core.exceptions import ValidationError
+from django.core.validators import URLValidator
 from django.db import connection
 from django.db.models.query import QuerySet
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
 from django.shortcuts import render
 from django.template import loader
+from django.urls import reverse
+from django.utils.timesince import timesince
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
-from django.utils.timesince import timesince
-from django.core.validators import URLValidator
-from django.core.exceptions import ValidationError
 from jinja2 import Markup as mark_safe
-from psycopg2.sql import Composable, Literal, SQL
+from psycopg2.sql import SQL, Composable, Literal
 
 from analytics.lib.counts import COUNT_STATS, CountStat
 from analytics.lib.time_utils import time_range
-from analytics.models import BaseCount, InstallationCount, \
-    RealmCount, StreamCount, UserCount, last_successful_fill, installation_epoch
-from confirmation.models import Confirmation, confirmation_url, _properties
-from zerver.decorator import require_server_admin, require_server_admin_api, \
-    to_utc_datetime, zulip_login_required, require_non_guest_user
+from analytics.models import (
+    BaseCount,
+    InstallationCount,
+    RealmCount,
+    StreamCount,
+    UserCount,
+    installation_epoch,
+    last_successful_fill,
+)
+from confirmation.models import Confirmation, _properties, confirmation_url
+from confirmation.settings import STATUS_ACTIVE
+from zerver.decorator import (
+    require_non_guest_user,
+    require_server_admin,
+    require_server_admin_api,
+    to_utc_datetime,
+    zulip_login_required,
+)
+from zerver.lib.actions import (
+    do_change_plan_type,
+    do_deactivate_realm,
+    do_scrub_realm,
+    do_send_realm_reactivation_email,
+)
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.timestamp import convert_to_UTC, timestamp_to_datetime
-from zerver.lib.realm_icon import realm_icon_url
-from zerver.views.invite import get_invitee_emails_set
 from zerver.lib.subdomains import get_subdomain_from_hostname
-from zerver.lib.actions import do_change_plan_type, do_deactivate_realm, \
-    do_send_realm_reactivation_email, do_scrub_realm
+from zerver.lib.timestamp import convert_to_UTC, timestamp_to_datetime
 from zerver.lib.validator import to_non_negative_int
-from confirmation.settings import STATUS_ACTIVE
+from zerver.views.invite import get_invitee_emails_set
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import attach_discount_to_realm, get_discount_for_realm
 
-from zerver.models import Client, get_realm, Realm, UserActivity, UserActivityInterval, \
-    UserProfile, PreregistrationUser, MultiuseInvite
+from zerver.models import (
+    Client,
+    MultiuseInvite,
+    PreregistrationUser,
+    Realm,
+    UserActivity,
+    UserActivityInterval,
+    UserProfile,
+    get_realm,
+)
 
 if settings.ZILENCER_ENABLED:
-    from zilencer.models import RemoteInstallationCount, RemoteRealmCount, \
-        RemoteZulipServer
+    from zilencer.models import RemoteInstallationCount, RemoteRealmCount, RemoteZulipServer
 else:
     from unittest.mock import Mock
     RemoteInstallationCount = Mock()  # type: ignore[misc] # https://github.com/JukkaL/mypy/issues/1188

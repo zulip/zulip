@@ -1,57 +1,81 @@
 import base64
-from unittest import mock
-import re
 import os
+import re
 from collections import defaultdict
-
 from typing import Any, Dict, Iterable, List, Optional, Tuple
+from unittest import mock
 
-from django.test import TestCase
-from django.http import HttpResponse, HttpRequest
+import ujson
 from django.conf import settings
+from django.http import HttpRequest, HttpResponse
+from django.test import TestCase
 
-from zerver.forms import OurAuthenticationForm
-from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
-    do_reactivate_user, do_reactivate_realm, do_set_realm_property
-from zerver.lib.exceptions import JsonableError, InvalidAPIKeyError, InvalidAPIKeyFormatError
-from zerver.lib.initial_password import initial_password
-from zerver.lib.test_helpers import (
-    HostRequestMock,
-)
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-from zerver.lib.response import json_response, json_success
-from zerver.lib.users import get_api_key
-from zerver.lib.user_agent import parse_user_agent
-from zerver.lib.utils import generate_api_key, has_api_key_format
-from zerver.lib.request import \
-    REQ, has_request_variables, RequestVariableMissingError, \
-    RequestVariableConversionError, RequestConfusingParmsError
-from zerver.lib.webhooks.common import UnexpectedWebhookEventType
 from zerver.decorator import (
     api_key_only_webhook_view,
+    authenticate_notify,
     authenticated_json_view,
     authenticated_rest_api_view,
     authenticated_uploads_api_view,
-    authenticate_notify, cachify,
-    get_client_name, internal_notify_view, is_local_addr,
-    rate_limit, validate_api_key,
+    cachify,
+    get_client_name,
+    internal_notify_view,
+    is_local_addr,
+    rate_limit,
     return_success_on_head_request,
+    validate_api_key,
     zulip_login_required,
 )
-from zerver.lib.cache import ignore_unhashable_lru_cache, dict_to_items_tuple, items_tuple_to_dict
+from zerver.forms import OurAuthenticationForm
+from zerver.lib.actions import (
+    do_deactivate_realm,
+    do_deactivate_user,
+    do_reactivate_realm,
+    do_reactivate_user,
+    do_set_realm_property,
+)
+from zerver.lib.cache import dict_to_items_tuple, ignore_unhashable_lru_cache, items_tuple_to_dict
+from zerver.lib.exceptions import InvalidAPIKeyError, InvalidAPIKeyFormatError, JsonableError
+from zerver.lib.initial_password import initial_password
+from zerver.lib.request import (
+    REQ,
+    RequestConfusingParmsError,
+    RequestVariableConversionError,
+    RequestVariableMissingError,
+    has_request_variables,
+)
+from zerver.lib.response import json_response, json_success
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import HostRequestMock
+from zerver.lib.user_agent import parse_user_agent
+from zerver.lib.users import get_api_key
+from zerver.lib.utils import generate_api_key, has_api_key_format
 from zerver.lib.validator import (
-    check_string, check_dict, check_dict_only, check_bool, check_float, check_int, check_list, Validator,
-    check_variable_type, equals, check_none_or, check_url, check_short_string,
-    check_string_fixed_length, check_capped_string, check_color, to_non_negative_int,
-    check_string_or_int_list, check_string_or_int, check_int_in, check_string_in,
+    Validator,
+    check_bool,
+    check_capped_string,
+    check_color,
+    check_dict,
+    check_dict_only,
+    check_float,
+    check_int,
+    check_int_in,
+    check_list,
+    check_none_or,
+    check_short_string,
+    check_string,
+    check_string_fixed_length,
+    check_string_in,
+    check_string_or_int,
+    check_string_or_int_list,
+    check_url,
+    check_variable_type,
+    equals,
+    to_non_negative_int,
     to_positive_or_allowed_int,
 )
-from zerver.models import \
-    get_realm, get_user, UserProfile, Realm
+from zerver.lib.webhooks.common import UnexpectedWebhookEventType
+from zerver.models import Realm, UserProfile, get_realm, get_user
 
-import ujson
 
 class DecoratorTestCase(TestCase):
     def test_get_client_name(self) -> None:

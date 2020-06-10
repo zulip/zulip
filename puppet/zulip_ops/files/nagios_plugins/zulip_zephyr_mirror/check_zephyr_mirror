@@ -9,9 +9,9 @@ run out of cron.
 
 See puppet/zulip_ops/files/cron.d/zephyr-mirror for the crontab details.
 """
-from typing import Dict
 import os
 import time
+from typing import Dict
 
 RESULTS_FILE = "/var/lib/nagios_state/check-mirroring-results"
 

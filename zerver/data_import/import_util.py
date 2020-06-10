@@ -1,20 +1,29 @@
-import random
-import requests
-import shutil
 import logging
 import os
+import random
+import shutil
 import traceback
-import ujson
+from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, TypeVar
 
-from typing import List, Dict, Any, Optional, Set, Callable, Iterable, Tuple, TypeVar
+import requests
+import ujson
 from django.forms.models import model_to_dict
 
-from zerver.models import Realm, RealmEmoji, Subscription, Recipient, \
-    Attachment, Stream, Message, UserProfile, Huddle
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.parallel import run_parallel
+from zerver.models import (
+    Attachment,
+    Huddle,
+    Message,
+    Realm,
+    RealmEmoji,
+    Recipient,
+    Stream,
+    Subscription,
+    UserProfile,
+)
 
 # stubs
 ZerverFieldsT = Dict[str, Any]

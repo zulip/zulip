@@ -1,4 +1,5 @@
 import os
+
 # test_settings.py works differently from
 # dev_settings.py/prod_settings.py; it actually is directly referenced
 # by the test suite as DJANGO_SETTINGS_MODULE and imports settings.py

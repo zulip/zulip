@@ -1,17 +1,9 @@
-from zerver.data_import.hipchat import (
-    get_hipchat_sender_id,
-)
-from zerver.data_import.hipchat_user import (
-    UserHandler,
-)
-from zerver.data_import.sequencer import (
-    IdMapper,
-)
-
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
 from typing import Any, Dict
+
+from zerver.data_import.hipchat import get_hipchat_sender_id
+from zerver.data_import.hipchat_user import UserHandler
+from zerver.data_import.sequencer import IdMapper
+from zerver.lib.test_classes import ZulipTestCase
 
 
 class HipChatImporter(ZulipTestCase):

@@ -6,8 +6,12 @@ from django.conf import settings
 from django.core.management.base import CommandError
 
 from zerver.lib.management import ZulipBaseCommand
-from zerver.lib.soft_deactivation import do_auto_soft_deactivate_users, \
-    do_soft_activate_users, do_soft_deactivate_users, logger
+from zerver.lib.soft_deactivation import (
+    do_auto_soft_deactivate_users,
+    do_soft_activate_users,
+    do_soft_deactivate_users,
+    logger,
+)
 from zerver.models import Realm, UserProfile
 
 

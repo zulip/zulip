@@ -1,32 +1,15 @@
 from typing import Any, List, Mapping
+from unittest import mock
 
+import ujson
 from django.db import connection
 
-from zerver.models import (
-    get_realm,
-    get_stream,
-    get_user,
-    Subscription,
-    UserMessage,
-    UserProfile,
-)
-
-from zerver.lib.fix_unreads import (
-    fix,
-    fix_pre_pointer,
-    fix_unsubscribed,
-)
-from zerver.lib.test_helpers import (
-    get_subscription,
-    tornado_redirected_to_list,
-)
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
+from zerver.lib.fix_unreads import fix, fix_pre_pointer, fix_unsubscribed
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import get_subscription, tornado_redirected_to_list
 from zerver.lib.topic_mutes import add_topic_mute
+from zerver.models import Subscription, UserMessage, UserProfile, get_realm, get_stream, get_user
 
-from unittest import mock
-import ujson
 
 class PointerTest(ZulipTestCase):
 

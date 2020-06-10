@@ -1,13 +1,10 @@
 import logging
-import shutil
 import os
-
-from zerver.data_import.import_util import (
-    build_attachment,
-    create_converted_data_files,
-)
-
+import shutil
 from typing import Any, Dict, List, Optional
+
+from zerver.data_import.import_util import build_attachment, create_converted_data_files
+
 
 class AttachmentHandler:
     def __init__(self) -> None:

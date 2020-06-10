@@ -1,12 +1,12 @@
 import os
-import time
-import ujson
 import smtplib
+import time
+from typing import Any, Callable, Dict, List, Mapping, Tuple
+from unittest.mock import MagicMock, patch
 
+import ujson
 from django.conf import settings
 from django.test import override_settings
-from unittest.mock import patch, MagicMock
-from typing import Any, Callable, Dict, List, Mapping, Tuple
 
 from zerver.lib.email_mirror import RateLimitedRealmMirror
 from zerver.lib.email_mirror_helpers import encode_email_address
@@ -14,18 +14,17 @@ from zerver.lib.queue import MAX_REQUEST_RETRIES
 from zerver.lib.rate_limiter import RateLimiterLockingException
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
 from zerver.lib.send_email import FromAddress
-from zerver.lib.test_helpers import simulated_queue_client
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import get_client, UserActivity, PreregistrationUser, \
-    get_stream, get_realm
+from zerver.lib.test_helpers import simulated_queue_client
+from zerver.models import PreregistrationUser, UserActivity, get_client, get_realm, get_stream
 from zerver.tornado.event_queue import build_offline_notification
 from zerver.worker import queue_processors
 from zerver.worker.queue_processors import (
-    get_active_worker_queues,
-    QueueProcessingWorker,
     EmailSendingWorker,
     LoopQueueProcessingWorker,
     MissedMessageWorker,
+    QueueProcessingWorker,
+    get_active_worker_queues,
 )
 
 Event = Dict[str, Any]

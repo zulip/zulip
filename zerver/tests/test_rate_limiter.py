@@ -1,20 +1,18 @@
+import time
+from typing import Dict, List, Tuple, Type
+from unittest import mock
+
 from zerver.lib.rate_limiter import (
-    add_ratelimit_rule,
-    remove_ratelimit_rule,
     RateLimitedObject,
     RateLimitedUser,
     RateLimiterBackend,
     RedisRateLimiterBackend,
     TornadoInMemoryRateLimiterBackend,
+    add_ratelimit_rule,
+    remove_ratelimit_rule,
 )
-
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.utils import generate_random_token
-
-from typing import Dict, List, Tuple, Type
-
-from unittest import mock
-import time
 
 RANDOM_KEY_PREFIX = generate_random_token(32)
 

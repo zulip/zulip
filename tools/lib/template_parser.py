@@ -1,5 +1,6 @@
 from typing import Callable, List, Optional, Text
 
+
 class FormattedException(Exception):
     pass
 

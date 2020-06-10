@@ -1,13 +1,14 @@
-import re
-import os
 import json
+import os
+import re
+from typing import Any, Dict, List, Optional
 
+import markdown
 from django.utils.html import escape as escape_html
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
+
 from zerver.openapi.openapi import get_openapi_parameters
-from typing import Any, Dict, Optional, List
-import markdown
 
 REGEXP = re.compile(r'\{generate_api_arguments_table\|\s*(.+?)\s*\|\s*(.+)\s*\}')
 

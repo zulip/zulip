@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
-
 from typing import List
+
 # check for the venv
 from lib import sanity_check
+
 sanity_check.check_venv(__file__)
 
 import argparse
 import json
 import os
-import sys
 import subprocess
+import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from scripts.lib.zulip_tools import WARNING, FAIL, ENDC
+from scripts.lib.zulip_tools import ENDC, FAIL, WARNING
+
 
 def find_handlebars(translatable_strings: List[str]) -> List[str]:
     errored = []

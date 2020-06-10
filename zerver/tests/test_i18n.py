@@ -1,20 +1,19 @@
+from http.cookies import SimpleCookie
 from typing import Any
-
 from unittest import mock
+
 import ujson
+from django.conf import settings
+from django.core import mail
+from django.http import HttpResponse
 from django.test import TestCase
 from django.utils import translation
-from django.conf import settings
-from django.http import HttpResponse
-from django.core import mail
-from http.cookies import SimpleCookie
 
-from zerver.models import get_realm_stream
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-from zerver.management.commands import makemessages
 from zerver.lib.email_notifications import enqueue_welcome_emails
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.management.commands import makemessages
+from zerver.models import get_realm_stream
+
 
 class EmailTranslationTestCase(ZulipTestCase):
     def test_email_translation(self) -> None:

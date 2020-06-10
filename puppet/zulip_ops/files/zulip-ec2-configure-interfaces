@@ -40,16 +40,15 @@ Note that it currently does not handle the deconfiguration of
 interfaces.
 
 '''
-
-import sys
 import logging
 import logging.handlers
 import subprocess
+import sys
+from typing import Optional
 
 import boto.utils
 import netifaces
 
-from typing import Optional
 
 def address_of(device_id: int) -> Optional[str]:
     try:

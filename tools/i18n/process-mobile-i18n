@@ -5,6 +5,7 @@ import re
 from subprocess import check_output
 from typing import Dict, List
 
+
 def get_json_filename(locale: str) -> str:
     return f"locale/{locale}/mobile.json"
 

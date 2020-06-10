@@ -1,6 +1,8 @@
-from typing import Optional, Dict, Any
-from pyoembed import oEmbed, PyOembedException
 import json
+from typing import Any, Dict, Optional
+
+from pyoembed import PyOembedException, oEmbed
+
 
 def get_oembed_data(url: str,
                     maxwidth: Optional[int]=640,

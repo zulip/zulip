@@ -7,8 +7,8 @@ from django import http
 from django.core import signals
 from django.core.handlers import base
 from django.core.handlers.wsgi import WSGIRequest, get_script_name
-from django.urls import set_script_prefix
 from django.http import HttpRequest, HttpResponse
+from django.urls import set_script_prefix
 from tornado.wsgi import WSGIContainer
 
 from zerver.lib.response import json_response

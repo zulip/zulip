@@ -1,38 +1,33 @@
-from functools import partial
+import os
 import random
+import shutil
 import sys
-
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
-    Type, TypeVar, Union
+import time
+import unittest
+from functools import partial
+from multiprocessing.sharedctypes import Synchronized
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union
 from unittest import loader, runner
 from unittest.result import TestResult
 
 from django.conf import settings
-from django.db import connections, ProgrammingError
-from django.urls.resolvers import URLPattern
+from django.db import ProgrammingError, connections
 from django.test import TestCase
 from django.test import runner as django_runner
 from django.test.runner import DiscoverRunner
 from django.test.signals import template_rendered
+from django.urls.resolvers import URLPattern
 
+from scripts.lib.zulip_tools import (
+    TEMPLATE_DATABASE_DIR,
+    get_dev_uuid_var_path,
+    get_or_create_dev_uuid_var_path,
+)
 from zerver.lib import test_helpers
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.rate_limiter import bounce_redis_key_prefix_for_testing
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
-from zerver.lib.test_helpers import (
-    write_instrumentation_reports,
-    append_instrumentation_data,
-)
-
-import os
-import time
-import unittest
-import shutil
-
-from multiprocessing.sharedctypes import Synchronized
-
-from scripts.lib.zulip_tools import get_dev_uuid_var_path, TEMPLATE_DATABASE_DIR, \
-    get_or_create_dev_uuid_var_path
+from zerver.lib.test_helpers import append_instrumentation_data, write_instrumentation_reports
 
 # We need to pick an ID for this test-backend invocation, and store it
 # in this global so it can be used in init_worker; this is used to

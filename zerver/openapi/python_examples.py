@@ -1,16 +1,14 @@
-from typing import Dict, Any, Optional, Iterable, Callable, Set, List
-
 import json
 import os
 import sys
 from functools import wraps
-
-from zerver.lib import mdiff
-from zerver.openapi.openapi import validate_against_openapi_schema
-
-from zerver.models import get_realm, get_user
+from typing import Any, Callable, Dict, Iterable, List, Optional, Set
 
 from zulip import Client
+
+from zerver.lib import mdiff
+from zerver.models import get_realm, get_user
+from zerver.openapi.openapi import validate_against_openapi_schema
 
 ZULIP_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 

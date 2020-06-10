@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
-from lib.template_parser import validate
-from lib.html_branches import build_id_dict
-from lib.pretty_print import validate_indent_html
 import argparse
-import sys
 import logging
+import sys
 
 # check for the venv
 from lib import sanity_check
+from lib.html_branches import build_id_dict
+from lib.pretty_print import validate_indent_html
+from lib.template_parser import validate
+
 sanity_check.check_venv(__file__)
 
-from zulint import lister
 from typing import Dict, Iterable, List
+
+from zulint import lister
 
 EXCLUDED_FILES = [
     ## Test data Files for testing modules in tests

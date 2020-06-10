@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 
 # Updates static files for production.
-
-
-import os
 import argparse
+import os
 import sys
 
 # We need settings so we can figure out where the prod-static directory is.
@@ -15,11 +13,12 @@ setup_path()
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 from django.conf import settings
-from scripts.lib.node_cache import setup_node_modules
-from scripts.lib.zulip_tools import run
 
 # check for the venv
 from lib import sanity_check
+from scripts.lib.node_cache import setup_node_modules
+from scripts.lib.zulip_tools import run
+
 sanity_check.check_venv(__file__)
 
 parser = argparse.ArgumentParser()

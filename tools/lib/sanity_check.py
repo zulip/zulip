@@ -2,6 +2,7 @@ import os
 import pwd
 import sys
 
+
 def check_venv(filename: str) -> None:
     try:
         import django

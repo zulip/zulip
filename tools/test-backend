@@ -2,22 +2,23 @@
 
 # check for the venv
 from lib import sanity_check
+
 sanity_check.check_venv(__file__)
 
-from typing import List, Iterator
-import glob
 import argparse
 import contextlib
-from unittest import mock
+import glob
 import os
 import shlex
-import sys
 import subprocess
+import sys
 import tempfile
-import ujson
-import responses
+from typing import Iterator, List
+from unittest import mock
 
 import django
+import responses
+import ujson
 from django.conf import settings
 from django.test.utils import get_runner
 
@@ -183,11 +184,10 @@ def main() -> None:
     os.environ.pop("http_proxy", "")
     os.environ.pop("https_proxy", "")
 
-    from zerver.lib.test_fixtures import update_test_databases_if_required, \
-        remove_test_run_directories
-
-    from tools.lib.test_script import (
-        assert_provisioning_status_ok,
+    from tools.lib.test_script import assert_provisioning_status_ok
+    from zerver.lib.test_fixtures import (
+        remove_test_run_directories,
+        update_test_databases_if_required,
     )
 
     os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
@@ -460,6 +460,7 @@ def main() -> None:
 
     if options.report_slow_tests:
         from zerver.lib.test_runner import report_slow_tests
+
         # We do this even with failures, since slowness can be
         # an important clue as to why tests fail.
         report_slow_tests()

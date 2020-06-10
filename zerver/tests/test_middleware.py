@@ -1,12 +1,14 @@
 import time
 from typing import List
+from unittest.mock import patch
 
 from bs4 import BeautifulSoup
-from unittest.mock import patch
+
 from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.middleware import is_slow_query, write_log_line
 from zerver.models import get_realm
+
 
 class SlowQueryTest(ZulipTestCase):
     SLOW_QUERY_TIME = 10

@@ -1,10 +1,11 @@
-from django.conf import settings
-from typing import Any, Dict, Optional
-from zerver.lib.utils import generate_random_token
-
 import re
+from typing import Any, Dict, Optional
+
 import redis
 import ujson
+from django.conf import settings
+
+from zerver.lib.utils import generate_random_token
 
 # Redis accepts keys up to 512MB in size, but there's no reason for us to use such size,
 # so we want to stay limited to 1024 characters.

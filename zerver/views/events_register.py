@@ -1,11 +1,13 @@
-from django.http import HttpRequest, HttpResponse
 from typing import Dict, Iterable, Optional, Sequence
+
+from django.http import HttpRequest, HttpResponse
 
 from zerver.lib.events import do_events_register
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import check_dict, check_string, check_list, check_bool
+from zerver.lib.validator import check_bool, check_dict, check_list, check_string
 from zerver.models import Stream, UserProfile
+
 
 def _default_all_public_streams(user_profile: UserProfile,
                                 all_public_streams: Optional[bool]) -> bool:

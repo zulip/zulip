@@ -1,8 +1,8 @@
 from typing import Any
 
-from django.views.generic import TemplateView
 from django.conf.urls import include
 from django.urls import path
+from django.views.generic import TemplateView
 
 import corporate.views
 from zerver.lib.rest import rest_dispatch

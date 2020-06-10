@@ -26,17 +26,17 @@ To extend this concept, it's simply a matter of writing your own validator
 for any particular type of object.
 '''
 import re
+from datetime import datetime
+from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, TypeVar, Union, cast
+
 import ujson
-from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.validators import validate_email, URLValidator
-from typing import Any, Dict, Iterable, Optional, Tuple, cast, List, Callable, TypeVar, \
-    Set, Union
+from django.core.validators import URLValidator, validate_email
+from django.utils.translation import ugettext as _
 
-from datetime import datetime
 from zerver.lib.request import JsonableError
-from zerver.lib.types import Validator, ProfileFieldData
+from zerver.lib.types import ProfileFieldData, Validator
 
 FuncT = Callable[..., Any]
 TypeStructure = TypeVar("TypeStructure")

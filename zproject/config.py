@@ -1,6 +1,6 @@
+import configparser
 import os
 from typing import Optional, overload
-import configparser
 
 DEPLOY_ROOT = os.path.realpath(os.path.dirname(os.path.dirname(__file__)))
 

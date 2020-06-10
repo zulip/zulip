@@ -4,7 +4,7 @@ from __future__ import absolute_import
 import os
 import re
 import sys
-from typing import Any, Text, Tuple, Optional
+from typing import Any, Optional, Text, Tuple
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(ZULIP_PATH)

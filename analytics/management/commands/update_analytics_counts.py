@@ -1,8 +1,8 @@
 import os
 import time
 from argparse import ArgumentParser
-from typing import Any, Dict
 from datetime import timezone
+from typing import Any, Dict
 
 from django.conf import settings
 from django.core.management.base import BaseCommand

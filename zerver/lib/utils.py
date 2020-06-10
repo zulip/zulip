@@ -1,4 +1,3 @@
-from typing import Any, Callable, List, Optional, Sequence, TypeVar, Iterable, Set, Tuple
 import base64
 import hashlib
 import heapq
@@ -6,8 +5,9 @@ import itertools
 import os
 import re
 import string
-from time import sleep
 from itertools import zip_longest
+from time import sleep
+from typing import Any, Callable, Iterable, List, Optional, Sequence, Set, Tuple, TypeVar
 
 from django.conf import settings
 

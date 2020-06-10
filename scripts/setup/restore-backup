@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
-
 import argparse
 import os
 import re
 import subprocess
 import sys
 import tempfile
-
 from typing import IO
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_DIR)
-from scripts.lib.zulip_tools import su_to_zulip, run
+from scripts.lib.zulip_tools import run, su_to_zulip
 
 POSTGRES_USER = "postgres"
 

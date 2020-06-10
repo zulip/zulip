@@ -1,7 +1,7 @@
-import sys
 import functools
+import sys
+from typing import IO, Any, Callable, Mapping, Sequence, TypeVar
 
-from typing import Any, Callable, IO, Mapping, Sequence, TypeVar
 
 def get_mapping_type_str(x: Mapping[Any, Any]) -> str:
     container_type = type(x).__name__

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-
-from pygments.lexers import get_all_lexers
 import json
 import os
+
+from pygments.lexers import get_all_lexers
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../')
 DATA_PATH = os.path.join(ZULIP_PATH, 'tools', 'setup', 'lang.json')

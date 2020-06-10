@@ -1,49 +1,51 @@
-from django.conf import settings
-from django.conf.urls import url, include
-from django.conf.urls.i18n import i18n_patterns
-from django.views.generic import TemplateView, RedirectView
-from django.utils.module_loading import import_string
 import os
+
+from django.conf import settings
+from django.conf.urls import include, url
+from django.conf.urls.i18n import i18n_patterns
+from django.contrib.auth.views import (
+    LoginView,
+    PasswordResetCompleteView,
+    PasswordResetConfirmView,
+    PasswordResetDoneView,
+)
+from django.utils.module_loading import import_string
+from django.views.generic import RedirectView, TemplateView
+
 import zerver.forms
-from zproject import dev_urls
-from zproject.legacy_urls import legacy_urls
-from zerver.views.documentation import IntegrationView, MarkdownDirectoryView
-from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
-
-
-from django.contrib.auth.views import (LoginView, PasswordResetDoneView,
-                                       PasswordResetConfirmView, PasswordResetCompleteView)
-
 import zerver.tornado.views
 import zerver.views
-import zerver.views.auth
 import zerver.views.archive
+import zerver.views.auth
 import zerver.views.camo
 import zerver.views.compatibility
-import zerver.views.home
-import zerver.views.email_mirror
-import zerver.views.registration
-import zerver.views.portico
-import zerver.views.zephyr
-import zerver.views.users
-import zerver.views.unsubscribe
+import zerver.views.digest
 import zerver.views.documentation
+import zerver.views.email_mirror
+import zerver.views.home
+import zerver.views.messages
+import zerver.views.muting
+import zerver.views.portico
+import zerver.views.realm
+import zerver.views.realm_export
+import zerver.views.registration
+import zerver.views.streams
+import zerver.views.unsubscribe
+import zerver.views.upload
 import zerver.views.user_groups
 import zerver.views.user_settings
-import zerver.views.muting
-import zerver.views.streams
-import zerver.views.realm
-import zerver.views.digest
-import zerver.views.messages
-import zerver.views.realm_export
-import zerver.views.upload
+import zerver.views.users
 import zerver.views.video_calls
-
+import zerver.views.zephyr
+from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.lib.rest import rest_dispatch
+from zerver.views.documentation import IntegrationView, MarkdownDirectoryView
+from zproject import dev_urls
+from zproject.legacy_urls import legacy_urls
 
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
-    from two_factor.urls import urlpatterns as tf_urls
     from two_factor.gateways.twilio.urls import urlpatterns as tf_twilio_urls
+    from two_factor.urls import urlpatterns as tf_urls
 
 # NB: There are several other pieces of code which route requests by URL:
 #

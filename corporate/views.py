@@ -1,30 +1,45 @@
 import logging
 from decimal import Decimal
-import stripe
-from typing import Any, Dict, cast, Optional, Union
+from typing import Any, Dict, Optional, Union, cast
 
+import stripe
+from django.conf import settings
 from django.core import signing
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
-from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _
 from django.shortcuts import render
 from django.urls import reverse
-from django.conf import settings
+from django.utils.timezone import now as timezone_now
+from django.utils.translation import ugettext as _
 
-from zerver.decorator import zulip_login_required, require_billing_access
+from corporate.lib.stripe import (
+    DEFAULT_INVOICE_DAYS_UNTIL_DUE,
+    MAX_INVOICED_LICENSES,
+    MIN_INVOICED_LICENSES,
+    STRIPE_PUBLISHABLE_KEY,
+    BillingError,
+    do_change_plan_status,
+    do_replace_payment_source,
+    downgrade_now,
+    get_latest_seat_count,
+    make_end_of_cycle_updates_if_needed,
+    process_initial_upgrade,
+    renewal_amount,
+    sign_string,
+    start_of_next_billing_cycle,
+    stripe_get_customer,
+    unsign_string,
+)
+from corporate.models import (
+    CustomerPlan,
+    get_current_plan_by_customer,
+    get_current_plan_by_realm,
+    get_customer_by_realm,
+)
+from zerver.decorator import require_billing_access, zulip_login_required
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
-from zerver.lib.validator import check_string, check_int
+from zerver.lib.validator import check_int, check_string
 from zerver.models import UserProfile
-from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
-    stripe_get_customer, get_latest_seat_count, \
-    process_initial_upgrade, sign_string, \
-    unsign_string, BillingError, do_change_plan_status, do_replace_payment_source, \
-    MIN_INVOICED_LICENSES, MAX_INVOICED_LICENSES, DEFAULT_INVOICE_DAYS_UNTIL_DUE, \
-    start_of_next_billing_cycle, renewal_amount, \
-    make_end_of_cycle_updates_if_needed, downgrade_now
-from corporate.models import CustomerPlan, get_current_plan_by_customer, \
-    get_customer_by_realm, get_current_plan_by_realm
 
 billing_logger = logging.getLogger('corporate.stripe')
 

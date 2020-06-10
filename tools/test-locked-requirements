@@ -8,9 +8,9 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import ujson
+from typing import List, Optional
 
-from typing import Optional, List
+import ujson
 
 TOOLS_DIR = os.path.abspath(os.path.dirname(__file__))
 ZULIP_PATH = os.path.dirname(TOOLS_DIR)

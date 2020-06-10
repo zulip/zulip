@@ -25,6 +25,7 @@ setup_path()
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
 
 import django
+
 try:
     django.setup()
 except Exception as e:
@@ -45,10 +46,12 @@ except Exception as e:
 # need to import zerver.models first before the middleware tries to import it.
 
 import zerver.models
+
 zerver.models
 
 # This application object is used by any WSGI server configured to use this
 # file. This includes Django's development server, if the WSGI_APPLICATION
 # setting points here.
 from django.core.wsgi import get_wsgi_application
+
 application = get_wsgi_application()

@@ -3,7 +3,7 @@ from typing import Any
 
 from django.core.management.base import CommandError
 
-from zerver.lib.actions import do_change_user_role, do_change_is_api_super_user
+from zerver.lib.actions import do_change_is_api_super_user, do_change_user_role
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import UserProfile
 

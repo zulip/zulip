@@ -1,87 +1,89 @@
+import random
+from datetime import timedelta
 from typing import Any, Dict, List, Mapping, Optional, Set, Union
+from unittest import mock
 
+import ujson
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 
+from zerver.decorator import JsonableError
 from zerver.lib import cache
-
-from zerver.lib.test_helpers import (
-    get_subscription, queries_captured, tornado_redirected_to_list,
-    reset_emails_in_zulip_realm,
+from zerver.lib.actions import (
+    bulk_add_subscriptions,
+    bulk_get_subscriber_user_ids,
+    bulk_remove_subscriptions,
+    can_access_stream_user_ids,
+    create_stream_if_needed,
+    do_add_default_stream,
+    do_add_streams_to_default_stream_group,
+    do_change_default_stream_group_description,
+    do_change_default_stream_group_name,
+    do_change_stream_post_policy,
+    do_change_user_role,
+    do_create_default_stream_group,
+    do_create_realm,
+    do_deactivate_stream,
+    do_deactivate_user,
+    do_get_streams,
+    do_remove_default_stream,
+    do_remove_default_stream_group,
+    do_remove_streams_from_default_stream_group,
+    do_set_realm_property,
+    ensure_stream,
+    gather_subscriptions,
+    gather_subscriptions_helper,
+    get_average_weekly_stream_traffic,
+    get_default_streams_for_realm,
+    get_stream,
+    lookup_default_stream_groups,
+    round_to_2_significant_digits,
+    validate_user_access_to_subscribers_helper,
 )
-
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-
-from zerver.decorator import (
-    JsonableError,
-)
-
-from zerver.lib.response import (
-    json_error,
-    json_success,
-)
-
-from zerver.lib.streams import (
-    access_stream_by_id, access_stream_by_name, filter_stream_authorization,
-    list_to_streams, create_streams_if_needed,
-)
-
+from zerver.lib.message import aggregate_unread_data, get_raw_unread_data
+from zerver.lib.response import json_error, json_success
+from zerver.lib.stream_recipient import StreamRecipientMap
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     num_subscribers_for_stream_id,
 )
-
-from zerver.lib.test_runner import (
-    slow,
+from zerver.lib.streams import (
+    access_stream_by_id,
+    access_stream_by_name,
+    create_streams_if_needed,
+    filter_stream_authorization,
+    list_to_streams,
 )
-
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import (
+    get_subscription,
+    queries_captured,
+    reset_emails_in_zulip_realm,
+    tornado_redirected_to_list,
+)
+from zerver.lib.test_runner import slow
 from zerver.models import (
-    Realm, Recipient, Stream, Subscription,
-    DefaultStream, UserProfile, active_non_guest_user_ids,
-    get_default_stream_groups, flush_per_request_caches, DefaultStreamGroup,
-    get_client, get_realm, get_user, get_user_profile_by_id_in_realm, Message, UserMessage,
+    DefaultStream,
+    DefaultStreamGroup,
+    Message,
+    Realm,
+    Recipient,
+    Stream,
+    Subscription,
+    UserMessage,
+    UserProfile,
+    active_non_guest_user_ids,
+    flush_per_request_caches,
+    get_client,
+    get_default_stream_groups,
+    get_realm,
+    get_user,
+    get_user_profile_by_id_in_realm,
 )
+from zerver.views.streams import compose_views
 
-from zerver.lib.actions import (
-    do_add_default_stream, do_change_user_role, do_set_realm_property,
-    do_create_realm, do_remove_default_stream, bulk_get_subscriber_user_ids,
-    gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
-    gather_subscriptions, get_default_streams_for_realm, get_stream,
-    do_get_streams,
-    create_stream_if_needed,
-    ensure_stream,
-    do_deactivate_stream,
-    do_deactivate_user,
-    do_create_default_stream_group,
-    do_add_streams_to_default_stream_group, do_remove_streams_from_default_stream_group,
-    do_remove_default_stream_group,
-    do_change_default_stream_group_description,
-    do_change_default_stream_group_name,
-    lookup_default_stream_groups,
-    can_access_stream_user_ids,
-    validate_user_access_to_subscribers_helper,
-    get_average_weekly_stream_traffic, round_to_2_significant_digits,
-    do_change_stream_post_policy,
-)
-
-from zerver.views.streams import (
-    compose_views,
-)
-
-from zerver.lib.message import (
-    aggregate_unread_data,
-    get_raw_unread_data,
-)
-from zerver.lib.stream_recipient import StreamRecipientMap
-
-from datetime import timedelta
-from unittest import mock
-import random
-import ujson
 
 class TestMiscStuff(ZulipTestCase):
     def test_empty_results(self) -> None:

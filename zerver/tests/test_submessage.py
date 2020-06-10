@@ -1,17 +1,10 @@
+from typing import Any, Dict, List
 from unittest import mock
 
+from zerver.lib.message import MessageDict
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.models import Message, SubMessage
 
-from zerver.lib.message import (
-    MessageDict,
-)
-
-from zerver.models import (
-    Message,
-    SubMessage,
-)
-
-from typing import Any, Dict, List
 
 class TestBasics(ZulipTestCase):
     def test_get_raw_db_rows(self) -> None:

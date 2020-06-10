@@ -1,28 +1,22 @@
+import time
+from unittest import mock
+
+import DNS
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 
 from zerver.forms import email_is_not_mit_mailing_list
-
 from zerver.lib.rate_limiter import (
-    add_ratelimit_rule,
-    remove_ratelimit_rule,
     RateLimitedUser,
     RateLimiterLockingException,
+    add_ratelimit_rule,
+    remove_ratelimit_rule,
 )
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.zephyr import compute_mit_user_fullname
+from zerver.models import UserProfile
 
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-
-from zerver.models import (
-    UserProfile,
-)
-
-import DNS
-from unittest import mock
-import time
 
 class MITNameTest(ZulipTestCase):
     def test_valid_hesiod(self) -> None:

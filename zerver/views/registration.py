@@ -1,55 +1,92 @@
-from typing import List, Dict, Optional
+import logging
+import smtplib
+import urllib
+from typing import Dict, List, Optional
 
-from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.contrib.auth import authenticate, get_backends
-from django.urls import reverse
-from django.http import HttpResponseRedirect, HttpResponse, HttpRequest
-from django.shortcuts import redirect, render
-from django.core.exceptions import ValidationError
 from django.core import validators
-from zerver.context_processors import get_realm_from_request, login_context
-from zerver.models import UserProfile, Realm, Stream, MultiuseInvite, \
-    name_changes_disabled, email_to_username, \
-    get_realm, get_user_by_delivery_email, get_default_stream_groups, DisposableEmailError, \
-    DomainNotAllowedForRealmError, get_source_profile, EmailContainsPlusError
-from zerver.lib.email_validation import email_allowed_for_realm, \
-    validate_email_not_already_in_realm
-from zerver.lib.send_email import send_email, FromAddress
-from zerver.lib.actions import do_change_password, do_change_full_name, \
-    do_activate_user, do_create_user, do_create_realm, \
-    do_set_user_display_setting, lookup_default_stream_groups, bulk_add_subscriptions
-from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
-    FindMyTeamForm, RealmRedirectForm
+from django.core.exceptions import ValidationError
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.shortcuts import redirect, render
+from django.urls import reverse
+from django.utils.translation import ugettext as _
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
-from zerver.decorator import require_post, \
-    do_login
+
+from confirmation import settings as confirmation_settings
+from confirmation.models import (
+    Confirmation,
+    ConfirmationKeyException,
+    RealmCreationKey,
+    create_confirmation_link,
+    get_object_from_key,
+    render_confirmation_key_error,
+    validate_key,
+)
+from zerver.context_processors import get_realm_from_request, login_context
+from zerver.decorator import do_login, require_post
+from zerver.forms import (
+    FindMyTeamForm,
+    HomepageForm,
+    RealmCreationForm,
+    RealmRedirectForm,
+    RegistrationForm,
+)
+from zerver.lib.actions import (
+    bulk_add_subscriptions,
+    do_activate_user,
+    do_change_full_name,
+    do_change_password,
+    do_create_realm,
+    do_create_user,
+    do_set_user_display_setting,
+    lookup_default_stream_groups,
+)
 from zerver.lib.create_user import get_role_for_new_user
+from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.onboarding import send_initial_realm_messages, setup_realm_internal_bots
-from zerver.lib.sessions import get_expirable_session_var
 from zerver.lib.pysa import mark_sanitized
+from zerver.lib.send_email import FromAddress, send_email
+from zerver.lib.sessions import get_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.timezone import get_all_timezones
 from zerver.lib.url_encoding import add_query_to_redirect_url
 from zerver.lib.users import get_accounts_for_email
 from zerver.lib.zephyr import compute_mit_user_fullname
-from zerver.views.auth import create_preregistration_user, redirect_and_log_into_subdomain, \
-    redirect_to_deactivation_notice, get_safe_redirect_to, finish_desktop_flow, finish_mobile_flow
+from zerver.models import (
+    DisposableEmailError,
+    DomainNotAllowedForRealmError,
+    EmailContainsPlusError,
+    MultiuseInvite,
+    Realm,
+    Stream,
+    UserProfile,
+    email_to_username,
+    get_default_stream_groups,
+    get_realm,
+    get_source_profile,
+    get_user_by_delivery_email,
+    name_changes_disabled,
+)
+from zerver.views.auth import (
+    create_preregistration_user,
+    finish_desktop_flow,
+    finish_mobile_flow,
+    get_safe_redirect_to,
+    redirect_and_log_into_subdomain,
+    redirect_to_deactivation_notice,
+)
+from zproject.backends import (
+    ExternalAuthResult,
+    ZulipLDAPAuthBackend,
+    ZulipLDAPExceptionNoMatchingLDAPUser,
+    any_social_backend_enabled,
+    email_auth_enabled,
+    email_belongs_to_ldap,
+    ldap_auth_enabled,
+    password_auth_enabled,
+)
 
-from zproject.backends import ldap_auth_enabled, password_auth_enabled, \
-    ZulipLDAPExceptionNoMatchingLDAPUser, email_auth_enabled, ZulipLDAPAuthBackend, \
-    email_belongs_to_ldap, any_social_backend_enabled, ExternalAuthResult
-
-from confirmation.models import Confirmation, RealmCreationKey, ConfirmationKeyException, \
-    validate_key, create_confirmation_link, get_object_from_key, \
-    render_confirmation_key_error
-
-from confirmation import settings as confirmation_settings
-
-import logging
-import smtplib
-
-import urllib
 
 def check_prereg_key_and_redirect(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     confirmation = Confirmation.objects.filter(confirmation_key=confirmation_key).first()

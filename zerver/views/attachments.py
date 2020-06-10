@@ -1,10 +1,9 @@
 from django.http import HttpRequest, HttpResponse
 
-from zerver.models import UserProfile
 from zerver.lib.actions import notify_attachment_update
+from zerver.lib.attachments import access_attachment_by_id, remove_attachment, user_attachments
 from zerver.lib.response import json_success
-from zerver.lib.attachments import user_attachments, remove_attachment, \
-    access_attachment_by_id
+from zerver.models import UserProfile
 
 
 def list_by_user(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:

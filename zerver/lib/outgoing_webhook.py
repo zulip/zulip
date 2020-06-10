@@ -1,23 +1,29 @@
-from typing import Any, AnyStr, Dict, Optional
-
 import abc
-import requests
 import json
 import logging
+from typing import Any, AnyStr, Dict, Optional
+
+import requests
+from django.utils.translation import ugettext as _
 from requests import Response
 
-from django.utils.translation import ugettext as _
-
-from zerver.models import UserProfile, get_user_profile_by_id, get_client, \
-    GENERIC_INTERFACE, Service, SLACK_INTERFACE, email_to_domain
+from version import ZULIP_VERSION
+from zerver.decorator import JsonableError
 from zerver.lib.actions import check_send_message
 from zerver.lib.message import MessageDict
 from zerver.lib.queue import retry_event
 from zerver.lib.topic import get_topic_from_message_info
 from zerver.lib.url_encoding import near_message_url
-from zerver.decorator import JsonableError
+from zerver.models import (
+    GENERIC_INTERFACE,
+    SLACK_INTERFACE,
+    Service,
+    UserProfile,
+    email_to_domain,
+    get_client,
+    get_user_profile_by_id,
+)
 
-from version import ZULIP_VERSION
 
 class OutgoingWebhookServiceInterface(metaclass=abc.ABCMeta):
 

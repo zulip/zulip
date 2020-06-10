@@ -8,16 +8,23 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import UnexpectedWebhookEventType, \
-    check_send_webhook_message
-from zerver.lib.webhooks.git import CONTENT_MESSAGE_TEMPLATE, \
-    TOPIC_WITH_BRANCH_TEMPLATE, TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
-    get_commits_comment_action_message, get_create_branch_event_message, \
-    get_pull_request_event_message, get_push_tag_event_message, \
-    get_remove_branch_event_message
+from zerver.lib.webhooks.common import UnexpectedWebhookEventType, check_send_webhook_message
+from zerver.lib.webhooks.git import (
+    CONTENT_MESSAGE_TEMPLATE,
+    TOPIC_WITH_BRANCH_TEMPLATE,
+    TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE,
+    get_commits_comment_action_message,
+    get_create_branch_event_message,
+    get_pull_request_event_message,
+    get_push_tag_event_message,
+    get_remove_branch_event_message,
+)
 from zerver.models import UserProfile
-from zerver.webhooks.bitbucket2.view import BITBUCKET_FORK_BODY, \
-    BITBUCKET_REPO_UPDATED_CHANGED, BITBUCKET_TOPIC_TEMPLATE
+from zerver.webhooks.bitbucket2.view import (
+    BITBUCKET_FORK_BODY,
+    BITBUCKET_REPO_UPDATED_CHANGED,
+    BITBUCKET_TOPIC_TEMPLATE,
+)
 
 BRANCH_UPDATED_MESSAGE_TEMPLATE = "{user_name} pushed to branch {branch_name}. Head is now {head}."
 PULL_REQUEST_MARKED_AS_NEEDS_WORK_TEMPLATE = "{user_name} marked [PR #{number}]({url}) as \"needs work\"."

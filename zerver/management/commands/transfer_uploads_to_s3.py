@@ -1,8 +1,7 @@
 from typing import Any
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError, \
-    CommandParser
+from django.core.management.base import BaseCommand, CommandError, CommandParser
 
 from zerver.lib.transfer import transfer_uploads_to_s3
 

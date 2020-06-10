@@ -1,7 +1,8 @@
+import requests
+import responses
+
 from zerver.lib.test_classes import ZulipTestCase
 
-import responses
-import requests
 
 class ResponsesTest(ZulipTestCase):
     def test_responses(self) -> None:

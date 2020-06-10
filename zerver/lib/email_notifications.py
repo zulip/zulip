@@ -1,40 +1,44 @@
+import re
+from collections import defaultdict
+from datetime import timedelta
+from email.utils import formataddr
 from typing import Any, Dict, Iterable, List, Optional, Tuple
-from zerver.lib.types import DisplayRecipientT
 
-from confirmation.models import one_click_unsubscribe_link
+import html2text
+import lxml.html
+import pytz
+from bs4 import BeautifulSoup
 from django.conf import settings
+from django.contrib.auth import get_backends
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import override as override_language
 from django.utils.translation import ugettext as _
-from django.contrib.auth import get_backends
+from lxml.cssselect import CSSSelector
 
+from confirmation.models import one_click_unsubscribe_link
 from zerver.decorator import statsd_increment
 from zerver.lib.message import bulk_access_messages
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.send_email import send_future_email, FromAddress
-from zerver.lib.url_encoding import personal_narrow_url, huddle_narrow_url, \
-    stream_narrow_url, topic_narrow_url
+from zerver.lib.send_email import FromAddress, send_future_email
+from zerver.lib.types import DisplayRecipientT
+from zerver.lib.url_encoding import (
+    huddle_narrow_url,
+    personal_narrow_url,
+    stream_narrow_url,
+    topic_narrow_url,
+)
 from zerver.models import (
+    Message,
     Recipient,
-    UserMessage,
     Stream,
-    get_display_recipient,
+    UserMessage,
     UserProfile,
+    get_context_for_message,
+    get_display_recipient,
     get_user_profile_by_id,
     receives_offline_email_notifications,
-    get_context_for_message,
-    Message,
 )
 
-from datetime import timedelta
-from email.utils import formataddr
-import html2text
-from lxml.cssselect import CSSSelector
-import lxml.html
-import re
-from collections import defaultdict
-import pytz
-from bs4 import BeautifulSoup
 
 def relative_to_full_url(base_url: str, content: str) -> str:
     # Convert relative URLs to absolute URLs.
@@ -297,6 +301,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
                       for a group of messages that share a recipient (and topic)
     """
     from zerver.context_processors import common_context
+
     # Disabled missedmessage emails internally
     if not user_profile.enable_offline_email_notifications:
         return
@@ -558,7 +563,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> Non
         context['getting_started_link'] = "https://zulip.com"
 
     # Imported here to avoid import cycles.
-    from zproject.backends import email_belongs_to_ldap, ZulipLDAPAuthBackend
+    from zproject.backends import ZulipLDAPAuthBackend, email_belongs_to_ldap
 
     if email_belongs_to_ldap(user.realm, user.delivery_email):
         context["ldap"] = True

@@ -1,94 +1,67 @@
-from django.conf import settings
-
 import os
-import ujson
-
+from typing import Any, Callable, Dict, FrozenSet, List, Optional, Set, Tuple
 from unittest.mock import patch
-from typing import Any, Dict, List, Set, Optional, Tuple, Callable, \
-    FrozenSet
+
+import ujson
+from django.conf import settings
 from django.db.models import Q
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.export import (
-    do_export_realm,
-    export_usermessages_batch,
-    do_export_user,
-)
-from zerver.lib.import_realm import (
-    do_import_realm,
-    get_incoming_message_ids,
-)
-from zerver.lib.avatar_hash import (
-    user_avatar_path,
-)
-from zerver.lib.upload import (
-    claim_attachment,
-    upload_message_file,
-    upload_emoji_image,
-    upload_avatar_image,
-)
 from zerver.lib import upload
-
-from zerver.lib.utils import (
-    query_chunker,
-)
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-from zerver.lib.test_helpers import (
-    get_test_image_file,
-    use_s3_backend,
-    create_s3_buckets,
-)
-
-from zerver.lib.topic_mutes import (
-    add_topic_mute,
-)
-from zerver.lib.bot_lib import (
-    StateHandler,
-)
-from zerver.lib.bot_config import (
-    set_bot_config,
-)
 from zerver.lib.actions import (
-    do_create_user,
     do_add_reaction,
     do_change_icon_source,
     do_change_logo_source,
-    do_update_user_presence,
     do_change_plan_type,
+    do_create_user,
+    do_update_user_presence,
 )
+from zerver.lib.avatar_hash import user_avatar_path
+from zerver.lib.bot_config import set_bot_config
+from zerver.lib.bot_lib import StateHandler
+from zerver.lib.export import do_export_realm, do_export_user, export_usermessages_batch
+from zerver.lib.import_realm import do_import_realm, get_incoming_message_ids
 from zerver.lib.streams import create_stream_if_needed
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import create_s3_buckets, get_test_image_file, use_s3_backend
 from zerver.lib.test_runner import slow
-
+from zerver.lib.topic_mutes import add_topic_mute
+from zerver.lib.upload import (
+    claim_attachment,
+    upload_avatar_image,
+    upload_emoji_image,
+    upload_message_file,
+)
+from zerver.lib.utils import query_chunker
 from zerver.models import (
-    Message,
-    Realm,
-    Stream,
-    UserProfile,
-    Subscription,
     Attachment,
-    RealmEmoji,
-    Reaction,
-    Recipient,
-    UserMessage,
+    BotConfigData,
+    BotStorageData,
     CustomProfileField,
     CustomProfileFieldValue,
-    RealmAuditLog,
     Huddle,
-    UserHotspot,
+    Message,
     MutedTopic,
+    Reaction,
+    Realm,
+    RealmAuditLog,
+    RealmEmoji,
+    Recipient,
+    Stream,
+    Subscription,
     UserGroup,
     UserGroupMembership,
+    UserHotspot,
+    UserMessage,
     UserPresence,
-    BotStorageData,
-    BotConfigData,
+    UserProfile,
     get_active_streams,
     get_client,
+    get_huddle_hash,
     get_realm,
     get_stream,
-    get_huddle_hash,
 )
+
 
 class QueryUtilTest(ZulipTestCase):
     def _create_messages(self) -> None:

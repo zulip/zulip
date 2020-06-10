@@ -4,6 +4,7 @@ from typing import Any, Dict
 from django.http import HttpRequest
 from django.views.debug import SafeExceptionReporterFilter
 
+
 class ZulipExceptionReporterFilter(SafeExceptionReporterFilter):
     def get_post_parameters(self, request: HttpRequest) -> Dict[str, Any]:
         filtered_post = SafeExceptionReporterFilter.get_post_parameters(self, request).copy()

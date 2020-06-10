@@ -1,24 +1,33 @@
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
-
 import re
 import unicodedata
 from collections import defaultdict
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 from django.conf import settings
 from django.db.models.query import QuerySet
 from django.forms.models import model_to_dict
 from django.utils.translation import ugettext as _
-
-from zerver.lib.cache import generic_bulk_cached_fetch, user_profile_cache_key_id, \
-    user_profile_by_id_cache_key, realm_user_dict_fields
-from zerver.lib.request import JsonableError
-from zerver.lib.avatar import avatar_url, get_avatar_field
-from zerver.lib.exceptions import OrganizationAdministratorRequired
-from zerver.models import UserProfile, Service, Realm, \
-    get_user_profile_by_id_in_realm, CustomProfileFieldValue, \
-    get_realm_user_dicts, CustomProfileField
-
 from zulip_bots.custom_exceptions import ConfigValidationError
+
+from zerver.lib.avatar import avatar_url, get_avatar_field
+from zerver.lib.cache import (
+    generic_bulk_cached_fetch,
+    realm_user_dict_fields,
+    user_profile_by_id_cache_key,
+    user_profile_cache_key_id,
+)
+from zerver.lib.exceptions import OrganizationAdministratorRequired
+from zerver.lib.request import JsonableError
+from zerver.models import (
+    CustomProfileField,
+    CustomProfileFieldValue,
+    Realm,
+    Service,
+    UserProfile,
+    get_realm_user_dicts,
+    get_user_profile_by_id_in_realm,
+)
+
 
 def check_full_name(full_name_raw: str) -> str:
     full_name = full_name_raw.strip()

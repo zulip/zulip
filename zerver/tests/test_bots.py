@@ -1,28 +1,38 @@
 import filecmp
 import os
-import ujson
+from typing import Any, Dict, List, Mapping, Optional
+from unittest.mock import MagicMock, patch
 
+import ujson
 from django.core import mail
 from django.test import override_settings
-from unittest.mock import patch, MagicMock
-from typing import Any, Dict, List, Mapping, Optional
+from zulip_bots.custom_exceptions import ConfigValidationError
 
-from zerver.lib.actions import do_change_stream_invite_only, do_deactivate_user, \
-    do_set_realm_property
-from zerver.lib.bot_config import get_bot_config, ConfigError
-from zerver.models import get_realm, get_stream, \
-    Realm, UserProfile, get_user, get_bot_services, Service, \
-    is_cross_realm_bot_email
-from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
+from zerver.lib.actions import (
+    do_change_stream_invite_only,
+    do_deactivate_user,
+    do_set_realm_property,
+)
+from zerver.lib.bot_config import ConfigError, get_bot_config
+from zerver.lib.bot_lib import get_bot_handler
+from zerver.lib.integrations import EMBEDDED_BOTS, WebhookIntegration
+from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import (
     avatar_disk_path,
     get_test_image_file,
     queries_captured,
     tornado_redirected_to_list,
 )
-from zerver.lib.integrations import EMBEDDED_BOTS, WebhookIntegration
-from zerver.lib.bot_lib import get_bot_handler
-from zulip_bots.custom_exceptions import ConfigValidationError
+from zerver.models import (
+    Realm,
+    Service,
+    UserProfile,
+    get_bot_services,
+    get_realm,
+    get_stream,
+    get_user,
+    is_cross_realm_bot_email,
+)
 
 
 # A test validator

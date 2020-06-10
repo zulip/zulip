@@ -1,9 +1,14 @@
 from django.http import HttpResponse
+
+from zerver.lib.actions import (
+    do_change_stream_web_public,
+    do_deactivate_stream,
+    get_web_public_streams,
+    get_web_public_subs,
+)
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.actions import do_change_stream_web_public
-from zerver.lib.actions import get_web_public_streams, get_web_public_subs, \
-    do_deactivate_stream
 from zerver.models import get_realm
+
 
 class GlobalPublicStreamTest(ZulipTestCase):
     def test_non_existant_stream_id(self) -> None:

@@ -7,9 +7,10 @@
 #
 # The decryption logic here isn't actually used by the flow; we just
 # have it here as part of testing the overall library.
-
 import binascii
+
 from zerver.models import UserProfile
+
 
 def xor_hex_strings(bytes_a: str, bytes_b: str) -> str:
     """Given two hex strings of equal length, return a hex string with

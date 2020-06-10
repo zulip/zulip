@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 import argparse
 import configparser
-import os
-import sys
-import pwd
-import subprocess
 import logging
-import time
+import os
+import pwd
 import shlex
+import subprocess
+import sys
+import time
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from scripts.lib.zulip_tools import ENDC, OKGREEN, WARNING, DEPLOYMENTS_DIR, overwrite_symlink
+from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, ENDC, OKGREEN, WARNING, overwrite_symlink
 
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s restart-server: %(message)s",

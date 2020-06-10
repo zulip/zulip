@@ -1,15 +1,17 @@
-import ujson
-from django.http import HttpResponse
 from typing import Any, Dict, List, Mapping
 from unittest import mock
 
-from zerver.lib.cache import to_dict_cache_key_id, cache_get
+import ujson
+from django.http import HttpResponse
+
+from zerver.lib.cache import cache_get, to_dict_cache_key_id
 from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.message import extract_message_dict
 from zerver.lib.request import JsonableError
-from zerver.lib.test_helpers import tornado_redirected_to_list
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import get_realm, Message, Reaction, RealmEmoji, UserMessage
+from zerver.lib.test_helpers import tornado_redirected_to_list
+from zerver.models import Message, Reaction, RealmEmoji, UserMessage, get_realm
+
 
 class ReactionEmojiTest(ZulipTestCase):
     def test_missing_emoji(self) -> None:

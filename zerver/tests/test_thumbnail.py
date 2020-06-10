@@ -1,19 +1,20 @@
+import base64
+import urllib
+from io import StringIO
+
+import ujson
 from django.conf import settings
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
-    use_s3_backend,
     create_s3_buckets,
-    override_settings,
     get_test_image_file,
+    override_settings,
+    use_s3_backend,
 )
 from zerver.lib.upload import upload_backend, upload_emoji_image
 from zerver.lib.users import get_api_key
 
-from io import StringIO
-import ujson
-import urllib
-import base64
 
 class ThumbnailTest(ZulipTestCase):
 

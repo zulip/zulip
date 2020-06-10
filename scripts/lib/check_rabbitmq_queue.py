@@ -1,9 +1,8 @@
+import json
 import os
 import re
-import time
 import subprocess
-import json
-
+import time
 from collections import defaultdict
 from typing import Any, DefaultDict, Dict, List
 

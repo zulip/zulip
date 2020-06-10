@@ -1,23 +1,19 @@
-from django.utils.timezone import now as timezone_now
-from datetime import timedelta, datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict
 from unittest import mock
 
-from zerver.lib.test_classes import ZulipTestCase
+from django.utils.timezone import now as timezone_now
+
 from zerver.lib.stream_topic import StreamTopicTarget
-
-from zerver.models import (
-    get_stream,
-    UserProfile,
-    MutedTopic,
-)
-
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic_mutes import (
     add_topic_mute,
     get_topic_mutes,
     remove_topic_mute,
     topic_is_muted,
 )
+from zerver.models import MutedTopic, UserProfile, get_stream
+
 
 class MutedTopicsTests(ZulipTestCase):
     def test_user_ids_muting_topic(self) -> None:

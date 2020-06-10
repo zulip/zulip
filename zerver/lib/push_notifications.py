@@ -1,32 +1,37 @@
 import base64
 import binascii
 import logging
-import lxml.html
 import re
 import time
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
-from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING, Union
-
+import gcm
+import lxml.html
+import ujson
 from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.db.models import F
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
-import gcm
-import ujson
 
 from zerver.decorator import statsd_increment
 from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.message import access_message, \
-    bulk_access_messages_expect_usermessage, huddle_users
-from zerver.lib.remote_server import send_to_push_bouncer, send_json_to_push_bouncer
+from zerver.lib.message import access_message, bulk_access_messages_expect_usermessage, huddle_users
+from zerver.lib.remote_server import send_json_to_push_bouncer, send_to_push_bouncer
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.models import PushDeviceToken, Message, Recipient, \
-    UserMessage, UserProfile, \
-    get_display_recipient, receives_offline_push_notifications, \
-    receives_online_notifications, get_user_profile_by_id, \
-    ArchivedMessage
+from zerver.models import (
+    ArchivedMessage,
+    Message,
+    PushDeviceToken,
+    Recipient,
+    UserMessage,
+    UserProfile,
+    get_display_recipient,
+    get_user_profile_by_id,
+    receives_offline_push_notifications,
+    receives_online_notifications,
+)
 
 if TYPE_CHECKING:
     from apns2.client import APNsClient

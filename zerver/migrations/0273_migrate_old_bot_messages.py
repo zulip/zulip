@@ -1,9 +1,10 @@
+from typing import Any
+
 from django.conf import settings
 from django.db import migrations
 from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
-from typing import Any
 
 def fix_messages(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     """Conceptually, this migration cleans up the old NEW_USER_BOT and FEEDBACK_BOT

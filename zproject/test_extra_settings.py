@@ -5,6 +5,7 @@ import ldap
 from django_auth_ldap.config import LDAPSearch
 
 from zerver.lib.db import TimeTrackingConnection
+
 from .config import DEPLOY_ROOT, get_from_file_if_exists
 from .settings import (
     AUTHENTICATION_BACKENDS,

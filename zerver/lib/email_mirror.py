@@ -1,31 +1,44 @@
-from typing import Dict, Optional, Tuple, List
-
 import logging
 import re
-
 from email.header import decode_header, make_header
 from email.message import Message as EmailMessage
 from email.utils import getaddresses
+from typing import Dict, List, Optional, Tuple
 
 from django.conf import settings
-from django.utils.timezone import timedelta, now as timezone_now
+from django.utils.timezone import now as timezone_now
+from django.utils.timezone import timedelta
 
-from zerver.lib.actions import internal_send_private_message, \
-    internal_send_stream_message, internal_send_huddle_message
-from zerver.lib.email_mirror_helpers import decode_email_address, \
-    get_email_gateway_message_string_from_address, ZulipEmailForwardError
+from zerver.lib.actions import (
+    internal_send_huddle_message,
+    internal_send_private_message,
+    internal_send_stream_message,
+)
+from zerver.lib.email_mirror_helpers import (
+    ZulipEmailForwardError,
+    decode_email_address,
+    get_email_gateway_message_string_from_address,
+)
 from zerver.lib.email_notifications import convert_html_to_markdown
-from zerver.lib.queue import queue_json_publish
-from zerver.lib.utils import generate_random_token
-from zerver.lib.upload import upload_message_file
-from zerver.lib.send_email import FromAddress
-from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.exceptions import RateLimited
 from zerver.lib.message import truncate_body, truncate_topic
-from zerver.models import Stream, Recipient, MissedMessageEmailAddress, \
-    get_display_recipient, \
-    Message, Realm, UserProfile, get_system_bot, get_user, get_stream_by_id_in_realm
-
+from zerver.lib.queue import queue_json_publish
+from zerver.lib.rate_limiter import RateLimitedObject
+from zerver.lib.send_email import FromAddress
+from zerver.lib.upload import upload_message_file
+from zerver.lib.utils import generate_random_token
+from zerver.models import (
+    Message,
+    MissedMessageEmailAddress,
+    Realm,
+    Recipient,
+    Stream,
+    UserProfile,
+    get_display_recipient,
+    get_stream_by_id_in_realm,
+    get_system_bot,
+    get_user,
+)
 from zproject.backends import is_user_active
 
 logger = logging.getLogger(__name__)

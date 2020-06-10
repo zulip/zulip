@@ -23,14 +23,15 @@ except ImportError:
     pass
 
 import argparse
+import configparser
+import logging
+import os
+import select
+import sys
+import time
+
 import psycopg2
 import psycopg2.extensions
-import select
-import time
-import logging
-import configparser
-import sys
-import os
 
 BATCH_SIZE = 1000
 

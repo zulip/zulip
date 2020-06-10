@@ -7,6 +7,7 @@ from django.db.models import CASCADE
 
 from zerver.models import Realm
 
+
 class Customer(models.Model):
     realm: Realm = models.OneToOneField(Realm, on_delete=CASCADE)
     stripe_customer_id: str = models.CharField(max_length=255, null=True, unique=True)

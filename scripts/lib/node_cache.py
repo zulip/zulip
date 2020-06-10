@@ -1,10 +1,10 @@
-import os
 import hashlib
 import json
+import os
 import shutil
+from typing import List, Optional
 
-from typing import Optional, List
-from scripts.lib.zulip_tools import subprocess_text_output, run
+from scripts.lib.zulip_tools import run, subprocess_text_output
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ZULIP_SRV_PATH = "/srv"

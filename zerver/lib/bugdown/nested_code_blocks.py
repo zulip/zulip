@@ -1,9 +1,11 @@
-from markdown.extensions import Extension
-from typing import Any, Dict, Optional, List, Tuple
-import markdown
+from typing import Any, Dict, List, Optional, Tuple
 from xml.etree.ElementTree import Element, SubElement
 
-from zerver.lib.bugdown import walk_tree_with_family, ResultWithFamily
+import markdown
+from markdown.extensions import Extension
+
+from zerver.lib.bugdown import ResultWithFamily, walk_tree_with_family
+
 
 class NestedCodeBlocksRenderer(Extension):
     def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:

@@ -1,7 +1,8 @@
-import lxml
-
-from lxml.html.diff import htmldiff
 from typing import Optional
+
+import lxml
+from lxml.html.diff import htmldiff
+
 
 def highlight_with_class(text: str, klass: str) -> str:
     return f'<span class="{klass}">{text}</span>'

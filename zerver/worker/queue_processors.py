@@ -1,61 +1,97 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
-from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, List, Mapping, MutableSequence, Optional, cast, Tuple, TypeVar, Type
-
 import copy
+import datetime
+import email
+import logging
+import os
 import signal
-import tempfile
-from functools import wraps
-from threading import Timer
-
 import smtplib
 import socket
+import tempfile
+import time
+import urllib
+from abc import ABC, abstractmethod
+from collections import defaultdict, deque
+from functools import wraps
+from threading import Timer
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Mapping,
+    MutableSequence,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+    cast,
+)
 
+import requests
+import ujson
 from django.conf import settings
 from django.db import connection
 from django.utils.timezone import now as timezone_now
-from zerver.models import \
-    get_client, get_system_bot, PreregistrationUser, \
-    get_user_profile_by_id, Message, Realm, UserMessage, UserProfile, \
-    Client, flush_per_request_caches
-from zerver.lib.context_managers import lockfile
-from zerver.lib.error_notify import do_report_error
-from zerver.lib.queue import SimpleQueueClient, retry_event
-from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.email_notifications import handle_missedmessage_emails
-from zerver.lib.push_notifications import handle_push_notification, handle_remove_push_notification, \
-    initialize_push_notifications, clear_push_device_tokens
-from zerver.lib.actions import do_send_confirmation_email, \
-    do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
-    internal_send_private_message, notify_realm_export, \
-    render_incoming_message, do_update_embedded_data, do_mark_stream_messages_as_read
-from zerver.lib.url_preview import preview as url_preview
-from zerver.lib.digest import handle_digest_email
-from zerver.lib.send_email import send_future_email, send_email_from_dict, \
-    FromAddress, EmailNotDeliveredException, handle_send_email_format_changes
-from zerver.lib.email_mirror import process_message as mirror_email, rate_limit_mirror_by_realm, \
-    is_missed_message_address, decode_stream_email_address
-from zerver.lib.streams import access_stream_by_id
-from zerver.lib.db import reset_queries
-from zerver.context_processors import common_context
-from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
-from zerver.models import get_bot_services, RealmAuditLog
 from zulip_bots.lib import ExternalBotHandler, extract_query_without_mention
-from zerver.lib.bot_lib import EmbeddedBotHandler, get_bot_handler, EmbeddedBotQuitException
+
+from zerver.context_processors import common_context
+from zerver.lib.actions import (
+    do_mark_stream_messages_as_read,
+    do_send_confirmation_email,
+    do_update_embedded_data,
+    do_update_user_activity,
+    do_update_user_activity_interval,
+    do_update_user_presence,
+    internal_send_private_message,
+    notify_realm_export,
+    render_incoming_message,
+)
+from zerver.lib.bot_lib import EmbeddedBotHandler, EmbeddedBotQuitException, get_bot_handler
+from zerver.lib.context_managers import lockfile
+from zerver.lib.db import reset_queries
+from zerver.lib.digest import handle_digest_email
+from zerver.lib.email_mirror import decode_stream_email_address, is_missed_message_address
+from zerver.lib.email_mirror import process_message as mirror_email
+from zerver.lib.email_mirror import rate_limit_mirror_by_realm
+from zerver.lib.email_notifications import handle_missedmessage_emails
+from zerver.lib.error_notify import do_report_error
 from zerver.lib.exceptions import RateLimited
 from zerver.lib.export import export_realm_wrapper
-from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
+from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
+from zerver.lib.push_notifications import (
+    clear_push_device_tokens,
+    handle_push_notification,
+    handle_remove_push_notification,
+    initialize_push_notifications,
+)
 from zerver.lib.pysa import mark_sanitized
-
-import os
-import ujson
-from collections import defaultdict, deque
-import email
-import time
-import datetime
-import logging
-import requests
-import urllib
+from zerver.lib.queue import SimpleQueueClient, retry_event
+from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
+from zerver.lib.send_email import (
+    EmailNotDeliveredException,
+    FromAddress,
+    handle_send_email_format_changes,
+    send_email_from_dict,
+    send_future_email,
+)
+from zerver.lib.streams import access_stream_by_id
+from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.lib.url_preview import preview as url_preview
+from zerver.models import (
+    Client,
+    Message,
+    PreregistrationUser,
+    Realm,
+    RealmAuditLog,
+    UserMessage,
+    UserProfile,
+    flush_per_request_caches,
+    get_bot_services,
+    get_client,
+    get_system_bot,
+    get_user_profile_by_id,
+)
 
 logger = logging.getLogger(__name__)
 

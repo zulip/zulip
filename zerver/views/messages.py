@@ -1,70 +1,119 @@
-from django.utils.translation import ugettext as _
-from django.utils.timezone import now as timezone_now
+import datetime
+import re
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Tuple, Union, cast
+
+import ujson
+from dateutil.parser import parse as dateparser
 from django.conf import settings
 from django.core import validators
 from django.core.exceptions import ValidationError
-from django.db import connection, IntegrityError
+from django.db import IntegrityError, connection
 from django.http import HttpRequest, HttpResponse
-from typing import Dict, List, Set, Any, Iterable, \
-    Optional, Tuple, Union, Sequence, cast
-from zerver.lib.exceptions import JsonableError, ErrorCode
-from zerver.lib.html_diff import highlight_html_differences
-from zerver.decorator import has_request_variables, REQ
 from django.utils.html import escape as escape_html
+from django.utils.timezone import now as timezone_now
+from django.utils.translation import ugettext as _
+from sqlalchemy import func
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.sql import (
+    ColumnElement,
+    Selectable,
+    alias,
+    and_,
+    column,
+    join,
+    literal,
+    literal_column,
+    not_,
+    or_,
+    select,
+    table,
+    union_all,
+)
+
+from zerver.decorator import REQ, has_request_variables
 from zerver.lib import bugdown
-from zerver.lib.zcommand import process_zcommands
-from zerver.lib.actions import recipient_for_user_profiles, do_update_message_flags, \
-    compute_irc_user_fullname, compute_jabber_user_fullname, \
-    create_mirror_user_if_needed, check_send_message, do_update_message, \
-    extract_private_recipients, render_incoming_message, do_delete_messages, \
-    do_mark_all_as_read, do_mark_stream_messages_as_read, extract_stream_indicator, \
-    get_user_info_for_message_updates, check_schedule_message
+from zerver.lib.actions import (
+    check_schedule_message,
+    check_send_message,
+    compute_irc_user_fullname,
+    compute_jabber_user_fullname,
+    create_mirror_user_if_needed,
+    do_delete_messages,
+    do_mark_all_as_read,
+    do_mark_stream_messages_as_read,
+    do_update_message,
+    do_update_message_flags,
+    extract_private_recipients,
+    extract_stream_indicator,
+    get_user_info_for_message_updates,
+    recipient_for_user_profiles,
+    render_incoming_message,
+)
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.html_diff import highlight_html_differences
 from zerver.lib.message import (
     access_message,
+    get_first_visible_message_id,
     messages_for_ids,
     render_markdown,
-    get_first_visible_message_id,
     truncate_body,
 )
-from zerver.lib.response import json_success, json_error
+from zerver.lib.queue import queue_json_publish
+from zerver.lib.response import json_error, json_success
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
-from zerver.lib.streams import access_stream_by_id, get_public_streams_queryset, \
-    can_access_stream_history_by_name, can_access_stream_history_by_id, \
-    get_stream_by_narrow_operand_access_unchecked, get_stream_by_id
-from zerver.lib.timestamp import datetime_to_timestamp, convert_to_UTC
+from zerver.lib.streams import (
+    access_stream_by_id,
+    can_access_stream_history_by_id,
+    can_access_stream_history_by_name,
+    get_public_streams_queryset,
+    get_stream_by_id,
+    get_stream_by_narrow_operand_access_unchecked,
+)
+from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.lib.timezone import get_timezone
 from zerver.lib.topic import (
-    topic_column_sa,
-    topic_match_sa,
-    user_message_exists_for_topic,
     DB_TOPIC_NAME,
     LEGACY_PREV_TOPIC,
     MATCH_TOPIC,
     REQ_topic,
+    topic_column_sa,
+    topic_match_sa,
+    user_message_exists_for_topic,
 )
 from zerver.lib.topic_mutes import exclude_topic_mutes
 from zerver.lib.utils import statsd
-from zerver.lib.validator import \
-    check_list, check_int, check_dict, check_string, check_bool, \
-    check_string_or_int_list, check_string_or_int, check_string_in, \
-    check_required_string, to_non_negative_int
+from zerver.lib.validator import (
+    check_bool,
+    check_dict,
+    check_int,
+    check_list,
+    check_required_string,
+    check_string,
+    check_string_in,
+    check_string_or_int,
+    check_string_or_int_list,
+    to_non_negative_int,
+)
+from zerver.lib.zcommand import process_zcommands
 from zerver.lib.zephyr import compute_mit_user_fullname
-from zerver.models import Message, UserProfile, Stream, Subscription, Client,\
-    Realm, RealmDomain, Recipient, UserMessage, UserActivity, \
-    email_to_domain, get_realm, get_active_streams, get_user_including_cross_realm, \
-    get_user_by_id_in_realm_including_cross_realm
-
-from sqlalchemy import func
-from sqlalchemy.dialects import postgresql
-from sqlalchemy.sql import select, join, column, literal_column, literal, and_, \
-    or_, not_, union_all, alias, Selectable, ColumnElement, table
-
-from dateutil.parser import parse as dateparser
-import re
-import ujson
-import datetime
+from zerver.models import (
+    Client,
+    Message,
+    Realm,
+    RealmDomain,
+    Recipient,
+    Stream,
+    Subscription,
+    UserActivity,
+    UserMessage,
+    UserProfile,
+    email_to_domain,
+    get_active_streams,
+    get_realm,
+    get_user_by_id_in_realm_including_cross_realm,
+    get_user_including_cross_realm,
+)
 
 LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000
 MAX_MESSAGES_PER_FETCH = 5000

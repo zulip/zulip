@@ -1,22 +1,30 @@
+import importlib
 import json
 import os
-import importlib
-from zerver.lib.actions import internal_send_private_message, \
-    internal_send_stream_message_by_name, internal_send_huddle_message
-from zerver.models import UserProfile, get_active_user
-from zerver.lib.bot_storage import get_bot_storage, set_bot_storage, \
-    is_key_in_bot_storage, remove_bot_storage
-from zerver.lib.bot_config import get_bot_config, ConfigError
-from zerver.lib.integrations import EMBEDDED_BOTS
-from zerver.lib.topic import get_topic_from_message_info
+from typing import Any, Dict
 
 from django.utils.translation import ugettext as _
 
-from typing import Any, Dict
+from zerver.lib.actions import (
+    internal_send_huddle_message,
+    internal_send_private_message,
+    internal_send_stream_message_by_name,
+)
+from zerver.lib.bot_config import ConfigError, get_bot_config
+from zerver.lib.bot_storage import (
+    get_bot_storage,
+    is_key_in_bot_storage,
+    remove_bot_storage,
+    set_bot_storage,
+)
+from zerver.lib.integrations import EMBEDDED_BOTS
+from zerver.lib.topic import get_topic_from_message_info
+from zerver.models import UserProfile, get_active_user
 
 our_dir = os.path.dirname(os.path.abspath(__file__))
 
 from zulip_bots.lib import RateLimit
+
 
 def get_bot_handler(service_name: str) -> Any:
 
