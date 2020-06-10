@@ -413,8 +413,8 @@ exports.register_stream_handlers = function () {
         e.stopPropagation();
     });
 
-    // Choose custom color
-    $('body').on('click', '.custom_color', function (e) {
+    // Choose a different color.
+    $('body').on('click', '.choose_stream_color', function (e) {
         update_spectrum($(e.target).closest('.streams_popover'), function (colorpicker) {
             $('.colorpicker-container').show();
             colorpicker.spectrum("destroy");

@@ -9,7 +9,7 @@ stream. Changing a stream's color does not change it for anyone else.
 
 {!stream-actions.md!}
 
-1. Pick a color from the grid, or select **Choose custom color**.
+1. Pick a color from the grid, or select **Change color**.
 
 {end_tabs}
 
