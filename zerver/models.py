@@ -2243,6 +2243,11 @@ class Subscription(models.Model):
     # resubscribes.
     active: bool = models.BooleanField(default=True)
 
+    ROLE_STREAM_ADMINISTRATOR = 20
+    ROLE_MEMBER = 50
+
+    role: int = models.PositiveSmallIntegerField(default=ROLE_MEMBER, db_index=True)
+
     # Whether this user had muted this stream.
     is_muted: Optional[bool] = models.BooleanField(null=True, default=False)
 
@@ -2264,6 +2269,10 @@ class Subscription(models.Model):
 
     def __str__(self) -> str:
         return f"<Subscription: {self.user_profile} -> {self.recipient}>"
+
+    @property
+    def is_stream_admin(self) -> bool:
+        return self.role == Subscription.ROLE_STREAM_ADMINISTRATOR
 
     # Subscription fields included whenever a Subscription object is provided to
     # Zulip clients via the API.  A few details worth noting:
