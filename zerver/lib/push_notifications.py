@@ -497,10 +497,10 @@ def get_mobile_push_content(rendered_content: str) -> str:
         return elem.text or ''
 
     def format_as_quote(quote_text: str) -> str:
-        quote_text_list = filter(None, quote_text.split('\n'))  # Remove empty lines
-        quote_text = '\n'.join(map(lambda x: "> "+x, quote_text_list))
-        quote_text += '\n'
-        return quote_text
+        return "".join(
+            f"> {line}\n" for line in quote_text.splitlines()
+            if line  # Remove empty lines
+        )
 
     def render_olist(ol: lxml.html.HtmlElement) -> str:
         items = []

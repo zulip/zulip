@@ -174,13 +174,12 @@ class TestCommandsCanStart(TestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.commands = filter(
-            lambda filename: filename != '__init__',
-            map(
-                lambda file: os.path.basename(file).replace('.py', ''),
-                glob.iglob('*/management/commands/*.py')
-            )
-        )
+        self.commands = [
+            command
+            for filename in glob.iglob('*/management/commands/*.py')
+            for command in [os.path.basename(filename).replace('.py', '')]
+            if command != '__init__'
+        ]
 
     @slow("Aggregate of runs dozens of individual --help tests")
     def test_management_commands_show_help(self) -> None:
