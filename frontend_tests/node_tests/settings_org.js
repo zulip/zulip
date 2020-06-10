@@ -112,50 +112,15 @@ function simulate_realm_domains_table() {
     };
 }
 
-function test_realms_domain_modal(add_realm_domain) {
-    const info = $(".realm_domains_info");
-
-    $("#add-realm-domain-widget").set_find_results(
-        ".new-realm-domain",
-        $.create("new-realm-domain-stub"),
-    );
-
-    $("#add-realm-domain-widget").set_find_results(
-        ".new-realm-domain-allow-subdomains",
-        $.create("new-realm-domain-allow-subdomains-stub"),
-    );
-
-    let posted;
-    let success_callback;
-    let error_callback;
-    channel.post = function (req) {
-        posted = true;
-        assert.equal(req.url, "/json/realm/domains");
-        success_callback = req.success;
-        error_callback = req.error;
-    };
-
-    add_realm_domain();
-
-    assert(posted);
-
-    success_callback();
-    assert.equal(info.val(), "translated: Added successfully!");
-
-    error_callback({});
-    assert.equal(info.val(), "translated: Failed");
-}
-
 function createSaveButtons(subsection) {
     const stub_save_button_header = $(`#org-${subsection}`);
     const save_button_controls = $(".save-button-controls");
     const stub_save_button = $(`#org-submit-${subsection}`);
     const stub_discard_button = $(`#org-discard-${subsection}`);
     const stub_save_button_text = $(".save-discard-widget-button-text");
-    stub_save_button_header.set_find_results(
-        ".subsection-failed-status p",
-        $("<failed status element>"),
-    );
+    const stub_failed_element = $("<failed status element>");
+    stub_save_button_header.set_find_results(".subsection-failed-status p", stub_failed_element);
+    save_button_controls.set_find_results(".subsection-failed-status p", stub_failed_element);
     stub_save_button.closest = () => stub_save_button_header;
     save_button_controls.set_find_results(".save-button", stub_save_button);
     stub_save_button.set_find_results(".save-discard-widget-button-text", stub_save_button_text);
@@ -181,6 +146,45 @@ function createSaveButtons(subsection) {
         save_button_controls,
         save_button_text: stub_save_button_text,
     };
+}
+
+function test_realms_domain_modal(add_realm_domain) {
+    $("#add-realm-domain-widget").set_find_results(
+        ".new-realm-domain",
+        $.create("new-realm-domain-stub"),
+    );
+
+    $("#add-realm-domain-widget").set_find_results(
+        ".new-realm-domain-allow-subdomains",
+        $.create("new-realm-domain-allow-subdomains-stub"),
+    );
+
+    let posted;
+    let success_callback;
+    let error_callback;
+    channel.post = function (req) {
+        posted = true;
+        assert.equal(req.url, "/json/realm/domains");
+        success_callback = req.success;
+        error_callback = req.error;
+    };
+    createSaveButtons("domain-restrictions");
+
+    add_realm_domain();
+
+    assert(posted);
+
+    const stubbed_function = settings_org.change_save_button_state;
+    settings_org.change_save_button_state = (save_button_controls, status) => {
+        assert(status, "succeeded");
+    };
+    success_callback();
+
+    settings_org.change_save_button_state = (save_button_controls, status) => {
+        assert(status, "error_occured");
+    };
+    error_callback({});
+    settings_org.change_save_button_state = stubbed_function;
 }
 
 function test_submit_settings_form(submit_form) {
@@ -353,6 +357,13 @@ function test_change_save_button_state() {
         assert.equal(save_button.attr("data-status"), "failed");
         assert.equal(save_button_text.text(), "translated: Save changes");
     }
+    {
+        assert.equal(save_button.visible(), true);
+        settings_org.change_save_button_state(save_button_controls, "error_occured");
+        assert.equal(props.hidden, true);
+        assert.equal(save_button.attr("data-status"), "failed");
+        assert.equal(save_button.visible(), false);
+    }
 }
 
 function test_upload_realm_icon(upload_realm_logo_or_icon) {
@@ -382,10 +393,8 @@ function test_change_allow_subdomains(change_allow_subdomains) {
         stopPropagation: noop,
     };
 
-    const info = $(".realm_domains_info");
-    info.fadeOut = noop;
     const domain = "example.com";
-    let allow = true;
+    const allow = true;
 
     let success_callback;
     let error_callback;
@@ -395,6 +404,8 @@ function test_change_allow_subdomains(change_allow_subdomains) {
         success_callback = req.success;
         error_callback = req.error;
     };
+
+    createSaveButtons("domain-restrictions");
 
     const domain_obj = $.create("domain object");
     domain_obj.text(domain);
@@ -408,20 +419,18 @@ function test_change_allow_subdomains(change_allow_subdomains) {
 
     change_allow_subdomains.call(elem_obj, ev);
 
+    const stubbed_function = settings_org.change_save_button_state;
+    settings_org.change_save_button_state = (save_button_controls, status) => {
+        assert(status, "succeeded");
+    };
     success_callback();
-    assert.equal(info.val(), "translated: Update successful: Subdomains allowed for example.com");
 
+    settings_org.change_save_button_state = (save_button_controls, status) => {
+        assert(status, "error_occured");
+    };
     error_callback({});
-    assert.equal(info.val(), "translated: Failed");
 
-    allow = false;
-    elem_obj.prop("checked", allow);
-    change_allow_subdomains.call(elem_obj, ev);
-    success_callback();
-    assert.equal(
-        info.val(),
-        "translated: Update successful: Subdomains no longer allowed for example.com",
-    );
+    settings_org.change_save_button_state = stubbed_function;
 }
 
 function test_extract_property_name() {
