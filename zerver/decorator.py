@@ -1,51 +1,59 @@
-import django_otp
-from two_factor.utils import default_device
-from django_otp import user_has_device
-
-from django.contrib.auth.decorators import user_passes_test as django_user_passes_test
-from django.contrib.auth.models import AnonymousUser
-from django.utils.translation import ugettext as _
-from django.http import HttpResponseRedirect, HttpResponse
-from django.contrib.auth import REDIRECT_FIELD_NAME, login as django_login
-from django.views.decorators.csrf import csrf_exempt
-from django.http import QueryDict, HttpResponseNotAllowed, HttpRequest
-from django.http.multipartparser import MultiPartParser
-from zerver.models import Realm, UserProfile, get_client, get_user_profile_by_api_key
-from zerver.lib.response import json_error, json_unauthorized, json_success
-from django.shortcuts import resolve_url
-from django.utils.decorators import available_attrs
-from django.utils.timezone import now as timezone_now
-from django.conf import settings
-from django.template.response import SimpleTemplateResponse
-
-from zerver.lib.exceptions import UnexpectedWebhookEventType
-from zerver.lib.queue import queue_json_publish
-from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
-from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.lib.utils import statsd, has_api_key_format
-from zerver.lib.exceptions import JsonableError, ErrorCode, \
-    InvalidJSONError, InvalidAPIKeyError, InvalidAPIKeyFormatError, \
-    OrganizationAdministratorRequired
-from zerver.lib.types import ViewFuncT
-
-from zerver.lib.rate_limiter import RateLimitedUser
-from zerver.lib.request import REQ, has_request_variables
-
-from functools import wraps
 import base64
 import datetime
-import ujson
 import logging
-from io import BytesIO
 import urllib
+from functools import wraps
+from io import BytesIO
+from typing import Any, Callable, Dict, Optional, Tuple, TypeVar, Union
 
-from typing import Union, Any, Callable, Dict, Optional, TypeVar, Tuple
+import django_otp
+import ujson
+from django.conf import settings
+from django.contrib.auth import REDIRECT_FIELD_NAME
+from django.contrib.auth import login as django_login
+from django.contrib.auth.decorators import user_passes_test as django_user_passes_test
+from django.contrib.auth.models import AnonymousUser
+from django.http import (
+    HttpRequest,
+    HttpResponse,
+    HttpResponseNotAllowed,
+    HttpResponseRedirect,
+    QueryDict,
+)
+from django.http.multipartparser import MultiPartParser
+from django.shortcuts import resolve_url
+from django.template.response import SimpleTemplateResponse
+from django.utils.decorators import available_attrs
+from django.utils.timezone import now as timezone_now
+from django.utils.translation import ugettext as _
+from django.views.decorators.csrf import csrf_exempt
+from django_otp import user_has_device
+from two_factor.utils import default_device
+
+from zerver.lib.exceptions import (
+    ErrorCode,
+    InvalidAPIKeyError,
+    InvalidAPIKeyFormatError,
+    InvalidJSONError,
+    JsonableError,
+    OrganizationAdministratorRequired,
+    UnexpectedWebhookEventType,
+)
 from zerver.lib.logging_util import log_to_file
+from zerver.lib.queue import queue_json_publish
+from zerver.lib.rate_limiter import RateLimitedUser
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_error, json_success, json_unauthorized
+from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
+from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
+from zerver.lib.types import ViewFuncT
+from zerver.lib.utils import has_api_key_format, statsd
+from zerver.models import Realm, UserProfile, get_client, get_user_profile_by_api_key
 
 # This is a hack to ensure that RemoteZulipServer always exists even
 # if Zilencer isn't enabled.
 if settings.ZILENCER_ENABLED:
-    from zilencer.models import get_remote_server_by_uuid, RemoteZulipServer
+    from zilencer.models import RemoteZulipServer, get_remote_server_by_uuid
 else:  # nocoverage # Hack here basically to make impossible code paths compile
     from unittest.mock import Mock
     get_remote_server_by_uuid = Mock()
@@ -121,6 +129,7 @@ def require_billing_access(func: ViewFuncT) -> ViewFuncT:
     return wrapper  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
 
 from zerver.lib.user_agent import parse_user_agent
+
 
 def get_client_name(request: HttpRequest) -> str:
     # If the API request specified a client in the request content,
@@ -333,7 +342,9 @@ def api_key_only_webhook_view(
                     # NOTE: importing this at the top of file leads to a
                     # cyclic import; correct fix is probably to move
                     # notify_bot_owner_about_invalid_json to a smaller file.
-                    from zerver.lib.webhooks.common import notify_bot_owner_about_invalid_json
+                    from zerver.lib.webhooks.common import (
+                        notify_bot_owner_about_invalid_json,
+                    )
                     notify_bot_owner_about_invalid_json(user_profile, webhook_client_name)
                 else:
                     kwargs = {'request': request, 'user_profile': user_profile}

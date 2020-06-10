@@ -1,17 +1,16 @@
-from django.conf import settings
-from django.db.models import Sum
-from django.db.models.query import F
-from django.db.models.functions import Length
-from zerver.models import BotConfigData, UserProfile
-
-from typing import List, Dict, Optional
-
-from collections import defaultdict
-
-import os
-
 import configparser
 import importlib
+import os
+from collections import defaultdict
+from typing import Dict, List, Optional
+
+from django.conf import settings
+from django.db.models import Sum
+from django.db.models.functions import Length
+from django.db.models.query import F
+
+from zerver.models import BotConfigData, UserProfile
+
 
 class ConfigError(Exception):
     pass

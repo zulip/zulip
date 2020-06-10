@@ -7,6 +7,7 @@ os.environ["RUNNING_OPENAPI_CURL_TEST"] = "1"
 
 # check for the venv
 from lib import sanity_check
+
 sanity_check.check_venv(__file__)
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -30,13 +31,15 @@ assert_provisioning_status_ok(options.force)
 with test_server_running(force=options.force, external_host='zulipdev.com:9981'):
     # Zerver imports should happen after `django.setup()` is run
     # by the test_server_running decorator.
-    from zerver.openapi.python_examples import test_the_api, test_invalid_api_key
-    from zerver.openapi.javascript_examples import test_js_bindings
-    from zerver.openapi.test_curl_examples import test_generated_curl_examples_for_success
     from zerver.lib.actions import do_create_user
     from zerver.lib.test_helpers import reset_emails_in_zulip_realm
     from zerver.lib.users import get_api_key
-    from zerver.models import get_user, get_realm
+    from zerver.models import get_realm, get_user
+    from zerver.openapi.javascript_examples import test_js_bindings
+    from zerver.openapi.python_examples import test_invalid_api_key, test_the_api
+    from zerver.openapi.test_curl_examples import (
+        test_generated_curl_examples_for_success,
+    )
 
     print("Running API tests...")
 

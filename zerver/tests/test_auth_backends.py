@@ -1,29 +1,39 @@
+import base64
+import copy
+import datetime
+import json
+import re
+import time
+import urllib
+from typing import Any, Callable, Dict, List, Optional, Tuple
+from unittest import mock
+
+import jwt
+import ldap
+import requests
+import responses
+import ujson
 from bs4 import BeautifulSoup
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core import mail
-from django.http import HttpResponse, HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.test import override_settings
-from django_auth_ldap.backend import LDAPSearch, _LDAPUser
 from django.test.client import RequestFactory
-from django.utils.timezone import now as timezone_now
-from typing import Any, Callable, Dict, List, Optional, Tuple
 from django.urls import reverse
+from django.utils.timezone import now as timezone_now
+from django_auth_ldap.backend import LDAPSearch, _LDAPUser
+from onelogin.saml2.auth import OneLogin_Saml2_Auth
+from onelogin.saml2.response import OneLogin_Saml2_Response
+from social_core.exceptions import AuthFailed, AuthStateForbidden
+from social_django.storage import BaseDjangoStorage
+from social_django.strategy import DjangoStrategy
 
-import responses
-
-import ldap
-import jwt
-from unittest import mock
-import re
-import datetime
-import time
-import requests
-
+from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.actions import (
-    do_create_user,
     do_create_realm,
+    do_create_user,
     do_deactivate_realm,
     do_deactivate_user,
     do_invite_users,
@@ -35,57 +45,92 @@ from zerver.lib.actions import (
 from zerver.lib.avatar import avatar_url
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.dev_ldap_directory import generate_dev_ldap_dir
-from zerver.lib.email_validation import get_realm_email_validator, \
-    validate_email_is_valid, get_existing_user_errors
+from zerver.lib.email_validation import (
+    get_existing_user_errors,
+    get_realm_email_validator,
+    validate_email_is_valid,
+)
 from zerver.lib.exceptions import RateLimited
+from zerver.lib.initial_password import initial_password
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
-from zerver.lib.validator import validate_login_email, \
-    check_bool, check_dict_only, check_list, check_string, check_int, Validator
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.request import JsonableError
 from zerver.lib.storage import static_path
-from zerver.lib.upload import resize_avatar, MEDIUM_AVATAR_SIZE
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import (
+    create_s3_buckets,
+    get_test_image_file,
+    load_subdomain_token,
+    use_s3_backend,
+)
+from zerver.lib.upload import MEDIUM_AVATAR_SIZE, resize_avatar
 from zerver.lib.users import get_all_api_keys
 from zerver.lib.utils import generate_random_token
-from zerver.lib.initial_password import initial_password
-from zerver.lib.test_classes import (
-    ZulipTestCase,
+from zerver.lib.validator import (
+    Validator,
+    check_bool,
+    check_dict_only,
+    check_int,
+    check_list,
+    check_string,
+    validate_login_email,
 )
-from zerver.models import \
-    get_realm, email_to_username, CustomProfileField, CustomProfileFieldValue, \
-    UserProfile, PreregistrationUser, Realm, RealmDomain, MultiuseInvite, \
-    clear_supported_auth_backends_cache, PasswordTooWeakError, get_user_by_delivery_email
+from zerver.models import (
+    CustomProfileField,
+    CustomProfileFieldValue,
+    MultiuseInvite,
+    PasswordTooWeakError,
+    PreregistrationUser,
+    Realm,
+    RealmDomain,
+    UserProfile,
+    clear_supported_auth_backends_cache,
+    email_to_username,
+    get_realm,
+    get_user_by_delivery_email,
+)
 from zerver.signals import JUST_CREATED_THRESHOLD
-
-from confirmation.models import Confirmation, create_confirmation_link
-
-from zproject.backends import ZulipDummyBackend, EmailAuthBackend, AppleAuthBackend, \
-    GoogleAuthBackend, ZulipRemoteUserBackend, ZulipLDAPAuthBackend, \
-    ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend, GitLabAuthBackend, ZulipAuthMixin, \
-    dev_auth_enabled, password_auth_enabled, github_auth_enabled, gitlab_auth_enabled, \
-    apple_auth_enabled, google_auth_enabled, require_email_format_usernames, AUTH_BACKEND_NAME_MAP, \
-    ZulipLDAPConfigurationError, ZulipLDAPExceptionNoMatchingLDAPUser, ZulipLDAPExceptionOutsideDomain, \
-    ZulipLDAPException, query_ldap, sync_user_from_ldap, SocialAuthMixin, \
-    PopulateUserLDAPError, SAMLAuthBackend, saml_auth_enabled, email_belongs_to_ldap, \
-    get_external_method_dicts, AzureADAuthBackend, check_password_strength, \
-    ZulipLDAPUser, RateLimitedAuthenticationByUsername, ExternalAuthResult, \
-    ExternalAuthDataDict
-
 from zerver.views.auth import maybe_send_to_registration
+from zproject.backends import (
+    AUTH_BACKEND_NAME_MAP,
+    AppleAuthBackend,
+    AzureADAuthBackend,
+    DevAuthBackend,
+    EmailAuthBackend,
+    ExternalAuthDataDict,
+    ExternalAuthResult,
+    GitHubAuthBackend,
+    GitLabAuthBackend,
+    GoogleAuthBackend,
+    PopulateUserLDAPError,
+    RateLimitedAuthenticationByUsername,
+    SAMLAuthBackend,
+    SocialAuthMixin,
+    ZulipAuthMixin,
+    ZulipDummyBackend,
+    ZulipLDAPAuthBackend,
+    ZulipLDAPConfigurationError,
+    ZulipLDAPException,
+    ZulipLDAPExceptionNoMatchingLDAPUser,
+    ZulipLDAPExceptionOutsideDomain,
+    ZulipLDAPUser,
+    ZulipLDAPUserPopulator,
+    ZulipRemoteUserBackend,
+    apple_auth_enabled,
+    check_password_strength,
+    dev_auth_enabled,
+    email_belongs_to_ldap,
+    get_external_method_dicts,
+    github_auth_enabled,
+    gitlab_auth_enabled,
+    google_auth_enabled,
+    password_auth_enabled,
+    query_ldap,
+    require_email_format_usernames,
+    saml_auth_enabled,
+    sync_user_from_ldap,
+)
 
-from onelogin.saml2.auth import OneLogin_Saml2_Auth
-from onelogin.saml2.response import OneLogin_Saml2_Response
-from social_core.exceptions import AuthFailed, AuthStateForbidden
-from social_django.strategy import DjangoStrategy
-from social_django.storage import BaseDjangoStorage
-
-import base64
-import copy
-import json
-import urllib
-import ujson
-from zerver.lib.test_helpers import load_subdomain_token, \
-    use_s3_backend, create_s3_buckets, get_test_image_file
 
 class AuthBackendTest(ZulipTestCase):
     def get_username(self, email_to_username: Optional[Callable[[str], str]]=None) -> str:

@@ -1,25 +1,22 @@
+import os
+import subprocess
+import urllib
+
+import ujson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect, render
 from django.views.decorators.http import require_safe
 
-from zerver.models import (
-    get_realm, get_user_by_delivery_email, get_realm_stream, Realm,
+from confirmation.models import Confirmation, confirmation_url
+from zerver.lib.actions import (
+    do_change_user_delivery_email,
+    do_send_realm_reactivation_email,
 )
 from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.response import json_success
-from zerver.lib.actions import do_change_user_delivery_email, \
-    do_send_realm_reactivation_email
-from zproject.email_backends import (
-    get_forward_address,
-    set_forward_address,
-)
-import urllib
-from confirmation.models import Confirmation, confirmation_url
-
-import os
-import subprocess
-import ujson
+from zerver.models import Realm, get_realm, get_realm_stream, get_user_by_delivery_email
+from zproject.email_backends import get_forward_address, set_forward_address
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../')
 

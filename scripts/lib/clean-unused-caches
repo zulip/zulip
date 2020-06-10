@@ -4,8 +4,9 @@ import sys
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(ZULIP_PATH)
+from scripts.lib import clean_emoji_cache, clean_node_cache, clean_venv_cache
 from scripts.lib.zulip_tools import parse_cache_script_args
-from scripts.lib import clean_venv_cache, clean_node_cache, clean_emoji_cache
+
 
 def main() -> None:
     args = parse_cache_script_args("This script cleans unused zulip caches.")

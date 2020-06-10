@@ -1,63 +1,80 @@
-from django.conf import settings
-from django.test import TestCase
+import datetime
+import io
+import os
+import re
+import shutil
+import time
+import urllib
+from io import StringIO
+from unittest import mock
 from unittest.mock import patch
 
-from zerver.lib.avatar import (
-    avatar_url,
-    get_avatar_field,
+import botocore.exceptions
+import ujson
+from django.conf import settings
+from django.test import TestCase
+from django.utils.timezone import now as timezone_now
+from django_sendfile.sendfile import _get_sendfile
+from PIL import Image
+
+import zerver.lib.upload
+from scripts.lib.zulip_tools import get_dev_uuid_var_path
+from zerver.lib.actions import (
+    do_change_icon_source,
+    do_change_logo_source,
+    do_change_plan_type,
+    do_delete_old_unclaimed_attachments,
+    do_set_realm_property,
+    internal_send_private_message,
 )
+from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.avatar_hash import user_avatar_path
+from zerver.lib.cache import cache_get, get_realm_used_upload_space_cache_key
+from zerver.lib.create_user import copy_user_settings
 from zerver.lib.initial_password import initial_password
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_url
-from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
+from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import (
     avatar_disk_path,
-    get_test_image_file,
-    use_s3_backend,
     create_s3_buckets,
+    get_test_image_file,
     queries_captured,
+    use_s3_backend,
 )
-from zerver.lib.upload import sanitize_name, S3UploadBackend, \
-    upload_message_file, upload_emoji_image, delete_message_image, LocalUploadBackend, \
-    ZulipUploadBackend, MEDIUM_AVATAR_SIZE, resize_avatar, \
-    resize_emoji, BadImageError, get_realm_for_filename, \
-    DEFAULT_AVATAR_SIZE, DEFAULT_EMOJI_SIZE, exif_rotate, \
-    upload_export_tarball, delete_export_tarball
-import zerver.lib.upload
-from zerver.models import Attachment, get_user_by_delivery_email, \
-    Message, UserProfile, Realm, \
-    RealmDomain, RealmEmoji, get_realm, get_system_bot, \
-    validate_attachment_request
-from zerver.lib.actions import (
-    do_change_plan_type,
-    do_change_icon_source,
-    do_change_logo_source,
-    do_delete_old_unclaimed_attachments,
-    internal_send_private_message,
-    do_set_realm_property
+from zerver.lib.upload import (
+    DEFAULT_AVATAR_SIZE,
+    DEFAULT_EMOJI_SIZE,
+    MEDIUM_AVATAR_SIZE,
+    BadImageError,
+    LocalUploadBackend,
+    S3UploadBackend,
+    ZulipUploadBackend,
+    delete_export_tarball,
+    delete_message_image,
+    exif_rotate,
+    get_realm_for_filename,
+    resize_avatar,
+    resize_emoji,
+    sanitize_name,
+    upload_emoji_image,
+    upload_export_tarball,
+    upload_message_file,
 )
-from zerver.lib.cache import get_realm_used_upload_space_cache_key, cache_get
-from zerver.lib.create_user import copy_user_settings
 from zerver.lib.users import get_api_key
+from zerver.models import (
+    Attachment,
+    Message,
+    Realm,
+    RealmDomain,
+    RealmEmoji,
+    UserProfile,
+    get_realm,
+    get_system_bot,
+    get_user_by_delivery_email,
+    validate_attachment_request,
+)
 
-from scripts.lib.zulip_tools import get_dev_uuid_var_path
-
-import urllib
-import ujson
-from PIL import Image
-import botocore.exceptions
-
-from io import StringIO
-from unittest import mock
-import os
-import io
-import shutil
-import re
-import time
-import datetime
-from django.utils.timezone import now as timezone_now
-from django_sendfile.sendfile import _get_sendfile
 
 def destroy_uploads() -> None:
     if os.path.exists(settings.LOCAL_UPLOADS_DIR):

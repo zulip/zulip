@@ -1,45 +1,45 @@
-from typing import Any, Optional, Tuple
-
-from datetime import timedelta
-
-from django.utils.translation import ugettext as _
-from django.conf import settings
-from django.core.files import File
-from django.core.signing import TimestampSigner, BadSignature
-from django.http import HttpRequest
-from django.urls import reverse
-from jinja2 import Markup as mark_safe
+import base64
+import binascii
+import io
+import logging
+import os
+import random
+import re
+import shutil
+import sys
 import unicodedata
-
-from zerver.lib.avatar_hash import user_avatar_path
-from zerver.lib.exceptions import JsonableError, ErrorCode
-from zerver.lib.utils import generate_random_token
+import urllib
+from datetime import timedelta
+from mimetypes import guess_extension, guess_type
+from typing import Any, Optional, Tuple
 
 import boto3
 import botocore
-from botocore.client import Config
 from boto3.resources.base import ServiceResource
 from boto3.session import Session
-
-from mimetypes import guess_type, guess_extension
-
-from zerver.models import get_user_profile_by_id
-from zerver.models import Attachment
-from zerver.models import Realm, RealmEmoji, UserProfile, Message
-
-import urllib
-import base64
-import binascii
-import os
-import re
-from PIL import Image, ImageOps, ExifTags
-from PIL.Image import DecompressionBombError
+from botocore.client import Config
+from django.conf import settings
+from django.core.files import File
+from django.core.signing import BadSignature, TimestampSigner
+from django.http import HttpRequest
+from django.urls import reverse
+from django.utils.translation import ugettext as _
+from jinja2 import Markup as mark_safe
+from PIL import ExifTags, Image, ImageOps
 from PIL.GifImagePlugin import GifImageFile
-import io
-import random
-import logging
-import shutil
-import sys
+from PIL.Image import DecompressionBombError
+
+from zerver.lib.avatar_hash import user_avatar_path
+from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.utils import generate_random_token
+from zerver.models import (
+    Attachment,
+    Message,
+    Realm,
+    RealmEmoji,
+    UserProfile,
+    get_user_profile_by_id,
+)
 
 DEFAULT_AVATAR_SIZE = 100
 MEDIUM_AVATAR_SIZE = 500

@@ -1,24 +1,23 @@
 # System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
-
+import logging
+import subprocess
 from typing import Any, Dict, Optional
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+
 from zerver.decorator import human_users_only
 from zerver.lib.bugdown import privacy_clean_markdown
-from zerver.lib.request import has_request_variables, REQ
-from zerver.lib.response import json_success
 from zerver.lib.queue import queue_json_publish
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_success
 from zerver.lib.storage import static_path
 from zerver.lib.unminify import SourceMap
 from zerver.lib.utils import statsd, statsd_key
 from zerver.lib.validator import check_bool, check_dict, to_non_negative_int
 from zerver.models import UserProfile
-
-import subprocess
-import logging
 
 js_source_map: Optional[SourceMap] = None
 

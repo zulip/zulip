@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-
 import configparser
-from hashlib import md5
 import os
+from hashlib import md5
 
 import polib
 

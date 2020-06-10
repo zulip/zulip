@@ -1,13 +1,19 @@
-from django.db.models import Model
-
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 
+from django.db.models import Model
+
+from zerver.lib.create_user import create_user_profile, get_display_email_address
 from zerver.lib.initial_password import initial_password
-from zerver.models import Realm, Stream, UserProfile, \
-    Subscription, Recipient, RealmAuditLog
-from zerver.lib.create_user import create_user_profile, \
-    get_display_email_address
 from zerver.lib.streams import render_stream_description
+from zerver.models import (
+    Realm,
+    RealmAuditLog,
+    Recipient,
+    Stream,
+    Subscription,
+    UserProfile,
+)
+
 
 def bulk_create_users(realm: Realm,
                       users_raw: Set[Tuple[str, str, str, bool]],

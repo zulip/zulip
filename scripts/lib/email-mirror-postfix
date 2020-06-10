@@ -40,21 +40,16 @@ Also you can use optional keys to configure the script and change default values
 -t                  Disable sending request to the Zulip server. Default value: False.
 
 """
-
+import argparse
+import json
 import os
+import posix
 import ssl
 import sys
-
-import argparse
-
-import posix
-import json
-
-from urllib.parse import urljoin, urlencode
-from urllib.request import Request, urlopen
-from urllib.error import HTTPError
 from configparser import RawConfigParser
-
+from urllib.error import HTTPError
+from urllib.parse import urlencode, urljoin
+from urllib.request import Request, urlopen
 
 parser = argparse.ArgumentParser()
 

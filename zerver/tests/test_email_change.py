@@ -1,17 +1,22 @@
 import datetime
-from email.utils import parseaddr
 import re
+from email.utils import parseaddr
 
 from django.core import mail
 from django.utils.timezone import now
 
-from confirmation.models import Confirmation, generate_key, confirmation_url
-from zerver.lib.actions import do_start_email_change_process, do_set_realm_property
-from zerver.lib.test_classes import (
-    ZulipTestCase,
+from confirmation.models import Confirmation, confirmation_url, generate_key
+from zerver.lib.actions import do_set_realm_property, do_start_email_change_process
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.models import (
+    EmailChangeStatus,
+    Realm,
+    UserProfile,
+    get_realm,
+    get_user,
+    get_user_by_delivery_email,
+    get_user_profile_by_id,
 )
-from zerver.models import get_user_by_delivery_email, EmailChangeStatus, get_realm, \
-    Realm, UserProfile, get_user, get_user_profile_by_id
 
 
 class EmailChangeTestCase(ZulipTestCase):

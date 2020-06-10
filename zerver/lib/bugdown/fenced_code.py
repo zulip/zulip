@@ -75,14 +75,15 @@ Dependencies:
 * [Pygments (optional)](http://pygments.org)
 
 """
-
 import re
+from typing import Any, Dict, Iterable, List, MutableSequence, Optional
+
 import markdown
 from django.utils.html import escape
 from markdown.extensions.codehilite import CodeHilite, CodeHiliteExtension
+
 from zerver.lib.exceptions import BugdownRenderingException
 from zerver.lib.tex import render_tex
-from typing import Any, Dict, Iterable, List, MutableSequence, Optional
 
 # Global vars
 FENCE_RE = re.compile("""

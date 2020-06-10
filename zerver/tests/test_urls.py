@@ -1,15 +1,16 @@
 import importlib
 import os
-import ujson
+from typing import List, Optional
 
 import django.urls.resolvers
-from django.test import TestCase, Client
-from typing import List, Optional
+import ujson
+from django.test import Client, TestCase
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_runner import slow
 from zerver.models import Stream
 from zproject import urls
+
 
 class PublicURLTest(ZulipTestCase):
     """

@@ -1,86 +1,105 @@
 import datetime
-from email.utils import parseaddr
-
-from django.conf import settings
-from django.contrib.auth.views import INTERNAL_RESET_URL_TOKEN
-from django.contrib.contenttypes.models import ContentType
-from django.http import HttpResponse
-from django.test import TestCase, override_settings
-from django.utils.timezone import now as timezone_now
-from django.core.exceptions import ValidationError
-from django.urls import reverse
-
-from unittest.mock import patch, MagicMock
-from zerver.lib.test_helpers import (
-    avatar_disk_path,
-    get_test_image_file,
-    reset_emails_in_zulip_realm,
-)
-
-from confirmation.models import Confirmation, create_confirmation_link, MultiuseInvite, \
-    generate_key, confirmation_url, get_object_from_key, ConfirmationKeyException, \
-    one_click_unsubscribe_link
-from confirmation import settings as confirmation_settings
-
-from zerver.forms import HomepageForm, check_subdomain_available
-from zerver.decorator import do_two_factor_login
-from zerver.views.auth import \
-    redirect_and_log_into_subdomain, start_two_factor_auth
-from zerver.views.invite import get_invitee_emails_set
-from zerver.views.development.registration import confirmation_key
-
-from zerver.models import (
-    get_realm, get_user, CustomProfileField,
-    CustomProfileFieldValue, DefaultStream, PreregistrationUser,
-    Realm, Recipient, Message, ScheduledEmail, UserProfile, UserMessage,
-    Stream, Subscription, flush_per_request_caches, get_system_bot,
-    get_user_by_delivery_email
-)
-from zerver.lib.actions import (
-    do_change_user_role,
-    get_stream,
-    do_create_default_stream_group,
-    do_add_default_stream,
-    do_create_realm,
-    get_default_streams_for_realm,
-    do_invite_users, do_create_user)
-from zerver.lib.send_email import send_future_email, FromAddress, \
-    deliver_email
-from zerver.lib.initial_password import initial_password
-from zerver.lib.actions import (
-    do_get_user_invites,
-    do_change_full_name,
-    do_deactivate_realm,
-    do_deactivate_user,
-    do_set_realm_property,
-    add_new_user_history,
-)
-from zerver.lib.mobile_auth_otp import xor_hex_strings, ascii_to_hex, \
-    otp_encrypt_api_key, is_valid_otp, hex_to_ascii, otp_decrypt_api_key
-from zerver.lib.email_notifications import enqueue_welcome_emails, \
-    followup_day2_email_delay
-from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
-from zerver.lib.subdomains import is_root_domain_available
-from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
-from zerver.lib.streams import create_stream_if_needed
-from zerver.lib.test_helpers import find_key_by_email, queries_captured, \
-    HostRequestMock, load_subdomain_token
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-from zerver.lib.name_restrictions import is_disposable_domain
-from zerver.context_processors import common_context
-
-from zproject.backends import ExternalAuthResult, ExternalAuthDataDict
-
 import re
 import smtplib
 import time
-import ujson
-
-from typing import Any, List, Optional
-
 import urllib
+from email.utils import parseaddr
+from typing import Any, List, Optional
+from unittest.mock import MagicMock, patch
+
+import ujson
+from django.conf import settings
+from django.contrib.auth.views import INTERNAL_RESET_URL_TOKEN
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
+from django.http import HttpResponse
+from django.test import TestCase, override_settings
+from django.urls import reverse
+from django.utils.timezone import now as timezone_now
+
+from confirmation import settings as confirmation_settings
+from confirmation.models import (
+    Confirmation,
+    ConfirmationKeyException,
+    MultiuseInvite,
+    confirmation_url,
+    create_confirmation_link,
+    generate_key,
+    get_object_from_key,
+    one_click_unsubscribe_link,
+)
+from zerver.context_processors import common_context
+from zerver.decorator import do_two_factor_login
+from zerver.forms import HomepageForm, check_subdomain_available
+from zerver.lib.actions import (
+    add_new_user_history,
+    do_add_default_stream,
+    do_change_full_name,
+    do_change_user_role,
+    do_create_default_stream_group,
+    do_create_realm,
+    do_create_user,
+    do_deactivate_realm,
+    do_deactivate_user,
+    do_get_user_invites,
+    do_invite_users,
+    do_set_realm_property,
+    get_default_streams_for_realm,
+    get_stream,
+)
+from zerver.lib.email_notifications import (
+    enqueue_welcome_emails,
+    followup_day2_email_delay,
+)
+from zerver.lib.initial_password import initial_password
+from zerver.lib.mobile_auth_otp import (
+    ascii_to_hex,
+    hex_to_ascii,
+    is_valid_otp,
+    otp_decrypt_api_key,
+    otp_encrypt_api_key,
+    xor_hex_strings,
+)
+from zerver.lib.name_restrictions import is_disposable_domain
+from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
+from zerver.lib.send_email import FromAddress, deliver_email, send_future_email
+from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
+from zerver.lib.streams import create_stream_if_needed
+from zerver.lib.subdomains import is_root_domain_available
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import (
+    HostRequestMock,
+    avatar_disk_path,
+    find_key_by_email,
+    get_test_image_file,
+    load_subdomain_token,
+    queries_captured,
+    reset_emails_in_zulip_realm,
+)
+from zerver.models import (
+    CustomProfileField,
+    CustomProfileFieldValue,
+    DefaultStream,
+    Message,
+    PreregistrationUser,
+    Realm,
+    Recipient,
+    ScheduledEmail,
+    Stream,
+    Subscription,
+    UserMessage,
+    UserProfile,
+    flush_per_request_caches,
+    get_realm,
+    get_system_bot,
+    get_user,
+    get_user_by_delivery_email,
+)
+from zerver.views.auth import redirect_and_log_into_subdomain, start_two_factor_auth
+from zerver.views.development.registration import confirmation_key
+from zerver.views.invite import get_invitee_emails_set
+from zproject.backends import ExternalAuthDataDict, ExternalAuthResult
+
 
 class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):
     def test_data(self) -> None:
@@ -3968,6 +3987,7 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertIn(self.example_email("iago"), content)
         self.assertIn(self.example_email("cordelia"), content)
         from django.core.mail import outbox
+
         # 3 = 1 + 2 -- Cordelia gets an email each for the "zulip" and "lear" realms.
         self.assertEqual(len(outbox), 3)
 

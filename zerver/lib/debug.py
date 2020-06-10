@@ -8,10 +8,10 @@ import threading
 import traceback
 import tracemalloc
 from types import FrameType
+from typing import Optional
 
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
-from typing import Optional
 
 logger = logging.getLogger('zulip.debug')
 

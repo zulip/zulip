@@ -4,12 +4,11 @@
 Nagios plugin to check the difference between the primary and
 secondary Postgres servers' xlog location.
 """
-
 import configparser
-import subprocess
 import re
-
+import subprocess
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     # typing_extensions might not be installed
     from typing_extensions import NoReturn

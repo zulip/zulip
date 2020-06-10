@@ -1,6 +1,7 @@
 import string
-from typing import Optional, Any, Dict, List, Tuple
 from collections import defaultdict
+from typing import Any, Dict, List, Optional, Tuple
+
 TOPIC_WITH_BRANCH_TEMPLATE = '{repo} / {branch}'
 TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE = '{repo} / {type} #{id} {title}'
 TOPIC_WITH_RELEASE_TEMPLATE = '{repo} / {tag} {title}'

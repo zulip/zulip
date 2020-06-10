@@ -1,25 +1,13 @@
 from typing import Any, Dict, Mapping, Union
-
 from unittest import mock
 
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import (
-    get_client,
-)
+from zerver.lib.actions import get_client
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.models import Subscription, UserPresence
+from zerver.tornado.event_queue import maybe_enqueue_notifications
 
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-
-from zerver.models import (
-    Subscription,
-    UserPresence,
-)
-
-from zerver.tornado.event_queue import (
-    maybe_enqueue_notifications,
-)
 
 class EditMessageSideEffectsTest(ZulipTestCase):
     def _assert_update_does_not_notify_anybody(self, message_id: int, content: str) -> None:

@@ -1,12 +1,19 @@
+import copy
+import os
+import re
+from typing import Any, Dict, List, Optional, Set, Tuple, cast
+from unittest import mock
+
+import ujson
 from django.conf import settings
 from django.test import TestCase, override_settings
 
-from zerver.lib import bugdown
+from zerver.lib import bugdown, mdiff
 from zerver.lib.actions import (
-    do_set_user_display_setting,
-    do_remove_realm_emoji,
     do_add_alert_words,
+    do_remove_realm_emoji,
     do_set_realm_property,
+    do_set_user_display_setting,
 )
 from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.create_user import create_user
@@ -14,42 +21,30 @@ from zerver.lib.emoji import get_emoji_url
 from zerver.lib.exceptions import BugdownRenderingException
 from zerver.lib.mention import possible_mentions, possible_user_group_mentions
 from zerver.lib.message import render_markdown
-from zerver.lib.request import (
-    JsonableError,
-)
-from zerver.lib.user_groups import create_user_group
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
+from zerver.lib.request import JsonableError
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_runner import slow
-from zerver.lib import mdiff
 from zerver.lib.tex import render_tex
+from zerver.lib.user_groups import create_user_group
 from zerver.models import (
-    realm_in_local_realm_filters_cache,
+    MAX_MESSAGE_LENGTH,
+    Message,
+    Realm,
+    RealmEmoji,
+    RealmFilter,
+    Stream,
+    UserGroup,
+    UserMessage,
+    UserProfile,
     flush_per_request_caches,
     flush_realm_filter,
     get_client,
     get_realm,
     get_stream,
     realm_filters_for_realm,
-    MAX_MESSAGE_LENGTH,
-    Message,
-    Stream,
-    Realm,
-    RealmEmoji,
-    RealmFilter,
-    UserMessage,
-    UserProfile,
-    UserGroup,
+    realm_in_local_realm_filters_cache,
 )
 
-import copy
-from unittest import mock
-import os
-import ujson
-import re
-
-from typing import cast, Any, Dict, List, Optional, Set, Tuple
 
 class FakeMessage:
     pass

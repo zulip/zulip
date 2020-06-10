@@ -1,15 +1,22 @@
+import datetime
+import time
+from collections import namedtuple
+from operator import itemgetter
+from typing import Any, Dict, List, Set, Tuple, Union
+from unittest import mock
+
+import ujson
+from django.conf import settings
 from django.db import IntegrityError
 from django.db.models import Q
-from django.conf import settings
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib import bugdown
+from analytics.lib.counts import COUNT_STATS
+from analytics.models import RealmCount
 from zerver.decorator import JsonableError
-from zerver.lib.test_runner import slow
-from zerver.lib.addressee import Addressee
-
+from zerver.lib import bugdown
 from zerver.lib.actions import (
     check_message,
     check_send_stream_message,
@@ -22,8 +29,8 @@ from zerver.lib.actions import (
     do_create_user,
     do_deactivate_user,
     do_send_messages,
-    do_update_message,
     do_set_realm_property,
+    do_update_message,
     extract_private_recipients,
     extract_stream_indicator,
     gather_subscriptions_helper,
@@ -40,18 +47,9 @@ from zerver.lib.actions import (
     internal_send_stream_message_by_name,
     send_rate_limited_pm_notification_to_bot_owner,
 )
-
-from zerver.lib.cache import (
-    cache_delete,
-    get_stream_cache_key,
-    to_dict_cache_key_id,
-)
-
-
-from zerver.lib.create_user import (
-    create_user_profile,
-)
-
+from zerver.lib.addressee import Addressee
+from zerver.lib.cache import cache_delete, get_stream_cache_key, to_dict_cache_key_id
+from zerver.lib.create_user import create_user_profile
 from zerver.lib.message import (
     MessageDict,
     bulk_access_messages,
@@ -64,7 +62,13 @@ from zerver.lib.message import (
     sew_messages_and_reactions,
     update_first_visible_message_id,
 )
-
+from zerver.lib.soft_deactivation import (
+    add_missing_messages,
+    do_soft_activate_users,
+    do_soft_deactivate_users,
+    reactivate_user_if_soft_deactivated,
+)
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     get_subscription,
     get_user_messages,
@@ -75,55 +79,42 @@ from zerver.lib.test_helpers import (
     queries_captured,
     reset_emails_in_zulip_realm,
 )
-
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-
-from zerver.lib.topic import (
-    LEGACY_PREV_TOPIC,
-    DB_TOPIC_NAME,
-    TOPIC_LINKS,
-    TOPIC_NAME,
-)
-
-from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
-from zerver.lib.soft_deactivation import (
-    add_missing_messages,
-    do_soft_activate_users,
-    do_soft_deactivate_users,
-    reactivate_user_if_soft_deactivated,
-)
-
-from zerver.models import (
-    MAX_MESSAGE_LENGTH, MAX_TOPIC_NAME_LENGTH,
-    Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment,
-    RealmAuditLog, RealmDomain, get_realm, UserPresence, Subscription,
-    get_stream, get_system_bot, get_user, Reaction,
-    flush_per_request_caches, ScheduledMessage, get_huddle_recipient,
-    bulk_get_huddle_user_ids, get_huddle_user_ids,
-    get_display_recipient, RealmFilter
-)
-
-
+from zerver.lib.test_runner import slow
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.lib.timezone import get_timezone
+from zerver.lib.topic import DB_TOPIC_NAME, LEGACY_PREV_TOPIC, TOPIC_LINKS, TOPIC_NAME
+from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
 from zerver.lib.upload import create_attachment
 from zerver.lib.url_encoding import near_message_url
+from zerver.models import (
+    MAX_MESSAGE_LENGTH,
+    MAX_TOPIC_NAME_LENGTH,
+    Attachment,
+    Message,
+    Reaction,
+    Realm,
+    RealmAuditLog,
+    RealmDomain,
+    RealmFilter,
+    Recipient,
+    ScheduledMessage,
+    Stream,
+    Subscription,
+    UserMessage,
+    UserPresence,
+    UserProfile,
+    bulk_get_huddle_user_ids,
+    flush_per_request_caches,
+    get_display_recipient,
+    get_huddle_recipient,
+    get_huddle_user_ids,
+    get_realm,
+    get_stream,
+    get_system_bot,
+    get_user,
+)
+from zerver.views.messages import InvalidMirrorInput, create_mirrored_message_users
 
-from zerver.views.messages import create_mirrored_message_users, InvalidMirrorInput
-
-from analytics.lib.counts import COUNT_STATS
-from analytics.models import RealmCount
-
-import datetime
-from unittest import mock
-from operator import itemgetter
-import time
-import ujson
-from typing import Any, Dict, List, Set, Union, Tuple
-
-from collections import namedtuple
 
 class MiscMessageTest(ZulipTestCase):
     def test_get_last_message_id(self) -> None:

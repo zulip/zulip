@@ -5,7 +5,6 @@
 from lib import sanity_check
 
 sanity_check.check_venv(__file__)
-
 import os
 import sys
 
@@ -26,23 +25,33 @@ import argparse
 import base64
 import subprocess
 from typing import Any, Dict, Optional
-from urllib.parse import urlencode, parse_qsl
+from urllib.parse import parse_qsl, urlencode
 
 import requests
 import ujson
 
 from scripts.lib.zulip_tools import BOLDRED, ENDC
 from tools.lib.test_script import prepare_puppeteer_run
-from zerver.models import UserProfile, Message, get_user_by_delivery_email, get_realm
 from zerver.lib.actions import (
-    do_create_user, notify_created_bot, bulk_add_subscriptions, do_change_avatar_fields)
+    bulk_add_subscriptions,
+    do_change_avatar_fields,
+    do_create_user,
+    notify_created_bot,
+)
+from zerver.lib.integrations import (
+    DOC_SCREENSHOT_CONFIG,
+    INTEGRATIONS,
+    ScreenshotConfig,
+    WebhookIntegration,
+    get_fixture_and_image_paths,
+    split_fixture_path,
+)
+from zerver.lib.storage import static_path
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.integrations import (
-    WebhookIntegration, INTEGRATIONS, split_fixture_path, ScreenshotConfig, get_fixture_and_image_paths,
-    DOC_SCREENSHOT_CONFIG)
 from zerver.lib.webhooks.common import get_fixture_http_headers
-from zerver.lib.storage import static_path
+from zerver.models import Message, UserProfile, get_realm, get_user_by_delivery_email
+
 
 def create_integration_bot(integration: WebhookIntegration, bot_name: Optional[str]=None) -> UserProfile:
     realm = get_realm('zulip')

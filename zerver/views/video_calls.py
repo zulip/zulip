@@ -1,10 +1,11 @@
-from functools import partial
 import json
+from functools import partial
 from typing import Dict
 from urllib.parse import urljoin
 
+import requests
 from django.conf import settings
-from django.http import HttpResponse, HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.middleware import csrf
 from django.shortcuts import redirect, render
 from django.utils.crypto import constant_time_compare, salted_hmac
@@ -13,7 +14,6 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from oauthlib.oauth2 import OAuth2Error
-import requests
 from requests_oauthlib import OAuth2Session
 
 from zerver.decorator import REQ, has_request_variables, zulip_login_required

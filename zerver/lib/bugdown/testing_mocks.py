@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional
-import ujson
 
+import ujson
 
 NORMAL_TWEET = """{
     "created_at": "Sat Sep 10 22:23:38 +0000 2011",

@@ -1,33 +1,29 @@
-import ujson
 import logging
-from unittest import mock
-import requests
-
 from typing import Any, Optional
+from unittest import mock
 
-from zerver.lib.actions import (
-    do_create_user,
-)
+import requests
+import ujson
 
+from version import ZULIP_VERSION
+from zerver.lib.actions import do_create_user
 from zerver.lib.outgoing_webhook import (
-    do_rest_call,
     GenericOutgoingWebhookService,
     SlackOutgoingWebhookService,
+    do_rest_call,
 )
-
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.users import add_service
 from zerver.models import (
-    get_display_recipient,
-    get_realm,
-    get_user,
     Recipient,
     Service,
     UserProfile,
+    get_display_recipient,
+    get_realm,
+    get_user,
 )
 
-from version import ZULIP_VERSION
 
 class ResponseMock:
     def __init__(self, status_code: int, content: Optional[Any]=None) -> None:

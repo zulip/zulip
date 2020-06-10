@@ -2,10 +2,10 @@ import logging
 import os
 import shutil
 import subprocess
-from scripts.lib.zulip_tools import run, run_as_root, ENDC, WARNING, os_families
-from scripts.lib.hash_reqs import expand_reqs
+from typing import List, Optional, Set, Tuple
 
-from typing import List, Optional, Tuple, Set
+from scripts.lib.hash_reqs import expand_reqs
+from scripts.lib.zulip_tools import ENDC, WARNING, os_families, run, run_as_root
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 VENV_CACHE_PATH = "/srv/zulip-venv-cache"

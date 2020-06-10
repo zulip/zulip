@@ -1,15 +1,17 @@
 import datetime
+from unittest import mock
+
 from django.conf import settings
 from django.core import mail
 from django.test import override_settings
 
-from zerver.lib.test_classes import ZulipTestCase
-from zerver.signals import get_device_browser, get_device_os, JUST_CREATED_THRESHOLD
-from zerver.lib.actions import notify_new_user, do_change_notification_settings
-from zerver.models import Recipient, Stream, Realm
+from zerver.lib.actions import do_change_notification_settings, notify_new_user
 from zerver.lib.initial_password import initial_password
-from unittest import mock
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timezone import get_timezone
+from zerver.models import Realm, Recipient, Stream
+from zerver.signals import JUST_CREATED_THRESHOLD, get_device_browser, get_device_os
+
 
 class SendLoginEmailTest(ZulipTestCase):
     """

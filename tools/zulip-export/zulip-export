@@ -19,11 +19,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-
-import sys
-import os
 import argparse
 import json
+import os
+import sys
+
 usage = """Export all messages on a given stream to a JSON dump.
 
 zulip-export --user=<your email address> --api-key=<your api key> --stream=<stream name>

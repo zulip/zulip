@@ -1,21 +1,28 @@
-from copy import deepcopy
 import os
-import time
 import sys
+import time
+from copy import deepcopy
 from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urljoin
 
-from zerver.lib.db import TimeTrackingConnection
 import zerver.lib.logging_util
+from zerver.lib.db import TimeTrackingConnection
 
-from .config import DEPLOY_ROOT, PRODUCTION, DEVELOPMENT, get_secret, get_config, get_from_file_if_exists
+from .config import (
+    DEPLOY_ROOT,
+    DEVELOPMENT,
+    PRODUCTION,
+    get_config,
+    get_from_file_if_exists,
+    get_secret,
+)
 from .configured_settings import (
     ADMINS,
     ALLOWED_HOSTS,
-    AUTHENTICATION_BACKENDS,
     AUTH_LDAP_BIND_DN,
     AUTH_LDAP_CONNECTION_OPTIONS,
     AUTH_LDAP_SERVER_URI,
+    AUTHENTICATION_BACKENDS,
     CAMO_URI,
     DEBUG,
     DEBUG_ERROR_REPORTING,
@@ -156,6 +163,8 @@ ALLOWED_HOSTS += [EXTERNAL_HOST.split(":")[0],
 ALLOWED_HOSTS += REALM_HOSTS.values()
 
 from django.template.loaders import app_directories
+
+
 class TwoFactorLoader(app_directories.Loader):
     def get_dirs(self) -> List[str]:
         dirs = super().get_dirs()

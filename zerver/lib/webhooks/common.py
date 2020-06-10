@@ -1,18 +1,24 @@
 import importlib
+from typing import Any, Callable, Dict, Optional, Union
 from urllib.parse import unquote
 
 from django.http import HttpRequest
 from django.utils.translation import ugettext as _
-from typing import Optional, Dict, Union, Any, Callable
 
-from zerver.lib.actions import check_send_stream_message, \
-    check_send_private_message, send_rate_limited_pm_notification_to_bot_owner
-from zerver.lib.exceptions import StreamDoesNotExistError, JsonableError, \
-    ErrorCode, UnexpectedWebhookEventType
+from zerver.lib.actions import (
+    check_send_private_message,
+    check_send_stream_message,
+    send_rate_limited_pm_notification_to_bot_owner,
+)
+from zerver.lib.exceptions import (
+    ErrorCode,
+    JsonableError,
+    StreamDoesNotExistError,
+    UnexpectedWebhookEventType,
+)
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.send_email import FromAddress
 from zerver.models import UserProfile
-
 
 MISSING_EVENT_HEADER_MESSAGE = """
 Hi there!  Your bot {bot_name} just sent an HTTP request to {request_path} that

@@ -1,7 +1,10 @@
-import ujson
 from unittest.mock import MagicMock, patch
+
+import ujson
+
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import get_user, get_realm, Message, Stream
+from zerver.models import Message, Stream, get_realm, get_user
+
 
 class TestIntegrationsDevPanel(ZulipTestCase):
 

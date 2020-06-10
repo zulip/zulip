@@ -1,7 +1,8 @@
 import optparse
-from scrapy.crawler import Crawler
-from scrapy.commands import crawl
 from typing import List, Union
+
+from scrapy.commands import crawl
+from scrapy.crawler import Crawler
 
 
 class Command(crawl.Command):

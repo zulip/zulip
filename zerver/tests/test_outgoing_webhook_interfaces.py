@@ -1,7 +1,7 @@
-from typing import cast, Any, Dict
-
-from unittest import mock
 import json
+from typing import Any, Dict, cast
+from unittest import mock
+
 import requests
 
 from zerver.lib.avatar import get_gravatar_url
@@ -13,13 +13,7 @@ from zerver.lib.outgoing_webhook import (
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
-from zerver.models import (
-    get_realm,
-    get_stream,
-    get_user,
-    Message,
-    SLACK_INTERFACE,
-)
+from zerver.models import SLACK_INTERFACE, Message, get_realm, get_stream, get_user
 
 
 class TestGenericOutgoingWebhookService(ZulipTestCase):

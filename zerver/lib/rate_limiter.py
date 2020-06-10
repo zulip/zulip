@@ -1,19 +1,17 @@
+import logging
 import os
-
+import time
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Tuple, Type
 
+import redis
 from django.conf import settings
 from django.http import HttpRequest
+
 from zerver.lib.exceptions import RateLimited
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.utils import statsd
-
 from zerver.models import UserProfile
-
-import logging
-import redis
-import time
 
 # Implement a rate-limiting scheme inspired by the one described here, but heavily modified
 # https://www.domaintools.com/resources/blog/rate-limiting-with-redis

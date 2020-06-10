@@ -1,7 +1,6 @@
-from typing import Optional
-
 import sys
 import unittest
+from typing import Optional
 
 try:
     from tools.lib.template_parser import (

@@ -1,29 +1,39 @@
-from typing import Union, List, Dict
-import ujson
+from typing import Dict, List, Union
 
+import ujson
 from django.db import IntegrityError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.decorator import require_realm_admin, human_users_only
-from zerver.lib.request import has_request_variables, REQ
-from zerver.lib.actions import (try_add_realm_custom_profile_field,
-                                do_remove_realm_custom_profile_field,
-                                try_update_realm_custom_profile_field,
-                                do_update_user_custom_profile_data_if_changed,
-                                try_reorder_realm_custom_profile_fields,
-                                try_add_realm_default_custom_profile_field,
-                                check_remove_custom_profile_field_value)
-from zerver.lib.response import json_success, json_error
-from zerver.lib.types import ProfileFieldData
-from zerver.lib.validator import (check_dict, check_list, check_int,
-                                  validate_choice_field_data, check_capped_string)
-
-from zerver.models import (UserProfile,
-                           CustomProfileField, custom_profile_fields_for_realm)
+from zerver.decorator import human_users_only, require_realm_admin
+from zerver.lib.actions import (
+    check_remove_custom_profile_field_value,
+    do_remove_realm_custom_profile_field,
+    do_update_user_custom_profile_data_if_changed,
+    try_add_realm_custom_profile_field,
+    try_add_realm_default_custom_profile_field,
+    try_reorder_realm_custom_profile_fields,
+    try_update_realm_custom_profile_field,
+)
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.users import validate_user_custom_profile_data
 from zerver.lib.external_accounts import validate_external_account_field_data
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_error, json_success
+from zerver.lib.types import ProfileFieldData
+from zerver.lib.users import validate_user_custom_profile_data
+from zerver.lib.validator import (
+    check_capped_string,
+    check_dict,
+    check_int,
+    check_list,
+    validate_choice_field_data,
+)
+from zerver.models import (
+    CustomProfileField,
+    UserProfile,
+    custom_profile_fields_for_realm,
+)
+
 
 def list_realm_custom_profile_fields(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     fields = custom_profile_fields_for_realm(user_profile.realm_id)

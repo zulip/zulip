@@ -3,10 +3,13 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import require_realm_admin
-from zerver.lib.actions import do_add_realm_domain, do_change_realm_domain, \
-    do_remove_realm_domain
+from zerver.lib.actions import (
+    do_add_realm_domain,
+    do_change_realm_domain,
+    do_remove_realm_domain,
+)
 from zerver.lib.domains import validate_domain
-from zerver.lib.request import has_request_variables, REQ
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_bool, check_string
 from zerver.models import RealmDomain, UserProfile, get_realm_domains

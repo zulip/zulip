@@ -1,8 +1,9 @@
 try:
     from django.conf import settings
-    from zerver.models import *
-    from zerver.lib.actions import *
+
     from analytics.models import *
+    from zerver.lib.actions import *
+    from zerver.models import *
 except Exception:
     import traceback
     print("\nException importing Zulip core modules on startup!")

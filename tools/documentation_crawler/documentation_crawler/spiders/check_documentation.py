@@ -1,6 +1,5 @@
 import os
 import pathlib
-
 from typing import List
 
 from .common.spiders import BaseDocumentationSpider

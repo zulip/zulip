@@ -1,16 +1,31 @@
+from typing import Any, Dict, List, Optional
+from unittest.mock import Mock, patch
+
 from django.conf import settings
 
-from unittest.mock import Mock, patch
-from typing import Any, List, Dict, Optional
-
 from zerver.apps import flush_cache
-from zerver.lib.cache import generic_bulk_cached_fetch, user_profile_by_email_cache_key, cache_with_key, \
-    validate_cache_key, InvalidCacheKeyException, MEMCACHED_MAX_KEY_LENGTH, get_cache_with_key, \
-    NotFoundInCache, cache_set, cache_get, cache_delete, cache_delete_many, cache_get_many, cache_set_many, \
-    safe_cache_get_many, safe_cache_set_many
+from zerver.lib.cache import (
+    MEMCACHED_MAX_KEY_LENGTH,
+    InvalidCacheKeyException,
+    NotFoundInCache,
+    cache_delete,
+    cache_delete_many,
+    cache_get,
+    cache_get_many,
+    cache_set,
+    cache_set_many,
+    cache_with_key,
+    generic_bulk_cached_fetch,
+    get_cache_with_key,
+    safe_cache_get_many,
+    safe_cache_set_many,
+    user_profile_by_email_cache_key,
+    validate_cache_key,
+)
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
-from zerver.models import get_system_bot, get_user_profile_by_email, UserProfile
+from zerver.models import UserProfile, get_system_bot, get_user_profile_by_email
+
 
 class AppsTest(ZulipTestCase):
     def test_cache_gets_flushed(self) -> None:

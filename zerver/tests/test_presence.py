@@ -1,20 +1,18 @@
+import datetime
 from datetime import timedelta
-from django.utils.timezone import now as timezone_now
+from typing import Any, Dict
 from unittest import mock
 
-from typing import Any, Dict
+from django.utils.timezone import now as timezone_now
+
 from zerver.lib.actions import do_deactivate_user
-from zerver.lib.presence import (
-    get_status_dict_by_realm
-)
+from zerver.lib.presence import get_status_dict_by_realm
 from zerver.lib.statistics import seconds_usage_between
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     make_client,
     queries_captured,
     reset_emails_in_zulip_realm,
-)
-from zerver.lib.test_classes import (
-    ZulipTestCase,
 )
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
@@ -22,12 +20,11 @@ from zerver.models import (
     PushDeviceToken,
     UserActivity,
     UserActivityInterval,
-    UserProfile,
     UserPresence,
+    UserProfile,
     flush_per_request_caches,
 )
 
-import datetime
 
 class ActivityTest(ZulipTestCase):
     @mock.patch("stripe.Customer.list", return_value=[])

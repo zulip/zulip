@@ -1,20 +1,24 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/thumbnailing.html
 from __future__ import absolute_import
 
-from six.moves import urllib
-from tornado.concurrent import return_future
-from thumbor.loaders import LoaderResult, file_loader, https_loader
-from tc_aws.loaders import s3_loader
-from thumbor.context import Context
-from .helpers import (
-    separate_url_and_source_type,
-    THUMBOR_S3_TYPE, THUMBOR_LOCAL_FILE_TYPE, THUMBOR_EXTERNAL_TYPE
-)
-
-from typing import Any, Callable
-
 import base64
 import logging
+from typing import Any, Callable
+
+from six.moves import urllib
+from tornado.concurrent import return_future
+
+from tc_aws.loaders import s3_loader
+from thumbor.context import Context
+from thumbor.loaders import LoaderResult, file_loader, https_loader
+
+from .helpers import (
+    THUMBOR_EXTERNAL_TYPE,
+    THUMBOR_LOCAL_FILE_TYPE,
+    THUMBOR_S3_TYPE,
+    separate_url_and_source_type,
+)
+
 
 def get_not_found_result():
     # type: () -> LoaderResult

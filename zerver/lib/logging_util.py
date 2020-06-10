@@ -1,16 +1,16 @@
 # System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
-
-from django.utils.timezone import now as timezone_now
-
 import hashlib
 import logging
 import threading
 import traceback
-from typing import Optional, Tuple
 from datetime import datetime, timedelta, timezone
+from logging import Logger
+from typing import Optional, Tuple
+
 from django.conf import settings
 from django.core.cache import cache
-from logging import Logger
+from django.utils.timezone import now as timezone_now
+
 
 class _RateLimitFilter:
     """This class is designed to rate-limit Django error reporting

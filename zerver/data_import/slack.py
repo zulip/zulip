@@ -1,32 +1,54 @@
+import logging
 import os
-import ujson
+import random
 import shutil
 import subprocess
-import logging
-import random
-import requests
-
 from collections import defaultdict
-
-from django.conf import settings
-from django.utils.timezone import now as timezone_now
-from django.forms.models import model_to_dict
-from typing import Any, Dict, List, Optional, Tuple, Set, Iterator
-from zerver.models import Reaction, RealmEmoji, UserProfile, Recipient, \
-    CustomProfileField, CustomProfileFieldValue, Realm
-from zerver.data_import.slack_message_conversion import convert_to_zulip_markdown, \
-    get_user_full_name
-from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
-    build_avatar, build_subscription, build_recipient, build_usermessages, \
-    build_defaultstream, build_attachment, process_avatars, process_uploads, \
-    process_emojis, build_realm, build_stream, build_huddle, build_message, \
-    create_converted_data_files, make_subscriber_map
-from zerver.data_import.sequencer import NEXT_ID
-from zerver.lib.upload import random_name, sanitize_name
-from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
-from zerver.lib.emoji import name_to_codepoint
-from zerver.lib.upload import resize_logo
+from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
 from urllib.parse import urlencode
+
+import requests
+import ujson
+from django.conf import settings
+from django.forms.models import model_to_dict
+from django.utils.timezone import now as timezone_now
+
+from zerver.data_import.import_util import (
+    ZerverFieldsT,
+    build_attachment,
+    build_avatar,
+    build_defaultstream,
+    build_huddle,
+    build_message,
+    build_realm,
+    build_recipient,
+    build_stream,
+    build_subscription,
+    build_usermessages,
+    build_zerver_realm,
+    create_converted_data_files,
+    make_subscriber_map,
+    process_avatars,
+    process_emojis,
+    process_uploads,
+)
+from zerver.data_import.sequencer import NEXT_ID
+from zerver.data_import.slack_message_conversion import (
+    convert_to_zulip_markdown,
+    get_user_full_name,
+)
+from zerver.lib.emoji import name_to_codepoint
+from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
+from zerver.lib.upload import random_name, resize_logo, sanitize_name
+from zerver.models import (
+    CustomProfileField,
+    CustomProfileFieldValue,
+    Reaction,
+    Realm,
+    RealmEmoji,
+    Recipient,
+    UserProfile,
+)
 
 SlackToZulipUserIDT = Dict[str, int]
 AddedChannelsT = Dict[str, Tuple[str, int]]

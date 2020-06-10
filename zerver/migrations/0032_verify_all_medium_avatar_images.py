@@ -1,11 +1,11 @@
 import hashlib
 from typing import Text
+from unittest.mock import patch
 
 from django.conf import settings
 from django.db import migrations
 from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
-from unittest.mock import patch
 
 from zerver.lib.upload import upload_backend
 from zerver.lib.utils import make_safe_digest

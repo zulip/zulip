@@ -1,7 +1,6 @@
 from typing import Any
 
-from zerver.lib.actions import bulk_add_subscriptions, do_create_realm, \
-    do_create_user
+from zerver.lib.actions import bulk_add_subscriptions, do_create_realm, do_create_user
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.onboarding import send_initial_realm_messages
 from zerver.models import Realm, UserProfile

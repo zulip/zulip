@@ -1,10 +1,11 @@
-from unittest import mock
 from typing import Any, Dict, List
+from unittest import mock
 
 from django.test import TestCase
 
 from zerver.lib.subdomains import get_subdomain
 from zerver.models import Realm
+
 
 class SubdomainsTest(TestCase):
     def test_get_subdomain(self) -> None:

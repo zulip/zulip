@@ -1,22 +1,27 @@
-from typing import Any, Dict, Tuple
-from collections import OrderedDict
-from django.views.generic import TemplateView
-from django.conf import settings
-from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
-from django.template import loader
-
 import os
 import random
 import re
+from collections import OrderedDict
+from typing import Any, Dict, Tuple
 
+from django.conf import settings
+from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
+from django.template import loader
+from django.views.generic import TemplateView
+
+from zerver.context_processors import zulip_default_context
 from zerver.decorator import add_google_analytics_context
-from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, HubotIntegration, \
-    WebhookIntegration
-from zerver.lib.request import has_request_variables, REQ
+from zerver.lib.integrations import (
+    CATEGORIES,
+    INTEGRATIONS,
+    HubotIntegration,
+    WebhookIntegration,
+)
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.subdomains import get_subdomain
 from zerver.models import Realm
 from zerver.templatetags.app_filters import render_markdown_path
-from zerver.context_processors import zulip_default_context
+
 
 def add_api_uri_context(context: Dict[str, Any], request: HttpRequest) -> None:
     context.update(zulip_default_context(request))

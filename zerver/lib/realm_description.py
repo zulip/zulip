@@ -1,8 +1,12 @@
-from zerver.models import Realm
-from zerver.lib.cache import cache_with_key, realm_rendered_description_cache_key, \
-    realm_text_description_cache_key
 from zerver.lib.bugdown import convert as bugdown_convert
+from zerver.lib.cache import (
+    cache_with_key,
+    realm_rendered_description_cache_key,
+    realm_text_description_cache_key,
+)
 from zerver.lib.html_to_text import html_to_text
+from zerver.models import Realm
+
 
 @cache_with_key(realm_rendered_description_cache_key, timeout=3600*24*7)
 def get_realm_rendered_description(realm: Realm) -> str:

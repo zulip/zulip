@@ -1,14 +1,14 @@
-from unittest import mock
-from unittest import TestCase
+import time
+from unittest import TestCase, mock
 
 from scripts.lib.check_rabbitmq_queue import (
-    analyze_queue_stats,
-    OK,
-    WARNING,
     CRITICAL,
+    OK,
     UNKNOWN,
+    WARNING,
+    analyze_queue_stats,
 )
-import time
+
 
 class AnalyzeQueueStatsTests(TestCase):
     def test_no_stats_available(self) -> None:

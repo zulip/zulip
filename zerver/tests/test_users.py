@@ -1,8 +1,33 @@
+import datetime
 from email.utils import parseaddr
+from typing import Any, Dict, Iterable, List, Mapping, Optional, TypeVar, Union
+from unittest import mock
 
-from typing import (Any, Dict, Iterable, List, Mapping,
-                    Optional, TypeVar, Union)
+import ujson
+from django.conf import settings
+from django.test import override_settings
 
+from zerver.lib.actions import (
+    create_users,
+    do_change_user_role,
+    do_create_user,
+    do_deactivate_user,
+    do_reactivate_user,
+    do_set_realm_property,
+    get_emails_from_user_ids,
+    get_recipient_info,
+)
+from zerver.lib.avatar import avatar_url, get_gravatar_url
+from zerver.lib.create_user import copy_user_settings
+from zerver.lib.events import do_events_register
+from zerver.lib.exceptions import JsonableError
+from zerver.lib.send_email import (
+    clear_scheduled_emails,
+    deliver_email,
+    send_future_email,
+)
+from zerver.lib.stream_topic import StreamTopicTarget
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     get_subscription,
     most_recent_message,
@@ -11,45 +36,32 @@ from zerver.lib.test_helpers import (
     simulated_empty_cache,
     tornado_redirected_to_list,
 )
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-
-from zerver.models import UserProfile, Recipient, Realm, \
-    RealmDomain, UserHotspot, get_client, \
-    get_user, get_user_by_delivery_email, get_realm, get_stream, \
-    get_source_profile, get_system_bot, \
-    ScheduledEmail, check_valid_user_ids, \
-    get_user_by_id_in_realm_including_cross_realm, CustomProfileField, \
-    InvalidFakeEmailDomain, get_fake_email_domain
-
-from zerver.lib.avatar import avatar_url, get_gravatar_url
-from zerver.lib.exceptions import JsonableError
-from zerver.lib.send_email import send_future_email, clear_scheduled_emails, \
-    deliver_email
-from zerver.lib.actions import (
-    create_users,
-    get_emails_from_user_ids,
-    get_recipient_info,
-    do_deactivate_user,
-    do_reactivate_user,
-    do_change_user_role,
-    do_create_user,
-    do_set_realm_property,
-)
-from zerver.lib.create_user import copy_user_settings
-from zerver.lib.events import do_events_register
 from zerver.lib.topic_mutes import add_topic_mute
-from zerver.lib.stream_topic import StreamTopicTarget
-from zerver.lib.users import user_ids_to_users, access_user_by_id, \
-    get_accounts_for_email
-
-from django.conf import settings
-from django.test import override_settings
-
-import datetime
-from unittest import mock
-import ujson
+from zerver.lib.users import (
+    access_user_by_id,
+    get_accounts_for_email,
+    user_ids_to_users,
+)
+from zerver.models import (
+    CustomProfileField,
+    InvalidFakeEmailDomain,
+    Realm,
+    RealmDomain,
+    Recipient,
+    ScheduledEmail,
+    UserHotspot,
+    UserProfile,
+    check_valid_user_ids,
+    get_client,
+    get_fake_email_domain,
+    get_realm,
+    get_source_profile,
+    get_stream,
+    get_system_bot,
+    get_user,
+    get_user_by_delivery_email,
+    get_user_by_id_in_realm_including_cross_realm,
+)
 
 K = TypeVar('K')
 V = TypeVar('V')

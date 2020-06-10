@@ -1,18 +1,26 @@
-from typing import Any, Iterable, List, Mapping, Set, Tuple, Optional, Union
+from typing import Any, Iterable, List, Mapping, Optional, Set, Tuple, Union
 
-from django.utils.translation import ugettext as _
 from django.conf import settings
+from django.db.models.query import QuerySet
+from django.utils.translation import ugettext as _
 
+from zerver.lib.bugdown import convert as bugdown_convert
 from zerver.lib.request import JsonableError
 from zerver.models import (
-    UserProfile, Stream, Subscription, Realm, Recipient, get_stream,
-    bulk_get_streams, get_realm_stream, DefaultStreamGroup, get_stream_by_id_in_realm,
-    is_cross_realm_bot_email, active_non_guest_user_ids,
+    DefaultStreamGroup,
+    Realm,
+    Recipient,
+    Stream,
+    Subscription,
+    UserProfile,
+    active_non_guest_user_ids,
+    bulk_get_streams,
+    get_realm_stream,
+    get_stream,
+    get_stream_by_id_in_realm,
+    is_cross_realm_bot_email,
 )
-from zerver.lib.bugdown import convert as bugdown_convert
 from zerver.tornado.event_queue import send_event
-
-from django.db.models.query import QuerySet
 
 
 def get_default_value_for_history_public_to_subscribers(

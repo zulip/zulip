@@ -1,13 +1,12 @@
-import unittest
 import os
+import unittest
 
 import tools.lib.template_parser
-
 from tools.lib.html_branches import (
+    build_id_dict,
     get_tag_info,
     html_branches,
     html_tag_tree,
-    build_id_dict,
     split_for_id_and_class,
 )
 

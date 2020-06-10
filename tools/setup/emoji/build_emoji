@@ -5,14 +5,20 @@
 import os
 import shutil
 import sys
-import ujson
-
 from typing import Any, Dict, Iterator, List, Optional
 
-from emoji_setup_utils import generate_emoji_catalog, generate_codepoint_to_name_map, \
-    get_emoji_code, generate_name_to_codepoint_map, emoji_names_for_picker, \
-    EMOTICON_CONVERSIONS, REMAPPED_EMOJIS
+import ujson
+
 from emoji_names import EMOJI_NAME_MAPS
+from emoji_setup_utils import (
+    EMOTICON_CONVERSIONS,
+    REMAPPED_EMOJIS,
+    emoji_names_for_picker,
+    generate_codepoint_to_name_map,
+    generate_emoji_catalog,
+    generate_name_to_codepoint_map,
+    get_emoji_code,
+)
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
 sys.path.append(ZULIP_PATH)

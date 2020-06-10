@@ -1,7 +1,7 @@
-import time
 import logging
-
+import time
 from typing import Callable, List, TypeVar
+
 from psycopg2.extensions import cursor
 from psycopg2.sql import SQL
 

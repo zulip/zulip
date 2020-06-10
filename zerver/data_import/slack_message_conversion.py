@@ -1,5 +1,5 @@
 import re
-from typing import Any, Dict, Tuple, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 # stubs
 ZerverFieldsT = Dict[str, Any]

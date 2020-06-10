@@ -2,7 +2,7 @@ from typing import Any
 
 from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
-from django.template.defaultfilters import slugify, pluralize
+from django.template.defaultfilters import pluralize, slugify
 from django.urls import reverse
 from django.utils import translation
 from django.utils.timesince import timesince

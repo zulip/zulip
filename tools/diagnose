@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
-
 import os
 import platform
 import shlex
-import sys
 import subprocess
-
+import sys
 from typing import Callable, List
 
 TOOLS_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.dirname(TOOLS_DIR)
 sys.path.insert(0, ROOT_DIR)
 from scripts.lib.zulip_tools import get_dev_uuid_var_path
+
 UUID_VAR_PATH = get_dev_uuid_var_path()
 
 def run(check_func: Callable[[], bool]) -> None:
@@ -88,7 +87,7 @@ def test_models() -> bool:
     os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
     import django
     django.setup()
-    from zerver.models import UserProfile, Realm
+    from zerver.models import Realm, UserProfile
     print('Num realms: ', Realm.objects.count())
     print('Num users: ', UserProfile.objects.count())
     return True

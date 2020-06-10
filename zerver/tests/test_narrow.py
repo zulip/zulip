@@ -1,57 +1,47 @@
+import os
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Union
+from unittest import mock
+
+import ujson
 from django.db import connection
 from django.test import TestCase, override_settings
-from sqlalchemy.sql import (
-    and_, select, column, table,
-)
+from sqlalchemy.sql import and_, column, select, table
 from sqlalchemy.sql.elements import ClauseElement
 
-from zerver.models import (
-    Realm, Subscription, Recipient, Stream,
-    get_display_recipient, get_realm, get_stream,
-    UserMessage, Message
-)
-from zerver.lib.actions import (
-    do_set_realm_property,
-    do_deactivate_user,
-)
-from zerver.lib.message import (
-    MessageDict,
-)
-from zerver.lib.narrow import (
-    build_narrow_filter,
-    is_web_public_compatible,
-)
+from zerver.lib.actions import do_deactivate_user, do_set_realm_property
+from zerver.lib.message import MessageDict
+from zerver.lib.narrow import build_narrow_filter, is_web_public_compatible
 from zerver.lib.request import JsonableError
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
-from zerver.lib.test_helpers import (
-    POSTRequestMock,
-    get_user_messages, queries_captured,
-)
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-from zerver.lib.topic import (
-    MATCH_TOPIC,
-    TOPIC_NAME,
-)
-from zerver.lib.topic_mutes import (
-    set_topic_mutes,
-)
-from zerver.lib.types import DisplayRecipientT
-from zerver.views.messages import (
-    exclude_muting_conditions,
-    get_messages_backend, ok_to_include_history,
-    NarrowBuilder, BadNarrowOperator, Query,
-    post_process_limited_query,
-    find_first_unread_anchor,
-    LARGER_THAN_MAX_MESSAGE_ID,
-)
 from zerver.lib.streams import create_streams_if_needed
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import POSTRequestMock, get_user_messages, queries_captured
+from zerver.lib.topic import MATCH_TOPIC, TOPIC_NAME
+from zerver.lib.topic_mutes import set_topic_mutes
+from zerver.lib.types import DisplayRecipientT
+from zerver.models import (
+    Message,
+    Realm,
+    Recipient,
+    Stream,
+    Subscription,
+    UserMessage,
+    get_display_recipient,
+    get_realm,
+    get_stream,
+)
+from zerver.views.messages import (
+    LARGER_THAN_MAX_MESSAGE_ID,
+    BadNarrowOperator,
+    NarrowBuilder,
+    Query,
+    exclude_muting_conditions,
+    find_first_unread_anchor,
+    get_messages_backend,
+    ok_to_include_history,
+    post_process_limited_query,
+)
 
-from typing import Dict, Mapping, List, Sequence, Tuple, Union, Any, Optional
-from unittest import mock
-import os
-import ujson
 
 def get_sqlalchemy_sql(query: ClauseElement) -> str:
     dialect = get_sqlalchemy_connection().dialect

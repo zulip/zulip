@@ -1,51 +1,96 @@
-from typing import Any, DefaultDict, Dict, List, Set, Tuple, TypeVar, \
-    Union, Optional, Sequence, AbstractSet, Callable, Iterable
-
-from django.db import models
-from django.db.models.query import QuerySet
-from django.db.models import Manager, Q, Sum, CASCADE
-from django.conf import settings
-from django.contrib.auth.models import AbstractBaseUser, UserManager, \
-    PermissionsMixin
-import django.contrib.auth
-from django.core.exceptions import ValidationError
-from django.core.validators import URLValidator, MinLengthValidator, \
-    RegexValidator, validate_email
-from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
-    user_profile_by_api_key_cache_key, active_non_guest_user_ids_cache_key, \
-    user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
-    user_profile_cache_key, generic_bulk_cached_fetch, cache_set, flush_stream, \
-    cache_delete, active_user_ids_cache_key, \
-    get_stream_cache_key, realm_user_dicts_cache_key, \
-    bot_dicts_in_realm_cache_key, realm_user_dict_fields, \
-    bot_dict_fields, flush_message, flush_submessage, bot_profile_cache_key, \
-    flush_used_upload_space_cache, get_realm_used_upload_space_cache_key, \
-    realm_alert_words_cache_key, realm_alert_words_automaton_cache_key
-from zerver.lib.utils import make_safe_digest, generate_random_token
-from django.db import transaction
-from django.utils.timezone import now as timezone_now
-from zerver.lib.timestamp import datetime_to_timestamp
-from django.db.models.signals import post_save, post_delete
-from django.utils.translation import ugettext_lazy as _
-from zerver.lib import cache
-from zerver.lib.validator import check_int, \
-    check_short_string, check_long_string, validate_choice_field, check_date, \
-    check_url, check_list
-from zerver.lib.types import Validator, ExtendedValidator, \
-    ProfileDataElement, ProfileData, RealmUserValidator, \
-    ExtendedFieldElement, UserFieldElement, FieldElement, \
-    DisplayRecipientT
-from zerver.lib.exceptions import JsonableError
-from django.contrib.postgres.fields import JSONField
-
-from bitfield import BitField
-from bitfield.types import BitHandler
-from collections import defaultdict
-from datetime import timedelta
+import datetime
 import re
 import sre_constants
 import time
-import datetime
+from collections import defaultdict
+from datetime import timedelta
+from typing import (
+    AbstractSet,
+    Any,
+    Callable,
+    DefaultDict,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+)
+
+import django.contrib.auth
+from bitfield import BitField
+from bitfield.types import BitHandler
+from django.conf import settings
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager
+from django.contrib.postgres.fields import JSONField
+from django.core.exceptions import ValidationError
+from django.core.validators import (
+    MinLengthValidator,
+    RegexValidator,
+    URLValidator,
+    validate_email,
+)
+from django.db import models, transaction
+from django.db.models import CASCADE, Manager, Q, Sum
+from django.db.models.query import QuerySet
+from django.db.models.signals import post_delete, post_save
+from django.utils.timezone import now as timezone_now
+from django.utils.translation import ugettext_lazy as _
+
+from zerver.lib import cache
+from zerver.lib.cache import (
+    active_non_guest_user_ids_cache_key,
+    active_user_ids_cache_key,
+    bot_dict_fields,
+    bot_dicts_in_realm_cache_key,
+    bot_profile_cache_key,
+    cache_delete,
+    cache_set,
+    cache_with_key,
+    flush_message,
+    flush_realm,
+    flush_stream,
+    flush_submessage,
+    flush_used_upload_space_cache,
+    flush_user_profile,
+    generic_bulk_cached_fetch,
+    get_realm_used_upload_space_cache_key,
+    get_stream_cache_key,
+    realm_alert_words_automaton_cache_key,
+    realm_alert_words_cache_key,
+    realm_user_dict_fields,
+    realm_user_dicts_cache_key,
+    user_profile_by_api_key_cache_key,
+    user_profile_by_email_cache_key,
+    user_profile_by_id_cache_key,
+    user_profile_cache_key,
+)
+from zerver.lib.exceptions import JsonableError
+from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.types import (
+    DisplayRecipientT,
+    ExtendedFieldElement,
+    ExtendedValidator,
+    FieldElement,
+    ProfileData,
+    ProfileDataElement,
+    RealmUserValidator,
+    UserFieldElement,
+    Validator,
+)
+from zerver.lib.utils import generate_random_token, make_safe_digest
+from zerver.lib.validator import (
+    check_date,
+    check_int,
+    check_list,
+    check_long_string,
+    check_short_string,
+    check_url,
+    validate_choice_field,
+)
 
 MAX_TOPIC_NAME_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000

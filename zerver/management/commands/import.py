@@ -5,8 +5,7 @@ from typing import Any
 
 from django.conf import settings
 from django.core.management import call_command
-from django.core.management.base import BaseCommand, CommandError, \
-    CommandParser
+from django.core.management.base import BaseCommand, CommandError, CommandParser
 
 from zerver.forms import check_subdomain_available
 from zerver.lib.import_realm import do_import_realm, do_import_system_bots

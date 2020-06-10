@@ -1,14 +1,22 @@
-from django.contrib.auth.models import UserManager
-from django.utils.timezone import now as timezone_now
-from zerver.models import UserProfile, Recipient, Subscription, Realm, Stream, \
-    PreregistrationUser, get_fake_email_domain
-from zerver.lib.upload import copy_avatar
-from zerver.lib.hotspots import copy_hotpots
-from zerver.lib.utils import generate_api_key
+from typing import Optional
 
 import ujson
+from django.contrib.auth.models import UserManager
+from django.utils.timezone import now as timezone_now
 
-from typing import Optional
+from zerver.lib.hotspots import copy_hotpots
+from zerver.lib.upload import copy_avatar
+from zerver.lib.utils import generate_api_key
+from zerver.models import (
+    PreregistrationUser,
+    Realm,
+    Recipient,
+    Stream,
+    Subscription,
+    UserProfile,
+    get_fake_email_domain,
+)
+
 
 def copy_user_settings(source_profile: UserProfile, target_profile: UserProfile) -> None:
     """Warning: Does not save, to avoid extra database queries"""

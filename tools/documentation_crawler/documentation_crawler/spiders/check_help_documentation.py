@@ -1,11 +1,9 @@
 import os
-
 from posixpath import basename
+from typing import Any, List, Set
 from urllib.parse import urlparse
 
 from .common.spiders import BaseDocumentationSpider
-
-from typing import Any, List, Set
 
 
 def get_images_dir(images_path: str) -> str:

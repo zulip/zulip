@@ -1,41 +1,57 @@
+import logging
+import re
+from typing import Any, Dict, List, Optional, Tuple
+
+import DNS
 from django import forms
 from django.conf import settings
 from django.contrib.auth import authenticate, password_validation
-from django.contrib.auth.forms import SetPasswordForm, AuthenticationForm, \
-    PasswordResetForm
+from django.contrib.auth.forms import (
+    AuthenticationForm,
+    PasswordResetForm,
+    SetPasswordForm,
+)
+from django.contrib.auth.tokens import (
+    PasswordResetTokenGenerator,
+    default_token_generator,
+)
 from django.core.exceptions import ValidationError
-from django.urls import reverse
 from django.core.validators import validate_email
-from django.utils.translation import ugettext as _
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.http import HttpRequest
+from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.utils.translation import ugettext as _
 from jinja2 import Markup as mark_safe
-
-from zerver.lib.actions import do_change_password, email_not_system_bot
-from zerver.lib.email_validation import email_allowed_for_realm, \
-    validate_email_not_already_in_realm
-from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
-from zerver.lib.rate_limiter import RateLimited, RateLimitedObject
-from zerver.lib.request import JsonableError
-from zerver.lib.send_email import send_email, FromAddress
-from zerver.lib.subdomains import get_subdomain, is_root_domain_available
-from zerver.lib.users import check_full_name
-from zerver.models import Realm, get_user_by_delivery_email, UserProfile, get_realm, \
-    email_to_domain, \
-    DisposableEmailError, DomainNotAllowedForRealmError, \
-    EmailContainsPlusError
-from zproject.backends import email_auth_enabled, email_belongs_to_ldap, check_password_strength
-
-import logging
-import re
-import DNS
-
-from typing import Any, List, Optional, Dict, Tuple
 from two_factor.forms import AuthenticationTokenForm as TwoFactorAuthenticationTokenForm
 from two_factor.utils import totp_digits
+
+from zerver.lib.actions import do_change_password, email_not_system_bot
+from zerver.lib.email_validation import (
+    email_allowed_for_realm,
+    validate_email_not_already_in_realm,
+)
+from zerver.lib.name_restrictions import is_disposable_domain, is_reserved_subdomain
+from zerver.lib.rate_limiter import RateLimited, RateLimitedObject
+from zerver.lib.request import JsonableError
+from zerver.lib.send_email import FromAddress, send_email
+from zerver.lib.subdomains import get_subdomain, is_root_domain_available
+from zerver.lib.users import check_full_name
+from zerver.models import (
+    DisposableEmailError,
+    DomainNotAllowedForRealmError,
+    EmailContainsPlusError,
+    Realm,
+    UserProfile,
+    email_to_domain,
+    get_realm,
+    get_user_by_delivery_email,
+)
+from zproject.backends import (
+    check_password_strength,
+    email_auth_enabled,
+    email_belongs_to_ldap,
+)
 
 MIT_VALIDATION_ERROR = 'That user does not exist at MIT or is a ' + \
                        '<a href="https://ist.mit.edu/email-lists">mailing list</a>. ' + \

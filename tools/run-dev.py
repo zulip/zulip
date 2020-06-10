@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import argparse
 import os
 import pwd
@@ -7,26 +6,21 @@ import signal
 import subprocess
 import sys
 import traceback
-
 from urllib.parse import urlunparse
 
 # check for the venv
 from lib import sanity_check
+
 sanity_check.check_venv(__file__)
 
-from tornado import httpclient
-from tornado import httputil
-from tornado import gen
-from tornado import web
+from tornado import gen, httpclient, httputil, web
 from tornado.ioloop import IOLoop
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
-from tools.lib.test_script import (
-    assert_provisioning_status_ok,
-)
-
 from typing import Any, Callable, Generator, List, Optional
+
+from tools.lib.test_script import assert_provisioning_status_ok
 
 if 'posix' in os.name and os.geteuid() == 0:
     raise RuntimeError("run-dev.py should not be run as root.")
@@ -103,7 +97,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from scripts.lib.zulip_tools import CYAN, WARNING, FAIL, ENDC
+from scripts.lib.zulip_tools import CYAN, ENDC, FAIL, WARNING
 
 proxy_port = base_port
 django_port = base_port + 1

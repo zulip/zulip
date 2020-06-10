@@ -1,26 +1,31 @@
-from datetime import datetime, timedelta
-from decimal import Decimal
-from functools import wraps
 import logging
 import math
 import os
-from typing import Any, Callable, Dict, Optional, TypeVar, Tuple, cast
-import ujson
+from datetime import datetime, timedelta
+from decimal import Decimal
+from functools import wraps
+from typing import Any, Callable, Dict, Optional, Tuple, TypeVar, cast
 
-from django.conf import settings
-from django.db import transaction
-from django.utils.translation import ugettext as _
-from django.utils.timezone import now as timezone_now
-from django.core.signing import Signer
 import stripe
+import ujson
+from django.conf import settings
+from django.core.signing import Signer
+from django.db import transaction
+from django.utils.timezone import now as timezone_now
+from django.utils.translation import ugettext as _
 
+from corporate.models import (
+    Customer,
+    CustomerPlan,
+    LicenseLedger,
+    get_current_plan_by_customer,
+    get_current_plan_by_realm,
+    get_customer_by_realm,
+)
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
-from zerver.models import Realm, UserProfile, RealmAuditLog
-from corporate.models import Customer, CustomerPlan, LicenseLedger, \
-    get_current_plan_by_customer, get_customer_by_realm, \
-    get_current_plan_by_realm
+from zerver.models import Realm, RealmAuditLog, UserProfile
 from zproject.config import get_secret
 
 STRIPE_PUBLISHABLE_KEY = get_secret('stripe_publishable_key')

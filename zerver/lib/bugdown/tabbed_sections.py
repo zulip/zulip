@@ -1,9 +1,9 @@
 import re
+from typing import Any, Dict, List, Optional
 
+import markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
-from typing import Any, Dict, Optional, List
-import markdown
 
 START_TABBED_SECTION_REGEX = re.compile(r'^\{start_tabs\}$')
 END_TABBED_SECTION_REGEX = re.compile(r'^\{end_tabs\}$')

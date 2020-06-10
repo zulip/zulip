@@ -4,6 +4,7 @@ from zerver.lib.avatar_hash import gravatar_hash
 from zerver.lib.upload import upload_backend
 from zerver.models import Realm
 
+
 def realm_icon_url(realm: Realm) -> str:
     return get_realm_icon_url(realm)
 

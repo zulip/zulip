@@ -1,17 +1,19 @@
+from typing import Dict, List, Optional
+
 from django.http import HttpRequest, HttpResponse
+
+from zerver.decorator import REQ, has_request_variables
 from zerver.lib.bot_storage import (
-    get_bot_storage,
-    set_bot_storage,
-    remove_bot_storage,
-    get_keys_in_bot_storage,
     StateError,
+    get_bot_storage,
+    get_keys_in_bot_storage,
+    remove_bot_storage,
+    set_bot_storage,
 )
-from zerver.decorator import has_request_variables, REQ
-from zerver.lib.response import json_success, json_error
+from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_dict, check_list, check_string
 from zerver.models import UserProfile
 
-from typing import Dict, List, Optional
 
 @has_request_variables
 def update_storage(request: HttpRequest, user_profile: UserProfile,

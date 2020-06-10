@@ -1,18 +1,27 @@
 from collections import defaultdict
 from functools import wraps
 from types import FunctionType
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    TypeVar,
+    Union,
+    cast,
+    overload,
+)
+
 import ujson
-
+from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
+from typing_extensions import Literal
 
-from zerver.lib.exceptions import JsonableError, ErrorCode, \
-    InvalidJSONError
+from zerver.lib.exceptions import ErrorCode, InvalidJSONError, JsonableError
 from zerver.lib.types import Validator, ViewFuncT
 
-from django.http import HttpRequest, HttpResponse
-
-from typing import Any, Callable, Dict, Generic, List, Optional, TypeVar, Union, cast, overload
-from typing_extensions import Literal
 
 class RequestConfusingParmsError(JsonableError):
     code = ErrorCode.REQUEST_CONFUSING_VAR

@@ -1,57 +1,68 @@
 from contextlib import contextmanager
 from typing import (
-    Any, Callable, Dict, Generator, Iterable, Iterator, List, Mapping,
-    Optional, Tuple, Union, IO, TypeVar, TYPE_CHECKING
+    IO,
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Generator,
+    Iterable,
+    Iterator,
+    List,
+    Mapping,
+    Optional,
+    Tuple,
+    TypeVar,
+    Union,
 )
 
-from django.urls import URLResolver
-from django.conf import settings
-from django.test import override_settings
-from django.http import HttpResponse, HttpResponseRedirect
-from django.db.migrations.state import StateApps
 import boto3
 from boto3.resources.base import ServiceResource
+from django.conf import settings
+from django.db.migrations.state import StateApps
+from django.http import HttpResponse, HttpResponseRedirect
+from django.test import override_settings
+from django.urls import URLResolver
 
 import zerver.lib.upload
+from zerver.lib import cache
 from zerver.lib.actions import do_set_realm_property
-from zerver.lib.upload import S3UploadBackend, LocalUploadBackend
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend
 from zerver.lib.db import Params, ParamsT, Query, TimeTrackingCursor
-from zerver.lib import cache
-from zerver.tornado import event_queue
-from zerver.tornado.handlers import allocate_handler_id
-from zerver.worker import queue_processors
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
-
+from zerver.lib.upload import LocalUploadBackend, S3UploadBackend
 from zerver.models import (
-    get_realm,
-    get_stream,
     Client,
     Message,
     Realm,
     Subscription,
     UserMessage,
     UserProfile,
+    get_realm,
+    get_stream,
 )
-
-from zproject.backends import ExternalAuthResult, ExternalAuthDataDict
+from zerver.tornado import event_queue
+from zerver.tornado.handlers import allocate_handler_id
+from zerver.worker import queue_processors
+from zproject.backends import ExternalAuthDataDict, ExternalAuthResult
 
 if TYPE_CHECKING:
     # Avoid an import cycle; we only need these for type annotations.
     from zerver.lib.test_classes import ZulipTestCase, MigrationsTestCase
 
 import collections
-from unittest import mock
 import os
 import re
 import sys
 import time
-import ujson
-from moto import mock_s3
+from unittest import mock
 
 import fakeldap
 import ldap
+import ujson
+from moto import mock_s3
+
 
 class MockLDAP(fakeldap.MockLDAP):
     class LDAPError(ldap.LDAPError):

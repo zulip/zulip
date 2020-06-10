@@ -1,16 +1,17 @@
 # System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
-
 from collections import defaultdict
+from typing import Any, Dict, Optional
+
 from django.conf import settings
 from django.core.mail import mail_admins
 from django.http import HttpResponse
 from django.utils.translation import ugettext as _
-from typing import Any, Dict, Optional
 
 from zerver.filters import clean_data_from_query_parameters
-from zerver.models import get_stream, get_system_bot
 from zerver.lib.actions import internal_send_stream_message
-from zerver.lib.response import json_success, json_error
+from zerver.lib.response import json_error, json_success
+from zerver.models import get_stream, get_system_bot
+
 
 def format_email_subject(email_subject: str) -> str:
     """

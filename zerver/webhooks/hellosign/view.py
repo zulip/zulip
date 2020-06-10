@@ -1,5 +1,6 @@
 from typing import Any, Dict, List
 
+import ujson
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
@@ -7,7 +8,6 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
-import ujson
 
 IS_AWAITING_SIGNATURE = "is awaiting the signature of {awaiting_recipients}"
 WAS_JUST_SIGNED_BY = "was just signed by {signed_recipients}"

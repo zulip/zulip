@@ -1,14 +1,12 @@
+from typing import Any, Dict
+
 import ujson
 
-from typing import Dict, Any
-
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.validator import check_widget_content
+from zerver.lib.widget import get_widget_data
 from zerver.models import SubMessage
 
-from zerver.lib.test_classes import ZulipTestCase
-
-from zerver.lib.widget import get_widget_data
-
-from zerver.lib.validator import check_widget_content
 
 class WidgetContentTestCase(ZulipTestCase):
     def test_validation(self) -> None:

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 import os
-
-from premailer import Premailer
-from cssutils import profile
-from cssutils.profiles import Profiles, properties, macros
 from typing import Set
+
+from cssutils import profile
+from cssutils.profiles import Profiles, macros, properties
+from premailer import Premailer
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../')
 EMAIL_TEMPLATES_PATH = os.path.join(ZULIP_PATH, 'templates', 'zerver', 'emails')

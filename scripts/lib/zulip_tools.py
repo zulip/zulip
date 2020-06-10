@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 import argparse
+import configparser
 import datetime
 import functools
 import hashlib
+import json
 import logging
 import os
 import pwd
@@ -13,11 +15,8 @@ import subprocess
 import sys
 import tempfile
 import time
-import json
 import uuid
-import configparser
-
-from typing import Sequence, Set, Any, Dict, List
+from typing import Any, Dict, List, Sequence, Set
 
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
 LOCK_DIR = os.path.join(DEPLOYMENTS_DIR, "lock")

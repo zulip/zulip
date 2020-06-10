@@ -14,18 +14,17 @@
 # Copy conf.ini-template to conf.ini and populate with your api token.
 #
 # usage: python3 create.py <username>
-
-import sys
+import argparse
 import configparser
+import json
+import os
+import sys
+import time
 import urllib.error
 import urllib.request
-import json
-import digitalocean
-import time
-import argparse
-import os
-
 from typing import Any, Dict, List
+
+import digitalocean
 
 # initiation argument parser
 parser = argparse.ArgumentParser(description='Create a Zulip devopment VM Digital Ocean droplet.')

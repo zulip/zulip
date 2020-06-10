@@ -1,27 +1,34 @@
-import os
-import ujson
 import filecmp
 import logging
+import os
+from typing import Any, Dict, List
 
-from typing import Dict, Any, List
+import ujson
 
-from zerver.lib.emoji import name_to_codepoint
-from zerver.lib.import_realm import (
-    do_import_realm,
-)
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-
-from zerver.data_import.mattermost_user import UserHandler
-from zerver.data_import.mattermost import mattermost_data_file_to_dict, process_user, convert_user_data, \
-    create_username_to_user_mapping, label_mirror_dummy_users, reset_mirror_dummy_users, \
-    convert_channel_data, write_emoticon_data, get_mentioned_user_ids, check_user_in_team, \
-    build_reactions, do_convert_data, convert_huddle_data, \
-    generate_huddle_name
-from zerver.data_import.sequencer import IdMapper
 from zerver.data_import.import_util import SubscriberHandler
-from zerver.models import Reaction, UserProfile, Message, get_realm, get_user, Recipient
+from zerver.data_import.mattermost import (
+    build_reactions,
+    check_user_in_team,
+    convert_channel_data,
+    convert_huddle_data,
+    convert_user_data,
+    create_username_to_user_mapping,
+    do_convert_data,
+    generate_huddle_name,
+    get_mentioned_user_ids,
+    label_mirror_dummy_users,
+    mattermost_data_file_to_dict,
+    process_user,
+    reset_mirror_dummy_users,
+    write_emoticon_data,
+)
+from zerver.data_import.mattermost_user import UserHandler
+from zerver.data_import.sequencer import IdMapper
+from zerver.lib.emoji import name_to_codepoint
+from zerver.lib.import_realm import do_import_realm
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.models import Message, Reaction, Recipient, UserProfile, get_realm, get_user
+
 
 class MatterMostImporter(ZulipTestCase):
     logger = logging.getLogger()

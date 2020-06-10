@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 # This tools generates /etc/zulip/zulip-secrets.conf
-
-import sys
 import os
-
+import sys
 from typing import Dict, List
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -15,8 +13,8 @@ setup_path()
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 
 import argparse
-import uuid
 import configparser
+import uuid
 
 os.chdir(os.path.join(os.path.dirname(__file__), '..', '..'))
 
@@ -140,6 +138,7 @@ def generate_secrets(development: bool = False) -> None:
                 # file directly.
 
                 import redis
+
                 from zerver.lib.redis_utils import get_redis_client
 
                 redis_password = random_token()

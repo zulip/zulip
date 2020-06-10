@@ -4,6 +4,7 @@ import os
 import sys
 import urllib
 from urllib.parse import urljoin
+
 from django.conf import settings
 from django.utils.http import is_safe_url
 from libthumbor import CryptoURL
@@ -11,10 +12,13 @@ from libthumbor import CryptoURL
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(ZULIP_PATH)
 
-from zthumbor.loaders.helpers import (
-    THUMBOR_S3_TYPE, THUMBOR_LOCAL_FILE_TYPE, THUMBOR_EXTERNAL_TYPE
-)
 from zerver.lib.camo import get_camo_url
+from zthumbor.loaders.helpers import (
+    THUMBOR_EXTERNAL_TYPE,
+    THUMBOR_LOCAL_FILE_TYPE,
+    THUMBOR_S3_TYPE,
+)
+
 
 def is_thumbor_enabled() -> bool:
     return settings.THUMBOR_URL != ''

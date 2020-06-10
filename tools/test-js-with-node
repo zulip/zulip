@@ -5,7 +5,7 @@ import os
 import pwd
 import subprocess
 import sys
-from typing import Dict, Any
+from typing import Any, Dict
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
@@ -13,12 +13,12 @@ ROOT_DIR = os.path.dirname(TOOLS_DIR)
 
 # check for the venv
 from tools.lib import sanity_check
+
 sanity_check.check_venv(__file__)
 
 # Import this after we do the sanity_check so it doesn't crash.
 import ujson
-
-from zulint.printer import CYAN, GREEN, BOLDRED, ENDC
+from zulint.printer import BOLDRED, CYAN, ENDC, GREEN
 
 INDEX_JS = 'frontend_tests/zjsunit/index.js'
 NODE_COVERAGE_PATH = 'var/node-coverage/coverage-final.json'

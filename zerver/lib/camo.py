@@ -1,7 +1,9 @@
-from django.conf import settings
 import binascii
 import hashlib
 import hmac
+
+from django.conf import settings
+
 
 def generate_camo_url(url: str) -> str:
     encoded_url = url.encode("utf-8")

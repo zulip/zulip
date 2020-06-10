@@ -1,13 +1,14 @@
-from django.http import HttpResponse, HttpRequest
 import re
 from typing import List, Optional, Tuple
 
+from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
+from version import DESKTOP_MINIMUM_VERSION, DESKTOP_WARNING_VERSION
 from zerver.lib.response import json_error, json_success
 from zerver.lib.user_agent import parse_user_agent
 from zerver.signals import get_device_browser
-from version import DESKTOP_MINIMUM_VERSION, DESKTOP_WARNING_VERSION
+
 
 def pop_numerals(ver: str) -> Tuple[List[int], str]:
     match = re.search(r'^( \d+ (?: \. \d+ )* ) (.*)', ver, re.X)

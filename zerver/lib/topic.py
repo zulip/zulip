@@ -1,22 +1,11 @@
-from django.db import connection
-from django.db.models.query import QuerySet, Q
+from typing import Any, Dict, List, Optional, Tuple
 
-from sqlalchemy.sql import (
-    column,
-    literal,
-    func,
-)
+from django.db import connection
+from django.db.models.query import Q, QuerySet
+from sqlalchemy.sql import column, func, literal
 
 from zerver.lib.request import REQ
-from zerver.models import (
-    Message,
-    Recipient,
-    Stream,
-    UserMessage,
-    UserProfile,
-)
-
-from typing import Any, Dict, List, Optional, Tuple
+from zerver.models import Message, Recipient, Stream, UserMessage, UserProfile
 
 # Only use these constants for events.
 ORIG_TOPIC = "orig_subject"

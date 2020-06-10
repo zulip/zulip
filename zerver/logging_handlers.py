@@ -1,8 +1,7 @@
 # System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
-
 import logging
-import platform
 import os
+import platform
 import subprocess
 import traceback
 from typing import Any, Dict, Optional
@@ -11,9 +10,10 @@ from django.conf import settings
 from django.http import HttpRequest
 from django.views.debug import get_exception_reporter_filter
 
+from version import ZULIP_VERSION
 from zerver.lib.logging_util import find_log_caller_module
 from zerver.lib.queue import queue_json_publish
-from version import ZULIP_VERSION
+
 
 def try_git_describe() -> Optional[str]:
     try:  # nocoverage

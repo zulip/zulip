@@ -1,7 +1,8 @@
 import re
-import markdown
 from typing import Any, Dict, List, Optional
 from typing.re import Match
+
+import markdown
 from markdown.preprocessors import Preprocessor
 
 # There is a lot of duplicated code between this file and

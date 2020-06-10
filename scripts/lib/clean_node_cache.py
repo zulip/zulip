@@ -2,14 +2,16 @@
 import argparse
 import os
 import sys
-
 from typing import Set
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(ZULIP_PATH)
-from scripts.lib.zulip_tools import \
-    get_environment, get_recent_deployments, parse_cache_script_args, \
-    purge_unused_caches
+from scripts.lib.zulip_tools import (
+    get_environment,
+    get_recent_deployments,
+    parse_cache_script_args,
+    purge_unused_caches,
+)
 
 ENV = get_environment()
 NODE_MODULES_CACHE_PATH = "/srv/zulip-npm-cache"

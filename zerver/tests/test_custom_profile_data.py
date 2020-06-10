@@ -1,17 +1,25 @@
-from typing import Union, List, Dict, Any
+from typing import Any, Dict, List, Union
+from unittest import mock
 
-from zerver.lib.actions import try_add_realm_custom_profile_field, \
-    do_update_user_custom_profile_data_if_changed, do_remove_realm_custom_profile_field, \
-    try_reorder_realm_custom_profile_fields
-from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import queries_captured
-from zerver.lib.bugdown import convert as bugdown_convert
-from zerver.models import CustomProfileField, \
-    custom_profile_fields_for_realm, CustomProfileFieldValue, get_realm
-from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 import ujson
 
-from unittest import mock
+from zerver.lib.actions import (
+    do_remove_realm_custom_profile_field,
+    do_update_user_custom_profile_data_if_changed,
+    try_add_realm_custom_profile_field,
+    try_reorder_realm_custom_profile_fields,
+)
+from zerver.lib.bugdown import convert as bugdown_convert
+from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import queries_captured
+from zerver.models import (
+    CustomProfileField,
+    CustomProfileFieldValue,
+    custom_profile_fields_for_realm,
+    get_realm,
+)
+
 
 class CustomProfileFieldTestCase(ZulipTestCase):
     def setUp(self) -> None:

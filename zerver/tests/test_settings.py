@@ -1,20 +1,18 @@
-from unittest import mock
 import time
-import ujson
+from typing import Any, Dict
+from unittest import mock
 
+import ujson
 from django.http import HttpResponse
 from django.test import override_settings
-from typing import Any, Dict
 
 from zerver.lib.initial_password import initial_password
+from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
 from zerver.lib.users import get_all_api_keys
-from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
-from zerver.models import (
-    UserProfile,
-    get_user_profile_by_api_key
-)
+from zerver.models import UserProfile, get_user_profile_by_api_key
+
 
 class ChangeSettingsTest(ZulipTestCase):
 

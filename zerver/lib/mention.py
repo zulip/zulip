@@ -1,6 +1,5 @@
-from typing import Optional, Set, Tuple
-
 import re
+from typing import Optional, Set, Tuple
 
 # Match multi-word string between @** ** or match any one-word
 # sequences after @

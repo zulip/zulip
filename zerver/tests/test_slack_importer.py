@@ -1,64 +1,49 @@
+import logging
+import os
+import shutil
+from typing import Any, Dict, Iterator, List, Set, Tuple
+from unittest import mock
+from unittest.mock import ANY, call
+
+import ujson
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
+from zerver.data_import.import_util import (
+    build_defaultstream,
+    build_recipient,
+    build_subscription,
+    build_usermessages,
+    build_zerver_realm,
+)
+from zerver.data_import.sequencer import NEXT_ID
 from zerver.data_import.slack import (
-    get_slack_api_data,
-    get_owner,
-    get_admin,
-    get_guest,
-    get_user_timezone,
-    fetch_shared_channel_users,
-    users_to_zerver_userprofile,
-    get_subscription,
-    channels_to_zerver_stream,
-    slack_workspace_to_realm,
-    get_message_sending_user,
-    channel_message_to_zerver_message,
-    convert_slack_workspace_messages,
-    do_convert_data,
-    process_message_files,
     AddedChannelsT,
     AddedMPIMsT,
     DMMembersT,
     ZerverFieldsT,
+    channel_message_to_zerver_message,
+    channels_to_zerver_stream,
+    convert_slack_workspace_messages,
+    do_convert_data,
+    fetch_shared_channel_users,
+    get_admin,
+    get_guest,
+    get_message_sending_user,
+    get_owner,
+    get_slack_api_data,
+    get_subscription,
+    get_user_timezone,
+    process_message_files,
+    slack_workspace_to_realm,
+    users_to_zerver_userprofile,
 )
-from zerver.data_import.import_util import (
-    build_zerver_realm,
-    build_subscription,
-    build_recipient,
-    build_usermessages,
-    build_defaultstream,
-)
-from zerver.data_import.sequencer import (
-    NEXT_ID,
-)
-from zerver.lib.import_realm import (
-    do_import_realm,
-)
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-from zerver.lib.test_helpers import (
-    get_test_image_file
-)
-from zerver.lib.topic import (
-    EXPORT_TOPIC_NAME,
-)
-from zerver.models import (
-    Realm,
-    get_realm,
-    RealmAuditLog,
-    Recipient,
-    UserProfile,
-)
+from zerver.lib.import_realm import do_import_realm
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import get_test_image_file
+from zerver.lib.topic import EXPORT_TOPIC_NAME
+from zerver.models import Realm, RealmAuditLog, Recipient, UserProfile, get_realm
 
-import ujson
-import logging
-import shutil
-import os
-from unittest import mock
-from unittest.mock import ANY, call
-from typing import Any, Dict, List, Set, Tuple, Iterator
 
 def remove_folder(path: str) -> None:
     if os.path.exists(path):

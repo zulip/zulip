@@ -7,33 +7,60 @@
 # (2) if it doesn't belong in EXCLUDED_TABLES, add a Config object for
 # it to get_realm_config.
 import datetime
+import glob
+import logging
+import os
+import shutil
+import subprocess
+import tempfile
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+
 import boto3
+import ujson
 from boto3.resources.base import ServiceResource
 from django.apps import apps
 from django.conf import settings
 from django.forms.models import model_to_dict
-from django.utils.timezone import make_aware as timezone_make_aware
 from django.utils.timezone import is_naive as timezone_is_naive
-import glob
-import logging
-import os
-import ujson
-import subprocess
-import tempfile
-import shutil
+from django.utils.timezone import make_aware as timezone_make_aware
+
+import zerver.lib.upload
+from analytics.models import RealmCount, StreamCount, UserCount
 from scripts.lib.zulip_tools import overwrite_symlink
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
-from analytics.models import RealmCount, UserCount, StreamCount
-from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
-    UserMessage, Subscription, Message, RealmEmoji, RealmFilter, Reaction, \
-    RealmDomain, Recipient, DefaultStream, get_user_profile_by_id, \
-    UserPresence, UserActivity, UserActivityInterval, CustomProfileField, \
-    CustomProfileFieldValue, get_display_recipient, Attachment, get_system_bot, \
-    RealmAuditLog, UserHotspot, MutedTopic, Service, UserGroup, \
-    UserGroupMembership, BotStorageData, BotConfigData
-import zerver.lib.upload
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
-    Union
+from zerver.models import (
+    Attachment,
+    BotConfigData,
+    BotStorageData,
+    Client,
+    CustomProfileField,
+    CustomProfileFieldValue,
+    DefaultStream,
+    Huddle,
+    Message,
+    MutedTopic,
+    Reaction,
+    Realm,
+    RealmAuditLog,
+    RealmDomain,
+    RealmEmoji,
+    RealmFilter,
+    Recipient,
+    Service,
+    Stream,
+    Subscription,
+    UserActivity,
+    UserActivityInterval,
+    UserGroup,
+    UserGroupMembership,
+    UserHotspot,
+    UserMessage,
+    UserPresence,
+    UserProfile,
+    get_display_recipient,
+    get_system_bot,
+    get_user_profile_by_id,
+)
 
 # Custom mypy types follow:
 Record = Dict[str, Any]

@@ -1,13 +1,10 @@
 from typing import Set
+
 from django.db.models.query import QuerySet
 
-from zerver.lib.stream_subscription import (
-    get_active_subscriptions_for_stream_id,
-)
+from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
+from zerver.models import MutedTopic
 
-from zerver.models import (
-    MutedTopic,
-)
 
 class StreamTopicTarget:
     '''

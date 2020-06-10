@@ -1,8 +1,10 @@
+from typing import Dict, List
+
+import ujson
 from django.db import migrations
 from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
-import ujson
-from typing import Dict, List
+
 
 def move_to_seperate_table(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     UserProfile = apps.get_model('zerver', 'UserProfile')

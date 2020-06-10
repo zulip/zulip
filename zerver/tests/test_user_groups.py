@@ -1,26 +1,21 @@
-import ujson
 from unittest import mock
 
-from zerver.lib.actions import (
-    ensure_stream,
-)
+import ujson
 
+from zerver.lib.actions import do_set_realm_property, ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import (
-    most_recent_usermessage,
-)
-from zerver.lib.actions import do_set_realm_property
+from zerver.lib.test_helpers import most_recent_usermessage
 from zerver.lib.user_groups import (
     check_add_user_to_user_group,
     check_remove_user_from_user_group,
     create_user_group,
+    get_memberships_of_users,
     get_user_groups,
     user_groups_in_realm,
-    get_memberships_of_users,
     user_groups_in_realm_serialized,
 )
-from zerver.models import UserGroup, get_realm, Realm, \
-    UserGroupMembership
+from zerver.models import Realm, UserGroup, UserGroupMembership, get_realm
+
 
 class UserGroupTestCase(ZulipTestCase):
     def create_user_group_for_test(self, group_name: str,

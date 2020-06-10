@@ -1,6 +1,5 @@
-from unittest import mock
-
 from typing import Any
+from unittest import mock
 
 from zerver.lib.attachments import user_attachments
 from zerver.lib.test_classes import ZulipTestCase

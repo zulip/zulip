@@ -1,9 +1,14 @@
 from typing import Dict, List, Optional, Set, Tuple
-from typing_extensions import TypedDict
-from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
 
-from zerver.lib.cache import cache_with_key, display_recipient_cache_key, generic_bulk_cached_fetch, \
-    display_recipient_bulk_get_users_by_id_cache_key
+from typing_extensions import TypedDict
+
+from zerver.lib.cache import (
+    cache_with_key,
+    display_recipient_bulk_get_users_by_id_cache_key,
+    display_recipient_cache_key,
+    generic_bulk_cached_fetch,
+)
+from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
 from zerver.models import Recipient, Stream, UserProfile, bulk_get_huddle_user_ids
 
 display_recipient_fields = [

@@ -1,14 +1,19 @@
 import glob
+import html
 import json
 import shlex
 import subprocess
-import markdown
-import html
 
+import markdown
 from zulip import Client
-from zerver.openapi import markdown_extension
+
 from zerver.models import get_realm
-from zerver.openapi.curl_param_value_generators import REGISTERED_GENERATOR_FUNCTIONS, CALLED_GENERATOR_FUNCTIONS
+from zerver.openapi import markdown_extension
+from zerver.openapi.curl_param_value_generators import (
+    CALLED_GENERATOR_FUNCTIONS,
+    REGISTERED_GENERATOR_FUNCTIONS,
+)
+
 
 def test_generated_curl_examples_for_success(client: Client) -> None:
     authentication_line = f"{client.email}:{client.api_key}"

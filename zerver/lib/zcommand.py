@@ -1,9 +1,11 @@
 from typing import Any, Dict
+
 from django.utils.translation import ugettext as _
 
-from zerver.models import UserProfile
 from zerver.lib.actions import do_set_user_display_setting
 from zerver.lib.exceptions import JsonableError
+from zerver.models import UserProfile
+
 
 def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]:
     def change_mode_setting(command: str, switch_command: str,

@@ -1,21 +1,20 @@
-from django.conf import settings
-from django.http import HttpResponse, HttpRequest
-from django.utils.translation import ugettext as _
-from zerver.decorator import authenticated_json_view
-from zerver.lib.ccache import make_ccache
-from zerver.lib.request import has_request_variables, REQ
-from zerver.lib.response import json_success, json_error
-from zerver.lib.users import get_api_key
-from zerver.models import UserProfile
-
 import base64
 import logging
 import re
 import subprocess
-import ujson
-
 from typing import Optional
 
+import ujson
+from django.conf import settings
+from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
+
+from zerver.decorator import authenticated_json_view
+from zerver.lib.ccache import make_ccache
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_error, json_success
+from zerver.lib.users import get_api_key
+from zerver.models import UserProfile
 
 # Hack for mit.edu users whose Kerberos usernames don't match what they zephyr
 # as.  The key is for Kerberos and the value is for zephyr.

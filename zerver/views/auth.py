@@ -1,38 +1,55 @@
+import logging
 import os
+import urllib
+from functools import wraps
+from typing import Any, Dict, List, Mapping, Optional, cast
+
+import jwt
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from django.forms import Form
 from django.conf import settings
 from django.contrib.auth import authenticate
-from django.contrib.auth.views import LoginView as DjangoLoginView, \
-    logout_then_login as django_logout_then_login
+from django.contrib.auth.views import LoginView as DjangoLoginView
 from django.contrib.auth.views import PasswordResetView as DjangoPasswordResetView
-from django.urls import reverse
-from zerver.decorator import require_post, \
-    process_client, do_login, log_view_func
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, \
-    HttpResponseServerError
-from django.template.response import SimpleTemplateResponse
+from django.contrib.auth.views import logout_then_login as django_logout_then_login
+from django.forms import Form
+from django.http import (
+    HttpRequest,
+    HttpResponse,
+    HttpResponseRedirect,
+    HttpResponseServerError,
+)
 from django.shortcuts import redirect, render
+from django.template.response import SimpleTemplateResponse
+from django.urls import reverse
+from django.utils.http import is_safe_url
+from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_safe
 from django.views.generic import TemplateView
-from django.utils.translation import ugettext as _
-from django.utils.http import is_safe_url
-from functools import wraps
-import urllib
-from typing import Any, Dict, List, Optional, Mapping, cast
+from social_django.utils import load_backend, load_strategy
+from two_factor.forms import BackupTokenForm
+from two_factor.views import LoginView as BaseTwoFactorLoginView
 
 from confirmation.models import Confirmation, create_confirmation_link
-from zerver.context_processors import zulip_default_context, get_realm_from_request, \
-    login_context
-from zerver.forms import HomepageForm, OurAuthenticationForm, \
-    DEACTIVATED_ACCOUNT_ERROR, ZulipPasswordResetForm, \
-    AuthenticationTokenForm
+from version import API_FEATURE_LEVEL, ZULIP_VERSION
+from zerver.context_processors import (
+    get_realm_from_request,
+    login_context,
+    zulip_default_context,
+)
+from zerver.decorator import do_login, log_view_func, process_client, require_post
+from zerver.forms import (
+    DEACTIVATED_ACCOUNT_ERROR,
+    AuthenticationTokenForm,
+    HomepageForm,
+    OurAuthenticationForm,
+    ZulipPasswordResetForm,
+)
 from zerver.lib.mobile_auth_otp import otp_encrypt_api_key
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.realm_icon import realm_icon_url
-from zerver.lib.request import REQ, has_request_variables, JsonableError
-from zerver.lib.response import json_success, json_error
+from zerver.lib.request import REQ, JsonableError, has_request_variables
+from zerver.lib.response import json_error, json_success
 from zerver.lib.sessions import set_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
 from zerver.lib.types import ViewFuncT
@@ -41,23 +58,30 @@ from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.users import get_api_key
 from zerver.lib.utils import has_api_key_format
 from zerver.lib.validator import validate_login_email
-from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm, \
-    get_realm
+from zerver.models import (
+    PreregistrationUser,
+    Realm,
+    UserProfile,
+    get_realm,
+    remote_user_to_email,
+)
 from zerver.signals import email_on_new_login
-from zproject.backends import password_auth_enabled, dev_auth_enabled, \
-    ldap_auth_enabled, ZulipLDAPConfigurationError, ZulipLDAPAuthBackend, \
-    AUTH_BACKEND_NAME_MAP, auth_enabled_helper, saml_auth_enabled, SAMLAuthBackend, \
-    redirect_to_config_error, ZulipRemoteUserBackend, validate_otp_params, ExternalAuthResult, \
-    ExternalAuthDataDict
-from version import ZULIP_VERSION, API_FEATURE_LEVEL
-
-import jwt
-import logging
-
-from social_django.utils import load_backend, load_strategy
-
-from two_factor.forms import BackupTokenForm
-from two_factor.views import LoginView as BaseTwoFactorLoginView
+from zproject.backends import (
+    AUTH_BACKEND_NAME_MAP,
+    ExternalAuthDataDict,
+    ExternalAuthResult,
+    SAMLAuthBackend,
+    ZulipLDAPAuthBackend,
+    ZulipLDAPConfigurationError,
+    ZulipRemoteUserBackend,
+    auth_enabled_helper,
+    dev_auth_enabled,
+    ldap_auth_enabled,
+    password_auth_enabled,
+    redirect_to_config_error,
+    saml_auth_enabled,
+    validate_otp_params,
+)
 
 ExtraContext = Optional[Dict[str, Any]]
 

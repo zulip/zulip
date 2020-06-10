@@ -1,6 +1,7 @@
-from typing import TypeVar, Callable, Optional, List, Dict, Union, Tuple, Any
-from typing_extensions import TypedDict
+from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union
+
 from django.http import HttpResponse
+from typing_extensions import TypedDict
 
 ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 

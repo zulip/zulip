@@ -1,8 +1,7 @@
-from zerver.models import Realm, UserProfile
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.models import Realm, UserProfile
+
 
 class TestRealmInternalBotCreation(ZulipTestCase):
     def test_create_if_missing_realm_internal_bots(self) -> None:

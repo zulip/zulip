@@ -1,27 +1,29 @@
+import glob
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
-from typing import Any, List, Set
+import time
 from importlib import import_module
 from io import StringIO
-import glob
-import time
-import shutil
+from typing import Any, List, Set
 
-from django.db import connections, DEFAULT_DB_ALIAS, ProgrammingError, \
-    connection
-from django.db.utils import OperationalError
 from django.apps import apps
 from django.conf import settings
 from django.core.management import call_command
+from django.db import DEFAULT_DB_ALIAS, ProgrammingError, connection, connections
+from django.db.utils import OperationalError
 from django.utils.module_loading import module_has_submodule
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from scripts.lib.zulip_tools import (
-    get_dev_uuid_var_path, run, TEMPLATE_DATABASE_DIR,
-    is_digest_obsolete, write_new_digest,
+    TEMPLATE_DATABASE_DIR,
+    get_dev_uuid_var_path,
+    is_digest_obsolete,
+    run,
+    write_new_digest,
 )
 
 UUID_VAR_DIR = get_dev_uuid_var_path()

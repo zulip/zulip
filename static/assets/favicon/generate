@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-import xml.etree.ElementTree as ET
 import subprocess
+from xml.etree import ElementTree as ET
 
 # Generates the favicon images containing unread message counts.
 

@@ -1,20 +1,24 @@
 from types import SimpleNamespace
-from unittest.mock import MagicMock, patch
 from typing import Dict
+from unittest.mock import MagicMock, patch
 
 from django.http import HttpRequest
 
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.exceptions import InvalidJSONError, JsonableError
-from zerver.lib.test_classes import ZulipTestCase, WebhookTestCase
-from zerver.lib.webhooks.common import \
-    validate_extract_webhook_http_header, \
-    MISSING_EVENT_HEADER_MESSAGE, MissingHTTPEventHeader, \
-    INVALID_JSON_MESSAGE, get_fixture_http_headers, standardize_headers
-from zerver.models import get_user, get_realm, UserProfile
-from zerver.lib.users import get_api_key
 from zerver.lib.send_email import FromAddress
+from zerver.lib.test_classes import WebhookTestCase, ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
+from zerver.lib.users import get_api_key
+from zerver.lib.webhooks.common import (
+    INVALID_JSON_MESSAGE,
+    MISSING_EVENT_HEADER_MESSAGE,
+    MissingHTTPEventHeader,
+    get_fixture_http_headers,
+    standardize_headers,
+    validate_extract_webhook_http_header,
+)
+from zerver.models import UserProfile, get_realm, get_user
 
 
 class WebhooksCommonTestCase(ZulipTestCase):

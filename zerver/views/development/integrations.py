@@ -1,19 +1,17 @@
 import os
-import ujson
 from typing import Any, Dict, List, Optional
 
+import ujson
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.test import Client
 
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
-from zerver.lib.request import has_request_variables, REQ
-from zerver.lib.response import json_success, json_error
-from zerver.models import UserProfile, get_realm
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_bool
-from zerver.lib.webhooks.common import get_fixture_http_headers, \
-    standardize_headers
-
+from zerver.lib.webhooks.common import get_fixture_http_headers, standardize_headers
+from zerver.models import UserProfile, get_realm
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
 

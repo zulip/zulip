@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-
 import shlex
 import subprocess
 import sys
 from typing import List
+
 
 def exit(message: str) -> None:
     print('PROBLEM!')

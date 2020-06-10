@@ -1,15 +1,14 @@
 # Library code for use in management commands
-
 import time
-
 from argparse import ArgumentParser, RawTextHelpFormatter
+from typing import Any, Dict, List, Optional
 
 from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.management.base import BaseCommand, CommandError
-from typing import Any, Dict, Optional, List
 
-from zerver.models import Realm, UserProfile, Client, get_client
+from zerver.models import Client, Realm, UserProfile, get_client
+
 
 def is_integer_string(val: str) -> bool:
     try:

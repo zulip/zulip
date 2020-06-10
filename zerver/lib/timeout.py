@@ -1,10 +1,9 @@
+import ctypes
+import sys
+import threading
+import time
 from types import TracebackType
 from typing import Any, Callable, Optional, Tuple, Type, TypeVar
-
-import sys
-import time
-import ctypes
-import threading
 
 # Based on https://code.activestate.com/recipes/483752/
 

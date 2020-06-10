@@ -1,9 +1,12 @@
-from django.http import HttpRequest, HttpResponse
 from typing import List, Union
 
-from zerver.decorator import has_request_variables, REQ
-from zerver.lib.actions import check_send_typing_notification, \
-    extract_private_recipients
+from django.http import HttpRequest, HttpResponse
+
+from zerver.decorator import REQ, has_request_variables
+from zerver.lib.actions import (
+    check_send_typing_notification,
+    extract_private_recipients,
+)
 from zerver.lib.response import json_success
 from zerver.models import UserProfile
 

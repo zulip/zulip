@@ -1,8 +1,8 @@
-from psycopg2.extensions import cursor
-from psycopg2.sql import Composable, Identifier, SQL
+import time
 from typing import List, TypeVar
 
-import time
+from psycopg2.extensions import cursor
+from psycopg2.sql import SQL, Composable, Identifier
 
 CursorObj = TypeVar('CursorObj', bound=cursor)
 

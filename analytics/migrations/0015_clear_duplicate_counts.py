@@ -3,6 +3,7 @@ from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import Count, Sum
 
+
 def clear_duplicate_counts(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     """This is a preparatory migration for our Analytics tables.
 

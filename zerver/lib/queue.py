@@ -1,17 +1,17 @@
-from collections import defaultdict
 import logging
 import random
 import threading
 import time
+from collections import defaultdict
 from typing import Any, Callable, Dict, List, Mapping, Optional, Set
 
-from django.conf import settings
 import pika
 import pika.adapters.tornado_connection
+import ujson
+from django.conf import settings
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.spec import Basic
 from tornado import ioloop
-import ujson
 
 from zerver.lib.utils import statsd
 

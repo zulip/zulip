@@ -1,9 +1,10 @@
-from typing import Optional, Any
-
-from django.db import connection
-from zerver.lib.db import TimeTrackingConnection
+from typing import Any, Optional
 
 import sqlalchemy
+from django.db import connection
+
+from zerver.lib.db import TimeTrackingConnection
+
 
 # This is a Pool that doesn't close connections.  Therefore it can be used with
 # existing Django database connections.

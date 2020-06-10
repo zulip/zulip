@@ -1,43 +1,66 @@
-from datetime import datetime, timedelta, timezone
-from decimal import Decimal
-from functools import wraps
-from unittest.mock import Mock, patch
+import json
 import operator
 import os
 import re
 import sys
-from typing import Any, Callable, Dict, List, Optional, TypeVar, Tuple, cast
-import ujson
-import json
-import responses
+from datetime import datetime, timedelta, timezone
+from decimal import Decimal
+from functools import wraps
+from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, cast
+from unittest.mock import Mock, patch
 
-from django.core import signing
-from django.urls.resolvers import get_resolver
-from django.http import HttpResponse
+import responses
+import stripe
+import ujson
 from django.conf import settings
+from django.core import signing
+from django.http import HttpResponse
+from django.urls.resolvers import get_resolver
 from django.utils.timezone import now as timezone_now
 
-import stripe
-
-from zerver.lib.actions import do_deactivate_user, do_create_user, \
-    do_activate_user, do_reactivate_user, do_deactivate_realm, \
-    do_reactivate_realm
+from corporate.lib.stripe import (
+    MAX_INVOICED_LICENSES,
+    MIN_INVOICED_LICENSES,
+    BillingError,
+    StripeCardError,
+    add_months,
+    attach_discount_to_realm,
+    catch_stripe_errors,
+    compute_plan_parameters,
+    get_discount_for_realm,
+    get_latest_seat_count,
+    invoice_plan,
+    invoice_plans_as_needed,
+    make_end_of_cycle_updates_if_needed,
+    next_month,
+    process_initial_upgrade,
+    sign_string,
+    stripe_get_customer,
+    unsign_string,
+    update_license_ledger_for_automanaged_plan,
+    update_license_ledger_if_needed,
+    update_or_create_stripe_customer,
+)
+from corporate.models import (
+    Customer,
+    CustomerPlan,
+    LicenseLedger,
+    get_current_plan_by_customer,
+    get_current_plan_by_realm,
+    get_customer_by_realm,
+)
+from zerver.lib.actions import (
+    do_activate_user,
+    do_create_user,
+    do_deactivate_realm,
+    do_deactivate_user,
+    do_reactivate_realm,
+    do_reactivate_user,
+)
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_emails_in_zulip_realm
-from zerver.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
-from zerver.models import Realm, UserProfile, get_realm, RealmAuditLog
-from corporate.lib.stripe import catch_stripe_errors, attach_discount_to_realm, \
-    get_latest_seat_count, sign_string, unsign_string, \
-    BillingError, StripeCardError, stripe_get_customer, \
-    MIN_INVOICED_LICENSES, MAX_INVOICED_LICENSES, \
-    add_months, next_month, \
-    compute_plan_parameters, update_or_create_stripe_customer, \
-    process_initial_upgrade, make_end_of_cycle_updates_if_needed, \
-    update_license_ledger_if_needed, update_license_ledger_for_automanaged_plan, \
-    invoice_plan, invoice_plans_as_needed, get_discount_for_realm
-from corporate.models import Customer, CustomerPlan, LicenseLedger, \
-    get_customer_by_realm, get_current_plan_by_customer, \
-    get_current_plan_by_realm
+from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
+from zerver.models import Realm, RealmAuditLog, UserProfile, get_realm
 
 CallableT = TypeVar('CallableT', bound=Callable[..., Any])
 

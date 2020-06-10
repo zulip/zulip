@@ -1,18 +1,26 @@
-from django.conf import settings
-
-from moto import mock_s3
-from unittest.mock import Mock, patch
 import logging
+from unittest.mock import Mock, patch
 
-from zerver.lib.upload import upload_message_file, resize_emoji
-from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import create_s3_buckets, get_test_image_file, \
-    avatar_disk_path
-from zerver.lib.transfer import transfer_avatars_to_s3, transfer_emoji_to_s3, \
-    transfer_message_files_to_s3, transfer_uploads_to_s3
-from zerver.models import Attachment, RealmEmoji
+from django.conf import settings
+from moto import mock_s3
+
 from zerver.lib.actions import check_add_realm_emoji
 from zerver.lib.avatar_hash import user_avatar_path
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import (
+    avatar_disk_path,
+    create_s3_buckets,
+    get_test_image_file,
+)
+from zerver.lib.transfer import (
+    transfer_avatars_to_s3,
+    transfer_emoji_to_s3,
+    transfer_message_files_to_s3,
+    transfer_uploads_to_s3,
+)
+from zerver.lib.upload import resize_emoji, upload_message_file
+from zerver.models import Attachment, RealmEmoji
+
 
 class TransferUploadsToS3Test(ZulipTestCase):
     logger = logging.getLogger()

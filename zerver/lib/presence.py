@@ -1,21 +1,20 @@
-from collections import defaultdict
-
 import datetime
 import itertools
 import time
+from collections import defaultdict
+from typing import Any, Dict, List, Set
 
 from django.utils.timezone import now as timezone_now
 
-from typing import Any, Dict, List, Set
-
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
-    query_for_ids,
     PushDeviceToken,
     Realm,
     UserPresence,
     UserProfile,
+    query_for_ids,
 )
+
 
 def get_status_dicts_for_rows(all_rows: List[Dict[str, Any]],
                               mobile_user_ids: Set[int],

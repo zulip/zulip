@@ -1,20 +1,30 @@
+import logging
 from datetime import timedelta
+from typing import Any, Dict, List, Optional, Tuple
 
 from django.conf import settings
 from django.db import connection, transaction
 from django.db.models import Model
 from django.utils.timezone import now as timezone_now
-from psycopg2.sql import Composable, Identifier, Literal, SQL
+from psycopg2.sql import SQL, Composable, Identifier, Literal
 
 from zerver.lib.logging_util import log_to_file
-from zerver.models import (Message, UserMessage, ArchivedUserMessage, Realm,
-                           Attachment, ArchivedAttachment, Reaction, ArchivedReaction,
-                           SubMessage, ArchivedSubMessage, Recipient, Stream, ArchiveTransaction,
-                           get_user_including_cross_realm)
-
-from typing import Any, Dict, List, Optional, Tuple
-
-import logging
+from zerver.models import (
+    ArchivedAttachment,
+    ArchivedReaction,
+    ArchivedSubMessage,
+    ArchivedUserMessage,
+    ArchiveTransaction,
+    Attachment,
+    Message,
+    Reaction,
+    Realm,
+    Recipient,
+    Stream,
+    SubMessage,
+    UserMessage,
+    get_user_including_cross_realm,
+)
 
 logger = logging.getLogger('zulip.retention')
 log_to_file(logger, settings.RETENTION_LOG_PATH)

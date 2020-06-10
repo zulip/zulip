@@ -2,11 +2,15 @@
     This module stores data for "External Account" custom profile field.
 """
 from typing import Optional
+
 from django.utils.translation import ugettext as _
 
-from zerver.lib.validator import check_required_string, \
-    check_external_account_url_pattern, check_dict_only
 from zerver.lib.types import ProfileFieldData
+from zerver.lib.validator import (
+    check_dict_only,
+    check_external_account_url_pattern,
+    check_required_string,
+)
 
 # Default external account fields are by default available
 # to realm admins, where realm admin only need to select

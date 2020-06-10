@@ -10,6 +10,7 @@ from .default_settings import *  # isort: skip
 # Import variables like secrets from the prod_settings file
 # Import prod_settings after determining the deployment/machine type
 from .config import PRODUCTION
+
 if PRODUCTION:
     from .prod_settings import *  # isort: skip
 else:

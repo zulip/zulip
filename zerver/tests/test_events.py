@@ -1,29 +1,26 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 import copy
 import os
 import shutil
 import sys
+import time
+from io import StringIO
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from unittest import mock
 
+import ujson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
-from io import StringIO
-
-from zerver.models import (
-    get_client, get_stream, get_realm, get_system_bot,
-    Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile,
-    Realm, Subscription, Stream, flush_per_request_caches, UserGroup, Service,
-    Attachment, PreregistrationUser, get_user_by_delivery_email, MultiuseInvite,
-    RealmAuditLog
-)
 
 from zerver.lib.actions import (
-    try_update_realm_custom_profile_field,
+    bulk_add_members_to_user_group,
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
     check_add_realm_emoji,
+    check_add_user_group,
+    check_delete_user_group,
     check_send_message,
     check_send_typing_notification,
     do_add_alert_words,
@@ -44,7 +41,6 @@ from zerver.lib.actions import (
     do_change_full_name,
     do_change_icon_source,
     do_change_logo_source,
-    do_change_user_role,
     do_change_notification_settings,
     do_change_plan_type,
     do_change_realm_domain,
@@ -53,9 +49,10 @@ from zerver.lib.actions import (
     do_change_stream_post_policy,
     do_change_subscription_property,
     do_change_user_delivery_email,
-    do_create_user,
+    do_change_user_role,
     do_create_default_stream_group,
     do_create_multiuse_invite_link,
+    do_create_user,
     do_deactivate_stream,
     do_deactivate_user,
     do_delete_messages,
@@ -78,10 +75,10 @@ from zerver.lib.actions import (
     do_revoke_user_invite,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
-    do_set_realm_property,
-    do_set_user_display_setting,
     do_set_realm_notifications_stream,
+    do_set_realm_property,
     do_set_realm_signup_notifications_stream,
+    do_set_user_display_setting,
     do_set_zoom_token,
     do_unmute_topic,
     do_update_embedded_data,
@@ -89,18 +86,16 @@ from zerver.lib.actions import (
     do_update_message_flags,
     do_update_outgoing_webhook_service,
     do_update_pointer,
+    do_update_user_custom_profile_data_if_changed,
+    do_update_user_group_description,
+    do_update_user_group_name,
     do_update_user_presence,
     do_update_user_status,
     log_event,
     lookup_default_stream_groups,
     notify_realm_custom_profile_fields,
-    check_add_user_group,
-    do_update_user_group_name,
-    do_update_user_group_description,
-    bulk_add_members_to_user_group,
     remove_members_from_user_group,
-    check_delete_user_group,
-    do_update_user_custom_profile_data_if_changed,
+    try_update_realm_custom_profile_field,
 )
 from zerver.lib.bugdown import MentionData
 from zerver.lib.events import (
@@ -110,36 +105,65 @@ from zerver.lib.events import (
     post_process_state,
 )
 from zerver.lib.message import (
+    MessageDict,
+    UnreadMessagesResult,
     aggregate_unread_data,
     apply_unread_message_event,
     get_raw_unread_data,
     render_markdown,
-    MessageDict,
-    UnreadMessagesResult,
 )
-from zerver.lib.test_helpers import POSTRequestMock, get_subscription, \
-    get_test_image_file, stub_event_queue_user_events, queries_captured, \
-    create_dummy_file, stdout_suppressed, reset_emails_in_zulip_realm
-from zerver.lib.test_classes import (
-    ZulipTestCase,
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import (
+    POSTRequestMock,
+    create_dummy_file,
+    get_subscription,
+    get_test_image_file,
+    queries_captured,
+    reset_emails_in_zulip_realm,
+    stdout_suppressed,
+    stub_event_queue_user_events,
 )
 from zerver.lib.test_runner import slow
-from zerver.lib.topic import (
-    ORIG_TOPIC,
-    TOPIC_NAME,
-    TOPIC_LINKS,
-)
-from zerver.lib.topic_mutes import (
-    add_topic_mute,
-)
-from zerver.lib.validator import (
-    check_bool, check_dict, check_dict_only, check_float, check_int, check_list, check_string,
-    equals, check_none_or, Validator, check_url, check_int_in
-)
+from zerver.lib.topic import ORIG_TOPIC, TOPIC_LINKS, TOPIC_NAME
+from zerver.lib.topic_mutes import add_topic_mute
 from zerver.lib.users import get_api_key
-
-from zerver.views.events_register import _default_all_public_streams, _default_narrow
-
+from zerver.lib.validator import (
+    Validator,
+    check_bool,
+    check_dict,
+    check_dict_only,
+    check_float,
+    check_int,
+    check_int_in,
+    check_list,
+    check_none_or,
+    check_string,
+    check_url,
+    equals,
+)
+from zerver.models import (
+    Attachment,
+    Message,
+    MultiuseInvite,
+    PreregistrationUser,
+    Realm,
+    RealmAuditLog,
+    RealmDomain,
+    Recipient,
+    Service,
+    Stream,
+    Subscription,
+    UserGroup,
+    UserMessage,
+    UserPresence,
+    UserProfile,
+    flush_per_request_caches,
+    get_client,
+    get_realm,
+    get_stream,
+    get_system_bot,
+    get_user_by_delivery_email,
+)
 from zerver.tornado.event_queue import (
     allocate_client_descriptor,
     clear_client_event_queues_for_testing,
@@ -147,10 +171,7 @@ from zerver.tornado.event_queue import (
     process_message_event,
 )
 from zerver.tornado.views import get_events
-
-from unittest import mock
-import time
-import ujson
+from zerver.views.events_register import _default_all_public_streams, _default_narrow
 
 
 class LogEventsTest(ZulipTestCase):

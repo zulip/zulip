@@ -1,6 +1,5 @@
 # Webhooks for external integrations.
-from typing import Any, Dict, Tuple, Optional
-
+from typing import Any, Dict, Optional, Tuple
 from urllib.parse import urlparse
 
 from django.http import HttpRequest, HttpResponse

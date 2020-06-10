@@ -1,13 +1,8 @@
-from typing import Dict, List, Optional, Set
-
 import re
 from collections import defaultdict
+from typing import Dict, List, Optional, Set
 
-from .template_parser import (
-    tokenize,
-    FormattedException,
-    Token,
-)
+from .template_parser import FormattedException, Token, tokenize
 
 
 class HtmlBranchesException(Exception):

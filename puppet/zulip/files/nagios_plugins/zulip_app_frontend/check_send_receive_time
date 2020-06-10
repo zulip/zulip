@@ -8,12 +8,12 @@ It supports both munin and nagios outputs
 It must be run on a machine that is using the live database for the
 Django ORM.
 """
-import sys
 import argparse
+import os
 import random
+import sys
 import time
 import traceback
-import os
 
 sys.path.append('.')
 sys.path.append('/home/zulip/deployments/current')
@@ -21,9 +21,9 @@ from scripts.lib.setup_path import setup_path
 
 setup_path()
 
-import django
-
 from typing import Any, Dict, List, Optional
+
+import django
 
 usage = """Usage: send-receive.py [options] [config]
 
@@ -75,8 +75,9 @@ os.environ['DJANGO_SETTINGS_MODULE'] = "zproject.settings"
 
 django.setup()
 
-from zerver.models import get_system_bot
 from django.conf import settings
+
+from zerver.models import get_system_bot
 
 states = {
     "OK": 0,

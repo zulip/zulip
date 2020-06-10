@@ -1,32 +1,41 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/caching.html for docs
-from functools import wraps
-
-from django.utils.lru_cache import lru_cache
-from django.core.cache import cache as djcache
-from django.core.cache import caches
-from django.conf import settings
-from django.db.models import Q
-from django.core.cache.backends.base import BaseCache
-from django.http import HttpRequest
-
-from typing import Any, Callable, Dict, Iterable, List, \
-    Optional, Sequence, TypeVar, Tuple, TYPE_CHECKING
-
-from zerver.lib.utils import statsd, statsd_key, make_safe_digest
-import time
 import base64
+import hashlib
 import logging
+import os
 import random
 import re
 import sys
+import time
 import traceback
-import os
-import hashlib
+from functools import wraps
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    TypeVar,
+)
+
+from django.conf import settings
+from django.core.cache import cache as djcache
+from django.core.cache import caches
+from django.core.cache.backends.base import BaseCache
+from django.db.models import Q
+from django.http import HttpRequest
+from django.utils.lru_cache import lru_cache
+
+from zerver.lib.utils import make_safe_digest, statsd, statsd_key
 
 if TYPE_CHECKING:
     # These modules have to be imported for type annotations but
     # they cannot be imported at runtime due to cyclic dependency.
-    from zerver.models import UserProfile, Realm, Message
+    from zerver.models import Message, Realm, UserProfile
 
 MEMCACHED_MAX_KEY_LENGTH = 250
 
@@ -501,7 +510,9 @@ def delete_user_profile_caches(user_profiles: Iterable['UserProfile']) -> None:
     cache_delete_many(keys)
 
 def delete_display_recipient_cache(user_profile: 'UserProfile') -> None:
-    from zerver.models import Subscription  # We need to import here to avoid cyclic dependency.
+    from zerver.models import (
+        Subscription,  # We need to import here to avoid cyclic dependency.
+    )
     recipient_ids = Subscription.objects.filter(user_profile=user_profile)
     recipient_ids = recipient_ids.values_list('recipient_id', flat=True)
     keys = [display_recipient_cache_key(rid) for rid in recipient_ids]

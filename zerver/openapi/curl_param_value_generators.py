@@ -1,13 +1,16 @@
-from typing import Dict, Any, Callable, Set, List, Optional, Tuple
-
 from functools import wraps
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from django.utils.timezone import now as timezone_now
 
-from zerver.models import Client, Message, UserPresence, UserGroup, get_realm
-from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.actions import (
+    do_add_reaction,
+    do_add_realm_filter,
+    update_user_presence,
+)
 from zerver.lib.events import do_events_register
-from zerver.lib.actions import update_user_presence, do_add_realm_filter, do_add_reaction
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.models import Client, Message, UserGroup, UserPresence, get_realm
 
 GENERATOR_FUNCTIONS: Dict[str, Callable[..., Dict[Any, Any]]] = dict()
 REGISTERED_GENERATOR_FUNCTIONS: Set[str] = set()

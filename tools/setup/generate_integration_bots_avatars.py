@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import os
 import sys
 
@@ -7,6 +6,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 if ZULIP_PATH not in sys.path:
     sys.path.append(ZULIP_PATH)
 from scripts.lib.setup_path import setup_path
+
 setup_path()
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
@@ -20,9 +20,10 @@ import io
 import cairosvg
 from PIL import Image
 
-from zerver.lib.upload import resize_avatar, DEFAULT_AVATAR_SIZE
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.lib.storage import static_path
+from zerver.lib.upload import DEFAULT_AVATAR_SIZE, resize_avatar
+
 
 def create_square_image(png: bytes) -> bytes:
     img = Image.open(io.BytesIO(png))

@@ -1,16 +1,20 @@
 from functools import wraps
 from typing import Any, Callable, Dict
 
-from django.utils.module_loading import import_string
+from django.conf import settings
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.utils.cache import add_never_cache_headers
+from django.utils.module_loading import import_string
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
-from zerver.decorator import authenticated_json_view, authenticated_rest_api_view, \
-    process_as_post, authenticated_uploads_api_view, \
-    ReturnT
+from zerver.decorator import (
+    ReturnT,
+    authenticated_json_view,
+    authenticated_rest_api_view,
+    authenticated_uploads_api_view,
+    process_as_post,
+)
 from zerver.lib.response import json_method_not_allowed, json_unauthorized
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
-from django.conf import settings
 
 METHODS = ('GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH')
 FLAGS = ('override_api_url_scheme')

@@ -7,6 +7,7 @@ from django.db.models import Q, UniqueConstraint
 from zerver.lib.timestamp import floor_to_day
 from zerver.models import Realm, Stream, UserProfile
 
+
 class FillState(models.Model):
     property: str = models.CharField(max_length=40, unique=True)
     end_time: datetime.datetime = models.DateTimeField()

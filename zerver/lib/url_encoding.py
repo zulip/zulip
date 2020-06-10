@@ -4,6 +4,7 @@ from typing import Any, Dict, List
 from zerver.lib.topic import get_topic_from_message_info
 from zerver.models import Realm, Stream, UserProfile
 
+
 def hash_util_encode(string: str) -> str:
     # Do the same encoding operation as hash_util.encodeHashComponent on the
     # frontend.

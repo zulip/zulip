@@ -8,10 +8,10 @@ import argparse
 import configparser
 import glob
 import hashlib
-import subprocess
-import os
-import sys
 import logging
+import os
+import subprocess
+import sys
 import time
 
 os.environ["PYTHONUNBUFFERED"] = "y"
@@ -22,8 +22,12 @@ os.environ["LANG"] = "en_US.UTF-8"
 os.environ["LANGUAGE"] = "en_US.UTF-8"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, su_to_zulip, \
-    assert_running_as_root, parse_os_release
+from scripts.lib.zulip_tools import (
+    DEPLOYMENTS_DIR,
+    assert_running_as_root,
+    parse_os_release,
+    su_to_zulip,
+)
 
 assert_running_as_root()
 

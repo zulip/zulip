@@ -1,9 +1,10 @@
 from django.urls import path
+
 import zerver.views
-import zerver.views.streams
 import zerver.views.auth
-import zerver.views.tutorial
 import zerver.views.report
+import zerver.views.streams
+import zerver.views.tutorial
 
 # Future endpoints should add to urls.py, which includes these legacy urls
 

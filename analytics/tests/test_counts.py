@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple, Type
-
 from unittest import mock
+
 import ujson
 from django.apps import apps
 from django.db import models
@@ -10,24 +10,58 @@ from django.test import TestCase
 from django.utils.timezone import now as timezone_now
 from psycopg2.sql import SQL, Literal
 
-from analytics.lib.counts import COUNT_STATS, CountStat, get_count_stats, \
-    DependentCountStat, LoggingCountStat, do_aggregate_to_summary_table, \
-    do_drop_all_analytics_tables, do_drop_single_stat, \
-    do_fill_count_stat_at_hour, do_increment_logging_stat, \
-    process_count_stat, sql_data_collector
-from analytics.models import BaseCount, \
-    FillState, InstallationCount, RealmCount, StreamCount, \
-    UserCount, installation_epoch
-from zerver.lib.actions import do_activate_user, do_create_user, \
-    do_deactivate_user, do_reactivate_user, update_user_activity_interval, \
-    do_invite_users, do_revoke_user_invite, do_resend_user_invite_email, \
-    InvitationError
+from analytics.lib.counts import (
+    COUNT_STATS,
+    CountStat,
+    DependentCountStat,
+    LoggingCountStat,
+    do_aggregate_to_summary_table,
+    do_drop_all_analytics_tables,
+    do_drop_single_stat,
+    do_fill_count_stat_at_hour,
+    do_increment_logging_stat,
+    get_count_stats,
+    process_count_stat,
+    sql_data_collector,
+)
+from analytics.models import (
+    BaseCount,
+    FillState,
+    InstallationCount,
+    RealmCount,
+    StreamCount,
+    UserCount,
+    installation_epoch,
+)
+from zerver.lib.actions import (
+    InvitationError,
+    do_activate_user,
+    do_create_user,
+    do_deactivate_user,
+    do_invite_users,
+    do_reactivate_user,
+    do_resend_user_invite_email,
+    do_revoke_user_invite,
+    update_user_activity_interval,
+)
 from zerver.lib.create_user import create_user
 from zerver.lib.timestamp import TimezoneNotUTCException, floor_to_day
 from zerver.lib.topic import DB_TOPIC_NAME
-from zerver.models import Client, Huddle, Message, Realm, \
-    RealmAuditLog, Recipient, Stream, UserActivityInterval, \
-    UserProfile, get_client, get_user, PreregistrationUser
+from zerver.models import (
+    Client,
+    Huddle,
+    Message,
+    PreregistrationUser,
+    Realm,
+    RealmAuditLog,
+    Recipient,
+    Stream,
+    UserActivityInterval,
+    UserProfile,
+    get_client,
+    get_user,
+)
+
 
 class AnalyticsTestCase(TestCase):
     MINUTE = timedelta(seconds = 60)

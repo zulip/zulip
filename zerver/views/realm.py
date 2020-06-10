@@ -1,31 +1,44 @@
 from typing import Any, Dict, Optional
+
+from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.utils.translation import ugettext as _
-from django.core.exceptions import ValidationError
 from django.views.decorators.http import require_safe
 
+from confirmation.models import (
+    Confirmation,
+    ConfirmationKeyException,
+    get_object_from_key,
+)
 from zerver.decorator import require_realm_admin
+from zerver.forms import check_subdomain_available as check_subdomain
 from zerver.lib.actions import (
-    do_set_realm_message_editing,
-    do_set_realm_message_deleting,
-    do_set_realm_authentication_methods,
-    do_set_realm_notifications_stream,
-    do_set_realm_signup_notifications_stream,
-    do_set_realm_property,
     do_deactivate_realm,
     do_reactivate_realm,
+    do_set_realm_authentication_methods,
+    do_set_realm_message_deleting,
+    do_set_realm_message_editing,
+    do_set_realm_notifications_stream,
+    do_set_realm_property,
+    do_set_realm_signup_notifications_stream,
 )
-from zerver.lib.i18n import get_available_language_codes
-from zerver.lib.request import has_request_variables, REQ, JsonableError
-from zerver.lib.response import json_success, json_error
-from zerver.lib.validator import check_string, check_dict, check_bool, check_int, \
-    check_int_in, to_positive_or_allowed_int, to_non_negative_int
-from zerver.lib.streams import access_stream_by_id
 from zerver.lib.domains import validate_domain
+from zerver.lib.i18n import get_available_language_codes
+from zerver.lib.request import REQ, JsonableError, has_request_variables
+from zerver.lib.response import json_error, json_success
+from zerver.lib.streams import access_stream_by_id
+from zerver.lib.validator import (
+    check_bool,
+    check_dict,
+    check_int,
+    check_int_in,
+    check_string,
+    to_non_negative_int,
+    to_positive_or_allowed_int,
+)
 from zerver.models import Realm, UserProfile
-from zerver.forms import check_subdomain_available as check_subdomain
-from confirmation.models import get_object_from_key, Confirmation, ConfirmationKeyException
+
 
 @require_realm_admin
 @has_request_variables

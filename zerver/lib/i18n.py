@@ -1,16 +1,15 @@
+import logging
 import operator
+import os
+from itertools import zip_longest
+from typing import Any, Dict, List
 
+import ujson
 from django.conf import settings
 from django.utils import translation
-from django.utils.translation import ugettext as _
 from django.utils.lru_cache import lru_cache
+from django.utils.translation import ugettext as _
 
-from itertools import zip_longest
-from typing import Any, List, Dict
-
-import os
-import ujson
-import logging
 
 def with_language(string: str, language: str) -> str:
     """

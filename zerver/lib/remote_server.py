@@ -1,9 +1,9 @@
 import logging
-import requests
-import ujson
 import urllib
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+import requests
+import ujson
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.translation import ugettext as _
@@ -13,6 +13,7 @@ from version import ZULIP_VERSION
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.export import floatify_datetime_fields
 from zerver.models import RealmAuditLog
+
 
 class PushNotificationBouncerException(Exception):
     pass

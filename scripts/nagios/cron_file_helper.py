@@ -1,6 +1,6 @@
 import time
-
 from typing import Tuple
+
 
 def nagios_from_file(results_file: str) -> Tuple[int, str]:
     """Returns a nagios-appropriate string and return code obtained by

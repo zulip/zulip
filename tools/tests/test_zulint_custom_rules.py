@@ -1,11 +1,11 @@
-from io import StringIO
 import os
-
-from unittest.mock import patch
+from io import StringIO
 from unittest import TestCase
+from unittest.mock import patch
 
 from zulint.custom_rules import RuleList
-from linter_lib.custom_check import python_rules, non_py_rules
+
+from linter_lib.custom_check import non_py_rules, python_rules
 
 ROOT_DIR = os.path.abspath(os.path.join(__file__, '..', '..', '..'))
 CHECK_MESSAGE = "Fix the corresponding rule in `tools/linter_lib/custom_check.py`."

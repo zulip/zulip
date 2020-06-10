@@ -1,25 +1,27 @@
 import datetime
-import ujson
 import re
-from unittest import mock
 from email.utils import parseaddr
-
-from django.conf import settings
 from typing import Any, Dict, List, Mapping
+from unittest import mock
 
+import ujson
+from django.conf import settings
+
+from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.actions import (
+    do_change_plan_type,
     do_change_realm_subdomain,
-    do_set_realm_property,
+    do_create_realm,
     do_deactivate_realm,
     do_deactivate_stream,
-    do_create_realm,
     do_scrub_realm,
-    do_change_plan_type,
-    do_send_realm_reactivation_email
+    do_send_realm_reactivation_email,
+    do_set_realm_property,
 )
-
-from confirmation.models import create_confirmation_link, Confirmation
-from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
+from zerver.lib.realm_description import (
+    get_realm_rendered_description,
+    get_realm_text_description,
+)
 from zerver.lib.send_email import send_future_email
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
@@ -28,9 +30,20 @@ from zerver.lib.test_helpers import (
     tornado_redirected_to_list,
 )
 from zerver.lib.test_runner import slow
-from zerver.models import get_realm, Realm, UserProfile, ScheduledEmail, get_stream, \
-    CustomProfileField, Message, UserMessage, Attachment, get_user_profile_by_email, \
-    get_user_profile_by_id
+from zerver.models import (
+    Attachment,
+    CustomProfileField,
+    Message,
+    Realm,
+    ScheduledEmail,
+    UserMessage,
+    UserProfile,
+    get_realm,
+    get_stream,
+    get_user_profile_by_email,
+    get_user_profile_by_id,
+)
+
 
 class RealmTest(ZulipTestCase):
     def assert_user_profile_cache_gets_new_name(self, user_profile: UserProfile,

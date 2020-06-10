@@ -1,59 +1,60 @@
+import base64
+import os
+import re
+import shutil
+import tempfile
+import urllib
 from contextlib import contextmanager
 from email.utils import parseaddr
-from fakeldap import MockLDAP
-from typing import (cast, Any, Dict, Iterable,
-                    Iterator, List, Optional,
-                    Tuple, Union, Set)
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    Union,
+    cast,
+)
+from unittest import mock
 
+import ujson
 from django.apps import apps
-from django.db.migrations.state import StateApps
-from django.urls import resolve
 from django.conf import settings
-from django.test import TestCase
-from django.test.client import (
-    BOUNDARY, MULTIPART_CONTENT, encode_multipart,
-)
-from django.test.testcases import SerializeMixin
-from django.http import HttpResponse
-from django.db.migrations.executor import MigrationExecutor
 from django.db import connection
+from django.db.migrations.executor import MigrationExecutor
+from django.db.migrations.state import StateApps
 from django.db.utils import IntegrityError
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
+from django.test import TestCase
+from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
+from django.test.testcases import SerializeMixin
+from django.urls import resolve
 from django.utils import translation
-
+from fakeldap import MockLDAP
 from two_factor.models import PhoneDevice
-from zerver.lib.initial_password import initial_password
-from zerver.lib.users import get_api_key
-from zerver.lib.sessions import get_session_dict_user
-from zerver.lib.webhooks.common import get_fixture_http_headers, standardize_headers
 
+from zerver.decorator import do_two_factor_login
 from zerver.lib.actions import (
-    check_send_message, bulk_add_subscriptions,
+    bulk_add_subscriptions,
     bulk_remove_subscriptions,
-    check_send_stream_message, gather_subscriptions,
+    check_send_message,
+    check_send_stream_message,
+    gather_subscriptions,
 )
+from zerver.lib.initial_password import initial_password
+from zerver.lib.sessions import get_session_dict_user
+from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
 from zerver.lib.streams import (
     create_stream_if_needed,
-    get_default_value_for_history_public_to_subscribers
+    get_default_value_for_history_public_to_subscribers,
 )
-from zerver.lib.stream_subscription import (
-    get_stream_subscriptions_for_user,
-)
-
-from zerver.lib.test_helpers import (
-    instrument_url, find_key_by_email,
-)
-
+from zerver.lib.test_helpers import find_key_by_email, instrument_url
+from zerver.lib.users import get_api_key
+from zerver.lib.webhooks.common import get_fixture_http_headers, standardize_headers
 from zerver.models import (
-    clear_supported_auth_backends_cache,
-    flush_per_request_caches,
-    get_stream,
-    get_client,
-    get_display_recipient,
-    get_user,
-    get_user_by_delivery_email,
-    get_realm,
-    get_system_bot,
     Client,
     Message,
     Realm,
@@ -61,20 +62,20 @@ from zerver.models import (
     Stream,
     Subscription,
     UserProfile,
-    get_realm_stream
+    clear_supported_auth_backends_cache,
+    flush_per_request_caches,
+    get_client,
+    get_display_recipient,
+    get_realm,
+    get_realm_stream,
+    get_stream,
+    get_system_bot,
+    get_user,
+    get_user_by_delivery_email,
 )
-from zilencer.models import get_remote_server_by_uuid
-from zerver.decorator import do_two_factor_login
 from zerver.tornado.event_queue import clear_client_event_queues_for_testing
+from zilencer.models import get_remote_server_by_uuid
 
-import base64
-from unittest import mock
-import os
-import re
-import ujson
-import urllib
-import shutil
-import tempfile
 
 class UploadSerializeMixin(SerializeMixin):
     """

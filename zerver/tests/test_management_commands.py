@@ -3,24 +3,32 @@ import os
 import re
 from datetime import timedelta
 from email.utils import parseaddr
+from typing import Any, Dict, List, Optional
 from unittest import mock
-from unittest.mock import MagicMock, patch, call
-from typing import List, Dict, Any, Optional
+from unittest.mock import MagicMock, call, patch
 
 from django.conf import settings
 from django.core.management import call_command
 from django.test import TestCase, override_settings
-from zerver.lib.actions import do_create_user, do_add_reaction
-from zerver.lib.management import ZulipBaseCommand, CommandError, check_config
-from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import stdout_suppressed
-from zerver.lib.test_runner import slow
-from zerver.models import Recipient, get_user_profile_by_email, get_stream
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.test_helpers import most_recent_message
-from zerver.models import get_realm, UserProfile, Realm, Reaction, Message
 from confirmation.models import RealmCreationKey, generate_realm_creation_url
+from zerver.lib.actions import do_add_reaction, do_create_user
+from zerver.lib.management import CommandError, ZulipBaseCommand, check_config
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import most_recent_message, stdout_suppressed
+from zerver.lib.test_runner import slow
+from zerver.models import (
+    Message,
+    Reaction,
+    Realm,
+    Recipient,
+    UserProfile,
+    get_realm,
+    get_stream,
+    get_user_profile_by_email,
+)
+
 
 class TestCheckConfig(ZulipTestCase):
     def test_check_config(self) -> None:

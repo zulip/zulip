@@ -1,9 +1,12 @@
 import logging
 import os
 import subprocess
-from django.conf import settings
 from typing import Optional
+
+from django.conf import settings
+
 from zerver.lib.storage import static_path
+
 
 def render_tex(tex: str, is_inline: bool=True) -> Optional[str]:
     r"""Render a TeX string into HTML using KaTeX

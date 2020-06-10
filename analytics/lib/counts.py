@@ -1,23 +1,40 @@
+import logging
 import time
 from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
-import logging
-from typing import Callable, Dict, List, \
-    Optional, Tuple, Type, Union
+from typing import Callable, Dict, List, Optional, Tuple, Type, Union
 
 from django.conf import settings
 from django.db import connection
 from django.db.models import F
-from psycopg2.sql import Composable, Identifier, Literal, SQL
+from psycopg2.sql import SQL, Composable, Identifier, Literal
 
-from analytics.models import BaseCount, \
-    FillState, InstallationCount, RealmCount, StreamCount, \
-    UserCount, installation_epoch, last_successful_fill
+from analytics.models import (
+    BaseCount,
+    FillState,
+    InstallationCount,
+    RealmCount,
+    StreamCount,
+    UserCount,
+    installation_epoch,
+    last_successful_fill,
+)
 from zerver.lib.logging_util import log_to_file
-from zerver.lib.timestamp import ceiling_to_day, \
-    ceiling_to_hour, floor_to_hour, verify_UTC
-from zerver.models import Message, Realm, RealmAuditLog, \
-    Stream, UserActivityInterval, UserProfile, models
+from zerver.lib.timestamp import (
+    ceiling_to_day,
+    ceiling_to_hour,
+    floor_to_hour,
+    verify_UTC,
+)
+from zerver.models import (
+    Message,
+    Realm,
+    RealmAuditLog,
+    Stream,
+    UserActivityInterval,
+    UserProfile,
+    models,
+)
 
 ## Logging setup ##
 

@@ -7,12 +7,12 @@ Disclaimer: This script is not a lawyer.  It cannot validate that the
 claimed licenses are correct.  It can only check for basic syntactic
 issues.
 """
-
 import difflib
 import io
 import os
 import subprocess
 import sys
+
 from debian import copyright
 
 COPYRIGHT_FILENAME = "docs/THIRDPARTY"

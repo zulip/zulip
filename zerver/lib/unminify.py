@@ -1,8 +1,8 @@
-import re
 import os
-import sourcemap
-
+import re
 from typing import Dict, List
+
+import sourcemap
 
 
 class SourceMap:

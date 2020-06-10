@@ -4,6 +4,7 @@ import os
 from typing import Any, Dict, List, Optional
 
 from django.conf import settings
+
 from zerver.lib.storage import static_path
 
 # See https://jackstromberg.com/2013/01/useraccountcontrol-attributeflag-values/
@@ -59,6 +60,7 @@ def init_fakeldap(directory: Optional[Dict[str, Dict[str, List[str]]]]=None) -> 
     # because its dependency pbr uses pkgresources, which is
     # really slow to import.)
     from unittest import mock
+
     from fakeldap import MockLDAP
 
     # Silent `django_auth_ldap` logger in dev mode to avoid

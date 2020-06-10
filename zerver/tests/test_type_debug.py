@@ -1,10 +1,9 @@
 import sys
-from unittest import TestCase
 from io import StringIO
+from typing import Any, Callable, Dict, Iterable, List, Tuple, TypeVar
+from unittest import TestCase
 
 from zerver.lib.type_debug import print_types
-
-from typing import Any, Callable, Dict, Iterable, Tuple, TypeVar, List
 
 T = TypeVar('T')
 

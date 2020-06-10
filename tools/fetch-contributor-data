@@ -3,31 +3,32 @@
 Fetch contributors data from Github using their API, convert it to structured
 JSON data for the /team page contributors section.
 """
-
 import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from scripts.lib.setup_path import setup_path
+
 setup_path()
 
-from typing import Any, Dict, List, Optional, Union
-from typing_extensions import TypedDict
-
 import argparse
-from time import sleep
+import logging
 from datetime import date
 from random import randrange
-import logging
+from time import sleep
+from typing import Any, Dict, List, Optional, Union
+
+from typing_extensions import TypedDict
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 import django
+
 django.setup()
 
-from django.conf import settings
+import json
 
 import requests
-import json
+from django.conf import settings
 
 duplicate_commits_file = os.path.join(os.path.dirname(__file__), 'duplicate_commits.json')
 
