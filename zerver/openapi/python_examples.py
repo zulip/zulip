@@ -280,7 +280,7 @@ def remove_realm_filter(client: Client) -> None:
 
     # {code_example|start}
     # Remove the organization filter with ID 42
-    result = client.remove_realm_filter(42)
+    result = client.remove_realm_filter(1)
     # {code_example|end}
 
     validate_against_openapi_schema(result, '/realm/filters/{filter_id}', 'delete', '200')
@@ -532,7 +532,7 @@ def update_subscription_settings(client: Client) -> None:
     }, {
         'stream_id': 3,
         'property': 'color',
-        'value': 'f00'
+        'value': '#f00f00'
     }]
     result = client.update_subscription_settings(request)
     # {code_example|end}
@@ -1121,8 +1121,8 @@ def test_users(client: Client) -> None:
     update_notification_settings(client)
     upload_file(client)
     set_typing_status(client)
-    get_user_presence(client)
     update_presence(client)
+    get_user_presence(client)
     create_user_group(client)
     group_id = get_user_groups(client)
     update_user_group(client, group_id)

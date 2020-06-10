@@ -90,7 +90,7 @@ add_example('send_message', '/messages:post', 200, async (client) => {
 add_example('create_user', '/users:post', 200, async (client) => {
     // {code_example|start}
     const params = {
-        email: 'newbie@zulip.com',
+        email: 'notnewbie@zulip.com',
         password: 'temp',
         full_name: 'New User',
         short_name: 'newbie',

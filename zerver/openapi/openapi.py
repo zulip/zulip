@@ -124,6 +124,9 @@ def validate_against_openapi_schema(content: Dict[str, Any], endpoint: str,
     """Compare a "content" dict with the defined schema for a specific method
     in an endpoint.
     """
+    # Check if the response matches its code
+    if response.startswith('2') and (content.get('result', 'success').lower() != 'success'):
+        raise SchemaError("Response is not 200 but is validating against 200 schema")
     global exclusion_list
     schema = get_schema(endpoint, method, response)
     # In a single response schema we do not have two keys with the same name.
