@@ -78,9 +78,10 @@ priority.
 - Users can rotate their accounts’ credentials, blocking further access from
   any compromised Zulip credentials.  With Zulip on-premise, server
   administrators can additionally revoke and reset any user’s credentials.
-- Owners and administrators can deactivate any
-  [user](/help/deactivate-or-reactivate-a-user),
-  [bot, or integration](/help/deactivate-or-reactivate-a-bot).
+- Owners can deactivate any [user](/help/deactivate-or-reactivate-a-user),
+  [bot, or integration](/help/deactivate-or-reactivate-a-bot). Administrators
+  can also deactivate any [user](/help/deactivate-or-reactivate-a-user),
+  [bot, or integration](/help/deactivate-or-reactivate-a-bot) except owners.
 - With Zulip on-premise,
   [session length](https://github.com/zulip/zulip/blob/master/zproject/prod_settings_template.py#L206)
   and idle timeouts can be configured to match your organization’s security

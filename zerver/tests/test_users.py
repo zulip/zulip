@@ -1120,9 +1120,14 @@ class ActivateTest(ZulipTestCase):
         self.assertTrue(user.is_active)
 
     def test_api_with_nonexistent_user(self) -> None:
-        self.login('desdemona')
+        self.login('iago')
+
+        # Organization Administrator cannot deactivate organization owner.
+        result = self.client_delete(f'/json/users/{self.example_user("desdemona").id}')
+        self.assert_json_error(result, 'Only owners can deactivate other organization owners.')
 
         iago = self.example_user('iago')
+        desdemona = self.example_user('desdemona')
         do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER)
 
         # Cannot deactivate a user with the bot api
@@ -1137,10 +1142,10 @@ class ActivateTest(ZulipTestCase):
         result = self.client_delete('/json/users/{}'.format(self.example_user("webhook_bot").id))
         self.assert_json_error(result, 'No such user')
 
-        result = self.client_delete('/json/users/{}'.format(iago.id))
+        result = self.client_delete('/json/users/{}'.format(desdemona.id))
         self.assert_json_success(result)
 
-        result = self.client_delete(f'/json/users/{self.example_user("desdemona").id}')
+        result = self.client_delete(f'/json/users/{iago.id}')
         self.assert_json_error(result, 'Cannot deactivate the only organization owner')
 
         # Cannot reactivate a nonexistent user.
