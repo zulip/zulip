@@ -382,7 +382,7 @@ function test_change_save_button_state() {
     }
 }
 
-function test_upload_realm_icon(upload_realm_icon) {
+function test_upload_realm_icon(upload_realm_logo_or_icon) {
     form_data = {
         append: function (field, val) {
             form_data[field] = val;
@@ -402,7 +402,7 @@ function test_upload_realm_icon(upload_realm_icon) {
         assert.equal(req.data['file-1'], 'image2.png');
     };
 
-    upload_realm_icon(file_input);
+    upload_realm_logo_or_icon(file_input, null, true);
     assert(posted);
 }
 
@@ -790,9 +790,9 @@ run_test('set_up', () => {
         }
     };
 
-    let upload_realm_icon;
+    let upload_realm_logo_or_icon;
     realm_icon.build_realm_icon_widget = function (f) {
-        upload_realm_icon = f;
+        upload_realm_logo_or_icon = f;
     };
 
     const dropdown_list_widget_backup = dropdown_list_widget;
@@ -832,7 +832,7 @@ run_test('set_up', () => {
 
     test_realms_domain_modal(callbacks.add_realm_domain);
     test_submit_settings_form(submit_settings_form);
-    test_upload_realm_icon(upload_realm_icon);
+    test_upload_realm_icon(upload_realm_logo_or_icon);
     test_change_allow_subdomains(change_allow_subdomains);
     test_extract_property_name();
     test_change_save_button_state();
