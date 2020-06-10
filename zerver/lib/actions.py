@@ -251,6 +251,12 @@ STREAM_ASSIGNMENT_COLORS = [
     "#9987e1", "#e4523d", "#c2c2c2", "#4f8de4",
     "#c6a8ad", "#e7cc4d", "#c8bebf", "#a47462"]
 
+def subscriber_info(user_id: int) -> Dict[str, Any]:
+    return {
+        'id': user_id,
+        'flags': ['read']
+    }
+
 # Store an event in the log for re-importing messages
 def log_event(event: MutableMapping[str, Any]) -> None:
     if settings.EVENT_LOG_DIR is None:
@@ -4540,12 +4546,6 @@ def do_update_message(user_profile: UserProfile, message: Message,
             'flags': um.flags_list(),
         }
 
-    def subscriber_info(user_id: int) -> Dict[str, Any]:
-        return {
-            'id': user_id,
-            'flags': ['read'],
-        }
-
     # The following blocks arranges that users who are subscribed to a
     # stream and can see history from before they subscribed get
     # live-update when old messages are edited (e.g. if the user does
@@ -4584,50 +4584,45 @@ def do_update_message(user_profile: UserProfile, message: Message,
     return len(changed_messages)
 
 def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
+    # messages in delete_message event belong to the same topic
+    # or is a single private message, as any other behaviour is not possible with
+    # the current callers to this method.
+    messages = list(messages)
     message_ids = [message.id for message in messages]
     if not message_ids:
         return
 
-    usermessages = UserMessage.objects.filter(message_id__in=message_ids)
-    message_id_to_notifiable_users: Dict[int, List[int]] = {}
-    for um in usermessages:
-        if um.message_id not in message_id_to_notifiable_users:
-            message_id_to_notifiable_users[um.message_id] = []
-        message_id_to_notifiable_users[um.message_id].append(um.user_profile_id)
+    event: Dict[str, Any] = {
+        'type': 'delete_message',
+        'message_ids': message_ids,
+    }
 
-    events_and_users_to_notify = []
-    for message in messages:
-        message_type = "stream"
-        if not message.is_stream_message():
-            message_type = "private"
+    sample_message = messages[0]
+    message_type = "stream"
+    users_to_notify = []
+    if not sample_message.is_stream_message():
+        assert len(messages) == 1
+        message_type = "private"
+        ums = UserMessage.objects.filter(message_id__in=message_ids)
+        users_to_notify = [um.user_profile_id for um in ums]
+        # TODO: We should plan to remove `sender_id` here.
+        event['recipient_id'] = sample_message.recipient_id
+        event['sender_id'] = sample_message.sender_id
 
-        event: Dict[str, Any] = {
-            'type': 'delete_message',
-            'sender': message.sender.email,
-            'sender_id': message.sender_id,
-            'message_id': message.id,
-            'message_type': message_type,
-        }
-        if message_type == "stream":
-            event['stream_id'] = message.recipient.type_id
-            event['topic'] = message.topic_name()
-        else:
-            event['recipient_id'] = message.recipient_id
-
-        # In theory, it's possible for message_id_to_notifiable_users
-        # to not have a key for the message ID in some weird corner
-        # case where we've deleted the last user subscribed to the
-        # target stream before a bot sent a message to it, and thus
-        # there are no UserMessage objects associated with the
-        # message.
-        events_and_users_to_notify.append(
-            (event, message_id_to_notifiable_users.get(message.id, [])),
-        )
+    if message_type == "stream":
+        stream_id = sample_message.recipient.type_id
+        event['stream_id'] = stream_id
+        event['topic'] = sample_message.topic_name()
+        subscribers = get_active_subscriptions_for_stream_id(stream_id)
+        # We exclude long-term idle users, since they by definition have no active clients.
+        subscribers = subscribers.exclude(user_profile__long_term_idle=True)
+        subscribers_ids = [user.user_profile_id for user in subscribers]
+        users_to_notify = list(map(subscriber_info, subscribers_ids))
 
     move_messages_to_archive(message_ids, realm=realm)
-    for event, users_to_notify in events_and_users_to_notify:
-        # TODO: Figure out some kind of bulk event that we could send just one of?
-        send_event(realm, event, users_to_notify)
+
+    event['message_type'] = message_type
+    send_event(realm, event, users_to_notify)
 
 def do_delete_messages_by_sender(user: UserProfile) -> None:
     message_ids = list(Message.objects.filter(sender=user).values_list('id', flat=True).order_by('id'))

@@ -3112,6 +3112,15 @@ paths:
             notification settings for stream messages).  New in Zulip
             2.1.0; in earlier Zulip releases, stream-level
             notification settings were simple booleans.
+
+          * `bulk_message_deletion`: Boolean for whether the client's
+             handler for the `delete_message` event type has been
+             updated to process the new bulk format (with a
+             `message_ids`, rather than a singleton `message_id`).
+             Otherwise, the server will send `delete_message` events
+             in a loop.  New in Zulip 2.2 (feature level 13).  This
+             capability is for backwards-compatibility; it will be
+             required in a future server release.
         schema:
           type: object
         example:

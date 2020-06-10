@@ -10,6 +10,17 @@ below features are supported.
 
 ## Changes in Zulip 2.2
 
+**Feature level 13**
+
+* [`POST /register`](/api/register-queue): Added
+  `bulk_message_deletion` to supported `client_capabilities`.
+* [`GET /events`](/api/get-events-from-queue): `message_deleted`
+  events have new behavior.  The `sender` and `sender_id` fields were
+  removed, and the `message_id` field was replaced by a `message_ids`
+  list for clients with the `bulk_message_deletion` client capability.
+  All clients should upgrade; we expect `bulk_message_deletion` to be
+  required in the future.
+
 **Feature level 12**
 
 * [`GET users/{user_id}/subscriptions/{stream_id}`](/api/get-subscription-status):

@@ -528,6 +528,7 @@ class EventsRegisterTest(ZulipTestCase):
                  last_connection_time = time.time(),
                  narrow = []),
         )
+
         # hybrid_state = initial fetch state + re-applying events triggered by our action
         # normal_state = do action then fetch at the end (the "normal" code path)
         hybrid_state = fetch_initial_state_data(
@@ -2732,8 +2733,6 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker = self.check_events_dict([
             ('type', equals('delete_message')),
             ('message_id', check_int),
-            ('sender', check_string),
-            ('sender_id', check_int),
             ('message_type', equals("stream")),
             ('stream_id', check_int),
             ('topic', check_string),
@@ -2752,7 +2751,6 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker = self.check_events_dict([
             ('type', equals('delete_message')),
             ('message_id', check_int),
-            ('sender', check_string),
             ('sender_id', check_int),
             ('message_type', equals("private")),
             ('recipient_id', check_int),

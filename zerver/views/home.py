@@ -191,6 +191,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     client_capabilities = {
         'notification_settings_null': True,
+        'bulk_message_deletion': False,
     }
 
     register_ret = do_events_register(user_profile, request.client,

@@ -679,6 +679,10 @@ def apply_event(state: Dict[str, Any],
                 if message_id in stream_dict:
                     stream_dict[message_id]['topic'] = topic
     elif event['type'] == "delete_message":
+        if 'message_id' in event:
+            message_ids = [event['message_id']]
+        else:
+            message_ids = event['message_ids']  # nocoverage
         max_message = Message.objects.filter(
             usermessage__user_profile=user_profile).order_by('-id').first()
         if max_message:
@@ -687,8 +691,8 @@ def apply_event(state: Dict[str, Any],
             state['max_message_id'] = -1
 
         if 'raw_unread_msgs' in state:
-            remove_id = event['message_id']
-            remove_message_id_from_unread_mgs(state['raw_unread_msgs'], remove_id)
+            for remove_id in message_ids:
+                remove_message_id_from_unread_mgs(state['raw_unread_msgs'], remove_id)
 
         # The remainder of this block is about maintaining recent_private_conversations
         if 'raw_recent_private_conversations' not in state or event['message_type'] != 'private':
@@ -705,7 +709,7 @@ def apply_event(state: Dict[str, Any],
             return
 
         old_max_message_id = state['raw_recent_private_conversations'][recipient_id]['max_message_id']
-        if old_max_message_id != event['message_id']:  # nocoverage
+        if old_max_message_id not in message_ids:  # nocoverage
             return
 
         # OK, we just deleted what had been the max_message_id for
@@ -839,6 +843,7 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
     check_supported_events_narrow_filter(narrow)
 
     notification_settings_null = client_capabilities.get('notification_settings_null', False)
+    bulk_message_deletion = client_capabilities.get('bulk_message_deletion', False)
 
     if user_profile.realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
         # If real email addresses are not available to the user, their
@@ -850,7 +855,8 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
     queue_id = request_event_queue(user_profile, user_client,
                                    apply_markdown, client_gravatar, slim_presence,
                                    queue_lifespan_secs, event_types, all_public_streams,
-                                   narrow=narrow)
+                                   narrow=narrow,
+                                   bulk_message_deletion=bulk_message_deletion)
 
     if queue_id is None:
         raise JsonableError(_("Could not allocate event queue"))

@@ -90,7 +90,8 @@ class ClientDescriptor:
                  slim_presence: bool=False,
                  all_public_streams: bool=False,
                  lifespan_secs: int=0,
-                 narrow: Iterable[Sequence[str]]=[]) -> None:
+                 narrow: Iterable[Sequence[str]]=[],
+                 bulk_message_deletion: bool=False) -> None:
         # These objects are serialized on shutdown and restored on restart.
         # If fields are added or semantics are changed, temporary code must be
         # added to load_event_queues() to update the restored objects.
@@ -110,6 +111,7 @@ class ClientDescriptor:
         self._timeout_handle: Any = None  # TODO: should be return type of ioloop.call_later
         self.narrow = narrow
         self.narrow_filter = build_narrow_filter(narrow)
+        self.bulk_message_deletion = bulk_message_deletion
 
         # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
@@ -132,7 +134,8 @@ class ClientDescriptor:
                     slim_presence=self.slim_presence,
                     all_public_streams=self.all_public_streams,
                     narrow=self.narrow,
-                    client_type_name=self.client_type_name)
+                    client_type_name=self.client_type_name,
+                    bulk_message_deletion=self.bulk_message_deletion)
 
     def __repr__(self) -> str:
         return f"ClientDescriptor<{self.event_queue.id}>"
@@ -161,6 +164,7 @@ class ClientDescriptor:
             d['all_public_streams'],
             d['queue_timeout'],
             d.get('narrow', []),
+            d.get('bulk_message_deletion', False),
         )
         ret.last_connection_time = d['last_connection_time']
         return ret
@@ -604,7 +608,9 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
                         client_gravatar: bool, slim_presence: bool, queue_lifespan_secs: int,
                         event_types: Optional[Iterable[str]]=None,
                         all_public_streams: bool=False,
-                        narrow: Iterable[Sequence[str]]=[]) -> Optional[str]:
+                        narrow: Iterable[Sequence[str]]=[],
+                        bulk_message_deletion: bool=False) -> Optional[str]:
+
     if settings.TORNADO_SERVER:
         tornado_uri = get_tornado_uri(user_profile.realm)
         req = {'dont_block': 'true',
@@ -617,7 +623,9 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
                'user_client': user_client.name,
                'narrow': ujson.dumps(narrow),
                'secret': settings.SHARED_SECRET,
-               'lifespan_secs': queue_lifespan_secs}
+               'lifespan_secs': queue_lifespan_secs,
+               'bulk_message_deletion': ujson.dumps(bulk_message_deletion)}
+
         if event_types is not None:
             req['event_types'] = ujson.dumps(event_types)
 
@@ -972,6 +980,29 @@ def process_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
             if client.accepts_event(event):
                 client.add_event(event)
 
+def process_deletion_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if not client.accepts_event(event):
+                continue
+
+            # For clients which support message deletion in bulk, we
+            # send a list of msgs_ids together, otherwise we send a
+            # delete event for each message.  All clients will be
+            # required to support bulk_message_deletion in the future;
+            # this logic is intended for backwards-compatibility only.
+            if client.bulk_message_deletion:
+                client.add_event(event)
+                continue
+
+            for message_id in event['message_ids']:
+                # We use the following rather than event.copy()
+                # because the read-only Mapping type doesn't support .copy().
+                compatibility_event = dict(event)
+                compatibility_event['message_id'] = message_id
+                del compatibility_event['message_ids']
+                client.add_event(compatibility_event)
+
 def process_message_update_event(event_template: Mapping[str, Any],
                                  users: Iterable[Mapping[str, Any]]) -> None:
     prior_mention_user_ids = set(event_template.get('prior_mention_user_ids', []))
@@ -1089,13 +1120,19 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         process_message_event(event, cast(Iterable[Mapping[str, Any]], users))
     elif event['type'] == "update_message":
         process_message_update_event(event, cast(Iterable[Mapping[str, Any]], users))
-    elif event['type'] == "delete_message" and len(users) > 0 and isinstance(users[0], dict):
-        # do_delete_messages used to send events with users in dict format {"id": <int>}
-        # This block is here for compatibility with events in that format still in the queue
-        # at the time of upgrade.
-        # TODO: Remove this block in release >= 2.3.
-        user_ids = [user['id'] for user in cast(Iterable[Mapping[str, int]], users)]
-        process_event(event, user_ids)
+    elif event['type'] == "delete_message":
+        if len(users) > 0 and isinstance(users[0], dict):
+            # do_delete_messages used to send events with users in
+            # dict format {"id": <int>} This block is here for
+            # compatibility with events in that format still in the
+            # queue at the time of upgrade.
+            #
+            # TODO: Remove this block in release >= 2.3.
+            user_ids: List[int] = [user['id'] for user in
+                                   cast(List[Mapping[str, int]], users)]
+        else:
+            user_ids = cast(List[int], users)
+        process_deletion_event(event, user_ids)
     elif event['type'] == "presence":
         process_presence_event(event, cast(Iterable[int], users))
     else:

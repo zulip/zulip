@@ -76,6 +76,8 @@ def get_events_backend(request: HttpRequest, user_profile: UserProfile,
                                                            intentionally_undocumented=True),
                        lifespan_secs: int=REQ(default=0, converter=to_non_negative_int,
                                               intentionally_undocumented=True),
+                       bulk_message_deletion: bool=REQ(default=False, validator=check_bool,
+                                                       intentionally_undocumented=True)
                        ) -> HttpResponse:
     # Extract the Tornado handler from the request
     handler: AsyncDjangoHandler = request._tornado_handler
@@ -109,7 +111,8 @@ def get_events_backend(request: HttpRequest, user_profile: UserProfile,
             all_public_streams = all_public_streams,
             queue_timeout = lifespan_secs,
             last_connection_time = time.time(),
-            narrow = narrow)
+            narrow = narrow,
+            bulk_message_deletion = bulk_message_deletion)
 
     result = fetch_events(events_query)
     if "extra_log_data" in result:

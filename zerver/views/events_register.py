@@ -39,6 +39,7 @@ def events_register_backend(
             ("notification_settings_null", check_bool),
         ], [
             # Any new fields of `client_capabilities` should be optional. Add them here.
+            ("bulk_message_deletion", check_bool),
         ]), default=None),
         event_types: Optional[Iterable[str]]=REQ(validator=check_list(check_string), default=None),
         fetch_event_types: Optional[Iterable[str]]=REQ(validator=check_list(check_string), default=None),
