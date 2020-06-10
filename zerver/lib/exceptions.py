@@ -202,6 +202,18 @@ class OrganizationAdministratorRequired(JsonableError):
     def msg_format() -> str:
         return OrganizationAdministratorRequired.ADMIN_REQUIRED_MESSAGE
 
+class OrganizationOwnerRequired(JsonableError):
+    code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
+
+    OWNER_REQUIRED_MESSAGE = _("Must be an organization owner")
+
+    def __init__(self) -> None:
+        super().__init__(self.OWNER_REQUIRED_MESSAGE)
+
+    @staticmethod
+    def msg_format() -> str:
+        return OrganizationOwnerRequired.OWNER_REQUIRED_MESSAGE
+
 class BugdownRenderingException(Exception):
     pass
 
