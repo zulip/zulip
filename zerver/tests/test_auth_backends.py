@@ -722,6 +722,12 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                                  dict(state=csrf_state), **headers)
         return result
 
+    def generate_access_url_payload(self, account_data_dict: Dict[str, str]) -> str:
+        return json.dumps({
+            'access_token': 'foobar',
+            'token_type': 'bearer',
+        })
+
     def social_auth_test(self, account_data_dict: Dict[str, str],
                          *, subdomain: Optional[str]=None,
                          mobile_flow_otp: Optional[str]=None,
@@ -784,11 +790,6 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         # Next, the browser requests result["Location"], and gets
         # redirected back to the registered redirect uri.
 
-        token_data_dict = {
-            'access_token': 'foobar',
-            'token_type': 'bearer'
-        }
-
         # We register callbacks for the key URLs on Identity Provider that
         # auth completion url will call
         with responses.RequestsMock(assert_all_requests_are_fired=False) as requests_mock:
@@ -797,7 +798,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                 self.ACCESS_TOKEN_URL,
                 match_querystring=False,
                 status=200,
-                body=json.dumps(token_data_dict))
+                body=self.generate_access_url_payload(account_data_dict))
             requests_mock.add(
                 requests_mock.GET,
                 self.USER_INFO_URL,
@@ -1941,31 +1942,15 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
             json=json.loads(settings.APPLE_JWK),
         )
 
-        # This endpoint works a bit different that in standard Oauth2,
-        # so we need to remove the standard mock and set up our own.
-        #
-        # TODO: It might be cleaner to make this variable payload a
-        # generic feature of social_auth_test rather than doing the
-        # remove/remock approach here.
-        requests_mock.remove(
-            requests_mock.POST,
-            self.ACCESS_TOKEN_URL,
-        )
-
-        token_data_dict = {
+    def generate_access_url_payload(self, account_data_dict: Dict[str, str]) -> str:
+        # The ACCESS_TOKEN_URL endpoint works a bit different in standard Oauth2,
+        # where the token_data_dict contains some essential data. we add that data here.
+        return json.dumps({
             'access_token': 'foobar',
             'expires_in': time.time() + 60*5,
             'id_token': self.generate_id_token(account_data_dict),
             'token_type': 'bearer'
-        }
-
-        requests_mock.add(
-            requests_mock.POST,
-            self.ACCESS_TOKEN_URL,
-            match_querystring=False,
-            status=200,
-            body=json.dumps(token_data_dict),
-        )
+        })
 
     def test_apple_auth_enabled(self) -> None:
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.AppleAuthBackend',)):
