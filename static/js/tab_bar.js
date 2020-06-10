@@ -120,20 +120,20 @@ function build_tab_bar(filter) {
     }
 }
 
+// we rely entirely on this function to ensure
+// the searchbar has the right text.
+exports.reset_searchbox_text = function () {
+    const search_string = narrow_state.search_string();
+    if (search_string !== "") {
+        $("#search_query").val(search_string);
+    }
+};
+
 exports.exit_search = function () {
     const filter = narrow_state.filter();
     if (!filter || filter.is_common_narrow()) {
         // for common narrows, we change the UI (and don't redirect)
         exports.close_search_bar_and_open_narrow_description();
-
-        // reset searchbox text
-        const search_string = narrow_state.search_string();
-        // This does not need to be conditional like the corresponding
-        // function call in narrow.activate because search filters are
-        // not common narrows
-        if (search_string !== "") {
-            $("#search_query").val(search_string + " ");
-        }
     } else {
         // for "searching narrows", we redirect
         window.location.replace(filter.generate_redirect_url());
@@ -159,6 +159,7 @@ exports.render_title_area = function () {
 };
 
 exports.open_search_bar_and_close_narrow_description = function () {
+    exports.reset_searchbox_text();
     $(".navbar-search").addClass("expanded");
     $("#tab_list").addClass("hidden");
 };
