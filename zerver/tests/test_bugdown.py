@@ -1891,9 +1891,7 @@ class BugdownTest(ZulipTestCase):
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         content = "#**привет**"
         quoted_name = '.D0.BF.D1.80.D0.B8.D0.B2.D0.B5.D1.82'
-        href = '/#narrow/stream/{stream_id}-{quoted_name}'.format(
-            stream_id=uni.id,
-            quoted_name=quoted_name)
+        href = f'/#narrow/stream/{uni.id}-{quoted_name}'
         self.assertEqual(
             render_markdown(msg, content),
             '<p><a class="stream" data-stream-id="{s.id}" href="{href}">#{s.name}</a></p>'.format(

@@ -57,10 +57,7 @@ class AttachmentHandler:
         size = os.path.getsize(local_fn)
         mtime = os.path.getmtime(local_fn)
 
-        content = '[{name}](/user_uploads/{path})'.format(
-            name=name,
-            path=target_path,
-        )
+        content = f'[{name}](/user_uploads/{target_path})'
 
         info = dict(
             message_ids={message_id},

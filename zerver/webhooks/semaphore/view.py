@@ -147,8 +147,7 @@ def semaphore_classic(payload: Dict[str, Any]) -> Tuple[str, str, str]:
         )
 
     else:  # should never get here
-        content = "{event}: {result}".format(
-            event=event, result=result)
+        content = f"{event}: {result}"
 
     return content, project_name, branch_name
 
@@ -163,8 +162,7 @@ def semaphore_2(payload: Dict[str, Any]) -> Tuple[str, str, Optional[str]]:
         author_url=GITHUB_URL_TEMPLATES['user'].format(repo_url=repo_url, username=author_name),
         pipeline_name=payload["pipeline"]["name"],
         pipeline_result=payload["pipeline"]["result"],
-        workflow_url='https://{org}.semaphoreci.com/workflows/{id}'.format(
-            org=organization_name, id=workflow_id)
+        workflow_url=f'https://{organization_name}.semaphoreci.com/workflows/{workflow_id}'
     )
 
     if payload["revision"]["reference_type"] == "branch":  # push event

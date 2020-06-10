@@ -300,8 +300,7 @@ def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
     raise AssertionError("Could not find email address for Slack user %s" % (user,))
 
 def build_avatar_url(slack_user_id: str, team_id: str, avatar_hash: str) -> str:
-    avatar_url = "https://ca.slack-edge.com/{}-{}-{}".format(team_id, slack_user_id,
-                                                             avatar_hash)
+    avatar_url = f"https://ca.slack-edge.com/{team_id}-{slack_user_id}-{avatar_hash}"
     return avatar_url
 
 def get_owner(user: ZerverFieldsT) -> bool:

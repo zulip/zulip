@@ -76,11 +76,9 @@ def api_teamcity_webhook(request: HttpRequest, user_profile: UserProfile,
             status = 'was successful! :thumbs_up:'
     elif build_result == 'failure':
         if build_result_delta == 'broken':
-            status = 'is broken with status {status}! :thumbs_down:'.format(
-                status=build_status)
+            status = f'is broken with status {build_status}! :thumbs_down:'
         else:
-            status = 'is still broken with status {status}! :thumbs_down:'.format(
-                status=build_status)
+            status = f'is still broken with status {build_status}! :thumbs_down:'
     elif build_result == 'running':
         status = 'has started.'
 

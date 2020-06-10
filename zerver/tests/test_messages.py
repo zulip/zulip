@@ -4299,8 +4299,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
 
         with mock.patch("zerver.lib.actions.do_claim_attachments",
                         wraps=do_claim_attachments) as m:
-            self.update_message(msg, '[link](http://{}/user_uploads/{})'.format(
-                hamlet.realm.host, dummy_path_ids[0]))
+            self.update_message(msg, f'[link](http://{hamlet.realm.host}/user_uploads/{dummy_path_ids[0]})')
             self.assertTrue(m.called)
             m.reset_mock()
 
@@ -4317,8 +4316,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
             self.assertFalse(m.called)
             m.reset_mock()
 
-            self.update_message(msg, '[link](https://github.com/user_uploads/{})'.format(
-                dummy_path_ids[0]))
+            self.update_message(msg, f'[link](https://github.com/user_uploads/{dummy_path_ids[0]})')
             self.assertFalse(m.called)
             m.reset_mock()
 

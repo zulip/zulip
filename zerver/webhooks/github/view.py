@@ -145,9 +145,7 @@ def get_fork_body(payload: Dict[str, Any]) -> str:
     )
 
 def get_deployment_body(payload: Dict[str, Any]) -> str:
-    return '{} created new deployment.'.format(
-        get_sender_name(payload),
-    )
+    return f'{get_sender_name(payload)} created new deployment.'
 
 def get_change_deployment_status_body(payload: Dict[str, Any]) -> str:
     return 'Deployment changed status to {}.'.format(

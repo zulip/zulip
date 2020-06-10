@@ -862,8 +862,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         self.assertEqual(data['redirect_to'], '/user_uploads/image')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
-        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
-                                 parsed_url.path)
+        uri = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
     @override_settings(SOCIAL_AUTH_SUBDOMAIN=None)
@@ -880,8 +879,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         self.assertEqual(data['redirect_to'], '/user_uploads/image')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
-        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
-                                 parsed_url.path)
+        uri = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
     def test_social_auth_deactivated_user(self) -> None:
@@ -1042,8 +1040,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         self.assertEqual(data['subdomain'], 'zulip')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
-        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
-                                 parsed_url.path)
+        uri = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
         hamlet = self.example_user("hamlet")
         # Name wasn't changed at all
@@ -1062,8 +1059,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         self.assertEqual(data['subdomain'], 'zulip')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
-        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
-                                 parsed_url.path)
+        uri = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
         result = self.client_get(result.url)
@@ -1250,8 +1246,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         self.assertEqual(data['subdomain'], 'zulip')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
-        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
-                                 parsed_url.path)
+        uri = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
         result = self.client_get(result.url)
@@ -1275,8 +1270,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         self.assertEqual(data['subdomain'], 'zulip')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
-        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
-                                 parsed_url.path)
+        uri = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
         result = self.client_get(result.url)
@@ -1792,8 +1786,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.assertEqual(data['subdomain'], 'zulip')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
-        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
-                                 parsed_url.path)
+        uri = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
         self.client_get(uri)
@@ -1828,8 +1821,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.assertEqual(data['subdomain'], 'zulip')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
-        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
-                                 parsed_url.path)
+        uri = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
         self.client_get(uri)
@@ -1850,8 +1842,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.assertEqual(data['subdomain'], 'zulip')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
-        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
-                                 parsed_url.path)
+        uri = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
         self.client_get(uri)
@@ -2235,8 +2226,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         self.assertEqual(data['redirect_to'], '/user_uploads/image')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
-        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
-                                 parsed_url.path)
+        uri = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
     def test_github_oauth2_success_single_email(self) -> None:
@@ -2261,8 +2251,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         self.assertEqual(data['redirect_to'], '/user_uploads/image')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
-        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
-                                 parsed_url.path)
+        uri = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
     def test_github_oauth2_login_only_one_account_exists(self) -> None:
@@ -2292,8 +2281,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         self.assertEqual(data['redirect_to'], '/user_uploads/image')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
-        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
-                                 parsed_url.path)
+        uri = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
     def test_github_oauth2_login_multiple_accounts_exist(self) -> None:
@@ -2324,8 +2312,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         self.assertEqual(data['redirect_to'], '/user_uploads/image')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
-        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
-                                 parsed_url.path)
+        uri = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
     def test_github_oauth2_login_no_account_exists(self) -> None:
@@ -2378,8 +2365,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         self.assertEqual(data['redirect_to'], '/user_uploads/image')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
-        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
-                                 parsed_url.path)
+        uri = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
     def test_github_oauth2_signup_choose_new_email_to_register(self) -> None:

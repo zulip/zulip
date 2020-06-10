@@ -64,8 +64,7 @@ def stripe_fixture_path(decorated_function_name: str, mocked_function_name: str,
     # use test_* for the python test files
     if decorated_function_name[:5] == 'test_':
         decorated_function_name = decorated_function_name[5:]
-    return "{}/{}--{}.{}.json".format(
-        STRIPE_FIXTURES_DIR, decorated_function_name, mocked_function_name[7:], call_count)
+    return f"{STRIPE_FIXTURES_DIR}/{decorated_function_name}--{mocked_function_name[7:]}.{call_count}.json"
 
 def fixture_files_for_function(decorated_function: CallableT) -> List[str]:  # nocoverage
     decorated_function_name = decorated_function.__name__
