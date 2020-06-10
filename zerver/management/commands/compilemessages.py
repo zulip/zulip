@@ -70,7 +70,7 @@ class Command(compilemessages.Command):
                     print(f"Problem in parsing {po_filename}")
                     raise
             else:
-                raise Exception("Unknown language %s" % (locale,))
+                raise Exception(f"Unknown language {locale}")
 
     def get_locales(self) -> List[str]:
         output = check_output(['git', 'ls-files', 'locale'])

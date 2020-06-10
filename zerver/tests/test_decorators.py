@@ -578,7 +578,7 @@ body:
     def test_authenticated_rest_api_view_errors(self) -> None:
         user_profile = self.example_user("hamlet")
         api_key = get_api_key(user_profile)
-        credentials = "%s:%s" % (user_profile.email, api_key)
+        credentials = f"{user_profile.email}:{api_key}"
         api_auth = 'Digest ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
         result = self.client_post('/api/v1/external/zendesk', {},
                                   HTTP_AUTHORIZATION=api_auth)
@@ -771,7 +771,7 @@ class ValidatorTestCase(TestCase):
             self.assertEqual(to_non_negative_int('-1'))
         with self.assertRaisesRegex(ValueError, re.escape('5 is too large (max 4)')):
             self.assertEqual(to_non_negative_int('5', max_int_size=4))
-        with self.assertRaisesRegex(ValueError, re.escape('%s is too large (max %s)' % (2**32, 2**32-1))):
+        with self.assertRaisesRegex(ValueError, re.escape(f'{2**32} is too large (max {2**32-1})')):
             self.assertEqual(to_non_negative_int(str(2**32)))
 
     def test_to_positive_or_allowed_int(self) -> None:
@@ -1055,7 +1055,7 @@ class DeactivatedRealmTest(ZulipTestCase):
         do_deactivate_realm(get_realm("zulip"))
         user_profile = self.example_user("hamlet")
         api_key = get_api_key(user_profile)
-        url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (api_key,)
+        url = f"/api/v1/external/jira?api_key={api_key}&stream=jira_custom"
         data = self.webhook_fixture_data('jira', 'created_v2')
         result = self.client_post(url, data,
                                   content_type="application/json")
@@ -1234,7 +1234,7 @@ class InactiveUserTest(ZulipTestCase):
         do_deactivate_user(user_profile)
 
         api_key = get_api_key(user_profile)
-        url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (api_key,)
+        url = f"/api/v1/external/jira?api_key={api_key}&stream=jira_custom"
         data = self.webhook_fixture_data('jira', 'created_v2')
         result = self.client_post(url, data,
                                   content_type="application/json")
@@ -1725,7 +1725,7 @@ class CacheTestCase(ZulipTestCase):
 
             @cachify
             def greet(first_name: str, last_name: str) -> str:
-                msg = '%s %s %s' % (greeting, first_name, last_name)
+                msg = f'{greeting} {first_name} {last_name}'
                 work_log.append(msg)
                 return msg
 

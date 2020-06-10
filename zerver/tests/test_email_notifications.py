@@ -237,7 +237,7 @@ class TestMissedMessages(ZulipTestCase):
         from_email = formataddr(("Zulip missed messages", FromAddress.NOREPLY))
         self.assertEqual(len(mail.outbox), 1)
         if send_as_user:
-            from_email = '"%s" <%s>' % (othello.full_name, othello.email)
+            from_email = f'"{othello.full_name}" <{othello.email}>'
         self.assertEqual(msg.from_email, from_email)
         self.assertEqual(msg.subject, email_subject)
         self.assertEqual(len(msg.reply_to), 1)
@@ -678,9 +678,8 @@ class TestMissedMessages(ZulipTestCase):
             self.example_user('othello'), self.example_user('hamlet'),
             'Extremely personal message with a realm emoji :green_tick:!')
         realm_emoji_id = realm.get_active_emoji()['green_tick']['id']
-        realm_emoji_url = "http://zulip.testserver/user_avatars/%s/emoji/images/%s.png" % (
-            realm.id, realm_emoji_id,)
-        verify_body_include = ['<img alt=":green_tick:" src="%s" title="green tick" style="height: 20px;">' % (realm_emoji_url,)]
+        realm_emoji_url = f"http://zulip.testserver/user_avatars/{realm.id}/emoji/images/{realm_emoji_id}.png"
+        verify_body_include = [f'<img alt=":green_tick:" src="{realm_emoji_url}" title="green tick" style="height: 20px;">']
         email_subject = 'PMs with Othello, the Moor of Venice'
         self._test_cases(msg_id, verify_body_include, email_subject, send_as_user=False, verify_html_body=True)
 

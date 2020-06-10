@@ -42,7 +42,7 @@ def reset_is_private_flag(
         i += 1
         if (i % 50 == 0 or i == total):
             percent = round((i / total) * 100, 2)
-            print("Processed %s/%s %s%%" % (i, total, percent))
+            print(f"Processed {i}/{total} {percent}%")
             sys.stdout.flush()
 
 class Migration(migrations.Migration):

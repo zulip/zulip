@@ -76,8 +76,8 @@ def timedelta_ms(timedelta: float) -> float:
 
 def format_timedelta(timedelta: float) -> str:
     if (timedelta >= 1):
-        return "%.1fs" % (timedelta,)
-    return "%.0fms" % (timedelta_ms(timedelta),)
+        return f"{timedelta:.1f}s"
+    return f"{timedelta_ms(timedelta):.0f}ms"
 
 def is_slow_query(time_delta: float, path: str) -> bool:
     if time_delta < 1.2:
@@ -114,7 +114,7 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
         if path == '/':
             statsd_path = 'webreq'
         else:
-            statsd_path = "webreq.%s" % (path[1:].replace('/', '.'),)
+            statsd_path = "webreq.{}".format(path[1:].replace('/', '.'))
             # Remove non-ascii chars from path (there should be none, if there are it's
             # because someone manually entered a nonexistent path), as UTF-8 chars make
             # statsd sad when it sends the key name over the socket
@@ -135,7 +135,7 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
         orig_time_delta = time_delta
         time_delta = ((log_data['time_stopped'] - log_data['time_started']) +
                       (time.time() - log_data['time_restarted']))
-        optional_orig_delta = " (lp: %s)" % (format_timedelta(orig_time_delta),)
+        optional_orig_delta = f" (lp: {format_timedelta(orig_time_delta)})"
     remote_cache_output = ""
     if 'remote_cache_time_start' in log_data:
         remote_cache_time_delta = get_remote_cache_time() - log_data['remote_cache_time_start']
@@ -148,16 +148,15 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
                                          log_data['remote_cache_requests_restarted'])
 
         if (remote_cache_time_delta > 0.005):
-            remote_cache_output = " (mem: %s/%s)" % (format_timedelta(remote_cache_time_delta),
-                                                     remote_cache_count_delta)
+            remote_cache_output = f" (mem: {format_timedelta(remote_cache_time_delta)}/{remote_cache_count_delta})"
 
         if not suppress_statsd:
-            statsd.timing("%s.remote_cache.time" % (statsd_path,), timedelta_ms(remote_cache_time_delta))
-            statsd.incr("%s.remote_cache.querycount" % (statsd_path,), remote_cache_count_delta)
+            statsd.timing(f"{statsd_path}.remote_cache.time", timedelta_ms(remote_cache_time_delta))
+            statsd.incr(f"{statsd_path}.remote_cache.querycount", remote_cache_count_delta)
 
     startup_output = ""
     if 'startup_time_delta' in log_data and log_data["startup_time_delta"] > 0.005:
-        startup_output = " (+start: %s)" % (format_timedelta(log_data["startup_time_delta"]),)
+        startup_output = " (+start: {})".format(format_timedelta(log_data["startup_time_delta"]))
 
     bugdown_output = ""
     if 'bugdown_time_start' in log_data:
@@ -171,32 +170,30 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
                                     log_data['bugdown_requests_restarted'])
 
         if (bugdown_time_delta > 0.005):
-            bugdown_output = " (md: %s/%s)" % (format_timedelta(bugdown_time_delta),
-                                               bugdown_count_delta)
+            bugdown_output = f" (md: {format_timedelta(bugdown_time_delta)}/{bugdown_count_delta})"
 
             if not suppress_statsd:
-                statsd.timing("%s.markdown.time" % (statsd_path,), timedelta_ms(bugdown_time_delta))
-                statsd.incr("%s.markdown.count" % (statsd_path,), bugdown_count_delta)
+                statsd.timing(f"{statsd_path}.markdown.time", timedelta_ms(bugdown_time_delta))
+                statsd.incr(f"{statsd_path}.markdown.count", bugdown_count_delta)
 
     # Get the amount of time spent doing database queries
     db_time_output = ""
     queries = connection.connection.queries if connection.connection is not None else []
     if len(queries) > 0:
         query_time = sum(float(query.get('time', 0)) for query in queries)
-        db_time_output = " (db: %s/%sq)" % (format_timedelta(query_time),
-                                            len(queries))
+        db_time_output = f" (db: {format_timedelta(query_time)}/{len(queries)}q)"
 
         if not suppress_statsd:
             # Log ms, db ms, and num queries to statsd
-            statsd.timing("%s.dbtime" % (statsd_path,), timedelta_ms(query_time))
-            statsd.incr("%s.dbq" % (statsd_path,), len(queries))
-            statsd.timing("%s.total" % (statsd_path,), timedelta_ms(time_delta))
+            statsd.timing(f"{statsd_path}.dbtime", timedelta_ms(query_time))
+            statsd.incr(f"{statsd_path}.dbq", len(queries))
+            statsd.timing(f"{statsd_path}.total", timedelta_ms(time_delta))
 
     if 'extra' in log_data:
-        extra_request_data = " %s" % (log_data['extra'],)
+        extra_request_data = " {}".format(log_data['extra'])
     else:
         extra_request_data = ""
-    logger_client = "(%s via %s)" % (requestor_for_logs, client_name)
+    logger_client = f"({requestor_for_logs} via {client_name})"
     logger_timing = ('%5s%s%s%s%s%s %s' %
                      (format_timedelta(time_delta), optional_orig_delta,
                       remote_cache_output, bugdown_output,
@@ -214,7 +211,7 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
 
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"].disable()
-        profile_path = "/tmp/profile.data.%s.%s" % (path.split("/")[-1], int(time_delta * 1000),)
+        profile_path = "/tmp/profile.data.{}.{}".format(path.split("/")[-1], int(time_delta * 1000))
         log_data["prof"].dump_stats(profile_path)
 
     # Log some additional data whenever we return certain 40x errors
@@ -284,7 +281,7 @@ class LogRequests(MiddlewareMixin):
             if hasattr(request, 'user') and hasattr(request.user, 'format_requestor_for_logs'):
                 requestor_for_logs = request.user.format_requestor_for_logs()
             else:
-                requestor_for_logs = "unauth@%s" % (get_subdomain(request) or 'root',)
+                requestor_for_logs = "unauth@{}".format(get_subdomain(request) or 'root')
         try:
             client = request.client.name
         except Exception:

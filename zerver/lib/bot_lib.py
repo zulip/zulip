@@ -27,7 +27,7 @@ def get_bot_handler(service_name: str) -> Any:
             configured_service = embedded_bot_service.name
     if not configured_service:
         return None
-    bot_module_name = 'zulip_bots.bots.%s.%s' % (configured_service, configured_service)
+    bot_module_name = f'zulip_bots.bots.{configured_service}.{configured_service}'
     bot_module: Any = importlib.import_module(bot_module_name)
     return bot_module.handler_class()
 

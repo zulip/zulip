@@ -17,7 +17,7 @@ class FillState(models.Model):
     state: int = models.PositiveSmallIntegerField()
 
     def __str__(self) -> str:
-        return "<FillState: %s %s %s>" % (self.property, self.end_time, self.state)
+        return f"<FillState: {self.property} {self.end_time} {self.state}>"
 
 # The earliest/starting end_time in FillState
 # We assume there is at least one realm
@@ -61,7 +61,7 @@ class InstallationCount(BaseCount):
         ]
 
     def __str__(self) -> str:
-        return "<InstallationCount: %s %s %s>" % (self.property, self.subgroup, self.value)
+        return f"<InstallationCount: {self.property} {self.subgroup} {self.value}>"
 
 class RealmCount(BaseCount):
     realm = models.ForeignKey(Realm, on_delete=models.CASCADE)
@@ -81,7 +81,7 @@ class RealmCount(BaseCount):
         index_together = ["property", "end_time"]
 
     def __str__(self) -> str:
-        return "<RealmCount: %s %s %s %s>" % (self.realm, self.property, self.subgroup, self.value)
+        return f"<RealmCount: {self.realm} {self.property} {self.subgroup} {self.value}>"
 
 class UserCount(BaseCount):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
@@ -104,7 +104,7 @@ class UserCount(BaseCount):
         index_together = ["property", "realm", "end_time"]
 
     def __str__(self) -> str:
-        return "<UserCount: %s %s %s %s>" % (self.user, self.property, self.subgroup, self.value)
+        return f"<UserCount: {self.user} {self.property} {self.subgroup} {self.value}>"
 
 class StreamCount(BaseCount):
     stream = models.ForeignKey(Stream, on_delete=models.CASCADE)
@@ -127,5 +127,4 @@ class StreamCount(BaseCount):
         index_together = ["property", "realm", "end_time"]
 
     def __str__(self) -> str:
-        return "<StreamCount: %s %s %s %s %s>" % (
-            self.stream, self.property, self.subgroup, self.value, self.id)
+        return f"<StreamCount: {self.stream} {self.property} {self.subgroup} {self.value} {self.id}>"

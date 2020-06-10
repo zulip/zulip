@@ -45,7 +45,7 @@ def send_to_push_bouncer(method: str,
     api_auth = requests.auth.HTTPBasicAuth(settings.ZULIP_ORG_ID,
                                            settings.ZULIP_ORG_KEY)
 
-    headers = {"User-agent": "ZulipServer/%s" % (ZULIP_VERSION,)}
+    headers = {"User-agent": f"ZulipServer/{ZULIP_VERSION}"}
     if extra_headers is not None:
         headers.update(extra_headers)
 
@@ -88,7 +88,7 @@ def send_to_push_bouncer(method: str,
         # this version of Zulip, so we throw an exception that will
         # email the server admins.
         raise PushNotificationBouncerException(
-            "Push notification bouncer returned unexpected status code %s" % (res.status_code,))
+            f"Push notification bouncer returned unexpected status code {res.status_code}")
 
     # If we don't throw an exception, it's a successful bounce!
     return ujson.loads(res.content)

@@ -269,7 +269,7 @@ def generate_curl_example(endpoint: str, method: str,
         raise AssertionError("Unhandled securityScheme. Please update the code to handle this scheme.")
 
     if authentication_required:
-        lines.append("    -u %s:%s" % (auth_email, auth_api_key))
+        lines.append(f"    -u {auth_email}:{auth_api_key}")
 
     for param in operation_params:
         if param["in"] == "path":

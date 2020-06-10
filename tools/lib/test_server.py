@@ -37,7 +37,7 @@ def assert_server_running(server: "subprocess.Popen[bytes]", log_file: Optional[
     if server.poll() is not None:
         message = 'Server died unexpectedly!'
         if log_file:
-            message += '\nSee %s\n' % (log_file,)
+            message += f'\nSee {log_file}\n'
         raise RuntimeError(message)
 
 def server_is_up(server: "subprocess.Popen[bytes]", log_file: Optional[str]) -> bool:

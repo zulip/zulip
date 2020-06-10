@@ -519,7 +519,7 @@ class MessageDict:
                 elif recip['email'] > display_recipient[0]['email']:
                     display_recipient = [display_recipient[0], recip]
         else:
-            raise AssertionError("Invalid recipient type %s" % (recipient_type,))
+            raise AssertionError(f"Invalid recipient type {recipient_type}")
 
         obj['display_recipient'] = display_recipient
         obj['type'] = display_type
@@ -1019,7 +1019,7 @@ def apply_unread_message_event(user_profile: UserProfile,
         else:
             message_type = 'huddle'
     else:
-        raise AssertionError("Invalid message type %s" % (message['type'],))
+        raise AssertionError("Invalid message type {}".format(message['type']))
 
     sender_id = message['sender_id']
 

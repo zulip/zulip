@@ -84,8 +84,7 @@ def confirmation_url(confirmation_key: str, host: str,
     if url_args is None:
         url_args = {}
     url_args['confirmation_key'] = confirmation_key
-    return '%s%s%s' % (settings.EXTERNAL_URI_SCHEME, host,
-                       reverse(_properties[confirmation_type].url_name, kwargs=url_args))
+    return f'{settings.EXTERNAL_URI_SCHEME}{host}{reverse(_properties[confirmation_type].url_name, kwargs=url_args)}'
 
 class Confirmation(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=CASCADE)
@@ -107,7 +106,7 @@ class Confirmation(models.Model):
     type: int = models.PositiveSmallIntegerField()
 
     def __str__(self) -> str:
-        return '<Confirmation: %s>' % (self.content_object,)
+        return f'<Confirmation: {self.content_object}>'
 
     class Meta:
         unique_together = ("type", "confirmation_key")
@@ -167,10 +166,10 @@ def generate_realm_creation_url(by_admin: bool=False) -> str:
     RealmCreationKey.objects.create(creation_key=key,
                                     date_created=timezone_now(),
                                     presume_email_valid=by_admin)
-    return '%s%s%s' % (settings.EXTERNAL_URI_SCHEME,
-                       settings.EXTERNAL_HOST,
-                       reverse('zerver.views.create_realm',
-                               kwargs={'creation_key': key}))
+    return '{}{}{}'.format(settings.EXTERNAL_URI_SCHEME,
+                           settings.EXTERNAL_HOST,
+                           reverse('zerver.views.create_realm',
+                                   kwargs={'creation_key': key}))
 
 class RealmCreationKey(models.Model):
     creation_key = models.CharField('activation key', db_index=True, max_length=40)

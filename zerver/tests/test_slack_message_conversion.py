@@ -74,7 +74,7 @@ class SlackMessageConversion(ZulipTestCase):
         self.assertEqual(full_name, 'John Doe')
         self.assertEqual(get_user_full_name(users[2]), 'Jane')
 
-        self.assertEqual(text, 'Hi @**%s**: How are you? #**general**' % (full_name,))
+        self.assertEqual(text, f'Hi @**{full_name}**: How are you? #**general**')
         self.assertEqual(mentioned_users, [540])
 
         # multiple mentioning

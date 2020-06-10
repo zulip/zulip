@@ -621,7 +621,7 @@ class DesktopFlowTestingLib(ZulipTestCase):
         browser_url = soup.find("a", href=True)["href"]
 
         decrypted_key = self.verify_desktop_data_and_return_key(desktop_data, desktop_flow_otp)
-        self.assertEqual(browser_url, 'http://zulip.testserver/accounts/login/subdomain/%s' % (decrypted_key,))
+        self.assertEqual(browser_url, f'http://zulip.testserver/accounts/login/subdomain/{decrypted_key}')
 
         result = self.client_get(browser_url)
         self.assertEqual(result.status_code, 302)
@@ -706,7 +706,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         params['next'] = next
         params['multiuse_object_key'] = multiuse_object_key
         if len(params) > 0:
-            url += "?%s" % (urllib.parse.urlencode(params),)
+            url += f"?{urllib.parse.urlencode(params)}"
         if user_agent is not None:
             headers['HTTP_USER_AGENT'] = user_agent
 
@@ -767,7 +767,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
         result = self.client_get(url, **headers)
 
-        expected_result_url_prefix = 'http://testserver/login/%s/' % (self.backend.name,)
+        expected_result_url_prefix = f'http://testserver/login/{self.backend.name}/'
         if settings.SOCIAL_AUTH_SUBDOMAIN is not None:
             expected_result_url_prefix = ('http://%s.testserver/login/%s/' %
                                           (settings.SOCIAL_AUTH_SUBDOMAIN, self.backend.name,))
@@ -1404,10 +1404,10 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
         result = self.client_get(url, **headers)
 
-        expected_result_url_prefix = 'http://testserver/login/%s/' % (self.backend.name,)
+        expected_result_url_prefix = f'http://testserver/login/{self.backend.name}/'
         if settings.SOCIAL_AUTH_SUBDOMAIN is not None:
             expected_result_url_prefix = (
-                'http://%s.testserver/login/%s/' % (settings.SOCIAL_AUTH_SUBDOMAIN, self.backend.name)
+                f'http://{settings.SOCIAL_AUTH_SUBDOMAIN}.testserver/login/{self.backend.name}/'
             )
 
         if result.status_code != 302 or not result.url.startswith(expected_result_url_prefix):
@@ -1599,7 +1599,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual('/login/', result.url)
         self.assertEqual(m.output, [self.logger_output(
-            "/complete/saml/: Can't figure out subdomain for this authentication request. relayed_params: %s" % ("{}",),
+            "/complete/saml/: Can't figure out subdomain for this authentication request. relayed_params: {}".format("{}"),
             'info'
         )])
 
@@ -1647,13 +1647,13 @@ class SAMLAuthBackendTest(SocialAuthBase):
             result = self.client_get('/login/saml/')
             self.assertEqual(result.status_code, 302)
             self.assertEqual('/login/', result.url)
-        self.assertEqual(m.output, [self.logger_output("/login/saml/ : Bad idp param: KeyError: %s." % ("'idp'",), 'info')])
+        self.assertEqual(m.output, [self.logger_output("/login/saml/ : Bad idp param: KeyError: {}.".format("'idp'"), 'info')])
 
         with self.assertLogs(self.logger_string, level='INFO') as m:
             result = self.client_get('/login/saml/?idp=bad_idp')
             self.assertEqual(result.status_code, 302)
             self.assertEqual('/login/', result.url)
-        self.assertEqual(m.output, [self.logger_output("/login/saml/ : Bad idp param: KeyError: %s." % ("'bad_idp'",), 'info')])
+        self.assertEqual(m.output, [self.logger_output("/login/saml/ : Bad idp param: KeyError: {}.".format("'bad_idp'"), 'info')])
 
     def test_social_auth_invalid_email(self) -> None:
         """
@@ -2140,7 +2140,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "/login/")
         self.assertEqual(m.output, [self.logger_output(
-            "Social auth (%s) failed because user has no verified emails" % ('GitHub',),
+            "Social auth ({}) failed because user has no verified emails".format('GitHub'),
             "warning"
         )])
 
@@ -2469,7 +2469,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "/login/")
         self.assertEqual(m.output, [self.logger_output(
-            "Social auth (%s) failed because user has no verified emails associated with the account" % ("GitHub",),
+            "Social auth ({}) failed because user has no verified emails associated with the account".format("GitHub"),
             "warning"
         )])
 
@@ -2519,7 +2519,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "/login/")
         self.assertEqual(m.output, [self.logger_output(
-            "Social auth (%s) failed because user has no verified emails" % ("Google",),
+            "Social auth ({}) failed because user has no verified emails".format("Google"),
             "warning"
         )])
 
@@ -2961,7 +2961,7 @@ class ExternalMethodDictsTests(ZulipTestCase):
                 'id="{}_auth_button_google"'
             ]
             for name in saml_idp_names:
-                expected_button_id_strings.append('id="{}_auth_button_saml:%s"' % (name,))
+                expected_button_id_strings.append(f'id="{{}}_auth_button_saml:{name}"')
 
             result = self.client_get("/login/")
             self.assert_in_success_response([string.format("login") for string in expected_button_id_strings],

@@ -366,7 +366,7 @@ class Command(BaseCommand):
                 for profile in profiles:
                     email = profile.delivery_email
                     if email not in subscriptions_map:
-                        raise Exception('Subscriptions not listed for user %s' % (email,))
+                        raise Exception(f'Subscriptions not listed for user {email}')
 
                     for stream_name in subscriptions_map[email]:
                         stream = Stream.objects.get(name=stream_name)

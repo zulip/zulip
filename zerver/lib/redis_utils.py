@@ -63,4 +63,4 @@ def validate_key_fits_format(key: str, key_format: str) -> None:
     regex = key_format.format(token=r"[a-zA-Z0-9]+")
 
     if not re.fullmatch(regex, key):
-        raise ZulipRedisKeyOfWrongFormatError("%s does not match format %s" % (key, key_format))
+        raise ZulipRedisKeyOfWrongFormatError(f"{key} does not match format {key_format}")

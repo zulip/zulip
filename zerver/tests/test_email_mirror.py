@@ -339,8 +339,8 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         process_message(incoming_valid_message)
         message = most_recent_message(user_profile)
 
-        self.assertEqual(message.content, "From: %s\n%s" % (self.example_email('hamlet'),
-                                                            "TestStreamEmailMessages Body"))
+        self.assertEqual(message.content, "From: {}\n{}".format(self.example_email('hamlet'),
+                                                                "TestStreamEmailMessages Body"))
         self.assertEqual(get_display_recipient(message.recipient), stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message['Subject'])
 
@@ -364,8 +364,8 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         process_message(incoming_valid_message)
         message = most_recent_message(user_profile)
 
-        self.assertEqual(message.content, "From: %s\n%s" % ('Test Useróąę <hamlet_ę@zulip.com>',
-                                                            "TestStreamEmailMessages Body"))
+        self.assertEqual(message.content, "From: {}\n{}".format('Test Useróąę <hamlet_ę@zulip.com>',
+                                                                "TestStreamEmailMessages Body"))
         self.assertEqual(get_display_recipient(message.recipient), stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message['Subject'])
 
@@ -494,7 +494,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
                                                    target_realm=user_profile.realm)
 
         message = most_recent_message(user_profile)
-        self.assertEqual(message.content, "Test body\n[%s](https://test_url)" % (utf8_filename,))
+        self.assertEqual(message.content, f"Test body\n[{utf8_filename}](https://test_url)")
 
     def test_message_with_valid_nested_attachment(self) -> None:
         user_profile = self.example_user('hamlet')

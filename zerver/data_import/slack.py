@@ -227,7 +227,7 @@ def build_customprofile_field(customprofile_field: List[ZerverFieldsT], fields: 
             if field in slack_custom_fields:
                 field_name = field
             else:
-                field_name = "slack custom field %s" % (str(custom_profile_field_id + 1),)
+                field_name = f"slack custom field {str(custom_profile_field_id + 1)}"
             customprofilefield = CustomProfileField(
                 id=custom_profile_field_id,
                 name=field_name,
@@ -294,10 +294,10 @@ def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
             slack_bot_name = user['profile']['first_name']
         else:
             raise AssertionError("Could not identify bot type")
-        return slack_bot_name.replace("Bot", "").replace(" ", "") + "-bot@%s" % (domain_name,)
+        return slack_bot_name.replace("Bot", "").replace(" ", "") + f"-bot@{domain_name}"
     if get_user_full_name(user).lower() == "slackbot":
-        return "imported-slackbot-bot@%s" % (domain_name,)
-    raise AssertionError("Could not find email address for Slack user %s" % (user,))
+        return f"imported-slackbot-bot@{domain_name}"
+    raise AssertionError(f"Could not find email address for Slack user {user}")
 
 def build_avatar_url(slack_user_id: str, team_id: str, avatar_hash: str) -> str:
     avatar_url = f"https://ca.slack-edge.com/{team_id}-{slack_user_id}-{avatar_hash}"
@@ -742,7 +742,7 @@ def channel_message_to_zerver_message(realm_id: int,
         # For example "sh_room_created" has the message 'started a call'
         # which should be displayed as '/me started a call'
         if subtype in ["bot_add", "sh_room_created", "me_message"]:
-            content = '/me %s' % (content,)
+            content = f'/me {content}'
         if subtype == 'file_comment':
             # The file_comment message type only indicates the
             # responsible user in a subfield.
@@ -864,7 +864,7 @@ def process_message_files(message: ZerverFieldsT,
                 file_name = fileinfo['title']
             else:
                 file_name = fileinfo['name']
-            markdown_links.append('[%s](%s)' % (file_name, fileinfo['url_private']))
+            markdown_links.append('[{}]({})'.format(file_name, fileinfo['url_private']))
 
     content = '\n'.join(markdown_links)
 
@@ -887,8 +887,8 @@ def get_attachment_path_and_content(fileinfo: ZerverFieldsT, realm_id: int) -> T
         random_name(18),
         sanitize_name(fileinfo['name'])
     ])
-    attachment_path = '/user_uploads/%s' % (s3_path,)
-    content = '[%s](%s)' % (fileinfo['title'], attachment_path)
+    attachment_path = f'/user_uploads/{s3_path}'
+    content = '[{}]({})'.format(fileinfo['title'], attachment_path)
 
     return s3_path, content
 
@@ -1119,7 +1119,7 @@ def get_slack_api_data(slack_api_url: str, get_param: str, **kwargs: Any) -> Any
     if data.status_code == requests.codes.ok:
         result = data.json()
         if not result['ok']:
-            raise Exception('Error accessing Slack API: %s' % (result['error'],))
+            raise Exception('Error accessing Slack API: {}'.format(result['error']))
         return result[get_param]
 
     raise Exception('HTTP error accessing the Slack API.')

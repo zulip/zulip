@@ -357,7 +357,7 @@ def destroy_leaked_test_databases(expiry_time: int = 60 * 60) -> int:
     if not databases_to_drop:
         return 0
 
-    commands = "\n".join("DROP DATABASE IF EXISTS %s;" % (db,) for db in databases_to_drop)
+    commands = "\n".join(f"DROP DATABASE IF EXISTS {db};" for db in databases_to_drop)
     p = subprocess.Popen(["psql", "-q", "-v", "ON_ERROR_STOP=1", "-h", "localhost",
                           "postgres", "zulip_test"],
                          stdin=subprocess.PIPE)

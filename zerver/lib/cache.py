@@ -176,7 +176,7 @@ def cache_with_key(
                 metric_key = statsd_key(key)
 
             status = "hit" if val is not None else "miss"
-            statsd.incr("cache%s.%s.%s" % (extra, metric_key, status))
+            statsd.incr(f"cache{extra}.{metric_key}.{status}")
 
             # Values are singleton tuples so that we can distinguish
             # a result of None from a missing key.
@@ -409,7 +409,7 @@ def generic_bulk_cached_fetch(
             if cache_keys[object_id] in cached_objects}
 
 def preview_url_cache_key(url: str) -> str:
-    return "preview_url:%s" % (make_safe_digest(url),)
+    return f"preview_url:{make_safe_digest(url)}"
 
 def display_recipient_cache_key(recipient_id: int) -> str:
     return "display_recipient_dict:%d" % (recipient_id,)
@@ -423,22 +423,22 @@ def user_profile_by_email_cache_key(email: str) -> str:
     # See the comment in zerver/lib/avatar_hash.py:gravatar_hash for why we
     # are proactively encoding email addresses even though they will
     # with high likelihood be ASCII-only for the foreseeable future.
-    return 'user_profile_by_email:%s' % (make_safe_digest(email.strip()),)
+    return f'user_profile_by_email:{make_safe_digest(email.strip())}'
 
 def user_profile_cache_key_id(email: str, realm_id: int) -> str:
-    return "user_profile:%s:%s" % (make_safe_digest(email.strip()), realm_id,)
+    return f"user_profile:{make_safe_digest(email.strip())}:{realm_id}"
 
 def user_profile_cache_key(email: str, realm: 'Realm') -> str:
     return user_profile_cache_key_id(email, realm.id)
 
 def bot_profile_cache_key(email: str) -> str:
-    return "bot_profile:%s" % (make_safe_digest(email.strip()),)
+    return f"bot_profile:{make_safe_digest(email.strip())}"
 
 def user_profile_by_id_cache_key(user_profile_id: int) -> str:
-    return "user_profile_by_id:%s" % (user_profile_id,)
+    return f"user_profile_by_id:{user_profile_id}"
 
 def user_profile_by_api_key_cache_key(api_key: str) -> str:
-    return "user_profile_by_api_key:%s" % (api_key,)
+    return f"user_profile_by_api_key:{api_key}"
 
 realm_user_dict_fields: List[str] = [
     'id', 'full_name', 'short_name', 'email',
@@ -449,16 +449,16 @@ realm_user_dict_fields: List[str] = [
 ]
 
 def realm_user_dicts_cache_key(realm_id: int) -> str:
-    return "realm_user_dicts:%s" % (realm_id,)
+    return f"realm_user_dicts:{realm_id}"
 
 def get_realm_used_upload_space_cache_key(realm: 'Realm') -> str:
-    return 'realm_used_upload_space:%s' % (realm.id,)
+    return f'realm_used_upload_space:{realm.id}'
 
 def active_user_ids_cache_key(realm_id: int) -> str:
-    return "active_user_ids:%s" % (realm_id,)
+    return f"active_user_ids:{realm_id}"
 
 def active_non_guest_user_ids_cache_key(realm_id: int) -> str:
-    return "active_non_guest_user_ids:%s" % (realm_id,)
+    return f"active_non_guest_user_ids:{realm_id}"
 
 bot_dict_fields: List[str] = [
     'api_key',
@@ -478,11 +478,10 @@ bot_dict_fields: List[str] = [
 ]
 
 def bot_dicts_in_realm_cache_key(realm: 'Realm') -> str:
-    return "bot_dicts_in_realm:%s" % (realm.id,)
+    return f"bot_dicts_in_realm:{realm.id}"
 
 def get_stream_cache_key(stream_name: str, realm_id: int) -> str:
-    return "stream_by_realm_and_name:%s:%s" % (
-        realm_id, make_safe_digest(stream_name.strip().lower()))
+    return f"stream_by_realm_and_name:{realm_id}:{make_safe_digest(stream_name.strip().lower())}"
 
 def delete_user_profile_caches(user_profiles: Iterable['UserProfile']) -> None:
     # Imported here to avoid cyclic dependency.
@@ -571,16 +570,16 @@ def flush_realm(sender: Any, **kwargs: Any) -> None:
         cache_delete(realm_text_description_cache_key(realm))
 
 def realm_alert_words_cache_key(realm: 'Realm') -> str:
-    return "realm_alert_words:%s" % (realm.string_id,)
+    return f"realm_alert_words:{realm.string_id}"
 
 def realm_alert_words_automaton_cache_key(realm: 'Realm') -> str:
-    return "realm_alert_words_automaton:%s" % (realm.string_id,)
+    return f"realm_alert_words_automaton:{realm.string_id}"
 
 def realm_rendered_description_cache_key(realm: 'Realm') -> str:
-    return "realm_rendered_description:%s" % (realm.string_id,)
+    return f"realm_rendered_description:{realm.string_id}"
 
 def realm_text_description_cache_key(realm: 'Realm') -> str:
-    return "realm_text_description:%s" % (realm.string_id,)
+    return f"realm_text_description:{realm.string_id}"
 
 # Called by models.py to flush the stream cache whenever we save a stream
 # object.
@@ -610,7 +609,7 @@ def to_dict_cache_key(message: 'Message', realm_id: Optional[int]=None) -> str:
     return to_dict_cache_key_id(message.id)
 
 def open_graph_description_cache_key(content: Any, request: HttpRequest) -> str:
-    return 'open_graph_description_path:%s' % (make_safe_digest(request.META['PATH_INFO']),)
+    return 'open_graph_description_path:{}'.format(make_safe_digest(request.META['PATH_INFO']))
 
 def flush_message(sender: Any, **kwargs: Any) -> None:
     message = kwargs['instance']

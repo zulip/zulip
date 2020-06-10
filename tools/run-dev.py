@@ -98,7 +98,7 @@ if options.test:
 else:
     settings_module = "zproject.settings"
 
-manage_args = ['--settings=%s' % (settings_module,)]
+manage_args = [f'--settings={settings_module}']
 os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -158,7 +158,7 @@ def server_processes() -> List[List[str]]:
          './puppet/zulip/files/postgresql/process_fts_updates', '--quiet'],
         ['./manage.py', 'deliver_scheduled_messages'],
         ['/srv/zulip-thumbor-venv/bin/thumbor', '-c', './zthumbor/thumbor.conf',
-         '-p', '%s' % (thumbor_port,)],
+         '-p', f'{thumbor_port}'],
     ]
 
     # NORMAL (but slower) operation:

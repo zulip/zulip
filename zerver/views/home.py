@@ -301,7 +301,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         if user_profile.realm.plan_type == Realm.LIMITED:
             show_plans = True
 
-    request._log_data['extra'] = "[%s]" % (register_ret["queue_id"],)
+    request._log_data['extra'] = "[{}]".format(register_ret["queue_id"])
 
     page_params['translation_data'] = {}
     if request_language != 'en':

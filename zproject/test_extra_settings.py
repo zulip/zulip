@@ -205,7 +205,7 @@ SOCIAL_AUTH_SAML_ORG_INFO = {
     "en-US": {
         "name": "example",
         "displayname": "Example Inc.",
-        "url": "%s%s" % ('http://', EXTERNAL_HOST),
+        "url": "{}{}".format('http://', EXTERNAL_HOST),
     }
 }
 

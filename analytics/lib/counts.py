@@ -40,7 +40,7 @@ class CountStat:
         self.data_collector = data_collector
         # might have to do something different for bitfields
         if frequency not in self.FREQUENCIES:
-            raise AssertionError("Unknown frequency: %s" % (frequency,))
+            raise AssertionError(f"Unknown frequency: {frequency}")
         self.frequency = frequency
         if interval is not None:
             self.interval = interval
@@ -50,7 +50,7 @@ class CountStat:
             self.interval = timedelta(days=1)
 
     def __str__(self) -> str:
-        return "<CountStat: %s>" % (self.property,)
+        return f"<CountStat: {self.property}>"
 
 class LoggingCountStat(CountStat):
     def __init__(self, property: str, output_table: Type[BaseCount], frequency: str) -> None:
@@ -86,11 +86,11 @@ def process_count_stat(stat: CountStat, fill_to_time: datetime,
     elif stat.frequency == CountStat.DAY:
         time_increment = timedelta(days=1)
     else:
-        raise AssertionError("Unknown frequency: %s" % (stat.frequency,))
+        raise AssertionError(f"Unknown frequency: {stat.frequency}")
 
     verify_UTC(fill_to_time)
     if floor_to_hour(fill_to_time) != fill_to_time:
-        raise ValueError("fill_to_time must be on an hour boundary: %s" % (fill_to_time,))
+        raise ValueError(f"fill_to_time must be on an hour boundary: {fill_to_time}")
 
     fill_state = FillState.objects.filter(property=stat.property).first()
     if fill_state is None:
@@ -108,7 +108,7 @@ def process_count_stat(stat: CountStat, fill_to_time: datetime,
     elif fill_state.state == FillState.DONE:
         currently_filled = fill_state.end_time
     else:
-        raise AssertionError("Unknown value for FillState.state: %s." % (fill_state.state,))
+        raise AssertionError(f"Unknown value for FillState.state: {fill_state.state}.")
 
     if isinstance(stat, DependentCountStat):
         for dependency in stat.dependencies:

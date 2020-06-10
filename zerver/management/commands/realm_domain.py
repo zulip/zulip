@@ -32,7 +32,7 @@ class Command(ZulipBaseCommand):
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
         if options["op"] == "show":
-            print("Domains for %s:" % (realm.string_id,))
+            print(f"Domains for {realm.string_id}:")
             for realm_domain in get_realm_domains(realm):
                 if realm_domain["allow_subdomains"]:
                     print(realm_domain["domain"] + " (subdomains allowed)")

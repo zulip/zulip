@@ -34,7 +34,7 @@ def user_avatar_path(user_profile: UserProfile) -> str:
 
 def user_avatar_path_from_ids(user_profile_id: int, realm_id: int) -> str:
     user_id_hash = user_avatar_hash(str(user_profile_id))
-    return '%s/%s' % (str(realm_id), user_id_hash)
+    return f'{str(realm_id)}/{user_id_hash}'
 
 def user_avatar_content_hash(ldap_avatar: bytes) -> str:
     return hashlib.sha256(ldap_avatar).hexdigest()

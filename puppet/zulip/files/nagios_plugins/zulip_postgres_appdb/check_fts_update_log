@@ -22,7 +22,7 @@ states = {
 }
 
 def report(state: str, num: str) -> None:
-    print("%s: %s rows in fts_update_log table" % (state, num))
+    print(f"{state}: {num} rows in fts_update_log table")
     exit(states[state])
 
 conn = psycopg2.connect(database="zulip")

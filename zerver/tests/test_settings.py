@@ -330,7 +330,7 @@ class ChangeSettingsTest(ZulipTestCase):
         test_value = test_changes.get(setting_name)
         # Error if a setting in UserProfile.property_types does not have test values
         if test_value is None:
-            raise AssertionError('No test created for %s' % (setting_name,))
+            raise AssertionError(f'No test created for {setting_name}')
 
         if isinstance(test_value, int):
             invalid_value: Any = 100
@@ -350,7 +350,7 @@ class ChangeSettingsTest(ZulipTestCase):
         result = self.client_patch("/json/settings/display", data)
         # the json error for multiple word setting names (ex: default_language)
         # displays as 'Invalid language'. Using setting_name.split('_') to format.
-        self.assert_json_error(result, "Invalid %s" % (setting_name,))
+        self.assert_json_error(result, f"Invalid {setting_name}")
 
         user_profile = self.example_user('hamlet')
         self.assertNotEqual(getattr(user_profile, setting_name), invalid_value)

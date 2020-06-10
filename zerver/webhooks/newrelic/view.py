@@ -40,7 +40,7 @@ def api_newrelic_webhook(request: HttpRequest, user_profile: UserProfile,
         subject = alert['message']
         content = ALERT_TEMPLATE.format(**alert)
     elif deployment:
-        subject = "%s deploy" % (deployment['application_name'],)
+        subject = "{} deploy".format(deployment['application_name'])
         content = DEPLOY_TEMPLATE.format(**deployment)
     else:
         raise UnexpectedWebhookEventType('New Relic', 'Unknown Event Type')

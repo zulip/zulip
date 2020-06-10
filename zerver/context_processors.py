@@ -141,7 +141,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         'landing_page_navbar_message': settings.LANDING_PAGE_NAVBAR_MESSAGE,
     }
 
-    context['OPEN_GRAPH_URL'] = '%s%s' % (realm_uri, request.path)
+    context['OPEN_GRAPH_URL'] = f'{realm_uri}{request.path}'
     if realm is not None and realm.icon_source == realm.ICON_UPLOADED:
         context['OPEN_GRAPH_IMAGE'] = urljoin(realm_uri, realm_icon)
 
@@ -175,7 +175,7 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
     no_auth_enabled = True
     for auth_backend_name in AUTH_BACKEND_NAME_MAP:
         name_lower = auth_backend_name.lower()
-        key = "%s_auth_enabled" % (name_lower,)
+        key = f"{name_lower}_auth_enabled"
         is_enabled = auth_enabled_helper([auth_backend_name], realm)
         context[key] = is_enabled
         if is_enabled:
@@ -191,7 +191,7 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
         external_authentication_methods = get_external_method_dicts(realm)
     )
     for auth_dict in context['page_params']['external_authentication_methods']:
-        auth_dict['button_id_suffix'] = "auth_button_%s" % (auth_dict['name'],)
+        auth_dict['button_id_suffix'] = "auth_button_{}".format(auth_dict['name'])
 
     return context
 

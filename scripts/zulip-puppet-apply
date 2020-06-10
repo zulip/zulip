@@ -31,7 +31,7 @@ Exec { path => "/usr/sbin:/usr/bin:/sbin:/bin" }
 """
 
 for pclass in re.split(r'\s*,\s*', config.get('machine', 'puppet_classes')):
-    puppet_config += "include %s\n" % (pclass,)
+    puppet_config += f"include {pclass}\n"
 
 # We use the puppet configuration from the same Zulip checkout as this script
 scripts_path = os.path.join(BASE_DIR, "scripts")

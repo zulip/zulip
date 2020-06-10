@@ -78,7 +78,7 @@ def strip_unnecesary_tags(text: str) -> str:
         text = text[start:end]
         return text
     else:
-        raise ValueError("Template does not have %s or %s" % (start_block, end_block))
+        raise ValueError(f"Template does not have {start_block} or {end_block}")
 
 def get_all_templates_from_directory(directory: str) -> Set[str]:
     result = set()

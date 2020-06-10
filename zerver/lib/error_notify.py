@@ -34,7 +34,7 @@ def user_info_str(report: Dict[str, Any]) -> str:
 def deployment_repr(report: Dict[str, Any]) -> str:
     deployment = 'Deployed code:\n'
     for field, val in report['deployment_data'].items():
-        deployment += '- %s: %s\n' % (field, val)
+        deployment += f'- {field}: {val}\n'
     return deployment
 
 def notify_browser_error(report: Dict[str, Any]) -> None:
@@ -44,7 +44,7 @@ def notify_browser_error(report: Dict[str, Any]) -> None:
     email_browser_error(report)
 
 def email_browser_error(report: Dict[str, Any]) -> None:
-    email_subject = "Browser error for %s" % (user_info_str(report),)
+    email_subject = f"Browser error for {user_info_str(report)}"
 
     body = ("User: %(user_full_name)s <%(user_email)s> on %(deployment)s\n\n"
             "Message:\n%(message)s\n\nStacktrace:\n%(stacktrace)s\n\n"
@@ -59,18 +59,18 @@ def email_browser_error(report: Dict[str, Any]) -> None:
     if more_info is not None:
         body += "\nAdditional information:"
         for (key, value) in more_info.items():
-            body += "\n  %s: %s" % (key, value)
+            body += f"\n  {key}: {value}"
 
-    body += "\n\nLog:\n%s" % (report['log'],)
+    body += "\n\nLog:\n{}".format(report['log'])
 
     mail_admins(email_subject, body)
 
 def zulip_browser_error(report: Dict[str, Any]) -> None:
-    email_subject = "JS error: %s" % (report['user_email'],)
+    email_subject = "JS error: {}".format(report['user_email'])
 
     user_info = user_info_str(report)
 
-    body = "User: %s\n" % (user_info,)
+    body = f"User: {user_info}\n"
     body += ("Message: %(message)s\n"
              % dict(report))
 
@@ -108,7 +108,7 @@ def zulip_server_error(report: Dict[str, Any]) -> None:
             val = report.get(field.lower())
             if field == "QUERY_STRING":
                 val = clean_data_from_query_parameters(str(val))
-            request_repr += "- %s: \"%s\"\n" % (field, val)
+            request_repr += f"- {field}: \"{val}\"\n"
         request_repr += "~~~~"
     else:
         request_repr = "Request info: none"
@@ -144,7 +144,7 @@ def email_server_error(report: Dict[str, Any]) -> None:
             val = report.get(field.lower())
             if field == "QUERY_STRING":
                 val = clean_data_from_query_parameters(str(val))
-            request_repr += "- %s: \"%s\"\n" % (field, val)
+            request_repr += f"- {field}: \"{val}\"\n"
     else:
         request_repr = "Request info: none\n"
 

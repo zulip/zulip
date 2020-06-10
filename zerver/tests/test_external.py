@@ -93,7 +93,7 @@ class RateLimitTests(ZulipTestCase):
         start_time = time.time()
         for i in range(6):
             with mock.patch('time.time', return_value=(start_time + i * 0.1)):
-                result = self.send_api_message(user, "some stuff %s" % (i,))
+                result = self.send_api_message(user, f"some stuff {i}")
 
         self.assertEqual(result.status_code, 429)
         json = result.json()
@@ -122,5 +122,5 @@ class RateLimitTests(ZulipTestCase):
             self.assertEqual(result.status_code, 429)
             mock_warn.assert_called_with(
                 "Deadlock trying to incr_ratelimit for %s",
-                "RateLimitedUser:%s:api_by_user" % (user.id,),
+                f"RateLimitedUser:{user.id}:api_by_user",
             )

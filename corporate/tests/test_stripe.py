@@ -144,7 +144,7 @@ def normalize_fixture_data(decorated_function: CallableT,
     for i, timestamp_field in enumerate(tested_timestamp_fields):
         # Don't use (..) notation, since the matched timestamp can easily appear in other fields
         pattern_translations[
-            '"%s": 1[5-9][0-9]{8}(?![0-9-])' % (timestamp_field,)
+            f'"{timestamp_field}": 1[5-9][0-9]{{8}}(?![0-9-])'
         ] = '"%s": 1%02d%%07d' % (timestamp_field, i+1)
 
     normalized_values: Dict[str, Dict[str, str]] = {
@@ -463,8 +463,8 @@ class StripeTest(StripeTestCase):
         self.assert_not_in_success_response(['Pay annually'], response)
         for substring in [
                 'Zulip Standard', str(self.seat_count),
-                'You are using', '%s of %s licenses' % (self.seat_count, self.seat_count),
-                'Your plan will renew on', 'January 2, 2013', '$%s.00' % (80 * self.seat_count,),
+                'You are using', f'{self.seat_count} of {self.seat_count} licenses',
+                'Your plan will renew on', 'January 2, 2013', f'${80 * self.seat_count}.00',
                 'Visa ending in 4242',
                 'Update card']:
             self.assert_in_response(substring, response)
@@ -547,7 +547,7 @@ class StripeTest(StripeTestCase):
         self.assert_not_in_success_response(['Pay annually', 'Update card'], response)
         for substring in [
                 'Zulip Standard', str(123),
-                'You are using', '%s of %s licenses' % (self.seat_count, 123),
+                'You are using', f'{self.seat_count} of {123} licenses',
                 'Your plan will renew on', 'January 2, 2013', '$9,840.00',  # 9840 = 80 * 123
                 'Billed by invoice']:
             self.assert_in_response(substring, response)
@@ -618,8 +618,8 @@ class StripeTest(StripeTestCase):
             self.assert_not_in_success_response(['Pay annually'], response)
             for substring in [
                     'Zulip Standard', 'Free Trial', str(self.seat_count),
-                    'You are using', '%s of %s licenses' % (self.seat_count, self.seat_count),
-                    'Your plan will be upgraded to', 'March 2, 2012', '$%s.00' % (80 * self.seat_count,),
+                    'You are using', f'{self.seat_count} of {self.seat_count} licenses',
+                    'Your plan will be upgraded to', 'March 2, 2012', f'${80 * self.seat_count}.00',
                     'Visa ending in 4242',
                     'Update card']:
                 self.assert_in_response(substring, response)
@@ -772,7 +772,7 @@ class StripeTest(StripeTestCase):
             self.assert_not_in_success_response(['Pay annually'], response)
             for substring in [
                     'Zulip Standard', 'Free Trial', str(self.seat_count),
-                    'You are using', '%s of %s licenses' % (self.seat_count, 123),
+                    'You are using', f'{self.seat_count} of {123} licenses',
                     'Your plan will be upgraded to', 'March 2, 2012',
                     f'{80 * 123:,.2f}', 'Billed by invoice'
             ]:

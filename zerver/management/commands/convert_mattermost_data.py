@@ -55,7 +55,7 @@ class Command(BaseCommand):
 
         data_dir = options['mattermost_data_dir']
         if not os.path.exists(data_dir):
-            raise CommandError("Directory not found: '%s'" % (data_dir,))
+            raise CommandError(f"Directory not found: '{data_dir}'")
         data_dir = os.path.realpath(data_dir)
 
         print("Converting Data ...")

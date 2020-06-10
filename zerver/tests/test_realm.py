@@ -347,7 +347,7 @@ class RealmTest(ZulipTestCase):
         invalid_lang = "invalid_lang"
         req = dict(default_language=ujson.dumps(invalid_lang))
         result = self.client_patch('/json/realm', req)
-        self.assert_json_error(result, "Invalid language '%s'" % (invalid_lang,))
+        self.assert_json_error(result, f"Invalid language '{invalid_lang}'")
         realm = get_realm('zulip')
         self.assertNotEqual(realm.default_language, invalid_lang)
 
@@ -405,20 +405,20 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.email_address_visibility, Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
 
         edited_user_profile = get_user_profile_by_id(user_profile.id)
-        self.assertEqual(edited_user_profile.email, "user%s@zulip.testserver" % (edited_user_profile.id,))
+        self.assertEqual(edited_user_profile.email, f"user{edited_user_profile.id}@zulip.testserver")
 
         # Check normal user cannot access email
-        result = self.api_get(cordelia, "/api/v1/users/%s" % (hamlet.id,))
+        result = self.api_get(cordelia, f"/api/v1/users/{hamlet.id}")
         self.assert_json_success(result)
         self.assertEqual(result.json()['user']['email'],
-                         'user%s@zulip.testserver' % (hamlet.id,))
+                         f'user{hamlet.id}@zulip.testserver')
         self.assertEqual(result.json()['user'].get('delivery_email'), None)
 
         # Check administrator gets delivery_email with EMAIL_ADDRESS_VISIBILITY_ADMINS
-        result = self.api_get(user_profile, "/api/v1/users/%s" % (hamlet.id,))
+        result = self.api_get(user_profile, f"/api/v1/users/{hamlet.id}")
         self.assert_json_success(result)
         self.assertEqual(result.json()['user']['email'],
-                         'user%s@zulip.testserver' % (hamlet.id,))
+                         f'user{hamlet.id}@zulip.testserver')
         self.assertEqual(result.json()['user'].get('delivery_email'),
                          hamlet.delivery_email)
 
@@ -429,14 +429,14 @@ class RealmTest(ZulipTestCase):
         realm = get_realm("zulip")
         self.assertEqual(realm.email_address_visibility, Realm.EMAIL_ADDRESS_VISIBILITY_NOBODY)
         edited_user_profile = get_user_profile_by_id(user_profile.id)
-        self.assertEqual(edited_user_profile.email, "user%s@zulip.testserver" % (edited_user_profile.id,))
+        self.assertEqual(edited_user_profile.email, f"user{edited_user_profile.id}@zulip.testserver")
 
         # Check even administrator doesn't get delivery_email with
         # EMAIL_ADDRESS_VISIBILITY_NOBODY
-        result = self.api_get(user_profile, "/api/v1/users/%s" % (hamlet.id,))
+        result = self.api_get(user_profile, f"/api/v1/users/{hamlet.id}")
         self.assert_json_success(result)
         self.assertEqual(result.json()['user']['email'],
-                         'user%s@zulip.testserver' % (hamlet.id,))
+                         f'user{hamlet.id}@zulip.testserver')
         self.assertEqual(result.json()['user'].get('delivery_email'), None)
 
     def test_change_stream_creation_policy(self) -> None:
@@ -511,7 +511,7 @@ class RealmTest(ZulipTestCase):
         for name in integer_values:
             invalid_value = invalid_values.get(name)
             if invalid_value is None:
-                raise AssertionError('No test created for %s' % (name,))
+                raise AssertionError(f'No test created for {name}')
 
             self.do_test_invalid_integer_attribute_value(name, invalid_value)
 
@@ -724,7 +724,7 @@ class RealmAPITest(ZulipTestCase):
         if Realm.property_types[name] is bool:
             vals = bool_tests
         if vals is None:
-            raise AssertionError('No test created for %s' % (name,))
+            raise AssertionError(f'No test created for {name}')
 
         if name == 'video_chat_provider':
             self.set_up_db(name, vals[0][name])

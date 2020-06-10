@@ -14,7 +14,7 @@ class Customer(models.Model):
     default_discount: Optional[Decimal] = models.DecimalField(decimal_places=4, max_digits=7, null=True)
 
     def __str__(self) -> str:
-        return "<Customer %s %s>" % (self.realm, self.stripe_customer_id)
+        return f"<Customer {self.realm} {self.stripe_customer_id}>"
 
 def get_customer_by_realm(realm: Realm) -> Optional[Customer]:
     return Customer.objects.filter(realm=realm).first()

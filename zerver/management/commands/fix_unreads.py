@@ -41,7 +41,7 @@ class Command(ZulipBaseCommand):
             try:
                 user_profile = self.get_user(email, realm)
             except CommandError:
-                print("e-mail %s doesn't exist in the realm %s, skipping" % (email, realm))
+                print(f"e-mail {email} doesn't exist in the realm {realm}, skipping")
                 return
 
             fix(user_profile)

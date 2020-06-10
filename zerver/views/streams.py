@@ -312,7 +312,7 @@ def you_were_just_subscribed_message(acting_user: UserProfile,
         {"full_name": acting_user.full_name}
     message += "\n\n"
     for stream_name in subscriptions:
-        message += "* #**%s**\n" % (stream_name,)
+        message += f"* #**{stream_name}**\n"
     return message
 
 @require_non_guest_user
@@ -443,7 +443,7 @@ def add_subscriptions_backend(
             content = content % {
                 'user_name': user_profile.full_name,
                 'user_id': user_profile.id,
-                'stream_str': ", ".join('#**%s**' % (s.name,) for s in created_streams)}
+                'stream_str': ", ".join(f'#**{s.name}**' for s in created_streams)}
 
             sender = get_system_bot(settings.NOTIFICATION_BOT)
             topic = _('new streams')

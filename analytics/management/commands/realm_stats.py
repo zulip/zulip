@@ -66,7 +66,7 @@ class Command(BaseCommand):
             fraction = 0.0
         else:
             fraction = numerator / float(denominator)
-        print("%.2f%% of" % (fraction * 100,), text)
+        print(f"{fraction * 100:.2f}% of", text)
 
     def handle(self, *args: Any, **options: Any) -> None:
         if options['realms']:

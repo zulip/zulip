@@ -135,9 +135,9 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
         host = user_profile.realm.host
         realm_id = get_realm("zulip").id
         dummy_files = [
-            ('zulip.txt', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt' % (realm_id,), sample_size),
-            ('temp_file.py', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py' % (realm_id,), sample_size),
-            ('abc.py', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py' % (realm_id,), sample_size)
+            ('zulip.txt', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt', sample_size),
+            ('temp_file.py', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py', sample_size),
+            ('abc.py', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py', sample_size)
         ]
 
         for file_name, path_id, size in dummy_files:
@@ -483,11 +483,11 @@ class MoveMessageToArchiveBase(RetentionTestingBase):
         sample_size = 10
         realm_id = get_realm("zulip").id
         dummy_files = [
-            ('zulip.txt', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt' % (realm_id,), sample_size),
-            ('temp_file.py', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py' % (realm_id,), sample_size),
-            ('abc.py', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py' % (realm_id,), sample_size),
-            ('hello.txt', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt' % (realm_id,), sample_size),
-            ('new.py', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py' % (realm_id,), sample_size)
+            ('zulip.txt', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt', sample_size),
+            ('temp_file.py', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py', sample_size),
+            ('abc.py', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py', sample_size),
+            ('hello.txt', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt', sample_size),
+            ('new.py', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py', sample_size)
         ]
         user_profile = self.example_user('hamlet')
         for file_name, path_id, size in dummy_files:

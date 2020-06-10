@@ -161,7 +161,7 @@ def queries_captured(include_savepoints: Optional[bool]=False) -> Generator[
             if include_savepoints or not isinstance(sql, str) or 'SAVEPOINT' not in sql:
                 queries.append({
                     'sql': self.mogrify(sql, params).decode('utf-8'),
-                    'time': "%.3f" % (duration,),
+                    'time': f"{duration:.3f}",
                 })
 
     old_execute = TimeTrackingCursor.execute
@@ -437,13 +437,13 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
                     print(call)
 
         if full_suite:
-            print('INFO: URL coverage report is in %s' % (fn,))
+            print(f'INFO: URL coverage report is in {fn}')
             print('INFO: Try running: ./tools/create-test-api-docs')
 
         if full_suite and len(untested_patterns):  # nocoverage -- test suite error handling
             print("\nERROR: Some URLs are untested!  Here's the list of untested URLs:")
             for untested_pattern in sorted(untested_patterns):
-                print("   %s" % (untested_pattern,))
+                print(f"   {untested_pattern}")
             sys.exit(1)
 
 def load_subdomain_token(response: HttpResponse) -> ExternalAuthDataDict:

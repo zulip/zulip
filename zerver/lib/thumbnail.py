@@ -46,7 +46,7 @@ def generate_thumbnail_url(path: str,
 
     source_type = get_source_type(path)
     safe_url = base64.urlsafe_b64encode(path.encode()).decode('utf-8')
-    image_url = '%s/source_type/%s' % (safe_url, source_type)
+    image_url = f'{safe_url}/source_type/{source_type}'
     width, height = map(int, size.split('x'))
     crypto = CryptoURL(key=settings.THUMBOR_KEY)
 

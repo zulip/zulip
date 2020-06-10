@@ -51,11 +51,11 @@ def report_send_times(request: HttpRequest, user_profile: UserProfile,
         % (time, received_str, displayed_str, locally_echoed, rendered_content_disparity)
 
     base_key = statsd_key(user_profile.realm.string_id, clean_periods=True)
-    statsd.timing("endtoend.send_time.%s" % (base_key,), time)
+    statsd.timing(f"endtoend.send_time.{base_key}", time)
     if received > 0:
-        statsd.timing("endtoend.receive_time.%s" % (base_key,), received)
+        statsd.timing(f"endtoend.receive_time.{base_key}", received)
     if displayed > 0:
-        statsd.timing("endtoend.displayed_time.%s" % (base_key,), displayed)
+        statsd.timing(f"endtoend.displayed_time.{base_key}", displayed)
     if locally_echoed:
         statsd.incr('locally_echoed')
     if rendered_content_disparity:
@@ -68,11 +68,11 @@ def report_narrow_times(request: HttpRequest, user_profile: UserProfile,
                         initial_core: int=REQ(converter=to_non_negative_int),
                         initial_free: int=REQ(converter=to_non_negative_int),
                         network: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
-    request._log_data["extra"] = "[%sms/%sms/%sms]" % (initial_core, initial_free, network)
+    request._log_data["extra"] = f"[{initial_core}ms/{initial_free}ms/{network}ms]"
     base_key = statsd_key(user_profile.realm.string_id, clean_periods=True)
-    statsd.timing("narrow.initial_core.%s" % (base_key,), initial_core)
-    statsd.timing("narrow.initial_free.%s" % (base_key,), initial_free)
-    statsd.timing("narrow.network.%s" % (base_key,), network)
+    statsd.timing(f"narrow.initial_core.{base_key}", initial_core)
+    statsd.timing(f"narrow.initial_free.{base_key}", initial_free)
+    statsd.timing(f"narrow.network.{base_key}", network)
     return json_success()
 
 @human_users_only
@@ -80,10 +80,10 @@ def report_narrow_times(request: HttpRequest, user_profile: UserProfile,
 def report_unnarrow_times(request: HttpRequest, user_profile: UserProfile,
                           initial_core: int=REQ(converter=to_non_negative_int),
                           initial_free: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
-    request._log_data["extra"] = "[%sms/%sms]" % (initial_core, initial_free)
+    request._log_data["extra"] = f"[{initial_core}ms/{initial_free}ms]"
     base_key = statsd_key(user_profile.realm.string_id, clean_periods=True)
-    statsd.timing("unnarrow.initial_core.%s" % (base_key,), initial_core)
-    statsd.timing("unnarrow.initial_free.%s" % (base_key,), initial_free)
+    statsd.timing(f"unnarrow.initial_core.{base_key}", initial_core)
+    statsd.timing(f"unnarrow.initial_free.{base_key}", initial_free)
     return json_success()
 
 @has_request_variables

@@ -185,7 +185,7 @@ def do_create_stripe_customer(user: UserProfile, stripe_token: Optional[str]=Non
     # bad thing that will happen is that we will create an extra stripe
     # customer that we can delete or ignore.
     stripe_customer = stripe.Customer.create(
-        description="%s (%s)" % (realm.string_id, realm.name),
+        description=f"{realm.string_id} ({realm.name})",
         email=user.delivery_email,
         metadata={'realm_id': realm.id, 'realm_str': realm.string_id},
         source=stripe_token)

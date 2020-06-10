@@ -21,7 +21,7 @@ class RemoteZulipServer(models.Model):
     last_updated: datetime.datetime = models.DateTimeField('last updated', auto_now=True)
 
     def __str__(self) -> str:
-        return "<RemoteZulipServer %s %s>" % (self.hostname, self.uuid[0:12])
+        return f"<RemoteZulipServer {self.hostname} {self.uuid[0:12]}>"
 
     def format_requestor_for_logs(self) -> str:
         return "zulip-server:" + self.uuid
@@ -36,7 +36,7 @@ class RemotePushDeviceToken(AbstractPushDeviceToken):
         unique_together = ("server", "user_id", "kind", "token")
 
     def __str__(self) -> str:
-        return "<RemotePushDeviceToken %s %s>" % (self.server, self.user_id)
+        return f"<RemotePushDeviceToken {self.server} {self.user_id}>"
 
 class RemoteRealmAuditLog(AbstractRealmAuditLog):
     """Synced audit data from a remote Zulip server, used primarily for
@@ -48,8 +48,7 @@ class RemoteRealmAuditLog(AbstractRealmAuditLog):
     remote_id: int = models.IntegerField(db_index=True)
 
     def __str__(self) -> str:
-        return "<RemoteRealmAuditLog: %s %s %s %s>" % (
-            self.server, self.event_type, self.event_time, self.id)
+        return f"<RemoteRealmAuditLog: {self.server} {self.event_type} {self.event_time} {self.id}>"
 
 class RemoteInstallationCount(BaseCount):
     server: RemoteZulipServer = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
@@ -63,7 +62,7 @@ class RemoteInstallationCount(BaseCount):
         ]
 
     def __str__(self) -> str:
-        return "<InstallationCount: %s %s %s>" % (self.property, self.subgroup, self.value)
+        return f"<InstallationCount: {self.property} {self.subgroup} {self.value}>"
 
 # We can't subclass RealmCount because we only have a realm_id here, not a foreign key.
 class RemoteRealmCount(BaseCount):
@@ -80,4 +79,4 @@ class RemoteRealmCount(BaseCount):
         ]
 
     def __str__(self) -> str:
-        return "%s %s %s %s %s" % (self.server, self.realm_id, self.property, self.subgroup, self.value)
+        return f"{self.server} {self.realm_id} {self.property} {self.subgroup} {self.value}"

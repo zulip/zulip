@@ -143,7 +143,7 @@ def any_social_backend_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(social_backend_names, realm)
 
 def redirect_to_config_error(error_type: str) -> HttpResponseRedirect:
-    return HttpResponseRedirect("/config-error/%s" % (error_type,))
+    return HttpResponseRedirect(f"/config-error/{error_type}")
 
 def require_email_format_usernames(realm: Optional[Realm]=None) -> bool:
     if ldap_auth_enabled(realm):
@@ -445,8 +445,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         if settings.LDAP_APPEND_DOMAIN:
             if is_valid_email(username):
                 if not username.endswith("@" + settings.LDAP_APPEND_DOMAIN):
-                    raise ZulipLDAPExceptionOutsideDomain("Email %s does not match LDAP domain %s." % (
-                        username, settings.LDAP_APPEND_DOMAIN))
+                    raise ZulipLDAPExceptionOutsideDomain(f"Email {username} does not match LDAP domain {settings.LDAP_APPEND_DOMAIN}.")
                 result = email_to_username(username)
         else:
             # We can use find_ldap_users_by_email
@@ -485,8 +484,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         if settings.LDAP_EMAIL_ATTR is not None:
             # Get email from ldap attributes.
             if settings.LDAP_EMAIL_ATTR not in ldap_user.attrs:
-                raise ZulipLDAPException("LDAP user doesn't have the needed %s attribute" % (
-                    settings.LDAP_EMAIL_ATTR,))
+                raise ZulipLDAPException(f"LDAP user doesn't have the needed {settings.LDAP_EMAIL_ATTR} attribute")
             else:
                 return ldap_user.attrs[settings.LDAP_EMAIL_ATTR][0]
 
@@ -611,12 +609,12 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             try:
                 field = fields_by_var_name[var_name]
             except KeyError:
-                raise ZulipLDAPException('Custom profile field with name %s not found.' % (var_name,))
+                raise ZulipLDAPException(f'Custom profile field with name {var_name} not found.')
             if existing_values.get(var_name) == value:
                 continue
             result = validate_user_custom_profile_field(user_profile.realm.id, field, value)
             if result is not None:
-                raise ZulipLDAPException('Invalid data for %s field: %s' % (var_name, result))
+                raise ZulipLDAPException(f'Invalid data for {var_name} field: {result}')
             profile_data.append({
                 'id': field.id,
                 'value': value,
@@ -876,9 +874,9 @@ def query_ldap(email: str) -> List[str]:
             if django_field == "avatar":
                 if isinstance(value, bytes):
                     value = "(An avatar image file)"
-            values.append("%s: %s" % (django_field, value))
+            values.append(f"{django_field}: {value}")
         if settings.LDAP_EMAIL_ATTR is not None:
-            values.append("%s: %s" % ('email', ldap_attrs[settings.LDAP_EMAIL_ATTR][0]))
+            values.append("{}: {}".format('email', ldap_attrs[settings.LDAP_EMAIL_ATTR][0]))
     else:
         values.append("LDAP backend not configured on this server.")
     return values
@@ -1680,7 +1678,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             if idps_without_limit_to_subdomains:
                 self.logger.error("SAML_REQUIRE_LIMIT_TO_SUBDOMAINS is enabled and the following " +
                                   "IdPs don't have limit_to_subdomains specified and will be ignored: " +
-                                  "%s" % (idps_without_limit_to_subdomains,))
+                                  f"{idps_without_limit_to_subdomains}")
                 for idp_name in idps_without_limit_to_subdomains:
                     del settings.SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name]
         super().__init__(*args, **kwargs)
@@ -1874,7 +1872,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     def validate_idp_for_subdomain(cls, idp_name: str, subdomain: str) -> bool:
         idp_dict = settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.get(idp_name)
         if idp_dict is None:
-            raise AssertionError("IdP: %s not found" % (idp_name,))
+            raise AssertionError(f"IdP: {idp_name} not found")
         if 'limit_to_subdomains' in idp_dict and subdomain not in idp_dict['limit_to_subdomains']:
             return False
 

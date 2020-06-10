@@ -49,7 +49,7 @@ class AnalyticsTestCase(TestCase):
     def create_user(self, **kwargs: Any) -> UserProfile:
         self.name_counter += 1
         defaults = {
-            'email': 'user%s@domain.tld' % (self.name_counter,),
+            'email': f'user{self.name_counter}@domain.tld',
             'date_joined': self.TIME_LAST_HOUR,
             'full_name': 'full_name',
             'short_name': 'short_name',
@@ -71,7 +71,7 @@ class AnalyticsTestCase(TestCase):
 
     def create_stream_with_recipient(self, **kwargs: Any) -> Tuple[Stream, Recipient]:
         self.name_counter += 1
-        defaults = {'name': 'stream name %s' % (self.name_counter,),
+        defaults = {'name': f'stream name {self.name_counter}',
                     'realm': self.default_realm,
                     'date_created': self.TIME_LAST_HOUR}
         for key, value in defaults.items():
@@ -84,7 +84,7 @@ class AnalyticsTestCase(TestCase):
 
     def create_huddle_with_recipient(self, **kwargs: Any) -> Tuple[Huddle, Recipient]:
         self.name_counter += 1
-        defaults = {'huddle_hash': 'hash%s' % (self.name_counter,)}
+        defaults = {'huddle_hash': f'hash{self.name_counter}'}
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
         huddle = Huddle.objects.create(**kwargs)
@@ -339,10 +339,10 @@ class TestCountStats(AnalyticsTestCase):
             date_created=self.TIME_ZERO-2*self.DAY)
         for minutes_ago in [0, 1, 61, 60*24+1]:
             creation_time = self.TIME_ZERO - minutes_ago*self.MINUTE
-            user = self.create_user(email='user-%s@second.analytics' % (minutes_ago,),
+            user = self.create_user(email=f'user-{minutes_ago}@second.analytics',
                                     realm=self.second_realm, date_joined=creation_time)
             recipient = self.create_stream_with_recipient(
-                name='stream %s' % (minutes_ago,), realm=self.second_realm,
+                name=f'stream {minutes_ago}', realm=self.second_realm,
                 date_created=creation_time)[1]
             self.create_message(user, recipient, date_sent=creation_time)
         self.hourly_user = get_user('user-1@second.analytics', self.second_realm)

@@ -38,7 +38,7 @@ class SimpleQueueClient:
         start = time.time()
         self.connection = pika.BlockingConnection(self._get_parameters())
         self.channel    = self.connection.channel()
-        self.log.info('SimpleQueueClient connected (connecting took %.3fs)' % (time.time() - start,))
+        self.log.info(f'SimpleQueueClient connected (connecting took {time.time() - start:.3f}s)')
 
     def _reconnect(self) -> None:
         self.connection = None
@@ -76,10 +76,10 @@ class SimpleQueueClient:
                                          credentials=credentials)
 
     def _generate_ctag(self, queue_name: str) -> str:
-        return "%s_%s" % (queue_name, str(random.getrandbits(16)))
+        return f"{queue_name}_{str(random.getrandbits(16))}"
 
     def _reconnect_consumer_callback(self, queue: str, consumer: Consumer) -> None:
-        self.log.info("Queue reconnecting saved consumer %s to queue %s" % (consumer, queue))
+        self.log.info(f"Queue reconnecting saved consumer {consumer} to queue {queue}")
         self.ensure_queue(queue, lambda: self.channel.basic_consume(queue,
                                                                     consumer,
                                                                     consumer_tag=self._generate_ctag(queue)))
@@ -115,7 +115,7 @@ class SimpleQueueClient:
                 properties=pika.BasicProperties(delivery_mode=2),
                 body=body)
 
-            statsd.incr("rabbitmq.publish.%s" % (queue_name,))
+            statsd.incr(f"rabbitmq.publish.{queue_name}")
 
         self.ensure_queue(queue_name, do_publish)
 

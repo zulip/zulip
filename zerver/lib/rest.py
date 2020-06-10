@@ -144,7 +144,7 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
             # browser, send the user to the login page
             if 'text/html' in request.META.get('HTTP_ACCEPT', ''):
                 # TODO: It seems like the `?next=` part is unlikely to be helpful
-                return HttpResponseRedirect('%s?next=%s' % (settings.HOME_NOT_LOGGED_IN, request.path))
+                return HttpResponseRedirect(f'{settings.HOME_NOT_LOGGED_IN}?next={request.path}')
             # Ask for basic auth (email:apiKey)
             elif request.path.startswith("/api"):
                 return json_unauthorized()

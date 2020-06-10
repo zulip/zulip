@@ -209,7 +209,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
         del self.API_KEYS[self.server_uuid]
 
-        credentials = "%s:%s" % ("5678-efgh", 'invalid')
+        credentials = "{}:{}".format("5678-efgh", 'invalid')
         api_auth = 'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
         result = self.client_post(endpoint, {'user_id': user_id,
                                              'token_kind': token_kind,
@@ -1900,20 +1900,17 @@ class TestPushNotificationsContent(ZulipTestCase):
         fixtures = [
             {
                 'name': 'realm_emoji',
-                'rendered_content': '<p>Testing <img alt=":green_tick:" class="emoji" src="/user_avatars/%s/emoji/green_tick.png" title="green tick"> realm emoji.</p>' % (
-                    realm.id,),
+                'rendered_content': f'<p>Testing <img alt=":green_tick:" class="emoji" src="/user_avatars/{realm.id}/emoji/green_tick.png" title="green tick"> realm emoji.</p>',
                 'expected_output': 'Testing :green_tick: realm emoji.',
             },
             {
                 'name': 'mentions',
-                'rendered_content': '<p>Mentioning <span class="user-mention" data-user-id="%s">@Cordelia Lear</span>.</p>' % (
-                    cordelia.id,),
+                'rendered_content': f'<p>Mentioning <span class="user-mention" data-user-id="{cordelia.id}">@Cordelia Lear</span>.</p>',
                 'expected_output': 'Mentioning @Cordelia Lear.',
             },
             {
                 'name': 'stream_names',
-                'rendered_content': '<p>Testing stream names <a class="stream" data-stream-id="%s" href="/#narrow/stream/Verona">#Verona</a>.</p>' % (
-                    stream.id,),
+                'rendered_content': f'<p>Testing stream names <a class="stream" data-stream-id="{stream.id}" href="/#narrow/stream/Verona">#Verona</a>.</p>',
                 'expected_output': 'Testing stream names #Verona.',
             },
         ]

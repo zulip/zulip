@@ -131,7 +131,7 @@ for device in macs.values():
     for (count, ip) in enumerate(to_configure):
         # Configure the IP via a virtual interface
         device = "ens%i:%i" % (device_number, count)
-        log.info("Configuring %s with IP %s" % (device, ip))
+        log.info(f"Configuring {device} with IP {ip}")
         subprocess.check_call(['/sbin/ifconfig', device, ip])
         subprocess.check_call(
             ['/sbin/iptables', '-t', 'mangle', '-A', 'OUTPUT', '-m', 'conntrack', '--ctorigdst',

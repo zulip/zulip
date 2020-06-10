@@ -10,7 +10,7 @@ class JiraHookTests(WebhookTestCase):
 
     def test_custom_stream(self) -> None:
         api_key = get_api_key(self.test_user)
-        url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (api_key,)
+        url = f"/api/v1/external/jira?api_key={api_key}&stream=jira_custom"
         msg = self.send_json_payload(self.test_user,
                                      url,
                                      self.get_body('created_v2'),

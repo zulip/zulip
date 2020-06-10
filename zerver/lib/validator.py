@@ -221,7 +221,7 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
             if k not in val:
                 return (_('%(key_name)s key is missing from %(var_name)s') %
                         {'key_name': k, 'var_name': var_name})
-            vname = '%s["%s"]' % (var_name, k)
+            vname = f'{var_name}["{k}"]'
             error = sub_validator(vname, val[k])
             if error:
                 return error
@@ -230,7 +230,7 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
 
         for k, sub_validator in optional_keys:
             if k in val:
-                vname = '%s["%s"]' % (var_name, k)
+                vname = f'{var_name}["{k}"]'
                 error = sub_validator(vname, val[k])
                 if error:
                     return error
@@ -239,7 +239,7 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
 
         if value_validator:
             for key in val:
-                vname = '%s contains a value that' % (var_name,)
+                vname = f'{var_name} contains a value that'
                 error = value_validator(vname, val[key])
                 if error:
                     return error
@@ -271,7 +271,7 @@ def check_variable_type(allowed_type_funcs: Iterable[Validator]) -> Validator:
     """
 
     if settings.LOG_API_EVENT_TYPES:
-        type_structure = 'any("%s")' % ([x.type_structure for x in allowed_type_funcs],)  # type: ignore[attr-defined] # monkey-patching
+        type_structure = f'any("{[x.type_structure for x in allowed_type_funcs]}")'  # type: ignore[attr-defined] # monkey-patching
     else:
         type_structure = None  # type: ignore[assignment] # monkey-patching
 
@@ -284,7 +284,7 @@ def check_variable_type(allowed_type_funcs: Iterable[Validator]) -> Validator:
     return enumerated_type_check
 
 def equals(expected_val: object) -> Validator:
-    @set_type_structure('equals("%s")' % (str(expected_val),))
+    @set_type_structure(f'equals("{str(expected_val)}")')
     def f(var_name: str, val: object) -> Optional[str]:
         if val != expected_val:
             return (_('%(variable)s != %(expected_value)s (%(value)s is wrong)') %
@@ -415,7 +415,7 @@ def to_non_negative_int(s: str, max_int_size: int=2**32-1) -> int:
     if x < 0:
         raise ValueError("argument is negative")
     if x > max_int_size:
-        raise ValueError('%s is too large (max %s)' % (x, max_int_size))
+        raise ValueError(f'{x} is too large (max {max_int_size})')
     return x
 
 def to_positive_or_allowed_int(allowed_integer: int) -> Callable[[str], int]:

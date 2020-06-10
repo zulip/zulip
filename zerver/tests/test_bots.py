@@ -741,7 +741,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         # A regular user cannot reactivate a generic bot
         self.assert_num_bots_equal(0)
-        result = self.client_post("/json/users/%s/reactivate" % (bot_user.id,))
+        result = self.client_post(f"/json/users/{bot_user.id}/reactivate")
         self.assert_json_error(result, 'Must be an organization administrator')
         self.assert_num_bots_equal(0)
 

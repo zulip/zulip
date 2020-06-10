@@ -44,16 +44,16 @@ def display_list(values: List[str], display_limit: int) -> str:
     """
     if len(values) == 1:
         # One value, show it.
-        display_string = "%s" % (values[0],)
+        display_string = f"{values[0]}"
     elif len(values) <= display_limit:
         # Fewer than `display_limit` values, show all of them.
         display_string = ", ".join(
-            "%s" % (value,) for value in values[:-1])
-        display_string += " and %s" % (values[-1],)
+            f"{value}" for value in values[:-1])
+        display_string += f" and {values[-1]}"
     else:
         # More than `display_limit` values, only mention a few.
         display_string = ", ".join(
-            "%s" % (value,) for value in values[:display_limit])
+            f"{value}" for value in values[:display_limit])
         display_string += and_n_others(values, display_limit)
 
     return display_string

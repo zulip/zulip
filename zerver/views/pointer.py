@@ -19,7 +19,7 @@ def update_pointer_backend(request: HttpRequest, user_profile: UserProfile,
     if get_usermessage_by_message_id(user_profile, pointer) is None:
         raise JsonableError(_("Invalid message ID"))
 
-    request._log_data["extra"] = "[%s]" % (pointer,)
+    request._log_data["extra"] = f"[{pointer}]"
     update_flags = (request.client.name.lower() in ['android', "zulipandroid"])
     do_update_pointer(user_profile, request.client, pointer, update_flags=update_flags)
 

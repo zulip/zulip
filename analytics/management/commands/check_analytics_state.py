@@ -33,8 +33,7 @@ class Command(BaseCommand):
         state_file_tmp = state_file_path + "-tmp"
 
         with open(state_file_tmp, "w") as f:
-            f.write("%s|%s|%s|%s\n" % (
-                int(time.time()), status, states[status], message))
+            f.write(f"{int(time.time())}|{status}|{states[status]}|{message}\n")
         os.rename(state_file_tmp, state_file_path)
 
     def get_fill_state(self) -> Dict[str, Any]:
@@ -50,7 +49,7 @@ class Command(BaseCommand):
             try:
                 verify_UTC(last_fill)
             except TimezoneNotUTCException:
-                return {'status': 2, 'message': 'FillState not in UTC for %s' % (property,)}
+                return {'status': 2, 'message': f'FillState not in UTC for {property}'}
 
             if stat.frequency == CountStat.DAY:
                 floor_function = floor_to_day
