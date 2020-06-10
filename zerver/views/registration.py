@@ -444,7 +444,7 @@ def send_confirm_registration_email(email: str, activation_url: str, language: s
 def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
     login_url = reverse('django.contrib.auth.views.login')
     email = urllib.parse.quote_plus(email)
-    redirect_url = login_url + '?already_registered=' + email
+    redirect_url = add_query_to_redirect_url(login_url, 'already_registered=' + email)
     return HttpResponseRedirect(redirect_url)
 
 def create_realm(request: HttpRequest, creation_key: Optional[str]=None) -> HttpResponse:
