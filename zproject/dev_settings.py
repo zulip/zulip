@@ -2,12 +2,13 @@ import os
 import pwd
 from typing import Optional, Set, Tuple
 
-from .config import DEPLOY_ROOT
-
 ZULIP_ADMINISTRATOR = "desdemona+admin@zulip.com"
 
 # We want LOCAL_UPLOADS_DIR to be an absolute path so that code can
-# chdir without having problems accessing it.
+# chdir without having problems accessing it.  Unfortunately, this
+# means we need a duplicate definition of DEPLOY_ROOT with the one in
+# settings.py.
+DEPLOY_ROOT = os.path.realpath(os.path.dirname(os.path.dirname(__file__)))
 LOCAL_UPLOADS_DIR = os.path.join(DEPLOY_ROOT, 'var/uploads')
 
 # We assume dev droplets are the only places where
