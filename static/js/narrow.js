@@ -345,12 +345,6 @@ exports.activate = function (raw_operators, opts) {
         compose.update_closed_compose_buttons_for_stream();
     }
 
-    // Put the narrow operators in the search bar.
-    // we append a space to make searching more convenient in some cases.
-    if (filter && !filter.is_search()) {
-        $('#search_query').val(Filter.unparse(operators) + " ");
-    }
-
     search.update_button_visibility();
 
     compose_actions.on_narrow(opts);

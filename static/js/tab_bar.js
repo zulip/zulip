@@ -123,8 +123,12 @@ function build_tab_bar(filter) {
 // we rely entirely on this function to ensure
 // the searchbar has the right text.
 exports.reset_searchbox_text = function () {
-    const search_string = narrow_state.search_string();
+    let search_string = narrow_state.search_string();
     if (search_string !== "") {
+        if (!page_params.search_pills_enabled && !narrow_state.filter().is_search()) {
+            // saves the user a keystroke for quick searches
+            search_string = search_string + " ";
+        }
         $("#search_query").val(search_string);
     }
 };
