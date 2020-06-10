@@ -46,6 +46,8 @@ def check_last_owner(user_profile: UserProfile) -> bool:
 def deactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
                             user_id: int) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id)
+    if target.is_realm_owner and not user_profile.is_realm_owner:
+        return json_error(_('Only owners can deactivate other organization owners.'))
     if check_last_owner(target):
         return json_error(_('Cannot deactivate the only organization owner'))
     return _deactivate_user_profile_backend(request, user_profile, target)
