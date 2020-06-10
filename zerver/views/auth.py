@@ -62,7 +62,7 @@ from two_factor.views import LoginView as BaseTwoFactorLoginView
 ExtraContext = Optional[Dict[str, Any]]
 
 def get_safe_redirect_to(url: str, redirect_host: str) -> str:
-    is_url_safe = is_safe_url(url=url, allowed_hosts=set(redirect_host))
+    is_url_safe = is_safe_url(url=url, allowed_hosts=None)
     if is_url_safe:
         return urllib.parse.urljoin(redirect_host, url)
     else:
