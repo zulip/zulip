@@ -492,12 +492,6 @@ if PRODUCTION:
 
 INTERNAL_BOT_DOMAIN = "zulip.com"
 
-# Set the realm-specific bot names
-for bot in INTERNAL_BOTS + REALM_INTERNAL_BOTS + DISABLED_REALM_INTERNAL_BOTS:
-    if vars().get(bot['var_name']) is None:
-        bot_email = bot['email_template'] % (INTERNAL_BOT_DOMAIN,)
-        vars()[bot['var_name']] = bot_email
-
 ########################################################################
 # STATSD CONFIGURATION
 ########################################################################
