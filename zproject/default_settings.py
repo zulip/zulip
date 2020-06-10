@@ -399,3 +399,6 @@ GOOGLE_ANALYTICS_ID: Optional[str] = None
 
 # This is overridden by dev_settings.py for droplets.
 IS_DEV_DROPLET = False
+
+# Used by puppet/zulip_ops/files/cron.d/check_send_receive_time.
+NAGIOS_BOT_HOST = EXTERNAL_HOST

@@ -427,9 +427,6 @@ else:
 
 ROOT_DOMAIN_URI = EXTERNAL_URI_SCHEME + EXTERNAL_HOST
 
-if "NAGIOS_BOT_HOST" not in vars():
-    NAGIOS_BOT_HOST = EXTERNAL_HOST
-
 S3_KEY = get_secret("s3_key")
 S3_SECRET_KEY = get_secret("s3_secret_key")
 
