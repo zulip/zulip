@@ -643,7 +643,8 @@ class TestSupportEndpoint(ZulipTestCase):
             self.assert_in_success_response(["Lear &amp; Co. scrubbed"], result)
 
         with mock.patch("analytics.views.do_scrub_realm") as m:
-            result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}"})
+            with self.assertRaises(AssertionError):
+                result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}"})
             m.assert_not_called()
 
 class TestGetChartDataHelpers(ZulipTestCase):

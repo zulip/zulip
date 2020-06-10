@@ -1113,46 +1113,46 @@ def get_confirmations(types: List[int], object_ids: List[int],
 def support(request: HttpRequest) -> HttpResponse:
     context: Dict[str, Any] = {}
     if settings.BILLING_ENABLED and request.method == "POST":
-        realm_id = request.POST.get("realm_id", None)
+        # We check that request.POST only has two keys in it: The
+        # realm_id and a field to change.
+        keys = set(request.POST.keys())
+        if "csrfmiddlewaretoken" in keys:
+            keys.remove("csrfmiddlewaretoken")
+        assert(len(keys) == 2)
+
+        realm_id = request.POST.get("realm_id")
         realm = Realm.objects.get(id=realm_id)
 
-        new_plan_type = request.POST.get("plan_type", None)
-        if new_plan_type is not None:
-            new_plan_type = int(new_plan_type)
+        if request.POST.get("plan_type", None) is not None:
+            new_plan_type = int(request.POST.get("plan_type"))
             current_plan_type = realm.plan_type
             do_change_plan_type(realm, new_plan_type)
             msg = f"Plan type of {realm.name} changed from {get_plan_name(current_plan_type)} to {get_plan_name(new_plan_type)} "
             context["message"] = msg
-
-        new_discount = request.POST.get("discount", None)
-        if new_discount is not None:
-            new_discount = Decimal(new_discount)
+        elif request.POST.get("discount", None) is not None:
+            new_discount = Decimal(request.POST.get("discount"))
             current_discount = get_discount_for_realm(realm)
             attach_discount_to_realm(realm, new_discount)
             msg = f"Discount of {realm.name} changed to {new_discount} from {current_discount} "
             context["message"] = msg
-
-        status = request.POST.get("status", None)
-        if status is not None:
+        elif request.POST.get("status", None) is not None:
+            status = request.POST.get("status")
             if status == "active":
                 do_send_realm_reactivation_email(realm)
                 context["message"] = f"Realm reactivation email sent to admins of {realm.name}."
             elif status == "deactivated":
                 do_deactivate_realm(realm, request.user)
                 context["message"] = f"{realm.name} deactivated."
-
-        sponsorship_pending = request.POST.get("sponsorship_pending", None)
-        if sponsorship_pending is not None:
+        elif request.POST.get("sponsorship_pending", None) is not None:
+            sponsorship_pending = request.POST.get("sponsorship_pending")
             if sponsorship_pending == "true":
                 update_sponsorship_status(realm, True)
                 context["message"] = f"{realm.name} marked as pending sponsorship."
             elif sponsorship_pending == "false":
                 update_sponsorship_status(realm, False)
                 context["message"] = f"{realm.name} is no longer pending sponsorship."
-
-        scrub_realm = request.POST.get("scrub_realm", None)
-        if scrub_realm is not None:
-            if scrub_realm == "scrub_realm":
+        elif request.POST.get("scrub_realm", None) is not None:
+            if request.POST.get("scrub_realm") == "scrub_realm":
                 do_scrub_realm(realm)
                 context["message"] = f"{realm.name} scrubbed."
 
