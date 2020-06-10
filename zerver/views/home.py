@@ -189,10 +189,14 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     narrow, narrow_stream, narrow_topic = detect_narrowed_window(request, user_profile)
 
+    client_capabilities = {
+        'notification_settings_null': True,
+    }
+
     register_ret = do_events_register(user_profile, request.client,
                                       apply_markdown=True, client_gravatar=True,
                                       slim_presence=True,
-                                      notification_settings_null=True,
+                                      client_capabilities=client_capabilities,
                                       narrow=narrow)
     update_last_reminder(user_profile)
 

@@ -830,13 +830,15 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
                        queue_lifespan_secs: int = 0,
                        all_public_streams: bool = False,
                        include_subscribers: bool = True,
-                       notification_settings_null: bool = False,
+                       client_capabilities: Dict[str, bool] = {},
                        narrow: Iterable[Sequence[str]] = [],
                        fetch_event_types: Optional[Iterable[str]] = None) -> Dict[str, Any]:
     # Technically we don't need to check this here because
     # build_narrow_filter will check it, but it's nicer from an error
     # handling perspective to do it before contacting Tornado
     check_supported_events_narrow_filter(narrow)
+
+    notification_settings_null = client_capabilities.get('notification_settings_null', False)
 
     if user_profile.realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
         # If real email addresses are not available to the user, their

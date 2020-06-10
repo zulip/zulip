@@ -50,12 +50,11 @@ def events_register_backend(
 
     if client_capabilities is None:
         client_capabilities = {}
-    notification_settings_null = client_capabilities.get("notification_settings_null", False)
 
     ret = do_events_register(user_profile, request.client,
                              apply_markdown, client_gravatar, slim_presence,
                              event_types, queue_lifespan_secs, all_public_streams,
                              narrow=narrow, include_subscribers=include_subscribers,
-                             notification_settings_null=notification_settings_null,
+                             client_capabilities=client_capabilities,
                              fetch_event_types=fetch_event_types)
     return json_success(ret)
