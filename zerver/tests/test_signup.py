@@ -1111,7 +1111,7 @@ class InviteUserTest(InviteUserBase):
 
 earl-test@zulip.com""", ["Denmark"]))
         for user in ("bob", "carol", "dave", "earl"):
-            self.assertTrue(find_key_by_email("%s-test@zulip.com" % (user,)))
+            self.assertTrue(find_key_by_email(f"{user}-test@zulip.com"))
         self.check_sent_emails(["bob-test@zulip.com", "carol-test@zulip.com",
                                 "dave-test@zulip.com", "earl-test@zulip.com"])
 
@@ -1926,7 +1926,7 @@ class MultiuseInviteTest(ZulipTestCase):
         result = self.client_post(invite_link, {'email': email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
+            f"/accounts/send_confirm/{email}"))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
 
@@ -2158,7 +2158,7 @@ class RealmCreationTest(ZulipTestCase):
         result = self.client_post('/new/', {'email': email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/new/send_confirm/%s" % (email,)))
+            f"/accounts/new/send_confirm/{email}"))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
 
@@ -2255,7 +2255,7 @@ class RealmCreationTest(ZulipTestCase):
         result = self.client_post('/new/', {'email': email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/new/send_confirm/%s" % (email,)))
+            f"/accounts/new/send_confirm/{email}"))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
 
@@ -2296,7 +2296,7 @@ class RealmCreationTest(ZulipTestCase):
         result = self.client_post('/new/', {'email': email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/new/send_confirm/%s" % (email,)))
+            f"/accounts/new/send_confirm/{email}"))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
 
@@ -2508,7 +2508,7 @@ class UserSignUpTest(InviteUserBase):
         result = self.client_post('/accounts/home/', {'email': email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
+            f"/accounts/send_confirm/{email}"))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
 
@@ -2540,7 +2540,7 @@ class UserSignUpTest(InviteUserBase):
         result = self.client_post('/accounts/home/', {'email': email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
+            f"/accounts/send_confirm/{email}"))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
 
@@ -2608,7 +2608,7 @@ class UserSignUpTest(InviteUserBase):
         result = self.client_post('/accounts/home/', {'email': email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
+            f"/accounts/send_confirm/{email}"))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
 
@@ -2635,7 +2635,7 @@ class UserSignUpTest(InviteUserBase):
         result = self.client_post('/accounts/home/', {'email': email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
+            f"/accounts/send_confirm/{email}"))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
 
@@ -2667,7 +2667,7 @@ class UserSignUpTest(InviteUserBase):
         result = self.client_post('/accounts/home/', {'email': email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
+            f"/accounts/send_confirm/{email}"))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
 
@@ -2698,7 +2698,7 @@ class UserSignUpTest(InviteUserBase):
         result = self.client_post('/accounts/home/', {'email': email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
+            f"/accounts/send_confirm/{email}"))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
 
@@ -2726,7 +2726,7 @@ class UserSignUpTest(InviteUserBase):
         result = self.client_post('/accounts/home/', {'email': email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
+            f"/accounts/send_confirm/{email}"))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
 
@@ -2969,7 +2969,7 @@ class UserSignUpTest(InviteUserBase):
         result = self.client_post('/accounts/home/', {'email': email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
+            f"/accounts/send_confirm/{email}"))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
 
@@ -3081,7 +3081,7 @@ class UserSignUpTest(InviteUserBase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
+            f"/accounts/send_confirm/{email}"))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
         # Visit the confirmation link.
@@ -3149,7 +3149,7 @@ class UserSignUpTest(InviteUserBase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
+            f"/accounts/send_confirm/{email}"))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
         # Visit the confirmation link.
@@ -3212,7 +3212,7 @@ class UserSignUpTest(InviteUserBase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
+            f"/accounts/send_confirm/{email}"))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
 
@@ -3273,7 +3273,7 @@ class UserSignUpTest(InviteUserBase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
+            f"/accounts/send_confirm/{email}"))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
 
@@ -3393,7 +3393,7 @@ class UserSignUpTest(InviteUserBase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
+            f"/accounts/send_confirm/{email}"))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
 
@@ -3437,7 +3437,7 @@ class UserSignUpTest(InviteUserBase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
+            f"/accounts/send_confirm/{email}"))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
 
@@ -3536,7 +3536,7 @@ class UserSignUpTest(InviteUserBase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
+            f"/accounts/send_confirm/{email}"))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
 
@@ -3575,7 +3575,7 @@ class UserSignUpTest(InviteUserBase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
+            f"/accounts/send_confirm/{email}"))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
         with self.settings(
@@ -3690,7 +3690,7 @@ class UserSignUpTest(InviteUserBase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
+            f"/accounts/send_confirm/{email}"))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
 
@@ -3718,7 +3718,7 @@ class UserSignUpTest(InviteUserBase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
+            f"/accounts/send_confirm/{email}"))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
         # Visit the confirmation link.
@@ -3773,7 +3773,7 @@ class UserSignUpTest(InviteUserBase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
+            f"/accounts/send_confirm/{email}"))
         result = self.client_get(result["Location"], subdomain="zephyr")
         self.assert_in_response("Check your email so we can get started.", result)
         # Visit the confirmation link.

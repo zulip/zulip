@@ -66,6 +66,6 @@ class Command(BaseCommand):
             }
             r = requests.post(endpoint, auth=('apikey', api_key), json=data, timeout=10)
             if r.status_code == 400 and ujson.loads(r.text)['title'] == 'Member Exists':
-                print("%s is already a part of the list." % (data['email_address'],))
+                print("{} is already a part of the list.".format(data['email_address']))
             elif r.status_code >= 400:
                 print(r.text)

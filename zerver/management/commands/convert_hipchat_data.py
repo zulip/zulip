@@ -72,7 +72,7 @@ class Command(BaseCommand):
 
         for path in options['hipchat_tar']:
             if not os.path.exists(path):
-                raise CommandError("Tar file not found: '%s'" % (path,))
+                raise CommandError(f"Tar file not found: '{path}'")
 
             print("Converting Data ...")
             do_convert_data(

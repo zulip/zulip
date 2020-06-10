@@ -276,7 +276,7 @@ def main(options: argparse.Namespace) -> int:
 
         destroyed = destroy_leaked_test_databases()
         if destroyed:
-            print("Dropped %s stale test databases!" % (destroyed,))
+            print(f"Dropped {destroyed} stale test databases!")
 
     clean_unused_caches()
 
@@ -304,7 +304,7 @@ def main(options: argparse.Namespace) -> int:
             pass
 
     version_file = os.path.join(UUID_VAR_PATH, 'provision_version')
-    print('writing to %s\n' % (version_file,))
+    print(f'writing to {version_file}\n')
     open(version_file, 'w').write(PROVISION_VERSION + '\n')
 
     print()

@@ -47,12 +47,12 @@ def load_data(data_file: str) -> List[List[str]]:
 
 def check_uniqueness(emoji_name: str) -> None:
     if emoji_name in emoji_names:
-        raise Exception("Duplicate emoji name: %s" % (emoji_name,))
+        raise Exception(f"Duplicate emoji name: {emoji_name}")
     emoji_names.add(emoji_name)
 
 def check_valid_emoji_name(emoji_name: str) -> None:
     if re.fullmatch("[+-]?[a-z0-9_-]+", emoji_name) is None:
-        raise Exception("Invalid emoji name: %s" % (emoji_name,))
+        raise Exception(f"Invalid emoji name: {emoji_name}")
 
 def check_emoji_names(canonical_name: str, aliases: List[str]) -> None:
     if canonical_name == 'X':

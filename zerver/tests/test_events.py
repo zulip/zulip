@@ -1295,7 +1295,7 @@ class EventsRegisterTest(ZulipTestCase):
         error = realm_user_add_checker('events[0]', events[0])
         self.assert_on_error(error)
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
-        self.assertEqual(new_user_profile.email, "user%s@zulip.testserver" % (new_user_profile.id,))
+        self.assertEqual(new_user_profile.email, f"user{new_user_profile.id}@zulip.testserver")
 
     def test_alert_words_events(self) -> None:
         alert_words_checker = self.check_events_dict([
@@ -1646,7 +1646,7 @@ class EventsRegisterTest(ZulipTestCase):
         elif property_type == (int, type(None)):
             validator = check_int
         else:
-            raise AssertionError("Unexpected property type %s" % (property_type,))
+            raise AssertionError(f"Unexpected property type {property_type}")
         schema_checker = self.check_events_dict([
             ('type', equals('realm')),
             ('op', equals('update')),
@@ -1655,7 +1655,7 @@ class EventsRegisterTest(ZulipTestCase):
         ])
 
         if vals is None:
-            raise AssertionError('No test created for %s' % (name,))
+            raise AssertionError(f'No test created for {name}')
         do_set_realm_property(self.user_profile.realm, name, vals[0])
         for val in vals[1:]:
             state_change_expected = True
@@ -1903,7 +1903,7 @@ class EventsRegisterTest(ZulipTestCase):
         elif property_type is int:
             validator = check_int
         else:
-            raise AssertionError("Unexpected property type %s" % (property_type,))
+            raise AssertionError(f"Unexpected property type {property_type}")
 
         num_events = 1
         if setting_name == "timezone":
@@ -1915,7 +1915,7 @@ class EventsRegisterTest(ZulipTestCase):
             else:
                 values = [False, True, False]
         if values is None:
-            raise AssertionError('No test created for %s' % (setting_name,))
+            raise AssertionError(f'No test created for {setting_name}')
 
         for value in values:
             events = self.do_test(lambda: do_set_user_display_setting(
@@ -2844,7 +2844,7 @@ class EventsRegisterTest(ZulipTestCase):
         ])
 
         events = self.do_test(
-            lambda: self.client_delete("/json/attachments/%s" % (entry.id,)),
+            lambda: self.client_delete(f"/json/attachments/{entry.id}"),
             num_events=1, state_change_expected=False)
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)

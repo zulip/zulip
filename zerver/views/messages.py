@@ -95,7 +95,7 @@ TS_STOP = "</ts-match>"
 def ts_locs_array(
     config: ColumnElement, text: ColumnElement, tsquery: ColumnElement
 ) -> ColumnElement:
-    options = "HighlightAll = TRUE, StartSel = %s, StopSel = %s" % (TS_START, TS_STOP)
+    options = f"HighlightAll = TRUE, StartSel = {TS_START}, StopSel = {TS_STOP}"
     delimited = func.ts_headline(config, text, tsquery, options)
     parts = func.unnest(func.string_to_array(delimited, TS_START)).alias()
     part = column(parts.name)
@@ -255,7 +255,7 @@ class NarrowBuilder:
             base_stream_name = m.group(1)
 
             matching_streams = get_active_streams(self.user_profile.realm).filter(
-                name__iregex=r'^(un)*%s(\.d)*$' % (self._pg_re_escape(base_stream_name),))
+                name__iregex=fr'^(un)*{self._pg_re_escape(base_stream_name)}(\.d)*$')
             recipient_ids = [matching_stream.recipient_id for matching_stream in matching_streams]
             cond = column("recipient_id").in_(recipient_ids)
             return query.where(maybe_negate(cond))
@@ -851,7 +851,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
                 verbose_operators.append("is:" + term['operand'])
             else:
                 verbose_operators.append(term['operator'])
-        request._log_data['extra'] = "[%s]" % (",".join(verbose_operators),)
+        request._log_data['extra'] = "[{}]".format(",".join(verbose_operators))
 
     sa_conn = get_sqlalchemy_connection()
 
@@ -1127,7 +1127,7 @@ def update_message_flags(request: HttpRequest, user_profile: UserProfile,
     count = do_update_message_flags(user_profile, request.client, operation, flag, messages)
 
     target_count_str = str(len(messages))
-    log_data_str = "[%s %s/%s] actually %s" % (operation, flag, target_count_str, count)
+    log_data_str = f"[{operation} {flag}/{target_count_str}] actually {count}"
     request._log_data["extra"] = log_data_str
 
     return json_success({'result': 'success',
@@ -1138,7 +1138,7 @@ def update_message_flags(request: HttpRequest, user_profile: UserProfile,
 def mark_all_as_read(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     count = do_mark_all_as_read(user_profile, request.client)
 
-    log_data_str = "[%s updated]" % (count,)
+    log_data_str = f"[{count} updated]"
     request._log_data["extra"] = log_data_str
 
     return json_success({'result': 'success',
@@ -1151,7 +1151,7 @@ def mark_stream_as_read(request: HttpRequest,
     stream, recipient, sub = access_stream_by_id(user_profile, stream_id)
     count = do_mark_stream_messages_as_read(user_profile, request.client, stream)
 
-    log_data_str = "[%s updated]" % (count,)
+    log_data_str = f"[{count} updated]"
     request._log_data["extra"] = log_data_str
 
     return json_success({'result': 'success',
@@ -1176,7 +1176,7 @@ def mark_topic_as_read(request: HttpRequest,
 
     count = do_mark_stream_messages_as_read(user_profile, request.client, stream, topic_name)
 
-    log_data_str = "[%s updated]" % (count,)
+    log_data_str = f"[{count} updated]"
     request._log_data["extra"] = log_data_str
 
     return json_success({'result': 'success',
@@ -1616,7 +1616,7 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
                                        mention_user_ids, mention_data)
 
     # Include the number of messages changed in the logs
-    request._log_data['extra'] = "[%s]" % (number_changed,)
+    request._log_data['extra'] = f"[{number_changed}]"
     if links_for_embed:
         event_data = {
             'message_id': message.id,

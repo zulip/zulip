@@ -11,9 +11,9 @@ class HttpResponseUnauthorized(HttpResponse):
     def __init__(self, realm: str, www_authenticate: Optional[str]=None) -> None:
         HttpResponse.__init__(self)
         if www_authenticate is None:
-            self["WWW-Authenticate"] = 'Basic realm="%s"' % (realm,)
+            self["WWW-Authenticate"] = f'Basic realm="{realm}"'
         elif www_authenticate == "session":
-            self["WWW-Authenticate"] = 'Session realm="%s"' % (realm,)
+            self["WWW-Authenticate"] = f'Session realm="{realm}"'
         else:
             raise AssertionError("Invalid www_authenticate value!")
 

@@ -150,7 +150,7 @@ class QueueProcessingWorker(ABC):
 
         os.makedirs(settings.QUEUE_STATS_DIR, exist_ok=True)
 
-        fname = '%s.stats' % (self.queue_name,)
+        fname = f'{self.queue_name}.stats'
         fn = os.path.join(settings.QUEUE_STATS_DIR, fname)
         with lockfile(fn + '.lock'):
             tmp_fn = fn + '.tmp'
@@ -204,9 +204,9 @@ class QueueProcessingWorker(ABC):
         self._log_problem()
         if not os.path.exists(settings.QUEUE_ERROR_DIR):
             os.mkdir(settings.QUEUE_ERROR_DIR)  # nocoverage
-        fname = '%s.errors' % (self.queue_name,)
+        fname = f'{self.queue_name}.errors'
         fn = os.path.join(settings.QUEUE_ERROR_DIR, fname)
-        line = '%s\t%s\n' % (time.asctime(), ujson.dumps(events))
+        line = f'{time.asctime()}\t{ujson.dumps(events)}\n'
         lock_fn = fn + '.lock'
         with lockfile(lock_fn):
             with open(fn, 'ab') as f:
@@ -214,7 +214,7 @@ class QueueProcessingWorker(ABC):
         check_and_send_restart_signal()
 
     def _log_problem(self) -> None:
-        logging.exception("Problem handling data on queue %s" % (self.queue_name,))
+        logging.exception(f"Problem handling data on queue {self.queue_name}")
 
     def setup(self) -> None:
         self.q = SimpleQueueClient()
@@ -685,8 +685,7 @@ class DeferredWorker(QueueProcessingWorker):
 
             # Send a private message notification letting the user who
             # triggered the export know the export finished.
-            content = "Your data export is complete and has been uploaded here:\n\n%s" % (
-                public_url,)
+            content = f"Your data export is complete and has been uploaded here:\n\n{public_url}"
             internal_send_private_message(
                 realm=user_profile.realm,
                 sender=get_system_bot(settings.NOTIFICATION_BOT),

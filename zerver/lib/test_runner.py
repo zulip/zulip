@@ -74,7 +74,7 @@ def full_test_name(test: TestCase) -> str:
     test_module = test.__module__
     test_class = test.__class__.__name__
     test_method = test._testMethodName
-    return '%s.%s.%s' % (test_module, test_class, test_method)
+    return f'{test_module}.{test_class}.{test_method}'
 
 def get_test_method(test: TestCase) -> Callable[[], None]:
     return getattr(test, test._testMethodName)
@@ -91,14 +91,14 @@ def report_slow_tests() -> None:
     for delay, test_name, slowness_reason in timings[:15]:
         if not slowness_reason:
             slowness_reason = 'UNKNOWN WHY SLOW, please investigate'
-        print(' %0.3f %s\n       %s\n' % (delay, test_name, slowness_reason))
+        print(f' {delay:0.3f} {test_name}\n       {slowness_reason}\n')
 
     print('...')
     for delay, test_name, slowness_reason in timings[100:]:
         if slowness_reason:
-            print(' %.3f %s is not that slow' % (delay, test_name))
+            print(f' {delay:.3f} {test_name} is not that slow')
             print('      consider removing @slow decorator')
-            print('      This may no longer be true: %s' % (slowness_reason,))
+            print(f'      This may no longer be true: {slowness_reason}')
 
 def enforce_timely_test_completion(test_method: Callable[..., ReturnT], test_name: str,
                                    delay: float, result: unittest.TestResult) -> None:
@@ -110,7 +110,7 @@ def enforce_timely_test_completion(test_method: Callable[..., ReturnT], test_nam
     assert isinstance(result, TextTestResult) or isinstance(result, RemoteTestResult)
 
     if delay > max_delay:
-        msg = '** Test is TOO slow: %s (%.3f s)\n' % (test_name, delay)
+        msg = f'** Test is TOO slow: {test_name} ({delay:.3f} s)\n'
         result.addInfo(test_method, msg)
 
 def fast_tests_only() -> bool:

@@ -97,7 +97,7 @@ def build_userprofile(timestamp: Any, domain_name: str,
 
 def get_user_email(user_data: ZerverFieldsT, domain_name: str) -> str:
     # TODO Get user email from github
-    email = ("%s@users.noreply.github.com" % (user_data['username'],))
+    email = ("{}@users.noreply.github.com".format(user_data['username']))
     return email
 
 def build_stream_map(timestamp: Any,
@@ -240,14 +240,14 @@ def get_usermentions(message: Dict[str, Any], user_map: Dict[str, int],
     if 'mentions' in message:
         for mention in message['mentions']:
             if mention.get('userId') in user_map:
-                gitter_mention = '@%s' % (mention['screenName'],)
+                gitter_mention = '@{}'.format(mention['screenName'])
                 if mention['screenName'] not in user_short_name_to_full_name:
                     logging.info("Mentioned user %s never sent any messages, so has no full name data",
                                  mention['screenName'])
                     full_name = mention['screenName']
                 else:
                     full_name = user_short_name_to_full_name[mention['screenName']]
-                zulip_mention = ('@**%s**' % (full_name,))
+                zulip_mention = (f'@**{full_name}**')
                 message['text'] = message['text'].replace(gitter_mention, zulip_mention)
 
                 mentioned_user_ids.append(user_map[mention['userId']])

@@ -30,4 +30,4 @@ and will otherwise fall back to the zulip realm."""
             domain = realm.string_id + '.zulip.com'
 
         name = '%02d-user' % (UserProfile.objects.filter(email__contains='user@').count(),)
-        do_create_user('%s@%s' % (name, domain), 'password', valid_realm, name, name)
+        do_create_user(f'{name}@{domain}', 'password', valid_realm, name, name)

@@ -112,7 +112,7 @@ def validate_email_is_valid(
     return None
 
 def email_reserved_for_system_bots_error(email: str) -> str:
-    return '%s is reserved for system bots' % (email,)
+    return f'{email} is reserved for system bots'
 
 def get_existing_user_errors(
     target_realm: Realm,

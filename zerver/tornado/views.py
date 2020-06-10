@@ -29,7 +29,7 @@ def cleanup_event_queue(request: HttpRequest, user_profile: UserProfile,
         raise BadEventQueueIdError(queue_id)
     if user_profile.id != client.user_profile_id:
         return json_error(_("You are not authorized to access this queue"))
-    request._log_data['extra'] = "[%s]" % (queue_id,)
+    request._log_data['extra'] = f"[{queue_id}]"
     client.cleanup()
     return json_success()
 

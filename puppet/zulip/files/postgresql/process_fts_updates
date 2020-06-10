@@ -142,7 +142,7 @@ while True:
             # Catch up on any historical columns
             while True:
                 rows_updated = update_fts_columns(cursor)
-                notice = "Processed %s rows catching up" % (rows_updated,)
+                notice = f"Processed {rows_updated} rows catching up"
                 if rows_updated > 0:
                     logger.info(notice)
                 else:

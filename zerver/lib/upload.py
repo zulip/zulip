@@ -378,7 +378,7 @@ class S3UploadBackend(ZulipUploadBackend):
             random_name(18),
             sanitize_name(uploaded_file_name)
         ])
-        url = "/user_uploads/%s" % (s3_file_name,)
+        url = f"/user_uploads/{s3_file_name}"
 
         upload_image_to_s3(
             bucket_name,
@@ -469,12 +469,12 @@ class S3UploadBackend(ZulipUploadBackend):
         bucket = settings.S3_AVATAR_BUCKET
         medium_suffix = "-medium.png" if medium else ""
         # ?x=x allows templates to append additional parameters with &s
-        return "https://%s.s3.amazonaws.com/%s%s?x=x" % (bucket, hash_key, medium_suffix)
+        return f"https://{bucket}.s3.amazonaws.com/{hash_key}{medium_suffix}?x=x"
 
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
         bucket = settings.S3_AVATAR_BUCKET
         # export_path has a leading /
-        return "https://%s.s3.amazonaws.com%s" % (bucket, export_path)
+        return f"https://{bucket}.s3.amazonaws.com{export_path}"
 
     def realm_avatar_and_logo_path(self, realm: Realm) -> str:
         return os.path.join(str(realm.id), 'realm')
@@ -507,8 +507,7 @@ class S3UploadBackend(ZulipUploadBackend):
     def get_realm_icon_url(self, realm_id: int, version: int) -> str:
         bucket = settings.S3_AVATAR_BUCKET
         # ?x=x allows templates to append additional parameters with &s
-        return "https://%s.s3.amazonaws.com/%s/realm/icon.png?version=%s" % (
-            bucket, realm_id, version)
+        return f"https://{bucket}.s3.amazonaws.com/{realm_id}/realm/icon.png?version={version}"
 
     def upload_realm_logo_image(self, logo_file: File, user_profile: UserProfile,
                                 night: bool) -> None:
@@ -547,8 +546,7 @@ class S3UploadBackend(ZulipUploadBackend):
             file_name = 'logo.png'
         else:
             file_name = 'night_logo.png'
-        return "https://%s.s3.amazonaws.com/%s/realm/%s?version=%s" % (
-            bucket, realm_id, file_name, version)
+        return f"https://{bucket}.s3.amazonaws.com/{realm_id}/realm/{file_name}?version={version}"
 
     def ensure_medium_avatar_image(self, user_profile: UserProfile) -> None:
         file_path = user_avatar_path(user_profile)
@@ -618,7 +616,7 @@ class S3UploadBackend(ZulipUploadBackend):
         bucket = settings.S3_AVATAR_BUCKET
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(realm_id=realm_id,
                                                         emoji_file_name=emoji_file_name)
-        return "https://%s.s3.amazonaws.com/%s" % (bucket, emoji_path)
+        return f"https://{bucket}.s3.amazonaws.com/{emoji_path}"
 
     def upload_export_tarball(self, realm: Optional[Realm], tarball_path: str) -> str:
         def percent_callback(bytes_transferred: Any) -> None:
@@ -747,7 +745,7 @@ class LocalUploadBackend(ZulipUploadBackend):
     def get_avatar_url(self, hash_key: str, medium: bool=False) -> str:
         # ?x=x allows templates to append additional parameters with &s
         medium_suffix = "-medium" if medium else ""
-        return "/user_avatars/%s%s.png?x=x" % (hash_key, medium_suffix)
+        return f"/user_avatars/{hash_key}{medium_suffix}.png?x=x"
 
     def copy_avatar(self, source_profile: UserProfile, target_profile: UserProfile) -> None:
         source_file_path = user_avatar_path(source_profile)
@@ -772,7 +770,7 @@ class LocalUploadBackend(ZulipUploadBackend):
 
     def get_realm_icon_url(self, realm_id: int, version: int) -> str:
         # ?x=x allows templates to append additional parameters with &s
-        return "/user_avatars/%s/realm/icon.png?version=%s" % (realm_id, version)
+        return f"/user_avatars/{realm_id}/realm/icon.png?version={version}"
 
     def upload_realm_logo_image(self, logo_file: File, user_profile: UserProfile,
                                 night: bool) -> None:
@@ -798,7 +796,7 @@ class LocalUploadBackend(ZulipUploadBackend):
             file_name = 'night_logo.png'
         else:
             file_name = 'logo.png'
-        return "/user_avatars/%s/realm/%s?version=%s" % (realm_id, file_name, version)
+        return f"/user_avatars/{realm_id}/realm/{file_name}?version={version}"
 
     def ensure_medium_avatar_image(self, user_profile: UserProfile) -> None:
         file_path = user_avatar_path(user_profile)

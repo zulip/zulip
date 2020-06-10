@@ -2259,7 +2259,7 @@ class GetOldMessagesTest(ZulipTestCase):
             post_params = dict(required_args[:i] + required_args[i + 1:])
             result = self.client_get("/json/messages", post_params)
             self.assert_json_error(result,
-                                   "Missing '%s' argument" % (required_args[i][0],))
+                                   f"Missing '{required_args[i][0]}' argument")
 
     def test_get_messages_limits(self) -> None:
         """
@@ -2295,7 +2295,7 @@ class GetOldMessagesTest(ZulipTestCase):
                                    )
                 result = self.client_get("/json/messages", post_params)
                 self.assert_json_error(result,
-                                       "Bad value for '%s': %s" % (param, type))
+                                       f"Bad value for '{param}': {type}")
 
     def test_bad_narrow_type(self) -> None:
         """
@@ -2313,7 +2313,7 @@ class GetOldMessagesTest(ZulipTestCase):
             post_params = dict(other_params + [("narrow", type)])
             result = self.client_get("/json/messages", post_params)
             self.assert_json_error(result,
-                                   "Bad value for 'narrow': %s" % (type,))
+                                   f"Bad value for 'narrow': {type}")
 
     def test_bad_narrow_operator(self) -> None:
         """
@@ -2535,7 +2535,7 @@ class GetOldMessagesTest(ZulipTestCase):
         queries = [q for q in all_queries if '/* get_messages */' in q['sql']]
         self.assertEqual(len(queries), 1)
         sql = queries[0]['sql']
-        self.assertNotIn('AND message_id = %s' % (LARGER_THAN_MAX_MESSAGE_ID,), sql)
+        self.assertNotIn(f'AND message_id = {LARGER_THAN_MAX_MESSAGE_ID}', sql)
         self.assertIn('ORDER BY message_id ASC', sql)
 
         cond = 'WHERE user_profile_id = %d AND message_id >= %d' % (
@@ -2583,7 +2583,7 @@ class GetOldMessagesTest(ZulipTestCase):
         queries = [q for q in all_queries if '/* get_messages */' in q['sql']]
         self.assertEqual(len(queries), 1)
         sql = queries[0]['sql']
-        self.assertNotIn('AND message_id = %s' % (LARGER_THAN_MAX_MESSAGE_ID,), sql)
+        self.assertNotIn(f'AND message_id = {LARGER_THAN_MAX_MESSAGE_ID}', sql)
         self.assertIn('ORDER BY message_id ASC', sql)
         cond = 'WHERE user_profile_id = %d AND message_id <= %d' % (
             user_profile.id, first_unread_message_id - 1
@@ -2795,19 +2795,19 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
         sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) AND message_id = 0) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 0,
-                                              'narrow': '[["pm-with", "%s"]]' % (othello_email,)},
+                                              'narrow': f'[["pm-with", "{othello_email}"]]'},
                                              sql)
 
         sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) AND message_id = 0) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 1, 'num_after': 0,
-                                              'narrow': '[["pm-with", "%s"]]' % (othello_email,)},
+                                              'narrow': f'[["pm-with", "{othello_email}"]]'},
                                              sql)
 
         sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 9,
-                                              'narrow': '[["pm-with", "%s"]]' % (othello_email,)},
+                                              'narrow': f'[["pm-with", "{othello_email}"]]'},
                                              sql)
 
         sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (flags & 2) != 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
@@ -2819,7 +2819,7 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
         sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND sender_id = {othello_id} ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 9,
-                                              'narrow': '[["sender", "%s"]]' % (othello_email,)},
+                                              'narrow': f'[["sender", "{othello_email}"]]'},
                                              sql)
 
         sql_template = 'SELECT anon_1.message_id \nFROM (SELECT id AS message_id \nFROM zerver_message \nWHERE recipient_id = {scotland_recipient} ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
@@ -2856,7 +2856,7 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
         sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND sender_id = {hamlet_id} AND recipient_id = {hamlet_recipient} ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 9,
-                                              'narrow': '[["pm-with", "%s"]]' % (hamlet_email,)},
+                                              'narrow': f'[["pm-with", "{hamlet_email}"]]'},
                                              sql)
 
         sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND recipient_id = {scotland_recipient} AND (flags & 2) != 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'

@@ -32,4 +32,4 @@ def nagios_from_file(results_file: str) -> Tuple[int, str]:
             state = pieces[2]
             data = pieces[3]
 
-    return (ret, "%s: %s" % (state, data))
+    return (ret, f"{state}: {data}")

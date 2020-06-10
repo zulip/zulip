@@ -22,7 +22,7 @@ def process_batch(apps: StateApps, id_start: int, id_end: int, last_id: int) -> 
             continue
 
         if message.id % 1000 == 0:
-            print("Processed %s / %s" % (message.id, last_id))
+            print(f"Processed {message.id} / {last_id}")
 
         # Because we maintain the Attachment table, this should be as
         # simple as just just checking if there's any Attachment

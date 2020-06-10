@@ -33,7 +33,7 @@ def copy_user_settings(source_profile: UserProfile, target_profile: UserProfile)
 
 def get_display_email_address(user_profile: UserProfile, realm: Realm) -> str:
     if not user_profile.email_address_is_realm_public():
-        return "user%s@%s" % (user_profile.id, get_fake_email_domain())
+        return f"user{user_profile.id}@{get_fake_email_domain()}"
     return user_profile.delivery_email
 
 def get_role_for_new_user(invited_as: int, realm_creation: bool=False) -> int:

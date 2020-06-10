@@ -922,7 +922,7 @@ class StreamAdminTest(ZulipTestCase):
             "/json/users/me/subscriptions",
             {"subscriptions": ujson.dumps([{"name": deactivated_stream_name}])})
         self.assert_json_error(
-            result, "Unable to access stream (%s)." % (deactivated_stream_name,))
+            result, f"Unable to access stream ({deactivated_stream_name}).")
 
     def test_you_must_be_realm_admin(self) -> None:
         """
@@ -1804,7 +1804,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                                                                    "value": "bad",
                                                                    "stream_id": subs[0]["stream_id"]}])})
         self.assert_json_error(result,
-                               '%s is not a boolean' % (property_name,))
+                               f'{property_name} is not a boolean')
 
         property_name = "in_home_view"
         result = self.api_post(test_user, "/api/v1/users/me/subscriptions/properties",
@@ -1812,7 +1812,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                                                                    "value": "bad",
                                                                    "stream_id": subs[0]["stream_id"]}])})
         self.assert_json_error(result,
-                               '%s is not a boolean' % (property_name,))
+                               f'{property_name} is not a boolean')
 
         property_name = "desktop_notifications"
         result = self.api_post(test_user, "/api/v1/users/me/subscriptions/properties",
@@ -1820,7 +1820,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                                                                    "value": "bad",
                                                                    "stream_id": subs[0]["stream_id"]}])})
         self.assert_json_error(result,
-                               '%s is not a boolean' % (property_name,))
+                               f'{property_name} is not a boolean')
 
         property_name = "audible_notifications"
         result = self.api_post(test_user, "/api/v1/users/me/subscriptions/properties",
@@ -1828,7 +1828,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                                                                    "value": "bad",
                                                                    "stream_id": subs[0]["stream_id"]}])})
         self.assert_json_error(result,
-                               '%s is not a boolean' % (property_name,))
+                               f'{property_name} is not a boolean')
 
         property_name = "push_notifications"
         result = self.api_post(test_user, "/api/v1/users/me/subscriptions/properties",
@@ -1836,7 +1836,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                                                                    "value": "bad",
                                                                    "stream_id": subs[0]["stream_id"]}])})
         self.assert_json_error(result,
-                               '%s is not a boolean' % (property_name,))
+                               f'{property_name} is not a boolean')
 
         property_name = "email_notifications"
         result = self.api_post(test_user, "/api/v1/users/me/subscriptions/properties",
@@ -1844,7 +1844,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                                                                    "value": "bad",
                                                                    "stream_id": subs[0]["stream_id"]}])})
         self.assert_json_error(result,
-                               '%s is not a boolean' % (property_name,))
+                               f'{property_name} is not a boolean')
 
         property_name = "wildcard_mentions_notify"
         result = self.api_post(test_user, "/api/v1/users/me/subscriptions/properties",
@@ -1853,7 +1853,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                                                                    "stream_id": subs[0]["stream_id"]}])})
 
         self.assert_json_error(result,
-                               "%s is not a boolean" % (property_name,))
+                               f"{property_name} is not a boolean")
 
         property_name = "color"
         result = self.api_post(test_user, "/api/v1/users/me/subscriptions/properties",
@@ -1861,7 +1861,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                                                                    "value": False,
                                                                    "stream_id": subs[0]["stream_id"]}])})
         self.assert_json_error(result,
-                               '%s is not a string' % (property_name,))
+                               f'{property_name} is not a string')
 
     def test_json_subscription_property_invalid_stream(self) -> None:
         test_user = self.example_user("hamlet")
@@ -2024,7 +2024,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
         }
         result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
         self.assert_json_error(result,
-                               "Invalid stream name '%s'" % (invalid_stream_name,))
+                               f"Invalid stream name '{invalid_stream_name}'")
 
     def test_stream_name_too_long(self) -> None:
         user = self.example_user('hamlet')
@@ -2048,7 +2048,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
         }
         result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
         self.assert_json_error(result,
-                               "Stream name '%s' contains NULL (0x00) characters." % (stream_name,))
+                               f"Stream name '{stream_name}' contains NULL (0x00) characters.")
 
     def test_compose_views_rollback(self) -> None:
         '''
@@ -2348,7 +2348,7 @@ class SubscriptionAPITest(ZulipTestCase):
         stream_name = "abc\000"
         result = self.common_subscribe_to_streams(self.test_user, [stream_name])
         self.assert_json_error(result,
-                               "Stream name '%s' contains NULL (0x00) characters." % (stream_name,))
+                               f"Stream name '{stream_name}' contains NULL (0x00) characters.")
 
     def test_user_settings_for_adding_streams(self) -> None:
         with mock.patch('zerver.models.UserProfile.can_create_streams', return_value=False):
@@ -2457,7 +2457,7 @@ class SubscriptionAPITest(ZulipTestCase):
         invalid_stream_name = ""
         result = self.common_subscribe_to_streams(self.test_user, [invalid_stream_name])
         self.assert_json_error(result,
-                               "Invalid stream name '%s'" % (invalid_stream_name,))
+                               f"Invalid stream name '{invalid_stream_name}'")
 
     def assert_adding_subscriptions_for_principal(self, invitee_data: Union[str, int], invitee_realm: Realm,
                                                   streams: List[str], invite_only: bool=False) -> None:
@@ -2821,7 +2821,7 @@ class SubscriptionAPITest(ZulipTestCase):
         mit_user = self.mit_user('starnine')
 
         realm = get_realm("zephyr")
-        stream_names = ["stream_%s" % (i,) for i in range(40)]
+        stream_names = [f"stream_{i}" for i in range(40)]
         streams = [
             self.make_stream(stream_name, realm=realm)
             for stream_name in stream_names]
@@ -2857,7 +2857,7 @@ class SubscriptionAPITest(ZulipTestCase):
     def test_bulk_subscribe_many(self) -> None:
 
         # Create a whole bunch of streams
-        streams = ["stream_%s" % (i,) for i in range(20)]
+        streams = [f"stream_{i}" for i in range(20)]
         for stream_name in streams:
             self.make_stream(stream_name)
 
@@ -3015,7 +3015,7 @@ class SubscriptionAPITest(ZulipTestCase):
         streams_to_remove = random_streams[:1]  # pick only one fake stream, to make checking the error message easy
         result = self.client_delete("/json/users/me/subscriptions",
                                     {"subscriptions": ujson.dumps(streams_to_remove)})
-        self.assert_json_error(result, "Stream(s) (%s) do not exist" % (random_streams[0],))
+        self.assert_json_error(result, f"Stream(s) ({random_streams[0]}) do not exist")
 
     def helper_subscriptions_exists(self, stream: str, expect_success: bool, subscribed: bool) -> None:
         """
@@ -3473,7 +3473,7 @@ class StreamIdTest(ZulipTestCase):
         user = self.example_user('hamlet')
         self.login_user(user)
         stream = gather_subscriptions(user)[0][0]
-        result = self.client_get("/json/get_stream_id?stream=%s" % (stream['name'],))
+        result = self.client_get("/json/get_stream_id?stream={}".format(stream['name']))
         self.assert_json_success(result)
         self.assertEqual(result.json()['stream_id'], stream['stream_id'])
 
@@ -3631,7 +3631,7 @@ class GetSubscribersTest(ZulipTestCase):
         (We also use this test to verify subscription notifications to
         folks who get subscribed to streams.)
         """
-        streams = ["stream_%s" % (i,) for i in range(10)]
+        streams = [f"stream_{i}" for i in range(10)]
         for stream_name in streams:
             self.make_stream(stream_name)
 

@@ -402,7 +402,7 @@ def remote_user_jwt(request: HttpRequest) -> HttpResponse:
     if email_domain is None:
         raise JsonableError(_("No organization specified in JSON web token claims"))
 
-    email = "%s@%s" % (remote_user, email_domain)
+    email = f"{remote_user}@{email_domain}"
 
     try:
         realm = get_realm(subdomain)

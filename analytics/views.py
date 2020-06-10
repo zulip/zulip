@@ -96,9 +96,9 @@ def stats_for_realm(request: HttpRequest, realm_str: str) -> HttpResponse:
     try:
         realm = get_realm(realm_str)
     except Realm.DoesNotExist:
-        return HttpResponseNotFound("Realm %s does not exist" % (realm_str,))
+        return HttpResponseNotFound(f"Realm {realm_str} does not exist")
 
-    return render_stats(request, '/realm/%s' % (realm_str,), realm.name or realm.string_id,
+    return render_stats(request, f'/realm/{realm_str}', realm.name or realm.string_id,
                         analytics_ready=is_analytics_ready(realm))
 
 @require_server_admin
@@ -106,8 +106,8 @@ def stats_for_realm(request: HttpRequest, realm_str: str) -> HttpResponse:
 def stats_for_remote_realm(request: HttpRequest, remote_server_id: str,
                            remote_realm_id: str) -> HttpResponse:
     server = RemoteZulipServer.objects.get(id=remote_server_id)
-    return render_stats(request, '/remote/%s/realm/%s' % (server.id, remote_realm_id),
-                        "Realm %s on server %s" % (remote_realm_id, server.hostname))
+    return render_stats(request, f'/remote/{server.id}/realm/{remote_realm_id}',
+                        f"Realm {remote_realm_id} on server {server.hostname}")
 
 @require_server_admin_api
 @has_request_variables
@@ -136,8 +136,8 @@ def stats_for_installation(request: HttpRequest) -> HttpResponse:
 @require_server_admin
 def stats_for_remote_installation(request: HttpRequest, remote_server_id: str) -> HttpResponse:
     server = RemoteZulipServer.objects.get(id=remote_server_id)
-    return render_stats(request, '/remote/%s/installation' % (server.id,),
-                        'remote Installation %s' % (server.hostname,), True, True)
+    return render_stats(request, f'/remote/{server.id}/installation',
+                        f'remote Installation {server.hostname}', True, True)
 
 @require_server_admin_api
 @has_request_variables
@@ -332,7 +332,7 @@ def table_filtered_to_id(table: Type[BaseCount], key_id: int) -> QuerySet:
     elif table == RemoteRealmCount:
         return RemoteRealmCount.objects.filter(realm_id=key_id)
     else:
-        raise AssertionError("Unknown table: %s" % (table,))
+        raise AssertionError(f"Unknown table: {table}")
 
 def client_label_map(name: str) -> str:
     if name == "website":
@@ -463,7 +463,7 @@ def get_realm_day_counts() -> Dict[str, Dict[str, str]]:
             else:
                 good_bad = 'neutral'
 
-            return '<td class="number %s">%s</td>' % (good_bad, cnt)
+            return f'<td class="number {good_bad}">{cnt}</td>'
 
         cnts = (format_count(raw_cnts[0], 'neutral')
                 + ''.join(map(format_count, raw_cnts[1:])))
@@ -629,7 +629,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         total_hours += hours
         row['hours'] = str(int(hours))
         try:
-            row['hours_per_user'] = '%.1f' % (hours / row['dau_count'],)
+            row['hours_per_user'] = '{:.1f}'.format(hours / row['dau_count'])
         except Exception:
             pass
 
@@ -709,7 +709,7 @@ def user_activity_intervals() -> Tuple[mark_safe, Dict[str, float]]:
 
     for string_id, realm_intervals in itertools.groupby(all_intervals, by_string_id):
         realm_duration = timedelta(0)
-        output += '<hr>%s\n' % (string_id,)
+        output += f'<hr>{string_id}\n'
         for email, intervals in itertools.groupby(realm_intervals, by_email):
             duration = timedelta(0)
             for interval in intervals:
@@ -723,9 +723,9 @@ def user_activity_intervals() -> Tuple[mark_safe, Dict[str, float]]:
 
         realm_minutes[string_id] = realm_duration.total_seconds() / 60
 
-    output += "\nTotal Duration:                      %s\n" % (total_duration,)
-    output += "\nTotal Duration in minutes:           %s\n" % (total_duration.total_seconds() / 60.,)
-    output += "Total Duration amortized to a month: %s" % (total_duration.total_seconds() * 30. / 60.,)
+    output += f"\nTotal Duration:                      {total_duration}\n"
+    output += f"\nTotal Duration in minutes:           {total_duration.total_seconds() / 60.}\n"
+    output += f"Total Duration amortized to a month: {total_duration.total_seconds() * 30. / 60.}"
     content = mark_safe('<pre>' + output + '</pre>')
     return content, realm_minutes
 
@@ -841,7 +841,7 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
     ###
 
     for mobile_type in ['Android', 'ZulipiOS']:
-        title = '%s usage' % (mobile_type,)
+        title = f'{mobile_type} usage'
 
         query = SQL('''
             select
@@ -1284,13 +1284,13 @@ def format_date_for_activity_reports(date: Optional[datetime]) -> str:
 def user_activity_link(email: str) -> mark_safe:
     url_name = 'analytics.views.get_user_activity'
     url = reverse(url_name, kwargs=dict(email=email))
-    email_link = '<a href="%s">%s</a>' % (url, email)
+    email_link = f'<a href="{url}">{email}</a>'
     return mark_safe(email_link)
 
 def realm_activity_link(realm_str: str) -> mark_safe:
     url_name = 'analytics.views.get_realm_activity'
     url = reverse(url_name, kwargs=dict(realm_str=realm_str))
-    realm_link = '<a href="%s">%s</a>' % (url, realm_str)
+    realm_link = f'<a href="{url}">{realm_str}</a>'
     return mark_safe(realm_link)
 
 def realm_stats_link(realm_str: str) -> mark_safe:
@@ -1449,7 +1449,7 @@ def get_realm_activity(request: HttpRequest, realm_str: str) -> HttpResponse:
     try:
         admins = Realm.objects.get(string_id=realm_str).get_human_admin_users()
     except Realm.DoesNotExist:
-        return HttpResponseNotFound("Realm %s does not exist" % (realm_str,))
+        return HttpResponseNotFound(f"Realm {realm_str} does not exist")
 
     admin_emails = {admin.delivery_email for admin in admins}
 

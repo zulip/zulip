@@ -53,7 +53,7 @@ def beanstalk_decoder(view_func: ViewFuncT) -> ViewFuncT:
         if auth_type.lower() == "basic":
             email, api_key = base64.b64decode(encoded_value).decode('utf-8').split(":")
             email = email.replace('%40', '@')
-            credentials = "%s:%s" % (email, api_key)
+            credentials = f"{email}:{api_key}"
             encoded_credentials: str = base64.b64encode(credentials.encode('utf-8')).decode('utf8')
             request.META['HTTP_AUTHORIZATION'] = "Basic " + encoded_credentials
 
@@ -89,8 +89,8 @@ def api_beanstalk_webhook(request: HttpRequest, user_profile: UserProfile,
         revision = payload.get('revision')
         (short_commit_msg, _, _) = payload['message'].partition("\n")
 
-        subject = "svn r%s" % (revision,)
-        content = "%s pushed [revision %s](%s):\n\n> %s" % (author, revision, url, short_commit_msg)
+        subject = f"svn r{revision}"
+        content = f"{author} pushed [revision {revision}]({url}):\n\n> {short_commit_msg}"
 
     check_send_webhook_message(request, user_profile, subject, content)
     return json_success()

@@ -110,11 +110,11 @@ class MarkdownDirectoryView(ApiURLView):
             # Strip the header and then use the first line to get the article title
             article_title = first_line.lstrip("#").strip()
             if context["not_index_page"]:
-                context["OPEN_GRAPH_TITLE"] = "%s (%s)" % (article_title, title_base)
+                context["OPEN_GRAPH_TITLE"] = f"{article_title} ({title_base})"
             else:
                 context["OPEN_GRAPH_TITLE"] = title_base
             self.request.placeholder_open_graph_description = (
-                "REPLACMENT_OPEN_GRAPH_DESCRIPTION_%s" % (int(2**24 * random.random()),))
+                f"REPLACMENT_OPEN_GRAPH_DESCRIPTION_{int(2**24 * random.random())}")
             context["OPEN_GRAPH_DESCRIPTION"] = self.request.placeholder_open_graph_description
 
         context["sidebar_index"] = sidebar_index

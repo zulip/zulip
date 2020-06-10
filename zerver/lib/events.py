@@ -818,7 +818,7 @@ def apply_event(state: Dict[str, Any],
     elif event['type'] == 'has_zoom_token':
         state['has_zoom_token'] = event['value']
     else:
-        raise AssertionError("Unexpected event type %s" % (event['type'],))
+        raise AssertionError("Unexpected event type {}".format(event['type']))
 
 def do_events_register(user_profile: UserProfile, user_client: Client,
                        apply_markdown: bool = True,

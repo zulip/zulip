@@ -60,7 +60,7 @@ def encode_email_address_helper(name: str, email_token: str, show_sender: bool=F
 
     # If encoded_name ends up empty, we just skip this part of the address:
     if encoded_name:
-        encoded_token = "%s.%s" % (encoded_name, email_token)
+        encoded_token = f"{encoded_name}.{email_token}"
     else:
         encoded_token = email_token
 

@@ -22,7 +22,7 @@ states: Dict[str, int] = {
 }
 
 def report(state: str, output: str) -> None:
-    print("%s\n%s" % (state, output))
+    print(f"{state}\n{output}")
     exit(states[state])
 
 output = ""
@@ -41,7 +41,7 @@ for results_file_name in os.listdir(RESULTS_DIR):
         down_count += 1
         this_state = "DOWN"
     last_check_ts = time.strftime("%Y-%m-%d %H:%M %Z", time.gmtime(last_check))
-    output += "%s: %s (%s)\n" % (results_file, this_state, last_check_ts)
+    output += f"{results_file}: {this_state} ({last_check_ts})\n"
 
 if down_count == 0:
     state = "OK"

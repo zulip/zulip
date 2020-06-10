@@ -487,7 +487,7 @@ class ZulipTestCase(TestCase):
         """
         identifier: Can be an email or a remote server uuid.
         """
-        credentials = "%s:%s" % (identifier, api_key)
+        credentials = f"{identifier}:{api_key}"
         return 'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
 
     def uuid_get(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
@@ -629,7 +629,7 @@ class ZulipTestCase(TestCase):
             print('ITEMS:\n')
             for item in items:
                 print(item)
-            print("\nexpected length: %s\nactual length: %s" % (count, actual_count))
+            print(f"\nexpected length: {count}\nactual length: {actual_count}")
             raise AssertionError('List is unexpected size!')
 
     def assert_json_error_contains(self, result: HttpResponse, msg_substring: str,
@@ -663,14 +663,14 @@ class ZulipTestCase(TestCase):
     def webhook_fixture_data(self, type: str, action: str, file_type: str='json') -> str:
         fn = os.path.join(
             os.path.dirname(__file__),
-            "../webhooks/%s/fixtures/%s.%s" % (type, action, file_type)
+            f"../webhooks/{type}/fixtures/{action}.{file_type}"
         )
         return open(fn).read()
 
     def fixture_file_name(self, file_name: str, type: str='') -> str:
         return os.path.join(
             os.path.dirname(__file__),
-            "../tests/fixtures/%s/%s" % (type, file_name)
+            f"../tests/fixtures/{type}/{file_name}"
         )
 
     def fixture_data(self, file_name: str, type: str='') -> str:
@@ -695,10 +695,10 @@ class ZulipTestCase(TestCase):
             )
         except IntegrityError:  # nocoverage -- this is for bugs in the tests
             raise Exception('''
-                %s already exists
+                {} already exists
 
                 Please call make_stream with a stream name
-                that is not already in use.''' % (stream_name,))
+                that is not already in use.'''.format(stream_name))
 
         recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
         stream.recipient = recipient

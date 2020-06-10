@@ -57,7 +57,7 @@ def email_is_not_mit_mailing_list(email: str) -> None:
         username = email.rsplit("@", 1)[0]
         # Check whether the user exists and can get mail.
         try:
-            DNS.dnslookup("%s.pobox.ns.athena.mit.edu" % (username,), DNS.Type.TXT)
+            DNS.dnslookup(f"{username}.pobox.ns.athena.mit.edu", DNS.Type.TXT)
         except DNS.Base.ServerError as e:
             if e.rcode == DNS.Status.NXDOMAIN:
                 raise ValidationError(mark_safe(MIT_VALIDATION_ERROR))

@@ -117,7 +117,7 @@ class ClientDescriptor:
                     client_type_name=self.client_type_name)
 
     def __repr__(self) -> str:
-        return "ClientDescriptor<%s>" % (self.event_queue.id,)
+        return f"ClientDescriptor<{self.event_queue.id}>"
 
     @classmethod
     def from_dict(cls, d: MutableMapping[str, Any]) -> 'ClientDescriptor':
@@ -161,7 +161,7 @@ class ClientDescriptor:
 
     def finish_current_handler(self) -> bool:
         if self.current_handler_id is not None:
-            err_msg = "Got error finishing handler for queue %s" % (self.event_queue.id,)
+            err_msg = f"Got error finishing handler for queue {self.event_queue.id}"
             try:
                 finish_handler(self.current_handler_id, self.event_queue.id,
                                self.event_queue.contents(), self.apply_markdown)
@@ -232,8 +232,8 @@ def compute_full_event_type(event: Mapping[str, Any]) -> str:
     if event["type"] == "update_message_flags":
         if event["all"]:
             # Put the "all" case in its own category
-            return "all_flags/%s/%s" % (event["flag"], event["operation"])
-        return "flags/%s/%s" % (event["operation"], event["flag"])
+            return "all_flags/{}/{}".format(event["flag"], event["operation"])
+        return "flags/{}/{}".format(event["operation"], event["flag"])
     return event["type"]
 
 class EventQueue:
@@ -561,10 +561,10 @@ def fetch_events(query: Mapping[str, Any]) -> Dict[str, Any]:
             if orig_queue_id is None:
                 response['queue_id'] = queue_id
             if len(response["events"]) == 1:
-                extra_log_data = "[%s/%s/%s]" % (queue_id, len(response["events"]),
-                                                 response["events"][0]["type"])
+                extra_log_data = "[{}/{}/{}]".format(queue_id, len(response["events"]),
+                                                     response["events"][0]["type"])
             else:
-                extra_log_data = "[%s/%s]" % (queue_id, len(response["events"]))
+                extra_log_data = "[{}/{}]".format(queue_id, len(response["events"]))
             if was_connected:
                 extra_log_data += " [was connected]"
             return dict(type="response", response=response, extra_log_data=extra_log_data)

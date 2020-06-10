@@ -154,7 +154,7 @@ class ReactionEmojiTest(ZulipTestCase):
             'emoji_name': 'smile'
         }
 
-        result = self.api_post(sender, '/api/v1/messages/%s/reactions' % (message_id,),
+        result = self.api_post(sender, f'/api/v1/messages/{message_id}/reactions',
                                reaction_info)
         self.assert_json_success(result)
 
@@ -279,7 +279,7 @@ class ReactionMessageIDTest(ZulipTestCase):
             'emoji_name': 'smile'
         }
 
-        result = self.api_post(reaction_sender, '/api/v1/messages/%s/reactions' % (pm_id,),
+        result = self.api_post(reaction_sender, f'/api/v1/messages/{pm_id}/reactions',
                                reaction_info)
         self.assert_json_error(result, "Invalid message(s)")
 
@@ -305,11 +305,11 @@ class ReactionTest(ZulipTestCase):
             'emoji_name': 'smile'
         }
 
-        first = self.api_post(reaction_sender, '/api/v1/messages/%s/reactions' % (pm_id,),
+        first = self.api_post(reaction_sender, f'/api/v1/messages/{pm_id}/reactions',
                               reaction_info)
         self.assert_json_success(first)
 
-        second = self.api_post(reaction_sender, '/api/v1/messages/%s/reactions' % (pm_id,),
+        second = self.api_post(reaction_sender, f'/api/v1/messages/{pm_id}/reactions',
                                reaction_info)
         self.assert_json_error(second, "Reaction already exists.")
 
@@ -333,15 +333,15 @@ class ReactionTest(ZulipTestCase):
             'emoji_name': 'smile'
         }
 
-        add = self.api_post(reaction_sender, '/api/v1/messages/%s/reactions' % (pm_id,),
+        add = self.api_post(reaction_sender, f'/api/v1/messages/{pm_id}/reactions',
                             reaction_info)
         self.assert_json_success(add)
 
-        first = self.api_delete(reaction_sender, '/api/v1/messages/%s/reactions' % (pm_id,),
+        first = self.api_delete(reaction_sender, f'/api/v1/messages/{pm_id}/reactions',
                                 reaction_info)
         self.assert_json_success(first)
 
-        second = self.api_delete(reaction_sender, '/api/v1/messages/%s/reactions' % (pm_id,),
+        second = self.api_delete(reaction_sender, f'/api/v1/messages/{pm_id}/reactions',
                                  reaction_info)
         self.assert_json_error(second, "Reaction doesn't exist.")
 
@@ -414,7 +414,7 @@ class ReactionEventTest(ZulipTestCase):
 
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
-            result = self.api_post(reaction_sender, '/api/v1/messages/%s/reactions' % (pm_id,),
+            result = self.api_post(reaction_sender, f'/api/v1/messages/{pm_id}/reactions',
                                    reaction_info)
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
@@ -452,13 +452,13 @@ class ReactionEventTest(ZulipTestCase):
             'emoji_name': 'smile'
         }
 
-        add = self.api_post(reaction_sender, '/api/v1/messages/%s/reactions' % (pm_id,),
+        add = self.api_post(reaction_sender, f'/api/v1/messages/{pm_id}/reactions',
                             reaction_info)
         self.assert_json_success(add)
 
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
-            result = self.api_delete(reaction_sender, '/api/v1/messages/%s/reactions' % (pm_id,),
+            result = self.api_delete(reaction_sender, f'/api/v1/messages/{pm_id}/reactions',
                                      reaction_info)
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
@@ -486,7 +486,7 @@ class EmojiReactionBase(ZulipTestCase):
         if 'reaction_type' not in reaction_info:
             reaction_info['reaction_type'] = self.reaction_type
         sender = self.example_user(sender)
-        result = self.api_post(sender, '/api/v1/messages/%s/reactions' % (message_id,),
+        result = self.api_post(sender, f'/api/v1/messages/{message_id}/reactions',
                                reaction_info)
         return result
 
@@ -505,7 +505,7 @@ class EmojiReactionBase(ZulipTestCase):
         if 'reaction_type' not in reaction_info:
             reaction_info['reaction_type'] = self.reaction_type
         sender = self.example_user(sender)
-        result = self.api_delete(sender, '/api/v1/messages/%s/reactions' % (message_id,),
+        result = self.api_delete(sender, f'/api/v1/messages/{message_id}/reactions',
                                  reaction_info)
         return result
 
@@ -852,7 +852,7 @@ class RealmEmojiReactionTests(EmojiReactionBase):
         }
         sender = self.example_user("hamlet")
         message_id = 1
-        result = self.api_post(sender, '/api/v1/messages/%s/reactions' % (message_id,),
+        result = self.api_post(sender, f'/api/v1/messages/{message_id}/reactions',
                                reaction_info)
         self.assert_json_error(result, "Invalid emoji type.")
 

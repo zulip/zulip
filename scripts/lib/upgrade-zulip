@@ -28,12 +28,12 @@ logging.basicConfig(format="%(asctime)s upgrade-zulip: %(message)s",
                     level=logging.INFO)
 
 if len(sys.argv) != 2:
-    print(FAIL + "Usage: %s <tarball>" % (sys.argv[0],) + ENDC)
+    print(FAIL + f"Usage: {sys.argv[0]} <tarball>" + ENDC)
     sys.exit(1)
 
 tarball_path = sys.argv[1]
 
-error_rerun_script = "%s/current/scripts/upgrade-zulip %s" % (DEPLOYMENTS_DIR, tarball_path)
+error_rerun_script = f"{DEPLOYMENTS_DIR}/current/scripts/upgrade-zulip {tarball_path}"
 get_deployment_lock(error_rerun_script)
 
 try:

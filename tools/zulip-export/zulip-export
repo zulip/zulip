@@ -81,7 +81,7 @@ for msg in result['messages']:
         msg.pop(k, None)
     messages.append(msg)
 
-filename = "zulip-%s.json" % (options.stream,)
+filename = f"zulip-{options.stream}.json"
 with open(filename, 'wb') as f:
     f.write(json.dumps(messages, indent=0, sort_keys=False).encode('utf-8'))
 print("%d messages exported to %s" % (len(messages), filename,))

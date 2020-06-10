@@ -85,7 +85,7 @@ approach shown above.
             result = client.post(options['url'], json, content_type="application/json",
                                  HTTP_HOST=realm.host)
         if result.status_code != 200:
-            raise CommandError('Error status %s: %s' % (result.status_code, result.content))
+            raise CommandError(f'Error status {result.status_code}: {result.content}')
 
     def _does_fixture_path_exist(self, fixture_path: str) -> bool:
         return os.path.exists(fixture_path)

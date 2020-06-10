@@ -17,7 +17,7 @@ if len(sys.argv) < 2:
     print("Please pass the name of the consumer file to check")
     exit(1)
 
-RESULTS_FILE = "/var/lib/nagios_state/check-rabbitmq-consumers-%s" % (sys.argv[1],)
+RESULTS_FILE = f"/var/lib/nagios_state/check-rabbitmq-consumers-{sys.argv[1]}"
 
 ret, result = nagios_from_file(RESULTS_FILE)
 

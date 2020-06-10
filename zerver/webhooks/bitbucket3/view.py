@@ -65,7 +65,7 @@ def repo_comment_handler(payload: Dict[str, Any], action: str) -> List[Dict[str,
     subject = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=repo_name)
     sha = payload["commit"]
     commit_url = payload["repository"]["links"]["self"][0]["href"][:-6]  # remove the "browse" at the end
-    commit_url += "commits/%s" % (sha,)
+    commit_url += f"commits/{sha}"
     message = payload["comment"]["text"]
     if action == "deleted their comment":
         message = f"~~{message}~~"
@@ -125,7 +125,7 @@ def repo_push_branch_data(payload: Dict[str, Any], change: Dict[str, Any]) -> Di
     elif event_type == "DELETE":
         body = get_remove_branch_event_message(user_name, branch_name)
     else:
-        message = "%s.%s" % (payload["eventKey"], event_type)  # nocoverage
+        message = "{}.{}".format(payload["eventKey"], event_type)  # nocoverage
         raise UnexpectedWebhookEventType("BitBucket Server", message)
 
     subject = TOPIC_WITH_BRANCH_TEMPLATE.format(repo=repo_name, branch=branch_name)
@@ -141,7 +141,7 @@ def repo_push_tag_data(payload: Dict[str, Any], change: Dict[str, Any]) -> Dict[
     elif event_type == "DELETE":
         action = "removed"
     else:
-        message = "%s.%s" % (payload["eventKey"], event_type)  # nocoverage
+        message = "{}.{}".format(payload["eventKey"], event_type)  # nocoverage
         raise UnexpectedWebhookEventType("BitBucket Server", message)
 
     subject = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=repo_name)
@@ -162,7 +162,7 @@ def repo_push_handler(payload: Dict[str, Any], branches: Optional[str]=None
         elif event_target_type == "TAG":
             data.append(repo_push_tag_data(payload, change))
         else:
-            message = "%s.%s" % (payload["eventKey"], event_target_type)  # nocoverage
+            message = "{}.{}".format(payload["eventKey"], event_target_type)  # nocoverage
             raise UnexpectedWebhookEventType("BitBucket Server", message)
     return data
 
@@ -171,7 +171,7 @@ def get_assignees_string(pr: Dict[str, Any]) -> Optional[str]:
     for reviewer in pr["reviewers"]:
         name = reviewer["user"]["name"]
         link = reviewer["user"]["links"]["self"][0]["href"]
-        reviewers.append("[%s](%s)" % (name, link))
+        reviewers.append(f"[{name}]({link})")
     if len(reviewers) == 0:
         assignees = None
     elif len(reviewers) == 1:

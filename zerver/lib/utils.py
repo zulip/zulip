@@ -36,9 +36,9 @@ class StatsDWrapper:
         """Set a gauge value."""
         from django_statsd.clients import statsd
         if delta:
-            value_str = '%+g|g' % (value,)
+            value_str = f'{value:+g}|g'
         else:
-            value_str = '%g|g' % (value,)
+            value_str = f'{value:g}|g'
         statsd._send(stat, value_str, rate)
 
     def __getattr__(self, name: str) -> Any:
@@ -76,7 +76,7 @@ def run_in_batches(all_list: Sequence[T],
         batch = all_list[start:end]
 
         if logger:
-            logger("Executing %s in batch %s of %s" % (end-start, i+1, limit))
+            logger(f"Executing {end-start} in batch {i+1} of {limit}")
 
         callback(batch)
 
@@ -104,7 +104,7 @@ def log_statsd_event(name: str) -> None:
     Note that to draw this event as a vertical line in graphite
     you can use the drawAsInfinite() command
     """
-    event_name = "events.%s" % (name,)
+    event_name = f"events.{name}"
     statsd.incr(event_name)
 
 def generate_random_token(length: int) -> str:

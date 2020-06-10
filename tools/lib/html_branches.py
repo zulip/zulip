@@ -190,8 +190,8 @@ def build_id_dict(templates: List[str]) -> (Dict[str, List[str]]):
             list_tags = tokenize(text)
         except FormattedException as e:
             raise Exception('''
-                fn: %s
-                %s''' % (fn, e))
+                fn: {}
+                {}'''.format(fn, e))
 
         for tag in list_tags:
             info = get_tag_info(tag)

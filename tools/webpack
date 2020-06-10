@@ -97,9 +97,9 @@ def build_for_most_tests() -> None:
     with open('tools/webpack.assets.json') as json_data:
         for entry in json.load(json_data).keys():
             entries[entry] = [{
-                "name": "%s.js" % (entry,),
-                "publicPath": "http://localhost:3000/webpack-stub/%s-stubentry.js" % (entry,),
-                "path": "/stubfolder/%s-stubfile.js" % (entry,)
+                "name": f"{entry}.js",
+                "publicPath": f"http://localhost:3000/webpack-stub/{entry}-stubentry.js",
+                "path": f"/stubfolder/{entry}-stubfile.js"
             }]
     stat_data = {
         "status": "done",

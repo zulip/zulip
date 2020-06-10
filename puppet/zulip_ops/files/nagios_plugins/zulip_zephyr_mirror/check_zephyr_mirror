@@ -23,7 +23,7 @@ states: Dict[str, int] = {
 }
 
 def report(state: str, data: str, last_check: float) -> None:
-    print("%s: Last test run completed at %s\n%s" % (
+    print("{}: Last test run completed at {}\n{}".format(
         state, time.strftime("%Y-%m-%d %H:%M %Z", time.gmtime(last_check)),
         data))
     exit(states[state])

@@ -15,7 +15,7 @@ class Command(ZulipBaseCommand):
         realm = self.get_realm(options)
         assert realm is not None
         if not realm.deactivated:
-            raise CommandError("The realm %s is already active." % (realm.name,))
+            raise CommandError(f"The realm {realm.name} is already active.")
         print('Sending email to admins')
         do_send_realm_reactivation_email(realm)
         print('Done!')

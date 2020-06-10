@@ -394,10 +394,7 @@ def process_new_human_user(user_profile: UserProfile,
             user_profile.realm,
             get_system_bot(settings.NOTIFICATION_BOT),
             prereg_user.referred_by,
-            "%s <`%s`> accepted your invitation to join Zulip!" % (
-                user_profile.full_name,
-                user_profile.email,
-            )
+            f"{user_profile.full_name} <`{user_profile.email}`> accepted your invitation to join Zulip!"
         )
     # Mark any other PreregistrationUsers that are STATUS_ACTIVE as
     # inactive so we can keep track of the PreregistrationUser we
@@ -598,8 +595,7 @@ def do_set_realm_property(realm: Realm, name: str, value: Any) -> None:
     """
     property_type = Realm.property_types[name]
     assert isinstance(value, property_type), (
-        'Cannot update %s: %s is not an instance of %s' % (
-            name, value, property_type,))
+        f'Cannot update {name}: {value} is not an instance of {property_type}')
 
     old_value = getattr(realm, name)
     setattr(realm, name, value)
@@ -2359,8 +2355,7 @@ def _internal_prep_message(realm: Realm,
         return check_message(sender, get_client("Internal"), addressee,
                              content, realm=realm)
     except JsonableError as e:
-        logging.exception("Error queueing internal message by %s: %s" % (
-            sender.delivery_email, e))
+        logging.exception(f"Error queueing internal message by {sender.delivery_email}: {e}")
 
     return None
 
@@ -3587,7 +3582,7 @@ def do_change_stream_description(stream: Stream, new_description: str) -> None:
 def do_create_realm(string_id: str, name: str,
                     emails_restricted_to_domains: Optional[bool]=None) -> Realm:
     if Realm.objects.filter(string_id=string_id).exists():
-        raise AssertionError("Realm %s already exists!" % (string_id,))
+        raise AssertionError(f"Realm {string_id} already exists!")
     if not server_initialized():
         logging.info("Server not yet initialized. Creating the internal realm first.")
         create_internal_realm()
@@ -3653,8 +3648,7 @@ def do_change_notification_settings(user_profile: UserProfile, name: str,
 
     notification_setting_type = UserProfile.notification_setting_types[name]
     assert isinstance(value, notification_setting_type), (
-        'Cannot update %s: %s is not an instance of %s' % (
-            name, value, notification_setting_type,))
+        f'Cannot update {name}: {value} is not an instance of {notification_setting_type}')
 
     setattr(user_profile, name, value)
 
@@ -4179,7 +4173,7 @@ def do_update_message_flags(user_profile: UserProfile,
     if flag == "read" and operation == "add":
         do_clear_mobile_push_notifications_for_ids(user_profile, messages)
 
-    statsd.incr("flags.%s.%s" % (flag, operation), count)
+    statsd.incr(f"flags.{flag}.{operation}", count)
     return count
 
 class MessageUpdateUserInfoResult(TypedDict):
@@ -4199,9 +4193,9 @@ def notify_topic_moved_streams(user_profile: UserProfile,
     if new_topic is None:
         new_topic = old_topic
 
-    user_mention = "@_**%s|%s**" % (user_profile.full_name, user_profile.id)
-    old_topic_link = "#**%s>%s**" % (old_stream.name, old_topic)
-    new_topic_link = "#**%s>%s**" % (new_stream.name, new_topic)
+    user_mention = f"@_**{user_profile.full_name}|{user_profile.id}**"
+    old_topic_link = f"#**{old_stream.name}>{old_topic}**"
+    new_topic_link = f"#**{new_stream.name}>{new_topic}**"
     if send_notification_to_new_thread:
         internal_send_stream_message(
             new_stream.realm, sender, new_stream, new_topic,
@@ -4918,7 +4912,7 @@ def do_send_confirmation_email(invitee: PreregistrationUser,
     activation_url = create_confirmation_link(invitee, referrer.realm.host, Confirmation.INVITATION)
     context = {'referrer_full_name': referrer.full_name, 'referrer_email': referrer.delivery_email,
                'activate_url': activation_url, 'referrer_realm_name': referrer.realm.name}
-    from_name = "%s (via Zulip)" % (referrer.full_name,)
+    from_name = f"{referrer.full_name} (via Zulip)"
     send_email('zerver/emails/invitation', to_emails=[invitee.email], from_name=from_name,
                from_address=FromAddress.tokenized_no_reply_address(),
                language=referrer.realm.default_language, context=context)

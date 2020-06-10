@@ -65,7 +65,7 @@ class Command(BaseCommand):
             addr = '127.0.0.1'
 
         if not port.isdigit():
-            raise CommandError("%r is not a valid port number." % (port,))
+            raise CommandError(f"{port!r} is not a valid port number.")
 
         xheaders = options.get('xheaders', True)
         no_keep_alive = options.get('no_keep_alive', False)
@@ -82,7 +82,7 @@ class Command(BaseCommand):
             # We pass display_num_errors=False, since Django will
             # likely display similar output anyway.
             self.check(display_num_errors=False)
-            print("Tornado server is running at http://%s:%s/" % (addr, port))
+            print(f"Tornado server is running at http://{addr}:{port}/")
 
             if settings.USING_RABBITMQ:
                 queue_client = get_queue_client()

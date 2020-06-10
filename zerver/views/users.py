@@ -268,7 +268,7 @@ def add_bot_backend(
     short_name += "-bot"
     full_name = check_full_name(full_name_raw)
     try:
-        email = '%s@%s' % (short_name, user_profile.realm.get_bot_domain())
+        email = f'{short_name}@{user_profile.realm.get_bot_domain()}'
     except InvalidFakeEmailDomain:
         return json_error(_("Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
                             "Please contact your server administrator."))

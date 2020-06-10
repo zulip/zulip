@@ -61,7 +61,7 @@ class TestZulipBaseCommand(ZulipTestCase):
         self.assertEqual(self.command.get_user(email, self.zulip_realm), user_profile)
         self.assertEqual(self.command.get_user(email, None), user_profile)
 
-        error_message = "The realm '%s' does not contain a user with email" % (mit_realm,)
+        error_message = f"The realm '{mit_realm}' does not contain a user with email"
         with self.assertRaisesRegex(CommandError, error_message):
             self.command.get_user(email, mit_realm)
 
@@ -106,7 +106,7 @@ class TestZulipBaseCommand(ZulipTestCase):
         user_emails = ','.join(u.delivery_email for u in expected_user_profiles)
         user_profiles = self.get_users_sorted(dict(users=user_emails), None)
         self.assertEqual(user_profiles, expected_user_profiles)
-        error_message = "The realm '%s' does not contain a user with email" % (self.zulip_realm,)
+        error_message = f"The realm '{self.zulip_realm}' does not contain a user with email"
         with self.assertRaisesRegex(CommandError, error_message):
             self.command.get_users(dict(users=user_emails), self.zulip_realm)
 
@@ -340,7 +340,7 @@ class TestRealmReactivationEmail(ZulipTestCase):
 
     def test_if_realm_not_deactivated(self) -> None:
         realm = get_realm('zulip')
-        with self.assertRaisesRegex(CommandError, "The realm %s is already active." % (realm.name,)):
+        with self.assertRaisesRegex(CommandError, f"The realm {realm.name} is already active."):
             call_command(self.COMMAND_NAME, "--realm=zulip")
 
 class TestSendToEmailMirror(ZulipTestCase):

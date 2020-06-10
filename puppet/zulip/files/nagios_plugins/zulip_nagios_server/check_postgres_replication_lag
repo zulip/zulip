@@ -22,17 +22,17 @@ states = {
 }
 
 def report(state: str, msg: str) -> "NoReturn":
-    print("%s: %s" % (state, msg))
+    print(f"{state}: {msg}")
     exit(states[state])
 
 def get_loc_over_ssh(host: str, func: str) -> str:
     try:
         return subprocess.check_output(['ssh', host,
-                                        'psql -v ON_ERROR_STOP=1 zulip -t -c "SELECT %s()"' % (func,)],
+                                        f'psql -v ON_ERROR_STOP=1 zulip -t -c "SELECT {func}()"'],
                                        stderr=subprocess.STDOUT,
                                        universal_newlines=True)
     except subprocess.CalledProcessError as e:
-        report('CRITICAL', 'ssh failed: %s: %s' % (str(e), e.output))
+        report('CRITICAL', f'ssh failed: {str(e)}: {e.output}')
 
 def loc_to_abs_offset(loc_str: str) -> int:
     m = re.match(r'^\s*([0-9a-fA-F]+)/([0-9a-fA-F]+)\s*$', loc_str)

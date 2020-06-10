@@ -53,7 +53,7 @@ ONLY perform this on customer request from an authorized person.
                         do_change_user_role(user, UserProfile.ROLE_REALM_ADMINISTRATOR)
                     print("Done!")
                 else:
-                    print("Would have granted %s %s rights for %s" % (
+                    print("Would have granted {} {} rights for {}".format(
                           email, options['permission'], user.realm.string_id))
         else:
             if (user.is_realm_admin and options['permission'] == "administer" or
@@ -65,7 +65,7 @@ ONLY perform this on customer request from an authorized person.
                         do_change_user_role(user, UserProfile.ROLE_MEMBER)
                     print("Done!")
                 else:
-                    print("Would have removed %s's %s rights on %s" % (email, options['permission'],
-                                                                       user.realm.string_id))
+                    print("Would have removed {}'s {} rights on {}".format(email, options['permission'],
+                                                                           user.realm.string_id))
             else:
                 raise CommandError("User did not have permission for this realm!")

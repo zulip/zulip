@@ -93,16 +93,9 @@ def fix_emojis(content: str, base_url: str, emojiset: str) -> str:
         emoji_code = match.group('emoji_code')
         emoji_name = emoji_span_elem.get('title')
         alt_code = emoji_span_elem.text
-        image_url = base_url + '/static/generated/emoji/images-%(emojiset)s-64/%(emoji_code)s.png' % {
-            'emojiset': emojiset,
-            'emoji_code': emoji_code
-        }
+        image_url = base_url + f'/static/generated/emoji/images-{emojiset}-64/{emoji_code}.png'
         img_elem = lxml.html.fromstring(
-            '<img alt="%(alt_code)s" src="%(image_url)s" title="%(title)s">' % {
-                'alt_code': alt_code,
-                'image_url': image_url,
-                'title': emoji_name,
-            })
+            f'<img alt="{alt_code}" src="{image_url}" title="{emoji_name}">')
         img_elem.set('style', 'height: 20px;')
         img_elem.tail = emoji_span_elem.tail
         return img_elem
@@ -179,8 +172,8 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
     def message_header(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
         if message.recipient.type == Recipient.PERSONAL:
             narrow_link = get_narrow_url(user_profile, message)
-            header = "You and %s" % (message.sender.full_name,)
-            header_html = "<a style='color: #ffffff;' href='%s'>%s</a>" % (narrow_link, header)
+            header = f"You and {message.sender.full_name}"
+            header_html = f"<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
         elif message.recipient.type == Recipient.HUDDLE:
             display_recipient = get_display_recipient(message.recipient)
             assert not isinstance(display_recipient, str)
@@ -188,15 +181,14 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
                                          display_recipient=display_recipient)
             other_recipients = [r['full_name'] for r in display_recipient
                                 if r['id'] != user_profile.id]
-            header = "You and %s" % (", ".join(other_recipients),)
-            header_html = "<a style='color: #ffffff;' href='%s'>%s</a>" % (narrow_link, header)
+            header = "You and {}".format(", ".join(other_recipients))
+            header_html = f"<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
         else:
             stream = Stream.objects.only('id', 'name').get(id=message.recipient.type_id)
             narrow_link = get_narrow_url(user_profile, message, stream=stream)
-            header = "%s > %s" % (stream.name, message.topic_name())
+            header = f"{stream.name} > {message.topic_name()}"
             stream_link = stream_narrow_url(user_profile.realm, stream)
-            header_html = "<a href='%s'>%s</a> > <a href='%s'>%s</a>" % (
-                stream_link, stream.name, narrow_link, message.topic_name())
+            header_html = f"<a href='{stream_link}'>{stream.name}</a> > <a href='{narrow_link}'>{message.topic_name()}</a>"
         return {"plain": header,
                 "html": header_html,
                 "stream_message": message.recipient.type_name() == "stream"}
@@ -371,11 +363,10 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
             huddle_display_name = " and ".join(other_recipients)
             context.update({'huddle_display_name': huddle_display_name})
         elif len(other_recipients) == 3:
-            huddle_display_name = "%s, %s, and %s" % (
-                other_recipients[0], other_recipients[1], other_recipients[2])
+            huddle_display_name = f"{other_recipients[0]}, {other_recipients[1]}, and {other_recipients[2]}"
             context.update({'huddle_display_name': huddle_display_name})
         else:
-            huddle_display_name = "%s, and %s others" % (
+            huddle_display_name = "{}, and {} others".format(
                 ', '.join(other_recipients[:2]), len(other_recipients) - 2)
             context.update({'huddle_display_name': huddle_display_name})
     elif (missed_messages[0]['message'].recipient.type == Recipient.PERSONAL):
@@ -388,7 +379,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
                             m['trigger'] == 'wildcard_mentioned'})
         message = missed_messages[0]['message']
         stream = Stream.objects.only('id', 'name').get(id=message.recipient.type_id)
-        stream_header = "%s > %s" % (stream.name, message.topic_name())
+        stream_header = f"{stream.name} > {message.topic_name()}"
         context.update({
             'stream_header': stream_header,
         })

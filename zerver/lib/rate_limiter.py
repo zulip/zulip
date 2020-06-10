@@ -286,7 +286,7 @@ class TornadoInMemoryRateLimiterBackend(RateLimiterBackend):
             ratelimited, time_till_free = cls.need_to_limit(entity_key, time_window, max_count)
 
             if ratelimited:
-                statsd.incr("ratelimiter.limited.%s" % (entity_key,))
+                statsd.incr(f"ratelimiter.limited.{entity_key}")
                 break
 
         return ratelimited, time_till_free
@@ -450,7 +450,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
         ratelimited, time = cls.is_ratelimited(entity_key, rules)
 
         if ratelimited:
-            statsd.incr("ratelimiter.limited.%s" % (entity_key,))
+            statsd.incr(f"ratelimiter.limited.{entity_key}")
 
         else:
             try:

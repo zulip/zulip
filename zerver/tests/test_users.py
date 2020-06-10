@@ -57,7 +57,7 @@ def find_dict(lst: Iterable[Dict[K, V]], k: K, v: V) -> Dict[K, V]:
     for dct in lst:
         if dct[k] == v:
             return dct
-    raise AssertionError('Cannot find element in list where key %s == %s' % (k, v))
+    raise AssertionError(f'Cannot find element in list where key {k} == {v}')
 
 class PermissionTest(ZulipTestCase):
     def test_role_setters(self) -> None:
@@ -263,7 +263,7 @@ class PermissionTest(ZulipTestCase):
         self.assert_json_success(result)
         members = result.json()['members']
         hamlet = find_dict(members, 'user_id', user.id)
-        self.assertEqual(hamlet['email'], "user%s@zulip.testserver" % (user.id,))
+        self.assertEqual(hamlet['email'], f"user{user.id}@zulip.testserver")
         # Note that the Gravatar URL should still be computed from the
         # `delivery_email`; otherwise, we won't be able to serve the
         # user's Gravatar.
@@ -291,7 +291,7 @@ class PermissionTest(ZulipTestCase):
         self.assert_json_success(result)
         members = result.json()['members']
         hamlet = find_dict(members, 'user_id', user.id)
-        self.assertEqual(hamlet['email'], "user%s@zulip.testserver" % (user.id,))
+        self.assertEqual(hamlet['email'], f"user{user.id}@zulip.testserver")
         self.assertEqual(hamlet['avatar_url'], get_gravatar_url(user.email, 1))
         self.assertEqual(hamlet['delivery_email'], self.example_email("hamlet"))
 

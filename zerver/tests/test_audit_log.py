@@ -97,7 +97,7 @@ class TestRealmAuditLog(ZulipTestCase):
 
         # Test the RealmAuditLog stringification
         audit_entry = RealmAuditLog.objects.get(event_type=RealmAuditLog.USER_EMAIL_CHANGED, event_time__gte=now)
-        self.assertTrue(str(audit_entry).startswith("<RealmAuditLog: <UserProfile: %s %s> %s " % (user.email, user.realm, RealmAuditLog.USER_EMAIL_CHANGED)))
+        self.assertTrue(str(audit_entry).startswith(f"<RealmAuditLog: <UserProfile: {user.email} {user.realm}> {RealmAuditLog.USER_EMAIL_CHANGED} "))
 
     def test_change_avatar_source(self) -> None:
         now = timezone_now()

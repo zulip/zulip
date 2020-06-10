@@ -257,7 +257,7 @@ class HomeTest(ZulipTestCase):
 
         for html_bit in html_bits:
             if html_bit not in html:
-                raise AssertionError('%s not in result' % (html_bit,))
+                raise AssertionError(f'{html_bit} not in result')
 
         page_params = self._get_page_params(result)
 
@@ -772,23 +772,23 @@ class HomeTest(ZulipTestCase):
         page_params = {"night_mode": True}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/user_avatars/%s/realm/logo.png?version=2" % (user_profile.realm_id,))
+                         f"/user_avatars/{user_profile.realm_id}/realm/logo.png?version=2")
 
         page_params = {"night_mode": False}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/user_avatars/%s/realm/logo.png?version=2" % (user_profile.realm_id,))
+                         f"/user_avatars/{user_profile.realm_id}/realm/logo.png?version=2")
 
         do_change_logo_source(user_profile.realm, Realm.LOGO_UPLOADED, night=True)
         page_params = {"night_mode": True}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/user_avatars/%s/realm/night_logo.png?version=2" % (user_profile.realm_id,))
+                         f"/user_avatars/{user_profile.realm_id}/realm/night_logo.png?version=2")
 
         page_params = {"night_mode": False}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/user_avatars/%s/realm/logo.png?version=2" % (user_profile.realm_id,))
+                         f"/user_avatars/{user_profile.realm_id}/realm/logo.png?version=2")
 
         # This configuration isn't super supported in the UI and is a
         # weird choice, but we have a test for it anyway.
@@ -796,7 +796,7 @@ class HomeTest(ZulipTestCase):
         page_params = {"night_mode": True}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/user_avatars/%s/realm/night_logo.png?version=2" % (user_profile.realm_id,))
+                         f"/user_avatars/{user_profile.realm_id}/realm/night_logo.png?version=2")
 
         page_params = {"night_mode": False}
         add_realm_logo_fields(page_params, user_profile.realm)

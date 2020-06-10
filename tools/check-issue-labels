@@ -64,7 +64,7 @@ def check_issue_labels() -> None:
             if args.force:
                 response = requests.get(next_page_url)
             else:
-                response = requests.get(next_page_url, headers={'Authorization': 'token %s' % (token,)})
+                response = requests.get(next_page_url, headers={'Authorization': f'token {token}'})
             if response.status_code == 401:
                 sys.exit("Error. Please check the token.")
             if response.status_code == 403:

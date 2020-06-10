@@ -69,7 +69,7 @@ def report_to_zulip(error_message: str) -> None:
         error_bot,
         error_stream,
         "email mirror error",
-        """~~~\n%s\n~~~""" % (error_message,)
+        f"""~~~\n{error_message}\n~~~"""
     )
 
 def log_and_report(email_message: EmailMessage, error_message: str, to: Optional[str]) -> None:
@@ -155,7 +155,7 @@ def construct_zulip_body(message: EmailMessage, realm: Realm, show_sender: bool=
 
     if show_sender:
         sender = handle_header_content(message.get("From", ""))
-        body = "From: %s\n%s" % (sender, body)
+        body = f"From: {sender}\n{body}"
 
     return body
 
@@ -279,7 +279,7 @@ def extract_and_upload_attachments(message: EmailMessage, realm: Realm) -> str:
                                              attachment,
                                              user_profile,
                                              target_realm=realm)
-                formatted_link = "[%s](%s)" % (filename, s3_url)
+                formatted_link = f"[{filename}]({s3_url})"
                 attachment_links.append(formatted_link)
             else:
                 logger.warning("Payload is not bytes (invalid attachment %s in message from %s).",

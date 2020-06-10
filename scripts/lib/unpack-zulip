@@ -14,7 +14,7 @@ from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, ENDC, make_deploy_pat
 import version
 
 if len(sys.argv) != 2:
-    print(FAIL + "Usage: %s <tarball>" % (sys.argv[0],) + ENDC)
+    print(FAIL + f"Usage: {sys.argv[0]} <tarball>" + ENDC)
     sys.exit(1)
 
 tarball_path = sys.argv[1]

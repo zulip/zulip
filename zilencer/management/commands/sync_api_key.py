@@ -26,4 +26,4 @@ class Command(BaseCommand):
             user_profile.api_key = api_key
             user_profile.save(update_fields=["api_key"])
         except UserProfile.DoesNotExist:
-            print("User %s does not exist; not syncing API key" % (email,))
+            print(f"User {email} does not exist; not syncing API key")

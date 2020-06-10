@@ -420,13 +420,13 @@ class Config:
                     using id_source.''')
             if self.id_source[0] != self.virtual_parent.table:
                 raise AssertionError('''
-                    Configuration error.  To populate %s, you
-                    want data from %s, but that differs from
-                    the table name of your virtual parent (%s),
+                    Configuration error.  To populate {}, you
+                    want data from {}, but that differs from
+                    the table name of your virtual parent ({}),
                     which suggests you many not have set up
                     the ordering correctly.  You may simply
                     need to assign a virtual_parent, or there
-                    may be deeper issues going on.''' % (
+                    may be deeper issues going on.'''.format(
                     self.table,
                     self.id_source[0],
                     self.virtual_parent.table))
@@ -466,7 +466,7 @@ def export_from_config(response: TableData, config: Config, seed_object: Optiona
         if config.custom_tables:
             for t in config.custom_tables:
                 if t not in response:
-                    raise AssertionError('Custom fetch failed to populate %s' % (t,))
+                    raise AssertionError(f'Custom fetch failed to populate {t}')
 
     elif config.concat_and_destroy:
         # When we concat_and_destroy, we are working with
@@ -1177,16 +1177,16 @@ def _check_key_metadata(email_gateway_bot: Optional[UserProfile],
     # Helper function for export_files_from_s3
     if 'realm_id' in key.metadata and key.metadata['realm_id'] != str(realm.id):
         if email_gateway_bot is None or key.metadata['user_profile_id'] != str(email_gateway_bot.id):
-            raise AssertionError("Key metadata problem: %s %s / %s" % (key.name, key.metadata, realm.id))
+            raise AssertionError(f"Key metadata problem: {key.name} {key.metadata} / {realm.id}")
         # Email gateway bot sends messages, potentially including attachments, cross-realm.
-        print("File uploaded by email gateway bot: %s / %s" % (key.key, key.metadata))
+        print(f"File uploaded by email gateway bot: {key.key} / {key.metadata}")
     elif processing_avatars:
         if 'user_profile_id' not in key.metadata:
-            raise AssertionError("Missing user_profile_id in key metadata: %s" % (key.metadata,))
+            raise AssertionError(f"Missing user_profile_id in key metadata: {key.metadata}")
         if int(key.metadata['user_profile_id']) not in user_ids:
-            raise AssertionError("Wrong user_profile_id in key metadata: %s" % (key.metadata,))
+            raise AssertionError(f"Wrong user_profile_id in key metadata: {key.metadata}")
     elif 'realm_id' not in key.metadata:
-        raise AssertionError("Missing realm_id in key metadata: %s" % (key.metadata,))
+        raise AssertionError(f"Missing realm_id in key metadata: {key.metadata}")
 
 def _get_exported_s3_record(
         bucket_name: str,
@@ -1233,11 +1233,11 @@ def _save_s3_object_to_file(key: ServiceResource, output_dir: str, processing_av
     else:
         fields = key.key.split('/')
         if len(fields) != 3:
-            raise AssertionError("Suspicious key with invalid format %s" % (key.key,))
+            raise AssertionError(f"Suspicious key with invalid format {key.key}")
         filename = os.path.join(output_dir, key.key)
 
     if "../" in filename:
-        raise AssertionError("Suspicious file with invalid format %s" % (filename,))
+        raise AssertionError(f"Suspicious file with invalid format {filename}")
 
     dirname = os.path.dirname(filename)
     if not os.path.exists(dirname):
@@ -1264,11 +1264,11 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
             user_ids.add(user_profile.id)
 
     if processing_realm_icon_and_logo:
-        object_prefix = "%s/realm/" % (realm.id,)
+        object_prefix = f"{realm.id}/realm/"
     elif processing_emoji:
-        object_prefix = "%s/emoji/images/" % (realm.id,)
+        object_prefix = f"{realm.id}/emoji/images/"
     else:
-        object_prefix = "%s/" % (realm.id,)
+        object_prefix = f"{realm.id}/"
 
     if settings.EMAIL_GATEWAY_BOT is not None:
         email_gateway_bot: Optional[UserProfile] = get_system_bot(settings.EMAIL_GATEWAY_BOT)
@@ -1576,7 +1576,7 @@ def launch_user_message_subprocesses(threads: int, output_dir: Path,
     while pids:
         pid, status = os.wait()
         shard = pids.pop(pid)
-        print('Shard %s finished, status %s' % (shard, status))
+        print(f'Shard {shard} finished, status {status}')
 
 def do_export_user(user_profile: UserProfile, output_dir: Path) -> None:
     response: TableData = {}
@@ -1741,8 +1741,8 @@ def export_realm_wrapper(realm: Realm, output_dir: str,
     tarball_path = do_export_realm(realm=realm, output_dir=output_dir,
                                    threads=threads, public_only=public_only,
                                    consent_message_id=consent_message_id)
-    print("Finished exporting to %s" % (output_dir,))
-    print("Tarball written to %s" % (tarball_path,))
+    print(f"Finished exporting to {output_dir}")
+    print(f"Tarball written to {tarball_path}")
 
     if not upload:
         return None
@@ -1753,11 +1753,11 @@ def export_realm_wrapper(realm: Realm, output_dir: str,
     print("Uploading export tarball...")
     public_url = zerver.lib.upload.upload_backend.upload_export_tarball(realm, tarball_path)
     print()
-    print("Uploaded to %s" % (public_url,))
+    print(f"Uploaded to {public_url}")
 
     if delete_after_upload:
         os.remove(tarball_path)
-        print("Successfully deleted the tarball at %s" % (tarball_path,))
+        print(f"Successfully deleted the tarball at {tarball_path}")
     return public_url
 
 def get_realm_exports_serialized(user: UserProfile) -> List[Dict[str, Any]]:

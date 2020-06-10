@@ -31,7 +31,7 @@ class Command(ZulipBaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         timestamp = timezone_now().strftime(TIMESTAMP_FORMAT)
         with tempfile.TemporaryDirectory(
-            prefix="zulip-backup-%s-" % (timestamp,)
+            prefix=f"zulip-backup-{timestamp}-"
         ) as tmp:
             os.mkdir(os.path.join(tmp, "zulip-backup"))
             members = []
@@ -109,7 +109,7 @@ class Command(ZulipBaseCommand):
             try:
                 if options["output"] is None:
                     tarball_path = tempfile.NamedTemporaryFile(
-                        prefix="zulip-backup-%s-" % (timestamp,),
+                        prefix=f"zulip-backup-{timestamp}-",
                         suffix=".tar.gz",
                         delete=False,
                     ).name
@@ -122,7 +122,7 @@ class Command(ZulipBaseCommand):
                     + ["--"]
                     + members
                 )
-                print("Backup tarball written to %s" % (tarball_path,))
+                print(f"Backup tarball written to {tarball_path}")
             except BaseException:
                 if options["output"] is None:
                     os.unlink(tarball_path)

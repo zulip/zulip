@@ -279,7 +279,7 @@ class TopicHistoryTest(ZulipTestCase):
             'mit_stream',
             realm=get_realm('zephyr')
         )
-        endpoint = '/json/users/me/%s/topics' % (bad_stream.id,)
+        endpoint = f'/json/users/me/{bad_stream.id}/topics'
         result = self.client_get(endpoint, dict())
         self.assert_json_error(result, 'Invalid stream id')
 
@@ -288,7 +288,7 @@ class TopicHistoryTest(ZulipTestCase):
             'private_stream',
             invite_only=True
         )
-        endpoint = '/json/users/me/%s/topics' % (private_stream.id,)
+        endpoint = f'/json/users/me/{private_stream.id}/topics'
         result = self.client_get(endpoint, dict())
         self.assert_json_error(result, 'Invalid stream id')
 
@@ -3458,11 +3458,11 @@ class EditMessageTest(ZulipTestCase):
 
         messages = get_topic_messages(user_profile, old_stream, "test")
         self.assertEqual(len(messages), 1)
-        self.assertEqual(messages[0].content, "This topic was moved by @_**Iago|%s** to #**new stream>test**" % (user_profile.id,))
+        self.assertEqual(messages[0].content, f"This topic was moved by @_**Iago|{user_profile.id}** to #**new stream>test**")
 
         messages = get_topic_messages(user_profile, new_stream, "test")
         self.assertEqual(len(messages), 4)
-        self.assertEqual(messages[3].content, "This topic was moved here from #**test move stream>test** by @_**Iago|%s**" % (user_profile.id,))
+        self.assertEqual(messages[3].content, f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**")
 
     def test_move_message_to_stream_change_later(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
@@ -3478,7 +3478,7 @@ class EditMessageTest(ZulipTestCase):
         messages = get_topic_messages(user_profile, old_stream, "test")
         self.assertEqual(len(messages), 2)
         self.assertEqual(messages[0].id, msg_id)
-        self.assertEqual(messages[1].content, "This topic was moved by @_**Iago|%s** to #**new stream>test**" % (user_profile.id,))
+        self.assertEqual(messages[1].content, f"This topic was moved by @_**Iago|{user_profile.id}** to #**new stream>test**")
 
         messages = get_topic_messages(user_profile, new_stream, "test")
         self.assertEqual(len(messages), 3)
@@ -3535,11 +3535,11 @@ class EditMessageTest(ZulipTestCase):
 
         messages = get_topic_messages(user_profile, old_stream, "test")
         self.assertEqual(len(messages), 1)
-        self.assertEqual(messages[0].content, "This topic was moved by @_**Iago|%s** to #**new stream>new topic**" % (user_profile.id,))
+        self.assertEqual(messages[0].content, f"This topic was moved by @_**Iago|{user_profile.id}** to #**new stream>new topic**")
 
         messages = get_topic_messages(user_profile, new_stream, "new topic")
         self.assertEqual(len(messages), 4)
-        self.assertEqual(messages[3].content, "This topic was moved here from #**test move stream>test** by @_**Iago|%s**" % (user_profile.id,))
+        self.assertEqual(messages[3].content, f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**")
         self.assert_json_success(result)
 
     def test_no_notify_move_message_to_stream(self) -> None:
@@ -3599,7 +3599,7 @@ class EditMessageTest(ZulipTestCase):
 
         messages = get_topic_messages(user_profile, old_stream, "test")
         self.assertEqual(len(messages), 1)
-        self.assertEqual(messages[0].content, "This topic was moved by @_**Iago|%s** to #**new stream>test**" % (user_profile.id,))
+        self.assertEqual(messages[0].content, f"This topic was moved by @_**Iago|{user_profile.id}** to #**new stream>test**")
 
         messages = get_topic_messages(user_profile, new_stream, "test")
         self.assertEqual(len(messages), 3)
@@ -4144,9 +4144,9 @@ class MessageHasKeywordsTest(ZulipTestCase):
         sample_size = 10
         realm_id = user_profile.realm_id
         dummy_files = [
-            ('zulip.txt', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt' % (realm_id,), sample_size),
-            ('temp_file.py', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py' % (realm_id,), sample_size),
-            ('abc.py', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py' % (realm_id,), sample_size)
+            ('zulip.txt', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt', sample_size),
+            ('temp_file.py', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py', sample_size),
+            ('abc.py', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py', sample_size)
         ]
 
         for file_name, path_id, size in dummy_files:

@@ -102,10 +102,10 @@ def get_display_recipient(recipient: 'Recipient') -> DisplayRecipientT:
     )
 
 def get_realm_emoji_cache_key(realm: 'Realm') -> str:
-    return 'realm_emoji:%s' % (realm.id,)
+    return f'realm_emoji:{realm.id}'
 
 def get_active_realm_emoji_cache_key(realm: 'Realm') -> str:
-    return 'active_realm_emoji:%s' % (realm.id,)
+    return f'active_realm_emoji:{realm.id}'
 
 # This simple call-once caching saves ~500us in auth_enabled_helper,
 # which is a significant optimization for common_context.  Note that
@@ -420,7 +420,7 @@ class Realm(models.Model):
         return ret
 
     def __str__(self) -> str:
-        return "<Realm: %s %s>" % (self.string_id, self.id)
+        return f"<Realm: {self.string_id} {self.id}>"
 
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600*24*7)
     def get_emoji(self) -> Dict[str, Dict[str, Iterable[str]]]:
@@ -524,7 +524,7 @@ class Realm(models.Model):
     def host_for_subdomain(subdomain: str) -> str:
         if subdomain == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
             return settings.EXTERNAL_HOST
-        default_host = "%s.%s" % (subdomain, settings.EXTERNAL_HOST)
+        default_host = f"{subdomain}.{settings.EXTERNAL_HOST}"
         return settings.REALM_HOSTS.get(subdomain, default_host)
 
     @property
@@ -614,11 +614,7 @@ class RealmEmoji(models.Model):
     PATH_ID_TEMPLATE = "{realm_id}/emoji/images/{emoji_file_name}"
 
     def __str__(self) -> str:
-        return "<RealmEmoji(%s): %s %s %s %s>" % (self.realm.string_id,
-                                                  self.id,
-                                                  self.name,
-                                                  self.deactivated,
-                                                  self.file_name)
+        return f"<RealmEmoji({self.realm.string_id}): {self.id} {self.name} {self.deactivated} {self.file_name}>"
 
 def get_realm_emoji_dicts(realm: Realm,
                           only_active_emojis: bool=False) -> Dict[str, Dict[str, Any]]:
@@ -694,10 +690,10 @@ class RealmFilter(models.Model):
         unique_together = ("realm", "pattern")
 
     def __str__(self) -> str:
-        return "<RealmFilter(%s): %s %s>" % (self.realm.string_id, self.pattern, self.url_format_string)
+        return f"<RealmFilter({self.realm.string_id}): {self.pattern} {self.url_format_string}>"
 
 def get_realm_filters_cache_key(realm_id: int) -> str:
-    return '%s:all_realm_filters:%s' % (cache.KEY_PREFIX, realm_id,)
+    return f'{cache.KEY_PREFIX}:all_realm_filters:{realm_id}'
 
 # We have a per-process cache to avoid doing 1000 remote cache queries during page load
 per_request_realm_filters_cache: Dict[int, List[Tuple[str, str, int]]] = {}
@@ -1104,7 +1100,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             return False
 
     def __str__(self) -> str:
-        return "<UserProfile: %s %s>" % (self.email, self.realm)
+        return f"<UserProfile: {self.email} {self.realm}>"
 
     @property
     def is_new_member(self) -> bool:
@@ -1432,7 +1428,7 @@ class Stream(models.Model):
     first_message_id: Optional[int] = models.IntegerField(null=True, db_index=True)
 
     def __str__(self) -> str:
-        return "<Stream: %s>" % (self.name,)
+        return f"<Stream: {self.name}>"
 
     def is_public(self) -> bool:
         # All streams are private in Zephyr mirroring realms.
@@ -1502,16 +1498,13 @@ class MutedTopic(models.Model):
         unique_together = ('user_profile', 'stream', 'topic_name')
 
     def __str__(self) -> str:
-        return ("<MutedTopic: (%s, %s, %s, %s)>" % (self.user_profile.email,
-                                                    self.stream.name,
-                                                    self.topic_name,
-                                                    self.date_muted))
+        return (f"<MutedTopic: ({self.user_profile.email}, {self.stream.name}, {self.topic_name}, {self.date_muted})>")
 
 class Client(models.Model):
     name: str = models.CharField(max_length=30, db_index=True, unique=True)
 
     def __str__(self) -> str:
-        return "<Client: %s>" % (self.name,)
+        return f"<Client: {self.name}>"
 
 get_client_cache: Dict[str, Client] = {}
 def get_client(name: str) -> Client:
@@ -1524,7 +1517,7 @@ def get_client(name: str) -> Client:
     return get_client_cache[cache_name]
 
 def get_client_cache_key(name: str) -> str:
-    return 'get_client:%s' % (make_safe_digest(name),)
+    return f'get_client:{make_safe_digest(name)}'
 
 @cache_with_key(get_client_cache_key, timeout=3600*24*7)
 def get_client_remote_cache(name: str) -> Client:
@@ -1660,8 +1653,7 @@ class AbstractMessage(models.Model):
 
     def __str__(self) -> str:
         display_recipient = get_display_recipient(self.recipient)
-        return "<%s: %s / %s / %s>" % (self.__class__.__name__, display_recipient,
-                                       self.subject, self.sender)
+        return f"<{self.__class__.__name__}: {display_recipient} / {self.subject} / {self.sender}>"
 
 class ArchiveTransaction(models.Model):
     timestamp: datetime.datetime = models.DateTimeField(default=timezone_now, db_index=True)
@@ -1859,7 +1851,7 @@ class Reaction(AbstractReaction):
         return Reaction.objects.filter(message_id__in=needed_ids).values(*fields)
 
     def __str__(self) -> str:
-        return "%s / %s / %s" % (self.user_profile.email, self.message.id, self.emoji_name)
+        return f"{self.user_profile.email} / {self.message.id} / {self.emoji_name}"
 
 class ArchivedReaction(AbstractReaction):
     message: ArchivedMessage = models.ForeignKey(ArchivedMessage, on_delete=CASCADE)
@@ -1973,8 +1965,7 @@ class AbstractUserMessage(models.Model):
 
     def __str__(self) -> str:
         display_recipient = get_display_recipient(self.message.recipient)
-        return "<%s: %s / %s (%s)>" % (self.__class__.__name__, display_recipient,
-                                       self.user_profile.email, self.flags_list())
+        return f"<{self.__class__.__name__}: {display_recipient} / {self.user_profile.email} ({self.flags_list()})>"
 
 
 class UserMessage(AbstractUserMessage):
@@ -2020,7 +2011,7 @@ class AbstractAttachment(models.Model):
         abstract = True
 
     def __str__(self) -> str:
-        return "<%s: %s>" % (self.__class__.__name__, self.file_name,)
+        return f"<{self.__class__.__name__}: {self.file_name}>"
 
 
 class ArchivedAttachment(AbstractAttachment):
@@ -2128,7 +2119,7 @@ class Subscription(models.Model):
         unique_together = ("user_profile", "recipient")
 
     def __str__(self) -> str:
-        return "<Subscription: %s -> %s>" % (self.user_profile, self.recipient)
+        return f"<Subscription: {self.user_profile} -> {self.recipient}>"
 
     # Subscription fields included whenever a Subscription object is provided to
     # Zulip clients via the API.  A few details worth noting:
@@ -2329,7 +2320,7 @@ def get_huddle_hash(id_list: List[int]) -> str:
     return make_safe_digest(hash_key)
 
 def huddle_hash_cache_key(huddle_hash: str) -> str:
-    return "huddle_by_hash:%s" % (huddle_hash,)
+    return f"huddle_by_hash:{huddle_hash}"
 
 def get_huddle(id_list: List[int]) -> Huddle:
     huddle_hash = get_huddle_hash(id_list)
@@ -2413,7 +2404,7 @@ class UserPresence(models.Model):
         elif status == UserPresence.IDLE:
             return 'idle'
         else:  # nocoverage # TODO: Add a presence test to cover this.
-            raise ValueError('Unknown status: %s' % (status,))
+            raise ValueError(f'Unknown status: {status}')
 
     @staticmethod
     def to_presence_dict(client_name: str, status: int, dt: datetime.datetime, push_enabled: bool=False,
@@ -2510,9 +2501,7 @@ class ScheduledEmail(AbstractScheduledJob):
     type: int = models.PositiveSmallIntegerField()
 
     def __str__(self) -> str:
-        return "<ScheduledEmail: %s %s %s>" % (self.type,
-                                               self.address or list(self.users.all()),
-                                               self.scheduled_timestamp)
+        return f"<ScheduledEmail: {self.type} {self.address or list(self.users.all())} {self.scheduled_timestamp}>"
 
 class MissedMessageEmailAddress(models.Model):
     EXPIRY_SECONDS = 60 * 60 * 24 * 5
@@ -2570,9 +2559,7 @@ class ScheduledMessage(models.Model):
 
     def __str__(self) -> str:
         display_recipient = get_display_recipient(self.recipient)
-        return "<ScheduledMessage: %s %s %s %s>" % (display_recipient,
-                                                    self.subject, self.sender,
-                                                    self.scheduled_timestamp)
+        return f"<ScheduledMessage: {display_recipient} {self.subject} {self.sender} {self.scheduled_timestamp}>"
 
 EMAIL_TYPES = {
     'followup_day1': ScheduledEmail.WELCOME,
@@ -2680,13 +2667,10 @@ class RealmAuditLog(AbstractRealmAuditLog):
 
     def __str__(self) -> str:
         if self.modified_user is not None:
-            return "<RealmAuditLog: %s %s %s %s>" % (
-                self.modified_user, self.event_type, self.event_time, self.id)
+            return f"<RealmAuditLog: {self.modified_user} {self.event_type} {self.event_time} {self.id}>"
         if self.modified_stream is not None:
-            return "<RealmAuditLog: %s %s %s %s>" % (
-                self.modified_stream, self.event_type, self.event_time, self.id)
-        return "<RealmAuditLog: %s %s %s %s>" % (
-            self.realm, self.event_type, self.event_time, self.id)
+            return f"<RealmAuditLog: {self.modified_stream} {self.event_type} {self.event_time} {self.id}>"
+        return f"<RealmAuditLog: {self.realm} {self.event_type} {self.event_time} {self.id}>"
 
 class UserHotspot(models.Model):
     user: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
@@ -2827,7 +2811,7 @@ class CustomProfileFieldValue(models.Model):
         unique_together = ('user_profile', 'field')
 
     def __str__(self) -> str:
-        return "<CustomProfileFieldValue: %s %s %s>" % (self.user_profile, self.field, self.value)
+        return f"<CustomProfileFieldValue: {self.user_profile} {self.field} {self.value}>"
 
 # Interfaces for services
 # They provide additional functionality like parsing message to obtain query url, data to be sent to url,

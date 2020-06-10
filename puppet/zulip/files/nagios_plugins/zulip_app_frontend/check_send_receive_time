@@ -88,24 +88,24 @@ states = {
 def report(state: str, timestamp: Any = None, msg: Optional[str] = None) -> None:
     now = int(time.time())
     if msg is None:
-        msg = "send time was %s" % (timestamp,)
+        msg = f"send time was {timestamp}"
     state_file_path = "/var/lib/nagios_state/check_send_receive_state"
     with open(state_file_path + ".tmp", 'w') as f:
-        f.write("%s|%s|%s|%s\n" % (now, states[state], state, msg))
+        f.write(f"{now}|{states[state]}|{state}|{msg}\n")
     os.rename(state_file_path + ".tmp", state_file_path)
-    print("%s: %s" % (state, msg))
+    print(f"{state}: {msg}")
     exit(states[state])
 
 def send_zulip(sender: zulip.Client, message: Dict[str, Any]) -> None:
     result = sender.send_message(message)
     if result["result"] != "success" and options.nagios:
-        report("CRITICAL", msg="Error sending Zulip, args were: %s, %s" % (message, result))
+        report("CRITICAL", msg=f"Error sending Zulip, args were: {message}, {result}")
 
 def get_zulips() -> List[Dict[str, Any]]:
     global queue_id, last_event_id
     res = zulip_recipient.get_events(queue_id=queue_id, last_event_id=last_event_id)
     if 'error' in res.get('result', {}):
-        report("CRITICAL", msg="Error receiving Zulips, error was: %s" % (res["msg"],))
+        report("CRITICAL", msg="Error receiving Zulips, error was: {}".format(res["msg"]))
     for event in res['events']:
         last_event_id = max(last_event_id, int(event['id']))
     # If we get a heartbeat event, that means we've been hanging for
@@ -141,10 +141,10 @@ zulip_recipient = zulip.Client(
 try:
     res = zulip_recipient.register(event_types=["message"])
     if 'error' in res.get('result', {}):
-        report("CRITICAL", msg="Error subscribing to Zulips: %s" % (res['msg'],))
+        report("CRITICAL", msg="Error subscribing to Zulips: {}".format(res['msg']))
     queue_id, last_event_id = (res['queue_id'], res['last_event_id'])
 except Exception:
-    report("CRITICAL", msg="Error subscribing to Zulips:\n%s" % (traceback.format_exc(),))
+    report("CRITICAL", msg=f"Error subscribing to Zulips:\n{traceback.format_exc()}")
 msg_to_send = str(random.getrandbits(64))
 time_start = time.time()
 
@@ -172,6 +172,6 @@ if options.nagios:
         report('WARNING', timestamp=seconds_diff)
 
 if options.munin:
-    print("sendreceive.value %s" % (seconds_diff,))
+    print(f"sendreceive.value {seconds_diff}")
 elif options.nagios:
     report('OK', timestamp=seconds_diff)

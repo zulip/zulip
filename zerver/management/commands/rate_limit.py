@@ -46,7 +46,7 @@ class Command(ZulipBaseCommand):
             try:
                 user_profile = get_user_profile_by_api_key(options['api_key'])
             except UserProfile.DoesNotExist:
-                raise CommandError("Unable to get user profile for api key %s" % (options['api_key'],))
+                raise CommandError("Unable to get user profile for api key {}".format(options['api_key']))
 
         users = [user_profile]
         if options['bots']:
@@ -55,7 +55,7 @@ class Command(ZulipBaseCommand):
 
         operation = options['operation']
         for user in users:
-            print("Applying operation to User ID: %s: %s" % (user.id, operation))
+            print(f"Applying operation to User ID: {user.id}: {operation}")
 
             if operation == 'block':
                 RateLimitedUser(user, domain=options['domain']).block_access(options['seconds'])

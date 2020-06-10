@@ -242,7 +242,7 @@ def run_tests_via_node_js() -> int:
     try:
         ret = subprocess.check_call(command)
     except OSError:
-        print('Bad command: %s' % (command,))
+        print(f'Bad command: {command}')
         raise
     except subprocess.CalledProcessError:
         print('\n** Tests failed, PLEASE FIX! **\n')
@@ -257,8 +257,8 @@ def check_line_coverage(fn: str, line_coverage: Dict[Any, Any], line_mapping: Di
             missing_lines.append(str(actual_line["start"]["line"]))
     if missing_lines:
         if log:
-            print_error("%s no longer has complete node test coverage" % (fn,))
-            print("  Lines missing coverage: %s" % (", ".join(sorted(missing_lines, key=int)),))
+            print_error(f"{fn} no longer has complete node test coverage")
+            print("  Lines missing coverage: {}".format(", ".join(sorted(missing_lines, key=int))))
             print()
         return False
     return True
@@ -288,7 +288,7 @@ def enforce_proper_coverage(coverage_json: Any) -> bool:
         path = ROOT_DIR + "/" + relative_path
         if not (path in coverage_json):
             coverage_lost = True
-            print_error("%s has no node test coverage" % (relative_path,))
+            print_error(f"{relative_path} has no node test coverage")
             continue
         line_coverage = coverage_json[path]['s']
         line_mapping = coverage_json[path]['statementMap']

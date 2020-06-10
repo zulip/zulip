@@ -468,14 +468,14 @@ def get_gcm_alert(message: Message) -> str:
     """
     sender_str = message.sender.full_name
     if message.recipient.type == Recipient.HUDDLE and message.trigger == 'private_message':
-        return "New private group message from %s" % (sender_str,)
+        return f"New private group message from {sender_str}"
     elif message.recipient.type == Recipient.PERSONAL and message.trigger == 'private_message':
-        return "New private message from %s" % (sender_str,)
+        return f"New private message from {sender_str}"
     elif message.is_stream_message() and (message.trigger == 'mentioned' or
                                           message.trigger == 'wildcard_mentioned'):
-        return "New mention from %s" % (sender_str,)
+        return f"New mention from {sender_str}"
     else:  # message.is_stream_message() and message.trigger == 'stream_push_notify'
-        return "New stream message from %s in %s" % (sender_str, get_display_recipient(message.recipient),)
+        return f"New stream message from {sender_str} in {get_display_recipient(message.recipient)}"
 
 def get_mobile_push_content(rendered_content: str) -> str:
     def get_text(elem: lxml.html.HtmlElement) -> str:
@@ -586,7 +586,7 @@ def get_apns_alert_title(message: Message) -> str:
         assert isinstance(recipients, list)
         return ', '.join(sorted(r['full_name'] for r in recipients))
     elif message.is_stream_message():
-        return "#%s > %s" % (get_display_recipient(message.recipient), message.topic_name(),)
+        return f"#{get_display_recipient(message.recipient)} > {message.topic_name()}"
     # For personal PMs, we just show the sender name.
     return message.sender.full_name
 

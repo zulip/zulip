@@ -131,9 +131,9 @@ class Command(ZulipBaseCommand):
         try:
             os.close(os.open(tarball_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o666))
         except FileExistsError:
-            raise CommandError("Refusing to overwrite existing tarball: %s. Aborting..." % (tarball_path,))
+            raise CommandError(f"Refusing to overwrite existing tarball: {tarball_path}. Aborting...")
 
-        print("\033[94mExporting realm\033[0m: %s" % (realm.string_id,))
+        print(f"\033[94mExporting realm\033[0m: {realm.string_id}")
 
         num_threads = int(options['threads'])
         if num_threads < 1:

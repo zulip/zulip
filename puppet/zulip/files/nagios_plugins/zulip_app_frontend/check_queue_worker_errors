@@ -12,7 +12,7 @@ import sys
 wildcard = os.path.join("/var/log/zulip/queue_error", '*.errors')
 clean = True
 for fn in glob.glob(wildcard):
-    print('WARNING: Queue errors logged in %s' % (fn,))
+    print(f'WARNING: Queue errors logged in {fn}')
     clean = False
 
 if not clean:

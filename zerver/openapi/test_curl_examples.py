@@ -39,7 +39,7 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
             curl_command_text = curl_command_text.replace(
                 "BOT_EMAIL_ADDRESS:BOT_API_KEY", authentication_line)
 
-            print("Testing %s ..." % (curl_command_text.split("\n")[0],))
+            print("Testing {} ...".format(curl_command_text.split("\n")[0]))
 
             # Turn the text into an arguments list.
             generated_curl_command = [

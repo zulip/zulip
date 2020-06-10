@@ -15,9 +15,9 @@ setup_path()
 from scripts.lib.zulip_tools import get_config_file
 
 def write_realm_nginx_config_line(f: Any, host: str, port: str) -> None:
-    f.write("""if ($host = '%s') {
-    set $tornado_server http://tornado%s;
-}\n""" % (host, port))
+    f.write("""if ($host = '{}') {{
+    set $tornado_server http://tornado{};
+}}\n""".format(host, port))
 
 # Basic system to do Tornado sharding.  Writes two output .tmp files that need
 # to be renamed to the following files to finalize the changes:
@@ -48,7 +48,7 @@ with open('/etc/zulip/nginx_sharding.conf.tmp', 'w') as nginx_sharding_conf_f, \
                 host = shard
             else:
                 host = f"{shard}.{external_host}"
-            assert host not in shard_map, "host %s duplicated" % (host,)
+            assert host not in shard_map, f"host {host} duplicated"
             shard_map[host] = int(port)
             write_realm_nginx_config_line(nginx_sharding_conf_f, host, port)
         nginx_sharding_conf_f.write('\n')

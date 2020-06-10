@@ -223,11 +223,11 @@ def notify_bot_owner(event: Dict[str, Any],
     bot_id = event['user_profile_id']
     bot_owner = get_user_profile_by_id(bot_id).bot_owner
 
-    notification_message = "[A message](%s) triggered an outgoing webhook." % (message_url,)
+    notification_message = f"[A message]({message_url}) triggered an outgoing webhook."
     if failure_message:
         notification_message += "\n" + failure_message
     if status_code:
-        notification_message += "\nThe webhook got a response with status code *%s*." % (status_code,)
+        notification_message += f"\nThe webhook got a response with status code *{status_code}*."
     if response_content:
         notification_message += "\nThe response contains the following payload:\n" \
                                 "```\n%s\n```" % (str(response_content),)
@@ -326,6 +326,6 @@ def do_rest_call(base_url: str,
         response_message = ("An exception of type *%s* occurred for message `%s`! "
                             "See the Zulip server logs for more information." % (
                                 type(e).__name__, event["command"],))
-        logging.exception("Outhook trigger failed:\n %s" % (e,))
+        logging.exception(f"Outhook trigger failed:\n {e}")
         fail_with_message(event, response_message)
         notify_bot_owner(event, exception=e)
