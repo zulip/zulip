@@ -180,6 +180,13 @@ DEVELOPMENT_LOG_EMAILS = DEVELOPMENT
 #    one or a handful of realms, though they might on an installation
 #    like Zulip Cloud or to work around a problem on another server.
 
+NOTIFICATION_BOT = 'notification-bot@zulip.com'
+EMAIL_GATEWAY_BOT = 'emailgateway@zulip.com'
+NAGIOS_SEND_BOT = 'nagios-send-bot@zulip.com'
+NAGIOS_RECEIVE_BOT = 'nagios-receive-bot@zulip.com'
+WELCOME_BOT = 'welcome-bot@zulip.com'
+REMINDER_BOT = 'reminder-bot@zulip.com'
+
 # The following bots are optional system bots not enabled by
 # default.  The default ones are defined in INTERNAL_BOTS, in settings.py.
 
@@ -188,8 +195,8 @@ DEVELOPMENT_LOG_EMAILS = DEVELOPMENT
 ERROR_BOT: Optional[str] = None
 # These are extra bot users for our end-to-end Nagios message
 # sending tests.
-NAGIOS_STAGING_SEND_BOT: Optional[str] = None
-NAGIOS_STAGING_RECEIVE_BOT: Optional[str] = None
+NAGIOS_STAGING_SEND_BOT = 'nagios-staging-send-bot@zulip.com' if PRODUCTION else None
+NAGIOS_STAGING_RECEIVE_BOT = 'nagios-staging-receive-bot@zulip.com' if PRODUCTION else None
 # SYSTEM_BOT_REALM would be a constant always set to 'zulip',
 # except that it isn't that on Zulip Cloud.  We will likely do a
 # migration and eliminate this parameter in the future.
