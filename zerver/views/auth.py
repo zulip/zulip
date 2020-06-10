@@ -62,11 +62,21 @@ from two_factor.views import LoginView as BaseTwoFactorLoginView
 ExtraContext = Optional[Dict[str, Any]]
 
 def get_safe_redirect_to(url: str, redirect_host: str) -> str:
-    is_url_safe = is_safe_url(url=url, allowed_hosts=None)
+    # allowed_hosts given to is_safe_url are supposed to be without the scheme,
+    # e.g. example.com is valid, but https://example.com is not. We want to allow
+    # passing redirect_host with the scheme here, so we'll handle those cases by
+    # extracting the netloc.
+    parsed_host = urllib.parse.urlparse(redirect_host)
+    if parsed_host.scheme:
+        redirect_host = parsed_host.netloc
+
+    is_url_safe = is_safe_url(url=url, allowed_hosts={redirect_host})
+    scheme = parsed_host.scheme or 'https'
+    base_url = f"{scheme}://{redirect_host}"
     if is_url_safe:
-        return urllib.parse.urljoin(redirect_host, url)
+        return urllib.parse.urljoin(base_url, url)
     else:
-        return redirect_host
+        return base_url
 
 def create_preregistration_user(email: str, request: HttpRequest, realm_creation: bool=False,
                                 password_required: bool=True, full_name: Optional[str]=None,

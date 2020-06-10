@@ -1,4 +1,5 @@
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.views.auth import get_safe_redirect_to
 
 import responses
 import requests
@@ -18,3 +19,35 @@ class ResponsesTest(ZulipTestCase):
             result = requests.request('GET', 'https://www.google.com')
             self.assertEqual(result.status_code, 200)
             self.assertEqual(result.text, '{}')
+
+class GetSafeRedirectUrlTest(ZulipTestCase):
+    def test_get_safe_redirect_to(self) -> None:
+        self.assertEqual(
+            get_safe_redirect_to('/test/endpoint?query', 'example.com'),
+            'https://example.com/test/endpoint?query'
+        )
+        self.assertEqual(
+            get_safe_redirect_to('/test/endpoint?query', 'https://example.com'),
+            'https://example.com/test/endpoint?query'
+        )
+        self.assertEqual(
+            get_safe_redirect_to('/test/endpoint?query', 'http://example.com'),
+            'http://example.com/test/endpoint?query'
+        )
+        self.assertEqual(
+            get_safe_redirect_to('https://example.com/test/endpoint?query', 'example.com'),
+            'https://example.com/test/endpoint?query'
+        )
+        self.assertEqual(
+            get_safe_redirect_to('https://example.com/test/endpoint?query', 'https://example.com'),
+            'https://example.com/test/endpoint?query'
+        )
+        # Don't allow redirect to an unintended host. Convert to a redirect to the safe host.
+        self.assertEqual(
+            get_safe_redirect_to('https://evilexample.com/test/endpoint?query', 'example.com'),
+            'https://example.com'
+        )
+        self.assertEqual(
+            get_safe_redirect_to('https://evilexample.com/test/endpoint?query', 'https://example.com'),
+            'https://example.com'
+        )
