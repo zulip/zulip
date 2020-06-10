@@ -986,3 +986,15 @@ class OpenAPIAttributesTest(ZulipTestCase):
                 assert("tags" in openapi_spec[path][method])
                 tag = openapi_spec[path][method]["tags"][0]
                 assert(tag in VALID_TAGS)
+                for response in openapi_spec[path][method]['responses']:
+                    response_schema = (openapi_spec[path][method]['responses'][response]
+                                       ['content']['application/json']['schema'])
+                    if 'oneOf' in response_schema:
+                        cnt = 0
+                        for entry in response_schema['oneOf']:
+                            validate_against_openapi_schema(entry['example'], path,
+                                                            method, response + '_' + str(cnt))
+                            cnt += 1
+                        continue
+                    validate_against_openapi_schema(response_schema['example'], path,
+                                                    method, response)
