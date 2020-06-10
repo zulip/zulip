@@ -345,6 +345,44 @@ class TestCreateStreams(ZulipTestCase):
         # But it should be marked as read for Iago, the stream creator.
         self.assert_length(iago_unread_messages, 0)
 
+    def test_set_stream_admin_on_stream_creation(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        stream_public = "public"
+        stream_private = "private"
+
+        # Make the user creating the stream as stream admin.
+        result = self.common_subscribe_to_streams(
+            hamlet,
+            [stream_public, stream_private],
+            {"principals": orjson.dumps([hamlet.id, cordelia.id]).decode()},
+        )
+        self.assert_json_success(result)
+        sub_hamlet = get_subscription(stream_public, hamlet)
+        self.assertTrue(sub_hamlet.is_stream_admin)
+        sub_hamlet = get_subscription(stream_private, hamlet)
+        self.assertTrue(sub_hamlet.is_stream_admin)
+
+        # Only user creating the stream is stream admin and not other users.
+        sub_cordelia = get_subscription(stream_private, cordelia)
+        self.assertFalse(sub_cordelia.is_stream_admin)
+        sub_cordelia = get_subscription(stream_public, cordelia)
+        self.assertFalse(sub_cordelia.is_stream_admin)
+
+        # Stream admin is set only on newly created streams and not on exisiting streams.
+        stream_new = "new stream"
+        stream_old = "existing stream"
+        self.make_stream(stream_old)
+        self.common_subscribe_to_streams(
+            hamlet,
+            [stream_old, stream_new],
+            {"principals": orjson.dumps([hamlet.id, cordelia.id]).decode()},
+        )
+        sub_hamlet = get_subscription(stream_old, hamlet)
+        self.assertFalse(sub_hamlet.is_stream_admin)
+        sub_hamlet = get_subscription(stream_new, hamlet)
+        self.assertTrue(sub_hamlet.is_stream_admin)
+
 
 class RecipientTest(ZulipTestCase):
     def test_recipient(self) -> None:
@@ -2807,6 +2845,10 @@ class SubscriptionRestApiTest(ZulipTestCase):
         self.assert_json_success(result)
         streams = self.get_streams(user)
         self.assertTrue("my_test_stream_1" in streams)
+
+        stream = get_stream("my_test_stream_1", user.realm)
+        sub = get_subscription("my_test_stream_1", user)
+        do_change_subscription_role(user, sub, stream, UserProfile.ROLE_MEMBER)
 
         # now delete the same stream
         request = {

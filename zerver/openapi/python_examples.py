@@ -21,7 +21,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Set, TypeVar, 
 from zulip import Client
 
 from zerver.lib import mdiff
-from zerver.models import get_realm, get_user
+from zerver.models import Subscription, get_realm, get_user
 from zerver.openapi.openapi import validate_against_openapi_schema
 
 ZULIP_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -582,6 +582,14 @@ def list_subscriptions(client: Client) -> None:
 
 @openapi_test_function("/users/me/subscriptions:delete")
 def remove_subscriptions(client: Client) -> None:
+    # Change the role of stream admin to member because
+    # unsubscribing the last stream admin is not allowed.
+    stream_id = client.get_stream_id("new stream")["stream_id"]
+    realm = get_realm("zulip")
+    user = get_user("iago@zulip.com", realm)
+    Subscription.objects.filter(recipient__type_id=stream_id, user_profile=user).update(
+        role=Subscription.ROLE_MEMBER
+    )
 
     # {code_example|start}
     # Unsubscribe from the stream "new stream"

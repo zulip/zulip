@@ -3586,6 +3586,7 @@ def bulk_add_subscriptions(
     from_user_creation: bool = False,
     *,
     acting_user: Optional[UserProfile],
+    stream_admin_map: Optional[Dict[int, List[Stream]]] = None,
 ) -> SubT:
     users = list(users)
 
@@ -3634,12 +3635,21 @@ def bulk_add_subscriptions(
                 color = pick_color(user_profile, used_colors)
             used_colors.add(color)
 
+            role = Subscription.ROLE_MEMBER
+            if stream_admin_map is not None:
+                if (
+                    user_profile.id in stream_admin_map
+                    and stream in stream_admin_map[user_profile.id]
+                ):
+                    role = Subscription.ROLE_STREAM_ADMINISTRATOR
+
             sub = Subscription(
                 user_profile=user_profile,
                 is_user_active=user_profile.is_active,
                 active=True,
                 color=color,
                 recipient_id=recipient_id,
+                role=role,
             )
             sub_info = SubInfo(user_profile, sub, stream)
             subs_to_add.append(sub_info)
