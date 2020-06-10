@@ -1718,8 +1718,7 @@ class StreamTopicPattern(CompiledPattern):
             el.set('data-stream-id', str(stream['id']))
             stream_url = encode_stream(stream['id'], stream_name)
             topic_url = hash_util_encode(topic_name)
-            link = '/#narrow/stream/{stream_url}/topic/{topic_url}'.format(stream_url=stream_url,
-                                                                           topic_url=topic_url)
+            link = f'/#narrow/stream/{stream_url}/topic/{topic_url}'
             el.set('href', link)
             text = f'#{stream_name} > {topic_name}'
             el.text = markdown.util.AtomicString(text)

@@ -150,10 +150,7 @@ def api_freshdesk_webhook(request: HttpRequest, user_profile: UserProfile,
 
     ticket = TicketDict(ticket_data)
 
-    subject = "#{ticket_id}: {ticket_subject}".format(
-        ticket_id=ticket.id,
-        ticket_subject=ticket.subject
-    )
+    subject = f"#{ticket.id}: {ticket.subject}"
     event_info = parse_freshdesk_event(ticket.triggered_event)
 
     if event_info[1] == "created":

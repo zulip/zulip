@@ -177,8 +177,7 @@ def curl_method_arguments(endpoint: str, method: str,
     elif method in valid_methods:
         return ["-sSX", method, url]
     else:
-        msg = "The request method {} is not one of {}".format(method,
-                                                              valid_methods)
+        msg = f"The request method {method} is not one of {valid_methods}"
         raise ValueError(msg)
 
 def get_openapi_param_example_value_as_string(endpoint: str, method: str, param: Dict[str, Any],

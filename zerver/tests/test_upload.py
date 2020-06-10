@@ -1550,10 +1550,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         result = re.search(re.compile(r"([A-Za-z0-9\-_]{24})"), uri)
         if result is not None:
             random_name = result.group(1)
-        expected_url = "http://zulip.testserver/user_avatars/exports/{realm_id}/{random_name}/tarball.tar.gz".format(
-            realm_id=user_profile.realm_id,
-            random_name=random_name,
-        )
+        expected_url = f"http://zulip.testserver/user_avatars/exports/{user_profile.realm_id}/{random_name}/tarball.tar.gz"
         self.assertEqual(expected_url, uri)
 
         # Delete the tarball.
@@ -1863,10 +1860,7 @@ class S3Test(ZulipTestCase):
         result = re.search(re.compile(r"([0-9a-fA-F]{32})"), uri)
         if result is not None:
             hex_value = result.group(1)
-        expected_url = "https://{bucket}.s3.amazonaws.com/exports/{hex_value}/{path}".format(
-            bucket=bucket.name,
-            hex_value=hex_value,
-            path=os.path.basename(tarball_path))
+        expected_url = f"https://{bucket.name}.s3.amazonaws.com/exports/{hex_value}/{os.path.basename(tarball_path)}"
         self.assertEqual(uri, expected_url)
 
         # Delete the tarball.

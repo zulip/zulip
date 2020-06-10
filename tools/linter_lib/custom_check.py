@@ -257,13 +257,11 @@ python_rules = RuleList(
         # This next check could have false positives, but it seems pretty
         # rare; if we find any, they can be added to the exclude list for
         # this rule.
-        {'pattern': r"""^(?:[^'"#\\]|{}|{})*(?:{}|{})\s*%\s*(?![\s({{\\]|dict\(|tuple\()(?:[^,{}]|{})+(?:$|[,#\\]|{})""".format(
-            PYSQ, PYDQ, PYSQ, PYDQ, PYDELIMS, PYGROUP, PYRIGHT),
+        {'pattern': fr"""^(?:[^'"#\\]|{PYSQ}|{PYDQ})*(?:{PYSQ}|{PYDQ})\s*%\s*(?![\s({{\\]|dict\(|tuple\()(?:[^,{PYDELIMS}]|{PYGROUP})+(?:$|[,#\\]|{PYRIGHT})""",
          'description': 'Used % formatting without a tuple',
          'good_lines': ['"foo %s bar" % ("baz",)'],
          'bad_lines': ['"foo %s bar" % "baz"']},
-        {'pattern': r"""^(?:[^'"#\\]|{}|{})*(?:{}|{})\s*%\s*\((?:[^,{}]|{})*\)""".format(
-            PYSQ, PYDQ, PYSQ, PYDQ, PYDELIMS, PYGROUP),
+        {'pattern': fr"""^(?:[^'"#\\]|{PYSQ}|{PYDQ})*(?:{PYSQ}|{PYDQ})\s*%\s*\((?:[^,{PYDELIMS}]|{PYGROUP})*\)""",
          'description': 'Used % formatting with parentheses that do not form a tuple',
          'good_lines': ['"foo %s bar" % ("baz",)"'],
          'bad_lines': ['"foo %s bar" % ("baz")']},

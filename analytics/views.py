@@ -1096,9 +1096,7 @@ def support(request: HttpRequest) -> HttpResponse:
             new_plan_type = int(new_plan_type)
             current_plan_type = realm.plan_type
             do_change_plan_type(realm, new_plan_type)
-            msg = "Plan type of {} changed from {} to {} ".format(realm.name,
-                                                                  get_plan_name(current_plan_type),
-                                                                  get_plan_name(new_plan_type))
+            msg = f"Plan type of {realm.name} changed from {get_plan_name(current_plan_type)} to {get_plan_name(new_plan_type)} "
             context["message"] = msg
 
         new_discount = request.POST.get("discount", None)

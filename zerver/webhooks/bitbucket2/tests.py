@@ -47,17 +47,13 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_push_commits_above_limit_event(self) -> None:
         commit_info = '* a ([6f161a7](https://bitbucket.org/kolaszek/repository-name/commits/6f161a7bced94430ac8947d87dbf45c6deee3fb0))\n'
-        expected_message = "kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branches/compare/6f161a7bced94430ac8947d87dbf45c6deee3fb0..1221f2fda6f1e3654b09f1f3a08390e4cb25bb48) 5 commits to branch master. Commits by Tomasz (5).\n\n{}[and more commit(s)]".format(
-            (commit_info * 5),
-        )
+        expected_message = f"kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branches/compare/6f161a7bced94430ac8947d87dbf45c6deee3fb0..1221f2fda6f1e3654b09f1f3a08390e4cb25bb48) 5 commits to branch master. Commits by Tomasz (5).\n\n{(commit_info * 5)}[and more commit(s)]"
         self.send_and_test_stream_message('push_commits_above_limit', self.EXPECTED_TOPIC_BRANCH_EVENTS, expected_message)
 
     def test_bitbucket2_on_push_commits_above_limit_filtered_by_branches(self) -> None:
         self.url = self.build_webhook_url(branches='master,development')
         commit_info = '* a ([6f161a7](https://bitbucket.org/kolaszek/repository-name/commits/6f161a7bced94430ac8947d87dbf45c6deee3fb0))\n'
-        expected_message = "kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branches/compare/6f161a7bced94430ac8947d87dbf45c6deee3fb0..1221f2fda6f1e3654b09f1f3a08390e4cb25bb48) 5 commits to branch master. Commits by Tomasz (5).\n\n{}[and more commit(s)]".format(
-            (commit_info * 5),
-        )
+        expected_message = f"kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branches/compare/6f161a7bced94430ac8947d87dbf45c6deee3fb0..1221f2fda6f1e3654b09f1f3a08390e4cb25bb48) 5 commits to branch master. Commits by Tomasz (5).\n\n{(commit_info * 5)}[and more commit(s)]"
 
         self.send_and_test_stream_message('push_commits_above_limit', self.EXPECTED_TOPIC_BRANCH_EVENTS, expected_message)
 

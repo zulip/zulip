@@ -241,8 +241,7 @@ def get_build_hook_event_body(payload: Dict[str, Any]) -> str:
     )
 
 def get_test_event_body(payload: Dict[str, Any]) -> str:
-    return "Webhook for **{repo}** has been configured successfully! :tada:".format(
-        repo=get_repo_name(payload))
+    return f"Webhook for **{get_repo_name(payload)}** has been configured successfully! :tada:"
 
 def get_pipeline_event_body(payload: Dict[str, Any]) -> str:
     pipeline_status = payload['object_attributes'].get('status')
@@ -269,11 +268,7 @@ def get_pipeline_event_body(payload: Dict[str, Any]) -> str:
         if artifact_filename:
             artifact_download_url = f'{build_url}/artifacts/download'
             artifact_browse_url = f'{build_url}/artifacts/browse'
-            artifact_string = '  * built artifact: *{}* [[Browse]({})|[Download]({})]\n'.format(
-                artifact_filename,
-                artifact_browse_url,
-                artifact_download_url
-            )
+            artifact_string = f'  * built artifact: *{artifact_filename}* [[Browse]({artifact_browse_url})|[Download]({artifact_download_url})]\n'
         else:
             artifact_string = ''
         builds_status += "* [{}]({}) - {}\n{}".format(

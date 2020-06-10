@@ -43,11 +43,7 @@ def handle_push_image_event(payload: Dict[str, Any],
     image_name = payload["event_data"]["repository"]["repo_full_name"]
     image_tag = payload["event_data"]["resources"][0]["tag"]
 
-    return "{author} pushed image `{image_name}:{image_tag}`".format(
-        author=operator_username,
-        image_name=image_name,
-        image_tag=image_tag
-    )
+    return f"{operator_username} pushed image `{image_name}:{image_tag}`"
 
 
 VULNERABILITY_SEVERITY_NAME_MAP = {

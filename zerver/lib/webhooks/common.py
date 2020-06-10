@@ -134,9 +134,7 @@ def get_fixture_http_headers(integration_name: str,
     function from the target integration module to determine what set
     of HTTP headers goes with the given test fixture.
     """
-    view_module_name = "zerver.webhooks.{integration_name}.view".format(
-        integration_name=integration_name
-    )
+    view_module_name = f"zerver.webhooks.{integration_name}.view"
     try:
         # TODO: We may want to migrate to a more explicit registration
         # strategy for this behavior rather than a try/except import.

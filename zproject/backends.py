@@ -1198,10 +1198,7 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
         # In SAML authentication, the IdP may support only sending
         # the first and last name as separate attributes - in that case
         # we construct the full name from them.
-        return_data["full_name"] = "{} {}".format(
-            first_name,
-            last_name
-        ).strip()  # strip removes the unnecessary ' '
+        return_data["full_name"] = f"{first_name} {last_name}".strip()  # strip removes the unnecessary ' '
 
     return user_profile
 
