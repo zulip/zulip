@@ -5,7 +5,7 @@ from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 from django.views.decorators.http import require_safe
 
-from zerver.decorator import require_realm_admin
+from zerver.decorator import require_realm_admin, require_realm_owner
 from zerver.lib.actions import (
     do_set_realm_message_editing,
     do_set_realm_message_deleting,
@@ -184,7 +184,7 @@ def update_realm(
 
     return json_success(data)
 
-@require_realm_admin
+@require_realm_owner
 @has_request_variables
 def deactivate_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
     realm = user.realm

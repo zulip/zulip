@@ -1,6 +1,6 @@
 # Deactivate your organization
 
-{!admin-only.md!}
+{!owner-only.md!}
 
 {start_tabs}
 

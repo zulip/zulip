@@ -25,7 +25,7 @@ from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import statsd, has_api_key_format
 from zerver.lib.exceptions import JsonableError, ErrorCode, \
     InvalidJSONError, InvalidAPIKeyError, InvalidAPIKeyFormatError, \
-    OrganizationAdministratorRequired
+    OrganizationAdministratorRequired, OrganizationOwnerRequired
 from zerver.lib.types import ViewFuncT
 
 from zerver.lib.rate_limiter import RateLimitedUser
@@ -102,6 +102,14 @@ def require_post(func: ViewFuncT) -> ViewFuncT:
                             extra={'status_code': 405, 'request': request})
             return HttpResponseNotAllowed(["POST"])
         return func(request, *args, **kwargs)
+    return wrapper  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
+
+def require_realm_owner(func: ViewFuncT) -> ViewFuncT:
+    @wraps(func)
+    def wrapper(request: HttpRequest, user_profile: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
+        if not user_profile.is_realm_owner:
+            raise OrganizationOwnerRequired()
+        return func(request, user_profile, *args, **kwargs)
     return wrapper  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
 
 def require_realm_admin(func: ViewFuncT) -> ViewFuncT:
