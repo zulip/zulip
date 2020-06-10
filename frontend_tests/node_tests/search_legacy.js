@@ -251,6 +251,7 @@ run_test('initiate_search', () => {
     // this implicitly expects the code to used the chained
     // function calls, which is something to keep in mind if
     // this test ever fails unexpectedly.
+    narrow_state.filter = () => ({is_search: return_true});
     let typeahead_forced_open = false;
     let is_searchbox_text_selected = false;
     $('#search_query').select = noop;
@@ -267,4 +268,10 @@ run_test('initiate_search', () => {
     search.initiate_search();
     assert(typeahead_forced_open);
     assert(is_searchbox_text_selected);
+    assert.equal($('#search_query').val(), "ver");
+
+    // test that we append space for user convenience
+    narrow_state.filter = () => ({is_search: return_false});
+    search.initiate_search();
+    assert.equal($('#search_query').val(), "ver ");
 });
