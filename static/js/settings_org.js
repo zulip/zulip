@@ -955,67 +955,47 @@ exports.build_page = function () {
         delete_button.hide();
     }
 
-    function upload_realm_icon(file_input) {
-        const spinner = $('#icon-spinner-background');
-        const upload_text =  $('#realm_icon_upload');
-        const delete_button = $('#realm_icon_delete_button');
-        const form_data = new FormData();
-
-        form_data.append('csrfmiddlewaretoken', csrf_token);
-        for (const [i, file] of Array.prototype.entries.call(file_input[0].files)) {
-            form_data.append('file-' + i, file);
-        }
-
-        const error_field = $("#realm_icon_file_input_error");
-        error_field.hide();
-        realm_icon_logo_upload_start(spinner, upload_text, delete_button);
-
-        channel.post({
-            url: '/json/realm/icon',
-            data: form_data,
-            cache: false,
-            processData: false,
-            contentType: false,
-            success: function () {
-                realm_icon_logo_upload_complete(spinner, upload_text, delete_button);
-            },
-            error: function (xhr) {
-                realm_icon_logo_upload_complete(spinner, upload_text, delete_button);
-                ui_report.error("", xhr, error_field);
-            },
-        });
-
-    }
-    realm_icon.build_realm_icon_widget(upload_realm_icon);
-
-    function upload_realm_logo(file_input, night) {
+    function upload_realm_logo_or_icon(file_input, night, icon) {
         const form_data = new FormData();
         let spinner;
         let error_field;
         let upload_text;
         let delete_button;
+        let url;
 
         form_data.append('csrfmiddlewaretoken', csrf_token);
         for (const [i, file] of Array.prototype.entries.call(file_input[0].files)) {
             form_data.append('file-' + i, file);
         }
-        if (night) {
-            error_field = $("#night-logo-section .realm-logo-file-input-error");
-            spinner = $("#night-logo-section .upload-logo-spinner");
-            upload_text = $('#night-logo-section .realm_logo_upload');
-            delete_button = $('#night-logo-section .realm-logo-delete-button');
+        if (icon) {
+            url = '/json/realm/icon';
+            spinner = $('#icon-spinner-background');
+            upload_text =  $('#realm_icon_upload');
+            delete_button = $('#realm_icon_delete_button');
+            error_field = $("#realm_icon_file_input_error");
         } else {
-            error_field = $("#day-logo-section .realm-logo-file-input-error");
-            spinner = $("#day-logo-section .upload-logo-spinner");
-            upload_text = $('#day-logo-section .realm_logo_upload');
-            delete_button = $('#day-logo-section .realm-logo-delete-button');
+            if (night) {
+                error_field = $("#night-logo-section .realm-logo-file-input-error");
+                spinner = $("#night-logo-section .upload-logo-spinner");
+                upload_text = $('#night-logo-section .realm_logo_upload');
+                delete_button = $('#night-logo-section .realm-logo-delete-button');
+            } else {
+                error_field = $("#day-logo-section .realm-logo-file-input-error");
+                spinner = $("#day-logo-section .upload-logo-spinner");
+                upload_text = $('#day-logo-section .realm_logo_upload');
+                delete_button = $('#day-logo-section .realm-logo-delete-button');
+            }
+            url = '/json/realm/logo';
+            form_data.append('night', JSON.stringify(night));
         }
         spinner.expectOne();
-        error_field.hide();
+        upload_text.expectOne();
+        delete_button.expectOne();
+        error_field.expectOne();
         realm_icon_logo_upload_start(spinner, upload_text, delete_button);
-        form_data.append('night', JSON.stringify(night));
+        error_field.hide();
         channel.post({
-            url: '/json/realm/logo',
+            url: url,
             data: form_data,
             cache: false,
             processData: false,
@@ -1030,9 +1010,10 @@ exports.build_page = function () {
         });
     }
 
+    realm_icon.build_realm_icon_widget(upload_realm_logo_or_icon, null, true);
     if (page_params.zulip_plan_is_not_limited) {
-        realm_logo.build_realm_logo_widget(upload_realm_logo, false);
-        realm_logo.build_realm_logo_widget(upload_realm_logo, true);
+        realm_logo.build_realm_logo_widget(upload_realm_logo_or_icon, false);
+        realm_logo.build_realm_logo_widget(upload_realm_logo_or_icon, true);
     }
 
 
