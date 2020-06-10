@@ -42,10 +42,7 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
     # there are also cases where Casper deliberately uses invalid HTML,
     # so we exclude them from our linter.
     logging.basicConfig(format='%(levelname)s:%(message)s')
-    templates = filter(
-        lambda fn: ('casperjs' not in fn),
-        templates)
-    templates = sorted(list(templates))
+    templates = sorted(fn for fn in templates if 'casperjs' not in fn)
     # Use of underscore templates <%= %>.
     if 'templates/zerver/team.html' in templates:
         templates.remove('templates/zerver/team.html')
@@ -99,12 +96,8 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
         return bad_ids_dict
 
     bad_ids_list: List[str] = []
-    archive_templates = list(filter(
-        lambda fn: ('templates/zerver/archive' in fn),
-        templates))
-    templates = list(filter(
-        lambda fn: ('templates/zerver/archive' not in fn),
-        templates))
+    archive_templates = [fn for fn in templates if 'templates/zerver/archive' in fn]
+    templates = [fn for fn in templates if 'templates/zerver/archive' not in fn]
 
     bad_ids_list += list(check_for_duplicate_ids(archive_templates).keys())
     bad_ids_list += list(check_for_duplicate_ids(templates).keys())
