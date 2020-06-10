@@ -409,3 +409,6 @@ IS_DEV_DROPLET = False
 
 # Used by puppet/zulip_ops/files/cron.d/check_send_receive_time.
 NAGIOS_BOT_HOST = EXTERNAL_HOST
+
+# Automatically deactivate users not found by the AUTH_LDAP_USER_SEARCH query.
+LDAP_DEACTIVATE_NON_MATCHING_USERS: Optional[bool] = None
