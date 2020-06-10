@@ -114,7 +114,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.provider "virtualbox" do |vb, override|
-    override.vm.box = "ubuntu/bionic64"
+    override.vm.box = "hashicorp/bionic64"
     # An unnecessary log file gets generated when running vagrant up for the
     # first time with the Ubuntu Bionic box. This looks like it is being
     # caused upstream by the base box containing a Vagrantfile with a similar
