@@ -136,17 +136,14 @@ function failed_listing_users() {
 
 function populate_users() {
     const active_user_ids = people.get_active_human_ids();
-    let active_users = active_user_ids.map(user_id => people.get_by_user_id(user_id));
-
     const deactivated_user_ids = people.get_non_active_human_ids();
-    let deactivated_users = deactivated_user_ids.map(user_id => people.get_by_user_id(user_id));
 
     if (active_user_ids.length === 0 && deactivated_user_ids.length === 0) {
         failed_listing_users();
     }
 
-    section.active.create_table(active_users);
-    section.deactivated.create_table(deactivated_users);
+    section.active.create_table(active_user_ids);
+    section.deactivated.create_table(deactivated_user_ids);
 }
 
 function reset_scrollbar($sel) {
@@ -280,6 +277,9 @@ section.active.create_table = (active_users) => {
     const $users_table = $("#admin_users_table");
     list_render.create($users_table, active_users, {
         name: "users_table_list",
+        get_item: (item) => {
+            return people.get_by_user_id(item);
+        },
         modifier: function (item) {
             const info = human_info(item);
             return render_admin_user_list(info);
@@ -306,6 +306,9 @@ section.deactivated.create_table = (deactivated_users) => {
     const $deactivated_users_table = $("#admin_deactivated_users_table");
     list_render.create($deactivated_users_table, deactivated_users, {
         name: "deactivated_users_table_list",
+        get_item: (item) => {
+            return people.get_by_user_id(item);
+        },
         modifier: function (item) {
             const info = human_info(item);
             return render_admin_user_list(info);
