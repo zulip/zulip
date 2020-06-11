@@ -282,9 +282,10 @@ ul {
             margin-bottom: 5px;
 
             .name {
-                color: hsl(0, 0%, 55%);
+                color: hsl(0, 0%, 20%);
                 display: inline-block;
                 min-width: 120px;
+                font-weight: 600;
             }
         }
 
@@ -318,7 +319,8 @@ ul {
             margin-top: 8px;
 
             .name {
-                color: hsl(0, 0%, 55%);
+                color: hsl(0, 0%, 20%);
+                font-weight: 600;
             }
 
             .value {
