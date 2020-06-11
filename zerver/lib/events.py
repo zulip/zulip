@@ -406,8 +406,6 @@ def apply_event(state: Dict[str, Any],
                 if 'gravatar.com' in person['avatar_url']:
                     person['avatar_url'] = None
             person['is_active'] = True
-            if not person['is_bot']:
-                person['profile_data'] = {}
             state['raw_users'][person_user_id] = person
         elif event['op'] == "remove":
             state['raw_users'][person_user_id]['is_active'] = False

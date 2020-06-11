@@ -50,6 +50,7 @@ from zerver.lib.message import (
     truncate_body,
     truncate_topic,
 )
+from zerver.lib.presence import get_presence_for_user
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_data
 from zerver.lib.retention import move_messages_to_archive
@@ -88,6 +89,7 @@ from zerver.lib.users import (
     format_user_row,
     get_api_key,
     user_profile_to_user_row,
+    get_raw_user_data,
 )
 from zerver.lib.user_status import (
     update_user_status,
@@ -454,6 +456,41 @@ def notify_created_user(user_profile: UserProfile) -> None:
     event: Dict[str, Any] = dict(type="realm_user", op="add", person=person)
     send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
+def notify_reactivated_user(user_profile: UserProfile) -> None:
+    user_data = get_raw_user_data(user_profile.realm,
+                                  acting_user=user_profile,
+                                  client_gravatar=False,
+                                  target_user=user_profile)
+    person = user_data[user_profile.id]
+    event = dict(type="realm_user", op="add", person=person)  # type: Dict[str, Any]
+    send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+
+    presence_dict = get_presence_for_user(user_profile)
+    if presence_dict:
+        event = dict(type="presence", email=user_profile.email,
+                     user_id=user_profile.id, server_timestamp=time.time(),
+                     presence=presence_dict[user_profile.email])
+        send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+
+    subscribed_stream_ids = list(get_subscribed_stream_ids_for_user(user_profile))
+    streams = []
+    for stream_id in subscribed_stream_ids:
+        stream = get_stream_by_id_in_realm(stream_id, user_profile.realm)
+        streams.append(stream)
+    all_subscribers_by_stream = get_user_ids_for_streams(streams=streams)
+
+    for stream in streams:
+        subscribed_user_ids = all_subscribers_by_stream[stream.id]
+        peer_user_ids = get_peer_user_ids_for_stream_change(
+            stream=stream,
+            altered_user_ids=[user_profile.id],
+            subscribed_user_ids=subscribed_user_ids,
+        )
+        if peer_user_ids:
+            event = dict(type="subscription", op="peer_add",
+                         subscriptions=[stream.name], user_id=user_profile.id)
+            send_event(user_profile.realm, event, peer_user_ids)
+
 def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
     def stream_name(stream: Optional[Stream]) -> Optional[str]:
         if not stream:
@@ -580,9 +617,10 @@ def do_reactivate_user(user_profile: UserProfile, acting_user: Optional[UserProf
     if settings.BILLING_ENABLED:
         update_license_ledger_if_needed(user_profile.realm, event_time)
 
-    notify_created_user(user_profile)
-
-    if user_profile.is_bot:
+    if not user_profile.is_bot:
+        notify_reactivated_user(user_profile)
+    else:
+        notify_created_user(user_profile)
         notify_created_bot(user_profile)
 
 def active_humans_in_realm(realm: Realm) -> Sequence[UserProfile]:

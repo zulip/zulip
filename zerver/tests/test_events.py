@@ -101,6 +101,7 @@ from zerver.lib.actions import (
     remove_members_from_user_group,
     check_delete_user_group,
     do_update_user_custom_profile_data_if_changed,
+    update_user_presence,
 )
 from zerver.lib.bugdown import MentionData
 from zerver.lib.events import (
@@ -2396,6 +2397,65 @@ class EventsRegisterTest(ZulipTestCase):
         self.assert_on_error(error)
 
     def test_do_reactivate_user(self) -> None:
+        user_reactivate_checker = self.check_events_dict([
+            ('type', equals('realm_user')),
+            ('op', equals('add')),
+            ('person', check_dict_only([
+                ('user_id', check_int),
+                ('email', check_string),
+                ('avatar_url', check_none_or(check_string)),
+                ('full_name', check_string),
+                ('is_admin', check_bool),
+                ('is_bot', check_bool),
+                ('is_guest', check_bool),
+                ('is_active', check_bool),
+                ('profile_data', check_none_or(check_dict_only([]))),
+                ('timezone', check_string),
+                ('date_joined', check_string),
+            ])),
+        ])
+
+        peer_add_event_checker = self.check_events_dict([
+            ('type', equals('subscription')),
+            ('op', equals('peer_add')),
+            ('subscriptions', check_list(check_string)),
+            ('user_id', check_int),
+        ])
+
+        presence_event_checker = self.check_events_dict([
+            ('type', equals('presence')),
+            ('email', check_string),
+            ('user_id', check_int),
+            ('server_timestamp', check_float),
+            ('presence', check_dict_only([
+                ('aggregated', check_dict_only([
+                    ('status', equals('active')),
+                    ('timestamp', check_int),
+                    ('client', check_string),
+                ])),
+                ('website', check_dict_only([
+                    ('status', equals('active')),
+                    ('timestamp', check_int),
+                    ('client', check_string),
+                    ('pushable', check_bool),
+                ])),
+            ])),
+        ])
+
+        user = self.example_user("cordelia")
+        do_deactivate_user(user)
+        update_user_presence(user, get_client("website"),
+                             timezone_now(), UserPresence.ACTIVE, True)
+        action = lambda: do_reactivate_user(user)
+        events = self.do_test(action, num_events=3)
+        error = user_reactivate_checker('events[0]', events[0])
+        self.assert_on_error(error)
+        error = presence_event_checker('events[1]', events[1])
+        self.assert_on_error(error)
+        error = peer_add_event_checker('events[2]', events[2])
+        self.assert_on_error(error)
+
+    def test_do_reactivate_bot(self) -> None:
         bot_reactivate_checker = self.check_events_dict([
             ('type', equals('realm_bot')),
             ('op', equals('add')),

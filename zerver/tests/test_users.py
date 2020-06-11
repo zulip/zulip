@@ -1250,6 +1250,44 @@ class ActivateTest(ZulipTestCase):
             self.assertEqual({hamlet.delivery_email, iago.delivery_email}, set(to_fields))
         self.assertEqual(ScheduledEmail.objects.count(), 0)
 
+    def test_reactivate_user(self) -> None:
+        self.login('iago')
+        cordelia = self.example_user('cordelia')
+        othello = self.example_user('othello')
+        prospero = self.example_user('prospero')
+
+        self.make_stream('private_test_stream', invite_only=True)
+        for user in [cordelia, othello]:
+            self.subscribe(user, 'private_test_stream')
+        self.unsubscribe(prospero, 'Verona')
+
+        user_before_deactivation = cordelia
+        do_deactivate_user(cordelia)
+        events = []  # type: List[Mapping[str, Any]]
+        with tornado_redirected_to_list(events):
+            do_reactivate_user(cordelia)
+
+        realm_user_add_event = events[0]
+        peer_add_to_stream_event = events[1]
+        peer_add_to_private_stream_event = events[2]
+
+        self.assert_length(events, 3)
+        for event in events:
+            self.assertTrue(othello.id in event['users'])
+
+        self.assertTrue(prospero.id in realm_user_add_event['users'])
+        self.assertTrue(prospero.id in peer_add_to_stream_event['users'])
+        self.assertFalse(prospero.id in peer_add_to_private_stream_event['users'])
+
+        self.assertTrue(cordelia.id in realm_user_add_event['users'])
+        self.assertFalse(cordelia.id in peer_add_to_stream_event['users'])
+        self.assertFalse(cordelia.id in peer_add_to_private_stream_event['users'])
+
+        self.assertEqual(user_before_deactivation.full_name, cordelia.full_name)
+        self.assertEqual(user_before_deactivation.delivery_email, cordelia.delivery_email)
+        self.assertEqual(user_before_deactivation.profile_data, cordelia.profile_data)
+        self.assertEqual(user_before_deactivation.alert_words, cordelia.alert_words)
+
 class RecipientInfoTest(ZulipTestCase):
     def test_stream_recipient_info(self) -> None:
         hamlet = self.example_user('hamlet')
