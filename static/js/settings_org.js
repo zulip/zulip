@@ -18,6 +18,9 @@ exports.maybe_disable_widgets = function () {
         return;
     }
 
+    $(".organization-box [data-name='auth-methods']")
+        .find("input, button, select, checked").attr("disabled", true);
+
     if (page_params.is_admin) {
         $("#deactivate_realm_button").attr("disabled", true);
         return;
@@ -37,9 +40,6 @@ exports.maybe_disable_widgets = function () {
 
     $(".organization-box [data-name='organization-permissions']")
         .find(".control-label-disabled").addClass('enabled');
-
-    $(".organization-box [data-name='auth-methods']")
-        .find("input, button, select, checked").attr("disabled", true);
 };
 
 exports.get_sorted_options_list = function (option_values_object) {
@@ -310,7 +310,7 @@ exports.populate_auth_methods = function (auth_methods) {
         rendered_auth_method_rows += render_settings_admin_auth_methods_list({
             method: auth_method,
             enabled: value,
-            is_admin: page_params.is_admin,
+            is_owner: page_params.is_owner,
         });
     }
     auth_methods_table.html(rendered_auth_method_rows);
@@ -324,6 +324,7 @@ function insert_tip_box() {
     $(".organization-box").find(".settings-section:not(.can-edit)")
         .not("#emoji-settings")
         .not("#user-groups-admin")
+        .not("#organization-auth-settings")
         .prepend(tip_box);
 }
 
