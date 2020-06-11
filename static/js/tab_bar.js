@@ -54,15 +54,15 @@ exports.colorize_tab_bar = function () {
 };
 
 function append_and_display_title_area(tab_bar_data) {
-    const tab_bar = $("#tab_bar");
-    tab_bar.empty();
+    const tab_bar_elem = $("#tab_bar");
+    tab_bar_elem.empty();
     const rendered = render_tab_bar(tab_bar_data);
-    tab_bar.append(rendered);
+    tab_bar_elem.append(rendered);
     if (tab_bar_data.stream_settings_link) {
         exports.colorize_tab_bar();
     }
-    tab_bar.removeClass('notdisplayed');
-    const content = tab_bar.find('span.rendered_markdown');
+    tab_bar_elem.removeClass('notdisplayed');
+    const content = tab_bar_elem.find('span.rendered_markdown');
     if (content) {
         // Update syntax like stream names, emojis, mentions, timestamps.
         rendered_markdown.update_elements(content);
