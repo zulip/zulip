@@ -27,6 +27,7 @@ from zerver.views.messages import get_latest_update_message_flag_activity
 from zerver.views.portico import hello_view
 from two_factor.utils import default_device
 
+from urllib.parse import urlparse
 import calendar
 import logging
 import time
@@ -341,6 +342,25 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                'max_file_upload_size_mib': settings.MAX_FILE_UPLOAD_SIZE,
                                })
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)
+
+    img_src = 'https:;'
+    uri_host_source = urlparse(user_profile.realm.uri).netloc
+    connect_src = ("ws://%s/ 'self';" % (uri_host_source))
+    if settings.DEVELOPMENT:
+        img_src = 'http: ' + img_src
+        connect_src = 'http://localhost:9994/ ws://localhost:9994/ ' + connect_src
+    csp_policy = ("object-src 'none'; "
+                  "default-src 'none'; "
+                  "img-src %s "
+                  "font-src 'self'; "
+                  "frame-src  https:; "
+                  "media-src 'self'; "
+                  "connect-src %s "
+                  "script-src 'nonce-%s' 'unsafe-inline' 'unsafe-eval' 'strict-dynamic' 'self'; "
+                  "style-src 'unsafe-inline' 'self'; "
+                  "base-uri 'none'; "
+                  "report-uri /report/csp_violations" % (img_src, connect_src, csp_nonce))
+    response['Content-Security-Policy-Report-Only'] = csp_policy
     return response
 
 @zulip_login_required
