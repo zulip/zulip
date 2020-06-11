@@ -80,12 +80,12 @@ class zulip::postgres_common {
     source  => 'puppet:///modules/zulip/nagios_plugins/zulip_postgres_common',
   }
 
-  file { '/usr/local/bin/env-wal-e':
+  file { '/usr/local/bin/env-wal-g':
     ensure  => file,
     owner   => 'root',
     group   => 'postgres',
     mode    => '0750',
-    source  => 'puppet:///modules/zulip/postgresql/env-wal-e',
+    source  => 'puppet:///modules/zulip/postgresql/env-wal-g',
     require => Package[$postgresql],
   }
 
@@ -95,7 +95,7 @@ class zulip::postgres_common {
     group   => 'postgres',
     mode    => '0754',
     source  => 'puppet:///modules/zulip/postgresql/pg_backup_and_purge',
-    require => File['/usr/local/bin/env-wal-e'],
+    require => File['/usr/local/bin/env-wal-g'],
   }
 
   # Use arcane puppet virtual resources to add postgres user to zulip group
