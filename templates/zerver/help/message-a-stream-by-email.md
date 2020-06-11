@@ -11,7 +11,7 @@ You can send emails to Zulip streams. This can be useful
 
 If you're planning on doing this in an automated way, and have some
 programming experience, another option is to use our [send message
-API](/api/send-message).
+API](/api/send_message).
 
 ### Message a stream by email
 

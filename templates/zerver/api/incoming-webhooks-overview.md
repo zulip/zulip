@@ -5,7 +5,7 @@ something happens.  There's several ways to do an incoming webhook in
 Zulip:
 
 * Use our [REST API](/api/rest) endpoint for [sending
-  messages](/api/send-message).  This works great for internal tools
+  messages](/api/send_message).  This works great for internal tools
   or cases where the third-party tool wants to control the formatting
   of the messages in Zulip.
 * Use one of our supported [integration

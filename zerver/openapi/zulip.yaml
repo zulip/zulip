@@ -615,7 +615,7 @@ paths:
                                   description: |
                                     Dictionary with data on the user who added the reaction, including
                                     the user ID as the `id` field.  **Note**: In the [events
-                                    API](/api/get-events), this `user` dictionary
+                                    API](/api/get_events), this `user` dictionary
                                     confusing had the user ID in a field called `user_id`
                                     instead.  We recommend ignoring fields other than the user
                                     ID.  **Deprecated** and to be removed in a future release
@@ -1109,7 +1109,7 @@ paths:
 
         For updating the `read` flag on common collections of messages, see also
         the
-        [special endpoints for marking message as read in bulk](/api/mark-all-as-read).
+        [special endpoints for marking message as read in bulk](/api/mark_all_as_read).
       parameters:
       - name: messages
         in: query
@@ -1263,13 +1263,13 @@ paths:
         `POST {{ api_url }}/v1/user_uploads`
 
         Initially, only you will be able to access the link.  To share the
-        uploaded file, you'll need to [send a message][send-message]
+        uploaded file, you'll need to [send a message][send_message]
         containing the resulting link.  Users who can already access the link
         can reshare it with other users by sending additional Zulip messages
         containing the link.
 
         [uploaded-files]: /help/manage-your-uploaded-files
-        [send-message]: /api/send-message
+        [send_message]: /api/send_message
       requestBody:
         content:
           multipart/form-data:
@@ -1519,7 +1519,7 @@ paths:
 
         `GET {{ api_url }}/v1/users/{user_id}`
 
-        You can also fetch details on [all users in the organization](/api/get-users).
+        You can also fetch details on [all users in the organization](/api/get_users).
 
         *This endpoint is new in Zulip Server 2.2.*
       parameters:
@@ -2966,7 +2966,7 @@ paths:
                         organization. Each of these tuples contain the
                         pattern, the formatted URL and the filter's
                         ID, in that order. See the [Create
-                        linkifiers](/api/add-linkifier) article for
+                        linkifiers](/api/add_linkifier) article for
                         details on what each field means.
                 - example:
                     {
@@ -3408,7 +3408,7 @@ paths:
       tags: ["users"]
       description: |
         This endpoint is used to edit the user's global notification settings.
-        See [this endpoint](/api/update-subscription-settings) for
+        See [this endpoint](/api/update_subscription_settings) for
         per-stream notification settings.
 
         `PATCH {{ api_url }}/v1/settings/notifications`

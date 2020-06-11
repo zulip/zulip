@@ -62,4 +62,4 @@ A typical successful JSON response may look like:
 
 [status-messages]: /help/format-your-message-using-markdown#status-messages
 [linkification-filters]: /help/add-a-custom-linkification-filter
-[message-flags]: /api/update-message-flags#available-flags
+[message-flags]: /api/update_message_flags#available-flags

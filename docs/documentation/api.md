@@ -33,10 +33,10 @@ want to also read the [Step by step guide](#step-by-step-guide).
 ## How it works
 
 To understand how this documentation system works, start by reading an
-existing doc file (`templates/zerver/api/render-message.md` is a good
+existing doc file (`templates/zerver/api/render_message.md` is a good
 example; accessible live
 [here](https://zulip.com/api/render-message) or in the development
-environment at `http://localhost:9991/api/render-message`).
+environment at `http://localhost:9991/api/render_message`).
 
 We highly recommend looking at those resources while reading this page.
 
@@ -145,7 +145,7 @@ wherever that string appears in the API documentation.
 
 We have a separate Markdown extension to document the arguments that
 an API endpoint expects.  You'll see this in files like
-`templates/zerver/api/render-message.md` via the following Markdown
+`templates/zerver/api/render_message.md` via the following Markdown
 directive (implemented in
 `zerver/lib/bugdown/api_arguments_table_generator.py`):
 

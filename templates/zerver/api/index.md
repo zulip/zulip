@@ -12,11 +12,11 @@ guide should help you find the API you need:
   integrating a new service with Zulip without writing any code.
 * If you'd like to send content into Zulip, you can
   [write a native incoming webhook integration](/api/incoming-webhooks-overview)
-  or use [Zulip's API for sending messages](/api/send-message).
+  or use [Zulip's API for sending messages](/api/send_message).
 * If you're building an interactive bot that reacts to activity inside
   Zulip, you'll want to look at Zulip's
   [Python framework for interactive bots](/api/running-bots) or
-  [Zulip's real-time events API](/api/get-events).
+  [Zulip's real-time events API](/api/get_events).
 
 And if you still need to build your own integration with Zulip, check out
 the full [REST API](/api/rest), generally starting with

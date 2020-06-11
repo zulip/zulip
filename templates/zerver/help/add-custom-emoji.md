@@ -28,7 +28,7 @@ are treated the same as spaces.
 
 ### Bulk add emoji
 
-We expose a [REST API endpoint](/api/upload-custom-emoji) for bulk uploading
+We expose a [REST API endpoint](/api/upload_custom_emoji) for bulk uploading
 emoji. Using REST API endpoints requires some technical expertise;
 [contact us](/help/contact-support) if you get stuck.
 

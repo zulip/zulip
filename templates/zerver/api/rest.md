@@ -23,7 +23,7 @@ endpoints:
 !!! tip ""
     You may use the `client.call_endpoint` method of our Python API
     bindings to call an endpoint that isn't documented here. For an
-    example, see [Upload a custom emoji](/api/upload-custom-emoji).
+    example, see [Upload a custom emoji](/api/upload_custom_emoji).
 
 {!rest-endpoints.md!}
 

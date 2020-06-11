@@ -1167,7 +1167,7 @@ def test_streams(client: Client, nonadmin_client: Client) -> None:
 
 
 def test_queues(client: Client) -> None:
-    # Note that the example for api/get-events is not tested.
+    # Note that the example for api/get_events is not tested.
     # Since, methods such as client.get_events() or client.call_on_each_message
     # are blocking calls and since the event queue backend is already
     # thoroughly tested in zerver/tests/test_event_queue.py, it is not worth

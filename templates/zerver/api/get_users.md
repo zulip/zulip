@@ -2,7 +2,7 @@
 
 {generate_api_description(/users:get)}
 
-You can also [fetch details on a single user](/api/get-user).
+You can also [fetch details on a single user](/api/get_user).
 
 ## Usage examples
 

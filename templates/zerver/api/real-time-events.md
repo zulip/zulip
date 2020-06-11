@@ -23,7 +23,7 @@ interface for processing Zulip messages.
 
 More complex applications (like a Zulip terminal client) may need to
 instead use the raw [register](/api/register-queue) and
-[events](/api/get-events) endpoints.
+[events](/api/get_events) endpoints.
 
 ## Usage examples
 
@@ -56,5 +56,5 @@ You may also pass in the following keyword arguments to `call_on_each_event`:
 
 {generate_api_arguments_table|zulip.yaml|/real-time:post}
 
-See the [GET /events](/api/get-events) documentation for
+See the [GET /events](/api/get_events) documentation for
 more details on the format of individual events.
