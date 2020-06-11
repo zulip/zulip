@@ -22,19 +22,27 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         break;
 
     case 'delete_message': {
-        const msg_id = event.message_id;
+        const msg_ids = event.message_ids;
         // message is passed to unread.get_unread_messages,
         // which returns all the unread messages out of a given list.
         // So double marking something as read would not occur
-        unread_ops.process_read_messages_event([msg_id]);
+        unread_ops.process_read_messages_event(msg_ids);
+
         if (event.message_type === 'stream') {
             stream_topic_history.remove_message({
                 stream_id: event.stream_id,
                 topic_name: event.topic,
+                num_messages: msg_ids.length,
             });
             stream_list.update_streams_sidebar();
         }
-        ui.remove_message(msg_id);
+
+        // TODO: Do this as a bulk process.
+        // We may need to change narrow too,
+        // but that maybe confusing to users.
+        for (const msg_id of msg_ids) {
+            ui.remove_message(msg_id);
+        }
         break;
     }
 

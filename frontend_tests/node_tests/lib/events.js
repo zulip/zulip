@@ -549,7 +549,7 @@ exports.fixtures = {
 
     delete_message: {
         type: 'delete_message',
-        message_id: 1337,
+        message_ids: [1337],
         message_type: "stream",
         stream_id: 99,
         topic: 'topic1',
@@ -616,4 +616,3 @@ exports.fixtures = {
         },
     },
 };
-
