@@ -10,7 +10,6 @@ from zerver.models import (
     UserPresence,
     UserProfile,
     bulk_get_huddle_user_ids,
-    get_client,
     get_huddle_user_ids,
 )
 
@@ -40,11 +39,11 @@ class MissedMessageTest(ZulipTestCase):
 
         def set_presence(user: UserProfile, client_name: str, ago: int) -> None:
             when = timezone_now() - datetime.timedelta(seconds=ago)
-            UserPresence.objects.create(
+            UserPresence.objects.update_or_create(
                 user_profile_id=user.id,
-                realm_id=user.realm_id,
-                client=get_client(client_name),
-                timestamp=when,
+                defaults=dict(
+                    realm_id=user.realm_id, last_active_time=when, last_connected_time=when
+                ),
             )
 
         hamlet_notifications_data.pm_push_notify = True

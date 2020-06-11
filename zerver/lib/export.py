@@ -293,7 +293,7 @@ DATE_FIELDS: Dict[TableName, List[Field]] = {
     "zerver_useractivityinterval": ["start", "end"],
     "zerver_useractivity": ["last_visit"],
     "zerver_userhotspot": ["timestamp"],
-    "zerver_userpresence": ["timestamp"],
+    "zerver_userpresence": ["last_active_time", "last_connected_time"],
     "zerver_userprofile": ["date_joined", "last_login", "last_reminder"],
     "zerver_userprofile_mirrordummy": ["date_joined", "last_login", "last_reminder"],
     "zerver_userstatus": ["timestamp"],

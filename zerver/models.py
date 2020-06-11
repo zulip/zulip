@@ -4111,82 +4111,44 @@ class UserPresence(models.Model):
       https://zulip.readthedocs.io/en/latest/subsystems/presence.html
     """
 
-    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
+    user_profile = models.OneToOneField(UserProfile, on_delete=CASCADE, unique=True)
+
+    # Realm is just here as denormalization to optimize database
+    # queries to fetch all presence data for a given realm.
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
-    client = models.ForeignKey(Client, on_delete=CASCADE)
 
-    # The time we heard this update from the client.
-    timestamp = models.DateTimeField("presence changed")
+    # The last time the user had a client connected to Zulip,
+    # including idle clients where the user hasn't interacted with the
+    # system recently (and thus might be AFK).
+    last_connected_time = models.DateTimeField(default=timezone_now, db_index=True)
+    # The last time a client connected to Zulip reported that the user
+    # was actually present (E.g. via focusing a browser window or
+    # interacting with a computer running the desktop app)
+    last_active_time = models.DateTimeField(default=timezone_now, db_index=True)
 
-    # The user was actively using this Zulip client as of `timestamp` (i.e.,
-    # they had interacted with the client recently).  When the timestamp is
-    # itself recent, this is the green "active" status in the web app.
-    ACTIVE = 1
-
-    # There had been no user activity (keyboard/mouse/etc.) on this client
-    # recently.  So the client was online at the specified time, but it
-    # could be the user's desktop which they were away from.  Displayed as
-    # orange/idle if the timestamp is current.
-    IDLE = 2
-
-    # Information from the client about the user's recent interaction with
-    # that client, as of `timestamp`.  Possible values above.
-    #
-    # There is no "inactive" status, because that is encoded by the
-    # timestamp being old.
-    status = models.PositiveSmallIntegerField(default=ACTIVE)
+    # The following constants are used in the presence API for
+    # communicating whether a user is active (last_active_time recent)
+    # or idle (last_connected_time recent) or offline (neither
+    # recent).  They're no longer part of the data model.
+    LEGACY_STATUS_ACTIVE = "active"
+    LEGACY_STATUS_IDLE = "idle"
+    LEGACY_STATUS_ACTIVE_INT = 1
+    LEGACY_STATUS_IDLE_INT = 2
 
     class Meta:
-        unique_together = ("user_profile", "client")
         index_together = [
-            ("realm", "timestamp"),
+            ("realm", "last_active_time"),
+            ("realm", "last_connected_time"),
         ]
-
-    @staticmethod
-    def status_to_string(status: int) -> str:
-        if status == UserPresence.ACTIVE:
-            return "active"
-        elif status == UserPresence.IDLE:
-            return "idle"
-        else:  # nocoverage # TODO: Add a presence test to cover this.
-            raise ValueError(f"Unknown status: {status}")
-
-    @staticmethod
-    def to_presence_dict(
-        client_name: str,
-        status: int,
-        dt: datetime.datetime,
-        push_enabled: bool = False,
-        has_push_devices: bool = False,
-    ) -> Dict[str, Any]:
-        presence_val = UserPresence.status_to_string(status)
-
-        timestamp = datetime_to_timestamp(dt)
-        return dict(
-            client=client_name,
-            status=presence_val,
-            timestamp=timestamp,
-            pushable=(push_enabled and has_push_devices),
-        )
-
-    def to_dict(self) -> Dict[str, Any]:
-        return UserPresence.to_presence_dict(
-            self.client.name,
-            self.status,
-            self.timestamp,
-        )
 
     @staticmethod
     def status_from_string(status: str) -> Optional[int]:
         if status == "active":
-            # See https://github.com/python/mypy/issues/2611
-            status_val: Optional[int] = UserPresence.ACTIVE
+            return UserPresence.LEGACY_STATUS_ACTIVE_INT
         elif status == "idle":
-            status_val = UserPresence.IDLE
-        else:
-            status_val = None
+            return UserPresence.LEGACY_STATUS_IDLE_INT
 
-        return status_val
+        return None
 
 
 class UserStatus(AbstractEmoji):
