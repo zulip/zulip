@@ -1,23 +1,16 @@
 class zulip_ops::postgres_common {
   include zulip::postgres_common
 
-  $internal_postgres_packages = [# dependencies for our wal-e backup system
-    'lzop',
-    'pv',
-    'python3-pip',
-    'python-pip',
-    'python3-gevent',
-    'python-gevent',
-  ]
-  package { $internal_postgres_packages: ensure => 'installed' }
+  $wal_g_version = '0.2.15'
+  $wal_g_hash = 'ea33c2341d7bfb203c6948590c29834c013ab06a28c7a2b236a73d906f785c84'
+  exec {'install-wal-g':
+    command => "${::zulip_scripts_path}/setup/install-wal-g ${wal_g_version} ${wal_g_hash}",
+    creates => "/usr/local/bin/wal-g-${wal_g_version}",
+  }
 
-  exec {'pip_wal-e':
-    # On trusty, there is no python3-boto or python3-gevent package,
-    # so we keep our `wal-e` explicitly on Python 2 for now.
-    command => '/usr/bin/pip2 install git+git://github.com/zbenjamin/wal-e.git#egg=wal-e',
-    creates => '/usr/local/bin/wal-e',
-    require => Package['python-pip', 'python-boto', 'python-gevent',
-                        'lzop', 'pv'],
+  file { '/usr/local/bin/wal-g':
+    ensure => 'link',
+    target => "/usr/local/bin/wal-g-${wal_g_version}",
   }
 
   cron { 'pg_backup_and_purge':
