@@ -1482,27 +1482,7 @@ div.focused_table {
             @media (max-width: 500px) {
                 padding: 7px 3.5px; // based on having ~41.66% decrease
             }
-            &:not(.search_closed):not(.sub_count):not(.narrow_description) {
-                flex-shrink: 1;
-                overflow: hidden;
-            }
-            &:not(.stream) {
-                text-overflow: ellipsis;
-            }
-            &:nth-last-child(2) {
-                flex-grow: 1;
-            }
 
-            // We extend the clickable area for the search_closed icon over the
-            // 2nd last navbar element for better design (user convenience) this
-            // selector makes it so mousing over that element also gives the user
-            // a visual cue about the results of clicking the element
-            &:nth-last-child(2) {
-                cursor: pointer;
-                &:hover + .search_closed {
-                    color: hsl(0, 0%, 0%);
-                }
-            }
             i {
                 margin-right: 3px;
             }
@@ -1601,6 +1581,30 @@ div.focused_table {
             padding: 10px 15px 0px 0px;
             @media (max-width: 500px) {
                 padding: 5px 15px 0px 0px;
+            }
+        }
+
+        > :not(.search_closed):not(.sub_count):not(.narrow_description) {
+            flex-shrink: 1;
+            overflow: hidden;
+        }
+
+        > :not(.stream) {
+            text-overflow: ellipsis;
+        }
+
+        > :nth-last-child(2) {
+            flex-grow: 1;
+        }
+
+        // We extend the clickable area for the search_closed icon over the
+        // 2nd last navbar element for better design (user convenience) this
+        // selector makes it so mousing over that element also gives the user
+        // a visual cue about the results of clicking the element
+        > :nth-last-child(2) {
+            cursor: pointer;
+            &:hover + .search_closed {
+                color: hsl(0, 0%, 0%);
             }
         }
     }
