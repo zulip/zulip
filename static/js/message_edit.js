@@ -699,7 +699,7 @@ exports.save_message_row_edit = function (row) {
         echo.edit_locally(message, currently_echoing_messages.get(message_id));
 
         row = current_msg_list.get_row(message_id);
-        message_edit.end_message_row_edit(row);
+        exports.end_message_row_edit(row);
     }
 
     channel.patch({
@@ -732,7 +732,7 @@ exports.save_message_row_edit = function (row) {
                     });
 
                     row = current_msg_list.get_row(message_id);
-                    if (!message_edit.is_editing(message_id)) {
+                    if (!exports.is_editing(message_id)) {
                         // Return to the message editing open UI state.
                         start_edit_maintaining_scroll(row, echo_data.orig_raw_content);
                     }

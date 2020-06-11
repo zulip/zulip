@@ -131,7 +131,7 @@ exports.insert_local_message = function (message_request, local_id_float) {
     waiting_for_id.set(message.local_id, message);
     waiting_for_ack.set(message.local_id, message);
 
-    message.display_recipient = echo.build_display_recipient(message);
+    message.display_recipient = exports.build_display_recipient(message);
     local_message.insert_message(message);
     return message;
 };
