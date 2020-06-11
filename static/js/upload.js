@@ -213,7 +213,7 @@ exports.setup_upload = function (config) {
         if (!compose_state.composing()) {
             compose_actions.start('stream');
         }
-        const absolute_uri = upload.make_upload_absolute(uri);
+        const absolute_uri = exports.make_upload_absolute(uri);
         const filename_uri = "[" + filename + "](" + absolute_uri + ")";
         compose_ui.replace_syntax(exports.get_translated_status(file), filename_uri, exports.get_item("textarea", config));
         compose_ui.autosize_textarea();

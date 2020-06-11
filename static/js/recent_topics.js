@@ -322,7 +322,7 @@ exports.launch = function () {
             hashchange.exit_overlay();
         },
     });
-    recent_topics.complete_rerender();
+    exports.complete_rerender();
     $("#recent_topics_search").focus();
 };
 
