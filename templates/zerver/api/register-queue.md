@@ -13,7 +13,7 @@ intended primarily for complex applications for which the more convenient
 
 This endpoint returns a `queue_id` and a `last_event_id`; these can be
 used in subsequent calls to the
-["events" endpoint](/api/get-events-from-queue) to request events from
+["events" endpoint](/api/get-events) to request events from
 the Zulip server using long-polling.
 
 The server will queue events for up to 10 minutes of inactivity.
@@ -24,7 +24,7 @@ client loses network connectivity with the Zulip server for 10 minutes
 or longer.
 
 Once the server garbage-collects your event queue, the server will
-[return an error](/api/get-events-from-queue#bad_event_queue_id-errors)
+[return an error](/api/get-events#bad_event_queue_id-errors)
 with a code of `BAD_EVENT_QUEUE_ID` if you try to fetch events from
 the event queue.  Your software will need to handle that error
 condition by re-initializing itself (e.g. this is what triggers your

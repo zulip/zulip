@@ -23,21 +23,21 @@ below features are supported.
   value means no limit.
 * [`POST /register`](/api/register-queue): The response now contains a
   `is_owner`, similar to the existing `is_admin` and `is_guest` fields.
-* [`POST /typing`](/api/typing): Removed legacy support for sending email
+* [`POST /set-typing-status`](/api/set-typing-status): Removed legacy support for sending email
   addresses, rather than user IDs, to encode private message recipients.
 
 **Feature level 10**
 
-* [`GET users/me`](/api/get-profile): Added `avatar_version`, `is_guest`,
+* [`GET users/me`](/api/get-own-user): Added `avatar_version`, `is_guest`,
   `is_active`, `timezone`, and `date_joined` fields to the User objects.
-* [`GET users/me`](/api/get-profile): Removed `client_id` and `short_name`
+* [`GET users/me`](/api/get-own-user): Removed `client_id` and `short_name`
   from the reponse to this endpoint.  These fields had no purpose and
   were inconsistent with other API responses describing users.
 
 **Feature level 9**
 
-* [`POST users/me/subscriptions`](/api/add-subscriptions), [`DELETE
-  /users/me/subscriptions`](/api/remove-subscriptions): Other users to
+* [`POST users/me/subscriptions`](/api/subscribe), [`DELETE
+  /users/me/subscriptions`](/api/unsubscribe): Other users to
   subscribe/unsubscribe, declared in the `principals` parameter, can
   now be referenced by user_id, rather than Zulip display email
   address.
@@ -47,13 +47,13 @@ below features are supported.
 
 **Feature level 8**
 
-* [`GET /users`](/api/get-all-users), [`GET /users/{user_id}`](/api/get-user)
-  and [`GET /users/me`](/api/get-profile): User objects now contain the
+* [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user)
+  and [`GET /users/me`](/api/get-own-user): User objects now contain the
   `is_owner` field as well.
 
 **Feature level 7**
 
-* [`GET /events`](/api/get-events-from-queue): `realm_user` and
+* [`GET /events`](/api/get-events): `realm_user` and
   `realm_bot` events no longer contain an `email` field to identify
   the user; use the `user_id` field instead.  Previously, some (but
   not all) events of these types contained an `email` key in addition to
@@ -61,7 +61,7 @@ below features are supported.
 * [`PATCH /users/{user_id}`](/api/update-user): The `is_admin` and
   `is_guest` parameters were removed in favor of the more general
   `role` parameter for specifying a change in user role.
-* [`GET /events`](/api/get-events-from-queue): `realm_user` events
+* [`GET /events`](/api/get-events): `realm_user` events
   sent when a user's role changes now include `role` property, instead
   of the previous `is_guest` or `is_admin` booleans.
 * `GET /realm/emoji`: The user who uploaded a given custom emoji is
@@ -70,16 +70,16 @@ below features are supported.
 
 **Feature level 6**
 
-* [`GET /events`](/api/get-events-from-queue): `realm_user` events to
+* [`GET /events`](/api/get-events): `realm_user` events to
   update a user's avatar now include the `avatar_version` field, which
   is important for correctly refetching medium-size avatar images when
   the user's avatar changes.
-* [`GET /users`](/api/get-all-users) and [`GET
+* [`GET /users`](/api/get-users) and [`GET
   /users/{user_id}`](/api/get-user): User objects now contain the
   `avatar_version` field as well.
 
 **Feature level 5**
-* [`GET /events`](/api/get-events-from-queue): `realm_bot` events,
+* [`GET /events`](/api/get-events): `realm_bot` events,
   sent when changes are made to bot users, now contain an
   integer-format `owner_id` field, replacing the `owner` field (which
   was an email address).
@@ -104,7 +104,7 @@ below features are supported.
 
 **Feature level 2**:
 
-* [`POST /messages/{message_id}/reactions`](/api/add-emoji-reaction):
+* [`POST /messages/{message_id}/reactions`](/api/add-reaction):
   The `reaction_type` parameter is optional; the server will guess the
   `reaction_type` if it is not specified (checking custom emoji, then
   unicode emoji for any with the provided name).
@@ -115,13 +115,13 @@ below features are supported.
 
 **Feature level 1**:
 
-* [`GET /server_settings`](/api/server-settings): Added
+* [`GET /server_settings`](/api/get-server-settings): Added
   `zulip_feature_level`, which can be used by clients to detect which
   of the features described in this changelog are supported.
 * [`POST /register`](/api/register-queue): Added `zulip_feature_level`
   to the response if `zulip_version` is among the requested
   `event_types`.
-* [`GET /users`](/api/get-all-users): User objects for bots now
+* [`GET /users`](/api/get-users): User objects for bots now
   contain a `bot_owner_id`, replacing the previous `bot_owner` field
   (which had the email address of the bot owner).
 * [`GET /users/{user_id}`](/api/get-user): Endpoint added.
@@ -129,16 +129,16 @@ below features are supported.
   values for the `anchor` parameter, deprecating and replacing the
   `use_first_unread_anchor` parameter.
 * [`GET /messages`](/api/get-messages) and [`GET
-  /events`](/api/get-events-from-queue): Message objects now use
+  /events`](/api/get-events): Message objects now use
   `topic_links` rather than `subject_links` to indicate links either
   present in the topic or generated by Linkifiers applied to the topic.
-* [`POST /users/me/subscriptions`](/api/add-subscriptions): Replaced
+* [`POST /users/me/subscriptions`](/api/subscribe): Replaced
   `is_announcement_only` boolean with `stream_post_policy` enum for
   specifying who can post to a stream.
 * [`PATCH /streams/{stream_id}`](/api/update-stream): Replaced
   `is_announcement_only` boolean with `stream_post_policy` enum for
   specifying who can post to a stream.
-* [`GET /streams`](/api/get-all-streams): Replaced
+* [`GET /streams`](/api/get-streams): Replaced
   `is_announcement_only` boolean with `stream_post_policy` enum for
   specifying who can post to a stream.
 * `GET /api/v1/user_uploads`: Added new endpoint for requesting a
@@ -155,24 +155,24 @@ below features are supported.
 
 ## Changes in Zulip 2.1
 
-* [`GET /users`](/api/get-all-users): Added `include_custom_profile_fields`
+* [`GET /users`](/api/get-users): Added `include_custom_profile_fields`
   to request custom profile field data.
-* [`GET /users/me`](/api/get-profile): Added `avatar_url` field,
+* [`GET /users/me`](/api/get-own-user): Added `avatar_url` field,
   containing the user's avatar URL, to the response.
-* [`GET /users/me/subscriptions`](/api/get-subscribed-streams): Added
+* [`GET /users/me/subscriptions`](/api/get-subscriptions): Added
   `include_subscribers` parameter controlling whether data on the
   other subscribers is included.  Previous behavior was to always send
   subscriber data.
-* [`GET /users/me/subscriptions`](/api/get-subscribed-streams):
+* [`GET /users/me/subscriptions`](/api/get-subscriptions):
   Stream-level notification settings like `push_notifications` were
   changed to be nullable boolean fields (true/false/null), with `null`
   meaning that the stream inherits the organization-level default.
   Previously, the only values were true/false.  A client communicates
   support for this feature using `client_capabilities`.
-* [`GET /users/me/subscriptions`](/api/get-subscribed-streams): Added
+* [`GET /users/me/subscriptions`](/api/get-subscriptions): Added
   `wildcard_mentions_notify` notification setting, with the same
   global-plus-stream-level-override model as other notification settings.
-* [`GET /server_settings`](/api/server-settings): Added
+* [`GET /server_settings`](/api/get-server-settings): Added
   `external_authentication_methods` structure, used to display login
   buttons nicely in the mobile apps.
 * Added `first_message_id` field to Stream objects.  This is helpful
@@ -196,7 +196,7 @@ below features are supported.
 
 * [`POST /messages`](/api/send-message): Added support for using user
   IDs and stream IDs for specifying the recipients of a message.
-* [`POST /typing`](/api/typing): Added support for specifying the
+* [`POST /set-typing-status`](/api/set-typing-status): Added support for specifying the
   recipients with user IDs, deprecating the original API of specifying
   them using email addresses.
 
