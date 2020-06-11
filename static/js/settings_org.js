@@ -14,7 +14,12 @@ exports.reset = function () {
 
 
 exports.maybe_disable_widgets = function () {
+    if (page_params.is_owner) {
+        return;
+    }
+
     if (page_params.is_admin) {
+        $("#deactivate_realm_button").attr("disabled", true);
         return;
     }
 

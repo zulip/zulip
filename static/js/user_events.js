@@ -56,6 +56,7 @@ exports.update_person = function update(person) {
 
         if (people.is_my_user_id(person.user_id) && page_params.is_owner !== person_obj.is_owner) {
             page_params.is_owner = person_obj.is_owner;
+            settings_org.maybe_disable_widgets();
         }
 
         if (people.is_my_user_id(person.user_id) && page_params.is_admin !== person_obj.is_admin) {
