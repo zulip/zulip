@@ -1,6 +1,6 @@
 # Zulip's main markdown implementation.  See docs/subsystems/markdown.md for
 # detailed documentation on our markdown syntax.
-from typing import (Any, Callable, Dict, Generic, Iterable, List, NamedTuple,
+from typing import (Any, Callable, Dict, Generic, Iterable, List,
                     Optional, Set, Tuple, TypeVar, Union)
 from typing.re import Match, Pattern
 from typing_extensions import TypedDict
@@ -15,6 +15,7 @@ import os
 import html
 import time
 import functools
+from dataclasses import dataclass
 from io import StringIO
 import dateutil.parser
 import dateutil.tz
@@ -291,12 +292,12 @@ def walk_tree(root: Element,
 
     return results
 
-ElementFamily = NamedTuple('ElementFamily', [
-    ('grandparent', Optional[Element]),
-    ('parent', Element),
-    ('child', Element),
-    ('in_blockquote', bool),
-])
+@dataclass
+class ElementFamily:
+    grandparent: Optional[Element]
+    parent: Element
+    child: Element
+    in_blockquote: bool
 
 T = TypeVar("T")
 
@@ -1517,6 +1518,11 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
         # And then run the upstream processor's code for removing the '>'
         return super().clean(line)
 
+@dataclass
+class Fence:
+    fence_str: str
+    is_code: bool
+
 class BugdownListPreprocessor(markdown.preprocessors.Preprocessor):
     """ Allows list blocks that come directly after another block
         to be rendered as a list.
@@ -1529,11 +1535,6 @@ class BugdownListPreprocessor(markdown.preprocessors.Preprocessor):
 
     def run(self, lines: List[str]) -> List[str]:
         """ Insert a newline between a paragraph and ulist if missing """
-        Fence = NamedTuple('Fence', [
-            ('fence_str', str),
-            ('is_code', bool),
-        ])
-
         inserts = 0
         in_code_fence: bool = False
         open_fences: List[Fence] = []

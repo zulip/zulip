@@ -8,6 +8,9 @@ Django==2.2.*
 # needed for Deque (in Python < 3.5.4) and TypedDict
 typing-extensions
 
+# Backport of @dataclass
+dataclasses;python_version<"3.7"
+
 # Needed for rendering backend templates
 Jinja2
 
