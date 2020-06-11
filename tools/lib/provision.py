@@ -24,8 +24,7 @@ from tools.setup import setup_venvs
 
 from typing import List, TYPE_CHECKING
 if TYPE_CHECKING:
-    # typing_extensions might not be installed yet
-    from typing_extensions import NoReturn
+    from typing import NoReturn
 
 VAR_DIR_PATH = os.path.join(ZULIP_PATH, 'var')
 
