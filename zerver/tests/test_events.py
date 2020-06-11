@@ -504,7 +504,7 @@ class EventsRegisterTest(ZulipTestCase):
                 include_subscribers: bool=True, state_change_expected: bool=True,
                 notification_settings_null: bool=False,
                 client_gravatar: bool=True, slim_presence: bool=False,
-                num_events: int=1) -> List[Dict[str, Any]]:
+                num_events: int=1, bulk_message_deletion: bool=True) -> List[Dict[str, Any]]:
         '''
         Make sure we have a clean slate of client descriptors for these tests.
         If we don't do this, then certain failures will only manifest when you
@@ -526,7 +526,8 @@ class EventsRegisterTest(ZulipTestCase):
                  all_public_streams = False,
                  queue_timeout = 600,
                  last_connection_time = time.time(),
-                 narrow = []),
+                 narrow = [],
+                 bulk_message_deletion = bulk_message_deletion)
         )
 
         # hybrid_state = initial fetch state + re-applying events triggered by our action
@@ -2732,6 +2733,32 @@ class EventsRegisterTest(ZulipTestCase):
     def test_do_delete_message_stream(self) -> None:
         schema_checker = self.check_events_dict([
             ('type', equals('delete_message')),
+            ('message_ids', check_list(check_int, 2)),
+            ('message_type', equals("stream")),
+            ('stream_id', check_int),
+            ('topic', check_string),
+        ])
+        hamlet = self.example_user('hamlet')
+        msg_id = self.send_stream_message(hamlet, "Verona")
+        msg_id_2 = self.send_stream_message(hamlet, "Verona")
+        messages = [
+            Message.objects.get(id=msg_id),
+            Message.objects.get(id=msg_id_2)
+        ]
+        events = self.do_test(
+            lambda: do_delete_messages(self.user_profile.realm, messages),
+            state_change_expected=True,
+        )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_do_delete_message_stream_legacy(self) -> None:
+        """
+        Test for legacy method of deleting messages which
+        sends an event per message to delete to the client.
+        """
+        schema_checker = self.check_events_dict([
+            ('type', equals('delete_message')),
             ('message_id', check_int),
             ('message_type', equals("stream")),
             ('stream_id', check_int),
@@ -2739,6 +2766,32 @@ class EventsRegisterTest(ZulipTestCase):
         ])
         hamlet = self.example_user('hamlet')
         msg_id = self.send_stream_message(hamlet, "Verona")
+        msg_id_2 = self.send_stream_message(hamlet, "Verona")
+        messages = [
+            Message.objects.get(id=msg_id),
+            Message.objects.get(id=msg_id_2)
+        ]
+        events = self.do_test(
+            lambda: do_delete_messages(self.user_profile.realm, messages),
+            state_change_expected=True, bulk_message_deletion=False,
+            num_events=2
+        )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_do_delete_message_personal(self) -> None:
+        schema_checker = self.check_events_dict([
+            ('type', equals('delete_message')),
+            ('message_ids', check_list(check_int, 1)),
+            ('sender_id', check_int),
+            ('message_type', equals("private")),
+            ('recipient_id', check_int),
+        ])
+        msg_id = self.send_personal_message(
+            self.example_user("cordelia"),
+            self.user_profile,
+            "hello",
+        )
         message = Message.objects.get(id=msg_id)
         events = self.do_test(
             lambda: do_delete_messages(self.user_profile.realm, [message]),
@@ -2747,7 +2800,7 @@ class EventsRegisterTest(ZulipTestCase):
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-    def test_do_delete_message_personal(self) -> None:
+    def test_do_delete_message_personal_legacy(self) -> None:
         schema_checker = self.check_events_dict([
             ('type', equals('delete_message')),
             ('message_id', check_int),
@@ -2763,7 +2816,7 @@ class EventsRegisterTest(ZulipTestCase):
         message = Message.objects.get(id=msg_id)
         events = self.do_test(
             lambda: do_delete_messages(self.user_profile.realm, [message]),
-            state_change_expected=True,
+            state_change_expected=True, bulk_message_deletion=False
         )
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)

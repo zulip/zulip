@@ -116,8 +116,9 @@ exports.per_stream_history = function (stream_id) {
         }
     };
 
-    self.maybe_remove = function (topic_name) {
+    self.maybe_remove = function (topic_name, msgs_count) {
         const existing = topics.get(topic_name);
+        msgs_count = msgs_count || 1;
 
         if (!existing) {
             return;
@@ -130,12 +131,12 @@ exports.per_stream_history = function (stream_id) {
             return;
         }
 
-        if (existing.count <= 1) {
+        if (existing.count <= msgs_count) {
             topics.delete(topic_name);
             return;
         }
 
-        existing.count -= 1;
+        existing.count -= msgs_count;
     };
 
     self.add_history = function (server_history) {
@@ -199,6 +200,10 @@ exports.per_stream_history = function (stream_id) {
 exports.remove_message = function (opts) {
     const stream_id = opts.stream_id;
     const topic_name = opts.topic_name;
+    // Number of messages to remove
+    // TODO: Use this option when moving
+    // topic between stream in message_events.js
+    const msgs_count = opts.msgs_count;
     const history = stream_dict.get(stream_id);
 
     // This is the special case of "removing" a message from
@@ -209,7 +214,7 @@ exports.remove_message = function (opts) {
     }
 
     // This is the normal case of an incoming message.
-    history.maybe_remove(topic_name);
+    history.maybe_remove(topic_name, msgs_count);
 };
 
 exports.find_or_create = function (stream_id) {
