@@ -25,65 +25,52 @@ class TemplateTestCase(ZulipTestCase):
         }
         content = template.render(context)
         content_sans_whitespace = content.replace(" ", "").replace('\n', '')
-
-        # Note that the expected HTML has a lot of stray <p> tags. This is a
-        # consequence of how the Markdown renderer converts newlines to HTML
-        # and how elements are delimited by newlines and so forth. However,
-        # stray <p> tags are usually matched with closing tags by HTML renderers
-        # so this doesn't affect the final rendered UI in any visible way.
         expected_html = """
 header
 
 <h1 id="heading">Heading</h1>
-<p>
-  <div class="code-section has-tabs" markdown="1">
-    <ul class="nav">
-      <li data-language="ios">iOS</li>
-      <li data-language="desktop-web">Desktop/Web</li>
-    </ul>
-    <div class="blocks">
-      <div data-language="ios" markdown="1"></p>
-        <p>iOS instructions</p>
-      <p></div>
-      <div data-language="desktop-web" markdown="1"></p>
-        <p>Desktop/browser instructions</p>
-      <p></div>
+<div class="code-section has-tabs" markdown="1">
+  <ul class="nav">
+    <li data-language="ios">iOS</li>
+    <li data-language="desktop-web">Desktop/Web</li>
+  </ul>
+  <div class="blocks">
+    <div data-language="ios" markdown="1">
+      <p>iOS instructions</p>
+    </div>
+    <div data-language="desktop-web" markdown="1">
+      <p>Desktop/browser instructions</p>
     </div>
   </div>
-</p>
+</div>
 
 <h2 id="heading-2">Heading 2</h2>
-<p>
-  <div class="code-section has-tabs" markdown="1">
-    <ul class="nav">
-      <li data-language="desktop-web">Desktop/Web</li>
-      <li data-language="android">Android</li>
-    </ul>
-    <div class="blocks">
-      <div data-language="desktop-web" markdown="1"></p>
-        <p>Desktop/browser instructions</p>
-      <p></div>
-      <div data-language="android" markdown="1"></p>
-        <p>Android instructions</p>
-      <p></div>
+<div class="code-section has-tabs" markdown="1">
+  <ul class="nav">
+    <li data-language="desktop-web">Desktop/Web</li>
+    <li data-language="android">Android</li>
+  </ul>
+  <div class="blocks">
+    <div data-language="desktop-web" markdown="1">
+      <p>Desktop/browser instructions</p>
+    </div>
+    <div data-language="android" markdown="1">
+      <p>Android instructions</p>
     </div>
   </div>
-</p>
+</div>
 
 <h2 id="heading-3">Heading 3</h2>
-<p>
-  <div class="code-section no-tabs" markdown="1">
-    <ul class="nav">
-      <li data-language="null_tab">None</li>
-    </ul>
-    <div class="blocks">
-      <div data-language="null_tab" markdown="1"></p>
-        <p>Instructions for all platforms</p>
-      <p></div>
+<div class="code-section no-tabs" markdown="1">
+  <ul class="nav">
+    <li data-language="null_tab">None</li>
+  </ul>
+  <div class="blocks">
+    <div data-language="null_tab" markdown="1">
+      <p>Instructions for all platforms</p>
     </div>
   </div>
-</p>
-
+</div>
 footer
 """
 

@@ -19,6 +19,7 @@ import zerver.lib.bugdown.help_settings_links
 import zerver.lib.bugdown.help_relative_links
 import zerver.lib.bugdown.help_emoticon_translations_table
 import zerver.lib.bugdown.include
+import zerver.lib.bugdown.raw_html_postprocessor
 from zerver.lib.cache import ignore_unhashable_lru_cache, dict_to_items_tuple, items_tuple_to_dict
 
 register = Library()
@@ -115,6 +116,7 @@ def render_markdown_path(markdown_file_path: str,
             zerver.lib.bugdown.help_settings_links.makeExtension(),
             zerver.lib.bugdown.help_relative_links.makeExtension(),
             zerver.lib.bugdown.help_emoticon_translations_table.makeExtension(),
+            zerver.lib.bugdown.raw_html_postprocessor.makeExtension(),
         ]
     if md_macro_extension is None:
         md_macro_extension = zerver.lib.bugdown.include.makeExtension(

@@ -10,12 +10,12 @@ END_TABBED_SECTION_REGEX = re.compile(r'^\{end_tabs\}$')
 TAB_CONTENT_REGEX = re.compile(r'^\{tab\|\s*(.+?)\s*\}$')
 
 CODE_SECTION_TEMPLATE = """
-<div class="code-section {tab_class}" markdown="1">
+<!--remove_tag_before--><div class="code-section {tab_class}" markdown="1">
 {nav_bar}
 <div class="blocks">
 {blocks}
 </div>
-</div>
+</div><!--remove_tag_after-->
 """.strip()
 
 NAV_BAR_TEMPLATE = """
@@ -29,9 +29,9 @@ NAV_LIST_ITEM_TEMPLATE = """
 """.strip()
 
 DIV_TAB_CONTENT_TEMPLATE = """
-<div data-language="{data_language}" markdown="1">
+<div data-language="{data_language}" markdown="1"><!--remove_tag_after-->
 {content}
-</div>
+<!--remove_tag_before--></div>
 """.strip()
 
 # If adding new entries here, also check if you need to update
@@ -156,6 +156,16 @@ class TabbedSectionsPreprocessor(Preprocessor):
                 block['end_tabs_index'] = index
                 break
         return block
+
+def remove_redundant_html(text: str) -> str:
+    # This function runs in the postprocessor after substituting the
+    # placeholders for the actual html in the content. Here, we remove
+    # the extra <p> tags added by the paragraph block processor that
+    # are needed for properly parsing this content in the tree processor.
+    # text.
+    text = text.replace('<p><!--remove_tag_before-->', '')
+    text = text.replace('<!--remove_tag_after--></p>', '')
+    return text
 
 def makeExtension(*args: Any, **kwargs: str) -> TabbedSectionsGenerator:
     return TabbedSectionsGenerator(**kwargs)
