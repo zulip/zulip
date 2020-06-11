@@ -725,6 +725,224 @@ function populate_number_of_users(data) {
     $('#all_time_actives_button').addClass("selected");
 }
 
+function populate_messages_read_over_time(data) {
+    if (data.end_times.length === 0) {
+        // TODO: do something nicer here
+        return;
+    }
+
+    // Helper functions
+    function make_traces(dates, values, type, date_formatter) {
+        const text = dates.map(function (date) {
+            return date_formatter(date);
+        });
+        const common = { x: dates, type: type, hoverinfo: 'none', text: text };
+        return {
+            everyone: {
+                name: i18n.t("Everyone"), y: values.everyone, marker: {color: '#5f6ea0'},
+                ...common,
+            },
+            me: {
+                name: i18n.t("Me"), y: values.me, marker: {color: '#be6d68'},
+                ...common,
+            },
+        };
+    }
+
+    const layout = {
+        barmode: 'group',
+        width: 750,
+        height: 400,
+        margin: { l: 40, r: 0, b: 40, t: 0 },
+        xaxis: {
+            fixedrange: true,
+            rangeslider: { bordercolor: '#D8D8D8', borderwidth: 1 },
+            type: 'date',
+        },
+        yaxis: { fixedrange: true, rangemode: 'tozero' },
+        legend: {
+            x: 0.62, y: 1.12, orientation: 'h', font: font_14pt,
+        },
+        font: font_14pt,
+    };
+
+    function make_rangeselector(x, y, button1, button2) {
+        return {x: x, y: y,
+                buttons: [
+                    {stepmode: 'backward', ...button1},
+                    {stepmode: 'backward', ...button2},
+                    {step: 'all', label: 'All time'}]};
+    }
+
+    // This is also the cumulative rangeselector
+    const daily_rangeselector = make_rangeselector(
+        0.68, -0.62,
+        {count: 10, label: i18n.t('Last 10 days'), step: 'day'},
+        {count: 30, label: i18n.t('Last 30 days'), step: 'day'});
+    const weekly_rangeselector = make_rangeselector(
+        0.656, -0.62,
+        {count: 2, label: i18n.t('Last 2 months'), step: 'month'},
+        {count: 6, label: i18n.t('Last 6 months'), step: 'month'});
+
+    function add_hover_handler() {
+        document.getElementById('id_messages_read_over_time').on('plotly_hover', function (data) {
+            $("#read_hover_info").show();
+            document.getElementById('read_hover_date').innerText =
+                data.points[0].data.text[data.points[0].pointNumber];
+            const values = [null, null];
+            data.points.forEach(function (trace) {
+                values[trace.curveNumber] = trace.y;
+            });
+            const read_hover_text_ids = ['read_hover_me', 'read_hover_everyone'];
+            const read_hover_value_ids = ['read_hover_me_value', 'read_hover_everyone_value'];
+            for (let i = 0; i < values.length; i += 1) {
+                if (values[i] !== null) {
+                    document.getElementById(read_hover_text_ids[i]).style.display = 'inline';
+                    document.getElementById(read_hover_value_ids[i]).style.display = 'inline';
+                    document.getElementById(read_hover_value_ids[i]).innerText = values[i];
+                } else {
+                    document.getElementById(read_hover_text_ids[i]).style.display = 'none';
+                    document.getElementById(read_hover_value_ids[i]).style.display = 'none';
+                }
+            }
+        });
+    }
+
+    const start_dates = data.end_times.map(function (timestamp) {
+        // data.end_times are the ends of hour long intervals.
+        return new Date(timestamp * 1000 - 60 * 60 * 1000);
+    });
+
+    function aggregate_data(aggregation) {
+        let start;
+        let is_boundary;
+        if (aggregation === 'day') {
+            start = floor_to_local_day(start_dates[0]);
+            is_boundary = function (date) {
+                return date.getHours() === 0;
+            };
+        } else if (aggregation === 'week') {
+            start = floor_to_local_week(start_dates[0]);
+            is_boundary = function (date) {
+                return date.getHours() === 0 && date.getDay() === 0;
+            };
+        }
+        const dates = [start];
+        const values = {everyone: [], me: []};
+        let current = {everyone: 0, me: 0};
+        let i_init = 0;
+        if (is_boundary(start_dates[0])) {
+            current = {everyone: data.everyone.read[0],
+                       me: data.user.read[0]};
+            i_init = 1;
+        }
+        for (let i = i_init; i < start_dates.length; i += 1) {
+            if (is_boundary(start_dates[i])) {
+                dates.push(start_dates[i]);
+                values.everyone.push(current.everyone);
+                values.me.push(current.me);
+                current = {everyone: 0, me: 0};
+            }
+            current.everyone += data.everyone.read[i];
+            current.me += data.user.read[i];
+        }
+        values.everyone.push(current.everyone);
+        values.me.push(current.me);
+        return {
+            dates: dates, values: values,
+            last_value_is_partial: !is_boundary(new Date(
+                start_dates[start_dates.length - 1].getTime() + 60 * 60 * 1000))};
+    }
+
+    // Generate traces
+    let date_formatter = function (date) {
+        return format_date(date, true);
+    };
+    let values = {me: data.user.read, everyone: data.everyone.read};
+
+    let info = aggregate_data('day');
+    date_formatter = function (date) {
+        return format_date(date, false);
+    };
+    const last_day_is_partial = info.last_value_is_partial;
+    const daily_traces = make_traces(info.dates, info.values, 'bar', date_formatter);
+
+    info = aggregate_data('week');
+    date_formatter = function (date) {
+        return i18n.t("Week of __date__", {date: format_date(date, false)});
+    };
+    const last_week_is_partial = info.last_value_is_partial;
+    const weekly_traces = make_traces(info.dates, info.values, 'bar', date_formatter);
+
+    const dates = data.end_times.map(function (timestamp) {
+        return new Date(timestamp * 1000);
+    });
+    values = {everyone: partial_sums(data.everyone.read),
+              me: partial_sums(data.user.read)};
+    date_formatter = function (date) {
+        return format_date(date, true);
+    };
+    const cumulative_traces = make_traces(dates, values, 'scatter', date_formatter);
+
+    // Functions to draw and interact with the plot
+
+    // We need to redraw plot entirely if switching from (the cumulative) line
+    // graph to any bar graph, since otherwise the rangeselector shows both (plotly bug)
+    let clicked_cumulative = false;
+
+    function draw_or_update_plot(rangeselector, traces, last_value_is_partial, initial_draw) {
+        $('#read_daily_button, #read_weekly_button, #read_cumulative_button').removeClass("selected");
+        $('#id_messages_read_over_time > div').removeClass("spinner");
+        if (initial_draw) {
+            traces.everyone.visible = true;
+            traces.me.visible = 'legendonly';
+        } else {
+            const plotDiv = document.getElementById('id_messages_read_over_time');
+            traces.me.visible = plotDiv.data[0].visible;
+            traces.everyone.visible = plotDiv.data[1].visible;
+        }
+        layout.xaxis.rangeselector = rangeselector;
+        if (clicked_cumulative || initial_draw) {
+            Plotly.newPlot('id_messages_read_over_time',
+                           [traces.me, traces.everyone], layout, {displayModeBar: false});
+            add_hover_handler();
+        } else {
+            Plotly.deleteTraces('id_messages_read_over_time', [0, 1]);
+            Plotly.addTraces('id_messages_read_over_time', [traces.me, traces.everyone]);
+            Plotly.relayout('id_messages_read_over_time', layout);
+        }
+        $('#id_messages_read_over_time').attr('last_value_is_partial', last_value_is_partial);
+    }
+
+    // Click handlers for aggregation buttons
+    $('#read_daily_button').click(function () {
+        draw_or_update_plot(daily_rangeselector, daily_traces, last_day_is_partial, false);
+        $(this).addClass("selected");
+        clicked_cumulative = false;
+    });
+
+    $('#read_weekly_button').click(function () {
+        draw_or_update_plot(weekly_rangeselector, weekly_traces, last_week_is_partial, false);
+        $(this).addClass("selected");
+        clicked_cumulative = false;
+    });
+
+    $('#read_cumulative_button').click(function () {
+        clicked_cumulative = false;
+        draw_or_update_plot(daily_rangeselector, cumulative_traces, false, false);
+        $(this).addClass("selected");
+        clicked_cumulative = true;
+    });
+
+    // Initial drawing of plot
+    if (weekly_traces.everyone.x.length < 12) {
+        draw_or_update_plot(daily_rangeselector, daily_traces, last_day_is_partial, true);
+        $('#read_daily_button').addClass("selected");
+    } else {
+        draw_or_update_plot(weekly_rangeselector, weekly_traces, last_week_is_partial, true);
+        $('#read_weekly_button').addClass("selected");
+    }
+}
 
 function get_chart_data(data, callback) {
     $.get({
@@ -759,4 +977,9 @@ get_chart_data(
 get_chart_data(
     {chart_name: 'number_of_humans', min_length: '10'},
     populate_number_of_users
+);
+
+get_chart_data(
+    {chart_name: 'messages_read_over_time', min_length: '10'},
+    populate_messages_read_over_time
 );
