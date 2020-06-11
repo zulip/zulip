@@ -150,7 +150,10 @@
 
             <div class="inline-block organization-settings-parent">
                 <div class="input-group">
-                    <label for="id_realm_message_retention_setting" class="dropdown-title">{{t "Message retention period" }}</label>
+                    <label for="id_realm_message_retention_setting" class="dropdown-title">{{t "Message retention period" }}
+                        <i class="fa fa-info-circle settings-info-icon realm_allow_message_deleting_tooltip" data-toggle="tooltip"
+                          aria-hidden="true" title="{{t 'Only owners can change message retention policy.' }}"></i>
+                    </label>
                     <select name="realm_message_retention_setting"
                       id="id_realm_message_retention_setting" class="prop-element"
                       {{#unless zulip_plan_is_not_limited}}disabled{{/unless}}>

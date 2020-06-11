@@ -104,6 +104,8 @@ def update_realm(
             return json_error(_('Invalid domain: {}').format(e.messages[0]))
 
     if message_retention_days is not None:
+        if not user_profile.is_realm_owner:
+            return json_error(_("Only organization owners can change message retention period."))
         realm.ensure_not_on_limited_plan()
 
     # The user of `locals()` here is a bit of a code smell, but it's

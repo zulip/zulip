@@ -1,5 +1,7 @@
 # Message retention policy (beta)
 
+{!owner-only.md!}
+
 By default, Zulip stores messages indefinitely, allowing full-text
 search of your complete history.
 
