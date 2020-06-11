@@ -36,17 +36,24 @@
                         <option value="by_admins_only">{{t "Yes. Only admins can send invitations." }}</option>
                     </select>
                 </div>
+            </div>
+        </div>
 
+        <div id="org-domain-restrictions" class="org-subsection-parent">
+            <div class="subsection-header">
+                <h3 class="settings-section-title">{{t "Domain restrictions" }}</h3>
+                {{> settings_save_discard_widget section_name="domain-restrictions" }}
+            </div>
+            <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">
                     <label for="realm_org_join_restrictions" class="dropdown-title">{{t "Restrict email domains of new users?" }}</label>
                     <select name="realm_org_join_restrictions" id="id_realm_org_join_restrictions" class="prop-element">
                         <option value="no_restriction">{{t "No restrictions" }}</option>
                         <option value="no_disposable_email">{{t "Don’t allow disposable email addresses" }}</option>
-                        <option value="only_selected_domain">{{t "Restrict to a list of domains" }}</option>
+                        <option value="only_selected_domain">{{t "Restrict to the domains listed below" }}</option>
                     </select>
                 </div>
                 <div class="input-group">
-                    <h3>{{t "Allowed domains:" }}</h3>
                     <p id="zero_domains_warning">There are no domains configured now. This'd restrict anyone from registering.</p>
                     {{> realm_domains_table }}
                 </div>

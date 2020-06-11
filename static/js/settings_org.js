@@ -785,7 +785,7 @@ exports.build_page = function () {
             } else if (add_emoji_permission === "by_anyone") {
                 data.add_emoji_by_admins_only = false;
             }
-        } else if (subsection === "org_join") {
+        } else if (subsection === "domain_restrictions") {
             const org_join_restrictions = $("#id_realm_org_join_restrictions").val();
             if (org_join_restrictions === "only_selected_domain") {
                 data.emails_restricted_to_domains = true;
@@ -797,7 +797,7 @@ exports.build_page = function () {
                 data.disallow_disposable_email_addresses = false;
                 data.emails_restricted_to_domains = false;
             }
-
+        } else if (subsection === "org_join") {
             const user_invite_restriction = $("#id_realm_user_invite_restriction").val();
             if (user_invite_restriction === "no_invite_required") {
                 data.invite_required = false;
@@ -907,16 +907,6 @@ exports.build_page = function () {
             "id_realm_waiting_period_threshold",
             waiting_period_threshold === "custom_days",
         );
-    });
-
-    $("#id_realm_org_join_restrictions").on("change", (e) => {
-        const org_join_restrictions = e.target.value;
-        const node = $("#zero_domains_warning").parent();
-        if (org_join_restrictions === "only_selected_domain") {
-            node.show();
-        } else {
-            node.hide();
-        }
     });
 
     function fade_status_element(elem) {
