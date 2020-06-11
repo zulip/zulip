@@ -620,6 +620,24 @@ on a dark background, and don't change the dark labels dark either. */
         box-shadow: 0 5px 10px hsla(0, 0%, 0%, 0.4);
     }
 
+    #user-profile-modal {
+        #default-section {
+            .default-field {
+                .name {
+                    color: hsl(236, 33%, 90%);
+                }
+            }
+        }
+
+        #content {
+            .field-section {
+                .name {
+                    color: hsl(236, 33%, 90%);
+                }
+            }
+        }
+    }
+
     /* Arrows: */
     .hotspot.overlay {
         .hotspot-popover.arrow-right::before {
