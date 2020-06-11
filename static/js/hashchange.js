@@ -164,7 +164,7 @@ function do_hashchange_overlay(old_hash) {
                     // We may be on a really old browser or somebody
                     // hand-typed a hash.
                     blueslip.warn('missing section for organization');
-                    section = 'organization-profile';
+                    section = 'your-organization';
                 }
                 settings_panel_menu.org_settings.activate_section(section);
                 return;

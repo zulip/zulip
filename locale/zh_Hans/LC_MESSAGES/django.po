@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Chriser Chaoo <jsf.chris@foxmail.com>, 2017
 # Greg Price <gnprice@gmail.com>, 2017
@@ -1134,7 +1134,7 @@ msgstr "查看如何设置电子邮件"
 msgid ""
 "\n"
 "            Complete the\n"
-"            <a class=\"alert-link\" href=\"#organization/organization-profile\">\n"
+"            <a class=\"alert-link\" href=\"#organization/your-organization\">\n"
 "                organization profile\n"
 "            </a> to brand and explain the purpose of this Zulip organization.\n"
 "            "
@@ -1337,7 +1337,7 @@ msgid "Muted topics"
 msgstr "已静音主题"
 
 #: templates/zerver/app/settings_overlay.html:51
-msgid "Organization profile"
+msgid "Your organization"
 msgstr "社群资料"
 
 #: templates/zerver/app/settings_overlay.html:53

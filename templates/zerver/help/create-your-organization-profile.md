@@ -17,7 +17,7 @@ including bold/italic, links, lists, and
 
 {start_tabs}
 
-{settings_tab|organization-profile}
+{settings_tab|your-organization}
 
 1. Edit your organization **name**, **description**, and **profile picture**.
 1. Click **Save changes**.
@@ -34,7 +34,7 @@ transparent background, and trim the logo of any bordering whitespace.
 
 {start_tabs}
 
-{settings_tab|organization-profile}
+{settings_tab|your-organization}
 
 1. Under **Organization logo**, upload a new logo.
 

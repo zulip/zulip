@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Cihan Alkan <cihanalk@gmail.com>, 2018
 # Hüseyin Fahri Uzun <mail@fahriuzun.com>, 2019-2020
@@ -1132,11 +1132,11 @@ msgstr "E-posta ayarlamayı öğrenin."
 msgid ""
 "\n"
 "            Complete the\n"
-"            <a class=\"alert-link\" href=\"#organization/organization-profile\">\n"
+"            <a class=\"alert-link\" href=\"#organization/your-organization\">\n"
 "                organization profile\n"
 "            </a> to brand and explain the purpose of this Zulip organization.\n"
 "            "
-msgstr "\n    Bu Zulip organizasyonunu marka ve amaç tanımı için\n    <a class=\"alert-link\" href=\"#organization/organization-profile\">\n    organizasyon profilini\n    </a>tamamlayınız."
+msgstr "\n    Bu Zulip organizasyonunu marka ve amaç tanımı için\n    <a class=\"alert-link\" href=\"#organization/your-organization\">\n    organizasyon profilini\n    </a>tamamlayınız."
 
 #: templates/zerver/app/navbar_alerts.html:43
 msgid ""
@@ -1335,7 +1335,7 @@ msgid "Muted topics"
 msgstr "Susturulmuş konular"
 
 #: templates/zerver/app/settings_overlay.html:51
-msgid "Organization profile"
+msgid "Your organization"
 msgstr "Organizasyon profili"
 
 #: templates/zerver/app/settings_overlay.html:53

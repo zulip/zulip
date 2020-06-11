@@ -18,7 +18,7 @@ exports.maybe_disable_widgets = function () {
         return;
     }
 
-    $(".organization-box [data-name='organization-profile']")
+    $(".organization-box [data-name='your-organization']")
         .find("input, textarea, button, select").attr("disabled", true);
 
     $(".organization-box [data-name='organization-settings']")

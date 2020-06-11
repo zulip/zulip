@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Akira Tenchi <jimjan2002@gmail.com>, 2019
 # Ansgar Hofmann <ansgar@trollgames.de>, 2016
@@ -1155,11 +1155,11 @@ msgstr "So konfigurierst du die E-Mails."
 msgid ""
 "\n"
 "            Complete the\n"
-"            <a class=\"alert-link\" href=\"#organization/organization-profile\">\n"
+"            <a class=\"alert-link\" href=\"#organization/your-organization\">\n"
 "                organization profile\n"
 "            </a> to brand and explain the purpose of this Zulip organization.\n"
 "            "
-msgstr "\n           Vervollständige das\n            <a class=\"alert-link\" href=\"#organization/organization-profile\">\n                Profil der Organisation\n            </a> um es hervorzuheben und den Nutzern den Zweck dieser Zulip-Organisation zu erklären.\n            "
+msgstr "\n           Vervollständige das\n            <a class=\"alert-link\" href=\"#organization/your-organization\">\n                Profil der Organisation\n            </a> um es hervorzuheben und den Nutzern den Zweck dieser Zulip-Organisation zu erklären.\n            "
 
 #: templates/zerver/app/navbar_alerts.html:43
 msgid ""
@@ -1358,7 +1358,7 @@ msgid "Muted topics"
 msgstr "Stummgeschaltete Themen"
 
 #: templates/zerver/app/settings_overlay.html:51
-msgid "Organization profile"
+msgid "Your organization"
 msgstr "Organisationsprofil"
 
 #: templates/zerver/app/settings_overlay.html:53

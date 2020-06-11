@@ -5,7 +5,7 @@ exports.get_group = function (section) {
     // Sometimes several sections all share the same code.
 
     switch (section) {
-    case 'organization-profile':
+    case 'your-organization':
     case 'organization-settings':
     case 'organization-permissions':
     case 'auth-methods':

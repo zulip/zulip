@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Filip Mezera <filip.mezera@pirati.cz>, 2019
 # Filip Vařecha <filip.varecha@fragaria.cz>, 2019
@@ -1132,11 +1132,11 @@ msgstr "Podívejte se jak nastavit e-mail."
 msgid ""
 "\n"
 "            Complete the\n"
-"            <a class=\"alert-link\" href=\"#organization/organization-profile\">\n"
+"            <a class=\"alert-link\" href=\"#organization/your-organization\">\n"
 "                organization profile\n"
 "            </a> to brand and explain the purpose of this Zulip organization.\n"
 "            "
-msgstr "\n            Dokončete\n            <a class=\"alert-link\" href=\"#organization/organization-profile\">\n                profil organizace\n            </a> pro označení a vysvětlení účelu této organizace Zulipu.\n            "
+msgstr "\n            Dokončete\n            <a class=\"alert-link\" href=\"#organization/your-organization\">\n                profil organizace\n            </a> pro označení a vysvětlení účelu této organizace Zulipu.\n            "
 
 #: templates/zerver/app/navbar_alerts.html:43
 msgid ""
@@ -1335,7 +1335,7 @@ msgid "Muted topics"
 msgstr "Ztlumená témata"
 
 #: templates/zerver/app/settings_overlay.html:51
-msgid "Organization profile"
+msgid "Your organization"
 msgstr "Profil organizace"
 
 #: templates/zerver/app/settings_overlay.html:53

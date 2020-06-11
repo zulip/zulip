@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Mamat Rahmat <coderbodoh@gmail.com>, 2017
 # Rafid Aslam <rafidteam@gmail.com>, 2017
@@ -1131,7 +1131,7 @@ msgstr ""
 msgid ""
 "\n"
 "            Complete the\n"
-"            <a class=\"alert-link\" href=\"#organization/organization-profile\">\n"
+"            <a class=\"alert-link\" href=\"#organization/your-organization\">\n"
 "                organization profile\n"
 "            </a> to brand and explain the purpose of this Zulip organization.\n"
 "            "
@@ -1334,7 +1334,7 @@ msgid "Muted topics"
 msgstr "Topik yang didiamkan"
 
 #: templates/zerver/app/settings_overlay.html:51
-msgid "Organization profile"
+msgid "Your organization"
 msgstr "Profil organisasi"
 
 #: templates/zerver/app/settings_overlay.html:53

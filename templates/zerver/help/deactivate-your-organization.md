@@ -4,7 +4,7 @@
 
 {start_tabs}
 
-{settings_tab|organization-profile}
+{settings_tab|your-organization}
 
 1. Under **Deactivate organization**, click **Deactivate organization**.
 

@@ -23,8 +23,8 @@ link_mapping = {
     'uploaded-files': ['Settings', 'Uploaded files', '/#settings/uploaded-files'],
     'muted-topics': ['Settings', 'Muted topics', '/#settings/muted-topics'],
 
-    'organization-profile': ['Manage organization', 'Organization profile',
-                             '/#organization/organization-profile'],
+    'your-organization': ['Manage organization', 'Your organization',
+                             '/#organization/your-organization'],
     'organization-settings': ['Manage organization', 'Organization settings',
                               '/#organization/organization-settings'],
     'organization-permissions': ['Manage organization', 'Organization permissions',

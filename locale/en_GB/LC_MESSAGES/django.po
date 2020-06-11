@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # David Wood <ZXFEIIKBVHB0Y6EIYWUMV68EL@david.davidtw.co>, 2019
 # David Wood <ZXFEIIKBVHB0Y6EIYWUMV68EL@david.davidtw.co>, 2019-2020
@@ -1129,11 +1129,11 @@ msgstr "See how to configure email."
 msgid ""
 "\n"
 "            Complete the\n"
-"            <a class=\"alert-link\" href=\"#organization/organization-profile\">\n"
+"            <a class=\"alert-link\" href=\"#organization/your-organization\">\n"
 "                organization profile\n"
 "            </a> to brand and explain the purpose of this Zulip organization.\n"
 "            "
-msgstr "\n            Complete the\n            <a class=\"alert-link\" href=\"#organization/organization-profile\">\n                organisation profile\n            </a> to brand and explain the purpose of this Zulip organisation.\n            "
+msgstr "\n            Complete the\n            <a class=\"alert-link\" href=\"#organization/your-organization\">\n                organisation profile\n            </a> to brand and explain the purpose of this Zulip organisation.\n            "
 
 #: templates/zerver/app/navbar_alerts.html:43
 msgid ""
@@ -1332,7 +1332,7 @@ msgid "Muted topics"
 msgstr "Muted topics"
 
 #: templates/zerver/app/settings_overlay.html:51
-msgid "Organization profile"
+msgid "Your organization"
 msgstr "Organisation profile"
 
 #: templates/zerver/app/settings_overlay.html:53

@@ -334,7 +334,7 @@ casper.then(function () {
 
 // Test uploading realm icon image
 casper.then(function () {
-    casper.click("li[data-section='organization-profile']");
+    casper.click("li[data-section='your-organization']");
     var selector = 'img#realm-icon-block[src^="https://secure.gravatar.com/avatar/"]';
     casper.waitUntilVisible(selector, function () {
         casper.test.assertEqual(casper.visible('#realm_icon_delete_button'), false);
@@ -353,7 +353,7 @@ casper.then(function () {
 
 // Test deleting realm icon image
 casper.then(function () {
-    casper.click("li[data-section='organization-profile']");
+    casper.click("li[data-section='your-organization']");
     casper.click("#realm_icon_delete_button");
     casper.test.assertEqual(casper.visible('#realm_icon_delete_button'), true);
     casper.waitWhileVisible('#realm_icon_delete_button', function () {

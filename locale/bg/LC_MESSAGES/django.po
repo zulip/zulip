@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Boris Yankov <borisyankov@gmail.com>, 2017
 # Veselin Georgiev <vvgeorgievv@gmail.com>, 2018
@@ -1129,7 +1129,7 @@ msgstr "Вижте как да конфигурирате е-поща."
 msgid ""
 "\n"
 "            Complete the\n"
-"            <a class=\"alert-link\" href=\"#organization/organization-profile\">\n"
+"            <a class=\"alert-link\" href=\"#organization/your-organization\">\n"
 "                organization profile\n"
 "            </a> to brand and explain the purpose of this Zulip organization.\n"
 "            "
@@ -1332,7 +1332,7 @@ msgid "Muted topics"
 msgstr "Заглушени теми"
 
 #: templates/zerver/app/settings_overlay.html:51
-msgid "Organization profile"
+msgid "Your organization"
 msgstr ""
 
 #: templates/zerver/app/settings_overlay.html:53

@@ -1137,7 +1137,7 @@ msgstr ""
 msgid ""
 "\n"
 "            Complete the\n"
-"            <a class=\"alert-link\" href=\"#organization/organization-profile"
+"            <a class=\"alert-link\" href=\"#organization/your-organization"
 "\">\n"
 "                organization profile\n"
 "            </a> to brand and explain the purpose of this Zulip "
@@ -1341,7 +1341,7 @@ msgid "Muted topics"
 msgstr ""
 
 #: templates/zerver/app/settings_overlay.html:51
-msgid "Organization profile"
+msgid "Your organization"
 msgstr ""
 
 #: templates/zerver/app/settings_overlay.html:53

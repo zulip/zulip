@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Eugenol Man <neatusebastian@gmail.com>, 2020
 # Julian Dumitrascu, 2020
@@ -1130,11 +1130,11 @@ msgstr "Vezi cum se configurează emailul."
 msgid ""
 "\n"
 "            Complete the\n"
-"            <a class=\"alert-link\" href=\"#organization/organization-profile\">\n"
+"            <a class=\"alert-link\" href=\"#organization/your-organization\">\n"
 "                organization profile\n"
 "            </a> to brand and explain the purpose of this Zulip organization.\n"
 "            "
-msgstr "\n            Completează\n            <a class=\"alert-link\" href=\"#organization/organization-profile\">\n                profilul organizației\n            </a> pentru e explica scopul acestei organizații Zulip.\n            "
+msgstr "\n            Completează\n            <a class=\"alert-link\" href=\"#organization/your-organization\">\n                profilul organizației\n            </a> pentru e explica scopul acestei organizații Zulip.\n            "
 
 #: templates/zerver/app/navbar_alerts.html:43
 msgid ""
@@ -1333,7 +1333,7 @@ msgid "Muted topics"
 msgstr "Subiecte fără alertă sonoră"
 
 #: templates/zerver/app/settings_overlay.html:51
-msgid "Organization profile"
+msgid "Your organization"
 msgstr "Profilul organizației"
 
 #: templates/zerver/app/settings_overlay.html:53
