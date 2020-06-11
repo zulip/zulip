@@ -703,7 +703,7 @@ paths:
                                   description: |
                                     Dictionary with data on the user who added the reaction, including
                                     the user ID as the `id` field.  **Note**: In the [events
-                                    API](/api/get-events-from-queue), this `user` dictionary
+                                    API](/api/get-events), this `user` dictionary
                                     confusing had the user ID in a field called `user_id`
                                     instead.  We recommend ignoring fields other than the user
                                     ID.  **Deprecated** and to be removed in a future release
@@ -1197,7 +1197,7 @@ paths:
 
         For updating the `read` flag on common collections of messages, see also
         the
-        [special endpoints for marking message as read in bulk](/api/mark-as-read-bulk).
+        [special endpoints for marking message as read in bulk](/api/mark-all-as-read).
       parameters:
       - name: messages
         in: query
@@ -1607,7 +1607,7 @@ paths:
 
         `GET {{ api_url }}/v1/users/{user_id}`
 
-        You can also fetch details on [all users in the organization](/api/get-all-users).
+        You can also fetch details on [all users in the organization](/api/get-users).
 
         *This endpoint is new in Zulip Server 2.2.*
       parameters:
@@ -3052,7 +3052,7 @@ paths:
                         organization. Each of these tuples contain the
                         pattern, the formatted URL and the filter's
                         ID, in that order. See the [Create
-                        linkifiers](/api/add-linkifiers) article for
+                        linkifiers](/api/add-linkifier) article for
                         details on what each field means.
                 - example:
                     {
@@ -3512,7 +3512,7 @@ paths:
       tags: ["users"]
       description: |
         This endpoint is used to edit the user's global notification settings.
-        See [this endpoint](/api/update-subscription-properties) for
+        See [this endpoint](/api/update-subscription-settings) for
         per-stream notification settings.
 
         `PATCH {{ api_url }}/v1/settings/notifications`
