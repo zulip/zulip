@@ -181,6 +181,23 @@ class TestGetChartData(ZulipTestCase):
             'result': 'success',
         })
 
+    def test_messages_read_over_time(self) -> None:
+        stat = COUNT_STATS['messages_read::hour']
+        self.insert_data(stat, [None], [])
+        result = self.client_get('/json/analytics/chart_data',
+                                 {'chart_name': 'messages_read_over_time'})
+        self.assert_json_success(result)
+        data = result.json()
+        self.assertEqual(data, {
+            'msg': '',
+            'end_times': [datetime_to_timestamp(dt) for dt in self.end_times_hour],
+            'frequency': CountStat.HOUR,
+            'everyone': {'read': self.data(100)},
+            'user': {'read': self.data(0)},
+            'display_order': None,
+            'result': 'success',
+        })
+
     def test_include_empty_subgroups(self) -> None:
         FillState.objects.create(
             property='realm_active_humans::day', end_time=self.end_times_day[0],
