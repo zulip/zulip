@@ -45,7 +45,7 @@ if len(pg_data_paths) != 1:
     print(f"Postgres installation is not unique: {pg_data_paths}")
     sys.exit(1)
 pg_data_path = pg_data_paths[0]
-run(['env-wal-e', 'backup-push', pg_data_path])
+run(['env-wal-g', 'backup-push', pg_data_path])
 
 now = datetime.now(tz=timezone.utc)
 with open('/var/lib/nagios_state/last_postgres_backup', 'w') as f:
@@ -53,7 +53,7 @@ with open('/var/lib/nagios_state/last_postgres_backup', 'w') as f:
     f.write("\n")
 
 backups: Dict[datetime, str] = {}
-lines = run(['env-wal-e', 'backup-list']).split("\n")
+lines = run(['env-wal-g', 'backup-list']).split("\n")
 for line in lines[1:]:
     if line:
         backup_name, date_str, _, _ = line.split()
@@ -62,7 +62,7 @@ for line in lines[1:]:
 one_month_ago = now - timedelta(days=30)
 for date in sorted(backups.keys(), reverse=True):
     if date < one_month_ago:
-        run(['env-wal-e', 'delete', '--confirm', 'before', backups[date]])
+        run(['env-wal-g', 'delete', '--confirm', 'before', backups[date]])
         # Because we're going from most recent to least recent, we
         # only have to do one delete operation
         break
