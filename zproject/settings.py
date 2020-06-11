@@ -16,8 +16,8 @@
 #
 ########################################################################
 
-from .configured_settings import *  # isort: skip
-from .computed_settings import *  # isort: skip
+from .configured_settings import *  # noqa: F401,F403 isort: skip
+from .computed_settings import *  # noqa: F401,F403 isort: skip
 
 # Do not add any code after these wildcard imports!  Add it to
 # computed_settings instead.
