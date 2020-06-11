@@ -4,7 +4,6 @@ class zulip_ops::postgres_master {
 
   $master_packages = [# Packages needed for disk + RAID configuration
                       'xfsprogs',
-                      'mdadm',
                       ]
   package { $master_packages: ensure => 'installed' }
 
@@ -26,8 +25,8 @@ class zulip_ops::postgres_master {
 
   exec { 'setup_disks':
     command => '/root/setup_disks.sh',
-    require => Package["postgresql-${zulip::base::postgres_version}", 'xfsprogs', 'mdadm'],
-    creates => '/dev/md0'
+    require => Package["postgresql-${zulip::base::postgres_version}", 'xfsprogs'],
+    unless  => 'test $(readlink /var/lib/postgresql) = "/srv/postgresql/" -a -d /srv/postgresql',
   }
 
   # This one will probably fail most of the time
