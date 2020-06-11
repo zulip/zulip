@@ -160,7 +160,12 @@ h3 .fa-question-circle-o {
 #notification_sound,
 #play_notification_sound {
     display: inline;
-    margin-right: 8px;
+    margin-right: 4px;
+
+    i {
+        font-size: 22px;
+        cursor: pointer;
+    }
 }
 
 .attributions_title {
