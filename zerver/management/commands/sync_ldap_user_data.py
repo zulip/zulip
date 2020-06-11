@@ -27,7 +27,7 @@ def sync_ldap_user_data(user_profiles: List[UserProfile], deactivation_protectio
                 sync_user_from_ldap(u, logger)
             except ZulipLDAPException as e:
                 logger.error("Error attempting to update user %s:", u.delivery_email)
-                logger.error(e)
+                logger.error(e.args[0])
 
         if deactivation_protection:
             if not UserProfile.objects.filter(is_bot=False, is_active=True).exists():

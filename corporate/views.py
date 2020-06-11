@@ -128,8 +128,8 @@ def upgrade(request: HttpRequest, user: UserProfile,
                 schedule, license_management, licenses, stripe_token is not None,
             )
         return json_error(e.message, data={'error_description': e.description})
-    except Exception as e:
-        billing_logger.exception(f"Uncaught exception in billing: {e}")
+    except Exception:
+        billing_logger.exception("Uncaught exception in billing:")
         error_message = BillingError.CONTACT_SUPPORT
         error_description = "uncaught exception during upgrade"
         return json_error(error_message, data={'error_description': error_description})

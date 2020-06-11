@@ -6,7 +6,6 @@ import logging
 import os
 import re
 import time
-import traceback
 import urllib
 import urllib.parse
 from collections import defaultdict, deque
@@ -424,7 +423,7 @@ def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
                 # but for now it seems reasonable to log at error
                 # level (so that we get notified), but then cache the
                 # failure to proceed with our usual work
-                bugdown_logger.error(traceback.format_exc())
+                bugdown_logger.exception("Unknown error fetching tweet data")
                 return None
     return res
 
@@ -984,7 +983,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             # We put this in its own try-except because it requires external
             # connectivity. If Twitter flakes out, we don't want to not-render
             # the entire message; we just want to not show the Twitter preview.
-            bugdown_logger.warning(traceback.format_exc())
+            bugdown_logger.warning("Error building Twitter link", exc_info=True)
             return None
 
     def get_url_data(self, e: Element) -> Optional[Tuple[str, Optional[str]]]:
@@ -2367,9 +2366,11 @@ def do_convert(content: str,
         # NOTE: Don't change this message without also changing the
         # logic in logging_handlers.py or we can create recursive
         # exceptions.
-        exception_message = ('Exception in Markdown parser: %sInput (sanitized) was: %s\n (message %s)'
-                             % (traceback.format_exc(), cleaned, logging_message_id))
-        bugdown_logger.exception(exception_message)
+        bugdown_logger.exception(
+            'Exception in Markdown parser; input (sanitized) was: %s\n (message %s)',
+            cleaned,
+            logging_message_id,
+        )
 
         raise BugdownRenderingException()
     finally:

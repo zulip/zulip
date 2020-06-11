@@ -49,11 +49,8 @@ def fetch_contributors(repo_link: str) -> Optional[List[Dict[str, Dict[str, Any]
 
 def write_to_disk(json_data: ContributorsJSON, out_file: str) -> None:
     with open(out_file, 'w') as f:
-        try:
-            f.write(f"{json.dumps(json_data, indent=2, sort_keys=True)}\n")
-        except OSError as e:
-            logger.warning(e)
-            sys.exit(1)
+        json.dump(json_data, f, indent=2, sort_keys=True)
+        f.write("\n")
 
 def update_contributor_data_file() -> None:
     """

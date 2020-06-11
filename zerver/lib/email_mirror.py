@@ -422,12 +422,11 @@ def process_message(message: EmailMessage, rcpt_to: Optional[str]=None) -> None:
             process_missed_message(to, message)
         else:
             process_stream_message(to, message)
+    except ZulipEmailForwardUserError as e:
+        # TODO: notify sender of error, retry if appropriate.
+        logging.warning(e.args[0])
     except ZulipEmailForwardError as e:
-        if isinstance(e, ZulipEmailForwardUserError):
-            # TODO: notify sender of error, retry if appropriate.
-            logging.warning(str(e))
-        else:
-            log_and_report(message, str(e), to)
+        log_and_report(message, e.args[0], to)
 
 def validate_to_address(rcpt_to: str) -> None:
     if is_missed_message_address(rcpt_to):

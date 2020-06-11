@@ -547,7 +547,8 @@ class WorkerTest(ZulipTestCase):
             with patch('logging.exception') as logging_exception_mock:
                 worker.start()
                 logging_exception_mock.assert_called_once_with(
-                    "Problem handling data on queue unreliable_worker")
+                    "Problem handling data on queue %s", "unreliable_worker",
+                )
 
         self.assertEqual(processed, ['good', 'fine', 'back to normal'])
         with open(fn) as f:
@@ -585,7 +586,8 @@ class WorkerTest(ZulipTestCase):
                 except AbortLoop:
                     pass
                 logging_exception_mock.assert_called_once_with(
-                    "Problem handling data on queue unreliable_loopworker")
+                    "Problem handling data on queue %s", "unreliable_loopworker",
+                )
 
         self.assertEqual(processed, ['good', 'fine'])
         with open(fn) as f:

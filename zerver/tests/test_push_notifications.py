@@ -1654,7 +1654,7 @@ class GCMSendTest(PushNotificationTest):
                                          mock_gcm: mock.MagicMock) -> None:
         mock_gcm.json_request.side_effect = IOError('error')
         send_android_push_notification_to_user(self.user_profile, {}, {})
-        mock_warn.assert_called_with('error')
+        mock_warn.assert_called_with("Error while pushing to GCM", exc_info=True)
 
     @mock.patch('zerver.lib.push_notifications.logger.warning')
     @mock.patch('zerver.lib.push_notifications.logger.info')

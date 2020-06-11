@@ -145,7 +145,7 @@ def retry_send_email_failures(
             func(worker, data)
         except (smtplib.SMTPServerDisconnected, socket.gaierror, EmailNotDeliveredException):
             def on_failure(event: Dict[str, Any]) -> None:
-                logging.exception(f"Event {event} failed")
+                logging.exception("Event %r failed", event)
 
             retry_event(worker.queue_name, data, on_failure)
 
@@ -253,7 +253,7 @@ class QueueProcessingWorker(ABC):
         check_and_send_restart_signal()
 
     def _log_problem(self) -> None:
-        logging.exception(f"Problem handling data on queue {self.queue_name}")
+        logging.exception("Problem handling data on queue %s", self.queue_name)
 
     def setup(self) -> None:
         self.q = SimpleQueueClient()

@@ -538,8 +538,11 @@ class InternalPrepTest(ZulipTestCase):
                 content=bad_content,
             )
 
-        arg = m.call_args_list[0][0][0]
-        self.assertIn('Message must not be empty', arg)
+        m.assert_called_once_with(
+            "Error queueing internal message by %s: %s",
+            "cordelia@zulip.com",
+            "Message must not be empty",
+        )
 
         with mock.patch('logging.exception') as m:
             internal_send_huddle_message(
@@ -549,8 +552,11 @@ class InternalPrepTest(ZulipTestCase):
                 content=bad_content,
             )
 
-        arg = m.call_args_list[0][0][0]
-        self.assertIn('Message must not be empty', arg)
+        m.assert_called_once_with(
+            "Error queueing internal message by %s: %s",
+            "cordelia@zulip.com",
+            "Message must not be empty",
+        )
 
         with mock.patch('logging.exception') as m:
             internal_send_stream_message(
@@ -561,8 +567,11 @@ class InternalPrepTest(ZulipTestCase):
                 stream=stream,
             )
 
-        arg = m.call_args_list[0][0][0]
-        self.assertIn('Message must not be empty', arg)
+        m.assert_called_once_with(
+            "Error queueing internal message by %s: %s",
+            "cordelia@zulip.com",
+            "Message must not be empty",
+        )
 
         with mock.patch('logging.exception') as m:
             internal_send_stream_message_by_name(
@@ -573,8 +582,11 @@ class InternalPrepTest(ZulipTestCase):
                 content=bad_content,
             )
 
-        arg = m.call_args_list[0][0][0]
-        self.assertIn('Message must not be empty', arg)
+        m.assert_called_once_with(
+            "Error queueing internal message by %s: %s",
+            "cordelia@zulip.com",
+            "Message must not be empty",
+        )
 
     def test_error_handling(self) -> None:
         realm = get_realm('zulip')
@@ -606,9 +618,11 @@ class InternalPrepTest(ZulipTestCase):
                 sender=sender,
                 recipient_user=recipient_user,
                 content=content)
-        arg = logging_mock.call_args_list[0][0][0]
-        prefix = "Error queueing internal message by cordelia@zulip.com: You can't send private messages outside of your organization."
-        self.assertTrue(arg.startswith(prefix))
+        logging_mock.assert_called_once_with(
+            "Error queueing internal message by %s: %s",
+            "cordelia@zulip.com",
+            "You can't send private messages outside of your organization.",
+        )
 
     def test_ensure_stream_gets_called(self) -> None:
         realm = get_realm('zulip')

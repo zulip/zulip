@@ -163,7 +163,7 @@ while True:
         retries -= 1
         if retries <= 0:
             raise
-        logger.info(e)
+        logger.info(e.pgerror, exc_info=True)
         logger.info("Sleeping and reconnecting")
         time.sleep(5)
         if conn is not None:

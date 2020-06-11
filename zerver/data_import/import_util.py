@@ -2,7 +2,6 @@ import logging
 import os
 import random
 import shutil
-import traceback
 from typing import AbstractSet, Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, TypeVar
 
 import requests
@@ -586,8 +585,7 @@ def run_parallel_wrapper(f: Callable[[ListJobData], None], full_items: List[List
             try:
                 f(item)
             except Exception:
-                logging.info("Error processing item: %s", item)
-                traceback.print_exc()
+                logging.exception("Error processing item: %s", item)
             count += 1
             if count % 1000 == 0:
                 logging.info("A download thread finished %s items", count)
