@@ -98,8 +98,11 @@ def update_realm(
         return json_error(_("Organization description is too long."))
     if name is not None and len(name) > Realm.MAX_REALM_NAME_LENGTH:
         return json_error(_("Organization name is too long."))
-    if authentication_methods is not None and True not in list(authentication_methods.values()):
-        return json_error(_("At least one authentication method must be enabled."))
+    if authentication_methods is not None:
+        if not user_profile.is_realm_owner:
+            return json_error(_("Only organization owners can configure authentication methods."))
+        if True not in list(authentication_methods.values()):
+            return json_error(_("At least one authentication method must be enabled."))
     if (video_chat_provider is not None and
             video_chat_provider not in {p['id'] for p in Realm.VIDEO_CHAT_PROVIDERS.values()}):
         return json_error(_("Invalid video_chat_provider {}").format(video_chat_provider))

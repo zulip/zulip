@@ -1,6 +1,6 @@
 # Configure authentication methods
 
-{!admin-only.md!}
+{!owner-only.md!}
 
 By default, Zulip allows logging in via email/password as well as
 various social authentication providers like Google, GitHub, and

@@ -4711,6 +4711,11 @@ class TestAdminSetBackends(ZulipTestCase):
         self.login('iago')
         result = self.client_patch("/json/realm", {
             'authentication_methods': ujson.dumps({'Email': False, 'Dev': True})})
+        self.assert_json_error(result, 'Only organization owners can configure authentication methods.')
+
+        self.login('desdemona')
+        result = self.client_patch("/json/realm", {
+            'authentication_methods': ujson.dumps({'Email': False, 'Dev': True})})
         self.assert_json_success(result)
         realm = get_realm('zulip')
         self.assertFalse(password_auth_enabled(realm))
@@ -4718,7 +4723,7 @@ class TestAdminSetBackends(ZulipTestCase):
 
     def test_disable_all_backends(self) -> None:
         # Log in as admin
-        self.login('iago')
+        self.login('desdemona')
         result = self.client_patch("/json/realm", {
             'authentication_methods': ujson.dumps({'Email': False, 'Dev': False})})
         self.assert_json_error(result, 'At least one authentication method must be enabled.')
@@ -4728,7 +4733,7 @@ class TestAdminSetBackends(ZulipTestCase):
 
     def test_supported_backends_only_updated(self) -> None:
         # Log in as admin
-        self.login('iago')
+        self.login('desdemona')
         # Set some supported and unsupported backends
         result = self.client_patch("/json/realm", {
             'authentication_methods': ujson.dumps({'Email': False, 'Dev': True, 'GitHub': False})})

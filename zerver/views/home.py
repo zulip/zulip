@@ -312,12 +312,14 @@ def home_real(request: HttpRequest) -> HttpResponse:
     if user_profile is not None:
         night_mode = user_profile.night_mode
         is_guest = user_profile.is_guest
+        is_realm_owner = user_profile.is_realm_owner
         is_realm_admin = user_profile.is_realm_admin
         show_webathena = user_profile.realm.webathena_enabled
     else:  # nocoverage
         night_mode = False
         is_guest = False
         is_realm_admin = False
+        is_realm_owner = False
         show_webathena = False
 
     navbar_logo_url = compute_navbar_logo_url(page_params)
@@ -332,6 +334,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                'show_billing': show_billing,
                                'corporate_enabled': settings.CORPORATE_ENABLED,
                                'show_plans': show_plans,
+                               'is_owner': is_realm_owner,
                                'is_admin': is_realm_admin,
                                'is_guest': is_guest,
                                'night_mode': night_mode,
