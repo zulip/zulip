@@ -793,17 +793,11 @@ class Command(BaseCommand):
         if not options["test_suite"]:
             # Populate users with some bar data
             for user in user_profiles:
-                status: int = UserPresence.ACTIVE
                 date = timezone_now()
-                client = get_client("website")
-                if user.full_name[0] <= "H":
-                    client = get_client("ZulipAndroid")
                 UserPresence.objects.get_or_create(
                     user_profile=user,
                     realm_id=user.realm_id,
-                    client=client,
-                    timestamp=date,
-                    status=status,
+                    defaults={"last_active_time": date, "last_connected_time": date},
                 )
 
         user_profiles_ids = [user_profile.id for user_profile in user_profiles]

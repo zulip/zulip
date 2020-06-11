@@ -1,9 +1,9 @@
 import datetime
-import itertools
 import time
 from collections import defaultdict
 from typing import Any, Dict, Mapping, Sequence, Set
 
+from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -13,16 +13,6 @@ from zerver.models import PushDeviceToken, Realm, UserPresence, UserProfile, que
 def get_presence_dicts_for_rows(
     all_rows: Sequence[Mapping[str, Any]], mobile_user_ids: Set[int], slim_presence: bool
 ) -> Dict[str, Dict[str, Any]]:
-    # Note that datetime values have sub-second granularity, which is
-    # mostly important for avoiding test flakes, but it's also technically
-    # more precise for real users.
-    # We could technically do this sort with the database, but doing it
-    # here prevents us from having to assume the caller is playing nice.
-    all_rows = sorted(
-        all_rows,
-        key=lambda row: (row["user_profile_id"], row["timestamp"]),
-    )
-
     if slim_presence:
         # Stringify user_id here, since it's gonna be turned
         # into a string anyway by JSON, and it keeps mypy happy.
@@ -34,10 +24,11 @@ def get_presence_dicts_for_rows(
 
     user_statuses: Dict[str, Dict[str, Any]] = {}
 
-    for user_key, presence_rows in itertools.groupby(all_rows, get_user_key):
+    for presence_row in all_rows:
+        user_key = get_user_key(presence_row)
         info = get_user_presence_info(
-            list(presence_rows),
-            mobile_user_ids=mobile_user_ids,
+            presence_row["last_active_time"],
+            presence_row["last_connected_time"],
         )
         user_statuses[user_key] = info
 
@@ -45,59 +36,48 @@ def get_presence_dicts_for_rows(
 
 
 def get_modern_user_presence_info(
-    presence_rows: Sequence[Mapping[str, Any]], mobile_user_ids: Set[int]
+    last_active_time: datetime.datetime, last_connected_time: datetime.datetime
 ) -> Dict[str, Any]:
-    active_timestamp = None
-    for row in reversed(presence_rows):
-        if row["status"] == UserPresence.ACTIVE:
-            active_timestamp = datetime_to_timestamp(row["timestamp"])
-            break
-
-    idle_timestamp = None
-    for row in reversed(presence_rows):
-        if row["status"] == UserPresence.IDLE:
-            idle_timestamp = datetime_to_timestamp(row["timestamp"])
-            break
-
-    # Be stingy about bandwidth, and don't even include
-    # keys for entities that have None values.  JS
-    # code should just do a falsy check here.
+    # TODO: Do further bandwidth optimizations to this structure.
     result = {}
-
-    if active_timestamp is not None:
-        result["active_timestamp"] = active_timestamp
-
-    if idle_timestamp is not None:
-        result["idle_timestamp"] = idle_timestamp
-
+    result["active_timestamp"] = datetime_to_timestamp(last_active_time)
+    result["idle_timestamp"] = datetime_to_timestamp(last_connected_time)
     return result
 
 
 def get_legacy_user_presence_info(
-    presence_rows: Sequence[Mapping[str, Any]], mobile_user_ids: Set[int]
+    last_active_time: datetime.datetime, last_connected_time: datetime.datetime
 ) -> Dict[str, Any]:
-    # The format of data here is for legacy users of our API,
-    # including old versions of the mobile app.
-    info_rows = []
-    for row in presence_rows:
-        client_name = row["client__name"]
-        status = UserPresence.status_to_string(row["status"])
-        dt = row["timestamp"]
-        timestamp = datetime_to_timestamp(dt)
-        push_enabled = row["user_profile__enable_offline_push_notifications"]
-        has_push_devices = row["user_profile_id"] in mobile_user_ids
-        pushable = push_enabled and has_push_devices
+    # Reformats the modern UserPresence data structure so that legacy
+    # API clients can still access presence data.
+    #
+    # We expect this code to remain mostly unchanged until we can delete it.
 
-        info = dict(
-            client=client_name,
-            status=status,
-            timestamp=timestamp,
-            pushable=pushable,
-        )
+    if timezone_now() - last_active_time > datetime.timedelta(minutes=2):
+        dt = last_connected_time
+        status = UserPresence.LEGACY_STATUS_IDLE
+    else:
+        dt = last_active_time
+        status = UserPresence.LEGACY_STATUS_ACTIVE
 
-        info_rows.append(info)
+    client_name = "website"
+    timestamp = datetime_to_timestamp(dt)
 
-    most_recent_info = info_rows[-1]
+    # This field was never used by clients of the legacy API, so we
+    # just set it to a fixed value for API format compatibility.
+    pushable = False
+
+    # Now we put things together in the legacy presence format with
+    # one client + an `aggregated` field.
+    #
+    # TODO: Look at whether we can drop to just the "aggregated" field
+    # if no clients look at the rest.
+    most_recent_info = dict(
+        client=client_name,
+        status=status,
+        timestamp=timestamp,
+        pushable=pushable,
+    )
 
     result = {}
 
@@ -109,22 +89,36 @@ def get_legacy_user_presence_info(
         timestamp=most_recent_info["timestamp"],
     )
 
-    # Build a dictionary of client -> info.  There should
-    # only be one row per client, but to be on the safe side,
-    # we always overwrite with rows that are later in our list.
-    for info in info_rows:
-        result[info["client"]] = info
+    result[client_name] = most_recent_info
 
     return result
+
+
+def format_legacy_presence_dict(presence: UserPresence) -> Dict[str, Any]:
+    """
+    This function assumes it's being called right after the presence object was updated,
+    and is not meant to be used on old presence data.
+    """
+    if (
+        presence.last_active_time
+        + datetime.timedelta(seconds=settings.PRESENCE_LEGACY_EVENT_OFFSET_FOR_ACTIVITY_SECONDS)
+        >= presence.last_connected_time
+    ):
+        status = UserPresence.LEGACY_STATUS_ACTIVE
+        timestamp = datetime_to_timestamp(presence.last_active_time)
+    else:
+        status = UserPresence.LEGACY_STATUS_IDLE
+        timestamp = datetime_to_timestamp(presence.last_connected_time)
+
+    return dict(client="website", status=status, timestamp=timestamp, pushable=False)
 
 
 def get_presence_for_user(
     user_profile_id: int, slim_presence: bool = False
 ) -> Dict[str, Dict[str, Any]]:
     query = UserPresence.objects.filter(user_profile_id=user_profile_id).values(
-        "client__name",
-        "status",
-        "timestamp",
+        "last_active_time",
+        "last_connected_time",
         "user_profile__email",
         "user_profile_id",
         "user_profile__enable_offline_push_notifications",
@@ -145,13 +139,12 @@ def get_presence_dict_by_realm(
     two_weeks_ago = timezone_now() - datetime.timedelta(weeks=2)
     query = UserPresence.objects.filter(
         realm_id=realm_id,
-        timestamp__gte=two_weeks_ago,
+        last_connected_time__gte=two_weeks_ago,
         user_profile__is_active=True,
         user_profile__is_bot=False,
     ).values(
-        "client__name",
-        "status",
-        "timestamp",
+        "last_active_time",
+        "last_connected_time",
         "user_profile__email",
         "user_profile_id",
         "user_profile__enable_offline_push_notifications",

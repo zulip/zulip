@@ -506,6 +506,18 @@ PRESENCE_PING_INTERVAL_SECS = 60
 # disabled.
 USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS = 100
 
+# Controls the how much newer a user presence update needs to be
+# than the currently saved last_active_time or last_connected_time in order for us to
+# update the database state. E.g. If set to 0, we will do
+# a database write each time a client sends a presence update.
+PRESENCE_UPDATE_MIN_FREQ_SECONDS = 55
+
+# Controls the timedelta between last_connected_time and last_active_time
+# within which the user should be considered ACTIVE for the purposes of
+# legacy presence events. That is - when sending a presence update about a user to clients,
+# we will specify ACTIVE status  as long as the timedelta is within this limit and IDLE otherwise.
+PRESENCE_LEGACY_EVENT_OFFSET_FOR_ACTIVITY_SECONDS = 70
+
 # How many days deleted messages data should be kept before being
 # permanently deleted.
 ARCHIVED_DATA_VACUUMING_DELAY_DAYS = 30

@@ -5,6 +5,7 @@
 # and zerver/lib/data_types.py systems for validating the schemas of
 # events; it also uses the OpenAPI tools to validate our documentation.
 import copy
+import datetime
 import time
 from io import StringIO
 from typing import Any, Callable, Dict, List, Optional, Set
@@ -1071,7 +1072,10 @@ class NormalActionsTest(BaseAction):
     def test_presence_events(self) -> None:
         events = self.verify_action(
             lambda: do_update_user_presence(
-                self.user_profile, get_client("website"), timezone_now(), UserPresence.ACTIVE
+                self.user_profile,
+                get_client("website"),
+                timezone_now(),
+                UserPresence.LEGACY_STATUS_ACTIVE_INT,
             ),
             slim_presence=False,
         )
@@ -1089,7 +1093,7 @@ class NormalActionsTest(BaseAction):
                 self.example_user("cordelia"),
                 get_client("website"),
                 timezone_now(),
-                UserPresence.ACTIVE,
+                UserPresence.LEGACY_STATUS_ACTIVE_INT,
             ),
             slim_presence=True,
         )
@@ -1103,6 +1107,15 @@ class NormalActionsTest(BaseAction):
         )
 
     def test_presence_events_multiple_clients(self) -> None:
+        now = timezone_now()
+        initial_presence = now - datetime.timedelta(days=365)
+        UserPresence.objects.create(
+            user_profile=self.user_profile,
+            realm=self.user_profile.realm,
+            last_active_time=initial_presence,
+            last_connected_time=initial_presence,
+        )
+
         self.api_post(
             self.user_profile,
             "/api/v1/users/me/presence",
@@ -1111,12 +1124,28 @@ class NormalActionsTest(BaseAction):
         )
         self.verify_action(
             lambda: do_update_user_presence(
-                self.user_profile, get_client("website"), timezone_now(), UserPresence.ACTIVE
+                self.user_profile,
+                get_client("website"),
+                timezone_now(),
+                UserPresence.LEGACY_STATUS_ACTIVE_INT,
             )
+        )
+        self.verify_action(
+            lambda: do_update_user_presence(
+                self.user_profile,
+                get_client("ZulipAndroid/1.0"),
+                timezone_now(),
+                UserPresence.LEGACY_STATUS_IDLE_INT,
+            ),
+            state_change_expected=False,
+            num_events=0,
         )
         events = self.verify_action(
             lambda: do_update_user_presence(
-                self.user_profile, get_client("ZulipAndroid/1.0"), timezone_now(), UserPresence.IDLE
+                self.user_profile,
+                get_client("ZulipAndroid/1.0"),
+                timezone_now() + datetime.timedelta(seconds=301),
+                UserPresence.LEGACY_STATUS_ACTIVE_INT,
             )
         )
 
@@ -1124,8 +1153,10 @@ class NormalActionsTest(BaseAction):
             "events[0]",
             events[0],
             has_email=True,
-            presence_key="ZulipAndroid/1.0",
-            status="idle",
+            # We no longer store information about the client and we simply
+            # set the field to 'website' for backwards compatibility.
+            presence_key="website",
+            status="active",
         )
 
     def test_register_events(self) -> None:
