@@ -10,6 +10,12 @@ below features are supported.
 
 ## Changes in Zulip 2.2
 
+**Feature level 22**
+
+* [`POST users/me/subscriptions/properties`](/api/update-subscription-settings):
+  The response from this endpoint no longer contains the `subscription_data` list
+  and is now an empty HTTP response.
+
 **Feature level 21**
 
 * `PATCH /settings/display`: Replaced the `night_mode` boolean with

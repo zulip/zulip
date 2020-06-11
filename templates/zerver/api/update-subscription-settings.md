@@ -39,11 +39,6 @@ The possible values for each `property` and `value` pairs are:
 
 ## Response
 
-#### Return values
-
-* `subscription_data`: The same `subscription_data` object sent by the client
-    for the request, confirming the changes made.
-
 #### Example response
 
 A typical successful JSON response may look like:

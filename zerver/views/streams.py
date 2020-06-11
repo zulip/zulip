@@ -697,7 +697,6 @@ def update_subscription_properties_backend(
                            "email_notifications": check_bool,
                            "pin_to_top": check_bool,
                            "wildcard_mentions_notify": check_bool}
-    response_data = []
 
     for change in subscription_data:
         stream_id = change["stream_id"]
@@ -719,8 +718,4 @@ def update_subscription_properties_backend(
         do_change_subscription_property(user_profile, sub, stream,
                                         property, value)
 
-        response_data.append({'stream_id': stream_id,
-                              'property': property,
-                              'value': value})
-
-    return json_success({"subscription_data": response_data})
+    return json_success()
