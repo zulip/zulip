@@ -4,7 +4,7 @@ import argparse
 import os
 import json
 import subprocess
-from typing_extensions import NoReturn
+from typing import NoReturn
 
 os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 STATIC_PATH = 'static/'

@@ -1,8 +1,8 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
-from typing import cast, AbstractSet, Any, Callable, Dict, List, \
+from typing import cast, AbstractSet, Any, Callable, Deque, Dict, List, \
     Mapping, MutableMapping, Optional, Iterable, Sequence, Set, Union
-from typing_extensions import Deque, TypedDict
+from typing_extensions import TypedDict
 
 from django.utils.translation import ugettext as _
 from django.conf import settings

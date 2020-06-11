@@ -9,8 +9,7 @@ from django.utils.log import AdminEmailHandler
 from functools import wraps
 from unittest.mock import MagicMock, patch
 from types import TracebackType
-from typing import Any, Callable, Dict, Iterator, Optional, Tuple, Type
-from typing_extensions import NoReturn
+from typing import Any, Callable, Dict, Iterator, NoReturn, Optional, Tuple, Type
 
 from zerver.lib.types import ViewFuncT
 from zerver.lib.test_classes import ZulipTestCase

@@ -5,7 +5,7 @@
 # Django itself
 Django==2.2.*
 
-# needed for Deque (in Python < 3.5.4) and TypedDict
+# needed for Literal, TypedDict
 typing-extensions
 
 # Needed for rendering backend templates
