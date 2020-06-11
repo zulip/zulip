@@ -160,7 +160,7 @@ data includes:
 
 * The postgres database.  You can back it up like any postgres
 database. We have some example tooling for doing that incrementally
-into S3 using [wal-e](https://github.com/wal-e/wal-e) in
+into S3 using [wal-g](https://github.com/wal-g/wal-g) in
 `puppet/zulip_ops/manifests/postgres_common.pp`.
 In short, this requires:
   - Zulip 1.4 or newer release.
@@ -207,7 +207,7 @@ To restore from a manual backup, the process is basically the reverse of the abo
 * If you ran `initialize-database` anyway above, you'll want to run
   `scripts/setup/postgres-init-db` to drop the initial database first.
 
-* Restore your database from the backup using `wal-e`.
+* Restore your database from the backup.
 
 * Reconfigure rabbitmq to use the password from `secrets.conf`
   by running, as root, `scripts/setup/configure-rabbitmq`.
