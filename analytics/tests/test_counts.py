@@ -6,7 +6,6 @@ import ujson
 from django.apps import apps
 from django.db import models
 from django.db.models import Sum
-from django.test import TestCase
 from django.utils.timezone import now as timezone_now
 from psycopg2.sql import SQL, Literal
 
@@ -45,6 +44,7 @@ from zerver.lib.actions import (
     update_user_activity_interval,
 )
 from zerver.lib.create_user import create_user
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import TimezoneNotUTCException, floor_to_day
 from zerver.lib.topic import DB_TOPIC_NAME
 from zerver.models import (
@@ -63,7 +63,7 @@ from zerver.models import (
 )
 
 
-class AnalyticsTestCase(TestCase):
+class AnalyticsTestCase(ZulipTestCase):
     MINUTE = timedelta(seconds = 60)
     HOUR = MINUTE * 60
     DAY = HOUR * 24
