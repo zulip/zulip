@@ -11,7 +11,7 @@ class zulip::tornado_sharding {
     ensure  => file,
     owner   => 'root',
     group   => 'root',
-    mode    => '0640',
+    mode    => '0644',
     notify  => Service['nginx'],
     content => "set \$tornado_server http://tornado;\n",
     replace => false,
