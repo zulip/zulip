@@ -1,5 +1,6 @@
 import os
 
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Any, Tuple
 from django.conf.urls import url
 from django.contrib.staticfiles.storage import staticfiles_storage
@@ -201,22 +202,17 @@ def split_fixture_path(path: str) -> Tuple[str, str]:
     integration_name = os.path.split(os.path.dirname(path))[-1]
     return integration_name, fixture_name
 
-# FIXME: Change to namedtuple if we drop Python3.6: No default values support on namedtuples (or dataclass)
+@dataclass
 class ScreenshotConfig:
-    def __init__(self, fixture_name: str, image_name: str='001.png',
-                 image_dir: Optional[str]=None, bot_name: Optional[str]=None,
-                 payload_as_query_param: bool=False, payload_param_name: str='payload',
-                 extra_params: Optional[Dict[str, str]]=None,
-                 use_basic_auth: bool=False, custom_headers: Optional[Dict[str, str]]=None):
-        self.fixture_name = fixture_name
-        self.image_name = image_name
-        self.image_dir = image_dir
-        self.bot_name = bot_name
-        self.payload_as_query_param = payload_as_query_param
-        self.payload_param_name = payload_param_name
-        self.extra_params = extra_params
-        self.use_basic_auth = use_basic_auth
-        self.custom_headers = custom_headers
+    fixture_name: str
+    image_name: str = '001.png'
+    image_dir: Optional[str] = None
+    bot_name: Optional[str] = None
+    payload_as_query_param: bool = False
+    payload_param_name: str = 'payload'
+    extra_params: Optional[Dict[str, str]] = None
+    use_basic_auth: bool = False
+    custom_headers: Optional[Dict[str, str]] = None
 
 def get_fixture_and_image_paths(integration: WebhookIntegration,
                                 screenshot_config: ScreenshotConfig) -> Tuple[str, str]:
