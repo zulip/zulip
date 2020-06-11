@@ -55,6 +55,28 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="chart-container">
+                    <h1>{{ _("Messages read over time") }}</h1>
+                    <div class="button-container">
+                        <label>{{ _("Aggregation") }}</label>
+                        <div class="buttons">
+                            <button class="button" type="button" id='read_daily_button'>{{ _("Daily") }} </button>
+                            <button class="button" type="button" id='read_weekly_button'>{{ _("Weekly") }} </button>
+                            <button class="button" type="button" id='read_cumulative_button'>{{ _("Cumulative") }} </button>
+                        </div>
+                    </div>
+                    <div id="id_messages_read_over_time">
+                        <div class="spinner"></div>
+                    </div>
+                    <div id="read_hover_info">
+                        <span id="read_hover_date"></span>
+                        <span id="read_hover_me">{{ _("Me") }}:</span>
+                        <span id="read_hover_me_value"></span>
+                        <b id="read_hover_everyone">{{ _("Everyone") }}:</b>
+                        <span id="read_hover_everyone_value"></span>
+                    </div>
+                </div>
             </div>
 
             <div class="right">

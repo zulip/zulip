@@ -153,6 +153,7 @@ p {
 }
 
 #users_hover_humans,
+#read_hover_everyone,
 #hover_human {
     margin-left: 10px;
 }
@@ -169,7 +170,8 @@ p {
     position: relative;
 }
 
-#id_messages_sent_over_time {
+#id_messages_sent_over_time,
+#id_messages_read_over_time {
     height: 400px;
     width: 750px;
     position: relative;
@@ -190,6 +192,7 @@ p {
 }
 
 #users_hover_info,
+#read_hover_info,
 #hoverinfo {
     display: none;
     font-size: 0.8em;
