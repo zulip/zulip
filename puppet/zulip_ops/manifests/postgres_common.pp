@@ -33,7 +33,6 @@ class zulip_ops::postgres_common {
       Package[
         "postgresql-${zulip::base::postgres_version}",
         'python3-dateutil',
-        'python-dateutil'
       ]
     ]
   }
