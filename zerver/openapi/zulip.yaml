@@ -1400,7 +1400,7 @@ paths:
         schema:
           type: integer
         example: 1
-        required: True
+        required: true
       - name: filename
         in: path
         description: |
@@ -1408,7 +1408,7 @@ paths:
         schema:
           type: string
         example: 4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt
-        required: True
+        required: true
       responses:
         '200':
           description: Success.
