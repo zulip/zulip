@@ -634,6 +634,12 @@ class RealmTest(ZulipTestCase):
         realm = get_realm('zulip')
         self.assertEqual(realm.plan_type, Realm.SELF_HOSTED)
 
+        req = dict(message_retention_days=ujson.dumps(10))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(result, "Only organization owners can change message retention period.")
+
+        self.login('desdemona')
+
         req = dict(message_retention_days=ujson.dumps(0))
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, "Bad value for 'message_retention_days': 0")
@@ -666,7 +672,7 @@ class RealmAPITest(ZulipTestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.login('iago')
+        self.login('desdemona')
 
     def set_up_db(self, attr: str, value: Any) -> None:
         realm = get_realm('zulip')

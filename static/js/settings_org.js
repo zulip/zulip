@@ -23,6 +23,7 @@ exports.maybe_disable_widgets = function () {
 
     if (page_params.is_admin) {
         $("#deactivate_realm_button").attr("disabled", true);
+        $("#org-message-retention").find("input, select").attr("disabled", true);
         return;
     }
 
