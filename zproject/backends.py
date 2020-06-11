@@ -1397,7 +1397,7 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod):
             # the flow or the IdP is unreliable and returns a bad http response),
             # don't throw a 500, just send them back to the
             # login page and record the event at the info log level.
-            self.logger.info(f"{e.__class__.__name__}: {str(e)}")
+            self.logger.info("%s: %s", e.__class__.__name__, str(e))
             return None
         except SocialAuthBaseException as e:
             # Other python-social-auth exceptions are likely
@@ -1813,9 +1813,9 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         try:
             resp = OneLogin_Saml2_Response(settings={}, response=SAMLResponse)
             issuers = resp.get_issuers()
-        except cls.SAMLRESPONSE_PARSING_EXCEPTIONS as e:
+        except cls.SAMLRESPONSE_PARSING_EXCEPTIONS:
             logger = logging.getLogger(f"zulip.auth.{cls.name}")
-            logger.info("Error while parsing SAMLResponse: %s: %s", e.__class__.__name__, e)
+            logger.info("Error while parsing SAMLResponse:", exc_info=True)
             return None
 
         for idp_name, idp_config in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
@@ -1920,9 +1920,9 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
             # Call the auth_complete method of SocialAuthMixIn
             result = super().auth_complete(*args, **kwargs)
-        except self.SAMLRESPONSE_PARSING_EXCEPTIONS as e:
+        except self.SAMLRESPONSE_PARSING_EXCEPTIONS:
             # These can be raised if SAMLResponse is missing or badly formatted.
-            self.logger.info("/complete/saml/: %s: %s", e.__class__.__name__, e)
+            self.logger.info("/complete/saml/: error while parsing SAMLResponse:", exc_info=True)
             # Fall through to returning None.
         finally:
             if result is None:

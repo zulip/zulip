@@ -279,8 +279,8 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
                                       priority=priority,
                                       data=data,
                                       retries=10)
-    except OSError as e:
-        logger.warning(str(e))
+    except OSError:
+        logger.warning("Error while pushing to GCM", exc_info=True)
         return
 
     if res and 'success' in res:

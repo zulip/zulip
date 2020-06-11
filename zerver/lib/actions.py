@@ -2392,7 +2392,7 @@ def _internal_prep_message(realm: Realm,
         return check_message(sender, get_client("Internal"), addressee,
                              content, realm=realm)
     except JsonableError as e:
-        logging.exception(f"Error queueing internal message by {sender.delivery_email}: {e}")
+        logging.exception("Error queueing internal message by %s: %s", sender.delivery_email, e.msg)
 
     return None
 

@@ -59,9 +59,11 @@ rules:
       - pattern-either:
           - pattern: logging.$Y(... % ...)
           - pattern: logging.$Y(... .format(...))
+          - pattern: logging.$Y(f"...")
           - pattern: logger.$Y(... % ...)
           - pattern: logger.$Y(... .format(...))
-      - pattern-where-python: "vars['$Y'] in ['debug', 'info', 'warning', 'error', 'critical']"
+          - pattern: logger.$Y(f"...")
+      - pattern-where-python: "vars['$Y'] in ['debug', 'info', 'warning', 'error', 'critical', 'exception']"
     severity: ERROR
     message: "Pass format arguments to logging (https://docs.python.org/3/howto/logging.html#optimization)"
 

@@ -28,7 +28,7 @@ import django
 
 try:
     django.setup()
-except Exception as e:
+except Exception:
     # If /etc/zulip/settings.py contains invalid syntax, Django
     # initialization will fail in django.setup().  In this case, our
     # normal configuration to logs errors to /var/log/zulip/errors.log
@@ -39,7 +39,7 @@ except Exception as e:
     logging.basicConfig(filename='/var/log/zulip/errors.log', level=logging.INFO,
                         format='%(asctime)s %(levelname)s %(name)s %(message)s')
     logger = logging.getLogger(__name__)
-    logger.exception(e)
+    logger.exception("django.setup() failed:")
     raise
 
 # Because import_module does not correctly handle safe circular imports we
