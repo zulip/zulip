@@ -4,7 +4,7 @@
 from lib import sanity_check
 sanity_check.check_venv(__file__)
 
-from typing import List, Iterator
+from typing import List, Iterator, Optional
 import glob
 import argparse
 import contextlib
@@ -138,6 +138,7 @@ not_yet_fully_covered = {path for target in [
 enforce_fully_covered = sorted(target_fully_covered - not_yet_fully_covered)
 
 FAILED_TEST_PATH = 'var/last_test_failure.json'
+FAILED_THREAD_PATH = 'var/failed_thread_tests.json'
 
 def get_failed_tests() -> List[str]:
     try:
@@ -147,10 +148,22 @@ def get_failed_tests() -> List[str]:
         print("var/last_test_failure.json doesn't exist; running all tests.")
         return []
 
+def get_failed_thread_tests() -> Optional[List[str]]:
+    try:
+        with open(FAILED_THREAD_PATH, 'r') as f:
+            return ujson.load(f)
+    except IOError:
+        print("var/failed_thread_tests.json doesn't exist; running all tests.")
+        return None
+
 def write_failed_tests(failed_tests: List[str]) -> None:
     if failed_tests:
         with open(FAILED_TEST_PATH, 'w') as f:
             ujson.dump(failed_tests, f)
+
+def write_failed_thread_tests(failed_thread_tests: List[str]) -> None:
+    with open(FAILED_THREAD_PATH, 'w') as f:
+        ujson.dump(failed_thread_tests, f, indent=2)
 
 @contextlib.contextmanager
 def block_internet() -> Iterator[None]:
@@ -206,6 +219,7 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(description=usage,
                                      formatter_class=argparse.RawTextHelpFormatter)
+    group = parser.add_mutually_exclusive_group()
 
     parser.add_argument('--nonfatal-errors', action="store_false", default=True,
                         dest="fatal_errors", help="Continue past test failures to run all tests")
@@ -249,11 +263,11 @@ def main() -> None:
                         action="store_true",
                         default=False,
                         help="Run tests in reverse order.")
-    parser.add_argument('--rerun', dest="rerun",
-                        action="store_true",
-                        default=False,
-                        help=("Run the tests which failed the last time "
-                              "test-backend was run.  Implies --nonfatal-errors."))
+    group.add_argument('--rerun', dest="rerun",
+                       action="store_true",
+                       default=False,
+                       help=("Run the tests which failed the last time "
+                             "test-backend was run.  Implies --nonfatal-errors."))
     parser.add_argument('--include-webhooks', dest="include_webhooks",
                         action="store_true",
                         default=False,
@@ -262,6 +276,11 @@ def main() -> None:
                         action="store_true",
                         default=False,
                         help=("Generate Stripe test fixtures by making requests to Stripe test network"))
+    group.add_argument('--replicate', dest='replicate',
+                       action="store_true",
+                       default=False,
+                       help=("Run the set of tests leading up to a failure. "
+                             "The set is specific to the worker that failed."))
     parser.add_argument('args', nargs='*')
 
     options = parser.parse_args()
@@ -286,6 +305,15 @@ def main() -> None:
         failed_tests = get_failed_tests()
         if failed_tests:
             args = failed_tests
+
+    # Similarly to --rerun, when running --replicate, we read in
+    # `var/failed_thread_tests.json` to get the list of tests which
+    # ran in the failed process on the last run.
+    if options.replicate:
+        failed_thread_tests = get_failed_thread_tests()
+        if failed_thread_tests:
+            args = failed_thread_tests
+
     if len(args) > 0:
         # If we passed a specific set of tests, run in serial mode.
         parallel = 1
@@ -395,9 +423,11 @@ def main() -> None:
         test_runner = TestRunner(failfast=options.fatal_errors, verbosity=2,
                                  parallel=parallel, reverse=options.reverse,
                                  keepdb=True)
-        failures, failed_tests = test_runner.run_tests(suites, full_suite=full_suite,
-                                                       include_webhooks=include_webhooks)
+        failures, failed_tests, failed_thread_tests = test_runner.run_tests(suites, full_suite=full_suite,
+                                                                            include_webhooks=include_webhooks)
     write_failed_tests(failed_tests)
+    if failed_thread_tests:
+        write_failed_thread_tests(failed_thread_tests)
 
     templates_not_rendered = test_runner.get_shallow_tested_templates()
     # We only check the templates if all the tests ran and passed

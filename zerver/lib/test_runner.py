@@ -29,7 +29,7 @@ import time
 import unittest
 import shutil
 
-from multiprocessing.sharedctypes import Synchronized
+from multiprocessing.sharedctypes import Synchronized, Array
 
 from scripts.lib.zulip_tools import get_dev_uuid_var_path, TEMPLATE_DATABASE_DIR, \
     get_or_create_dev_uuid_var_path
@@ -51,6 +51,10 @@ TEST_RUN_DIR = get_or_create_dev_uuid_var_path(
     os.path.join('test-backend', f'run_{get_database_id()}'))
 
 _worker_id = 0  # Used to identify the worker process.
+
+# mypy wants this name assigned here, so we set the Array size to
+# 0 and then set the actual size in Runner.run_tests
+_subsuite_index_to_pid = Array('i', 0)
 
 ReturnT = TypeVar('ReturnT')  # Constrain return type to match
 
@@ -225,6 +229,8 @@ def run_subsuite(args: SubsuiteArgs) -> Tuple[int, Any]:
     # TestResult are passed TestCase as the first argument but
     # addInstrumentation does not need it.
     process_instrumented_calls(partial(result.addInstrumentation, None))
+
+    _subsuite_index_to_pid[subsuite_index] = os.getpid()
     return subsuite_index, result.events
 
 def destroy_test_databases(worker_id: Optional[int]=None) -> None:
@@ -507,7 +513,7 @@ class Runner(DiscoverRunner):
                   extra_tests: Optional[List[TestCase]]=None,
                   full_suite: bool=False,
                   include_webhooks: bool=False,
-                  **kwargs: Any) -> Tuple[bool, List[str]]:
+                  **kwargs: Any) -> Tuple[bool, List[str], List[str]]:
         self.setup_test_environment()
         try:
             suite = self.build_suite(test_labels, extra_tests)
@@ -538,6 +544,9 @@ class Runner(DiscoverRunner):
             # We pass a _worker_id, which in this code path is always 0
             destroy_test_databases(_worker_id)
             create_test_databases(_worker_id)
+        else:
+            global _subsuite_index_to_pid
+            _subsuite_index_to_pid = Array('i', len(suite.subsuites))
 
         # We have to do the next line to avoid flaky scenarios where we
         # run a single test and getting an SA connection causes data from
@@ -546,9 +555,27 @@ class Runner(DiscoverRunner):
         result = self.run_suite(suite)
         self.teardown_test_environment()
         failed = self.suite_result(suite, result)
-        if not failed:
+        failed_thread_tests = []  # type: List[str]
+
+        # Return if running in serial mode because we won't have subsuites.
+        if not failed or self.parallel == 1:
             write_instrumentation_reports(full_suite=full_suite, include_webhooks=include_webhooks)
-        return failed, result.failed_tests
+            return failed, result.failed_tests, failed_thread_tests
+
+        # For the first failure that occurs, we aggregate a list that's
+        # comprised of the tests which ran within the failed thread.
+        failed_pid = next(
+            pid
+            for subsuite, pid in zip(suite.subsuites, _subsuite_index_to_pid)
+            if result.failed_tests[0] in subsuite[1]
+        )
+        failed_thread_tests = [
+            test
+            for subsuite, pid in zip(suite.subsuites, _subsuite_index_to_pid)
+            if pid == failed_pid
+            for test in subsuite[1]
+        ]
+        return failed, result.failed_tests, failed_thread_tests
 
 def get_test_names(suite: Union[TestSuite, ParallelTestSuite]) -> List[str]:
     if isinstance(suite, ParallelTestSuite):
