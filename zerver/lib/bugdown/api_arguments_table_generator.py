@@ -1,7 +1,7 @@
 import json
 import os
 import re
-from typing import Any, Dict, List, Mapping
+from typing import Any, Dict, List, Mapping, Sequence
 
 import markdown
 from django.utils.html import escape as escape_html
@@ -87,7 +87,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                 done = True
         return lines
 
-    def render_table(self, arguments: List[Dict[str, Any]]) -> List[str]:
+    def render_table(self, arguments: Sequence[Mapping[str, Any]]) -> List[str]:
         # TODO: Fix naming now that this no longer renders a table.
         table = []
         argument_template = """
@@ -104,7 +104,6 @@ class APIArgumentsTablePreprocessor(Preprocessor):
 
         for argument in arguments:
             description = argument['description']
-
             oneof = ['`' + str(item) + '`'
                      for item in argument.get('schema', {}).get('enum', [])]
             if oneof:
@@ -122,11 +121,21 @@ class APIArgumentsTablePreprocessor(Preprocessor):
             else:
                 example = json.dumps(argument['content']['application/json']['example'])
 
+            required_string: str = "required"
+            if argument.get('in', '') == 'path':
+                # Any path variable is required
+                assert argument['required']
+                required_string = 'required in path'
+
+            if argument.get('required', False):
+                required_block = f'<span class="api-argument-required">{required_string}</span>'
+            else:
+                required_block = '<span class="api-argument-optional">optional</span>'
+
             table.append(argument_template.format(
                 argument=argument.get('argument') or argument.get('name'),
                 example=escape_html(example),
-                required='<span class="api-argument-required">required</span>' if argument.get('required')
-                else '<span class="api-argument-optional">optional</span>',
+                required=required_block,
                 description=md_engine.convert(description),
             ))
 
