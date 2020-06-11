@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
-version=0.9.0
+version=0.10.1
 tarball=semgrep-v$version-ubuntu-16.04.tgz
-sha256=aae50f8dd494af24bb59cfceaf0780767fd0b8df2fc669b8812b6061fa06baca
+sha256=7d07d223e88d52a2e8886e748726e1c8488d8d81ced34b80b128c362d9b57a0a
 tarball_url=https://github.com/returntocorp/semgrep/releases/download/v$version/$tarball
 
 check_version () {
