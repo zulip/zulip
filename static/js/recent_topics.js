@@ -157,23 +157,30 @@ function topic_in_search_results(keyword, stream, topic) {
     return reg.test(text);
 }
 
-function is_topic_hidden(topic_data) {
+function filters_should_hide_topic(topic_data) {
     const msg = message_store.get(topic_data.last_msg_id);
-    const topic_muted = !!muting.is_topic_muted(msg.stream_id, msg.topic);
-    const stream_muted = stream_data.is_muted(msg.stream_id);
-    const muted = topic_muted || stream_muted;
-    const unreadCount = unread.unread_topic_counter.get(msg.stream_id, msg.topic);
-    const search_keyword = $("#recent_topics_search").val();
 
+    const unreadCount = unread.unread_topic_counter.get(msg.stream_id, msg.topic);
     if (unreadCount === 0 && filters.has('unread')) {
         return true;
-    } else if (!topic_data.participated && filters.has('participated')) {
-        return true;
-    } else if (muted && !filters.has('muted')) {
-        return true;
-    } else if (!topic_in_search_results(search_keyword, msg.stream, msg.topic)) {
+    }
+
+    if (!topic_data.participated && filters.has('participated')) {
         return true;
     }
+
+    const topic_muted = !!muting.is_topic_muted(msg.stream_id, msg.topic);
+    const stream_muted = stream_data.is_muted(msg.stream_id);
+    const include_muted = topic_muted || stream_muted;
+    if (include_muted && !filters.has('muted')) {
+        return true;
+    }
+
+    const search_keyword = $("#recent_topics_search").val();
+    if (!topic_in_search_results(search_keyword, msg.stream, msg.topic)) {
+        return true;
+    }
+
     return false;
 }
 
@@ -189,7 +196,7 @@ exports.inplace_rerender = function (topic_key) {
     topics_widget.render_item(topic_data);
     const topic_row = get_topic_row(topic_data);
 
-    if (is_topic_hidden(topic_data)) {
+    if (filters_should_hide_topic(topic_data)) {
         topic_row.hide();
     } else {
         topic_row.show();
@@ -304,10 +311,10 @@ exports.complete_rerender = function () {
             return render_recent_topic_row(format_topic(item));
         },
         filter: {
-            // We use update_filters_view & is_topic_hidden to do all the
+            // We use update_filters_view & filters_should_hide_topic to do all the
             // filtering for us, which is called using click_handlers.
             predicate: function (topic_data) {
-                return !is_topic_hidden(topic_data);
+                return !filters_should_hide_topic(topic_data);
             },
         },
         sort_fields: {
