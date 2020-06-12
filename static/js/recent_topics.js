@@ -149,7 +149,7 @@ function topic_in_search_results(keyword, stream, topic) {
     // split the search text around whitespace(s).
     // eg: "Denamark recent" -> ["Denamrk", "recent"]
     const search_keywords = $.trim(keyword).split(/\s+/);
-    // turn the search keywords into word boundry groups
+    // turn the search keywords into word boundary groups
     // eg: ["Denamrk", "recent"] -> "^(?=.*\bDenmark\b)(?=.*\brecent\b).*$"
     const val = '^(?=.*\\b' + search_keywords.join('\\b)(?=.*\\b') + ').*$';
     const reg = RegExp(val, 'i'); // i for ignorecase
