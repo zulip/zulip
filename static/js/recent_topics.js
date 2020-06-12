@@ -9,6 +9,10 @@ const MAX_AVATAR = 4;
 // This variable can be used to set default filters.
 let filters = new Set(['unread', 'participated']);
 
+function get_topic_key(stream_id, topic) {
+    return stream_id + ":" + topic.toLowerCase();
+}
+
 exports.process_messages = function (messages) {
     // FIX: Currently, we do a complete_rerender everytime
     // we process a new message.
@@ -27,7 +31,7 @@ exports.process_message = function (msg) {
         return false;
     }
     // Initialize topic data
-    const key = msg.stream_id + ':' + msg.topic;
+    const key = get_topic_key(msg.stream_id, msg.topic);
     if (!topics.has(key)) {
         topics.set(key, {
             last_msg_id: -1,
@@ -112,6 +116,7 @@ function format_topic(topic_data) {
         stream_url: hash_util.by_stream_uri(stream_id),
 
         topic: topic,
+        topic_key: get_topic_key(stream_id, topic),
         unread_count: unread_count,
         last_msg_time: last_msg_time,
         topic_url: hash_util.by_stream_topic_uri(stream_id, topic),
@@ -125,14 +130,14 @@ function format_topic(topic_data) {
 
 function get_topic_row(topic_data) {
     const msg = message_store.get(topic_data.last_msg_id);
-    const topic_key = msg.stream_id + ":" + msg.topic;
+    const topic_key = get_topic_key(msg.stream_id, msg.topic);
     return $("#" + $.escapeSelector("recent_topic:" + topic_key));
 }
 
 exports.process_topic_edit = function (old_stream_id, old_topic, new_topic, new_stream_id) {
     // See `recent_senders.process_topic_edit` for
     // logic behind this and important notes on use of this function.
-    topics.delete(old_stream_id + ':' + old_topic);
+    topics.delete(get_topic_key(old_stream_id, old_topic));
 
     const old_topic_msgs = message_util.get_messages_in_topic(old_stream_id, old_topic);
     exports.process_messages(old_topic_msgs);
@@ -205,7 +210,7 @@ exports.inplace_rerender = function (topic_key) {
 };
 
 exports.update_topic_is_muted = function (stream_id, topic) {
-    const key = stream_id + ":" + topic;
+    const key = get_topic_key(stream_id, topic);
     if (!topics.has(key)) {
         // we receive mute request for a topic we are
         // not tracking currently
@@ -217,7 +222,7 @@ exports.update_topic_is_muted = function (stream_id, topic) {
 };
 
 exports.update_topic_unread_count = function (message) {
-    const topic_key = message.stream_id + ":" + message.topic;
+    const topic_key = get_topic_key(message.stream_id, message.topic);
     exports.inplace_rerender(topic_key);
 };
 
