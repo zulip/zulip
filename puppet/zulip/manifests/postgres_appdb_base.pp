@@ -9,7 +9,11 @@ class zulip::postgres_appdb_base {
       include zulip::apt_repository
       $postgresql = "postgresql-${zulip::base::postgres_version}"
       $postgres_sharedir = "/usr/share/postgresql/${zulip::base::postgres_version}"
-      $postgres_confdir = "/etc/postgresql/${zulip::base::postgres_version}/main"
+      $postgres_confdirs = [
+        "/etc/postgresql/${zulip::base::postgres_version}",
+        "/etc/postgresql/${zulip::base::postgres_version}/main",
+      ]
+      $postgres_confdir = $postgres_confdirs[-1]
       $postgres_datadir = "/var/lib/postgresql/${zulip::base::postgres_version}/main"
       $tsearch_datadir = "${postgres_sharedir}/tsearch_data"
       $pgroonga_setup_sql_path = "${postgres_sharedir}/pgroonga_setup.sql"
@@ -20,7 +24,11 @@ class zulip::postgres_appdb_base {
       include zulip::yum_repository
       $postgresql = "postgresql${zulip::base::postgres_version}"
       $postgres_sharedir = "/usr/pgsql-${zulip::base::postgres_version}/share"
-      $postgres_confdir = "/var/lib/pgsql/${zulip::base::postgres_version}/data"
+      $postgres_confdirs = [
+        "/var/lib/pgsql/${zulip::base::postgres_version}",
+        "/var/lib/pgsql/${zulip::base::postgres_version}/data",
+      ]
+      $postgres_confdir = $postgres_confdirs[-1]
       $postgres_datadir = "/var/lib/pgsql/${zulip::base::postgres_version}/data"
       $tsearch_datadir = "${postgres_sharedir}/tsearch_data/"
       $pgroonga_setup_sql_path = "${postgres_sharedir}/pgroonga_setup.sql"

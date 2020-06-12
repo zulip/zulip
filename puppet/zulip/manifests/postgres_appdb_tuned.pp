@@ -17,6 +17,11 @@ class zulip::postgres_appdb_tuned {
   $ssl_key_file = zulipconf('postgresql', 'ssl_key_file', undef)
   $ssl_ca_file = zulipconf('postgresql', 'ssl_ca_file', undef)
 
+  file { $zulip::postgres_appdb_base::postgres_confdirs:
+    ensure => directory,
+    owner  => 'postgres',
+    group  => 'postgres',
+  }
 
   $postgres_conf_file = "${zulip::postgres_appdb_base::postgres_confdir}/postgresql.conf"
   file { $postgres_conf_file:
