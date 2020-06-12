@@ -653,8 +653,8 @@ with_overrides(function (override) {
     global.with_stub(function (stub) {
         override('stream_data.add_subscriber', stub.f);
         dispatch(event);
-        const args = stub.get_args('sub', 'user_id');
-        assert_same(args.sub, event.subscriptions[0]);
+        const args = stub.get_args('stream_name', 'user_id');
+        assert_same(args.stream_name, 'devel');
         assert_same(args.user_id, 555);
     });
     assert.equal(compose_fade_stub.num_calls, 1);
@@ -663,8 +663,8 @@ with_overrides(function (override) {
     global.with_stub(function (stub) {
         override('stream_data.remove_subscriber', stub.f);
         dispatch(event);
-        const args = stub.get_args('sub', 'user_id');
-        assert_same(args.sub, event.subscriptions[0]);
+        const args = stub.get_args('stream_name', 'user_id');
+        assert_same(args.stream_name, 'prod help');
         assert_same(args.user_id, 555);
     });
     assert.equal(compose_fade_stub.num_calls, 2);

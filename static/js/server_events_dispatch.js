@@ -328,21 +328,28 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 }
             }
         } else if (event.op === 'peer_add') {
-            for (const sub of event.subscriptions) {
-                if (stream_data.add_subscriber(sub, event.user_id)) {
-                    $(document).trigger('peer_subscribe.zulip', {stream_name: sub});
-                } else {
+            function add_peer(stream_name, user_id) {
+                if (!stream_data.add_subscriber(stream_name, user_id)) {
                     blueslip.warn('Cannot process peer_add event');
+                    return;
                 }
+
+                $(document).trigger('peer_subscribe.zulip', {stream_name: stream_name});
+            }
+            for (const stream_name of event.subscriptions) {
+                add_peer(stream_name, event.user_id);
             }
             compose_fade.update_faded_users();
         } else if (event.op === 'peer_remove') {
-            for (const sub of event.subscriptions) {
-                if (stream_data.remove_subscriber(sub, event.user_id)) {
-                    $(document).trigger('peer_unsubscribe.zulip', {stream_name: sub});
-                } else {
+            function remove_peer(stream_name, user_id) {
+                if (!stream_data.remove_subscriber(stream_name, user_id)) {
                     blueslip.warn('Cannot process peer_remove event.');
+                    return;
                 }
+                $(document).trigger('peer_unsubscribe.zulip', {stream_name: stream_name});
+            }
+            for (const stream_name of event.subscriptions) {
+                remove_peer(stream_name, event.user_id);
             }
             compose_fade.update_faded_users();
         } else if (event.op === 'remove') {
