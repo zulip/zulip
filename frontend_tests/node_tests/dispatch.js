@@ -6,7 +6,6 @@ const event_fixtures = events.fixtures;
 const test_message = events.test_message;
 const test_user = events.test_user;
 
-set_global('document', 'document-stub');
 set_global('$', global.make_zjquery());
 
 global.patch_builtin('setTimeout', func => func());
@@ -646,6 +645,9 @@ with_overrides(function (override) {
         });
     });
 
+    const stream_edit_stub = global.make_stub();
+    override('stream_edit.rerender', stream_edit_stub.f);
+
     const compose_fade_stub = global.make_stub();
     override('compose_fade.update_faded_users', compose_fade_stub.f);
 
@@ -658,6 +660,7 @@ with_overrides(function (override) {
         assert_same(args.user_id, 555);
     });
     assert.equal(compose_fade_stub.num_calls, 1);
+    assert.equal(stream_edit_stub.num_calls, 1);
 
     event = event_fixtures.subscription__peer_remove;
     global.with_stub(function (stub) {
@@ -668,6 +671,7 @@ with_overrides(function (override) {
         assert_same(args.user_id, 555);
     });
     assert.equal(compose_fade_stub.num_calls, 2);
+    assert.equal(stream_edit_stub.num_calls, 2);
 
     event = event_fixtures.subscription__remove;
     let stream_id_looked_up;
