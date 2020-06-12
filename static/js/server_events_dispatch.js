@@ -335,6 +335,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                     blueslip.warn('Cannot process peer_add event');
                 }
             }
+            compose_fade.update_faded_users();
         } else if (event.op === 'peer_remove') {
             for (const sub of event.subscriptions) {
                 if (stream_data.remove_subscriber(sub, event.user_id)) {
@@ -343,6 +344,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                     blueslip.warn('Cannot process peer_remove event.');
                 }
             }
+            compose_fade.update_faded_users();
         } else if (event.op === 'remove') {
             for (const rec of event.subscriptions) {
                 const sub = stream_data.get_sub_by_id(rec.stream_id);

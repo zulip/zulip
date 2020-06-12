@@ -239,11 +239,4 @@ exports.update_rendered_message_groups = function (message_groups, get_element) 
     }
 };
 
-exports.initialize = function () {
-    $(document).on('peer_subscribe.zulip peer_unsubscribe.zulip', function () {
-        exports.update_faded_users();
-    });
-};
-
-
 window.compose_fade = exports;
