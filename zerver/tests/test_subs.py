@@ -2781,9 +2781,10 @@ class SubscriptionAPITest(ZulipTestCase):
         notifications = set()
         for event in peer_events:
             for user_id in event['users']:
-                for stream_name in event['event']['subscriptions']:
-                    removed_user_id = event['event']['user_id']
-                    notifications.add((user_id, removed_user_id, stream_name))
+                stream_id = event['event']['stream_id']
+                stream_name = Stream.objects.get(id=stream_id).name
+                removed_user_id = event['event']['user_id']
+                notifications.add((user_id, removed_user_id, stream_name))
 
         # POSITIVE CASES FIRST
         self.assertIn((user3.id, user1.id, 'stream1'), notifications)

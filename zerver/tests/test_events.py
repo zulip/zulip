@@ -2541,7 +2541,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('subscription')),
             ('op', equals('peer_add')),
             ('user_id', check_int),
-            ('subscriptions', check_list(check_string)),
+            ('stream_id', check_int),
         ])
         error = peer_add_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
@@ -2613,13 +2613,13 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('subscription')),
             ('op', equals('peer_add')),
             ('user_id', check_int),
-            ('subscriptions', check_list(check_string)),
+            ('stream_id', check_int),
         ])
         peer_remove_schema_checker = self.check_events_dict([
             ('type', equals('subscription')),
             ('op', equals('peer_remove')),
             ('user_id', check_int),
-            ('subscriptions', check_list(check_string)),
+            ('stream_id', check_int),
         ])
         stream_update_schema_checker = self.check_events_dict([
             ('type', equals('stream')),

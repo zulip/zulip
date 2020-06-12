@@ -650,19 +650,21 @@ def apply_event(state: Dict[str, Any],
                 if sub['name'].lower() == event['name'].lower():
                     sub[event['property']] = event['value']
         elif event['op'] == 'peer_add':
+            stream_id = event['stream_id']
             user_id = event['user_id']
             for sub in state['subscriptions']:
-                if (sub['name'] in event['subscriptions'] and
+                if (sub['stream_id'] == stream_id and
                         user_id not in sub['subscribers']):
                     sub['subscribers'].append(user_id)
             for sub in state['never_subscribed']:
-                if (sub['name'] in event['subscriptions'] and
+                if (sub['stream_id'] == stream_id and
                         user_id not in sub['subscribers']):
                     sub['subscribers'].append(user_id)
         elif event['op'] == 'peer_remove':
+            stream_id = event['stream_id']
             user_id = event['user_id']
             for sub in state['subscriptions']:
-                if (sub['name'] in event['subscriptions'] and
+                if (sub['stream_id'] == stream_id and
                         user_id in sub['subscribers']):
                     sub['subscribers'].remove(user_id)
     elif event['type'] == "presence":

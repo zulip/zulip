@@ -42,8 +42,11 @@ test('add', (override) => {
 });
 
 test('peer add/remove', (override) => {
+    let event = event_fixtures.subscription__peer_add;
+
     stream_data.add_sub({
         name: 'devel',
+        stream_id: event.stream_id,
     });
 
     const stream_edit_stub = global.make_stub();
@@ -52,7 +55,6 @@ test('peer add/remove', (override) => {
     const compose_fade_stub = global.make_stub();
     override('compose_fade.update_faded_users', compose_fade_stub.f);
 
-    let event = event_fixtures.subscription__peer_add;
     dispatch(event);
     assert.equal(compose_fade_stub.num_calls, 1);
     assert.equal(stream_edit_stub.num_calls, 1);
@@ -106,27 +108,57 @@ test('add error handling', (override) => {
 
 });
 
-test('peer event error handling', (override) => {
+test('peer event error handling (bad stream_ids)', (override) => {
     override('compose_fade.update_faded_users', noop);
 
     const add_event = {
         type: 'subscription',
         op: 'peer_add',
-        subscriptions: ['bogus'],
+        stream_id: 99999,
     };
 
-    blueslip.expect('warn', 'We got an add_subscriber call for a non-existent stream.');
-    blueslip.expect('warn', 'Cannot process peer_add event');
+    blueslip.expect('warn', 'Cannot find stream for peer_add: 99999');
     dispatch(add_event);
     blueslip.reset();
 
     const remove_event = {
         type: 'subscription',
         op: 'peer_remove',
-        subscriptions: ['bogus'],
+        stream_id: 99999,
     };
 
-    blueslip.expect('warn', 'We got a remove_subscriber call for a non-existent stream bogus');
+    blueslip.expect('warn', 'Cannot find stream for peer_remove: 99999');
+    dispatch(remove_event);
+});
+
+test('peer event error handling (add_subscriber)', (override) => {
+    stream_data.add_sub({
+        name: 'devel',
+        stream_id: 1,
+    });
+
+    override('stream_data.add_subscriber', () => false);
+
+    const add_event = {
+        type: 'subscription',
+        op: 'peer_add',
+        stream_id: 1,
+        user_id: 99999, // id is irrelevant
+    };
+
+    blueslip.expect('warn', 'Cannot process peer_add event');
+    dispatch(add_event);
+    blueslip.reset();
+
+    override('stream_data.remove_subscriber', () => false);
+
+    const remove_event = {
+        type: 'subscription',
+        op: 'peer_remove',
+        stream_id: 1,
+        user_id: 99999, // id is irrelevant
+    };
+
     blueslip.expect('warn', 'Cannot process peer_remove event.');
     dispatch(remove_event);
 });
