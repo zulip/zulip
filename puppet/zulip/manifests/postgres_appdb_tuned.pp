@@ -7,11 +7,6 @@ class zulip::postgres_appdb_tuned {
     'debian' => "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf",
     'redhat' => "/var/lib/pgsql/${zulip::base::postgres_version}/data/postgresql.conf",
   }
-  $postgres_restart = $::osfamily ? {
-    'debian' => "pg_ctlcluster ${zulip::base::postgres_version} main restart",
-    'redhat' => "systemctl restart postgresql-${zulip::base::postgres_version}",
-  }
-
   $work_mem = $zulip::base::total_memory_mb / 512
   $shared_buffers = $zulip::base::total_memory_mb / 8
   $effective_cache_size = $zulip::base::total_memory_mb * 10 / 32
@@ -38,7 +33,7 @@ class zulip::postgres_appdb_tuned {
     content => template("zulip/postgresql/${zulip::base::postgres_version}/postgresql.conf.template.erb"),
   }
 
-  exec { $postgres_restart:
+  exec { $zulip::postgres_appdb_base::postgres_restart:
     require     => Package[$zulip::postgres_appdb_base::postgresql],
     refreshonly => true,
     subscribe   => [ File[$postgres_conf] ]
