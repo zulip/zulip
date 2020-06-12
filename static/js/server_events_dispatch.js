@@ -37,12 +37,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             stream_list.update_streams_sidebar();
         }
 
-        // TODO: Do this as a bulk process.
-        // We may need to change narrow too,
-        // but that maybe confusing to users.
-        for (const msg_id of msg_ids) {
-            ui.remove_message(msg_id);
-        }
+        ui.remove_messages(msg_ids);
         break;
     }
 
