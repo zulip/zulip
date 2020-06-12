@@ -19,9 +19,9 @@
     </td>
     <td class='recent_topic_users'>
         <ul class="recent_avatars">
-            {{#if count_senders}}
+            {{#if other_senders_count}}
             <li class="recent_avatars_item">
-                <span class="recent_avatars_others">+{{count_senders}}</span>
+                <span class="recent_avatars_others">+{{other_senders_count}}</span>
             </li>
             {{/if}}
             {{#each senders}}
