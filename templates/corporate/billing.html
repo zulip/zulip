@@ -34,7 +34,16 @@
                         {% else %}
                         <p>Your current plan is <strong>{{ plan_name }}</strong>.</p>
                         {% endif %}
-                        <p>You are using <strong>{{ licenses_used }} of {{ licenses }} licenses</strong>.</p>
+                        <p>
+                            You are using <strong>{{ licenses_used }} of {{ licenses }} licenses</strong>.
+                            {% if automanage_licenses %}
+                            Licenses are automatically managed by Zulip; when you add or deactivate a user, the number of
+                            licenses will be immediately updated to reflect your new usage.
+                            {% else %}
+                            Licenses are manually managed. You will not be able to add new users to your organization once
+                            you are using all of your licenses.
+                            {% endif %}
+                        </p>
                         <p>
                             {% if renewal_amount %}
                                 {% if free_trial %}

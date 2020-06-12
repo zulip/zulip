@@ -222,6 +222,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
                 'has_active_plan': True,
                 'free_trial': free_trial,
                 'downgrade_at_end_of_cycle': downgrade_at_end_of_cycle,
+                'automanage_licenses': plan.automanage_licenses,
                 'licenses': licenses,
                 'licenses_used': licenses_used,
                 'renewal_date': renewal_date,
