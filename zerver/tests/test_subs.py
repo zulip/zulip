@@ -2509,8 +2509,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         self.assert_length(events, 7)
         for ev in [x for x in events if x['event']['type'] not in ('message', 'stream')]:
-            if isinstance(ev['event']['subscriptions'][0], dict):
-                self.assertEqual(ev['event']['op'], 'add')
+            if ev['event']['op'] == 'add':
                 self.assertEqual(
                     set(ev['event']['subscriptions'][0]['subscribers']),
                     {user1.id, user2.id},
