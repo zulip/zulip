@@ -38,7 +38,7 @@
 # The default values of these variables are driven from the -D command-line
 # option or PGDATA environment variable, represented here as ConfigDir.
 
-data_directory = '<%= scope["zulip::postgres_appdb_tuned::pg_datadir"] %>'		# use data in another directory
+data_directory = '<%= scope["zulip::postgres_appdb_base::postgres_datadir"] %>'		# use data in another directory
 					# (change requires restart)
 hba_file = '<%= scope["zulip::postgres_appdb_base::postgres_confdir"] %>/pg_hba.conf'	# host-based authentication file
 					# (change requires restart)
