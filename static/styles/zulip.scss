@@ -1468,6 +1468,7 @@ div.focused_table {
             display: none;
         }
         .sub_count,
+        .stream,
         & > span {
             white-space: nowrap;
             list-style-type: none;
@@ -1483,7 +1484,6 @@ div.focused_table {
             @media (max-width: 500px) {
                 padding: 7px 3.5px; // based on having ~41.66% decrease
             }
-
             i {
                 margin-right: 3px;
             }
@@ -1504,11 +1504,8 @@ div.focused_table {
         .stream {
             text-overflow: clip;
             overflow: hidden;
-            a {
-                color: inherit;
-                text-decoration: none;
-                padding-right: 2px;
-            }
+            color: inherit;
+            text-decoration: none;
         }
 
         .sub_count,
