@@ -227,19 +227,30 @@ exports.update_topic_unread_count = function (message) {
 };
 
 exports.set_filter = function (filter) {
+    // This function updates the `filters` variable
+    // after user clicks on one of the filter buttons
+    // based on `btn-recent-selected` class and current
+    // set `filters`.
+
+    // Get the button which was clicked.
     const filter_elem = $('#recent_topics_filter_buttons')
         .find('[data-filter="' + filter + '"]');
 
+    // If user clicks `All`, we clear all filters.
     if (filter === 'all' && filters.size !== 0) {
         filters = new Set();
+    // If the button was already selected, remove the filter.
     } else if (filter_elem.hasClass('btn-recent-selected')) {
         filters.delete(filter);
+    // If the button was not selected, we add the filter.
     } else {
         filters.add(filter);
     }
 };
 
 function show_selected_filters() {
+    // Add `btn-selected-filter` to the buttons to show
+    // which filters are applied.
     if (filters.size === 0) {
         $('#recent_topics_filter_buttons')
             .find('[data-filter="all"]')
@@ -292,7 +303,7 @@ exports.complete_rerender = function () {
     if (!overlays.recent_topics_open()) {
         return false;
     }
-    // Prepare Header
+    // Prepare header
     const rendered_body = render_recent_topics_body({
         filter_participated: filters.has('participated'),
         filter_unread: filters.has('unread'),
