@@ -2919,7 +2919,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
         if peer_user_ids:
             for new_user_id in new_user_ids:
                 event = dict(type="subscription", op="peer_add",
-                             subscriptions=[stream.name],
+                             stream_id=stream.id,
                              user_id=new_user_id)
                 send_event(realm, event, peer_user_ids)
 
@@ -3063,7 +3063,7 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
             for removed_user in altered_users:
                 event = dict(type="subscription",
                              op="peer_remove",
-                             subscriptions=[stream.name],
+                             stream_id=stream.id,
                              user_id=removed_user.id)
                 send_event(our_realm, event, peer_user_ids)
 

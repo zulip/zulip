@@ -405,14 +405,14 @@ exports.fixtures = {
         type: 'subscription',
         op: 'peer_add',
         user_id: exports.test_user.user_id,
-        subscriptions: ['devel'],
+        stream_id: 42,
     },
 
     subscription__peer_remove: {
         type: 'subscription',
         op: 'peer_remove',
         user_id: exports.test_user.user_id,
-        subscriptions: ['devel'],
+        stream_id: 42,
     },
 
     subscription__update: {

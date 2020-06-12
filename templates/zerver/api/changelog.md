@@ -10,6 +10,12 @@ below features are supported.
 
 ## Changes in Zulip 2.2
 
+**Feature level 19**
+
+* [`GET /events`](/api/get-events): `subscriptions` event with
+  `op="peer_add"` and `op="peer_remove"` now identify the modified
+  stream by a `stream_id` field, replacing the old `name` field.
+
 **Feature level 18**
 
 * [`POST /register`](/api/register-queue): Added
