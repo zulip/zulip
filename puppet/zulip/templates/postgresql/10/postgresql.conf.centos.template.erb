@@ -40,9 +40,9 @@
 
 data_directory = '<%= scope["zulip::postgres_appdb_tuned::pg_datadir"] %>'		# use data in another directory
 					# (change requires restart)
-hba_file = '<%= scope["zulip::postgres_appdb_tuned::pg_datadir"] %>/pg_hba.conf'	# host-based authentication file
+hba_file = '<%= scope["zulip::postgres_appdb_base::postgres_confdir"] %>/pg_hba.conf'	# host-based authentication file
 					# (change requires restart)
-ident_file = '<%= scope["zulip::postgres_appdb_tuned::pg_datadir"] %>/pg_ident.conf'	# ident configuration file
+ident_file = '<%= scope["zulip::postgres_appdb_base::postgres_confdir"] %>/pg_ident.conf'	# ident configuration file
 					# (change requires restart)
 
 # If external_pid_file is not explicitly set, no extra PID file is written.
