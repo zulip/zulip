@@ -200,6 +200,7 @@ from zerver.models import (
     active_user_ids,
     custom_profile_fields_for_realm,
     email_to_username,
+    filter_to_valid_prereg_users,
     get_active_streams,
     get_bot_dicts_in_realm,
     get_bot_services,
@@ -5129,17 +5130,14 @@ def do_invite_users(user_profile: UserProfile,
     notify_invites_changed(user_profile)
 
 def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
-    days_to_activate = settings.INVITATION_LINK_VALIDITY_DAYS
-    active_value = confirmation_settings.STATUS_ACTIVE
-    revoked_value = confirmation_settings.STATUS_REVOKED
-    lowest_datetime = timezone_now() - datetime.timedelta(days=days_to_activate)
-    base_query = PreregistrationUser.objects.exclude(status__in=[active_value, revoked_value]).filter(
-        invited_at__gte=lowest_datetime)
-
     if user_profile.is_realm_admin:
-        prereg_users = base_query.filter(referred_by__realm=user_profile.realm)
+        prereg_users = filter_to_valid_prereg_users(
+            PreregistrationUser.objects.filter(referred_by__realm=user_profile.realm)
+        )
     else:
-        prereg_users = base_query.filter(referred_by=user_profile)
+        prereg_users = filter_to_valid_prereg_users(
+            PreregistrationUser.objects.filter(referred_by=user_profile)
+        )
 
     invites = []
 
@@ -5151,6 +5149,7 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
                             invited_as=invitee.invited_as,
                             is_multiuse=False))
 
+    lowest_datetime = timezone_now() - datetime.timedelta(days=settings.INVITATION_LINK_VALIDITY_DAYS)
     multiuse_confirmation_objs = Confirmation.objects.filter(realm=user_profile.realm,
                                                              type=Confirmation.MULTIUSE_INVITE,
                                                              date_sent__gte=lowest_datetime)

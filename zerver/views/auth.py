@@ -50,7 +50,14 @@ from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.users import get_api_key
 from zerver.lib.utils import has_api_key_format
 from zerver.lib.validator import validate_login_email
-from zerver.models import PreregistrationUser, Realm, UserProfile, get_realm, remote_user_to_email
+from zerver.models import (
+    PreregistrationUser,
+    Realm,
+    UserProfile,
+    filter_to_valid_prereg_users,
+    get_realm,
+    remote_user_to_email,
+)
 from zerver.signals import email_on_new_login
 from zproject.backends import (
     AUTH_BACKEND_NAME_MAP,
@@ -159,8 +166,8 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
         # creation or confirm-continue-registration depending on
         # is_signup.
         try:
-            prereg_user = PreregistrationUser.objects.filter(
-                email__iexact=email, realm=realm).latest("invited_at")
+            prereg_user = filter_to_valid_prereg_users(PreregistrationUser.objects.filter(
+                email__iexact=email, realm=realm)).latest("invited_at")
 
             # password_required and full_name data passed here as argument should take precedence
             # over the defaults with which the existing PreregistrationUser that we've just fetched

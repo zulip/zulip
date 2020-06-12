@@ -35,6 +35,7 @@ from django.db.models.signals import post_delete, post_save
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext_lazy as _
 
+from confirmation import settings as confirmation_settings
 from zerver.lib import cache
 from zerver.lib.cache import (
     active_non_guest_user_ids_cache_key,
@@ -1356,6 +1357,14 @@ class PreregistrationUser(models.Model):
         GUEST_USER = 3,
     )
     invited_as: int = models.PositiveSmallIntegerField(default=INVITE_AS['MEMBER'])
+
+def filter_to_valid_prereg_users(query: QuerySet) -> QuerySet:
+    days_to_activate = settings.INVITATION_LINK_VALIDITY_DAYS
+    active_value = confirmation_settings.STATUS_ACTIVE
+    revoked_value = confirmation_settings.STATUS_REVOKED
+    lowest_datetime = timezone_now() - datetime.timedelta(days=days_to_activate)
+    return query.exclude(status__in=[active_value, revoked_value]).filter(
+        invited_at__gte=lowest_datetime)
 
 class MultiuseInvite(models.Model):
     referred_by = models.ForeignKey(UserProfile, on_delete=CASCADE)  # Optional[UserProfile]

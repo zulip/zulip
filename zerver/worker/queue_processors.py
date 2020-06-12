@@ -89,6 +89,7 @@ from zerver.models import (
     RealmAuditLog,
     UserMessage,
     UserProfile,
+    filter_to_valid_prereg_users,
     flush_per_request_caches,
     get_bot_services,
     get_client,
@@ -324,10 +325,13 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         if "email" in data:
             # When upgrading from a version up through 1.7.1, there may be
             # existing items in the queue with `email` instead of `prereg_id`.
-            invitee = PreregistrationUser.objects.filter(
-                email__iexact=data["email"].strip()).latest("invited_at")
+            invitee = filter_to_valid_prereg_users(
+                PreregistrationUser.objects.filter(email__iexact=data["email"].strip())
+            ).latest("invited_at")
         else:
-            invitee = PreregistrationUser.objects.filter(id=data["prereg_id"]).first()
+            invitee = filter_to_valid_prereg_users(
+                PreregistrationUser.objects.filter(id=data["prereg_id"])
+            ).first()
             if invitee is None:
                 # The invitation could have been revoked
                 return
