@@ -290,7 +290,7 @@ def get_pr_reassigned_body(payload: Dict[str, Any], include_title: Optional[bool
     )
 
 def pr_handler(payload: Dict[str, Any], action: str,
-               include_title: Optional[bool]=False) -> List[Dict[str, str]]:
+               include_title: bool=False) -> List[Dict[str, str]]:
     pr = payload["pullRequest"]
     subject = get_pr_subject(pr["toRef"]["repository"]["name"], type="PR", id=pr["id"],
                              title=pr["title"])
@@ -306,7 +306,7 @@ def pr_handler(payload: Dict[str, Any], action: str,
     return [{"subject": subject, "body": body}]
 
 def pr_comment_handler(payload: Dict[str, Any], action: str,
-                       include_title: Optional[bool]=False) -> List[Dict[str, str]]:
+                       include_title: bool=False) -> List[Dict[str, str]]:
     pr = payload["pullRequest"]
     subject = get_pr_subject(pr["toRef"]["repository"]["name"], type="PR", id=pr["id"],
                              title=pr["title"])

@@ -148,7 +148,7 @@ def simulated_empty_cache() -> Generator[
     cache.cache_get_many = old_get_many
 
 @contextmanager
-def queries_captured(include_savepoints: Optional[bool]=False) -> Generator[
+def queries_captured(include_savepoints: bool=False) -> Generator[
         List[Dict[str, Union[str, bytes]]], None, None]:
     '''
     Allow a user to capture just the queries executed during

@@ -97,7 +97,7 @@ def extract_code_example(source: List[str], snippet: List[Any],
     source = source[end + 1:]
     return extract_code_example(source, snippet, example_regex)
 
-def render_python_code_example(function: str, admin_config: Optional[bool]=False,
+def render_python_code_example(function: str, admin_config: bool=False,
                                **kwargs: Any) -> List[str]:
     method = zerver.openapi.python_examples.TEST_FUNCTIONS[function]
     function_source_lines = inspect.getsourcelines(method)[0]
@@ -124,7 +124,7 @@ def render_python_code_example(function: str, admin_config: Optional[bool]=False
 
     return code_example
 
-def render_javascript_code_example(function: str, admin_config: Optional[bool]=False,
+def render_javascript_code_example(function: str, admin_config: bool=False,
                                    **kwargs: Any) -> List[str]:
     function_source_lines = []
     with open('zerver/openapi/javascript_examples.js') as f:

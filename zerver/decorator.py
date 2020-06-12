@@ -269,7 +269,7 @@ def access_user_by_api_key(request: HttpRequest, api_key: str, email: Optional[s
 def log_exception_to_webhook_logger(
         request: HttpRequest, user_profile: UserProfile,
         request_body: Optional[str]=None,
-        unexpected_event: Optional[bool]=False,
+        unexpected_event: bool=False,
 ) -> None:
     if request_body is not None:
         payload = request_body
@@ -328,7 +328,7 @@ def full_webhook_client_name(raw_client_name: Optional[str]=None) -> Optional[st
 # Use this for webhook views that don't get an email passed in.
 def api_key_only_webhook_view(
         webhook_client_name: str,
-        notify_bot_owner_on_invalid_json: Optional[bool]=True,
+        notify_bot_owner_on_invalid_json: bool=True,
 ) -> Callable[[ViewFuncT], ViewFuncT]:
     # TODO The typing here could be improved by using the Extended Callable types:
     # https://mypy.readthedocs.io/en/latest/kinds_of_types.html#extended-callable-types

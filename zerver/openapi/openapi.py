@@ -77,11 +77,9 @@ def get_schema(endpoint: str, method: str, response: str) -> Dict[str, Any]:
         return schema
 
 def get_openapi_fixture(endpoint: str, method: str,
-                        response: Optional[str]='200') -> Dict[str, Any]:
+                        response: str='200') -> Dict[str, Any]:
     """Fetch a fixture from the full spec object.
     """
-    if response is None:
-        response = '200'
     return (get_schema(endpoint, method, response)['example'])
 
 def get_openapi_description(endpoint: str, method: str) -> str:

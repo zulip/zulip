@@ -1,5 +1,5 @@
 import re
-from typing import List, Optional, Set
+from typing import List, Set
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -25,7 +25,7 @@ from zerver.models import MultiuseInvite, PreregistrationUser, Stream, UserProfi
 @has_request_variables
 def invite_users_backend(request: HttpRequest, user_profile: UserProfile,
                          invitee_emails_raw: str=REQ("invitee_emails"),
-                         invite_as: Optional[int]=REQ(
+                         invite_as: int=REQ(
                              validator=check_int, default=PreregistrationUser.INVITE_AS['MEMBER']),
                          stream_ids: List[int]=REQ(validator=check_list(check_int)),
                          ) -> HttpResponse:

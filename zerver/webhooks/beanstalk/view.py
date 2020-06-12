@@ -19,7 +19,7 @@ from zerver.models import UserProfile
 def build_message_from_gitlog(user_profile: UserProfile, name: str, ref: str,
                               commits: List[Dict[str, str]], before: str, after: str,
                               url: str, pusher: str, forced: Optional[str]=None,
-                              created: Optional[str]=None, deleted: Optional[bool]=False,
+                              created: Optional[str]=None, deleted: bool=False,
                               ) -> Tuple[str, str]:
     short_ref = re.sub(r'^refs/heads/', '', ref)
     subject = TOPIC_WITH_BRANCH_TEMPLATE.format(repo=name, branch=short_ref)

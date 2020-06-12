@@ -57,8 +57,8 @@ RELEASE_MESSAGE_TEMPLATE = "{user_name} {action} release [{release_name}]({url})
 
 def get_push_commits_event_message(user_name: str, compare_url: Optional[str],
                                    branch_name: str, commits_data: List[Dict[str, Any]],
-                                   is_truncated: Optional[bool]=False,
-                                   deleted: Optional[bool]=False) -> str:
+                                   is_truncated: bool=False,
+                                   deleted: bool=False) -> str:
     if not commits_data and deleted:
         return PUSH_DELETE_BRANCH_MESSAGE_TEMPLATE.format(
             user_name=user_name,
@@ -135,7 +135,7 @@ def get_pull_request_event_message(user_name: str, action: str, url: str, number
                                    target_branch: Optional[str]=None, base_branch: Optional[str]=None,
                                    message: Optional[str]=None, assignee: Optional[str]=None,
                                    assignees: Optional[List[Dict[str, Any]]]=None,
-                                   type: Optional[str]='PR', title: Optional[str]=None) -> str:
+                                   type: str='PR', title: Optional[str]=None) -> str:
     kwargs = {
         'user_name': user_name,
         'action': action,
@@ -220,7 +220,7 @@ def get_issue_event_message(user_name: str,
 def get_push_tag_event_message(user_name: str,
                                tag_name: str,
                                tag_url: Optional[str]=None,
-                               action: Optional[str]='pushed') -> str:
+                               action: str='pushed') -> str:
     if tag_url:
         tag_part = TAG_WITH_URL_TEMPLATE.format(tag_name=tag_name, tag_url=tag_url)
     else:
@@ -257,7 +257,7 @@ def get_commits_comment_action_message(user_name: str,
 
     return content
 
-def get_commits_content(commits_data: List[Dict[str, Any]], is_truncated: Optional[bool]=False) -> str:
+def get_commits_content(commits_data: List[Dict[str, Any]], is_truncated: bool=False) -> str:
     commits_content = ''
     for commit in commits_data[:COMMITS_LIMIT]:
         commits_content += COMMIT_ROW_TEMPLATE.format(

@@ -403,12 +403,12 @@ class ZulipTestCase(TestCase):
 
     def submit_reg_form_for_user(
             self, email: str, password: str,
-            realm_name: Optional[str]="Zulip Test",
-            realm_subdomain: Optional[str]="zuliptest",
-            from_confirmation: Optional[str]='', full_name: Optional[str]=None,
-            timezone: Optional[str]='', realm_in_root_domain: Optional[str]=None,
-            default_stream_groups: Optional[List[str]]=[],
-            source_realm: Optional[str]='',
+            realm_name: str="Zulip Test",
+            realm_subdomain: str="zuliptest",
+            from_confirmation: str='', full_name: Optional[str]=None,
+            timezone: str='', realm_in_root_domain: Optional[str]=None,
+            default_stream_groups: List[str]=[],
+            source_realm: str='',
             key: Optional[str]=None, **kwargs: Any) -> HttpResponse:
         """
         Stage two of the two-step registration process.
@@ -668,7 +668,7 @@ class ZulipTestCase(TestCase):
         return open(fn).read()
 
     def make_stream(self, stream_name: str, realm: Optional[Realm]=None,
-                    invite_only: Optional[bool]=False,
+                    invite_only: bool=False,
                     history_public_to_subscribers: Optional[bool]=None) -> Stream:
         if realm is None:
             realm = get_realm('zulip')
@@ -918,7 +918,7 @@ class WebhookTestCase(ZulipTestCase):
         return msg
 
     def send_and_test_private_message(self, fixture_name: str, expected_topic: str=None,
-                                      expected_message: str=None, content_type: str="application/json",
+                                      expected_message: str=None, content_type: Optional[str]="application/json",
                                       **kwargs: Any) -> Message:
         payload = self.get_body(fixture_name)
         if content_type is not None:

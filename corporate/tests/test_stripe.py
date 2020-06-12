@@ -1527,7 +1527,7 @@ class RequiresBillingAccessTest(ZulipTestCase):
         hamlet.save(update_fields=["is_billing_admin"])
 
     def verify_non_admins_blocked_from_endpoint(
-            self, url: str, request_data: Optional[Dict[str, Any]]={}) -> None:
+            self, url: str, request_data: Dict[str, Any]={}) -> None:
         cordelia = self.example_user('cordelia')
         self.login_user(cordelia)
         response = self.client_post(url, request_data)

@@ -1490,7 +1490,7 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(msg.mentions_user_ids, set())
 
     def test_possible_mentions(self) -> None:
-        def assert_mentions(content: str, names: Set[str], has_wildcards: Optional[bool]=False) -> None:
+        def assert_mentions(content: str, names: Set[str], has_wildcards: bool=False) -> None:
             self.assertEqual(possible_mentions(content), (names, has_wildcards))
 
         assert_mentions('', set())

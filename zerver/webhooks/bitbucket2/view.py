@@ -254,12 +254,12 @@ def get_commit_status_changed_body(payload: Dict[str, Any]) -> str:
     )
 
 def get_issue_commented_body(payload: Dict[str, Any],
-                             include_title: Optional[bool]=False) -> str:
+                             include_title: bool=False) -> str:
     action = '[commented]({}) on'.format(payload['comment']['links']['html']['href'])
     return get_issue_action_body(payload, action, include_title)
 
 def get_issue_action_body(payload: Dict[str, Any], action: str,
-                          include_title: Optional[bool]=False) -> str:
+                          include_title: bool=False) -> str:
     issue = payload['issue']
     assignee = None
     message = None
@@ -279,7 +279,7 @@ def get_issue_action_body(payload: Dict[str, Any], action: str,
     )
 
 def get_pull_request_action_body(payload: Dict[str, Any], action: str,
-                                 include_title: Optional[bool]=False) -> str:
+                                 include_title: bool=False) -> str:
     pull_request = payload['pullrequest']
     return get_pull_request_event_message(
         get_user_username(payload),
@@ -290,7 +290,7 @@ def get_pull_request_action_body(payload: Dict[str, Any], action: str,
     )
 
 def get_pull_request_created_or_updated_body(payload: Dict[str, Any], action: str,
-                                             include_title: Optional[bool]=False) -> str:
+                                             include_title: bool=False) -> str:
     pull_request = payload['pullrequest']
     assignee = None
     if pull_request.get('reviewers'):
@@ -314,21 +314,21 @@ def get_pull_request_created_or_updated_body(payload: Dict[str, Any], action: st
 
 def get_pull_request_comment_created_action_body(
         payload: Dict[str, Any],
-        include_title: Optional[bool]=False,
+        include_title: bool=False,
 ) -> str:
     action = '[commented]({})'.format(payload['comment']['links']['html']['href'])
     return get_pull_request_comment_action_body(payload, action, include_title)
 
 def get_pull_request_deleted_or_updated_comment_action_body(
         payload: Dict[str, Any], action: str,
-        include_title: Optional[bool]=False,
+        include_title: bool=False,
 ) -> str:
     action = "{} a [comment]({})".format(action, payload['comment']['links']['html']['href'])
     return get_pull_request_comment_action_body(payload, action, include_title)
 
 def get_pull_request_comment_action_body(
         payload: Dict[str, Any], action: str,
-        include_title: Optional[bool]=False,
+        include_title: bool=False,
 ) -> str:
     action += ' on'
     return get_pull_request_event_message(
@@ -343,7 +343,7 @@ def get_pull_request_comment_action_body(
 def get_push_tag_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str:
     if change.get('new'):
         tag = change['new']
-        action: Optional[str] = 'pushed'
+        action = 'pushed'
     elif change.get('old'):
         tag = change['old']
         action = 'removed'

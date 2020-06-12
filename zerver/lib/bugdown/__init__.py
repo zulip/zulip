@@ -232,7 +232,7 @@ def rewrite_local_links_to_relative(db_data: Optional[DbData], link: str) -> str
 
 def url_embed_preview_enabled(message: Optional[Message]=None,
                               realm: Optional[Realm]=None,
-                              no_previews: Optional[bool]=False) -> bool:
+                              no_previews: bool=False) -> bool:
     if not settings.INLINE_URL_EMBED_PREVIEW:
         return False
 
@@ -253,7 +253,7 @@ def url_embed_preview_enabled(message: Optional[Message]=None,
 
 def image_preview_enabled(message: Optional[Message]=None,
                           realm: Optional[Realm]=None,
-                          no_previews: Optional[bool]=False) -> bool:
+                          no_previews: bool=False) -> bool:
     if not settings.INLINE_IMAGE_PREVIEW:
         return False
 
@@ -558,7 +558,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             class_attr: str="message_inline_image",
             data_id: Optional[str]=None,
             insertion_index: Optional[int]=None,
-            already_thumbnailed: Optional[bool]=False,
+            already_thumbnailed: bool=False,
     ) -> None:
         desc = desc if desc is not None else ""
 
@@ -2260,11 +2260,11 @@ def do_convert(content: str,
                realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
                message: Optional[Message]=None,
                message_realm: Optional[Realm]=None,
-               sent_by_bot: Optional[bool]=False,
-               translate_emoticons: Optional[bool]=False,
+               sent_by_bot: bool=False,
+               translate_emoticons: bool=False,
                mention_data: Optional[MentionData]=None,
-               email_gateway: Optional[bool]=False,
-               no_previews: Optional[bool]=False) -> str:
+               email_gateway: bool=False,
+               no_previews: bool=False) -> str:
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     # This logic is a bit convoluted, but the overall goal is to support a range of use cases:
     # * Nothing is passed in other than content -> just run default options (e.g. for docs)
@@ -2405,11 +2405,11 @@ def convert(content: str,
             realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
             message: Optional[Message]=None,
             message_realm: Optional[Realm]=None,
-            sent_by_bot: Optional[bool]=False,
-            translate_emoticons: Optional[bool]=False,
+            sent_by_bot: bool=False,
+            translate_emoticons: bool=False,
             mention_data: Optional[MentionData]=None,
-            email_gateway: Optional[bool]=False,
-            no_previews: Optional[bool]=False) -> str:
+            email_gateway: bool=False,
+            no_previews: bool=False) -> str:
     bugdown_stats_start()
     ret = do_convert(content, realm_alert_words_automaton,
                      message, message_realm, sent_by_bot,
