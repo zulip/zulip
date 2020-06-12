@@ -594,7 +594,7 @@ run_test('test_reify_local_echo_message', () => {
         topic: topic7,
         sender_id: sender1,
         type: 'stream',
-    }, false);
+    });
 
     assert.equal(rt.reify_message_id_if_available({
         old_id: 1000.01,
@@ -607,7 +607,7 @@ run_test('test_reify_local_echo_message', () => {
         topic: topic7,
         sender_id: sender1,
         type: 'stream',
-    }, false);
+    });
 
     // A new message arrived in the same topic before we could reify the message_id
     rt.process_message({
@@ -616,7 +616,7 @@ run_test('test_reify_local_echo_message', () => {
         topic: topic7,
         sender_id: sender1,
         type: 'stream',
-    }, false);
+    });
 
     assert.equal(rt.reify_message_id_if_available({
         old_id: 1000.01,
