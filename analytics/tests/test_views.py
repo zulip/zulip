@@ -427,7 +427,7 @@ class TestSupportEndpoint(ZulipTestCase):
                                              'scrub-realm-button">',
                                              'data-string-id="lear"'], result)
 
-        def check_preregistration_user_query_result(result: HttpResponse, email: str, invite: Optional[bool]=False) -> None:
+        def check_preregistration_user_query_result(result: HttpResponse, email: str, invite: bool=False) -> None:
             self.assert_in_success_response(['<span class="label">preregistration user</span>\n',
                                              f'<b>Email</b>: {email}',
                                              ], result)

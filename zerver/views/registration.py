@@ -530,7 +530,7 @@ def create_realm(request: HttpRequest, creation_key: Optional[str]=None) -> Http
                   context={'form': form, 'current_url': request.get_full_path},
                   )
 
-def accounts_home(request: HttpRequest, multiuse_object_key: Optional[str]="",
+def accounts_home(request: HttpRequest, multiuse_object_key: str="",
                   multiuse_object: Optional[MultiuseInvite]=None) -> HttpResponse:
     try:
         realm = get_realm(get_subdomain(request))

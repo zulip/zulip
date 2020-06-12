@@ -313,7 +313,7 @@ def init_worker(counter: Synchronized) -> None:
         print("*** Upload directory not found.")
 
 class TestSuite(unittest.TestSuite):
-    def run(self, result: TestResult, debug: Optional[bool]=False) -> TestResult:
+    def run(self, result: TestResult, debug: bool=False) -> TestResult:
         """
         This function mostly contains the code from
         unittest.TestSuite.run. The need to override this function

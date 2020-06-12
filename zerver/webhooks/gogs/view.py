@@ -58,7 +58,7 @@ def format_new_branch_event(payload: Dict[str, Any]) -> str:
     return get_create_branch_event_message(**data)
 
 def format_pull_request_event(payload: Dict[str, Any],
-                              include_title: Optional[bool]=False) -> str:
+                              include_title: bool=False) -> str:
 
     data = {
         'user_name': payload['pull_request']['user']['username'],
@@ -76,7 +76,7 @@ def format_pull_request_event(payload: Dict[str, Any],
 
     return get_pull_request_event_message(**data)
 
-def format_issues_event(payload: Dict[str, Any], include_title: Optional[bool]=False) -> str:
+def format_issues_event(payload: Dict[str, Any], include_title: bool=False) -> str:
     issue_nr = payload['issue']['number']
     assignee = payload['issue']['assignee']
     return get_issue_event_message(
@@ -89,7 +89,7 @@ def format_issues_event(payload: Dict[str, Any], include_title: Optional[bool]=F
         title=payload['issue']['title'] if include_title else None,
     )
 
-def format_issue_comment_event(payload: Dict[str, Any], include_title: Optional[bool]=False) -> str:
+def format_issue_comment_event(payload: Dict[str, Any], include_title: bool=False) -> str:
     action = payload['action']
     comment = payload['comment']
     issue = payload['issue']
@@ -109,7 +109,7 @@ def format_issue_comment_event(payload: Dict[str, Any], include_title: Optional[
         title=issue['title'] if include_title else None,
     )
 
-def format_release_event(payload: Dict[str, Any], include_title: Optional[bool]=False) -> str:
+def format_release_event(payload: Dict[str, Any], include_title: bool=False) -> str:
     data = {
         'user_name': payload['release']['author']['username'],
         'action': payload['action'],

@@ -660,7 +660,7 @@ def render_markdown(message: Message,
                     realm_alert_words_automaton: Optional[ahocorasick.Automaton]=None,
                     user_ids: Optional[Set[int]]=None,
                     mention_data: Optional[bugdown.MentionData]=None,
-                    email_gateway: Optional[bool]=False) -> str:
+                    email_gateway: bool=False) -> str:
     '''
     This is basically just a wrapper for do_render_markdown.
     '''
@@ -699,7 +699,7 @@ def do_render_markdown(message: Message,
                        translate_emoticons: bool,
                        realm_alert_words_automaton: Optional[ahocorasick.Automaton]=None,
                        mention_data: Optional[bugdown.MentionData]=None,
-                       email_gateway: Optional[bool]=False) -> str:
+                       email_gateway: bool=False) -> str:
     """Return HTML for given markdown. Bugdown may add properties to the
     message object such as `mentions_user_ids`, `mentions_user_group_ids`, and
     `mentions_wildcard`.  These are only on this Django object and are not

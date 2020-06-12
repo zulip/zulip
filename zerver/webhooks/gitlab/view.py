@@ -77,7 +77,7 @@ def get_tag_push_event_body(payload: Dict[str, Any]) -> str:
     )
 
 def get_issue_created_event_body(payload: Dict[str, Any],
-                                 include_title: Optional[bool]=False) -> str:
+                                 include_title: bool=False) -> str:
     description = payload['object_attributes'].get('description')
     # Filter out multiline hidden comments
     if description is not None:
@@ -96,7 +96,7 @@ def get_issue_created_event_body(payload: Dict[str, Any],
     )
 
 def get_issue_event_body(payload: Dict[str, Any], action: str,
-                         include_title: Optional[bool]=False) -> str:
+                         include_title: bool=False) -> str:
     return get_issue_event_message(
         get_issue_user_name(payload),
         action,
@@ -106,7 +106,7 @@ def get_issue_event_body(payload: Dict[str, Any], action: str,
     )
 
 def get_merge_request_updated_event_body(payload: Dict[str, Any],
-                                         include_title: Optional[bool]=False) -> str:
+                                         include_title: bool=False) -> str:
     if payload['object_attributes'].get('oldrev'):
         return get_merge_request_event_body(
             payload, "added commit(s) to",
@@ -119,7 +119,7 @@ def get_merge_request_updated_event_body(payload: Dict[str, Any],
     )
 
 def get_merge_request_event_body(payload: Dict[str, Any], action: str,
-                                 include_title: Optional[bool]=False) -> str:
+                                 include_title: bool=False) -> str:
     pull_request = payload['object_attributes']
     return get_pull_request_event_message(
         get_issue_user_name(payload),
@@ -131,7 +131,7 @@ def get_merge_request_event_body(payload: Dict[str, Any], action: str,
     )
 
 def get_merge_request_open_or_updated_body(payload: Dict[str, Any], action: str,
-                                           include_title: Optional[bool]=False) -> str:
+                                           include_title: bool=False) -> str:
     pull_request = payload['object_attributes']
     return get_pull_request_event_message(
         get_issue_user_name(payload),
@@ -170,7 +170,7 @@ def get_commented_commit_event_body(payload: Dict[str, Any]) -> str:
     )
 
 def get_commented_merge_request_event_body(payload: Dict[str, Any],
-                                           include_title: Optional[bool]=False) -> str:
+                                           include_title: bool=False) -> str:
     comment = payload['object_attributes']
     action = '[commented]({}) on'.format(comment['url'])
     url = '{}/merge_requests/{}'.format(
@@ -189,7 +189,7 @@ def get_commented_merge_request_event_body(payload: Dict[str, Any],
     )
 
 def get_commented_issue_event_body(payload: Dict[str, Any],
-                                   include_title: Optional[bool]=False) -> str:
+                                   include_title: bool=False) -> str:
     comment = payload['object_attributes']
     action = '[commented]({}) on'.format(comment['url'])
     url = '{}/issues/{}'.format(
@@ -208,7 +208,7 @@ def get_commented_issue_event_body(payload: Dict[str, Any],
     )
 
 def get_commented_snippet_event_body(payload: Dict[str, Any],
-                                     include_title: Optional[bool]=False) -> str:
+                                     include_title: bool=False) -> str:
     comment = payload['object_attributes']
     action = '[commented]({}) on'.format(comment['url'])
     url = '{}/snippets/{}'.format(

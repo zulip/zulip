@@ -76,7 +76,7 @@ docs_without_macros = [
 @register.filter(name='render_markdown_path', is_safe=True)
 def render_markdown_path(markdown_file_path: str,
                          context: Optional[Dict[Any, Any]]=None,
-                         pure_markdown: Optional[bool]=False) -> str:
+                         pure_markdown: bool=False) -> str:
     """Given a path to a markdown file, return the rendered html.
 
     Note that this assumes that any HTML in the markdown file is

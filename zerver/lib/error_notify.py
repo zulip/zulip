@@ -1,6 +1,6 @@
 # System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
 from collections import defaultdict
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from django.conf import settings
 from django.core.mail import mail_admins
@@ -87,7 +87,7 @@ def zulip_browser_error(report: Dict[str, Any]) -> None:
         body,
     )
 
-def notify_server_error(report: Dict[str, Any], skip_error_zulip: Optional[bool]=False) -> None:
+def notify_server_error(report: Dict[str, Any], skip_error_zulip: bool=False) -> None:
     report = defaultdict(lambda: None, report)
     email_server_error(report)
     if settings.ERROR_BOT and not skip_error_zulip:

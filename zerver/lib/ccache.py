@@ -100,7 +100,7 @@ def der_encode_octet_string(val: bytes) -> bytes:
         raise TypeError("bytes")
     return der_encode_tlv(0x04, val)
 
-def der_encode_sequence(tlvs: List[Optional[bytes]], tagged: Optional[bool]=True) -> bytes:
+def der_encode_sequence(tlvs: List[Optional[bytes]], tagged: bool=True) -> bytes:
     body = []
     for i, tlv in enumerate(tlvs):
         # Missing optional elements represented as None.

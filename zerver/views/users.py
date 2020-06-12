@@ -122,7 +122,7 @@ def reactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
 
 @has_request_variables
 def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id: int,
-                        full_name: Optional[str]=REQ(default="", validator=check_string),
+                        full_name: Optional[str]=REQ(default=None, validator=check_string),
                         role: Optional[int]=REQ(default=None, validator=check_int_in(
                             UserProfile.ROLE_TYPES)),
                         profile_data: Optional[List[Dict[str, Union[int, str, List[int]]]]]=

@@ -1030,7 +1030,7 @@ def render_incoming_message(message: Message,
                             user_ids: Set[int],
                             realm: Realm,
                             mention_data: Optional[bugdown.MentionData]=None,
-                            email_gateway: Optional[bool]=False) -> str:
+                            email_gateway: bool=False) -> str:
     realm_alert_words_automaton = get_alert_word_automaton(realm)
     try:
         rendered_content = render_markdown(
@@ -1343,7 +1343,7 @@ def do_schedule_messages(messages: Sequence[Mapping[str, Any]]) -> List[int]:
 
 
 def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, Any]]],
-                     email_gateway: Optional[bool]=False,
+                     email_gateway: bool=False,
                      mark_as_read: List[int]=[]) -> List[int]:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -2456,7 +2456,7 @@ def internal_send_stream_message(
         stream: Stream,
         topic: str,
         content: str,
-        email_gateway: Optional[bool]=False) -> Optional[int]:
+        email_gateway: bool=False) -> Optional[int]:
 
     message = internal_prep_stream_message(
         realm, sender, stream,
@@ -5020,7 +5020,7 @@ def check_invite_limit(realm: Realm, num_invitees: int) -> None:
 def do_invite_users(user_profile: UserProfile,
                     invitee_emails: SizedTextIterable,
                     streams: Iterable[Stream],
-                    invite_as: Optional[int]=PreregistrationUser.INVITE_AS['MEMBER']) -> None:
+                    invite_as: int=PreregistrationUser.INVITE_AS['MEMBER']) -> None:
 
     check_invite_limit(user_profile.realm, len(invitee_emails))
 
@@ -5142,7 +5142,7 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
     return invites
 
 def do_create_multiuse_invite_link(referred_by: UserProfile, invited_as: int,
-                                   streams: Optional[List[Stream]]=[]) -> str:
+                                   streams: List[Stream]=[]) -> str:
     realm = referred_by.realm
     invite = MultiuseInvite.objects.create(realm=realm, referred_by=referred_by)
     if streams:

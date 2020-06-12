@@ -275,7 +275,7 @@ def update_or_create_stripe_customer(user: UserProfile, stripe_token: Optional[s
 def compute_plan_parameters(
         automanage_licenses: bool, billing_schedule: int,
         discount: Optional[Decimal],
-        free_trial: Optional[bool]=False) -> Tuple[datetime, datetime, datetime, int]:
+        free_trial: bool=False) -> Tuple[datetime, datetime, datetime, int]:
     # Everything in Stripe is stored as timestamps with 1 second resolution,
     # so standardize on 1 second resolution.
     # TODO talk about leapseconds?
