@@ -2,7 +2,7 @@ class zulip_ops::postgres_slave {
   include zulip_ops::base
   include zulip_ops::postgres_appdb
 
-  file { "/var/lib/postgresql/${zulip::base::postgres_version}/main/recovery.conf":
+  file { "${zulip::postgres_appdb_base::postgres_confdir}/recovery.conf":
     ensure  => file,
     require => Package["postgresql-${zulip::base::postgres_version}"],
     owner   => 'postgres',

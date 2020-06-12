@@ -3,10 +3,6 @@
 class zulip::postgres_appdb_tuned {
   include zulip::postgres_appdb_base
 
-  $postgres_conf = $::osfamily ? {
-    'debian' => "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf",
-    'redhat' => "/var/lib/pgsql/${zulip::base::postgres_version}/data/postgresql.conf",
-  }
   $work_mem = $zulip::base::total_memory_mb / 512
   $shared_buffers = $zulip::base::total_memory_mb / 8
   $effective_cache_size = $zulip::base::total_memory_mb * 10 / 32
@@ -24,7 +20,8 @@ class zulip::postgres_appdb_tuned {
   # Only used in CentOS for now
   $pg_datadir = "/var/lib/pgsql/${zulip::base::postgres_version}/data"
 
-  file { $postgres_conf:
+  $postgres_conf_file = "${zulip::postgres_appdb_base::postgres_confdir}/postgresql.conf"
+  file { $postgres_conf_file:
     ensure  => file,
     require => Package[$zulip::postgres_appdb_base::postgresql],
     owner   => 'postgres',
@@ -36,6 +33,6 @@ class zulip::postgres_appdb_tuned {
   exec { $zulip::postgres_appdb_base::postgres_restart:
     require     => Package[$zulip::postgres_appdb_base::postgresql],
     refreshonly => true,
-    subscribe   => [ File[$postgres_conf] ]
+    subscribe   => [ File[$postgres_conf_file] ]
   }
 }
