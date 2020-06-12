@@ -243,6 +243,10 @@ messages[10] = {
     type: 'stream',
 };
 
+function get_topic_key(stream_id, topic) {
+    return stream_id + ":" + topic.toLowerCase();
+}
+
 function generate_topic_data(topic_info_array) {
     // Since most of the fields are common, this function helps generate fixtures
     // with non common fields.
@@ -251,7 +255,7 @@ function generate_topic_data(topic_info_array) {
     const selectors = [];
 
     for (const [stream_id, topic, unread_count, muted, participated] of topic_info_array) {
-        const topic_selector = $.create('#recent_topic:' + stream_id + ":" + topic);
+        const topic_selector = $.create('#recent_topic:' + get_topic_key(stream_id, topic));
         topic_selector.data = function () {
             return {
                 participated: participated,
@@ -275,6 +279,7 @@ function generate_topic_data(topic_info_array) {
             stream_id: stream_id,
             stream_url: 'https://www.example.com',
             topic: topic,
+            topic_key: get_topic_key(stream_id, topic),
             topic_url: 'https://www.example.com',
             unread_count: unread_count,
             muted: muted,
@@ -506,7 +511,7 @@ run_test('test_update_unread_count', () => {
 
     // update a message
     generate_topic_data([[1, 'topic-7', 1, false, true]]);
-    rt.update_topic_unread_count([messages[9]]);
+    rt.update_topic_unread_count(messages[9]);
 });
 
 // template rendering is tested in test_recent_topics_launch.
@@ -636,9 +641,9 @@ run_test('test_topic_edit', () => {
 
     ////////////////// test change topic //////////////////
     verify_topic_data(all_topics, stream1, topic6, messages[8].id, true);
-    assert.equal(all_topics.get(stream1 + ":" + topic8), undefined);
+    assert.equal(all_topics.get(get_topic_key(stream1, topic8)), undefined);
 
-    let topic_selector = $.create('#recent_topic:' + stream1 + ":" + topic8);
+    let topic_selector = $.create('#recent_topic:' + get_topic_key(stream1, topic8));
     topic_selector.data = function () {
         return {
             participated: true,
@@ -653,13 +658,13 @@ run_test('test_topic_edit', () => {
     all_topics = rt.get();
 
     verify_topic_data(all_topics, stream1, topic8, messages[8].id, true);
-    assert.equal(all_topics.get(stream1 + ":" + topic6), undefined);
+    assert.equal(all_topics.get(get_topic_key(stream1, topic6)), undefined);
 
     ////////////////// test stream change //////////////////
     verify_topic_data(all_topics, stream1, topic1, messages[0].id, true);
-    assert.equal(all_topics.get(stream2 + ":" + topic1), undefined);
+    assert.equal(all_topics.get(get_topic_key(stream2, topic1)), undefined);
 
-    topic_selector = $.create('#recent_topic:' + stream2 + ":" + topic1);
+    topic_selector = $.create('#recent_topic:' + get_topic_key(stream2, topic1));
     topic_selector.data = function () {
         return {
             participated: true,
@@ -671,14 +676,14 @@ run_test('test_topic_edit', () => {
     rt.process_topic_edit(stream1, topic1, topic1, stream2);
     all_topics = rt.get();
 
-    assert.equal(all_topics.get(stream1 + ":" + topic1), undefined);
+    assert.equal(all_topics.get(get_topic_key(stream1, topic1)), undefined);
     verify_topic_data(all_topics, stream2, topic1, messages[0].id, true);
 
     ////////////////// test stream & topic change //////////////////
     verify_topic_data(all_topics, stream2, topic1, messages[0].id, true);
-    assert.equal(all_topics.get(stream3 + ":" + topic9), undefined);
+    assert.equal(all_topics.get(get_topic_key(stream3, topic9)), undefined);
 
-    topic_selector = $.create('#recent_topic:' + stream3 + ":" + topic9);
+    topic_selector = $.create('#recent_topic:' + get_topic_key(stream3, topic9));
     topic_selector.data = function () {
         return {
             participated: false,
@@ -691,6 +696,6 @@ run_test('test_topic_edit', () => {
     rt.process_topic_edit(stream2, topic1, topic9, stream3);
     all_topics = rt.get();
 
-    assert.equal(all_topics.get(stream2 + ":" + topic1), undefined);
+    assert.equal(all_topics.get(get_topic_key(stream2, topic1)), undefined);
     verify_topic_data(all_topics, stream3, topic9, messages[0].id, true);
 });
