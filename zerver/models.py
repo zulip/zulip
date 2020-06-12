@@ -26,6 +26,8 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.timestamp import datetime_to_timestamp
 from django.db.models.signals import post_save, post_delete
 from django.utils.translation import ugettext_lazy as _
+
+from confirmation import settings as confirmation_settings
 from zerver.lib import cache
 from zerver.lib.validator import check_int, \
     check_short_string, check_long_string, validate_choice_field, check_date, \
@@ -1283,6 +1285,14 @@ class PreregistrationUser(models.Model):
         GUEST_USER = 3,
     )
     invited_as = models.PositiveSmallIntegerField(default=INVITE_AS['MEMBER'])  # type: int
+
+def filter_to_valid_prereg_users(query: QuerySet) -> QuerySet:
+    days_to_activate = settings.INVITATION_LINK_VALIDITY_DAYS
+    active_value = confirmation_settings.STATUS_ACTIVE
+    revoked_value = confirmation_settings.STATUS_REVOKED
+    lowest_datetime = timezone_now() - datetime.timedelta(days=days_to_activate)
+    return query.exclude(status__in=[active_value, revoked_value]).filter(
+        invited_at__gte=lowest_datetime)
 
 class MultiuseInvite(models.Model):
     referred_by = models.ForeignKey(UserProfile, on_delete=CASCADE)  # Optional[UserProfile]

@@ -98,7 +98,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     ScheduledEmail, MAX_TOPIC_NAME_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_personal_recipient, \
     get_user_profile_by_id, PreregistrationUser, \
-    get_stream_recipient, \
+    get_stream_recipient, filter_to_valid_prereg_users, \
     email_allowed_for_realm, email_to_username, \
     get_user_by_delivery_email, get_stream_cache_key, active_non_guest_user_ids, \
     UserActivityInterval, active_user_ids, get_active_streams, \
@@ -128,7 +128,6 @@ from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link, generate_key, \
     confirmation_url
-from confirmation import settings as confirmation_settings
 
 from zerver.lib.bulk_create import bulk_create_users
 from zerver.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
@@ -5170,13 +5169,8 @@ def do_invite_users(user_profile: UserProfile,
     notify_invites_changed(user_profile)
 
 def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
-    days_to_activate = settings.INVITATION_LINK_VALIDITY_DAYS
-    active_value = getattr(confirmation_settings, 'STATUS_ACTIVE', 1)
-
-    lowest_datetime = timezone_now() - datetime.timedelta(days=days_to_activate)
-    prereg_users = PreregistrationUser.objects.exclude(status=active_value).filter(
-        invited_at__gte=lowest_datetime,
-        referred_by__realm=user_profile.realm)
+    prereg_users = filter_to_valid_prereg_users(
+        PreregistrationUser.objects.filter(referred_by__realm=user_profile.realm))
 
     invites = []
 
@@ -5188,6 +5182,7 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
                             invited_as=invitee.invited_as,
                             is_multiuse=False))
 
+    lowest_datetime = timezone_now() - datetime.timedelta(days=settings.INVITATION_LINK_VALIDITY_DAYS)
     multiuse_confirmation_objs = Confirmation.objects.filter(realm=user_profile.realm,
                                                              type=Confirmation.MULTIUSE_INVITE,
                                                              date_sent__gte=lowest_datetime)

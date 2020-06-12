@@ -49,7 +49,7 @@ from zerver.lib.test_classes import (
 from zerver.models import \
     get_realm, email_to_username, CustomProfileField, CustomProfileFieldValue, \
     UserProfile, PreregistrationUser, Realm, RealmDomain, get_user, MultiuseInvite, \
-    clear_supported_auth_backends_cache, PasswordTooWeakError
+    clear_supported_auth_backends_cache, PasswordTooWeakError, get_user_by_delivery_email
 from zerver.signals import JUST_CREATED_THRESHOLD
 
 from confirmation.models import Confirmation, create_confirmation_link
@@ -1065,6 +1065,29 @@ class SocialAuthBase(ZulipTestCase):
             result = self.client_get(reverse('social:complete', args=[self.backend.name]))
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
+
+    @override_settings(TERMS_OF_SERVICE=None)
+    def test_social_auth_invited_as_admin_but_expired(self) -> None:
+        iago = self.example_user("iago")
+        email = self.nonreg_email("alice")
+        name = 'Alice Jones'
+
+        do_invite_users(iago, [email], [], invite_as=PreregistrationUser.INVITE_AS['REALM_ADMIN'])
+        expired_date = timezone_now() - datetime.timedelta(days=settings.INVITATION_LINK_VALIDITY_DAYS + 1)
+        PreregistrationUser.objects.filter(email=email).update(invited_at=expired_date)
+
+        subdomain = 'zulip'
+        realm = get_realm("zulip")
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+        result = self.social_auth_test(account_data_dict,
+                                       expect_choose_email_screen=True,
+                                       subdomain=subdomain, is_signup='1')
+        self.stage_two_of_registration(result, realm, subdomain, email, name, name,
+                                       self.BACKEND_CLASS.full_name_validated)
+
+        # The invitation is expired, so the user should be created as normal member only.
+        created_user = get_user_by_delivery_email(email, realm)
+        self.assertEqual(created_user.role, UserProfile.ROLE_MEMBER)
 
 class SAMLAuthBackendTest(SocialAuthBase):
     __unittest_skip__ = False
