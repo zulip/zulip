@@ -116,7 +116,7 @@ function format_topic(topic_data) {
         last_msg_time: last_msg_time,
         topic_url: hash_util.by_stream_topic_uri(stream_id, topic),
         senders: senders_info,
-        count_senders: Math.max(0, all_senders.length - MAX_AVATAR),
+        other_senders_count: Math.max(0, all_senders.length - MAX_AVATAR),
         muted: muted,
         topic_muted: topic_muted,
         participated: topic_data.participated,

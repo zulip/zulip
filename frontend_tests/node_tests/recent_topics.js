@@ -262,7 +262,7 @@ function generate_topic_data(topic_info_array) {
 
         selectors.push(topic_selector);
         data.push({
-            count_senders: 0,
+            other_senders_count: 0,
             invite_only: false,
             is_web_public: true,
             last_msg_time: 'Just now',
