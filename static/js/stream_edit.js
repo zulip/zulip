@@ -36,6 +36,15 @@ exports.settings_for_sub = function (sub) {
     return $("#subscription_overlay .subscription_settings[data-stream-id='" + sub.stream_id + "']");
 };
 
+exports.rerender = function (stream_name) {
+    // This is a shim--our caller should call
+    // rerender_subscriptions_settings directly,
+    // but we are in the middle of a stream_name -> stream_id
+    // refactoring.
+    const sub = stream_data.get_sub(stream_name);
+    subs.rerender_subscriptions_settings(sub);
+};
+
 exports.is_sub_settings_active = function (sub) {
     // This function return whether the provided given sub object is
     // currently being viewed/edited in the stream edit UI.  This is
@@ -677,11 +686,6 @@ exports.initialize = function () {
         if ($(e.target).closest(".check, .subscription_settings").length === 0) {
             exports.open_edit_panel_for_row(this);
         }
-    });
-
-    $(document).on('peer_subscribe.zulip peer_unsubscribe.zulip', function (e, data) {
-        const sub = stream_data.get_sub(data.stream_name);
-        subs.rerender_subscriptions_settings(sub);
     });
 };
 

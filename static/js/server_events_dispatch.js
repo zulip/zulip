@@ -334,7 +334,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                     return;
                 }
 
-                $(document).trigger('peer_subscribe.zulip', {stream_name: stream_name});
+                stream_edit.rerender(stream_name);
             }
             for (const stream_name of event.subscriptions) {
                 add_peer(stream_name, event.user_id);
@@ -346,7 +346,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                     blueslip.warn('Cannot process peer_remove event.');
                     return;
                 }
-                $(document).trigger('peer_unsubscribe.zulip', {stream_name: stream_name});
+                stream_edit.rerender(stream_name);
             }
             for (const stream_name of event.subscriptions) {
                 remove_peer(stream_name, event.user_id);
