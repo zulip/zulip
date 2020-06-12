@@ -114,15 +114,19 @@ exports.show_message_failed = function (message_id, failed_msg) {
     });
 };
 
-exports.remove_message = function (message_id) {
+exports.remove_messages = function (message_ids) {
+    const msg_ids_to_rerender = [];
     for (const list of [message_list.all, home_msg_list, message_list.narrowed]) {
         if (list === undefined) {
             continue;
         }
-        const row = list.get_row(message_id);
-        if (row !== undefined) {
-            list.remove_and_rerender([{id: message_id}]);
+        for (const message_id of message_ids) {
+            const row = list.get_row(message_id);
+            if (row !== undefined) {
+                msg_ids_to_rerender.push({id: message_id});
+            }
         }
+        list.remove_and_rerender(msg_ids_to_rerender);
     }
 };
 

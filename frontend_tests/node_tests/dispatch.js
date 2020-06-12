@@ -799,10 +799,10 @@ with_overrides(function (override) {
     override('stream_list.update_streams_sidebar', noop);
     global.with_stub(function (stub) {
         override('unread_ops.process_read_messages_event', noop);
-        override('ui.remove_message', stub.f);
+        override('ui.remove_messages', stub.f);
         dispatch(event);
-        const args = stub.get_args('message_id');
-        assert_same(args.message_id, 1337);
+        const args = stub.get_args('message_ids');
+        assert_same(args.message_ids, [1337]);
     });
     global.with_stub(function (stub) {
         override('unread_ops.process_read_messages_event', stub.f);
