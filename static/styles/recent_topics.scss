@@ -81,14 +81,14 @@
             padding-right: 3px;
         }
 
-        .tableFixHead {
+        .table_fix_head {
             padding: 10px;
             padding-top: 0px !important;
             overflow-y: auto;
             max-height: 100%;
         }
 
-        .tableFixHead table {
+        .table_fix_head table {
             // To keep border properties to the thead th.
             border-collapse: separate;
         }
