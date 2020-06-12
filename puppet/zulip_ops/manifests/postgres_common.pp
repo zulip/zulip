@@ -1,6 +1,9 @@
 class zulip_ops::postgres_common {
   include zulip::postgres_common
 
+  $common_packages = ['xfsprogs']
+  package { $common_packages: ensure => 'installed' }
+
   $wal_g_version = '0.2.15'
   $wal_g_hash = 'ea33c2341d7bfb203c6948590c29834c013ab06a28c7a2b236a73d906f785c84'
   exec {'install-wal-g':
@@ -36,5 +39,18 @@ class zulip_ops::postgres_common {
     refreshonly => true,
   }
 
+  file { '/root/setup_disks.sh':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0744',
+    source => 'puppet:///modules/zulip_ops/postgresql/setup_disks.sh',
+  }
+
+  exec { 'setup_disks':
+    command => '/root/setup_disks.sh',
+    require => Package["postgresql-${zulip::base::postgres_version}", 'xfsprogs'],
+    unless  => 'test $(readlink /var/lib/postgresql) = "/srv/postgresql/" -a -d /srv/postgresql',
+  }
 
 }
