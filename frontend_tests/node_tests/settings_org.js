@@ -157,7 +157,7 @@ function createSaveButtons(subsection) {
     const stub_save_button_header = $(`#org-${subsection}`);
     const save_button_controls = $('.save-button-controls');
     const stub_save_button = $(`#org-submit-${subsection}`);
-    const stub_discard_button = $(`#org-submit-${subsection}`);
+    const stub_discard_button = $(`#org-discard-${subsection}`);
     const stub_save_button_text = $('.icon-button-text');
     stub_save_button_header.set_find_results(
         '.subsection-failed-status p', $('<failed status element>')
