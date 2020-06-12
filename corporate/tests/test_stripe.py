@@ -487,6 +487,7 @@ class StripeTest(StripeTestCase):
         for substring in [
                 'Zulip Standard', str(self.seat_count),
                 'You are using', f'{self.seat_count} of {self.seat_count} licenses',
+                'Licenses are automatically managed by Zulip; when you add',
                 'Your plan will renew on', 'January 2, 2013', f'${80 * self.seat_count}.00',
                 'Visa ending in 4242',
                 'Update card']:
@@ -571,6 +572,7 @@ class StripeTest(StripeTestCase):
         for substring in [
                 'Zulip Standard', str(123),
                 'You are using', f'{self.seat_count} of {123} licenses',
+                'Licenses are manually managed. You will not be able to add ',
                 'Your plan will renew on', 'January 2, 2013', '$9,840.00',  # 9840 = 80 * 123
                 'Billed by invoice']:
             self.assert_in_response(substring, response)
