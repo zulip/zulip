@@ -245,6 +245,74 @@ class CommonUtils {
         }
     }
 
+    /**
+     * This method returns a Map, whose key is "stream > topic",
+     * and the value is an array with messages under that stream
+     * and topic. The messages are sorted chronologically. The key
+     * for private, and group messages is "You and ...".
+     */
+    async get_rendered_messages(page, table = 'zhome') {
+        const map_array = await page.evaluate((table) => {
+            const data = new Map();
+            const $recipient_rows = $(`#${table}`).find('.recipient_row');
+            $.map($recipient_rows, (element) => {
+                const $el = $(element);
+                const stream_name = $el.find('.stream_label').text().trim();
+                const topic_name = $el.find('.stream_topic a').text().trim();
+
+                let key = stream_name;
+                if (topic_name !== '') {
+                    // If topic_name is '' then this is PMs, so only
+                    // append > topic_name if we are not in PMs or Group PMs.
+                    key = `${stream_name} > ${topic_name}`;
+                }
+
+                if (!data.has(key)) {
+                    data.set(key, []);
+                }
+
+                const messages = data.get(key);
+                $.map($el.find('.message_row .message_content'), (message_row) => {
+                    messages.push(message_row.innerText.trim());
+                });
+            });
+
+            // Map cannot be seralized by puppeteer when sending
+            // it over to node from the browser. Array.from(<Map>)
+            // convert the map into an array which can be sent over,
+            // and is in a format from which we can get a Map by
+            // calling new Map(<array>).
+            return Array.from(data);
+        }, table);
+
+        return new Map(map_array);
+    }
+
+    // This method takes in page, table to fetch the messages
+    // from, and expected messages. The format of expected
+    // message is { "stream > topic": [messages] }.
+    // The method will only check that all the messages in the
+    // messages array passed exist in the order they are passed.
+    async check_messages_sent(page, table, messages) {
+        await page.waitForSelector('#' + table);
+        const rendered_messages = await this.get_rendered_messages(page, table);
+        for (const [key, expected_messages] of Object.entries(messages)) {
+            const actual_messages = rendered_messages.get(key);
+            try {
+                // We only check the last n messages because if we run
+                // the test with --interactive there will be duplicates.
+                const last_n_messages = actual_messages.slice(-expected_messages.length);
+                assert.deepStrictEqual(last_n_messages, expected_messages);
+            } catch (error) {
+                // Only printing the array diff from the assertion error
+                // does not provide enough infromation to debug the faliure.
+                // So we print additonal debug information.
+                console.log(`Messages under ${key} do not match the expected messages:`);
+                throw error;
+            }
+        }
+    }
+
     async run_test(test_function) {
         // Pass a page instance to test so we can take
         // a screenshot of it when the test fails.
