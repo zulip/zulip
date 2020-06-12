@@ -646,6 +646,9 @@ with_overrides(function (override) {
         });
     });
 
+    const compose_fade_stub = global.make_stub();
+    override('compose_fade.update_faded_users', compose_fade_stub.f);
+
     event = event_fixtures.subscription__peer_add;
     global.with_stub(function (stub) {
         override('stream_data.add_subscriber', stub.f);
@@ -654,6 +657,7 @@ with_overrides(function (override) {
         assert_same(args.sub, event.subscriptions[0]);
         assert_same(args.user_id, 555);
     });
+    assert.equal(compose_fade_stub.num_calls, 1);
 
     event = event_fixtures.subscription__peer_remove;
     global.with_stub(function (stub) {
@@ -663,6 +667,7 @@ with_overrides(function (override) {
         assert_same(args.sub, event.subscriptions[0]);
         assert_same(args.user_id, 555);
     });
+    assert.equal(compose_fade_stub.num_calls, 2);
 
     event = event_fixtures.subscription__remove;
     let stream_id_looked_up;
