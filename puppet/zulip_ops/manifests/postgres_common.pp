@@ -33,6 +33,13 @@ class zulip_ops::postgres_common {
     ]
   }
 
+  file { '/etc/sysctl.d/40-postgresql.conf':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    source => 'puppet:///modules/zulip_ops/postgresql/40-postgresql.conf',
+  }
   exec { 'sysctl_p':
     command     => '/sbin/sysctl -p /etc/sysctl.d/40-postgresql.conf',
     subscribe   => File['/etc/sysctl.d/40-postgresql.conf'],
