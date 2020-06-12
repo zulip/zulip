@@ -154,34 +154,13 @@
 
         <div class="inline-block user-avatar-section">
             <h3>{{t "Profile picture" }}</h3>
-
-            <div class="inline-block">
-                <div id="user-settings-avatar" class="avatar-icon-logo-settings">
-                    <div class="settings-page-image-background"></div>
-                    <span id="avatar-spinner-background" class="upload-spinner-background">
-                        <object id="user-avatar-spinner" type="image/svg+xml" data="/static/images/tail-spin.svg"></object>
-                    </span>
-                    <span id="user_avatar_delete_button" class="settings-page-delete-button"  aria-label="{{t 'Delete profile picture'}}" role="button" tabindex="0"
-                      {{#unless user_can_change_avatar}}style="display:none"{{/unless}}>
-                        &times;
-                    </span>
-                    <span id="user_avatar_delete" class="settings-page-delete-text" aria-label="{{t 'Delete profile picture'}}" tabindex="0">
-                        {{t 'Delete profile picture' }}
-                    </span>
-                    <span id="user_avatar_upload_button" class="settings-page-upload-text" aria-label="{{t 'Upload new profile picture'}}" role="button" tabindex="0"
-                      {{#if (and (not page_params.is_admin) page_params.realm_avatar_changes_disabled)}}style="display:none"{{/if}}>
-                        {{t 'Upload new profile picture' }}
-                    </span>
-                </div>
-                 <img id="user-avatar-block" src="{{ page_params.avatar_url_medium }}"
-                  {{#if page_params.is_guest}} class="guest-avatar"{{/if}}/>
-                <div id="user-avatar-source">
-                    <a href="https://en.gravatar.com/" target="_blank">{{t "Avatar from Gravatar" }}</a>
-                </div>
-                <input type="file" name="user_avatar_file_input" class="notvisible" id="user_avatar_file_input" value="{{t 'Upload profile picture' }}" />
-            </div>
-            <div class="avatar-controls">
-                <div id="user_avatar_file_input_error" class="text-error"></div>
+            {{> image_upload_widget
+              widget = "user-avatar"
+              upload_text = "Upload new profile picture"
+              delete_text = "Delete profile picture"
+              image = page_params.avatar_url_medium}}
+            <div id="user-avatar-source">
+                <a href="https://en.gravatar.com/" target="_blank">{{t "Avatar from Gravatar" }}</a>
             </div>
         </div>
         <div class="clear-float"></div>
