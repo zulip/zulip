@@ -63,7 +63,6 @@ EXEMPT_FILES = {
     'static/js/hotkey.js',
     'static/js/hotspots.js',
     'static/js/info_overlay.js',
-    'static/js/integration_bot_widget.js',
     'static/js/invite.js',
     'static/js/lightbox_canvas.js',
     'static/js/lightbox.js',
