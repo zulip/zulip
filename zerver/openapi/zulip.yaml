@@ -5023,6 +5023,199 @@ paths:
                               },
                           },
                       }
+  /realm/profile_fields:
+    get:
+      operationId: get_custom_profile_fields
+      tags: ["server_and_organizations"]
+      description: |
+        Get all the custom profile fields in the user's organization.
+
+        `GET {{ api_url }}/v1/realm/profile_fields`
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - properties:
+                      custom_fields:
+                        type: array
+                        description: |
+                          An array that contains custom profile field objects.
+                        items:
+                          $ref: "#/components/schemas/CustomProfileField"
+                  - example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "custom_fields":
+                          [
+                            {
+                              "id": 1,
+                              "name": "Phone number",
+                              "type": 1,
+                              "hint": "",
+                              "field_data": "",
+                              "order": 1,
+                            },
+                            {
+                              "id": 2,
+                              "name": "Biography",
+                              "type": 2,
+                              "hint": "What are you known for?",
+                              "field_data": "",
+                              "order": 2,
+                            },
+                            {
+                              "id": 3,
+                              "name": "Favorite food",
+                              "type": 1,
+                              "hint": "Or drink, if you'd prefer",
+                              "field_data": "",
+                              "order": 3,
+                            },
+                            {
+                              "id": 4,
+                              "name": "Favorite editor",
+                              "type": 3,
+                              "hint": "",
+                              "field_data": '{"vim":{"text":"Vim","order":"1"},"emacs":{"text":"Emacs","order":"2"}}',
+                              "order": 4,
+                            },
+                            {
+                              "id": 5,
+                              "name": "Birthday",
+                              "type": 4,
+                              "hint": "",
+                              "field_data": "",
+                              "order": 5,
+                            },
+                            {
+                              "id": 6,
+                              "name": "Favorite website",
+                              "type": 5,
+                              "hint": "Or your personal blog's URL",
+                              "field_data": "",
+                              "order": 6,
+                            },
+                            {
+                              "id": 7,
+                              "name": "Mentor",
+                              "type": 6,
+                              "hint": "",
+                              "field_data": "",
+                              "order": 7,
+                            },
+                            {
+                              "id": 8,
+                              "name": "GitHub",
+                              "type": 7,
+                              "hint": "Enter your GitHub username",
+                              "field_data": '{"subtype":"github"}',
+                              "order": 8,
+                            },
+                          ],
+                      }
+    patch:
+      operationId: reorder_custom_profile_fields
+      tags: ["server_and_organizations"]
+      description: |
+        {!api-admin-only.md!}
+
+        Reorder the custom profile fields in the user's organization.
+
+        `PATCH {{ api_url }}/v1/realm/profile_fields`
+      parameters:
+        - name: order
+          in: query
+          description: |
+            A list of ids of the respective custom profile fields in the desired
+            order.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+              example: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+          required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonSuccess"
+    post:
+      operationId: create_custom_profile_field
+      tags: ["server_and_organizations"]
+      description: |
+        {!api-admin-only.md!}
+
+        Create a custom profile field in the user's organization.
+
+        `POST {{ api_url }}/v1/realm/profile_fields`
+      parameters:
+        - name: name
+          in: query
+          description: |
+            The name of the custom profile field.
+          schema:
+            type: string
+          example: "Favorite programming language"
+        - name: hint
+          in: query
+          description: |
+            The hint to be displayed for the custom profile field.
+          schema:
+            type: string
+          example: "Your favorite programming language."
+        - name: field_type
+          in: query
+          description: |
+            The type can be one of the following types available. See the
+            [Add custom profile fields](/help/add-custom-profile-fields) article for
+            details on what each type means.
+            * **1**: Short text
+            * **2**: Long text
+            * **3**: List of options
+            * **4**: Date picker
+            * **5**: Link
+            * **6**: Person picker
+            * **7**: External account
+          schema:
+            type: integer
+          example: 3
+          required: true
+        - name: field_data
+          in: query
+          description: |
+            The data to be displayed if the field has a list of options.
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                {
+                  "python": {"text": "Python", "order": "1"},
+                  "java": {"text": "Java", "order": "2"},
+                }
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - properties:
+                      id:
+                        type: integer
+                        description: |
+                          The ID for the custom profile field.
+                  - example: {"result": "success", "msg": "", "id": 9}
   /users/me/subscriptions/properties:
     post:
       operationId: update_subscription_settings
@@ -6932,11 +7125,21 @@ components:
         type:
           type: integer
           description: |
-            The type of the custom profile field.
+            The type can be one of the following types available. See the
+            [Add custom profile fields](/help/add-custom-profile-fields) article for
+            details on what each type means.
+            * **1**: Short text
+            * **2**: Long text
+            * **3**: List of options
+            * **4**: Date picker
+            * **5**: Link
+            * **6**: Person picker
+            * **7**: External account
         order:
           type: integer
           description: |
-            The order of the custom profile field.
+            A number describing the order of appearance
+            of the custom profile field.
         name:
           type: string
           description: |
@@ -6949,7 +7152,8 @@ components:
         field_data:
           type: string
           description: |
-            The data related to the custom profile field.
+            The data to be displayed if the field has
+            a list of options.
     Hotspot:
       type: object
       additionalProperties: false
