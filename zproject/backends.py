@@ -953,18 +953,17 @@ def external_auth_method(cls: Type[ExternalAuthMethod]) -> Type[ExternalAuthMeth
 
 # We want to be able to store this data in redis, so it has to be easy to serialize.
 # That's why we avoid having fields that could pose a problem for that.
-ExternalAuthDataDict = TypedDict('ExternalAuthDataDict', {
-    'subdomain': str,
-    'full_name': str,
-    'email': str,
-    'is_signup': bool,
-    'is_realm_creation': bool,
-    'redirect_to': str,
-    'mobile_flow_otp': Optional[str],
-    'desktop_flow_otp': Optional[str],
-    'multiuse_object_key': str,
-    'full_name_validated': bool,
-}, total=False)
+class ExternalAuthDataDict(TypedDict, total=False):
+    subdomain: str
+    full_name: str
+    email: str
+    is_signup: bool
+    is_realm_creation: bool
+    redirect_to: str
+    mobile_flow_otp: Optional[str]
+    desktop_flow_otp: Optional[str]
+    multiuse_object_key: str
+    full_name_validated: bool
 
 class ExternalAuthResult:
     LOGIN_KEY_PREFIX = "login_key_"
