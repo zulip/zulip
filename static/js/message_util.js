@@ -16,6 +16,18 @@ function add_messages(messages, msg_list, opts) {
     return render_info;
 }
 
+exports.message_has_link = function (message) {
+    return $(message.content).find(`a`).length > 0;
+};
+
+exports.message_has_image = function (message) {
+    return $(message.content).find(`.message_inline_image`).length > 0;
+};
+
+exports.message_has_attachment = function (message) {
+    return $(message.content).find(`a[href^='/user_uploads']`).length > 0;
+};
+
 exports.add_old_messages = function (messages, msg_list) {
     return add_messages(messages, msg_list, {messages_are_new: false});
 };

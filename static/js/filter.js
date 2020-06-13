@@ -46,6 +46,15 @@ function message_in_home(message) {
 
 function message_matches_search_term(message, operator, operand) {
     switch (operator) {
+    case 'has':
+        if (operand === 'image') {
+            return message_util.message_has_image(message);
+        } else if (operand === 'link') {
+            return message_util.message_has_link(message);
+        } else if (operand === 'attachment') {
+            return message_util.message_has_attachment(message);
+        }
+        return false; // has:something_else returns false
     case 'is':
         if (operand === 'private') {
             return message.type === 'private';
@@ -620,7 +629,10 @@ Filter.prototype = {
         return this.has_operand("is", "mentioned") || this.has_operand("is", "starred");
     },
 
-    can_apply_locally: function () {
+    can_apply_locally: function (is_local_echo) {
+        // Since there can be multiple operators, each block should
+        // just return false here.
+
         if (this.is_search()) {
             // The semantics for matching keywords are implemented
             // by database plugins, and we don't have JS code for
@@ -629,10 +641,11 @@ Filter.prototype = {
             return false;
         }
 
-        if (this.has_operator('has')) {
-            // See #6186 to see why we currently punt on 'has:foo'
-            // queries.  This can be fixed, there are just some random
-            // complications that make it non-trivial.
+        if (this.has_operator('has') && is_local_echo) {
+            // The has: operators can be applied locally for messages
+            // rendered by the backend; links, attachments, and images
+            // are not handled properly by the local echo markdown
+            // processor.
             return false;
         }
 

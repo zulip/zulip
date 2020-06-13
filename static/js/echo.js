@@ -146,7 +146,7 @@ exports.try_deliver_locally = function (message_request) {
         return;
     }
 
-    if (narrow_state.active() && !narrow_state.filter().can_apply_locally()) {
+    if (narrow_state.active() && !narrow_state.filter().can_apply_locally(true)) {
         return;
     }
 
