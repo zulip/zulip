@@ -1,6 +1,6 @@
 import re
 from collections import defaultdict
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Sequence, Set
 
 from .template_parser import FormattedException, Token, tokenize
 
@@ -132,12 +132,9 @@ def html_branches(text: str, fn: Optional[str] = None) -> List[HtmlTreeBranch]:
     tree = html_tag_tree(text, fn)
     branches: List[HtmlTreeBranch] = []
 
-    def walk(node: Node, tag_info_list: Optional[List[TagInfo]] = None) -> None:
+    def walk(node: Node, tag_info_list: Sequence[TagInfo] = []) -> None:
         info = get_tag_info(node.token)
-        if tag_info_list is None:
-            tag_info_list = [info]
-        else:
-            tag_info_list = tag_info_list[:] + [info]
+        tag_info_list = [*tag_info_list, info]
 
         if node.children:
             for child in node.children:
@@ -147,7 +144,7 @@ def html_branches(text: str, fn: Optional[str] = None) -> List[HtmlTreeBranch]:
             branches.append(tree_branch)
 
     for node in tree.children:
-        walk(node, None)
+        walk(node, [])
 
     return branches
 

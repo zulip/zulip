@@ -1,6 +1,6 @@
 import random
 from datetime import timedelta
-from typing import Any, Dict, List, Mapping, Optional, Set, Union
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Union
 from unittest import mock
 
 import ujson
@@ -976,7 +976,7 @@ class StreamAdminTest(ZulipTestCase):
     def attempt_unsubscribe_of_principal(self, query_count: int, target_users: List[UserProfile],
                                          is_admin: bool=False, is_subbed: bool=True, invite_only: bool=False,
                                          target_users_subbed: bool=True, using_legacy_emails: bool=False,
-                                         other_sub_users: Optional[List[UserProfile]]=None) -> HttpResponse:
+                                         other_sub_users: Sequence[UserProfile]=[]) -> HttpResponse:
 
         # Set up the main user, who is in most cases an admin.
         if is_admin:
@@ -1004,9 +1004,8 @@ class StreamAdminTest(ZulipTestCase):
         if target_users_subbed:
             for user in target_users:
                 self.subscribe(user, stream_name)
-        if other_sub_users:
-            for user in other_sub_users:
-                self.subscribe(user, stream_name)
+        for user in other_sub_users:
+            self.subscribe(user, stream_name)
 
         with queries_captured() as queries:
             result = self.client_delete(

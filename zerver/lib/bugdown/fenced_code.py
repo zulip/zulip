@@ -76,7 +76,7 @@ Dependencies:
 
 """
 import re
-from typing import Any, Dict, Iterable, List, MutableSequence, Optional
+from typing import Any, Dict, Iterable, List, Mapping, MutableSequence, Optional
 
 import markdown
 from django.utils.html import escape
@@ -128,9 +128,7 @@ CODE_VALIDATORS = {
 }
 
 class FencedCodeExtension(markdown.Extension):
-    def __init__(self, config: Optional[Dict[str, Any]]=None) -> None:
-        if config is None:
-            config = {}
+    def __init__(self, config: Mapping[str, Any] = {}) -> None:
         self.config = {
             'run_content_validators': [
                 config.get('run_content_validators', False),

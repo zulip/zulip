@@ -4,7 +4,7 @@ __revision__ = '$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $'
 import datetime
 import string
 from random import SystemRandom
-from typing import Dict, Optional, Union
+from typing import Mapping, Optional, Union
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -65,7 +65,7 @@ def get_object_from_key(confirmation_key: str,
 
 def create_confirmation_link(obj: ContentType, host: str,
                              confirmation_type: int,
-                             url_args: Optional[Dict[str, str]]=None) -> str:
+                             url_args: Mapping[str, str] = {}) -> str:
     key = generate_key()
     realm = None
     if hasattr(obj, 'realm'):
@@ -79,9 +79,8 @@ def create_confirmation_link(obj: ContentType, host: str,
 
 def confirmation_url(confirmation_key: str, host: str,
                      confirmation_type: int,
-                     url_args: Optional[Dict[str, str]]=None) -> str:
-    if url_args is None:
-        url_args = {}
+                     url_args: Mapping[str, str] = {}) -> str:
+    url_args = dict(url_args)
     url_args['confirmation_key'] = confirmation_key
     return '%s%s%s' % (settings.EXTERNAL_URI_SCHEME, host,
                        reverse(_properties[confirmation_type].url_name, kwargs=url_args))

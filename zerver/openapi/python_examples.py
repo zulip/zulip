@@ -1058,18 +1058,18 @@ def test_invalid_stream_error(client: Client) -> None:
 
 
 # SETUP METHODS FOLLOW
-def test_against_fixture(result: Dict[str, Any], fixture: Dict[str, Any], check_if_equal: Optional[Iterable[str]] = [], check_if_exists: Optional[Iterable[str]] = []) -> None:
+def test_against_fixture(result: Dict[str, Any], fixture: Dict[str, Any], check_if_equal: Optional[Iterable[str]] = None, check_if_exists: Optional[Iterable[str]] = None) -> None:
     assertLength(result, fixture)
 
-    if not check_if_equal and not check_if_exists:
+    if check_if_equal is None and check_if_exists is None:
         for key, value in fixture.items():
             assertEqual(key, result, fixture)
 
-    if check_if_equal:
+    if check_if_equal is not None:
         for key in check_if_equal:
             assertEqual(key, result, fixture)
 
-    if check_if_exists:
+    if check_if_exists is not None:
         for key in check_if_exists:
             assertIn(key, result)
 

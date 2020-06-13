@@ -140,11 +140,9 @@ class AuthBackendTest(ZulipTestCase):
 
         return username
 
-    def verify_backend(self, backend: Any, good_kwargs: Optional[Dict[str, Any]]=None, bad_kwargs: Optional[Dict[str, Any]]=None) -> None:
+    def verify_backend(self, backend: Any, *, good_kwargs: Dict[str, Any], bad_kwargs: Optional[Dict[str, Any]]=None) -> None:
         clear_supported_auth_backends_cache()
         user_profile = self.example_user('hamlet')
-
-        assert good_kwargs is not None
 
         # If bad_kwargs was specified, verify auth fails in that case
         if bad_kwargs is not None:

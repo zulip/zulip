@@ -1,6 +1,6 @@
 import os
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from django.conf.urls import url
 from django.contrib.staticfiles.storage import staticfiles_storage
@@ -56,7 +56,7 @@ class Integration:
                  logo: Optional[str]=None, secondary_line_text: Optional[str]=None,
                  display_name: Optional[str]=None, doc: Optional[str]=None,
                  stream_name: Optional[str]=None, legacy: bool=False,
-                 config_options: Optional[List[Tuple[str, str, Validator]]]=None) -> None:
+                 config_options: Sequence[Tuple[str, str, Validator]]=[]) -> None:
         self.name = name
         self.client_name = client_name
         self.secondary_line_text = secondary_line_text
@@ -66,8 +66,6 @@ class Integration:
         # Note: Currently only incoming webhook type bots use this list for
         # defining how the bot's BotConfigData should be. Embedded bots follow
         # a different approach.
-        if config_options is None:
-            config_options = []
         self.config_options = config_options
 
         for category in categories:
@@ -160,7 +158,7 @@ class WebhookIntegration(Integration):
                  function: Optional[str]=None, url: Optional[str]=None,
                  display_name: Optional[str]=None, doc: Optional[str]=None,
                  stream_name: Optional[str]=None, legacy: bool=False,
-                 config_options: Optional[List[Tuple[str, str, Validator]]]=None) -> None:
+                 config_options: Sequence[Tuple[str, str, Validator]]=[]) -> None:
         if client_name is None:
             client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
         super().__init__(
@@ -210,9 +208,9 @@ class ScreenshotConfig:
     bot_name: Optional[str] = None
     payload_as_query_param: bool = False
     payload_param_name: str = 'payload'
-    extra_params: Optional[Dict[str, str]] = None
+    extra_params: Dict[str, str] = field(default_factory=dict)
     use_basic_auth: bool = False
-    custom_headers: Optional[Dict[str, str]] = None
+    custom_headers: Dict[str, str] = field(default_factory=dict)
 
 def get_fixture_and_image_paths(integration: WebhookIntegration,
                                 screenshot_config: ScreenshotConfig) -> Tuple[str, str]:

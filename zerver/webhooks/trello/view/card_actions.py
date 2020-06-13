@@ -1,4 +1,4 @@
-from typing import Any, Dict, Mapping, Optional, Tuple
+from typing import Any, Mapping, Optional, Tuple
 
 from zerver.lib.exceptions import UnexpectedWebhookEventType
 
@@ -205,9 +205,10 @@ def get_body_by_action_type_without_data(payload: Mapping[str, Any], action_type
 
 def fill_appropriate_message_content(payload: Mapping[str, Any],
                                      action_type: str,
-                                     data: Optional[Dict[str, Any]]=None) -> str:
-    data = {} if data is None else data
-    data['card_url_template'] = data.get('card_url_template', get_filled_card_url_template(payload))
+                                     data: Mapping[str, Any] = {}) -> str:
+    data = dict(data)
+    if 'card_url_template' not in data:
+        data['card_url_template'] = get_filled_card_url_template(payload)
     message_body = get_message_body(action_type)
     return message_body.format(**data)
 

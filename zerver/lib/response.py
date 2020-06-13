@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Mapping, Optional
 
 import ujson
 from django.http import HttpResponse, HttpResponseNotAllowed
@@ -37,15 +37,14 @@ def json_method_not_allowed(methods: List[str]) -> HttpResponseNotAllowed:
 
 def json_response(res_type: str="success",
                   msg: str="",
-                  data: Optional[Dict[str, Any]]=None,
+                  data: Mapping[str, Any]={},
                   status: int=200) -> HttpResponse:
     content = {"result": res_type, "msg": msg}
-    if data is not None:
-        content.update(data)
+    content.update(data)
     return HttpResponse(content=ujson.dumps(content) + "\n",
                         content_type='application/json', status=status)
 
-def json_success(data: Optional[Dict[str, Any]]=None) -> HttpResponse:
+def json_success(data: Mapping[str, Any]={}) -> HttpResponse:
     return json_response(data=data)
 
 def json_response_from_error(exception: JsonableError) -> HttpResponse:
@@ -61,5 +60,5 @@ def json_response_from_error(exception: JsonableError) -> HttpResponse:
                          data=exception.data,
                          status=exception.http_status_code)
 
-def json_error(msg: str, data: Optional[Dict[str, Any]]=None, status: int=400) -> HttpResponse:
+def json_error(msg: str, data: Mapping[str, Any]={}, status: int=400) -> HttpResponse:
     return json_response(res_type="error", msg=msg, data=data, status=status)
