@@ -1,6 +1,7 @@
 import inspect
 import re
 import sys
+from collections import abc
 from typing import (
     Any,
     Callable,
@@ -48,11 +49,19 @@ VARMAP = {
     'integer': int,
     'string': str,
     'boolean': bool,
-    'array': list,
-    'Typing.List': list,
     'object': dict,
     'NoneType': type(None),
 }
+
+def schema_type(schema: Dict[str, Any]) -> Union[type, Tuple[type, object]]:
+    if 'oneOf' in schema:
+        # Hack: Just use the type of the first value
+        # Ideally, we'd turn this into a Union type.
+        return schema_type(schema['oneOf'][0])
+    elif schema["type"] == "array":
+        return (list, schema_type(schema["items"]))
+    else:
+        return VARMAP[schema["type"]]
 
 class OpenAPIToolsTest(ZulipTestCase):
     """Make sure that the tools we use to handle our OpenAPI specification
@@ -380,15 +389,16 @@ so maybe we shouldn't mark it as intentionally undocumented in the urls.
                 origin = getattr(t, "__origin__", None)
         else:  # nocoverage  # python3.7+
             origin = getattr(t, "__origin__", None)
-            t_name = getattr(t, "_name", None)
             if origin == list:
                 origin = List
             elif origin == dict:
                 origin = Dict
-            elif t_name == "Iterable":
+            elif origin == abc.Iterable:
                 origin = Iterable
-            elif t_name == "Mapping":
+            elif origin == abc.Mapping:
                 origin = Mapping
+            elif origin == abc.Sequence:
+                origin = Sequence
 
         if not origin:
             # Then it's most likely one of the fundamental data types
@@ -403,12 +413,12 @@ so maybe we shouldn't mark it as intentionally undocumented in the urls.
             for st in args:
                 subtypes.append(self.get_standardized_argument_type(st))
             return self.get_type_by_priority(subtypes)
-        elif origin in [List, Iterable]:
-            subtypes = [self.get_standardized_argument_type(st) for st in t.__args__]
-            return (list, self.get_type_by_priority(subtypes))
+        elif origin in [List, Iterable, Sequence]:
+            [st] = t.__args__
+            return (list, self.get_standardized_argument_type(st))
         elif origin in [Dict, Mapping]:
             return dict
-        return self.get_standardized_argument_type(t.__args__[0])
+        raise AssertionError(f"Unknown origin {origin}")
 
     def render_openapi_type_exception(self, function:  Callable[..., HttpResponse],
                                       openapi_params: Set[Tuple[str, Union[type, Tuple[type, object]]]],
@@ -456,33 +466,9 @@ do not match the types declared in the implementation of {}.\n""".format(functio
                 # data type is essentially string.
                 openapi_params.add((name, VARMAP["string"]))
                 continue
-
             else:
                 schema = element["schema"]
-            if 'oneOf' in schema:
-                # Hack: Just use the type of the first value
-                # Ideally, we'd turn this into a Union type.
-                _type = VARMAP[schema['oneOf'][0]['type']]
-            else:
-                _type = VARMAP[schema["type"]]
-            if _type == list:
-                items = schema["items"]
-                if "anyOf" in items.keys():
-                    subtypes = []
-                    for st in items["anyOf"]:
-                        st = st["type"]
-                        subtypes.append(VARMAP[st])
-                    self.assertTrue(len(subtypes) > 1)
-                    sub_type = self.get_type_by_priority(subtypes)
-                elif "oneOf" in items.keys():
-                    sub_type = VARMAP[element["schema"]["items"]["oneOf"][0]["type"]]
-                    self.assertIsNotNone(sub_type)
-                else:
-                    sub_type = VARMAP[schema["items"]["type"]]
-                    self.assertIsNotNone(sub_type)
-                openapi_params.add((name, (_type, sub_type)))
-            else:
-                openapi_params.add((name, _type))
+            openapi_params.add((name, schema_type(schema)))
 
         function_params: Set[Tuple[str, Union[type, Tuple[type, object]]]] = set()
 
