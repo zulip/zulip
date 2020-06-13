@@ -461,7 +461,7 @@ class TestSupportEndpoint(ZulipTestCase):
         def check_realm_creation_query_result(result: HttpResponse, email: str) -> None:
             self.assert_in_success_response(['<span class="label">preregistration user</span>\n',
                                              '<span class="label">realm creation</span>\n',
-                                             '<b>Link</b>: http://zulip.testserver/accounts/do_confirm/',
+                                             '<b>Link</b>: http://testserver/accounts/do_confirm/',
                                              '<b>Expires in</b>: 1\xa0day<br>\n',
                                              ], result)
 

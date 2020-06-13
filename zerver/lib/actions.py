@@ -974,7 +974,7 @@ def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> 
     obj = EmailChangeStatus.objects.create(new_email=new_email, old_email=old_email,
                                            user_profile=user_profile, realm=user_profile.realm)
 
-    activation_url = create_confirmation_link(obj, user_profile.realm.host, Confirmation.EMAIL_CHANGE)
+    activation_url = create_confirmation_link(obj, Confirmation.EMAIL_CHANGE)
     from zerver.context_processors import common_context
     context = common_context(user_profile)
     context.update({
@@ -4956,7 +4956,7 @@ def do_send_confirmation_email(invitee: PreregistrationUser,
     """
     Send the confirmation/welcome e-mail to an invited user.
     """
-    activation_url = create_confirmation_link(invitee, referrer.realm.host, Confirmation.INVITATION)
+    activation_url = create_confirmation_link(invitee, Confirmation.INVITATION)
     context = {'referrer_full_name': referrer.full_name, 'referrer_email': referrer.delivery_email,
                'activate_url': activation_url, 'referrer_realm_name': referrer.realm.name}
     from_name = f"{referrer.full_name} (via Zulip)"
@@ -5149,7 +5149,7 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
                             invited=datetime_to_timestamp(confirmation_obj.date_sent),
                             id=invite.id,
                             link_url=confirmation_url(confirmation_obj.confirmation_key,
-                                                      user_profile.realm.host,
+                                                      user_profile.realm,
                                                       Confirmation.MULTIUSE_INVITE),
                             invited_as=invite.invited_as,
                             is_multiuse=True))
@@ -5164,7 +5164,7 @@ def do_create_multiuse_invite_link(referred_by: UserProfile, invited_as: int,
     invite.invited_as = invited_as
     invite.save()
     notify_invites_changed(referred_by)
-    return create_confirmation_link(invite, realm.host, Confirmation.MULTIUSE_INVITE)
+    return create_confirmation_link(invite, Confirmation.MULTIUSE_INVITE)
 
 def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
     email = prereg_user.email
@@ -5793,7 +5793,7 @@ def check_delete_user_group(user_group_id: int, user_profile: UserProfile) -> No
     do_send_delete_user_group_event(user_profile.realm, user_group_id, user_profile.realm.id)
 
 def do_send_realm_reactivation_email(realm: Realm) -> None:
-    url = create_confirmation_link(realm, realm.host, Confirmation.REALM_REACTIVATION)
+    url = create_confirmation_link(realm, Confirmation.REALM_REACTIVATION)
     context = {'confirmation_url': url,
                'realm_uri': realm.uri,
                'realm_name': realm.name}

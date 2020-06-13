@@ -187,22 +187,7 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
             prereg_user.invited_as = invited_as
             prereg_user.save()
 
-        # We want to create a confirmation link to create an account
-        # in the current realm, i.e. one with a hostname of
-        # realm.host.  For the Apache REMOTE_USER_SSO auth code path,
-        # this is preferable over realm.get_host() because the latter
-        # contains the port number of the Apache instance and we want
-        # to send the user back to nginx.  But if we're in the realm
-        # creation code path, there might not be a realm yet, so we
-        # have to use request.get_host().
-        if realm is not None:
-            host = realm.host
-        else:
-            host = request.get_host()
-        # Mark 'host' as safe for use in a redirect. It's pulled from the
-        # current request or realm, both of which only allow a limited set of
-        # trusted hosts.
-        confirmation_link = create_confirmation_link(prereg_user, mark_sanitized(host),
+        confirmation_link = create_confirmation_link(prereg_user,
                                                      Confirmation.USER_REGISTRATION)
         if is_signup:
             return redirect(confirmation_link)
