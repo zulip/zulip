@@ -2,7 +2,7 @@ import datetime
 import logging
 import os
 import shutil
-from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, cast
+from typing import Any, Dict, Iterable, List, Optional, Tuple, cast
 
 import boto3
 import ujson
@@ -323,14 +323,12 @@ def fix_message_rendered_content(realm: Realm,
             # platforms, since they generally don't have an "alert
             # words" type feature, and notifications aren't important anyway.
             realm_alert_words_automaton = None
-            message_user_ids: Set[int] = set()
 
             rendered_content = do_render_markdown(
                 message=cast(Message, message_object),
                 content=content,
                 realm=realm,
                 realm_alert_words_automaton=realm_alert_words_automaton,
-                message_user_ids=message_user_ids,
                 sent_by_bot=sent_by_bot,
                 translate_emoticons=translate_emoticons,
             )

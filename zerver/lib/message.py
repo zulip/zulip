@@ -658,17 +658,11 @@ def render_markdown(message: Message,
                     content: str,
                     realm: Optional[Realm]=None,
                     realm_alert_words_automaton: Optional[ahocorasick.Automaton]=None,
-                    user_ids: Optional[Set[int]]=None,
                     mention_data: Optional[bugdown.MentionData]=None,
                     email_gateway: bool=False) -> str:
     '''
     This is basically just a wrapper for do_render_markdown.
     '''
-
-    if user_ids is None:
-        message_user_ids: Set[int] = set()
-    else:
-        message_user_ids = user_ids
 
     if realm is None:
         realm = message.get_realm()
@@ -682,7 +676,6 @@ def render_markdown(message: Message,
         content=content,
         realm=realm,
         realm_alert_words_automaton=realm_alert_words_automaton,
-        message_user_ids=message_user_ids,
         sent_by_bot=sent_by_bot,
         translate_emoticons=translate_emoticons,
         mention_data=mention_data,
@@ -694,7 +687,6 @@ def render_markdown(message: Message,
 def do_render_markdown(message: Message,
                        content: str,
                        realm: Realm,
-                       message_user_ids: Set[int],
                        sent_by_bot: bool,
                        translate_emoticons: bool,
                        realm_alert_words_automaton: Optional[ahocorasick.Automaton]=None,
