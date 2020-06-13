@@ -6,8 +6,7 @@ let topics_widget;
 // Sets the number of avatars to display.
 // Rest of the avatars, if present, are displayed as {+x}
 const MAX_AVATAR = 4;
-// This variable can be used to set default filters.
-let filters = new Set(['unread', 'participated']);
+let filters = new Set();
 
 function get_topic_key(stream_id, topic) {
     return stream_id + ":" + topic.toLowerCase();
