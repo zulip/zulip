@@ -1,21 +1,21 @@
-<div id ="{{widget}}-upload-widget" class="inline-block">
-    <div id="user-settings-avatar" class="avatar-icon-logo-settings">
+<div id ="{{widget}}-upload-widget" class="inline-block avatar-icon-logo-settings">
+    {{#if is_editable_by_current_user}}
+    <div id="user-settings-avatar">
         <div class="settings-page-image-background"></div>
-        <span id="user_avatar_delete_button" class="settings-page-delete-button"  aria-label="{{t 'Delete profile picture'}}" role="button" tabindex="0"
-          {{#unless user_can_change_avatar}}style="display:none"{{/unless}}>
+        <span id="user_avatar_delete_button" class="settings-page-delete-button"  aria-label="{{t 'Delete profile picture'}}" role="button" tabindex="0">
             &times;
         </span>
         <span id="user_avatar_delete" class="settings-page-delete-text" aria-label="{{t 'Delete profile picture'}}" tabindex="0">
             {{t delete_text }}
         </span>
-        <span id="user_avatar_upload_button" class="settings-page-upload-text" aria-label="{{t 'Upload new profile picture'}}" role="button" tabindex="0"
-          {{#if (and (not page_params.is_admin) page_params.realm_avatar_changes_disabled)}}style="display:none"{{/if}}>
+        <span id="user_avatar_upload_button" class="settings-page-upload-text" aria-label="{{t 'Upload new profile picture'}}" role="button" tabindex="0">
             {{t upload_text }}
         </span>
         <span id="avatar-spinner-background" class="upload-spinner-background">
             <object id="user-avatar-spinner" type="image/svg+xml" data="/static/images/tail-spin.svg"></object>
         </span>
     </div>
+    {{/if}}
     <img id="user-avatar-block" src="{{ image }}"/>
     <input type="file" name="user_avatar_file_input" class="notvisible" id="user_avatar_file_input" value="{{t 'Upload profile picture' }}" />
     <div id="user_avatar_file_input_error" class="text-error"></div>
