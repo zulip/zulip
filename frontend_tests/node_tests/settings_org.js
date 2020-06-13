@@ -986,25 +986,25 @@ run_test('misc', () => {
     page_params.server_avatar_changes_disabled = false;
     settings_account.update_avatar_change_display();
     assert.equal($("#user_avatar_upload_button .button").attr('disabled'), false);
-    assert.equal($("#user_avatar_delete_button .button").attr('disabled'), false);
+    assert.equal($("#user-avatar-upload-widget .settings-page-delete-button .button").attr('disabled'), false);
 
     page_params.realm_avatar_changes_disabled = true;
     page_params.server_avatar_changes_disabled = false;
     settings_account.update_avatar_change_display();
     assert.equal($("#user_avatar_upload_button .button").attr('disabled'), 'disabled');
-    assert.equal($("#user_avatar_delete_button .button").attr('disabled'), 'disabled');
+    assert.equal($("#user-avatar-upload-widget .settings-page-delete-button .button").attr('disabled'), 'disabled');
 
     page_params.realm_avatar_changes_disabled = false;
     page_params.server_avatar_changes_disabled = true;
     settings_account.update_avatar_change_display();
     assert.equal($("#user_avatar_upload_button .button").attr('disabled'), 'disabled');
-    assert.equal($("#user_avatar_delete_button .button").attr('disabled'), 'disabled');
+    assert.equal($("#user-avatar-upload-widget .settings-page-delete-button .button").attr('disabled'), 'disabled');
 
     page_params.realm_avatar_changes_disabled = true;
     page_params.server_avatar_changes_disabled = true;
     settings_account.update_avatar_change_display();
     assert.equal($("#user_avatar_upload_button .button").attr('disabled'), 'disabled');
-    assert.equal($("#user_avatar_delete_button .button").attr('disabled'), 'disabled');
+    assert.equal($("#user-avatar-upload-widget .settings-page-delete-button .button").attr('disabled'), 'disabled');
 
     // If organization admin, these UI elements are never disabled.
     page_params.is_admin = true;

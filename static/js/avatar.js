@@ -46,13 +46,13 @@ exports.build_user_avatar_widget = function (upload_function) {
     };
 
     if (page_params.avatar_source === 'G') {
-        $("#user_avatar_delete_button").hide();
+        $("#user-avatar-upload-widget .settings-page-delete-button").hide();
         $("#user-avatar-source").show();
     } else {
         $("#user-avatar-source").hide();
     }
 
-    $("#user_avatar_delete_button").on('click keydown', function (e) {
+    $("#user-avatar-upload-widget .settings-page-delete-button").on('click keydown', function (e) {
         e.preventDefault();
         e.stopPropagation();
         channel.del({
