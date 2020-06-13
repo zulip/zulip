@@ -260,17 +260,8 @@ function get_person_suggestions(people_getter, last, operators, autocomplete_ope
 }
 
 function get_default_suggestion(operators) {
-    // Here we return the canonical suggestion for the last query that the
-    // user typed.
-    if (operators !== undefined && operators.length > 0) {
-        return format_as_suggestion(operators);
-    }
-    return false;
-}
-
-function get_default_suggestion_legacy(operators) {
-    // Here we return the canonical suggestion for the full query that the
-    // user typed.  (The caller passes us the parsed query as "operators".)
+    // Here we return the canonical suggestion for the query that the
+    // user typed. (The caller passes us the parsed query as "operators".)
     if (operators.length === 0) {
         return {description: '', search_string: ''};
     }
@@ -675,9 +666,7 @@ exports.get_search_result = function (base_query, query) {
     // a suggestion for `has:abc`does not make sense.
     if (last.operator !== '' && last.operator !== 'has' && last.operator !== 'is') {
         suggestion = get_default_suggestion(query_operators);
-        if (suggestion) {
-            attacher.push(suggestion);
-        }
+        attacher.push(suggestion);
     }
 
     // only make one people_getter to avoid duplicate work
@@ -751,7 +740,7 @@ exports.get_search_result_legacy = function (query) {
         }
     }
 
-    const base = get_default_suggestion_legacy(operators.slice(0, -1));
+    const base = get_default_suggestion(operators.slice(0, -1));
     const attacher = make_attacher(base);
 
     // Display the default first
@@ -759,7 +748,7 @@ exports.get_search_result_legacy = function (query) {
     // is not displayed in that case. e.g. `messages with one or more abc` as
     // a suggestion for `has:abc`does not make sense.
     if (last.operator !== '' && last.operator !== 'has' && last.operator !== 'is') {
-        suggestion = get_default_suggestion_legacy(operators);
+        suggestion = get_default_suggestion(operators);
         attacher.push(suggestion);
     }
 
