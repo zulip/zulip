@@ -119,11 +119,18 @@
         }
 
         .recent_topic_unread_count {
-            background-color: hsl(0, 0%, 89%);
+            background-color: hsl(105, 2%, 50%) !important;
+            color: hsl(0, 0%, 100%);
             float: right;
-            padding: 0.5px;
+            height: 16px;
+            line-height: 16px;
+            font-size: 12px;
+            font-weight: 400;
+            letter-spacing: .6px;
+            border-radius: 4px;
+            background-color: hsl(0, 0%, 89%);
+            padding: 0 4px;
             margin-right: 10px;
-            border-radius: 5px;
         }
 
         .recent_avatars {
