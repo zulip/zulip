@@ -187,6 +187,29 @@ exports.hide_or_show_history_limit_message = function (msg_list) {
         return;
     }
 
+    if (msg_list.data.fetch_status.has_found_oldest() &&
+        current_msg_list !== home_msg_list) {
+        const filter = narrow_state.filter();
+        // Potentially display the notice that lets users know
+        // that not all messages were searched.  One could
+        // imagine including `filter.is_search()` in these
+        // conditions, but there's a very legitimate use case
+        // for moderation of searching for all messages sent
+        // by a potential spammer user.
+        if (!filter.contains_only_private_messages() &&
+            !filter.includes_full_stream_history() &&
+            !filter.is_personal_filter()) {
+            $(".all-messages-search-caution").show();
+            // Set the link to point to this search with streams:public added.
+            // It's a bit hacky to use the href, but
+            // !filter.includes_full_stream_history() implies streams:public
+            // wasn't already present.
+            $(".all-messages-search-caution a.search-shared-history").attr(
+                "href", window.location.hash.replace("#narrow/", "#narrow/streams/public/")
+            );
+        }
+    }
+
     if (msg_list.data.fetch_status.history_limited()) {
         exports.show_history_limit_message();
     } else {

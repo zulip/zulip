@@ -22,6 +22,10 @@ const FetchStatus = function () {
         return !loading_older && !found_oldest;
     };
 
+    self.has_found_oldest = function () {
+        return found_oldest;
+    };
+
     self.history_limited = function () {
         return history_limited;
     };

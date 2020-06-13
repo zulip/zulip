@@ -53,10 +53,6 @@ function process_result(data, opts) {
     pm_list.update_private_messages();
     recent_topics.process_messages(messages);
 
-    if (opts.pre_scroll_cont !== undefined) {
-        opts.pre_scroll_cont(data);
-    }
-
     stream_list.maybe_scroll_narrow_into_view();
 
     if (opts.cont !== undefined) {
@@ -225,7 +221,6 @@ exports.load_messages_for_narrow = function (opts) {
         num_before: consts.narrow_before,
         num_after: consts.narrow_after,
         msg_list: msg_list,
-        pre_scroll_cont: opts.pre_scroll_cont,
         cont: function () {
             message_scroll.hide_indicators();
             opts.cont();

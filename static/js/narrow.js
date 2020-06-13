@@ -290,26 +290,6 @@ exports.activate = function (raw_operators, opts) {
                 msg_list.network_time = new Date();
                 maybe_report_narrow_time(msg_list);
             },
-            pre_scroll_cont: function () {
-                // Potentially display the notice that lets users know
-                // that not all messages were searched.  One could
-                // imagine including `filter.is_search()` in these
-                // conditions, but there's a very legitimate use case
-                // for moderation of searching for all messages sent
-                // by a potential spammer user.
-                if (!filter.contains_only_private_messages() &&
-                    !filter.includes_full_stream_history() &&
-                    !filter.is_personal_filter()) {
-                    $(".all-messages-search-caution").show();
-                    // Set the link to point to this search with streams:public added.
-                    // It's a bit hacky to use the href, but
-                    // !filter.includes_full_stream_history() implies streams:public
-                    // wasn't already present.
-                    $(".all-messages-search-caution a.search-shared-history").attr(
-                        "href", window.location.hash.replace("#narrow/", "#narrow/streams/public/")
-                    );
-                }
-            },
         });
     }());
 

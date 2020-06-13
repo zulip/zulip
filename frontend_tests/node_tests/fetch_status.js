@@ -22,6 +22,14 @@ function blocked_older() {
     assert.equal(fetch_status.can_load_older_messages(), false);
 }
 
+function has_found_oldest() {
+    assert.equal(fetch_status.has_found_oldest(), true);
+}
+
+function has_not_found_oldest() {
+    assert.equal(fetch_status.has_found_oldest(), false);
+}
+
 function has_found_newest() {
     assert.equal(fetch_status.has_found_newest(), true);
 }
@@ -47,6 +55,7 @@ run_test('basics', () => {
     blocked_newer();
     blocked_older();
     can_load_history();
+    has_not_found_oldest();
     has_not_found_newest();
 
     let data = {
@@ -57,6 +66,7 @@ run_test('basics', () => {
     fetch_status.finish_newer_batch(data);
     fetch_status.finish_older_batch(data);
 
+    has_found_oldest();
     has_found_newest();
     blocked_newer();
     blocked_older();
