@@ -133,6 +133,7 @@ class OpenAPIToolsTest(ZulipTestCase):
                                         TEST_RESPONSE_SUCCESS)
 
         # Overwrite the exception list with a mocked one
+        exclude_properties = openapi.EXCLUDE_PROPERTIES
         openapi.EXCLUDE_PROPERTIES = {
             TEST_ENDPOINT: {
                 TEST_METHOD: {
@@ -149,6 +150,7 @@ class OpenAPIToolsTest(ZulipTestCase):
                                         TEST_ENDPOINT,
                                         TEST_METHOD,
                                         TEST_RESPONSE_SUCCESS)
+        openapi.EXCLUDE_PROPERTIES = exclude_properties
 
     def test_to_python_type(self) -> None:
         TYPES = {

@@ -62,6 +62,7 @@ from zerver.models import (
     get_user,
     get_user_by_delivery_email,
 )
+from zerver.openapi.openapi import validate_against_openapi_schema
 from zerver.tornado.event_queue import clear_client_event_queues_for_testing
 from zilencer.models import get_remote_server_by_uuid
 
@@ -152,7 +153,14 @@ class ZulipTestCase(TestCase):
         encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
-        return django_client.patch(url, encoded, **kwargs)
+        result = django_client.patch(url, encoded, **kwargs)
+        if (url.startswith("/json") or url.startswith("/api/v1")):
+            content = ujson.loads(result.content)
+            url = re.sub(r"\?.*", "", url)
+            validate_against_openapi_schema(content,
+                                            url.replace("/json/", "/").replace("/api/v1/", "/"),
+                                            "patch", str(result.status_code))
+        return result
 
     @instrument_url
     def client_patch_multipart(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
@@ -167,11 +175,18 @@ class ZulipTestCase(TestCase):
         encoded = encode_multipart(BOUNDARY, info)
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
-        return django_client.patch(
+        result = django_client.patch(
             url,
             encoded,
             content_type=MULTIPART_CONTENT,
             **kwargs)
+        if (url.startswith("/json") or url.startswith("/api/v1")):
+            content = ujson.loads(result.content)
+            url = re.sub(r"\?.*", "", url)
+            validate_against_openapi_schema(content,
+                                            url.replace("/json/", "/").replace("/api/v1/", "/"),
+                                            "patch", str(result.status_code))
+        return result
 
     @instrument_url
     def client_put(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
@@ -185,7 +200,14 @@ class ZulipTestCase(TestCase):
         encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
-        return django_client.delete(url, encoded, **kwargs)
+        result = django_client.delete(url, encoded, **kwargs)
+        if (url.startswith("/json") or url.startswith("/api/v1")):
+            content = ujson.loads(result.content)
+            url = re.sub(r"\?.*", "", url)
+            validate_against_openapi_schema(content,
+                                            url.replace("/json/", "/").replace("/api/v1/", "/"),
+                                            "delete", str(result.status_code))
+        return result
 
     @instrument_url
     def client_options(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
@@ -205,7 +227,17 @@ class ZulipTestCase(TestCase):
     def client_post(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
-        return django_client.post(url, info, **kwargs)
+        result = django_client.post(url, info, **kwargs)
+        if (url.startswith("/json") or url.startswith("/api/v1")):
+            try:
+                content = ujson.loads(result.content)
+            except ValueError:
+                return result
+            url = re.sub(r"\?.*", "", url)
+            validate_against_openapi_schema(content,
+                                            url.replace("/json/", "/").replace("/api/v1/", "/"),
+                                            "post", str(result.status_code))
+        return result
 
     @instrument_url
     def client_post_request(self, url: str, req: Any) -> HttpResponse:
@@ -225,8 +257,17 @@ class ZulipTestCase(TestCase):
     def client_get(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
-        return django_client.get(url, info, **kwargs)
-
+        result = django_client.get(url, info, **kwargs)
+        if (url.startswith("/json") or url.startswith("/api/v1")):
+            try:
+                content = ujson.loads(result.content)
+            except ValueError:
+                return result
+            url = re.sub(r"\?.*", "", url)
+            validate_against_openapi_schema(content,
+                                            url.replace("/json/", "/").replace("/api/v1/", "/"),
+                                            "get", str(result.status_code))
+        return result
     example_user_map = dict(
         hamlet='hamlet@zulip.com',
         cordelia='cordelia@zulip.com',
