@@ -302,8 +302,8 @@ run_test("test_recent_topics_launch", () => {
     // since they are generated in external libraries
     // and are not to be tested here.
     const expected = {
-        filter_participated: true,
-        filter_unread: true,
+        filter_participated: false,
+        filter_unread: false,
         filter_muted: false,
         search_val: '',
     };
@@ -402,6 +402,7 @@ run_test('test_filter_unread', () => {
     rt.process_messages(messages);
     assert.equal(rt.inplace_rerender('1:topic-1'), true);
 
+    $('#recent_topics_filter_buttons').removeClass('btn-recent-selected');
     global.stub_templates(function (template_name, data) {
         assert.equal(template_name, 'recent_topics_filters');
         assert.equal(data.filter_unread, expected.filter_unread);
@@ -409,8 +410,7 @@ run_test('test_filter_unread', () => {
         return '<recent_topics table stub>';
     });
 
-    // This will deselect participated and leave only unread selected.
-    rt.set_filter('participated');
+    rt.set_filter('unread');
     rt.update_filters_view();
 
     global.stub_templates(function (template_name, data) {
@@ -475,13 +475,14 @@ run_test('test_filter_participated', () => {
     // remove muted filter
     rt.set_filter('muted');
 
+    $('#recent_topics_filter_buttons').removeClass('btn-recent-selected');
     global.stub_templates(function (template_name, data) {
         assert.equal(template_name, 'recent_topics_filters');
         assert.equal(data.filter_unread, expected.filter_unread);
         assert.equal(data.filter_participated, expected.filter_participated);
         return '<recent_topics table stub>';
     });
-    rt.set_filter('unread');
+    rt.set_filter('participated');
     rt.update_filters_view();
 
 
