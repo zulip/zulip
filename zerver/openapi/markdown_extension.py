@@ -197,10 +197,10 @@ def get_openapi_param_example_value_as_string(endpoint: str, method: str, param:
     if param_type in ["object", "array"]:
         example_value = param.get("example", None)
         if not example_value:
-            msg = """All array and object type request parameters must have
-concrete examples. The openAPI documentation for {}/{} is missing an example
-value for the {} parameter. Without this we cannot automatically generate a
-cURL example.""".format(endpoint, method, param_name)
+            msg = f"""All array and object type request parameters must have
+concrete examples. The openAPI documentation for {endpoint}/{method} is missing an example
+value for the {param_name} parameter. Without this we cannot automatically generate a
+cURL example."""
             raise ValueError(msg)
         ordered_ex_val_str = json.dumps(example_value, sort_keys=True)
         if curl_argument:

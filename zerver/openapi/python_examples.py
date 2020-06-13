@@ -258,7 +258,7 @@ def get_subscription_status(client: Client) -> None:
     user_id = 7
     stream_id = 1
     result = client.call_endpoint(
-        url='/users/{}/subscriptions/{}'.format(user_id, stream_id),
+        url=f'/users/{user_id}/subscriptions/{stream_id}',
         method='GET',
     )
     # {code_example|end}

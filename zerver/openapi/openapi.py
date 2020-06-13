@@ -207,7 +207,7 @@ def validate_object(content: Dict[str, Any], schema: Dict[str, Any]) -> None:
             if req_key in exclusion_list:
                 continue
             if req_key not in content.keys():
-                raise SchemaError('Expected to find the "{}" required key'.format(req_key))
+                raise SchemaError(f'Expected to find the "{req_key}" required key')
 
 def to_python_type(py_type: str) -> type:
     """Transform an OpenAPI-like type to a Python one.

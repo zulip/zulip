@@ -684,11 +684,11 @@ class ZulipTestCase(TestCase):
                 history_public_to_subscribers=history_public_to_subscribers,
             )
         except IntegrityError:  # nocoverage -- this is for bugs in the tests
-            raise Exception('''
-                {} already exists
+            raise Exception(f'''
+                {stream_name} already exists
 
                 Please call make_stream with a stream name
-                that is not already in use.'''.format(stream_name))
+                that is not already in use.''')
 
         recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
         stream.recipient = recipient

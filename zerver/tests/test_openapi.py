@@ -336,10 +336,10 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         try:
             get_openapi_parameters(url_pattern, method)
             if not msg:  # nocoverage
-                msg = """
+                msg = f"""
 We found some OpenAPI documentation for {method} {url_pattern},
 so maybe we shouldn't mark it as intentionally undocumented in the urls.
-""".format(method=method, url_pattern=url_pattern)
+"""
             raise AssertionError(msg)  # nocoverage
         except KeyError:
             return
@@ -427,9 +427,9 @@ so maybe we shouldn't mark it as intentionally undocumented in the urls.
         """ Print a *VERY* clear and verbose error message for when the types
         (between the OpenAPI documentation and the function declaration) don't match. """
 
-        msg = """
+        msg = f"""
 The types for the request parameters in zerver/openapi/zulip.yaml
-do not match the types declared in the implementation of {}.\n""".format(function.__name__)
+do not match the types declared in the implementation of {function.__name__}.\n"""
         msg += '='*65 + '\n'
         msg += "{:<10s}{:^30s}{:>10s}\n".format("Parameter", "OpenAPI Type",
                                                 "Function Declaration Type")
@@ -582,10 +582,10 @@ do not match the types declared in the implementation of {}.\n""".format(functio
                 if url_pattern in self.pending_endpoints:
                     # HACK: After all pending_endpoints have been resolved, we should remove
                     # this segment and the "msg" part of the `ensure_no_...` method.
-                    msg = """
+                    msg = f"""
 We found some OpenAPI documentation for {method} {url_pattern},
 so maybe we shouldn't include it in pending_endpoints.
-""".format(method=method, url_pattern=url_pattern)
+"""
                     self.ensure_no_documentation_if_intentionally_undocumented(url_pattern,
                                                                                method, msg)
                     continue

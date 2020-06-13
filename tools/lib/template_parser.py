@@ -213,9 +213,9 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None, check_indent:
     try:
         tokens = tokenize(text)
     except FormattedException as e:
-        raise TemplateParserException('''
-            fn: {}
-            {}'''.format(fn, e))
+        raise TemplateParserException(f'''
+            fn: {fn}
+            {e}''')
 
     class State:
         def __init__(self, func: Callable[[Token], None]) -> None:

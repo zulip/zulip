@@ -880,12 +880,12 @@ class InviteUserTest(InviteUserBase):
         actual_count = len(queries)
         expected_count = 312
         if abs(actual_count - expected_count) > 1:
-            raise AssertionError('''
+            raise AssertionError(f'''
                 Unexpected number of queries:
 
-                expected query count: {}
-                actual: {}
-                '''.format(expected_count, actual_count))
+                expected query count: {expected_count}
+                actual: {actual_count}
+                ''')
 
         self.assert_json_success(result)
 

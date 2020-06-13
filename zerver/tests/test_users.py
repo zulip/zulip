@@ -494,7 +494,7 @@ class PermissionTest(ZulipTestCase):
         req = dict(role=UserProfile.ROLE_GUEST)
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
-            result = self.client_patch('/json/users/{}'.format(iago.id), req)
+            result = self.client_patch(f'/json/users/{iago.id}', req)
         self.assert_json_success(result)
 
         iago = self.example_user("iago")
@@ -518,7 +518,7 @@ class PermissionTest(ZulipTestCase):
         req = dict(role=UserProfile.ROLE_REALM_OWNER)
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
-            result = self.client_patch('/json/users/{}'.format(polonius.id), req)
+            result = self.client_patch(f'/json/users/{polonius.id}', req)
         self.assert_json_success(result)
 
         polonius = self.example_user("polonius")
@@ -542,7 +542,7 @@ class PermissionTest(ZulipTestCase):
         req = dict(role=UserProfile.ROLE_REALM_OWNER)
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
-            result = self.client_patch('/json/users/{}'.format(iago.id), req)
+            result = self.client_patch(f'/json/users/{iago.id}', req)
         self.assert_json_success(result)
 
         iago = self.example_user("iago")
@@ -565,7 +565,7 @@ class PermissionTest(ZulipTestCase):
         req = dict(role=UserProfile.ROLE_REALM_ADMINISTRATOR)
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
-            result = self.client_patch('/json/users/{}'.format(iago.id), req)
+            result = self.client_patch(f'/json/users/{iago.id}', req)
         self.assert_json_success(result)
 
         iago = self.example_user("iago")
@@ -1103,20 +1103,20 @@ class UserProfileTest(ZulipTestCase):
         stream = get_stream('Rome', iago.realm)
 
         # Invalid User ID.
-        result = self.client_get("/json/users/25/subscriptions/{}".format(stream.id))
+        result = self.client_get(f"/json/users/25/subscriptions/{stream.id}")
         self.assert_json_error(result, "No such user")
 
         # Invalid Stream ID.
-        result = self.client_get("/json/users/{}/subscriptions/25".format(iago.id))
+        result = self.client_get(f"/json/users/{iago.id}/subscriptions/25")
         self.assert_json_error(result, "Invalid stream id")
 
-        result = ujson.loads(self.client_get("/json/users/{}/subscriptions/{}".format(iago.id, stream.id)).content)
+        result = ujson.loads(self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content)
         self.assertFalse(result['is_subscribed'])
 
         # Subscribe to the stream.
         self.subscribe(iago, stream.name)
         with queries_captured() as queries:
-            result = ujson.loads(self.client_get("/json/users/{}/subscriptions/{}".format(iago.id, stream.id)).content)
+            result = ujson.loads(self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content)
 
         self.assert_length(queries, 7)
         self.assertTrue(result['is_subscribed'])
@@ -1126,7 +1126,7 @@ class UserProfileTest(ZulipTestCase):
         self.login('polonius')
         self.assertTrue(polonius.is_guest)
 
-        result = self.client_get("/json/users/{}/subscriptions/{}".format(iago.id, stream.id))
+        result = self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}")
         self.assert_json_error(result, "Invalid stream id")
 
 class ActivateTest(ZulipTestCase):
@@ -1178,7 +1178,7 @@ class ActivateTest(ZulipTestCase):
         result = self.client_delete('/json/users/{}'.format(self.example_user("webhook_bot").id))
         self.assert_json_error(result, 'No such user')
 
-        result = self.client_delete('/json/users/{}'.format(desdemona.id))
+        result = self.client_delete(f'/json/users/{desdemona.id}')
         self.assert_json_success(result)
 
         result = self.client_delete(f'/json/users/{iago.id}')

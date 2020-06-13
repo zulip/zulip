@@ -127,11 +127,11 @@ path_maps: Dict[str, Dict[str, str]] = {
 
 def update_id_map(table: TableName, old_id: int, new_id: int) -> None:
     if table not in ID_MAP:
-        raise Exception('''
-            Table {} is not initialized in ID_MAP, which could
+        raise Exception(f'''
+            Table {table} is not initialized in ID_MAP, which could
             mean that we have not thought through circular
             dependencies.
-            '''.format(table))
+            ''')
     ID_MAP[table][old_id] = new_id
 
 def fix_datetime_fields(data: TableData, table: TableName) -> None:

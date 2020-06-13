@@ -447,17 +447,14 @@ class Config:
                     You must specify a virtual_parent if you are
                     using id_source.''')
             if self.id_source[0] != self.virtual_parent.table:
-                raise AssertionError('''
-                    Configuration error.  To populate {}, you
-                    want data from {}, but that differs from
-                    the table name of your virtual parent ({}),
+                raise AssertionError(f'''
+                    Configuration error.  To populate {self.table}, you
+                    want data from {self.id_source[0]}, but that differs from
+                    the table name of your virtual parent ({self.virtual_parent.table}),
                     which suggests you many not have set up
                     the ordering correctly.  You may simply
                     need to assign a virtual_parent, or there
-                    may be deeper issues going on.'''.format(
-                    self.table,
-                    self.id_source[0],
-                    self.virtual_parent.table))
+                    may be deeper issues going on.''')
 
 
 def export_from_config(response: TableData, config: Config, seed_object: Optional[Any]=None,

@@ -15,9 +15,9 @@ from scripts.lib.zulip_tools import get_config_file
 
 
 def write_realm_nginx_config_line(f: Any, host: str, port: str) -> None:
-    f.write("""if ($host = '{}') {{
-    set $tornado_server http://tornado{};
-}}\n""".format(host, port))
+    f.write(f"""if ($host = '{host}') {{
+    set $tornado_server http://tornado{port};
+}}\n""")
 
 # Basic system to do Tornado sharding.  Writes two output .tmp files that need
 # to be renamed to the following files to finalize the changes:
