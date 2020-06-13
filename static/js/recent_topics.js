@@ -349,7 +349,7 @@ exports.launch = function () {
         },
     });
     exports.complete_rerender();
-    $("#recent_topics_search").focus();
+    $("#recent_topics_search").select();
 };
 
 window.recent_topics = exports;
