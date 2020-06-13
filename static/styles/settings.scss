@@ -657,7 +657,6 @@ input[type=checkbox] {
     margin-left: 20px;
 }
 
-#user-settings-avatar,
 #realm-icon-section {
     border-radius: 5px;
     box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
@@ -1184,6 +1183,16 @@ input[type=checkbox] {
 
 .right.show .emoji_alt_code {
     font-size: 1.2em;
+}
+
+#user-avatar-upload-widget {
+
+    .image_upload_button {
+        border-radius: 5px;
+        box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
+        z-index: 99;
+    }
+
 }
 
 .avatar-icon-logo-settings {
@@ -2083,13 +2092,6 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     .realm-logo-img {
         max-width: 400px;
         height: 50px;
-    }
-}
-
-@media (max-width: 786px) {
-    #user-settings-avatar {
-        width: 220px;
-        height: 220px;
     }
 }
 
