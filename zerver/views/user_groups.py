@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Sequence
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -31,7 +31,7 @@ from zerver.views.streams import FuncKwargPair, compose_views
 @has_request_variables
 def add_user_group(request: HttpRequest, user_profile: UserProfile,
                    name: str=REQ(),
-                   members: List[int]=REQ(validator=check_list(check_int), default=[]),
+                   members: Sequence[int]=REQ(validator=check_list(check_int), default=[]),
                    description: str=REQ()) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm)
     check_add_user_group(user_profile.realm, name, user_profiles, description)
@@ -74,8 +74,8 @@ def delete_user_group(request: HttpRequest, user_profile: UserProfile,
 @has_request_variables
 def update_user_group_backend(request: HttpRequest, user_profile: UserProfile,
                               user_group_id: int=REQ(validator=check_int),
-                              delete: List[int]=REQ(validator=check_list(check_int), default=[]),
-                              add: List[int]=REQ(validator=check_list(check_int), default=[]),
+                              delete: Sequence[int]=REQ(validator=check_list(check_int), default=[]),
+                              add: Sequence[int]=REQ(validator=check_list(check_int), default=[]),
                               ) -> HttpResponse:
     if not add and not delete:
         return json_error(_('Nothing to do. Specify at least one of "add" or "delete".'))

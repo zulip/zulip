@@ -1,6 +1,6 @@
 # Webhooks for external integrations.
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional, Sequence, Tuple
 
 from django.http import HttpRequest, HttpResponse
 
@@ -49,7 +49,7 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
         topic = customer_id
     body = None
 
-    def update_string(blacklist: List[str]=[]) -> str:
+    def update_string(blacklist: Sequence[str] = []) -> str:
         assert('previous_attributes' in payload['data'])
         previous_attributes = payload['data']['previous_attributes']
         for attribute in blacklist:
@@ -60,7 +60,7 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
                        ' is now ' + stringify(object_[attribute])
                        for attribute in sorted(previous_attributes.keys()))
 
-    def default_body(update_blacklist: List[str]=[]) -> str:
+    def default_body(update_blacklist: Sequence[str] = []) -> str:
         body = '{resource} {verbed}'.format(
             resource=linkified_id(object_['id']), verbed=event.replace('_', ' '))
         if event == 'updated':

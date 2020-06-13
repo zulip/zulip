@@ -1,5 +1,17 @@
 from collections import defaultdict
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set, Tuple, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Union,
+)
 
 import ujson
 from django.conf import settings
@@ -371,7 +383,7 @@ def add_subscriptions_backend(
             Stream.STREAM_POST_POLICY_TYPES), default=Stream.STREAM_POST_POLICY_EVERYONE),
         history_public_to_subscribers: Optional[bool]=REQ(validator=check_bool, default=None),
         announce: bool=REQ(validator=check_bool, default=False),
-        principals: List[Union[str, int]]=REQ(validator=check_variable_type([
+        principals: Sequence[Union[str, int]]=REQ(validator=check_variable_type([
             check_list(check_string), check_list(check_int)]), default=[]),
         authorization_errors_fatal: bool=REQ(validator=check_bool, default=True),
 ) -> HttpResponse:

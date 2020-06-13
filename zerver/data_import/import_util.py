@@ -289,9 +289,9 @@ def build_recipient(type_id: int, recipient_id: int, type: int) -> ZerverFieldsT
     recipient_dict = model_to_dict(recipient)
     return recipient_dict
 
-def build_recipients(zerver_userprofile: List[ZerverFieldsT],
-                     zerver_stream: List[ZerverFieldsT],
-                     zerver_huddle: List[ZerverFieldsT]=[]) -> List[ZerverFieldsT]:
+def build_recipients(zerver_userprofile: Iterable[ZerverFieldsT],
+                     zerver_stream: Iterable[ZerverFieldsT],
+                     zerver_huddle: Iterable[ZerverFieldsT] = []) -> List[ZerverFieldsT]:
     '''
     As of this writing, we only use this in the HipChat
     conversion.  The Slack and Gitter conversions do it more

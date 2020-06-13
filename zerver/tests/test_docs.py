@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, List
+from typing import Any, Dict, Sequence
 from unittest import mock
 from urllib.parse import urlsplit
 
@@ -34,8 +34,8 @@ class DocPageTest(ZulipTestCase):
             print("ERROR: {}".format(content.get('msg')))
             print()
 
-    def _test(self, url: str, expected_content: str, extra_strings: List[str]=[],
-              landing_missing_strings: List[str]=[], landing_page: bool=True,
+    def _test(self, url: str, expected_content: str, extra_strings: Sequence[str]=[],
+              landing_missing_strings: Sequence[str]=[], landing_page: bool=True,
               doc_html_str: bool=False) -> None:
 
         # Test the URL on the "zephyr" subdomain

@@ -74,3 +74,39 @@ rules:
       - pattern: psycopg2.sql.SQL(... .format(...))
     severity: ERROR
     message: "Do not write a SQL injection vulnerability please"
+
+  - id: mutable-default-type
+    languages: [python]
+    pattern-either:
+      - pattern: |
+          def $F(..., $A: typing.List[...] = [...], ...) -> ...:
+              ...
+      - pattern: |
+          def $F(..., $A: typing.Optional[typing.List[...]] = [...], ...) -> ...:
+              ...
+      - pattern: |
+          def $F(..., $A: typing.List[...] = zerver.lib.request.REQ(..., default=[...], ...), ...) -> ...:
+              ...
+      - pattern: |
+          def $F(..., $A: typing.Optional[typing.List[...]] = zerver.lib.request.REQ(..., default=[...], ...), ...) -> ...:
+              ...
+      - pattern: |
+          def $F(..., $A: typing.Dict[...] = {}, ...) -> ...:
+              ...
+      - pattern: |
+          def $F(..., $A: typing.Optional[typing.Dict[...]] = {}, ...) -> ...:
+              ...
+      - pattern: |
+          def $F(..., $A: typing.Dict[...] = zerver.lib.request.REQ(..., default={}, ...), ...) -> ...:
+              ...
+      - pattern: |
+          def $F(..., $A: typing.Optional[typing.Dict[...]] = zerver.lib.request.REQ(..., default={}, ...), ...) -> ...:
+              ...
+      - pattern: |
+          def $F(..., $A: typing.Set[...] = set(), ...) -> ...:
+              ...
+      - pattern: |
+          def $F(..., $A: typing.Optional[typing.Set[...]] = set(), ...) -> ...:
+              ...
+    severity: ERROR
+    message: "Guard mutable default with read-only type (Sequence, Mapping, AbstractSet)"

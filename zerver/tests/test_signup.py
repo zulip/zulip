@@ -4,7 +4,7 @@ import smtplib
 import time
 import urllib
 from email.utils import parseaddr
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Sequence
 from unittest.mock import MagicMock, patch
 
 import ujson
@@ -772,7 +772,7 @@ class InviteUserBase(ZulipTestCase):
         tokenized_no_reply_email = parseaddr(outbox[0].from_email)[1]
         self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
 
-    def invite(self, invitee_emails: str, stream_names: List[str], body: str='',
+    def invite(self, invitee_emails: str, stream_names: Sequence[str], body: str='',
                invite_as: int=1) -> HttpResponse:
         """
         Invites the specified users to Zulip with the specified streams.
@@ -3623,7 +3623,7 @@ class UserSignUpTest(InviteUserBase):
             # Name comes from the POST request, not LDAP
             self.assertEqual(user_profile.full_name, 'Non-LDAP Full Name')
 
-    def ldap_invite_and_signup_as(self, invite_as: int, streams: List[str]=['Denmark']) -> None:
+    def ldap_invite_and_signup_as(self, invite_as: int, streams: Sequence[str] = ['Denmark']) -> None:
         self.init_default_ldap_database()
         ldap_user_attr_map = {'full_name': 'cn'}
 

@@ -377,8 +377,8 @@ def os_families() -> Set[str]:
     distro_info = parse_os_release()
     return {distro_info["ID"], *distro_info.get("ID_LIKE", "").split()}
 
-def files_and_string_digest(filenames: List[str],
-                            extra_strings: List[str]) -> str:
+def files_and_string_digest(filenames: Sequence[str],
+                            extra_strings: Sequence[str]) -> str:
     # see is_digest_obsolete for more context
     sha1sum = hashlib.sha1()
     for fn in filenames:
@@ -391,8 +391,8 @@ def files_and_string_digest(filenames: List[str],
     return sha1sum.hexdigest()
 
 def is_digest_obsolete(hash_name: str,
-                       filenames: List[str],
-                       extra_strings: List[str]=[]) -> bool:
+                       filenames: Sequence[str],
+                       extra_strings: Sequence[str] = []) -> bool:
     '''
     In order to determine if we need to run some
     process, we calculate a digest of the important
@@ -425,8 +425,8 @@ def is_digest_obsolete(hash_name: str,
     return new_hash != old_hash
 
 def write_new_digest(hash_name: str,
-                     filenames: List[str],
-                     extra_strings: List[str]=[]) -> None:
+                     filenames: Sequence[str],
+                     extra_strings: Sequence[str] = []) -> None:
     hash_path = os.path.join(get_dev_uuid_var_path(), hash_name)
     new_hash = files_and_string_digest(filenames, extra_strings)
     with open(hash_path, 'w') as f:
