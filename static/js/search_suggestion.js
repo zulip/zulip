@@ -625,9 +625,8 @@ exports.get_search_result = function (base_query, query) {
     // or pressing enter in between i.e search pill for is:starred has not yet been added,
     // then `base` should be equal to the default suggestion for `is:starred`. Thus the
     // description of `is:starred` will act as a prefix in every suggestion.
-    const base_query_operators = Filter.parse(base_query);
     const query_operators = Filter.parse(query);
-    const operators = base_query_operators.concat(query_operators);
+    const operators = Filter.parse((base_query + " " + query).trim());
     let last = {operator: '', operand: '', negated: false};
     if (query_operators.length > 0) {
         last = query_operators.slice(-1)[0];
