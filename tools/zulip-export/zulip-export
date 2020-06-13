@@ -84,5 +84,5 @@ for msg in result['messages']:
 filename = f"zulip-{options.stream}.json"
 with open(filename, 'wb') as f:
     f.write(json.dumps(messages, indent=0, sort_keys=False).encode('utf-8'))
-print("%d messages exported to %s" % (len(messages), filename))
+print(f"{len(messages)} messages exported to {filename}")
 sys.exit(0)

@@ -880,7 +880,7 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(check_valid_user_ids(realm.id, invalid_uid),
                          "User IDs is not a list")
         self.assertEqual(check_valid_user_ids(realm.id, [invalid_uid]),
-                         "Invalid user ID: %d" % (invalid_uid,))
+                         f"Invalid user ID: {invalid_uid}")
 
         invalid_uid = "abc"
         self.assertEqual(check_valid_user_ids(realm.id, [invalid_uid]),
@@ -891,19 +891,19 @@ class UserProfileTest(ZulipTestCase):
 
         # User is in different realm
         self.assertEqual(check_valid_user_ids(get_realm("zephyr").id, [hamlet.id]),
-                         "Invalid user ID: %d" % (hamlet.id,))
+                         f"Invalid user ID: {hamlet.id}")
 
         # User is not active
         hamlet.is_active = False
         hamlet.save()
         self.assertEqual(check_valid_user_ids(realm.id, [hamlet.id]),
-                         "User with ID %d is deactivated" % (hamlet.id,))
+                         f"User with ID {hamlet.id} is deactivated")
         self.assertEqual(check_valid_user_ids(realm.id, [hamlet.id], allow_deactivated=True),
                          None)
 
         # User is a bot
         self.assertEqual(check_valid_user_ids(realm.id, [bot.id]),
-                         "User with ID %d is a bot" % (bot.id,))
+                         f"User with ID {bot.id} is a bot")
 
         # Successfully get non-bot, active user belong to your realm
         self.assertEqual(check_valid_user_ids(realm.id, [othello.id]), None)

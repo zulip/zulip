@@ -70,22 +70,22 @@ replay_diff = secondary_recv_offset - secondary_replay_offset
 
 # xlog segments are normally 16MB each.  These thresholds are pretty arbitrary.
 if recv_diff > 5 * 16 * 1024**2:
-    report('CRITICAL', 'secondary is %d bytes behind on receiving xlog' % (recv_diff,))
+    report('CRITICAL', f'secondary is {recv_diff} bytes behind on receiving xlog')
 
 if replay_diff > 5 * 16 * 1024**2:
-    report('CRITICAL', 'secondary is %d bytes behind on applying received xlog' % (replay_diff,))
+    report('CRITICAL', f'secondary is {replay_diff} bytes behind on applying received xlog')
 
 if recv_diff < 0:
-    report('CRITICAL', 'secondary is %d bytes ahead on receiving xlog' % (recv_diff,))
+    report('CRITICAL', f'secondary is {recv_diff} bytes ahead on receiving xlog')
 
 if replay_diff < 0:
-    report('CRITICAL', 'secondary is %d bytes ahead on applying received xlog' % (replay_diff,))
+    report('CRITICAL', f'secondary is {replay_diff} bytes ahead on applying received xlog')
 
 if recv_diff > 16 * 1024**2:
-    report('WARNING', 'secondary is %d bytes behind on receiving xlog' % (recv_diff,))
+    report('WARNING', f'secondary is {recv_diff} bytes behind on receiving xlog')
 
 if replay_diff > 16 * 1024**2:
-    report('WARNING', 'secondary is %d bytes behind on applying received xlog' % (replay_diff,))
+    report('WARNING', f'secondary is {replay_diff} bytes behind on applying received xlog')
 
 report('OK', ('secondary is %d bytes behind on receiving and %d bytes behind on applying xlog'
               % (recv_diff, replay_diff)))

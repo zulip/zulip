@@ -16,10 +16,10 @@ def generate_dev_ldap_dir(mode: str, num_users: int=8) -> Dict[str, Dict[str, An
     mode = mode.lower()
     ldap_data = []
     for i in range(1, num_users+1):
-        name = 'LDAP User %d' % (i,)
-        email = 'ldapuser%d@zulip.com' % (i,)
-        phone_number = '999999999%d' % (i,)
-        birthdate = '19%02d-%02d-%02d' % (i, i, i)
+        name = f'LDAP User {i}'
+        email = f'ldapuser{i}@zulip.com'
+        phone_number = f'999999999{i}'
+        birthdate = f'19{i:02}-{i:02}-{i:02}'
         ldap_data.append((name, email, phone_number, birthdate))
 
     profile_images = [open(path, "rb").read() for path in

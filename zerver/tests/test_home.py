@@ -531,15 +531,15 @@ class HomeTest(ZulipTestCase):
         for i in range(3):
             bots[i] = self.create_bot(
                 owner=hamlet,
-                bot_email='bot-%d@zulip.com' % (i,),
-                bot_name='Bot %d' % (i,),
+                bot_email=f'bot-{i}@zulip.com',
+                bot_name=f'Bot {i}',
             )
 
         for i in range(3):
             defunct_user = self.create_non_active_user(
                 realm=realm,
-                email='defunct-%d@zulip.com' % (i,),
-                name='Defunct User %d' % (i,),
+                email=f'defunct-{i}@zulip.com',
+                name=f'Defunct User {i}',
             )
 
         result = self._get_home_page()

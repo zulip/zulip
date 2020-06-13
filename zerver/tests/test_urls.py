@@ -23,8 +23,7 @@ class PublicURLTest(ZulipTestCase):
             # e.g. self.client_post(url) if method is "post"
             response = getattr(self, method)(url)
             self.assertEqual(response.status_code, expected_status,
-                             msg="Expected %d, received %d for %s to %s" % (
-                                 expected_status, response.status_code, method, url))
+                             msg=f"Expected {expected_status}, received {response.status_code} for {method} to {url}")
 
     @slow("Tests dozens of endpoints, including all of our /help/ documents")
     def test_public_urls(self) -> None:
@@ -40,7 +39,7 @@ class PublicURLTest(ZulipTestCase):
                           "/en/accounts/login/", "/ru/accounts/login/",
                           "/help/"],
                     302: ["/", "/en/", "/ru/"],
-                    401: ["/json/streams/%d/members" % (denmark_stream_id,),
+                    401: [f"/json/streams/{denmark_stream_id}/members",
                           "/api/v1/users/me/subscriptions",
                           "/api/v1/messages",
                           "/json/messages",
@@ -92,16 +91,14 @@ class PublicURLTest(ZulipTestCase):
         with self.settings(GOOGLE_CLIENT_ID=None):
             resp = self.client_get("/api/v1/fetch_google_client_id")
             self.assertEqual(400, resp.status_code,
-                             msg="Expected 400, received %d for GET /api/v1/fetch_google_client_id" % (
-                                 resp.status_code,))
+                             msg=f"Expected 400, received {resp.status_code} for GET /api/v1/fetch_google_client_id")
             self.assertEqual('error', resp.json()['result'])
 
     def test_get_gcid_when_configured(self) -> None:
         with self.settings(GOOGLE_CLIENT_ID="ABCD"):
             resp = self.client_get("/api/v1/fetch_google_client_id")
             self.assertEqual(200, resp.status_code,
-                             msg="Expected 200, received %d for GET /api/v1/fetch_google_client_id" % (
-                                 resp.status_code,))
+                             msg=f"Expected 200, received {resp.status_code} for GET /api/v1/fetch_google_client_id")
             data = ujson.loads(resp.content)
             self.assertEqual('success', data['result'])
             self.assertEqual('ABCD', data['google_client_id'])

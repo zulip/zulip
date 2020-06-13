@@ -272,8 +272,8 @@ class Command(BaseCommand):
             num_boring_names = 300
 
             for i in range(min(num_names, num_boring_names)):
-                full_name = 'Extra%03d User' % (i,)
-                names.append((full_name, 'extrauser%d@zulip.com' % (i,)))
+                full_name = f'Extra{i:03} User'
+                names.append((full_name, f'extrauser{i}@zulip.com'))
 
             if num_names > num_boring_names:
                 fnames = ['Amber', 'Arpita', 'Bob', 'Cindy', 'Daniela', 'Dan', 'Dinesh',
@@ -319,7 +319,7 @@ class Command(BaseCommand):
                 ("Zulip Default Bot", "default-bot@zulip.com"),
             ]
             for i in range(options["extra_bots"]):
-                zulip_realm_bots.append(('Extra Bot %d' % (i,), 'extrabot%d@zulip.com' % (i,)))
+                zulip_realm_bots.append((f'Extra Bot {i}', f'extrabot{i}@zulip.com'))
 
             create_users(zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
 

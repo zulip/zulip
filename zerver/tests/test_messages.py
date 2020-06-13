@@ -142,7 +142,7 @@ class TopicHistoryTest(ZulipTestCase):
         # that the new topic is not accessible
         self.login_user(user_profile)
         self.subscribe(user_profile, stream_name)
-        endpoint = '/json/users/me/%d/topics' % (stream.id,)
+        endpoint = f'/json/users/me/{stream.id}/topics'
         result = self.client_get(endpoint, dict(), subdomain="zephyr")
         self.assert_json_success(result)
         history = result.json()['topics']
@@ -196,7 +196,7 @@ class TopicHistoryTest(ZulipTestCase):
         topic1_msg_id = create_test_message('topic1')
         topic0_msg_id = create_test_message('topic0')
 
-        endpoint = '/json/users/me/%d/topics' % (stream.id,)
+        endpoint = f'/json/users/me/{stream.id}/topics'
         result = self.client_get(endpoint, dict())
         self.assert_json_success(result)
         history = result.json()['topics']
@@ -968,7 +968,7 @@ class StreamMessagesTest(ZulipTestCase):
             # Make every other user be idle.
             long_term_idle = i % 2 > 0
 
-            email = 'foo%d@example.com' % (i,)
+            email = f'foo{i}@example.com'
             user = UserProfile.objects.create(
                 realm=realm,
                 email=email,
@@ -1380,7 +1380,7 @@ class MessageDictTest(ZulipTestCase):
                 message = Message(
                     sender=sender,
                     recipient=recipient,
-                    content='whatever %d' % (i,),
+                    content=f'whatever {i}',
                     rendered_content='DOES NOT MATTER',
                     rendered_content_version=bugdown.version,
                     date_sent=timezone_now(),
@@ -1573,7 +1573,7 @@ class SewMessageAndReactionTest(ZulipTestCase):
                 message = Message(
                     sender=sender,
                     recipient=recipient,
-                    content='whatever %d' % (i,),
+                    content=f'whatever {i}',
                     date_sent=timezone_now(),
                     sending_client=sending_client,
                     last_edit_time=timezone_now(),
@@ -3511,7 +3511,7 @@ class EditMessageTest(ZulipTestCase):
         messages = get_topic_messages(user_profile, new_stream, "test")
         self.assertEqual(len(messages), 3)
         self.assertEqual(messages[0].id, msg_id_later)
-        self.assertEqual(messages[2].content, "This topic was moved here from #**test move stream>test** by @_**Iago|%d**" % (user_profile.id,))
+        self.assertEqual(messages[2].content, f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**")
 
     def test_move_message_to_stream_no_allowed(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
@@ -3609,7 +3609,7 @@ class EditMessageTest(ZulipTestCase):
 
         messages = get_topic_messages(user_profile, new_stream, "test")
         self.assertEqual(len(messages), 4)
-        self.assertEqual(messages[3].content, "This topic was moved here from #**test move stream>test** by @_**Iago|%d**" % (user_profile.id,))
+        self.assertEqual(messages[3].content, f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**")
 
     def test_notify_old_thread_move_message_to_stream(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(

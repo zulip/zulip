@@ -2528,13 +2528,9 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertNotIn(f'AND message_id = {LARGER_THAN_MAX_MESSAGE_ID}', sql)
         self.assertIn('ORDER BY message_id ASC', sql)
 
-        cond = 'WHERE user_profile_id = %d AND message_id >= %d' % (
-            user_profile.id, first_unread_message_id,
-        )
+        cond = f'WHERE user_profile_id = {user_profile.id} AND message_id >= {first_unread_message_id}'
         self.assertIn(cond, sql)
-        cond = 'WHERE user_profile_id = %d AND message_id <= %d' % (
-            user_profile.id, first_unread_message_id - 1,
-        )
+        cond = f'WHERE user_profile_id = {user_profile.id} AND message_id <= {first_unread_message_id - 1}'
         self.assertIn(cond, sql)
         self.assertIn('UNION', sql)
 
@@ -2575,13 +2571,9 @@ class GetOldMessagesTest(ZulipTestCase):
         sql = queries[0]['sql']
         self.assertNotIn(f'AND message_id = {LARGER_THAN_MAX_MESSAGE_ID}', sql)
         self.assertIn('ORDER BY message_id ASC', sql)
-        cond = 'WHERE user_profile_id = %d AND message_id <= %d' % (
-            user_profile.id, first_unread_message_id - 1,
-        )
+        cond = f'WHERE user_profile_id = {user_profile.id} AND message_id <= {first_unread_message_id - 1}'
         self.assertIn(cond, sql)
-        cond = 'WHERE user_profile_id = %d AND message_id >= %d' % (
-            user_profile.id, first_visible_message_id,
-        )
+        cond = f'WHERE user_profile_id = {user_profile.id} AND message_id >= {first_visible_message_id}'
         self.assertIn(cond, sql)
 
     def test_use_first_unread_anchor_with_no_unread_messages(self) -> None:
@@ -2664,7 +2656,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # the `message_id = LARGER_THAN_MAX_MESSAGE_ID` hack.
         queries = [q for q in all_queries if '/* get_messages */' in q['sql']]
         self.assertEqual(len(queries), 1)
-        self.assertIn('AND zerver_message.id = %d' % (LARGER_THAN_MAX_MESSAGE_ID,),
+        self.assertIn(f'AND zerver_message.id = {LARGER_THAN_MAX_MESSAGE_ID}',
                       queries[0]['sql'])
 
     def test_exclude_muting_conditions(self) -> None:

@@ -22,9 +22,9 @@ def get_tornado_uri(realm: Realm) -> str:
         return settings.TORNADO_SERVER
 
     port = get_tornado_port(realm)
-    return "http://127.0.0.1:%d" % (port,)
+    return f"http://127.0.0.1:{port}"
 
 def notify_tornado_queue_name(port: int) -> str:
     if settings.TORNADO_PROCESSES == 1:
         return "notify_tornado"
-    return "notify_tornado_port_%d" % (port,)
+    return f"notify_tornado_port_{port}"

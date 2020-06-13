@@ -27,7 +27,7 @@ def register_development_user(request: HttpRequest) -> HttpResponse:
     if get_subdomain(request) == '':
         request.META['HTTP_HOST'] = settings.REALM_HOSTS['zulip']
     count = UserProfile.objects.count()
-    name = 'user-%d' % (count,)
+    name = f'user-{count}'
     email = f'{name}@zulip.com'
     prereg = create_preregistration_user(email, request, realm_creation=False,
                                          password_required=False)
@@ -42,9 +42,9 @@ def register_development_user(request: HttpRequest) -> HttpResponse:
 @csrf_exempt
 def register_development_realm(request: HttpRequest) -> HttpResponse:
     count = UserProfile.objects.count()
-    name = 'user-%d' % (count,)
+    name = f'user-{count}'
     email = f'{name}@zulip.com'
-    realm_name = 'realm-%d' % (count,)
+    realm_name = f'realm-{count}'
     prereg = create_preregistration_user(email, request, realm_creation=True,
                                          password_required=False)
     activation_url = create_confirmation_link(prereg,

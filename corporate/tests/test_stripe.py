@@ -149,7 +149,7 @@ def normalize_fixture_data(decorated_function: CallableT,
         ('src', 24), ('invst', 26), ('acct', 16), ('rcpt', 31)]
     # We'll replace cus_D7OT2jf5YAtZQ2 with something like cus_NORMALIZED0001
     pattern_translations = {
-        "%s_[A-Za-z0-9]{%d}" % (prefix, length): "%s_NORMALIZED%%0%dd" % (prefix, length - 10)
+        f"{prefix}_[A-Za-z0-9]{{{length}}}": f"{prefix}_NORMALIZED%0{length - 10}d"
         for prefix, length in id_lengths
     }
     # We'll replace "invoice_prefix": "A35BC4Q" with something like "invoice_prefix": "NORMA01"
@@ -168,7 +168,7 @@ def normalize_fixture_data(decorated_function: CallableT,
         # Don't use (..) notation, since the matched timestamp can easily appear in other fields
         pattern_translations[
             f'"{timestamp_field}": 1[5-9][0-9]{{8}}(?![0-9-])'
-        ] = '"%s": 1%02d%%07d' % (timestamp_field, i+1)
+        ] = f'"{timestamp_field}": 1{i+1:02}%07d'
 
     normalized_values: Dict[str, Dict[str, str]] = {
         pattern: {} for pattern in pattern_translations.keys()

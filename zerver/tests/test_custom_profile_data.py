@@ -314,7 +314,7 @@ class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
             'data': ujson.dumps([invalid_field_id]),
         })
         self.assert_json_error(result,
-                               'Field id %d not found.' % (invalid_field_id,))
+                               f'Field id {invalid_field_id} not found.')
 
         field = CustomProfileField.objects.get(name="Mentor", realm=realm)
         data: List[Dict[str, Union[int, str, List[int]]]] = [

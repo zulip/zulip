@@ -25,7 +25,7 @@ class Command(ZulipBaseCommand):
                 owner_detail = ""
                 if user.id in owner_user_ids:
                     owner_detail = " [owner]"
-                print('  %s (%s)%s' % (user.delivery_email, user.full_name, owner_detail))
+                print(f'  {user.delivery_email} ({user.full_name}){owner_detail}')
 
         else:
             raise CommandError('There are no admins for this realm!')

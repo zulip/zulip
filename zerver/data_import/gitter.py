@@ -235,7 +235,7 @@ def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
 
         message_json['zerver_message'] = zerver_message
         message_json['zerver_usermessage'] = zerver_usermessage
-        message_filename = os.path.join(output_dir, "messages-%06d.json" % (dump_file_id,))
+        message_filename = os.path.join(output_dir, f"messages-{dump_file_id:06}.json")
         logging.info("Writing Messages to %s\n", message_filename)
         write_data_to_file(os.path.join(message_filename), message_json)
 

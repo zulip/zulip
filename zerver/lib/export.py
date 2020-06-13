@@ -1130,7 +1130,7 @@ def write_message_partial_for_query(realm: Realm, message_query: Any, dump_file_
             break
 
         # Figure out the name of our shard file.
-        message_filename = os.path.join(output_dir, "messages-%06d.json" % (dump_file_id,))
+        message_filename = os.path.join(output_dir, f"messages-{dump_file_id:06}.json")
         message_filename += '.partial'
         logging.info("Fetched Messages for %s", message_filename)
 
@@ -1479,7 +1479,7 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
             with open(fn) as filename:
                 data = ujson.load(filename)
             for k in sorted(data):
-                f.write('%5d %s\n' % (len(data[k]), k))
+                f.write(f'{len(data[k]):5} {k}\n')
             f.write('\n')
 
         avatar_file = os.path.join(output_dir, 'avatars/records.json')
@@ -1489,7 +1489,7 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
             f.write(fn+'\n')
             with open(fn) as filename:
                 data = ujson.load(filename)
-            f.write('%5d records\n' % (len(data),))
+            f.write(f'{len(data):5} records\n')
             f.write('\n')
 
 def do_export_realm(realm: Realm, output_dir: Path, threads: int,
@@ -1712,7 +1712,7 @@ def export_messages_single_user(user_profile: UserProfile, output_dir: Path,
             item['display_recipient'] = get_display_recipient(user_message.message.recipient)
             message_chunk.append(item)
 
-        message_filename = os.path.join(output_dir, "messages-%06d.json" % (dump_file_id,))
+        message_filename = os.path.join(output_dir, f"messages-{dump_file_id:06}.json")
         logging.info("Fetched Messages for %s", message_filename)
 
         output = {'zerver_message': message_chunk}

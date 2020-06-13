@@ -223,7 +223,7 @@ SOCIAL_AUTH_SAML_ORG_INFO = {
     "en-US": {
         "displayname": "Example, Inc. Zulip",
         "name": "zulip",
-        "url": "%s%s" % ('https://', EXTERNAL_HOST),
+        "url": "{}{}".format('https://', EXTERNAL_HOST),
     },
 }
 SOCIAL_AUTH_SAML_ENABLED_IDPS = {
