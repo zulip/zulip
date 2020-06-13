@@ -3399,6 +3399,29 @@ class EditMessageTest(ZulipTestCase):
         self.check_topic(id5, topic_name="edited")
         self.check_topic(id6, topic_name="topic3")
 
+    def test_propagate_all_topics_with_different_uppercase_letters(self) -> None:
+        self.login('hamlet')
+        id1 = self.send_stream_message(self.example_user("hamlet"), "Scotland",
+                                       topic_name="topic1")
+        id2 = self.send_stream_message(self.example_user("hamlet"), "Scotland",
+                                       topic_name="Topic1")
+        id3 = self.send_stream_message(self.example_user("iago"), "Rome",
+                                       topic_name="topiC1")
+        id4 = self.send_stream_message(self.example_user("iago"), "Scotland",
+                                       topic_name="toPic1")
+
+        result = self.client_patch("/json/messages/" + str(id2), {
+            'message_id': id2,
+            'topic': 'edited',
+            'propagate_mode': 'change_all',
+        })
+        self.assert_json_success(result)
+
+        self.check_topic(id1, topic_name="topic1")
+        self.check_topic(id2, topic_name="edited")
+        self.check_topic(id3, topic_name="topiC1")
+        self.check_topic(id4, topic_name="toPic1")
+
     def test_propagate_invalid(self) -> None:
         self.login('hamlet')
         id1 = self.send_stream_message(self.example_user("hamlet"), "Scotland",
