@@ -421,7 +421,7 @@ def preview_url_cache_key(url: str) -> str:
     return f"preview_url:{make_safe_digest(url)}"
 
 def display_recipient_cache_key(recipient_id: int) -> str:
-    return "display_recipient_dict:%d" % (recipient_id,)
+    return f"display_recipient_dict:{recipient_id}"
 
 def display_recipient_bulk_get_users_by_id_cache_key(user_id: int) -> str:
     # Cache key function for a function for bulk fetching users, used internally
@@ -612,7 +612,7 @@ def flush_used_upload_space_cache(sender: Any, **kwargs: Any) -> None:
         cache_delete(get_realm_used_upload_space_cache_key(attachment.owner.realm))
 
 def to_dict_cache_key_id(message_id: int) -> str:
-    return 'message_dict:%d' % (message_id,)
+    return f'message_dict:{message_id}'
 
 def to_dict_cache_key(message: 'Message', realm_id: Optional[int]=None) -> str:
     return to_dict_cache_key_id(message.id)

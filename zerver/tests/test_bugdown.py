@@ -371,7 +371,7 @@ class BugdownTest(ZulipTestCase):
         # We do not want any ignored tests to be committed and merged.
         format_tests, linkify_tests = self.load_bugdown_tests()
         for name, test in format_tests.items():
-            message = 'Test "%s" shouldn\'t be ignored.' % (name,)
+            message = f'Test "{name}" shouldn\'t be ignored.'
             is_ignored = test.get('ignore', False)
             self.assertFalse(is_ignored, message)
 
@@ -409,7 +409,7 @@ class BugdownTest(ZulipTestCase):
                 href = 'mailto:' + url
             else:
                 href = 'http://' + url
-            return payload % ("<a href=\"%s\">%s</a>" % (href, url),)
+            return payload % (f"<a href=\"{href}\">{url}</a>",)
 
         print("Running Bugdown Linkify tests")
         with mock.patch('zerver.lib.url_preview.preview.link_embed_data_from_cache', return_value=None):
@@ -722,7 +722,7 @@ class BugdownTest(ZulipTestCase):
 
     def test_inline_interesting_links(self) -> None:
         def make_link(url: str) -> str:
-            return '<a href="%s">%s</a>' % (url, url)
+            return f'<a href="{url}">{url}</a>'
 
         normal_tweet_html = ('<a href="https://twitter.com/Twitter"'
                              '>@Twitter</a> '
@@ -759,41 +759,41 @@ class BugdownTest(ZulipTestCase):
 
         msg = 'http://www.twitter.com'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>' % (make_link('http://www.twitter.com'),))
+        self.assertEqual(converted, '<p>{}</p>'.format(make_link('http://www.twitter.com')))
 
         msg = 'http://www.twitter.com/wdaher/'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>' % (make_link('http://www.twitter.com/wdaher/'),))
+        self.assertEqual(converted, '<p>{}</p>'.format(make_link('http://www.twitter.com/wdaher/')))
 
         msg = 'http://www.twitter.com/wdaher/status/3'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>' % (make_link('http://www.twitter.com/wdaher/status/3'),))
+        self.assertEqual(converted, '<p>{}</p>'.format(make_link('http://www.twitter.com/wdaher/status/3')))
 
         # id too long
         msg = 'http://www.twitter.com/wdaher/status/2879779692873154569'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>' % (make_link('http://www.twitter.com/wdaher/status/2879779692873154569'),))
+        self.assertEqual(converted, '<p>{}</p>'.format(make_link('http://www.twitter.com/wdaher/status/2879779692873154569')))
 
         # id too large (i.e. tweet doesn't exist)
         msg = 'http://www.twitter.com/wdaher/status/999999999999999999'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>' % (make_link('http://www.twitter.com/wdaher/status/999999999999999999'),))
+        self.assertEqual(converted, '<p>{}</p>'.format(make_link('http://www.twitter.com/wdaher/status/999999999999999999')))
 
         msg = 'http://www.twitter.com/wdaher/status/287977969287315456'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>\n%s' % (
+        self.assertEqual(converted, '<p>{}</p>\n{}'.format(
             make_link('http://www.twitter.com/wdaher/status/287977969287315456'),
             make_inline_twitter_preview('http://www.twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
 
         msg = 'https://www.twitter.com/wdaher/status/287977969287315456'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>\n%s' % (
+        self.assertEqual(converted, '<p>{}</p>\n{}'.format(
             make_link('https://www.twitter.com/wdaher/status/287977969287315456'),
             make_inline_twitter_preview('https://www.twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
 
         msg = 'http://twitter.com/wdaher/status/287977969287315456'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>\n%s' % (
+        self.assertEqual(converted, '<p>{}</p>\n{}'.format(
             make_link('http://twitter.com/wdaher/status/287977969287315456'),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
 
@@ -803,7 +803,7 @@ class BugdownTest(ZulipTestCase):
                'http://twitter.com/wdaher/status/287977969287315457 '
                'http://twitter.com/wdaher/status/287977969287315457')
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s %s %s %s</p>\n%s%s' % (
+        self.assertEqual(converted, '<p>{} {} {} {}</p>\n{}{}'.format(
             make_link('http://twitter.com/wdaher/status/287977969287315456'),
             make_link('http://twitter.com/wdaher/status/287977969287315457'),
             make_link('http://twitter.com/wdaher/status/287977969287315457'),
@@ -817,7 +817,7 @@ class BugdownTest(ZulipTestCase):
                'https://twitter.com/wdaher/status/287977969287315456 '
                'http://twitter.com/wdaher/status/287977969287315460')
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s %s %s %s</p>\n%s%s%s' % (
+        self.assertEqual(converted, '<p>{} {} {} {}</p>\n{}{}{}'.format(
             make_link('http://twitter.com/wdaher/status/287977969287315456'),
             make_link('http://twitter.com/wdaher/status/287977969287315457'),
             make_link('https://twitter.com/wdaher/status/287977969287315456'),
@@ -830,7 +830,7 @@ class BugdownTest(ZulipTestCase):
         msg = 'http://twitter.com/wdaher/status/287977969287315458'
 
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>\n%s' % (
+        self.assertEqual(converted, '<p>{}</p>\n{}'.format(
             make_link('http://twitter.com/wdaher/status/287977969287315458'),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315458', mention_in_link_tweet_html)))
 
@@ -838,7 +838,7 @@ class BugdownTest(ZulipTestCase):
         msg = 'http://twitter.com/wdaher/status/287977969287315459'
 
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>\n%s' % (
+        self.assertEqual(converted, '<p>{}</p>\n{}'.format(
             make_link('http://twitter.com/wdaher/status/287977969287315459'),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315459',
                                         media_tweet_html,
@@ -850,7 +850,7 @@ class BugdownTest(ZulipTestCase):
 
         msg = 'http://twitter.com/wdaher/status/287977969287315460'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>\n%s' % (
+        self.assertEqual(converted, '<p>{}</p>\n{}'.format(
             make_link('http://twitter.com/wdaher/status/287977969287315460'),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315460', emoji_in_tweet_html)))
 
@@ -870,7 +870,7 @@ class BugdownTest(ZulipTestCase):
 
     def test_realm_emoji(self) -> None:
         def emoji_img(name: str, file_name: str, realm_id: int) -> str:
-            return '<img alt="%s" class="emoji" src="%s" title="%s">' % (
+            return '<img alt="{}" class="emoji" src="{}" title="{}">'.format(
                 name, get_emoji_url(file_name, realm_id), name[1:-1].replace("_", " "))
 
         realm = get_realm('zulip')
@@ -881,7 +881,7 @@ class BugdownTest(ZulipTestCase):
         realm_emoji = RealmEmoji.objects.filter(realm=realm,
                                                 name='green_tick',
                                                 deactivated=False).get()
-        self.assertEqual(converted, '<p>%s</p>' % (emoji_img(':green_tick:', realm_emoji.file_name, realm.id),))
+        self.assertEqual(converted, '<p>{}</p>'.format(emoji_img(':green_tick:', realm_emoji.file_name, realm.id)))
 
         # Deactivate realm emoji.
         do_remove_realm_emoji(realm, 'green_tick')
@@ -2041,7 +2041,7 @@ class BugdownApiTests(ZulipTestCase):
         user_id = self.example_user('hamlet').id
         stream_id = get_stream('Denmark', get_realm('zulip')).id
         self.assertEqual(result.json()['rendered'],
-                         '<p>This mentions <a class="stream" data-stream-id="%s" href="/#narrow/stream/%s-Denmark">#Denmark</a> and <span class="user-mention" data-user-id="%s">@King Hamlet</span>.</p>' % (stream_id, stream_id, user_id))
+                         f'<p>This mentions <a class="stream" data-stream-id="{stream_id}" href="/#narrow/stream/{stream_id}-Denmark">#Denmark</a> and <span class="user-mention" data-user-id="{user_id}">@King Hamlet</span>.</p>')
 
 class BugdownErrorTests(ZulipTestCase):
     def test_bugdown_error_handling(self) -> None:

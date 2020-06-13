@@ -37,14 +37,14 @@ def ensure_on_clean_master() -> None:
     run(['git', 'rebase', 'upstream/master'])
 
 def create_pull_branch(pull_id: int) -> None:
-    run(['git', 'fetch', 'upstream', 'pull/%d/head' % (pull_id,)])
+    run(['git', 'fetch', 'upstream', f'pull/{pull_id}/head'])
     run(['git', 'checkout', '-B', f'review-{pull_id}', 'FETCH_HEAD'])
     run(['git', 'rebase', 'upstream/master'])
     run(['git', 'log', 'upstream/master..', '--oneline'])
     run(['git', 'diff', 'upstream/master..', '--name-status'])
 
     print()
-    print('PR: %d' % (pull_id,))
+    print(f'PR: {pull_id}')
     print(subprocess.check_output(['git', 'log', 'HEAD~..',
                                    '--pretty=format:Author: %an']))
 

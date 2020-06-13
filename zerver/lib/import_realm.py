@@ -1169,7 +1169,7 @@ def get_incoming_message_ids(import_dir: Path,
 
     dump_file_id = 1
     while True:
-        message_filename = os.path.join(import_dir, "messages-%06d.json" % (dump_file_id,))
+        message_filename = os.path.join(import_dir, f"messages-{dump_file_id:06}.json")
         if not os.path.exists(message_filename):
             break
 
@@ -1212,7 +1212,7 @@ def import_message_data(realm: Realm,
                         import_dir: Path) -> None:
     dump_file_id = 1
     while True:
-        message_filename = os.path.join(import_dir, "messages-%06d.json" % (dump_file_id,))
+        message_filename = os.path.join(import_dir, f"messages-{dump_file_id:06}.json")
         if not os.path.exists(message_filename):
             break
 

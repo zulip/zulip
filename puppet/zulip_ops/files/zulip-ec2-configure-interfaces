@@ -52,7 +52,7 @@ import netifaces
 
 def address_of(device_id: int) -> Optional[str]:
     try:
-        return netifaces.ifaddresses("ens%i" % (device_id,))[netifaces.AF_INET][0]['addr']
+        return netifaces.ifaddresses(f"ens{device_id}")[netifaces.AF_INET][0]['addr']
     except KeyError:
         return None
 
@@ -83,7 +83,7 @@ ifaces = [iface for iface in netifaces.interfaces() if ":" not in iface and ifac
 
 # Number of IDs should equal number of interfaces
 if len(ids) != len(ifaces):
-    log.error("Metadata indicated %i interfaces but we have %i!" % (len(ids), len(ifaces)))
+    log.error(f"Metadata indicated {len(ids)} interfaces but we have {len(ifaces)}!")
     sys.exit(1)
 
 for device in macs.values():
@@ -105,8 +105,8 @@ for device in macs.values():
 
     if address is None:
         # If the device was not autoconfigured, do so now.
-        log.info("Device ens%i not configured, starting dhcpd" % (device_number,))
-        subprocess.check_call(['/sbin/dhcpcd', 'ens%i' % (device_number,)])
+        log.info(f"Device ens{device_number} not configured, starting dhcpd")
+        subprocess.check_call(['/sbin/dhcpcd', f'ens{device_number}'])
 
         dev_num = str(device_number)
         address = address_of(device_number)
@@ -120,7 +120,7 @@ for device in macs.values():
             ['/sbin/ip', 'rule', 'add', 'fwmark', dev_num, 'table', dev_num])
         subprocess.check_call(
             ['/sbin/ip', 'route', 'add', '0.0.0.0/0', 'table', dev_num, 'dev',
-             'ens%i' % (device_number,), 'via', gateway])
+             f'ens{device_number}', 'via', gateway])
         subprocess.check_call(
             ['/sbin/iptables', '-t', 'mangle', '-A', 'OUTPUT', '-m', 'conntrack', '--ctorigdst',
              address, '-j', 'MARK', '--set-mark', dev_num])
@@ -129,7 +129,7 @@ for device in macs.values():
 
     for (count, ip) in enumerate(to_configure):
         # Configure the IP via a virtual interface
-        device = "ens%i:%i" % (device_number, count)
+        device = f"ens{device_number}:{count}"
         log.info(f"Configuring {device} with IP {ip}")
         subprocess.check_call(['/sbin/ifconfig', device, ip])
         subprocess.check_call(

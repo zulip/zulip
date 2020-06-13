@@ -839,7 +839,7 @@ class InviteUserTest(InviteUserBase):
         daily_counts = [(1, max_daily_count)]
 
         invite_emails = [
-            'foo-%02d@zulip.com' % (i,)
+            f'foo-{i:02}@zulip.com'
             for i in range(num_invitees)
         ]
         invitees = ','.join(invite_emails)
@@ -3854,7 +3854,7 @@ class UserSignUpTest(InviteUserBase):
         """Verify that /devtools/register_user creates a new user, logs them
         in, and redirects to the logged-in app."""
         count = UserProfile.objects.count()
-        email = "user-%d@zulip.com" % (count,)
+        email = f"user-{count}@zulip.com"
 
         result = self.client_post('/devtools/register_user/')
         user_profile = UserProfile.objects.all().order_by("id").last()
@@ -3867,7 +3867,7 @@ class UserSignUpTest(InviteUserBase):
     @override_settings(TERMS_OF_SERVICE=False)
     def test_dev_user_registration_create_realm(self) -> None:
         count = UserProfile.objects.count()
-        string_id = "realm-%d" % (count,)
+        string_id = f"realm-{count}"
 
         result = self.client_post('/devtools/register_realm/')
         self.assertEqual(result.status_code, 302)

@@ -65,8 +65,7 @@ class TranslationTestCase(ZulipTestCase):
     def fetch(self, method: str, url: str, expected_status: int, **kwargs: Any) -> HttpResponse:
         response = getattr(self.client, method)(url, **kwargs)
         self.assertEqual(response.status_code, expected_status,
-                         msg="Expected %d, received %d for %s to %s" % (
-                             expected_status, response.status_code, method, url))
+                         msg=f"Expected {expected_status}, received {response.status_code} for {method} to {url}")
         return response
 
     def test_accept_language_header(self) -> None:

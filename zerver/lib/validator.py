@@ -198,7 +198,7 @@ def check_list(sub_validator: Optional[Validator], length: Optional[int]=None) -
 
         if sub_validator:
             for i, item in enumerate(val):
-                vname = '%s[%d]' % (var_name, i)
+                vname = f'{var_name}[{i}]'
                 error = sub_validator(vname, item)
                 if error:
                     return error

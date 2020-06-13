@@ -813,7 +813,7 @@ class Recipient(models.Model):
 
     def __str__(self) -> str:
         display_recipient = get_display_recipient(self)
-        return "<Recipient: %s (%d, %s)>" % (display_recipient, self.type_id, self.type)
+        return f"<Recipient: {display_recipient} ({self.type_id}, {self.type})>"
 
 class UserProfile(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
@@ -2846,7 +2846,7 @@ class CustomProfileField(models.Model):
         return False
 
     def __str__(self) -> str:
-        return "<CustomProfileField: %s %s %s %d>" % (self.realm, self.name, self.field_type, self.order)
+        return f"<CustomProfileField: {self.realm} {self.name} {self.field_type} {self.order}>"
 
 def custom_profile_fields_for_realm(realm_id: int) -> List[CustomProfileField]:
     return CustomProfileField.objects.filter(realm=realm_id).order_by('order')

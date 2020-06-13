@@ -745,7 +745,7 @@ def process_raw_message_batch(realm_id: int,
     )
 
     dump_file_id = NEXT_ID('dump_file_id')
-    message_file = "/messages-%06d.json" % (dump_file_id,)
+    message_file = f"/messages-{dump_file_id:06}.json"
     create_converted_data_files(message_json, output_dir, message_file)
 
 def do_convert_data(input_tar_file: str,

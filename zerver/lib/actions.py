@@ -341,9 +341,7 @@ def notify_new_user(user_profile: UserProfile) -> None:
             sender,
             signup_notifications_stream,
             "signups",
-            "@_**%s|%s** just signed up for Zulip. (total: %i)" % (
-                user_profile.full_name, user_profile.id, user_count,
-            ),
+            f"@_**{user_profile.full_name}|{user_profile.id}** just signed up for Zulip. (total: {user_count})",
         )
 
     # We also send a notification to the Zulip administrative realm
@@ -356,11 +354,7 @@ def notify_new_user(user_profile: UserProfile) -> None:
             sender,
             signups_stream,
             user_profile.realm.display_subdomain,
-            "%s <`%s`> just signed up for Zulip! (total: **%i**)" % (
-                user_profile.full_name,
-                user_profile.email,
-                user_count,
-            ),
+            f"{user_profile.full_name} <`{user_profile.email}`> just signed up for Zulip! (total: **{user_count}**)",
         )
 
     except Stream.DoesNotExist:

@@ -157,12 +157,7 @@ def tokenize(text: str) -> List[Token]:
                 continue
         except TokenizationException as e:
             raise FormattedException(
-                '''%s at Line %d Col %d:"%s"''' % (
-                    e.message,
-                    state.line,
-                    state.col,
-                    e.line_content,
-                ),
+                f'''{e.message} at Line {state.line} Col {state.col}:"{e.line_content}"''',
             )
 
         line_span = len(s.split('\n'))
@@ -223,13 +218,13 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None, check_indent:
             self.matcher = func
 
     def no_start_tag(token: Token) -> None:
-        raise TemplateParserException('''
+        raise TemplateParserException(f'''
             No start tag
-            fn: %s
+            fn: {fn}
             end tag:
-                %s
-                line %d, col %d
-            ''' % (fn, token.tag, token.line, token.col))
+                {token.tag}
+                line {token.line}, col {token.col}
+            ''')
 
     state = State(no_start_tag)
 
@@ -261,16 +256,16 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None, check_indent:
                 if end_col != start_col:
                     problem = 'Bad indentation.'
             if problem:
-                raise TemplateParserException('''
-                    fn: %s
-                    %s
+                raise TemplateParserException(f'''
+                    fn: {fn}
+                    {problem}
                     start:
-                        %s
-                        line %d, col %d
+                        {start_token.s}
+                        line {start_line}, col {start_col}
                     end tag:
-                        %s
-                        line %d, col %d
-                    ''' % (fn, problem, start_token.s, start_line, start_col, end_tag, end_line, end_col))
+                        {end_tag}
+                        line {end_line}, col {end_col}
+                    ''')
             state.matcher = old_matcher
             state.depth -= 1
         state.matcher = f

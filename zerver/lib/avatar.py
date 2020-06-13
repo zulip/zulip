@@ -38,7 +38,7 @@ def avatar_url_from_dict(userdict: Dict[str, Any], medium: bool=False) -> str:
         userdict['realm_id'],
         email=userdict['email'],
         medium=medium)
-    url += '&version=%d' % (userdict['avatar_version'],)
+    url += '&version={:d}'.format(userdict['avatar_version'])
     return url
 
 def get_avatar_field(user_id: int,
@@ -87,12 +87,12 @@ def get_avatar_field(user_id: int,
         email=email,
         medium=medium,
     )
-    url += '&version=%d' % (avatar_version,)
+    url += f'&version={avatar_version:d}'
     return url
 
 def get_gravatar_url(email: str, avatar_version: int, medium: bool=False) -> str:
     url = _get_unversioned_gravatar_url(email, medium)
-    url += '&version=%d' % (avatar_version,)
+    url += f'&version={avatar_version:d}'
     return url
 
 def _get_unversioned_gravatar_url(email: str, medium: bool) -> str:

@@ -109,13 +109,13 @@ EMOJI_REGEX = r'(?P<syntax>:[\w\-\+]+:)'
 
 def verbose_compile(pattern: str) -> Any:
     return re.compile(
-        "^(.*?)%s(.*?)$" % (pattern,),
+        f"^(.*?){pattern}(.*?)$",
         re.DOTALL | re.UNICODE | re.VERBOSE,
     )
 
 def normal_compile(pattern: str) -> Any:
     return re.compile(
-        r"^(.*?)%s(.*)$" % (pattern,),
+        fr"^(.*?){pattern}(.*)$",
         re.DOTALL | re.UNICODE,
     )
 
@@ -178,7 +178,7 @@ def get_web_link_regex() -> str:
     nested_paren_chunk = nested_paren_chunk % (inner_paren_contents,)
 
     file_links = r"| (?:file://(/[^/ ]*)+/?)" if settings.ENABLE_FILE_LINKS else r""
-    REGEX = r"""
+    REGEX = fr"""
         (?<![^\s'"\(,:<])    # Start after whitespace or specified chars
                              # (Double-negative lookbehind to allow start-of-string)
         (?P<url>             # Main group
@@ -186,21 +186,21 @@ def get_web_link_regex() -> str:
                 https?://[\w.:@-]+?   # If it has a protocol, anything goes.
                |(?:                   # Or, if not, be more strict to avoid false-positives
                     (?:[\w-]+\.)+     # One or more domain components, separated by dots
-                    (?:%s)            # TLDs (filled in via format from tlds-alpha-by-domain.txt)
+                    (?:{tlds})            # TLDs (filled in via format from tlds-alpha-by-domain.txt)
                 )
             )
             (?:/             # A path, beginning with /
-                %s           # zero-to-6 sets of paired parens
+                {nested_paren_chunk}           # zero-to-6 sets of paired parens
             )?)              # Path is optional
             | (?:[\w.-]+\@[\w.-]+\.[\w]+) # Email is separate, since it can't have a path
-            %s               # File path start with file:///, enable by setting ENABLE_FILE_LINKS=True
-            | (?:bitcoin:[13][a-km-zA-HJ-NP-Z1-9]{25,34})  # Bitcoin address pattern, see https://mokagio.github.io/tech-journal/2014/11/21/regex-bitcoin.html
+            {file_links}               # File path start with file:///, enable by setting ENABLE_FILE_LINKS=True
+            | (?:bitcoin:[13][a-km-zA-HJ-NP-Z1-9]{{25,34}})  # Bitcoin address pattern, see https://mokagio.github.io/tech-journal/2014/11/21/regex-bitcoin.html
         )
         (?=                            # URL must be followed by (not included in group)
             [!:;\?\),\.\'\"\>]*         # Optional punctuation characters
             (?:\Z|\s)                  # followed by whitespace or end of string
         )
-        """ % (tlds, nested_paren_chunk, file_links)
+        """
     LINK_REGEX = verbose_compile(REGEX)
     return LINK_REGEX
 
@@ -527,7 +527,7 @@ class BacktickPattern(markdown.inlinepatterns.Pattern):
 
     def __init__(self, pattern: str) -> None:
         markdown.inlinepatterns.Pattern.__init__(self, pattern)
-        self.ESCAPED_BSLASH = '%s%s%s' % (markdown.util.STX, ord('\\'), markdown.util.ETX)
+        self.ESCAPED_BSLASH = '{}{}{}'.format(markdown.util.STX, ord('\\'), markdown.util.ETX)
         self.tag = 'code'
 
     def handleMatch(self, m: Match[str]) -> Union[str, Element]:
@@ -787,7 +787,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         yt_id = self.youtube_id(url)
 
         if yt_id is not None:
-            return "https://i.ytimg.com/vi/%s/default.jpg" % (yt_id,)
+            return f"https://i.ytimg.com/vi/{yt_id}/default.jpg"
         return None
 
     def vimeo_id(self, url: str) -> Optional[str]:
@@ -953,7 +953,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             tweet.append(p)
 
             span = SubElement(tweet, 'span')
-            span.text = "- %s (@%s)" % (user['name'], user['screen_name'])
+            span.text = "- {} (@{})".format(user['name'], user['screen_name'])
 
             # Add image previews
             for media_item in media:
@@ -970,7 +970,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     if size['h'] < self.TWITTER_MAX_IMAGE_HEIGHT:
                         break
 
-                media_url = '%s:%s' % (media_item['media_url_https'], size_name)
+                media_url = '{}:{}'.format(media_item['media_url_https'], size_name)
                 img_div = SubElement(tweet, 'div')
                 img_div.set('class', 'twitter-image')
                 img_a = SubElement(img_div, 'a')
@@ -1296,7 +1296,7 @@ def make_emoji(codepoint: str, display_string: str) -> Element:
     # Replace underscore in emoji's title with space
     title = display_string[1:-1].replace("_", " ")
     span = Element('span')
-    span.set('class', 'emoji emoji-%s' % (codepoint,))
+    span.set('class', f'emoji emoji-{codepoint}')
     span.set('title', title)
     span.set('role', 'img')
     span.set('aria-label', title)
@@ -1588,7 +1588,7 @@ def prepare_realm_pattern(source: str) -> str:
     whitespace, or opening delimiters, won't match if there are word
     characters directly after, and saves what was matched as
     OUTER_CAPTURE_GROUP."""
-    return r"""(?<![^\s'"\(,:<])(?P<%s>%s)(?!\w)""" % (OUTER_CAPTURE_GROUP, source)
+    return fr"""(?<![^\s'"\(,:<])(?P<{OUTER_CAPTURE_GROUP}>{source})(?!\w)"""
 
 # Given a regular expression pattern, linkifies groups that match it
 # using the provided format string to construct the URL.
@@ -1643,7 +1643,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
 
             el = Element("span")
             el.set('data-user-id', user_id)
-            text = "%s" % (name,)
+            text = f"{name}"
             if silent:
                 el.set('class', 'user-mention silent')
             else:
@@ -1673,7 +1673,7 @@ class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
             el = Element("span")
             el.set('class', 'user-group-mention')
             el.set('data-user-group-id', user_group_id)
-            text = "@%s" % (name,)
+            text = f"@{name}"
             el.text = markdown.util.AtomicString(text)
             return el
         return None
@@ -1829,7 +1829,7 @@ class Bugdown(markdown.Markdown):
         # define default configs
         self.config = {
             "realm_filters": [kwargs['realm_filters'],
-                              "Realm-specific filters for realm_filters_key %s" % (kwargs['realm'],)],
+                              "Realm-specific filters for realm_filters_key {}".format(kwargs['realm'])],
             "realm": [kwargs['realm'], "Realm id"],
             "code_block_processor_disabled": [kwargs['code_block_processor_disabled'],
                                               "Disabled for email gateway"],
@@ -1953,7 +1953,7 @@ class Bugdown(markdown.Markdown):
     def register_realm_filters(self, inlinePatterns: markdown.util.Registry) -> markdown.util.Registry:
         for (pattern, format_string, id) in self.getConfig("realm_filters"):
             inlinePatterns.register(RealmFilterPattern(pattern, format_string, self),
-                                    'realm_filters/%s' % (pattern,), 45)
+                                    f'realm_filters/{pattern}', 45)
         return inlinePatterns
 
     def build_treeprocessors(self) -> markdown.util.Registry:

@@ -139,8 +139,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         num_bots = 3
         for i in range(num_bots):
-            full_name = 'Bot %d' % (i,)
-            short_name = 'bot-%d' % (i,)
+            full_name = f'Bot {i}'
+            short_name = f'bot-{i}'
             bot_info = dict(
                 full_name=full_name,
                 short_name=short_name,
