@@ -3417,10 +3417,10 @@ class EditMessageTest(ZulipTestCase):
         })
         self.assert_json_success(result)
 
-        self.check_topic(id1, topic_name="topic1")
+        self.check_topic(id1, topic_name="edited")
         self.check_topic(id2, topic_name="edited")
         self.check_topic(id3, topic_name="topiC1")
-        self.check_topic(id4, topic_name="toPic1")
+        self.check_topic(id4, topic_name="edited")
 
     def test_propagate_invalid(self) -> None:
         self.login('hamlet')
