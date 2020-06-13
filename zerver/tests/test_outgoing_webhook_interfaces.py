@@ -96,6 +96,9 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
             'timestamp': datetime_to_timestamp(message.date_sent),
             'topic_links': [],
             'type': 'stream',
+            'has_link': False,
+            'has_image': False,
+            'has_attachment': False
         }
 
         wide_message_dict = MessageDict.wide_dict(message)

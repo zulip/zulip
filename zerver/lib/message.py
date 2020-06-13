@@ -298,6 +298,9 @@ class MessageDict:
             "sender_id": message.sender.id,
             "sending_client__name": message.sending_client.name,
             "sender__realm_id": message.sender.realm_id,
+            "has_link": message.has_link,
+            "has_image": message.has_image,
+            "has_attachment": message.has_attachment
         } for message in messages]
 
         MessageDict.sew_submessages_and_reactions_to_msgs(message_rows)
@@ -322,6 +325,9 @@ class MessageDict:
             'sender_id',
             'sending_client__name',
             'sender__realm_id',
+            'has_link',
+            'has_image',
+            'has_attachment',
         ]
         messages = Message.objects.filter(id__in=needed_ids).values(*fields)
         return MessageDict.sew_submessages_and_reactions_to_msgs(messages)
@@ -350,6 +356,9 @@ class MessageDict:
             recipient_type_id = row['recipient__type_id'],
             reactions=row['reactions'],
             submessages=row['submessages'],
+            has_attachment=row['has_attachment'],
+            has_link=row['has_link'],
+            has_image=row['has_image'],
         )
 
     @staticmethod
@@ -371,6 +380,9 @@ class MessageDict:
             recipient_type_id: int,
             reactions: List[Dict[str, Any]],
             submessages: List[Dict[str, Any]],
+            has_attachment: bool,
+            has_link: bool,
+            has_image: bool,
     ) -> Dict[str, Any]:
 
         obj = dict(
@@ -381,7 +393,10 @@ class MessageDict:
             recipient_type    = recipient_type,
             recipient_id      = recipient_id,
             timestamp         = datetime_to_timestamp(date_sent),
-            client            = sending_client_name)
+            client            = sending_client_name,
+            has_link          = has_link,
+            has_image         = has_image,
+            has_attachment    = has_attachment)
 
         obj[TOPIC_NAME] = topic_name
         obj['sender_realm_id'] = sender_realm_id
