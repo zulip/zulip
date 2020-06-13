@@ -108,7 +108,7 @@ def update_messages_for_topic_edit(message: Message,
                                    orig_topic_name: str,
                                    topic_name: Optional[str],
                                    new_stream: Optional[Stream]) -> List[Message]:
-    propagate_query = Q(recipient = message.recipient, subject = orig_topic_name)
+    propagate_query = Q(recipient = message.recipient, subject__iexact = orig_topic_name)
     if propagate_mode == 'change_all':
         propagate_query = propagate_query & ~Q(id = message.id)
     if propagate_mode == 'change_later':
