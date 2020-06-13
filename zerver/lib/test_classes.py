@@ -6,7 +6,7 @@ import tempfile
 import urllib
 from contextlib import contextmanager
 from email.utils import parseaddr
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple, Union, cast
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Set, Tuple, Union, cast
 from unittest import mock
 
 import ujson
@@ -407,7 +407,7 @@ class ZulipTestCase(TestCase):
             realm_subdomain: str="zuliptest",
             from_confirmation: str='', full_name: Optional[str]=None,
             timezone: str='', realm_in_root_domain: Optional[str]=None,
-            default_stream_groups: List[str]=[],
+            default_stream_groups: Sequence[str]=[],
             source_realm: str='',
             key: Optional[str]=None, **kwargs: Any) -> HttpResponse:
         """

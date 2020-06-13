@@ -1,7 +1,7 @@
 import re
 import unicodedata
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union, cast
 
 from django.conf import settings
 from django.db.models.query import QuerySet
@@ -180,7 +180,7 @@ def bulk_get_users(emails: List[str], realm: Optional[Realm],
         id_fetcher=user_to_email,
     )
 
-def user_ids_to_users(user_ids: List[int], realm: Realm) -> List[UserProfile]:
+def user_ids_to_users(user_ids: Sequence[int], realm: Realm) -> List[UserProfile]:
     # TODO: Consider adding a flag to control whether deactivated
     # users should be included.
 

@@ -6,7 +6,7 @@ import urllib
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple, Type, Union
 
 import pytz
 from django.conf import settings
@@ -411,7 +411,7 @@ def get_time_series_by_subgroup(stat: CountStat,
 
 eastern_tz = pytz.timezone('US/Eastern')
 
-def make_table(title: str, cols: List[str], rows: List[Any], has_row_class: bool=False) -> str:
+def make_table(title: str, cols: Sequence[str], rows: Sequence[Any], has_row_class: bool = False) -> str:
 
     if not has_row_class:
         def fix_row(row: Any) -> Dict[str, Any]:
@@ -818,8 +818,8 @@ def sent_messages_report(realm: str) -> str:
     return make_table(title, cols, rows)
 
 def ad_hoc_queries() -> List[Dict[str, str]]:
-    def get_page(query: Composable, cols: List[str], title: str,
-                 totals_columns: List[int]=[]) -> Dict[str, str]:
+    def get_page(query: Composable, cols: Sequence[str], title: str,
+                 totals_columns: Sequence[int]=[]) -> Dict[str, str]:
         cursor = connection.cursor()
         cursor.execute(query)
         rows = cursor.fetchall()

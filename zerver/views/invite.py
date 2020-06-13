@@ -1,5 +1,5 @@
 import re
-from typing import List, Set
+from typing import List, Sequence, Set
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -129,7 +129,7 @@ def resend_user_invite_email(request: HttpRequest, user_profile: UserProfile,
 def generate_multiuse_invite_backend(
         request: HttpRequest, user_profile: UserProfile,
         invite_as: int=REQ(validator=check_int, default=PreregistrationUser.INVITE_AS['MEMBER']),
-        stream_ids: List[int]=REQ(validator=check_list(check_int), default=[])) -> HttpResponse:
+        stream_ids: Sequence[int]=REQ(validator=check_list(check_int), default=[])) -> HttpResponse:
     streams = []
     for stream_id in stream_ids:
         try:

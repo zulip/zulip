@@ -5,7 +5,7 @@ import json
 import re
 import time
 import urllib
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 from unittest import mock
 
 import jwt
@@ -3037,7 +3037,7 @@ class FetchAuthBackends(ZulipTestCase):
             raise AssertionError(error)
 
     def test_get_server_settings(self) -> None:
-        def check_result(result: HttpResponse, extra_fields: List[Tuple[str, Validator]]=[]) -> None:
+        def check_result(result: HttpResponse, extra_fields: Sequence[Tuple[str, Validator]] = []) -> None:
             authentication_methods_list = [
                 ('password', check_bool),
             ]
@@ -3058,7 +3058,8 @@ class FetchAuthBackends(ZulipTestCase):
                 ('push_notifications_enabled', check_bool),
                 ('msg', check_string),
                 ('result', check_string),
-            ] + extra_fields)
+                *extra_fields,
+            ])
             self.assert_on_error(checker("data", result.json()))
 
         result = self.client_get("/api/v1/server_settings", subdomain="", HTTP_USER_AGENT="")

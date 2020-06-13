@@ -420,8 +420,8 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
 # * subscribe the user to newsletter if newsletter_data is specified
 def process_new_human_user(user_profile: UserProfile,
                            prereg_user: Optional[PreregistrationUser]=None,
-                           newsletter_data: Optional[Dict[str, str]]=None,
-                           default_stream_groups: List[DefaultStreamGroup]=[],
+                           newsletter_data: Optional[Mapping[str, str]]=None,
+                           default_stream_groups: Sequence[DefaultStreamGroup]=[],
                            realm_creation: bool=False) -> None:
     mit_beta_user = user_profile.realm.is_zephyr_mirror_realm
     if prereg_user is not None:
@@ -565,7 +565,7 @@ def do_create_user(email: str, password: Optional[str], realm: Realm, full_name:
                    default_all_public_streams: Optional[bool]=None,
                    prereg_user: Optional[PreregistrationUser]=None,
                    newsletter_data: Optional[Dict[str, str]]=None,
-                   default_stream_groups: List[DefaultStreamGroup]=[],
+                   default_stream_groups: Sequence[DefaultStreamGroup]=[],
                    source_profile: Optional[UserProfile]=None,
                    realm_creation: bool=False) -> UserProfile:
 
@@ -1342,7 +1342,7 @@ def do_schedule_messages(messages: Sequence[Mapping[str, Any]]) -> List[int]:
 
 def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, Any]]],
                      email_gateway: bool=False,
-                     mark_as_read: List[int]=[]) -> List[int]:
+                     mark_as_read: Sequence[int]=[]) -> List[int]:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
     for high-level documentation on this subsystem.
@@ -1614,12 +1614,12 @@ class UserMessageLite:
         return UserMessage.flags_list_for_flags(self.flags)
 
 def create_user_messages(message: Message,
-                         um_eligible_user_ids: Set[int],
-                         long_term_idle_user_ids: Set[int],
-                         stream_push_user_ids: Set[int],
-                         stream_email_user_ids: Set[int],
-                         mentioned_user_ids: Set[int],
-                         mark_as_read: List[int]=[]) -> List[UserMessageLite]:
+                         um_eligible_user_ids: AbstractSet[int],
+                         long_term_idle_user_ids: AbstractSet[int],
+                         stream_push_user_ids: AbstractSet[int],
+                         stream_email_user_ids: AbstractSet[int],
+                         mentioned_user_ids: AbstractSet[int],
+                         mark_as_read: Sequence[int] = []) -> List[UserMessageLite]:
     ums_to_create = []
     for user_profile_id in um_eligible_user_ids:
         um = UserMessageLite(
@@ -5140,7 +5140,7 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
     return invites
 
 def do_create_multiuse_invite_link(referred_by: UserProfile, invited_as: int,
-                                   streams: List[Stream]=[]) -> str:
+                                   streams: Sequence[Stream] = []) -> str:
     realm = referred_by.realm
     invite = MultiuseInvite.objects.create(realm=realm, referred_by=referred_by)
     if streams:

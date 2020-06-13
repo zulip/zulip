@@ -2,7 +2,7 @@ import logging
 import time
 from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
-from typing import Callable, Dict, List, Optional, Tuple, Type, Union
+from typing import Callable, Dict, Optional, Sequence, Tuple, Type, Union
 
 from django.conf import settings
 from django.db import connection
@@ -70,7 +70,7 @@ class LoggingCountStat(CountStat):
 
 class DependentCountStat(CountStat):
     def __init__(self, property: str, data_collector: 'DataCollector', frequency: str,
-                 interval: Optional[timedelta]=None, dependencies: List[str]=[]) -> None:
+                 interval: Optional[timedelta] = None, dependencies: Sequence[str] = []) -> None:
         CountStat.__init__(self, property, data_collector, frequency, interval=interval)
         self.dependencies = dependencies
 

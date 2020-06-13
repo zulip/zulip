@@ -6,7 +6,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, cast
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple, TypeVar, cast
 from unittest.mock import Mock, patch
 
 import responses
@@ -141,7 +141,7 @@ def delete_fixture_data(decorated_function: CallableT) -> None:  # nocoverage
         os.remove(fixture_file)
 
 def normalize_fixture_data(decorated_function: CallableT,
-                           tested_timestamp_fields: List[str]=[]) -> None:  # nocoverage
+                           tested_timestamp_fields: Sequence[str] = []) -> None:  # nocoverage
     # stripe ids are all of the form cus_D7OT2jf5YAtZQ2
     id_lengths = [
         ('cus', 14), ('sub', 14), ('si', 14), ('sli', 14), ('req', 14), ('tok', 24), ('card', 24),
@@ -208,7 +208,7 @@ MOCKED_STRIPE_FUNCTION_NAMES = [f"stripe.{name}" for name in [
     "Token.create",
 ]]
 
-def mock_stripe(tested_timestamp_fields: List[str]=[],
+def mock_stripe(tested_timestamp_fields: Sequence[str]=[],
                 generate: Optional[bool]=None) -> Callable[[CallableT], CallableT]:
     def _mock_stripe(decorated_function: CallableT) -> CallableT:
         generate_fixture = generate
@@ -299,7 +299,7 @@ class StripeTestCase(ZulipTestCase):
         return match.group(1) if match else None
 
     def upgrade(self, invoice: bool=False, talk_to_stripe: bool=True,
-                realm: Optional[Realm]=None, del_args: List[str]=[],
+                realm: Optional[Realm]=None, del_args: Sequence[str]=[],
                 **kwargs: Any) -> HttpResponse:
         host_args = {}
         if realm is not None:  # nocoverage: TODO
@@ -982,8 +982,8 @@ class StripeTest(StripeTestCase):
 
     def test_check_upgrade_parameters(self) -> None:
         # Tests all the error paths except 'not enough licenses'
-        def check_error(error_description: str, upgrade_params: Dict[str, Any],
-                        del_args: List[str]=[]) -> None:
+        def check_error(error_description: str, upgrade_params: Mapping[str, Any],
+                        del_args: Sequence[str] = []) -> None:
             response = self.upgrade(talk_to_stripe=False, del_args=del_args, **upgrade_params)
             self.assert_json_error_contains(response, "Something went wrong. Please contact")
             self.assertEqual(ujson.loads(response.content)['error_description'], error_description)
