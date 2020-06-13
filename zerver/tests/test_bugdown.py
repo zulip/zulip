@@ -1118,8 +1118,7 @@ class BugdownTest(ZulipTestCase):
         def render(msg: Message, content: str) -> str:
             return render_markdown(msg,
                                    content,
-                                   realm_alert_words_automaton=realm_alert_words_automaton,
-                                   user_ids={user_profile.id})
+                                   realm_alert_words_automaton=realm_alert_words_automaton)
 
         content = "We have an ALERTWORD day today!"
         self.assertEqual(render(msg, content), "<p>We have an ALERTWORD day today!</p>")
@@ -1137,22 +1136,18 @@ class BugdownTest(ZulipTestCase):
             'othello': ['how are you'], 'aaron': ['hey'],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        user_ids: Set[int] = set()
         for (username, alert_words) in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
-            user_ids.add(user_profile.id)
             do_add_alert_words(user_profile, alert_words)
         sender_user_profile = self.example_user('polonius')
-        user_ids.add(sender_user_profile.id)
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
 
         def render(msg: Message, content: str) -> str:
             return render_markdown(msg,
                                    content,
-                                   realm_alert_words_automaton=realm_alert_words_automaton,
-                                   user_ids = user_ids)
+                                   realm_alert_words_automaton=realm_alert_words_automaton)
 
         content = "hello how is this possible how are you doing today"
         render(msg, content)
@@ -1171,22 +1166,18 @@ class BugdownTest(ZulipTestCase):
             'othello': ['last'],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        user_ids: Set[int] = set()
         for (username, alert_words) in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
-            user_ids.add(user_profile.id)
             do_add_alert_words(user_profile, alert_words)
         sender_user_profile = self.example_user('polonius')
-        user_ids.add(sender_user_profile.id)
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
 
         def render(msg: Message, content: str) -> str:
             return render_markdown(msg,
                                    content,
-                                   realm_alert_words_automaton=realm_alert_words_automaton,
-                                   user_ids = user_ids)
+                                   realm_alert_words_automaton=realm_alert_words_automaton)
 
         content = """Hello, everyone. Prod deployment has been completed
         And this is a new line
@@ -1212,22 +1203,18 @@ class BugdownTest(ZulipTestCase):
             'othello': ['last'],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        user_ids: Set[int] = set()
         for (username, alert_words) in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
-            user_ids.add(user_profile.id)
             do_add_alert_words(user_profile, alert_words)
         sender_user_profile = self.example_user('polonius')
-        user_ids.add(sender_user_profile.id)
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
 
         def render(msg: Message, content: str) -> str:
             return render_markdown(msg,
                                    content,
-                                   realm_alert_words_automaton=realm_alert_words_automaton,
-                                   user_ids = user_ids)
+                                   realm_alert_words_automaton=realm_alert_words_automaton)
 
         content = """This is to test out alert words work in languages with accented characters too
         bonjour est (énormément) ce a quoi ressemble le français
@@ -1244,7 +1231,6 @@ class BugdownTest(ZulipTestCase):
             'othello': [], 'aaron': [],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        user_ids: Set[int] = set()
         for (username, alert_words) in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
@@ -1256,8 +1242,7 @@ class BugdownTest(ZulipTestCase):
         def render(msg: Message, content: str) -> str:
             return render_markdown(msg,
                                    content,
-                                   realm_alert_words_automaton=realm_alert_words_automaton,
-                                   user_ids = user_ids)
+                                   realm_alert_words_automaton=realm_alert_words_automaton)
 
         content = """hello how is this possible how are you doing today
         This is to test that the no user_ids who have alrert wourldword is participating
@@ -1280,21 +1265,18 @@ class BugdownTest(ZulipTestCase):
             'othello': [],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        user_ids: Set[int] = set()
         for (username, alert_words) in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
             do_add_alert_words(user_profile, alert_words)
         sender_user_profile = self.example_user('polonius')
-        user_ids = {user_profiles['hamlet'].id, user_profiles['iago'].id, user_profiles['othello'].id}
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
 
         def render(msg: Message, content: str) -> str:
             return render_markdown(msg,
                                    content,
-                                   realm_alert_words_automaton=realm_alert_words_automaton,
-                                   user_ids = user_ids)
+                                   realm_alert_words_automaton=realm_alert_words_automaton)
 
         content = """This is to test a empty alert words i.e. no user has any alert-words set"""
         render(msg, content)
@@ -1310,21 +1292,18 @@ class BugdownTest(ZulipTestCase):
             'othello': self.get_mock_alert_words(500, 10),
         }
         user_profiles: Dict[str, UserProfile] = {}
-        user_ids: Set[int] = set()
         for (username, alert_words) in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
             do_add_alert_words(user_profile, alert_words)
         sender_user_profile = self.example_user('polonius')
-        user_ids = {user_profiles['hamlet'].id, user_profiles['iago'].id, user_profiles['othello'].id}
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
 
         def render(msg: Message, content: str) -> str:
             return render_markdown(msg,
                                    content,
-                                   realm_alert_words_automaton=realm_alert_words_automaton,
-                                   user_ids = user_ids)
+                                   realm_alert_words_automaton=realm_alert_words_automaton)
 
         content = """The code above will print 10 random values of numbers between 1 and 100.
         The second line, for x in range(10), determines how many values will be printed (when you use

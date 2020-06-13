@@ -1038,7 +1038,6 @@ def render_incoming_message(message: Message,
             content=content,
             realm=realm,
             realm_alert_words_automaton = realm_alert_words_automaton,
-            user_ids=user_ids,
             mention_data=mention_data,
             email_gateway=email_gateway,
         )
