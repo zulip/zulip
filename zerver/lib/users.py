@@ -303,7 +303,7 @@ def compute_show_invites_and_add_streams(user_profile: Optional[UserProfile]) ->
     return True, True
 
 def format_user_row(realm: Realm, acting_user: UserProfile, row: Dict[str, Any],
-                    client_gravatar: bool,
+                    client_gravatar: bool, user_avatar_url_field_optional: bool,
                     custom_profile_field_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """Formats a user row returned by a database fetch using
     .values(*realm_user_dict_fields) into a dictionary representation
@@ -311,23 +311,13 @@ def format_user_row(realm: Realm, acting_user: UserProfile, row: Dict[str, Any],
     argument is used for permissions checks.
     """
 
-    avatar_url = get_avatar_field(user_id=row['id'],
-                                  realm_id=realm.id,
-                                  email=row['delivery_email'],
-                                  avatar_source=row['avatar_source'],
-                                  avatar_version=row['avatar_version'],
-                                  medium=False,
-                                  client_gravatar=client_gravatar)
-
     is_admin = is_administrator_role(row['role'])
     is_owner = row['role'] == UserProfile.ROLE_REALM_OWNER
     is_guest = row['role'] == UserProfile.ROLE_GUEST
     is_bot = row['is_bot']
-    # This format should align with get_cross_realm_dicts() and notify_created_user
     result = dict(
         email=row['email'],
         user_id=row['id'],
-        avatar_url=avatar_url,
         avatar_version=row['avatar_version'],
         is_admin=is_admin,
         is_owner=is_owner,
@@ -338,6 +328,35 @@ def format_user_row(realm: Realm, acting_user: UserProfile, row: Dict[str, Any],
         is_active = row['is_active'],
         date_joined = row['date_joined'].isoformat(),
     )
+
+    # Zulip clients that support using `GET /avatar/{user_id}` as a
+    # fallback if we didn't send an avatar URL in the user object pass
+    # user_avatar_url_field_optional in client_capabilities.
+    #
+    # This is a major network performance optimization for
+    # organizations with 10,000s of users where we would otherwise
+    # send avatar URLs in the payload (either because most users have
+    # uploaded avatars or because EMAIL_ADDRESS_VISIBILITY_ADMINS
+    # prevents the older client_gravatar optimization from helping).
+    # The performance impact is large largely because the hashes in
+    # avatar URLs structurally cannot compress well.
+    #
+    # The user_avatar_url_field_optional gives the server sole
+    # discretion in deciding for which users we want to send the
+    # avatar URL (Which saves clients an RTT at the cost of some
+    # bandwidth).  At present, the server looks at `long_term_idle` to
+    # decide which users to include avatars for, piggy-backing on a
+    # different optimization for organizations with 10,000s of users.
+    include_avatar_url = not user_avatar_url_field_optional or not row['long_term_idle']
+    if include_avatar_url:
+        result['avatar_url'] = get_avatar_field(user_id=row['id'],
+                                                realm_id=realm.id,
+                                                email=row['delivery_email'],
+                                                avatar_source=row['avatar_source'],
+                                                avatar_version=row['avatar_version'],
+                                                medium=False,
+                                                client_gravatar=client_gravatar)
+
     if (realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS and
             acting_user.is_realm_admin):
         result['delivery_email'] = row['delivery_email']
@@ -396,6 +415,7 @@ def get_cross_realm_dicts() -> List[Dict[str, Any]]:
                                       acting_user=user,
                                       row=user_row,
                                       client_gravatar=False,
+                                      user_avatar_url_field_optional=False,
                                       custom_profile_field_data=None))
 
     return result
@@ -416,8 +436,8 @@ def get_custom_profile_field_values(custom_profile_field_values:
             }
     return profiles_by_user_id
 
-def get_raw_user_data(realm: Realm, acting_user: UserProfile, client_gravatar: bool,
-                      target_user: Optional[UserProfile]=None,
+def get_raw_user_data(realm: Realm, acting_user: UserProfile, *, target_user: Optional[UserProfile]=None,
+                      client_gravatar: bool, user_avatar_url_field_optional: bool,
                       include_custom_profile_fields: bool=True) -> Dict[int, Dict[str, str]]:
     """Fetches data about the target user(s) appropriate for sending to
     acting_user via the standard format for the Zulip API.  If
@@ -447,9 +467,10 @@ def get_raw_user_data(realm: Realm, acting_user: UserProfile, client_gravatar: b
             custom_profile_field_data = profiles_by_user_id.get(row['id'], {})
 
         result[row['id']] = format_user_row(realm,
-                                            acting_user = acting_user,
+                                            acting_user=acting_user,
                                             row=row,
-                                            client_gravatar= client_gravatar,
-                                            custom_profile_field_data = custom_profile_field_data,
+                                            client_gravatar=client_gravatar,
+                                            user_avatar_url_field_optional=user_avatar_url_field_optional,
+                                            custom_profile_field_data=custom_profile_field_data,
                                             )
     return result

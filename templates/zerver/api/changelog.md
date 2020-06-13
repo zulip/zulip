@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 2.2
 
+**Feature level 18**
+
+* [`POST /register`](/api/register-queue): Added
+  `user_avatar_url_field_optional` to supported `client_capabilities`.
+
 **Feature level 17**
 
 * [`GET users/me/subscriptions`](/api/get-subscribed-streams), [`GET /streams`]

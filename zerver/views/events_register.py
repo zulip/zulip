@@ -40,6 +40,7 @@ def events_register_backend(
         ], [
             # Any new fields of `client_capabilities` should be optional. Add them here.
             ("bulk_message_deletion", check_bool),
+            ('user_avatar_url_field_optional', check_bool),
         ]), default=None),
         event_types: Optional[Iterable[str]]=REQ(validator=check_list(check_string), default=None),
         fetch_event_types: Optional[Iterable[str]]=REQ(validator=check_list(check_string), default=None),

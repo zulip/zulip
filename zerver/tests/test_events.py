@@ -503,8 +503,8 @@ class EventsRegisterTest(ZulipTestCase):
 
     def do_test(self, action: Callable[[], object], event_types: Optional[List[str]]=None,
                 include_subscribers: bool=True, state_change_expected: bool=True,
-                notification_settings_null: bool=False,
-                client_gravatar: bool=True, slim_presence: bool=False,
+                notification_settings_null: bool=False, client_gravatar: bool=True,
+                user_avatar_url_field_optional: bool=False, slim_presence: bool=False,
                 num_events: int=1, bulk_message_deletion: bool=True) -> List[Dict[str, Any]]:
         '''
         Make sure we have a clean slate of client descriptors for these tests.
@@ -536,6 +536,7 @@ class EventsRegisterTest(ZulipTestCase):
         hybrid_state = fetch_initial_state_data(
             self.user_profile, event_types, "",
             client_gravatar=client_gravatar,
+            user_avatar_url_field_optional=user_avatar_url_field_optional,
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
         )
@@ -567,6 +568,7 @@ class EventsRegisterTest(ZulipTestCase):
         normal_state = fetch_initial_state_data(
             self.user_profile, event_types, "",
             client_gravatar=client_gravatar,
+            user_avatar_url_field_optional=user_avatar_url_field_optional,
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
         )
@@ -2052,7 +2054,7 @@ class EventsRegisterTest(ZulipTestCase):
     def test_realm_update_plan_type(self) -> None:
         realm = self.user_profile.realm
 
-        state_data = fetch_initial_state_data(self.user_profile, None, "", False)
+        state_data = fetch_initial_state_data(self.user_profile, None, "", False, False)
         self.assertEqual(state_data['realm_plan_type'], Realm.SELF_HOSTED)
         self.assertEqual(state_data['zulip_plan_is_not_limited'], True)
 
@@ -2069,7 +2071,7 @@ class EventsRegisterTest(ZulipTestCase):
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-        state_data = fetch_initial_state_data(self.user_profile, None, "", False)
+        state_data = fetch_initial_state_data(self.user_profile, None, "", False, False)
         self.assertEqual(state_data['realm_plan_type'], Realm.LIMITED)
         self.assertEqual(state_data['zulip_plan_is_not_limited'], False)
 
@@ -2846,7 +2848,7 @@ class EventsRegisterTest(ZulipTestCase):
             lambda: do_delete_messages(self.user_profile.realm, [message]),
             state_change_expected=True,
         )
-        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
+        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False, user_avatar_url_field_optional=False)
         self.assertEqual(result['max_message_id'], -1)
 
     def test_add_attachment(self) -> None:
@@ -3069,7 +3071,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
     def test_realm_bots_non_admin(self) -> None:
         user_profile = self.example_user('cordelia')
         self.assertFalse(user_profile.is_realm_admin)
-        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
+        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False, user_avatar_url_field_optional=False)
         self.assert_length(result['realm_bots'], 0)
 
         # additionally the API key for a random bot is not present in the data
@@ -3081,14 +3083,14 @@ class FetchInitialStateDataTest(ZulipTestCase):
         user_profile = self.example_user('hamlet')
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.assertTrue(user_profile.is_realm_admin)
-        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
+        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False, user_avatar_url_field_optional=False)
         self.assertTrue(len(result['realm_bots']) > 2)
 
     def test_max_message_id_with_no_history(self) -> None:
         user_profile = self.example_user('aaron')
         # Delete all historical messages for this user
         UserMessage.objects.filter(user_profile=user_profile).delete()
-        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
+        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False, user_avatar_url_field_optional=False)
         self.assertEqual(result['max_message_id'], -1)
 
     def test_delivery_email_presence_for_non_admins(self) -> None:
@@ -3097,13 +3099,13 @@ class FetchInitialStateDataTest(ZulipTestCase):
 
         do_set_realm_property(user_profile.realm, "email_address_visibility",
                               Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
-        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
+        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False, user_avatar_url_field_optional=False)
         for key, value in result['raw_users'].items():
             self.assertNotIn('delivery_email', value)
 
         do_set_realm_property(user_profile.realm, "email_address_visibility",
                               Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
-        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
+        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False, user_avatar_url_field_optional=False)
         for key, value in result['raw_users'].items():
             self.assertNotIn('delivery_email', value)
 
@@ -3113,16 +3115,62 @@ class FetchInitialStateDataTest(ZulipTestCase):
 
         do_set_realm_property(user_profile.realm, "email_address_visibility",
                               Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
-        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
+        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False, user_avatar_url_field_optional=False)
         for key, value in result['raw_users'].items():
             self.assertNotIn('delivery_email', value)
 
         do_set_realm_property(user_profile.realm, "email_address_visibility",
                               Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
-        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
+        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False, user_avatar_url_field_optional=False)
         for key, value in result['raw_users'].items():
             self.assertIn('delivery_email', value)
 
+    def test_user_avatar_url_field_optional(self) -> None:
+        hamlet = self.example_user('hamlet')
+        users = [
+            self.example_user('iago'),
+            self.example_user('cordelia'),
+            self.example_user('ZOE'),
+            self.example_user('othello'),
+        ]
+
+        for user in users:
+            user.long_term_idle = True
+            user.save()
+
+        long_term_idle_users_ids = [user.id for user in users]
+
+        result = fetch_initial_state_data(user_profile=hamlet,
+                                          event_types=None,
+                                          queue_id='',
+                                          client_gravatar=False,
+                                          user_avatar_url_field_optional=True)
+
+        raw_users = result['raw_users']
+
+        for user_dict in raw_users.values():
+            if user_dict['user_id'] in long_term_idle_users_ids:
+                self.assertFalse('avatar_url' in user_dict)
+            else:
+                self.assertIsNotNone(user_dict['avatar_url'])
+
+        gravatar_users_id = [user_dict['user_id'] for user_dict in raw_users.values()
+                             if 'avatar_url' in user_dict and 'gravatar.com' in user_dict['avatar_url']]
+
+        # Test again with client_gravatar = True
+        result = fetch_initial_state_data(user_profile=hamlet,
+                                          event_types=None,
+                                          queue_id='',
+                                          client_gravatar=True,
+                                          user_avatar_url_field_optional=True)
+
+        raw_users = result['raw_users']
+
+        for user_dict in raw_users.values():
+            if user_dict['user_id'] in gravatar_users_id:
+                self.assertIsNone(user_dict['avatar_url'])
+            else:
+                self.assertFalse('avatar_url' in user_dict)
 
 class GetUnreadMsgsTest(ZulipTestCase):
     def mute_stream(self, user_profile: UserProfile, stream: Stream) -> None:
@@ -3836,6 +3884,7 @@ class FetchQueriesTest(ZulipTestCase):
                     event_types=None,
                     queue_id='x',
                     client_gravatar=False,
+                    user_avatar_url_field_optional=False
                 )
 
         self.assert_length(queries, 30)
@@ -3892,6 +3941,7 @@ class FetchQueriesTest(ZulipTestCase):
                     event_types=event_types,
                     queue_id='x',
                     client_gravatar=False,
+                    user_avatar_url_field_optional=False
                 )
             self.assert_length(queries, count)
 
@@ -3971,7 +4021,8 @@ class TestEventsRegisterNarrowDefaults(ZulipTestCase):
 
 class TestGetRawUserDataSystemBotRealm(ZulipTestCase):
     def test_get_raw_user_data_on_system_bot_realm(self) -> None:
-        result = get_raw_user_data(get_realm("zulipinternal"), self.example_user('hamlet'), True)
+        result = get_raw_user_data(get_realm("zulipinternal"), self.example_user('hamlet'),
+                                   client_gravatar=True, user_avatar_url_field_optional=True)
 
         for bot_email in settings.CROSS_REALM_BOT_EMAILS:
             bot_profile = get_system_bot(bot_email)

@@ -504,8 +504,10 @@ def notify_created_user(user_profile: UserProfile) -> None:
     person = format_user_row(user_profile.realm, user_profile, user_row,
                              # Since we don't know what the client
                              # supports at this point in the code, we
-                             # just assume client_gravatar=False :(
+                             # just assume client_gravatar and
+                             # user_avatar_url_field_optional = False :(
                              client_gravatar=False,
+                             user_avatar_url_field_optional=False,
                              # We assume there's no custom profile
                              # field data for a new user; initial
                              # values are expected to be added in a

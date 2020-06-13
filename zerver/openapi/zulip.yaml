@@ -3207,6 +3207,15 @@ paths:
              in a loop.  New in Zulip 2.2 (feature level 13).  This
              capability is for backwards-compatibility; it will be
              required in a future server release.
+
+          * `user_avatar_url_field_optional`: Boolean for whether the
+             client required avatar URLs for all users, or supports
+             using `GET /avatar/{user_id}` to access user avatars.  If the
+             client has this capability, the server may skip sending a
+             `avatar_url` field in the `realm_user` at its sole discretion
+             to optimize network performance.  This is an important optimization
+             in organizations with 10,000s of users.
+             New in Zulip 2.2 (feature level 18).
         schema:
           type: object
         example:
