@@ -121,7 +121,7 @@ run_test('basics', () => {
     ];
     filter = new Filter(operators);
     assert(filter.has_operator('has'));
-    assert(!filter.can_apply_locally());
+    assert(filter.can_apply_locally());
     assert(!filter.includes_full_stream_history());
     assert(!filter.can_mark_messages_read());
     assert(!filter.is_personal_filter());
