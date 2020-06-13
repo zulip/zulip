@@ -54,5 +54,5 @@ class Command(ZulipBaseCommand):
 
             prereg_user = PreregistrationUser(email=email, realm=realm)
             prereg_user.save()
-            print(email + ": " + create_confirmation_link(prereg_user, realm.host,
+            print(email + ": " + create_confirmation_link(prereg_user,
                                                           Confirmation.INVITATION))

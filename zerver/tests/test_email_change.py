@@ -23,14 +23,14 @@ class EmailChangeTestCase(ZulipTestCase):
     def test_confirm_email_change_with_non_existent_key(self) -> None:
         self.login('hamlet')
         key = generate_key()
-        url = confirmation_url(key, 'testserver', Confirmation.EMAIL_CHANGE)
+        url = confirmation_url(key, None, Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
         self.assert_in_success_response(["Whoops. We couldn't find your confirmation link in the system."], response)
 
     def test_confirm_email_change_with_invalid_key(self) -> None:
         self.login('hamlet')
         key = 'invalid_key'
-        url = confirmation_url(key, 'testserver', Confirmation.EMAIL_CHANGE)
+        url = confirmation_url(key, None, Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
         self.assert_in_success_response(["Whoops. The confirmation link is malformed."], response)
 
@@ -49,7 +49,7 @@ class EmailChangeTestCase(ZulipTestCase):
                                     date_sent=date_sent,
                                     confirmation_key=key,
                                     type=Confirmation.EMAIL_CHANGE)
-        url = confirmation_url(key, user_profile.realm.host, Confirmation.EMAIL_CHANGE)
+        url = confirmation_url(key, user_profile.realm, Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
         self.assert_in_success_response(["The confirmation link has expired or been deactivated."], response)
 
@@ -74,7 +74,7 @@ class EmailChangeTestCase(ZulipTestCase):
                                     date_sent=now(),
                                     confirmation_key=key,
                                     type=Confirmation.EMAIL_CHANGE)
-        url = confirmation_url(key, user_profile.realm.host, Confirmation.EMAIL_CHANGE)
+        url = confirmation_url(key, user_profile.realm, Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
 
         self.assertEqual(response.status_code, 200)
@@ -208,7 +208,7 @@ class EmailChangeTestCase(ZulipTestCase):
                                     date_sent=now(),
                                     confirmation_key=key,
                                     type=Confirmation.EMAIL_CHANGE)
-        url = confirmation_url(key, user_profile.realm.host, Confirmation.EMAIL_CHANGE)
+        url = confirmation_url(key, user_profile.realm, Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
 
         self.assertEqual(response.status_code, 200)

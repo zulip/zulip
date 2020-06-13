@@ -5,6 +5,7 @@ import datetime
 import string
 from random import SystemRandom
 from typing import Mapping, Optional, Union
+from urllib.parse import urljoin
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -63,7 +64,7 @@ def get_object_from_key(confirmation_key: str,
         obj.save(update_fields=['status'])
     return obj
 
-def create_confirmation_link(obj: ContentType, host: str,
+def create_confirmation_link(obj: ContentType,
                              confirmation_type: int,
                              url_args: Mapping[str, str] = {}) -> str:
     key = generate_key()
@@ -75,15 +76,17 @@ def create_confirmation_link(obj: ContentType, host: str,
 
     Confirmation.objects.create(content_object=obj, date_sent=timezone_now(), confirmation_key=key,
                                 realm=realm, type=confirmation_type)
-    return confirmation_url(key, host, confirmation_type, url_args)
+    return confirmation_url(key, realm, confirmation_type, url_args)
 
-def confirmation_url(confirmation_key: str, host: str,
+def confirmation_url(confirmation_key: str, realm: Optional[Realm],
                      confirmation_type: int,
                      url_args: Mapping[str, str] = {}) -> str:
     url_args = dict(url_args)
     url_args['confirmation_key'] = confirmation_key
-    return '%s%s%s' % (settings.EXTERNAL_URI_SCHEME, host,
-                       reverse(_properties[confirmation_type].url_name, kwargs=url_args))
+    return urljoin(
+        settings.ROOT_DOMAIN_URI if realm is None else realm.uri,
+        reverse(_properties[confirmation_type].url_name, kwargs=url_args),
+    )
 
 class Confirmation(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=CASCADE)
@@ -135,7 +138,7 @@ def one_click_unsubscribe_link(user_profile: UserProfile, email_type: str) -> st
     Generate a unique link that a logged-out user can visit to unsubscribe from
     Zulip e-mails without having to first log in.
     """
-    return create_confirmation_link(user_profile, user_profile.realm.host,
+    return create_confirmation_link(user_profile,
                                     Confirmation.UNSUBSCRIBE,
                                     url_args = {'email_type': email_type})
 
@@ -165,10 +168,10 @@ def generate_realm_creation_url(by_admin: bool=False) -> str:
     RealmCreationKey.objects.create(creation_key=key,
                                     date_created=timezone_now(),
                                     presume_email_valid=by_admin)
-    return '%s%s%s' % (settings.EXTERNAL_URI_SCHEME,
-                       settings.EXTERNAL_HOST,
-                       reverse('zerver.views.create_realm',
-                               kwargs={'creation_key': key}))
+    return urljoin(
+        settings.ROOT_DOMAIN_URI,
+        reverse('zerver.views.create_realm', kwargs={'creation_key': key}),
+    )
 
 class RealmCreationKey(models.Model):
     creation_key = models.CharField('activation key', db_index=True, max_length=40)

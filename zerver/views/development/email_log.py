@@ -109,7 +109,7 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
 
     # Email change successful
     key = Confirmation.objects.filter(type=Confirmation.EMAIL_CHANGE).latest('id').confirmation_key
-    url = confirmation_url(key, realm.host, Confirmation.EMAIL_CHANGE)
+    url = confirmation_url(key, realm, Confirmation.EMAIL_CHANGE)
     user_profile = get_user_by_delivery_email(registered_email, realm)
     result = client.get(url)
     assert result.status_code == 200

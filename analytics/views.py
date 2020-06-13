@@ -1075,13 +1075,6 @@ def get_confirmations(types: List[int], object_ids: List[int],
         realm = confirmation.realm
         content_object = confirmation.content_object
 
-        if realm is not None:
-            realm_host = realm.host
-        elif isinstance(content_object, Realm):
-            realm_host = content_object.host
-        else:
-            realm_host = hostname
-
         type = confirmation.type
         days_to_activate = _properties[type].validity_in_days
         expiry_date = confirmation.date_sent + timedelta(days=days_to_activate)
@@ -1099,7 +1092,7 @@ def get_confirmations(types: List[int], object_ids: List[int],
         else:
             expires_in = "Expired"
 
-        url = confirmation_url(confirmation.confirmation_key, realm_host, type)
+        url = confirmation_url(confirmation.confirmation_key, realm, type)
         confirmation_dicts.append({"object": confirmation.content_object,
                                    "url": url, "type": type, "link_status": link_status,
                                    "expires_in": expires_in})

@@ -1432,7 +1432,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         data = {"email": invitee_email, "referrer_email": current_user.email}
         invitee = PreregistrationUser.objects.get(email=data["email"])
         referrer = self.example_user(referrer_name)
-        link = create_confirmation_link(invitee, referrer.realm.host, Confirmation.INVITATION)
+        link = create_confirmation_link(invitee, Confirmation.INVITATION)
         context = common_context(referrer)
         context.update({
             'activate_url': link,
@@ -1489,7 +1489,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         inviter = self.example_user('iago')
         prereg_user = PreregistrationUser.objects.create(
             email=email, referred_by=inviter, realm=realm)
-        url = create_confirmation_link(prereg_user, 'host', Confirmation.USER_REGISTRATION)
+        url = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
         registration_key = url.split('/')[-1]
 
         # Mainly a test of get_object_from_key, rather than of the invitation pathway
@@ -1498,7 +1498,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assertEqual(cm.exception.error_type, ConfirmationKeyException.DOES_NOT_EXIST)
 
         # Verify that using the wrong type doesn't work in the main confirm code path
-        email_change_url = create_confirmation_link(prereg_user, 'host', Confirmation.EMAIL_CHANGE)
+        email_change_url = create_confirmation_link(prereg_user, Confirmation.EMAIL_CHANGE)
         email_change_key = email_change_url.split('/')[-1]
         url = '/accounts/do_confirm/' + email_change_key
         result = self.client_get(url)
@@ -1511,7 +1511,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         inviter = self.example_user('iago')
         prereg_user = PreregistrationUser.objects.create(
             email=email, referred_by=inviter, realm=realm)
-        url = create_confirmation_link(prereg_user, 'host', Confirmation.USER_REGISTRATION)
+        url = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
         registration_key = url.split('/')[-1]
 
         conf = Confirmation.objects.filter(confirmation_key=registration_key).first()
@@ -1569,7 +1569,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         inviter = self.example_user('iago')
         prereg_user = PreregistrationUser.objects.create(
             email=email, referred_by=inviter, realm=realm)
-        confirmation_link = create_confirmation_link(prereg_user, 'host', Confirmation.USER_REGISTRATION)
+        confirmation_link = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
 
         registration_key = 'invalid_confirmation_key'
         url = '/accounts/register/'
@@ -1591,7 +1591,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         prereg_user = PreregistrationUser.objects.create(
             email=email, referred_by=inviter, realm=realm)
 
-        confirmation_link = create_confirmation_link(prereg_user, 'host', Confirmation.USER_REGISTRATION)
+        confirmation_link = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
         registration_key = confirmation_link.split('/')[-1]
 
         url = "/accounts/register/"
@@ -1652,10 +1652,10 @@ class InvitationsTestCase(InviteUserBase):
         othello = self.example_user('othello')
 
         multiuse_invite_one = MultiuseInvite.objects.create(referred_by=hamlet, realm=realm)
-        create_confirmation_link(multiuse_invite_one, realm.host, Confirmation.MULTIUSE_INVITE)
+        create_confirmation_link(multiuse_invite_one, Confirmation.MULTIUSE_INVITE)
 
         multiuse_invite_two = MultiuseInvite.objects.create(referred_by=othello, realm=realm)
-        create_confirmation_link(multiuse_invite_two, realm.host, Confirmation.MULTIUSE_INVITE)
+        create_confirmation_link(multiuse_invite_two, Confirmation.MULTIUSE_INVITE)
         confirmation = Confirmation.objects.last()
         confirmation.date_sent = expired_datetime
         confirmation.save()
@@ -1742,7 +1742,7 @@ class InvitationsTestCase(InviteUserBase):
 
         zulip_realm = get_realm("zulip")
         multiuse_invite = MultiuseInvite.objects.create(referred_by=self.example_user("hamlet"), realm=zulip_realm)
-        create_confirmation_link(multiuse_invite, zulip_realm.host, Confirmation.MULTIUSE_INVITE)
+        create_confirmation_link(multiuse_invite, Confirmation.MULTIUSE_INVITE)
         result = self.client_delete('/json/invites/multiuse/' + str(multiuse_invite.id))
         self.assertEqual(result.status_code, 200)
         self.assertIsNone(MultiuseInvite.objects.filter(id=multiuse_invite.id).first())
@@ -1753,7 +1753,7 @@ class InvitationsTestCase(InviteUserBase):
         # Test deleting multiuse invite from another realm
         mit_realm = get_realm("zephyr")
         multiuse_invite_in_mit = MultiuseInvite.objects.create(referred_by=self.mit_user("sipbtest"), realm=mit_realm)
-        create_confirmation_link(multiuse_invite_in_mit, mit_realm.host, Confirmation.MULTIUSE_INVITE)
+        create_confirmation_link(multiuse_invite_in_mit, Confirmation.MULTIUSE_INVITE)
         error_result = self.client_delete('/json/invites/multiuse/' + str(multiuse_invite_in_mit.id))
         self.assert_json_error(error_result, "No such invitation")
 
@@ -1864,7 +1864,7 @@ class InvitationsTestCase(InviteUserBase):
         prereg_user = PreregistrationUser.objects.create(
             email=email, referred_by=inviter, realm=realm)
 
-        confirmation_link = create_confirmation_link(prereg_user, 'host', Confirmation.USER_REGISTRATION)
+        confirmation_link = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
         registration_key = confirmation_link.split('/')[-1]
 
         result = self.client_post(
@@ -1934,7 +1934,7 @@ class MultiuseInviteTest(ZulipTestCase):
         Confirmation.objects.create(content_object=invite, date_sent=date_sent,
                                     confirmation_key=key, type=Confirmation.MULTIUSE_INVITE)
 
-        return confirmation_url(key, self.realm.host, Confirmation.MULTIUSE_INVITE)
+        return confirmation_url(key, self.realm, Confirmation.MULTIUSE_INVITE)
 
     def check_user_able_to_register(self, email: str, invite_link: str) -> None:
         password = "password"
