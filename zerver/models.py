@@ -72,7 +72,7 @@ from zerver.lib.types import (
     ExtendedValidator,
     FieldElement,
     ProfileData,
-    ProfileDataElement,
+    ProfileDataElementBase,
     RealmUserValidator,
     UserFieldElement,
     Validator,
@@ -1127,9 +1127,16 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
                 value = converter(value)
 
             field_data = field.as_dict()
-            field_data['value'] = value
-            field_data['rendered_value'] = rendered_value
-            data.append(field_data)
+            data.append({
+                'id': field_data['id'],
+                'name': field_data['name'],
+                'type': field_data['type'],
+                'hint': field_data['hint'],
+                'field_data': field_data['field_data'],
+                'order': field_data['order'],
+                'value': value,
+                'rendered_value': rendered_value,
+            })
 
         return data
 
@@ -2823,7 +2830,7 @@ class CustomProfileField(models.Model):
     class Meta:
         unique_together = ('realm', 'name')
 
-    def as_dict(self) -> ProfileDataElement:
+    def as_dict(self) -> ProfileDataElementBase:
         return {
             'id': self.id,
             'name': self.name,
