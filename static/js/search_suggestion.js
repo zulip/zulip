@@ -680,11 +680,6 @@ exports.get_search_result = function (base_query, query) {
         }
     }
 
-    let base_operators = [];
-    if (operators.length > 1) {
-        base_operators = operators.slice(0, -1);
-    }
-
     // only make one people_getter to avoid duplicate work
     const people_getter = make_people_getter(last);
 
@@ -709,6 +704,7 @@ exports.get_search_result = function (base_query, query) {
         get_has_filter_suggestions,
     ];
 
+    const base_operators = operators.slice(0, -1);
     const max_items = exports.max_num_of_search_results;
 
     for (const filterer of filterers) {
@@ -755,11 +751,7 @@ exports.get_search_result_legacy = function (query) {
         }
     }
 
-    let base_operators = [];
-    if (operators.length > 1) {
-        base_operators = operators.slice(0, -1);
-    }
-    const base = get_default_suggestion_legacy(base_operators);
+    const base = get_default_suggestion_legacy(operators.slice(0, -1));
     const attacher = make_attacher(base);
 
     // Display the default first
@@ -795,6 +787,7 @@ exports.get_search_result_legacy = function (query) {
         get_has_filter_suggestions,
     ];
 
+    const base_operators = operators.slice(0, -1);
     const max_items = exports.max_num_of_search_results;
 
     for (const filterer of filterers) {
