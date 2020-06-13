@@ -88,6 +88,7 @@ def always_want(msg_type: str) -> bool:
 def fetch_initial_state_data(user_profile: UserProfile,
                              event_types: Optional[Iterable[str]],
                              queue_id: str, client_gravatar: bool,
+                             user_avatar_url_field_optional: bool,
                              slim_presence: bool = False,
                              include_subscribers: bool = True) -> Dict[str, Any]:
     state: Dict[str, Any] = {'queue_id': queue_id}
@@ -208,7 +209,8 @@ def fetch_initial_state_data(user_profile: UserProfile,
 
     if want('realm_user'):
         state['raw_users'] = get_raw_user_data(realm, user_profile,
-                                               client_gravatar=client_gravatar)
+                                               client_gravatar=client_gravatar,
+                                               user_avatar_url_field_optional=user_avatar_url_field_optional)
 
         # For the user's own avatar URL, we force
         # client_gravatar=False, since that saves some unnecessary
@@ -844,6 +846,7 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
 
     notification_settings_null = client_capabilities.get('notification_settings_null', False)
     bulk_message_deletion = client_capabilities.get('bulk_message_deletion', False)
+    user_avatar_url_field_optional = client_capabilities.get('user_avatar_url_field_optional', False)
 
     if user_profile.realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
         # If real email addresses are not available to the user, their
@@ -873,6 +876,7 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
 
     ret = fetch_initial_state_data(user_profile, event_types_set, queue_id,
                                    client_gravatar=client_gravatar,
+                                   user_avatar_url_field_optional=user_avatar_url_field_optional,
                                    slim_presence=slim_presence,
                                    include_subscribers=include_subscribers)
 

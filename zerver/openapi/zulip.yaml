@@ -3121,6 +3121,14 @@ paths:
              in a loop.  New in Zulip 2.2 (feature level 13).  This
              capability is for backwards-compatibility; it will be
              required in a future server release.
+
+          * `user_avatar_url_field_optional`: Boolean for whether the
+             clients can compute avatar URLs of the users who are
+             unlikely to appear in messages using GET /avatar/{user_id}
+             endpoint. In such cases, the server will send None for the
+             `avatar_url` field. New in Zulip 2.2 (feature level 14).
+             This capability is for backward-compatibility; it will be
+             required in a future server release.
         schema:
           type: object
         example:

@@ -452,7 +452,7 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile, user_id
                                         allow_bots=True, read_only=True)
 
     members = get_raw_user_data(realm, user_profile, client_gravatar=client_gravatar,
-                                target_user=target_user,
+                                user_avatar_url_field_optional=False, target_user=target_user,
                                 include_custom_profile_fields=include_custom_profile_fields)
 
     if target_user is not None:
@@ -500,7 +500,9 @@ def create_user_backend(request: HttpRequest, user_profile: UserProfile,
 
 def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     raw_user_data = get_raw_user_data(user_profile.realm, user_profile,
-                                      client_gravatar=False, target_user=user_profile)
+                                      client_gravatar=False,
+                                      user_avatar_url_field_optional=False,
+                                      target_user=user_profile)
     result: Dict[str, Any] = raw_user_data[user_profile.id]
 
     result['max_message_id'] = -1
