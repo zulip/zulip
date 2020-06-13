@@ -1,7 +1,7 @@
 import json
 import os
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Mapping
 
 import markdown
 from django.utils.html import escape as escape_html
@@ -14,9 +14,7 @@ REGEXP = re.compile(r'\{generate_api_arguments_table\|\s*(.+?)\s*\|\s*(.+)\s*\}'
 
 
 class MarkdownArgumentsTableGenerator(Extension):
-    def __init__(self, configs: Optional[Dict[str, Any]]=None) -> None:
-        if configs is None:
-            configs = {}
+    def __init__(self, configs: Mapping[str, Any] = {}) -> None:
         self.config = {
             'base_path': ['.', 'Default location from which to evaluate relative paths for the JSON files.'],
         }

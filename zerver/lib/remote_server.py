@@ -1,6 +1,6 @@
 import logging
 import urllib
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Mapping, Tuple, Union
 
 import requests
 import ujson
@@ -24,7 +24,7 @@ class PushNotificationBouncerRetryLaterError(JsonableError):
 def send_to_push_bouncer(method: str,
                          endpoint: str,
                          post_data: Union[str, Dict[str, Any]],
-                         extra_headers: Optional[Dict[str, Any]]=None) -> Dict[str, Any]:
+                         extra_headers: Mapping[str, Any] = {}) -> Dict[str, Any]:
     """While it does actually send the notice, this function has a lot of
     code and comments around error handling for the push notifications
     bouncer.  There are several classes of failures, each with its own
@@ -47,8 +47,7 @@ def send_to_push_bouncer(method: str,
                                            settings.ZULIP_ORG_KEY)
 
     headers = {"User-agent": f"ZulipServer/{ZULIP_VERSION}"}
-    if extra_headers is not None:
-        headers.update(extra_headers)
+    headers.update(extra_headers)
 
     try:
         res = requests.request(method,

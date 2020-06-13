@@ -129,8 +129,7 @@ def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, 
         data = ''
 
     headers = get_requests_headers(integration.name, fixture_name)
-    if config.custom_headers:
-        headers.update(config.custom_headers)
+    headers.update(config.custom_headers)
     if config.use_basic_auth:
         credentials = base64.b64encode(f'{bot.email}:{bot.api_key}'.encode('utf8')).decode('utf8')
         auth = f'basic {credentials}'
@@ -140,8 +139,7 @@ def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, 
     stream = integration.stream_name or 'devel'
     url = f"{bot.bot_owner.realm.uri}/{integration.url}"
     params = {'api_key': bot.api_key, 'stream': stream}
-    if config.extra_params:
-        params.update(config.extra_params)
+    params.update(config.extra_params)
 
     extra_args = {}
     if not json_fixture and data:

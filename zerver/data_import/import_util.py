@@ -3,7 +3,7 @@ import os
 import random
 import shutil
 import traceback
-from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, TypeVar
+from typing import AbstractSet, Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, TypeVar
 
 import requests
 import ujson
@@ -363,11 +363,8 @@ def build_usermessages(zerver_usermessage: List[ZerverFieldsT],
                        mentioned_user_ids: List[int],
                        message_id: int,
                        is_private: bool,
-                       long_term_idle: Optional[Set[int]]=None) -> Tuple[int, int]:
+                       long_term_idle: AbstractSet[int] = set()) -> Tuple[int, int]:
     user_ids = subscriber_map.get(recipient_id, set())
-
-    if long_term_idle is None:
-        long_term_idle = set()
 
     user_messages_created = 0
     user_messages_skipped = 0

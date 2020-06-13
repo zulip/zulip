@@ -24,7 +24,7 @@ sys.path.append('/home/zulip/deployments/current/zerver')
 
 django.setup()
 
-from typing import Any, Dict, Optional, Set
+from typing import AbstractSet, Any, Dict
 
 from zerver.models import UserActivity
 
@@ -35,7 +35,7 @@ states: Dict[str, int] = {
     "UNKNOWN": 3,
 }
 
-def report(state: str, short_msg: str, too_old: Optional[Set[Any]] = None) -> None:
+def report(state: str, short_msg: str, too_old: AbstractSet[Any] = set()) -> None:
     too_old_data = ""
     if too_old:
         too_old_data = "\nLast call to get_message for recently out of date mirrors:\n" + "\n".join(

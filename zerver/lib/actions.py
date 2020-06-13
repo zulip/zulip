@@ -1059,7 +1059,7 @@ class RecipientInfoResult(TypedDict):
 def get_recipient_info(recipient: Recipient,
                        sender_id: int,
                        stream_topic: Optional[StreamTopicTarget],
-                       possibly_mentioned_user_ids: Optional[Set[int]]=None,
+                       possibly_mentioned_user_ids: AbstractSet[int]=set(),
                        possible_wildcard_mention: bool=True) -> RecipientInfoResult:
     stream_push_user_ids: Set[int] = set()
     stream_email_user_ids: Set[int] = set()
@@ -1151,14 +1151,13 @@ def get_recipient_info(recipient: Recipient,
     message_to_user_id_set = set(message_to_user_ids)
 
     user_ids = set(message_to_user_id_set)
-    if possibly_mentioned_user_ids:
-        # Important note: Because we haven't rendered bugdown yet, we
-        # don't yet know which of these possibly-mentioned users was
-        # actually mentioned in the message (in other words, the
-        # mention syntax might have been in a code block or otherwise
-        # escaped).  `get_ids_for` will filter these extra user rows
-        # for our data structures not related to bots
-        user_ids |= possibly_mentioned_user_ids
+    # Important note: Because we haven't rendered bugdown yet, we
+    # don't yet know which of these possibly-mentioned users was
+    # actually mentioned in the message (in other words, the
+    # mention syntax might have been in a code block or otherwise
+    # escaped).  `get_ids_for` will filter these extra user rows
+    # for our data structures not related to bots
+    user_ids |= possibly_mentioned_user_ids
 
     if user_ids:
         query = UserProfile.objects.filter(
@@ -2759,7 +2758,7 @@ def get_last_message_id() -> int:
 SubT = Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
 def bulk_add_subscriptions(streams: Iterable[Stream],
                            users: Iterable[UserProfile],
-                           color_map: Optional[Dict[str, str]]=None,
+                           color_map: Mapping[str, str]={},
                            from_stream_creation: bool=False,
                            acting_user: Optional[UserProfile]=None) -> SubT:
     users = list(users)
@@ -2799,7 +2798,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
 
     subs_to_add: List[Tuple[Subscription, Stream]] = []
     for (user_profile, recipient_id, stream) in new_subs:
-        if color_map is not None and stream.name in color_map:
+        if stream.name in color_map:
             color = color_map[stream.name]
         else:
             color = pick_color(user_profile, subs_by_user[user_profile.id])

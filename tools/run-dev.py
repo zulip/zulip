@@ -6,6 +6,7 @@ import signal
 import subprocess
 import sys
 import traceback
+from typing import Any, Callable, Generator, List, Sequence
 from urllib.parse import urlunparse
 
 # check for the venv
@@ -18,7 +19,6 @@ from tornado.ioloop import IOLoop
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
-from typing import Any, Callable, Generator, List, Optional
 
 from tools.lib.test_script import assert_provisioning_status_ok
 
@@ -212,9 +212,8 @@ class BaseHandler(web.RequestHandler):
     target_port: int
 
     def _add_request_headers(
-        self, exclude_lower_headers_list: Optional[List[str]] = None,
+        self, exclude_lower_headers_list: Sequence[str] = [],
     ) -> httputil.HTTPHeaders:
-        exclude_lower_headers_list = exclude_lower_headers_list or []
         headers = httputil.HTTPHeaders()
         for header, v in self.request.headers.get_all():
             if header.lower() not in exclude_lower_headers_list:

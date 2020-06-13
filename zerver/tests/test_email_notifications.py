@@ -1,7 +1,7 @@
 import random
 import re
 from email.utils import formataddr
-from typing import List, Optional
+from typing import List, Sequence
 from unittest.mock import patch
 
 import ldap
@@ -221,7 +221,7 @@ class TestMissedMessages(ZulipTestCase):
     def _test_cases(self, msg_id: int, verify_body_include: List[str], email_subject: str,
                     send_as_user: bool, verify_html_body: bool=False,
                     show_message_content: bool=True,
-                    verify_body_does_not_include: Optional[List[str]]=None,
+                    verify_body_does_not_include: Sequence[str]=[],
                     trigger: str='') -> None:
         othello = self.example_user('othello')
         hamlet = self.example_user('hamlet')
@@ -248,9 +248,8 @@ class TestMissedMessages(ZulipTestCase):
         else:
             for text in verify_body_include:
                 self.assertIn(text, self.normalize_string(msg.body))
-        if verify_body_does_not_include is not None:
-            for text in verify_body_does_not_include:
-                self.assertNotIn(text, self.normalize_string(msg.body))
+        for text in verify_body_does_not_include:
+            self.assertNotIn(text, self.normalize_string(msg.body))
 
     def _realm_name_in_missed_message_email_subject(self, realm_name_in_notifications: bool) -> None:
         msg_id = self.send_personal_message(

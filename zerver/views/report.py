@@ -1,7 +1,7 @@
 # System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
 import logging
 import subprocess
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Mapping, Optional
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
@@ -89,14 +89,13 @@ def report_unnarrow_times(request: HttpRequest, user_profile: UserProfile,
 def report_error(request: HttpRequest, user_profile: UserProfile, message: str=REQ(),
                  stacktrace: str=REQ(), ui_message: bool=REQ(validator=check_bool),
                  user_agent: str=REQ(), href: str=REQ(), log: str=REQ(),
-                 more_info: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None),
+                 more_info: Mapping[str, Any]=REQ(validator=check_dict([]), default={}),
                  ) -> HttpResponse:
     """Accepts an error report and stores in a queue for processing.  The
     actual error reports are later handled by do_report_error"""
     if not settings.BROWSER_ERROR_REPORTING:
         return json_success()
-    if more_info is None:
-        more_info = {}
+    more_info = dict(more_info)
 
     js_source_map = get_js_source_map()
     if js_source_map:
