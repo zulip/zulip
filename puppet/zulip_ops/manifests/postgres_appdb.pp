@@ -8,7 +8,7 @@ class zulip_ops::postgres_appdb {
   $wal_g_version = '0.2.15'
   $wal_g_hash = 'ea33c2341d7bfb203c6948590c29834c013ab06a28c7a2b236a73d906f785c84'
   exec {'install-wal-g':
-    command => "${::zulip_scripts_path}/setup/install-wal-g ${wal_g_version} ${wal_g_hash}",
+    command => "${::zulip_scripts_path}/setup/install-wal-g.sh ${wal_g_version} ${wal_g_hash}",
     creates => "/usr/local/bin/wal-g-${wal_g_version}",
   }
   file { '/usr/local/bin/wal-g':
