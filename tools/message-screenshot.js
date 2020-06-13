@@ -36,9 +36,14 @@ async function run() {
         // deviceScaleFactor:2 gives better quality screenshots (higher pixel density)
         await page.setViewport({ width: 1280, height: 1024, deviceScaleFactor: 2 });
         await page.goto('http://' + host);
-        // wait for devlogin admin button and click on it
-        await page.waitForSelector('.btn-admin');
-        await page.click('.btn-admin');
+        // wait for Iago devlogin button and click on it.
+        await page.waitForSelector('[value="iago@zulip.com"]');
+
+        // By waiting till DOMContentLoaded we're confirming that Iago is logged in.
+        await Promise.all([
+            page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+            page.click('[value="iago@zulip.com"]'),
+        ]);
 
         // Navigate to message and capture screenshot
         await page.goto(`http://${host}/#narrow/near/${options.messageId}`);
