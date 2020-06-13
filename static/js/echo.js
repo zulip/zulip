@@ -142,6 +142,17 @@ exports.is_slash_command = function (content) {
 
 
 exports.try_deliver_locally = function (message_request) {
+
+    // Even though has: filers can be applied locally,
+    // We dont want to locally echo those has: messages
+    // because:
+    //  1. has:image, has:attachment are backend only syntax.
+    //  2. has:link do not get displayed in current narrow
+    //     if local echo is on.
+    if (narrow_state.active() && narrow_state.filter() && narrow_state.filter().has_operator('has')) {
+        return;
+    }
+
     if (markdown.contains_backend_only_syntax(message_request.content)) {
         return;
     }

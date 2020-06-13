@@ -3,6 +3,9 @@ zrequire('unread');
 zrequire('stream_data');
 zrequire('people');
 set_global('Handlebars', global.make_handlebars());
+global.stub_out_jquery();
+set_global('$', global.make_zjquery());
+zrequire('message_util', 'js/message_util');
 zrequire('Filter', 'js/filter');
 
 set_global('message_store', {});
@@ -121,7 +124,7 @@ run_test('basics', () => {
     ];
     filter = new Filter(operators);
     assert(filter.has_operator('has'));
-    assert(!filter.can_apply_locally());
+    assert(filter.can_apply_locally());
     assert(!filter.includes_full_stream_history());
     assert(!filter.can_mark_messages_read());
     assert(!filter.is_personal_filter());
@@ -715,6 +718,62 @@ run_test('predicate_basics', () => {
         display_recipient: [{id: steve.user_id}, {id: me.user_id}],
     }));
     assert(!predicate({type: 'stream'}));
+
+    const img_msg = {
+        content: `<p><a href="/user_uploads/randompath/test.jpeg">test.jpeg</a></p><div class="message_inline_image"><a href="/user_uploads/randompath/test.jpeg" title="test.jpeg"><img src="/user_uploads/randompath/test.jpeg"></a></div>`,
+    };
+
+    const link_msg = {
+        content: `<p><a href="http://chat.zulip.org">chat.zulip.org</a></p>`,
+    };
+
+    const non_img_attachment_msg = {
+        content: `<p><a href="/user_uploads/randompath/attachment.ext">attachment.ext</a></p>`,
+    };
+
+    const no_has_filter_matching_msg = {
+        content: "<p>Testing</p>",
+    };
+
+    predicate = get_predicate([['has', 'non_valid_operand']]);
+    assert(!predicate(img_msg));
+    assert(!predicate(non_img_attachment_msg));
+    assert(!predicate(link_msg));
+    assert(!predicate(no_has_filter_matching_msg));
+
+    // HTML content of message is used to determine if image have link, image or attachment.
+    // We are using jquery to parse the html and find existence of relevant tags/elements.
+    // In tests we need to stub the calls to jquery so using zjquery's .set_find_results method.
+    const has_link = get_predicate([['has', 'link']]);
+    $(img_msg.content).set_find_results("a", [$("<a>")]);
+    assert(has_link(img_msg));
+    $(non_img_attachment_msg.content).set_find_results("a", [$("<a>")]);
+    assert(has_link(non_img_attachment_msg));
+    $(link_msg.content).set_find_results("a", [$("<a>")]);
+    assert(has_link(link_msg));
+    $(no_has_filter_matching_msg.content).set_find_results("a", false);
+    assert(!has_link(no_has_filter_matching_msg));
+
+    const has_attachment = get_predicate([['has', 'attachment']]);
+    $(img_msg.content).set_find_results("a[href^='/user_uploads']", [$("<a>")]);
+    assert(has_attachment(img_msg));
+    $(non_img_attachment_msg.content).set_find_results("a[href^='/user_uploads']", [$("<a>")]);
+    assert(has_attachment(non_img_attachment_msg));
+    $(link_msg.content).set_find_results("a[href^='/user_uploads']", false);
+    assert(!has_attachment(link_msg));
+    $(no_has_filter_matching_msg.content).set_find_results("a[href^='/user_uploads']", false);
+    assert(!has_attachment(no_has_filter_matching_msg));
+
+    const has_image = get_predicate([['has', 'image']]);
+    $(img_msg.content).set_find_results(".message_inline_image", [$("<img>")]);
+    assert(has_image(img_msg));
+    $(non_img_attachment_msg.content).set_find_results(".message_inline_image", false);
+    assert(!has_image(non_img_attachment_msg));
+    $(link_msg.content).set_find_results(".message_inline_image", false);
+    assert(!has_image(link_msg));
+    $(no_has_filter_matching_msg.content).set_find_results(".message_inline_image", false);
+    assert(!has_image(no_has_filter_matching_msg));
+
 });
 
 run_test('negated_predicates', () => {

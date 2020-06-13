@@ -46,6 +46,15 @@ function message_in_home(message) {
 
 function message_matches_search_term(message, operator, operand) {
     switch (operator) {
+    case 'has':
+        if (operand === 'image') {
+            return message_util.message_has_image(message);
+        } else if (operand === 'link') {
+            return message_util.message_has_link(message);
+        } else if (operand === 'attachment') {
+            return message_util.message_has_attachment(message);
+        }
+        return false; // has:something_else returns false
     case 'is':
         if (operand === 'private') {
             return message.type === 'private';
@@ -630,10 +639,7 @@ Filter.prototype = {
         }
 
         if (this.has_operator('has')) {
-            // See #6186 to see why we currently punt on 'has:foo'
-            // queries.  This can be fixed, there are just some random
-            // complications that make it non-trivial.
-            return false;
+            return true;
         }
 
         if (this.has_operator('streams') ||
