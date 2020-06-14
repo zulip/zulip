@@ -257,6 +257,63 @@ your installation.
 [zulipchat-puppet]: https://github.com/zulip/zulip/tree/master/puppet/zulip_ops/manifests
 [nginx-loadbalancer]: https://github.com/zulip/zulip/blob/master/puppet/zulip_ops/files/nginx/sites-available/loadbalancer
 
+### Apache2 configuration
+
+Below is a working example of a full Apache2 configuration. It assumes that your Zulip sits at `http://localhost:5080`. You first need to make the following changes in two configuration files.
+
+1. Add the following to `/etc/zulip/zulip.conf`:
+    ```
+    [application_server]
+    http_only = true
+    ```
+
+2. Add the following to `/etc/zulip/settings.py`:
+    ```
+    EXTERNAL_HOST = 'zulip.example.com'
+    ALLOWED_HOSTS = ['zulip.example.com', '127.0.0.1']
+    USE_X_FORWARDED_HOST = True
+    ```
+
+3. Restart your Zulip.
+
+4. Put the following config in an Apache2 virtual host config file, depending on your distribution; e.g. if you use Debian or Ubuntu, then place it in `/etc/apache2/sites-available/zulip.example.com.conf` and then run `a2ensite zulip.example.com && systemctl reload apache2`:
+    ```
+    <VirtualHost *:80>
+        ServerName zulip.example.com
+        RewriteEngine On
+        RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+    </VirtualHost>
+
+    <VirtualHost *:443>
+      ServerName zulip.example.com
+
+      RequestHeader set "X-Forwarded-Proto" expr=%{REQUEST_SCHEME}
+      RequestHeader set "X-Forwarded-SSL" expr=%{HTTPS}
+
+      RewriteEngine On
+      RewriteCond %{HTTP:Upgrade} =websocket [NC]
+      RewriteRule /(.*)           ws://localhost:5080/$1 [P,L]
+      RewriteCond %{HTTP:Upgrade} !=websocket [NC]
+      RewriteRule /(.*)           http://localhost:5080/$1 [P,L]
+
+      <Location />
+        Require all granted
+        ProxyPass  http://localhost:5080/  timeout=300
+        ProxyPassReverse  http://localhost:5080/
+        ProxyPassReverseCookieDomain  127.0.0.1  zulip.example.com
+      </Location>
+
+      SSLProtocol TLSv1 TLSv1.1 TLSv1.2
+      SSLEngine on
+      SSLProxyEngine on
+      SSLCertificateFile /etc/letsencrypt/live/example.com/fullchain.pem
+      SSLCertificateKeyFile /etc/letsencrypt/live/example.com/privkey.pem
+      SSLCipherSuite "EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA256:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EDH+aRSA+AESGCM:EDH+aRSA+SHA256:EDH+aRSA:EECDH:!aNULL:!eNULL:!MEDIUM:!LOW:!3DES:!MD5:!
+      SSLHonorCipherOrder on
+      Header set Strict-Transport-Security "max-age=31536000"
+    </VirtualHost>
+    ```
+
 ### HAProxy configuration
 
 If you want to use HAProxy with Zulip, this `backend` config is a good
