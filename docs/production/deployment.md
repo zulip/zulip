@@ -222,10 +222,6 @@ For `nginx` configuration, there's two things you need to setup:
   example:
 
 ```
-map $http_upgrade $connection_upgrade {
-        default upgrade;
-        ''      close;
-}
 server {
         listen                  443 ssl;
         server_name             zulip.example.net;
@@ -237,8 +233,6 @@ server {
         location / {
                 proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
                 proxy_set_header        Host $http_host;
-                proxy_set_header        Upgrade $http_upgrade;
-                proxy_set_header        Connection $connection_upgrade;
                 proxy_http_version      1.1;
                 proxy_buffering         off;
                 proxy_read_timeout      20m;
