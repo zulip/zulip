@@ -19,7 +19,7 @@ EXCLUDE_PROPERTIES = {
     },
     '/settings/notifications': {
         'patch': {
-            # Extraneous key
+            # Some responses contain undocumented keys
             '200': ['notification_sound', 'enable_login_emails',
                     'enable_stream_desktop_notifications', 'wildcard_mentions_notify',
                     'pm_content_in_desktop_notifications', 'desktop_icon_count_display',
@@ -34,17 +34,17 @@ EXCLUDE_PROPERTIES = {
     },
     '/users/me': {
         'get': {
-            # Extraneous key
+            # Some responses contain undocumented keys
             '200': ['delivery_email'],
         },
     },
     '/users/{user_id}': {
         'get': {
-            # Extraneous key
+            # Some responses contain undocumented keys
             '200': ['delivery_email'],
         },
         'delete': {
-            # Extraneous key
+            # Some responses contain undocumented keys
             '200': ['delivery_email'],
         }
     },
@@ -56,15 +56,15 @@ EXCLUDE_PROPERTIES = {
     },
     '/messages': {
         'post': {
+            # Extraneous
             '200': ['deliver_at'],
         }
     }
 }
-# If we want to exclude the endpoint entirely we just write the
-# endpoint in EXCLUDE_ENDPOINTS else we can write ENDPOINT:METHOD
-# if we just want to skip a single method of that endpoint
-EXCLUDE_ENDPOINTS = ["/users/me/presence", "/messages/matches_narrow",
-                     "/realm/emoji/{emoji_name}:delete"]
+
+# A list of endpoint-methods such that the endpoint
+# has documentation but not with this particular method.
+EXCLUDE_ENDPOINTS = ["/realm/emoji/{emoji_name}:delete"]
 class OpenAPISpec():
     def __init__(self, path: str) -> None:
         self.path = path
@@ -88,16 +88,46 @@ class OpenAPISpec():
             yaml_parser = YamoleParser(f)
 
         self.data = yaml_parser.data
+        self.create_regex_dict()
+        self.last_update = os.path.getmtime(self.path)
+
+    def create_regex_dict(self) -> None:
+        # Alogrithm description:
+        # We have 2 types of endpoints
+        # 1.with path arguments 2. without path arguments
+        # In validate_against_openapi_schema we directly check
+        # if we have a without path endpoint, since it does not
+        # require regex. Hence they are not part of the regex dict
+        # and now we are left with only:
+        # endpoint with path arguments.
+        # Now for this case, the regex has been created carefully,
+        # numeric arguments are matched with [0-9] only and
+        # emails are matched with their regex. This is why there are zero
+        # collisions. Hence if this regex matches
+        # an incorrect endpoint then there is some backend problem.
+        # For example if we have users/{name}/presence then it will
+        # conflict with users/me/presence even in the backend.
+        # Care should be taken though that if we have special strings
+        # such as email they must be substituted with proper regex.
+
+        email_regex = r'([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})'
         self.regex_dict = {}
-        for keys in self.data['paths']:
-            if '{' not in keys:
+        for key in self.data['paths']:
+            if '{' not in key:
                 continue
-            regex_key = '^' + keys + '$'
+            regex_key = '^' + key + '$'
+            # Numeric arguments have id at their end
+            # so find such arguments and replace them with numeric
+            # regex
+            regex_key = re.sub(r'{[^}]*id}', r'[0-9]*', regex_key)
+            # Email arguments end with email
+            regex_key = re.sub(r'{[^}]*email}', email_regex, regex_key)
+            # All other types of arguments are supposed to be
+            # all-encompassing string.
             regex_key = re.sub(r'{[^}]*}', r'[^\/]*', regex_key)
             regex_key = regex_key.replace(r'/', r'\/')
             regex_key = fr'{regex_key}'
-            self.regex_dict[regex_key] = keys
-        self.last_update = os.path.getmtime(self.path)
+            self.regex_dict[regex_key] = key
 
     def spec(self) -> Dict[str, Any]:
         """Reload the OpenAPI file if it has been modified after the last time
@@ -108,7 +138,7 @@ class OpenAPISpec():
         # earlier version than the current one
         if self.last_update != last_modified:
             self.reload()
-        assert(len(self.data))
+        assert(len(self.data) > 0)
         return self.data
 
     def regex_keys(self) -> Dict[str, str]:
@@ -120,7 +150,7 @@ class OpenAPISpec():
         # earlier version than the current one
         if self.last_update != last_modified:
             self.reload()
-        assert(len(self.regex_dict))
+        assert(len(self.regex_dict) > 0)
         return self.regex_dict
 
 
@@ -188,32 +218,30 @@ def get_openapi_return_values(endpoint: str, method: str,
     response = response['properties']
     return response
 
+def match_against_openapi_regex(endpoint: str) -> Optional[str]:
+    for key in openapi_spec.regex_keys():
+        matches = re.match(fr'{key}', endpoint)
+        if matches:
+            return openapi_spec.regex_keys()[key]
+    return None
+
 def validate_against_openapi_schema(content: Dict[str, Any], endpoint: str,
-                                    method: str, response: str) -> None:
+                                    method: str, response: str) -> bool:
     """Compare a "content" dict with the defined schema for a specific method
-    in an endpoint.
+    in an endpoint. Return true if validated and false if skipped.
     """
-    if endpoint in EXCLUDE_ENDPOINTS:
-        return
-    # Collision between /users/me/subscriptions/{id} and /users/{id}/subscripitions/{id}
-    if endpoint.startswith('/users/me/subscriptions/'):
-        return
     # No 500 responses have been documented, so skip them
     if response.startswith('5'):
-        return
+        return False
     if endpoint not in openapi_spec.spec()['paths'].keys():
-        match: bool = False
-        for keys in openapi_spec.regex_keys():
-            matches = re.match(fr'{keys}', endpoint)
-            if matches:
-                match = True
-                endpoint = openapi_spec.regex_keys()[keys]
-                break
+        match = match_against_openapi_regex(endpoint)
         # If it doesn't match it hasn't been documented yet.
-        if not match:
-            return
+        if match is None:
+            return False
+        endpoint = match
+    # Excluded endpoint/methods
     if endpoint + ':' + method in EXCLUDE_ENDPOINTS:
-        return
+        return False
 
     # Check if the response matches its code
     if response.startswith('2') and (content.get('result', 'success').lower() != 'success'):
@@ -228,9 +256,10 @@ def validate_against_openapi_schema(content: Dict[str, Any], endpoint: str,
         # This return statement should ideally be not here. But since we have not defined 400
         # responses for various paths this has been added as all 400 have the same schema.
         # When all 400 response have been defined this should be removed.
-        return
+        return True
     schema = get_schema(endpoint, method, response)
     validate_object(content, schema, exclusion_list)
+    return True
 
 def validate_array(content: List[Any], schema: Dict[str, Any], exclusion_list: List[str]) -> None:
     valid_types: List[type] = []

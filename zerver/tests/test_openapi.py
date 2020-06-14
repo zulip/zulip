@@ -141,16 +141,18 @@ class OpenAPIToolsTest(ZulipTestCase):
                 },
             },
         }
-        good_content = {
-            'msg': '',
-            'result': 'success',
-            'foo': 'bar',
-        }
-        validate_against_openapi_schema(good_content,
-                                        TEST_ENDPOINT,
-                                        TEST_METHOD,
-                                        TEST_RESPONSE_SUCCESS)
-        openapi.EXCLUDE_PROPERTIES = exclude_properties
+        try:
+            good_content = {
+                'msg': '',
+                'result': 'success',
+                'foo': 'bar',
+            }
+            validate_against_openapi_schema(good_content,
+                                            TEST_ENDPOINT,
+                                            TEST_METHOD,
+                                            TEST_RESPONSE_SUCCESS)
+        finally:
+            openapi.EXCLUDE_PROPERTIES = exclude_properties
 
     def test_to_python_type(self) -> None:
         TYPES = {
@@ -1002,9 +1004,9 @@ class OpenAPIAttributesTest(ZulipTestCase):
                     if 'oneOf' in response_schema:
                         cnt = 0
                         for entry in response_schema['oneOf']:
-                            validate_against_openapi_schema(entry['example'], path,
-                                                            method, response + '_' + str(cnt))
+                            assert(validate_against_openapi_schema(entry['example'], path,
+                                                                   method, response + '_' + str(cnt)))
                             cnt += 1
                         continue
-                    validate_against_openapi_schema(response_schema['example'], path,
-                                                    method, response)
+                    assert(validate_against_openapi_schema(response_schema['example'], path,
+                                                           method, response))
