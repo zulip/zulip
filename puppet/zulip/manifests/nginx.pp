@@ -95,7 +95,7 @@ class zulip::nginx {
     mode   => '0650'
   }
 
-  $certbot_auto_renew = zulipconf('cerbot', 'auto_renew', '')
+  $certbot_auto_renew = zulipconf('certbot', 'auto_renew', '')
   if $certbot_auto_renew == 'yes' {
     package { 'certbot':
       ensure => 'installed',
