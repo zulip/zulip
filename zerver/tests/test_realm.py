@@ -524,10 +524,10 @@ class RealmTest(ZulipTestCase):
     def do_test_invalid_integer_attribute_value(self, val_name: str, invalid_val: int) -> None:
 
         possible_messages = {
-            "Invalid %(field_name)s" % dict(field_name=val_name),
-            "Bad value for '%(field_name)s'" % dict(field_name=val_name),
-            "Bad value for '%(field_name)s': %(value)s" % dict(field_name=val_name, value=invalid_val),
-            "Invalid %(field_name)s %(value)s" % dict(field_name=val_name, value=invalid_val),
+            f"Invalid {val_name}",
+            f"Bad value for '{val_name}'",
+            f"Bad value for '{val_name}': {invalid_val}",
+            f"Invalid {val_name} {invalid_val}",
         }
 
         req = {val_name: invalid_val}

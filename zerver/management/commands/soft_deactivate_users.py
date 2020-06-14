@@ -25,8 +25,11 @@ def get_users_from_emails(emails: List[str],
     if len(users) != len(emails):
         user_emails_found = {user.delivery_email for user in users}
         user_emails_not_found = '\n'.join(set(emails) - user_emails_found)
-        raise CommandError('Users with the following emails were not found:\n\n%s\n\n'
-                           'Check if they are correct.' % (user_emails_not_found,))
+        raise CommandError(
+            'Users with the following emails were not found:\n\n'
+            f'{user_emails_not_found}\n\n'
+            'Check if they are correct.',
+        )
     return users
 
 class Command(ZulipBaseCommand):

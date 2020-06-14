@@ -60,8 +60,7 @@ class SourceMap:
                         webpack_prefix = "webpack:///"
                         if display_src.startswith(webpack_prefix):
                             display_src = display_src[len(webpack_prefix):]
-                        out += ('       = %s line %d column %d\n' %
-                                (display_src, result.src_line+1, result.src_col+1))
+                        out += f'       = {display_src} line {result.src_line+1} column {result.src_col+1}\n'
                 except IndexError:
                     out += '       [Unable to look up in source map]\n'
 

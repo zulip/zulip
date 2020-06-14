@@ -309,8 +309,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     recipients = {(msg['message'].recipient_id, msg['message'].topic_name()) for msg in missed_messages}
     if len(recipients) != 1:
         raise ValueError(
-            'All missed_messages must have the same recipient and topic %r' %
-            (recipients,),
+            f'All missed_messages must have the same recipient and topic {recipients!r}',
         )
 
     # This link is no longer a part of the email, but keeping the code in case

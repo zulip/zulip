@@ -2015,5 +2015,4 @@ class PushBouncerSignupTest(ZulipTestCase):
             contact_email="server-admin@example.com",
         )
         result = self.client_post("/api/v1/remotes/server/register", request)
-        self.assert_json_error(result, "Zulip server auth failure: key does not match role %s" %
-                               (zulip_org_id,))
+        self.assert_json_error(result, f"Zulip server auth failure: key does not match role {zulip_org_id}")

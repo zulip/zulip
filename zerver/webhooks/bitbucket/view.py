@@ -35,9 +35,10 @@ def api_bitbucket_webhook(request: HttpRequest, user_profile: UserProfile,
         # Bitbucket doesn't give us enough information to really give
         # a useful message :/
         subject = repository['name']
-        content = ("%s [force pushed](%s)."
-                   % (payload.get('user', 'Someone'),
-                      payload['canon_url'] + repository['absolute_url']))
+        content = "{} [force pushed]({}).".format(
+            payload.get('user', 'Someone'),
+            payload['canon_url'] + repository['absolute_url'],
+        )
     else:
         branch = payload['commits'][-1]['branch']
         if branches is not None and branches.find(branch) == -1:

@@ -87,5 +87,4 @@ if recv_diff > 16 * 1024**2:
 if replay_diff > 16 * 1024**2:
     report('WARNING', f'secondary is {replay_diff} bytes behind on applying received xlog')
 
-report('OK', ('secondary is %d bytes behind on receiving and %d bytes behind on applying xlog'
-              % (recv_diff, replay_diff)))
+report('OK', f'secondary is {recv_diff} bytes behind on receiving and {replay_diff} bytes behind on applying xlog')

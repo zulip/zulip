@@ -958,18 +958,16 @@ class ImportExportTest(ZulipTestCase):
         original_msg = Message.objects.get(content=special_characters_message, sender__realm=original_realm)
         self.assertEqual(
             original_msg.rendered_content,
-            ('<div class="codehilite"><pre><span></span><code>&#39;\n</code></pre></div>\n\n\n'
-             '<p><span class="user-mention" data-user-id="%s">@Polonius</span></p>' %
-             (orig_polonius_user.id,)),
+            '<div class="codehilite"><pre><span></span><code>&#39;\n</code></pre></div>\n\n\n'
+            f'<p><span class="user-mention" data-user-id="{orig_polonius_user.id}">@Polonius</span></p>',
         )
         imported_polonius_user = UserProfile.objects.get(delivery_email=self.example_email("polonius"),
                                                          realm=imported_realm)
         imported_msg = Message.objects.get(content=special_characters_message, sender__realm=imported_realm)
         self.assertEqual(
             imported_msg.rendered_content,
-            ('<div class="codehilite"><pre><span></span><code>\'\n</code></pre></div>\n'
-             '<p><span class="user-mention" data-user-id="%s">@Polonius</span></p>' %
-             (imported_polonius_user.id,)),
+            '<div class="codehilite"><pre><span></span><code>\'\n</code></pre></div>\n'
+            f'<p><span class="user-mention" data-user-id="{imported_polonius_user.id}">@Polonius</span></p>',
         )
 
         # Check recipient_id was generated correctly for the imported users and streams.

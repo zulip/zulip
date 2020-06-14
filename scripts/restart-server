@@ -98,12 +98,11 @@ if change_symlink and "PWD" in os.environ:
         if os.path.commonprefix([os.environ["PWD"], symlink]) == symlink:
             print(
                 """
-%sYour shell entered its current directory through a symlink:
-  %s
+{}Your shell entered its current directory through a symlink:
+  {}
 which has now changed. Your shell will not see this change until you run:
-  cd %s
-to traverse the symlink again.%s
-"""
-                % (WARNING, symlink, shlex.quote(os.environ["PWD"]), ENDC),
+  cd {}
+to traverse the symlink again.{}
+""".format(WARNING, symlink, shlex.quote(os.environ["PWD"]), ENDC),
                 file=sys.stderr,
             )

@@ -87,7 +87,7 @@ def next_month(billing_cycle_anchor: datetime, dt: datetime) -> datetime:
         if 20 < (proposed_next_month - dt).days < 40:
             return proposed_next_month
     raise AssertionError('Something wrong in next_month calculation with '
-                         'billing_cycle_anchor: %s, dt: %s' % (billing_cycle_anchor, dt))
+                         f'billing_cycle_anchor: {billing_cycle_anchor}, dt: {dt}')
 
 def start_of_next_billing_cycle(plan: CustomerPlan, event_time: datetime) -> datetime:
     if plan.status == CustomerPlan.FREE_TRIAL:

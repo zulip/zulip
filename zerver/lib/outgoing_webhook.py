@@ -236,11 +236,10 @@ def notify_bot_owner(event: Dict[str, Any],
         notification_message += f"\nThe webhook got a response with status code *{status_code}*."
     if response_content:
         notification_message += "\nThe response contains the following payload:\n" \
-                                "```\n%s\n```" % (str(response_content),)
+                                f"```\n{response_content!r}\n```"
     if exception:
         notification_message += "\nWhen trying to send a request to the webhook service, an exception " \
-                                "of type %s occurred:\n```\n%s\n```" % (
-                                    type(exception).__name__, str(exception))
+                                f"of type {type(exception).__name__} occurred:\n```\n{exception}\n```"
 
     message_info = dict(
         type='private',
@@ -329,9 +328,10 @@ def do_rest_call(base_url: str,
         request_retry(event, failure_message=failure_message)
 
     except requests.exceptions.RequestException as e:
-        response_message = ("An exception of type *%s* occurred for message `%s`! "
-                            "See the Zulip server logs for more information." % (
-                                type(e).__name__, event["command"]))
+        response_message = (
+            f"An exception of type *{type(e).__name__}* occurred for message `{event['command']}`! "
+            "See the Zulip server logs for more information."
+        )
         logging.exception("Outhook trigger failed:")
         fail_with_message(event, response_message)
         notify_bot_owner(event, exception=e)

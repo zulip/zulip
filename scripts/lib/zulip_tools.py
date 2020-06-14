@@ -173,7 +173,7 @@ def get_deployment_lock(error_rerun_script: str) -> None:
         print(FAIL + "Deployment already in progress.  Please run\n" +
               "  {}\n".format(error_rerun_script) +
               "manually when the previous deployment finishes, or run\n" +
-              "  rmdir %s\n"  % (LOCK_DIR,) +
+              "  rmdir {}\n".format(LOCK_DIR) +
               "if the previous deployment crashed." +
               ENDC)
         sys.exit(1)
@@ -189,9 +189,9 @@ def run(args: Sequence[str], **kwargs: Any) -> None:
         subprocess.check_call(args, **kwargs)
     except subprocess.CalledProcessError:
         print()
-        print(WHITEONRED + "Error running a subcommand of %s: %s" %
-              (sys.argv[0], " ".join(map(shlex.quote, args))) +
-              ENDC)
+        print(WHITEONRED + "Error running a subcommand of {}: {}".format(
+            sys.argv[0], " ".join(map(shlex.quote, args)),
+        ) + ENDC)
         print(WHITEONRED + "Actual error output for the subcommand is just above this." +
               ENDC)
         print()

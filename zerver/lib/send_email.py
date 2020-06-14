@@ -128,14 +128,12 @@ class EmailNotDeliveredException(Exception):
 
 class DoubledEmailArgumentException(CommandError):
     def __init__(self, argument_name: str) -> None:
-        msg = "Argument '%s' is ambiguously present in both options and email template." % (
-            argument_name)
+        msg = f"Argument '{argument_name}' is ambiguously present in both options and email template."
         super().__init__(msg)
 
 class NoEmailArgumentException(CommandError):
     def __init__(self, argument_name: str) -> None:
-        msg = "Argument '%s' is required in either options or email template." % (
-            argument_name)
+        msg = f"Argument '{argument_name}' is required in either options or email template."
         super().__init__(msg)
 
 # When changing the arguments to this function, you may need to write a

@@ -193,13 +193,8 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
     else:
         extra_request_data = ""
     logger_client = f"({requestor_for_logs} via {client_name})"
-    logger_timing = ('%5s%s%s%s%s%s %s' %
-                     (format_timedelta(time_delta), optional_orig_delta,
-                      remote_cache_output, bugdown_output,
-                      db_time_output, startup_output, path))
-    logger_line = ('%-15s %-7s %3d %s%s %s' %
-                   (remote_ip, method, status_code,
-                    logger_timing, extra_request_data, logger_client))
+    logger_timing = f'{format_timedelta(time_delta):>5}{optional_orig_delta}{remote_cache_output}{bugdown_output}{db_time_output}{startup_output} {path}'
+    logger_line = f'{remote_ip:<15} {method:<7} {status_code:3} {logger_timing}{extra_request_data} {logger_client}'
     if (status_code in [200, 304] and method == "GET" and path.startswith("/static")):
         logger.debug(logger_line)
     else:

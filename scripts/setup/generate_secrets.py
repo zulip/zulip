@@ -148,7 +148,7 @@ def generate_secrets(development: bool = False) -> None:
                         with open(filename, "a") as f:
                             f.write(
                                 "# Set a Redis password based on zulip-secrets.conf\n"
-                                "requirepass '%s'\n" % (redis_password,),
+                                f"requirepass '{redis_password}'\n",
                             )
                         break
 

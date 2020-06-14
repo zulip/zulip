@@ -302,8 +302,9 @@ class SignupWorker(QueueProcessingWorker):
             user_profile.id, user_profile.realm.string_id,
         )
         if settings.MAILCHIMP_API_KEY and settings.PRODUCTION:
-            endpoint = "https://%s.api.mailchimp.com/3.0/lists/%s/members" % \
-                       (settings.MAILCHIMP_API_KEY.split('-')[1], settings.ZULIP_FRIENDS_LIST_ID)
+            endpoint = "https://{}.api.mailchimp.com/3.0/lists/{}/members".format(
+                settings.MAILCHIMP_API_KEY.split('-')[1], settings.ZULIP_FRIENDS_LIST_ID,
+            )
             params = dict(data)
             del params['user_id']
             params['list_id'] = settings.ZULIP_FRIENDS_LIST_ID
