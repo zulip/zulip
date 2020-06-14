@@ -370,8 +370,10 @@ nav {
     z-index: 1;
 }
 
-.portico-landing.show {
-    opacity: 1;
+.portico-landing {
+    &.show {
+        opacity: 1;
+    }
 }
 
 .portico-landing.features-app {
