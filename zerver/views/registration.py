@@ -476,10 +476,12 @@ def prepare_activation_url(email: str, request: HttpRequest,
         request.session['confirmation_key'] = {'confirmation_key': activation_url.split('/')[-1]}
     return activation_url
 
-def send_confirm_registration_email(email: str, activation_url: str, language: str) -> None:
+def send_confirm_registration_email(email: str, activation_url: str, language: str,
+                                    realm: Optional[Realm]=None) -> None:
     send_email('zerver/emails/confirm_registration', to_emails=[email],
                from_address=FromAddress.tokenized_no_reply_address(),
-               language=language, context={'activate_url': activation_url})
+               language=language, context={'activate_url': activation_url},
+               realm=realm)
 
 def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
     login_url = reverse('django.contrib.auth.views.login')
@@ -556,7 +558,7 @@ def accounts_home(request: HttpRequest, multiuse_object_key: str="",
             activation_url = prepare_activation_url(email, request, streams=streams_to_subscribe,
                                                     invited_as=invited_as)
             try:
-                send_confirm_registration_email(email, activation_url, request.LANGUAGE_CODE)
+                send_confirm_registration_email(email, activation_url, request.LANGUAGE_CODE, realm=realm)
             except smtplib.SMTPException as e:
                 logging.error('Error in accounts_home: %s', str(e))
                 return HttpResponseRedirect("/config-error/smtp")

@@ -108,6 +108,8 @@ class EmailChangeTestCase(ZulipTestCase):
             fr"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
         )
 
+        self.assertEqual(email_message.extra_headers["List-Id"], "Zulip Dev <zulip.testserver>")
+
         activation_url = [s for s in body.split('\n') if s][2]
         response = self.client_get(activation_url)
 

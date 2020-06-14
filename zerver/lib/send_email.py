@@ -5,7 +5,7 @@ import os
 from email.headerregistry import Address
 from email.parser import Parser
 from email.policy import default
-from email.utils import parseaddr
+from email.utils import formataddr, parseaddr
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 import ujson
@@ -57,12 +57,23 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
                 to_emails: Optional[List[str]]=None, from_name: Optional[str]=None,
                 from_address: Optional[str]=None, reply_to_email: Optional[str]=None,
                 language: Optional[str]=None, context: Mapping[str, Any]={},
+                realm: Optional[Realm]=None
                 ) -> EmailMultiAlternatives:
     # Callers should pass exactly one of to_user_id and to_email.
     assert (to_user_ids is None) ^ (to_emails is None)
     if to_user_ids is not None:
         to_users = [get_user_profile_by_id(to_user_id) for to_user_id in to_user_ids]
+        if realm is None:
+            assert len(set([to_user.realm_id for to_user in to_users])) == 1
+            realm = to_users[0].realm
         to_emails = [str(Address(display_name=to_user.full_name, addr_spec=to_user.delivery_email)) for to_user in to_users]
+
+    extra_headers = {}
+    if realm is not None:
+        # formaddr is meant for formatting (display_name, email_address) pair for headers like "To",
+        # but we can use its utility for formatting the List-Id header, as it follows the same format,
+        # except having just a domain instead of an email address.
+        extra_headers['List-Id'] = formataddr((realm.name, realm.host))
 
     context = {
         **context,
@@ -118,7 +129,8 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
     elif from_address == FromAddress.NOREPLY:
         reply_to = [FromAddress.NOREPLY]
 
-    mail = EmailMultiAlternatives(email_subject, message, from_email, to_emails, reply_to=reply_to)
+    mail = EmailMultiAlternatives(email_subject, message, from_email, to_emails, reply_to=reply_to,
+                                  headers=extra_headers)
     if html_message is not None:
         mail.attach_alternative(html_message, 'text/html')
     return mail
@@ -141,10 +153,12 @@ class NoEmailArgumentException(CommandError):
 def send_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
                to_emails: Optional[List[str]]=None, from_name: Optional[str]=None,
                from_address: Optional[str]=None, reply_to_email: Optional[str]=None,
-               language: Optional[str]=None, context: Dict[str, Any]={}) -> None:
+               language: Optional[str]=None, context: Dict[str, Any]={},
+               realm: Optional[Realm]=None) -> None:
     mail = build_email(template_prefix, to_user_ids=to_user_ids, to_emails=to_emails,
                        from_name=from_name, from_address=from_address,
-                       reply_to_email=reply_to_email, language=language, context=context)
+                       reply_to_email=reply_to_email, language=language, context=context,
+                       realm=realm)
     template = template_prefix.split("/")[-1]
     logger.info("Sending %s email to %s", template, mail.to)
 
