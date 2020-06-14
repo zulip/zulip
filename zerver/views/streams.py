@@ -33,6 +33,7 @@ from zerver.lib.actions import (
     do_change_default_stream_group_name,
     do_change_stream_description,
     do_change_stream_invite_only,
+    do_change_stream_message_retention_days,
     do_change_stream_post_policy,
     do_change_subscription_property,
     do_create_default_stream_group,
@@ -49,8 +50,8 @@ from zerver.lib.actions import (
     internal_prep_private_message,
     internal_prep_stream_message,
 )
-from zerver.lib.exceptions import ErrorCode, JsonableError
-from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.exceptions import ErrorCode, JsonableError, OrganizationOwnerRequired
+from zerver.lib.request import REQ, RequestVariableConversionError, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import (
     access_default_stream_group_by_id,
@@ -73,6 +74,7 @@ from zerver.lib.validator import (
     check_int_in,
     check_list,
     check_string,
+    check_string_or_int,
     check_variable_type,
     to_non_negative_int,
 )
@@ -124,6 +126,16 @@ def check_if_removing_someone_else(user_profile: UserProfile,
         return principals[0] != user_profile.id
     else:
         return principals[0] != user_profile.email
+
+def parse_message_retention_days(value: Union[int, str]) -> Optional[int]:
+    if value == "forever":
+        return -1
+    if value == "realm_default":
+        return None
+    if isinstance(value, str) or value < 0:
+        raise RequestVariableConversionError('message_retention_days', value)
+    assert isinstance(value, int)
+    return value
 
 @require_realm_admin
 def deactivate_stream_backend(request: HttpRequest,
@@ -224,10 +236,19 @@ def update_stream_backend(
             Stream.STREAM_POST_POLICY_TYPES), default=None),
         history_public_to_subscribers: Optional[bool]=REQ(validator=check_bool, default=None),
         new_name: Optional[str]=REQ(validator=check_string, default=None),
+        message_retention_days: Optional[Union[int, str]]=REQ(validator=check_string_or_int, default=None),
 ) -> HttpResponse:
     # We allow realm administrators to to update the stream name and
     # description even for private streams.
     stream = access_stream_for_delete_or_update(user_profile, stream_id)
+
+    if message_retention_days is not None:
+        if not user_profile.is_realm_owner:
+            raise OrganizationOwnerRequired()
+        user_profile.realm.ensure_not_on_limited_plan()
+        message_retention_days_value = parse_message_retention_days(message_retention_days)
+        do_change_stream_message_retention_days(stream, message_retention_days_value)
+
     if description is not None:
         if '\n' in description:
             # We don't allow newline characters in stream descriptions.
@@ -384,6 +405,8 @@ def add_subscriptions_backend(
         stream_post_policy: int=REQ(validator=check_int_in(
             Stream.STREAM_POST_POLICY_TYPES), default=Stream.STREAM_POST_POLICY_EVERYONE),
         history_public_to_subscribers: Optional[bool]=REQ(validator=check_bool, default=None),
+        message_retention_days: Union[str, int]=REQ(validator=check_string_or_int,
+                                                    default="realm_default"),
         announce: bool=REQ(validator=check_bool, default=False),
         principals: Sequence[Union[str, int]]=REQ(validator=check_variable_type([
             check_list(check_string), check_list(check_int)]), default=[]),
@@ -408,6 +431,7 @@ def add_subscriptions_backend(
         stream_dict_copy["invite_only"] = invite_only
         stream_dict_copy["stream_post_policy"] = stream_post_policy
         stream_dict_copy["history_public_to_subscribers"] = history_public_to_subscribers
+        stream_dict_copy["message_retention_days"] = parse_message_retention_days(message_retention_days)
         stream_dicts.append(stream_dict_copy)
 
     # Validation of the streams arguments, including enforcement of

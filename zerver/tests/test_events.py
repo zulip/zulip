@@ -46,6 +46,7 @@ from zerver.lib.actions import (
     do_change_realm_domain,
     do_change_stream_description,
     do_change_stream_invite_only,
+    do_change_stream_message_retention_days,
     do_change_stream_post_policy,
     do_change_subscription_property,
     do_change_user_delivery_email,
@@ -1451,6 +1452,7 @@ class EventsRegisterTest(ZulipTestCase):
                     ('is_web_public', check_bool),
                     ('is_announcement_only', check_bool),
                     ('stream_post_policy', check_int_in(Stream.STREAM_POST_POLICY_TYPES)),
+                    ('message_retention_days', check_none_or(check_int)),
                     ('name', check_string),
                     ('stream_id', check_int),
                     ('first_message_id', check_none_or(check_int)),
@@ -2564,6 +2566,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('is_web_public', check_bool),
             ('is_announcement_only', check_bool),
             ('stream_post_policy', check_int_in(Stream.STREAM_POST_POLICY_TYPES)),
+            ('message_retention_days', check_none_or(check_int)),
             ('is_muted', check_bool),
             ('in_home_view', check_bool),
             ('name', check_string),
@@ -2647,6 +2650,14 @@ class EventsRegisterTest(ZulipTestCase):
             ('name', check_string),
             ('value', check_int_in(Stream.STREAM_POST_POLICY_TYPES)),
         ])
+        stream_update_message_retention_days_schema_checker = self.check_events_dict([
+            ('type', equals('stream')),
+            ('op', equals('update')),
+            ('property', equals('message_retention_days')),
+            ('stream_id', check_int),
+            ('name', check_string),
+            ('value', check_none_or(check_int))
+        ])
 
         # Subscribe to a totally new stream, so it's just Hamlet on it
         action: Callable[[], object] = lambda: self.subscribe(self.example_user("hamlet"), "test_stream")
@@ -2715,6 +2726,12 @@ class EventsRegisterTest(ZulipTestCase):
         events = self.do_test(action,
                               include_subscribers=include_subscribers, num_events=2)
         error = stream_update_stream_post_policy_schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        action = lambda: do_change_stream_message_retention_days(stream, -1)
+        events = self.do_test(action,
+                              include_subscribers=include_subscribers, num_events=1)
+        error = stream_update_message_retention_days_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
         # Subscribe to a totally new invite-only stream, so it's just Hamlet on it

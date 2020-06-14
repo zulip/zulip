@@ -1507,8 +1507,6 @@ class Stream(models.Model):
     # * "realm" and "recipient" are not exposed to clients via the API.
     # * "date_created" should probably be added here, as it's useful information
     #   to subscribers.
-    # * message_retention_days should be added here once the feature is
-    #   complete.
     API_FIELDS = [
         "name",
         "id",
@@ -1519,6 +1517,7 @@ class Stream(models.Model):
         "stream_post_policy",
         "history_public_to_subscribers",
         "first_message_id",
+        "message_retention_days"
     ]
 
     @staticmethod

@@ -10,6 +10,14 @@ below features are supported.
 
 ## Changes in Zulip 2.2
 
+**Feature level 17**
+
+* [`GET users/me/subscriptions`](/api/get-subscribed-streams), [`GET /streams`]
+  (api/get-all-streams): Added `message_retention_days` to the Stream objects.
+* [`POST users/me/subscriptions`](/api/add-subscriptions), [`PATCH
+  streams/{stream_id}`](/api/update-stream): Added `message_retention_days`
+  parameter.
+
 **Feature level 16**
 
 * [`GET /users/me`]: Removed `pointer` from the response, as the

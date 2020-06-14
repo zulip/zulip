@@ -58,7 +58,8 @@ def create_stream_if_needed(realm: Realm,
                             invite_only: bool=False,
                             stream_post_policy: int=Stream.STREAM_POST_POLICY_EVERYONE,
                             history_public_to_subscribers: Optional[bool]=None,
-                            stream_description: str="") -> Tuple[Stream, bool]:
+                            stream_description: str="",
+                            message_retention_days: Optional[int]=None) -> Tuple[Stream, bool]:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
         realm, invite_only, history_public_to_subscribers)
 
@@ -72,6 +73,7 @@ def create_stream_if_needed(realm: Realm,
             stream_post_policy=stream_post_policy,
             history_public_to_subscribers=history_public_to_subscribers,
             is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
+            message_retention_days=message_retention_days,
         ),
     )
 
@@ -104,6 +106,7 @@ def create_streams_if_needed(realm: Realm,
             stream_post_policy=stream_dict.get("stream_post_policy", Stream.STREAM_POST_POLICY_EVERYONE),
             history_public_to_subscribers=stream_dict.get("history_public_to_subscribers"),
             stream_description=stream_dict.get("description", ""),
+            message_retention_days=stream_dict.get("message_retention_days", None)
         )
 
         if created:
@@ -423,10 +426,13 @@ def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
     missing_stream_dicts: List[Mapping[str, Any]] = []
     existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
 
+    message_retention_days_not_none = False
     for stream_dict in streams_raw:
         stream_name = stream_dict["name"]
         stream = existing_stream_map.get(stream_name.lower())
         if stream is None:
+            if stream_dict.get('message_retention_days', None) is not None:
+                message_retention_days_not_none = True
             missing_stream_dicts.append(stream_dict)
         else:
             existing_streams.append(stream)
@@ -443,6 +449,10 @@ def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
             raise JsonableError(_("Stream(s) ({}) do not exist").format(
                 ", ".join(stream_dict["name"] for stream_dict in missing_stream_dicts),
             ))
+        elif message_retention_days_not_none:
+            if not user_profile.is_realm_owner:
+                raise JsonableError(_('User cannot create stream with this settings.'))
+            user_profile.realm.ensure_not_on_limited_plan()
 
         # We already filtered out existing streams, so dup_streams
         # will normally be an empty list below, but we protect against somebody
