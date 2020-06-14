@@ -523,77 +523,77 @@ nav {
     box-shadow: 10px 20px 80px hsla(0, 0%, 0%, 0.15);
     margin: 100px auto 150px auto;
     text-align: center;
-}
 
-.portico-landing.features-app section.notifications .envelope {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    max-height: 40vw;
-}
+    .envelope {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        max-height: 40vw;
+    }
 
-.portico-landing.features-app section.notifications h2 {
-    position: relative;
-
-    margin-bottom: 120px;
-    top: -0px;
-}
-
-.portico-landing.features-app section.notifications .feature-list {
-    position: relative;
-
-    display: inline-block;
-    vertical-align: top;
-    text-align: left;
-
-    margin: 35px 0px 0px 20px;
-
-    z-index: 1;
-
-    h3 {
+    h2 {
         position: relative;
 
-        margin: 15px 0px 15px 50px;
+        margin-bottom: 120px;
+        top: -0px;
+    }
 
-        font-size: 1.2em;
-        font-weight: 400;
+    .feature-list {
+        position: relative;
 
-        color: hsl(0, 0%, 53%);
+        display: inline-block;
+        vertical-align: top;
+        text-align: left;
 
-        &::before {
-            content: " ";
-            display: block;
-            position: absolute;
+        margin: 35px 0px 0px 20px;
 
-            left: -35px;
-            top: 0px;
-            width: 20px;
-            height: 20px;
+        z-index: 1;
 
-            border-radius: 4px;
+        h3 {
+            position: relative;
 
-            background-image: url(/static/images/checkbox-green.svg);
-            background-size: 100% auto;
-            background-position: center;
-            background-repeat: no-repeat;
+            margin: 15px 0px 15px 50px;
+
+            font-size: 1.2em;
+            font-weight: 400;
+
+            color: hsl(0, 0%, 53%);
+
+            &::before {
+                content: " ";
+                display: block;
+                position: absolute;
+
+                left: -35px;
+                top: 0px;
+                width: 20px;
+                height: 20px;
+
+                border-radius: 4px;
+
+                background-image: url(/static/images/checkbox-green.svg);
+                background-size: 100% auto;
+                background-position: center;
+                background-repeat: no-repeat;
+            }
         }
     }
-}
 
-.portico-landing.features-app section.notifications .image-block {
-    width: 400px;
-    height: 280px;
+    .image-block {
+        width: 400px;
+        height: 280px;
 
-    background: linear-gradient(135deg, hsla(0, 0%, 0%, 0.05), hsla(0, 0%, 0%, 0.2));
-    border-radius: 4px;
+        background: linear-gradient(135deg, hsla(0, 0%, 0%, 0.05), hsla(0, 0%, 0%, 0.2));
+        border-radius: 4px;
 
-    background-image: url(/static/images/landing-page/notifications.jpg);
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
+        background-image: url(/static/images/landing-page/notifications.jpg);
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
 
-    display: inline-block;
+        display: inline-block;
+    }
 }
 
 .portico-landing.features-app .cta::after {
@@ -3117,10 +3117,10 @@ nav {
 
     .portico-landing.features-app section.notifications {
         padding: 50px 10px;
-    }
 
-    .portico-landing.features-app section.notifications .image-block {
-        display: none;
+        .image-block {
+            display: none;
+        }
     }
 
     .portico-landing .testimonials .quote-container {
