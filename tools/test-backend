@@ -2,22 +2,23 @@
 
 # check for the venv
 from lib import sanity_check
+
 sanity_check.check_venv(__file__)
 
-from typing import List, Iterator
-import glob
 import argparse
 import contextlib
-from unittest import mock
+import glob
 import os
 import shlex
-import sys
 import subprocess
+import sys
 import tempfile
-import ujson
-import responses
+from typing import Iterator, List
+from unittest import mock
 
 import django
+import responses
+import ujson
 from django.conf import settings
 from django.test.utils import get_runner
 
@@ -183,11 +184,10 @@ def main() -> None:
     os.environ.pop("http_proxy", "")
     os.environ.pop("https_proxy", "")
 
-    from zerver.lib.test_fixtures import update_test_databases_if_required, \
-        remove_test_run_directories
-
-    from tools.lib.test_script import (
-        assert_provisioning_status_ok,
+    from tools.lib.test_script import assert_provisioning_status_ok
+    from zerver.lib.test_fixtures import (
+        remove_test_run_directories,
+        update_test_databases_if_required,
     )
 
     os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
@@ -314,7 +314,7 @@ def main() -> None:
                 classname = suite.rsplit('.', 1)[0]
                 rewrite_arguments(classname)
             elif suite[0].isupper():
-                rewrite_arguments('class %s(' % (suite,))
+                rewrite_arguments(f'class {suite}(')
 
         for i, suite in enumerate(args):
             if suite.startswith('test'):
@@ -403,7 +403,7 @@ def main() -> None:
     # We only check the templates if all the tests ran and passed
     if not failures and full_suite and templates_not_rendered:
         missed_count = len(templates_not_rendered)
-        print("\nError: %s templates have no tests!" % (missed_count,))
+        print(f"\nError: {missed_count} templates have no tests!")
         for template in templates_not_rendered:
             print(f'  {template}')
         print("See zerver/tests/test_templates.py for the exclude list.")
@@ -424,8 +424,8 @@ def main() -> None:
         for path in enforce_fully_covered:
             missing_lines = cov.analysis2(path)[3]
             if len(missing_lines) > 0:
-                print("ERROR: %s no longer has complete backend test coverage" % (path,))
-                print("  Lines missing coverage: %s" % (missing_lines,))
+                print(f"ERROR: {path} no longer has complete backend test coverage")
+                print(f"  Lines missing coverage: {missing_lines}")
                 print()
                 failures = True
         if failures:
@@ -439,7 +439,7 @@ def main() -> None:
             try:
                 missing_lines = cov.analysis2(path)[3]
                 if len(missing_lines) == 0 and path != "zerver/lib/migrate.py":
-                    print("ERROR: %s has complete backend test coverage but is still in not_yet_fully_covered." % (path,))
+                    print(f"ERROR: {path} has complete backend test coverage but is still in not_yet_fully_covered.")
                     ok = False
             except coverage.misc.NoSource:
                 continue
@@ -460,6 +460,7 @@ def main() -> None:
 
     if options.report_slow_tests:
         from zerver.lib.test_runner import report_slow_tests
+
         # We do this even with failures, since slowness can be
         # an important clue as to why tests fail.
         report_slow_tests()
@@ -471,7 +472,7 @@ def main() -> None:
 
     removed = remove_test_run_directories()
     if removed:
-        print("Removed %s stale test run directories!" % (removed,))
+        print(f"Removed {removed} stale test run directories!")
 
     # We'll have printed whether tests passed or failed above
     sys.exit(bool(failures))

@@ -1,11 +1,10 @@
 """
 Context managers, i.e. things you can use with the 'with' statement.
 """
-
-
 import fcntl
 from contextlib import contextmanager
-from typing import Iterator, IO, Any, Union
+from typing import IO, Any, Iterator, Union
+
 
 @contextmanager
 def flock(lockfile: Union[int, IO[Any]], shared: bool=False) -> Iterator[None]:

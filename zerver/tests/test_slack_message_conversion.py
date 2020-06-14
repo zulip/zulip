@@ -1,16 +1,16 @@
-from zerver.data_import.slack_message_conversion import (
-    convert_to_zulip_markdown,
-    get_user_full_name
-)
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-from zerver.lib.test_runner import slow
-from zerver.lib import mdiff
-import ujson
-
 import os
 from typing import Any, Dict, List, Tuple
+
+import ujson
+
+from zerver.data_import.slack_message_conversion import (
+    convert_to_zulip_markdown,
+    get_user_full_name,
+)
+from zerver.lib import mdiff
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_runner import slow
+
 
 class SlackMessageConversion(ZulipTestCase):
     def assertEqual(self, first: Any, second: Any, msg: str="") -> None:
@@ -74,7 +74,7 @@ class SlackMessageConversion(ZulipTestCase):
         self.assertEqual(full_name, 'John Doe')
         self.assertEqual(get_user_full_name(users[2]), 'Jane')
 
-        self.assertEqual(text, 'Hi @**%s**: How are you? #**general**' % (full_name,))
+        self.assertEqual(text, f'Hi @**{full_name}**: How are you? #**general**')
         self.assertEqual(mentioned_users, [540])
 
         # multiple mentioning

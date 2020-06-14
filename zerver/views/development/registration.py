@@ -1,14 +1,13 @@
+from typing import Any
+
 from django.conf import settings
-from django.http import HttpResponse, HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from confirmation.models import Confirmation, create_confirmation_link
-
-from typing import Any
-
-from zerver.models import UserProfile
 from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain
+from zerver.models import UserProfile
 from zerver.views.auth import create_preregistration_user
 from zerver.views.registration import accounts_register
 
@@ -29,7 +28,7 @@ def register_development_user(request: HttpRequest) -> HttpResponse:
         request.META['HTTP_HOST'] = settings.REALM_HOSTS['zulip']
     count = UserProfile.objects.count()
     name = 'user-%d' % (count,)
-    email = '%s@zulip.com' % (name,)
+    email = f'{name}@zulip.com'
     prereg = create_preregistration_user(email, request, realm_creation=False,
                                          password_required=False)
     activation_url = create_confirmation_link(prereg, request.get_host(),
@@ -44,7 +43,7 @@ def register_development_user(request: HttpRequest) -> HttpResponse:
 def register_development_realm(request: HttpRequest) -> HttpResponse:
     count = UserProfile.objects.count()
     name = 'user-%d' % (count,)
-    email = '%s@zulip.com' % (name,)
+    email = f'{name}@zulip.com'
     realm_name = 'realm-%d' % (count,)
     prereg = create_preregistration_user(email, request, realm_creation=True,
                                          password_required=False)

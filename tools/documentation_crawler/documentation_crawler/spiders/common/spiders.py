@@ -1,15 +1,14 @@
 import json
 import re
-import scrapy
+from typing import Callable, Iterable, List, Optional, Union
 
+import scrapy
 from scrapy.http import Request, Response
 from scrapy.linkextractors import IGNORED_EXTENSIONS
 from scrapy.linkextractors.lxmlhtml import LxmlLinkExtractor
 from scrapy.spidermiddlewares.httperror import HttpError
 from scrapy.utils.url import url_has_any_extension
 from twisted.python.failure import Failure
-
-from typing import Callable, Iterable, List, Optional, Union
 
 EXCLUDED_URLS = [
     # Google calendar returns 404s on HEAD requests unconditionally

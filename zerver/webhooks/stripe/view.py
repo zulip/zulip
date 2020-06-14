@@ -1,6 +1,6 @@
 # Webhooks for external integrations.
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional, Sequence, Tuple
 
 from django.http import HttpRequest, HttpResponse
 
@@ -8,8 +8,7 @@ from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.webhooks.common import UnexpectedWebhookEventType, \
-    check_send_webhook_message
+from zerver.lib.webhooks.common import UnexpectedWebhookEventType, check_send_webhook_message
 from zerver.models import UserProfile
 
 
@@ -50,7 +49,7 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
         topic = customer_id
     body = None
 
-    def update_string(blacklist: List[str]=[]) -> str:
+    def update_string(blacklist: Sequence[str] = []) -> str:
         assert('previous_attributes' in payload['data'])
         previous_attributes = payload['data']['previous_attributes']
         for attribute in blacklist:
@@ -61,7 +60,7 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
                        ' is now ' + stringify(object_[attribute])
                        for attribute in sorted(previous_attributes.keys()))
 
-    def default_body(update_blacklist: List[str]=[]) -> str:
+    def default_body(update_blacklist: Sequence[str] = []) -> str:
         body = '{resource} {verbed}'.format(
             resource=linkified_id(object_['id']), verbed=event.replace('_', ' '))
         if event == 'updated':
@@ -103,7 +102,7 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
                 resource=linkified_id(object_['id'], lower=True),
                 charge=linkified_id(object_['charge'], lower=True),
                 amount=object_['amount'],
-                currency=object_['currency'].upper()
+                currency=object_['currency'].upper(),
             )
     if category == 'checkout_beta':  # nocoverage
         # Not sure what this is
@@ -127,7 +126,7 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
             body = 'Discount {verbed} ([{coupon_name}]({coupon_url})).'.format(
                 verbed=event.replace('_', ' '),
                 coupon_name=object_['coupon']['name'],
-                coupon_url='https://dashboard.stripe.com/{}/{}'.format('coupons', object_['coupon']['id'])
+                coupon_url='https://dashboard.stripe.com/{}/{}'.format('coupons', object_['coupon']['id']),
             )
         if resource == 'source':  # nocoverage
             body = default_body()

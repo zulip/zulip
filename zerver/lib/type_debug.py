@@ -1,7 +1,7 @@
-import sys
 import functools
+import sys
+from typing import IO, Any, Callable, Mapping, Sequence, TypeVar
 
-from typing import Any, Callable, IO, Mapping, Sequence, TypeVar
 
 def get_mapping_type_str(x: Mapping[Any, Any]) -> str:
     container_type = type(x).__name__
@@ -15,14 +15,14 @@ def get_mapping_type_str(x: Mapping[Any, Any]) -> str:
     value_type = get_type_str(x[key])
     if container_type == 'dict':
         if len(x) == 1:
-            return '{%s: %s}' % (key_type, value_type)
+            return f'{{{key_type}: {value_type}}}'
         else:
-            return '{%s: %s, ...}' % (key_type, value_type)
+            return f'{{{key_type}: {value_type}, ...}}'
     else:
         if len(x) == 1:
-            return '%s([(%s, %s)])' % (container_type, key_type, value_type)
+            return f'{container_type}([({key_type}, {value_type})])'
         else:
-            return '%s([(%s, %s), ...])' % (container_type, key_type, value_type)
+            return f'{container_type}([({key_type}, {value_type}), ...])'
 
 def get_sequence_type_str(x: Sequence[Any]) -> str:
     container_type = type(x).__name__
@@ -39,9 +39,9 @@ def get_sequence_type_str(x: Sequence[Any]) -> str:
             return '[' + elem_type + ', ...]'
     else:
         if len(x) == 1:
-            return '%s([%s])' % (container_type, elem_type)
+            return f'{container_type}([{elem_type}])'
         else:
-            return '%s([%s, ...])' % (container_type, elem_type)
+            return f'{container_type}([{elem_type}, ...])'
 
 expansion_blacklist = [str, bytes]
 
@@ -72,9 +72,9 @@ def print_types_to(file_obj: IO[str]) -> Callable[[FuncT], FuncT]:
             arg_types = [get_type_str(arg) for arg in args]
             kwarg_types = [key + "=" + get_type_str(value) for key, value in kwargs.items()]
             ret_val = func(*args, **kwargs)
-            output = "%s(%s) -> %s" % (func.__name__,
-                                       ", ".join(arg_types + kwarg_types),
-                                       get_type_str(ret_val))
+            output = "{}({}) -> {}".format(func.__name__,
+                                           ", ".join(arg_types + kwarg_types),
+                                           get_type_str(ret_val))
             print(output, file=file_obj)
             return ret_val
         return wrapper  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927

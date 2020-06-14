@@ -33,9 +33,9 @@ class Command(BaseCommand):
             queue_name = options['queue_name']
             if not (queue_name in get_active_worker_queues() or
                     queue_name.startswith("notify_tornado")):
-                raise CommandError("Unknown queue %s" % (queue_name,))
+                raise CommandError(f"Unknown queue {queue_name}")
 
-            print("Purging queue %s" % (queue_name,))
+            print(f"Purging queue {queue_name}")
             purge_queue(queue_name)
 
         print("Done")

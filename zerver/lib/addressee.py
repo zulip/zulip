@@ -1,14 +1,16 @@
 from typing import Iterable, List, Optional, Sequence, Union, cast
 
 from django.utils.translation import ugettext as _
+
 from zerver.lib.exceptions import JsonableError
 from zerver.models import (
     Realm,
-    UserProfile,
-    get_user_including_cross_realm,
-    get_user_by_id_in_realm_including_cross_realm,
     Stream,
+    UserProfile,
+    get_user_by_id_in_realm_including_cross_realm,
+    get_user_including_cross_realm,
 )
+
 
 def get_user_profiles(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
     user_profiles: List[UserProfile] = []

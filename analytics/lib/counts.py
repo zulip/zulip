@@ -1,23 +1,35 @@
+import logging
 import time
 from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
-import logging
-from typing import Callable, Dict, List, \
-    Optional, Tuple, Type, Union
+from typing import Callable, Dict, Optional, Sequence, Tuple, Type, Union
 
 from django.conf import settings
 from django.db import connection
 from django.db.models import F
-from psycopg2.sql import Composable, Identifier, Literal, SQL
+from psycopg2.sql import SQL, Composable, Identifier, Literal
 
-from analytics.models import BaseCount, \
-    FillState, InstallationCount, RealmCount, StreamCount, \
-    UserCount, installation_epoch, last_successful_fill
+from analytics.models import (
+    BaseCount,
+    FillState,
+    InstallationCount,
+    RealmCount,
+    StreamCount,
+    UserCount,
+    installation_epoch,
+    last_successful_fill,
+)
 from zerver.lib.logging_util import log_to_file
-from zerver.lib.timestamp import ceiling_to_day, \
-    ceiling_to_hour, floor_to_hour, verify_UTC
-from zerver.models import Message, Realm, RealmAuditLog, \
-    Stream, UserActivityInterval, UserProfile, models
+from zerver.lib.timestamp import ceiling_to_day, ceiling_to_hour, floor_to_hour, verify_UTC
+from zerver.models import (
+    Message,
+    Realm,
+    RealmAuditLog,
+    Stream,
+    UserActivityInterval,
+    UserProfile,
+    models,
+)
 
 ## Logging setup ##
 
@@ -40,7 +52,7 @@ class CountStat:
         self.data_collector = data_collector
         # might have to do something different for bitfields
         if frequency not in self.FREQUENCIES:
-            raise AssertionError("Unknown frequency: %s" % (frequency,))
+            raise AssertionError(f"Unknown frequency: {frequency}")
         self.frequency = frequency
         if interval is not None:
             self.interval = interval
@@ -50,7 +62,7 @@ class CountStat:
             self.interval = timedelta(days=1)
 
     def __str__(self) -> str:
-        return "<CountStat: %s>" % (self.property,)
+        return f"<CountStat: {self.property}>"
 
 class LoggingCountStat(CountStat):
     def __init__(self, property: str, output_table: Type[BaseCount], frequency: str) -> None:
@@ -58,7 +70,7 @@ class LoggingCountStat(CountStat):
 
 class DependentCountStat(CountStat):
     def __init__(self, property: str, data_collector: 'DataCollector', frequency: str,
-                 interval: Optional[timedelta]=None, dependencies: List[str]=[]) -> None:
+                 interval: Optional[timedelta] = None, dependencies: Sequence[str] = []) -> None:
         CountStat.__init__(self, property, data_collector, frequency, interval=interval)
         self.dependencies = dependencies
 
@@ -86,11 +98,11 @@ def process_count_stat(stat: CountStat, fill_to_time: datetime,
     elif stat.frequency == CountStat.DAY:
         time_increment = timedelta(days=1)
     else:
-        raise AssertionError("Unknown frequency: %s" % (stat.frequency,))
+        raise AssertionError(f"Unknown frequency: {stat.frequency}")
 
     verify_UTC(fill_to_time)
     if floor_to_hour(fill_to_time) != fill_to_time:
-        raise ValueError("fill_to_time must be on an hour boundary: %s" % (fill_to_time,))
+        raise ValueError(f"fill_to_time must be on an hour boundary: {fill_to_time}")
 
     fill_state = FillState.objects.filter(property=stat.property).first()
     if fill_state is None:
@@ -108,7 +120,7 @@ def process_count_stat(stat: CountStat, fill_to_time: datetime,
     elif fill_state.state == FillState.DONE:
         currently_filled = fill_state.end_time
     else:
-        raise AssertionError("Unknown value for FillState.state: %s." % (fill_state.state,))
+        raise AssertionError(f"Unknown value for FillState.state: {fill_state.state}.")
 
     if isinstance(stat, DependentCountStat):
         for dependency in stat.dependencies:
@@ -325,9 +337,9 @@ def sql_data_collector(
 def do_pull_minutes_active(property: str, start_time: datetime, end_time: datetime,
                            realm: Optional[Realm] = None) -> int:
     user_activity_intervals = UserActivityInterval.objects.filter(
-        end__gt=start_time, start__lt=end_time
+        end__gt=start_time, start__lt=end_time,
     ).select_related(
-        'user_profile'
+        'user_profile',
     ).values_list(
         'user_profile_id', 'user_profile__realm_id', 'start', 'end')
 
@@ -660,7 +672,7 @@ def get_count_stats(realm: Optional[Realm]=None) -> Dict[str, CountStat]:
                            sql_data_collector(
                                RealmCount, count_realm_active_humans_query(realm), None),
                            CountStat.DAY,
-                           dependencies=['active_users_audit:is_bot:day', '15day_actives::day'])
+                           dependencies=['active_users_audit:is_bot:day', '15day_actives::day']),
     ]
 
     return OrderedDict([(stat.property, stat) for stat in count_stats_])

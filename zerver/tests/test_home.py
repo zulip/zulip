@@ -1,33 +1,37 @@
 import calendar
+import urllib
 from datetime import timedelta
+from typing import Any, Dict
+from unittest.mock import patch
+
 import lxml.html
 import ujson
-
 from django.conf import settings
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
-from unittest.mock import patch
-import urllib
-from typing import Any, Dict
-from zerver.lib.actions import (
-    do_create_user, do_change_logo_source
-)
+
+from corporate.models import Customer, CustomerPlan
+from zerver.lib.actions import do_change_logo_source, do_create_user
 from zerver.lib.events import add_realm_logo_fields
-from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import (
-    queries_captured, get_user_messages
-)
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import get_user_messages, queries_captured
 from zerver.lib.test_runner import slow
 from zerver.lib.users import compute_show_invites_and_add_streams
 from zerver.models import (
-    get_realm, get_stream, get_user, UserProfile,
-    flush_per_request_caches, DefaultStream, Realm,
-    get_system_bot, UserActivity
+    DefaultStream,
+    Realm,
+    UserActivity,
+    UserProfile,
+    flush_per_request_caches,
+    get_realm,
+    get_stream,
+    get_system_bot,
+    get_user,
 )
 from zerver.views.home import compute_navbar_logo_url, get_furthest_read_time
-from corporate.models import Customer, CustomerPlan
 from zerver.worker.queue_processors import UserActivityWorker
+
 
 class HomeTest(ZulipTestCase):
     def test_home(self) -> None:
@@ -95,6 +99,7 @@ class HomeTest(ZulipTestCase):
             "insecure_desktop_app",
             "is_admin",
             "is_guest",
+            "is_owner",
             "jitsi_server_url",
             "language_list",
             "language_list_dbl_col",
@@ -256,7 +261,7 @@ class HomeTest(ZulipTestCase):
 
         for html_bit in html_bits:
             if html_bit not in html:
-                raise AssertionError('%s not in result' % (html_bit,))
+                raise AssertionError(f'{html_bit} not in result')
 
         page_params = self._get_page_params(result)
 
@@ -333,7 +338,7 @@ class HomeTest(ZulipTestCase):
             stream = self.make_stream(stream_name)
             DefaultStream.objects.create(
                 realm_id=realm_id,
-                stream_id=stream.id
+                stream_id=stream.id,
             )
             for user in [main_user, other_user]:
                 self.subscribe(user, stream_name)
@@ -410,7 +415,7 @@ class HomeTest(ZulipTestCase):
         unsupported_user_agents = [
             "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2)",
             "Mozilla/5.0 (Windows NT 10.0; Trident/7.0; rv:11.0) like Gecko",
-            "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0)"
+            "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0)",
         ]
         for user_agent in unsupported_user_agents:
             result = self.client_get('/',
@@ -487,7 +492,7 @@ class HomeTest(ZulipTestCase):
             full_name=bot_name,
             short_name=bot_name,
             bot_type=UserProfile.DEFAULT_BOT,
-            bot_owner=owner
+            bot_owner=owner,
         )
         return user
 
@@ -613,7 +618,7 @@ class HomeTest(ZulipTestCase):
                 is_admin=False,
                 is_owner=False,
                 is_cross_realm_bot=True,
-                is_guest=False
+                is_guest=False,
             ),
             dict(
                 avatar_version=email_gateway_bot.avatar_version,
@@ -627,7 +632,7 @@ class HomeTest(ZulipTestCase):
                 is_admin=False,
                 is_owner=False,
                 is_cross_realm_bot=True,
-                is_guest=False
+                is_guest=False,
             ),
             dict(
                 avatar_version=email_gateway_bot.avatar_version,
@@ -641,7 +646,7 @@ class HomeTest(ZulipTestCase):
                 is_admin=False,
                 is_owner=False,
                 is_cross_realm_bot=True,
-                is_guest=False
+                is_guest=False,
             ),
         ], key=by_email))
 
@@ -771,23 +776,23 @@ class HomeTest(ZulipTestCase):
         page_params = {"night_mode": True}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/user_avatars/%s/realm/logo.png?version=2" % (user_profile.realm_id,))
+                         f"/user_avatars/{user_profile.realm_id}/realm/logo.png?version=2")
 
         page_params = {"night_mode": False}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/user_avatars/%s/realm/logo.png?version=2" % (user_profile.realm_id,))
+                         f"/user_avatars/{user_profile.realm_id}/realm/logo.png?version=2")
 
         do_change_logo_source(user_profile.realm, Realm.LOGO_UPLOADED, night=True)
         page_params = {"night_mode": True}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/user_avatars/%s/realm/night_logo.png?version=2" % (user_profile.realm_id,))
+                         f"/user_avatars/{user_profile.realm_id}/realm/night_logo.png?version=2")
 
         page_params = {"night_mode": False}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/user_avatars/%s/realm/logo.png?version=2" % (user_profile.realm_id,))
+                         f"/user_avatars/{user_profile.realm_id}/realm/logo.png?version=2")
 
         # This configuration isn't super supported in the UI and is a
         # weird choice, but we have a test for it anyway.
@@ -795,7 +800,7 @@ class HomeTest(ZulipTestCase):
         page_params = {"night_mode": True}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/user_avatars/%s/realm/night_logo.png?version=2" % (user_profile.realm_id,))
+                         f"/user_avatars/{user_profile.realm_id}/realm/night_logo.png?version=2")
 
         page_params = {"night_mode": False}
         add_realm_logo_fields(page_params, user_profile.realm)

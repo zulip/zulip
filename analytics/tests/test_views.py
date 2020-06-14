@@ -1,24 +1,21 @@
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
-
 from unittest import mock
-from django.http import HttpResponse
+
 import ujson
+from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from analytics.lib.counts import COUNT_STATS, CountStat
 from analytics.lib.time_utils import time_range
-from analytics.models import FillState, \
-    RealmCount, UserCount, last_successful_fill
-from analytics.views import rewrite_client_arrays, \
-    sort_by_totals, sort_client_labels
-from zerver.lib.test_helpers import reset_emails_in_zulip_realm
+from analytics.models import FillState, RealmCount, UserCount, last_successful_fill
+from analytics.views import rewrite_client_arrays, sort_by_totals, sort_client_labels
+from zerver.lib.actions import do_create_multiuse_invite_link, do_send_realm_reactivation_email
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.timestamp import ceiling_to_day, \
-    ceiling_to_hour, datetime_to_timestamp
-from zerver.lib.actions import do_create_multiuse_invite_link, \
-    do_send_realm_reactivation_email
-from zerver.models import Client, get_realm, MultiuseInvite
+from zerver.lib.test_helpers import reset_emails_in_zulip_realm
+from zerver.lib.timestamp import ceiling_to_day, ceiling_to_hour, datetime_to_timestamp
+from zerver.models import Client, MultiuseInvite, get_realm
+
 
 class TestStatsEndpoint(ZulipTestCase):
     def test_stats(self) -> None:
@@ -403,12 +400,12 @@ class TestSupportEndpoint(ZulipTestCase):
             self.assert_in_success_response(['<span class="label">user</span>\n', '<h3>King Hamlet</h3>',
                                              '<b>Email</b>: hamlet@zulip.com', '<b>Is active</b>: True<br>',
                                              '<b>Admins</b>: desdemona@zulip.com, iago@zulip.com\n',
-                                             'class="copy-button" data-copytext="desdemona@zulip.com, iago@zulip.com"'
+                                             'class="copy-button" data-copytext="desdemona@zulip.com, iago@zulip.com"',
                                              ], result)
 
         def check_zulip_realm_query_result(result: HttpResponse) -> None:
             zulip_realm = get_realm("zulip")
-            self.assert_in_success_response(['<input type="hidden" name="realm_id" value="%s"' % (zulip_realm.id,),
+            self.assert_in_success_response([f'<input type="hidden" name="realm_id" value="{zulip_realm.id}"',
                                              'Zulip Dev</h3>',
                                              '<option value="1" selected>Self Hosted</option>',
                                              '<option value="2" >Limited</option>',
@@ -420,7 +417,7 @@ class TestSupportEndpoint(ZulipTestCase):
 
         def check_lear_realm_query_result(result: HttpResponse) -> None:
             lear_realm = get_realm("lear")
-            self.assert_in_success_response(['<input type="hidden" name="realm_id" value="%s"' % (lear_realm.id,),
+            self.assert_in_success_response([f'<input type="hidden" name="realm_id" value="{lear_realm.id}"',
                                              'Lear &amp; Co.</h3>',
                                              '<option value="1" selected>Self Hosted</option>',
                                              '<option value="2" >Limited</option>',
@@ -430,7 +427,7 @@ class TestSupportEndpoint(ZulipTestCase):
                                              'scrub-realm-button">',
                                              'data-string-id="lear"'], result)
 
-        def check_preregistration_user_query_result(result: HttpResponse, email: str, invite: Optional[bool]=False) -> None:
+        def check_preregistration_user_query_result(result: HttpResponse, email: str, invite: bool=False) -> None:
             self.assert_in_success_response(['<span class="label">preregistration user</span>\n',
                                              f'<b>Email</b>: {email}',
                                              ], result)
@@ -448,19 +445,19 @@ class TestSupportEndpoint(ZulipTestCase):
             self.assert_in_success_response(['<span class="label">preregistration user</span>\n',
                                              '<span class="label">realm creation</span>\n',
                                              '<b>Link</b>: http://zulip.testserver/accounts/do_confirm/',
-                                             '<b>Expires in</b>: 1\xa0day<br>\n'
+                                             '<b>Expires in</b>: 1\xa0day<br>\n',
                                              ], result)
 
         def check_multiuse_invite_link_query_result(result: HttpResponse) -> None:
             self.assert_in_success_response(['<span class="label">multiuse invite</span>\n',
                                              '<b>Link</b>: http://zulip.testserver/join/',
-                                             '<b>Expires in</b>: 1\xa0week, 3'
+                                             '<b>Expires in</b>: 1\xa0week, 3',
                                              ], result)
 
         def check_realm_reactivation_link_query_result(result: HttpResponse) -> None:
             self.assert_in_success_response(['<span class="label">realm reactivation</span>\n',
                                              '<b>Link</b>: http://zulip.testserver/reactivate/',
-                                             '<b>Expires in</b>: 1\xa0day'
+                                             '<b>Expires in</b>: 1\xa0day',
                                              ], result)
 
         self.login('cordelia')
@@ -532,7 +529,7 @@ class TestSupportEndpoint(ZulipTestCase):
         cordelia = self.example_user('cordelia')
         self.login_user(cordelia)
 
-        result = self.client_post("/activity/support", {"realm_id": "%s" % (cordelia.realm_id,), "plan_type": "2"})
+        result = self.client_post("/activity/support", {"realm_id": f"{cordelia.realm_id}", "plan_type": "2"})
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
 
@@ -540,7 +537,7 @@ class TestSupportEndpoint(ZulipTestCase):
         self.login_user(iago)
 
         with mock.patch("analytics.views.do_change_plan_type") as m:
-            result = self.client_post("/activity/support", {"realm_id": "%s" % (iago.realm_id,), "plan_type": "2"})
+            result = self.client_post("/activity/support", {"realm_id": f"{iago.realm_id}", "plan_type": "2"})
             m.assert_called_once_with(get_realm("zulip"), 2)
             self.assert_in_success_response(["Plan type of Zulip Dev changed from self hosted to limited"], result)
 
@@ -549,14 +546,14 @@ class TestSupportEndpoint(ZulipTestCase):
         lear_realm = get_realm('lear')
         self.login_user(cordelia)
 
-        result = self.client_post("/activity/support", {"realm_id": "%s" % (lear_realm.id,), "discount": "25"})
+        result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}", "discount": "25"})
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
 
         self.login('iago')
 
         with mock.patch("analytics.views.attach_discount_to_realm") as m:
-            result = self.client_post("/activity/support", {"realm_id": "%s" % (lear_realm.id,), "discount": "25"})
+            result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}", "discount": "25"})
             m.assert_called_once_with(get_realm("lear"), 25)
             self.assert_in_success_response(["Discount of Lear &amp; Co. changed to 25 from None"], result)
 
@@ -565,19 +562,19 @@ class TestSupportEndpoint(ZulipTestCase):
         lear_realm = get_realm('lear')
         self.login_user(cordelia)
 
-        result = self.client_post("/activity/support", {"realm_id": "%s" % (lear_realm.id,), "status": "deactivated"})
+        result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}", "status": "deactivated"})
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
 
         self.login('iago')
 
         with mock.patch("analytics.views.do_deactivate_realm") as m:
-            result = self.client_post("/activity/support", {"realm_id": "%s" % (lear_realm.id,), "status": "deactivated"})
+            result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}", "status": "deactivated"})
             m.assert_called_once_with(lear_realm, self.example_user("iago"))
             self.assert_in_success_response(["Lear &amp; Co. deactivated"], result)
 
         with mock.patch("analytics.views.do_send_realm_reactivation_email") as m:
-            result = self.client_post("/activity/support", {"realm_id": "%s" % (lear_realm.id,), "status": "active"})
+            result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}", "status": "active"})
             m.assert_called_once_with(lear_realm)
             self.assert_in_success_response(["Realm reactivation email sent to admins of Lear"], result)
 
@@ -586,19 +583,19 @@ class TestSupportEndpoint(ZulipTestCase):
         lear_realm = get_realm('lear')
         self.login_user(cordelia)
 
-        result = self.client_post("/activity/support", {"realm_id": "%s" % (lear_realm.id,), "discount": "25"})
+        result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}", "discount": "25"})
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
 
         self.login('iago')
 
         with mock.patch("analytics.views.do_scrub_realm") as m:
-            result = self.client_post("/activity/support", {"realm_id": "%s" % (lear_realm.id,), "scrub_realm": "scrub_realm"})
+            result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}", "scrub_realm": "scrub_realm"})
             m.assert_called_once_with(lear_realm)
             self.assert_in_success_response(["Lear &amp; Co. scrubbed"], result)
 
         with mock.patch("analytics.views.do_scrub_realm") as m:
-            result = self.client_post("/activity/support", {"realm_id": "%s" % (lear_realm.id,)})
+            result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}"})
             m.assert_not_called()
 
 class TestGetChartDataHelpers(ZulipTestCase):

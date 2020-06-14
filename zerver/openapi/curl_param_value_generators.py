@@ -1,13 +1,12 @@
-from typing import Dict, Any, Callable, Set, List, Optional, Tuple
-
 from functools import wraps
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from django.utils.timezone import now as timezone_now
 
-from zerver.models import Client, Message, UserPresence, UserGroup, get_realm
-from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.actions import do_add_reaction, do_add_realm_filter, update_user_presence
 from zerver.lib.events import do_events_register
-from zerver.lib.actions import update_user_presence, do_add_realm_filter, do_add_reaction
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.models import Client, Message, UserGroup, UserPresence, get_realm
 
 GENERATOR_FUNCTIONS: Dict[str, Callable[..., Dict[Any, Any]]] = dict()
 REGISTERED_GENERATOR_FUNCTIONS: Set[str] = set()
@@ -60,7 +59,7 @@ def patch_openapi_example_values(entry: str, params: List[Dict[str, Any]],
                                 "/messages/{message_id}:patch", "/messages/{message_id}:delete"])
 def iago_message_id() -> Dict[str, int]:
     return {
-        "message_id": helpers.send_stream_message(helpers.example_user("iago"), "Denmark")
+        "message_id": helpers.send_stream_message(helpers.example_user("iago"), "Denmark"),
     }
 
 @openapi_param_value_generator(["/messages/{message_id}/reactions:delete"])
@@ -131,8 +130,8 @@ def update_subscription_data() -> Dict[str, List[Dict[str, Any]]]:
     return {
         "subscription_data": [
             {"stream_id": helpers.get_stream_id("Verona"), "property": "pin_to_top", "value": True},
-            {"stream_id": helpers.get_stream_id("social"), "property": "color", "value": "#f00f00"}
-        ]
+            {"stream_id": helpers.get_stream_id("social"), "property": "color", "value": "#f00f00"},
+        ],
     }
 
 @openapi_param_value_generator(["/users/me/subscriptions:delete"])
@@ -177,13 +176,13 @@ def get_user_presence() -> Dict[None, None]:
 @openapi_param_value_generator(["/users:post"])
 def create_user() -> Dict[str, str]:
     return {
-        "email": helpers.nonreg_email("test")
+        "email": helpers.nonreg_email("test"),
     }
 
 @openapi_param_value_generator(["/user_groups/create:post"])
 def create_user_group_data() -> Dict[str, Any]:
     return {
-        "members": [helpers.example_user("hamlet").id, helpers.example_user("othello").id]
+        "members": [helpers.example_user("hamlet").id, helpers.example_user("othello").id],
     }
 
 @openapi_param_value_generator(["/user_groups/{group_id}:patch", "/user_groups/{group_id}:delete"])
@@ -197,7 +196,7 @@ def get_temp_user_group_id() -> Dict[str, str]:
 def remove_realm_filters() -> Dict[str, Any]:
     filter_id = do_add_realm_filter(get_realm("zulip"), "#(?P<id>[0-9]{2,8})", "https://github.com/zulip/zulip/pull/%(id)s")
     return {
-        "filter_id": filter_id
+        "filter_id": filter_id,
     }
 
 @openapi_param_value_generator(["/realm/emoji/{emoji_name}:post", "/user_uploads:post"])

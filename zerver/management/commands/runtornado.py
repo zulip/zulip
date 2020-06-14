@@ -3,8 +3,7 @@ import sys
 from typing import Any, Callable
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError, \
-    CommandParser
+from django.core.management.base import BaseCommand, CommandError, CommandParser
 from tornado import ioloop
 from tornado.log import app_log
 
@@ -19,11 +18,14 @@ settings.RUNNING_INSIDE_TORNADO = True
 instrument_tornado_ioloop()
 
 from zerver.lib.debug import interactive_debug_listen
-from zerver.tornado.application import create_tornado_application, \
-    setup_tornado_rabbitmq
+from zerver.tornado.application import create_tornado_application, setup_tornado_rabbitmq
 from zerver.tornado.autoreload import start as zulip_autoreload_start
-from zerver.tornado.event_queue import add_client_gc_hook, \
-    missedmessage_hook, get_wrapped_process_notification, setup_event_queue
+from zerver.tornado.event_queue import (
+    add_client_gc_hook,
+    get_wrapped_process_notification,
+    missedmessage_hook,
+    setup_event_queue,
+)
 from zerver.tornado.sharding import notify_tornado_queue_name
 
 if settings.USING_RABBITMQ:
@@ -65,7 +67,7 @@ class Command(BaseCommand):
             addr = '127.0.0.1'
 
         if not port.isdigit():
-            raise CommandError("%r is not a valid port number." % (port,))
+            raise CommandError(f"{port!r} is not a valid port number.")
 
         xheaders = options.get('xheaders', True)
         no_keep_alive = options.get('no_keep_alive', False)
@@ -82,7 +84,7 @@ class Command(BaseCommand):
             # We pass display_num_errors=False, since Django will
             # likely display similar output anyway.
             self.check(display_num_errors=False)
-            print("Tornado server is running at http://%s:%s/" % (addr, port))
+            print(f"Tornado server is running at http://{addr}:{port}/")
 
             if settings.USING_RABBITMQ:
                 queue_client = get_queue_client()

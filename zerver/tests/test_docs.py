@@ -1,12 +1,12 @@
 import os
-import ujson
+from typing import Any, Dict, Sequence
 from unittest import mock
 from urllib.parse import urlsplit
 
+import ujson
 from django.conf import settings
-from django.test import TestCase, override_settings
 from django.http import HttpResponse
-from typing import Any, Dict, List
+from django.test import TestCase, override_settings
 
 from zerver.lib.integrations import INTEGRATIONS
 from zerver.lib.test_classes import ZulipTestCase
@@ -14,9 +14,8 @@ from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.test_runner import slow
 from zerver.lib.utils import split_by
 from zerver.models import Realm, get_realm
-from zerver.views.documentation import (
-    add_api_uri_context,
-)
+from zerver.views.documentation import add_api_uri_context
+
 
 class DocPageTest(ZulipTestCase):
     def get_doc(self, url: str, subdomain: str) -> HttpResponse:
@@ -35,8 +34,8 @@ class DocPageTest(ZulipTestCase):
             print("ERROR: {}".format(content.get('msg')))
             print()
 
-    def _test(self, url: str, expected_content: str, extra_strings: List[str]=[],
-              landing_missing_strings: List[str]=[], landing_page: bool=True,
+    def _test(self, url: str, expected_content: str, extra_strings: Sequence[str]=[],
+              landing_missing_strings: Sequence[str]=[], landing_page: bool=True,
               doc_html_str: bool=False) -> None:
 
         # Test the URL on the "zephyr" subdomain
@@ -176,7 +175,7 @@ class DocPageTest(ZulipTestCase):
                        'And hundreds more through',
                        'Hubot',
                        'Zapier',
-                       'IFTTT'
+                       'IFTTT',
                    ])
 
         for integration in INTEGRATIONS.keys():

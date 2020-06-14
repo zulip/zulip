@@ -1,13 +1,10 @@
+import subprocess
 from typing import Any, Dict, List
 
-from .template_parser import (
-    tokenize,
-    is_django_block_tag,
-)
+from zulint.printer import ENDC, GREEN
 
-from zulint.printer import GREEN, ENDC
+from .template_parser import is_django_block_tag, tokenize
 
-import subprocess
 
 def pretty_print_html(html: str, num_spaces: int = 4) -> str:
     # We use 1-based indexing for both rows and columns.
@@ -85,7 +82,7 @@ def pretty_print_html(html: str, num_spaces: int = 4) -> str:
                         adjustment=adjustment,
                         indenting=True,
                         adjust_offset_until=token.line,
-                        ignore_lines=[]
+                        ignore_lines=[],
                     )
                     if token.kind in ('handlebars_start', 'django_start'):
                         info.update(dict(depth=new_depth - 1, indenting=False))
@@ -98,7 +95,7 @@ def pretty_print_html(html: str, num_spaces: int = 4) -> str:
                         tag=token.tag,
                         token_kind=token.kind,
                         extra_indent=stack[-1]['extra_indent'],
-                        ignore_lines=[]
+                        ignore_lines=[],
                     )
                 stack.append(info)
         elif (token.kind in ('html_end', 'handlebars_end', 'html_singleton_end',

@@ -3,18 +3,17 @@ from unittest import mock
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.soft_deactivation import (
+    do_auto_soft_deactivate_users,
+    do_catch_up_soft_deactivated_users,
+    do_soft_activate_users,
     do_soft_deactivate_user,
     do_soft_deactivate_users,
-    get_users_for_soft_deactivation,
-    do_soft_activate_users,
     get_soft_deactivated_users_for_catch_up,
-    do_catch_up_soft_deactivated_users,
-    do_auto_soft_deactivate_users
+    get_users_for_soft_deactivation,
 )
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import (
-    Client, UserProfile, UserActivity, get_realm, UserMessage
-)
+from zerver.models import Client, UserActivity, UserMessage, UserProfile, get_realm
+
 
 class UserSoftDeactivationTests(ZulipTestCase):
 
@@ -70,7 +69,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
                 client=client,
                 query=query,
                 count=count,
-                last_visit=last_visit
+                last_visit=last_visit,
             )
         filter_kwargs = dict(user_profile__realm=get_realm('zulip'))
         users_to_deactivate = get_users_for_soft_deactivation(-1, filter_kwargs)
@@ -177,7 +176,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
                 client=client,
                 query=query,
                 count=count,
-                last_visit=last_visit
+                last_visit=last_visit,
             )
 
         with mock.patch('logging.info'):

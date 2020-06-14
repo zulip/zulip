@@ -1,7 +1,8 @@
 import re
-import markdown
 from typing import Any, Dict, List, Optional
 from typing.re import Match
+
+import markdown
 from markdown.preprocessors import Preprocessor
 
 # There is a lot of duplicated code between this file and
@@ -103,9 +104,9 @@ class Setting(Preprocessor):
         setting_name = link_mapping[setting_identifier][1]
         setting_link = link_mapping[setting_identifier][2]
         if relative_settings_links:
-            return "1. Go to [%s](%s)." % (setting_name, setting_link)
+            return f"1. Go to [{setting_name}]({setting_link})."
         return settings_markdown % {'setting_type_name': setting_type_name,
-                                    'setting_reference': "**%s**" % (setting_name,)}
+                                    'setting_reference': f"**{setting_name}**"}
 
 def makeExtension(*args: Any, **kwargs: Any) -> SettingHelpExtension:
     return SettingHelpExtension(*args, **kwargs)

@@ -27,6 +27,6 @@ class Migration(migrations.Migration):
                 ON zerver_usermessage (user_profile_id, message_id)
                 WHERE (flags & 4096) != 0;
             ''',
-            reverse_sql='DROP INDEX zerver_usermessage_active_mobile_push_notification_id;'
+            reverse_sql='DROP INDEX zerver_usermessage_active_mobile_push_notification_id;',
         ),
     ]

@@ -1,11 +1,13 @@
-from django.http import HttpRequest, HttpResponse
 from typing import Dict, Iterable, Optional, Sequence
+
+from django.http import HttpRequest, HttpResponse
 
 from zerver.lib.events import do_events_register
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import check_dict, check_string, check_list, check_bool
+from zerver.lib.validator import check_bool, check_dict, check_list, check_string
 from zerver.models import Stream, UserProfile
+
 
 def _default_all_public_streams(user_profile: UserProfile,
                                 all_public_streams: Optional[bool]) -> bool:
@@ -41,7 +43,7 @@ def events_register_backend(
         event_types: Optional[Iterable[str]]=REQ(validator=check_list(check_string), default=None),
         fetch_event_types: Optional[Iterable[str]]=REQ(validator=check_list(check_string), default=None),
         narrow: NarrowT=REQ(validator=check_list(check_list(check_string, length=2)), default=[]),
-        queue_lifespan_secs: int=REQ(converter=int, default=0, documentation_pending=True)
+        queue_lifespan_secs: int=REQ(converter=int, default=0, documentation_pending=True),
 ) -> HttpResponse:
     all_public_streams = _default_all_public_streams(user_profile, all_public_streams)
     narrow = _default_narrow(user_profile, narrow)

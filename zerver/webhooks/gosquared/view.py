@@ -5,8 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import UnexpectedWebhookEventType, \
-    check_send_webhook_message
+from zerver.lib.webhooks.common import UnexpectedWebhookEventType, check_send_webhook_message
 from zerver.models import UserProfile
 
 TRAFFIC_SPIKE_TEMPLATE = '[{website_name}]({website_url}) has {user_num} visitors online.'
@@ -51,7 +50,7 @@ def api_gosquared_webhook(request: HttpRequest, user_profile: UserProfile,
             body = CHAT_MESSAGE_TEMPLATE.format(
                 status=payload['person']['status'],
                 name=payload['person']['_anon']['name'],
-                content=payload['message']['content']
+                content=payload['message']['content'],
             )
             check_send_webhook_message(request, user_profile, topic, body)
     else:

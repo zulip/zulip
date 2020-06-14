@@ -40,16 +40,15 @@ Note that it currently does not handle the deconfiguration of
 interfaces.
 
 '''
-
-import sys
 import logging
 import logging.handlers
 import subprocess
+import sys
+from typing import Optional
 
 import boto.utils
 import netifaces
 
-from typing import Optional
 
 def address_of(device_id: int) -> Optional[str]:
     try:
@@ -131,7 +130,7 @@ for device in macs.values():
     for (count, ip) in enumerate(to_configure):
         # Configure the IP via a virtual interface
         device = "ens%i:%i" % (device_number, count)
-        log.info("Configuring %s with IP %s" % (device, ip))
+        log.info(f"Configuring {device} with IP {ip}")
         subprocess.check_call(['/sbin/ifconfig', device, ip])
         subprocess.check_call(
             ['/sbin/iptables', '-t', 'mangle', '-A', 'OUTPUT', '-m', 'conntrack', '--ctorigdst',

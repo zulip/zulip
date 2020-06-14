@@ -1,15 +1,17 @@
 import datetime
+from unittest import mock
+
 from django.conf import settings
 from django.core import mail
 from django.test import override_settings
 
-from zerver.lib.test_classes import ZulipTestCase
-from zerver.signals import get_device_browser, get_device_os, JUST_CREATED_THRESHOLD
-from zerver.lib.actions import notify_new_user, do_change_notification_settings
-from zerver.models import Recipient, Stream, Realm
+from zerver.lib.actions import do_change_notification_settings, notify_new_user
 from zerver.lib.initial_password import initial_password
-from unittest import mock
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timezone import get_timezone
+from zerver.models import Realm, Recipient, Stream
+from zerver.signals import JUST_CREATED_THRESHOLD, get_device_browser, get_device_os
+
 
 class SendLoginEmailTest(ZulipTestCase):
     """
@@ -120,11 +122,11 @@ class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
         super().setUp()
         self.user_agents = [
             ('mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) ' +
-                'Chrome/54.0.2840.59 Safari/537.36', 'Chrome', 'Linux',),
+                'Chrome/54.0.2840.59 Safari/537.36', 'Chrome', 'Linux'),
             ('mozilla/5.0 (windows nt 6.1; win64; x64) applewebkit/537.36 (khtml, like gecko) ' +
-                'chrome/56.0.2924.87 safari/537.36', 'Chrome', 'Windows',),
+                'chrome/56.0.2924.87 safari/537.36', 'Chrome', 'Windows'),
             ('mozilla/5.0 (windows nt 6.1; wow64; rv:51.0) ' +
-                'gecko/20100101 firefox/51.0', 'Firefox', 'Windows',),
+                'gecko/20100101 firefox/51.0', 'Firefox', 'Windows'),
             ('mozilla/5.0 (windows nt 6.1; wow64; trident/7.0; rv:11.0) ' +
                 'like gecko', 'Internet Explorer', 'Windows'),
             ('Mozilla/5.0 (Android; Mobile; rv:27.0) ' +

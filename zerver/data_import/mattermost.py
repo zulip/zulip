@@ -2,33 +2,42 @@
 spec:
 https://docs.mattermost.com/administration/bulk-export.html
 """
-import os
 import logging
-import subprocess
-import ujson
+import os
 import re
 import shutil
-
+import subprocess
 from typing import Any, Callable, Dict, List, Set
 
+import ujson
 from django.conf import settings
-from django.utils.timezone import now as timezone_now
 from django.forms.models import model_to_dict
+from django.utils.timezone import now as timezone_now
 
-from zerver.models import Recipient, RealmEmoji, Reaction, UserProfile
-from zerver.lib.utils import (
-    process_list_in_batches,
+from zerver.data_import.import_util import (
+    SubscriberHandler,
+    ZerverFieldsT,
+    build_huddle,
+    build_huddle_subscriptions,
+    build_message,
+    build_personal_subscriptions,
+    build_realm,
+    build_realm_emoji,
+    build_recipients,
+    build_stream,
+    build_stream_subscriptions,
+    build_user_profile,
+    build_zerver_realm,
+    create_converted_data_files,
+    make_subscriber_map,
+    make_user_messages,
 )
-from zerver.lib.emoji import name_to_codepoint
-from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
-    build_stream, build_realm, build_message, create_converted_data_files, \
-    make_subscriber_map, build_recipients, build_user_profile, \
-    build_stream_subscriptions, build_huddle_subscriptions, \
-    build_personal_subscriptions, SubscriberHandler, \
-    build_realm_emoji, make_user_messages, build_huddle
-
 from zerver.data_import.mattermost_user import UserHandler
 from zerver.data_import.sequencer import NEXT_ID, IdMapper
+from zerver.lib.emoji import name_to_codepoint
+from zerver.lib.utils import process_list_in_batches
+from zerver.models import Reaction, RealmEmoji, Recipient, UserProfile
+
 
 def make_realm(realm_id: int, team: Dict[str, Any]) -> ZerverFieldsT:
     # set correct realm details
@@ -430,7 +439,7 @@ def process_posts(num_teams: int,
             sender_id=sender_id,
             content=content,
             date_sent=int(post_dict['create_at'] / 1000),
-            reactions=reactions
+            reactions=reactions,
         )
         if "channel" in post_dict:
             message_dict["channel_name"] = post_dict["channel"]

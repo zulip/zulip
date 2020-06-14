@@ -1,19 +1,17 @@
+import logging
 import os
-
+import time
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Tuple, Type
 
+import redis
 from django.conf import settings
 from django.http import HttpRequest
+
 from zerver.lib.exceptions import RateLimited
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.utils import statsd
-
 from zerver.models import UserProfile
-
-import logging
-import redis
-import time
 
 # Implement a rate-limiting scheme inspired by the one described here, but heavily modified
 # https://www.domaintools.com/resources/blog/rate-limiting-with-redis
@@ -50,7 +48,7 @@ class RateLimitedObject(ABC):
             entity=self,
             secs_to_freedom=time,
             remaining=0,
-            over_limit=ratelimited
+            over_limit=ratelimited,
         ))
         # Abort this request if the user is over their rate limits
         if ratelimited:
@@ -95,7 +93,7 @@ class RateLimitedObject(ABC):
         for "no rules".
         """
         rules_list = self.rules()
-        return rules_list or [(1, 9999), ]
+        return rules_list or [(1, 9999)]
 
     @abstractmethod
     def key(self) -> str:
@@ -286,7 +284,7 @@ class TornadoInMemoryRateLimiterBackend(RateLimiterBackend):
             ratelimited, time_till_free = cls.need_to_limit(entity_key, time_window, max_count)
 
             if ratelimited:
-                statsd.incr("ratelimiter.limited.%s" % (entity_key,))
+                statsd.incr(f"ratelimiter.limited.{entity_key}")
                 break
 
         return ratelimited, time_till_free
@@ -450,7 +448,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
         ratelimited, time = cls.is_ratelimited(entity_key, rules)
 
         if ratelimited:
-            statsd.incr("ratelimiter.limited.%s" % (entity_key,))
+            statsd.incr(f"ratelimiter.limited.{entity_key}")
 
         else:
             try:

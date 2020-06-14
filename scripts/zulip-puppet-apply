@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-
-import os
-import sys
-import subprocess
 import configparser
+import os
 import re
-from lib.zulip_tools import parse_os_release, assert_running_as_root
+import subprocess
+import sys
+
+from lib.zulip_tools import assert_running_as_root, parse_os_release
 
 assert_running_as_root()
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -31,7 +31,7 @@ Exec { path => "/usr/sbin:/usr/bin:/sbin:/bin" }
 """
 
 for pclass in re.split(r'\s*,\s*', config.get('machine', 'puppet_classes')):
-    puppet_config += "include %s\n" % (pclass,)
+    puppet_config += f"include {pclass}\n"
 
 # We use the puppet configuration from the same Zulip checkout as this script
 scripts_path = os.path.join(BASE_DIR, "scripts")

@@ -1,7 +1,15 @@
-from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.integrations import (
-    split_fixture_path, get_fixture_and_image_paths, INTEGRATIONS, ScreenshotConfig, WebhookIntegration,
-    DOC_SCREENSHOT_CONFIG, WEBHOOK_INTEGRATIONS, NO_SCREENSHOT_WEBHOOKS)
+    DOC_SCREENSHOT_CONFIG,
+    INTEGRATIONS,
+    NO_SCREENSHOT_WEBHOOKS,
+    WEBHOOK_INTEGRATIONS,
+    ScreenshotConfig,
+    WebhookIntegration,
+    get_fixture_and_image_paths,
+    split_fixture_path,
+)
+from zerver.lib.test_classes import ZulipTestCase
+
 
 class IntegrationsTestCase(ZulipTestCase):
 

@@ -1,11 +1,11 @@
 import itertools
 import os
 import random
-from typing import Any, Callable, Dict, List, \
-    Mapping, Sequence, Tuple
-
-import ujson
 from datetime import datetime
+from typing import Any, Callable, Dict, List, Mapping, Sequence, Tuple
+
+import pylibmc
+import ujson
 from django.conf import settings
 from django.contrib.sessions.models import Session
 from django.core.management import call_command
@@ -13,11 +13,17 @@ from django.core.management.base import BaseCommand, CommandParser
 from django.db.models import F, Max
 from django.utils.timezone import now as timezone_now
 from django.utils.timezone import timedelta as timezone_timedelta
-import pylibmc
 
-from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, check_add_realm_emoji, \
-    do_change_user_role, do_send_messages, do_update_user_custom_profile_data_if_changed, \
-    try_add_realm_custom_profile_field, try_add_realm_default_custom_profile_field
+from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
+from zerver.lib.actions import (
+    STREAM_ASSIGNMENT_COLORS,
+    check_add_realm_emoji,
+    do_change_user_role,
+    do_send_messages,
+    do_update_user_custom_profile_data_if_changed,
+    try_add_realm_custom_profile_field,
+    try_add_realm_default_custom_profile_field,
+)
 from zerver.lib.bulk_create import bulk_create_streams
 from zerver.lib.cache import cache_set
 from zerver.lib.generate_test_data import create_test_data, generate_topics
@@ -25,18 +31,35 @@ from zerver.lib.onboarding import create_if_missing_realm_internal_bots
 from zerver.lib.push_notifications import logger as push_notifications_logger
 from zerver.lib.server_initialization import create_internal_realm, create_users
 from zerver.lib.storage import static_path
-from zerver.lib.users import add_service
+from zerver.lib.types import ProfileFieldData
 from zerver.lib.url_preview.preview import CACHE_NAME as PREVIEW_CACHE_NAME
 from zerver.lib.user_groups import create_user_group
+from zerver.lib.users import add_service
 from zerver.lib.utils import generate_api_key
-from zerver.models import CustomProfileField, DefaultStream, Message, Realm, RealmAuditLog, \
-    RealmDomain, Recipient, Service, Stream, Subscription, \
-    UserMessage, UserPresence, UserProfile, Huddle, Client, \
-    get_client, get_huddle, get_realm, get_stream, \
-    get_user, get_user_by_delivery_email, get_user_profile_by_id
-from zerver.lib.types import ProfileFieldData
-
-from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
+from zerver.models import (
+    Client,
+    CustomProfileField,
+    DefaultStream,
+    Huddle,
+    Message,
+    Realm,
+    RealmAuditLog,
+    RealmDomain,
+    Recipient,
+    Service,
+    Stream,
+    Subscription,
+    UserMessage,
+    UserPresence,
+    UserProfile,
+    get_client,
+    get_huddle,
+    get_realm,
+    get_stream,
+    get_user,
+    get_user_by_delivery_email,
+    get_user_profile_by_id,
+)
 
 settings.TORNADO_SERVER = None
 # Disable using memcached caches to avoid 'unsupported pickle
@@ -44,7 +67,7 @@ settings.TORNADO_SERVER = None
 # from `run-dev.py`.
 default_cache = settings.CACHES['default']
 settings.CACHES['default'] = {
-    'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
+    'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
 }
 
 def clear_database() -> None:
@@ -312,7 +335,7 @@ class Command(BaseCommand):
             aaron = get_user_by_delivery_email("AARON@zulip.com", zulip_realm)
 
             zulip_outgoing_bots = [
-                ("Outgoing Webhook", "outgoing-webhook@zulip.com")
+                ("Outgoing Webhook", "outgoing-webhook@zulip.com"),
             ]
             create_users(zulip_realm, zulip_outgoing_bots,
                          bot_type=UserProfile.OUTGOING_WEBHOOK_BOT, bot_owner=aaron)
@@ -330,7 +353,7 @@ class Command(BaseCommand):
                 "Denmark": {"description": "A Scandinavian country"},
                 "Scotland": {"description": "Located in the United Kingdom"},
                 "Venice": {"description": "A northeastern Italian city"},
-                "Rome": {"description": "Yet another Italian city", "is_web_public": True}
+                "Rome": {"description": "Yet another Italian city", "is_web_public": True},
             }
 
             bulk_create_streams(zulip_realm, stream_dict)
@@ -366,7 +389,7 @@ class Command(BaseCommand):
                 for profile in profiles:
                     email = profile.delivery_email
                     if email not in subscriptions_map:
-                        raise Exception('Subscriptions not listed for user %s' % (email,))
+                        raise Exception(f'Subscriptions not listed for user {email}')
 
                     for stream_name in subscriptions_map[email]:
                         stream = Stream.objects.get(name=stream_name)
@@ -543,7 +566,7 @@ class Command(BaseCommand):
                     "social": {"description": "For socializing"},
                     "test": {"description": "For testing `code`"},
                     "errors": {"description": "For errors"},
-                    "sales": {"description": "For sales discussion"}
+                    "sales": {"description": "For sales discussion"},
                 }
 
                 # Calculate the maximum number of digits in any extra stream's

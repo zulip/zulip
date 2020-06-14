@@ -1,38 +1,47 @@
+import logging
 import os
+import urllib
+from functools import wraps
+from typing import Any, Dict, List, Mapping, Optional, cast
+
+import jwt
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from django.forms import Form
 from django.conf import settings
 from django.contrib.auth import authenticate
-from django.contrib.auth.views import LoginView as DjangoLoginView, \
-    logout_then_login as django_logout_then_login
+from django.contrib.auth.views import LoginView as DjangoLoginView
 from django.contrib.auth.views import PasswordResetView as DjangoPasswordResetView
-from django.urls import reverse
-from zerver.decorator import require_post, \
-    process_client, do_login, log_view_func
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, \
-    HttpResponseServerError
-from django.template.response import SimpleTemplateResponse
+from django.contrib.auth.views import logout_then_login as django_logout_then_login
+from django.forms import Form
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, HttpResponseServerError
 from django.shortcuts import redirect, render
+from django.template.response import SimpleTemplateResponse
+from django.urls import reverse
+from django.utils.http import is_safe_url
+from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_safe
 from django.views.generic import TemplateView
-from django.utils.translation import ugettext as _
-from django.utils.http import is_safe_url
-from functools import wraps
-import urllib
-from typing import Any, Dict, List, Optional, Mapping, cast
+from social_django.utils import load_backend, load_strategy
+from two_factor.forms import BackupTokenForm
+from two_factor.views import LoginView as BaseTwoFactorLoginView
 
 from confirmation.models import Confirmation, create_confirmation_link
-from zerver.context_processors import zulip_default_context, get_realm_from_request, \
-    login_context
-from zerver.forms import HomepageForm, OurAuthenticationForm, \
-    DEACTIVATED_ACCOUNT_ERROR, ZulipPasswordResetForm, \
-    AuthenticationTokenForm
+from version import API_FEATURE_LEVEL, ZULIP_VERSION
+from zerver.context_processors import get_realm_from_request, login_context, zulip_default_context
+from zerver.decorator import do_login, log_view_func, process_client, require_post
+from zerver.forms import (
+    DEACTIVATED_ACCOUNT_ERROR,
+    AuthenticationTokenForm,
+    HomepageForm,
+    OurAuthenticationForm,
+    ZulipPasswordResetForm,
+)
 from zerver.lib.mobile_auth_otp import otp_encrypt_api_key
 from zerver.lib.push_notifications import push_notifications_enabled
+from zerver.lib.pysa import mark_sanitized
 from zerver.lib.realm_icon import realm_icon_url
-from zerver.lib.request import REQ, has_request_variables, JsonableError
-from zerver.lib.response import json_success, json_error
+from zerver.lib.request import REQ, JsonableError, has_request_variables
+from zerver.lib.response import json_error, json_success
 from zerver.lib.sessions import set_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
 from zerver.lib.types import ViewFuncT
@@ -41,30 +50,34 @@ from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.users import get_api_key
 from zerver.lib.utils import has_api_key_format
 from zerver.lib.validator import validate_login_email
-from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm, \
-    get_realm
+from zerver.models import PreregistrationUser, Realm, UserProfile, get_realm, remote_user_to_email
 from zerver.signals import email_on_new_login
-from zproject.backends import password_auth_enabled, dev_auth_enabled, \
-    ldap_auth_enabled, ZulipLDAPConfigurationError, ZulipLDAPAuthBackend, \
-    AUTH_BACKEND_NAME_MAP, auth_enabled_helper, saml_auth_enabled, SAMLAuthBackend, \
-    redirect_to_config_error, ZulipRemoteUserBackend, validate_otp_params, ExternalAuthResult, \
-    ExternalAuthDataDict
-from version import ZULIP_VERSION, API_FEATURE_LEVEL
-
-import jwt
-import logging
-
-from social_django.utils import load_backend, load_strategy
-
-from two_factor.forms import BackupTokenForm
-from two_factor.views import LoginView as BaseTwoFactorLoginView
+from zproject.backends import (
+    AUTH_BACKEND_NAME_MAP,
+    ExternalAuthDataDict,
+    ExternalAuthResult,
+    SAMLAuthBackend,
+    ZulipLDAPAuthBackend,
+    ZulipLDAPConfigurationError,
+    ZulipRemoteUserBackend,
+    auth_enabled_helper,
+    dev_auth_enabled,
+    ldap_auth_enabled,
+    password_auth_enabled,
+    redirect_to_config_error,
+    saml_auth_enabled,
+    validate_otp_params,
+)
 
 ExtraContext = Optional[Dict[str, Any]]
 
 def get_safe_redirect_to(url: str, redirect_host: str) -> str:
     is_url_safe = is_safe_url(url=url, allowed_hosts=None)
     if is_url_safe:
-        return urllib.parse.urljoin(redirect_host, url)
+        # Mark as safe to prevent Pysa from surfacing false positives for
+        # open redirects. In this branch, we have already checked that the URL
+        # points to the specified 'redirect_host', or is relative.
+        return urllib.parse.urljoin(redirect_host, mark_sanitized(url))
     else:
         return redirect_host
 
@@ -83,7 +96,7 @@ def create_preregistration_user(email: str, request: HttpRequest, realm_creation
         password_required=password_required,
         realm=realm,
         full_name=full_name,
-        full_name_validated=full_name_validated
+        full_name_validated=full_name_validated,
     )
 
 def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str='',
@@ -164,7 +177,7 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
                 email, request,
                 password_required=password_required,
                 full_name=full_name,
-                full_name_validated=full_name_validated
+                full_name_validated=full_name_validated,
             )
 
         if multiuse_obj is not None:
@@ -186,7 +199,10 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
             host = realm.host
         else:
             host = request.get_host()
-        confirmation_link = create_confirmation_link(prereg_user, host,
+        # Mark 'host' as safe for use in a redirect. It's pulled from the
+        # current request or realm, both of which only allow a limited set of
+        # trusted hosts.
+        confirmation_link = create_confirmation_link(prereg_user, mark_sanitized(host),
                                                      Confirmation.USER_REGISTRATION)
         if is_signup:
             return redirect(confirmation_link)
@@ -367,7 +383,7 @@ def remote_user_sso(
         email=email,
         mobile_flow_otp=mobile_flow_otp,
         desktop_flow_otp=desktop_flow_otp,
-        redirect_to=next
+        redirect_to=next,
     )
     if realm:
         data_dict["subdomain"] = realm.subdomain
@@ -402,7 +418,7 @@ def remote_user_jwt(request: HttpRequest) -> HttpResponse:
     if email_domain is None:
         raise JsonableError(_("No organization specified in JSON web token claims"))
 
-    email = "%s@%s" % (remote_user, email_domain)
+    email = f"{remote_user}@{email_domain}"
 
     try:
         realm = get_realm(subdomain)
@@ -483,7 +499,7 @@ def start_remote_user_sso(request: HttpRequest) -> HttpResponse:
     return redirect(add_query_to_redirect_url(reverse('login-sso'), query))
 
 @handle_desktop_flow
-def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[str]=None
+def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[str]=None,
                        ) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
     extra_url_params: Dict[str, str] = {}
@@ -510,7 +526,7 @@ def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[s
     return oauth_redirect_to_root(request, backend_url, 'social', extra_url_params=extra_url_params)
 
 @handle_desktop_flow
-def start_social_signup(request: HttpRequest, backend: str, extra_arg: Optional[str]=None
+def start_social_signup(request: HttpRequest, backend: str, extra_arg: Optional[str]=None,
                         ) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
     extra_url_params: Dict[str, str] = {}
@@ -995,7 +1011,7 @@ def config_error_view(request: HttpRequest, error_category_name: str) -> HttpRes
         'saml': {'social_backend_name': 'saml'},
         'smtp': {'error_name': 'smtp_error'},
         'backend_disabled': {'error_name': 'remoteuser_error_backend_disabled'},
-        'remote_user_header_missing': {'error_name': 'remoteuser_error_remote_user_header_missing'}
+        'remote_user_header_missing': {'error_name': 'remoteuser_error_remote_user_header_missing'},
     }
 
     return TemplateView.as_view(template_name='zerver/config_error.html',

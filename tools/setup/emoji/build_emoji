@@ -5,14 +5,20 @@
 import os
 import shutil
 import sys
-import ujson
-
 from typing import Any, Dict, Iterator, List, Optional
 
-from emoji_setup_utils import generate_emoji_catalog, generate_codepoint_to_name_map, \
-    get_emoji_code, generate_name_to_codepoint_map, emoji_names_for_picker, \
-    EMOTICON_CONVERSIONS, REMAPPED_EMOJIS
+import ujson
+
 from emoji_names import EMOJI_NAME_MAPS
+from emoji_setup_utils import (
+    EMOTICON_CONVERSIONS,
+    REMAPPED_EMOJIS,
+    emoji_names_for_picker,
+    generate_codepoint_to_name_map,
+    generate_emoji_catalog,
+    generate_name_to_codepoint_map,
+    get_emoji_code,
+)
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
 sys.path.append(ZULIP_PATH)
@@ -79,7 +85,7 @@ def main() -> None:
         # anyway, because EMOJI_CACHE_PATH is created by puppet before
         # build_emoji would be run.
         run_as_root(["mkdir", "-p", EMOJI_CACHE_PATH])
-        run_as_root(["chown", "%s:%s" % (os.getuid(), os.getgid()), EMOJI_CACHE_PATH])
+        run_as_root(["chown", f"{os.getuid()}:{os.getgid()}", EMOJI_CACHE_PATH])
 
     sha1_hexdigest = generate_sha1sum_emoji(ZULIP_PATH)
     source_emoji_dump = os.path.join(EMOJI_CACHE_PATH, sha1_hexdigest, 'emoji')
@@ -107,7 +113,7 @@ def main() -> None:
         os.remove(os.path.join(TARGET_EMOJI_STYLES, filename))
 
 def percent(f: float) -> str:
-    return '%0.3f%%' % (f * 100,)
+    return f'{f * 100:0.3f}%'
 
 def get_square_size(emoji_data: List[Dict[str, Any]]) -> int:
     """
@@ -207,7 +213,7 @@ def generate_sprite_css_files(cache_path: str,
                 'pos_y': percent(emoji["sheet_y"] / (n - 1)),
             }
 
-    SPRITE_CSS_PATH = os.path.join(cache_path, '%s-sprite.css' % (emojiset,))
+    SPRITE_CSS_PATH = os.path.join(cache_path, f'{emojiset}-sprite.css')
     with open(SPRITE_CSS_PATH, 'w') as f:
         f.write(SPRITE_CSS_FILE_TEMPLATE % {'emojiset': emojiset,
                                             'alt_name': alt_name,

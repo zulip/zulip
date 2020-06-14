@@ -41,5 +41,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(fix_duplicate_attachments, elidable=True)
+        migrations.RunPython(fix_duplicate_attachments, elidable=True),
     ]

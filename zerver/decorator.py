@@ -1,51 +1,60 @@
-import django_otp
-from two_factor.utils import default_device
-from django_otp import user_has_device
-
-from django.contrib.auth.decorators import user_passes_test as django_user_passes_test
-from django.contrib.auth.models import AnonymousUser
-from django.utils.translation import ugettext as _
-from django.http import HttpResponseRedirect, HttpResponse
-from django.contrib.auth import REDIRECT_FIELD_NAME, login as django_login
-from django.views.decorators.csrf import csrf_exempt
-from django.http import QueryDict, HttpResponseNotAllowed, HttpRequest
-from django.http.multipartparser import MultiPartParser
-from zerver.models import Realm, UserProfile, get_client, get_user_profile_by_api_key
-from zerver.lib.response import json_error, json_unauthorized, json_success
-from django.shortcuts import resolve_url
-from django.utils.decorators import available_attrs
-from django.utils.timezone import now as timezone_now
-from django.conf import settings
-from django.template.response import SimpleTemplateResponse
-
-from zerver.lib.exceptions import UnexpectedWebhookEventType
-from zerver.lib.queue import queue_json_publish
-from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
-from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.lib.utils import statsd, has_api_key_format
-from zerver.lib.exceptions import JsonableError, ErrorCode, \
-    InvalidJSONError, InvalidAPIKeyError, InvalidAPIKeyFormatError, \
-    OrganizationAdministratorRequired
-from zerver.lib.types import ViewFuncT
-
-from zerver.lib.rate_limiter import RateLimitedUser
-from zerver.lib.request import REQ, has_request_variables
-
-from functools import wraps
 import base64
 import datetime
-import ujson
 import logging
-from io import BytesIO
 import urllib
+from functools import wraps
+from io import BytesIO
+from typing import Any, Callable, Dict, Optional, Tuple, TypeVar, Union
 
-from typing import Union, Any, Callable, Dict, Optional, TypeVar, Tuple
+import django_otp
+import ujson
+from django.conf import settings
+from django.contrib.auth import REDIRECT_FIELD_NAME
+from django.contrib.auth import login as django_login
+from django.contrib.auth.decorators import user_passes_test as django_user_passes_test
+from django.contrib.auth.models import AnonymousUser
+from django.http import (
+    HttpRequest,
+    HttpResponse,
+    HttpResponseNotAllowed,
+    HttpResponseRedirect,
+    QueryDict,
+)
+from django.http.multipartparser import MultiPartParser
+from django.shortcuts import resolve_url
+from django.template.response import SimpleTemplateResponse
+from django.utils.decorators import available_attrs
+from django.utils.timezone import now as timezone_now
+from django.utils.translation import ugettext as _
+from django.views.decorators.csrf import csrf_exempt
+from django_otp import user_has_device
+from two_factor.utils import default_device
+
+from zerver.lib.exceptions import (
+    ErrorCode,
+    InvalidAPIKeyError,
+    InvalidAPIKeyFormatError,
+    InvalidJSONError,
+    JsonableError,
+    OrganizationAdministratorRequired,
+    OrganizationOwnerRequired,
+    UnexpectedWebhookEventType,
+)
 from zerver.lib.logging_util import log_to_file
+from zerver.lib.queue import queue_json_publish
+from zerver.lib.rate_limiter import RateLimitedUser
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_error, json_success, json_unauthorized
+from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
+from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
+from zerver.lib.types import ViewFuncT
+from zerver.lib.utils import has_api_key_format, statsd
+from zerver.models import Realm, UserProfile, get_client, get_user_profile_by_api_key
 
 # This is a hack to ensure that RemoteZulipServer always exists even
 # if Zilencer isn't enabled.
 if settings.ZILENCER_ENABLED:
-    from zilencer.models import get_remote_server_by_uuid, RemoteZulipServer
+    from zilencer.models import RemoteZulipServer, get_remote_server_by_uuid
 else:  # nocoverage # Hack here basically to make impossible code paths compile
     from unittest.mock import Mock
     get_remote_server_by_uuid = Mock()
@@ -104,6 +113,14 @@ def require_post(func: ViewFuncT) -> ViewFuncT:
         return func(request, *args, **kwargs)
     return wrapper  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
 
+def require_realm_owner(func: ViewFuncT) -> ViewFuncT:
+    @wraps(func)
+    def wrapper(request: HttpRequest, user_profile: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
+        if not user_profile.is_realm_owner:
+            raise OrganizationOwnerRequired()
+        return func(request, user_profile, *args, **kwargs)
+    return wrapper  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
+
 def require_realm_admin(func: ViewFuncT) -> ViewFuncT:
     @wraps(func)
     def wrapper(request: HttpRequest, user_profile: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
@@ -121,6 +138,7 @@ def require_billing_access(func: ViewFuncT) -> ViewFuncT:
     return wrapper  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
 
 from zerver.lib.user_agent import parse_user_agent
+
 
 def get_client_name(request: HttpRequest) -> str:
     # If the API request specified a client in the request content,
@@ -251,7 +269,7 @@ def access_user_by_api_key(request: HttpRequest, api_key: str, email: Optional[s
 def log_exception_to_webhook_logger(
         request: HttpRequest, user_profile: UserProfile,
         request_body: Optional[str]=None,
-        unexpected_event: Optional[bool]=False
+        unexpected_event: bool=False,
 ) -> None:
     if request_body is not None:
         payload = request_body
@@ -310,7 +328,7 @@ def full_webhook_client_name(raw_client_name: Optional[str]=None) -> Optional[st
 # Use this for webhook views that don't get an email passed in.
 def api_key_only_webhook_view(
         webhook_client_name: str,
-        notify_bot_owner_on_invalid_json: Optional[bool]=True
+        notify_bot_owner_on_invalid_json: bool=True,
 ) -> Callable[[ViewFuncT], ViewFuncT]:
     # TODO The typing here could be improved by using the Extended Callable types:
     # https://mypy.readthedocs.io/en/latest/kinds_of_types.html#extended-callable-types
@@ -448,12 +466,12 @@ def zulip_login_required(
     actual_decorator = user_passes_test(
         logged_in_and_active,
         login_url=login_url,
-        redirect_field_name=redirect_field_name
+        redirect_field_name=redirect_field_name,
     )
 
     otp_required_decorator = zulip_otp_required(
         redirect_field_name=redirect_field_name,
-        login_url=login_url
+        login_url=login_url,
     )
 
     if function:
@@ -613,7 +631,7 @@ def process_as_post(view_func: ViewFuncT) -> ViewFuncT:
                     request.META,
                     BytesIO(request.body),
                     request.upload_handlers,
-                    request.encoding
+                    request.encoding,
                 ).parse()
             else:
                 request.POST = QueryDict(request.body, encoding=request.encoding)

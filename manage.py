@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
+import configparser
 import os
 import sys
-import configparser
+
 if sys.version_info <= (3, 0):
     print("Error: Zulip is a Python 3 project, and cannot be run with Python 2.")
     print("Use e.g. `/path/to/manage.py` not `python /path/to/manage.py`.")
@@ -37,6 +38,7 @@ if __name__ == "__main__":
     from django.conf import settings
     from django.core.management import execute_from_command_line
     from django.core.management.base import CommandError
+
     from scripts.lib.zulip_tools import log_management_command
 
     log_management_command(" ".join(sys.argv), settings.MANAGEMENT_LOG_PATH)

@@ -2,12 +2,12 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.models import RealmEmoji, UserProfile
-from zerver.lib.emoji import check_emoji_admin, check_valid_emoji_name
-from zerver.lib.request import JsonableError, REQ, has_request_variables
-from zerver.lib.response import json_success, json_error
-from zerver.lib.actions import check_add_realm_emoji, do_remove_realm_emoji
 from zerver.decorator import require_member_or_admin
+from zerver.lib.actions import check_add_realm_emoji, do_remove_realm_emoji
+from zerver.lib.emoji import check_emoji_admin, check_valid_emoji_name
+from zerver.lib.request import REQ, JsonableError, has_request_variables
+from zerver.lib.response import json_error, json_success
+from zerver.models import RealmEmoji, UserProfile
 
 
 def list_emoji(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:

@@ -1,26 +1,31 @@
-from datetime import datetime, timedelta
-from decimal import Decimal
-from functools import wraps
 import logging
 import math
 import os
-from typing import Any, Callable, Dict, Optional, TypeVar, Tuple, cast
-import ujson
+from datetime import datetime, timedelta
+from decimal import Decimal
+from functools import wraps
+from typing import Any, Callable, Dict, Optional, Tuple, TypeVar, cast
 
-from django.conf import settings
-from django.db import transaction
-from django.utils.translation import ugettext as _
-from django.utils.timezone import now as timezone_now
-from django.core.signing import Signer
 import stripe
+import ujson
+from django.conf import settings
+from django.core.signing import Signer
+from django.db import transaction
+from django.utils.timezone import now as timezone_now
+from django.utils.translation import ugettext as _
 
+from corporate.models import (
+    Customer,
+    CustomerPlan,
+    LicenseLedger,
+    get_current_plan_by_customer,
+    get_current_plan_by_realm,
+    get_customer_by_realm,
+)
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
-from zerver.models import Realm, UserProfile, RealmAuditLog
-from corporate.models import Customer, CustomerPlan, LicenseLedger, \
-    get_current_plan_by_customer, get_customer_by_realm, \
-    get_current_plan_by_realm
+from zerver.models import Realm, RealmAuditLog, UserProfile
 from zproject.config import get_secret
 
 STRIPE_PUBLISHABLE_KEY = get_secret('stripe_publishable_key')
@@ -185,7 +190,7 @@ def do_create_stripe_customer(user: UserProfile, stripe_token: Optional[str]=Non
     # bad thing that will happen is that we will create an extra stripe
     # customer that we can delete or ignore.
     stripe_customer = stripe.Customer.create(
-        description="%s (%s)" % (realm.string_id, realm.name),
+        description=f"{realm.string_id} ({realm.name})",
         email=user.delivery_email,
         metadata={'realm_id': realm.id, 'realm_str': realm.string_id},
         source=stripe_token)
@@ -270,7 +275,7 @@ def update_or_create_stripe_customer(user: UserProfile, stripe_token: Optional[s
 def compute_plan_parameters(
         automanage_licenses: bool, billing_schedule: int,
         discount: Optional[Decimal],
-        free_trial: Optional[bool]=False) -> Tuple[datetime, datetime, datetime, int]:
+        free_trial: bool=False) -> Tuple[datetime, datetime, datetime, int]:
     # Everything in Stripe is stored as timestamps with 1 second resolution,
     # so standardize on 1 second resolution.
     # TODO talk about leapseconds?

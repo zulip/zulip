@@ -29,47 +29,47 @@ def api_opsgenie_webhook(request: HttpRequest, user_profile: UserProfile,
     if 'note' in payload['alert']:
         info['additional_info'] += bullet_template.format(
             key='Note',
-            value=payload['alert']['note']
+            value=payload['alert']['note'],
         )
     if 'recipient' in payload['alert']:
         info['additional_info'] += bullet_template.format(
             key='Recipient',
-            value=payload['alert']['recipient']
+            value=payload['alert']['recipient'],
         )
     if 'addedTags' in payload['alert']:
         info['additional_info'] += bullet_template.format(
             key='Tags added',
-            value=payload['alert']['addedTags']
+            value=payload['alert']['addedTags'],
         )
     if 'team' in payload['alert']:
         info['additional_info'] += bullet_template.format(
             key='Team added',
-            value=payload['alert']['team']
+            value=payload['alert']['team'],
         )
     if 'owner' in payload['alert']:
         info['additional_info'] += bullet_template.format(
             key='Assigned owner',
-            value=payload['alert']['owner']
+            value=payload['alert']['owner'],
         )
     if 'escalationName' in payload:
         info['additional_info'] += bullet_template.format(
             key='Escalation',
-            value=payload['escalationName']
+            value=payload['escalationName'],
         )
     if 'removedTags' in payload['alert']:
         info['additional_info'] += bullet_template.format(
             key='Tags removed',
-            value=payload['alert']['removedTags']
+            value=payload['alert']['removedTags'],
         )
     if 'message' in payload['alert']:
         info['additional_info'] += bullet_template.format(
             key='Message',
-            value=payload['alert']['message']
+            value=payload['alert']['message'],
         )
     if info['tags']:
         info['additional_info'] += bullet_template.format(
             key='Tags',
-            value=info['tags']
+            value=info['tags'],
         )
 
     body_template = """

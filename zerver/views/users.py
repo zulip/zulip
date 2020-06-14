@@ -1,63 +1,105 @@
-from typing import Union, Optional, Dict, Any, List
+from typing import Any, Dict, List, Optional, Union
 
-from django.http import HttpRequest, HttpResponse
-
-from django.utils.translation import ugettext as _
-from django.shortcuts import redirect
 from django.conf import settings
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import redirect
+from django.utils.translation import ugettext as _
 
-from zerver.decorator import require_realm_admin, require_member_or_admin
-from zerver.forms import CreateUserForm, PASSWORD_TOO_WEAK_ERROR
-from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
-    do_change_user_role, do_change_default_all_public_streams, \
-    do_change_default_events_register_stream, do_change_default_sending_stream, \
-    do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key, \
-    check_change_full_name, notify_created_bot, do_update_outgoing_webhook_service, \
-    do_update_bot_config_data, check_change_bot_full_name, \
-    do_update_user_custom_profile_data_if_changed, check_remove_custom_profile_field_value
+from zerver.decorator import require_member_or_admin, require_realm_admin
+from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
+from zerver.lib.actions import (
+    check_change_bot_full_name,
+    check_change_full_name,
+    check_remove_custom_profile_field_value,
+    do_change_avatar_fields,
+    do_change_bot_owner,
+    do_change_default_all_public_streams,
+    do_change_default_events_register_stream,
+    do_change_default_sending_stream,
+    do_change_user_role,
+    do_create_user,
+    do_deactivate_user,
+    do_reactivate_user,
+    do_regenerate_api_key,
+    do_update_bot_config_data,
+    do_update_outgoing_webhook_service,
+    do_update_user_custom_profile_data_if_changed,
+    notify_created_bot,
+)
 from zerver.lib.avatar import avatar_url, get_gravatar_url
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.email_validation import email_allowed_for_realm
 from zerver.lib.exceptions import CannotDeactivateLastUserError
 from zerver.lib.integrations import EMBEDDED_BOTS
-from zerver.lib.request import has_request_variables, REQ
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
-from zerver.lib.streams import access_stream_by_name
+from zerver.lib.streams import access_stream_by_id, access_stream_by_name, subscribed_to_stream
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.validator import check_bool, check_string, check_int, check_url, check_dict, check_list, \
-    check_int_in
 from zerver.lib.url_encoding import add_query_arg_to_redirect_url
-from zerver.lib.users import check_valid_bot_type, check_bot_creation_policy, \
-    check_full_name, check_short_name, check_valid_interface_type, check_valid_bot_config, \
-    access_bot_by_id, add_service, access_user_by_id, check_bot_name_available, \
-    validate_user_custom_profile_data, get_raw_user_data, get_api_key
+from zerver.lib.users import (
+    access_bot_by_id,
+    access_user_by_id,
+    add_service,
+    check_bot_creation_policy,
+    check_bot_name_available,
+    check_full_name,
+    check_short_name,
+    check_valid_bot_config,
+    check_valid_bot_type,
+    check_valid_interface_type,
+    get_api_key,
+    get_raw_user_data,
+    validate_user_custom_profile_data,
+)
 from zerver.lib.utils import generate_api_key
-from zerver.models import UserProfile, Stream, Message, \
-    get_user_by_delivery_email, Service, get_user_including_cross_realm, \
-    DomainNotAllowedForRealmError, DisposableEmailError, get_user_profile_by_id_in_realm, \
-    EmailContainsPlusError, get_user_by_id_in_realm_including_cross_realm, Realm, \
-    InvalidFakeEmailDomain
+from zerver.lib.validator import (
+    check_bool,
+    check_dict,
+    check_int,
+    check_int_in,
+    check_list,
+    check_string,
+    check_url,
+)
+from zerver.models import (
+    DisposableEmailError,
+    DomainNotAllowedForRealmError,
+    EmailContainsPlusError,
+    InvalidFakeEmailDomain,
+    Message,
+    Realm,
+    Service,
+    Stream,
+    UserProfile,
+    get_user_by_delivery_email,
+    get_user_by_id_in_realm_including_cross_realm,
+    get_user_including_cross_realm,
+    get_user_profile_by_id_in_realm,
+)
 from zproject.backends import check_password_strength
+
+
+def check_last_owner(user_profile: UserProfile) -> bool:
+    owners = set(user_profile.realm.get_human_owner_users())
+    return user_profile.is_realm_owner and not user_profile.is_bot and len(owners) == 1
 
 def deactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
                             user_id: int) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id)
-    if check_last_admin(target):
-        return json_error(_('Cannot deactivate the only organization administrator'))
+    if target.is_realm_owner and not user_profile.is_realm_owner:
+        return json_error(_('Only owners can deactivate other organization owners.'))
+    if check_last_owner(target):
+        return json_error(_('Cannot deactivate the only organization owner'))
     return _deactivate_user_profile_backend(request, user_profile, target)
 
 def deactivate_user_own_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     if UserProfile.objects.filter(realm=user_profile.realm, is_active=True).count() == 1:
-        raise CannotDeactivateLastUserError(is_last_admin=False)
-    if user_profile.is_realm_admin and check_last_admin(user_profile):
-        raise CannotDeactivateLastUserError(is_last_admin=True)
+        raise CannotDeactivateLastUserError(is_last_owner=False)
+    if user_profile.is_realm_owner and check_last_owner(user_profile):
+        raise CannotDeactivateLastUserError(is_last_owner=True)
 
     do_deactivate_user(user_profile, acting_user=user_profile)
     return json_success()
-
-def check_last_admin(user_profile: UserProfile) -> bool:
-    admins = set(user_profile.realm.get_human_admin_users())
-    return user_profile.is_realm_admin and not user_profile.is_bot and len(admins) == 1
 
 def deactivate_bot_backend(request: HttpRequest, user_profile: UserProfile,
                            bot_id: int) -> HttpResponse:
@@ -80,7 +122,7 @@ def reactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
 
 @has_request_variables
 def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id: int,
-                        full_name: Optional[str]=REQ(default="", validator=check_string),
+                        full_name: Optional[str]=REQ(default=None, validator=check_string),
                         role: Optional[int]=REQ(default=None, validator=check_int_in(
                             UserProfile.ROLE_TYPES)),
                         profile_data: Optional[List[Dict[str, Union[int, str, List[int]]]]]=
@@ -89,8 +131,10 @@ def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id
     target = access_user_by_id(user_profile, user_id, allow_deactivated=True, allow_bots=True)
 
     if role is not None and target.role != role:
-        if target.role == UserProfile.ROLE_REALM_ADMINISTRATOR and check_last_admin(user_profile):
-            return json_error(_('Cannot remove the only organization administrator'))
+        if target.role == UserProfile.ROLE_REALM_OWNER and check_last_owner(user_profile):
+            return json_error(_('The owner permission cannot be removed from the only organization owner.'))
+        if UserProfile.ROLE_REALM_OWNER in [role, target.role] and not user_profile.is_realm_owner:
+            return json_error(_('Only organization owners can add or remove the owner permission.'))
         do_change_user_role(target, role)
 
     if (full_name is not None and target.full_name != full_name and
@@ -160,7 +204,7 @@ def patch_bot_backend(
         service_interface: Optional[int]=REQ(validator=check_int, default=1),
         default_sending_stream: Optional[str]=REQ(default=None),
         default_events_register_stream: Optional[str]=REQ(default=None),
-        default_all_public_streams: Optional[bool]=REQ(default=None, validator=check_bool)
+        default_all_public_streams: Optional[bool]=REQ(default=None, validator=check_bool),
 ) -> HttpResponse:
     bot = access_bot_by_id(user_profile, bot_id)
 
@@ -240,7 +284,7 @@ def regenerate_bot_api_key(request: HttpRequest, user_profile: UserProfile, bot_
 
     new_api_key = do_regenerate_api_key(bot, user_profile)
     json_result = dict(
-        api_key=new_api_key
+        api_key=new_api_key,
     )
     return json_success(json_result)
 
@@ -258,7 +302,7 @@ def add_bot_backend(
         default_sending_stream_name: Optional[str]=REQ('default_sending_stream', default=None),
         default_events_register_stream_name: Optional[str]=REQ('default_events_register_stream',
                                                                default=None),
-        default_all_public_streams: Optional[bool]=REQ(validator=check_bool, default=None)
+        default_all_public_streams: Optional[bool]=REQ(validator=check_bool, default=None),
 ) -> HttpResponse:
     short_name = check_short_name(short_name_raw)
     if bot_type != UserProfile.INCOMING_WEBHOOK_BOT:
@@ -266,7 +310,7 @@ def add_bot_backend(
     short_name += "-bot"
     full_name = check_full_name(full_name_raw)
     try:
-        email = '%s@%s' % (short_name, user_profile.realm.get_bot_domain())
+        email = f'{short_name}@{user_profile.realm.get_bot_domain()}'
     except InvalidFakeEmailDomain:
         return json_error(_("Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
                             "Please contact your server administrator."))
@@ -389,7 +433,7 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
 def get_members_backend(request: HttpRequest, user_profile: UserProfile, user_id: Optional[int]=None,
                         include_custom_profile_fields: bool=REQ(validator=check_bool,
                                                                 default=False),
-                        client_gravatar: bool=REQ(validator=check_bool, default=False)
+                        client_gravatar: bool=REQ(validator=check_bool, default=False),
                         ) -> HttpResponse:
     '''
     The client_gravatar field here is set to True if clients can compute
@@ -467,3 +511,15 @@ def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> Http
         result['max_message_id'] = messages[0].id
 
     return json_success(result)
+
+@has_request_variables
+def get_subscription_backend(request: HttpRequest, user_profile: UserProfile,
+                             user_id: int=REQ(validator=check_int, path_only=True),
+                             stream_id: int=REQ(validator=check_int, path_only=True),
+                             ) -> HttpResponse:
+    target_user = access_user_by_id(user_profile, user_id, read_only=True)
+    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+
+    subscription_status = {'is_subscribed': subscribed_to_stream(target_user, stream_id)}
+
+    return json_success(subscription_status)

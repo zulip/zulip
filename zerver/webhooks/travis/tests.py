@@ -25,7 +25,7 @@ class TravisHookTests(WebhookTestCase):
             'build',
             self.TOPIC,
             expected_message,
-            content_type="application/x-www-form-urlencoded"
+            content_type="application/x-www-form-urlencoded",
         )
 
     def test_ignore_travis_pull_request_by_default(self) -> None:
@@ -33,7 +33,7 @@ class TravisHookTests(WebhookTestCase):
         result = self.client_post(
             self.url,
             self.get_body('pull_request'),
-            content_type="application/x-www-form-urlencoded"
+            content_type="application/x-www-form-urlencoded",
         )
         self.assert_json_success(result)
         msg = self.get_last_message()
@@ -50,7 +50,7 @@ class TravisHookTests(WebhookTestCase):
             'pull_request',
             self.TOPIC,
             expected_message,
-            content_type="application/x-www-form-urlencoded"
+            content_type="application/x-www-form-urlencoded",
         )
 
     def get_body(self, fixture_name: str) -> str:

@@ -1,35 +1,36 @@
-from typing import Any, List, Dict, Optional, Tuple
+import calendar
+import logging
+import time
+from typing import Any, Dict, List, Optional, Tuple
 
 from django.conf import settings
-from django.urls import reverse
-from django.http import HttpResponseRedirect, HttpResponse, HttpRequest
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.utils import translation
 from django.utils.cache import patch_cache_control
+from two_factor.utils import default_device
 
 from zerver.decorator import zulip_login_required
 from zerver.forms import ToSForm
-from zerver.models import Message, Stream, UserProfile, \
-    Realm, PreregistrationUser
+from zerver.lib.actions import do_change_tos_version, realm_user_count
 from zerver.lib.events import do_events_register
-from zerver.lib.actions import do_change_tos_version, \
-    realm_user_count
-from zerver.lib.i18n import get_language_list, get_language_name, \
-    get_language_list_for_templates, get_language_translation_data
+from zerver.lib.i18n import (
+    get_language_list,
+    get_language_list_for_templates,
+    get_language_name,
+    get_language_translation_data,
+)
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.users import compute_show_invites_and_add_streams
-from zerver.lib.utils import statsd, generate_random_token
-from zerver.views.compatibility import is_outdated_desktop_app, \
-    is_unsupported_browser
+from zerver.lib.utils import generate_random_token, statsd
+from zerver.models import Message, PreregistrationUser, Realm, Stream, UserProfile
+from zerver.views.compatibility import is_outdated_desktop_app, is_unsupported_browser
 from zerver.views.messages import get_latest_update_message_flag_activity
 from zerver.views.portico import hello_view
-from two_factor.utils import default_device
 
-import calendar
-import logging
-import time
 
 def need_accept_tos(user_profile: Optional[UserProfile]) -> bool:
     if user_profile is None:  # nocoverage
@@ -123,7 +124,7 @@ def get_bot_types(user_profile: Optional[UserProfile]) -> List[Dict[str, object]
         bot_types.append({
             'type_id': type_id,
             'name': name,
-            'allowed': type_id in user_profile.allowed_bot_types
+            'allowed': type_id in user_profile.allowed_bot_types,
         })
     return bot_types
 
@@ -159,7 +160,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
             'zerver/insecure_desktop_app.html',
             context={
                 "auto_update_broken": auto_update_broken,
-            }
+            },
         )
     (unsupported_browser, browser_name) = is_unsupported_browser(client_user_agent)
     if unsupported_browser:
@@ -168,7 +169,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
             'zerver/unsupported_browser.html',
             context={
                 "browser_name": browser_name,
-            }
+            },
         )
 
     # We need to modify the session object every two weeks or it will expire.
@@ -301,7 +302,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         if user_profile.realm.plan_type == Realm.LIMITED:
             show_plans = True
 
-    request._log_data['extra'] = "[%s]" % (register_ret["queue_id"],)
+    request._log_data['extra'] = "[{}]".format(register_ret["queue_id"])
 
     page_params['translation_data'] = {}
     if request_language != 'en':
@@ -339,7 +340,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                'embedded': narrow_stream is not None,
                                'invite_as': PreregistrationUser.INVITE_AS,
                                'max_file_upload_size_mib': settings.MAX_FILE_UPLOAD_SIZE,
-                               },)
+                               })
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)
     return response
 

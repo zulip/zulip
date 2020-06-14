@@ -3,8 +3,7 @@ from typing import Any, Optional
 from django.conf import settings
 from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.dispatch import receiver
-from django.utils.timezone import \
-    get_current_timezone_name as timezone_get_current_timezone_name
+from django.utils.timezone import get_current_timezone_name as timezone_get_current_timezone_name
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 
@@ -12,8 +11,8 @@ from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.actions import do_set_zoom_token
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress
-from zerver.models import UserProfile
 from zerver.lib.timezone import get_timezone
+from zerver.models import UserProfile
 
 JUST_CREATED_THRESHOLD = 60
 

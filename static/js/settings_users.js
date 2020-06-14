@@ -277,9 +277,7 @@ section.active.create_table = (active_users) => {
     const $users_table = $("#admin_users_table");
     list_render.create($users_table, active_users, {
         name: "users_table_list",
-        get_item: (item) => {
-            return people.get_by_user_id(item);
-        },
+        get_item: people.get_by_user_id,
         modifier: function (item) {
             const info = human_info(item);
             return render_admin_user_list(info);
@@ -306,9 +304,7 @@ section.deactivated.create_table = (deactivated_users) => {
     const $deactivated_users_table = $("#admin_deactivated_users_table");
     list_render.create($deactivated_users_table, deactivated_users, {
         name: "deactivated_users_table_list",
-        get_item: (item) => {
-            return people.get_by_user_id(item);
-        },
+        get_item: people.get_by_user_id,
         modifier: function (item) {
             const info = human_info(item);
             return render_admin_user_list(info);

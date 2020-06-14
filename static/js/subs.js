@@ -143,6 +143,17 @@ exports.update_stream_name = function (sub, new_name) {
     // Update navbar stream name if needed
     const filter = narrow_state.filter();
     if (filter && filter.operands("stream")[0] === old_name) {
+        // This works, but it relies on `filter.fix_stream_params` masking
+        // some bad behaviour in the Filter object. In particular, the fact
+        // that the Filter object relies on the search box which doesn't
+        // rename the currently focused stream.
+        //
+        // This will likely be improved as we migrate to using search pills
+        // and then a stream ID based representation of the stream in Filter.
+
+        // update the stream_params stored in the filter object
+        filter.fix_stream_params();
+        // use these to update the navbar
         tab_bar.render_title_area();
     }
 };
@@ -161,12 +172,6 @@ exports.update_stream_description = function (sub, description, rendered_descrip
     // Update navbar if needed
     const filter = narrow_state.filter();
     if (filter && filter.operands("stream")[0] === sub.name) {
-        // TODO: This doesn't work, because the `filter` object
-        // represents the stream by name and hasn't been updated.
-        //
-        // This will likely be fixed automatically as we migrate to
-        // using search pills and then a stream ID based
-        // representation of the stream in Filter objects.
         tab_bar.render_title_area();
     }
 };
@@ -183,6 +188,15 @@ exports.update_stream_privacy = function (sub, values) {
     stream_ui_updates.update_subscribers_count(sub);
     stream_ui_updates.update_add_subscriptions_elements(sub);
     stream_list.redraw_stream_privacy(sub);
+
+    // Update navbar stream name if needed
+    const filter = narrow_state.filter();
+    if (filter && filter.operands("stream")[0] === sub.name) {
+        // update the stream_params stored in the filter object
+        filter.fix_stream_params();
+        // use these to update the navbar
+        tab_bar.render_title_area();
+    }
 };
 
 exports.update_stream_post_policy = function (sub, new_value) {

@@ -475,7 +475,6 @@ exports.initialize_everything = function () {
     presence.initialize(presence_params);
     activity.initialize();
     emoji_picker.initialize();
-    compose_fade.initialize();
     pm_list.initialize();
     topic_list.initialize();
     topic_zoom.initialize();

@@ -26,7 +26,7 @@ def copy_pub_date_to_date_sent(apps: StateApps, schema_editor: DatabaseSchemaEdi
         # Nothing to do
         return
 
-    first_uncopied_id = Message.objects.filter(date_sent__isnull=True
+    first_uncopied_id = Message.objects.filter(date_sent__isnull=True,
                                                ).aggregate(Min('id'))['id__min']
     # Note: the below id can fall in a segment
     # where date_sent = pub_date already, but it's not a big problem
@@ -72,5 +72,5 @@ class Migration(migrations.Migration):
         # in a normal migration with AlterField of date_sent to have db_index=True:
         migrations.RunSQL("""
         CREATE INDEX CONCURRENTLY zerver_message_date_sent_3b5b05d8 ON zerver_message (date_sent);
-        """)
+        """),
     ]

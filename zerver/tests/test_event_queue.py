@@ -1,18 +1,24 @@
-from unittest import mock
 import time
-import ujson
-
-from django.http import HttpRequest, HttpResponse
 from typing import Any, Callable, Dict, Tuple
+from unittest import mock
 
-from zerver.lib.actions import do_mute_topic, do_change_subscription_property
+import ujson
+from django.http import HttpRequest, HttpResponse
+
+from zerver.lib.actions import do_change_subscription_property, do_mute_topic
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import POSTRequestMock
 from zerver.models import Recipient, Stream, Subscription, UserProfile, get_stream
-from zerver.tornado.event_queue import maybe_enqueue_notifications, \
-    allocate_client_descriptor, ClientDescriptor, \
-    get_client_descriptor, missedmessage_hook, persistent_queue_filename
-from zerver.tornado.views import get_events, cleanup_event_queue
+from zerver.tornado.event_queue import (
+    ClientDescriptor,
+    allocate_client_descriptor,
+    get_client_descriptor,
+    maybe_enqueue_notifications,
+    missedmessage_hook,
+    persistent_queue_filename,
+)
+from zerver.tornado.views import cleanup_event_queue, get_events
+
 
 class MissedMessageNotificationsTest(ZulipTestCase):
     """Tests the logic for when missed-message notifications

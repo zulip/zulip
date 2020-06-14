@@ -1,9 +1,8 @@
-from django.conf import settings
-
-import hashlib
 import base64
-
+import hashlib
 from typing import Optional
+
+from django.conf import settings
 
 
 def initial_password(email: str) -> Optional[str]:

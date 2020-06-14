@@ -24,11 +24,11 @@ def analyze_activity(options: Dict[str, Any]) -> None:
             continue
 
         total_duration += duration
-        print("%-*s%s" % (37, user_profile.email, duration,))
+        print("%-*s%s" % (37, user_profile.email, duration))
 
-    print("\nTotal Duration:                      %s" % (total_duration,))
-    print("\nTotal Duration in minutes:           %s" % (total_duration.total_seconds() / 60.,))
-    print("Total Duration amortized to a month: %s" % (total_duration.total_seconds() * 30. / 60.,))
+    print(f"\nTotal Duration:                      {total_duration}")
+    print(f"\nTotal Duration in minutes:           {total_duration.total_seconds() / 60.}")
+    print(f"Total Duration amortized to a month: {total_duration.total_seconds() * 30. / 60.}")
 
 class Command(BaseCommand):
     help = """Report analytics of user activity on a per-user and realm basis.

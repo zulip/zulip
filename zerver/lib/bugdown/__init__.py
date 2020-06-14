@@ -1,64 +1,76 @@
 # Zulip's main markdown implementation.  See docs/subsystems/markdown.md for
 # detailed documentation on our markdown syntax.
-from typing import (Any, Callable, Dict, Generic, Iterable, List, NamedTuple,
-                    Optional, Set, Tuple, TypeVar, Union)
-from typing.re import Match, Pattern
-from typing_extensions import TypedDict
-
-import markdown
+import functools
+import html
 import logging
+import os
+import re
+import time
 import traceback
 import urllib
 import urllib.parse
-import re
-import os
-import html
-import time
-import functools
+from collections import defaultdict, deque
+from dataclasses import dataclass
+from datetime import datetime
 from io import StringIO
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    Iterable,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+)
+from typing.re import Match, Pattern
+from xml.etree import ElementTree as etree
+from xml.etree.ElementTree import Element, SubElement
+
+import ahocorasick
 import dateutil.parser
 import dateutil.tz
-from datetime import datetime
-import xml.etree.ElementTree as etree
-from xml.etree.ElementTree import Element, SubElement
-import ahocorasick
-from hyperlink import parse
-
-from collections import deque, defaultdict
-
+import markdown
 import requests
-
 from django.conf import settings
 from django.db.models import Q
+from hyperlink import parse
+from markdown.extensions import codehilite, nl2br, sane_lists, tables
+from typing_extensions import TypedDict
 
-from markdown.extensions import codehilite, nl2br, tables, sane_lists
+from zerver.lib import mention as mention
 from zerver.lib.bugdown import fenced_code
 from zerver.lib.bugdown.fenced_code import FENCE_RE
+from zerver.lib.cache import NotFoundInCache, cache_with_key
 from zerver.lib.camo import get_camo_url
-from zerver.lib.emoji import translate_emoticons, emoticon_regex, \
-    name_to_codepoint, codepoint_to_name
-from zerver.lib.mention import possible_mentions, \
-    possible_user_group_mentions, extract_user_group
-from zerver.lib.url_encoding import encode_stream, hash_util_encode
+from zerver.lib.emoji import (
+    codepoint_to_name,
+    emoticon_regex,
+    name_to_codepoint,
+    translate_emoticons,
+)
+from zerver.lib.exceptions import BugdownRenderingException
+from zerver.lib.mention import extract_user_group, possible_mentions, possible_user_group_mentions
+from zerver.lib.tex import render_tex
 from zerver.lib.thumbnail import user_uploads_or_external
-from zerver.lib.timeout import timeout, TimeoutExpired
-from zerver.lib.cache import cache_with_key, NotFoundInCache
+from zerver.lib.timeout import TimeoutExpired, timeout
+from zerver.lib.timezone import get_common_timezones
+from zerver.lib.url_encoding import encode_stream, hash_util_encode
 from zerver.lib.url_preview import preview as link_preview
 from zerver.models import (
-    all_realm_filters,
-    get_active_streams,
     MAX_MESSAGE_LENGTH,
     Message,
     Realm,
-    realm_filters_for_realm,
-    UserProfile,
     UserGroup,
     UserGroupMembership,
+    UserProfile,
+    all_realm_filters,
+    get_active_streams,
+    realm_filters_for_realm,
 )
-import zerver.lib.mention as mention
-from zerver.lib.tex import render_tex
-from zerver.lib.exceptions import BugdownRenderingException
-from zerver.lib.timezone import get_common_timezones
 
 ReturnT = TypeVar('ReturnT')
 
@@ -99,13 +111,13 @@ EMOJI_REGEX = r'(?P<syntax>:[\w\-\+]+:)'
 def verbose_compile(pattern: str) -> Any:
     return re.compile(
         "^(.*?)%s(.*?)$" % (pattern,),
-        re.DOTALL | re.UNICODE | re.VERBOSE
+        re.DOTALL | re.UNICODE | re.VERBOSE,
     )
 
 def normal_compile(pattern: str) -> Any:
     return re.compile(
         r"^(.*?)%s(.*)$" % (pattern,),
-        re.DOTALL | re.UNICODE
+        re.DOTALL | re.UNICODE,
     )
 
 STREAM_LINK_REGEX = r"""
@@ -220,7 +232,7 @@ def rewrite_local_links_to_relative(db_data: Optional[DbData], link: str) -> str
 
 def url_embed_preview_enabled(message: Optional[Message]=None,
                               realm: Optional[Realm]=None,
-                              no_previews: Optional[bool]=False) -> bool:
+                              no_previews: bool=False) -> bool:
     if not settings.INLINE_URL_EMBED_PREVIEW:
         return False
 
@@ -241,7 +253,7 @@ def url_embed_preview_enabled(message: Optional[Message]=None,
 
 def image_preview_enabled(message: Optional[Message]=None,
                           realm: Optional[Realm]=None,
-                          no_previews: Optional[bool]=False) -> bool:
+                          no_previews: bool=False) -> bool:
     if not settings.INLINE_IMAGE_PREVIEW:
         return False
 
@@ -291,12 +303,12 @@ def walk_tree(root: Element,
 
     return results
 
-ElementFamily = NamedTuple('ElementFamily', [
-    ('grandparent', Optional[Element]),
-    ('parent', Element),
-    ('child', Element),
-    ('in_blockquote', bool),
-])
+@dataclass
+class ElementFamily:
+    grandparent: Optional[Element]
+    parent: Element
+    child: Element
+    in_blockquote: bool
 
 T = TypeVar("T")
 
@@ -317,7 +329,7 @@ class ElementPair:
         self.value = value
 
 def walk_tree_with_family(root: Element,
-                          processor: Callable[[Element], Optional[_T]]
+                          processor: Callable[[Element], Optional[_T]],
                           ) -> List[ResultWithFamily[_T]]:
     results = []
 
@@ -338,12 +350,12 @@ def walk_tree_with_family(root: Element,
                     grandparent=grandparent,
                     parent=currElementPair.value,
                     child=child,
-                    in_blockquote=has_blockquote_ancestor(currElementPair)
+                    in_blockquote=has_blockquote_ancestor(currElementPair),
                 )
 
                 results.append(ResultWithFamily(
                     family=family,
-                    result=result
+                    result=result,
                 ))
 
     return results
@@ -546,7 +558,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             class_attr: str="message_inline_image",
             data_id: Optional[str]=None,
             insertion_index: Optional[int]=None,
-            already_thumbnailed: Optional[bool]=False
+            already_thumbnailed: bool=False,
     ) -> None:
         desc = desc if desc is not None else ""
 
@@ -575,10 +587,10 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             # consistency in what gets passed to /thumbnail
             url = url.lstrip('/')
             img.set("src", "/thumbnail?url={}&size=thumbnail".format(
-                urllib.parse.quote(url, safe='')
+                urllib.parse.quote(url, safe=''),
             ))
             img.set('data-src-fullsize', "/thumbnail?url={}&size=full".format(
-                urllib.parse.quote(url, safe='')
+                urllib.parse.quote(url, safe=''),
             ))
         else:
             img.set("src", url)
@@ -1132,7 +1144,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 if image_source is not None:
                     found_url = ResultWithFamily(
                         family=found_url.family,
-                        result=(image_source, image_source)
+                        result=(image_source, image_source),
                     )
                 self.handle_image_inlining(root, found_url)
                 continue
@@ -1517,6 +1529,11 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
         # And then run the upstream processor's code for removing the '>'
         return super().clean(line)
 
+@dataclass
+class Fence:
+    fence_str: str
+    is_code: bool
+
 class BugdownListPreprocessor(markdown.preprocessors.Preprocessor):
     """ Allows list blocks that come directly after another block
         to be rendered as a list.
@@ -1529,11 +1546,6 @@ class BugdownListPreprocessor(markdown.preprocessors.Preprocessor):
 
     def run(self, lines: List[str]) -> List[str]:
         """ Insert a newline between a paragraph and ulist if missing """
-        Fence = NamedTuple('Fence', [
-            ('fence_str', str),
-            ('is_code', bool),
-        ])
-
         inserts = 0
         in_code_fence: bool = False
         open_fences: List[Fence] = []
@@ -1718,8 +1730,7 @@ class StreamTopicPattern(CompiledPattern):
             el.set('data-stream-id', str(stream['id']))
             stream_url = encode_stream(stream['id'], stream_name)
             topic_url = hash_util_encode(topic_name)
-            link = '/#narrow/stream/{stream_url}/topic/{topic_url}'.format(stream_url=stream_url,
-                                                                           topic_url=topic_url)
+            link = f'/#narrow/stream/{stream_url}/topic/{topic_url}'
             el.set('href', link)
             text = f'#{stream_name} > {topic_name}'
             el.text = markdown.util.AtomicString(text)
@@ -1822,7 +1833,7 @@ class Bugdown(markdown.Markdown):
                               "Realm-specific filters for realm_filters_key %s" % (kwargs['realm'],)],
             "realm": [kwargs['realm'], "Realm id"],
             "code_block_processor_disabled": [kwargs['code_block_processor_disabled'],
-                                              "Disabled for email gateway"]
+                                              "Disabled for email gateway"],
         }
 
         super().__init__(*args, **kwargs)
@@ -2014,7 +2025,7 @@ def build_engine(realm_filters: List[Tuple[str, str, int]],
             tables.makeExtension(),
             codehilite.makeExtension(
                 linenums=False,
-                guess_lang=False
+                guess_lang=False,
             ),
         ])
     return engine
@@ -2104,7 +2115,7 @@ def get_email_info(realm_id: int, emails: Set[str]) -> Dict[str, FullNameInfo]:
     }
 
     rows = UserProfile.objects.filter(
-        realm_id=realm_id
+        realm_id=realm_id,
     ).filter(
         functools.reduce(lambda a, b: a | b, q_list),
     ).values(
@@ -2249,11 +2260,11 @@ def do_convert(content: str,
                realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
                message: Optional[Message]=None,
                message_realm: Optional[Realm]=None,
-               sent_by_bot: Optional[bool]=False,
-               translate_emoticons: Optional[bool]=False,
+               sent_by_bot: bool=False,
+               translate_emoticons: bool=False,
                mention_data: Optional[MentionData]=None,
-               email_gateway: Optional[bool]=False,
-               no_previews: Optional[bool]=False) -> str:
+               email_gateway: bool=False,
+               no_previews: bool=False) -> str:
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     # This logic is a bit convoluted, but the overall goal is to support a range of use cases:
     # * Nothing is passed in other than content -> just run default options (e.g. for docs)
@@ -2394,11 +2405,11 @@ def convert(content: str,
             realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
             message: Optional[Message]=None,
             message_realm: Optional[Realm]=None,
-            sent_by_bot: Optional[bool]=False,
-            translate_emoticons: Optional[bool]=False,
+            sent_by_bot: bool=False,
+            translate_emoticons: bool=False,
             mention_data: Optional[MentionData]=None,
-            email_gateway: Optional[bool]=False,
-            no_previews: Optional[bool]=False) -> str:
+            email_gateway: bool=False,
+            no_previews: bool=False) -> str:
     bugdown_stats_start()
     ret = do_convert(content, realm_alert_words_automaton,
                      message, message_realm, sent_by_bot,

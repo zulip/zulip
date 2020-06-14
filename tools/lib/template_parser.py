@@ -1,5 +1,6 @@
 from typing import Callable, List, Optional, Text
 
+
 class FormattedException(Exception):
     pass
 
@@ -160,8 +161,8 @@ def tokenize(text: str) -> List[Token]:
                     e.message,
                     state.line,
                     state.col,
-                    e.line_content
-                )
+                    e.line_content,
+                ),
             )
 
         line_span = len(s.split('\n'))
@@ -171,7 +172,7 @@ def tokenize(text: str) -> List[Token]:
             tag=tag.strip(),
             line=state.line,
             col=state.col,
-            line_span=line_span
+            line_span=line_span,
         )
         tokens.append(token)
         advance(len(s))
@@ -183,7 +184,7 @@ def tokenize(text: str) -> List[Token]:
                 tag=tag,
                 line=state.line,
                 col=state.col,
-                line_span=1
+                line_span=1,
             )
             tokens.append(token)
 
@@ -212,9 +213,9 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None, check_indent:
     try:
         tokens = tokenize(text)
     except FormattedException as e:
-        raise TemplateParserException('''
-            fn: %s
-            %s''' % (fn, e))
+        raise TemplateParserException(f'''
+            fn: {fn}
+            {e}''')
 
     class State:
         def __init__(self, func: Callable[[Token], None]) -> None:

@@ -1,14 +1,22 @@
-from django.contrib.auth.models import UserManager
-from django.utils.timezone import now as timezone_now
-from zerver.models import UserProfile, Recipient, Subscription, Realm, Stream, \
-    PreregistrationUser, get_fake_email_domain
-from zerver.lib.upload import copy_avatar
-from zerver.lib.hotspots import copy_hotpots
-from zerver.lib.utils import generate_api_key
+from typing import Optional
 
 import ujson
+from django.contrib.auth.models import UserManager
+from django.utils.timezone import now as timezone_now
 
-from typing import Optional
+from zerver.lib.hotspots import copy_hotpots
+from zerver.lib.upload import copy_avatar
+from zerver.lib.utils import generate_api_key
+from zerver.models import (
+    PreregistrationUser,
+    Realm,
+    Recipient,
+    Stream,
+    Subscription,
+    UserProfile,
+    get_fake_email_domain,
+)
+
 
 def copy_user_settings(source_profile: UserProfile, target_profile: UserProfile) -> None:
     """Warning: Does not save, to avoid extra database queries"""
@@ -33,11 +41,13 @@ def copy_user_settings(source_profile: UserProfile, target_profile: UserProfile)
 
 def get_display_email_address(user_profile: UserProfile, realm: Realm) -> str:
     if not user_profile.email_address_is_realm_public():
-        return "user%s@%s" % (user_profile.id, get_fake_email_domain())
+        return f"user{user_profile.id}@{get_fake_email_domain()}"
     return user_profile.delivery_email
 
 def get_role_for_new_user(invited_as: int, realm_creation: bool=False) -> int:
-    if invited_as == PreregistrationUser.INVITE_AS['REALM_ADMIN'] or realm_creation:
+    if realm_creation:
+        return UserProfile.ROLE_REALM_OWNER
+    elif invited_as == PreregistrationUser.INVITE_AS['REALM_ADMIN']:
         return UserProfile.ROLE_REALM_ADMINISTRATOR
     elif invited_as == PreregistrationUser.INVITE_AS['GUEST_USER']:
         return UserProfile.ROLE_GUEST
@@ -55,7 +65,7 @@ def create_user_profile(realm: Realm, email: str, password: Optional[str],
                         short_name: str, bot_owner: Optional[UserProfile],
                         is_mirror_dummy: bool, tos_version: Optional[str],
                         timezone: Optional[str],
-                        tutorial_status: Optional[str] = UserProfile.TUTORIAL_WAITING,
+                        tutorial_status: str = UserProfile.TUTORIAL_WAITING,
                         enter_sends: bool = False) -> UserProfile:
     now = timezone_now()
     email = UserManager.normalize_email(email)

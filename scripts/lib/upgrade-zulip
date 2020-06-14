@@ -1,19 +1,27 @@
 #!/usr/bin/env python3
+import configparser
+import logging
 import os
 import shutil
-import sys
 import subprocess
-import logging
+import sys
 import time
-import configparser
 
 TARBALL_ARCHIVE_PATH = "/home/zulip/archives"
 os.environ["PYTHONUNBUFFERED"] = "y"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, ENDC, \
-    su_to_zulip, get_deployment_lock, release_deployment_lock, assert_running_as_root, \
-    get_config_file, get_deploy_options
+from scripts.lib.zulip_tools import (
+    DEPLOYMENTS_DIR,
+    ENDC,
+    FAIL,
+    assert_running_as_root,
+    get_config_file,
+    get_deploy_options,
+    get_deployment_lock,
+    release_deployment_lock,
+    su_to_zulip,
+)
 
 config_file: configparser.RawConfigParser = get_config_file()
 deploy_options = get_deploy_options(config_file)
@@ -28,12 +36,12 @@ logging.basicConfig(format="%(asctime)s upgrade-zulip: %(message)s",
                     level=logging.INFO)
 
 if len(sys.argv) != 2:
-    print(FAIL + "Usage: %s <tarball>" % (sys.argv[0],) + ENDC)
+    print(FAIL + f"Usage: {sys.argv[0]} <tarball>" + ENDC)
     sys.exit(1)
 
 tarball_path = sys.argv[1]
 
-error_rerun_script = "%s/current/scripts/upgrade-zulip %s" % (DEPLOYMENTS_DIR, tarball_path)
+error_rerun_script = f"{DEPLOYMENTS_DIR}/current/scripts/upgrade-zulip {tarball_path}"
 get_deployment_lock(error_rerun_script)
 
 try:

@@ -1,9 +1,9 @@
 import logging
+import urllib
+from typing import Any, Dict, List, Mapping, Tuple, Union
+
 import requests
 import ujson
-import urllib
-from typing import Any, Dict, List, Optional, Tuple, Union
-
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.translation import ugettext as _
@@ -14,6 +14,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.export import floatify_datetime_fields
 from zerver.models import RealmAuditLog
 
+
 class PushNotificationBouncerException(Exception):
     pass
 
@@ -23,7 +24,7 @@ class PushNotificationBouncerRetryLaterError(JsonableError):
 def send_to_push_bouncer(method: str,
                          endpoint: str,
                          post_data: Union[str, Dict[str, Any]],
-                         extra_headers: Optional[Dict[str, Any]]=None) -> Dict[str, Any]:
+                         extra_headers: Mapping[str, Any] = {}) -> Dict[str, Any]:
     """While it does actually send the notice, this function has a lot of
     code and comments around error handling for the push notifications
     bouncer.  There are several classes of failures, each with its own
@@ -45,9 +46,8 @@ def send_to_push_bouncer(method: str,
     api_auth = requests.auth.HTTPBasicAuth(settings.ZULIP_ORG_ID,
                                            settings.ZULIP_ORG_KEY)
 
-    headers = {"User-agent": "ZulipServer/%s" % (ZULIP_VERSION,)}
-    if extra_headers is not None:
-        headers.update(extra_headers)
+    headers = {"User-agent": f"ZulipServer/{ZULIP_VERSION}"}
+    headers.update(extra_headers)
 
     try:
         res = requests.request(method,
@@ -88,7 +88,7 @@ def send_to_push_bouncer(method: str,
         # this version of Zulip, so we throw an exception that will
         # email the server admins.
         raise PushNotificationBouncerException(
-            "Push notification bouncer returned unexpected status code %s" % (res.status_code,))
+            f"Push notification bouncer returned unexpected status code {res.status_code}")
 
     # If we don't throw an exception, it's a successful bounce!
     return ujson.loads(res.content)

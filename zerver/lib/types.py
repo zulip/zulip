@@ -1,6 +1,7 @@
-from typing import TypeVar, Callable, Optional, List, Dict, Union, Tuple, Any
-from typing_extensions import TypedDict
+from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union
+
 from django.http import HttpResponse
+from typing_extensions import TypedDict
 
 ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 
@@ -10,16 +11,18 @@ Validator = Callable[[str, object], Optional[str]]
 ExtendedValidator = Callable[[str, str, object], Optional[str]]
 RealmUserValidator = Callable[[int, List[int], bool], Optional[str]]
 
-ProfileDataElement = TypedDict('ProfileDataElement', {
-    'id': int,
-    'name': str,
-    'type': int,
-    'hint': Optional[str],
-    'field_data': Optional[str],
-    'order': int,
-    'value': str,
-    'rendered_value': Optional[str],
-}, total=False)  # TODO: Can we remove this requirement?
+class ProfileDataElementBase(TypedDict):
+    id: int
+    name: str
+    type: int
+    hint: Optional[str]
+    field_data: Optional[str]
+    order: int
+
+class ProfileDataElement(ProfileDataElementBase):
+    value: str
+    rendered_value: Optional[str]
+
 ProfileData = List[ProfileDataElement]
 
 FieldElement = Tuple[int, str, Validator, Callable[[Any], Any], str]

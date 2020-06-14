@@ -3,8 +3,7 @@ from typing import Any, Dict
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.decorator import REQ, api_key_only_webhook_view, \
-    has_request_variables
+from zerver.decorator import REQ, api_key_only_webhook_view, has_request_variables
 from zerver.lib.actions import send_rate_limited_pm_notification_to_bot_owner
 from zerver.lib.response import json_error, json_success
 from zerver.lib.send_email import FromAddress
@@ -65,6 +64,6 @@ def get_body_for_http_request(payload: Dict[str, Any]) -> str:
         "status": status,
         "item": item,
         "trigger": trigger,
-        "link": link
+        "link": link,
     }
     return ZABBIX_MESSAGE_TEMPLATE.format(**data)

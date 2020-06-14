@@ -1,16 +1,15 @@
-import logging
-
-from typing import List
 import configparser
-
+import logging
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from typing import List
 
 from django.conf import settings
-from django.core.mail.backends.base import BaseEmailBackend
 from django.core.mail import EmailMultiAlternatives
+from django.core.mail.backends.base import BaseEmailBackend
 from django.template import loader
+
 
 def get_forward_address() -> str:
     config = configparser.ConfigParser()
@@ -71,7 +70,7 @@ class EmailLogBackEnd(BaseEmailBackend):
             'from_email': email.from_email,
             'recipients': email.to,
             'body': email.body,
-            'html_message': html_message
+            'html_message': html_message,
         }
 
         new_email = loader.render_to_string('zerver/email.html', context)

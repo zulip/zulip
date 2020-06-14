@@ -4,11 +4,10 @@
 # You can also read
 #   https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
 # to get a tutorial on the framework that inspired this feature.
+from django.db.migrations.state import StateApps
 
 from zerver.lib.test_classes import MigrationsTestCase
 from zerver.lib.test_helpers import use_db_models
-from django.db.migrations.state import StateApps
-
 from zerver.models import get_stream
 
 # Important note: These tests are very expensive, and details of

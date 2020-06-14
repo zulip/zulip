@@ -1,8 +1,7 @@
 # System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
-
 import logging
-import platform
 import os
+import platform
 import subprocess
 import traceback
 from typing import Any, Dict, Optional
@@ -11,9 +10,10 @@ from django.conf import settings
 from django.http import HttpRequest
 from django.views.debug import get_exception_reporter_filter
 
+from version import ZULIP_VERSION
 from zerver.lib.logging_util import find_log_caller_module
 from zerver.lib.queue import queue_json_publish
-from version import ZULIP_VERSION
+
 
 def try_git_describe() -> Optional[str]:
     try:  # nocoverage
@@ -30,9 +30,9 @@ def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
 
     report['path'] = request.path
     report['method'] = request.method
-    report['remote_addr'] = request.META.get('REMOTE_ADDR', None),
-    report['query_string'] = request.META.get('QUERY_STRING', None),
-    report['server_name'] = request.META.get('SERVER_NAME', None),
+    report['remote_addr'] = request.META.get('REMOTE_ADDR', None)
+    report['query_string'] = request.META.get('QUERY_STRING', None)
+    report['server_name'] = request.META.get('SERVER_NAME', None)
     try:
         from django.contrib.auth.models import AnonymousUser
         user_profile = request.user

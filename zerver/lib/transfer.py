@@ -1,14 +1,14 @@
-import os
 import logging
+import os
+from mimetypes import guess_type
 
 from django.conf import settings
 from django.db import connection
-from mimetypes import guess_type
 
-from zerver.models import UserProfile, Attachment, RealmEmoji
 from zerver.lib.avatar_hash import user_avatar_path
-from zerver.lib.upload import S3UploadBackend, upload_image_to_s3
 from zerver.lib.parallel import run_parallel
+from zerver.lib.upload import S3UploadBackend, upload_image_to_s3
+from zerver.models import Attachment, RealmEmoji, UserProfile
 
 s3backend = S3UploadBackend()
 
@@ -69,7 +69,7 @@ def transfer_emoji_to_s3(processes: int) -> None:
             return 0  # nocoverage
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=realm_emoji.realm.id,
-            emoji_file_name=realm_emoji.file_name
+            emoji_file_name=realm_emoji.file_name,
         )
         emoji_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", emoji_path) + ".original"
         try:

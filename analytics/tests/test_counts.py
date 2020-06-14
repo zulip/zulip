@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple, Type
-
 from unittest import mock
+
 import ujson
 from django.apps import apps
 from django.db import models
@@ -10,24 +10,58 @@ from django.test import TestCase
 from django.utils.timezone import now as timezone_now
 from psycopg2.sql import SQL, Literal
 
-from analytics.lib.counts import COUNT_STATS, CountStat, get_count_stats, \
-    DependentCountStat, LoggingCountStat, do_aggregate_to_summary_table, \
-    do_drop_all_analytics_tables, do_drop_single_stat, \
-    do_fill_count_stat_at_hour, do_increment_logging_stat, \
-    process_count_stat, sql_data_collector
-from analytics.models import BaseCount, \
-    FillState, InstallationCount, RealmCount, StreamCount, \
-    UserCount, installation_epoch
-from zerver.lib.actions import do_activate_user, do_create_user, \
-    do_deactivate_user, do_reactivate_user, update_user_activity_interval, \
-    do_invite_users, do_revoke_user_invite, do_resend_user_invite_email, \
-    InvitationError
+from analytics.lib.counts import (
+    COUNT_STATS,
+    CountStat,
+    DependentCountStat,
+    LoggingCountStat,
+    do_aggregate_to_summary_table,
+    do_drop_all_analytics_tables,
+    do_drop_single_stat,
+    do_fill_count_stat_at_hour,
+    do_increment_logging_stat,
+    get_count_stats,
+    process_count_stat,
+    sql_data_collector,
+)
+from analytics.models import (
+    BaseCount,
+    FillState,
+    InstallationCount,
+    RealmCount,
+    StreamCount,
+    UserCount,
+    installation_epoch,
+)
+from zerver.lib.actions import (
+    InvitationError,
+    do_activate_user,
+    do_create_user,
+    do_deactivate_user,
+    do_invite_users,
+    do_reactivate_user,
+    do_resend_user_invite_email,
+    do_revoke_user_invite,
+    update_user_activity_interval,
+)
 from zerver.lib.create_user import create_user
 from zerver.lib.timestamp import TimezoneNotUTCException, floor_to_day
 from zerver.lib.topic import DB_TOPIC_NAME
-from zerver.models import Client, Huddle, Message, Realm, \
-    RealmAuditLog, Recipient, Stream, UserActivityInterval, \
-    UserProfile, get_client, get_user, PreregistrationUser
+from zerver.models import (
+    Client,
+    Huddle,
+    Message,
+    PreregistrationUser,
+    Realm,
+    RealmAuditLog,
+    Recipient,
+    Stream,
+    UserActivityInterval,
+    UserProfile,
+    get_client,
+    get_user,
+)
+
 
 class AnalyticsTestCase(TestCase):
     MINUTE = timedelta(seconds = 60)
@@ -49,7 +83,7 @@ class AnalyticsTestCase(TestCase):
     def create_user(self, **kwargs: Any) -> UserProfile:
         self.name_counter += 1
         defaults = {
-            'email': 'user%s@domain.tld' % (self.name_counter,),
+            'email': f'user{self.name_counter}@domain.tld',
             'date_joined': self.TIME_LAST_HOUR,
             'full_name': 'full_name',
             'short_name': 'short_name',
@@ -71,7 +105,7 @@ class AnalyticsTestCase(TestCase):
 
     def create_stream_with_recipient(self, **kwargs: Any) -> Tuple[Stream, Recipient]:
         self.name_counter += 1
-        defaults = {'name': 'stream name %s' % (self.name_counter,),
+        defaults = {'name': f'stream name {self.name_counter}',
                     'realm': self.default_realm,
                     'date_created': self.TIME_LAST_HOUR}
         for key, value in defaults.items():
@@ -84,7 +118,7 @@ class AnalyticsTestCase(TestCase):
 
     def create_huddle_with_recipient(self, **kwargs: Any) -> Tuple[Huddle, Recipient]:
         self.name_counter += 1
-        defaults = {'huddle_hash': 'hash%s' % (self.name_counter,)}
+        defaults = {'huddle_hash': f'hash{self.name_counter}'}
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
         huddle = Huddle.objects.create(**kwargs)
@@ -339,10 +373,10 @@ class TestCountStats(AnalyticsTestCase):
             date_created=self.TIME_ZERO-2*self.DAY)
         for minutes_ago in [0, 1, 61, 60*24+1]:
             creation_time = self.TIME_ZERO - minutes_ago*self.MINUTE
-            user = self.create_user(email='user-%s@second.analytics' % (minutes_ago,),
+            user = self.create_user(email=f'user-{minutes_ago}@second.analytics',
                                     realm=self.second_realm, date_joined=creation_time)
             recipient = self.create_stream_with_recipient(
-                name='stream %s' % (minutes_ago,), realm=self.second_realm,
+                name=f'stream {minutes_ago}', realm=self.second_realm,
                 date_created=creation_time)[1]
             self.create_message(user, recipient, date_sent=creation_time)
         self.hourly_user = get_user('user-1@second.analytics', self.second_realm)

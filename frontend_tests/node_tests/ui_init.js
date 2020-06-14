@@ -108,7 +108,6 @@ zrequire('tutorial');
 zrequire('notifications');
 zrequire('pointer');
 zrequire('pm_conversations');
-zrequire('compose_fade');
 zrequire('pm_list');
 zrequire('list_cursor');
 zrequire('keydown_util');

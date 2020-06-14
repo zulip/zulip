@@ -1,16 +1,24 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#soft-deactivation
-
-from zerver.lib.logging_util import log_to_file
-from collections import defaultdict
 import logging
+from collections import defaultdict
+from typing import Any, DefaultDict, Dict, List, Optional, Union
+
+from django.conf import settings
 from django.db import transaction
 from django.db.models import Max
-from django.conf import settings
 from django.utils.timezone import now as timezone_now
-from typing import DefaultDict, Dict, List, Optional, Union, Any
 
-from zerver.models import UserProfile, UserMessage, RealmAuditLog, \
-    Subscription, Message, Recipient, UserActivity, Realm
+from zerver.lib.logging_util import log_to_file
+from zerver.models import (
+    Message,
+    Realm,
+    RealmAuditLog,
+    Recipient,
+    Subscription,
+    UserActivity,
+    UserMessage,
+    UserProfile,
+)
 
 logger = logging.getLogger("zulip.soft_deactivation")
 log_to_file(logger, settings.SOFT_DEACTIVATION_LOG_PATH)
@@ -74,7 +82,7 @@ def filter_by_subscription_history(user_profile: UserProfile,
                     if stream_messages[-1]['id'] <= log_entry.event_last_message_id:
                         stream_messages = []
             else:
-                raise AssertionError('%s is not a Subscription Event.' % (log_entry.event_type,))
+                raise AssertionError(f'{log_entry.event_type} is not a Subscription Event.')
 
         if len(stream_messages) > 0:
             # We do this check for last event since if the last subscription
@@ -228,7 +236,7 @@ def do_soft_deactivate_users(users: List[UserProfile]) -> List[UserProfile]:
                     realm=user.realm,
                     modified_user=user,
                     event_type=RealmAuditLog.USER_SOFT_DEACTIVATED,
-                    event_time=event_time
+                    event_time=event_time,
                 )
                 realm_logs.append(log)
                 users_soft_deactivated.append(user)
@@ -265,7 +273,7 @@ def reactivate_user_if_soft_deactivated(user_profile: UserProfile) -> Union[User
             realm=user_profile.realm,
             modified_user=user_profile,
             event_type=RealmAuditLog.USER_SOFT_ACTIVATED,
-            event_time=timezone_now()
+            event_time=timezone_now(),
         )
         logger.info('Soft Reactivated user %s', user_profile.id)
         return user_profile
@@ -309,6 +317,6 @@ def get_soft_deactivated_users_for_catch_up(filter_kwargs: Any) -> List[UserProf
         long_term_idle=True,
         is_active=True,
         is_bot=False,
-        **filter_kwargs
+        **filter_kwargs,
     )
     return users_to_catch_up

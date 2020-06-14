@@ -1,29 +1,26 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 import copy
 import os
 import shutil
 import sys
+import time
+from io import StringIO
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from unittest import mock
 
+import ujson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
-from io import StringIO
-
-from zerver.models import (
-    get_client, get_stream, get_realm, get_system_bot,
-    Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile,
-    Realm, Subscription, Stream, flush_per_request_caches, UserGroup, Service,
-    Attachment, PreregistrationUser, get_user_by_delivery_email, MultiuseInvite,
-    RealmAuditLog
-)
 
 from zerver.lib.actions import (
-    try_update_realm_custom_profile_field,
+    bulk_add_members_to_user_group,
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
     check_add_realm_emoji,
+    check_add_user_group,
+    check_delete_user_group,
     check_send_message,
     check_send_typing_notification,
     do_add_alert_words,
@@ -44,7 +41,6 @@ from zerver.lib.actions import (
     do_change_full_name,
     do_change_icon_source,
     do_change_logo_source,
-    do_change_user_role,
     do_change_notification_settings,
     do_change_plan_type,
     do_change_realm_domain,
@@ -53,9 +49,10 @@ from zerver.lib.actions import (
     do_change_stream_post_policy,
     do_change_subscription_property,
     do_change_user_delivery_email,
-    do_create_user,
+    do_change_user_role,
     do_create_default_stream_group,
     do_create_multiuse_invite_link,
+    do_create_user,
     do_deactivate_stream,
     do_deactivate_user,
     do_delete_messages,
@@ -78,10 +75,10 @@ from zerver.lib.actions import (
     do_revoke_user_invite,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
-    do_set_realm_property,
-    do_set_user_display_setting,
     do_set_realm_notifications_stream,
+    do_set_realm_property,
     do_set_realm_signup_notifications_stream,
+    do_set_user_display_setting,
     do_set_zoom_token,
     do_unmute_topic,
     do_update_embedded_data,
@@ -89,18 +86,16 @@ from zerver.lib.actions import (
     do_update_message_flags,
     do_update_outgoing_webhook_service,
     do_update_pointer,
+    do_update_user_custom_profile_data_if_changed,
+    do_update_user_group_description,
+    do_update_user_group_name,
     do_update_user_presence,
     do_update_user_status,
     log_event,
     lookup_default_stream_groups,
     notify_realm_custom_profile_fields,
-    check_add_user_group,
-    do_update_user_group_name,
-    do_update_user_group_description,
-    bulk_add_members_to_user_group,
     remove_members_from_user_group,
-    check_delete_user_group,
-    do_update_user_custom_profile_data_if_changed,
+    try_update_realm_custom_profile_field,
 )
 from zerver.lib.bugdown import MentionData
 from zerver.lib.events import (
@@ -110,36 +105,65 @@ from zerver.lib.events import (
     post_process_state,
 )
 from zerver.lib.message import (
+    MessageDict,
+    UnreadMessagesResult,
     aggregate_unread_data,
     apply_unread_message_event,
     get_raw_unread_data,
     render_markdown,
-    MessageDict,
-    UnreadMessagesResult,
 )
-from zerver.lib.test_helpers import POSTRequestMock, get_subscription, \
-    get_test_image_file, stub_event_queue_user_events, queries_captured, \
-    create_dummy_file, stdout_suppressed, reset_emails_in_zulip_realm
-from zerver.lib.test_classes import (
-    ZulipTestCase,
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import (
+    POSTRequestMock,
+    create_dummy_file,
+    get_subscription,
+    get_test_image_file,
+    queries_captured,
+    reset_emails_in_zulip_realm,
+    stdout_suppressed,
+    stub_event_queue_user_events,
 )
 from zerver.lib.test_runner import slow
-from zerver.lib.topic import (
-    ORIG_TOPIC,
-    TOPIC_NAME,
-    TOPIC_LINKS,
-)
-from zerver.lib.topic_mutes import (
-    add_topic_mute,
-)
-from zerver.lib.validator import (
-    check_bool, check_dict, check_dict_only, check_float, check_int, check_list, check_string,
-    equals, check_none_or, Validator, check_url, check_int_in
-)
+from zerver.lib.topic import ORIG_TOPIC, TOPIC_LINKS, TOPIC_NAME
+from zerver.lib.topic_mutes import add_topic_mute
 from zerver.lib.users import get_api_key
-
-from zerver.views.events_register import _default_all_public_streams, _default_narrow
-
+from zerver.lib.validator import (
+    Validator,
+    check_bool,
+    check_dict,
+    check_dict_only,
+    check_float,
+    check_int,
+    check_int_in,
+    check_list,
+    check_none_or,
+    check_string,
+    check_url,
+    equals,
+)
+from zerver.models import (
+    Attachment,
+    Message,
+    MultiuseInvite,
+    PreregistrationUser,
+    Realm,
+    RealmAuditLog,
+    RealmDomain,
+    Recipient,
+    Service,
+    Stream,
+    Subscription,
+    UserGroup,
+    UserMessage,
+    UserPresence,
+    UserProfile,
+    flush_per_request_caches,
+    get_client,
+    get_realm,
+    get_stream,
+    get_system_bot,
+    get_user_by_delivery_email,
+)
 from zerver.tornado.event_queue import (
     allocate_client_descriptor,
     clear_client_event_queues_for_testing,
@@ -147,10 +171,7 @@ from zerver.tornado.event_queue import (
     process_message_event,
 )
 from zerver.tornado.views import get_events
-
-from unittest import mock
-import time
-import ujson
+from zerver.views.events_register import _default_all_public_streams, _default_narrow
 
 
 class LogEventsTest(ZulipTestCase):
@@ -210,7 +231,7 @@ class EventsEndpointTest(ZulipTestCase):
                 'id': 6,
                 'type': 'pointer',
                 'pointer': 15,
-            }
+            },
         ]
         with stub_event_queue_user_events(return_event_queue, return_user_events):
             result = self.api_post(user, '/json/register', dict(event_types=ujson.dumps(['pointer'])))
@@ -262,7 +283,7 @@ class EventsEndpointTest(ZulipTestCase):
             data=ujson.dumps(
                 dict(
                     event=dict(
-                        type='other'
+                        type='other',
                     ),
                     users=[self.example_user('hamlet').id],
                 ),
@@ -410,7 +431,7 @@ class GetEventsTest(ZulipTestCase):
                     narrow=ujson.dumps([["stream", "denmark"]]),
                     user_client="website",
                     dont_block=ujson.dumps(True),
-                )
+                ),
             )
 
             self.assert_json_success(result)
@@ -505,7 +526,7 @@ class EventsRegisterTest(ZulipTestCase):
                  all_public_streams = False,
                  queue_timeout = 600,
                  last_connection_time = time.time(),
-                 narrow = [])
+                 narrow = []),
         )
         # hybrid_state = initial fetch state + re-applying events triggered by our action
         # normal_state = do action then fetch at the end (the "normal" code path)
@@ -513,7 +534,7 @@ class EventsRegisterTest(ZulipTestCase):
             self.user_profile, event_types, "",
             client_gravatar=client_gravatar,
             slim_presence=slim_presence,
-            include_subscribers=include_subscribers
+            include_subscribers=include_subscribers,
         )
         action()
         events = client.event_queue.contents()
@@ -622,7 +643,7 @@ class EventsRegisterTest(ZulipTestCase):
             self.do_test(
                 lambda: self.send_stream_message(self.example_user('cordelia'),
                                                  "Verona",
-                                                 content)
+                                                 content),
 
             )
 
@@ -632,7 +653,7 @@ class EventsRegisterTest(ZulipTestCase):
             self.do_test(
                 lambda: self.send_stream_message(self.example_user('cordelia'),
                                                  "Verona",
-                                                 content)
+                                                 content),
 
             )
 
@@ -640,7 +661,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.do_test(
             lambda: self.send_personal_message(self.example_user('cordelia'),
                                                self.example_user('hamlet'),
-                                               'hola')
+                                               'hola'),
 
         )
 
@@ -652,7 +673,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.do_test(
             lambda: self.send_huddle_message(self.example_user('cordelia'),
                                              huddle,
-                                             'hola')
+                                             'hola'),
 
         )
 
@@ -817,7 +838,7 @@ class EventsRegisterTest(ZulipTestCase):
             message = self.send_stream_message(
                 self.example_user('cordelia'),
                 "Verona",
-                content
+                content,
             )
 
             self.do_test(
@@ -830,7 +851,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.send_stream_message(
             sender,
             "Verona",
-            "hello 1"
+            "hello 1",
         )
         self.do_test(
             lambda: self.send_stream_message(sender, "Verona", "hello 2"),
@@ -849,7 +870,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('user', check_dict_only([
                 ('email', check_string),
                 ('full_name', check_string),
-                ('user_id', check_int)
+                ('user_id', check_int),
             ])),
         ])
 
@@ -875,7 +896,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('user', check_dict_only([
                 ('email', check_string),
                 ('full_name', check_string),
-                ('user_id', check_int)
+                ('user_id', check_int),
             ])),
         ])
 
@@ -902,7 +923,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('user', check_dict_only([
                 ('email', check_string),
                 ('full_name', check_string),
-                ('user_id', check_int)
+                ('user_id', check_int),
             ])),
         ])
 
@@ -957,7 +978,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('user', check_dict_only([
                 ('email', check_string),
                 ('full_name', check_string),
-                ('user_id', check_int)
+                ('user_id', check_int),
             ])),
         ])
 
@@ -1232,7 +1253,7 @@ class EventsRegisterTest(ZulipTestCase):
     def test_pointer_events(self) -> None:
         schema_checker = self.check_events_dict([
             ('type', equals('pointer')),
-            ('pointer', check_int)
+            ('pointer', check_int),
         ])
         events = self.do_test(lambda: do_update_pointer(self.user_profile, get_client("website"), 1500))
         error = schema_checker('events[0]', events[0])
@@ -1295,7 +1316,7 @@ class EventsRegisterTest(ZulipTestCase):
         error = realm_user_add_checker('events[0]', events[0])
         self.assert_on_error(error)
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
-        self.assertEqual(new_user_profile.email, "user%s@zulip.testserver" % (new_user_profile.id,))
+        self.assertEqual(new_user_profile.email, f"user{new_user_profile.id}@zulip.testserver")
 
     def test_alert_words_events(self) -> None:
         alert_words_checker = self.check_events_dict([
@@ -1626,7 +1647,7 @@ class EventsRegisterTest(ZulipTestCase):
             bot_creation_policy=[Realm.BOT_CREATION_EVERYONE],
             video_chat_provider=[
                 Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['id'],
-                Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['id']
+                Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['id'],
             ],
             google_hangouts_domain=["zulip.com", "zulip.org"],
             default_code_block_language=['python', 'javascript'],
@@ -1646,7 +1667,7 @@ class EventsRegisterTest(ZulipTestCase):
         elif property_type == (int, type(None)):
             validator = check_int
         else:
-            raise AssertionError("Unexpected property type %s" % (property_type,))
+            raise AssertionError(f"Unexpected property type {property_type}")
         schema_checker = self.check_events_dict([
             ('type', equals('realm')),
             ('op', equals('update')),
@@ -1655,7 +1676,7 @@ class EventsRegisterTest(ZulipTestCase):
         ])
 
         if vals is None:
-            raise AssertionError('No test created for %s' % (name,))
+            raise AssertionError(f'No test created for {name}')
         do_set_realm_property(self.user_profile.realm, name, vals[0])
         for val in vals[1:]:
             state_change_expected = True
@@ -1678,7 +1699,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('update_dict')),
             ('property', equals('default')),
             ('data', check_dict_only([
-                ('authentication_methods', check_dict([]))
+                ('authentication_methods', check_dict([])),
             ])),
         ])
 
@@ -1839,6 +1860,29 @@ class EventsRegisterTest(ZulipTestCase):
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
+    def test_change_is_owner(self) -> None:
+        reset_emails_in_zulip_realm()
+
+        # Important: We need to refresh from the database here so that
+        # we don't have a stale UserProfile object with an old value
+        # for email being passed into this next function.
+        self.user_profile.refresh_from_db()
+
+        schema_checker = self.check_events_dict([
+            ('type', equals('realm_user')),
+            ('op', equals('update')),
+            ('person', check_dict_only([
+                ('role', check_int_in(UserProfile.ROLE_TYPES)),
+                ('user_id', check_int),
+            ])),
+        ])
+
+        do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER)
+        for role in [UserProfile.ROLE_REALM_OWNER, UserProfile.ROLE_MEMBER]:
+            events = self.do_test(lambda: do_change_user_role(self.user_profile, role))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
     def test_change_is_guest(self) -> None:
         reset_emails_in_zulip_realm()
 
@@ -1880,7 +1924,7 @@ class EventsRegisterTest(ZulipTestCase):
         elif property_type is int:
             validator = check_int
         else:
-            raise AssertionError("Unexpected property type %s" % (property_type,))
+            raise AssertionError(f"Unexpected property type {property_type}")
 
         num_events = 1
         if setting_name == "timezone":
@@ -1892,7 +1936,7 @@ class EventsRegisterTest(ZulipTestCase):
             else:
                 values = [False, True, False]
         if values is None:
-            raise AssertionError('No test created for %s' % (setting_name,))
+            raise AssertionError(f'No test created for {setting_name}')
 
         for value in values:
             events = self.do_test(lambda: do_set_user_display_setting(
@@ -2016,7 +2060,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('property', equals('plan_type')),
             ('value', equals(Realm.LIMITED)),
             ('extra_data', check_dict_only([
-                ('upload_quota', check_int)
+                ('upload_quota', check_int),
             ])),
         ])
         events = self.do_test(lambda: do_change_plan_type(realm, Realm.LIMITED))
@@ -2469,9 +2513,9 @@ class EventsRegisterTest(ZulipTestCase):
                 ('reactions', check_list(None)),
                 ('client', equals('Internal')),
                 (TOPIC_NAME, equals('stream events')),
-                ('recipient_id', check_int)
+                ('recipient_id', check_int),
             ])),
-            ('id', check_int)
+            ('id', check_int),
         ])
         error = schema_checker('events[2]', events[2])
         self.assert_on_error(error)
@@ -2821,7 +2865,7 @@ class EventsRegisterTest(ZulipTestCase):
         ])
 
         events = self.do_test(
-            lambda: self.client_delete("/json/attachments/%s" % (entry.id,)),
+            lambda: self.client_delete(f"/json/attachments/{entry.id}"),
             num_events=1, state_change_expected=False)
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
@@ -2942,7 +2986,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('value', equals(True)),
         ])
         events = self.do_test(
-            lambda: do_set_zoom_token(self.user_profile, {'access_token': 'token'})
+            lambda: do_set_zoom_token(self.user_profile, {'access_token': 'token'}),
         )
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
@@ -3020,7 +3064,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
         subscription = Subscription.objects.get(
             user_profile=user_profile,
-            recipient=recipient
+            recipient=recipient,
         )
         subscription.is_muted = True
         subscription.save()
@@ -3102,7 +3146,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
                 sender_id=cordelia.id,
                 stream_id=get_stream('social', realm).id,
                 topic='lunch',
-            )
+            ),
         )
 
     def test_raw_unread_huddle(self) -> None:
@@ -3114,7 +3158,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
         huddle1_message_ids = [
             self.send_huddle_message(
                 cordelia,
-                [hamlet, othello]
+                [hamlet, othello],
             )
             for i in range(3)
         ]
@@ -3122,7 +3166,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
         huddle2_message_ids = [
             self.send_huddle_message(
                 cordelia,
-                [hamlet, prospero]
+                [hamlet, prospero],
             )
             for i in range(3)
         ]
@@ -3135,7 +3179,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
 
         self.assertEqual(
             set(huddle_dict.keys()),
-            set(huddle1_message_ids) | set(huddle2_message_ids)
+            set(huddle1_message_ids) | set(huddle2_message_ids),
         )
 
         huddle_string = ','.join(
@@ -3171,7 +3215,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
 
         self.assertEqual(
             set(pm_dict.keys()),
-            set(cordelia_pm_message_ids) | set(othello_pm_message_ids)
+            set(cordelia_pm_message_ids) | set(othello_pm_message_ids),
         )
 
         self.assertEqual(
@@ -3239,7 +3283,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
         )
         self.assertEqual(
             set(pm_dict.keys()),
-            {othello_msg.id, cordelia_msg.id}
+            {othello_msg.id, cordelia_msg.id},
         )
 
         # Again, `sender_id` is misnamed here.
@@ -3258,7 +3302,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
         )
         self.assertEqual(
             set(pm_dict.keys()),
-            {othello_msg.id, cordelia_msg.id, hamlet_msg.id}
+            {othello_msg.id, cordelia_msg.id, hamlet_msg.id},
         )
 
         # Again, `sender_id` is misnamed here.
@@ -3275,7 +3319,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
 
         self.assertEqual(
             set(pm_dict.keys()),
-            {othello_msg.id, cordelia_msg.id, hamlet_msg.id}
+            {othello_msg.id, cordelia_msg.id, hamlet_msg.id},
         )
 
         # Again, `sender_id` is misnamed here.
@@ -3358,7 +3402,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
 
         um = UserMessage.objects.get(
             user_profile_id=user_profile.id,
-            message_id=stream_message_id
+            message_id=stream_message_id,
         )
         um.flags |= UserMessage.flags.mentioned
         um.save()
@@ -3384,7 +3428,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
         # Test with a muted stream
         um = UserMessage.objects.get(
             user_profile_id=user_profile.id,
-            message_id=muted_stream_message_id
+            message_id=muted_stream_message_id,
         )
         um.flags = UserMessage.flags.mentioned
         um.save()
@@ -3409,7 +3453,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
         # Test with a muted topic
         um = UserMessage.objects.get(
             user_profile_id=user_profile.id,
-            message_id=muted_topic_message_id
+            message_id=muted_topic_message_id,
         )
         um.flags = UserMessage.flags.mentioned
         um.save()

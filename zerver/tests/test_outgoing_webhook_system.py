@@ -1,33 +1,29 @@
-import ujson
 import logging
-from unittest import mock
-import requests
-
 from typing import Any, Optional
+from unittest import mock
 
-from zerver.lib.actions import (
-    do_create_user,
-)
+import requests
+import ujson
 
+from version import ZULIP_VERSION
+from zerver.lib.actions import do_create_user
 from zerver.lib.outgoing_webhook import (
-    do_rest_call,
     GenericOutgoingWebhookService,
     SlackOutgoingWebhookService,
+    do_rest_call,
 )
-
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.users import add_service
 from zerver.models import (
-    get_display_recipient,
-    get_realm,
-    get_user,
     Recipient,
     Service,
     UserProfile,
+    get_display_recipient,
+    get_realm,
+    get_user,
 )
 
-from version import ZULIP_VERSION
 
 class ResponseMock:
     def __init__(self, status_code: int, content: Optional[Any]=None) -> None:
@@ -155,7 +151,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
             bot_owner,
             full_name='Outgoing Webhook bot',
             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
-            service_name='foo-service'
+            service_name='foo-service',
         )
 
     def test_multiple_services(self) -> None:
@@ -193,7 +189,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
             self.send_personal_message(
                 sender,
                 bot,
-                content="some content"
+                content="some content",
             )
 
         url_token_tups = set()
@@ -212,7 +208,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
             {
                 ('weather_url', 'weather_token'),
                 ('qotd_url', 'qotd_token'),
-            }
+            },
         )
 
     @mock.patch('requests.request', return_value=ResponseMock(200, {"response_string": "Hidley ho, I'm a webhook responding!"}))
@@ -228,11 +224,11 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         self.assertEqual(last_message.sender_id, bot.id)
         self.assertEqual(
             last_message.recipient.type_id,
-            sender.id
+            sender.id,
         )
         self.assertEqual(
             last_message.recipient.type,
-            Recipient.PERSONAL
+            Recipient.PERSONAL,
         )
 
     @mock.patch('requests.request', return_value=ResponseMock(200, {"response_string": "Hidley ho, I'm a webhook responding!"}))

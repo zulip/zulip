@@ -32,5 +32,5 @@ DROP INDEX zerver_message_search_pgroonga;
 
 CREATE INDEX CONCURRENTLY zerver_message_search_pgroonga ON zerver_message
   USING pgroonga(search_pgroonga pgroonga.text_full_text_search_ops);
-        """])
+        """]),
     ]

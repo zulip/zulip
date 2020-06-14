@@ -151,17 +151,10 @@ function message_matches_search_term(message, operator, operand) {
 function Filter(operators) {
     if (operators === undefined) {
         this._operators = [];
+        this._stream_params = undefined;
     } else {
         this._operators = this.fix_operators(operators);
-        // if has_op stream
-        if (this.has_operator('stream')) {
-            const stream_name_from_search = this.operands('stream')[0];
-            const sub = stream_data.get_sub_by_name(stream_name_from_search);
-            if (sub) {
-                this._stream_name = sub.name;
-                this._is_stream_private = sub.invite_only;
-            }
-        }
+        this.fix_stream_params();
     }
 }
 
@@ -519,6 +512,27 @@ Filter.prototype = {
         return "#"; // redirect to All
     },
 
+    fix_stream_params: function () {
+        this._stream_params = this.get_stream_params();
+    },
+
+    get_stream_params: function () {
+        // we return undefined when we are unable to get these parameters
+        if (!this.has_operator('stream')) {
+            return;
+        }
+        const stream_name_from_search = this.operands('stream')[0];
+        const sub = stream_data.get_sub_by_name(stream_name_from_search);
+        if (!sub) {
+            return;
+        }
+        return {
+            _stream_name: sub.name,
+            _is_stream_private: sub.invite_only,
+            _is_web_public: sub.is_web_public,
+        };
+    },
+
     get_icon: function () {
         // We have special icons for the simple narrows available for the via sidebars.
         const term_types = this.sorted_term_types();
@@ -527,8 +541,11 @@ Filter.prototype = {
         case 'in-all':
             return 'home';
         case 'stream':
-            if (this._is_stream_private) {
+            if (this._stream_params._is_stream_private) {
                 return 'lock';
+            }
+            if (this._stream_params._is_web_public) {
+                return 'globe';
             }
             return 'hashtag';
         case 'is-private':
@@ -547,7 +564,7 @@ Filter.prototype = {
         const term_types = this.sorted_term_types();
         if (term_types.length === 3 && _.isEqual(term_types, ['stream', 'topic', 'search']) ||
             term_types.length === 2 && _.isEqual(term_types, ['stream', 'topic'])) {
-            return this._stream_name;
+            return this._stream_params._stream_name;
         }
         if (term_types.length === 1 || term_types.length === 2 && term_types[1] === 'search') {
             switch (term_types[0]) {
@@ -558,7 +575,7 @@ Filter.prototype = {
             case 'streams-public':
                 return i18n.t('Public stream messages in organization');
             case 'stream':
-                return this._stream_name;
+                return this._stream_params._stream_name;
             case 'is-starred':
                 return i18n.t('Starred messages');
             case 'is-mentioned':

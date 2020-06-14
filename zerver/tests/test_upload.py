@@ -1,63 +1,80 @@
-from django.conf import settings
-from django.test import TestCase
+import datetime
+import io
+import os
+import re
+import shutil
+import time
+import urllib
+from io import StringIO
+from unittest import mock
 from unittest.mock import patch
 
-from zerver.lib.avatar import (
-    avatar_url,
-    get_avatar_field,
+import botocore.exceptions
+import ujson
+from django.conf import settings
+from django.test import TestCase
+from django.utils.timezone import now as timezone_now
+from django_sendfile.sendfile import _get_sendfile
+from PIL import Image
+
+import zerver.lib.upload
+from scripts.lib.zulip_tools import get_dev_uuid_var_path
+from zerver.lib.actions import (
+    do_change_icon_source,
+    do_change_logo_source,
+    do_change_plan_type,
+    do_delete_old_unclaimed_attachments,
+    do_set_realm_property,
+    internal_send_private_message,
 )
+from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.avatar_hash import user_avatar_path
+from zerver.lib.cache import cache_get, get_realm_used_upload_space_cache_key
+from zerver.lib.create_user import copy_user_settings
 from zerver.lib.initial_password import initial_password
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_url
-from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
+from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import (
     avatar_disk_path,
-    get_test_image_file,
-    use_s3_backend,
     create_s3_buckets,
+    get_test_image_file,
     queries_captured,
+    use_s3_backend,
 )
-from zerver.lib.upload import sanitize_name, S3UploadBackend, \
-    upload_message_file, upload_emoji_image, delete_message_image, LocalUploadBackend, \
-    ZulipUploadBackend, MEDIUM_AVATAR_SIZE, resize_avatar, \
-    resize_emoji, BadImageError, get_realm_for_filename, \
-    DEFAULT_AVATAR_SIZE, DEFAULT_EMOJI_SIZE, exif_rotate, \
-    upload_export_tarball, delete_export_tarball
-import zerver.lib.upload
-from zerver.models import Attachment, get_user_by_delivery_email, \
-    Message, UserProfile, Realm, \
-    RealmDomain, RealmEmoji, get_realm, get_system_bot, \
-    validate_attachment_request
-from zerver.lib.actions import (
-    do_change_plan_type,
-    do_change_icon_source,
-    do_change_logo_source,
-    do_delete_old_unclaimed_attachments,
-    internal_send_private_message,
-    do_set_realm_property
+from zerver.lib.upload import (
+    DEFAULT_AVATAR_SIZE,
+    DEFAULT_EMOJI_SIZE,
+    MEDIUM_AVATAR_SIZE,
+    BadImageError,
+    LocalUploadBackend,
+    S3UploadBackend,
+    ZulipUploadBackend,
+    delete_export_tarball,
+    delete_message_image,
+    exif_rotate,
+    get_realm_for_filename,
+    resize_avatar,
+    resize_emoji,
+    sanitize_name,
+    upload_emoji_image,
+    upload_export_tarball,
+    upload_message_file,
 )
-from zerver.lib.cache import get_realm_used_upload_space_cache_key, cache_get
-from zerver.lib.create_user import copy_user_settings
 from zerver.lib.users import get_api_key
+from zerver.models import (
+    Attachment,
+    Message,
+    Realm,
+    RealmDomain,
+    RealmEmoji,
+    UserProfile,
+    get_realm,
+    get_system_bot,
+    get_user_by_delivery_email,
+    validate_attachment_request,
+)
 
-from scripts.lib.zulip_tools import get_dev_uuid_var_path
-
-import urllib
-import ujson
-from PIL import Image
-import botocore.exceptions
-
-from io import StringIO
-from unittest import mock
-import os
-import io
-import shutil
-import re
-import time
-import datetime
-from django.utils.timezone import now as timezone_now
-from django_sendfile.sendfile import _get_sendfile
 
 def destroy_uploads() -> None:
     if os.path.exists(settings.LOCAL_UPLOADS_DIR):
@@ -295,8 +312,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         '''
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
-        response = self.client_get("http://localhost:9991/user_uploads/%s/ff/gg/abc.py" % (
-            hamlet.realm_id,))
+        response = self.client_get(f"http://localhost:9991/user_uploads/{hamlet.realm_id}/ff/gg/abc.py")
         self.assertEqual(response.status_code, 404)
         self.assert_in_response('File not found.', response)
 
@@ -335,8 +351,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
     def test_attachment_url_without_upload(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
-        body = "Test message ...[zulip.txt](http://localhost:9991/user_uploads/%s/64/fake_path_id.txt)" % (
-            hamlet.realm_id,)
+        body = f"Test message ...[zulip.txt](http://localhost:9991/user_uploads/{hamlet.realm_id}/64/fake_path_id.txt)"
         self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
         self.assertFalse(Attachment.objects.filter(path_id = "1/64/fake_path_id.txt").exists())
 
@@ -426,7 +441,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
                     "[f2.txt](http://{}/user_uploads/".format(host) + f2_path_id + ")")
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
-            'content': new_body
+            'content': new_body,
         })
         self.assert_json_success(result)
 
@@ -443,7 +458,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         new_body = "(deleted)"
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
-            'content': new_body
+            'content': new_body,
         })
         self.assert_json_success(result)
 
@@ -686,7 +701,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
     def test_multiple_message_attachment_file_download(self) -> None:
         hamlet = self.example_user("hamlet")
         for i in range(0, 5):
-            stream_name = "test-subscribe %s" % (i,)
+            stream_name = f"test-subscribe {i}"
             self.make_stream(stream_name, realm=hamlet.realm, invite_only=True, history_public_to_subscribers=True)
             self.subscribe(hamlet, stream_name)
 
@@ -698,7 +713,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         fp_path_id = re.sub('/user_uploads/', '', uri)
         for i in range(20):
             body = f"First message ...[zulip.txt](http://{hamlet.realm.host}/user_uploads/" + fp_path_id + ")"
-            self.send_stream_message(self.example_user("hamlet"), "test-subscribe %s" % (i % 5,), body, "test")
+            self.send_stream_message(self.example_user("hamlet"), f"test-subscribe {i % 5}", body, "test")
         self.logout()
 
         user = self.example_user("aaron")
@@ -811,7 +826,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
         self.assertEqual(
             url,
-            '/user_avatars/5/fc2b9f1a81f4508a4df2d95451a2a77e0524ca0e-medium.png?x=x&version=2'
+            '/user_avatars/5/fc2b9f1a81f4508a4df2d95451a2a77e0524ca0e-medium.png?x=x&version=2',
         )
 
         url = get_avatar_field(
@@ -826,7 +841,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
         self.assertEqual(
             url,
-            'https://secure.gravatar.com/avatar/b48def645758b95537d4424c84d1a9ff?d=identicon&s=500&version=2'
+            'https://secure.gravatar.com/avatar/b48def645758b95537d4424c84d1a9ff?d=identicon&s=500&version=2',
         )
 
         url = get_avatar_field(
@@ -903,7 +918,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         ('img.jpg', None),  # jpeg resizing is platform-dependent
         ('img.gif', 'gif_resized.png'),
         ('img.tif', 'tif_resized.png'),
-        ('cmyk.jpg', None)
+        ('cmyk.jpg', None),
     ]
     corrupt_files = ['text.txt', 'corrupt.png', 'corrupt.gif']
 
@@ -940,7 +955,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + '&foo=bar'))
 
-        response = self.client_get("/avatar/%s?foo=bar" % (cordelia.id,))
+        response = self.client_get(f"/avatar/{cordelia.id}?foo=bar")
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + '&foo=bar'))
 
@@ -954,7 +969,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + '&foo=bar'))
 
-        response = self.api_get(hamlet, "/avatar/%s?foo=bar" % (cordelia.id,))
+        response = self.api_get(hamlet, f"/avatar/{cordelia.id}?foo=bar")
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + '&foo=bar'))
 
@@ -964,7 +979,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         self.assertTrue(redirect_url.endswith(str(avatar_url(cross_realm_bot)) + '&foo=bar'))
 
         # Test cross_realm_bot avatar access using id.
-        response = self.api_get(hamlet, "/avatar/%s?foo=bar" % (cross_realm_bot.id,))
+        response = self.api_get(hamlet, f"/avatar/{cross_realm_bot.id}?foo=bar")
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(str(avatar_url(cross_realm_bot)) + '&foo=bar'))
 
@@ -985,7 +1000,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + '&foo=bar'))
 
-        response = self.client_get("/avatar/%s/medium?foo=bar" % (cordelia.id,))
+        response = self.client_get(f"/avatar/{cordelia.id}/medium?foo=bar")
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + '&foo=bar'))
 
@@ -996,7 +1011,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + '&foo=bar'))
 
-        response = self.api_get(hamlet, "/avatar/%s/medium?foo=bar" % (cordelia.id,))
+        response = self.api_get(hamlet, f"/avatar/{cordelia.id}/medium?foo=bar")
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + '&foo=bar'))
 
@@ -1222,7 +1237,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         ('img.jpg', None),  # jpeg resizing is platform-dependent
         ('img.gif', 'gif_resized.png'),
         ('img.tif', 'tif_resized.png'),
-        ('cmyk.jpg', None)
+        ('cmyk.jpg', None),
     ]
     corrupt_files = ['text.txt', 'corrupt.png', 'corrupt.gif']
 
@@ -1269,7 +1284,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
             realm = get_realm('zulip')
             self.assert_json_success(result)
             self.assertIn("icon_url", result.json())
-            base = '/user_avatars/%s/realm/icon.png' % (realm.id,)
+            base = f'/user_avatars/{realm.id}/realm/icon.png'
             url = result.json()['icon_url']
             self.assertEqual(base, url[:len(base)])
 
@@ -1356,7 +1371,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         ('img.jpg', None),  # jpeg resizing is platform-dependent
         ('img.gif', 'gif_resized.png'),
         ('img.tif', 'tif_resized.png'),
-        ('cmyk.jpg', None)
+        ('cmyk.jpg', None),
     ]
     corrupt_files = ['text.txt', 'corrupt.png', 'corrupt.gif']
 
@@ -1381,7 +1396,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         response = self.client_get("/json/realm/logo", {'night': ujson.dumps(self.night)})
         redirect_url = response['Location']
         self.assertEqual(redirect_url, get_realm_logo_url(realm, self.night) +
-                         '&night=%s' % (str(self.night).lower(),))
+                         f'&night={str(self.night).lower()}')
 
     def test_get_realm_logo(self) -> None:
         self.login('hamlet')
@@ -1390,7 +1405,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         response = self.client_get("/json/realm/logo", {'night': ujson.dumps(self.night)})
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(get_realm_logo_url(realm, self.night) +
-                                              '&night=%s' % (str(self.night).lower(),)))
+                                              f'&night={str(self.night).lower()}'))
 
     def test_valid_logos(self) -> None:
         """
@@ -1550,10 +1565,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         result = re.search(re.compile(r"([A-Za-z0-9\-_]{24})"), uri)
         if result is not None:
             random_name = result.group(1)
-        expected_url = "http://zulip.testserver/user_avatars/exports/{realm_id}/{random_name}/tarball.tar.gz".format(
-            realm_id=user_profile.realm_id,
-            random_name=random_name,
-        )
+        expected_url = f"http://zulip.testserver/user_avatars/exports/{user_profile.realm_id}/{random_name}/tarball.tar.gz"
         self.assertEqual(expected_url, uri)
 
         # Delete the tarball.
@@ -1799,12 +1811,12 @@ class S3Test(ZulipTestCase):
         image_file = get_test_image_file("img.png")
         zerver.lib.upload.upload_backend.upload_realm_logo_image(image_file, user_profile, night)
 
-        original_path_id = os.path.join(str(user_profile.realm.id), "realm", "%s.original" % (file_name,))
+        original_path_id = os.path.join(str(user_profile.realm.id), "realm", f"{file_name}.original")
         original_key = bucket.Object(original_path_id)
         image_file.seek(0)
         self.assertEqual(image_file.read(), original_key.get()['Body'].read())
 
-        resized_path_id = os.path.join(str(user_profile.realm.id), "realm", "%s.png" % (file_name,))
+        resized_path_id = os.path.join(str(user_profile.realm.id), "realm", f"{file_name}.png")
         resized_data = bucket.Object(resized_path_id).get()['Body'].read()
         resized_image = Image.open(io.BytesIO(resized_data)).size
         self.assertEqual(resized_image, (DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE))
@@ -1863,10 +1875,7 @@ class S3Test(ZulipTestCase):
         result = re.search(re.compile(r"([0-9a-fA-F]{32})"), uri)
         if result is not None:
             hex_value = result.group(1)
-        expected_url = "https://{bucket}.s3.amazonaws.com/exports/{hex_value}/{path}".format(
-            bucket=bucket.name,
-            hex_value=hex_value,
-            path=os.path.basename(tarball_path))
+        expected_url = f"https://{bucket.name}.s3.amazonaws.com/exports/{hex_value}/{os.path.basename(tarball_path)}"
         self.assertEqual(uri, expected_url)
 
         # Delete the tarball.

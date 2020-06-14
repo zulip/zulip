@@ -21,7 +21,7 @@ def api_zapier_webhook(request: HttpRequest, user_profile: UserProfile,
         return json_success({
             'full_name': user_profile.full_name,
             'email': user_profile.email,
-            'id': user_profile.id
+            'id': user_profile.id,
         })
 
     topic = payload.get('topic')

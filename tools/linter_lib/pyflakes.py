@@ -1,5 +1,4 @@
 import argparse
-
 from typing import List
 
 from zulint.linters import run_pyflakes

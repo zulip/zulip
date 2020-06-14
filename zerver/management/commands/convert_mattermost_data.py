@@ -14,8 +14,7 @@ Test out the realm:
     go to browser and use your dev url
 '''
 
-from django.core.management.base import BaseCommand, CommandError, \
-    CommandParser
+from django.core.management.base import BaseCommand, CommandError, CommandParser
 
 from zerver.data_import.mattermost import do_convert_data
 
@@ -55,7 +54,7 @@ class Command(BaseCommand):
 
         data_dir = options['mattermost_data_dir']
         if not os.path.exists(data_dir):
-            raise CommandError("Directory not found: '%s'" % (data_dir,))
+            raise CommandError(f"Directory not found: '{data_dir}'")
         data_dir = os.path.realpath(data_dir)
 
         print("Converting Data ...")

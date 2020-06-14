@@ -1,7 +1,8 @@
 import re
-import markdown
 from typing import Any, Dict, List
 from typing.re import Match
+
+import markdown
 from markdown.preprocessors import Preprocessor
 
 from zerver.lib.emoji import EMOTICON_CONVERSIONS, name_to_codepoint

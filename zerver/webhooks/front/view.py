@@ -20,12 +20,12 @@ def get_message_data(payload: Dict[str, Any]) -> Tuple[str, str, str, str]:
 def get_source_name(payload: Dict[str, Any]) -> str:
     first_name = payload['source']['data']['first_name']
     last_name = payload['source']['data']['last_name']
-    return "%s %s" % (first_name, last_name)
+    return f"{first_name} {last_name}"
 
 def get_target_name(payload: Dict[str, Any]) -> str:
     first_name = payload['target']['data']['first_name']
     last_name = payload['target']['data']['last_name']
-    return "%s %s" % (first_name, last_name)
+    return f"{first_name} {last_name}"
 
 def get_inbound_message_body(payload: Dict[str, Any]) -> str:
     link, outbox, inbox, subject = get_message_data(payload)
@@ -104,7 +104,7 @@ EVENT_FUNCTION_MAPPER = {
     'trash': get_conversation_deleted_body,
     'restore': get_conversation_restored_body,
     'tag': get_conversation_tagged_body,
-    'untag': get_conversation_untagged_body
+    'untag': get_conversation_untagged_body,
 }
 
 def get_body_based_on_event(event: str) -> Any:

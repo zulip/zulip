@@ -1,23 +1,29 @@
-from typing import Any, AnyStr, Dict, Optional
-
 import abc
-import requests
 import json
 import logging
+from typing import Any, AnyStr, Dict, Optional
+
+import requests
+from django.utils.translation import ugettext as _
 from requests import Response
 
-from django.utils.translation import ugettext as _
-
-from zerver.models import UserProfile, get_user_profile_by_id, get_client, \
-    GENERIC_INTERFACE, Service, SLACK_INTERFACE, email_to_domain
+from version import ZULIP_VERSION
+from zerver.decorator import JsonableError
 from zerver.lib.actions import check_send_message
 from zerver.lib.message import MessageDict
 from zerver.lib.queue import retry_event
 from zerver.lib.topic import get_topic_from_message_info
 from zerver.lib.url_encoding import near_message_url
-from zerver.decorator import JsonableError
+from zerver.models import (
+    GENERIC_INTERFACE,
+    SLACK_INTERFACE,
+    Service,
+    UserProfile,
+    email_to_domain,
+    get_client,
+    get_user_profile_by_id,
+)
 
-from version import ZULIP_VERSION
 
 class OutgoingWebhookServiceInterface(metaclass=abc.ABCMeta):
 
@@ -54,7 +60,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
             event['message'],
             apply_markdown=False,
             client_gravatar=False,
-            keep_rendered_content=True
+            keep_rendered_content=True,
         )
 
         request_data = {"data": event['command'],
@@ -175,8 +181,7 @@ def send_response_message(bot_id: str, message_info: Dict[str, Any], response_da
     client = get_client('OutgoingWebhookResponse')
 
     content = response_data.get('content')
-    if not content:
-        raise JsonableError(_("Missing content"))
+    assert content
 
     widget_content = response_data.get('widget_content')
 
@@ -224,11 +229,11 @@ def notify_bot_owner(event: Dict[str, Any],
     bot_id = event['user_profile_id']
     bot_owner = get_user_profile_by_id(bot_id).bot_owner
 
-    notification_message = "[A message](%s) triggered an outgoing webhook." % (message_url,)
+    notification_message = f"[A message]({message_url}) triggered an outgoing webhook."
     if failure_message:
         notification_message += "\n" + failure_message
     if status_code:
-        notification_message += "\nThe webhook got a response with status code *%s*." % (status_code,)
+        notification_message += f"\nThe webhook got a response with status code *{status_code}*."
     if response_content:
         notification_message += "\nThe response contains the following payload:\n" \
                                 "```\n%s\n```" % (str(response_content),)
@@ -278,7 +283,7 @@ def process_success_response(event: Dict[str, Any],
 
     content = success_data.get('content')
 
-    if content is None:
+    if content is None or content.strip() == "":
         return
 
     widget_content = success_data.get('widget_content')
@@ -326,7 +331,7 @@ def do_rest_call(base_url: str,
     except requests.exceptions.RequestException as e:
         response_message = ("An exception of type *%s* occurred for message `%s`! "
                             "See the Zulip server logs for more information." % (
-                                type(e).__name__, event["command"],))
-        logging.exception("Outhook trigger failed:\n %s" % (e,))
+                                type(e).__name__, event["command"]))
+        logging.exception(f"Outhook trigger failed:\n {e}")
         fail_with_message(event, response_message)
         notify_bot_owner(event, exception=e)

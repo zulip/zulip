@@ -2,10 +2,10 @@ import logging
 import os
 import shutil
 import subprocess
-from scripts.lib.zulip_tools import run, run_as_root, ENDC, WARNING, os_families
-from scripts.lib.hash_reqs import expand_reqs
+from typing import List, Optional, Set, Tuple
 
-from typing import List, Optional, Tuple, Set
+from scripts.lib.hash_reqs import expand_reqs
+from scripts.lib.zulip_tools import ENDC, WARNING, os_families, run, run_as_root
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 VENV_CACHE_PATH = "/srv/zulip-venv-cache"
@@ -98,9 +98,9 @@ YUM_THUMBOR_VENV_DEPENDENCIES = [
 
 def get_venv_dependencies(vendor: str, os_version: str) -> List[str]:
     if vendor == 'ubuntu' and os_version == '20.04':
-        return VENV_DEPENDENCIES + [PYTHON_DEV_DEPENDENCY.format("2"), ]
+        return VENV_DEPENDENCIES + [PYTHON_DEV_DEPENDENCY.format("2")]
     elif "debian" in os_families():
-        return VENV_DEPENDENCIES + [PYTHON_DEV_DEPENDENCY.format(""), ]
+        return VENV_DEPENDENCIES + [PYTHON_DEV_DEPENDENCY.format("")]
     elif "rhel" in os_families():
         return REDHAT_VENV_DEPENDENCIES
     elif "fedora" in os_families():
@@ -238,7 +238,7 @@ def get_logfile_name(venv_path: str) -> str:
     return "{}/setup-venv.log".format(venv_path)
 
 def create_log_entry(
-    target_log: str, parent: str, copied_packages: Set[str], new_packages: Set[str]
+    target_log: str, parent: str, copied_packages: Set[str], new_packages: Set[str],
 ) -> None:
 
     venv_path = os.path.dirname(target_log)

@@ -1,10 +1,11 @@
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 if TYPE_CHECKING:
     from django_auth_ldap.config import LDAPSearch
     from typing_extensions import TypedDict
 
-from .config import PRODUCTION, DEVELOPMENT, get_secret
+from .config import DEVELOPMENT, PRODUCTION, get_secret
+
 if PRODUCTION:
     from .prod_settings import EXTERNAL_HOST, ZULIP_ADMINISTRATOR
 else:

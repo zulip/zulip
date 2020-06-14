@@ -5,6 +5,7 @@ import ldap
 from django_auth_ldap.config import LDAPSearch
 
 from zerver.lib.db import TimeTrackingConnection
+
 from .config import DEPLOY_ROOT, get_from_file_if_exists
 from .settings import (
     AUTHENTICATION_BACKENDS,
@@ -98,8 +99,8 @@ CACHES['database'] = {
     'TIMEOUT': 3600,
     'CONN_MAX_AGE': 600,
     'OPTIONS': {
-        'MAX_ENTRIES': 100000
-    }
+        'MAX_ENTRIES': 100000,
+    },
 }
 
 # Disable caching on sessions to make query counts consistent
@@ -119,7 +120,7 @@ AUTORELOAD = False
 if not CASPER_TESTS:
     # Use local memory cache for backend tests.
     CACHES['default'] = {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
 
     def set_loglevel(logger_name: str, level: str) -> None:
@@ -206,12 +207,12 @@ SOCIAL_AUTH_SAML_ORG_INFO = {
         "name": "example",
         "displayname": "Example Inc.",
         "url": "%s%s" % ('http://', EXTERNAL_HOST),
-    }
+    },
 }
 
 SOCIAL_AUTH_SAML_TECHNICAL_CONTACT = {
     "givenName": "Tech Gal",
-    "emailAddress": "technical@example.com"
+    "emailAddress": "technical@example.com",
 }
 
 SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
@@ -230,7 +231,7 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS = {
         "attr_username": "email",
         "attr_email": "email",
         "display_name": "Test IdP",
-    }
+    },
 }
 
 RATE_LIMITING_RULES: Dict[str, List[Tuple[int, int]]] = {

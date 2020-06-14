@@ -45,11 +45,11 @@ aliases:
         rm -f /home/circleci/.gitconfig
 
         # This is the main setup job for the test suite
-        mispipe "tools/ci/setup-backend" ts
+        mispipe "tools/ci/setup-backend 2>&1" ts
 
         # Cleaning caches is mostly unnecessary in Circle, because
         # most builds don't get to write to the cache.
-        # mispipe "scripts/lib/clean-unused-caches --verbose --threshold 0" ts
+        # mispipe "scripts/lib/clean-unused-caches --verbose --threshold 0 2>&1" ts
 
   - &save_cache_package_json
     save_cache:
@@ -82,14 +82,14 @@ aliases:
       name: run backend tests
       command: |
         . /srv/zulip-py3-venv/bin/activate
-        mispipe ./tools/ci/backend ts
+        mispipe "./tools/ci/backend 2>&1" ts
 
   - &run_frontend_tests
     run:
       name: run frontend tests
       command: |
         . /srv/zulip-py3-venv/bin/activate
-        mispipe ./tools/ci/frontend ts
+        mispipe "./tools/ci/frontend 2>&1" ts
 
   - &upload_coverage_report
     run:
@@ -119,7 +119,7 @@ aliases:
         # Install moreutils so we can use `ts` and `mispipe` in the following.
         sudo apt-get install -y moreutils
 
-        mispipe ./tools/ci/production-build ts
+        mispipe "./tools/ci/production-build 2>&1" ts
 
   - &production_extract_tarball
     run:
@@ -129,14 +129,14 @@ aliases:
       # Install moreutils so we can use `ts` and `mispipe` in the following.
       sudo apt-get install -y moreutils
 
-      mispipe /tmp/production-extract-tarball ts
+      mispipe "/tmp/production-extract-tarball 2>&1" ts
 
   - &install_production
     run:
      name: install production
      command: |
       sudo service rabbitmq-server restart
-      sudo mispipe /tmp/production-install ts
+      sudo mispipe "/tmp/production-install 2>&1" ts
 
   - &check_xenial_provision_error
     run:
@@ -192,7 +192,7 @@ jobs:
           name: test locked requirements
           command: |
             . /srv/zulip-py3-venv/bin/activate
-            mispipe ./tools/test-locked-requirements ts
+            mispipe "./tools/test-locked-requirements 2>&1" ts
 
       - *run_frontend_tests
         # We only need to upload coverage reports on whichever platform

@@ -1,8 +1,29 @@
+import datetime
 from email.utils import parseaddr
+from typing import Any, Dict, Iterable, List, Mapping, Optional, TypeVar, Union
+from unittest import mock
 
-from typing import (Any, Dict, Iterable, List, Mapping,
-                    Optional, TypeVar, Union)
+import ujson
+from django.conf import settings
+from django.test import override_settings
 
+from zerver.lib.actions import (
+    create_users,
+    do_change_user_role,
+    do_create_user,
+    do_deactivate_user,
+    do_reactivate_user,
+    do_set_realm_property,
+    get_emails_from_user_ids,
+    get_recipient_info,
+)
+from zerver.lib.avatar import avatar_url, get_gravatar_url
+from zerver.lib.create_user import copy_user_settings
+from zerver.lib.events import do_events_register
+from zerver.lib.exceptions import JsonableError
+from zerver.lib.send_email import clear_scheduled_emails, deliver_email, send_future_email
+from zerver.lib.stream_topic import StreamTopicTarget
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     get_subscription,
     most_recent_message,
@@ -11,45 +32,28 @@ from zerver.lib.test_helpers import (
     simulated_empty_cache,
     tornado_redirected_to_list,
 )
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-
-from zerver.models import UserProfile, Recipient, Realm, \
-    RealmDomain, UserHotspot, get_client, \
-    get_user, get_user_by_delivery_email, get_realm, get_stream, \
-    get_source_profile, get_system_bot, \
-    ScheduledEmail, check_valid_user_ids, \
-    get_user_by_id_in_realm_including_cross_realm, CustomProfileField, \
-    InvalidFakeEmailDomain, get_fake_email_domain
-
-from zerver.lib.avatar import avatar_url, get_gravatar_url
-from zerver.lib.exceptions import JsonableError
-from zerver.lib.send_email import send_future_email, clear_scheduled_emails, \
-    deliver_email
-from zerver.lib.actions import (
-    create_users,
-    get_emails_from_user_ids,
-    get_recipient_info,
-    do_deactivate_user,
-    do_reactivate_user,
-    do_change_user_role,
-    do_create_user,
-    do_set_realm_property,
-)
-from zerver.lib.create_user import copy_user_settings
-from zerver.lib.events import do_events_register
 from zerver.lib.topic_mutes import add_topic_mute
-from zerver.lib.stream_topic import StreamTopicTarget
-from zerver.lib.users import user_ids_to_users, access_user_by_id, \
-    get_accounts_for_email
-
-from django.conf import settings
-from django.test import override_settings
-
-import datetime
-from unittest import mock
-import ujson
+from zerver.lib.users import access_user_by_id, get_accounts_for_email, user_ids_to_users
+from zerver.models import (
+    CustomProfileField,
+    InvalidFakeEmailDomain,
+    Realm,
+    RealmDomain,
+    Recipient,
+    ScheduledEmail,
+    UserHotspot,
+    UserProfile,
+    check_valid_user_ids,
+    get_client,
+    get_fake_email_domain,
+    get_realm,
+    get_source_profile,
+    get_stream,
+    get_system_bot,
+    get_user,
+    get_user_by_delivery_email,
+    get_user_by_id_in_realm_including_cross_realm,
+)
 
 K = TypeVar('K')
 V = TypeVar('V')
@@ -57,7 +61,7 @@ def find_dict(lst: Iterable[Dict[K, V]], k: K, v: V) -> Dict[K, V]:
     for dct in lst:
         if dct[k] == v:
             return dct
-    raise AssertionError('Cannot find element in list where key %s == %s' % (k, v))
+    raise AssertionError(f'Cannot find element in list where key {k} == {v}')
 
 class PermissionTest(ZulipTestCase):
     def test_role_setters(self) -> None:
@@ -119,12 +123,73 @@ class PermissionTest(ZulipTestCase):
         result = self.client_patch(f'/json/users/{invalid_user_id}', {})
         self.assert_json_error(result, 'No such user')
 
+    def test_owner_api(self) -> None:
+        self.login('iago')
+
+        desdemona = self.example_user('desdemona')
+        othello = self.example_user('othello')
+        iago = self.example_user('iago')
+        realm = iago.realm
+
+        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER)
+
+        result = self.client_get('/json/users')
+        self.assert_json_success(result)
+        members = result.json()['members']
+        iago_dict = find_dict(members, 'email', iago.email)
+        self.assertTrue(iago_dict['is_owner'])
+        othello_dict = find_dict(members, 'email', othello.email)
+        self.assertFalse(othello_dict['is_owner'])
+
+        req = dict(role=UserProfile.ROLE_REALM_OWNER)
+        events: List[Mapping[str, Any]] = []
+        with tornado_redirected_to_list(events):
+            result = self.client_patch(f'/json/users/{othello.id}', req)
+        self.assert_json_success(result)
+        owner_users = realm.get_human_owner_users()
+        self.assertTrue(othello in owner_users)
+        person = events[0]['event']['person']
+        self.assertEqual(person['user_id'], othello.id)
+        self.assertEqual(person['role'], UserProfile.ROLE_REALM_OWNER)
+
+        req = dict(role=UserProfile.ROLE_MEMBER)
+        events = []
+        with tornado_redirected_to_list(events):
+            result = self.client_patch(f'/json/users/{othello.id}', req)
+        self.assert_json_success(result)
+        owner_users = realm.get_human_owner_users()
+        self.assertFalse(othello in owner_users)
+        person = events[0]['event']['person']
+        self.assertEqual(person['user_id'], othello.id)
+        self.assertEqual(person['role'], UserProfile.ROLE_MEMBER)
+
+        # Cannot take away from last owner
+        self.login('desdemona')
+        req = dict(role=UserProfile.ROLE_MEMBER)
+        events = []
+        with tornado_redirected_to_list(events):
+            result = self.client_patch(f'/json/users/{iago.id}', req)
+        self.assert_json_success(result)
+        owner_users = realm.get_human_owner_users()
+        self.assertFalse(iago in owner_users)
+        person = events[0]['event']['person']
+        self.assertEqual(person['user_id'], iago.id)
+        self.assertEqual(person['role'], UserProfile.ROLE_MEMBER)
+        with tornado_redirected_to_list([]):
+            result = self.client_patch(f'/json/users/{desdemona.id}', req)
+        self.assert_json_error(result, 'The owner permission cannot be removed from the only organization owner.')
+
+        do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.login('iago')
+        with tornado_redirected_to_list([]):
+            result = self.client_patch(f'/json/users/{desdemona.id}', req)
+        self.assert_json_error(result, 'Only organization owners can add or remove the owner permission.')
+
     def test_admin_api(self) -> None:
         self.login('desdemona')
 
         hamlet = self.example_user('hamlet')
         othello = self.example_user('othello')
-        iago = self.example_user('iago')
         desdemona = self.example_user('desdemona')
         realm = hamlet.realm
 
@@ -161,22 +226,6 @@ class PermissionTest(ZulipTestCase):
         person = events[0]['event']['person']
         self.assertEqual(person['user_id'], othello.id)
         self.assertEqual(person['role'], UserProfile.ROLE_MEMBER)
-
-        # Cannot take away from last admin
-        self.login('iago')
-        req = dict(role=ujson.dumps(UserProfile.ROLE_MEMBER))
-        events = []
-        with tornado_redirected_to_list(events):
-            result = self.client_patch(f'/json/users/{desdemona.id}', req)
-        self.assert_json_success(result)
-        admin_users = realm.get_human_admin_users()
-        self.assertFalse(desdemona in admin_users)
-        person = events[0]['event']['person']
-        self.assertEqual(person['user_id'], desdemona.id)
-        self.assertEqual(person['role'], UserProfile.ROLE_MEMBER)
-        with tornado_redirected_to_list([]):
-            result = self.client_patch(f'/json/users/{iago.id}', req)
-        self.assert_json_error(result, 'Cannot remove the only organization administrator')
 
         # Make sure only admins can patch other user's info.
         self.login('othello')
@@ -218,7 +267,7 @@ class PermissionTest(ZulipTestCase):
         self.assert_json_success(result)
         members = result.json()['members']
         hamlet = find_dict(members, 'user_id', user.id)
-        self.assertEqual(hamlet['email'], "user%s@zulip.testserver" % (user.id,))
+        self.assertEqual(hamlet['email'], f"user{user.id}@zulip.testserver")
         # Note that the Gravatar URL should still be computed from the
         # `delivery_email`; otherwise, we won't be able to serve the
         # user's Gravatar.
@@ -246,7 +295,7 @@ class PermissionTest(ZulipTestCase):
         self.assert_json_success(result)
         members = result.json()['members']
         hamlet = find_dict(members, 'user_id', user.id)
-        self.assertEqual(hamlet['email'], "user%s@zulip.testserver" % (user.id,))
+        self.assertEqual(hamlet['email'], f"user{user.id}@zulip.testserver")
         self.assertEqual(hamlet['avatar_url'], get_gravatar_url(user.email, 1))
         self.assertEqual(hamlet['delivery_email'], self.example_email("hamlet"))
 
@@ -432,6 +481,100 @@ class PermissionTest(ZulipTestCase):
         self.assertEqual(person['user_id'], polonius.id)
         self.assertEqual(person['role'], UserProfile.ROLE_REALM_ADMINISTRATOR)
 
+    def test_change_owner_to_guest(self) -> None:
+        self.login("desdemona")
+        iago = self.example_user("iago")
+        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER)
+        self.assertFalse(iago.is_guest)
+        self.assertTrue(iago.is_realm_owner)
+
+        # Test changing a user from owner to guest and revoking owner status
+        iago = self.example_user("iago")
+        self.assertFalse(iago.is_guest)
+        req = dict(role=UserProfile.ROLE_GUEST)
+        events: List[Mapping[str, Any]] = []
+        with tornado_redirected_to_list(events):
+            result = self.client_patch(f'/json/users/{iago.id}', req)
+        self.assert_json_success(result)
+
+        iago = self.example_user("iago")
+        self.assertTrue(iago.is_guest)
+        self.assertFalse(iago.is_realm_owner)
+
+        person = events[0]['event']['person']
+        self.assertEqual(person['user_id'], iago.id)
+        self.assertEqual(person['role'], UserProfile.ROLE_GUEST)
+
+    def test_change_guest_to_owner(self) -> None:
+        desdemona = self.example_user("desdemona")
+        self.login_user(desdemona)
+        polonius = self.example_user("polonius")
+        self.assertTrue(polonius.is_guest)
+        self.assertFalse(polonius.is_realm_owner)
+
+        # Test changing a user from guest to admin and revoking guest status
+        polonius = self.example_user("polonius")
+        self.assertFalse(polonius.is_realm_owner)
+        req = dict(role=UserProfile.ROLE_REALM_OWNER)
+        events: List[Mapping[str, Any]] = []
+        with tornado_redirected_to_list(events):
+            result = self.client_patch(f'/json/users/{polonius.id}', req)
+        self.assert_json_success(result)
+
+        polonius = self.example_user("polonius")
+        self.assertFalse(polonius.is_guest)
+        self.assertTrue(polonius.is_realm_owner)
+
+        person = events[0]['event']['person']
+        self.assertEqual(person['user_id'], polonius.id)
+        self.assertEqual(person['role'], UserProfile.ROLE_REALM_OWNER)
+
+    def test_change_admin_to_owner(self) -> None:
+        desdemona = self.example_user("desdemona")
+        self.login_user(desdemona)
+        iago = self.example_user("iago")
+        self.assertTrue(iago.is_realm_admin)
+        self.assertFalse(iago.is_realm_owner)
+
+        # Test changing a user from admin to owner and revoking admin status
+        iago = self.example_user("iago")
+        self.assertFalse(iago.is_realm_owner)
+        req = dict(role=UserProfile.ROLE_REALM_OWNER)
+        events: List[Mapping[str, Any]] = []
+        with tornado_redirected_to_list(events):
+            result = self.client_patch(f'/json/users/{iago.id}', req)
+        self.assert_json_success(result)
+
+        iago = self.example_user("iago")
+        self.assertTrue(iago.is_realm_owner)
+
+        person = events[0]['event']['person']
+        self.assertEqual(person['user_id'], iago.id)
+        self.assertEqual(person['role'], UserProfile.ROLE_REALM_OWNER)
+
+    def test_change_owner_to_admin(self) -> None:
+        desdemona = self.example_user("desdemona")
+        self.login_user(desdemona)
+        iago = self.example_user("iago")
+        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER)
+        self.assertTrue(iago.is_realm_owner)
+
+        # Test changing a user from admin to owner and revoking admin status
+        iago = self.example_user("iago")
+        self.assertTrue(iago.is_realm_owner)
+        req = dict(role=UserProfile.ROLE_REALM_ADMINISTRATOR)
+        events: List[Mapping[str, Any]] = []
+        with tornado_redirected_to_list(events):
+            result = self.client_patch(f'/json/users/{iago.id}', req)
+        self.assert_json_success(result)
+
+        iago = self.example_user("iago")
+        self.assertFalse(iago.is_realm_owner)
+
+        person = events[0]['event']['person']
+        self.assertEqual(person['user_id'], iago.id)
+        self.assertEqual(person['role'], UserProfile.ROLE_REALM_ADMINISTRATOR)
+
     def test_admin_user_can_change_profile_data(self) -> None:
         realm = get_realm('zulip')
         self.login('iago')
@@ -489,7 +632,7 @@ class PermissionTest(ZulipTestCase):
         # non-existent field and no data
         invalid_profile_data = [{
             'id': 9001,
-            'value': ''
+            'value': '',
         }]
         result = self.client_patch(f'/json/users/{cordelia.id}',
                                    {'profile_data': ujson.dumps(invalid_profile_data)})
@@ -498,7 +641,7 @@ class PermissionTest(ZulipTestCase):
         # non-existent field and data
         invalid_profile_data = [{
             'id': 9001,
-            'value': 'some data'
+            'value': 'some data',
         }]
         result = self.client_patch(f'/json/users/{cordelia.id}',
                                    {'profile_data': ujson.dumps(invalid_profile_data)})
@@ -586,7 +729,7 @@ class BulkCreateUserTest(ZulipTestCase):
         fred = get_user_by_delivery_email('fred@zulip.com', realm)
         self.assertEqual(
             fred.email,
-            f'user{fred.id}@zulip.testserver'
+            f'user{fred.id}@zulip.testserver',
         )
 
         lisa = get_user_by_delivery_email('lisa@zulip.com', realm)
@@ -800,7 +943,7 @@ class UserProfileTest(ZulipTestCase):
         webhook_bot = self.example_user("webhook_bot")
         result = bulk_get_users(
             [hamlet.email, cordelia.email],
-            get_realm("zulip")
+            get_realm("zulip"),
         )
         self.assertEqual(result[hamlet.email].email, hamlet.email)
         self.assertEqual(result[cordelia.email].email, cordelia.email)
@@ -808,7 +951,7 @@ class UserProfileTest(ZulipTestCase):
         result = bulk_get_users(
             [hamlet.email, cordelia.email, webhook_bot.email],
             None,
-            base_query=UserProfile.objects.all()
+            base_query=UserProfile.objects.all(),
         )
         self.assertEqual(result[hamlet.email].email, hamlet.email)
         self.assertEqual(result[cordelia.email].email, cordelia.email)
@@ -954,6 +1097,38 @@ class UserProfileTest(ZulipTestCase):
             get_user_by_id_in_realm_including_cross_realm(
                 hamlet.id, None)
 
+    def test_get_user_subscription_status(self) -> None:
+        self.login('hamlet')
+        iago = self.example_user('iago')
+        stream = get_stream('Rome', iago.realm)
+
+        # Invalid User ID.
+        result = self.client_get(f"/json/users/25/subscriptions/{stream.id}")
+        self.assert_json_error(result, "No such user")
+
+        # Invalid Stream ID.
+        result = self.client_get(f"/json/users/{iago.id}/subscriptions/25")
+        self.assert_json_error(result, "Invalid stream id")
+
+        result = ujson.loads(self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content)
+        self.assertFalse(result['is_subscribed'])
+
+        # Subscribe to the stream.
+        self.subscribe(iago, stream.name)
+        with queries_captured() as queries:
+            result = ujson.loads(self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content)
+
+        self.assert_length(queries, 7)
+        self.assertTrue(result['is_subscribed'])
+
+        # Logging in with a Guest user.
+        polonius = self.example_user("polonius")
+        self.login('polonius')
+        self.assertTrue(polonius.is_guest)
+
+        result = self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}")
+        self.assert_json_error(result, "Invalid stream id")
+
 class ActivateTest(ZulipTestCase):
     def test_basics(self) -> None:
         user = self.example_user('hamlet')
@@ -981,8 +1156,15 @@ class ActivateTest(ZulipTestCase):
         self.assertTrue(user.is_active)
 
     def test_api_with_nonexistent_user(self) -> None:
-        admin = self.example_user('desdemona')
-        self.login_user(admin)
+        self.login('iago')
+
+        # Organization Administrator cannot deactivate organization owner.
+        result = self.client_delete(f'/json/users/{self.example_user("desdemona").id}')
+        self.assert_json_error(result, 'Only owners can deactivate other organization owners.')
+
+        iago = self.example_user('iago')
+        desdemona = self.example_user('desdemona')
+        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER)
 
         # Cannot deactivate a user with the bot api
         result = self.client_delete('/json/bots/{}'.format(self.example_user("hamlet").id))
@@ -996,11 +1178,11 @@ class ActivateTest(ZulipTestCase):
         result = self.client_delete('/json/users/{}'.format(self.example_user("webhook_bot").id))
         self.assert_json_error(result, 'No such user')
 
-        result = self.client_delete('/json/users/{}'.format(self.example_user("iago").id))
+        result = self.client_delete(f'/json/users/{desdemona.id}')
         self.assert_json_success(result)
 
-        result = self.client_delete(f'/json/users/{admin.id}')
-        self.assert_json_error(result, 'Cannot deactivate the only organization administrator')
+        result = self.client_delete(f'/json/users/{iago.id}')
+        self.assert_json_error(result, 'Cannot deactivate the only organization owner')
 
         # Cannot reactivate a nonexistent user.
         invalid_user_id = 1000
@@ -1240,7 +1422,7 @@ class RecipientInfoTest(ZulipTestCase):
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
-            possibly_mentioned_user_ids={service_bot.id}
+            possibly_mentioned_user_ids={service_bot.id},
         )
         self.assertEqual(info['service_bot_tuples'], [
             (service_bot.id, UserProfile.EMBEDDED_BOT),
@@ -1260,7 +1442,7 @@ class RecipientInfoTest(ZulipTestCase):
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
-            possibly_mentioned_user_ids={service_bot.id, normal_bot.id}
+            possibly_mentioned_user_ids={service_bot.id, normal_bot.id},
         )
         self.assertEqual(info['default_bot_user_ids'], {normal_bot.id})
 
@@ -1303,7 +1485,7 @@ class BulkUsersTest(ZulipTestCase):
 
         self.assertEqual(
             get_hamlet_avatar(client_gravatar=True),
-            None
+            None,
         )
 
         '''

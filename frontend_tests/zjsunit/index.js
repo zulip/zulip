@@ -44,6 +44,7 @@ global.to_$ = () => window;
 
 // Set up stub helpers.
 const stub = require('./stub.js');
+global.make_stub = stub.make_stub;
 global.with_stub = stub.with_stub;
 
 // Set up fake jQuery

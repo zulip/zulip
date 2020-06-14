@@ -6,8 +6,17 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Count
 from django.utils.timezone import now as timezone_now
 
-from zerver.models import Message, Realm, Recipient, Stream, Subscription, \
-    UserActivity, UserMessage, UserProfile, get_realm
+from zerver.models import (
+    Message,
+    Realm,
+    Recipient,
+    Stream,
+    Subscription,
+    UserActivity,
+    UserMessage,
+    UserProfile,
+    get_realm,
+)
 
 MOBILE_CLIENT_LIST = ["Android", "ios"]
 HUMAN_CLIENT_LIST = MOBILE_CLIENT_LIST + ["website"]
@@ -66,7 +75,7 @@ class Command(BaseCommand):
             fraction = 0.0
         else:
             fraction = numerator / float(denominator)
-        print("%.2f%% of" % (fraction * 100,), text)
+        print(f"{fraction * 100:.2f}% of", text)
 
     def handle(self, *args: Any, **options: Any) -> None:
         if options['realms']:

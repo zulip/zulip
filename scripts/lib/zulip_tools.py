@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 import argparse
+import configparser
 import datetime
 import functools
 import hashlib
+import json
 import logging
 import os
 import pwd
@@ -13,11 +15,8 @@ import subprocess
 import sys
 import tempfile
 import time
-import json
 import uuid
-import configparser
-
-from typing import Sequence, Set, Any, Dict, List
+from typing import Any, Dict, List, Sequence, Set
 
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
 LOCK_DIR = os.path.join(DEPLOYMENTS_DIR, "lock")
@@ -84,7 +83,7 @@ def parse_cache_script_args(description: str) -> argparse.Namespace:
 
 def get_deploy_root() -> str:
     return os.path.realpath(
-        os.path.normpath(os.path.join(os.path.dirname(__file__), "..", ".."))
+        os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..")),
     )
 
 def get_deployment_version(extract_path: str) -> str:
@@ -271,7 +270,7 @@ def get_caches_to_be_purged(caches_dir: str, caches_in_use: Set[str], threshold_
     return caches_to_purge
 
 def purge_unused_caches(
-    caches_dir: str, caches_in_use: Set[str], cache_type: str, args: argparse.Namespace
+    caches_dir: str, caches_in_use: Set[str], cache_type: str, args: argparse.Namespace,
 ) -> None:
     all_caches = {os.path.join(caches_dir, cache) for cache in os.listdir(caches_dir)}
     caches_to_purge = get_caches_to_be_purged(caches_dir, caches_in_use, args.threshold_days)
@@ -378,8 +377,8 @@ def os_families() -> Set[str]:
     distro_info = parse_os_release()
     return {distro_info["ID"], *distro_info.get("ID_LIKE", "").split()}
 
-def files_and_string_digest(filenames: List[str],
-                            extra_strings: List[str]) -> str:
+def files_and_string_digest(filenames: Sequence[str],
+                            extra_strings: Sequence[str]) -> str:
     # see is_digest_obsolete for more context
     sha1sum = hashlib.sha1()
     for fn in filenames:
@@ -392,8 +391,8 @@ def files_and_string_digest(filenames: List[str],
     return sha1sum.hexdigest()
 
 def is_digest_obsolete(hash_name: str,
-                       filenames: List[str],
-                       extra_strings: List[str]=[]) -> bool:
+                       filenames: Sequence[str],
+                       extra_strings: Sequence[str] = []) -> bool:
     '''
     In order to determine if we need to run some
     process, we calculate a digest of the important
@@ -426,8 +425,8 @@ def is_digest_obsolete(hash_name: str,
     return new_hash != old_hash
 
 def write_new_digest(hash_name: str,
-                     filenames: List[str],
-                     extra_strings: List[str]=[]) -> None:
+                     filenames: Sequence[str],
+                     extra_strings: Sequence[str] = []) -> None:
     hash_path = os.path.join(get_dev_uuid_var_path(), hash_name)
     new_hash = files_and_string_digest(filenames, extra_strings)
     with open(hash_path, 'w') as f:

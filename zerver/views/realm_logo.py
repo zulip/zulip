@@ -1,16 +1,16 @@
 from django.conf import settings
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.utils.translation import ugettext as _
-from django.http import HttpResponse, HttpRequest
 
-from zerver.lib.validator import check_bool
-from zerver.lib.request import REQ, has_request_variables
 from zerver.decorator import require_realm_admin
 from zerver.lib.actions import do_change_logo_source
 from zerver.lib.realm_logo import get_realm_logo_url
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.upload import upload_logo_image
 from zerver.lib.url_encoding import add_query_arg_to_redirect_url
+from zerver.lib.validator import check_bool
 from zerver.models import UserProfile
 
 

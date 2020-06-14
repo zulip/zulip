@@ -1,28 +1,22 @@
+import time
+from unittest import mock
+
+import DNS
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 
 from zerver.forms import email_is_not_mit_mailing_list
-
 from zerver.lib.rate_limiter import (
-    add_ratelimit_rule,
-    remove_ratelimit_rule,
     RateLimitedUser,
     RateLimiterLockingException,
+    add_ratelimit_rule,
+    remove_ratelimit_rule,
 )
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.zephyr import compute_mit_user_fullname
+from zerver.models import UserProfile
 
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-
-from zerver.models import (
-    UserProfile,
-)
-
-import DNS
-from unittest import mock
-import time
 
 class MITNameTest(ZulipTestCase):
     def test_valid_hesiod(self) -> None:
@@ -93,7 +87,7 @@ class RateLimitTests(ZulipTestCase):
         start_time = time.time()
         for i in range(6):
             with mock.patch('time.time', return_value=(start_time + i * 0.1)):
-                result = self.send_api_message(user, "some stuff %s" % (i,))
+                result = self.send_api_message(user, f"some stuff {i}")
 
         self.assertEqual(result.status_code, 429)
         json = result.json()
@@ -122,5 +116,5 @@ class RateLimitTests(ZulipTestCase):
             self.assertEqual(result.status_code, 429)
             mock_warn.assert_called_with(
                 "Deadlock trying to incr_ratelimit for %s",
-                "RateLimitedUser:%s:api_by_user" % (user.id,),
+                f"RateLimitedUser:{user.id}:api_by_user",
             )

@@ -1,21 +1,22 @@
 import re
+from typing import Any, Dict, List, Mapping, Optional
 
+import markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
+
 from zerver.openapi.openapi import get_openapi_return_values
-from typing import Any, Dict, Optional, List
-import markdown
 
 REGEXP = re.compile(r'\{generate_return_values_table\|\s*(.+?)\s*\|\s*(.+)\s*\}')
 
 
 class MarkdownReturnValuesTableGenerator(Extension):
-    def __init__(self, configs: Optional[Dict[str, Any]]=None) -> None:
+    def __init__(self, configs: Mapping[str, Any] = {}) -> None:
         self.config: Dict[str, Any] = {}
 
     def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
         md.preprocessors.add(
-            'generate_return_values', APIReturnValuesTablePreprocessor(md, self.getConfigs()), '_begin'
+            'generate_return_values', APIReturnValuesTablePreprocessor(md, self.getConfigs()), '_begin',
         )
 
 

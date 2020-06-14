@@ -9,13 +9,12 @@
 # machine:
 #
 # $ python3 add_mentor.py --remove <mentor's username>
-
 import os
+import re
+import socket
 import sys
 from argparse import ArgumentParser
 from typing import List
-import socket
-import re
 
 import requests
 

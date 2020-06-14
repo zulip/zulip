@@ -25,6 +25,6 @@ class Migration(migrations.Migration):
         ),
         migrations.RunPython(disable_realm_inline_url_embed_preview,
                              reverse_code=migrations.RunPython.noop,
-                             elidable=True)
+                             elidable=True),
 
     ]

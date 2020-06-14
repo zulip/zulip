@@ -1,38 +1,33 @@
-from functools import partial
+import os
 import random
+import shutil
 import sys
-
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
-    Type, TypeVar, Union
+import time
+import unittest
+from functools import partial
+from multiprocessing.sharedctypes import Synchronized
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union
 from unittest import loader, runner
 from unittest.result import TestResult
 
 from django.conf import settings
-from django.db import connections, ProgrammingError
-from django.urls.resolvers import URLPattern
+from django.db import ProgrammingError, connections
 from django.test import TestCase
 from django.test import runner as django_runner
 from django.test.runner import DiscoverRunner
 from django.test.signals import template_rendered
+from django.urls.resolvers import URLPattern
 
+from scripts.lib.zulip_tools import (
+    TEMPLATE_DATABASE_DIR,
+    get_dev_uuid_var_path,
+    get_or_create_dev_uuid_var_path,
+)
 from zerver.lib import test_helpers
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.rate_limiter import bounce_redis_key_prefix_for_testing
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
-from zerver.lib.test_helpers import (
-    write_instrumentation_reports,
-    append_instrumentation_data
-)
-
-import os
-import time
-import unittest
-import shutil
-
-from multiprocessing.sharedctypes import Synchronized
-
-from scripts.lib.zulip_tools import get_dev_uuid_var_path, TEMPLATE_DATABASE_DIR, \
-    get_or_create_dev_uuid_var_path
+from zerver.lib.test_helpers import append_instrumentation_data, write_instrumentation_reports
 
 # We need to pick an ID for this test-backend invocation, and store it
 # in this global so it can be used in init_worker; this is used to
@@ -74,7 +69,7 @@ def full_test_name(test: TestCase) -> str:
     test_module = test.__module__
     test_class = test.__class__.__name__
     test_method = test._testMethodName
-    return '%s.%s.%s' % (test_module, test_class, test_method)
+    return f'{test_module}.{test_class}.{test_method}'
 
 def get_test_method(test: TestCase) -> Callable[[], None]:
     return getattr(test, test._testMethodName)
@@ -91,14 +86,14 @@ def report_slow_tests() -> None:
     for delay, test_name, slowness_reason in timings[:15]:
         if not slowness_reason:
             slowness_reason = 'UNKNOWN WHY SLOW, please investigate'
-        print(' %0.3f %s\n       %s\n' % (delay, test_name, slowness_reason))
+        print(f' {delay:0.3f} {test_name}\n       {slowness_reason}\n')
 
     print('...')
     for delay, test_name, slowness_reason in timings[100:]:
         if slowness_reason:
-            print(' %.3f %s is not that slow' % (delay, test_name))
+            print(f' {delay:.3f} {test_name} is not that slow')
             print('      consider removing @slow decorator')
-            print('      This may no longer be true: %s' % (slowness_reason,))
+            print(f'      This may no longer be true: {slowness_reason}')
 
 def enforce_timely_test_completion(test_method: Callable[..., ReturnT], test_name: str,
                                    delay: float, result: unittest.TestResult) -> None:
@@ -110,7 +105,7 @@ def enforce_timely_test_completion(test_method: Callable[..., ReturnT], test_nam
     assert isinstance(result, TextTestResult) or isinstance(result, RemoteTestResult)
 
     if delay > max_delay:
-        msg = '** Test is TOO slow: %s (%.3f s)\n' % (test_name, delay)
+        msg = f'** Test is TOO slow: {test_name} ({delay:.3f} s)\n'
         result.addInfo(test_method, msg)
 
 def fast_tests_only() -> bool:
@@ -318,7 +313,7 @@ def init_worker(counter: Synchronized) -> None:
         print("*** Upload directory not found.")
 
 class TestSuite(unittest.TestSuite):
-    def run(self, result: TestResult, debug: Optional[bool]=False) -> TestResult:
+    def run(self, result: TestResult, debug: bool=False) -> TestResult:
         """
         This function mostly contains the code from
         unittest.TestSuite.run. The need to override this function

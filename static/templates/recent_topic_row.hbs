@@ -1,4 +1,4 @@
-<tr id="recent_topic:{{stream_id}}:{{topic}}" data-unread-count="{{unread_count}}" data-muted="{{muted}}" data-participated="{{participated}}">
+<tr id="recent_topic:{{topic_key}}" data-unread-count="{{unread_count}}" data-muted="{{muted}}" data-participated="{{participated}}">
     <td class="recent_topic_stream">
         <span id="stream_sidebar_privacy_swatch_{{stream_id}}" class="stream-privacy filter-icon" style="color: {{stream_color}}">
             {{> stream_privacy }}
@@ -7,7 +7,7 @@
     </td>
     <td class="recent_topic_name">
         <a href="{{topic_url}}">{{topic}}</a>
-        {{#if unread_count}}<span class="recent_topic_unread_count">+{{unread_count}}</span>{{/if}}
+        {{#if unread_count}}<span class="recent_topic_unread_count">{{unread_count}}</span>{{/if}}
     </td>
     <td class="recent_topic_actions">
         {{#if topic_muted}}
@@ -19,9 +19,9 @@
     </td>
     <td class='recent_topic_users'>
         <ul class="recent_avatars">
-            {{#if count_senders}}
+            {{#if other_senders_count}}
             <li class="recent_avatars_item">
-                <span class="recent_avatars_others">+{{count_senders}}</span>
+                <span class="recent_avatars_others">+{{other_senders_count}}</span>
             </li>
             {{/if}}
             {{#each senders}}

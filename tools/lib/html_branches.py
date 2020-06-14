@@ -1,13 +1,8 @@
-from typing import Dict, List, Optional, Set
-
 import re
 from collections import defaultdict
+from typing import Dict, List, Optional, Sequence, Set
 
-from .template_parser import (
-    tokenize,
-    FormattedException,
-    Token,
-)
+from .template_parser import FormattedException, Token, tokenize
 
 
 class HtmlBranchesException(Exception):
@@ -137,12 +132,9 @@ def html_branches(text: str, fn: Optional[str] = None) -> List[HtmlTreeBranch]:
     tree = html_tag_tree(text, fn)
     branches: List[HtmlTreeBranch] = []
 
-    def walk(node: Node, tag_info_list: Optional[List[TagInfo]] = None) -> None:
+    def walk(node: Node, tag_info_list: Sequence[TagInfo] = []) -> None:
         info = get_tag_info(node.token)
-        if tag_info_list is None:
-            tag_info_list = [info]
-        else:
-            tag_info_list = tag_info_list[:] + [info]
+        tag_info_list = [*tag_info_list, info]
 
         if node.children:
             for child in node.children:
@@ -152,7 +144,7 @@ def html_branches(text: str, fn: Optional[str] = None) -> List[HtmlTreeBranch]:
             branches.append(tree_branch)
 
     for node in tree.children:
-        walk(node, None)
+        walk(node, [])
 
     return branches
 
@@ -189,9 +181,9 @@ def build_id_dict(templates: List[str]) -> (Dict[str, List[str]]):
         try:
             list_tags = tokenize(text)
         except FormattedException as e:
-            raise Exception('''
-                fn: %s
-                %s''' % (fn, e))
+            raise Exception(f'''
+                fn: {fn}
+                {e}''')
 
         for tag in list_tags:
             info = get_tag_info(tag)

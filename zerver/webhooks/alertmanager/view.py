@@ -9,6 +9,7 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
+
 @api_key_only_webhook_view('AlertManager')
 @has_request_variables
 def api_alertmanager_webhook(request: HttpRequest, user_profile: UserProfile,
@@ -46,16 +47,10 @@ def api_alertmanager_webhook(request: HttpRequest, user_profile: UserProfile,
                 icon = ":squared_ok:"
 
             if len(messages) == 1:
-                body = "{icon} **{title}** {message}".format(
-                    icon=icon,
-                    title=title,
-                    message=messages[0])
+                body = f"{icon} **{title}** {messages[0]}"
             else:
                 message_list = "\n".join([f"* {m}" for m in messages])
-                body = "{icon} **{title}**\n{messages}".format(
-                    icon=icon,
-                    title=title,
-                    messages=message_list)
+                body = f"{icon} **{title}**\n{message_list}"
 
             check_send_webhook_message(request, user_profile, topic, body)
 

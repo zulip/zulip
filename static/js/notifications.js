@@ -589,7 +589,7 @@ exports.received_messages = function (messages) {
 };
 
 exports.send_test_notification = function (content) {
-    notifications.received_messages([{
+    exports.received_messages([{
         id: Math.random(),
         type: "test-notification",
         sender_email: "notification-bot@zulip.com",

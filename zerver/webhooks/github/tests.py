@@ -78,17 +78,13 @@ class GithubWebhookTest(WebhookTestCase):
 
     def test_push_50_commits(self) -> None:
         commit_info = "* Update README.md ([0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))\n"
-        expected_message = "baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 50 commits to branch changes.\n\n{}[and 30 more commit(s)]".format(
-            commit_info * COMMITS_LIMIT
-        )
+        expected_message = f"baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 50 commits to branch changes.\n\n{commit_info * COMMITS_LIMIT}[and 30 more commit(s)]"
         self.send_and_test_stream_message('push__50_commits', self.EXPECTED_TOPIC_BRANCH_EVENTS, expected_message)
 
     def test_push_50_commits_filtered_by_branches(self) -> None:
         self.url = self.build_webhook_url(branches='master,changes')
         commit_info = "* Update README.md ([0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))\n"
-        expected_message = "baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 50 commits to branch changes.\n\n{}[and 30 more commit(s)]".format(
-            commit_info * COMMITS_LIMIT
-        )
+        expected_message = f"baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 50 commits to branch changes.\n\n{commit_info * COMMITS_LIMIT}[and 30 more commit(s)]"
         self.send_and_test_stream_message('push__50_commits', self.EXPECTED_TOPIC_BRANCH_EVENTS, expected_message)
 
     def test_commit_comment_msg(self) -> None:

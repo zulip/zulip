@@ -21,8 +21,7 @@ spec:
     exporting-from-hipchat-server-or-data-center-for-data-portability-950821555.html
 '''
 
-from django.core.management.base import BaseCommand, CommandError, \
-    CommandParser
+from django.core.management.base import BaseCommand, CommandError, CommandParser
 
 from zerver.data_import.hipchat import do_convert_data
 
@@ -72,7 +71,7 @@ class Command(BaseCommand):
 
         for path in options['hipchat_tar']:
             if not os.path.exists(path):
-                raise CommandError("Tar file not found: '%s'" % (path,))
+                raise CommandError(f"Tar file not found: '{path}'")
 
             print("Converting Data ...")
             do_convert_data(

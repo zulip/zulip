@@ -1,20 +1,32 @@
+from datetime import timedelta
+from typing import Any, Dict
+
+import ujson
+from django.contrib.auth.password_validation import validate_password
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import do_create_user, do_deactivate_user, \
-    do_activate_user, do_reactivate_user, do_change_password, \
-    do_change_user_delivery_email, do_change_avatar_fields, do_change_bot_owner, \
-    do_regenerate_api_key, do_change_tos_version, \
-    bulk_add_subscriptions, bulk_remove_subscriptions, get_streams_traffic, \
-    do_change_user_role, do_deactivate_realm, do_reactivate_realm
-from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import RealmAuditLog, get_client, get_realm, UserProfile
 from analytics.models import StreamCount
+from zerver.lib.actions import (
+    bulk_add_subscriptions,
+    bulk_remove_subscriptions,
+    do_activate_user,
+    do_change_avatar_fields,
+    do_change_bot_owner,
+    do_change_password,
+    do_change_tos_version,
+    do_change_user_delivery_email,
+    do_change_user_role,
+    do_create_user,
+    do_deactivate_realm,
+    do_deactivate_user,
+    do_reactivate_realm,
+    do_reactivate_user,
+    do_regenerate_api_key,
+    get_streams_traffic,
+)
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.models import RealmAuditLog, UserProfile, get_client, get_realm
 
-from datetime import timedelta
-from django.contrib.auth.password_validation import validate_password
-
-from typing import Any, Dict
-import ujson
 
 class TestRealmAuditLog(ZulipTestCase):
     def check_role_count_schema(self, role_counts: Dict[str, Any]) -> None:
@@ -97,7 +109,7 @@ class TestRealmAuditLog(ZulipTestCase):
 
         # Test the RealmAuditLog stringification
         audit_entry = RealmAuditLog.objects.get(event_type=RealmAuditLog.USER_EMAIL_CHANGED, event_time__gte=now)
-        self.assertTrue(str(audit_entry).startswith("<RealmAuditLog: <UserProfile: %s %s> %s " % (user.email, user.realm, RealmAuditLog.USER_EMAIL_CHANGED)))
+        self.assertTrue(str(audit_entry).startswith(f"<RealmAuditLog: <UserProfile: {user.email} {user.realm}> {RealmAuditLog.USER_EMAIL_CHANGED} "))
 
     def test_change_avatar_source(self) -> None:
         now = timezone_now()

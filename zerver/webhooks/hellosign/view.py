@@ -1,5 +1,6 @@
 from typing import Any, Dict, List
 
+import ujson
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
@@ -7,7 +8,6 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
-import ujson
 
 IS_AWAITING_SIGNATURE = "is awaiting the signature of {awaiting_recipients}"
 WAS_JUST_SIGNED_BY = "was just signed by {signed_recipients}"
@@ -25,12 +25,12 @@ def get_message_body(payload: Dict[str, Dict[str, Any]]) -> str:
     recipients_text = ""
     if recipients.get('awaiting_signature'):
         recipients_text += IS_AWAITING_SIGNATURE.format(
-            awaiting_recipients=get_recipients_text(recipients['awaiting_signature'])
+            awaiting_recipients=get_recipients_text(recipients['awaiting_signature']),
         )
 
     if recipients.get('signed'):
         text = WAS_JUST_SIGNED_BY.format(
-            signed_recipients=get_recipients_text(recipients['signed'])
+            signed_recipients=get_recipients_text(recipients['signed']),
         )
 
         if recipients_text:

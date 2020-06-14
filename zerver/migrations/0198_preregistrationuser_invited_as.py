@@ -38,6 +38,6 @@ class Migration(migrations.Migration):
         migrations.RunPython(
             set_initial_value_for_invited_as,
             reverse_code=reverse_code,
-            elidable=True
+            elidable=True,
         ),
     ]

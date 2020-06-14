@@ -43,7 +43,7 @@ another.
 
 {!stream-actions.md!}
 
-1. Select **Move <topic name\> to another stream**.
+1. Select **Move topic**.
 
 1. Select the destination stream for the topic from the streams dropdown list.
 

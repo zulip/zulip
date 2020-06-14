@@ -27,6 +27,6 @@ class Migration(migrations.Migration):
                     name='date_sent',
                     field=models.DateTimeField(db_index=True, verbose_name='date sent'),
                 ),
-            ]
+            ],
         ),
     ]

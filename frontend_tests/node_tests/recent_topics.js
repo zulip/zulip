@@ -243,6 +243,10 @@ messages[10] = {
     type: 'stream',
 };
 
+function get_topic_key(stream_id, topic) {
+    return stream_id + ":" + topic.toLowerCase();
+}
+
 function generate_topic_data(topic_info_array) {
     // Since most of the fields are common, this function helps generate fixtures
     // with non common fields.
@@ -251,7 +255,7 @@ function generate_topic_data(topic_info_array) {
     const selectors = [];
 
     for (const [stream_id, topic, unread_count, muted, participated] of topic_info_array) {
-        const topic_selector = $.create('#recent_topic:' + stream_id + ":" + topic);
+        const topic_selector = $.create('#recent_topic:' + get_topic_key(stream_id, topic));
         topic_selector.data = function () {
             return {
                 participated: participated,
@@ -262,7 +266,7 @@ function generate_topic_data(topic_info_array) {
 
         selectors.push(topic_selector);
         data.push({
-            count_senders: 0,
+            other_senders_count: 0,
             invite_only: false,
             is_web_public: true,
             last_msg_time: 'Just now',
@@ -275,6 +279,7 @@ function generate_topic_data(topic_info_array) {
             stream_id: stream_id,
             stream_url: 'https://www.example.com',
             topic: topic,
+            topic_key: get_topic_key(stream_id, topic),
             topic_url: 'https://www.example.com',
             unread_count: unread_count,
             muted: muted,
@@ -297,8 +302,8 @@ run_test("test_recent_topics_launch", () => {
     // since they are generated in external libraries
     // and are not to be tested here.
     const expected = {
-        filter_participated: true,
-        filter_unread: true,
+        filter_participated: false,
+        filter_unread: false,
         filter_muted: false,
         search_val: '',
     };
@@ -313,11 +318,20 @@ run_test("test_recent_topics_launch", () => {
         return '<recent_topics table stub>';
     });
 
+    $("#recent_topics_search").selected = false;
+    $("#recent_topics_search").select = () => {
+        $("#recent_topics_search").selected = true;
+    };
+
     const rt = zrequire('recent_topics');
     rt.process_messages(messages);
 
+    assert.equal($("#recent_topics_search").selected, false);
+
     rt.launch();
-    assert.equal($("#recent_topics_search").is(":focus"), true);
+
+    // Test if search text is selected
+    assert.equal($("#recent_topics_search").selected, true);
     overlays.close_callback();
 
     // incorrect topic_key
@@ -397,6 +411,7 @@ run_test('test_filter_unread', () => {
     rt.process_messages(messages);
     assert.equal(rt.inplace_rerender('1:topic-1'), true);
 
+    $('#recent_topics_filter_buttons').removeClass('btn-recent-selected');
     global.stub_templates(function (template_name, data) {
         assert.equal(template_name, 'recent_topics_filters');
         assert.equal(data.filter_unread, expected.filter_unread);
@@ -404,8 +419,7 @@ run_test('test_filter_unread', () => {
         return '<recent_topics table stub>';
     });
 
-    // This will deselect participated and leave only unread selected.
-    rt.set_filter('participated');
+    rt.set_filter('unread');
     rt.update_filters_view();
 
     global.stub_templates(function (template_name, data) {
@@ -470,13 +484,14 @@ run_test('test_filter_participated', () => {
     // remove muted filter
     rt.set_filter('muted');
 
+    $('#recent_topics_filter_buttons').removeClass('btn-recent-selected');
     global.stub_templates(function (template_name, data) {
         assert.equal(template_name, 'recent_topics_filters');
         assert.equal(data.filter_unread, expected.filter_unread);
         assert.equal(data.filter_participated, expected.filter_participated);
         return '<recent_topics table stub>';
     });
-    rt.set_filter('unread');
+    rt.set_filter('participated');
     rt.update_filters_view();
 
 
@@ -506,7 +521,7 @@ run_test('test_update_unread_count', () => {
 
     // update a message
     generate_topic_data([[1, 'topic-7', 1, false, true]]);
-    rt.update_topic_unread_count([messages[9]]);
+    rt.update_topic_unread_count(messages[9]);
 });
 
 // template rendering is tested in test_recent_topics_launch.
@@ -594,7 +609,7 @@ run_test('test_reify_local_echo_message', () => {
         topic: topic7,
         sender_id: sender1,
         type: 'stream',
-    }, false);
+    });
 
     assert.equal(rt.reify_message_id_if_available({
         old_id: 1000.01,
@@ -607,7 +622,7 @@ run_test('test_reify_local_echo_message', () => {
         topic: topic7,
         sender_id: sender1,
         type: 'stream',
-    }, false);
+    });
 
     // A new message arrived in the same topic before we could reify the message_id
     rt.process_message({
@@ -616,7 +631,7 @@ run_test('test_reify_local_echo_message', () => {
         topic: topic7,
         sender_id: sender1,
         type: 'stream',
-    }, false);
+    });
 
     assert.equal(rt.reify_message_id_if_available({
         old_id: 1000.01,
@@ -636,9 +651,9 @@ run_test('test_topic_edit', () => {
 
     ////////////////// test change topic //////////////////
     verify_topic_data(all_topics, stream1, topic6, messages[8].id, true);
-    assert.equal(all_topics.get(stream1 + ":" + topic8), undefined);
+    assert.equal(all_topics.get(get_topic_key(stream1, topic8)), undefined);
 
-    let topic_selector = $.create('#recent_topic:' + stream1 + ":" + topic8);
+    let topic_selector = $.create('#recent_topic:' + get_topic_key(stream1, topic8));
     topic_selector.data = function () {
         return {
             participated: true,
@@ -653,13 +668,13 @@ run_test('test_topic_edit', () => {
     all_topics = rt.get();
 
     verify_topic_data(all_topics, stream1, topic8, messages[8].id, true);
-    assert.equal(all_topics.get(stream1 + ":" + topic6), undefined);
+    assert.equal(all_topics.get(get_topic_key(stream1, topic6)), undefined);
 
     ////////////////// test stream change //////////////////
     verify_topic_data(all_topics, stream1, topic1, messages[0].id, true);
-    assert.equal(all_topics.get(stream2 + ":" + topic1), undefined);
+    assert.equal(all_topics.get(get_topic_key(stream2, topic1)), undefined);
 
-    topic_selector = $.create('#recent_topic:' + stream2 + ":" + topic1);
+    topic_selector = $.create('#recent_topic:' + get_topic_key(stream2, topic1));
     topic_selector.data = function () {
         return {
             participated: true,
@@ -671,14 +686,14 @@ run_test('test_topic_edit', () => {
     rt.process_topic_edit(stream1, topic1, topic1, stream2);
     all_topics = rt.get();
 
-    assert.equal(all_topics.get(stream1 + ":" + topic1), undefined);
+    assert.equal(all_topics.get(get_topic_key(stream1, topic1)), undefined);
     verify_topic_data(all_topics, stream2, topic1, messages[0].id, true);
 
     ////////////////// test stream & topic change //////////////////
     verify_topic_data(all_topics, stream2, topic1, messages[0].id, true);
-    assert.equal(all_topics.get(stream3 + ":" + topic9), undefined);
+    assert.equal(all_topics.get(get_topic_key(stream3, topic9)), undefined);
 
-    topic_selector = $.create('#recent_topic:' + stream3 + ":" + topic9);
+    topic_selector = $.create('#recent_topic:' + get_topic_key(stream3, topic9));
     topic_selector.data = function () {
         return {
             participated: false,
@@ -691,6 +706,6 @@ run_test('test_topic_edit', () => {
     rt.process_topic_edit(stream2, topic1, topic9, stream3);
     all_topics = rt.get();
 
-    assert.equal(all_topics.get(stream2 + ":" + topic1), undefined);
+    assert.equal(all_topics.get(get_topic_key(stream2, topic1)), undefined);
     verify_topic_data(all_topics, stream3, topic9, messages[0].id, true);
 });

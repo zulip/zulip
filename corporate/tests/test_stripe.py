@@ -1,43 +1,66 @@
-from datetime import datetime, timedelta, timezone
-from decimal import Decimal
-from functools import wraps
-from unittest.mock import Mock, patch
+import json
 import operator
 import os
 import re
 import sys
-from typing import Any, Callable, Dict, List, Optional, TypeVar, Tuple, cast
-import ujson
-import json
-import responses
+from datetime import datetime, timedelta, timezone
+from decimal import Decimal
+from functools import wraps
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple, TypeVar, cast
+from unittest.mock import Mock, patch
 
-from django.core import signing
-from django.urls.resolvers import get_resolver
-from django.http import HttpResponse
+import responses
+import stripe
+import ujson
 from django.conf import settings
+from django.core import signing
+from django.http import HttpResponse
+from django.urls.resolvers import get_resolver
 from django.utils.timezone import now as timezone_now
 
-import stripe
-
-from zerver.lib.actions import do_deactivate_user, do_create_user, \
-    do_activate_user, do_reactivate_user, do_deactivate_realm, \
-    do_reactivate_realm
+from corporate.lib.stripe import (
+    MAX_INVOICED_LICENSES,
+    MIN_INVOICED_LICENSES,
+    BillingError,
+    StripeCardError,
+    add_months,
+    attach_discount_to_realm,
+    catch_stripe_errors,
+    compute_plan_parameters,
+    get_discount_for_realm,
+    get_latest_seat_count,
+    invoice_plan,
+    invoice_plans_as_needed,
+    make_end_of_cycle_updates_if_needed,
+    next_month,
+    process_initial_upgrade,
+    sign_string,
+    stripe_get_customer,
+    unsign_string,
+    update_license_ledger_for_automanaged_plan,
+    update_license_ledger_if_needed,
+    update_or_create_stripe_customer,
+)
+from corporate.models import (
+    Customer,
+    CustomerPlan,
+    LicenseLedger,
+    get_current_plan_by_customer,
+    get_current_plan_by_realm,
+    get_customer_by_realm,
+)
+from zerver.lib.actions import (
+    do_activate_user,
+    do_create_user,
+    do_deactivate_realm,
+    do_deactivate_user,
+    do_reactivate_realm,
+    do_reactivate_user,
+)
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_emails_in_zulip_realm
-from zerver.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
-from zerver.models import Realm, UserProfile, get_realm, RealmAuditLog
-from corporate.lib.stripe import catch_stripe_errors, attach_discount_to_realm, \
-    get_latest_seat_count, sign_string, unsign_string, \
-    BillingError, StripeCardError, stripe_get_customer, \
-    MIN_INVOICED_LICENSES, MAX_INVOICED_LICENSES, \
-    add_months, next_month, \
-    compute_plan_parameters, update_or_create_stripe_customer, \
-    process_initial_upgrade, make_end_of_cycle_updates_if_needed, \
-    update_license_ledger_if_needed, update_license_ledger_for_automanaged_plan, \
-    invoice_plan, invoice_plans_as_needed, get_discount_for_realm
-from corporate.models import Customer, CustomerPlan, LicenseLedger, \
-    get_customer_by_realm, get_current_plan_by_customer, \
-    get_current_plan_by_realm
+from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
+from zerver.models import Realm, RealmAuditLog, UserProfile, get_realm
 
 CallableT = TypeVar('CallableT', bound=Callable[..., Any])
 
@@ -64,8 +87,7 @@ def stripe_fixture_path(decorated_function_name: str, mocked_function_name: str,
     # use test_* for the python test files
     if decorated_function_name[:5] == 'test_':
         decorated_function_name = decorated_function_name[5:]
-    return "{}/{}--{}.{}.json".format(
-        STRIPE_FIXTURES_DIR, decorated_function_name, mocked_function_name[7:], call_count)
+    return f"{STRIPE_FIXTURES_DIR}/{decorated_function_name}--{mocked_function_name[7:]}.{call_count}.json"
 
 def fixture_files_for_function(decorated_function: CallableT) -> List[str]:  # nocoverage
     decorated_function_name = decorated_function.__name__
@@ -119,7 +141,7 @@ def delete_fixture_data(decorated_function: CallableT) -> None:  # nocoverage
         os.remove(fixture_file)
 
 def normalize_fixture_data(decorated_function: CallableT,
-                           tested_timestamp_fields: List[str]=[]) -> None:  # nocoverage
+                           tested_timestamp_fields: Sequence[str] = []) -> None:  # nocoverage
     # stripe ids are all of the form cus_D7OT2jf5YAtZQ2
     id_lengths = [
         ('cus', 14), ('sub', 14), ('si', 14), ('sli', 14), ('req', 14), ('tok', 24), ('card', 24),
@@ -145,7 +167,7 @@ def normalize_fixture_data(decorated_function: CallableT,
     for i, timestamp_field in enumerate(tested_timestamp_fields):
         # Don't use (..) notation, since the matched timestamp can easily appear in other fields
         pattern_translations[
-            '"%s": 1[5-9][0-9]{8}(?![0-9-])' % (timestamp_field,)
+            f'"{timestamp_field}": 1[5-9][0-9]{{8}}(?![0-9-])'
         ] = '"%s": 1%02d%%07d' % (timestamp_field, i+1)
 
     normalized_values: Dict[str, Dict[str, str]] = {
@@ -186,7 +208,7 @@ MOCKED_STRIPE_FUNCTION_NAMES = [f"stripe.{name}" for name in [
     "Token.create",
 ]]
 
-def mock_stripe(tested_timestamp_fields: List[str]=[],
+def mock_stripe(tested_timestamp_fields: Sequence[str]=[],
                 generate: Optional[bool]=None) -> Callable[[CallableT], CallableT]:
     def _mock_stripe(decorated_function: CallableT) -> CallableT:
         generate_fixture = generate
@@ -246,14 +268,14 @@ class StripeTestCase(ZulipTestCase):
         # sanity check our 8 expected users are active
         self.assertEqual(
             UserProfile.objects.filter(realm=realm, is_active=True).count(),
-            8
+            8,
         )
 
         # Make sure we have active users outside our realm (to make
         # sure relevant queries restrict on realm).
         self.assertEqual(
             UserProfile.objects.exclude(realm=realm).filter(is_active=True).count(),
-            10
+            10,
         )
 
         # Our seat count excludes our guest user and bot, and
@@ -277,7 +299,7 @@ class StripeTestCase(ZulipTestCase):
         return match.group(1) if match else None
 
     def upgrade(self, invoice: bool=False, talk_to_stripe: bool=True,
-                realm: Optional[Realm]=None, del_args: List[str]=[],
+                realm: Optional[Realm]=None, del_args: Sequence[str]=[],
                 **kwargs: Any) -> HttpResponse:
         host_args = {}
         if realm is not None:  # nocoverage: TODO
@@ -464,8 +486,8 @@ class StripeTest(StripeTestCase):
         self.assert_not_in_success_response(['Pay annually'], response)
         for substring in [
                 'Zulip Standard', str(self.seat_count),
-                'You are using', '%s of %s licenses' % (self.seat_count, self.seat_count),
-                'Your plan will renew on', 'January 2, 2013', '$%s.00' % (80 * self.seat_count,),
+                'You are using', f'{self.seat_count} of {self.seat_count} licenses',
+                'Your plan will renew on', 'January 2, 2013', f'${80 * self.seat_count}.00',
                 'Visa ending in 4242',
                 'Update card']:
             self.assert_in_response(substring, response)
@@ -548,7 +570,7 @@ class StripeTest(StripeTestCase):
         self.assert_not_in_success_response(['Pay annually', 'Update card'], response)
         for substring in [
                 'Zulip Standard', str(123),
-                'You are using', '%s of %s licenses' % (self.seat_count, 123),
+                'You are using', f'{self.seat_count} of {123} licenses',
                 'Your plan will renew on', 'January 2, 2013', '$9,840.00',  # 9840 = 80 * 123
                 'Billed by invoice']:
             self.assert_in_response(substring, response)
@@ -619,8 +641,8 @@ class StripeTest(StripeTestCase):
             self.assert_not_in_success_response(['Pay annually'], response)
             for substring in [
                     'Zulip Standard', 'Free Trial', str(self.seat_count),
-                    'You are using', '%s of %s licenses' % (self.seat_count, self.seat_count),
-                    'Your plan will be upgraded to', 'March 2, 2012', '$%s.00' % (80 * self.seat_count,),
+                    'You are using', f'{self.seat_count} of {self.seat_count} licenses',
+                    'Your plan will be upgraded to', 'March 2, 2012', f'${80 * self.seat_count}.00',
                     'Visa ending in 4242',
                     'Update card']:
                 self.assert_in_response(substring, response)
@@ -634,14 +656,14 @@ class StripeTest(StripeTestCase):
                 update_license_ledger_if_needed(realm, self.now)
             self.assertEqual(
                 LicenseLedger.objects.order_by('-id').values_list('licenses', 'licenses_at_next_renewal').first(),
-                (12, 12)
+                (12, 12),
             )
 
             with patch('corporate.lib.stripe.get_latest_seat_count', return_value=15):
                 update_license_ledger_if_needed(realm, self.next_month)
             self.assertEqual(
                 LicenseLedger.objects.order_by('-id').values_list('licenses', 'licenses_at_next_renewal').first(),
-                (15, 15)
+                (15, 15),
             )
 
             invoice_plans_as_needed(self.next_month)
@@ -663,7 +685,7 @@ class StripeTest(StripeTestCase):
                 "amount_due": 15 * 80 * 100, "amount_paid": 0, "amount_remaining": 15 * 80 * 100,
                 "auto_advance": True, "billing": "charge_automatically", "collection_method": "charge_automatically",
                 "customer_email": self.example_email("hamlet"), "discount": None, "paid": False, "status": "open",
-                "total": 15 * 80 * 100
+                "total": 15 * 80 * 100,
             }
             for key, value in invoice_params.items():
                 self.assertEqual(invoices[0].get(key), value)
@@ -674,7 +696,7 @@ class StripeTest(StripeTestCase):
                 "plan": None, "quantity": 15, "subscription": None, "discountable": False,
                 "period": {
                     "start": datetime_to_timestamp(free_trial_end_date),
-                    "end": datetime_to_timestamp(add_months(free_trial_end_date, 12))
+                    "end": datetime_to_timestamp(add_months(free_trial_end_date, 12)),
                 },
             }
             for key, value in invoice_item_params.items():
@@ -688,14 +710,14 @@ class StripeTest(StripeTestCase):
                 update_license_ledger_if_needed(realm, add_months(free_trial_end_date, 10))
             self.assertEqual(
                 LicenseLedger.objects.order_by('-id').values_list('licenses', 'licenses_at_next_renewal').first(),
-                (19, 19)
+                (19, 19),
             )
             invoice_plans_as_needed(add_months(free_trial_end_date, 10))
             invoices = [invoice for invoice in stripe.Invoice.list(customer=stripe_customer.id)]
             self.assertEqual(len(invoices), 2)
             invoice_params = {
                 "amount_due": 5172, "auto_advance": True,  "billing": "charge_automatically",
-                "collection_method": "charge_automatically", "customer_email": "hamlet@zulip.com"
+                "collection_method": "charge_automatically", "customer_email": "hamlet@zulip.com",
             }
             invoice_items = [invoice_item for invoice_item in invoices[0].get("lines")]
             self.assertEqual(len(invoice_items), 1)
@@ -704,8 +726,8 @@ class StripeTest(StripeTestCase):
                 "discountable": False, "quantity": 4,
                 "period": {
                     "start": datetime_to_timestamp(add_months(free_trial_end_date, 10)),
-                    "end": datetime_to_timestamp(add_months(free_trial_end_date, 12))
-                }
+                    "end": datetime_to_timestamp(add_months(free_trial_end_date, 12)),
+                },
             }
 
             invoice_plans_as_needed(add_months(free_trial_end_date, 12))
@@ -773,9 +795,9 @@ class StripeTest(StripeTestCase):
             self.assert_not_in_success_response(['Pay annually'], response)
             for substring in [
                     'Zulip Standard', 'Free Trial', str(self.seat_count),
-                    'You are using', '%s of %s licenses' % (self.seat_count, 123),
+                    'You are using', f'{self.seat_count} of {123} licenses',
                     'Your plan will be upgraded to', 'March 2, 2012',
-                    f'{80 * 123:,.2f}', 'Billed by invoice'
+                    f'{80 * 123:,.2f}', 'Billed by invoice',
             ]:
                 self.assert_in_response(substring, response)
 
@@ -799,7 +821,7 @@ class StripeTest(StripeTestCase):
                 "amount_due": 123 * 80 * 100, "amount_paid": 0, "amount_remaining": 123 * 80 * 100,
                 "auto_advance": True, "billing": "send_invoice", "collection_method": "send_invoice",
                 "customer_email": self.example_email("hamlet"), "discount": None, "paid": False, "status": "open",
-                "total": 123 * 80 * 100
+                "total": 123 * 80 * 100,
             }
             for key, value in invoice_params.items():
                 self.assertEqual(invoices[0].get(key), value)
@@ -810,7 +832,7 @@ class StripeTest(StripeTestCase):
                 "plan": None, "quantity": 123, "subscription": None, "discountable": False,
                 "period": {
                     "start": datetime_to_timestamp(free_trial_end_date),
-                    "end": datetime_to_timestamp(add_months(free_trial_end_date, 12))
+                    "end": datetime_to_timestamp(add_months(free_trial_end_date, 12)),
                 },
             }
             for key, value in invoice_item_params.items():
@@ -960,8 +982,8 @@ class StripeTest(StripeTestCase):
 
     def test_check_upgrade_parameters(self) -> None:
         # Tests all the error paths except 'not enough licenses'
-        def check_error(error_description: str, upgrade_params: Dict[str, Any],
-                        del_args: List[str]=[]) -> None:
+        def check_error(error_description: str, upgrade_params: Mapping[str, Any],
+                        del_args: Sequence[str] = []) -> None:
             response = self.upgrade(talk_to_stripe=False, del_args=del_args, **upgrade_params)
             self.assert_json_error_contains(response, "Something went wrong. Please contact")
             self.assertEqual(ujson.loads(response.content)['error_description'], error_description)
@@ -1505,7 +1527,7 @@ class RequiresBillingAccessTest(ZulipTestCase):
         hamlet.save(update_fields=["is_billing_admin"])
 
     def verify_non_admins_blocked_from_endpoint(
-            self, url: str, request_data: Optional[Dict[str, Any]]={}) -> None:
+            self, url: str, request_data: Dict[str, Any]={}) -> None:
         cordelia = self.example_user('cordelia')
         self.login_user(cordelia)
         response = self.client_post(url, request_data)

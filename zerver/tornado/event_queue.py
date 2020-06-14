@@ -1,39 +1,57 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
-from typing import cast, AbstractSet, Any, Callable, Dict, List, \
-    Mapping, MutableMapping, Optional, Iterable, Sequence, Set, Union
-from typing_extensions import Deque, TypedDict
-
-from django.utils.translation import ugettext as _
-from django.conf import settings
-from collections import deque
-import os
-import time
-import logging
-import ujson
-import requests
 import atexit
-import sys
-import signal
-import traceback
-import tornado.ioloop
+import copy
+import logging
+import os
 import random
-from zerver.models import UserProfile, Client, Realm
+import signal
+import sys
+import time
+import traceback
+from collections import deque
+from typing import (
+    AbstractSet,
+    Any,
+    Callable,
+    Deque,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    MutableMapping,
+    Optional,
+    Sequence,
+    Set,
+    Union,
+    cast,
+)
+
+import requests
+import tornado.ioloop
+import ujson
+from django.conf import settings
+from django.utils.translation import ugettext as _
+from typing_extensions import TypedDict
+
 from zerver.decorator import cachify
-from zerver.tornado.handlers import clear_handler_by_id, get_handler_by_id, \
-    finish_handler, handler_stats_string
-from zerver.lib.utils import statsd
-from zerver.middleware import async_request_timer_restart
 from zerver.lib.message import MessageDict
 from zerver.lib.narrow import build_narrow_filter
 from zerver.lib.queue import queue_json_publish, retry_event
 from zerver.lib.request import JsonableError
+from zerver.lib.utils import statsd
+from zerver.middleware import async_request_timer_restart
+from zerver.models import Client, Realm, UserProfile
+from zerver.tornado.autoreload import add_reload_hook
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from zerver.tornado.exceptions import BadEventQueueIdError
-from zerver.tornado.sharding import get_tornado_uri, get_tornado_port, \
-    notify_tornado_queue_name
-from zerver.tornado.autoreload import add_reload_hook
-import copy
+from zerver.tornado.handlers import (
+    clear_handler_by_id,
+    finish_handler,
+    get_handler_by_id,
+    handler_stats_string,
+)
+from zerver.tornado.sharding import get_tornado_port, get_tornado_uri, notify_tornado_queue_name
 
 requests_client = requests.Session()
 for host in ['127.0.0.1', 'localhost']:
@@ -117,7 +135,7 @@ class ClientDescriptor:
                     client_type_name=self.client_type_name)
 
     def __repr__(self) -> str:
-        return "ClientDescriptor<%s>" % (self.event_queue.id,)
+        return f"ClientDescriptor<{self.event_queue.id}>"
 
     @classmethod
     def from_dict(cls, d: MutableMapping[str, Any]) -> 'ClientDescriptor':
@@ -142,7 +160,7 @@ class ClientDescriptor:
             d['slim_presence'],
             d['all_public_streams'],
             d['queue_timeout'],
-            d.get('narrow', [])
+            d.get('narrow', []),
         )
         ret.last_connection_time = d['last_connection_time']
         return ret
@@ -161,7 +179,7 @@ class ClientDescriptor:
 
     def finish_current_handler(self) -> bool:
         if self.current_handler_id is not None:
-            err_msg = "Got error finishing handler for queue %s" % (self.event_queue.id,)
+            err_msg = f"Got error finishing handler for queue {self.event_queue.id}"
             try:
                 finish_handler(self.current_handler_id, self.event_queue.id,
                                self.event_queue.contents(), self.apply_markdown)
@@ -232,8 +250,8 @@ def compute_full_event_type(event: Mapping[str, Any]) -> str:
     if event["type"] == "update_message_flags":
         if event["all"]:
             # Put the "all" case in its own category
-            return "all_flags/%s/%s" % (event["flag"], event["operation"])
-        return "flags/%s/%s" % (event["operation"], event["flag"])
+            return "all_flags/{}/{}".format(event["flag"], event["operation"])
+        return "flags/{}/{}".format(event["operation"], event["flag"])
     return event["type"]
 
 class EventQueue:
@@ -561,10 +579,10 @@ def fetch_events(query: Mapping[str, Any]) -> Dict[str, Any]:
             if orig_queue_id is None:
                 response['queue_id'] = queue_id
             if len(response["events"]) == 1:
-                extra_log_data = "[%s/%s/%s]" % (queue_id, len(response["events"]),
-                                                 response["events"][0]["type"])
+                extra_log_data = "[{}/{}/{}]".format(queue_id, len(response["events"]),
+                                                     response["events"][0]["type"])
             else:
-                extra_log_data = "[%s/%s]" % (queue_id, len(response["events"]))
+                extra_log_data = "[{}/{}]".format(queue_id, len(response["events"]))
             if was_connected:
                 extra_log_data += " [was connected]"
             return dict(type="response", response=response, extra_log_data=extra_log_data)
@@ -629,7 +647,7 @@ def get_user_events(user_profile: UserProfile, queue_id: str, last_event_id: int
             'dont_block': 'true',
             'user_profile_id': user_profile.id,
             'secret': settings.SHARED_SECRET,
-            'client': 'internal'
+            'client': 'internal',
         }
         resp = requests_client.post(tornado_uri + '/api/v1/events/internal',
                                     data=post_data)
@@ -798,7 +816,7 @@ def get_client_info_for_message_event(event_template: Mapping[str, Any],
             send_to_clients[client.event_queue.id] = dict(
                 client=client,
                 flags=[],
-                is_sender=is_sender_client(client)
+                is_sender=is_sender_client(client),
             )
 
     for user_data in users:
@@ -809,7 +827,7 @@ def get_client_info_for_message_event(event_template: Mapping[str, Any],
             send_to_clients[client.event_queue.id] = dict(
                 client=client,
                 flags=flags,
-                is_sender=is_sender_client(client)
+                is_sender=is_sender_client(client),
             )
 
     return send_to_clients
@@ -844,7 +862,7 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
         return MessageDict.finalize_payload(
             wide_dict,
             apply_markdown=apply_markdown,
-            client_gravatar=client_gravatar
+            client_gravatar=client_gravatar,
         )
 
     # Extra user-specific data to include

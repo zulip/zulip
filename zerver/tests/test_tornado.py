@@ -1,22 +1,20 @@
+import urllib.parse
+from typing import Any, Dict, List, Optional, cast
+
 import ujson
 from django.conf import settings
-from django.db import close_old_connections
 from django.core import signals
+from django.db import close_old_connections
 from django.test import override_settings
 from tornado.httpclient import HTTPResponse
-
-from zerver.lib.test_classes import ZulipTestCase
-
 from tornado.testing import AsyncHTTPTestCase
 from tornado.web import Application
 
-from zerver.tornado.application import create_tornado_application
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.tornado import event_queue
+from zerver.tornado.application import create_tornado_application
 from zerver.tornado.event_queue import process_event
 
-import urllib.parse
-
-from typing import Any, Dict, Optional, List, cast
 
 class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
     def setUp(self) -> None:
@@ -53,7 +51,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
             self.get_url(path),
             self.stop,
             method=method,
-            **kwargs
+            **kwargs,
         )
 
     def client_get_async(self, path: str, **kwargs: Any) -> None:
@@ -66,7 +64,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
         session_cookie = settings.SESSION_COOKIE_NAME
         session_key = self.client.session.session_key
         self.session_cookie = {
-            "Cookie": f"{session_cookie}={session_key}"
+            "Cookie": f"{session_cookie}={session_key}",
         }
 
     def get_session_cookie(self) -> Dict[str, str]:

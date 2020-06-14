@@ -1,16 +1,18 @@
-from markdown.extensions import Extension
-from typing import Any, Dict, Optional, List, Tuple
-import markdown
+from typing import Any, Dict, List, Optional, Tuple
 from xml.etree.ElementTree import Element, SubElement
 
-from zerver.lib.bugdown import walk_tree_with_family, ResultWithFamily
+import markdown
+from markdown.extensions import Extension
+
+from zerver.lib.bugdown import ResultWithFamily, walk_tree_with_family
+
 
 class NestedCodeBlocksRenderer(Extension):
     def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
         md.treeprocessors.add(
             'nested_code_blocks',
             NestedCodeBlocksRendererTreeProcessor(md, self.getConfigs()),
-            '_end'
+            '_end',
         )
 
 class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocessor):
@@ -33,7 +35,7 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
         return None
 
     def get_nested_code_blocks(
-        self, code_tags: List[ResultWithFamily[Tuple[str, Optional[str]]]]
+        self, code_tags: List[ResultWithFamily[Tuple[str, Optional[str]]]],
     ) -> List[ResultWithFamily[Tuple[str, Optional[str]]]]:
         nested_code_blocks = []
         for code_tag in code_tags:
@@ -59,7 +61,7 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
     def replace_element(
             self, parent: Optional[Element],
             replacement: Element,
-            element_to_replace: Element
+            element_to_replace: Element,
     ) -> None:
         if parent is None:
             return

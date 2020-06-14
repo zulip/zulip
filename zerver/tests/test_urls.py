@@ -1,15 +1,16 @@
 import importlib
 import os
-import ujson
+from typing import List, Optional
 
 import django.urls.resolvers
-from django.test import TestCase, Client
-from typing import List, Optional
+import ujson
+from django.test import Client, TestCase
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_runner import slow
 from zerver.models import Stream
 from zproject import urls
+
 
 class PublicURLTest(ZulipTestCase):
     """
@@ -113,7 +114,7 @@ class URLResolutionTest(TestCase):
 
     def check_function_exists(self, module_name: str, view: str) -> None:
         module = importlib.import_module(module_name)
-        self.assertTrue(hasattr(module, view), "View %s.%s does not exist" % (module_name, view))
+        self.assertTrue(hasattr(module, view), f"View {module_name}.{view} does not exist")
 
     # Tests that all views in urls.v1_api_and_json_patterns exist
     def test_rest_api_url_resolution(self) -> None:

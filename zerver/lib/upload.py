@@ -1,45 +1,45 @@
-from typing import Any, Optional, Tuple
-
-from datetime import timedelta
-
-from django.utils.translation import ugettext as _
-from django.conf import settings
-from django.core.files import File
-from django.core.signing import TimestampSigner, BadSignature
-from django.http import HttpRequest
-from django.urls import reverse
-from jinja2 import Markup as mark_safe
+import base64
+import binascii
+import io
+import logging
+import os
+import random
+import re
+import shutil
+import sys
 import unicodedata
-
-from zerver.lib.avatar_hash import user_avatar_path
-from zerver.lib.exceptions import JsonableError, ErrorCode
-from zerver.lib.utils import generate_random_token
+import urllib
+from datetime import timedelta
+from mimetypes import guess_extension, guess_type
+from typing import Any, Optional, Tuple
 
 import boto3
 import botocore
-from botocore.client import Config
 from boto3.resources.base import ServiceResource
 from boto3.session import Session
-
-from mimetypes import guess_type, guess_extension
-
-from zerver.models import get_user_profile_by_id
-from zerver.models import Attachment
-from zerver.models import Realm, RealmEmoji, UserProfile, Message
-
-import urllib
-import base64
-import binascii
-import os
-import re
-from PIL import Image, ImageOps, ExifTags
-from PIL.Image import DecompressionBombError
+from botocore.client import Config
+from django.conf import settings
+from django.core.files import File
+from django.core.signing import BadSignature, TimestampSigner
+from django.http import HttpRequest
+from django.urls import reverse
+from django.utils.translation import ugettext as _
+from jinja2 import Markup as mark_safe
+from PIL import ExifTags, Image, ImageOps
 from PIL.GifImagePlugin import GifImageFile
-import io
-import random
-import logging
-import shutil
-import sys
+from PIL.Image import DecompressionBombError
+
+from zerver.lib.avatar_hash import user_avatar_path
+from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.utils import generate_random_token
+from zerver.models import (
+    Attachment,
+    Message,
+    Realm,
+    RealmEmoji,
+    UserProfile,
+    get_user_profile_by_id,
+)
 
 DEFAULT_AVATAR_SIZE = 100
 MEDIUM_AVATAR_SIZE = 500
@@ -98,7 +98,9 @@ def sanitize_name(value: str) -> str:
     """
     value = unicodedata.normalize('NFKC', value)
     value = re.sub(r'[^\w\s._-]', '', value, flags=re.U).strip()
-    return mark_safe(re.sub(r'[-\s]+', '-', value, flags=re.U))
+    value = re.sub(r'[-\s]+', '-', value, flags=re.U)
+    assert value not in {'', '.', '..'}
+    return mark_safe(value)
 
 def random_name(bytes: int=60) -> str:
     return base64.urlsafe_b64encode(os.urandom(bytes)).decode('utf-8')
@@ -290,7 +292,7 @@ def upload_image_to_s3(
     key = bucket.Object(file_name)
     metadata = {
         "user_profile_id": str(user_profile.id),
-        "realm_id": str(user_profile.realm_id)
+        "realm_id": str(user_profile.realm_id),
     }
 
     content_disposition = ''
@@ -376,16 +378,16 @@ class S3UploadBackend(ZulipUploadBackend):
         s3_file_name = "/".join([
             str(target_realm.id),
             random_name(18),
-            sanitize_name(uploaded_file_name)
+            sanitize_name(uploaded_file_name),
         ])
-        url = "/user_uploads/%s" % (s3_file_name,)
+        url = f"/user_uploads/{s3_file_name}"
 
         upload_image_to_s3(
             bucket_name,
             s3_file_name,
             content_type,
             user_profile,
-            file_data
+            file_data,
         )
 
         create_attachment(uploaded_file_name, s3_file_name, user_profile, uploaded_file_size)
@@ -413,7 +415,7 @@ class S3UploadBackend(ZulipUploadBackend):
             s3_file_name + "-medium.png",
             "image/png",
             target_user_profile,
-            resized_medium
+            resized_medium,
         )
 
         resized_data = resize_avatar(image_data)
@@ -469,12 +471,12 @@ class S3UploadBackend(ZulipUploadBackend):
         bucket = settings.S3_AVATAR_BUCKET
         medium_suffix = "-medium.png" if medium else ""
         # ?x=x allows templates to append additional parameters with &s
-        return "https://%s.s3.amazonaws.com/%s%s?x=x" % (bucket, hash_key, medium_suffix)
+        return f"https://{bucket}.s3.amazonaws.com/{hash_key}{medium_suffix}?x=x"
 
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
         bucket = settings.S3_AVATAR_BUCKET
         # export_path has a leading /
-        return "https://%s.s3.amazonaws.com%s" % (bucket, export_path)
+        return f"https://{bucket}.s3.amazonaws.com{export_path}"
 
     def realm_avatar_and_logo_path(self, realm: Realm) -> str:
         return os.path.join(str(realm.id), 'realm')
@@ -507,8 +509,7 @@ class S3UploadBackend(ZulipUploadBackend):
     def get_realm_icon_url(self, realm_id: int, version: int) -> str:
         bucket = settings.S3_AVATAR_BUCKET
         # ?x=x allows templates to append additional parameters with &s
-        return "https://%s.s3.amazonaws.com/%s/realm/icon.png?version=%s" % (
-            bucket, realm_id, version)
+        return f"https://{bucket}.s3.amazonaws.com/{realm_id}/realm/icon.png?version={version}"
 
     def upload_realm_logo_image(self, logo_file: File, user_profile: UserProfile,
                                 night: bool) -> None:
@@ -547,8 +548,7 @@ class S3UploadBackend(ZulipUploadBackend):
             file_name = 'logo.png'
         else:
             file_name = 'night_logo.png'
-        return "https://%s.s3.amazonaws.com/%s/realm/%s?version=%s" % (
-            bucket, realm_id, file_name, version)
+        return f"https://{bucket}.s3.amazonaws.com/{realm_id}/realm/{file_name}?version={version}"
 
     def ensure_medium_avatar_image(self, user_profile: UserProfile) -> None:
         file_path = user_avatar_path(user_profile)
@@ -565,7 +565,7 @@ class S3UploadBackend(ZulipUploadBackend):
             s3_file_name + "-medium.png",
             "image/png",
             user_profile,
-            resized_medium
+            resized_medium,
         )
 
     def ensure_basic_avatar_image(self, user_profile: UserProfile) -> None:  # nocoverage
@@ -585,7 +585,7 @@ class S3UploadBackend(ZulipUploadBackend):
             s3_file_name,
             "image/png",
             user_profile,
-            resized_avatar
+            resized_avatar,
         )
 
     def upload_emoji_image(self, emoji_file: File, emoji_file_name: str,
@@ -594,7 +594,7 @@ class S3UploadBackend(ZulipUploadBackend):
         bucket_name = settings.S3_AVATAR_BUCKET
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=user_profile.realm_id,
-            emoji_file_name=emoji_file_name
+            emoji_file_name=emoji_file_name,
         )
 
         image_data = emoji_file.read()
@@ -618,7 +618,7 @@ class S3UploadBackend(ZulipUploadBackend):
         bucket = settings.S3_AVATAR_BUCKET
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(realm_id=realm_id,
                                                         emoji_file_name=emoji_file_name)
-        return "https://%s.s3.amazonaws.com/%s" % (bucket, emoji_path)
+        return f"https://{bucket}.s3.amazonaws.com/{emoji_path}"
 
     def upload_export_tarball(self, realm: Optional[Realm], tarball_path: str) -> str:
         def percent_callback(bytes_transferred: Any) -> None:
@@ -640,9 +640,9 @@ class S3UploadBackend(ZulipUploadBackend):
             'get_object',
             Params={
                 'Bucket': bucket.name,
-                'Key': key.key
+                'Key': key.key,
             },
-            ExpiresIn=0
+            ExpiresIn=0,
         )
         return public_url
 
@@ -655,6 +655,7 @@ class S3UploadBackend(ZulipUploadBackend):
 
 def write_local_file(type: str, path: str, file_data: bytes) -> None:
     file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, type, path)
+
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     with open(file_path, 'wb') as f:
         f.write(file_data)
@@ -709,7 +710,7 @@ class LocalUploadBackend(ZulipUploadBackend):
             str(user_profile.realm_id),
             format(random.randint(0, 255), 'x'),
             random_name(18),
-            sanitize_name(uploaded_file_name)
+            sanitize_name(uploaded_file_name),
         ])
 
         write_local_file('files', path, file_data)
@@ -747,7 +748,7 @@ class LocalUploadBackend(ZulipUploadBackend):
     def get_avatar_url(self, hash_key: str, medium: bool=False) -> str:
         # ?x=x allows templates to append additional parameters with &s
         medium_suffix = "-medium" if medium else ""
-        return "/user_avatars/%s%s.png?x=x" % (hash_key, medium_suffix)
+        return f"/user_avatars/{hash_key}{medium_suffix}.png?x=x"
 
     def copy_avatar(self, source_profile: UserProfile, target_profile: UserProfile) -> None:
         source_file_path = user_avatar_path(source_profile)
@@ -772,7 +773,7 @@ class LocalUploadBackend(ZulipUploadBackend):
 
     def get_realm_icon_url(self, realm_id: int, version: int) -> str:
         # ?x=x allows templates to append additional parameters with &s
-        return "/user_avatars/%s/realm/icon.png?version=%s" % (realm_id, version)
+        return f"/user_avatars/{realm_id}/realm/icon.png?version={version}"
 
     def upload_realm_logo_image(self, logo_file: File, user_profile: UserProfile,
                                 night: bool) -> None:
@@ -798,7 +799,7 @@ class LocalUploadBackend(ZulipUploadBackend):
             file_name = 'night_logo.png'
         else:
             file_name = 'logo.png'
-        return "/user_avatars/%s/realm/%s?version=%s" % (realm_id, file_name, version)
+        return f"/user_avatars/{realm_id}/realm/{file_name}?version={version}"
 
     def ensure_medium_avatar_image(self, user_profile: UserProfile) -> None:
         file_path = user_avatar_path(user_profile)
@@ -831,7 +832,7 @@ class LocalUploadBackend(ZulipUploadBackend):
                            user_profile: UserProfile) -> None:
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id= user_profile.realm_id,
-            emoji_file_name=emoji_file_name
+            emoji_file_name=emoji_file_name,
         )
 
         image_data = emoji_file.read()

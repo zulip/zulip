@@ -6,8 +6,11 @@ let topics_widget;
 // Sets the number of avatars to display.
 // Rest of the avatars, if present, are displayed as {+x}
 const MAX_AVATAR = 4;
-// This variable can be used to set default filters.
-let filters = new Set(['unread', 'participated']);
+let filters = new Set();
+
+function get_topic_key(stream_id, topic) {
+    return stream_id + ":" + topic.toLowerCase();
+}
 
 exports.process_messages = function (messages) {
     // FIX: Currently, we do a complete_rerender everytime
@@ -27,7 +30,7 @@ exports.process_message = function (msg) {
         return false;
     }
     // Initialize topic data
-    const key = msg.stream_id + ':' + msg.topic;
+    const key = get_topic_key(msg.stream_id, msg.topic);
     if (!topics.has(key)) {
         topics.set(key, {
             last_msg_id: -1,
@@ -54,6 +57,10 @@ exports.process_message = function (msg) {
 };
 
 exports.reify_message_id_if_available = function (opts) {
+    // We don't need to reify the message_id of the topic
+    // if a new message arrives in the topic from another user,
+    // since it replaces the last_msg_id of the topic which
+    // we were trying to reify.
     for (const [, value] of topics.entries()) {
         if (value.last_msg_id === opts.old_id) {
             value.last_msg_id = opts.new_id;
@@ -108,11 +115,12 @@ function format_topic(topic_data) {
         stream_url: hash_util.by_stream_uri(stream_id),
 
         topic: topic,
+        topic_key: get_topic_key(stream_id, topic),
         unread_count: unread_count,
         last_msg_time: last_msg_time,
         topic_url: hash_util.by_stream_topic_uri(stream_id, topic),
         senders: senders_info,
-        count_senders: Math.max(0, all_senders.length - MAX_AVATAR),
+        other_senders_count: Math.max(0, all_senders.length - MAX_AVATAR),
         muted: muted,
         topic_muted: topic_muted,
         participated: topic_data.participated,
@@ -121,14 +129,14 @@ function format_topic(topic_data) {
 
 function get_topic_row(topic_data) {
     const msg = message_store.get(topic_data.last_msg_id);
-    const topic_key = msg.stream_id + ":" + msg.topic;
+    const topic_key = get_topic_key(msg.stream_id, msg.topic);
     return $("#" + $.escapeSelector("recent_topic:" + topic_key));
 }
 
 exports.process_topic_edit = function (old_stream_id, old_topic, new_topic, new_stream_id) {
     // See `recent_senders.process_topic_edit` for
     // logic behind this and important notes on use of this function.
-    topics.delete(old_stream_id + ':' + old_topic);
+    topics.delete(get_topic_key(old_stream_id, old_topic));
 
     const old_topic_msgs = message_util.get_messages_in_topic(old_stream_id, old_topic);
     exports.process_messages(old_topic_msgs);
@@ -145,7 +153,7 @@ function topic_in_search_results(keyword, stream, topic) {
     // split the search text around whitespace(s).
     // eg: "Denamark recent" -> ["Denamrk", "recent"]
     const search_keywords = $.trim(keyword).split(/\s+/);
-    // turn the search keywords into word boundry groups
+    // turn the search keywords into word boundary groups
     // eg: ["Denamrk", "recent"] -> "^(?=.*\bDenmark\b)(?=.*\brecent\b).*$"
     const val = '^(?=.*\\b' + search_keywords.join('\\b)(?=.*\\b') + ').*$';
     const reg = RegExp(val, 'i'); // i for ignorecase
@@ -153,23 +161,30 @@ function topic_in_search_results(keyword, stream, topic) {
     return reg.test(text);
 }
 
-function is_topic_hidden(topic_data) {
+function filters_should_hide_topic(topic_data) {
     const msg = message_store.get(topic_data.last_msg_id);
-    const topic_muted = !!muting.is_topic_muted(msg.stream_id, msg.topic);
-    const stream_muted = stream_data.is_muted(msg.stream_id);
-    const muted = topic_muted || stream_muted;
-    const unreadCount = unread.unread_topic_counter.get(msg.stream_id, msg.topic);
-    const search_keyword = $("#recent_topics_search").val();
 
+    const unreadCount = unread.unread_topic_counter.get(msg.stream_id, msg.topic);
     if (unreadCount === 0 && filters.has('unread')) {
         return true;
-    } else if (!topic_data.participated && filters.has('participated')) {
-        return true;
-    } else if (muted && !filters.has('muted')) {
-        return true;
-    } else if (!topic_in_search_results(search_keyword, msg.stream, msg.topic)) {
+    }
+
+    if (!topic_data.participated && filters.has('participated')) {
         return true;
     }
+
+    const topic_muted = !!muting.is_topic_muted(msg.stream_id, msg.topic);
+    const stream_muted = stream_data.is_muted(msg.stream_id);
+    const include_muted = topic_muted || stream_muted;
+    if (include_muted && !filters.has('muted')) {
+        return true;
+    }
+
+    const search_keyword = $("#recent_topics_search").val();
+    if (!topic_in_search_results(search_keyword, msg.stream, msg.topic)) {
+        return true;
+    }
+
     return false;
 }
 
@@ -185,7 +200,7 @@ exports.inplace_rerender = function (topic_key) {
     topics_widget.render_item(topic_data);
     const topic_row = get_topic_row(topic_data);
 
-    if (is_topic_hidden(topic_data)) {
+    if (filters_should_hide_topic(topic_data)) {
         topic_row.hide();
     } else {
         topic_row.show();
@@ -194,7 +209,7 @@ exports.inplace_rerender = function (topic_key) {
 };
 
 exports.update_topic_is_muted = function (stream_id, topic) {
-    const key = stream_id + ":" + topic;
+    const key = get_topic_key(stream_id, topic);
     if (!topics.has(key)) {
         // we receive mute request for a topic we are
         // not tracking currently
@@ -206,24 +221,35 @@ exports.update_topic_is_muted = function (stream_id, topic) {
 };
 
 exports.update_topic_unread_count = function (message) {
-    const topic_key = message.stream_id + ":" + message.topic;
+    const topic_key = get_topic_key(message.stream_id, message.topic);
     exports.inplace_rerender(topic_key);
 };
 
 exports.set_filter = function (filter) {
+    // This function updates the `filters` variable
+    // after user clicks on one of the filter buttons
+    // based on `btn-recent-selected` class and current
+    // set `filters`.
+
+    // Get the button which was clicked.
     const filter_elem = $('#recent_topics_filter_buttons')
         .find('[data-filter="' + filter + '"]');
 
+    // If user clicks `All`, we clear all filters.
     if (filter === 'all' && filters.size !== 0) {
         filters = new Set();
+    // If the button was already selected, remove the filter.
     } else if (filter_elem.hasClass('btn-recent-selected')) {
         filters.delete(filter);
+    // If the button was not selected, we add the filter.
     } else {
         filters.add(filter);
     }
 };
 
 function show_selected_filters() {
+    // Add `btn-selected-filter` to the buttons to show
+    // which filters are applied.
     if (filters.size === 0) {
         $('#recent_topics_filter_buttons')
             .find('[data-filter="all"]')
@@ -276,7 +302,7 @@ exports.complete_rerender = function () {
     if (!overlays.recent_topics_open()) {
         return false;
     }
-    // Prepare Header
+    // Prepare header
     const rendered_body = render_recent_topics_body({
         filter_participated: filters.has('participated'),
         filter_unread: filters.has('unread'),
@@ -300,10 +326,10 @@ exports.complete_rerender = function () {
             return render_recent_topic_row(format_topic(item));
         },
         filter: {
-            // We use update_filters_view & is_topic_hidden to do all the
+            // We use update_filters_view & filters_should_hide_topic to do all the
             // filtering for us, which is called using click_handlers.
             predicate: function (topic_data) {
-                return !is_topic_hidden(topic_data);
+                return !filters_should_hide_topic(topic_data);
             },
         },
         sort_fields: {
@@ -322,8 +348,8 @@ exports.launch = function () {
             hashchange.exit_overlay();
         },
     });
-    recent_topics.complete_rerender();
-    $("#recent_topics_search").focus();
+    exports.complete_rerender();
+    $("#recent_topics_search").select();
 };
 
 window.recent_topics = exports;

@@ -23,8 +23,9 @@
         text-overflow: ellipsis;
         list-style-type: none;
         border-radius: 4px;
-        margin: 1px 0px;
         padding-right: 15px;
+        padding-top: 1px;
+        padding-bottom: 2px;
 
         .user-list-sidebar-menu-icon {
             position: absolute;
@@ -42,7 +43,7 @@
             &:hover {
                 display: inline;
                 cursor: pointer;
-                color: hsl(0, 0%, 0%);
+                color: hsl(0, 0%, 0%) !important;
             }
         }
 

@@ -1,20 +1,29 @@
-import random
-import requests
-import shutil
 import logging
 import os
+import random
+import shutil
 import traceback
-import ujson
+from typing import AbstractSet, Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, TypeVar
 
-from typing import List, Dict, Any, Optional, Set, Callable, Iterable, Tuple, TypeVar
+import requests
+import ujson
 from django.forms.models import model_to_dict
 
-from zerver.models import Realm, RealmEmoji, Subscription, Recipient, \
-    Attachment, Stream, Message, UserProfile, Huddle
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.parallel import run_parallel
+from zerver.models import (
+    Attachment,
+    Huddle,
+    Message,
+    Realm,
+    RealmEmoji,
+    Recipient,
+    Stream,
+    Subscription,
+    UserProfile,
+)
 
 # stubs
 ZerverFieldsT = Dict[str, Any]
@@ -50,7 +59,7 @@ def build_zerver_realm(realm_id: int, realm_subdomain: str, time: float,
                        other_product: str) -> List[ZerverFieldsT]:
     realm = Realm(id=realm_id, date_created=time,
                   name=realm_subdomain, string_id=realm_subdomain,
-                  description="Organization imported from %s!" % (other_product,))
+                  description=f"Organization imported from {other_product}!")
     auth_methods = [[flag[0], flag[1]] for flag in realm.authentication_methods]
     realm_dict = model_to_dict(realm, exclude='authentication_methods')
     realm_dict['authentication_methods'] = auth_methods
@@ -280,9 +289,9 @@ def build_recipient(type_id: int, recipient_id: int, type: int) -> ZerverFieldsT
     recipient_dict = model_to_dict(recipient)
     return recipient_dict
 
-def build_recipients(zerver_userprofile: List[ZerverFieldsT],
-                     zerver_stream: List[ZerverFieldsT],
-                     zerver_huddle: List[ZerverFieldsT]=[]) -> List[ZerverFieldsT]:
+def build_recipients(zerver_userprofile: Iterable[ZerverFieldsT],
+                     zerver_stream: Iterable[ZerverFieldsT],
+                     zerver_huddle: Iterable[ZerverFieldsT] = []) -> List[ZerverFieldsT]:
     '''
     As of this writing, we only use this in the HipChat
     conversion.  The Slack and Gitter conversions do it more
@@ -354,11 +363,8 @@ def build_usermessages(zerver_usermessage: List[ZerverFieldsT],
                        mentioned_user_ids: List[int],
                        message_id: int,
                        is_private: bool,
-                       long_term_idle: Optional[Set[int]]=None) -> Tuple[int, int]:
+                       long_term_idle: AbstractSet[int] = set()) -> Tuple[int, int]:
     user_ids = subscriber_map.get(recipient_id, set())
-
-    if long_term_idle is None:
-        long_term_idle = set()
 
     user_messages_created = 0
     user_messages_skipped = 0
@@ -428,7 +434,7 @@ def build_stream(date_created: Any, realm_id: int, name: str,
 
 def build_huddle(huddle_id: int) -> ZerverFieldsT:
     huddle = Huddle(
-        id=huddle_id
+        id=huddle_id,
     )
     return model_to_dict(huddle)
 
@@ -514,8 +520,8 @@ def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str, realm_id:
         avatar_url = avatar['path']
         avatar_original = dict(avatar)
 
-        image_path = '%s.png' % (avatar_hash,)
-        original_image_path = '%s.original' % (avatar_hash,)
+        image_path = f'{avatar_hash}.png'
+        original_image_path = f'{avatar_hash}.original'
 
         avatar_upload_list.append([avatar_url, image_path, original_image_path])
         # We don't add the size field here in avatar's records.json,
@@ -635,7 +641,7 @@ def build_realm_emoji(realm_id: int,
             name=name,
             id=id,
             file_name=file_name,
-        )
+        ),
     )
 
 def process_emojis(zerver_realmemoji: List[ZerverFieldsT], emoji_dir: str,

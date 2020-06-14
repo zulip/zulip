@@ -1,12 +1,12 @@
 import os
-import time
-import ujson
 import smtplib
+import time
+from typing import Any, Callable, Dict, List, Mapping, Tuple
+from unittest.mock import MagicMock, patch
 
+import ujson
 from django.conf import settings
 from django.test import override_settings
-from unittest.mock import patch, MagicMock
-from typing import Any, Callable, Dict, List, Mapping, Tuple
 
 from zerver.lib.email_mirror import RateLimitedRealmMirror
 from zerver.lib.email_mirror_helpers import encode_email_address
@@ -14,18 +14,17 @@ from zerver.lib.queue import MAX_REQUEST_RETRIES
 from zerver.lib.rate_limiter import RateLimiterLockingException
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
 from zerver.lib.send_email import FromAddress
-from zerver.lib.test_helpers import simulated_queue_client
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import get_client, UserActivity, PreregistrationUser, \
-    get_stream, get_realm
+from zerver.lib.test_helpers import simulated_queue_client
+from zerver.models import PreregistrationUser, UserActivity, get_client, get_realm, get_stream
 from zerver.tornado.event_queue import build_offline_notification
 from zerver.worker import queue_processors
 from zerver.worker.queue_processors import (
-    get_active_worker_queues,
-    QueueProcessingWorker,
     EmailSendingWorker,
     LoopQueueProcessingWorker,
     MissedMessageWorker,
+    QueueProcessingWorker,
+    get_active_worker_queues,
 )
 
 Event = Dict[str, Any]
@@ -81,14 +80,14 @@ class WorkerTest(ZulipTestCase):
         user = self.example_user('hamlet')
         UserActivity.objects.filter(
             user_profile = user.id,
-            client = get_client('ios')
+            client = get_client('ios'),
         ).delete()
 
         data = dict(
             user_profile_id = user.id,
             client_id = get_client('ios').id,
             time = time.time(),
-            query = 'send_message'
+            query = 'send_message',
         )
         fake_client.queue.append(('user_activity', data))
 
@@ -100,7 +99,7 @@ class WorkerTest(ZulipTestCase):
             user_profile_id = user.id,
             client = 'ios',
             time = time.time(),
-            query = 'send_message'
+            query = 'send_message',
         )
         fake_client.queue.append(('user_activity', data_old_format))
 
@@ -114,7 +113,7 @@ class WorkerTest(ZulipTestCase):
                     pass
                 activity_records = UserActivity.objects.filter(
                     user_profile = user.id,
-                    client = get_client('ios')
+                    client = get_client('ios'),
                 )
                 self.assertEqual(len(activity_records), 1)
                 self.assertEqual(activity_records[0].count, 2)
@@ -133,7 +132,7 @@ class WorkerTest(ZulipTestCase):
                     pass
                 activity_records = UserActivity.objects.filter(
                     user_profile = user.id,
-                    client = get_client('ios')
+                    client = get_client('ios'),
                 )
                 self.assertEqual(len(activity_records), 1)
                 self.assertEqual(activity_records[0].count, 3)
@@ -198,7 +197,7 @@ class WorkerTest(ZulipTestCase):
         )
 
         send_mock = patch(
-            'zerver.lib.email_notifications.do_send_missedmessage_events_reply_in_zulip'
+            'zerver.lib.email_notifications.do_send_missedmessage_events_reply_in_zulip',
         )
         mmw.BATCH_DURATION = 0
 
@@ -242,7 +241,7 @@ class WorkerTest(ZulipTestCase):
         self.assertEqual(othello_info['count'], 1)
         self.assertEqual(
             {m['message'].content for m in othello_info['missed_messages']},
-            {'where art thou, othello?'}
+            {'where art thou, othello?'},
         )
 
     def test_push_notifications_worker(self) -> None:
@@ -310,8 +309,8 @@ class WorkerTest(ZulipTestCase):
             dict(
                 message='\xf3test',
                 time=time.time(),
-                rcpt_to=stream_to_address
-            )
+                rcpt_to=stream_to_address,
+            ),
         ] * 3
         for element in data:
             fake_client.queue.append(('email_mirror', element))
@@ -337,8 +336,8 @@ class WorkerTest(ZulipTestCase):
             dict(
                 message='\xf3test',
                 time=time.time(),
-                rcpt_to=stream_to_address
-            )
+                rcpt_to=stream_to_address,
+            ),
         ] * 5
         for element in data:
             fake_client.queue.append(('email_mirror', element))
@@ -364,7 +363,7 @@ class WorkerTest(ZulipTestCase):
                     event = dict(
                         message='\xf3test',
                         time=time.time(),
-                        rcpt_to=address
+                        rcpt_to=address,
                     )
                     fake_client.queue.append(('email_mirror', event))
                     worker.start()
@@ -384,7 +383,7 @@ class WorkerTest(ZulipTestCase):
                     self.assertEqual(mock_mirror_email.call_count, 4)
                     mock_warn.assert_called_with(
                         "Deadlock trying to incr_ratelimit for %s",
-                        "RateLimitedRealmMirror:%s" % (realm.string_id,),
+                        f"RateLimitedRealmMirror:{realm.string_id}",
                     )
 
     def test_email_sending_worker_retries(self) -> None:
@@ -397,7 +396,7 @@ class WorkerTest(ZulipTestCase):
             'to_emails': [self.example_email("hamlet")],
             'from_name': 'Zulip Account Security',
             'from_address': FromAddress.NOREPLY,
-            'context': {}
+            'context': {},
         }
         fake_client.queue.append(('email_senders', data))
 

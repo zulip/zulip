@@ -1,7 +1,5 @@
 # Export your organization
 
-{!admin-only.md!}
-
 !!! warn ""
     These instructions are specific to the hosted Zulip Cloud service.
     If you're running your own server, you may be looking for our
@@ -23,6 +21,8 @@ Zulip Standard customers have access to **full export without member consent**.
 
 ## Public export
 
+{!admin-only.md!}
+
 {start_tabs}
 
 {settings_tab|data-exports-admin}
@@ -40,6 +40,8 @@ Note that generating the export can take up to an hour for organizations
 with lots of messages or uploaded files.
 
 ## Full export with member consent
+
+{!owner-only.md!}
 
 {start_tabs}
 
@@ -68,6 +70,8 @@ subscriptions exported, but will otherwise be treated as new users after
 import.
 
 ## Full export without member consent
+
+{!owner-only.md!}
 
 This export is limited to paid Zulip Standard customers, though in rare
 cases may be available to other organizations in case of due legal process.

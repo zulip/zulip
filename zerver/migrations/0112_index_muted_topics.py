@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
             ON zerver_mutedtopic
             (stream_id, upper(topic_name))
             ''',
-            reverse_sql='DROP INDEX zerver_mutedtopic_stream_topic;'
+            reverse_sql='DROP INDEX zerver_mutedtopic_stream_topic;',
         ),
     ]

@@ -38,7 +38,7 @@ def api_splunk_webhook(request: HttpRequest, user_profile: UserProfile,
     # construct the message body
     body = MESSAGE_TEMPLATE.format(
         search=search_name, link=results_link,
-        host=host, source=source, raw=raw
+        host=host, source=source, raw=raw,
     )
 
     # send the message

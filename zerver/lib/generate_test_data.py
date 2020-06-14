@@ -1,10 +1,12 @@
 import itertools
-import ujson
-import random
-from typing import List, Dict, Any
 import os
+import random
+from typing import Any, Dict, List
+
+import ujson
 
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
+
 
 def load_config() -> Dict[str, Any]:
     with open("zerver/tests/fixtures/config.generate_data.json") as infile:

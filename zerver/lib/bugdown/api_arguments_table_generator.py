@@ -1,21 +1,20 @@
-import re
-import os
 import json
+import os
+import re
+from typing import Any, Dict, List, Mapping
 
+import markdown
 from django.utils.html import escape as escape_html
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
+
 from zerver.openapi.openapi import get_openapi_parameters
-from typing import Any, Dict, Optional, List
-import markdown
 
 REGEXP = re.compile(r'\{generate_api_arguments_table\|\s*(.+?)\s*\|\s*(.+)\s*\}')
 
 
 class MarkdownArgumentsTableGenerator(Extension):
-    def __init__(self, configs: Optional[Dict[str, Any]]=None) -> None:
-        if configs is None:
-            configs = {}
+    def __init__(self, configs: Mapping[str, Any] = {}) -> None:
         self.config = {
             'base_path': ['.', 'Default location from which to evaluate relative paths for the JSON files.'],
         }
@@ -24,7 +23,7 @@ class MarkdownArgumentsTableGenerator(Extension):
 
     def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
         md.preprocessors.add(
-            'generate_api_arguments', APIArgumentsTablePreprocessor(md, self.getConfigs()), '_begin'
+            'generate_api_arguments', APIArgumentsTablePreprocessor(md, self.getConfigs()), '_begin',
         )
 
 

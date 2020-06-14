@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import argparse
-import subprocess
-import sys
 import os
 import shlex
+import subprocess
+import sys
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -42,12 +42,18 @@ sys.path.insert(0, ZULIP_PATH)
 
 # check for the venv
 from tools.lib import sanity_check
+
 sanity_check.check_venv(__file__)
 
-from tools.lib.test_script import assert_provisioning_status_ok, find_js_test_files, prepare_puppeteer_run
+from typing import Iterable
+
+from tools.lib.test_script import (
+    assert_provisioning_status_ok,
+    find_js_test_files,
+    prepare_puppeteer_run,
+)
 from tools.lib.test_server import test_server_running
 
-from typing import Iterable
 
 def run_tests(files: Iterable[str], external_host: str) -> None:
     test_dir = os.path.join(ZULIP_PATH, 'frontend_tests/puppeteer_tests')
@@ -58,7 +64,7 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
         for test_file in test_files:
             test_name = os.path.basename(test_file)
             cmd = ["node"] + [test_file]
-            print("\n\n===================== %s\nRunning %s\n\n" % (test_name, " ".join(map(shlex.quote, cmd))), flush=True)
+            print("\n\n===================== {}\nRunning {}\n\n".format(test_name, " ".join(map(shlex.quote, cmd))), flush=True)
             ret = subprocess.call(cmd)
             if ret != 0:
                 return ret

@@ -1,9 +1,9 @@
-from typing import Text, List
+import re
+from typing import List, Text
 
 from gitlint.git import GitCommit
-from gitlint.rules import LineRule, RuleViolation, CommitMessageTitle
 from gitlint.options import StrOption
-import re
+from gitlint.rules import CommitMessageTitle, LineRule, RuleViolation
 
 # Word list from https://github.com/m1foley/fit-commit
 # Copyright (c) 2015 Mike Foley
@@ -69,7 +69,7 @@ WORD_SET = {
     'testing', 'tested',  # 'tests' excluded to reduce false negative
     'truncates', 'truncating', 'truncated',
     'updates', 'updating', 'updated',
-    'uses', 'using', 'used'
+    'uses', 'using', 'used',
 }
 
 imperative_forms = sorted([
@@ -135,7 +135,7 @@ class ImperativeMood(LineRule):
             violation = RuleViolation(self.id, self.error_msg.format(
                 word=first_word,
                 imperative=imperative,
-                title=commit.message.title
+                title=commit.message.title,
             ))
 
             violations.append(violation)

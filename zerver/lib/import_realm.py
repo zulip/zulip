@@ -1,44 +1,71 @@
 import datetime
 import logging
 import os
-import ujson
 import shutil
+from typing import Any, Dict, Iterable, List, Optional, Tuple, cast
 
 import boto3
+import ujson
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.db import connection
 from django.db.models import Max
 from django.utils.timezone import now as timezone_now
-from typing import Any, Dict, List, Optional, Set, Tuple, \
-    Iterable, cast
 from psycopg2.extras import execute_values
-from psycopg2.sql import Identifier, SQL
+from psycopg2.sql import SQL, Identifier
 
 from analytics.models import RealmCount, StreamCount, UserCount
-from zerver.lib.actions import UserMessageLite, bulk_insert_ums, \
-    do_change_plan_type, do_change_avatar_fields
+from zerver.lib.actions import (
+    UserMessageLite,
+    bulk_insert_ums,
+    do_change_avatar_fields,
+    do_change_plan_type,
+)
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
-from zerver.lib.bulk_create import bulk_create_users, bulk_set_users_or_streams_recipient_fields
-from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.export import DATE_FIELDS, \
-    Record, TableData, TableName, Field, Path
-from zerver.lib.message import do_render_markdown
 from zerver.lib.bugdown import version as bugdown_version
-from zerver.lib.streams import render_stream_description
-from zerver.lib.upload import random_name, sanitize_name, \
-    guess_type, BadImageError
-from zerver.lib.utils import generate_api_key, process_list_in_batches
+from zerver.lib.bulk_create import bulk_create_users, bulk_set_users_or_streams_recipient_fields
+from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, TableName
+from zerver.lib.message import do_render_markdown
 from zerver.lib.parallel import run_parallel
-from zerver.lib.server_initialization import server_initialized, create_internal_realm
-from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
-    UserMessage, Subscription, Message, RealmEmoji, \
-    RealmDomain, Recipient, get_user_profile_by_id, \
-    UserPresence, UserActivity, UserActivityInterval, Reaction, \
-    CustomProfileField, CustomProfileFieldValue, RealmAuditLog, \
-    Attachment, get_system_bot, email_to_username, get_huddle_hash, \
-    UserHotspot, MutedTopic, Service, UserGroup, UserGroupMembership, \
-    BotStorageData, BotConfigData, DefaultStream, RealmFilter
+from zerver.lib.server_initialization import create_internal_realm, server_initialized
+from zerver.lib.streams import render_stream_description
+from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.upload import BadImageError, guess_type, random_name, sanitize_name
+from zerver.lib.utils import generate_api_key, process_list_in_batches
+from zerver.models import (
+    Attachment,
+    BotConfigData,
+    BotStorageData,
+    Client,
+    CustomProfileField,
+    CustomProfileFieldValue,
+    DefaultStream,
+    Huddle,
+    Message,
+    MutedTopic,
+    Reaction,
+    Realm,
+    RealmAuditLog,
+    RealmDomain,
+    RealmEmoji,
+    RealmFilter,
+    Recipient,
+    Service,
+    Stream,
+    Subscription,
+    UserActivity,
+    UserActivityInterval,
+    UserGroup,
+    UserGroupMembership,
+    UserHotspot,
+    UserMessage,
+    UserPresence,
+    UserProfile,
+    email_to_username,
+    get_huddle_hash,
+    get_system_bot,
+    get_user_profile_by_id,
+)
 
 realm_tables = [("zerver_defaultstream", DefaultStream, "defaultstream"),
                 ("zerver_realmemoji", RealmEmoji, "realmemoji"),
@@ -100,11 +127,11 @@ path_maps: Dict[str, Dict[str, str]] = {
 
 def update_id_map(table: TableName, old_id: int, new_id: int) -> None:
     if table not in ID_MAP:
-        raise Exception('''
-            Table %s is not initialized in ID_MAP, which could
+        raise Exception(f'''
+            Table {table} is not initialized in ID_MAP, which could
             mean that we have not thought through circular
             dependencies.
-            ''' % (table,))
+            ''')
     ID_MAP[table][old_id] = new_id
 
 def fix_datetime_fields(data: TableData, table: TableName) -> None:
@@ -296,14 +323,12 @@ def fix_message_rendered_content(realm: Realm,
             # platforms, since they generally don't have an "alert
             # words" type feature, and notifications aren't important anyway.
             realm_alert_words_automaton = None
-            message_user_ids: Set[int] = set()
 
             rendered_content = do_render_markdown(
                 message=cast(Message, message_object),
                 content=content,
                 realm=realm,
                 realm_alert_words_automaton=realm_alert_words_automaton,
-                message_user_ids=message_user_ids,
                 sent_by_bot=sent_by_bot,
                 translate_emoticons=translate_emoticons,
             )
@@ -653,7 +678,7 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
             relative_path = "/".join([
                 str(record['realm_id']),
                 random_name(18),
-                sanitize_name(os.path.basename(record['path']))
+                sanitize_name(os.path.basename(record['path'])),
             ])
             path_maps['attachment_path'][record['s3_path']] = relative_path
 
@@ -707,6 +732,7 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
 
     if processing_avatars:
         from zerver.lib.upload import upload_backend
+
         # Ensure that we have medium-size avatar images for every
         # avatar.  TODO: This implementation is hacky, both in that it
         # does get_user_profile_by_id for each user, and in that it
@@ -1038,7 +1064,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
         #
         # Longer-term, the plan is to eliminate pointer as a concept.
         first_unread_message = UserMessage.objects.filter(user_profile=user_profile).extra(
-            where=[UserMessage.where_unread()]
+            where=[UserMessage.where_unread()],
         ).order_by("message_id").first()
         if first_unread_message is not None:
             user_profile.pointer = first_unread_message.message_id

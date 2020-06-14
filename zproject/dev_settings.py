@@ -29,7 +29,7 @@ if external_host_env is None:
         # Serve the main dev realm at the literal name "localhost",
         # so it works out of the box even when not on the Internet.
         REALM_HOSTS = {
-            'zulip': 'localhost:9991'
+            'zulip': 'localhost:9991',
         }
 else:
     EXTERNAL_HOST = external_host_env
@@ -113,6 +113,7 @@ FAKE_LDAP_MODE = None  # type: Optional[str]
 if FAKE_LDAP_MODE:
     import ldap
     from django_auth_ldap.config import LDAPSearch
+
     # To understand these parameters, read the docs in
     # prod_settings_template.py and on ReadTheDocs.
     LDAP_APPEND_DOMAIN = None

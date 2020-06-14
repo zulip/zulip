@@ -1,49 +1,51 @@
-from django.conf import settings
-from django.conf.urls import url, include
-from django.conf.urls.i18n import i18n_patterns
-from django.views.generic import TemplateView, RedirectView
-from django.utils.module_loading import import_string
 import os
+
+from django.conf import settings
+from django.conf.urls import include, url
+from django.conf.urls.i18n import i18n_patterns
+from django.contrib.auth.views import (
+    LoginView,
+    PasswordResetCompleteView,
+    PasswordResetConfirmView,
+    PasswordResetDoneView,
+)
+from django.utils.module_loading import import_string
+from django.views.generic import RedirectView, TemplateView
+
 import zerver.forms
-from zproject import dev_urls
-from zproject.legacy_urls import legacy_urls
-from zerver.views.documentation import IntegrationView, MarkdownDirectoryView
-from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
-
-
-from django.contrib.auth.views import (LoginView, PasswordResetDoneView,
-                                       PasswordResetConfirmView, PasswordResetCompleteView)
-
 import zerver.tornado.views
 import zerver.views
-import zerver.views.auth
 import zerver.views.archive
+import zerver.views.auth
 import zerver.views.camo
 import zerver.views.compatibility
-import zerver.views.home
-import zerver.views.email_mirror
-import zerver.views.registration
-import zerver.views.portico
-import zerver.views.zephyr
-import zerver.views.users
-import zerver.views.unsubscribe
+import zerver.views.digest
 import zerver.views.documentation
+import zerver.views.email_mirror
+import zerver.views.home
+import zerver.views.messages
+import zerver.views.muting
+import zerver.views.portico
+import zerver.views.realm
+import zerver.views.realm_export
+import zerver.views.registration
+import zerver.views.streams
+import zerver.views.unsubscribe
+import zerver.views.upload
 import zerver.views.user_groups
 import zerver.views.user_settings
-import zerver.views.muting
-import zerver.views.streams
-import zerver.views.realm
-import zerver.views.digest
-import zerver.views.messages
-import zerver.views.realm_export
-import zerver.views.upload
+import zerver.views.users
 import zerver.views.video_calls
-
+import zerver.views.zephyr
+from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.lib.rest import rest_dispatch
+from zerver.views.documentation import IntegrationView, MarkdownDirectoryView
+from zproject import dev_urls
+from zproject.legacy_urls import legacy_urls
 
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
-    from two_factor.urls import urlpatterns as tf_urls
     from two_factor.gateways.twilio.urls import urlpatterns as tf_twilio_urls
+    from two_factor.urls import urlpatterns as tf_urls
 
 # NB: There are several other pieces of code which route requests by URL:
 #
@@ -149,6 +151,8 @@ v1_api_and_json_patterns = [
         {'GET': 'zerver.views.users.get_members_backend',
          'PATCH': 'zerver.views.users.update_user_backend',
          'DELETE': 'zerver.views.users.deactivate_user_backend'}),
+    url(r'^users/(?P<user_id>[0-9]+)/subscriptions/(?P<stream_id>[0-9]+)$', rest_dispatch,
+        {'GET': 'zerver.views.users.get_subscription_backend'}),
     url(r'^bots$', rest_dispatch,
         {'GET': 'zerver.views.users.get_bots_backend',
          'POST': 'zerver.views.users.add_bot_backend'}),
@@ -578,7 +582,7 @@ i18n_urls = [
     url(r'^privacy/$', zerver.views.portico.privacy_view, name='privacy'),
     url(r'^config-error/(?P<error_category_name>[\w,-]+)$', zerver.views.auth.config_error_view,
         name='config_error'),
-    url(r'^config-error/remoteuser/(?P<error_category_name>[\w,-]+)$', zerver.views.auth.config_error_view)
+    url(r'^config-error/remoteuser/(?P<error_category_name>[\w,-]+)$', zerver.views.auth.config_error_view),
 
 ]
 
@@ -625,16 +629,20 @@ urls += [
 
 # This url serves as a way to receive CSP violation reports from the users.
 # We use this endpoint to just log these reports.
-urls += url(r'^report/csp_violations$', zerver.views.report.report_csp_violations,
-            name='zerver.views.report.report_csp_violations'),
+urls += [
+    url(r'^report/csp_violations$', zerver.views.report.report_csp_violations,
+        name='zerver.views.report.report_csp_violations'),
+]
 
 # This url serves as a way to provide backward compatibility to messages
 # rendered at the time Zulip used camo for doing http -> https conversion for
 # such links with images previews. Now thumbor can be used for serving such
 # images.
-urls += url(r'^external_content/(?P<digest>[\S]+)/(?P<received_url>[\S]+)$',
-            zerver.views.camo.handle_camo_url,
-            name='zerver.views.camo.handle_camo_url'),
+urls += [
+    url(r'^external_content/(?P<digest>[\S]+)/(?P<received_url>[\S]+)$',
+        zerver.views.camo.handle_camo_url,
+        name='zerver.views.camo.handle_camo_url'),
+]
 
 # Incoming webhook URLs
 # We don't create urls for particular git integrations here
@@ -696,7 +704,7 @@ urls += [
 for app_name in settings.EXTRA_INSTALLED_APPS:
     app_dir = os.path.join(settings.DEPLOY_ROOT, app_name)
     if os.path.exists(os.path.join(app_dir, 'urls.py')):
-        urls += [url(r'^', include('%s.urls' % (app_name,)))]
+        urls += [url(r'^', include(f'{app_name}.urls'))]
         i18n_urls += import_string(f"{app_name}.urls.i18n_urlpatterns")
 
 # Tornado views

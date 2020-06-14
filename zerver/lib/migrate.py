@@ -1,8 +1,8 @@
-from psycopg2.extensions import cursor
-from psycopg2.sql import Composable, Identifier, SQL
+import time
 from typing import List, TypeVar
 
-import time
+from psycopg2.extensions import cursor
+from psycopg2.sql import SQL, Composable, Identifier
 
 CursorObj = TypeVar('CursorObj', bound=cursor)
 
@@ -28,11 +28,11 @@ def do_batch_update(cursor: CursorObj,
     if min_id is None:
         return
 
-    print("\n    Range of rows to update: [%s, %s]" % (min_id, max_id))
+    print(f"\n    Range of rows to update: [{min_id}, {max_id}]")
     while min_id <= max_id:
         lower = min_id
         upper = min_id + batch_size
-        print('    Updating range [%s,%s)' % (lower, upper))
+        print(f'    Updating range [{lower},{upper})')
         cursor.execute(stmt, [lower, upper])
 
         min_id = upper

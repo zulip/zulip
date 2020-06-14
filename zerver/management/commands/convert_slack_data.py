@@ -3,8 +3,7 @@ import os
 import tempfile
 from typing import Any
 
-from django.core.management.base import BaseCommand, CommandError, \
-    CommandParser
+from django.core.management.base import BaseCommand, CommandError, CommandParser
 
 from zerver.data_import.slack import do_convert_data
 
@@ -49,7 +48,7 @@ class Command(BaseCommand):
 
         for path in options['slack_data_zip']:
             if not os.path.exists(path):
-                raise CommandError("Slack data directory not found: '%s'" % (path,))
+                raise CommandError(f"Slack data directory not found: '{path}'")
 
             print("Converting Data ...")
             do_convert_data(path, output_dir, token, threads=num_threads)

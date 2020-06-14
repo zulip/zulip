@@ -2,13 +2,12 @@ import os
 import subprocess
 import sys
 import time
-
 from contextlib import contextmanager
-
 from typing import Iterator, Optional
 
 # Verify the Zulip venv is available.
 from tools.lib import sanity_check
+
 sanity_check.check_venv(__file__)
 
 import django
@@ -20,8 +19,9 @@ TOOLS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if TOOLS_DIR not in sys.path:
     sys.path.insert(0, os.path.dirname(TOOLS_DIR))
 
-from zerver.lib.test_fixtures import update_test_databases_if_required
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
+from zerver.lib.test_fixtures import update_test_databases_if_required
+
 
 def set_up_django(external_host: str) -> None:
     os.environ['EXTERNAL_HOST'] = external_host
@@ -37,7 +37,7 @@ def assert_server_running(server: "subprocess.Popen[bytes]", log_file: Optional[
     if server.poll() is not None:
         message = 'Server died unexpectedly!'
         if log_file:
-            message += '\nSee %s\n' % (log_file,)
+            message += f'\nSee {log_file}\n'
         raise RuntimeError(message)
 
 def server_is_up(server: "subprocess.Popen[bytes]", log_file: Optional[str]) -> bool:
@@ -51,7 +51,7 @@ def server_is_up(server: "subprocess.Popen[bytes]", log_file: Optional[str]) -> 
 
 @contextmanager
 def test_server_running(force: bool=False, external_host: str='testserver',
-                        log_file: Optional[str]=None, dots: bool=False, use_db: bool=True
+                        log_file: Optional[str]=None, dots: bool=False, use_db: bool=True,
                         ) -> Iterator[None]:
     log = sys.stdout
     if log_file:

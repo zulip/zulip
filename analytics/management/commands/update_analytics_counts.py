@@ -1,8 +1,8 @@
 import os
 import time
 from argparse import ArgumentParser
-from typing import Any, Dict
 from datetime import timezone
+from typing import Any, Dict
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -71,7 +71,7 @@ class Command(BaseCommand):
         else:
             stats = list(COUNT_STATS.values())
 
-        logger.info("Starting updating analytics counts through %s" % (fill_to_time,))
+        logger.info(f"Starting updating analytics counts through {fill_to_time}")
         if options['verbose']:
             start = time.time()
             last = start
@@ -79,13 +79,13 @@ class Command(BaseCommand):
         for stat in stats:
             process_count_stat(stat, fill_to_time)
             if options['verbose']:
-                print("Updated %s in %.3fs" % (stat.property, time.time() - last))
+                print(f"Updated {stat.property} in {time.time() - last:.3f}s")
                 last = time.time()
 
         if options['verbose']:
             print("Finished updating analytics counts through %s in %.3fs" %
                   (fill_to_time, time.time() - start))
-        logger.info("Finished updating analytics counts through %s" % (fill_to_time,))
+        logger.info(f"Finished updating analytics counts through {fill_to_time}")
 
         if settings.PUSH_NOTIFICATION_BOUNCER_URL and settings.SUBMIT_USAGE_STATISTICS:
             send_analytics_to_remote_server()

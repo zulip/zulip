@@ -2,6 +2,7 @@ import os
 import pwd
 import sys
 
+
 def check_venv(filename: str) -> None:
     try:
         import django
@@ -11,7 +12,7 @@ def check_venv(filename: str) -> None:
         ujson
         zulip
     except ImportError:
-        print("You need to run %s inside a Zulip dev environment." % (filename,))
+        print(f"You need to run {filename} inside a Zulip dev environment.")
         user_id = os.getuid()
         user_name = pwd.getpwuid(user_id).pw_name
         if user_name != 'vagrant' and user_name != 'zulipdev':

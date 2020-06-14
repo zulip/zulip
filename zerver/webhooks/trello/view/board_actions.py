@@ -1,4 +1,4 @@
-from typing import Any, Dict, Mapping, Optional, Tuple
+from typing import Any, Mapping, Optional, Tuple
 
 from zerver.lib.exceptions import UnexpectedWebhookEventType
 
@@ -20,7 +20,7 @@ ACTIONS_TO_MESSAGE_MAPPER = {
     REMOVE_MEMBER: 'removed {member_name} from {board_url_template}.',
     ADD_MEMBER: 'added {member_name} to {board_url_template}.',
     CREATE_LIST: 'added {list_name} list to {board_url_template}.',
-    CHANGE_NAME: 'renamed the board from {old_name} to {board_url_template}.'
+    CHANGE_NAME: 'renamed the board from {old_name} to {board_url_template}.',
 }
 
 def process_board_action(payload: Mapping[str, Any],
@@ -64,16 +64,17 @@ def get_create_list_body(payload: Mapping[str, Any], action_type: str) -> str:
 
 def get_change_name_body(payload: Mapping[str, Any], action_type: str) -> str:
     data = {
-        'old_name': get_action_data(payload)['old']['name']
+        'old_name': get_action_data(payload)['old']['name'],
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 
 def fill_appropriate_message_content(payload: Mapping[str, Any],
                                      action_type: str,
-                                     data: Optional[Dict[str, Any]]=None) -> str:
-    data = {} if data is None else data
-    data['board_url_template'] = data.get('board_url_template', get_filled_board_url_template(payload))
+                                     data: Mapping[str, Any] = {}) -> str:
+    data = dict(data)
+    if 'board_url_template' not in data:
+        data['board_url_template'] = get_filled_board_url_template(payload)
     message_body = get_message_body(action_type)
     return message_body.format(**data)
 
@@ -97,5 +98,5 @@ ACTIONS_TO_FILL_BODY_MAPPER = {
     REMOVE_MEMBER: get_managed_member_body,
     ADD_MEMBER: get_managed_member_body,
     CREATE_LIST: get_create_list_body,
-    CHANGE_NAME: get_change_name_body
+    CHANGE_NAME: get_change_name_body,
 }

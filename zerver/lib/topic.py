@@ -1,22 +1,11 @@
-from django.db import connection
-from django.db.models.query import QuerySet, Q
+from typing import Any, Dict, List, Optional, Tuple
 
-from sqlalchemy.sql import (
-    column,
-    literal,
-    func,
-)
+from django.db import connection
+from django.db.models.query import Q, QuerySet
+from sqlalchemy.sql import column, func, literal
 
 from zerver.lib.request import REQ
-from zerver.models import (
-    Message,
-    Recipient,
-    Stream,
-    UserMessage,
-    UserProfile,
-)
-
-from typing import Any, Dict, List, Optional, Tuple
+from zerver.models import Message, Recipient, Stream, UserMessage, UserProfile
 
 # Only use these constants for events.
 ORIG_TOPIC = "orig_subject"
@@ -119,7 +108,7 @@ def update_messages_for_topic_edit(message: Message,
                                    orig_topic_name: str,
                                    topic_name: Optional[str],
                                    new_stream: Optional[Stream]) -> List[Message]:
-    propagate_query = Q(recipient = message.recipient, subject = orig_topic_name)
+    propagate_query = Q(recipient = message.recipient, subject__iexact = orig_topic_name)
     if propagate_mode == 'change_all':
         propagate_query = propagate_query & ~Q(id = message.id)
     if propagate_mode == 'change_later':
@@ -165,7 +154,7 @@ def generate_topic_history_from_db_rows(rows: List[Tuple[str, int]]) -> List[Dic
     for canonical_topic, (max_message_id, topic_name) in canonical_topic_names.items():
         history.append(dict(
             name=topic_name,
-            max_id=max_message_id)
+            max_id=max_message_id),
         )
     return sorted(history, key=lambda x: -x['max_id'])
 

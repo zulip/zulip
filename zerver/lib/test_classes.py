@@ -1,59 +1,49 @@
+import base64
+import os
+import re
+import shutil
+import tempfile
+import urllib
 from contextlib import contextmanager
 from email.utils import parseaddr
-from fakeldap import MockLDAP
-from typing import (cast, Any, Dict, Iterable,
-                    Iterator, List, Optional,
-                    Tuple, Union, Set)
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Set, Tuple, Union, cast
+from unittest import mock
 
+import ujson
 from django.apps import apps
-from django.db.migrations.state import StateApps
-from django.urls import resolve
 from django.conf import settings
-from django.test import TestCase
-from django.test.client import (
-    BOUNDARY, MULTIPART_CONTENT, encode_multipart,
-)
-from django.test.testcases import SerializeMixin
-from django.http import HttpResponse
-from django.db.migrations.executor import MigrationExecutor
 from django.db import connection
+from django.db.migrations.executor import MigrationExecutor
+from django.db.migrations.state import StateApps
 from django.db.utils import IntegrityError
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
+from django.test import TestCase
+from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
+from django.test.testcases import SerializeMixin
+from django.urls import resolve
 from django.utils import translation
-
+from fakeldap import MockLDAP
 from two_factor.models import PhoneDevice
-from zerver.lib.initial_password import initial_password
-from zerver.lib.users import get_api_key
-from zerver.lib.sessions import get_session_dict_user
-from zerver.lib.webhooks.common import get_fixture_http_headers, standardize_headers
 
+from zerver.decorator import do_two_factor_login
 from zerver.lib.actions import (
-    check_send_message, bulk_add_subscriptions,
+    bulk_add_subscriptions,
     bulk_remove_subscriptions,
-    check_send_stream_message, gather_subscriptions,
+    check_send_message,
+    check_send_stream_message,
+    gather_subscriptions,
 )
+from zerver.lib.initial_password import initial_password
+from zerver.lib.sessions import get_session_dict_user
+from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
 from zerver.lib.streams import (
     create_stream_if_needed,
-    get_default_value_for_history_public_to_subscribers
+    get_default_value_for_history_public_to_subscribers,
 )
-from zerver.lib.stream_subscription import (
-    get_stream_subscriptions_for_user,
-)
-
-from zerver.lib.test_helpers import (
-    instrument_url, find_key_by_email,
-)
-
+from zerver.lib.test_helpers import find_key_by_email, instrument_url
+from zerver.lib.users import get_api_key
+from zerver.lib.webhooks.common import get_fixture_http_headers, standardize_headers
 from zerver.models import (
-    clear_supported_auth_backends_cache,
-    flush_per_request_caches,
-    get_stream,
-    get_client,
-    get_display_recipient,
-    get_user,
-    get_user_by_delivery_email,
-    get_realm,
-    get_system_bot,
     Client,
     Message,
     Realm,
@@ -61,20 +51,20 @@ from zerver.models import (
     Stream,
     Subscription,
     UserProfile,
-    get_realm_stream
+    clear_supported_auth_backends_cache,
+    flush_per_request_caches,
+    get_client,
+    get_display_recipient,
+    get_realm,
+    get_realm_stream,
+    get_stream,
+    get_system_bot,
+    get_user,
+    get_user_by_delivery_email,
 )
-from zilencer.models import get_remote_server_by_uuid
-from zerver.decorator import do_two_factor_login
 from zerver.tornado.event_queue import clear_client_event_queues_for_testing
+from zilencer.models import get_remote_server_by_uuid
 
-import base64
-from unittest import mock
-import os
-import re
-import ujson
-import urllib
-import shutil
-import tempfile
 
 class UploadSerializeMixin(SerializeMixin):
     """
@@ -251,7 +241,7 @@ class ZulipTestCase(TestCase):
         webhook_bot='webhook-bot@zulip.com',
         welcome_bot='welcome-bot@zulip.com',
         outgoing_webhook_bot='outgoing-webhook@zulip.com',
-        default_bot='default-bot@zulip.com'
+        default_bot='default-bot@zulip.com',
     )
 
     mit_user_map = dict(
@@ -262,7 +252,7 @@ class ZulipTestCase(TestCase):
 
     lear_user_map = dict(
         cordelia="cordelia@zulip.com",
-        king="king@lear.org"
+        king="king@lear.org",
     )
 
     # Non-registered test users
@@ -367,7 +357,7 @@ class ZulipTestCase(TestCase):
                 username=email,
                 password=password,
                 realm=realm,
-            )
+            ),
         )
 
     def assert_login_failure(self,
@@ -379,7 +369,7 @@ class ZulipTestCase(TestCase):
                 username=email,
                 password=password,
                 realm=realm,
-            )
+            ),
         )
 
     def login_user(self, user_profile: UserProfile) -> None:
@@ -413,12 +403,12 @@ class ZulipTestCase(TestCase):
 
     def submit_reg_form_for_user(
             self, email: str, password: str,
-            realm_name: Optional[str]="Zulip Test",
-            realm_subdomain: Optional[str]="zuliptest",
-            from_confirmation: Optional[str]='', full_name: Optional[str]=None,
-            timezone: Optional[str]='', realm_in_root_domain: Optional[str]=None,
-            default_stream_groups: Optional[List[str]]=[],
-            source_realm: Optional[str]='',
+            realm_name: str="Zulip Test",
+            realm_subdomain: str="zuliptest",
+            from_confirmation: str='', full_name: Optional[str]=None,
+            timezone: str='', realm_in_root_domain: Optional[str]=None,
+            default_stream_groups: Sequence[str]=[],
+            source_realm: str='',
             key: Optional[str]=None, **kwargs: Any) -> HttpResponse:
         """
         Stage two of the two-step registration process.
@@ -487,7 +477,7 @@ class ZulipTestCase(TestCase):
         """
         identifier: Can be an email or a remote server uuid.
         """
-        credentials = "%s:%s" % (identifier, api_key)
+        credentials = f"{identifier}:{api_key}"
         return 'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
 
     def uuid_get(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
@@ -530,7 +520,7 @@ class ZulipTestCase(TestCase):
 
         return check_send_message(
             from_user, sending_client, 'private', recipient_list, None,
-            content
+            content,
         )
 
     def send_huddle_message(self,
@@ -545,7 +535,7 @@ class ZulipTestCase(TestCase):
 
         return check_send_message(
             from_user, sending_client, 'private', to_user_ids, None,
-            content
+            content,
         )
 
     def send_stream_message(self, sender: UserProfile, stream_name: str, content: str="test content",
@@ -629,7 +619,7 @@ class ZulipTestCase(TestCase):
             print('ITEMS:\n')
             for item in items:
                 print(item)
-            print("\nexpected length: %s\nactual length: %s" % (count, actual_count))
+            print(f"\nexpected length: {count}\nactual length: {actual_count}")
             raise AssertionError('List is unexpected size!')
 
     def assert_json_error_contains(self, result: HttpResponse, msg_substring: str,
@@ -663,14 +653,14 @@ class ZulipTestCase(TestCase):
     def webhook_fixture_data(self, type: str, action: str, file_type: str='json') -> str:
         fn = os.path.join(
             os.path.dirname(__file__),
-            "../webhooks/%s/fixtures/%s.%s" % (type, action, file_type)
+            f"../webhooks/{type}/fixtures/{action}.{file_type}",
         )
         return open(fn).read()
 
     def fixture_file_name(self, file_name: str, type: str='') -> str:
         return os.path.join(
             os.path.dirname(__file__),
-            "../tests/fixtures/%s/%s" % (type, file_name)
+            f"../tests/fixtures/{type}/{file_name}",
         )
 
     def fixture_data(self, file_name: str, type: str='') -> str:
@@ -678,7 +668,7 @@ class ZulipTestCase(TestCase):
         return open(fn).read()
 
     def make_stream(self, stream_name: str, realm: Optional[Realm]=None,
-                    invite_only: Optional[bool]=False,
+                    invite_only: bool=False,
                     history_public_to_subscribers: Optional[bool]=None) -> Stream:
         if realm is None:
             realm = get_realm('zulip')
@@ -694,11 +684,11 @@ class ZulipTestCase(TestCase):
                 history_public_to_subscribers=history_public_to_subscribers,
             )
         except IntegrityError:  # nocoverage -- this is for bugs in the tests
-            raise Exception('''
-                %s already exists
+            raise Exception(f'''
+                {stream_name} already exists
 
                 Please call make_stream with a stream name
-                that is not already in use.''' % (stream_name,))
+                that is not already in use.''')
 
         recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
         stream.recipient = recipient
@@ -840,7 +830,7 @@ class ZulipTestCase(TestCase):
         for dn, attrs in directory.items():
             if 'uid' in attrs:
                 # Generate a password for the ldap account:
-                attrs['userPassword'] = [self.ldap_password(attrs['uid'][0]), ]
+                attrs['userPassword'] = [self.ldap_password(attrs['uid'][0])]
 
             # Load binary attributes. If in "directory", an attribute as its value
             # has a string starting with "file:", the rest of the string is assumed
@@ -849,7 +839,7 @@ class ZulipTestCase(TestCase):
             for attr, value in attrs.items():
                 if isinstance(value, str) and value.startswith("file:"):
                     with open(value[5:], 'rb') as f:
-                        attrs[attr] = [f.read(), ]
+                        attrs[attr] = [f.read()]
 
         ldap_patcher = mock.patch('django_auth_ldap.config.ldap.initialize')
         self.mock_initialize = ldap_patcher.start()
@@ -873,7 +863,7 @@ class ZulipTestCase(TestCase):
         else:
             data = attr_value
 
-        self.mock_ldap.directory[dn][attr_name] = [data, ]
+        self.mock_ldap.directory[dn][attr_name] = [data]
 
     def ldap_username(self, username: str) -> str:
         """
@@ -928,7 +918,7 @@ class WebhookTestCase(ZulipTestCase):
         return msg
 
     def send_and_test_private_message(self, fixture_name: str, expected_topic: str=None,
-                                      expected_message: str=None, content_type: str="application/json",
+                                      expected_message: str=None, content_type: Optional[str]="application/json",
                                       **kwargs: Any) -> Message:
         payload = self.get_body(fixture_name)
         if content_type is not None:

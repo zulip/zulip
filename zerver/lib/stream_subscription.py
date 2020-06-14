@@ -1,12 +1,9 @@
 from typing import Any, Dict, List, Tuple
 
 from django.db.models.query import QuerySet
-from zerver.models import (
-    Recipient,
-    Stream,
-    Subscription,
-    UserProfile,
-)
+
+from zerver.models import Recipient, Stream, Subscription, UserProfile
+
 
 def get_active_subscriptions_for_stream_id(stream_id: int) -> QuerySet:
     # TODO: Change return type to QuerySet[Subscription]
@@ -21,7 +18,7 @@ def get_active_subscriptions_for_stream_ids(stream_ids: List[int]) -> QuerySet:
     return Subscription.objects.filter(
         recipient__type=Recipient.STREAM,
         recipient__type_id__in=stream_ids,
-        active=True
+        active=True,
     )
 
 def get_subscribed_stream_ids_for_user(user_profile: UserProfile) -> QuerySet:

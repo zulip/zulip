@@ -13,9 +13,14 @@ OPENAPI_SPEC_PATH = os.path.abspath(os.path.join(
 EXCLUDE_PROPERTIES = {
     '/register': {
         'post': {
-            '200': ['max_message_id', 'realm_emoji']
-        }
-    }
+            '200': ['max_message_id', 'realm_emoji'],
+        },
+    },
+    '/zulip-outgoing-webhook': {
+        'post': {
+            '200': ['result', 'msg', 'message'],
+        },
+    },
 }
 
 class OpenAPISpec():
@@ -72,11 +77,9 @@ def get_schema(endpoint: str, method: str, response: str) -> Dict[str, Any]:
         return schema
 
 def get_openapi_fixture(endpoint: str, method: str,
-                        response: Optional[str]='200') -> Dict[str, Any]:
+                        response: str='200') -> Dict[str, Any]:
     """Fetch a fixture from the full spec object.
     """
-    if response is None:
-        response = '200'
     return (get_schema(endpoint, method, response)['example'])
 
 def get_openapi_description(endpoint: str, method: str) -> str:
@@ -119,11 +122,18 @@ def validate_against_openapi_schema(content: Dict[str, Any], endpoint: str,
     """Compare a "content" dict with the defined schema for a specific method
     in an endpoint.
     """
+    # Check if the response matches its code
+    if response.startswith('2') and (content.get('result', 'success').lower() != 'success'):
+        raise SchemaError("Response is not 200 but is validating against 200 schema")
     global exclusion_list
     schema = get_schema(endpoint, method, response)
     # In a single response schema we do not have two keys with the same name.
     # Hence exclusion list is declared globally
     exclusion_list = (EXCLUDE_PROPERTIES.get(endpoint, {}).get(method, {}).get(response, []))
+    # Code is not declared but appears in various 400 responses. If common, it can be added
+    # to 400 response schema
+    if response.startswith('4'):
+        exclusion_list.append('code')
     validate_object(content, schema)
 
 def validate_array(content: List[Any], schema: Dict[str, Any]) -> None:
@@ -139,13 +149,14 @@ def validate_array(content: List[Any], schema: Dict[str, Any]) -> None:
         # We can directly check for objects and arrays as
         # there are no mixed arrays consisting of objects
         # and arrays.
-        if 'properties' in schema['items']:
-            validate_object(item, schema['items'])
+        if 'object' in valid_types:
+            if 'oneOf' not in schema['items']:
+                validate_object(item, schema['items'])
             continue
         # If the object was not an opaque object then
         # the continue statement above should have
         # been executed.
-        if 'object' in valid_types:
+        if type(item) is dict:
             raise SchemaError('Opaque object in array')
         if 'items' in schema['items']:
             validate_array(item, schema['items'])
@@ -158,14 +169,18 @@ def validate_object(content: Dict[str, Any], schema: Dict[str, Any]) -> None:
         if key not in schema['properties']:
             raise SchemaError('Extraneous key "{}" in the response\'s '
                               'content'.format(key))
-
         # Check that the types match
-        expected_type = to_python_type(schema['properties'][key]['type'])
+        expected_type: List[type] = []
+        if 'oneOf' in schema['properties'][key]:
+            for types in schema['properties'][key]['oneOf']:
+                expected_type.append(to_python_type(types['type']))
+        else:
+            expected_type.append(to_python_type(schema['properties'][key]['type']))
         actual_type = type(value)
         # We have only define nullable property if it is nullable
         if value is None and 'nullable' in schema['properties'][key]:
             continue
-        if expected_type is not actual_type:
+        if actual_type not in expected_type:
             raise SchemaError('Expected type {} for key "{}", but actually '
                               'got {}'.format(expected_type, key, actual_type))
         if expected_type is list:
@@ -189,8 +204,10 @@ def validate_object(content: Dict[str, Any], schema: Dict[str, Any]) -> None:
     # Check that at least all the required keys are present
     if 'required' in schema:
         for req_key in schema['required']:
+            if req_key in exclusion_list:
+                continue
             if req_key not in content.keys():
-                raise SchemaError('Expected to find the "{}" required key')
+                raise SchemaError(f'Expected to find the "{req_key}" required key')
 
 def to_python_type(py_type: str) -> type:
     """Transform an OpenAPI-like type to a Python one.
@@ -202,7 +219,7 @@ def to_python_type(py_type: str) -> type:
         'integer': int,
         'boolean': bool,
         'array': list,
-        'object': dict
+        'object': dict,
     }
 
     return TYPES[py_type]

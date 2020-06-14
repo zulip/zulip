@@ -1,33 +1,26 @@
+import datetime
 from datetime import timedelta
-from django.utils.timezone import now as timezone_now
+from typing import Any, Dict
 from unittest import mock
 
-from typing import Any, Dict
+from django.utils.timezone import now as timezone_now
+
 from zerver.lib.actions import do_deactivate_user
-from zerver.lib.presence import (
-    get_status_dict_by_realm
-)
+from zerver.lib.presence import get_status_dict_by_realm
 from zerver.lib.statistics import seconds_usage_between
-from zerver.lib.test_helpers import (
-    make_client,
-    queries_captured,
-    reset_emails_in_zulip_realm,
-)
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import make_client, queries_captured, reset_emails_in_zulip_realm
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
     Client,
     PushDeviceToken,
     UserActivity,
     UserActivityInterval,
-    UserProfile,
     UserPresence,
+    UserProfile,
     flush_per_request_caches,
 )
 
-import datetime
 
 class ActivityTest(ZulipTestCase):
     @mock.patch("stripe.Customer.list", return_value=[])
@@ -43,7 +36,7 @@ class ActivityTest(ZulipTestCase):
                 client=client,
                 query=query,
                 count=count,
-                last_visit=last_visit
+                last_visit=last_visit,
             )
 
         # Fails when not staff
@@ -146,7 +139,7 @@ class UserPresenceModelTests(ZulipTestCase):
 
         PushDeviceToken.objects.create(
             user=user_profile,
-            kind=PushDeviceToken.APNS
+            kind=PushDeviceToken.APNS,
         )
         self.assertTrue(pushable())
 
@@ -181,7 +174,7 @@ class UserPresenceTests(ZulipTestCase):
         presences = json['presences']
         self.assertEqual(
             set(presences.keys()),
-            {str(hamlet.id), str(othello.id)}
+            {str(hamlet.id), str(othello.id)},
         )
         hamlet_info = presences[str(hamlet.id)]
         othello_info = presences[str(othello.id)]
@@ -191,7 +184,7 @@ class UserPresenceTests(ZulipTestCase):
 
         self.assertGreaterEqual(
             othello_info['idle_timestamp'],
-            hamlet_info['idle_timestamp']
+            hamlet_info['idle_timestamp'],
         )
 
     def test_set_active(self) -> None:
@@ -233,24 +226,24 @@ class UserPresenceTests(ZulipTestCase):
         presences = json['presences']
         self.assertEqual(
             set(presences.keys()),
-            {str(hamlet.id), str(othello.id)}
+            {str(hamlet.id), str(othello.id)},
         )
         othello_info = presences[str(othello.id)]
         hamlet_info = presences[str(hamlet.id)]
 
         self.assertEqual(
             set(othello_info.keys()),
-            {'active_timestamp'}
+            {'active_timestamp'},
         )
 
         self.assertEqual(
             set(hamlet_info.keys()),
-            {'active_timestamp'}
+            {'active_timestamp'},
         )
 
         self.assertGreaterEqual(
             hamlet_info['active_timestamp'],
-            othello_info['active_timestamp']
+            othello_info['active_timestamp'],
         )
 
     @mock.patch("stripe.Customer.list", return_value=[])
@@ -380,7 +373,7 @@ class UserPresenceTests(ZulipTestCase):
             client=client,
             query='get_events',
             count=2,
-            last_visit=last_visit
+            last_visit=last_visit,
         )
 
     def test_same_realm(self) -> None:
@@ -399,7 +392,7 @@ class UserPresenceTests(ZulipTestCase):
         self.assertEqual(json['presences'][hamlet.email]["website"]['status'], 'idle')
         self.assertEqual(
             json['presences'].keys(),
-            {hamlet.email}
+            {hamlet.email},
         )
 
 class SingleUserPresenceTests(ZulipTestCase):
@@ -494,8 +487,8 @@ class UserPresenceAggregationTests(ZulipTestCase):
             {
                 'status': status,
                 'timestamp': datetime_to_timestamp(validate_time - datetime.timedelta(seconds=2)),
-                'client': 'ZulipAndroid'
-            }
+                'client': 'ZulipAndroid',
+            },
         )
 
         result = self.client_get(f"/json/users/{user.email}/presence")
@@ -515,8 +508,8 @@ class UserPresenceAggregationTests(ZulipTestCase):
             {
                 'status': 'active',
                 'timestamp': datetime_to_timestamp(validate_time - datetime.timedelta(seconds=1)),
-                'client': 'ZulipTestDev'
-            }
+                'client': 'ZulipTestDev',
+            },
         )
 
     def test_aggregated_presense_active(self) -> None:
@@ -528,8 +521,8 @@ class UserPresenceAggregationTests(ZulipTestCase):
             result_dict['presence']['aggregated'],
             {
                 "status": "active",
-                "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=2))
-            }
+                "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=2)),
+            },
         )
 
     def test_aggregated_presense_idle(self) -> None:
@@ -541,8 +534,8 @@ class UserPresenceAggregationTests(ZulipTestCase):
             result_dict['presence']['aggregated'],
             {
                 "status": "idle",
-                "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=2))
-            }
+                "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=2)),
+            },
         )
 
     def test_aggregated_presense_mixed(self) -> None:
@@ -558,8 +551,8 @@ class UserPresenceAggregationTests(ZulipTestCase):
             result_dict['presence']['aggregated'],
             {
                 "status": "idle",
-                "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=2))
-            }
+                "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=2)),
+            },
         )
 
     def test_aggregated_presense_offline(self) -> None:
@@ -572,8 +565,8 @@ class UserPresenceAggregationTests(ZulipTestCase):
             result_dict['presence']['aggregated'],
             {
                 "status": "offline",
-                "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=2))
-            }
+                "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=2)),
+            },
         )
 
 class GetRealmStatusesTest(ZulipTestCase):

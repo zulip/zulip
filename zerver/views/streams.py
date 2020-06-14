@@ -1,39 +1,91 @@
-from typing import Any, Optional, Tuple, List, Set, Iterable, Mapping, Callable, Dict, \
-    Union
+from collections import defaultdict
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Union,
+)
 
-from django.utils.translation import ugettext as _
+import ujson
 from django.conf import settings
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
 
-from zerver.lib.exceptions import JsonableError, ErrorCode
+from zerver.decorator import (
+    authenticated_json_post_view,
+    require_non_guest_user,
+    require_realm_admin,
+)
+from zerver.lib.actions import (
+    bulk_add_subscriptions,
+    bulk_remove_subscriptions,
+    do_add_default_stream,
+    do_add_streams_to_default_stream_group,
+    do_change_default_stream_group_description,
+    do_change_default_stream_group_name,
+    do_change_stream_description,
+    do_change_stream_invite_only,
+    do_change_stream_post_policy,
+    do_change_subscription_property,
+    do_create_default_stream_group,
+    do_deactivate_stream,
+    do_delete_messages,
+    do_get_streams,
+    do_remove_default_stream,
+    do_remove_default_stream_group,
+    do_remove_streams_from_default_stream_group,
+    do_rename_stream,
+    do_send_messages,
+    gather_subscriptions,
+    get_subscriber_emails,
+    internal_prep_private_message,
+    internal_prep_stream_message,
+)
+from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.request import REQ, has_request_variables
-from zerver.decorator import authenticated_json_post_view, \
-    require_realm_admin, require_non_guest_user
-from zerver.lib.actions import bulk_remove_subscriptions, \
-    do_change_subscription_property, internal_prep_private_message, \
-    internal_prep_stream_message, \
-    gather_subscriptions, \
-    bulk_add_subscriptions, do_send_messages, get_subscriber_emails, do_rename_stream, \
-    do_deactivate_stream, do_change_stream_invite_only, do_add_default_stream, \
-    do_change_stream_description, do_get_streams, \
-    do_remove_default_stream, do_change_stream_post_policy, do_delete_messages, \
-    do_create_default_stream_group, do_add_streams_to_default_stream_group, \
-    do_remove_streams_from_default_stream_group, do_remove_default_stream_group, \
-    do_change_default_stream_group_description, do_change_default_stream_group_name
-from zerver.lib.response import json_success, json_error
-from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
-    check_stream_name, check_stream_name_available, filter_stream_authorization, \
-    list_to_streams, access_stream_for_delete_or_update, access_default_stream_group_by_id
+from zerver.lib.response import json_error, json_success
+from zerver.lib.streams import (
+    access_default_stream_group_by_id,
+    access_stream_by_id,
+    access_stream_by_name,
+    access_stream_for_delete_or_update,
+    check_stream_name,
+    check_stream_name_available,
+    filter_stream_authorization,
+    list_to_streams,
+)
 from zerver.lib.topic import get_topic_history_for_stream, messages_for_topic
-from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
-    check_bool, check_variable_type, check_capped_string, check_color, check_dict_only, \
-    check_int_in, to_non_negative_int
-from zerver.models import UserProfile, Stream, Realm, UserMessage, \
-    get_system_bot, get_active_user, get_active_user_profile_by_id_in_realm
+from zerver.lib.validator import (
+    check_bool,
+    check_capped_string,
+    check_color,
+    check_dict,
+    check_dict_only,
+    check_int,
+    check_int_in,
+    check_list,
+    check_string,
+    check_variable_type,
+    to_non_negative_int,
+)
+from zerver.models import (
+    Realm,
+    Stream,
+    UserMessage,
+    UserProfile,
+    get_active_user,
+    get_active_user_profile_by_id_in_realm,
+    get_system_bot,
+)
 
-from collections import defaultdict
-import ujson
 
 class PrincipalError(JsonableError):
     code = ErrorCode.UNAUTHORIZED_PRINCIPAL
@@ -111,7 +163,7 @@ def update_default_stream_group_info(request: HttpRequest, user_profile: UserPro
     if not new_group_name and not new_description:
         return json_error(_('You must pass "new_description" or "new_group_name".'))
 
-    group = access_default_stream_group_by_id(user_profile.realm, group_id,)
+    group = access_default_stream_group_by_id(user_profile.realm, group_id)
     if new_group_name is not None:
         do_change_default_stream_group_name(user_profile.realm, group, new_group_name)
     if new_description is not None:
@@ -124,7 +176,7 @@ def update_default_stream_group_streams(request: HttpRequest, user_profile: User
                                         group_id: int, op: str=REQ(),
                                         stream_names: List[str]=REQ(
                                             validator=check_list(check_string))) -> None:
-    group = access_default_stream_group_by_id(user_profile.realm, group_id,)
+    group = access_default_stream_group_by_id(user_profile.realm, group_id)
     streams = []
     for stream_name in stream_names:
         (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
@@ -154,7 +206,7 @@ def remove_default_stream(request: HttpRequest,
     (stream, recipient, sub) = access_stream_by_id(
         user_profile,
         stream_id,
-        allow_realm_admin=True
+        allow_realm_admin=True,
     )
     do_remove_default_stream(stream)
     return json_success()
@@ -215,7 +267,7 @@ def list_subscriptions_backend(
     include_subscribers: bool=REQ(validator=check_bool, default=False),
 ) -> HttpResponse:
     subscribed, _ = gather_subscriptions(
-        user_profile, include_subscribers=include_subscribers
+        user_profile, include_subscribers=include_subscribers,
     )
     return json_success({"subscriptions": subscribed})
 
@@ -233,7 +285,7 @@ def update_subscriptions_backend(
 
     method_kwarg_pairs: List[FuncKwargPair] = [
         (add_subscriptions_backend, dict(streams_raw=add)),
-        (remove_subscriptions_backend, dict(streams_raw=delete))
+        (remove_subscriptions_backend, dict(streams_raw=delete)),
     ]
     return compose_views(request, user_profile, method_kwarg_pairs)
 
@@ -312,7 +364,7 @@ def you_were_just_subscribed_message(acting_user: UserProfile,
         {"full_name": acting_user.full_name}
     message += "\n\n"
     for stream_name in subscriptions:
-        message += "* #**%s**\n" % (stream_name,)
+        message += f"* #**{stream_name}**\n"
     return message
 
 @require_non_guest_user
@@ -324,14 +376,14 @@ def add_subscriptions_backend(
                 [('name', check_string)], optional_keys=[
                     ('color', check_color),
                     ('description', check_capped_string(Stream.MAX_DESCRIPTION_LENGTH)),
-                ])
+                ]),
             )),
         invite_only: bool=REQ(validator=check_bool, default=False),
         stream_post_policy: int=REQ(validator=check_int_in(
             Stream.STREAM_POST_POLICY_TYPES), default=Stream.STREAM_POST_POLICY_EVERYONE),
         history_public_to_subscribers: Optional[bool]=REQ(validator=check_bool, default=None),
         announce: bool=REQ(validator=check_bool, default=False),
-        principals: List[Union[str, int]]=REQ(validator=check_variable_type([
+        principals: Sequence[Union[str, int]]=REQ(validator=check_variable_type([
             check_list(check_string), check_list(check_int)]), default=[]),
         authorization_errors_fatal: bool=REQ(validator=check_bool, default=True),
 ) -> HttpResponse:
@@ -443,7 +495,7 @@ def add_subscriptions_backend(
             content = content % {
                 'user_name': user_profile.full_name,
                 'user_id': user_profile.id,
-                'stream_str': ", ".join('#**%s**' % (s.name,) for s in created_streams)}
+                'stream_str': ", ".join(f'#**{s.name}**' for s in created_streams)}
 
             sender = get_system_bot(settings.NOTIFICATION_BOT)
             topic = _('new streams')
@@ -455,7 +507,7 @@ def add_subscriptions_backend(
                     stream=notifications_stream,
                     topic=topic,
                     content=content,
-                )
+                ),
             )
 
     if not user_profile.realm.is_zephyr_mirror_realm and len(created_streams) > 0:
@@ -469,8 +521,8 @@ def add_subscriptions_backend(
                     topic=Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
                     content=_('Stream created by @_**%(user_name)s|%(user_id)d**.') % {
                         'user_name': user_profile.full_name,
-                        'user_id': user_profile.id}
-                )
+                        'user_id': user_profile.id},
+                ),
             )
 
     if len(notifications) > 0:
@@ -500,7 +552,7 @@ def get_streams_backend(
         include_subscribed: bool=REQ(validator=check_bool, default=True),
         include_all_active: bool=REQ(validator=check_bool, default=False),
         include_default: bool=REQ(validator=check_bool, default=False),
-        include_owner_subscribed: bool=REQ(validator=check_bool, default=False)
+        include_owner_subscribed: bool=REQ(validator=check_bool, default=False),
 ) -> HttpResponse:
 
     streams = do_get_streams(user_profile, include_public=include_public,
@@ -593,8 +645,8 @@ def update_subscription_properties_backend(
             validator=check_list(
                 check_dict([("stream_id", check_int),
                             ("property", check_string),
-                            ("value", check_variable_type([check_string, check_bool]))])
-            )
+                            ("value", check_variable_type([check_string, check_bool]))]),
+            ),
         ),
 ) -> HttpResponse:
     """

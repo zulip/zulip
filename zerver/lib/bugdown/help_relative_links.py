@@ -1,7 +1,8 @@
 import re
-import markdown
 from typing import Any, Dict, List, Optional
 from typing.re import Match
+
+import markdown
 from markdown.preprocessors import Preprocessor
 
 # There is a lot of duplicated code between this file and
@@ -34,9 +35,9 @@ gear_instructions = """
 
 def gear_handle_match(key: str) -> str:
     if relative_help_links:
-        item = '[%s](%s)' % (gear_info[key][0], gear_info[key][1])
+        item = f'[{gear_info[key][0]}]({gear_info[key][1]})'
     else:
-        item = '**%s**' % (gear_info[key][0],)
+        item = f'**{gear_info[key][0]}**'
     return gear_instructions % {'item': item}
 
 
@@ -54,7 +55,7 @@ stream_instructions_no_link = """
 
 def stream_handle_match(key: str) -> str:
     if relative_help_links:
-        return "1. Go to [%s](%s)." % (stream_info[key][0], stream_info[key][1])
+        return f"1. Go to [{stream_info[key][0]}]({stream_info[key][1]})."
     if key == 'all':
         return stream_instructions_no_link + "\n\n1. Click **All streams** in the upper left."
     return stream_instructions_no_link

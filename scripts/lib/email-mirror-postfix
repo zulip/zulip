@@ -40,21 +40,16 @@ Also you can use optional keys to configure the script and change default values
 -t                  Disable sending request to the Zulip server. Default value: False.
 
 """
-
+import argparse
+import json
 import os
+import posix
 import ssl
 import sys
-
-import argparse
-
-import posix
-import json
-
-from urllib.parse import urljoin, urlencode
-from urllib.request import Request, urlopen
-from urllib.error import HTTPError
 from configparser import RawConfigParser
-
+from urllib.error import HTTPError
+from urllib.parse import urlencode, urljoin
+from urllib.request import Request, urlopen
 
 parser = argparse.ArgumentParser()
 
@@ -94,7 +89,7 @@ def process_response_error(e: HTTPError) -> None:
 
 
 def send_email_mirror(
-    rcpt_to: str, shared_secret: str, host: str, url: str, test: bool, verify_ssl: bool
+    rcpt_to: str, shared_secret: str, host: str, url: str, test: bool, verify_ssl: bool,
 ) -> None:
     if not rcpt_to:
         print("5.1.1 Bad destination mailbox address: No missed message email address.")
@@ -112,7 +107,7 @@ def send_email_mirror(
 
     request_data = {
         "recipient": rcpt_to,
-        "msg_text": msg_text
+        "msg_text": msg_text,
     }
     if test:
         exit(0)

@@ -7,6 +7,7 @@ from django.db.models import CASCADE
 
 from zerver.models import Realm
 
+
 class Customer(models.Model):
     realm: Realm = models.OneToOneField(Realm, on_delete=CASCADE)
     stripe_customer_id: str = models.CharField(max_length=255, null=True, unique=True)
@@ -14,7 +15,7 @@ class Customer(models.Model):
     default_discount: Optional[Decimal] = models.DecimalField(decimal_places=4, max_digits=7, null=True)
 
     def __str__(self) -> str:
-        return "<Customer %s %s>" % (self.realm, self.stripe_customer_id)
+        return f"<Customer {self.realm} {self.stripe_customer_id}>"
 
 def get_customer_by_realm(realm: Realm) -> Optional[Customer]:
     return Customer.objects.filter(realm=realm).first()

@@ -6,8 +6,10 @@ from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.actions import check_send_private_message, \
-    send_rate_limited_pm_notification_to_bot_owner
+from zerver.lib.actions import (
+    check_send_private_message,
+    send_rate_limited_pm_notification_to_bot_owner,
+)
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress
@@ -76,11 +78,9 @@ def api_teamcity_webhook(request: HttpRequest, user_profile: UserProfile,
             status = 'was successful! :thumbs_up:'
     elif build_result == 'failure':
         if build_result_delta == 'broken':
-            status = 'is broken with status {status}! :thumbs_down:'.format(
-                status=build_status)
+            status = f'is broken with status {build_status}! :thumbs_down:'
         else:
-            status = 'is still broken with status {status}! :thumbs_down:'.format(
-                status=build_status)
+            status = f'is still broken with status {build_status}! :thumbs_down:'
     elif build_result == 'running':
         status = 'has started.'
 
@@ -94,7 +94,7 @@ def api_teamcity_webhook(request: HttpRequest, user_profile: UserProfile,
         build_id=build_number,
         status=status,
         changes_url=changes_url,
-        log_url=build_url
+        log_url=build_url,
     )
 
     if 'branchDisplayName' in message:

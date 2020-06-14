@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-from typing import List
-from lib.pretty_print import pretty_print_html
 import sys
+from typing import List
+
+from lib.pretty_print import pretty_print_html
+
 
 def clean_html(filenames: List[str]) -> None:
     for fn in filenames:
-        print('Prettifying: %s' % (fn,))
+        print(f'Prettifying: {fn}')
         with open(fn) as f:
             html = f.read()
         phtml = pretty_print_html(html)

@@ -7,6 +7,7 @@ from django.db.models import Q, UniqueConstraint
 from zerver.lib.timestamp import floor_to_day
 from zerver.models import Realm, Stream, UserProfile
 
+
 class FillState(models.Model):
     property: str = models.CharField(max_length=40, unique=True)
     end_time: datetime.datetime = models.DateTimeField()
@@ -17,7 +18,7 @@ class FillState(models.Model):
     state: int = models.PositiveSmallIntegerField()
 
     def __str__(self) -> str:
-        return "<FillState: %s %s %s>" % (self.property, self.end_time, self.state)
+        return f"<FillState: {self.property} {self.end_time} {self.state}>"
 
 # The earliest/starting end_time in FillState
 # We assume there is at least one realm
@@ -57,11 +58,11 @@ class InstallationCount(BaseCount):
             UniqueConstraint(
                 fields=["property", "end_time"],
                 condition=Q(subgroup__isnull=True),
-                name='unique_installation_count_null_subgroup')
+                name='unique_installation_count_null_subgroup'),
         ]
 
     def __str__(self) -> str:
-        return "<InstallationCount: %s %s %s>" % (self.property, self.subgroup, self.value)
+        return f"<InstallationCount: {self.property} {self.subgroup} {self.value}>"
 
 class RealmCount(BaseCount):
     realm = models.ForeignKey(Realm, on_delete=models.CASCADE)
@@ -76,12 +77,12 @@ class RealmCount(BaseCount):
             UniqueConstraint(
                 fields=["realm", "property", "end_time"],
                 condition=Q(subgroup__isnull=True),
-                name='unique_realm_count_null_subgroup')
+                name='unique_realm_count_null_subgroup'),
         ]
         index_together = ["property", "end_time"]
 
     def __str__(self) -> str:
-        return "<RealmCount: %s %s %s %s>" % (self.realm, self.property, self.subgroup, self.value)
+        return f"<RealmCount: {self.realm} {self.property} {self.subgroup} {self.value}>"
 
 class UserCount(BaseCount):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
@@ -97,14 +98,14 @@ class UserCount(BaseCount):
             UniqueConstraint(
                 fields=["user", "property", "end_time"],
                 condition=Q(subgroup__isnull=True),
-                name='unique_user_count_null_subgroup')
+                name='unique_user_count_null_subgroup'),
         ]
         # This index dramatically improves the performance of
         # aggregating from users to realms
         index_together = ["property", "realm", "end_time"]
 
     def __str__(self) -> str:
-        return "<UserCount: %s %s %s %s>" % (self.user, self.property, self.subgroup, self.value)
+        return f"<UserCount: {self.user} {self.property} {self.subgroup} {self.value}>"
 
 class StreamCount(BaseCount):
     stream = models.ForeignKey(Stream, on_delete=models.CASCADE)
@@ -120,12 +121,11 @@ class StreamCount(BaseCount):
             UniqueConstraint(
                 fields=["stream", "property", "end_time"],
                 condition=Q(subgroup__isnull=True),
-                name='unique_stream_count_null_subgroup')
+                name='unique_stream_count_null_subgroup'),
         ]
         # This index dramatically improves the performance of
         # aggregating from streams to realms
         index_together = ["property", "realm", "end_time"]
 
     def __str__(self) -> str:
-        return "<StreamCount: %s %s %s %s %s>" % (
-            self.stream, self.property, self.subgroup, self.value, self.id)
+        return f"<StreamCount: {self.stream} {self.property} {self.subgroup} {self.value} {self.id}>"

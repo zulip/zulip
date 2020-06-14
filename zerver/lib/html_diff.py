@@ -1,10 +1,11 @@
-import lxml
-
-from lxml.html.diff import htmldiff
 from typing import Optional
 
+import lxml
+from lxml.html.diff import htmldiff
+
+
 def highlight_with_class(text: str, klass: str) -> str:
-    return '<span class="%s">%s</span>' % (klass, text)
+    return f'<span class="{klass}">{text}</span>'
 
 def highlight_html_differences(s1: str, s2: str, msg_id: Optional[int]=None) -> str:
     retval = htmldiff(s1, s2)

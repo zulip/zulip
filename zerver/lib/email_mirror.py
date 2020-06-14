@@ -1,31 +1,44 @@
-from typing import Dict, Optional, Tuple, List
-
 import logging
 import re
-
 from email.header import decode_header, make_header
 from email.message import Message as EmailMessage
 from email.utils import getaddresses
+from typing import Dict, List, Optional, Tuple
 
 from django.conf import settings
-from django.utils.timezone import timedelta, now as timezone_now
+from django.utils.timezone import now as timezone_now
+from django.utils.timezone import timedelta
 
-from zerver.lib.actions import internal_send_private_message, \
-    internal_send_stream_message, internal_send_huddle_message
-from zerver.lib.email_mirror_helpers import decode_email_address, \
-    get_email_gateway_message_string_from_address, ZulipEmailForwardError
+from zerver.lib.actions import (
+    internal_send_huddle_message,
+    internal_send_private_message,
+    internal_send_stream_message,
+)
+from zerver.lib.email_mirror_helpers import (
+    ZulipEmailForwardError,
+    decode_email_address,
+    get_email_gateway_message_string_from_address,
+)
 from zerver.lib.email_notifications import convert_html_to_markdown
-from zerver.lib.queue import queue_json_publish
-from zerver.lib.utils import generate_random_token
-from zerver.lib.upload import upload_message_file
-from zerver.lib.send_email import FromAddress
-from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.exceptions import RateLimited
 from zerver.lib.message import truncate_body, truncate_topic
-from zerver.models import Stream, Recipient, MissedMessageEmailAddress, \
-    get_display_recipient, \
-    Message, Realm, UserProfile, get_system_bot, get_user, get_stream_by_id_in_realm
-
+from zerver.lib.queue import queue_json_publish
+from zerver.lib.rate_limiter import RateLimitedObject
+from zerver.lib.send_email import FromAddress
+from zerver.lib.upload import upload_message_file
+from zerver.lib.utils import generate_random_token
+from zerver.models import (
+    Message,
+    MissedMessageEmailAddress,
+    Realm,
+    Recipient,
+    Stream,
+    UserProfile,
+    get_display_recipient,
+    get_stream_by_id_in_realm,
+    get_system_bot,
+    get_user,
+)
 from zproject.backends import is_user_active
 
 logger = logging.getLogger(__name__)
@@ -69,7 +82,7 @@ def report_to_zulip(error_message: str) -> None:
         error_bot,
         error_stream,
         "email mirror error",
-        """~~~\n%s\n~~~""" % (error_message,)
+        f"""~~~\n{error_message}\n~~~""",
     )
 
 def log_and_report(email_message: EmailMessage, error_message: str, to: Optional[str]) -> None:
@@ -114,7 +127,7 @@ def get_usable_missed_message_address(address: str) -> MissedMessageEmailAddress
     try:
         mm_address = MissedMessageEmailAddress.objects.select_related().get(
             email_token=token,
-            timestamp__gt=timezone_now() - timedelta(seconds=MissedMessageEmailAddress.EXPIRY_SECONDS)
+            timestamp__gt=timezone_now() - timedelta(seconds=MissedMessageEmailAddress.EXPIRY_SECONDS),
         )
     except MissedMessageEmailAddress.DoesNotExist:
         raise ZulipEmailForwardError("Missed message address expired or doesn't exist.")
@@ -155,7 +168,7 @@ def construct_zulip_body(message: EmailMessage, realm: Realm, show_sender: bool=
 
     if show_sender:
         sender = handle_header_content(message.get("From", ""))
-        body = "From: %s\n%s" % (sender, body)
+        body = f"From: {sender}\n{body}"
 
     return body
 
@@ -279,7 +292,7 @@ def extract_and_upload_attachments(message: EmailMessage, realm: Realm) -> str:
                                              attachment,
                                              user_profile,
                                              target_realm=realm)
-                formatted_link = "[%s](%s)" % (filename, s3_url)
+                formatted_link = f"[{filename}]({s3_url})"
                 attachment_links.append(formatted_link)
             else:
                 logger.warning("Payload is not bytes (invalid attachment %s in message from %s).",
@@ -371,7 +384,7 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
         stream = get_stream_by_id_in_realm(recipient.type_id, user_profile.realm)
         internal_send_stream_message(
             user_profile.realm, user_profile, stream,
-            topic, body
+            topic, body,
         )
         recipient_str = stream.name
     elif recipient.type == Recipient.PERSONAL:
@@ -429,15 +442,15 @@ def mirror_email_message(data: Dict[str, str]) -> Dict[str, str]:
     except ZulipEmailForwardError as e:
         return {
             "status": "error",
-            "msg": f"5.1.1 Bad destination mailbox address: {e}"
+            "msg": f"5.1.1 Bad destination mailbox address: {e}",
         }
 
     queue_json_publish(
         "email_mirror",
         {
             "message": data['msg_text'],
-            "rcpt_to": rcpt_to
-        }
+            "rcpt_to": rcpt_to,
+        },
     )
     return {"status": "success"}
 

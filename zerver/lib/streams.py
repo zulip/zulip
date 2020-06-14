@@ -1,24 +1,32 @@
-from typing import Any, Iterable, List, Mapping, Set, Tuple, Optional, Union
+from typing import Any, Iterable, List, Mapping, Optional, Set, Tuple, Union
 
-from django.utils.translation import ugettext as _
 from django.conf import settings
+from django.db.models.query import QuerySet
+from django.utils.translation import ugettext as _
 
+from zerver.lib.bugdown import convert as bugdown_convert
 from zerver.lib.request import JsonableError
 from zerver.models import (
-    UserProfile, Stream, Subscription, Realm, Recipient, get_stream,
-    bulk_get_streams, get_realm_stream, DefaultStreamGroup, get_stream_by_id_in_realm,
-    is_cross_realm_bot_email, active_non_guest_user_ids,
+    DefaultStreamGroup,
+    Realm,
+    Recipient,
+    Stream,
+    Subscription,
+    UserProfile,
+    active_non_guest_user_ids,
+    bulk_get_streams,
+    get_realm_stream,
+    get_stream,
+    get_stream_by_id_in_realm,
+    is_cross_realm_bot_email,
 )
-from zerver.lib.bugdown import convert as bugdown_convert
 from zerver.tornado.event_queue import send_event
-
-from django.db.models.query import QuerySet
 
 
 def get_default_value_for_history_public_to_subscribers(
         realm: Realm,
         invite_only: bool,
-        history_public_to_subscribers: Optional[bool]
+        history_public_to_subscribers: Optional[bool],
 ) -> bool:
     if invite_only:
         if history_public_to_subscribers is None:
@@ -63,8 +71,8 @@ def create_stream_if_needed(realm: Realm,
             invite_only=invite_only,
             stream_post_policy=stream_post_policy,
             history_public_to_subscribers=history_public_to_subscribers,
-            is_in_zephyr_realm=realm.is_zephyr_mirror_realm
-        )
+            is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
+        ),
     )
 
     if created:
@@ -95,7 +103,7 @@ def create_streams_if_needed(realm: Realm,
             invite_only=stream_dict.get("invite_only", False),
             stream_post_policy=stream_dict.get("stream_post_policy", Stream.STREAM_POST_POLICY_EVERYONE),
             history_public_to_subscribers=stream_dict.get("history_public_to_subscribers"),
-            stream_description=stream_dict.get("description", "")
+            stream_description=stream_dict.get("description", ""),
         )
 
         if created:

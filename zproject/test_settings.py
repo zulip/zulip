@@ -1,4 +1,5 @@
 import os
+
 # test_settings.py works differently from
 # dev_settings.py/prod_settings.py; it actually is directly referenced
 # by the test suite as DJANGO_SETTINGS_MODULE and imports settings.py
@@ -17,8 +18,8 @@ import os
 if os.getenv("EXTERNAL_HOST") is None:
     os.environ["EXTERNAL_HOST"] = "testserver"
 
-from .settings import *  # isort: skip
-from .test_extra_settings import *  # isort: skip
+from .settings import *  # noqa: F401,F403 isort: skip
+from .test_extra_settings import *  # noqa: F401,F403 isort: skip
 
 # Do not add any code after these wildcard imports!  Add it to
 # test_extra_settings instead.

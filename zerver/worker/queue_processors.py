@@ -1,60 +1,97 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
-from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, List, Mapping, MutableSequence, Optional, cast, Tuple, TypeVar, Type
-
 import copy
+import datetime
+import email
+import logging
+import os
 import signal
-import tempfile
-from functools import wraps
-from threading import Timer
-
 import smtplib
 import socket
+import tempfile
+import time
+import urllib
+from abc import ABC, abstractmethod
+from collections import defaultdict, deque
+from functools import wraps
+from threading import Timer
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Mapping,
+    MutableSequence,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+    cast,
+)
 
+import requests
+import ujson
 from django.conf import settings
 from django.db import connection
 from django.utils.timezone import now as timezone_now
-from zerver.models import \
-    get_client, get_system_bot, PreregistrationUser, \
-    get_user_profile_by_id, Message, Realm, UserMessage, UserProfile, \
-    Client, flush_per_request_caches
-from zerver.lib.context_managers import lockfile
-from zerver.lib.error_notify import do_report_error
-from zerver.lib.queue import SimpleQueueClient, retry_event
-from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.email_notifications import handle_missedmessage_emails
-from zerver.lib.push_notifications import handle_push_notification, handle_remove_push_notification, \
-    initialize_push_notifications, clear_push_device_tokens
-from zerver.lib.actions import do_send_confirmation_email, \
-    do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
-    internal_send_private_message, notify_realm_export, \
-    render_incoming_message, do_update_embedded_data, do_mark_stream_messages_as_read
-from zerver.lib.url_preview import preview as url_preview
-from zerver.lib.digest import handle_digest_email
-from zerver.lib.send_email import send_future_email, send_email_from_dict, \
-    FromAddress, EmailNotDeliveredException, handle_send_email_format_changes
-from zerver.lib.email_mirror import process_message as mirror_email, rate_limit_mirror_by_realm, \
-    is_missed_message_address, decode_stream_email_address
-from zerver.lib.streams import access_stream_by_id
-from zerver.lib.db import reset_queries
-from zerver.context_processors import common_context
-from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
-from zerver.models import get_bot_services, RealmAuditLog
 from zulip_bots.lib import ExternalBotHandler, extract_query_without_mention
-from zerver.lib.bot_lib import EmbeddedBotHandler, get_bot_handler, EmbeddedBotQuitException
+
+from zerver.context_processors import common_context
+from zerver.lib.actions import (
+    do_mark_stream_messages_as_read,
+    do_send_confirmation_email,
+    do_update_embedded_data,
+    do_update_user_activity,
+    do_update_user_activity_interval,
+    do_update_user_presence,
+    internal_send_private_message,
+    notify_realm_export,
+    render_incoming_message,
+)
+from zerver.lib.bot_lib import EmbeddedBotHandler, EmbeddedBotQuitException, get_bot_handler
+from zerver.lib.context_managers import lockfile
+from zerver.lib.db import reset_queries
+from zerver.lib.digest import handle_digest_email
+from zerver.lib.email_mirror import decode_stream_email_address, is_missed_message_address
+from zerver.lib.email_mirror import process_message as mirror_email
+from zerver.lib.email_mirror import rate_limit_mirror_by_realm
+from zerver.lib.email_notifications import handle_missedmessage_emails
+from zerver.lib.error_notify import do_report_error
 from zerver.lib.exceptions import RateLimited
 from zerver.lib.export import export_realm_wrapper
+from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
+from zerver.lib.push_notifications import (
+    clear_push_device_tokens,
+    handle_push_notification,
+    handle_remove_push_notification,
+    initialize_push_notifications,
+)
+from zerver.lib.pysa import mark_sanitized
+from zerver.lib.queue import SimpleQueueClient, retry_event
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
-
-import os
-import ujson
-from collections import defaultdict, deque
-import email
-import time
-import datetime
-import logging
-import requests
-import urllib
+from zerver.lib.send_email import (
+    EmailNotDeliveredException,
+    FromAddress,
+    handle_send_email_format_changes,
+    send_email_from_dict,
+    send_future_email,
+)
+from zerver.lib.streams import access_stream_by_id
+from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.lib.url_preview import preview as url_preview
+from zerver.models import (
+    Client,
+    Message,
+    PreregistrationUser,
+    Realm,
+    RealmAuditLog,
+    UserMessage,
+    UserProfile,
+    flush_per_request_caches,
+    get_bot_services,
+    get_client,
+    get_system_bot,
+    get_user_profile_by_id,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +101,7 @@ class WorkerDeclarationException(Exception):
 ConcreteQueueWorker = TypeVar('ConcreteQueueWorker', bound='QueueProcessingWorker')
 
 def assign_queue(
-        queue_name: str, enabled: bool=True, queue_type: str="consumer"
+        queue_name: str, enabled: bool=True, queue_type: str="consumer",
 ) -> Callable[[Type[ConcreteQueueWorker]], Type[ConcreteQueueWorker]]:
     def decorate(clazz: Type[ConcreteQueueWorker]) -> Type[ConcreteQueueWorker]:
         clazz.queue_name = queue_name
@@ -99,7 +136,7 @@ def check_and_send_restart_signal() -> None:
         pass
 
 def retry_send_email_failures(
-        func: Callable[[ConcreteQueueWorker, Dict[str, Any]], None]
+        func: Callable[[ConcreteQueueWorker, Dict[str, Any]], None],
 ) -> Callable[['QueueProcessingWorker', Dict[str, Any]], None]:
 
     @wraps(func)
@@ -150,7 +187,7 @@ class QueueProcessingWorker(ABC):
 
         os.makedirs(settings.QUEUE_STATS_DIR, exist_ok=True)
 
-        fname = '%s.stats' % (self.queue_name,)
+        fname = f'{self.queue_name}.stats'
         fn = os.path.join(settings.QUEUE_STATS_DIR, fname)
         with lockfile(fn + '.lock'):
             tmp_fn = fn + '.tmp'
@@ -204,9 +241,11 @@ class QueueProcessingWorker(ABC):
         self._log_problem()
         if not os.path.exists(settings.QUEUE_ERROR_DIR):
             os.mkdir(settings.QUEUE_ERROR_DIR)  # nocoverage
-        fname = '%s.errors' % (self.queue_name,)
+        # Use 'mark_sanitized' to prevent Pysa from detecting this false positive
+        # flow. 'queue_name' is always a constant string.
+        fname = mark_sanitized(f'{self.queue_name}.errors')
         fn = os.path.join(settings.QUEUE_ERROR_DIR, fname)
-        line = '%s\t%s\n' % (time.asctime(), ujson.dumps(events))
+        line = f'{time.asctime()}\t{ujson.dumps(events)}\n'
         lock_fn = fn + '.lock'
         with lockfile(lock_fn):
             with open(fn, 'ab') as f:
@@ -214,7 +253,7 @@ class QueueProcessingWorker(ABC):
         check_and_send_restart_signal()
 
     def _log_problem(self) -> None:
-        logging.exception("Problem handling data on queue %s" % (self.queue_name,))
+        logging.exception(f"Problem handling data on queue {self.queue_name}")
 
     def setup(self) -> None:
         self.q = SimpleQueueClient()
@@ -557,7 +596,7 @@ class FetchLinksEmbedData(QueueProcessingWorker):
             return
         if message.content is not None:
             query = UserMessage.objects.filter(
-                message=message.id
+                message=message.id,
             )
             message_user_ids = set(query.values_list('user_profile_id', flat=True))
 
@@ -624,7 +663,7 @@ class EmbeddedBotWorker(QueueProcessingWorker):
                     assert message['content'] is not None
                 bot_handler.handle_message(
                     message=message,
-                    bot_handler=self.get_bot_api_client(user_profile)
+                    bot_handler=self.get_bot_api_client(user_profile),
                 )
             except EmbeddedBotQuitException as e:
                 logging.warning(str(e))
@@ -665,7 +704,7 @@ class DeferredWorker(QueueProcessingWorker):
                                                   delete_after_upload=True)
             except Exception:
                 export_event.extra_data = ujson.dumps(dict(
-                    failed_timestamp=timezone_now().timestamp()
+                    failed_timestamp=timezone_now().timestamp(),
                 ))
                 export_event.save(update_fields=['extra_data'])
                 logging.error(
@@ -685,13 +724,12 @@ class DeferredWorker(QueueProcessingWorker):
 
             # Send a private message notification letting the user who
             # triggered the export know the export finished.
-            content = "Your data export is complete and has been uploaded here:\n\n%s" % (
-                public_url,)
+            content = f"Your data export is complete and has been uploaded here:\n\n{public_url}"
             internal_send_private_message(
                 realm=user_profile.realm,
                 sender=get_system_bot(settings.NOTIFICATION_BOT),
                 recipient_user=user_profile,
-                content=content
+                content=content,
             )
 
             # For future frontend use, also notify administrator

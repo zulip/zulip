@@ -14,18 +14,17 @@
 # Copy conf.ini-template to conf.ini and populate with your api token.
 #
 # usage: python3 create.py <username>
-
-import sys
+import argparse
 import configparser
+import json
+import os
+import sys
+import time
 import urllib.error
 import urllib.request
-import json
-import digitalocean
-import time
-import argparse
-import os
-
 from typing import Any, Dict, List
+
+import digitalocean
 
 # initiation argument parser
 parser = argparse.ArgumentParser(description='Create a Zulip devopment VM Digital Ocean droplet.')
@@ -119,7 +118,7 @@ def set_user_data(username: str, userkey_dicts: List[Dict[str, Any]]) -> str:
     server_repo_setup = setup_repo.format(username, "zulip")
     python_api_repo_setup = setup_repo.format(username, "python-zulip-api")
 
-    cloudconf = """\
+    cloudconf = f"""\
 #!/bin/bash
 
 {setup_zulipdev_ssh_keys}
@@ -131,10 +130,7 @@ su -c '{server_repo_setup}' zulipdev
 su -c '{python_api_repo_setup}' zulipdev
 su -c 'git config --global core.editor nano' zulipdev
 su -c 'git config --global pull.rebase true' zulipdev
-""".format(setup_root_ssh_keys=setup_root_ssh_keys,
-           setup_zulipdev_ssh_keys=setup_zulipdev_ssh_keys,
-           hostname_setup=hostname_setup,
-           server_repo_setup=server_repo_setup, python_api_repo_setup=python_api_repo_setup)
+"""
     print("...returning cloud-config data.")
     return cloudconf
 

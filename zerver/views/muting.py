@@ -1,13 +1,13 @@
-from django.http import HttpResponse, HttpRequest
-from typing import Optional
 import datetime
+from typing import Optional
 
+from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
+
 from zerver.lib.actions import do_mute_topic, do_unmute_topic
-from zerver.lib.request import has_request_variables, REQ
-from zerver.lib.response import json_success, json_error
-from zerver.lib.topic_mutes import topic_is_muted
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import (
     access_stream_by_id,
     access_stream_by_name,
@@ -15,8 +15,10 @@ from zerver.lib.streams import (
     access_stream_for_unmute_topic_by_name,
     check_for_exactly_one_stream_arg,
 )
+from zerver.lib.topic_mutes import topic_is_muted
 from zerver.lib.validator import check_int
 from zerver.models import UserProfile
+
 
 def mute_topic(user_profile: UserProfile,
                stream_id: Optional[int],

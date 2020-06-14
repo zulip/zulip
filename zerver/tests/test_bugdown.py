@@ -1,12 +1,19 @@
+import copy
+import os
+import re
+from typing import Any, Dict, List, Optional, Set, Tuple, cast
+from unittest import mock
+
+import ujson
 from django.conf import settings
 from django.test import TestCase, override_settings
 
-from zerver.lib import bugdown
+from zerver.lib import bugdown, mdiff
 from zerver.lib.actions import (
-    do_set_user_display_setting,
-    do_remove_realm_emoji,
     do_add_alert_words,
+    do_remove_realm_emoji,
     do_set_realm_property,
+    do_set_user_display_setting,
 )
 from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.create_user import create_user
@@ -14,42 +21,30 @@ from zerver.lib.emoji import get_emoji_url
 from zerver.lib.exceptions import BugdownRenderingException
 from zerver.lib.mention import possible_mentions, possible_user_group_mentions
 from zerver.lib.message import render_markdown
-from zerver.lib.request import (
-    JsonableError,
-)
-from zerver.lib.user_groups import create_user_group
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
+from zerver.lib.request import JsonableError
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_runner import slow
-from zerver.lib import mdiff
 from zerver.lib.tex import render_tex
+from zerver.lib.user_groups import create_user_group
 from zerver.models import (
-    realm_in_local_realm_filters_cache,
+    MAX_MESSAGE_LENGTH,
+    Message,
+    Realm,
+    RealmEmoji,
+    RealmFilter,
+    Stream,
+    UserGroup,
+    UserMessage,
+    UserProfile,
     flush_per_request_caches,
     flush_realm_filter,
     get_client,
     get_realm,
     get_stream,
     realm_filters_for_realm,
-    MAX_MESSAGE_LENGTH,
-    Message,
-    Stream,
-    Realm,
-    RealmEmoji,
-    RealmFilter,
-    UserMessage,
-    UserProfile,
-    UserGroup,
+    realm_in_local_realm_filters_cache,
 )
 
-import copy
-from unittest import mock
-import os
-import ujson
-import re
-
-from typing import cast, Any, Dict, List, Optional, Set, Tuple
 
 class FakeMessage:
     pass
@@ -62,7 +57,7 @@ class FencedBlockPreprocessorTest(TestCase):
             'hi',
             'bye',
             '',
-            ''
+            '',
         ]
         expected = [
             '',
@@ -70,7 +65,7 @@ class FencedBlockPreprocessorTest(TestCase):
             '> bye',
             '',
             '',
-            ''
+            '',
         ]
         lines = processor.run(markdown)
         self.assertEqual(lines, expected)
@@ -85,7 +80,7 @@ class FencedBlockPreprocessorTest(TestCase):
             '~~~ quote',
             'bye',
             '',
-            ''
+            '',
         ]
         expected = [
             '',
@@ -96,7 +91,7 @@ class FencedBlockPreprocessorTest(TestCase):
             '> bye',
             '',
             '',
-            ''
+            '',
         ]
         lines = processor.run(markdown)
         self.assertEqual(lines, expected)
@@ -124,7 +119,7 @@ class FencedBlockPreprocessorTest(TestCase):
             '```',
             'no-highlight()',
             '```',
-            ''
+            '',
         ]
         expected = [
             '',
@@ -142,7 +137,7 @@ class FencedBlockPreprocessorTest(TestCase):
             '',
             '**:no-highlight()**',
             '',
-            ''
+            '',
         ]
         lines = processor.run(markdown)
         self.assertEqual(lines, expected)
@@ -161,7 +156,7 @@ class FencedBlockPreprocessorTest(TestCase):
             'hello()',
             '```',
             '',
-            ''
+            '',
         ]
         expected = [
             '',
@@ -170,7 +165,7 @@ class FencedBlockPreprocessorTest(TestCase):
             '> **py:hello()**',
             '',
             '',
-            ''
+            '',
         ]
         lines = processor.run(markdown)
         self.assertEqual(lines, expected)
@@ -182,7 +177,7 @@ def bugdown_convert(content: str) -> str:
     return bugdown.convert(
         content=content,
         message_realm=get_realm('zulip'),
-        message=message
+        message=message,
     )
 
 class BugdownMiscTest(ZulipTestCase):
@@ -227,12 +222,12 @@ class BugdownMiscTest(ZulipTestCase):
         self.assertEqual(by_id.get(fred2.id), dict(
             email=fred2.email,
             full_name='Fred Flintstone',
-            id=fred2.id
+            id=fred2.id,
         ))
         self.assertEqual(by_id.get(fred4.id), dict(
             email=fred4.email,
             full_name='Fred Flintstone',
-            id=fred4.id
+            id=fred4.id,
         ))
 
     def test_mention_data(self) -> None:
@@ -245,7 +240,7 @@ class BugdownMiscTest(ZulipTestCase):
         self.assertEqual(mention_data.get_user_by_id(hamlet.id), dict(
             email=hamlet.email,
             full_name=hamlet.full_name,
-            id=hamlet.id
+            id=hamlet.id,
         ))
 
         user = mention_data.get_user_by_name('king hamLET')
@@ -1094,7 +1089,7 @@ class BugdownTest(ZulipTestCase):
         rendered_content = render_markdown(msg, content)
         self.assertEqual(
             rendered_content,
-            '<p>/me makes a list</p>\n<ul>\n<li>one</li>\n<li>two</li>\n</ul>'
+            '<p>/me makes a list</p>\n<ul>\n<li>one</li>\n<li>two</li>\n</ul>',
         )
         self.assertTrue(Message.is_status_message(content, rendered_content))
 
@@ -1102,7 +1097,7 @@ class BugdownTest(ZulipTestCase):
         rendered_content = render_markdown(msg, content)
         self.assertEqual(
             rendered_content,
-            '<p>/me takes a walk</p>'
+            '<p>/me takes a walk</p>',
         )
         self.assertTrue(Message.is_status_message(content, rendered_content))
 
@@ -1110,7 +1105,7 @@ class BugdownTest(ZulipTestCase):
         rendered_content = render_markdown(msg, content)
         self.assertEqual(
             rendered_content,
-            '<p>/me writes a second line<br>\nline</p>'
+            '<p>/me writes a second line<br>\nline</p>',
         )
         self.assertTrue(Message.is_status_message(content, rendered_content))
 
@@ -1123,8 +1118,7 @@ class BugdownTest(ZulipTestCase):
         def render(msg: Message, content: str) -> str:
             return render_markdown(msg,
                                    content,
-                                   realm_alert_words_automaton=realm_alert_words_automaton,
-                                   user_ids={user_profile.id})
+                                   realm_alert_words_automaton=realm_alert_words_automaton)
 
         content = "We have an ALERTWORD day today!"
         self.assertEqual(render(msg, content), "<p>We have an ALERTWORD day today!</p>")
@@ -1139,31 +1133,27 @@ class BugdownTest(ZulipTestCase):
         alert_words_for_users: Dict[str, List[str]] = {
             'hamlet': ['how'], 'cordelia': ['this possible'],
             'iago': ['hello'], 'prospero': ['hello'],
-            'othello': ['how are you'], 'aaron': ['hey']
+            'othello': ['how are you'], 'aaron': ['hey'],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        user_ids: Set[int] = set()
         for (username, alert_words) in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
-            user_ids.add(user_profile.id)
             do_add_alert_words(user_profile, alert_words)
         sender_user_profile = self.example_user('polonius')
-        user_ids.add(sender_user_profile.id)
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
 
         def render(msg: Message, content: str) -> str:
             return render_markdown(msg,
                                    content,
-                                   realm_alert_words_automaton=realm_alert_words_automaton,
-                                   user_ids = user_ids)
+                                   realm_alert_words_automaton=realm_alert_words_automaton)
 
         content = "hello how is this possible how are you doing today"
         render(msg, content)
         expected_user_ids: Set[int] = {
             user_profiles['hamlet'].id, user_profiles['cordelia'].id, user_profiles['iago'].id,
-            user_profiles['prospero'].id, user_profiles['othello'].id
+            user_profiles['prospero'].id, user_profiles['othello'].id,
         }
         # All users except aaron have their alert word appear in the message content
         self.assertEqual(msg.user_ids_with_alert_words, expected_user_ids)
@@ -1173,25 +1163,21 @@ class BugdownTest(ZulipTestCase):
             'hamlet': ['provisioning', 'Prod deployment'],
             'cordelia': ['test', 'Prod'],
             'iago': ['prod'], 'prospero': ['deployment'],
-            'othello': ['last']
+            'othello': ['last'],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        user_ids: Set[int] = set()
         for (username, alert_words) in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
-            user_ids.add(user_profile.id)
             do_add_alert_words(user_profile, alert_words)
         sender_user_profile = self.example_user('polonius')
-        user_ids.add(sender_user_profile.id)
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
 
         def render(msg: Message, content: str) -> str:
             return render_markdown(msg,
                                    content,
-                                   realm_alert_words_automaton=realm_alert_words_automaton,
-                                   user_ids = user_ids)
+                                   realm_alert_words_automaton=realm_alert_words_automaton)
 
         content = """Hello, everyone. Prod deployment has been completed
         And this is a new line
@@ -1204,7 +1190,7 @@ class BugdownTest(ZulipTestCase):
             user_profiles['cordelia'].id,
             user_profiles['iago'].id,
             user_profiles['prospero'].id,
-            user_profiles['othello'].id
+            user_profiles['othello'].id,
         }
         # All users have their alert word appear in the message content
         self.assertEqual(msg.user_ids_with_alert_words, expected_user_ids)
@@ -1214,25 +1200,21 @@ class BugdownTest(ZulipTestCase):
             'hamlet': ['réglementaire', 'une politique', 'une merveille'],
             'cordelia': ['énormément', 'Prod'],
             'iago': ['prod'], 'prospero': ['deployment'],
-            'othello': ['last']
+            'othello': ['last'],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        user_ids: Set[int] = set()
         for (username, alert_words) in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
-            user_ids.add(user_profile.id)
             do_add_alert_words(user_profile, alert_words)
         sender_user_profile = self.example_user('polonius')
-        user_ids.add(sender_user_profile.id)
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
 
         def render(msg: Message, content: str) -> str:
             return render_markdown(msg,
                                    content,
-                                   realm_alert_words_automaton=realm_alert_words_automaton,
-                                   user_ids = user_ids)
+                                   realm_alert_words_automaton=realm_alert_words_automaton)
 
         content = """This is to test out alert words work in languages with accented characters too
         bonjour est (énormément) ce a quoi ressemble le français
@@ -1246,10 +1228,9 @@ class BugdownTest(ZulipTestCase):
     def test_alert_words_returns_empty_user_ids_with_alert_words(self) -> None:
         alert_words_for_users: Dict[str, List[str]] = {
             'hamlet': [], 'cordelia': [], 'iago': [], 'prospero': [],
-            'othello': [], 'aaron': []
+            'othello': [], 'aaron': [],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        user_ids: Set[int] = set()
         for (username, alert_words) in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
@@ -1261,8 +1242,7 @@ class BugdownTest(ZulipTestCase):
         def render(msg: Message, content: str) -> str:
             return render_markdown(msg,
                                    content,
-                                   realm_alert_words_automaton=realm_alert_words_automaton,
-                                   user_ids = user_ids)
+                                   realm_alert_words_automaton=realm_alert_words_automaton)
 
         content = """hello how is this possible how are you doing today
         This is to test that the no user_ids who have alrert wourldword is participating
@@ -1282,24 +1262,21 @@ class BugdownTest(ZulipTestCase):
             'hamlet': [],
             'cordelia': [],
             'iago': [],
-            'othello': []
+            'othello': [],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        user_ids: Set[int] = set()
         for (username, alert_words) in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
             do_add_alert_words(user_profile, alert_words)
         sender_user_profile = self.example_user('polonius')
-        user_ids = {user_profiles['hamlet'].id, user_profiles['iago'].id, user_profiles['othello'].id}
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
 
         def render(msg: Message, content: str) -> str:
             return render_markdown(msg,
                                    content,
-                                   realm_alert_words_automaton=realm_alert_words_automaton,
-                                   user_ids = user_ids)
+                                   realm_alert_words_automaton=realm_alert_words_automaton)
 
         content = """This is to test a empty alert words i.e. no user has any alert-words set"""
         render(msg, content)
@@ -1312,24 +1289,21 @@ class BugdownTest(ZulipTestCase):
             'hamlet': ['issue124'],
             'cordelia': self.get_mock_alert_words(500, 10),
             'iago': self.get_mock_alert_words(500, 10),
-            'othello': self.get_mock_alert_words(500, 10)
+            'othello': self.get_mock_alert_words(500, 10),
         }
         user_profiles: Dict[str, UserProfile] = {}
-        user_ids: Set[int] = set()
         for (username, alert_words) in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
             do_add_alert_words(user_profile, alert_words)
         sender_user_profile = self.example_user('polonius')
-        user_ids = {user_profiles['hamlet'].id, user_profiles['iago'].id, user_profiles['othello'].id}
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
 
         def render(msg: Message, content: str) -> str:
             return render_markdown(msg,
                                    content,
-                                   realm_alert_words_automaton=realm_alert_words_automaton,
-                                   user_ids = user_ids)
+                                   realm_alert_words_automaton=realm_alert_words_automaton)
 
         content = """The code above will print 10 random values of numbers between 1 and 100.
         The second line, for x in range(10), determines how many values will be printed (when you use
@@ -1495,7 +1469,7 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(msg.mentions_user_ids, set())
 
     def test_possible_mentions(self) -> None:
-        def assert_mentions(content: str, names: Set[str], has_wildcards: Optional[bool]=False) -> None:
+        def assert_mentions(content: str, names: Set[str], has_wildcards: bool=False) -> None:
             self.assertEqual(possible_mentions(content), (names, has_wildcards))
 
         assert_mentions('', set())
@@ -1505,7 +1479,7 @@ class BugdownTest(ZulipTestCase):
 
         assert_mentions(
             'Hello @**King Hamlet** and @**Cordelia Lear**\n@**Foo van Barson|1234** @**all**',
-            {'King Hamlet', 'Cordelia Lear', 'Foo van Barson|1234'}, True
+            {'King Hamlet', 'Cordelia Lear', 'Foo van Barson|1234'}, True,
         )
 
     def test_mention_multiple(self) -> None:
@@ -1700,12 +1674,12 @@ class BugdownTest(ZulipTestCase):
 
         assert_mentions(
             '@*support* Hello @**King Hamlet** and @**Cordelia Lear**\n'
-            '@**Foo van Barson** @**all**', {'support'}
+            '@**Foo van Barson** @**all**', {'support'},
         )
 
         assert_mentions(
             'Attention @*support*, @*frontend* and @*backend*\ngroups.',
-            {'support', 'frontend', 'backend'}
+            {'support', 'frontend', 'backend'},
         )
 
     def test_user_group_mention_multiple(self) -> None:
@@ -1742,7 +1716,7 @@ class BugdownTest(ZulipTestCase):
 
         def update_message_and_check_flag(content: str, mentioned: bool) -> None:
             result = self.client_patch("/json/messages/" + str(msg_id), {
-                'message_id': msg_id, 'content': content
+                'message_id': msg_id, 'content': content,
             })
             self.assert_json_success(result)
             um = UserMessage.objects.get(
@@ -1777,7 +1751,7 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(
             render_markdown(msg, content),
             '<p><a class="stream" data-stream-id="{d.id}" href="/#narrow/stream/{d.id}-Denmark">#{d.name}</a></p>'.format(
-                d=denmark
+                d=denmark,
             ))
 
     def test_stream_multiple(self) -> None:
@@ -1806,7 +1780,7 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(
             render_markdown(msg, content),
             '<p><a class="stream" data-stream-id="{s.id}" href="/#narrow/stream/{s.id}-{s.name}">#{s.name}</a></p>'.format(
-                s=case_sens
+                s=case_sens,
             ))
 
     def test_stream_case_sensitivity_nonmatching(self) -> None:
@@ -1830,7 +1804,7 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(
             render_markdown(msg, content),
             '<p><a class="stream-topic" data-stream-id="{d.id}" href="/#narrow/stream/{d.id}-Denmark/topic/some.20topic">#{d.name} &gt; some topic</a></p>'.format(
-                d=denmark
+                d=denmark,
             ))
 
     def test_topic_atomic_string(self) -> None:
@@ -1853,7 +1827,7 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(
             render_markdown(msg, content),
             '<p><a class="stream-topic" data-stream-id="{d.id}" href="/#narrow/stream/{d.id}-Denmark/topic/.231234">#{d.name} &gt; #1234</a></p>'.format(
-                d=denmark
+                d=denmark,
             ))
 
     def test_topic_multiple(self) -> None:
@@ -1881,7 +1855,7 @@ class BugdownTest(ZulipTestCase):
         '''
         self.assertEqual(
             bugdown.possible_linked_stream_names(content),
-            {'test here', 'Denmark', 'garçon', '천국'}
+            {'test here', 'Denmark', 'garçon', '천국'},
         )
 
     def test_stream_unicode(self) -> None:
@@ -1891,9 +1865,7 @@ class BugdownTest(ZulipTestCase):
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         content = "#**привет**"
         quoted_name = '.D0.BF.D1.80.D0.B8.D0.B2.D0.B5.D1.82'
-        href = '/#narrow/stream/{stream_id}-{quoted_name}'.format(
-            stream_id=uni.id,
-            quoted_name=quoted_name)
+        href = f'/#narrow/stream/{uni.id}-{quoted_name}'
         self.assertEqual(
             render_markdown(msg, content),
             '<p><a class="stream" data-stream-id="{s.id}" href="{href}">#{s.name}</a></p>'.format(
@@ -1947,7 +1919,7 @@ class BugdownTest(ZulipTestCase):
             '<a href="https://example.com/testimage.png" title="My favorite image">'
             '<img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fexample.com%2Ftestimage.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fexample.com%2Ftestimage.png&amp;size=thumbnail">'
             '</a>'
-            '</div>'
+            '</div>',
         )
 
     def test_mit_rendering(self) -> None:
@@ -2009,7 +1981,7 @@ class BugdownTest(ZulipTestCase):
 
         self.assertEqual(
             bugdown.convert(msg, message_realm=realm, message=message),
-            '<p><a href="http://example.com/#settings/">http://example.com/#settings/</a></p>'
+            '<p><a href="http://example.com/#settings/">http://example.com/#settings/</a></p>',
         )
 
     def test_relative_link(self) -> None:
@@ -2020,7 +1992,7 @@ class BugdownTest(ZulipTestCase):
 
         self.assertEqual(
             bugdown.convert(msg, message_realm=realm, message=message),
-            '<p><a href="#narrow/stream/999-hello">http://zulip.testserver/#narrow/stream/999-hello</a></p>'
+            '<p><a href="#narrow/stream/999-hello">http://zulip.testserver/#narrow/stream/999-hello</a></p>',
         )
 
     def test_relative_link_streams_page(self) -> None:
@@ -2031,7 +2003,7 @@ class BugdownTest(ZulipTestCase):
 
         self.assertEqual(
             bugdown.convert(msg, message_realm=realm, message=message),
-            '<p><a href="#streams/all">http://zulip.testserver/#streams/all</a></p>'
+            '<p><a href="#streams/all">http://zulip.testserver/#streams/all</a></p>',
         )
 
     def test_md_relative_link(self) -> None:
@@ -2042,7 +2014,7 @@ class BugdownTest(ZulipTestCase):
 
         self.assertEqual(
             bugdown.convert(msg, message_realm=realm, message=message),
-            '<p><a href="#narrow/stream/999-hello">hello</a></p>'
+            '<p><a href="#narrow/stream/999-hello">hello</a></p>',
         )
 
 class BugdownApiTests(ZulipTestCase):
@@ -2051,7 +2023,7 @@ class BugdownApiTests(ZulipTestCase):
         result = self.api_post(
             self.example_user("othello"),
             '/api/v1/messages/render',
-            dict(content=content)
+            dict(content=content),
         )
         self.assert_json_success(result)
         self.assertEqual(result.json()['rendered'],
@@ -2063,7 +2035,7 @@ class BugdownApiTests(ZulipTestCase):
         result = self.api_post(
             self.example_user("othello"),
             '/api/v1/messages/render',
-            dict(content=content)
+            dict(content=content),
         )
         self.assert_json_success(result)
         user_id = self.example_user('hamlet').id
@@ -2135,7 +2107,7 @@ class BugdownErrorTests(ZulipTestCase):
             '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY',
             '    -d "queue_id=1375801870:2942"**',
             '',
-            ''
+            '',
         ]
 
         result = processor.run(markdown)

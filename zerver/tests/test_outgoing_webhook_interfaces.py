@@ -1,25 +1,16 @@
-from typing import cast, Any, Dict
-
-from unittest import mock
 import json
+from typing import Any, Dict, cast
+from unittest import mock
+
 import requests
 
 from zerver.lib.avatar import get_gravatar_url
 from zerver.lib.message import MessageDict
-from zerver.lib.outgoing_webhook import (
-    get_service_interface_class,
-    process_success_response,
-)
+from zerver.lib.outgoing_webhook import get_service_interface_class, process_success_response
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
-from zerver.models import (
-    get_realm,
-    get_stream,
-    get_user,
-    Message,
-    SLACK_INTERFACE,
-)
+from zerver.models import SLACK_INTERFACE, Message, get_realm, get_stream, get_user
 
 
 class TestGenericOutgoingWebhookService(ZulipTestCase):
@@ -43,7 +34,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
 
         event = dict(
             user_profile_id=99,
-            message=dict(type='private')
+            message=dict(type='private'),
         )
         service_handler = self.handler
 
@@ -63,7 +54,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
             process_success_response(
                 event=event,
                 service_handler=service_handler,
-                response=response
+                response=response,
             )
         self.assertTrue(m.called)
 
@@ -73,7 +64,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         message_id = self.send_stream_message(
             othello,
             stream.name,
-            content="@**test**"
+            content="@**test**",
         )
 
         message = Message.objects.get(id=message_id)
@@ -168,7 +159,7 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
                 'timestamp': 123456,
                 'sender_id': 21,
                 'sender_full_name': 'Sample User',
-            }
+            },
         }
 
         self.private_message_event = {
@@ -186,7 +177,7 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
                 'id': 219,
                 TOPIC_NAME: 'test',
                 'content': 'test content',
-            }
+            },
         }
 
         service_class = get_service_interface_class(SLACK_INTERFACE)

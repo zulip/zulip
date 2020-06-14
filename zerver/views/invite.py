@@ -1,25 +1,31 @@
+import re
+from typing import List, Sequence, Set
+
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
-from typing import List, Optional, Set
 
-from zerver.decorator import require_realm_admin, require_member_or_admin
-from zerver.lib.actions import do_invite_users, do_revoke_user_invite, \
-    do_revoke_multi_use_invite, do_resend_user_invite_email, \
-    do_get_user_invites, do_create_multiuse_invite_link
+from zerver.decorator import require_member_or_admin, require_realm_admin
+from zerver.lib.actions import (
+    do_create_multiuse_invite_link,
+    do_get_user_invites,
+    do_invite_users,
+    do_resend_user_invite_email,
+    do_revoke_multi_use_invite,
+    do_revoke_user_invite,
+)
 from zerver.lib.exceptions import OrganizationAdministratorRequired
-from zerver.lib.request import REQ, has_request_variables, JsonableError
-from zerver.lib.response import json_success, json_error
+from zerver.lib.request import REQ, JsonableError, has_request_variables
+from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_id
-from zerver.lib.validator import check_list, check_int
-from zerver.models import PreregistrationUser, Stream, UserProfile, MultiuseInvite
+from zerver.lib.validator import check_int, check_list
+from zerver.models import MultiuseInvite, PreregistrationUser, Stream, UserProfile
 
-import re
 
 @require_member_or_admin
 @has_request_variables
 def invite_users_backend(request: HttpRequest, user_profile: UserProfile,
                          invitee_emails_raw: str=REQ("invitee_emails"),
-                         invite_as: Optional[int]=REQ(
+                         invite_as: int=REQ(
                              validator=check_int, default=PreregistrationUser.INVITE_AS['MEMBER']),
                          stream_ids: List[int]=REQ(validator=check_list(check_int)),
                          ) -> HttpResponse:
@@ -123,7 +129,7 @@ def resend_user_invite_email(request: HttpRequest, user_profile: UserProfile,
 def generate_multiuse_invite_backend(
         request: HttpRequest, user_profile: UserProfile,
         invite_as: int=REQ(validator=check_int, default=PreregistrationUser.INVITE_AS['MEMBER']),
-        stream_ids: List[int]=REQ(validator=check_list(check_int), default=[])) -> HttpResponse:
+        stream_ids: Sequence[int]=REQ(validator=check_list(check_int), default=[])) -> HttpResponse:
     streams = []
     for stream_id in stream_ids:
         try:

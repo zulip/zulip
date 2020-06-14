@@ -25,7 +25,7 @@ function make_tab_data(filter) {
     }
     tab_data.title = filter.get_title();
     tab_data.icon = filter.get_icon();
-    if (tab_data.icon === 'hashtag' || tab_data.icon === 'lock') {
+    if (['hashtag', 'lock', 'globe'].includes(tab_data.icon)) {
         const stream = filter.operands("stream")[0];
         const current_stream  = stream_data.get_sub_by_name(stream);
         if (current_stream) {
@@ -46,22 +46,23 @@ function make_tab_data(filter) {
 exports.colorize_tab_bar = function () {
     const filter = narrow_state.filter();
     if (filter === undefined || !filter.has_operator('stream')) {return;}
-    const color_for_stream = stream_data.get_color(filter.operands("stream")[0]);
+    const color_for_stream = stream_data.get_color(filter._stream_params._stream_name);
     const stream_light = colorspace.getHexColor(colorspace.getDecimalColor(color_for_stream));
     $("#tab_list .fa-hashtag").css('color', stream_light);
     $("#tab_list .fa-lock").css('color', stream_light);
+    $("#tab_list .fa-globe").css('color', stream_light);
 };
 
 function append_and_display_title_area(tab_bar_data) {
-    const tab_bar = $("#tab_bar");
-    tab_bar.empty();
+    const tab_bar_elem = $("#tab_bar");
+    tab_bar_elem.empty();
     const rendered = render_tab_bar(tab_bar_data);
-    tab_bar.append(rendered);
+    tab_bar_elem.append(rendered);
     if (tab_bar_data.stream_settings_link) {
         exports.colorize_tab_bar();
     }
-    tab_bar.removeClass('notdisplayed');
-    const content = tab_bar.find('span.rendered_markdown');
+    tab_bar_elem.removeClass('notdisplayed');
+    const content = tab_bar_elem.find('span.rendered_markdown');
     if (content) {
         // Update syntax like stream names, emojis, mentions, timestamps.
         rendered_markdown.update_elements(content);
@@ -119,20 +120,24 @@ function build_tab_bar(filter) {
     }
 }
 
+// we rely entirely on this function to ensure
+// the searchbar has the right text.
+exports.reset_searchbox_text = function () {
+    let search_string = narrow_state.search_string();
+    if (search_string !== "") {
+        if (!page_params.search_pills_enabled && !narrow_state.filter().is_search()) {
+            // saves the user a keystroke for quick searches
+            search_string = search_string + " ";
+        }
+        $("#search_query").val(search_string);
+    }
+};
+
 exports.exit_search = function () {
     const filter = narrow_state.filter();
     if (!filter || filter.is_common_narrow()) {
         // for common narrows, we change the UI (and don't redirect)
         exports.close_search_bar_and_open_narrow_description();
-
-        // reset searchbox text
-        const search_string = narrow_state.search_string();
-        // This does not need to be conditional like the corresponding
-        // function call in narrow.activate because search filters are
-        // not common narrows
-        if (search_string !== "") {
-            $("#search_query").val(search_string + " ");
-        }
     } else {
         // for "searching narrows", we redirect
         window.location.replace(filter.generate_redirect_url());
@@ -151,14 +156,14 @@ exports.initialize = function () {
 };
 
 exports.render_title_area = function () {
-    // TODO: Implement rerendering for stream privacy or subscriber
-    // count changes. We simply need to call this function in the
-    // appropriate places.
+    // TODO: Implement rerendering for subscriber count changes.
+    // We simply need to call this function in the appropriate places.
     const filter = narrow_state.filter();
     build_tab_bar(filter);
 };
 
 exports.open_search_bar_and_close_narrow_description = function () {
+    exports.reset_searchbox_text();
     $(".navbar-search").addClass("expanded");
     $("#tab_list").addClass("hidden");
 };

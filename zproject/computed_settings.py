@@ -1,21 +1,28 @@
-from copy import deepcopy
 import os
-import time
 import sys
+import time
+from copy import deepcopy
 from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urljoin
 
-from zerver.lib.db import TimeTrackingConnection
 import zerver.lib.logging_util
+from zerver.lib.db import TimeTrackingConnection
 
-from .config import DEPLOY_ROOT, PRODUCTION, DEVELOPMENT, get_secret, get_config, get_from_file_if_exists
+from .config import (
+    DEPLOY_ROOT,
+    DEVELOPMENT,
+    PRODUCTION,
+    get_config,
+    get_from_file_if_exists,
+    get_secret,
+)
 from .configured_settings import (
     ADMINS,
     ALLOWED_HOSTS,
-    AUTHENTICATION_BACKENDS,
     AUTH_LDAP_BIND_DN,
     AUTH_LDAP_CONNECTION_OPTIONS,
     AUTH_LDAP_SERVER_URI,
+    AUTHENTICATION_BACKENDS,
     CAMO_URI,
     DEBUG,
     DEBUG_ERROR_REPORTING,
@@ -156,6 +163,8 @@ ALLOWED_HOSTS += [EXTERNAL_HOST.split(":")[0],
 ALLOWED_HOSTS += REALM_HOSTS.values()
 
 from django.template.loaders import app_directories
+
+
 class TwoFactorLoader(app_directories.Loader):
     def get_dirs(self) -> List[str]:
         dirs = super().get_dirs()
@@ -278,7 +287,7 @@ DATABASES: Dict[str, Dict[str, Any]] = {"default": {
     'SCHEMA': 'zulip',
     'CONN_MAX_AGE': 600,
     'OPTIONS': {
-        'connection_factory': TimeTrackingConnection
+        'connection_factory': TimeTrackingConnection,
     },
 }}
 
@@ -286,12 +295,12 @@ if DEVELOPMENT:
     LOCAL_DATABASE_PASSWORD = get_secret("local_database_password")
     DATABASES["default"].update({
         'PASSWORD': LOCAL_DATABASE_PASSWORD,
-        'HOST': 'localhost'
+        'HOST': 'localhost',
     })
 elif REMOTE_POSTGRES_HOST != '':
     DATABASES['default'].update({
         'HOST': REMOTE_POSTGRES_HOST,
-        'PORT': REMOTE_POSTGRES_PORT
+        'PORT': REMOTE_POSTGRES_PORT,
     })
     if get_secret("postgres_password") is not None:
         DATABASES['default'].update({
@@ -335,7 +344,7 @@ CACHES = {
         'OPTIONS': {
             'tcp_nodelay': True,
             'retry_timeout': 1,
-        }
+        },
     },
     'database': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
@@ -347,7 +356,7 @@ CACHES = {
         'OPTIONS': {
             'MAX_ENTRIES': 100000000,
             'CULL_FREQUENCY': 10,
-        }
+        },
     },
     'in-memory': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -416,7 +425,7 @@ if DEVELOPMENT:
     # PRODUCTION.  Saves a bunch of time.
     PASSWORD_HASHERS = (
         'django.contrib.auth.hashers.SHA1PasswordHasher',
-        'django.contrib.auth.hashers.PBKDF2PasswordHasher'
+        'django.contrib.auth.hashers.PBKDF2PasswordHasher',
     )
     # Also we auto-generate passwords for the default users which you
     # can query using ./manage.py print_initial_password
@@ -483,7 +492,7 @@ REALM_INTERNAL_BOTS: List[Dict[str, str]] = []
 DISABLED_REALM_INTERNAL_BOTS = [
     {'var_name': 'REMINDER_BOT',
      'email_template': 'reminder-bot@%s',
-     'name': 'Reminder Bot'}
+     'name': 'Reminder Bot'},
 ]
 
 if PRODUCTION:
@@ -559,7 +568,7 @@ WEBPACK_LOADER = {
         'CACHE': not DEBUG,
         'BUNDLE_DIR_NAME': '../webpack/' if DEBUG else 'webpack-bundles/',
         'STATS_FILE': os.path.join(DEPLOY_ROOT, WEBPACK_STATS_FILE),
-    }
+    },
 }
 
 ########################################################################
@@ -708,7 +717,7 @@ LOGGING: Dict[str, Any] = {
     'formatters': {
         'default': {
             '()': 'zerver.lib.logging_util.ZulipFormatter',
-        }
+        },
     },
     'filters': {
         'ZulipLimiter': {
@@ -747,7 +756,7 @@ LOGGING: Dict[str, Any] = {
             'class': 'zerver.logging_handlers.AdminNotifyHandler',
             'filters': (['ZulipLimiter', 'require_debug_false', 'require_really_deployed']
                         if not DEBUG_ERROR_REPORTING else []),
-            'formatter': 'default'
+            'formatter': 'default',
         },
         'auth_file': {
             'level': 'DEBUG',
@@ -758,7 +767,7 @@ LOGGING: Dict[str, Any] = {
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            'formatter': 'default'
+            'formatter': 'default',
         },
         'file': {
             'level': 'DEBUG',
@@ -931,7 +940,7 @@ LOGGING: Dict[str, Any] = {
             'handlers': ['file', 'errors_file'],
             'propagate': False,
         },
-    }
+    },
 }
 
 if DEVELOPMENT:

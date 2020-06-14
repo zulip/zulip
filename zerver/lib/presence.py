@@ -1,21 +1,14 @@
-from collections import defaultdict
-
 import datetime
 import itertools
 import time
+from collections import defaultdict
+from typing import Any, Dict, List, Set
 
 from django.utils.timezone import now as timezone_now
 
-from typing import Any, Dict, List, Set
-
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.models import (
-    query_for_ids,
-    PushDeviceToken,
-    Realm,
-    UserPresence,
-    UserProfile,
-)
+from zerver.models import PushDeviceToken, Realm, UserPresence, UserProfile, query_for_ids
+
 
 def get_status_dicts_for_rows(all_rows: List[Dict[str, Any]],
                               mobile_user_ids: Set[int],
@@ -28,7 +21,7 @@ def get_status_dicts_for_rows(all_rows: List[Dict[str, Any]],
     # here prevents us from having to assume the caller is playing nice.
     all_rows = sorted(
         all_rows,
-        key = lambda row: (row['user_profile__id'], row['timestamp'])
+        key = lambda row: (row['user_profile__id'], row['timestamp']),
     )
 
     if slim_presence:
@@ -164,10 +157,10 @@ def get_status_dict_by_realm(realm_id: int, slim_presence: bool = False) -> Dict
     presence_rows = list(query)
 
     mobile_query = PushDeviceToken.objects.distinct(
-        'user_id'
+        'user_id',
     ).values_list(
         'user_id',
-        flat=True
+        flat=True,
     )
 
     user_profile_ids = [presence_row['user_profile__id'] for presence_row in presence_rows]
@@ -183,7 +176,7 @@ def get_status_dict_by_realm(realm_id: int, slim_presence: bool = False) -> Dict
     mobile_query = query_for_ids(
         query=mobile_query,
         user_ids=user_profile_ids,
-        field='user_id'
+        field='user_id',
     )
     mobile_user_ids = set(mobile_query)
 

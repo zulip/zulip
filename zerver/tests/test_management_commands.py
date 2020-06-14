@@ -3,24 +3,32 @@ import os
 import re
 from datetime import timedelta
 from email.utils import parseaddr
+from typing import Any, Dict, List, Optional
 from unittest import mock
-from unittest.mock import MagicMock, patch, call
-from typing import List, Dict, Any, Optional
+from unittest.mock import MagicMock, call, patch
 
 from django.conf import settings
 from django.core.management import call_command
 from django.test import TestCase, override_settings
-from zerver.lib.actions import do_create_user, do_add_reaction
-from zerver.lib.management import ZulipBaseCommand, CommandError, check_config
-from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import stdout_suppressed
-from zerver.lib.test_runner import slow
-from zerver.models import Recipient, get_user_profile_by_email, get_stream
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.test_helpers import most_recent_message
-from zerver.models import get_realm, UserProfile, Realm, Reaction, Message
 from confirmation.models import RealmCreationKey, generate_realm_creation_url
+from zerver.lib.actions import do_add_reaction, do_create_user
+from zerver.lib.management import CommandError, ZulipBaseCommand, check_config
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import most_recent_message, stdout_suppressed
+from zerver.lib.test_runner import slow
+from zerver.models import (
+    Message,
+    Reaction,
+    Realm,
+    Recipient,
+    UserProfile,
+    get_realm,
+    get_stream,
+    get_user_profile_by_email,
+)
+
 
 class TestCheckConfig(ZulipTestCase):
     def test_check_config(self) -> None:
@@ -61,7 +69,7 @@ class TestZulipBaseCommand(ZulipTestCase):
         self.assertEqual(self.command.get_user(email, self.zulip_realm), user_profile)
         self.assertEqual(self.command.get_user(email, None), user_profile)
 
-        error_message = "The realm '%s' does not contain a user with email" % (mit_realm,)
+        error_message = f"The realm '{mit_realm}' does not contain a user with email"
         with self.assertRaisesRegex(CommandError, error_message):
             self.command.get_user(email, mit_realm)
 
@@ -106,7 +114,7 @@ class TestZulipBaseCommand(ZulipTestCase):
         user_emails = ','.join(u.delivery_email for u in expected_user_profiles)
         user_profiles = self.get_users_sorted(dict(users=user_emails), None)
         self.assertEqual(user_profiles, expected_user_profiles)
-        error_message = "The realm '%s' does not contain a user with email" % (self.zulip_realm,)
+        error_message = f"The realm '{self.zulip_realm}' does not contain a user with email"
         with self.assertRaisesRegex(CommandError, error_message):
             self.command.get_users(dict(users=user_emails), self.zulip_realm)
 
@@ -340,7 +348,7 @@ class TestRealmReactivationEmail(ZulipTestCase):
 
     def test_if_realm_not_deactivated(self) -> None:
         realm = get_realm('zulip')
-        with self.assertRaisesRegex(CommandError, "The realm %s is already active." % (realm.name,)):
+        with self.assertRaisesRegex(CommandError, f"The realm {realm.name} is already active."):
             call_command(self.COMMAND_NAME, "--realm=zulip")
 
 class TestSendToEmailMirror(ZulipTestCase):

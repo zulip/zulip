@@ -1,5 +1,6 @@
 from zerver.lib.test_classes import ZulipTestCase
 
+
 class CamoURLTest(ZulipTestCase):
     def test_legacy_camo_url(self) -> None:
         # Test with valid hex and url pair

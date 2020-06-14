@@ -15,67 +15,81 @@
 import binascii
 import copy
 import logging
+from abc import ABC, abstractmethod
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union, cast
+
 import jwt
 import magic
 import ujson
-from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union, \
-    cast
-from typing_extensions import TypedDict
-from zxcvbn import zxcvbn
-
-from django_auth_ldap.backend import LDAPBackend, LDAPReverseEmailSearch, \
-    _LDAPUser, ldap_error
 from decorator import decorator
-
+from django.conf import settings
 from django.contrib.auth import authenticate, get_backends
 from django.contrib.auth.backends import RemoteUserBackend
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
-from django.dispatch import receiver, Signal
-from django.http import HttpResponse, HttpResponseRedirect, HttpRequest
+from django.dispatch import Signal, receiver
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import ugettext as _
+from django_auth_ldap.backend import LDAPBackend, LDAPReverseEmailSearch, _LDAPUser, ldap_error
 from jwt.algorithms import RSAAlgorithm
 from jwt.exceptions import PyJWTError
 from lxml.etree import XMLSyntaxError
-from requests import HTTPError
 from onelogin.saml2.errors import OneLogin_Saml2_Error
 from onelogin.saml2.response import OneLogin_Saml2_Response
-
-from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
-    GithubTeamOAuth2
-from social_core.backends.azuread import AzureADOAuth2
-from social_core.backends.gitlab import GitLabOAuth2
-from social_core.backends.base import BaseAuth
-from social_core.backends.google import GoogleOAuth2
+from requests import HTTPError
 from social_core.backends.apple import AppleIdAuth
+from social_core.backends.azuread import AzureADOAuth2
+from social_core.backends.base import BaseAuth
+from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, GithubTeamOAuth2
+from social_core.backends.gitlab import GitLabOAuth2
+from social_core.backends.google import GoogleOAuth2
 from social_core.backends.saml import SAMLAuth
+from social_core.exceptions import (
+    AuthFailed,
+    AuthMissingParameter,
+    AuthStateForbidden,
+    SocialAuthBaseException,
+)
 from social_core.pipeline.partial import partial
-from social_core.exceptions import AuthFailed, SocialAuthBaseException, \
-    AuthMissingParameter, AuthStateForbidden
+from typing_extensions import TypedDict
+from zxcvbn import zxcvbn
 
 from zerver.decorator import client_is_exempt_from_rate_limiting
-from zerver.lib.actions import do_create_user, do_reactivate_user, do_deactivate_user, \
-    do_update_user_custom_profile_data_if_changed
-from zerver.lib.avatar import is_avatar_new, avatar_url
+from zerver.lib.actions import (
+    do_create_user,
+    do_deactivate_user,
+    do_reactivate_user,
+    do_update_user_custom_profile_data_if_changed,
+)
+from zerver.lib.avatar import avatar_url, is_avatar_new
 from zerver.lib.avatar_hash import user_avatar_content_hash
 from zerver.lib.create_user import get_role_for_new_user
 from zerver.lib.dev_ldap_directory import init_fakeldap
-from zerver.lib.email_validation import email_allowed_for_realm, \
-    validate_email_not_already_in_realm
+from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.mobile_auth_otp import is_valid_otp
 from zerver.lib.rate_limiter import RateLimitedObject
+from zerver.lib.redis_utils import get_dict_from_redis, get_redis_client, put_dict_in_redis
 from zerver.lib.request import JsonableError
-from zerver.lib.users import check_full_name, validate_user_custom_profile_field
-from zerver.lib.redis_utils import get_redis_client, get_dict_from_redis, put_dict_in_redis
 from zerver.lib.subdomains import get_subdomain
-from zerver.models import CustomProfileField, DisposableEmailError, DomainNotAllowedForRealmError, \
-    EmailContainsPlusError, PreregistrationUser, UserProfile, Realm, custom_profile_fields_for_realm, \
-    get_user_profile_by_id, remote_user_to_email, \
-    email_to_username, get_realm, get_user_by_delivery_email, supported_auth_backends
+from zerver.lib.users import check_full_name, validate_user_custom_profile_field
+from zerver.models import (
+    CustomProfileField,
+    DisposableEmailError,
+    DomainNotAllowedForRealmError,
+    EmailContainsPlusError,
+    PreregistrationUser,
+    Realm,
+    UserProfile,
+    custom_profile_fields_for_realm,
+    email_to_username,
+    get_realm,
+    get_user_by_delivery_email,
+    get_user_profile_by_id,
+    remote_user_to_email,
+    supported_auth_backends,
+)
 
 redis_client = get_redis_client()
 
@@ -143,7 +157,7 @@ def any_social_backend_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(social_backend_names, realm)
 
 def redirect_to_config_error(error_type: str) -> HttpResponseRedirect:
-    return HttpResponseRedirect("/config-error/%s" % (error_type,))
+    return HttpResponseRedirect(f"/config-error/{error_type}")
 
 def require_email_format_usernames(realm: Optional[Realm]=None) -> bool:
     if ldap_auth_enabled(realm):
@@ -445,8 +459,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         if settings.LDAP_APPEND_DOMAIN:
             if is_valid_email(username):
                 if not username.endswith("@" + settings.LDAP_APPEND_DOMAIN):
-                    raise ZulipLDAPExceptionOutsideDomain("Email %s does not match LDAP domain %s." % (
-                        username, settings.LDAP_APPEND_DOMAIN))
+                    raise ZulipLDAPExceptionOutsideDomain(f"Email {username} does not match LDAP domain {settings.LDAP_APPEND_DOMAIN}.")
                 result = email_to_username(username)
         else:
             # We can use find_ldap_users_by_email
@@ -468,7 +481,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             # we want to return. Otherwise, raise an exception.
             error_message = "No ldap user matching django_to_ldap_username result: {}. Input username: {}"
             raise ZulipLDAPExceptionNoMatchingLDAPUser(
-                error_message.format(result, username)
+                error_message.format(result, username),
             )
 
         return result
@@ -485,8 +498,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         if settings.LDAP_EMAIL_ATTR is not None:
             # Get email from ldap attributes.
             if settings.LDAP_EMAIL_ATTR not in ldap_user.attrs:
-                raise ZulipLDAPException("LDAP user doesn't have the needed %s attribute" % (
-                    settings.LDAP_EMAIL_ATTR,))
+                raise ZulipLDAPException(f"LDAP user doesn't have the needed {settings.LDAP_EMAIL_ATTR} attribute")
             else:
                 return ldap_user.attrs[settings.LDAP_EMAIL_ATTR][0]
 
@@ -507,9 +519,10 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
     def sync_avatar_from_ldap(self, user: UserProfile, ldap_user: _LDAPUser) -> None:
         if 'avatar' in settings.AUTH_LDAP_USER_ATTR_MAP:
             # We do local imports here to avoid import loops
-            from zerver.lib.upload import upload_avatar_image
-            from zerver.lib.actions import do_change_avatar_fields
             from io import BytesIO
+
+            from zerver.lib.actions import do_change_avatar_fields
+            from zerver.lib.upload import upload_avatar_image
 
             avatar_attr_name = settings.AUTH_LDAP_USER_ATTR_MAP['avatar']
             if avatar_attr_name not in ldap_user.attrs:  # nocoverage
@@ -611,12 +624,12 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             try:
                 field = fields_by_var_name[var_name]
             except KeyError:
-                raise ZulipLDAPException('Custom profile field with name %s not found.' % (var_name,))
+                raise ZulipLDAPException(f'Custom profile field with name {var_name} not found.')
             if existing_values.get(var_name) == value:
                 continue
             result = validate_user_custom_profile_field(user_profile.realm.id, field, value)
             if result is not None:
-                raise ZulipLDAPException('Invalid data for %s field: %s' % (var_name, result))
+                raise ZulipLDAPException(f'Invalid data for {var_name} field: {result}')
             profile_data.append({
                 'id': field.id,
                 'value': value,
@@ -872,13 +885,13 @@ def query_ldap(email: str) -> List[str]:
         ldap_attrs = _LDAPUser(backend, ldap_username).attrs
 
         for django_field, ldap_field in settings.AUTH_LDAP_USER_ATTR_MAP.items():
-            value = ldap_attrs.get(ldap_field, ["LDAP field not present", ])[0]
+            value = ldap_attrs.get(ldap_field, ["LDAP field not present"])[0]
             if django_field == "avatar":
                 if isinstance(value, bytes):
                     value = "(An avatar image file)"
-            values.append("%s: %s" % (django_field, value))
+            values.append(f"{django_field}: {value}")
         if settings.LDAP_EMAIL_ATTR is not None:
-            values.append("%s: %s" % ('email', ldap_attrs[settings.LDAP_EMAIL_ATTR][0]))
+            values.append("{}: {}".format('email', ldap_attrs[settings.LDAP_EMAIL_ATTR][0]))
     else:
         values.append("LDAP backend not configured on this server.")
     return values
@@ -940,18 +953,17 @@ def external_auth_method(cls: Type[ExternalAuthMethod]) -> Type[ExternalAuthMeth
 
 # We want to be able to store this data in redis, so it has to be easy to serialize.
 # That's why we avoid having fields that could pose a problem for that.
-ExternalAuthDataDict = TypedDict('ExternalAuthDataDict', {
-    'subdomain': str,
-    'full_name': str,
-    'email': str,
-    'is_signup': bool,
-    'is_realm_creation': bool,
-    'redirect_to': str,
-    'mobile_flow_otp': Optional[str],
-    'desktop_flow_otp': Optional[str],
-    'multiuse_object_key': str,
-    'full_name_validated': bool,
-}, total=False)
+class ExternalAuthDataDict(TypedDict, total=False):
+    subdomain: str
+    full_name: str
+    email: str
+    is_signup: bool
+    is_realm_creation: bool
+    redirect_to: str
+    mobile_flow_otp: Optional[str]
+    desktop_flow_otp: Optional[str]
+    multiuse_object_key: str
+    full_name_validated: bool
 
 class ExternalAuthResult:
     LOGIN_KEY_PREFIX = "login_key_"
@@ -1198,10 +1210,7 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
         # In SAML authentication, the IdP may support only sending
         # the first and last name as separate attributes - in that case
         # we construct the full name from them.
-        return_data["full_name"] = "{} {}".format(
-            first_name,
-            last_name
-        ).strip()  # strip removes the unnecessary ' '
+        return_data["full_name"] = f"{first_name} {last_name}".strip()  # strip removes the unnecessary ' '
 
     return user_profile
 
@@ -1241,8 +1250,7 @@ def social_auth_finish(backend: Any,
     comments below as well as login_or_register_remote_user in
     `zerver/views/auth.py` for the details on how that dispatch works.
     """
-    from zerver.views.auth import (login_or_register_remote_user,
-                                   redirect_and_log_into_subdomain)
+    from zerver.views.auth import login_or_register_remote_user, redirect_and_log_into_subdomain
 
     user_profile = kwargs['user_profile']
     return_data = kwargs['return_data']
@@ -1321,7 +1329,7 @@ def social_auth_finish(backend: Any,
         multiuse_object_key=multiuse_object_key,
         full_name_validated=full_name_validated,
         mobile_flow_otp=mobile_flow_otp,
-        desktop_flow_otp=desktop_flow_otp
+        desktop_flow_otp=desktop_flow_otp,
     )
     if user_profile is None:
         data_dict.update(dict(full_name=full_name, email=email_address))
@@ -1466,7 +1474,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
         if team_id is None and org_name is None:
             # I believe this can't raise AuthFailed, so we don't try to catch it here.
             return super().user_data(
-                access_token, *args, **kwargs
+                access_token, *args, **kwargs,
             )
         elif team_id is not None:
             backend = GithubTeamOAuth2(self.strategy, self.redirect_uri)
@@ -1683,7 +1691,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             if idps_without_limit_to_subdomains:
                 self.logger.error("SAML_REQUIRE_LIMIT_TO_SUBDOMAINS is enabled and the following " +
                                   "IdPs don't have limit_to_subdomains specified and will be ignored: " +
-                                  "%s" % (idps_without_limit_to_subdomains,))
+                                  f"{idps_without_limit_to_subdomains}")
                 for idp_name in idps_without_limit_to_subdomains:
                     del settings.SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name]
         super().__init__(*args, **kwargs)
@@ -1877,7 +1885,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     def validate_idp_for_subdomain(cls, idp_name: str, subdomain: str) -> bool:
         idp_dict = settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.get(idp_name)
         if idp_dict is None:
-            raise AssertionError("IdP: %s not found" % (idp_name,))
+            raise AssertionError(f"IdP: {idp_name} not found")
         if 'limit_to_subdomains' in idp_dict and subdomain not in idp_dict['limit_to_subdomains']:
             return False
 
@@ -1890,7 +1898,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             settings.SOCIAL_AUTH_SAML_ORG_INFO,
             settings.SOCIAL_AUTH_SAML_TECHNICAL_CONTACT,
             settings.SOCIAL_AUTH_SAML_SUPPORT_CONTACT,
-            settings.SOCIAL_AUTH_SAML_ENABLED_IDPS
+            settings.SOCIAL_AUTH_SAML_ENABLED_IDPS,
         ]
         if any(not setting for setting in obligatory_saml_settings_list):
             return redirect_to_config_error("saml")

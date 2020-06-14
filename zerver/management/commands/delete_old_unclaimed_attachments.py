@@ -27,12 +27,12 @@ class Command(BaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> None:
         delta_weeks = options['delta_weeks']
-        print("Deleting unclaimed attached files older than %s weeks" % (delta_weeks,))
+        print(f"Deleting unclaimed attached files older than {delta_weeks} weeks")
 
         # print the list of files that are going to be removed
         old_attachments = get_old_unclaimed_attachments(delta_weeks)
         for old_attachment in old_attachments:
-            print("* %s created at %s" % (old_attachment.file_name, old_attachment.create_time))
+            print(f"* {old_attachment.file_name} created at {old_attachment.create_time}")
 
         print("")
         if not options["for_real"]:

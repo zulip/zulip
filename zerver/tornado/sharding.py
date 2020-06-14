@@ -1,8 +1,10 @@
+import json
+import os
+
 from django.conf import settings
 
 from zerver.models import Realm
-import json
-import os
+
 shard_map = {}
 if os.path.exists("/etc/zulip/sharding.json"):
     with open("/etc/zulip/sharding.json") as f:

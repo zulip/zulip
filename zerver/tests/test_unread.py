@@ -1,32 +1,15 @@
 from typing import Any, List, Mapping
+from unittest import mock
 
+import ujson
 from django.db import connection
 
-from zerver.models import (
-    get_realm,
-    get_stream,
-    get_user,
-    Subscription,
-    UserMessage,
-    UserProfile,
-)
-
-from zerver.lib.fix_unreads import (
-    fix,
-    fix_pre_pointer,
-    fix_unsubscribed,
-)
-from zerver.lib.test_helpers import (
-    get_subscription,
-    tornado_redirected_to_list,
-)
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
+from zerver.lib.fix_unreads import fix, fix_pre_pointer, fix_unsubscribed
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import get_subscription, tornado_redirected_to_list
 from zerver.lib.topic_mutes import add_topic_mute
+from zerver.models import Subscription, UserMessage, UserProfile, get_realm, get_stream, get_user
 
-from unittest import mock
-import ujson
 
 class PointerTest(ZulipTestCase):
 
@@ -263,7 +246,7 @@ class UnreadCountTests(ZulipTestCase):
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.client_post("/json/mark_stream_as_read", {
-                "stream_id": stream.id
+                "stream_id": stream.id,
             })
 
         self.assert_json_success(result)
@@ -296,7 +279,7 @@ class UnreadCountTests(ZulipTestCase):
         self.login('hamlet')
         invalid_stream_id = "12345678"
         result = self.client_post("/json/mark_stream_as_read", {
-            "stream_id": invalid_stream_id
+            "stream_id": invalid_stream_id,
         })
         self.assert_json_error(result, 'Invalid stream id')
 
@@ -383,7 +366,7 @@ class FixUnreadTests(ZulipTestCase):
             recipient = stream.recipient
             subscription = Subscription.objects.get(
                 user_profile=user,
-                recipient=recipient
+                recipient=recipient,
             )
             subscription.is_muted = True
             subscription.save()

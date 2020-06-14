@@ -10,11 +10,11 @@ import argparse
 import csv
 import os
 import re
+from typing import Any, Dict, List
+
 import ujson
 
 from emoji_setup_utils import get_emoji_code
-
-from typing import Any, Dict, List
 
 TOOLS_DIR_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ZULIP_PATH = os.path.dirname(TOOLS_DIR_PATH)
@@ -89,7 +89,7 @@ def main() -> None:
 
     args = parser.parse_args()
     prepare_sorting_info()
-    output_data = [column_names, ]
+    output_data = [column_names]
     explanation_lines: List[str] = []
     with open(args.input_file_path) as fp:
         for line in fp.readlines():

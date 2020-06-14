@@ -1,10 +1,18 @@
-from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.timestamp import floor_to_hour, floor_to_day, ceiling_to_hour, \
-    timestamp_to_datetime, datetime_to_timestamp, \
-    TimezoneNotUTCException, convert_to_UTC
-
 from datetime import timedelta, timezone
+
 from dateutil import parser
+
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.timestamp import (
+    TimezoneNotUTCException,
+    ceiling_to_hour,
+    convert_to_UTC,
+    datetime_to_timestamp,
+    floor_to_day,
+    floor_to_hour,
+    timestamp_to_datetime,
+)
+
 
 class TestTimestamp(ZulipTestCase):
     def test_datetime_and_timestamp_conversions(self) -> None:

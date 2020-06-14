@@ -32,6 +32,6 @@ class Command(ZulipBaseCommand):
                 stream = ensure_stream(realm, stream_name)
                 _ignore, already_subscribed = bulk_add_subscriptions([stream], [user_profile])
                 was_there_already = user_profile.id in {tup[0].id for tup in already_subscribed}
-                print("%s %s to %s" % (
+                print("{} {} to {}".format(
                     "Already subscribed" if was_there_already else "Subscribed",
                     user_profile.delivery_email, stream_name))

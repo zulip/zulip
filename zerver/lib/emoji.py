@@ -1,14 +1,14 @@
 import os
 import re
-import ujson
-
-from django.utils.translation import ugettext as _
 from typing import Optional, Tuple
 
+import ujson
+from django.utils.translation import ugettext as _
+
+from zerver.lib.exceptions import OrganizationAdministratorRequired
 from zerver.lib.request import JsonableError
 from zerver.lib.storage import static_path
 from zerver.lib.upload import upload_backend
-from zerver.lib.exceptions import OrganizationAdministratorRequired
 from zerver.models import Reaction, Realm, RealmEmoji, UserProfile
 
 emoji_codes_path = static_path("generated/emoji/emoji_codes.json")
@@ -17,7 +17,7 @@ if not os.path.exists(emoji_codes_path):  # nocoverage
     # prod-static/serve/generated/emoji won't exist yet.
     emoji_codes_path = os.path.join(
         os.path.dirname(__file__),
-        "../../static/generated/emoji/emoji_codes.json"
+        "../../static/generated/emoji/emoji_codes.json",
     )
 
 with open(emoji_codes_path) as fp:

@@ -38,7 +38,7 @@ Example: ./manage.py realm_filters --realm=zulip --op=show
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
         if options["op"] == "show":
-            print("%s: %s" % (realm.string_id, all_realm_filters().get(realm.id, [])))
+            print(f"{realm.string_id}: {all_realm_filters().get(realm.id, [])}")
             sys.exit(0)
 
         pattern = options['pattern']

@@ -1,14 +1,15 @@
 import os
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
-from typing import Dict, List, Optional, Any, Tuple
 from django.conf.urls import url
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls.resolvers import RegexPattern
 from django.utils.module_loading import import_string
 from django.utils.translation import ugettext as _
+
 from zerver.lib.storage import static_path
 from zerver.lib.types import Validator
-
 
 """This module declares all of the (documented) integrations available
 in the Zulip server.  The Integration class is used as part of
@@ -55,7 +56,7 @@ class Integration:
                  logo: Optional[str]=None, secondary_line_text: Optional[str]=None,
                  display_name: Optional[str]=None, doc: Optional[str]=None,
                  stream_name: Optional[str]=None, legacy: bool=False,
-                 config_options: Optional[List[Tuple[str, str, Validator]]]=None) -> None:
+                 config_options: Sequence[Tuple[str, str, Validator]]=[]) -> None:
         self.name = name
         self.client_name = client_name
         self.secondary_line_text = secondary_line_text
@@ -65,15 +66,13 @@ class Integration:
         # Note: Currently only incoming webhook type bots use this list for
         # defining how the bot's BotConfigData should be. Embedded bots follow
         # a different approach.
-        if config_options is None:
-            config_options = []
         self.config_options = config_options
 
         for category in categories:
             if category not in CATEGORIES:
                 raise KeyError(  # nocoverage
                     'INTEGRATIONS: ' + name + ' - category \'' +
-                    category + '\' is not a key in CATEGORIES.'
+                    category + '\' is not a key in CATEGORIES.',
                 )
         self.categories = list(map((lambda c: CATEGORIES[c]), categories))
 
@@ -159,7 +158,7 @@ class WebhookIntegration(Integration):
                  function: Optional[str]=None, url: Optional[str]=None,
                  display_name: Optional[str]=None, doc: Optional[str]=None,
                  stream_name: Optional[str]=None, legacy: bool=False,
-                 config_options: Optional[List[Tuple[str, str, Validator]]]=None) -> None:
+                 config_options: Sequence[Tuple[str, str, Validator]]=[]) -> None:
         if client_name is None:
             client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
         super().__init__(
@@ -171,7 +170,7 @@ class WebhookIntegration(Integration):
             display_name=display_name,
             stream_name=stream_name,
             legacy=legacy,
-            config_options=config_options
+            config_options=config_options,
         )
 
         if function is None:
@@ -201,22 +200,17 @@ def split_fixture_path(path: str) -> Tuple[str, str]:
     integration_name = os.path.split(os.path.dirname(path))[-1]
     return integration_name, fixture_name
 
-# FIXME: Change to namedtuple if we drop Python3.6: No default values support on namedtuples (or dataclass)
+@dataclass
 class ScreenshotConfig:
-    def __init__(self, fixture_name: str, image_name: str='001.png',
-                 image_dir: Optional[str]=None, bot_name: Optional[str]=None,
-                 payload_as_query_param: bool=False, payload_param_name: str='payload',
-                 extra_params: Optional[Dict[str, str]]=None,
-                 use_basic_auth: bool=False, custom_headers: Optional[Dict[str, str]]=None):
-        self.fixture_name = fixture_name
-        self.image_name = image_name
-        self.image_dir = image_dir
-        self.bot_name = bot_name
-        self.payload_as_query_param = payload_as_query_param
-        self.payload_param_name = payload_param_name
-        self.extra_params = extra_params
-        self.use_basic_auth = use_basic_auth
-        self.custom_headers = custom_headers
+    fixture_name: str
+    image_name: str = '001.png'
+    image_dir: Optional[str] = None
+    bot_name: Optional[str] = None
+    payload_as_query_param: bool = False
+    payload_param_name: str = 'payload'
+    extra_params: Dict[str, str] = field(default_factory=dict)
+    use_basic_auth: bool = False
+    custom_headers: Dict[str, str] = field(default_factory=dict)
 
 def get_fixture_and_image_paths(integration: WebhookIntegration,
                                 screenshot_config: ScreenshotConfig) -> Tuple[str, str]:
@@ -246,7 +240,7 @@ class HubotIntegration(Integration):
             name, name, categories,
             logo=logo, display_name=display_name,
             doc = 'zerver/integrations/hubot_common.md',
-            legacy=legacy
+            legacy=legacy,
         )
 
 class EmbeddedBotIntegration(Integration):
@@ -277,7 +271,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         'alertmanager',
         ['monitoring'],
         display_name='Prometheus AlertManager',
-        logo='images/integrations/logos/prometheus.svg'
+        logo='images/integrations/logos/prometheus.svg',
     ),
     WebhookIntegration('ansibletower', ['deployment'], display_name='Ansible Tower'),
     WebhookIntegration('appfollow', ['customer-support'], display_name='AppFollow'),
@@ -290,14 +284,14 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         ['version-control'],
         logo='images/integrations/logos/bitbucket.svg',
         display_name='Bitbucket Server',
-        stream_name='bitbucket'
+        stream_name='bitbucket',
     ),
     WebhookIntegration(
         'bitbucket2',
         ['version-control'],
         logo='images/integrations/logos/bitbucket.svg',
         display_name='Bitbucket',
-        stream_name='bitbucket'
+        stream_name='bitbucket',
     ),
     WebhookIntegration(
         'bitbucket',
@@ -305,7 +299,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         display_name='Bitbucket',
         secondary_line_text='(Enterprise)',
         stream_name='commits',
-        legacy=True
+        legacy=True,
     ),
     WebhookIntegration('buildbot', ['continuous-integration'], display_name='Buildbot'),
     WebhookIntegration('circleci', ['continuous-integration'], display_name='CircleCI'),
@@ -319,7 +313,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         ['customer-support'],
         logo='images/integrations/logos/deskcom.png',
         display_name='Desk.com',
-        stream_name='desk'
+        stream_name='desk',
     ),
     WebhookIntegration('dropbox', ['productivity'], display_name='Dropbox'),
     WebhookIntegration('errbit', ['monitoring'], display_name='Errbit'),
@@ -333,7 +327,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         display_name='GitHub',
         logo='images/integrations/logos/github.svg',
         function='zerver.webhooks.github.view.api_github_webhook',
-        stream_name='github'
+        stream_name='github',
     ),
     WebhookIntegration('gitlab', ['version-control'], display_name='GitLab'),
     WebhookIntegration('gocd', ['continuous-integration'], display_name='GoCD'),
@@ -351,7 +345,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         'ifttt',
         ['meta-integration'],
         function='zerver.webhooks.ifttt.view.api_iftt_app_webhook',
-        display_name='IFTTT'
+        display_name='IFTTT',
     ),
     WebhookIntegration('insping', ['monitoring'], display_name='Insping'),
     WebhookIntegration('intercom', ['customer-support'], display_name='Intercom'),
@@ -365,7 +359,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         ['monitoring'],
         display_name='Opbeat',
         stream_name='opbeat',
-        function='zerver.webhooks.opbeat.view.api_opbeat_webhook'
+        function='zerver.webhooks.opbeat.view.api_opbeat_webhook',
     ),
     WebhookIntegration('opsgenie', ['meta-integration', 'monitoring']),
     WebhookIntegration('pagerduty', ['monitoring'], display_name='PagerDuty'),
@@ -398,7 +392,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         'yo',
         ['communication'],
         function='zerver.webhooks.yo.view.api_yo_app_webhook',
-        display_name='Yo App'
+        display_name='Yo App',
     ),
     WebhookIntegration('wordpress', ['marketing'], display_name='WordPress'),
     WebhookIntegration('zapier', ['meta-integration']),
@@ -415,7 +409,7 @@ INTEGRATIONS: Dict[str, Integration] = {
         'capistrano',
         ['deployment'],
         display_name='Capistrano',
-        doc='zerver/integrations/capistrano.md'
+        doc='zerver/integrations/capistrano.md',
     ),
     'codebase': Integration('codebase', 'codebase', ['version-control'],
                             doc='zerver/integrations/codebase.md'),
@@ -432,7 +426,7 @@ INTEGRATIONS: Dict[str, Integration] = {
         'google-calendar',
         ['productivity'],
         display_name='Google Calendar',
-        doc='zerver/integrations/google-calendar.md'
+        doc='zerver/integrations/google-calendar.md',
     ),
     'hubot': Integration('hubot', 'hubot', ['meta-integration', 'bots'], doc='zerver/integrations/hubot.md'),
     'irc': Integration('irc', 'irc', ['communication'], display_name='IRC',
@@ -442,7 +436,7 @@ INTEGRATIONS: Dict[str, Integration] = {
         'jenkins',
         ['continuous-integration'],
         secondary_line_text='(or Hudson)',
-        doc='zerver/integrations/jenkins.md'
+        doc='zerver/integrations/jenkins.md',
     ),
     'jira-plugin': Integration(
         'jira-plugin',
@@ -453,7 +447,7 @@ INTEGRATIONS: Dict[str, Integration] = {
         display_name='JIRA',
         doc='zerver/integrations/jira-plugin.md',
         stream_name='jira',
-        legacy=True
+        legacy=True,
     ),
     'matrix': Integration('matrix', 'matrix', ['communication'],
                           doc='zerver/integrations/matrix.md'),
@@ -494,7 +488,7 @@ INTEGRATIONS: Dict[str, Integration] = {
         display_name='Trello',
         doc='zerver/integrations/trello-plugin.md',
         stream_name='trello',
-        legacy=True
+        legacy=True,
     ),
     'twitter': Integration('twitter', 'twitter', ['customer-support', 'marketing'],
                            # _ needed to get around adblock plus

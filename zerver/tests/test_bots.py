@@ -1,28 +1,38 @@
 import filecmp
 import os
-import ujson
+from typing import Any, Dict, List, Mapping, Optional
+from unittest.mock import MagicMock, patch
 
+import ujson
 from django.core import mail
 from django.test import override_settings
-from unittest.mock import patch, MagicMock
-from typing import Any, Dict, List, Mapping, Optional
+from zulip_bots.custom_exceptions import ConfigValidationError
 
-from zerver.lib.actions import do_change_stream_invite_only, do_deactivate_user, \
-    do_set_realm_property
-from zerver.lib.bot_config import get_bot_config, ConfigError
-from zerver.models import get_realm, get_stream, \
-    Realm, UserProfile, get_user, get_bot_services, Service, \
-    is_cross_realm_bot_email
-from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
+from zerver.lib.actions import (
+    do_change_stream_invite_only,
+    do_deactivate_user,
+    do_set_realm_property,
+)
+from zerver.lib.bot_config import ConfigError, get_bot_config
+from zerver.lib.bot_lib import get_bot_handler
+from zerver.lib.integrations import EMBEDDED_BOTS, WebhookIntegration
+from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import (
     avatar_disk_path,
     get_test_image_file,
     queries_captured,
     tornado_redirected_to_list,
 )
-from zerver.lib.integrations import EMBEDDED_BOTS, WebhookIntegration
-from zerver.lib.bot_lib import get_bot_handler
-from zulip_bots.custom_exceptions import ConfigValidationError
+from zerver.models import (
+    Realm,
+    Service,
+    UserProfile,
+    get_bot_services,
+    get_realm,
+    get_stream,
+    get_user,
+    is_cross_realm_bot_email,
+)
 
 
 # A test validator
@@ -33,7 +43,7 @@ def _check_string(var_name: str, val: object) -> Optional[str]:
 
 stripe_sample_config_options = [
     WebhookIntegration('stripe', ['financial'], display_name='Stripe',
-                       config_options=[("Stripe API Key", "stripe_api_key", _check_string)])
+                       config_options=[("Stripe API Key", "stripe_api_key", _check_string)]),
 ]
 
 class BotTest(ZulipTestCase, UploadSerializeMixin):
@@ -134,7 +144,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             bot_info = dict(
                 full_name=full_name,
                 short_name=short_name,
-                bot_type=1
+                bot_type=1,
             )
             result = self.client_post("/json/bots", bot_info)
             self.assert_json_success(result)
@@ -184,7 +194,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                     owner_id=hamlet.id,
                 ),
             ),
-            event['event']
+            event['event'],
         )
 
         users_result = self.client_get('/json/users')
@@ -314,9 +324,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                          default_events_register_stream=None,
                          default_all_public_streams=False,
                          services=[],
-                         owner_id=user.id)
+                         owner_id=user.id),
             ),
-            event['event']
+            event['event'],
         )
 
         users_result = self.client_get('/json/users')
@@ -342,7 +352,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         # Normal user i.e. not a bot.
         request_data = {
-            'principals': '["' + iago.email + '"]'
+            'principals': '["' + iago.email + '"]',
         }
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
@@ -359,7 +369,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         # A bot
         bot_request_data = {
-            'principals': '["hambot-bot@zulip.testserver"]'
+            'principals': '["hambot-bot@zulip.testserver"]',
         }
         events_bot: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events_bot):
@@ -417,9 +427,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                     owner_id=user_profile.id,
                 ),
             ),
-            event['event']
+            event['event'],
         )
-        self.assertEqual(event['users'], {user_profile.id, })
+        self.assertEqual(event['users'], {user_profile.id})
 
     def test_add_bot_with_default_sending_stream_private_denied(self) -> None:
         self.login('hamlet')
@@ -492,9 +502,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                     owner_id=user_profile.id,
                 ),
             ),
-            event['event']
+            event['event'],
         )
-        self.assertEqual(event['users'], {user_profile.id, })
+        self.assertEqual(event['users'], {user_profile.id})
 
     def test_add_bot_with_default_events_register_stream_private_denied(self) -> None:
         self.login('hamlet')
@@ -741,7 +751,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         # A regular user cannot reactivate a generic bot
         self.assert_num_bots_equal(0)
-        result = self.client_post("/json/users/%s/reactivate" % (bot_user.id,))
+        result = self.client_post(f"/json/users/{bot_user.id}/reactivate")
         self.assert_json_error(result, 'Must be an organization administrator')
         self.assert_num_bots_equal(0)
 
@@ -1333,7 +1343,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_json_success(result)
         bot_info = {
             'full_name': 'Fred',
-            'method': 'PATCH'
+            'method': 'PATCH',
         }
         email = 'hambot-bot@zulip.testserver'
         # Important: We intentionally use the wrong method, post, here.
@@ -1524,7 +1534,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             'short_name': 'embeddedservicebot3',
             'bot_type': UserProfile.EMBEDDED_BOT,
             'service_name': 'giphy',
-            'config_data': ujson.dumps(incorrect_bot_config_info)
+            'config_data': ujson.dumps(incorrect_bot_config_info),
         }
         bot_info.update(extras)
         with patch('zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config', side_effect=ConfigValidationError):
@@ -1548,7 +1558,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "short_name": "my-stripe",
             "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
             "service_name": "stripe",
-            "config_data": ujson.dumps({"stripe_api_key": "sample-api-key"})
+            "config_data": ujson.dumps({"stripe_api_key": "sample-api-key"}),
         }
         self.create_bot(**bot_metadata)
         new_bot = UserProfile.objects.get(full_name="My Stripe Bot")
@@ -1564,7 +1574,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "short_name": "my-stripe",
             "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
             "service_name": "stripe",
-            "config_data": ujson.dumps({"stripe_api_key": "_invalid_key"})
+            "config_data": ujson.dumps({"stripe_api_key": "_invalid_key"}),
         }
         response = self.client_post("/json/bots", bot_metadata)
         self.assertEqual(response.status_code, 400)

@@ -1,20 +1,30 @@
+import logging
 from datetime import timedelta
+from typing import Any, Dict, List, Optional, Tuple
 
 from django.conf import settings
 from django.db import connection, transaction
 from django.db.models import Model
 from django.utils.timezone import now as timezone_now
-from psycopg2.sql import Composable, Identifier, Literal, SQL
+from psycopg2.sql import SQL, Composable, Identifier, Literal
 
 from zerver.lib.logging_util import log_to_file
-from zerver.models import (Message, UserMessage, ArchivedUserMessage, Realm,
-                           Attachment, ArchivedAttachment, Reaction, ArchivedReaction,
-                           SubMessage, ArchivedSubMessage, Recipient, Stream, ArchiveTransaction,
-                           get_user_including_cross_realm)
-
-from typing import Any, Dict, List, Optional, Tuple
-
-import logging
+from zerver.models import (
+    ArchivedAttachment,
+    ArchivedReaction,
+    ArchivedSubMessage,
+    ArchivedUserMessage,
+    ArchiveTransaction,
+    Attachment,
+    Message,
+    Reaction,
+    Realm,
+    Recipient,
+    Stream,
+    SubMessage,
+    UserMessage,
+    get_user_including_cross_realm,
+)
 
 logger = logging.getLogger('zulip.retention')
 log_to_file(logger, settings.RETENTION_LOG_PATH)
@@ -27,19 +37,19 @@ models_with_message_key: List[Dict[str, Any]] = [
         'class': Reaction,
         'archive_class': ArchivedReaction,
         'table_name': 'zerver_reaction',
-        'archive_table_name': 'zerver_archivedreaction'
+        'archive_table_name': 'zerver_archivedreaction',
     },
     {
         'class': SubMessage,
         'archive_class': ArchivedSubMessage,
         'table_name': 'zerver_submessage',
-        'archive_table_name': 'zerver_archivedsubmessage'
+        'archive_table_name': 'zerver_archivedsubmessage',
     },
     {
         'class': UserMessage,
         'archive_class': ArchivedUserMessage,
         'table_name': 'zerver_usermessage',
-        'archive_table_name': 'zerver_archivedusermessage'
+        'archive_table_name': 'zerver_archivedusermessage',
     },
 ]
 
@@ -68,7 +78,7 @@ def move_rows(
     sql_args.update(kwargs)
     with connection.cursor() as cursor:
         cursor.execute(
-            raw_query.format(**sql_args)
+            raw_query.format(**sql_args),
         )
         if returning_id:
             return [id for (id,) in cursor.fetchall()]  # return list of row ids
@@ -153,7 +163,7 @@ def move_expired_messages_to_archive_by_recipient(recipient: Recipient,
     )
 
 def move_expired_personal_and_huddle_messages_to_archive(realm: Realm,
-                                                         chunk_size: int=MESSAGE_BATCH_SIZE
+                                                         chunk_size: int=MESSAGE_BATCH_SIZE,
                                                          ) -> int:
     # This function will archive appropriate messages and their related objects.
     cross_realm_bot_ids = [
@@ -324,7 +334,7 @@ def archive_stream_messages(realm: Realm, streams: List[Stream], chunk_size: int
     message_count = 0
     for recipient in recipients:
         message_count += archive_messages_by_recipient(
-            recipient, retention_policy_dict[recipient.type_id], realm, chunk_size
+            recipient, retention_policy_dict[recipient.type_id], realm, chunk_size,
         )
 
     logger.info("Done. Archived %s messages.", message_count)
@@ -521,7 +531,7 @@ def restore_all_data_from_archive(restore_manual_transactions: bool=True) -> Non
 
     if restore_manual_transactions:
         restore_data_from_archive_by_transactions(
-            ArchiveTransaction.objects.exclude(restored=True).filter(type=ArchiveTransaction.MANUAL)
+            ArchiveTransaction.objects.exclude(restored=True).filter(type=ArchiveTransaction.MANUAL),
         )
 
 def clean_archived_data() -> None:

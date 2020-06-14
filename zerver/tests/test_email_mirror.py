@@ -1,63 +1,50 @@
+import os
 import subprocess
+from email import message_from_string
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from typing import Any, Callable, Dict, Mapping, Optional
+from unittest import mock
 
+import ujson
+from django.conf import settings
 from django.http import HttpResponse
 
-from zerver.lib.test_helpers import (
-    most_recent_message,
-    most_recent_usermessage,
-)
-
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-
-from zerver.models import (
-    get_display_recipient,
-    get_realm,
-    get_stream,
-    get_system_bot,
-    MissedMessageEmailAddress,
-    Recipient,
-    UserProfile,
-)
-
-from zerver.lib.actions import ensure_stream, do_deactivate_realm, do_deactivate_user
-
+from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, ensure_stream
 from zerver.lib.email_mirror import (
-    process_message,
-    process_missed_message,
+    ZulipEmailForwardError,
     create_missed_message_address,
+    filter_footer,
     get_missed_message_token_from_address,
-    strip_from_subject,
     is_forwarded,
     is_missed_message_address,
-    filter_footer,
     log_and_report,
+    process_message,
+    process_missed_message,
     redact_email_address,
-    ZulipEmailForwardError,
+    strip_from_subject,
 )
-
 from zerver.lib.email_mirror_helpers import (
     decode_email_address,
     encode_email_address,
     get_email_gateway_message_string_from_address,
 )
-
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.send_email import FromAddress
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import most_recent_message, most_recent_usermessage
+from zerver.models import (
+    MissedMessageEmailAddress,
+    Recipient,
+    UserProfile,
+    get_display_recipient,
+    get_realm,
+    get_stream,
+    get_system_bot,
+)
 from zerver.worker.queue_processors import MirrorWorker
 
-from email import message_from_string
-from email.mime.text import MIMEText
-from email.mime.image import MIMEImage
-from email.mime.multipart import MIMEMultipart
-
-import ujson
-from unittest import mock
-import os
-from django.conf import settings
-
-from typing import Any, Callable, Dict, Mapping, Optional
 
 class TestEncodeDecode(ZulipTestCase):
     def _assert_options(self, options: Dict[str, bool], show_sender: bool=False,
@@ -77,7 +64,7 @@ class TestEncodeDecode(ZulipTestCase):
 
         # The default form of the email address (with an option - "include-footer"):
         token, options = decode_email_address(
-            f"dev-help.{stream.email_token}.include-footer@testserver"
+            f"dev-help.{stream.email_token}.include-footer@testserver",
         )
         self._assert_options(options, include_footer=True)
         self.assertEqual(token, stream.email_token)
@@ -85,7 +72,7 @@ class TestEncodeDecode(ZulipTestCase):
         # Using + instead of . as the separator is also supported for backwards compatibility,
         # since that was the original form of addresses that we used:
         token, options = decode_email_address(
-            f"dev-help+{stream.email_token}+include-footer@testserver"
+            f"dev-help+{stream.email_token}+include-footer@testserver",
         )
         self._assert_options(options, include_footer=True)
         self.assertEqual(token, stream.email_token)
@@ -339,8 +326,8 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         process_message(incoming_valid_message)
         message = most_recent_message(user_profile)
 
-        self.assertEqual(message.content, "From: %s\n%s" % (self.example_email('hamlet'),
-                                                            "TestStreamEmailMessages Body"))
+        self.assertEqual(message.content, "From: {}\n{}".format(self.example_email('hamlet'),
+                                                                "TestStreamEmailMessages Body"))
         self.assertEqual(get_display_recipient(message.recipient), stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message['Subject'])
 
@@ -364,8 +351,8 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         process_message(incoming_valid_message)
         message = most_recent_message(user_profile)
 
-        self.assertEqual(message.content, "From: %s\n%s" % ('Test Useróąę <hamlet_ę@zulip.com>',
-                                                            "TestStreamEmailMessages Body"))
+        self.assertEqual(message.content, "From: {}\n{}".format('Test Useróąę <hamlet_ę@zulip.com>',
+                                                                "TestStreamEmailMessages Body"))
         self.assertEqual(get_display_recipient(message.recipient), stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message['Subject'])
 
@@ -494,7 +481,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
                                                    target_realm=user_profile.realm)
 
         message = most_recent_message(user_profile)
-        self.assertEqual(message.content, "Test body\n[%s](https://test_url)" % (utf8_filename,))
+        self.assertEqual(message.content, f"Test body\n[{utf8_filename}](https://test_url)")
 
     def test_message_with_valid_nested_attachment(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -1108,7 +1095,7 @@ class TestScriptMTA(ZulipTestCase):
         except subprocess.CalledProcessError as e:
             self.assertEqual(
                 e.output,
-                b'5.1.1 Bad destination mailbox address: No missed message email address.\n'
+                b'5.1.1 Bad destination mailbox address: No missed message email address.\n',
             )
             self.assertEqual(e.returncode, 67)
             success_call = False
@@ -1127,7 +1114,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
                 "type": "private",
                 "content": "test_receive_missed_message_email_messages",
                 "client": "test suite",
-                "to": ujson.dumps([cordelia.id, iago.id])
+                "to": ujson.dumps([cordelia.id, iago.id]),
             })
         self.assert_json_success(result)
 
@@ -1154,11 +1141,11 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
         mock_queue_json_publish.side_effect = check_queue_json_publish
         request_data = {
             "recipient": to_address,
-            "msg_text": mail
+            "msg_text": mail,
         }
         post_data = dict(
             data=ujson.dumps(request_data),
-            secret=settings.SHARED_SECRET
+            secret=settings.SHARED_SECRET,
         )
         return self.client_post('/email_mirror_message', post_data)
 
@@ -1364,7 +1351,7 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
                 "type": "private",
                 "content": "test_redact_email_message",
                 "client": "test suite",
-                "to": ujson.dumps([cordelia.email, iago.email])
+                "to": ujson.dumps([cordelia.email, iago.email]),
             })
         self.assert_json_success(result)
 

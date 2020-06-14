@@ -1,16 +1,17 @@
 import re
-import requests
+from typing import Any, Callable, Dict, Optional
+from typing.re import Match
 
+import magic
+import requests
 from django.conf import settings
 from django.utils.encoding import smart_text
-import magic
-from typing import Any, Optional, Dict, Callable
-from typing.re import Match
 
 from version import ZULIP_VERSION
 from zerver.lib.cache import cache_with_key, get_cache_with_key, preview_url_cache_key
+from zerver.lib.pysa import mark_sanitized
 from zerver.lib.url_preview.oembed import get_oembed_data
-from zerver.lib.url_preview.parsers import OpenGraphParser, GenericParser
+from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
 
 # FIXME: Should we use a database cache or a memcached in production? What if
 # opengraph data is changed for a site?
@@ -73,8 +74,8 @@ def catch_network_errors(func: Callable[..., Any]) -> Callable[..., Any]:
 @catch_network_errors
 @cache_with_key(preview_url_cache_key, cache_name=CACHE_NAME, with_statsd_key="urlpreview_data")
 def get_link_embed_data(url: str,
-                        maxwidth: Optional[int]=640,
-                        maxheight: Optional[int]=480) -> Optional[Dict[str, Any]]:
+                        maxwidth: int=640,
+                        maxheight: int=480) -> Optional[Dict[str, Any]]:
     if not is_link(url):
         return None
 
@@ -88,7 +89,7 @@ def get_link_embed_data(url: str,
     if data.get('oembed'):
         return data
 
-    response = requests.get(url, stream=True, headers=HEADERS, timeout=TIMEOUT)
+    response = requests.get(mark_sanitized(url), stream=True, headers=HEADERS, timeout=TIMEOUT)
     if response.ok:
         og_data = OpenGraphParser(response.text).extract_data()
         for key in ['title', 'description', 'image']:
@@ -102,5 +103,5 @@ def get_link_embed_data(url: str,
     return data
 
 @get_cache_with_key(preview_url_cache_key, cache_name=CACHE_NAME)
-def link_embed_data_from_cache(url: str, maxwidth: Optional[int]=640, maxheight: Optional[int]=480) -> Any:
+def link_embed_data_from_cache(url: str, maxwidth: int=640, maxheight: int=480) -> Any:
     return

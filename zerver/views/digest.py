@@ -1,12 +1,14 @@
 import time
+from datetime import timedelta
+
+from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.utils.timezone import now as timezone_now
-from django.conf import settings
 
-from zerver.lib.digest import handle_digest_email, DIGEST_CUTOFF
 from zerver.decorator import zulip_login_required
-from datetime import timedelta
+from zerver.lib.digest import DIGEST_CUTOFF, handle_digest_email
+
 
 @zulip_login_required
 def digest_page(request: HttpRequest) -> HttpResponse:

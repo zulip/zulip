@@ -1,18 +1,28 @@
 from collections import defaultdict
 from functools import wraps
 from types import FunctionType
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    Sequence,
+    TypeVar,
+    Union,
+    cast,
+    overload,
+)
+
 import ujson
-
+from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
+from typing_extensions import Literal
 
-from zerver.lib.exceptions import JsonableError, ErrorCode, \
-    InvalidJSONError
+from zerver.lib.exceptions import ErrorCode, InvalidJSONError, JsonableError
 from zerver.lib.types import Validator, ViewFuncT
 
-from django.http import HttpRequest, HttpResponse
-
-from typing import Any, Callable, Dict, Generic, List, Optional, TypeVar, Union, cast, overload
-from typing_extensions import Literal
 
 class RequestConfusingParmsError(JsonableError):
     code = ErrorCode.REQUEST_CONFUSING_VAR
@@ -71,7 +81,7 @@ class _REQ(Generic[ResultT]):
         argument_type: Optional[str] = None,
         intentionally_undocumented: bool=False,
         documentation_pending: bool=False,
-        aliases: Optional[List[str]] = None,
+        aliases: Sequence[str] = [],
         path_only: bool=False
     ) -> None:
         """whence: the name of the request variable that should be used
@@ -136,7 +146,7 @@ def REQ(
     default: ResultT = ...,
     intentionally_undocumented: bool = ...,
     documentation_pending: bool = ...,
-    aliases: Optional[List[str]] = ...,
+    aliases: Sequence[str] = ...,
     path_only: bool = ...
 ) -> ResultT:
     ...
@@ -150,7 +160,7 @@ def REQ(
     validator: Validator,
     intentionally_undocumented: bool = ...,
     documentation_pending: bool = ...,
-    aliases: Optional[List[str]] = ...,
+    aliases: Sequence[str] = ...,
     path_only: bool = ...
 ) -> ResultT:
     ...
@@ -164,7 +174,7 @@ def REQ(
     str_validator: Optional[Validator] = ...,
     intentionally_undocumented: bool = ...,
     documentation_pending: bool = ...,
-    aliases: Optional[List[str]] = ...,
+    aliases: Sequence[str] = ...,
     path_only: bool = ...
 ) -> str:
     ...
@@ -178,7 +188,7 @@ def REQ(
     str_validator: Optional[Validator] = ...,
     intentionally_undocumented: bool = ...,
     documentation_pending: bool = ...,
-    aliases: Optional[List[str]] = ...,
+    aliases: Sequence[str] = ...,
     path_only: bool = ...
 ) -> Optional[str]:
     ...
@@ -193,7 +203,7 @@ def REQ(
     argument_type: Literal["body"],
     intentionally_undocumented: bool = ...,
     documentation_pending: bool = ...,
-    aliases: Optional[List[str]] = ...,
+    aliases: Sequence[str] = ...,
     path_only: bool = ...
 ) -> ResultT:
     ...
@@ -209,7 +219,7 @@ def REQ(
     argument_type: Optional[str] = None,
     intentionally_undocumented: bool=False,
     documentation_pending: bool=False,
-    aliases: Optional[List[str]] = None,
+    aliases: Sequence[str] = [],
     path_only: bool = False
 ) -> ResultT:
     return cast(ResultT, _REQ(
@@ -297,8 +307,7 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
                 raise Exception(_("Invalid argument type"))
 
             post_var_names = [param.post_var_name]
-            if param.aliases:
-                post_var_names += param.aliases
+            post_var_names += param.aliases
 
             default_assigned = False
 

@@ -19,5 +19,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(add_domain_to_realm_alias_if_needed, elidable=True)
+        migrations.RunPython(add_domain_to_realm_alias_if_needed, elidable=True),
     ]

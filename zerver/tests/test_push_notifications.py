@@ -1,52 +1,35 @@
-from contextlib import contextmanager
+import base64
 import datetime
 import itertools
-import requests
+import os
+import uuid
+from contextlib import contextmanager
+from typing import Any, Dict, Iterator, List, Optional
 from unittest import mock
 from unittest.mock import call
-from typing import Any, Dict, Iterator, List, Optional
 
-import base64
-import os
+import requests
 import ujson
-import uuid
-
-from django.test import override_settings
 from django.conf import settings
-from django.http import HttpResponse
 from django.db import transaction
 from django.db.models import F
+from django.http import HttpResponse
+from django.test import override_settings
 from django.utils.crypto import get_random_string
+from django.utils.timezone import now
 
 from analytics.lib.counts import CountStat, LoggingCountStat
 from analytics.models import InstallationCount, RealmCount
-from zerver.models import (
-    PushDeviceToken,
-    Message,
-    UserMessage,
-    receives_offline_email_notifications,
-    receives_offline_push_notifications,
-    receives_online_notifications,
-    receives_stream_notifications,
-    get_client,
-    get_realm,
-    get_stream,
-    Recipient,
-    RealmAuditLog,
-    Stream,
-    Subscription,
-)
 from zerver.lib.actions import (
     do_delete_messages,
     do_mark_stream_messages_as_read,
     do_regenerate_api_key,
 )
-from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.push_notifications import (
+    DeviceToken,
     absolute_avatar_url,
     b64_to_hex,
     datetime_to_timestamp,
-    DeviceToken,
     get_apns_client,
     get_display_recipient,
     get_message_payload_apns,
@@ -63,16 +46,38 @@ from zerver.lib.push_notifications import (
     send_notifications_to_bouncer,
     send_to_push_bouncer,
 )
-from zerver.lib.remote_server import send_analytics_to_remote_server, \
-    build_analytics_data, PushNotificationBouncerException, PushNotificationBouncerRetryLaterError
-from zerver.lib.request import JsonableError
-from zerver.lib.test_classes import (
-    TestCase, ZulipTestCase,
+from zerver.lib.remote_server import (
+    PushNotificationBouncerException,
+    PushNotificationBouncerRetryLaterError,
+    build_analytics_data,
+    send_analytics_to_remote_server,
 )
-
-from zilencer.models import RemoteZulipServer, RemotePushDeviceToken, \
-    RemoteRealmCount, RemoteInstallationCount, RemoteRealmAuditLog
-from django.utils.timezone import now
+from zerver.lib.request import JsonableError
+from zerver.lib.soft_deactivation import do_soft_deactivate_users
+from zerver.lib.test_classes import TestCase, ZulipTestCase
+from zerver.models import (
+    Message,
+    PushDeviceToken,
+    RealmAuditLog,
+    Recipient,
+    Stream,
+    Subscription,
+    UserMessage,
+    get_client,
+    get_realm,
+    get_stream,
+    receives_offline_email_notifications,
+    receives_offline_push_notifications,
+    receives_online_notifications,
+    receives_stream_notifications,
+)
+from zilencer.models import (
+    RemoteInstallationCount,
+    RemotePushDeviceToken,
+    RemoteRealmAuditLog,
+    RemoteRealmCount,
+    RemoteZulipServer,
+)
 
 ZERVER_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -209,7 +214,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
         del self.API_KEYS[self.server_uuid]
 
-        credentials = "%s:%s" % ("5678-efgh", 'invalid')
+        credentials = "{}:{}".format("5678-efgh", 'invalid')
         api_auth = 'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
         result = self.client_post(endpoint, {'user_id': user_id,
                                              'token_kind': token_kind,
@@ -685,7 +690,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         message = self.get_message(Recipient.PERSONAL, type_id=1)
         UserMessage.objects.create(
             user_profile=self.user_profile,
-            message=message
+            message=message,
         )
 
         missed_message = {
@@ -739,7 +744,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         message = self.get_message(Recipient.PERSONAL, type_id=1)
         UserMessage.objects.create(
             user_profile=self.user_profile,
-            message=message
+            message=message,
         )
 
         missed_message = {
@@ -782,7 +787,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         UserMessage.objects.create(
             user_profile=user_profile,
             flags=UserMessage.flags.read,
-            message=message
+            message=message,
         )
 
         missed_message = {
@@ -799,7 +804,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         UserMessage.objects.create(
             user_profile=user_profile,
             flags=UserMessage.flags.read,
-            message=message
+            message=message,
         )
         missed_message = {
             'message_id': message.id,
@@ -824,7 +829,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         UserMessage.objects.create(
             user_profile=user_profile,
             flags=UserMessage.flags.read,
-            message=message
+            message=message,
         )
         missed_message = {
             'message_id': message.id,
@@ -848,7 +853,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         message = self.get_message(Recipient.PERSONAL, type_id=1)
         UserMessage.objects.create(
             user_profile=user_profile,
-            message=message
+            message=message,
         )
 
         missed_message = {
@@ -875,7 +880,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         message = self.get_message(Recipient.PERSONAL, type_id=1)
         UserMessage.objects.create(
             user_profile=self.user_profile,
-            message=message
+            message=message,
         )
 
         android_devices = list(
@@ -1180,8 +1185,8 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'realm_id': self.sender.realm.id,
                     'realm_uri': self.sender.realm.uri,
                     "user_id": user_profile.id,
-                }
-            }
+                },
+            },
         }
         self.assertDictEqual(payload, expected)
 
@@ -1216,8 +1221,8 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'realm_id': self.sender.realm.id,
                     'realm_uri': self.sender.realm.uri,
                     "user_id": user_profile.id,
-                }
-            }
+                },
+            },
         }
         self.assertDictEqual(payload, expected)
         mock_push_notifications.assert_called()
@@ -1248,8 +1253,8 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'realm_id': self.sender.realm.id,
                     'realm_uri': self.sender.realm.uri,
                     "user_id": self.sender.id,
-                }
-            }
+                },
+            },
         }
         self.assertDictEqual(payload, expected)
 
@@ -1280,8 +1285,8 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'realm_id': self.sender.realm.id,
                     'realm_uri': self.sender.realm.uri,
                     "user_id": user_profile.id,
-                }
-            }
+                },
+            },
         }
         self.assertDictEqual(payload, expected)
 
@@ -1312,8 +1317,8 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'realm_id': self.sender.realm.id,
                     'realm_uri': self.sender.realm.uri,
                     "user_id": user_profile.id,
-                }
-            }
+                },
+            },
         }
         self.assertDictEqual(payload, expected)
 
@@ -1348,8 +1353,8 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'realm_id': self.sender.realm.id,
                     'realm_uri': self.sender.realm.uri,
                     "user_id": user_profile.id,
-                }
-            }
+                },
+            },
         }
         self.assertDictEqual(payload, expected)
 
@@ -1436,7 +1441,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "sender_avatar_url": absolute_avatar_url(message.sender),
             "recipient_type": "stream",
             "topic": "Test Topic",
-            "stream": "Denmark"
+            "stream": "Denmark",
         })
         self.assertDictEqual(gcm_options, {
             "priority": "high",
@@ -1466,7 +1471,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "sender_avatar_url": absolute_avatar_url(message.sender),
             "recipient_type": "stream",
             "topic": "Test Topic",
-            "stream": "Denmark"
+            "stream": "Denmark",
         })
         self.assertDictEqual(gcm_options, {
             "priority": "high",
@@ -1510,6 +1515,7 @@ class TestSendToPushBouncer(ZulipTestCase):
 
     def test_400_error_invalid_server_key(self) -> None:
         from zerver.decorator import InvalidZulipServerError
+
         # This is the exception our decorator uses for an invalid Zulip server
         error_obj = InvalidZulipServerError("testRole")
         with mock.patch('requests.request',
@@ -1900,20 +1906,17 @@ class TestPushNotificationsContent(ZulipTestCase):
         fixtures = [
             {
                 'name': 'realm_emoji',
-                'rendered_content': '<p>Testing <img alt=":green_tick:" class="emoji" src="/user_avatars/%s/emoji/green_tick.png" title="green tick"> realm emoji.</p>' % (
-                    realm.id,),
+                'rendered_content': f'<p>Testing <img alt=":green_tick:" class="emoji" src="/user_avatars/{realm.id}/emoji/green_tick.png" title="green tick"> realm emoji.</p>',
                 'expected_output': 'Testing :green_tick: realm emoji.',
             },
             {
                 'name': 'mentions',
-                'rendered_content': '<p>Mentioning <span class="user-mention" data-user-id="%s">@Cordelia Lear</span>.</p>' % (
-                    cordelia.id,),
+                'rendered_content': f'<p>Mentioning <span class="user-mention" data-user-id="{cordelia.id}">@Cordelia Lear</span>.</p>',
                 'expected_output': 'Mentioning @Cordelia Lear.',
             },
             {
                 'name': 'stream_names',
-                'rendered_content': '<p>Testing stream names <a class="stream" data-stream-id="%s" href="/#narrow/stream/Verona">#Verona</a>.</p>' % (
-                    stream.id,),
+                'rendered_content': f'<p>Testing stream names <a class="stream" data-stream-id="{stream.id}" href="/#narrow/stream/Verona">#Verona</a>.</p>',
                 'expected_output': 'Testing stream names #Verona.',
             },
         ]

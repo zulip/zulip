@@ -56,7 +56,7 @@ class Command(ZulipBaseCommand):
 
         print("The following data will be submitted to the push notification service:")
         for key in sorted(request.keys()):
-            print("  %s: %s" % (key, request[key]))
+            print(f"  {key}: {request[key]}")
         print("")
 
         if not options['agree_to_terms_of_service'] and not options["rotate_key"]:
@@ -88,7 +88,7 @@ class Command(ZulipBaseCommand):
             print("- Return to the documentation to learn how to test push notifications")
         else:
             if options["rotate_key"]:
-                print("Success! Updating %s with the new key..." % (SECRETS_FILENAME,))
+                print(f"Success! Updating {SECRETS_FILENAME} with the new key...")
                 subprocess.check_call(["crudini", '--set', SECRETS_FILENAME, "secrets", "zulip_org_key",
                                        request["new_org_key"]])
             print("Mobile Push Notification Service registration successfully updated!")

@@ -10,12 +10,21 @@ below features are supported.
 
 ## Changes in Zulip 2.2
 
+**Feature level 12**
+
+* [`GET users/{user_id}/subscriptions/{stream_id}`](/api/get-subscription-status):
+  New endpoint added for checking if another user is subscribed to a stream.
+
 **Feature level 11**
 
 * [`POST /register`](/api/register-queue): Added
   `realm_community_topic_editing_limit_seconds` to the response, the
   time limit before community topic editing is forbidden.  A `null`
   value means no limit.
+* [`POST /register`](/api/register-queue): The response now contains a
+  `is_owner`, similar to the existing `is_admin` and `is_guest` fields.
+* [`POST /typing`](/api/typing): Removed legacy support for sending email
+  addresses, rather than user IDs, to encode private message recipients.
 
 **Feature level 10**
 

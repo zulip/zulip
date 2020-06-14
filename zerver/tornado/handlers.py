@@ -7,8 +7,8 @@ from django import http
 from django.core import signals
 from django.core.handlers import base
 from django.core.handlers.wsgi import WSGIRequest, get_script_name
-from django.urls import set_script_prefix
 from django.http import HttpRequest, HttpResponse
+from django.urls import set_script_prefix
 from tornado.wsgi import WSGIContainer
 
 from zerver.lib.response import json_response
@@ -35,11 +35,11 @@ def clear_handler_by_id(handler_id: int) -> None:
     del handlers[handler_id]
 
 def handler_stats_string() -> str:
-    return "%s handlers, latest ID %s" % (len(handlers), current_handler_id)
+    return f"{len(handlers)} handlers, latest ID {current_handler_id}"
 
 def finish_handler(handler_id: int, event_queue_id: str,
                    contents: List[Dict[str, Any]], apply_markdown: bool) -> None:
-    err_msg = "Got error finishing handler for queue %s" % (event_queue_id,)
+    err_msg = f"Got error finishing handler for queue {event_queue_id}"
     try:
         # We call async_request_timer_restart here in case we are
         # being finished without any events (because another
@@ -48,9 +48,9 @@ def finish_handler(handler_id: int, event_queue_id: str,
         request = handler._request
         async_request_timer_restart(request)
         if len(contents) != 1:
-            request._log_data['extra'] = "[%s/1]" % (event_queue_id,)
+            request._log_data['extra'] = f"[{event_queue_id}/1]"
         else:
-            request._log_data['extra'] = "[%s/1/%s]" % (event_queue_id, contents[0]["type"])
+            request._log_data['extra'] = "[{}/1/{}]".format(event_queue_id, contents[0]["type"])
 
         handler.zulip_finish(dict(result='success', msg='',
                                   events=contents,
@@ -82,7 +82,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
     def __repr__(self) -> str:
         descriptor = get_descriptor_by_handler_id(self.handler_id)
-        return "AsyncDjangoHandler<%s, %s>" % (self.handler_id, descriptor)
+        return f"AsyncDjangoHandler<{self.handler_id}, {descriptor}>"
 
     def convert_tornado_request_to_django_request(self) -> HttpRequest:
         # This takes the WSGI environment that Tornado received (which

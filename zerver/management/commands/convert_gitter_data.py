@@ -3,8 +3,7 @@ import os
 import tempfile
 from typing import Any
 
-from django.core.management.base import BaseCommand, CommandError, \
-    CommandParser
+from django.core.management.base import BaseCommand, CommandError, CommandParser
 
 from zerver.data_import.gitter import do_convert_data
 
@@ -42,7 +41,7 @@ class Command(BaseCommand):
 
         for path in options['gitter_data']:
             if not os.path.exists(path):
-                raise CommandError("Gitter data file not found: '%s'" % (path,))
+                raise CommandError(f"Gitter data file not found: '{path}'")
             # TODO add json check
             print("Converting Data ...")
             do_convert_data(path, output_dir, num_threads)

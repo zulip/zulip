@@ -50,5 +50,5 @@ class Migration(migrations.Migration):
             name='file_name',
             field=models.TextField(db_index=True),
         ),
-        migrations.RunPython(check_and_create_attachments, elidable=True)
+        migrations.RunPython(check_and_create_attachments, elidable=True),
     ]

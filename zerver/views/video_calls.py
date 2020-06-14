@@ -1,10 +1,11 @@
-from functools import partial
 import json
+from functools import partial
 from typing import Dict
 from urllib.parse import urljoin
 
+import requests
 from django.conf import settings
-from django.http import HttpResponse, HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.middleware import csrf
 from django.shortcuts import redirect, render
 from django.utils.crypto import constant_time_compare, salted_hmac
@@ -13,12 +14,12 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from oauthlib.oauth2 import OAuth2Error
-import requests
 from requests_oauthlib import OAuth2Session
 
 from zerver.decorator import REQ, has_request_variables, zulip_login_required
 from zerver.lib.actions import do_set_zoom_token
 from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.pysa import mark_sanitized
 from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.validator import check_dict, check_string
@@ -57,7 +58,10 @@ def get_zoom_sid(request: HttpRequest) -> str:
     # token directly to the Zoom server.
 
     csrf.get_token(request)
-    return (
+    # Use 'mark_sanitized' to cause Pysa to ignore the flow of user controlled
+    # data out of this function. 'request.META' is indeed user controlled, but
+    # post-HMAC ouptut is no longer meaningfully controllable.
+    return mark_sanitized(
         ""
         if getattr(request, "_dont_enforce_csrf_checks", False)
         else salted_hmac("Zulip Zoom sid", request.META["CSRF_COOKIE"]).hexdigest()
@@ -71,7 +75,7 @@ def register_zoom_user(request: HttpRequest) -> HttpResponse:
     authorization_url, state = oauth.authorization_url(
         "https://zoom.us/oauth/authorize",
         state=json.dumps(
-            {"realm": get_subdomain(request), "sid": get_zoom_sid(request)}
+            {"realm": get_subdomain(request), "sid": get_zoom_sid(request)},
         ),
     )
     return redirect(authorization_url)

@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Mapping
 
 from bs4 import BeautifulSoup
 from django.http import HttpRequest
@@ -6,7 +6,8 @@ from django.utils.html import escape
 
 from zerver.lib.cache import cache_with_key, open_graph_description_cache_key
 
-def html_to_text(content: str, tags: Optional[Dict[str, str]]=None) -> str:
+
+def html_to_text(content: str, tags: Mapping[str, str] = {'p': ' | '}) -> str:
     bs = BeautifulSoup(content, features='lxml')
     # Skip any admonition (warning) blocks, since they're
     # usually something about users needing to be an
@@ -20,8 +21,6 @@ def html_to_text(content: str, tags: Optional[Dict[str, str]]=None) -> str:
         tag.clear()
 
     text = ''
-    if tags is None:
-        tags = {'p': ' | '}
     for element in bs.find_all(tags.keys()):
         # Ignore empty elements
         if not element.text:

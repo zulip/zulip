@@ -9,8 +9,7 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import UnexpectedWebhookEventType, \
-    check_send_webhook_message
+from zerver.lib.webhooks.common import UnexpectedWebhookEventType, check_send_webhook_message
 from zerver.models import Realm, UserProfile, get_user_by_delivery_email
 
 IGNORED_EVENTS = [
@@ -253,7 +252,7 @@ def handle_created_issue_event(payload: Dict[str, Any], user_profile: UserProfil
         author=get_issue_author(payload),
         issue_string=get_issue_string(payload, with_title=True),
         priority=get_in(payload, ['issue', 'fields', 'priority', 'name']),
-        assignee=get_in(payload, ['issue', 'fields', 'assignee', 'displayName'], 'no one')
+        assignee=get_in(payload, ['issue', 'fields', 'assignee', 'displayName'], 'no one'),
     )
 
 def handle_deleted_issue_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
@@ -263,7 +262,7 @@ def handle_deleted_issue_event(payload: Dict[str, Any], user_profile: UserProfil
     return template.format(
         author=get_issue_author(payload),
         issue_string=get_issue_string(payload, with_title=True),
-        punctuation=punctuation
+        punctuation=punctuation,
     )
 
 def normalize_comment(comment: str) -> str:
@@ -279,7 +278,7 @@ def handle_comment_created_event(payload: Dict[str, Any], user_profile: UserProf
 *\n``` quote\n{comment}\n```\n".format(
         author = payload["comment"]["author"]["displayName"],
         title = title,
-        comment = normalize_comment(payload["comment"]["body"])
+        comment = normalize_comment(payload["comment"]["body"]),
     )
 
 def handle_comment_updated_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
@@ -288,7 +287,7 @@ def handle_comment_updated_event(payload: Dict[str, Any], user_profile: UserProf
 *\n``` quote\n{comment}\n```\n".format(
         author = payload["comment"]["author"]["displayName"],
         title = title,
-        comment = normalize_comment(payload["comment"]["body"])
+        comment = normalize_comment(payload["comment"]["body"]),
     )
 
 def handle_comment_deleted_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
@@ -297,7 +296,7 @@ def handle_comment_deleted_event(payload: Dict[str, Any], user_profile: UserProf
 *\n``` quote\n~~{comment}~~\n```\n".format(
         author = payload["comment"]["author"]["displayName"],
         title = title,
-        comment = normalize_comment(payload["comment"]["body"])
+        comment = normalize_comment(payload["comment"]["body"]),
     )
 
 JIRA_CONTENT_FUNCTION_MAPPER = {

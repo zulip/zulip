@@ -125,12 +125,13 @@ exports.build_direct_upload_widget = function (
     max_file_upload_size = max_file_upload_size || default_max_file_size;
     function accept() {
         input_error.hide();
-        if (upload_button.hasClass("night-settings")) {
-            upload_function(get_file_input(), true);
-        } else if (upload_button.hasClass("day-settings")) {
-            upload_function(get_file_input(), false);
+        const realm_logo_section = upload_button.closest(".realm-logo-section");
+        if (realm_logo_section.attr('id') === "night-logo-section") {
+            upload_function(get_file_input(), true, false);
+        } else if (realm_logo_section.attr('id') === "day-logo-section") {
+            upload_function(get_file_input(), false, false);
         } else {
-            upload_function(get_file_input());
+            upload_function(get_file_input(), null, true);
         }
     }
 

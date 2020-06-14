@@ -1,25 +1,13 @@
 from typing import Any, Dict, Mapping, Union
-
 from unittest import mock
 
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import (
-    get_client,
-)
+from zerver.lib.actions import get_client
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.models import Subscription, UserPresence
+from zerver.tornado.event_queue import maybe_enqueue_notifications
 
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-
-from zerver.models import (
-    Subscription,
-    UserPresence,
-)
-
-from zerver.tornado.event_queue import (
-    maybe_enqueue_notifications,
-)
 
 class EditMessageSideEffectsTest(ZulipTestCase):
     def _assert_update_does_not_notify_anybody(self, message_id: int, content: str) -> None:
@@ -45,7 +33,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         message_id = self.send_personal_message(
             hamlet,
             cordelia,
-            content='no mention'
+            content='no mention',
         )
 
         self._assert_update_does_not_notify_anybody(
@@ -143,7 +131,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         return dict(
             enqueue_kwargs=enqueue_kwargs,
-            queue_messages=queue_messages
+            queue_messages=queue_messages,
         )
 
     def _send_and_update_message(self, original_content: str, updated_content: str,
@@ -175,7 +163,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         return dict(
             message_id=message_id,
-            info=info
+            info=info,
         )
 
     def test_updates_with_stream_mention(self) -> None:
@@ -262,7 +250,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         '''
         return mock.patch(
             'zerver.tornado.event_queue.receiver_is_off_zulip',
-            return_value=False
+            return_value=False,
         )
 
     def test_stream_push_notify_for_sorta_present_user(self) -> None:
@@ -311,7 +299,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         notification_message_data = self._send_and_update_message(
             original_content, updated_content,
             enable_online_push_notifications=True,
-            connected_to_zulip=True, present_on_web=True
+            connected_to_zulip=True, present_on_web=True,
         )
 
         message_id = notification_message_data['message_id']
@@ -347,7 +335,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         notification_message_data = self._send_and_update_message(
             original_content, updated_content,
             enable_online_push_notifications=True,
-            connected_to_zulip=True, present_on_web=True
+            connected_to_zulip=True, present_on_web=True,
         )
 
         message_id = notification_message_data['message_id']
@@ -386,7 +374,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         updated_content = 'now we mention @**Cordelia Lear**'
         notification_message_data = self._send_and_update_message(
             original_content, updated_content,
-            connected_to_zulip=True
+            connected_to_zulip=True,
         )
 
         message_id = notification_message_data['message_id']
@@ -421,7 +409,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         updated_content = 'now we mention @**all**'
         notification_message_data = self._send_and_update_message(
             original_content, updated_content,
-            connected_to_zulip=True
+            connected_to_zulip=True,
         )
 
         message_id = notification_message_data['message_id']
@@ -481,7 +469,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         notification_message_data = self._send_and_update_message(
             original_content, updated_content,
             connected_to_zulip=True,
-            present_on_web=True
+            present_on_web=True,
         )
 
         message_id = notification_message_data['message_id']

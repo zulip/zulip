@@ -248,8 +248,7 @@ exports.last_active_date = function (user_id) {
 };
 
 exports.initialize = function (params) {
-    presence.set_info(params.presences,
-                      params.initial_servertime);
+    exports.set_info(params.presences, params.initial_servertime);
 };
 
 window.presence = exports;

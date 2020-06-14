@@ -1,12 +1,12 @@
-from typing import Optional, Tuple, Iterable, List
-
+import glob
 import os
 import subprocess
 import sys
 from distutils.version import LooseVersion
-from version import PROVISION_VERSION
+from typing import Iterable, List, Optional, Tuple
+
 from scripts.lib.zulip_tools import get_dev_uuid_var_path
-import glob
+from version import PROVISION_VERSION
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 

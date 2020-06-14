@@ -1,31 +1,39 @@
 #!/usr/bin/env python3
-import os
-import sys
-import logging
 import argparse
+import hashlib
+import logging
+import os
 import platform
 import subprocess
-import hashlib
+import sys
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 sys.path.append(ZULIP_PATH)
-from scripts.lib.zulip_tools import run_as_root, ENDC, WARNING, \
-    get_dev_uuid_var_path, FAIL, os_families, parse_os_release, \
-    overwrite_symlink
+from typing import TYPE_CHECKING, List
+
+from scripts.lib.node_cache import NODE_MODULES_CACHE_PATH, setup_node_modules
 from scripts.lib.setup_venv import (
-    get_venv_dependencies, THUMBOR_VENV_DEPENDENCIES,
+    THUMBOR_VENV_DEPENDENCIES,
     YUM_THUMBOR_VENV_DEPENDENCIES,
+    get_venv_dependencies,
 )
-from scripts.lib.node_cache import setup_node_modules, NODE_MODULES_CACHE_PATH
+from scripts.lib.zulip_tools import (
+    ENDC,
+    FAIL,
+    WARNING,
+    get_dev_uuid_var_path,
+    os_families,
+    overwrite_symlink,
+    parse_os_release,
+    run_as_root,
+)
 from tools.setup import setup_venvs
 
-from typing import List, TYPE_CHECKING
 if TYPE_CHECKING:
-    # typing_extensions might not be installed yet
-    from typing_extensions import NoReturn
+    from typing import NoReturn
 
 VAR_DIR_PATH = os.path.join(ZULIP_PATH, 'var')
 
@@ -56,7 +64,7 @@ try:
         os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
     os.symlink(
         os.path.join(ZULIP_PATH, 'README.md'),
-        os.path.join(VAR_DIR_PATH, 'zulip-test-symlink')
+        os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'),
     )
     os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
 except OSError:
@@ -131,7 +139,7 @@ COMMON_DEPENDENCIES = [
     "libxss1",
     "fonts-freefont-ttf",
     "libappindicator1",
-    "xdg-utils"
+    "xdg-utils",
     # Puppeteer dependencies end here.
 ]
 
@@ -153,7 +161,7 @@ COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
     "freetype",
     "freetype-devel",
     "fontconfig-devel",
-    "libstdc++"
+    "libstdc++",
 ] + YUM_THUMBOR_VENV_DEPENDENCIES
 
 BUILD_PGROONGA_FROM_SOURCE = False
@@ -169,7 +177,7 @@ if vendor == 'debian' and os_version in [] or vendor == 'ubuntu' and os_version 
             "libgroonga-dev",
             "libmsgpack-dev",
             "clang-9",
-            "llvm-9-dev"
+            "llvm-9-dev",
         ]
     ] + VENV_DEPENDENCIES
 elif "debian" in os_families():
@@ -245,7 +253,7 @@ def install_apt_deps(deps_to_install: List[str]) -> None:
             "env", "DEBIAN_FRONTEND=noninteractive",
             "apt-get", "-y", "install", "--no-install-recommends",
         ]
-        + deps_to_install
+        + deps_to_install,
     )
 
 def install_yum_deps(deps_to_install: List[str]) -> None:
@@ -412,7 +420,7 @@ def main(options: argparse.Namespace) -> "NoReturn":
             provision_inner,
             *(["--force"] if options.is_force else []),
             *(["--build-release-tarball-only"] if options.is_build_release_tarball_only else []),
-        ]
+        ],
     )
 
 if __name__ == "__main__":

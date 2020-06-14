@@ -1,24 +1,33 @@
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
-
 import re
 import unicodedata
 from collections import defaultdict
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union, cast
 
 from django.conf import settings
 from django.db.models.query import QuerySet
 from django.forms.models import model_to_dict
 from django.utils.translation import ugettext as _
-
-from zerver.lib.cache import generic_bulk_cached_fetch, user_profile_cache_key_id, \
-    user_profile_by_id_cache_key, realm_user_dict_fields
-from zerver.lib.request import JsonableError
-from zerver.lib.avatar import avatar_url, get_avatar_field
-from zerver.lib.exceptions import OrganizationAdministratorRequired
-from zerver.models import UserProfile, Service, Realm, \
-    get_user_profile_by_id_in_realm, CustomProfileFieldValue, \
-    get_realm_user_dicts, CustomProfileField
-
 from zulip_bots.custom_exceptions import ConfigValidationError
+
+from zerver.lib.avatar import avatar_url, get_avatar_field
+from zerver.lib.cache import (
+    generic_bulk_cached_fetch,
+    realm_user_dict_fields,
+    user_profile_by_id_cache_key,
+    user_profile_cache_key_id,
+)
+from zerver.lib.exceptions import OrganizationAdministratorRequired
+from zerver.lib.request import JsonableError
+from zerver.models import (
+    CustomProfileField,
+    CustomProfileFieldValue,
+    Realm,
+    Service,
+    UserProfile,
+    get_realm_user_dicts,
+    get_user_profile_by_id_in_realm,
+)
+
 
 def check_full_name(full_name_raw: str) -> str:
     full_name = full_name_raw.strip()
@@ -171,7 +180,7 @@ def bulk_get_users(emails: List[str], realm: Optional[Realm],
         id_fetcher=user_to_email,
     )
 
-def user_ids_to_users(user_ids: List[int], realm: Realm) -> List[UserProfile]:
+def user_ids_to_users(user_ids: Sequence[int], realm: Realm) -> List[UserProfile]:
     # TODO: Consider adding a flag to control whether deactivated
     # users should be included.
 
@@ -181,7 +190,7 @@ def user_ids_to_users(user_ids: List[int], realm: Realm) -> List[UserProfile]:
     user_profiles_by_id: Dict[int, UserProfile] = generic_bulk_cached_fetch(
         cache_key_function=user_profile_by_id_cache_key,
         query_function=fetch_users_by_id,
-        object_ids=user_ids
+        object_ids=user_ids,
     )
 
     found_user_ids = user_profiles_by_id.keys()
@@ -307,7 +316,7 @@ def format_user_row(realm: Realm, acting_user: UserProfile, row: Dict[str, Any],
                                   avatar_source=row['avatar_source'],
                                   avatar_version=row['avatar_version'],
                                   medium=False,
-                                  client_gravatar=client_gravatar,)
+                                  client_gravatar=client_gravatar)
 
     is_admin = is_administrator_role(row['role'])
     is_owner = row['role'] == UserProfile.ROLE_REALM_OWNER
@@ -398,11 +407,11 @@ def get_custom_profile_field_values(custom_profile_field_values:
         if profile_field.field.is_renderable():
             profiles_by_user_id[user_id][profile_field.field_id] = {
                 "value": profile_field.value,
-                "rendered_value": profile_field.rendered_value
+                "rendered_value": profile_field.rendered_value,
             }
         else:
             profiles_by_user_id[user_id][profile_field.field_id] = {
-                "value": profile_field.value
+                "value": profile_field.value,
             }
     return profiles_by_user_id
 
@@ -440,6 +449,6 @@ def get_raw_user_data(realm: Realm, acting_user: UserProfile, client_gravatar: b
                                             acting_user = acting_user,
                                             row=row,
                                             client_gravatar= client_gravatar,
-                                            custom_profile_field_data = custom_profile_field_data
+                                            custom_profile_field_data = custom_profile_field_data,
                                             )
     return result

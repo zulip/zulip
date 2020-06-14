@@ -1,63 +1,53 @@
-import datetime
-import ujson
-import zlib
-import ahocorasick
 import copy
+import datetime
+import zlib
+from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
-from django.utils.translation import ugettext as _
-from django.utils.timezone import now as timezone_now
+import ahocorasick
+import ujson
 from django.db import connection
 from django.db.models import Sum
+from django.utils.timezone import now as timezone_now
+from django.utils.translation import ugettext as _
 from psycopg2.sql import SQL
+from typing_extensions import TypedDict
 
 from analytics.lib.counts import COUNT_STATS, RealmCount
-
+from zerver.lib import bugdown as bugdown
 from zerver.lib.avatar import get_avatar_field
-import zerver.lib.bugdown as bugdown
 from zerver.lib.cache import (
     cache_with_key,
     generic_bulk_cached_fetch,
     to_dict_cache_key,
     to_dict_cache_key_id,
 )
-from zerver.lib.display_recipient import UserDisplayRecipient, DisplayRecipientT, \
-    bulk_fetch_display_recipients
+from zerver.lib.display_recipient import (
+    DisplayRecipientT,
+    UserDisplayRecipient,
+    bulk_fetch_display_recipients,
+)
 from zerver.lib.request import JsonableError
-from zerver.lib.stream_subscription import (
-    get_stream_subscriptions_for_user,
-)
+from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.topic import (
-    DB_TOPIC_NAME,
-    MESSAGE__TOPIC,
-    TOPIC_LINKS,
-    TOPIC_NAME,
-)
-from zerver.lib.topic_mutes import (
-    build_topic_mute_checker,
-    topic_is_muted,
-)
-
+from zerver.lib.topic import DB_TOPIC_NAME, MESSAGE__TOPIC, TOPIC_LINKS, TOPIC_NAME
+from zerver.lib.topic_mutes import build_topic_mute_checker, topic_is_muted
 from zerver.models import (
-    get_display_recipient_by_id,
-    get_user_profile_by_id,
-    query_for_ids,
+    MAX_MESSAGE_LENGTH,
+    MAX_TOPIC_NAME_LENGTH,
     Message,
+    Reaction,
     Realm,
     Recipient,
     Stream,
     SubMessage,
     Subscription,
-    UserProfile,
     UserMessage,
-    Reaction,
+    UserProfile,
+    get_display_recipient_by_id,
+    get_user_profile_by_id,
     get_usermessage_by_message_id,
-    MAX_MESSAGE_LENGTH,
-    MAX_TOPIC_NAME_LENGTH
+    query_for_ids,
 )
-
-from typing import Any, Dict, List, Optional, Set, Tuple, Sequence
-from typing_extensions import TypedDict
 
 RealmAlertWord = Dict[int, List[str]]
 
@@ -236,7 +226,7 @@ class MessageDict:
             new_obj,
             apply_markdown=apply_markdown,
             client_gravatar=client_gravatar,
-            keep_rendered_content=keep_rendered_content
+            keep_rendered_content=keep_rendered_content,
         )
         return new_obj
 
@@ -519,7 +509,7 @@ class MessageDict:
                 elif recip['email'] > display_recipient[0]['email']:
                     display_recipient = [display_recipient[0], recip]
         else:
-            raise AssertionError("Invalid recipient type %s" % (recipient_type,))
+            raise AssertionError(f"Invalid recipient type {recipient_type}")
 
         obj['display_recipient'] = display_recipient
         obj['type'] = display_type
@@ -532,7 +522,7 @@ class MessageDict:
             (
                 obj['recipient_id'],
                 obj['recipient_type'],
-                obj['recipient_type_id']
+                obj['recipient_type_id'],
             ) for obj in objs
         }
         display_recipients = bulk_fetch_display_recipients(recipient_tuples)
@@ -668,17 +658,11 @@ def render_markdown(message: Message,
                     content: str,
                     realm: Optional[Realm]=None,
                     realm_alert_words_automaton: Optional[ahocorasick.Automaton]=None,
-                    user_ids: Optional[Set[int]]=None,
                     mention_data: Optional[bugdown.MentionData]=None,
-                    email_gateway: Optional[bool]=False) -> str:
+                    email_gateway: bool=False) -> str:
     '''
     This is basically just a wrapper for do_render_markdown.
     '''
-
-    if user_ids is None:
-        message_user_ids: Set[int] = set()
-    else:
-        message_user_ids = user_ids
 
     if realm is None:
         realm = message.get_realm()
@@ -692,7 +676,6 @@ def render_markdown(message: Message,
         content=content,
         realm=realm,
         realm_alert_words_automaton=realm_alert_words_automaton,
-        message_user_ids=message_user_ids,
         sent_by_bot=sent_by_bot,
         translate_emoticons=translate_emoticons,
         mention_data=mention_data,
@@ -704,12 +687,11 @@ def render_markdown(message: Message,
 def do_render_markdown(message: Message,
                        content: str,
                        realm: Realm,
-                       message_user_ids: Set[int],
                        sent_by_bot: bool,
                        translate_emoticons: bool,
                        realm_alert_words_automaton: Optional[ahocorasick.Automaton]=None,
                        mention_data: Optional[bugdown.MentionData]=None,
-                       email_gateway: Optional[bool]=False) -> str:
+                       email_gateway: bool=False) -> str:
     """Return HTML for given markdown. Bugdown may add properties to the
     message object such as `mentions_user_ids`, `mentions_user_group_ids`, and
     `mentions_wildcard`.  These are only on this Django object and are not
@@ -732,13 +714,13 @@ def do_render_markdown(message: Message,
         sent_by_bot=sent_by_bot,
         translate_emoticons=translate_emoticons,
         mention_data=mention_data,
-        email_gateway=email_gateway
+        email_gateway=email_gateway,
     )
     return rendered_content
 
 def huddle_users(recipient_id: int) -> str:
     display_recipient: DisplayRecipientT = get_display_recipient_by_id(
-        recipient_id, Recipient.HUDDLE, None
+        recipient_id, Recipient.HUDDLE, None,
     )
 
     # str is for streams.
@@ -814,7 +796,7 @@ def get_inactive_recipient_ids(user_profile: UserProfile) -> List[int]:
     rows = get_stream_subscriptions_for_user(user_profile).filter(
         active=False,
     ).values(
-        'recipient_id'
+        'recipient_id',
     )
     inactive_recipient_ids = [
         row['recipient_id']
@@ -826,7 +808,7 @@ def get_muted_stream_ids(user_profile: UserProfile) -> List[int]:
         active=True,
         is_muted=True,
     ).values(
-        'recipient__type_id'
+        'recipient__type_id',
     )
     muted_stream_ids = [
         row['recipient__type_id']
@@ -837,9 +819,9 @@ def get_starred_message_ids(user_profile: UserProfile) -> List[int]:
     return list(UserMessage.objects.filter(
         user_profile=user_profile,
     ).extra(
-        where=[UserMessage.where_starred()]
+        where=[UserMessage.where_starred()],
     ).order_by(
-        'message_id'
+        'message_id',
     ).values_list('message_id', flat=True)[0:10000])
 
 def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
@@ -847,11 +829,11 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
     excluded_recipient_ids = get_inactive_recipient_ids(user_profile)
 
     user_msgs = UserMessage.objects.filter(
-        user_profile=user_profile
+        user_profile=user_profile,
     ).exclude(
-        message__recipient_id__in=excluded_recipient_ids
+        message__recipient_id__in=excluded_recipient_ids,
     ).extra(
-        where=[UserMessage.where_unread()]
+        where=[UserMessage.where_unread()],
     ).values(
         'message_id',
         'message__sender_id',
@@ -1019,7 +1001,7 @@ def apply_unread_message_event(user_profile: UserProfile,
         else:
             message_type = 'huddle'
     else:
-        raise AssertionError("Invalid message type %s" % (message['type'],))
+        raise AssertionError("Invalid message type {}".format(message['type']))
 
     sender_id = message['sender_id']
 
