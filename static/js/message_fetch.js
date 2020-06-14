@@ -79,7 +79,7 @@ function get_messages_success(data, opts) {
                 history_limited: data.history_limited,
             });
         }
-        notifications.update_top_of_narrow_notices(opts.msg_list);
+        message_scroll.update_top_of_narrow_notices(opts.msg_list);
     }
 
     if (opts.num_after > 0) {

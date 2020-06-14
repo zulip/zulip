@@ -75,6 +75,7 @@ function test_helper() {
     stub('hashchange', 'save_narrow');
     stub('message_scroll', 'hide_indicators');
     stub('message_scroll', 'show_loading_older');
+    stub('message_scroll', 'hide_top_of_narrow_notices');
     stub('notifications', 'clear_compose_notifications');
     stub('notifications', 'redraw_title');
     stub('search', 'update_button_visibility');
@@ -86,8 +87,6 @@ function test_helper() {
     stub('unread_ops', 'process_visible');
     stub('compose', 'update_closed_compose_buttons_for_stream');
     stub('compose', 'update_closed_compose_buttons_for_private');
-    stub('notifications', 'hide_history_limit_notice');
-    stub('notifications', 'hide_end_of_results_notice');
 
     return {
         clear: () => {
@@ -201,8 +200,7 @@ run_test('basics', () => {
     helper.assert_events([
         'notifications.clear_compose_notifications',
         'notifications.redraw_title',
-        'notifications.hide_history_limit_notice',
-        'notifications.hide_end_of_results_notice',
+        'message_scroll.hide_top_of_narrow_notices',
         'message_scroll.hide_indicators',
         'ui_util.change_tab_to',
         'unread_ops.process_visible',
