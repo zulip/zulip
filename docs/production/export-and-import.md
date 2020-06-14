@@ -231,8 +231,7 @@ that they are up to date using the Nagios plugin at:
 Zulip has database configuration for using Postgres streaming
 replication. You can see the configuration in these files:
 
-* `puppet/zulip_ops/manifests/postgres_slave.pp`
-* `puppet/zulip_ops/manifests/postgres_master.pp`
+* `puppet/zulip_ops/manifests/postgres_appdb.pp`
 * `puppet/zulip_ops/files/postgresql/*`
 
 We use this configuration for Zulip Cloud, and it works well in
