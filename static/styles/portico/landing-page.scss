@@ -410,33 +410,34 @@ nav {
     color: hsl(0, 0%, 100%);
 
     background-color: hsla(0, 0%, 0%, 0.1);
+
+    .copy {
+        max-width: 800px;
+        margin: 0 auto;
+
+        text-align: center;
+    }
+
+    h1 {
+        margin: 0;
+        font-size: 3.7em;
+    }
+
+    h2 {
+        font-size: 1.8em;
+        margin: 30px auto 0 auto;
+
+        max-width: 600px;
+        line-height: 1.3;
+    }
+
+    .image {
+        height: 400px;
+        width: 40%;
+        background-color: hsla(0, 0%, 0%, 0.05);
+    }
 }
 
-.portico-landing.features-app section.hero .copy {
-    max-width: 800px;
-    margin: 0 auto;
-
-    text-align: center;
-}
-
-.portico-landing.features-app section.hero h1 {
-    margin: 0;
-    font-size: 3.7em;
-}
-
-.portico-landing.features-app section.hero h2 {
-    font-size: 1.8em;
-    margin: 30px auto 0 auto;
-
-    max-width: 600px;
-    line-height: 1.3;
-}
-
-.portico-landing.features-app section.hero .image {
-    height: 400px;
-    width: 40%;
-    background-color: hsla(0, 0%, 0%, 0.05);
-}
 
 .portico-landing.features-app section.keyboard-shortcuts {
     display: flex;
@@ -3202,10 +3203,10 @@ nav {
 
     .portico-landing.features-app section.hero {
         padding: 50px;
-    }
 
-    .portico-landing.features-app section.hero h1 {
-        font-size: 3em;
+        h1 {
+            font-size: 3em;
+        }
     }
 
     .portico-landing.hello .open-source .flex {
