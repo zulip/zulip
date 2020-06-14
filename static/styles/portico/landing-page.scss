@@ -550,37 +550,36 @@ nav {
     margin: 35px 0px 0px 20px;
 
     z-index: 1;
-}
 
-.portico-landing.features-app section.notifications .feature-list h3 {
-    position: relative;
+    h3 {
+        position: relative;
 
-    margin: 15px 0px 15px 50px;
+        margin: 15px 0px 15px 50px;
 
-    font-size: 1.2em;
-    font-weight: 400;
+        font-size: 1.2em;
+        font-weight: 400;
 
-    color: hsl(0, 0%, 53%);
+        color: hsl(0, 0%, 53%);
 
-    &::before {
-        content: " ";
-        display: block;
-        position: absolute;
+        &::before {
+            content: " ";
+            display: block;
+            position: absolute;
 
-        left: -35px;
-        top: 0px;
-        width: 20px;
-        height: 20px;
+            left: -35px;
+            top: 0px;
+            width: 20px;
+            height: 20px;
 
-        border-radius: 4px;
+            border-radius: 4px;
 
-        background-image: url(/static/images/checkbox-green.svg);
-        background-size: 100% auto;
-        background-position: center;
-        background-repeat: no-repeat;
+            background-image: url(/static/images/checkbox-green.svg);
+            background-size: 100% auto;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
     }
 }
-
 
 .portico-landing.features-app section.notifications .image-block {
     width: 400px;
