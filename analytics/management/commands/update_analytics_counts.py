@@ -71,7 +71,7 @@ class Command(BaseCommand):
         else:
             stats = list(COUNT_STATS.values())
 
-        logger.info(f"Starting updating analytics counts through {fill_to_time}")
+        logger.info("Starting updating analytics counts through %s", fill_to_time)
         if options['verbose']:
             start = time.time()
             last = start
@@ -85,7 +85,7 @@ class Command(BaseCommand):
         if options['verbose']:
             print("Finished updating analytics counts through %s in %.3fs" %
                   (fill_to_time, time.time() - start))
-        logger.info(f"Finished updating analytics counts through {fill_to_time}")
+        logger.info("Finished updating analytics counts through %s", fill_to_time)
 
         if settings.PUSH_NOTIFICATION_BOUNCER_URL and settings.SUBMIT_USAGE_STATISTICS:
             send_analytics_to_remote_server()

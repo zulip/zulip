@@ -243,20 +243,23 @@ class TornadoQueueClient(SimpleQueueClient):
                                   reason: Exception) -> None:
         self._connection_failure_count += 1
         retry_secs = self.CONNECTION_RETRY_SECS
-        message = ("TornadoQueueClient couldn't connect to RabbitMQ, retrying in %d secs..."
-                   % (retry_secs,))
-        if self._connection_failure_count > self.CONNECTION_FAILURES_BEFORE_NOTIFY:
-            self.log.critical(message)
-        else:
-            self.log.warning(message)
+        self.log.log(
+            logging.CRITICAL
+            if self._connection_failure_count > self.CONNECTION_FAILURES_BEFORE_NOTIFY
+            else logging.WARNING,
+            "TornadoQueueClient couldn't connect to RabbitMQ, retrying in %d secs...",
+            retry_secs,
+        )
         ioloop.IOLoop.instance().call_later(retry_secs, self._reconnect)
 
     def _on_connection_closed(self, connection: pika.connection.Connection,
                               reason: Exception) -> None:
         self._connection_failure_count = 1
         retry_secs = self.CONNECTION_RETRY_SECS
-        self.log.warning("TornadoQueueClient lost connection to RabbitMQ, reconnecting in %d secs..."
-                         % (retry_secs,))
+        self.log.warning(
+            "TornadoQueueClient lost connection to RabbitMQ, reconnecting in %d secs...",
+            retry_secs,
+        )
         ioloop.IOLoop.instance().call_later(retry_secs, self._reconnect)
 
     def _on_open(self, connection: pika.connection.Connection) -> None:
