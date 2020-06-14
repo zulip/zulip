@@ -313,8 +313,8 @@ exports.activate = function (raw_operators, opts) {
         });
     }());
 
+    message_scroll.hide_indicators();
     if (select_immediately) {
-        message_scroll.hide_indicators();
         exports.update_selection({
             id_info: id_info,
             select_offset: then_select_offset,
