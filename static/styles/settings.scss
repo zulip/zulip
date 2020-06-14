@@ -1197,6 +1197,10 @@ input[type=checkbox] {
         font-size: 3rem;
     }
 
+    .settings-page-delete-text {
+        top: 90px;
+        right: 40px;
+    }
 }
 
 .avatar-icon-logo-settings {
@@ -1267,11 +1271,6 @@ input[type=checkbox] {
         position: absolute;
         visibility: hidden;
         z-index: 99;
-    }
-
-    #user_avatar_delete {
-        top: 90px;
-        right: 40px;
     }
 
     #realm_icon_delete {
