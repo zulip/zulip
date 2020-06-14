@@ -500,15 +500,15 @@ nav {
 
 .portico-landing.features-app section.messages .features {
     max-width: 500px;
-}
 
-.portico-landing.features-app section.messages .features h2 {
-    margin: 0;
-}
+    h2 {
+        margin: 0;
+    }
 
-.portico-landing.features-app section.messages .features .feature-block {
-    display: block;
-    margin: 30px 0px;
+    .feature-block {
+        display: block;
+        margin: 30px 0px;
+    }
 }
 
 .portico-landing.features-app section.notifications {
@@ -3571,8 +3571,10 @@ nav {
         font-size: 2em;
     }
 
-    .portico-landing.features-app section.messages .features .feature-block {
-        margin: 20px 0px;
+    .portico-landing.features-app section.messages .features {
+        .feature-block {
+            margin: 20px 0px;
+        }
     }
 
     .portico-landing .tour {
