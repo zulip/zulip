@@ -39,6 +39,7 @@ function get_all_emoji_categories() {
         { name: "Travel & Places", icon: "fa-car" },
         { name: "Objects", icon: "fa-lightbulb-o" },
         { name: "Symbols", icon: "fa-hashtag" },
+        { name: "Flags", icon: "fa-flag" },
         { name: "Custom", icon: "fa-cog" },
     ];
 }

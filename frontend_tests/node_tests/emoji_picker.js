@@ -6,7 +6,7 @@ run_test('initialize', () => {
     emoji_picker.initialize();
 
     const complete_emoji_catalog = _.sortBy(emoji_picker.complete_emoji_catalog, 'name');
-    assert.equal(complete_emoji_catalog.length, 10);
+    assert.equal(complete_emoji_catalog.length, 11);
     assert.equal(emoji.emojis_by_name.size, 1037);
 
     function assert_emoji_category(ele, icon, num) {
@@ -30,6 +30,7 @@ run_test('initialize', () => {
     assert_emoji_category(complete_emoji_catalog.pop(), 'fa-thumbs-o-up', 102);
     assert_emoji_category(complete_emoji_catalog.pop(), 'fa-lightbulb-o', 191);
     assert_emoji_category(complete_emoji_catalog.pop(), 'fa-cutlery', 92);
+    assert_emoji_category(complete_emoji_catalog.pop(), 'fa-flag', 5);
     assert_emoji_category(complete_emoji_catalog.pop(), 'fa-cog', 1);
     assert_emoji_category(complete_emoji_catalog.pop(), 'fa-leaf', 104);
     assert_emoji_category(complete_emoji_catalog.pop(), 'fa-soccer-ball-o', 63);
