@@ -299,13 +299,15 @@ make the following changes in two configuration files.
         ProxyPassReverseCookieDomain  127.0.0.1  zulip.example.com
       </Location>
 
-      SSLProtocol TLSv1.2
       SSLEngine on
       SSLProxyEngine on
       SSLCertificateFile /etc/letsencrypt/live/zulip.example.com/fullchain.pem
       SSLCertificateKeyFile /etc/letsencrypt/live/zulip.example.com/privkey.pem
-      SSLCipherSuite "EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA256:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EDH+aRSA+AESGCM:EDH+aRSA+SHA256:EDH+aRSA:EECDH:!aNULL:!eNULL:!MEDIUM:!LOW:!3DES:!MD5:!
-      SSLHonorCipherOrder on
+      SSLOpenSSLConfCmd DHParameters "/etc/nginx/dhparam.pem"
+      SSLProtocol all -SSLv3 -TLSv1 -TLSv1.1
+      SSLCipherSuite ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384
+      SSLHonorCipherOrder off
+      SSLSessionTickets off
       Header set Strict-Transport-Security "max-age=31536000"
     </VirtualHost>
     ```
