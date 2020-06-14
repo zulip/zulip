@@ -148,8 +148,7 @@ exports.activate = function (raw_operators, opts) {
     const operators = filter.operators();
 
     update_narrow_title(filter);
-    notifications.hide_history_limit_notice();
-    notifications.hide_end_of_results_notice();
+    message_scroll.hide_top_of_narrow_notices();
     message_scroll.hide_indicators();
 
     blueslip.debug("Narrowed", {operators: operators.map(e => e.operator),
@@ -754,8 +753,8 @@ function handle_post_narrow_deactivate_processes() {
     tab_bar.initialize();
     exports.narrow_title = "home";
     notifications.redraw_title();
-    notifications.update_top_of_narrow_notices(home_msg_list);
-    notifications.hide_end_of_results_notice();
+    message_scroll.hide_top_of_narrow_notices();
+    message_scroll.update_top_of_narrow_notices(home_msg_list);
 }
 
 exports.deactivate = function () {

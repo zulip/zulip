@@ -30,13 +30,11 @@ set_global('message_scroll', {
     hide_loading_older: noop,
     show_loading_newer: noop,
     hide_loading_newer: noop,
+    update_top_of_narrow_notices: () => {},
 });
 set_global('message_util', {});
 set_global('message_store', {});
 set_global('narrow_state', {});
-set_global('notifications', {
-    update_top_of_narrow_notices: () => {},
-});
 set_global('pm_list', {});
 set_global('server_events', {});
 set_global('stream_list', {
