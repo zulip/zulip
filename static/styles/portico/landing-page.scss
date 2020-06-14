@@ -344,18 +344,6 @@ nav {
 }
 
 /* -- main panel styling -- */
-.portico-landing {
-    position: relative;
-
-    padding-top: 120px;
-
-    z-index: 1;
-}
-
-.portico-landing.show {
-    opacity: 1;
-}
-
 .main {
     width: calc(100% - 200px - 20px);
     margin: 0 auto;
@@ -374,6 +362,18 @@ nav {
 }
 
 /* -- features page css -- */
+.portico-landing {
+    position: relative;
+
+    padding-top: 120px;
+
+    z-index: 1;
+}
+
+.portico-landing.show {
+    opacity: 1;
+}
+
 .portico-landing.features-app {
     position: relative;
     overflow-x: hidden;
