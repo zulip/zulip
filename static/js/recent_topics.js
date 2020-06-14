@@ -175,8 +175,8 @@ function filters_should_hide_topic(topic_data) {
 
     const topic_muted = !!muting.is_topic_muted(msg.stream_id, msg.topic);
     const stream_muted = stream_data.is_muted(msg.stream_id);
-    const include_muted = topic_muted || stream_muted;
-    if (include_muted && !filters.has('muted')) {
+    const muted = topic_muted || stream_muted;
+    if (muted && !filters.has('include_muted')) {
         return true;
     }
 
@@ -267,7 +267,7 @@ exports.update_filters_view = function () {
     const rendered_filters = render_recent_topics_filters({
         filter_participated: filters.has('participated'),
         filter_unread: filters.has('unread'),
-        filter_muted: filters.has('muted'),
+        filter_muted: filters.has('include_muted'),
     });
     $("#recent_filters_group").html(rendered_filters);
     show_selected_filters();
@@ -306,7 +306,7 @@ exports.complete_rerender = function () {
     const rendered_body = render_recent_topics_body({
         filter_participated: filters.has('participated'),
         filter_unread: filters.has('unread'),
-        filter_muted: filters.has('muted'),
+        filter_muted: filters.has('include_muted'),
         search_val: $("#recent_topics_search").val() || "",
     });
     $('#recent_topics_table').html(rendered_body);
