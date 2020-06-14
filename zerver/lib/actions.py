@@ -3613,6 +3613,20 @@ def do_change_stream_description(stream: Stream, new_description: str) -> None:
     )
     send_event(stream.realm, event, can_access_stream_user_ids(stream))
 
+def do_change_stream_message_retention_days(stream: Stream, message_retention_days: Optional[int]=None) -> None:
+    stream.message_retention_days = message_retention_days
+    stream.save(update_fields=['message_retention_days'])
+
+    event = dict(
+        op="update",
+        type="stream",
+        property="message_retention_days",
+        value=message_retention_days,
+        stream_id=stream.id,
+        name=stream.name,
+    )
+    send_event(stream.realm, event, can_access_stream_user_ids(stream))
+
 def do_create_realm(string_id: str, name: str,
                     emails_restricted_to_domains: Optional[bool]=None) -> Realm:
     if Realm.objects.filter(string_id=string_id).exists():

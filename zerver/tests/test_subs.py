@@ -21,6 +21,7 @@ from zerver.lib.actions import (
     do_add_streams_to_default_stream_group,
     do_change_default_stream_group_description,
     do_change_default_stream_group_name,
+    do_change_plan_type,
     do_change_stream_post_policy,
     do_change_user_role,
     do_create_default_stream_group,
@@ -146,7 +147,8 @@ class TestCreateStreams(ZulipTestCase):
             [{"name": stream_name,
               "description": stream_description,
               "invite_only": True,
-              "stream_post_policy": Stream.STREAM_POST_POLICY_ADMINS}
+              "stream_post_policy": Stream.STREAM_POST_POLICY_ADMINS,
+              "message_retention_days": -1}
              for (stream_name, stream_description) in zip(stream_names, stream_descriptions)])
 
         self.assertEqual(len(new_streams), 3)
@@ -159,6 +161,7 @@ class TestCreateStreams(ZulipTestCase):
         for stream in new_streams:
             self.assertTrue(stream.invite_only)
             self.assertTrue(stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS)
+            self.assertTrue(stream.message_retention_days == -1)
 
         new_streams, existing_streams = create_streams_if_needed(
             realm,
@@ -855,6 +858,159 @@ class StreamAdminTest(ZulipTestCase):
             self.assert_json_success(result)
             stream = get_stream('stream_name1', user_profile.realm)
             self.assertEqual(stream.stream_post_policy, policy)
+
+    def test_change_stream_message_retention_days(self) -> None:
+        user_profile = self.example_user('desdemona')
+        self.login_user(user_profile)
+        realm = user_profile.realm
+        do_change_plan_type(realm, Realm.LIMITED)
+        stream = self.subscribe(user_profile, 'stream_name1')
+
+        result = self.client_patch(f'/json/streams/{stream.id}',
+                                   {'message_retention_days': ujson.dumps(2)})
+        self.assert_json_error(result, "Available on Zulip Standard. Upgrade to access.")
+
+        do_change_plan_type(realm, Realm.SELF_HOSTED)
+        events: List[Mapping[str, Any]] = []
+        with tornado_redirected_to_list(events):
+            result = self.client_patch(f'/json/streams/{stream.id}',
+                                       {'message_retention_days': ujson.dumps(2)})
+        self.assert_json_success(result)
+
+        event = events[0]['event']
+        self.assertEqual(event, dict(
+            op='update',
+            type='stream',
+            property='message_retention_days',
+            value=2,
+            stream_id=stream.id,
+            name='stream_name1',
+        ))
+        notified_user_ids = set(events[0]['users'])
+        stream = get_stream('stream_name1', realm)
+
+        self.assertEqual(notified_user_ids, set(active_non_guest_user_ids(realm.id)))
+        self.assertIn(user_profile.id, notified_user_ids)
+        self.assertIn(self.example_user('prospero').id, notified_user_ids)
+        self.assertNotIn(self.example_user('polonius').id, notified_user_ids)
+        self.assertEqual(stream.message_retention_days, 2)
+
+        events = []
+        with tornado_redirected_to_list(events):
+            result = self.client_patch(f'/json/streams/{stream.id}',
+                                       {'message_retention_days': ujson.dumps("forever")})
+        self.assert_json_success(result)
+        event = events[0]['event']
+        self.assertEqual(event, dict(
+            op='update',
+            type='stream',
+            property='message_retention_days',
+            value=-1,
+            stream_id=stream.id,
+            name='stream_name1',
+        ))
+        self.assert_json_success(result)
+        stream = get_stream('stream_name1', realm)
+        self.assertEqual(stream.message_retention_days, -1)
+
+        events = []
+        with tornado_redirected_to_list(events):
+            result = self.client_patch(f'/json/streams/{stream.id}',
+                                       {'message_retention_days': ujson.dumps("realm_default")})
+        self.assert_json_success(result)
+        event = events[0]['event']
+        self.assertEqual(event, dict(
+            op='update',
+            type='stream',
+            property='message_retention_days',
+            value=None,
+            stream_id=stream.id,
+            name='stream_name1',
+        ))
+        stream = get_stream('stream_name1', realm)
+        self.assertEqual(stream.message_retention_days, None)
+
+        result = self.client_patch(f'/json/streams/{stream.id}',
+                                   {'message_retention_days': ujson.dumps("invalid")})
+        self.assert_json_error(result, "Bad value for 'message_retention_days': invalid")
+
+        result = self.client_patch(f'/json/streams/{stream.id}',
+                                   {'message_retention_days': ujson.dumps(-1)})
+        self.assert_json_error(result, "Bad value for 'message_retention_days': -1")
+
+    def test_change_stream_message_retention_days_requires_realm_owner(self) -> None:
+        user_profile = self.example_user('iago')
+        self.login_user(user_profile)
+        realm = user_profile.realm
+        stream = self.subscribe(user_profile, 'stream_name1')
+
+        result = self.client_patch(f'/json/streams/{stream.id}',
+                                   {'message_retention_days': ujson.dumps(2)})
+        self.assert_json_error(result, "Must be an organization owner")
+
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER)
+        result = self.client_patch(f'/json/streams/{stream.id}',
+                                   {'message_retention_days': ujson.dumps(2)})
+        self.assert_json_success(result)
+        stream = get_stream('stream_name1', realm)
+        self.assertEqual(stream.message_retention_days, 2)
+
+    def test_stream_message_retention_days_on_stream_creation(self) -> None:
+        """
+        Only admins can create streams with message_retention_days
+        with value other than None.
+        """
+        admin = self.example_user('iago')
+
+        streams_raw = [{
+            'name': 'new_stream',
+            'message_retention_days': 10,
+        }]
+        with self.assertRaisesRegex(JsonableError, "User cannot create stream with this settings."):
+            list_to_streams(streams_raw, admin, autocreate=True)
+
+        streams_raw = [{
+            'name': 'new_stream',
+            'message_retention_days': -1,
+        }]
+        with self.assertRaisesRegex(JsonableError, "User cannot create stream with this settings."):
+            list_to_streams(streams_raw, admin, autocreate=True)
+
+        streams_raw = [{
+            'name': 'new_stream',
+            'message_retention_days': None,
+        }]
+        result = list_to_streams(streams_raw, admin, autocreate=True)
+        self.assert_length(result[0], 0)
+        self.assert_length(result[1], 1)
+        self.assertEqual(result[1][0].name, 'new_stream')
+        self.assertEqual(result[1][0].message_retention_days, None)
+
+        owner = self.example_user('desdemona')
+        realm = owner.realm
+        streams_raw = [
+            {'name': 'new_stream1',
+             'message_retention_days': 10},
+            {'name': 'new_stream2',
+             'message_retention_days': -1},
+            {'name': 'new_stream3'},
+        ]
+
+        do_change_plan_type(realm, Realm.LIMITED)
+        with self.assertRaisesRegex(JsonableError, "Available on Zulip Standard. Upgrade to access."):
+            list_to_streams(streams_raw, owner, autocreate=True)
+
+
+        do_change_plan_type(realm, Realm.SELF_HOSTED)
+        result = list_to_streams(streams_raw, owner, autocreate=True)
+        self.assert_length(result[0], 0)
+        self.assert_length(result[1], 3)
+        self.assertEqual(result[1][0].name, 'new_stream1')
+        self.assertEqual(result[1][0].message_retention_days, 10)
+        self.assertEqual(result[1][1].name, 'new_stream2')
+        self.assertEqual(result[1][1].message_retention_days, -1)
+        self.assertEqual(result[1][2].name, 'new_stream3')
+        self.assertEqual(result[1][2].message_retention_days, None)
 
     def set_up_stream_for_deletion(self, stream_name: str, invite_only: bool=False,
                                    subscribed: bool=True) -> Stream:

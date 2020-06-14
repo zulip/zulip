@@ -2337,6 +2337,19 @@ paths:
 
                               **Changes**: New in Zulip 2.2, replacing the previous
                               `is_announcement_only` boolean.
+                          message_retention_days:
+                            type: integer
+                            nullable: true
+                            description: |
+                              Number of days that messages sent to this stream will be stored
+                              before being automatically deleted by the [message retention
+                              policy](/help/message-retention-policy).  There are two special values:
+
+                              * `null`, the default, means the stream will inherit the organization
+                                level setting.
+                              * `-1` encodes retaining messages in this stream forever.
+
+                              **Changes**: New in Zulip 2.2 (feature level 17).
                           history_public_to_subscribers:
                             type: boolean
                             description: |
@@ -2463,6 +2476,7 @@ paths:
         example: false
       - $ref: '#/components/parameters/HistoryPublicToSubscribers'
       - $ref: '#/components/parameters/StreamPostPolicy'
+      - $ref: '#/components/parameters/MessageRetentionDays'
       - name: announce
         in: query
         description: |
@@ -3813,6 +3827,19 @@ paths:
 
                               **Changes**: New in Zulip 2.2, replacing the previous
                               `is_announcement_only` boolean.
+                          message_retention_days:
+                            type: integer
+                            nullable: true
+                            description: |
+                              Number of days that messages sent to this stream will be stored
+                              before being automatically deleted by the [message retention
+                              policy](/help/message-retention-policy).  There are two special values:
+
+                              * `null`, the default, means the stream will inherit the organization
+                                level setting.
+                              * `-1` encodes retaining messages in this stream forever.
+
+                              **Changes**: New in Zulip 2.2 (feature level 17).
                           history_public_to_subscribers:
                             type: boolean
                             description: |
@@ -3988,6 +4015,7 @@ paths:
         required: false
       - $ref: '#/components/parameters/StreamPostPolicy'
       - $ref: '#/components/parameters/HistoryPublicToSubscribers'
+      - $ref: '#/components/parameters/MessageRetentionDays'
       responses:
         '200':
           description: Success.
@@ -4974,4 +5002,23 @@ components:
       schema:
         type: string
       example: '1f419'
+      required: false
+    MessageRetentionDays:
+      name: message_retention_days
+      in: query
+      description: |
+        Number of days that messages sent to this stream will be stored
+        before being automatically deleted by the [message retention
+        policy](/help/message-retention-policy).  Two special string format
+        values are supported:
+
+        * "realm_default" => Return to the organization-level setting.
+        * "forever" => Retain messages forever.
+
+        **Changes**: New in Zulip 2.2 (feature level 17).
+      schema:
+        oneOf:
+          - type: string
+          - type: integer
+      example: '20'
       required: false
