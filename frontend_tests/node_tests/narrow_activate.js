@@ -86,7 +86,8 @@ function test_helper() {
     stub('unread_ops', 'process_visible');
     stub('compose', 'update_closed_compose_buttons_for_stream');
     stub('compose', 'update_closed_compose_buttons_for_private');
-    stub('notifications', 'hide_history_limit_message');
+    stub('notifications', 'hide_history_limit_notice');
+    stub('notifications', 'hide_end_of_results_notice');
 
     return {
         clear: () => {
@@ -200,7 +201,8 @@ run_test('basics', () => {
     helper.assert_events([
         'notifications.clear_compose_notifications',
         'notifications.redraw_title',
-        'notifications.hide_history_limit_message',
+        'notifications.hide_history_limit_notice',
+        'notifications.hide_end_of_results_notice',
         'ui_util.change_tab_to',
         'message_scroll.hide_indicators',
         'unread_ops.process_visible',

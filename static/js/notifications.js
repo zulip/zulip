@@ -171,18 +171,33 @@ exports.redraw_title = function () {
     }
 };
 
-exports.show_history_limit_message = function () {
+exports.show_history_limit_notice = function () {
     $(".top-messages-logo").hide();
     $(".history-limited-box").show();
     narrow.hide_empty_narrow_message();
 };
 
-exports.hide_history_limit_message = function () {
+exports.hide_history_limit_notice = function () {
     $(".top-messages-logo").show();
     $(".history-limited-box").hide();
 };
 
-exports.hide_or_show_history_limit_message = function (msg_list) {
+exports.hide_end_of_results_notice = function () {
+    $(".all-messages-search-caution").hide();
+};
+
+exports.show_end_of_results_notice = function () {
+    $(".all-messages-search-caution").show();
+    // Set the link to point to this search with streams:public added.
+    // It's a bit hacky to use the href, but
+    // !filter.includes_full_stream_history() implies streams:public
+    // wasn't already present.
+    $(".all-messages-search-caution a.search-shared-history").attr(
+        "href", window.location.hash.replace("#narrow/", "#narrow/streams/public/")
+    );
+};
+
+exports.update_top_of_narrow_notices = function (msg_list) {
     if (msg_list !== current_msg_list) {
         return;
     }
@@ -199,21 +214,14 @@ exports.hide_or_show_history_limit_message = function (msg_list) {
         if (!filter.contains_only_private_messages() &&
             !filter.includes_full_stream_history() &&
             !filter.is_personal_filter()) {
-            $(".all-messages-search-caution").show();
-            // Set the link to point to this search with streams:public added.
-            // It's a bit hacky to use the href, but
-            // !filter.includes_full_stream_history() implies streams:public
-            // wasn't already present.
-            $(".all-messages-search-caution a.search-shared-history").attr(
-                "href", window.location.hash.replace("#narrow/", "#narrow/streams/public/")
-            );
+            exports.show_end_of_results_notice();
         }
     }
 
     if (msg_list.data.fetch_status.history_limited()) {
-        exports.show_history_limit_message();
+        exports.show_history_limit_notice();
     } else {
-        exports.hide_history_limit_message();
+        exports.hide_history_limit_notice();
     }
 };
 

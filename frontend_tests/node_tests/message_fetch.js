@@ -33,7 +33,7 @@ set_global('message_util', {});
 set_global('message_store', {});
 set_global('narrow_state', {});
 set_global('notifications', {
-    hide_or_show_history_limit_message: () => {},
+    update_top_of_narrow_notices: () => {},
 });
 set_global('pm_list', {});
 set_global('server_events', {});
