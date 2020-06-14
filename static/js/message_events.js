@@ -167,62 +167,6 @@ exports.update_messages = function update_messages(events) {
             }
 
             const current_filter = narrow_state.filter();
-            if (going_forward_change) {
-                // This logic is a bit awkward.  What we're trying to
-                // accomplish is two things:
-                //
-                // * If we're currently narrowed to a topic that was just moved,
-                //   renarrow to the new location.
-                // * We determine whether enough of the topic was moved to justify
-                //   renarrowing by checking if the currently selected message is moved.
-                //
-                // Corner cases around only moving some messages in a topic
-                // need to be thought about carefully when making changes.
-                //
-                // Code further down takes care of the actual rerendering of
-                // messages within a narrow.
-                const current_id = current_msg_list.selected_id();
-                const selection_changed_topic = event.message_ids.includes(current_id);
-                if (selection_changed_topic) {
-                    if (current_filter && current_filter.has_topic(stream_name, orig_topic)) {
-                        let new_filter = current_filter;
-                        if (new_filter && stream_changed) {
-                            // TODO: This logic doesn't handle the
-                            // case where we're a guest user and the
-                            // message moves to a stream we cannot
-                            // access, which would cause the
-                            // stream_data lookup here to fail.
-                            //
-                            // The fix is likely somewhat involved, so punting for now.
-                            const new_stream_name = stream_data.get_sub_by_id(new_stream_id).name;
-                            new_filter = new_filter.filter_with_new_params({
-                                operator: 'stream',
-                                operand: new_stream_name,
-                            });
-                            changed_narrow = true;
-                        }
-
-                        if (new_filter && topic_edited) {
-                            new_filter = new_filter.filter_with_new_params({
-                                operator: 'topic',
-                                operand: new_topic,
-                            });
-                            changed_narrow = true;
-                        }
-
-                        if (changed_narrow) {
-                            const operators = new_filter.operators();
-                            const opts = {
-                                trigger: 'stream/topic change',
-                                then_select_id: current_id,
-                            };
-                            narrow.activate(operators, opts);
-                            changed_narrow = true;
-                        }
-                    }
-                }
-            }
-
             const messages_to_rerender = [];
             for (const id of event.message_ids) {
                 const msg = message_store.get(id);
@@ -273,6 +217,64 @@ exports.update_messages = function update_messages(events) {
                 }
             }
             current_msg_list.remove_and_rerender(messages_to_rerender);
+
+            if (going_forward_change) {
+                // This logic is a bit awkward.  What we're trying to
+                // accomplish is two things:
+                //
+                // * If we're currently narrowed to a topic that was just moved,
+                //   renarrow to the new location.
+                // * We determine whether enough of the topic was moved to justify
+                //   renarrowing by checking if the currently selected message is moved.
+                //
+                // Corner cases around only moving some messages in a topic
+                // need to be thought about carefully when making changes.
+                //
+                // Code further down takes care of the actual rerendering of
+                // messages within a narrow.
+                const current_id = current_msg_list.selected_id();
+                const selection_changed_topic = event.message_ids.includes(current_id);
+                if (selection_changed_topic) {
+                    if (current_filter && current_filter.has_topic(stream_name, orig_topic)) {
+                        let new_filter = current_filter;
+                        if (new_filter && stream_changed) {
+                            // TODO: This logic doesn't handle the
+                            // case where we're a guest user and the
+                            // message moves to a stream we cannot
+                            // access, which would cause the
+                            // stream_data lookup here to fail.
+                            //
+                            // The fix is likely somewhat involved, so punting for now.
+                            const new_stream_name = stream_data.get_sub_by_id(new_stream_id).name;
+                            new_filter = new_filter.filter_with_new_params({
+                                operator: 'stream',
+                                operand: new_stream_name,
+                            });
+                            changed_narrow = true;
+                        }
+
+                        if (new_filter && topic_edited) {
+                            new_filter = new_filter.filter_with_new_params({
+                                operator: 'topic',
+                                operand: new_topic,
+                            });
+                            changed_narrow = true;
+                        }
+                        // NOTE: We should always be changing narrows after we finish
+                        //       updating the local data and UI. This avoids conflict
+                        //       with data fetched from the server (which is already updated)
+                        //       when we move to new narrow and what data is locally available.
+                        if (changed_narrow) {
+                            const operators = new_filter.operators();
+                            const opts = {
+                                trigger: 'stream/topic change',
+                                then_select_id: current_id,
+                            };
+                            narrow.activate(operators, opts);
+                        }
+                    }
+                }
+            }
         }
 
         if (event.orig_content !== undefined) {
