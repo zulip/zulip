@@ -34,6 +34,7 @@ from zerver.openapi.openapi import (
     get_openapi_fixture,
     get_openapi_parameters,
     get_openapi_paths,
+    match_against_openapi_regex,
     openapi_spec,
     to_python_type,
     validate_against_openapi_schema,
@@ -1010,3 +1011,25 @@ class OpenAPIAttributesTest(ZulipTestCase):
                         continue
                     assert(validate_against_openapi_schema(response_schema['example'], path,
                                                            method, response))
+
+class OpenAPIRegexTest(ZulipTestCase):
+    def test_regex(self) -> None:
+        """
+        Calls a few documented  and undocumented endpoints and checks whether they
+        find a match or not.
+        """
+        # Some of the undocumentd endpoints which are very similar to
+        # some of the documented endpoints.
+        assert(match_against_openapi_regex('/users/me/presence') is None)
+        assert(match_against_openapi_regex('/users/me/subscriptions/23') is None)
+        assert(match_against_openapi_regex('/users/iago/subscriptions/23') is None)
+        assert(match_against_openapi_regex('/messages/matches_narrow') is None)
+        # Making sure documented endpoints are matched correctly.
+        assert(match_against_openapi_regex('/users/23/subscriptions/21') ==
+               '/users/{user_id}/subscriptions/{stream_id}')
+        assert(match_against_openapi_regex('/users/iago@zulip.com/presence') ==
+               '/users/{email}/presence')
+        assert(match_against_openapi_regex('/messages/23') ==
+               '/messages/{message_id}')
+        assert(match_against_openapi_regex('/realm/emoji/realm_emoji_1') ==
+               '/realm/emoji/{emoji_name}')
