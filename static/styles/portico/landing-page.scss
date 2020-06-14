@@ -521,6 +521,8 @@ nav {
     border-radius: 10px;
 
     box-shadow: 10px 20px 80px hsla(0, 0%, 0%, 0.15);
+    margin: 100px auto 150px auto;
+    text-align: center;
 }
 
 .portico-landing.features-app section.notifications .envelope {
@@ -548,11 +550,6 @@ nav {
     margin: 35px 0px 0px 20px;
 
     z-index: 1;
-}
-
-.portico-landing.features-app section.notifications {
-    margin: 100px auto 150px auto;
-    text-align: center;
 }
 
 .portico-landing.features-app section.notifications .feature-list h3 {
