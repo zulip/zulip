@@ -170,6 +170,56 @@ exports.update_messages = function update_messages(events) {
             }
 
             const current_filter = narrow_state.filter();
+            const messages_to_rerender = [];
+            for (const id of event.message_ids) {
+                const msg = message_store.get(id);
+                if (msg === undefined) {
+                    continue;
+                }
+
+                // Remove the recent topics entry for the old topics;
+                // must be called before we call set_message_topic.
+                stream_topic_history.remove_message({
+                    stream_id: msg.stream_id,
+                    topic_name: msg.topic,
+                });
+
+                // Update the unread counts; again, this must be called
+                // before we modify the topic field on the message.
+                unread.update_unread_topics(msg, event);
+
+                // Now edit the attributes of our message object.
+                if (topic_edited) {
+                    msg.topic = new_topic;
+                    msg.topic_links = event.topic_links;
+                }
+                if (stream_changed) {
+                    const new_stream_name = stream_data.get_sub_by_id(new_stream_id).name;
+                    msg.stream_id = event.new_stream_id;
+                    msg.stream = new_stream_name;
+                    msg.display_recipient = new_stream_name;
+                }
+
+                // Add the recent topics entry for the new stream/topics.
+                stream_topic_history.add_message({
+                    stream_id: msg.stream_id,
+                    topic_name: msg.topic,
+                    message_id: msg.id,
+                });
+
+                if (current_filter && current_filter.can_apply_locally() &&
+                    !current_filter.predicate()(msg)) {
+                    // This topic edit makes this message leave the
+                    // current narrow, which is not being changed as
+                    // part of processing this event.  So we should
+                    // remove the message from the current/narrowed message list.
+                    const cur_row = current_msg_list.get_row(id);
+                    if (cur_row !== undefined) {
+                        messages_to_rerender.push({id: id});
+                    }
+                }
+            }
+
             if (going_forward_change) {
                 // This logic is a bit awkward.  What we're trying to
                 // accomplish is two things:
@@ -210,7 +260,10 @@ exports.update_messages = function update_messages(events) {
                             });
                             changed_narrow = true;
                         }
-
+                        // NOTE: We should always be changing narrows after we finish
+                        //       updating the local data and UI. This avoids conflict
+                        //       with data fetched from the server (which is already updated)
+                        //       when we move to new narrow and what data is locally available.
                         if (changed_narrow) {
                             const operators = new_filter.operators();
                             const opts = {
@@ -218,62 +271,23 @@ exports.update_messages = function update_messages(events) {
                                 then_select_id: current_selected_id,
                             };
                             narrow.activate(operators, opts);
-                            changed_narrow = true;
                         }
                     }
                 }
             }
 
-            const messages_to_rerender = [];
-            for (const id of event.message_ids) {
-                const msg = message_store.get(id);
-                if (msg === undefined) {
-                    continue;
-                }
-
-                // Remove the recent topics entry for the old topics;
-                // must be called before we call set_message_topic.
-                stream_topic_history.remove_message({
-                    stream_id: msg.stream_id,
-                    topic_name: msg.topic,
-                });
-
-                // Update the unread counts; again, this must be called
-                // before we modify the topic field on the message.
-                unread.update_unread_topics(msg, event);
-
-                // Now edit the attributes of our message object.
-                if (topic_edited) {
-                    msg.topic = new_topic;
-                    msg.topic_links = event.topic_links;
-                }
-                if (stream_changed) {
-                    const new_stream_name = stream_data.get_sub_by_id(new_stream_id).name;
-                    msg.stream_id = event.new_stream_id;
-                    msg.stream = new_stream_name;
-                    msg.display_recipient = new_stream_name;
-                }
-
-                // Add the recent topics entry for the new stream/topics.
-                stream_topic_history.add_message({
-                    stream_id: msg.stream_id,
-                    topic_name: msg.topic,
-                    message_id: msg.id,
-                });
-
-                if (!changed_narrow && current_filter && current_filter.can_apply_locally() &&
-                    !current_filter.predicate()(msg)) {
-                    // This topic edit makes this message leave the
-                    // current narrow, which is not being changed as
-                    // part of processing this event.  So we should
-                    // remove the message from the current/narrowed message list.
-                    const cur_row = current_msg_list.get_row(id);
-                    if (cur_row !== undefined) {
-                        messages_to_rerender.push({id: id});
-                    }
-                }
+            // Ensure messages that are no longer part of this narrow
+            // are deleted from the message_list.
+            //
+            // Even if we end up renarrowing, the message_list_data
+            // part of this is important for non-rendering message
+            // lists, so we do this unconditionally.  Most correctly,
+            // this should be a loop over all valid message_list_data
+            // objects, without the rerender (which will naturally
+            // happen in the following code).
+            if (!changed_narrow && messages_to_rerender.length > 0) {
+                current_msg_list.remove_and_rerender(messages_to_rerender);
             }
-            current_msg_list.remove_and_rerender(messages_to_rerender);
         }
 
         if (event.orig_content !== undefined) {
