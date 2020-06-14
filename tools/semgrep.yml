@@ -116,3 +116,11 @@ rules:
               ...
     severity: ERROR
     message: "Guard mutable default with read-only type (Sequence, Mapping, AbstractSet)"
+
+  - id: percent-formatting
+    languages: [python]
+    pattern-either:
+      - pattern: '"..." % ...'
+      - pattern: '("...") % ...'
+    severity: ERROR
+    message: "Prefer f-strings or .format for string formatting"
