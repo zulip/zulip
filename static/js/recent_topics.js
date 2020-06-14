@@ -164,20 +164,23 @@ function topic_in_search_results(keyword, stream, topic) {
 function filters_should_hide_topic(topic_data) {
     const msg = message_store.get(topic_data.last_msg_id);
 
-    const unreadCount = unread.unread_topic_counter.get(msg.stream_id, msg.topic);
-    if (unreadCount === 0 && filters.has('unread')) {
-        return true;
+    if (filters.has('unread')) {
+        const unreadCount = unread.unread_topic_counter.get(msg.stream_id, msg.topic);
+        if (unreadCount === 0) {
+            return true;
+        }
     }
 
     if (!topic_data.participated && filters.has('participated')) {
         return true;
     }
 
-    const topic_muted = !!muting.is_topic_muted(msg.stream_id, msg.topic);
-    const stream_muted = stream_data.is_muted(msg.stream_id);
-    const muted = topic_muted || stream_muted;
-    if (muted && !filters.has('include_muted')) {
-        return true;
+    if (!filters.has('include_muted')) {
+        const topic_muted = !!muting.is_topic_muted(msg.stream_id, msg.topic);
+        const stream_muted = stream_data.is_muted(msg.stream_id);
+        if (topic_muted || stream_muted) {
+            return true;
+        }
     }
 
     const search_keyword = $("#recent_topics_search").val();
