@@ -635,12 +635,14 @@ nav {
     color: inherit;
 }
 
-.portico-landing.features-app section a.feature-block:hover {
-    box-shadow: 0px 3px 10px hsl(0, 0%, 75%);
-}
+.portico-landing.features-app section a.feature-block {
+    &:hover {
+        box-shadow: 0px 3px 10px hsl(0, 0%, 75%);
+    }
 
-.portico-landing.features-app section a.feature-block:active {
-    box-shadow: 0px 3px 10px hsl(0, 0%, 50%);
+    &:active {
+        box-shadow: 0px 3px 10px hsl(0, 0%, 50%);
+    }
 }
 
 .portico-landing.features-app .feature-block h3 {
