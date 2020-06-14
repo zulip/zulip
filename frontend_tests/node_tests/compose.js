@@ -943,10 +943,6 @@ run_test('initialize', () => {
             id: 1,
             name: "Jitsi Meet",
         },
-        google_hangouts: {
-            id: 2,
-            name: "Google Hangouts",
-        },
         zoom: {
             id: 3,
             name: "Zoom",
@@ -1448,15 +1444,6 @@ run_test('on_events', () => {
         assert(!called);
 
         page_params.realm_video_chat_provider =
-            page_params.realm_available_video_chat_providers.google_hangouts.id;
-        page_params.realm_google_hangouts_domain = 'zulip';
-
-        handler(ev);
-
-        video_link_regex = /\[Click to join video call\]\(https:\/\/hangouts.google.com\/hangouts\/\_\/zulip\/\d{15}\)/;
-        assert(video_link_regex.test(syntax_to_insert));
-
-        page_params.realm_video_chat_provider =
             page_params.realm_available_video_chat_providers.zoom.id;
 
         window.open = function (url) {
@@ -1733,13 +1720,6 @@ run_test('test_video_chat_button_toggle', () => {
     reset_jquery();
     stub_out_video_calls();
     page_params.jitsi_server_url = 'https://meet.jit.si';
-    compose.initialize();
-    assert.equal($("#below-compose-content .video_link").visible(), true);
-
-    reset_jquery();
-    stub_out_video_calls();
-    page_params.realm_video_chat_provider =
-        page_params.realm_available_video_chat_providers.google_hangouts.id;
     compose.initialize();
     assert.equal($("#below-compose-content .video_link").visible(), true);
 });

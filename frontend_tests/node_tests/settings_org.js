@@ -755,10 +755,6 @@ run_test('set_up', () => {
             id: 1,
             name: "Jitsi Meet",
         },
-        google_hangouts: {
-            id: 2,
-            name: "Google Hangouts",
-        },
         zoom: {
             id: 3,
             name: "Zoom",

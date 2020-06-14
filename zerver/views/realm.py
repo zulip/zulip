@@ -19,7 +19,6 @@ from zerver.lib.actions import (
     do_set_realm_property,
     do_set_realm_signup_notifications_stream,
 )
-from zerver.lib.domains import validate_domain
 from zerver.lib.exceptions import OrganizationOwnerRequired
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.request import REQ, JsonableError, has_request_variables
@@ -85,7 +84,6 @@ def update_realm(
             Realm.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None),
         default_twenty_four_hour_time: Optional[bool]=REQ(validator=check_bool, default=None),
         video_chat_provider: Optional[int]=REQ(validator=check_int, default=None),
-        google_hangouts_domain: Optional[str]=REQ(validator=check_string, default=None),
         default_code_block_language: Optional[str]=REQ(validator=check_string, default=None),
         digest_weekday: Optional[int]=REQ(validator=check_int_in(Realm.DIGEST_WEEKDAY_VALUES), default=None),
 ) -> HttpResponse:
@@ -107,11 +105,6 @@ def update_realm(
     if (video_chat_provider is not None and
             video_chat_provider not in {p['id'] for p in Realm.VIDEO_CHAT_PROVIDERS.values()}):
         return json_error(_("Invalid video_chat_provider {}").format(video_chat_provider))
-    if video_chat_provider == Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['id']:
-        try:
-            validate_domain(google_hangouts_domain)
-        except ValidationError as e:
-            return json_error(_('Invalid domain: {}').format(e.messages[0]))
 
     if message_retention_days is not None:
         if not user_profile.is_realm_owner:

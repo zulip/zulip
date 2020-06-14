@@ -168,7 +168,7 @@ def clear_supported_auth_backends_cache() -> None:
 class Realm(models.Model):
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_SUBDOMAIN_LENGTH = 40
-    MAX_GOOGLE_HANGOUTS_DOMAIN_LENGTH = 255  # This is just the maximum domain length by RFC
+
     INVITES_STANDARD_REALM_DAILY_MAX = 3000
     MESSAGE_VISIBILITY_LIMITED = 10000
     AUTHENTICATION_FLAGS = ['Google', 'Email', 'GitHub', 'LDAP', 'Dev',
@@ -358,10 +358,8 @@ class Realm(models.Model):
             'name': "Jitsi Meet",
             'id': 1,
         },
-        'google_hangouts': {
-            'name': "Google Hangouts",
-            'id': 2,
-        },
+        # ID 2 was used for the now-deleted Google Hangouts.
+        # ID 3 reserved for optional Zoom, see below.
     }
     if settings.VIDEO_ZOOM_CLIENT_ID is not None and settings.VIDEO_ZOOM_CLIENT_SECRET is not None:
         VIDEO_CHAT_PROVIDERS['zoom'] = {
@@ -369,7 +367,6 @@ class Realm(models.Model):
             'id': 3,
         }
     video_chat_provider = models.PositiveSmallIntegerField(default=VIDEO_CHAT_PROVIDERS['jitsi_meet']['id'])
-    google_hangouts_domain = models.TextField(default="")
 
     default_code_block_language: Optional[str] = models.TextField(null=True, default=None)
 
@@ -388,7 +385,6 @@ class Realm(models.Model):
         disallow_disposable_email_addresses=bool,
         email_address_visibility=int,
         email_changes_disabled=bool,
-        google_hangouts_domain=str,
         invite_required=bool,
         invite_by_admins_only=bool,
         inline_image_preview=bool,

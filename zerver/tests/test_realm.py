@@ -551,26 +551,6 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(get_realm('zulip').video_chat_provider,
                          Realm.VIDEO_CHAT_PROVIDERS['disabled']['id'])
 
-        req = {"video_chat_provider": ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['id'])}
-        result = self.client_patch('/json/realm', req)
-        self.assert_json_error(result, "Invalid domain: Domain can't be empty.")
-
-        req = {
-            "video_chat_provider": ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['id']),
-            "google_hangouts_domain": ujson.dumps("invaliddomain"),
-        }
-        result = self.client_patch('/json/realm', req)
-        self.assert_json_error(result, "Invalid domain: Domain must have at least one dot (.)")
-
-        req = {
-            "video_chat_provider": ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['id']),
-            "google_hangouts_domain": ujson.dumps("zulip.com"),
-        }
-        result = self.client_patch('/json/realm', req)
-        self.assert_json_success(result)
-        self.assertEqual(get_realm('zulip').video_chat_provider,
-                         Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['id'])
-
         req = {"video_chat_provider": ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['id'])}
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
@@ -722,14 +702,9 @@ class RealmAPITest(ZulipTestCase):
                                       Realm.EMAIL_ADDRESS_VISIBILITY_NOBODY],
             video_chat_provider=[
                 dict(
-                    video_chat_provider=ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['id']),
-                    google_hangouts_domain=ujson.dumps('zulip.com'),
-                ),
-                dict(
                     video_chat_provider=ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['id']),
                 ),
             ],
-            google_hangouts_domain=['zulip.com', 'zulip.org'],
         )
 
         vals = test_values.get(name)
@@ -740,8 +715,6 @@ class RealmAPITest(ZulipTestCase):
 
         if name == 'video_chat_provider':
             self.set_up_db(name, vals[0][name])
-            realm = self.update_with_api_multiple_value(vals[1])
-            self.assertEqual(getattr(realm, name), ujson.loads(vals[1][name]))
             realm = self.update_with_api_multiple_value(vals[0])
             self.assertEqual(getattr(realm, name), ujson.loads(vals[0][name]))
         else:

@@ -1649,9 +1649,7 @@ class EventsRegisterTest(ZulipTestCase):
             bot_creation_policy=[Realm.BOT_CREATION_EVERYONE],
             video_chat_provider=[
                 Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['id'],
-                Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['id'],
             ],
-            google_hangouts_domain=["zulip.com", "zulip.org"],
             default_code_block_language=['python', 'javascript'],
         )
 
