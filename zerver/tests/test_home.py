@@ -159,7 +159,6 @@ class HomeTest(ZulipTestCase):
             "realm_embedded_bots",
             "realm_emoji",
             "realm_filters",
-            "realm_google_hangouts_domain",
             "realm_icon_source",
             "realm_icon_url",
             "realm_incoming_webhook_bots",

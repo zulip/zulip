@@ -213,15 +213,7 @@ function set_realm_waiting_period_dropdown() {
 
 function set_video_chat_provider_dropdown() {
     const chat_provider_id = page_params.realm_video_chat_provider;
-    const available_providers = page_params.realm_available_video_chat_providers;
-
     $("#id_realm_video_chat_provider").val(chat_provider_id);
-    if (chat_provider_id === available_providers.google_hangouts.id) {
-        $("#google_hangouts_domain").show();
-        $("#id_realm_google_hangouts_domain").val(page_params.realm_google_hangouts_domain);
-    } else {
-        $("#google_hangouts_domain").hide();
-    }
 }
 
 function set_msg_edit_limit_dropdown() {
@@ -335,7 +327,6 @@ function update_dependent_subsettings(property_name) {
     } else if (property_name === 'realm_waiting_period_threshold') {
         set_realm_waiting_period_dropdown();
     } else if (property_name === 'realm_video_chat_provider' ||
-               property_name === 'realm_google_hangouts_domain' ||
                property_name.startsWith('realm_zoom')) {
         set_video_chat_provider_dropdown();
     } else if (property_name === 'realm_msg_edit_limit_setting' ||
@@ -836,17 +827,6 @@ exports.build_page = function () {
         const waiting_period_threshold = this.value;
         change_element_block_display_property('id_realm_waiting_period_threshold',
                                               waiting_period_threshold === 'custom_days');
-    });
-
-    $("#id_realm_video_chat_provider").change(function (e) {
-        const available_providers = page_params.realm_available_video_chat_providers;
-        const video_chat_provider_id = parseInt(e.target.value, 10);
-
-        if (video_chat_provider_id === available_providers.google_hangouts.id) {
-            $("#google_hangouts_domain").show();
-        } else {
-            $("#google_hangouts_domain").hide();
-        }
     });
 
     $("#id_realm_org_join_restrictions").change(function (e) {

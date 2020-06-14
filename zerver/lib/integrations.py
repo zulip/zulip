@@ -510,8 +510,6 @@ HUBOT_INTEGRATIONS: List[HubotIntegration] = [
     HubotIntegration('chartbeat', ['marketing'], display_name='Chartbeat'),
     HubotIntegration('darksky', ['misc'], display_name='Dark Sky',
                      logo_alt='Dark Sky logo'),
-    HubotIntegration('google-hangouts', ['communication'], display_name='Google Hangouts',
-                     logo_alt='Google Hangouts logo'),
     HubotIntegration('instagram', ['misc'], display_name='Instagram',
                      # _ needed to get around adblock plus
                      logo='images/integrations/logos/instagra_m.svg'),

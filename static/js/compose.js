@@ -1083,10 +1083,7 @@ exports.initialize = function () {
             return;
         }
 
-        if (page_params.realm_video_chat_provider === available_providers.google_hangouts.id) {
-            video_call_link = "https://hangouts.google.com/hangouts/_/" + page_params.realm_google_hangouts_domain + "/" + video_call_id;
-            insert_video_call_url(video_call_link, target_textarea);
-        } else if (available_providers.zoom
+        if (available_providers.zoom
             && page_params.realm_video_chat_provider === available_providers.zoom.id) {
             exports.abort_zoom(edit_message_id);
             const key = edit_message_id || "";

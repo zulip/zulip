@@ -65,7 +65,6 @@ TAB_DISPLAY_NAMES = {
     'allow-anyone-to-join': 'Allow anyone to join',
     'restrict-by-email-domain': 'Restrict by email domain',
 
-    'google-hangouts': 'Google Hangouts',
     'zoom': 'Zoom (experimental)',
     'jitsi-on-premise': 'Jitsi on-premise',
 

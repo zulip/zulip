@@ -358,10 +358,6 @@ class Realm(models.Model):
             'name': "Jitsi Meet",
             'id': 1,
         },
-        'google_hangouts': {
-            'name': "Google Hangouts",
-            'id': 2,
-        },
     }
     if settings.VIDEO_ZOOM_CLIENT_ID is not None and settings.VIDEO_ZOOM_CLIENT_SECRET is not None:
         VIDEO_CHAT_PROVIDERS['zoom'] = {
@@ -369,7 +365,6 @@ class Realm(models.Model):
             'id': 3,
         }
     video_chat_provider = models.PositiveSmallIntegerField(default=VIDEO_CHAT_PROVIDERS['jitsi_meet']['id'])
-    google_hangouts_domain = models.TextField(default="")
 
     default_code_block_language: Optional[str] = models.TextField(null=True, default=None)
 
@@ -388,7 +383,6 @@ class Realm(models.Model):
         disallow_disposable_email_addresses=bool,
         email_address_visibility=int,
         email_changes_disabled=bool,
-        google_hangouts_domain=str,
         invite_required=bool,
         invite_by_admins_only=bool,
         inline_image_preview=bool,
