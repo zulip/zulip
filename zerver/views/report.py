@@ -46,8 +46,7 @@ def report_send_times(request: HttpRequest, user_profile: UserProfile,
     if displayed > 0:
         displayed_str = str(displayed)
 
-    request._log_data["extra"] = "[%sms/%sms/%sms/echo:%s/diff:%s]" \
-        % (time, received_str, displayed_str, locally_echoed, rendered_content_disparity)
+    request._log_data["extra"] = f"[{time}ms/{received_str}ms/{displayed_str}ms/echo:{locally_echoed}/diff:{rendered_content_disparity}]"
 
     base_key = statsd_key(user_profile.realm.string_id, clean_periods=True)
     statsd.timing(f"endtoend.send_time.{base_key}", time)

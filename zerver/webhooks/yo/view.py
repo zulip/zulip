@@ -17,7 +17,7 @@ def api_yo_app_webhook(request: HttpRequest, user_profile: UserProfile,
                        username: str = REQ(default='Yo Bot'),
                        topic: Optional[str] = REQ(default=None),
                        user_ip: Optional[str] = REQ(default=None)) -> HttpResponse:
-    body = ('Yo from %s') % (username,)
+    body = f'Yo from {username}'
     receiving_user = get_user(email, user_profile.realm)
     check_send_private_message(user_profile, request.client, receiving_user, body)
     return json_success()

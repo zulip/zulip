@@ -818,8 +818,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
         expected_result_url_prefix = f'http://testserver/login/{self.backend.name}/'
         if settings.SOCIAL_AUTH_SUBDOMAIN is not None:
-            expected_result_url_prefix = ('http://%s.testserver/login/%s/' %
-                                          (settings.SOCIAL_AUTH_SUBDOMAIN, self.backend.name))
+            expected_result_url_prefix = f'http://{settings.SOCIAL_AUTH_SUBDOMAIN}.testserver/login/{self.backend.name}/'
 
         if result.status_code != 302 or not result.url.startswith(expected_result_url_prefix):
             return result
@@ -1772,8 +1771,8 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual('/login/', result.url)
         self.assertEqual(m.output, [self.logger_output(
-            '/complete/saml/: Authentication request with IdP %s but this provider is not enabled '
-            'for this subdomain %s.' % ("test_idp", "zephyr"), 'info',
+            '/complete/saml/: Authentication request with IdP test_idp but this provider is not enabled '
+            'for this subdomain zephyr.', 'info',
         )])
 
     def test_social_auth_saml_login_bad_idp_arg(self) -> None:
@@ -1907,7 +1906,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual('/login/', result.url)
         self.assertEqual(m.output, [self.logger_output(
-            "/complete/saml/: Can't figure out subdomain for this authentication request. relayed_params: %s" % {},
+            "/complete/saml/: Can't figure out subdomain for this authentication request. relayed_params: {}",
             "info",
         )])
 
@@ -2446,8 +2445,8 @@ class GitHubAuthBackendTest(SocialAuthBase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "/login/")
         self.assertEqual(m.output, [self.logger_output(
-            "Social auth (%s) failed because user has no verified"
-            " emails associated with the account" % ("GitHub",),
+            "Social auth (GitHub) failed because user has no verified"
+            " emails associated with the account",
             "warning",
         )])
 
@@ -2470,8 +2469,8 @@ class GitHubAuthBackendTest(SocialAuthBase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "/login/")
         self.assertEqual(m.output, [self.logger_output(
-            "Social auth (%s) failed because user has no verified"
-            " emails associated with the account" % ("GitHub",),
+            "Social auth (GitHub) failed because user has no verified"
+            " emails associated with the account",
             "warning",
         )])
 

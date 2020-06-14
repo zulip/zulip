@@ -51,8 +51,8 @@ class Command(ZulipBaseCommand):
                                            allow_subdomains=options["allow_subdomains"])
                 sys.exit(0)
             except IntegrityError:
-                raise CommandError("The domain %(domain)s is already a part "
-                                   "of your organization." % {'domain': domain})
+                raise CommandError(f"The domain {domain} is already a part "
+                                   "of your organization.")
         elif options["op"] == "remove":
             try:
                 RealmDomain.objects.get(realm=realm, domain=domain).delete()

@@ -200,7 +200,7 @@ def validate_indent_html(fn: str, fix: bool) -> int:
             # Since we successfully fixed the issues, we exit with status 0
             return 0
         print('Invalid Indentation detected in file: '
-              '%s\nDiff for the file against expected indented file:' % (fn,), flush=True)
+              f'{fn}\nDiff for the file against expected indented file:', flush=True)
         with subprocess.Popen(
                 ['diff', fn, '-'],
                 stdin=subprocess.PIPE,

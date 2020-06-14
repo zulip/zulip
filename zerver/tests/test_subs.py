@@ -774,8 +774,10 @@ class StreamAdminTest(ZulipTestCase):
 
         result = self.client_patch(f'/json/streams/{stream_id}',
                                    {'description': ujson.dumps('a' * 1025)})
-        self.assert_json_error(result, "description is too long (limit: %s characters)"
-                               % (Stream.MAX_DESCRIPTION_LENGTH,))
+        self.assert_json_error(
+            result,
+            f"description is too long (limit: {Stream.MAX_DESCRIPTION_LENGTH} characters)",
+        )
 
         result = self.client_patch(f'/json/streams/{stream_id}',
                                    {'description': ujson.dumps('a\nmulti\nline\ndescription')})
@@ -2931,8 +2933,11 @@ class SubscriptionAPITest(ZulipTestCase):
             get_user(invalid_principal, invalid_principal_realm)
         result = self.common_subscribe_to_streams(self.test_user, self.streams,
                                                   {"principals": ujson.dumps([invalid_principal])})
-        self.assert_json_error(result, "User not authorized to execute queries on behalf of '%s'"
-                               % (invalid_principal,), status_code=403)
+        self.assert_json_error(
+            result,
+            f"User not authorized to execute queries on behalf of '{invalid_principal}'",
+            status_code=403,
+        )
 
     def test_subscription_add_invalid_principal(self) -> None:
         invalid_principal = 999
@@ -2941,8 +2946,11 @@ class SubscriptionAPITest(ZulipTestCase):
             get_user_profile_by_id_in_realm(invalid_principal, invalid_principal_realm)
         result = self.common_subscribe_to_streams(self.test_user, self.streams,
                                                   {"principals": ujson.dumps([invalid_principal])})
-        self.assert_json_error(result, "User not authorized to execute queries on behalf of '%s'"
-                               % (invalid_principal,), status_code=403)
+        self.assert_json_error(
+            result,
+            f"User not authorized to execute queries on behalf of '{invalid_principal}'",
+            status_code=403,
+        )
 
     def test_subscription_add_principal_other_realm(self) -> None:
         """
@@ -2955,8 +2963,11 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertIsInstance(profile, UserProfile)
         result = self.common_subscribe_to_streams(self.test_user, self.streams,
                                                   {"principals": ujson.dumps([principal])})
-        self.assert_json_error(result, "User not authorized to execute queries on behalf of '%s'"
-                               % (principal,), status_code=403)
+        self.assert_json_error(
+            result,
+            f"User not authorized to execute queries on behalf of '{principal}'",
+            status_code=403,
+        )
 
     def helper_check_subs_before_and_after_remove(self, subscriptions: List[str],
                                                   json_dict: Dict[str, Any],
@@ -3144,7 +3155,7 @@ class SubscriptionAPITest(ZulipTestCase):
         with mock.patch('zerver.models.Recipient.__str__', return_value='recip'):
             self.assertEqual(str(subscription),
                              '<Subscription: '
-                             '<UserProfile: %s %s> -> recip>' % (user_profile.email, user_profile.realm))
+                             f'<UserProfile: {user_profile.email} {user_profile.realm}> -> recip>')
 
         self.assertIsNone(subscription.desktop_notifications)
         self.assertIsNone(subscription.push_notifications)

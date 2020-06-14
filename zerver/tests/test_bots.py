@@ -38,7 +38,7 @@ from zerver.models import (
 # A test validator
 def _check_string(var_name: str, val: object) -> Optional[str]:
     if str(val).startswith("_"):
-        return ('%s starts with a "_" and is hence invalid.') % (var_name,)
+        return f'{var_name} starts with a "_" and is hence invalid.'
     return None
 
 stripe_sample_config_options = [

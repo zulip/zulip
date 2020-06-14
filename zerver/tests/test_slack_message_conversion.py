@@ -80,8 +80,7 @@ class SlackMessageConversion(ZulipTestCase):
         # multiple mentioning
         message = 'Hi <@U08RGD1RD|john>: How are you?<@U0CBK5KAT> asked.'
         text, mentioned_users, has_link = convert_to_zulip_markdown(message, users, channel_map, slack_user_map)
-        self.assertEqual(text, 'Hi @**%s**: How are you?@**%s** asked.' %
-                         ('John Doe', 'aaron.anzalone'))
+        self.assertEqual(text, 'Hi @**John Doe**: How are you?@**aaron.anzalone** asked.')
         self.assertEqual(mentioned_users, [540, 554])
 
         # Check wrong mentioning

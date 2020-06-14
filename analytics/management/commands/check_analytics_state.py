@@ -60,8 +60,7 @@ class Command(BaseCommand):
                 critical_threshold = timedelta(minutes=150)
 
             if floor_function(last_fill) != last_fill:
-                return {'status': 2, 'message': 'FillState not on %s boundary for %s' %
-                        (stat.frequency, property)}
+                return {'status': 2, 'message': f'FillState not on {stat.frequency} boundary for {property}'}
 
             time_to_last_fill = timezone_now() - last_fill
             if time_to_last_fill > critical_threshold:
@@ -72,7 +71,16 @@ class Command(BaseCommand):
         if len(critical_unfilled_properties) == 0 and len(warning_unfilled_properties) == 0:
             return {'status': 0, 'message': 'FillState looks fine.'}
         if len(critical_unfilled_properties) == 0:
-            return {'status': 1, 'message': 'Missed filling %s once.' %
-                    (', '.join(warning_unfilled_properties),)}
-        return {'status': 2, 'message': 'Missed filling %s once. Missed filling %s at least twice.' %
-                (', '.join(warning_unfilled_properties), ', '.join(critical_unfilled_properties))}
+            return {
+                'status': 1,
+                'message': 'Missed filling {} once.'.format(
+                    ', '.join(warning_unfilled_properties),
+                ),
+            }
+        return {
+            'status': 2,
+            'message': 'Missed filling {} once. Missed filling {} at least twice.'.format(
+                ', '.join(warning_unfilled_properties),
+                ', '.join(critical_unfilled_properties),
+            ),
+        }

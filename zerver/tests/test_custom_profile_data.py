@@ -498,8 +498,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         field_name = "Mentor"
         invalid_user_id = 1000
         self.assert_error_update_invalid_value(field_name, [invalid_user_id],
-                                               "Invalid user ID: %d"
-                                               % (invalid_user_id,))
+                                               f"Invalid user ID: {invalid_user_id}")
 
     def test_update_profile_data_successfully(self) -> None:
         self.login('iago')

@@ -81,8 +81,7 @@ class ThumbnailTest(ZulipTestCase):
         self.logout()
         result = self.api_get(
             hamlet,
-            '/thumbnail?url=%s&size=full' %
-            (quoted_uri,))
+            f'/thumbnail?url={quoted_uri}&size=full')
         self.assertEqual(result.status_code, 302, result)
         expected_part_url = get_file_path_urlpart(uri)
         self.assertIn(expected_part_url, result.url)
@@ -227,8 +226,7 @@ class ThumbnailTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         result = self.api_get(
             user_profile,
-            '/thumbnail?url=%s&size=full' %
-            (quoted_uri,))
+            f'/thumbnail?url={quoted_uri}&size=full')
         self.assertEqual(result.status_code, 302, result)
         expected_part_url = get_file_path_urlpart(uri)
         self.assertIn(expected_part_url, result.url)
@@ -237,8 +235,7 @@ class ThumbnailTest(ZulipTestCase):
         # auth.
         user_profile = self.example_user("hamlet")
         result = self.client_get(
-            '/thumbnail?url=%s&size=full&api_key=%s' %
-            (quoted_uri, get_api_key(user_profile)))
+            f'/thumbnail?url={quoted_uri}&size=full&api_key={get_api_key(user_profile)}')
         self.assertEqual(result.status_code, 302, result)
         expected_part_url = get_file_path_urlpart(uri)
         self.assertIn(expected_part_url, result.url)

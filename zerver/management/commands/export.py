@@ -121,8 +121,7 @@ class Command(ZulipBaseCommand):
             if os.path.exists(output_dir):
                 if os.listdir(output_dir):
                     raise CommandError(
-                        "Refusing to overwrite nonempty directory: %s. Aborting..."
-                        % (output_dir,),
+                        f"Refusing to overwrite nonempty directory: {output_dir}. Aborting...",
                     )
             else:
                 os.makedirs(output_dir)

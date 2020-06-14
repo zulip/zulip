@@ -2954,6 +2954,6 @@ WHERE user_profile_id = {hamlet_id} AND (content ILIKE '%jumping%' OR subject IL
             'say hello')
         self.assertEqual(
             hello_message['match_content'],
-            ('<p>How are you doing, <span class="user-mention" data-user-id="%s">' +
-             '@<span class="highlight">Othello</span>, the Moor of Venice</span>?</p>') % (
-                 othello.id))
+            f'<p>How are you doing, <span class="user-mention" data-user-id="{othello.id}">'
+            '@<span class="highlight">Othello</span>, the Moor of Venice</span>?</p>',
+        )

@@ -186,12 +186,16 @@ class RealmExportTest(ZulipTestCase):
         with patch('zerver.models.Realm.currently_used_upload_space_bytes',
                    return_value=11 * 1024 * 1024 * 1024):
             result = self.client_post('/json/export/realm')
-        self.assert_json_error(result, 'Please request a manual export from %s.' %
-                               settings.ZULIP_ADMINISTRATOR)
+        self.assert_json_error(
+            result,
+            f'Please request a manual export from {settings.ZULIP_ADMINISTRATOR}.',
+        )
 
         # Message limit is set as 250000
         realm_count.value = 250001
         realm_count.save(update_fields=['value'])
         result = self.client_post('/json/export/realm')
-        self.assert_json_error(result, 'Please request a manual export from %s.' %
-                               settings.ZULIP_ADMINISTRATOR)
+        self.assert_json_error(
+            result,
+            f'Please request a manual export from {settings.ZULIP_ADMINISTRATOR}.',
+        )

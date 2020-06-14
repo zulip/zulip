@@ -629,8 +629,7 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
                           'and %s for more information.',
                           settings.ERROR_FILE_LOG_PATH, "tornado.log")
             raise requests.adapters.ConnectionError(
-                "Django cannot connect to Tornado server (%s); try restarting" %
-                (tornado_uri,))
+                f"Django cannot connect to Tornado server ({tornado_uri}); try restarting")
 
         resp.raise_for_status()
 

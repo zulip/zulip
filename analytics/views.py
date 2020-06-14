@@ -740,7 +740,7 @@ def user_activity_intervals() -> Tuple[mark_safe, Dict[str, float]]:
 
             total_duration += duration
             realm_duration += duration
-            output += "  %-*s%s\n" % (37, email, duration)
+            output += f"  {email:<37}{duration}\n"
 
         realm_minutes[string_id] = realm_duration.total_seconds() / 60
 

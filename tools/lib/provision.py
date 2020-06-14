@@ -311,10 +311,14 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
     # Later steps will ensure postgres is started
 
     # Link in tsearch data files
-    overwrite_symlink("/usr/share/myspell/en_US.dic", "/usr/pgsql-%s/share/tsearch_data/en_us.dict"
-                      % (POSTGRES_VERSION,))
-    overwrite_symlink("/usr/share/myspell/en_US.aff", "/usr/pgsql-%s/share/tsearch_data/en_us.affix"
-                      % (POSTGRES_VERSION,))
+    overwrite_symlink(
+        "/usr/share/myspell/en_US.dic",
+        "/usr/pgsql-{}/share/tsearch_data/en_us.dict".format(POSTGRES_VERSION),
+    )
+    overwrite_symlink(
+        "/usr/share/myspell/en_US.aff",
+        "/usr/pgsql-{}/share/tsearch_data/en_us.affix".format(POSTGRES_VERSION,),
+    )
 
 def main(options: argparse.Namespace) -> "NoReturn":
 

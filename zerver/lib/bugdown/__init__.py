@@ -2358,8 +2358,9 @@ def do_convert(content: str,
         # rest of the codebase from any bugs where we end up rendering
         # something huge.
         if len(rendered_content) > MAX_MESSAGE_LENGTH * 10:
-            raise BugdownRenderingException('Rendered content exceeds %s characters (message %s)' %
-                                            (MAX_MESSAGE_LENGTH * 10, logging_message_id))
+            raise BugdownRenderingException(
+                f'Rendered content exceeds {MAX_MESSAGE_LENGTH * 10} characters (message {logging_message_id})'
+            )
         return rendered_content
     except Exception:
         cleaned = privacy_clean_markdown(content)

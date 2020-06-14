@@ -596,8 +596,7 @@ so maybe we shouldn't include it in pending_endpoints.
                     openapi_parameters = get_openapi_parameters(url_pattern, method,
                                                                 include_url_parameters=False)
                 except Exception:  # nocoverage
-                    raise AssertionError("Could not find OpenAPI docs for %s %s" %
-                                         (method, url_pattern))
+                    raise AssertionError(f"Could not find OpenAPI docs for {method} {url_pattern}")
 
                 # We now have everything we need to understand the
                 # function as defined in our urls.py:

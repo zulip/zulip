@@ -24,8 +24,7 @@ def realm_emoji_name_to_id(apps: StateApps, schema_editor: DatabaseSchemaEditor)
             # Realm emoji used in this reaction has been deleted so this
             # reaction should also be deleted. We don't need to reverse
             # this step in migration reversal code.
-            print("Reaction for (%s, %s) refers to deleted custom emoji %s; deleting" %
-                  (emoji_name, reaction.message_id, reaction.user_profile_id))
+            print(f"Reaction for ({emoji_name}, {reaction.message_id}) refers to deleted custom emoji {reaction.user_profile_id}; deleting")
             reaction.delete()
         else:
             reaction.emoji_code = realm_emoji["id"]
