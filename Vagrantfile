@@ -177,9 +177,17 @@ if [ ! -w /srv/zulip ]; then
     echo "    vagrant up"
     exit 1
 fi
+
 # Provision the development environment
 ln -nsf /srv/zulip ~/zulip
 /srv/zulip/tools/provision
+
+# Activate the virtual environment
+case `grep -cF 'source /srv/zulip-py3-venv/bin/activate' ~/.zprofile` in
+   0)
+      echo "source /srv/zulip-py3-venv/bin/activate" | cat ~/.zprofile - > temp && mv temp ~/.zprofile
+   ;;
+esac
 
 # Run any custom provision hooks the user has configured
 if [ -f /srv/zulip/tools/custom_provision ]; then

@@ -4,6 +4,7 @@ import sys
 import argparse
 import glob
 import shutil
+import pwd
 
 from typing import List
 
@@ -77,8 +78,15 @@ def setup_shell_profile(shell_profile: str) -> None:
             with open(shell_profile_path, 'w') as shell_profile_file:
                 shell_profile_file.writelines(command + '\n')
 
+    # Activating the virtual environment automatically is disabled for
+    # setups that do not use Vagrant / Docker / Droplets. Pyvenv is activated from Vagrantfile,
+    # Dockerfile or the following for Droplets.
+    
     source_activate_command = "source " + os.path.join(VENV_PATH, "bin", "activate")
-    write_command(source_activate_command)
+    IS_DEV_DROPLET = pwd.getpwuid(os.getuid()).pw_name == 'zulipdev'
+    if IS_DEV_DROPLET:
+        write_command(source_activate_command)
+
     if os.path.exists('/srv/zulip'):
         write_command('cd /srv/zulip')
 
