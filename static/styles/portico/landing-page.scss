@@ -490,24 +490,24 @@ nav {
 
     margin: 50px auto;
     padding: 0px 50px;
-}
 
-.portico-landing.features-app section.messages .image {
-    width: calc(100% - 500px - 100px);
-    margin: 50px 0px 50px 50px;
-    max-width: 500px;
-}
-
-.portico-landing.features-app section.messages .features {
-    max-width: 500px;
-
-    h2 {
-        margin: 0;
+    .image {
+        width: calc(100% - 500px - 100px);
+        margin: 50px 0px 50px 50px;
+        max-width: 500px;
     }
 
-    .feature-block {
-        display: block;
-        margin: 30px 0px;
+    .features {
+        max-width: 500px;
+
+        h2 {
+            margin: 0;
+        }
+
+        .feature-block {
+            display: block;
+            margin: 30px 0px;
+        }
     }
 }
 
@@ -2999,16 +2999,16 @@ nav {
     .portico-landing.features-app section.messages {
         display: block;
         text-align: center;
-    }
 
-    .portico-landing.features-app section.messages > * {
-        display: inline-block;
-        text-align: left;
-    }
+        > * {
+            display: inline-block;
+            text-align: left;
+        }
 
-    .portico-landing.features-app section.messages .image {
-        width: 100%;
-        margin: 0;
+        .image {
+            width: 100%;
+            margin: 0;
+        }
     }
 
     .portico-landing.plans .compare .padded-content {
@@ -3565,15 +3565,15 @@ nav {
 
     .portico-landing.features-app section.messages {
         padding: 0px 20px;
-    }
 
-    .portico-landing.features-app section.messages h2 {
-        font-size: 2em;
-    }
+        h2 {
+            font-size: 2em;
+        }
 
-    .portico-landing.features-app section.messages .features {
-        .feature-block {
-            margin: 20px 0px;
+        .features {
+            .feature-block {
+                margin: 20px 0px;
+            }
         }
     }
 
