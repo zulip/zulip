@@ -614,9 +614,11 @@ nav {
     vertical-align: top;
 }
 
-.portico-landing.features-app section .headliner .feature-block {
-    margin: 0px 10px;
-    width: calc(100% - 250px - 20px);
+.portico-landing.features-app section .headliner {
+    .feature-block {
+        margin: 0px 10px;
+        width: calc(100% - 250px - 20px);
+    }
 }
 
 .portico-landing.features-app section h2 {
@@ -2984,13 +2986,15 @@ nav {
         }
     }
 
-    .portico-landing.features-app section .headliner .image {
-        width: 200px;
-        height: 200px;
-    }
+    .portico-landing.features-app section .headliner {
+        .image {
+            width: 200px;
+            height: 200px;
+        }
 
-    .portico-landing.features-app section .headliner .feature-box {
-        width: calc(100% - 200px - 20px);
+        .feature-box {
+            width: calc(100% - 200px - 20px);
+        }
     }
 
     .portico-landing.features-app section.messages {
