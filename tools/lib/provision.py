@@ -52,8 +52,8 @@ with open("/proc/meminfo") as meminfo:
     ram_size = meminfo.readlines()[0].strip().split(" ")[-2]
 ram_gb = float(ram_size) / 1024.0 / 1024.0
 if ram_gb < 1.5:
-    print("You have insufficient RAM (%s GB) to run the Zulip development environment." % (
-        round(ram_gb, 2),))
+    print("You have insufficient RAM ({} GB) to run the Zulip development environment.".format(
+        round(ram_gb, 2)))
     print("We recommend at least 2 GB of RAM, and require at least 1.5 GB.")
     sys.exit(1)
 
@@ -210,9 +210,9 @@ elif "fedora" in os_families():
     BUILD_PGROONGA_FROM_SOURCE = True
 
 if "fedora" in os_families():
-    TSEARCH_STOPWORDS_PATH = "/usr/pgsql-%s/share/tsearch_data/" % (POSTGRES_VERSION,)
+    TSEARCH_STOPWORDS_PATH = "/usr/pgsql-{}/share/tsearch_data/".format(POSTGRES_VERSION)
 else:
-    TSEARCH_STOPWORDS_PATH = "/usr/share/postgresql/%s/tsearch_data/" % (POSTGRES_VERSION,)
+    TSEARCH_STOPWORDS_PATH = "/usr/share/postgresql/{}/tsearch_data/".format(POSTGRES_VERSION)
 REPO_STOPWORDS_PATH = os.path.join(
     ZULIP_PATH,
     "puppet",
@@ -285,16 +285,16 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
         run_as_root(["python36", "-m", "ensurepip"])
         # `python36` is not aliased to `python3` by default
         run_as_root(["ln", "-nsf", "/usr/bin/python36", "/usr/bin/python3"])
-    postgres_dir = 'pgsql-%s' % (POSTGRES_VERSION,)
+    postgres_dir = 'pgsql-{}'.format(POSTGRES_VERSION)
     for cmd in ['pg_config', 'pg_isready', 'psql']:
         # Our tooling expects these postgres scripts to be at
         # well-known paths.  There's an argument for eventually
         # making our tooling auto-detect, but this is simpler.
-        run_as_root(["ln", "-nsf", "/usr/%s/bin/%s" % (postgres_dir, cmd),
-                     "/usr/bin/%s" % (cmd,)])
+        run_as_root(["ln", "-nsf", "/usr/{}/bin/{}".format(postgres_dir, cmd),
+                     "/usr/bin/{}".format(cmd)])
 
     # From here, we do the first-time setup/initialization for the postgres database.
-    pg_datadir = "/var/lib/pgsql/%s/data" % (POSTGRES_VERSION,)
+    pg_datadir = "/var/lib/pgsql/{}/data".format(POSTGRES_VERSION)
     pg_hba_conf = os.path.join(pg_datadir, "pg_hba.conf")
 
     # We can't just check if the file exists with os.path, since the
@@ -304,7 +304,7 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
         # Skip setup if it has been applied previously
         return
 
-    run_as_root(["/usr/%s/bin/postgresql-%s-setup" % (postgres_dir, POSTGRES_VERSION), "initdb"],
+    run_as_root(["/usr/{}/bin/postgresql-{}-setup".format(postgres_dir, POSTGRES_VERSION), "initdb"],
                 sudo_args = ['-H'])
     # Use vendored pg_hba.conf, which enables password authentication.
     run_as_root(["cp", "-a", "puppet/zulip/files/postgresql/centos_pg_hba.conf", pg_hba_conf])
@@ -367,7 +367,7 @@ def main(options: argparse.Namespace) -> "NoReturn":
 
     if not os.access(NODE_MODULES_CACHE_PATH, os.W_OK):
         run_as_root(["mkdir", "-p", NODE_MODULES_CACHE_PATH])
-        run_as_root(["chown", "%s:%s" % (os.getuid(), os.getgid()), NODE_MODULES_CACHE_PATH])
+        run_as_root(["chown", "{}:{}".format(os.getuid(), os.getgid()), NODE_MODULES_CACHE_PATH])
 
     # This is a wrapper around `yarn`, which we run last since
     # it can often fail due to network issues beyond our control.
@@ -401,7 +401,7 @@ def main(options: argparse.Namespace) -> "NoReturn":
     elif "fedora" in os_families():
         # These platforms don't enable and start services on
         # installing their package, so we do that here.
-        for service in ["postgresql-%s" % (POSTGRES_VERSION,), "rabbitmq-server", "memcached", "redis"]:
+        for service in ["postgresql-{}".format(POSTGRES_VERSION), "rabbitmq-server", "memcached", "redis"]:
             run_as_root(["systemctl", "enable", service], sudo_args = ['-H'])
             run_as_root(["systemctl", "start", service], sudo_args = ['-H'])
 

@@ -124,7 +124,7 @@ def get_package_names(requirements_file: str) -> List[str]:
         if package.startswith("git+https://") and '#egg=' in package:
             split_package = package.split("#egg=")
             if len(split_package) != 2:
-                raise Exception("Unexpected duplicate #egg in package %s" % (package,))
+                raise Exception("Unexpected duplicate #egg in package {}".format(package))
             # Extract the package name from Git requirements entries
             package = split_package[1]
 
@@ -270,7 +270,7 @@ def do_patch_activate_script(venv_path: str) -> None:
         lines = f.readlines()
     for i, line in enumerate(lines):
         if line.startswith('VIRTUAL_ENV='):
-            lines[i] = 'VIRTUAL_ENV="%s"\n' % (venv_path,)
+            lines[i] = 'VIRTUAL_ENV="{}"\n'.format(venv_path)
 
     with open(script_path, 'w') as f:
         f.write("".join(lines))
@@ -296,7 +296,7 @@ def setup_virtualenv(
         with open(success_stamp, 'w') as f:
             f.close()
 
-    print("Using cached Python venv from %s" % (cached_venv_path,))
+    print("Using cached Python venv from {}".format(cached_venv_path))
     if target_venv_path is not None:
         run_as_root(["ln", "-nsf", cached_venv_path, target_venv_path])
         if patch_activate_script:

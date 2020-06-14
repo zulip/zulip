@@ -59,7 +59,7 @@ def setup_node_modules(
                         yarn_args,
                         success_stamp)
 
-    print("Using cached node modules from %s" % (cached_node_modules,))
+    print("Using cached node modules from {}".format(cached_node_modules))
     if os.path.islink('node_modules'):
         os.remove('node_modules')
     elif os.path.isdir('node_modules'):
