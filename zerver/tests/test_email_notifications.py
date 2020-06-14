@@ -251,6 +251,8 @@ class TestMissedMessages(ZulipTestCase):
         for text in verify_body_does_not_include:
             self.assertNotIn(text, self.normalize_string(msg.body))
 
+        self.assertEqual(msg.extra_headers["List-Id"], "Zulip Dev <zulip.testserver>")
+
     def _realm_name_in_missed_message_email_subject(self, realm_name_in_notifications: bool) -> None:
         msg_id = self.send_personal_message(
             self.example_user('othello'),

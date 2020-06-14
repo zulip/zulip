@@ -313,7 +313,8 @@ class ZulipPasswordResetForm(PasswordResetForm):
             send_email('zerver/emails/password_reset', to_emails=[email],
                        from_name=FromAddress.security_email_from_name(language=language),
                        from_address=FromAddress.tokenized_no_reply_address(),
-                       language=language, context=context)
+                       language=language, context=context,
+                       realm=realm)
 
 class RateLimitedPasswordResetByEmail(RateLimitedObject):
     def __init__(self, email: str) -> None:

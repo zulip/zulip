@@ -65,7 +65,8 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
     send_email('zerver/emails/notify_change_in_email', to_emails=[old_email],
                from_name=FromAddress.security_email_from_name(user_profile=user_profile),
                from_address=FromAddress.SUPPORT, language=language,
-               context=context)
+               context=context,
+               realm=user_profile.realm)
 
     ctx = {
         'new_email': new_email,

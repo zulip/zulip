@@ -236,13 +236,15 @@ class PasswordResetTest(ZulipTestCase):
     Log in, reset password, log out, log in with new password.
     """
 
-    def get_reset_mail_body(self) -> str:
+    def get_reset_mail_body(self, subdomain: str='zulip') -> str:
         from django.core.mail import outbox
         [message] = outbox
         self.assertRegex(
             message.from_email,
             fr"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
         )
+        self.assertIn(f"{subdomain}.testserver", message.extra_headers["List-Id"])
+
         return message.body
 
     def test_password_reset(self) -> None:
@@ -421,7 +423,7 @@ class PasswordResetTest(ZulipTestCase):
 
         self.assert_in_response("Check your email in a few minutes to finish the process.", result)
 
-        body = self.get_reset_mail_body()
+        body = self.get_reset_mail_body('zephyr')
         self.assertIn('Somebody (possibly you) requested a new password', body)
         self.assertIn('You do not have an account', body)
         self.assertIn("active accounts in the following organization(s).\nhttp://zulip.testserver",
@@ -758,6 +760,8 @@ class InviteUserBase(ZulipTestCase):
             self.assertIn(custom_from_name, outbox[0].from_email)
 
         self.assertRegex(outbox[0].from_email, fr" <{self.TOKENIZED_NOREPLY_REGEX}>\Z")
+
+        self.assertEqual(outbox[0].extra_headers["List-Id"], "Zulip Dev <zulip.testserver>")
 
     def invite(self, invitee_emails: str, stream_names: Sequence[str], body: str='',
                invite_as: int=PreregistrationUser.INVITE_AS['MEMBER']) -> HttpResponse:
@@ -2781,6 +2785,19 @@ class UserSignUpTest(InviteUserBase):
 
         # Verify that the user is asked for name and password
         self.assert_in_success_response(['id_password', 'id_full_name'], result)
+
+    def test_signup_email_message_contains_org_header(self) -> None:
+        email = "newguy@zulip.com"
+
+        result = self.client_post('/accounts/home/', {'email': email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+            f"/accounts/send_confirm/{email}"))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        from django.core.mail import outbox
+        self.assertEqual(outbox[0].extra_headers["List-Id"], "Zulip Dev <zulip.testserver>")
 
     def test_signup_with_full_name(self) -> None:
         """

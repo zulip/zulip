@@ -994,7 +994,8 @@ def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> 
     send_email('zerver/emails/confirm_new_email', to_emails=[new_email],
                from_name=FromAddress.security_email_from_name(language=language),
                from_address=FromAddress.tokenized_no_reply_address(),
-               language=language, context=context)
+               language=language, context=context,
+               realm=user_profile.realm)
 
 def compute_irc_user_fullname(email: str) -> str:
     return email.split("@")[0] + " (IRC)"
@@ -5077,7 +5078,8 @@ def do_send_confirmation_email(invitee: PreregistrationUser,
     from_name = f"{referrer.full_name} (via Zulip)"
     send_email('zerver/emails/invitation', to_emails=[invitee.email], from_name=from_name,
                from_address=FromAddress.tokenized_no_reply_address(),
-               language=referrer.realm.default_language, context=context)
+               language=referrer.realm.default_language, context=context,
+               realm=referrer.realm)
     return activation_url
 
 def email_not_system_bot(email: str) -> None:
