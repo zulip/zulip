@@ -72,6 +72,8 @@ rules:
       - pattern: ... .execute("...".format(...))
       - pattern: psycopg2.sql.SQL(... % ...)
       - pattern: psycopg2.sql.SQL(... .format(...))
+      - pattern: django.db.migrations.RunSQL(..., ... % ..., ...)
+      - pattern: django.db.migrations.RunSQL(..., "..." .format(...), ...)
     severity: ERROR
     message: "Do not write a SQL injection vulnerability please"
 
