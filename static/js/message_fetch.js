@@ -352,7 +352,6 @@ exports.initialize = function () {
         }
 
         if (data.found_newest) {
-            message_scroll.hide_loading_newer();
             server_events.home_view_loaded();
             exports.start_backfilling_messages();
             return;
@@ -363,7 +362,6 @@ exports.initialize = function () {
         const messages = data.messages;
         const latest_id = messages[messages.length - 1].id;
 
-        message_scroll.show_loading_newer();
         exports.load_messages({
             anchor: latest_id.toFixed(),
             num_before: 0,
