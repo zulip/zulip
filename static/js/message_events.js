@@ -156,6 +156,9 @@ exports.update_messages = function update_messages(events) {
             const compose_stream_name = compose_state.stream_name();
             const orig_topic = util.get_edit_event_orig_topic(event);
 
+            const current_selected_id = current_msg_list.selected_id();
+            const selection_changed_topic = event.message_ids.includes(current_selected_id);
+
             if (going_forward_change && stream_name && compose_stream_name) {
                 if (stream_name.toLowerCase() === compose_stream_name.toLowerCase()) {
                     if (orig_topic === compose_state.topic()) {
@@ -181,8 +184,6 @@ exports.update_messages = function update_messages(events) {
                 //
                 // Code further down takes care of the actual rerendering of
                 // messages within a narrow.
-                const current_id = current_msg_list.selected_id();
-                const selection_changed_topic = event.message_ids.includes(current_id);
                 if (selection_changed_topic) {
                     if (current_filter && current_filter.has_topic(stream_name, orig_topic)) {
                         let new_filter = current_filter;
@@ -214,7 +215,7 @@ exports.update_messages = function update_messages(events) {
                             const operators = new_filter.operators();
                             const opts = {
                                 trigger: 'stream/topic change',
-                                then_select_id: current_id,
+                                then_select_id: current_selected_id,
                             };
                             narrow.activate(operators, opts);
                             changed_narrow = true;
