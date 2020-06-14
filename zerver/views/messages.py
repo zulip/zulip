@@ -912,9 +912,6 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
             narrow,
         )
 
-    # Hint to mypy that anchor is now unconditionally an integer,
-    # since its inference engine can't figure that out.
-    assert anchor is not None
     anchored_to_left = (anchor == 0)
 
     # Set value that will be used to short circuit the after_query
