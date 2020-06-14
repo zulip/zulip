@@ -27,7 +27,8 @@ You only have permission to edit a message if:
 
 1. You sent it, **OR**:
 2. This is a topic-only edit for a (no topic) message, **OR**:
-3. This is a topic-only edit and you are an admin.
+3. This is a topic-only edit and you are an admin, **OR**:
+4. This is a topic-only edit and your realm allows users to edit topics.
 
 ## Parameters
 
