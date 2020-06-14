@@ -165,13 +165,13 @@ def get_deployment_lock(error_rerun_script: str) -> None:
             break
         except OSError:
             print(WARNING + "Another deployment in progress; waiting for lock... " +
-                  "(If no deployment is running, rmdir %s)" % (LOCK_DIR,) + ENDC)
+                  "(If no deployment is running, rmdir {})".format(LOCK_DIR) + ENDC)
             sys.stdout.flush()
             time.sleep(3)
 
     if not got_lock:
         print(FAIL + "Deployment already in progress.  Please run\n" +
-              "  %s\n" % (error_rerun_script,) +
+              "  {}\n".format(error_rerun_script) +
               "manually when the previous deployment finishes, or run\n" +
               "  rmdir %s\n"  % (LOCK_DIR,) +
               "if the previous deployment crashed." +
@@ -183,7 +183,7 @@ def release_deployment_lock() -> None:
 
 def run(args: Sequence[str], **kwargs: Any) -> None:
     # Output what we're doing in the `set -x` style
-    print("+ %s" % (" ".join(map(shlex.quote, args)),))
+    print("+ {}".format(" ".join(map(shlex.quote, args))))
 
     try:
         subprocess.check_call(args, **kwargs)
@@ -325,17 +325,17 @@ def may_be_perform_purging(
     if dry_run:
         print("Performing a dry run...")
     if not no_headings:
-        print("Cleaning unused %ss..." % (dir_type,))
+        print("Cleaning unused {}s...".format(dir_type))
 
     for directory in dirs_to_purge:
         if verbose:
-            print("Cleaning unused %s: %s" % (dir_type, directory))
+            print("Cleaning unused {}: {}".format(dir_type, directory))
         if not dry_run:
             run_as_root(["rm", "-rf", directory])
 
     for directory in dirs_to_keep:
         if verbose:
-            print("Keeping used %s: %s" % (dir_type, directory))
+            print("Keeping used {}: {}".format(dir_type, directory))
 
 @functools.lru_cache(None)
 def parse_os_release() -> Dict[str, str]:
