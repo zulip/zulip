@@ -561,25 +561,26 @@ nav {
     font-weight: 400;
 
     color: hsl(0, 0%, 53%);
+
+    &::before {
+        content: " ";
+        display: block;
+        position: absolute;
+
+        left: -35px;
+        top: 0px;
+        width: 20px;
+        height: 20px;
+
+        border-radius: 4px;
+
+        background-image: url(/static/images/checkbox-green.svg);
+        background-size: 100% auto;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
 }
 
-.portico-landing.features-app section.notifications .feature-list h3::before {
-    content: " ";
-    display: block;
-    position: absolute;
-
-    left: -35px;
-    top: 0px;
-    width: 20px;
-    height: 20px;
-
-    border-radius: 4px;
-
-    background-image: url(/static/images/checkbox-green.svg);
-    background-size: 100% auto;
-    background-position: center;
-    background-repeat: no-repeat;
-}
 
 .portico-landing.features-app section.notifications .image-block {
     width: 400px;
