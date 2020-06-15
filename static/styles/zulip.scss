@@ -1519,7 +1519,8 @@ div.focused_table {
 
         .sub_count {
             margin-left: 10px;
-            margin-right: 10px;
+            padding-right: 10px;
+            margin-right: 1px;
             .fa.fa-user-o {
                 margin-left: 0px;
             }
@@ -1542,7 +1543,7 @@ div.focused_table {
             }
 
             &::after {
-                right: -5px;
+                right: -3px;
             }
         }
 
@@ -1558,11 +1559,11 @@ div.focused_table {
             white-space: nowrap;
             margin: 0;
             padding: 12px 0px;
-            padding-left: 2px;
+            padding-left: 10px;
 
             @media (max-width: 500px) {
                 padding: 7px 0;
-                padding-left: 2px;
+                padding-left: 10px;
             }
 
             & > a {
