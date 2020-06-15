@@ -20,8 +20,9 @@ def upload_icon(request: HttpRequest, user_profile: UserProfile) -> HttpResponse
 
     icon_file = list(request.FILES.values())[0]
     if ((settings.MAX_ICON_FILE_SIZE * 1024 * 1024) < icon_file.size):
-        return json_error(_("Uploaded file is larger than the allowed limit of %s MB") % (
-            settings.MAX_ICON_FILE_SIZE))
+        return json_error(_("Uploaded file is larger than the allowed limit of {} MiB").format(
+            settings.MAX_ICON_FILE_SIZE,
+        ))
     upload_icon_image(icon_file, user_profile)
     do_change_icon_source(user_profile.realm, user_profile.realm.ICON_UPLOADED)
     icon_url = realm_icon_url(user_profile.realm)

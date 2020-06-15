@@ -18,7 +18,7 @@ def get_user_profiles(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
         try:
             user_profile = get_user_including_cross_realm(email, realm)
         except UserProfile.DoesNotExist:
-            raise JsonableError(_("Invalid email '%s'") % (email,))
+            raise JsonableError(_("Invalid email '{}'").format(email))
         user_profiles.append(user_profile)
     return user_profiles
 

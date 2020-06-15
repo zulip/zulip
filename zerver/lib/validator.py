@@ -56,7 +56,7 @@ def set_type_structure(type_structure: TypeStructure) -> Callable[[FuncT], Any]:
 @set_type_structure("str")
 def check_string(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, str):
-        return _('%s is not a string') % (var_name,)
+        return _('{var_name} is not a string').format(var_name=var_name)
     return None
 
 @set_type_structure("str")
@@ -78,7 +78,7 @@ def check_string_in(possible_values: Union[Set[str], List[str]]) -> Validator:
         if not_str is not None:
             return not_str
         if val not in possible_values:
-            return _("Invalid %s") % (var_name,)
+            return _("Invalid {var_name}").format(var_name=var_name)
         return None
 
     return validator
@@ -91,7 +91,7 @@ def check_capped_string(max_length: int) -> Validator:
     @set_type_structure("str")
     def validator(var_name: str, val: object) -> Optional[str]:
         if not isinstance(val, str):
-            return _('%s is not a string') % (var_name,)
+            return _('{var_name} is not a string').format(var_name=var_name)
         if len(val) > max_length:
             return _("{var_name} is too long (limit: {max_length} characters)").format(
                 var_name=var_name, max_length=max_length)
@@ -103,7 +103,7 @@ def check_string_fixed_length(length: int) -> Validator:
     @set_type_structure("str")
     def validator(var_name: str, val: object) -> Optional[str]:
         if not isinstance(val, str):
-            return _('%s is not a string') % (var_name,)
+            return _('{var_name} is not a string').format(var_name=var_name)
         if len(val) != length:
             return _("{var_name} has incorrect length {length}; should be {target_length}").format(
                 var_name=var_name, target_length=length, length=len(val))
@@ -117,17 +117,17 @@ def check_long_string(var_name: str, val: object) -> Optional[str]:
 @set_type_structure("date")
 def check_date(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, str):
-        return _('%s is not a string') % (var_name,)
+        return _('{var_name} is not a string').format(var_name=var_name)
     try:
         datetime.strptime(val, '%Y-%m-%d')
     except ValueError:
-        return _('%s is not a date') % (var_name,)
+        return _('{var_name} is not a date').format(var_name=var_name)
     return None
 
 @set_type_structure("int")
 def check_int(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, int):
-        return _('%s is not an integer') % (var_name,)
+        return _('{var_name} is not an integer').format(var_name=var_name)
     return None
 
 def check_int_in(possible_values: List[int]) -> Validator:
@@ -137,7 +137,7 @@ def check_int_in(possible_values: List[int]) -> Validator:
         if not_int is not None:
             return not_int
         if val not in possible_values:
-            return _("Invalid %s") % (var_name,)
+            return _("Invalid {var_name}").format(var_name=var_name)
         return None
 
     return validator
@@ -145,23 +145,23 @@ def check_int_in(possible_values: List[int]) -> Validator:
 @set_type_structure("float")
 def check_float(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, float):
-        return _('%s is not a float') % (var_name,)
+        return _('{var_name} is not a float').format(var_name=var_name)
     return None
 
 @set_type_structure("bool")
 def check_bool(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, bool):
-        return _('%s is not a boolean') % (var_name,)
+        return _('{var_name} is not a boolean').format(var_name=var_name)
     return None
 
 @set_type_structure("str")
 def check_color(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, str):
-        return _('%s is not a string') % (var_name,)
+        return _('{var_name} is not a string').format(var_name=var_name)
     valid_color_pattern = re.compile(r'^#([a-fA-F0-9]{3,6})$')
     matched_results = valid_color_pattern.match(val)
     if not matched_results:
-        return _('%s is not a valid hex color code') % (var_name,)
+        return _('{var_name} is not a valid hex color code').format(var_name=var_name)
     return None
 
 def check_none_or(sub_validator: Validator) -> Validator:
@@ -190,11 +190,12 @@ def check_list(sub_validator: Optional[Validator], length: Optional[int]=None) -
     @set_type_structure(type_structure)
     def f(var_name: str, val: object) -> Optional[str]:
         if not isinstance(val, list):
-            return _('%s is not a list') % (var_name,)
+            return _('{var_name} is not a list').format(var_name=var_name)
 
         if length is not None and length != len(val):
-            return (_('%(container)s should have exactly %(length)s items') %
-                    {'container': var_name, 'length': length})
+            return (_('{container} should have exactly {length} items').format(
+                container=var_name, length=length,
+            ))
 
         if sub_validator:
             for i, item in enumerate(val):
@@ -215,12 +216,13 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
     @set_type_structure(type_structure)
     def f(var_name: str, val: object) -> Optional[str]:
         if not isinstance(val, dict):
-            return _('%s is not a dict') % (var_name,)
+            return _('{var_name} is not a dict').format(var_name=var_name)
 
         for k, sub_validator in required_keys:
             if k not in val:
-                return (_('%(key_name)s key is missing from %(var_name)s') %
-                        {'key_name': k, 'var_name': var_name})
+                return (_('{key_name} key is missing from {var_name}').format(
+                    key_name=k, var_name=var_name,
+                ))
             vname = f'{var_name}["{k}"]'
             error = sub_validator(vname, val[k])
             if error:
@@ -251,7 +253,7 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
             optional_keys_set = {x[0] for x in optional_keys}
             delta_keys = set(val.keys()) - required_keys_set - optional_keys_set
             if len(delta_keys) != 0:
-                return _("Unexpected arguments: %s") % (", ".join(list(delta_keys)),)
+                return _("Unexpected arguments: {}").format(", ".join(list(delta_keys)))
 
         return None
 
@@ -280,17 +282,16 @@ def check_variable_type(allowed_type_funcs: Iterable[Validator]) -> Validator:
         for func in allowed_type_funcs:
             if not func(var_name, val):
                 return None
-        return _('%s is not an allowed_type') % (var_name,)
+        return _('{var_name} is not an allowed_type').format(var_name=var_name)
     return enumerated_type_check
 
 def equals(expected_val: object) -> Validator:
     @set_type_structure(f'equals("{str(expected_val)}")')
     def f(var_name: str, val: object) -> Optional[str]:
         if val != expected_val:
-            return (_('%(variable)s != %(expected_value)s (%(value)s is wrong)') %
-                    {'variable': var_name,
-                     'expected_value': expected_val,
-                     'value': val})
+            return (_('{variable} != {expected_value} ({value} is wrong)').format(
+                variable=var_name, expected_value=expected_val, value=val,
+            ))
         return None
     return f
 
@@ -313,7 +314,7 @@ def check_url(var_name: str, val: object) -> Optional[str]:
         validate(val)
         return None
     except ValidationError:
-        return _('%s is not a URL') % (var_name,)
+        return _('{var_name} is not a URL').format(var_name=var_name)
 
 @set_type_structure('str')
 def check_external_account_url_pattern(var_name: str, val: object) -> Optional[str]:
@@ -435,7 +436,7 @@ def check_string_or_int_list(var_name: str, val: object) -> Optional[str]:
         return None
 
     if not isinstance(val, list):
-        return _('%s is not a string or an integer list') % (var_name,)
+        return _('{var_name} is not a string or an integer list').format(var_name=var_name)
 
     return check_list(check_int)(var_name, val)
 
@@ -444,4 +445,4 @@ def check_string_or_int(var_name: str, val: object) -> Optional[str]:
     if isinstance(val, str) or isinstance(val, int):
         return None
 
-    return _('%s is not a string or integer') % (var_name,)
+    return _('{var_name} is not a string or integer').format(var_name=var_name)

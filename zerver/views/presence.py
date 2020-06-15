@@ -30,7 +30,7 @@ def get_presence_backend(request: HttpRequest, user_profile: UserProfile,
 
     presence_dict = get_presence_for_user(target.id)
     if len(presence_dict) == 0:
-        return json_error(_('No presence data for %s') % (email,))
+        return json_error(_('No presence data for {email}').format(email=email))
 
     # For initial version, we just include the status and timestamp keys
     result = dict(presence=presence_dict[target.email])
@@ -77,7 +77,7 @@ def update_active_status_backend(request: HttpRequest, user_profile: UserProfile
                                  ) -> HttpResponse:
     status_val = UserPresence.status_from_string(status)
     if status_val is None:
-        raise JsonableError(_("Invalid status: %s") % (status,))
+        raise JsonableError(_("Invalid status: {}").format(status))
     elif user_profile.presence_enabled:
         update_user_presence(user_profile, request.client, timezone_now(),
                              status_val, new_user_input)

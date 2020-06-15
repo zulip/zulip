@@ -77,7 +77,7 @@ def send_to_push_bouncer(method: str,
         if 'code' in result_dict and result_dict['code'] == 'INVALID_ZULIP_SERVER':
             # Invalid Zulip server credentials should email this server's admins
             raise PushNotificationBouncerException(
-                _("Push notifications bouncer error: %s") % (msg,))
+                _("Push notifications bouncer error: {}").format(msg))
         else:
             # But most other errors coming from the push bouncer
             # server are client errors (e.g. never-registered token)

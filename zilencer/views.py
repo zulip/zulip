@@ -74,7 +74,7 @@ def register_remote_server(
         url_validator = URLValidator()
         url_validator('http://' + hostname)
     except ValidationError:
-        raise JsonableError(_('%s is not a valid hostname') % (hostname,))
+        raise JsonableError(_('{} is not a valid hostname').format(hostname))
 
     try:
         validate_email(contact_email)
@@ -179,7 +179,7 @@ def validate_incoming_table_data(server: RemoteZulipServer, model: Any,
     last_id = get_last_id_from_server(server, model)
     for row in rows:
         if is_count_stat and row['property'] not in COUNT_STATS:
-            raise JsonableError(_("Invalid property %s") % (row['property'],))
+            raise JsonableError(_("Invalid property {}").format(row['property']))
         if row['id'] <= last_id:
             raise JsonableError(_("Data is out of order."))
         last_id = row['id']

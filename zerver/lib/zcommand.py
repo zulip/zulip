@@ -54,4 +54,4 @@ def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]
                                             switch_command='fluid-width',
                                             setting='fluid_layout_width',
                                             setting_value=False))
-    raise JsonableError(_('No such command: %s') % (command,))
+    raise JsonableError(_('No such command: {}').format(command))

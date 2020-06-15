@@ -852,8 +852,9 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
                          apply_markdown: bool=REQ(validator=check_bool, default=True)) -> HttpResponse:
     anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
     if num_before + num_after > MAX_MESSAGES_PER_FETCH:
-        return json_error(_("Too many messages requested (maximum %s).")
-                          % (MAX_MESSAGES_PER_FETCH,))
+        return json_error(_("Too many messages requested (maximum {}).").format(
+            MAX_MESSAGES_PER_FETCH,
+        ))
 
     if user_profile.realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
         # If email addresses are only available to administrators,
@@ -1221,7 +1222,7 @@ def mark_topic_as_read(request: HttpRequest,
         )
 
         if not topic_exists:
-            raise JsonableError(_('No such topic \'%s\'') % (topic_name,))
+            raise JsonableError(_('No such topic \'{}\'').format(topic_name))
 
     count = do_mark_stream_messages_as_read(user_profile, request.client, stream, topic_name)
 
@@ -1416,7 +1417,7 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
         try:
             realm = get_realm(realm_str)
         except Realm.DoesNotExist:
-            return json_error(_("Unknown organization '%s'") % (realm_str,))
+            return json_error(_("Unknown organization '{}'").format(realm_str))
 
     if client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror", "JabberMirror"]:
         # Here's how security works for mirroring:

@@ -115,12 +115,12 @@ def create_streams_if_needed(realm: Realm,
 
 def check_stream_name(stream_name: str) -> None:
     if stream_name.strip() == "":
-        raise JsonableError(_("Invalid stream name '%s'") % (stream_name,))
+        raise JsonableError(_("Invalid stream name '{}'").format(stream_name))
     if len(stream_name) > Stream.MAX_NAME_LENGTH:
-        raise JsonableError(_("Stream name too long (limit: %s characters).") % (Stream.MAX_NAME_LENGTH,))
+        raise JsonableError(_("Stream name too long (limit: {} characters).").format(Stream.MAX_NAME_LENGTH))
     for i in stream_name:
         if ord(i) == 0:
-            raise JsonableError(_("Stream name '%s' contains NULL (0x00) characters.") % (stream_name,))
+            raise JsonableError(_("Stream name '{}' contains NULL (0x00) characters.").format(stream_name))
 
 def subscribed_to_stream(user_profile: UserProfile, stream_id: int) -> bool:
     return Subscription.objects.filter(
@@ -177,7 +177,7 @@ def access_stream_for_send_message(sender: UserProfile,
         return
 
     # All other cases are an error.
-    raise JsonableError(_("Not authorized to send to stream '%s'") % (stream.name,))
+    raise JsonableError(_("Not authorized to send to stream '{}'").format(stream.name))
 
 def check_for_exactly_one_stream_arg(stream_id: Optional[int], stream: Optional[str]) -> None:
     if stream_id is None and stream is None:
@@ -276,14 +276,14 @@ def check_stream_name_available(realm: Realm, name: str) -> None:
     check_stream_name(name)
     try:
         get_stream(name, realm)
-        raise JsonableError(_("Stream name '%s' is already taken.") % (name,))
+        raise JsonableError(_("Stream name '{}' is already taken.").format(name))
     except Stream.DoesNotExist:
         pass
 
 def access_stream_by_name(user_profile: UserProfile,
                           stream_name: str,
                           allow_realm_admin: bool=False) -> Tuple[Stream, Recipient, Optional[Subscription]]:
-    error = _("Invalid stream name '%s'") % (stream_name,)
+    error = _("Invalid stream name '{}'").format(stream_name)
     try:
         stream = get_realm_stream(stream_name, user_profile.realm_id)
     except Stream.DoesNotExist:
@@ -345,7 +345,7 @@ def can_access_stream_history(user_profile: UserProfile, stream: Stream) -> bool
 
     if stream.is_history_public_to_subscribers():
         # In this case, we check if the user is subscribed.
-        error = _("Invalid stream name '%s'") % (stream.name,)
+        error = _("Invalid stream name '{}'").format(stream.name)
         try:
             (recipient, sub) = access_stream_common(user_profile, stream, error)
         except JsonableError:
@@ -440,8 +440,9 @@ def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
         if not user_profile.can_create_streams():
             raise JsonableError(_('User cannot create streams.'))
         elif not autocreate:
-            raise JsonableError(_("Stream(s) (%s) do not exist") % ", ".join(
-                stream_dict["name"] for stream_dict in missing_stream_dicts))
+            raise JsonableError(_("Stream(s) ({}) do not exist").format(
+                ", ".join(stream_dict["name"] for stream_dict in missing_stream_dicts),
+            ))
 
         # We already filtered out existing streams, so dup_streams
         # will normally be an empty list below, but we protect against somebody
@@ -458,7 +459,7 @@ def access_default_stream_group_by_id(realm: Realm, group_id: int) -> DefaultStr
     try:
         return DefaultStreamGroup.objects.get(realm=realm, id=group_id)
     except DefaultStreamGroup.DoesNotExist:
-        raise JsonableError(_("Default stream group with id '%s' does not exist.") % (group_id,))
+        raise JsonableError(_("Default stream group with id '{}' does not exist.").format(group_id))
 
 def get_stream_by_narrow_operand_access_unchecked(operand: Union[str, int], realm: Realm) -> Stream:
     """This is required over access_stream_* in certain cases where

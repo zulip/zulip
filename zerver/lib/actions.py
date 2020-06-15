@@ -1948,7 +1948,7 @@ def validate_recipient_user_profiles(user_profiles: Sequence[UserProfile],
     for user_profile in user_profiles:
         if (not user_profile.is_active and not user_profile.is_mirror_dummy and
                 not allow_deactivated) or user_profile.realm.deactivated:
-            raise ValidationError(_("'%s' is no longer using Zulip.") % (user_profile.email,))
+            raise ValidationError(_("'{email}' is no longer using Zulip.").format(email=user_profile.email))
         recipient_profiles_map[user_profile.id] = user_profile
         if not is_cross_realm_bot_email(user_profile.email):
             realms.add(user_profile.realm_id)
@@ -2132,14 +2132,16 @@ def check_schedule_message(sender: UserProfile, client: Client,
 
 def check_default_stream_group_name(group_name: str) -> None:
     if group_name.strip() == "":
-        raise JsonableError(_("Invalid default stream group name '%s'") % (group_name,))
+        raise JsonableError(_("Invalid default stream group name '{}'").format(group_name))
     if len(group_name) > DefaultStreamGroup.MAX_NAME_LENGTH:
-        raise JsonableError(_("Default stream group name too long (limit: %s characters)")
-                            % (DefaultStreamGroup.MAX_NAME_LENGTH,))
+        raise JsonableError(_("Default stream group name too long (limit: {} characters)").format(
+            DefaultStreamGroup.MAX_NAME_LENGTH,
+        ))
     for i in group_name:
         if ord(i) == 0:
-            raise JsonableError(_("Default stream group name '%s' contains NULL (0x00) characters.")
-                                % (group_name,))
+            raise JsonableError(_("Default stream group name '{}' contains NULL (0x00) characters.").format(
+                group_name,
+            ))
 
 def send_rate_limited_pm_notification_to_bot_owner(sender: UserProfile,
                                                    realm: Realm,
@@ -2194,19 +2196,19 @@ def send_pm_if_empty_stream(stream: Optional[Stream],
     }
     if stream is None:
         if stream_id is not None:
-            content = _("Your bot `%(bot_identity)s` tried to send a message to stream ID "
-                        "%(stream_id)s, but there is no stream with that ID.") % arg_dict
+            content = _("Your bot `{bot_identity}` tried to send a message to stream ID "
+                        "{stream_id}, but there is no stream with that ID.").format(**arg_dict)
         else:
             assert(stream_name is not None)
-            content = _("Your bot `%(bot_identity)s` tried to send a message to stream "
-                        "#**%(stream_name)s**, but that stream does not exist. "
-                        "Click [here](#streams/new) to create it.") % arg_dict
+            content = _("Your bot `{bot_identity}` tried to send a message to stream "
+                        "#**{stream_name}**, but that stream does not exist. "
+                        "Click [here](#streams/new) to create it.").format(**arg_dict)
     else:
         if num_subscribers_for_stream_id(stream.id) > 0:
             return
-        content = _("Your bot `%(bot_identity)s` tried to send a message to "
-                    "stream #**%(stream_name)s**. The stream exists but "
-                    "does not have any subscribers.") % arg_dict
+        content = _("Your bot `{bot_identity}` tried to send a message to "
+                    "stream #**{stream_name}**. The stream exists but "
+                    "does not have any subscribers.").format(**arg_dict)
 
     send_rate_limited_pm_notification_to_bot_owner(sender, realm, content)
 
@@ -2349,7 +2351,9 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
 
         error_msg = check_widget_content(widget_content)
         if error_msg:
-            raise JsonableError(_('Widgets: %s') % (error_msg,))
+            raise JsonableError(_('Widgets: {error_msg}').format(
+                error_msg=error_msg,
+            ))
 
     return {'message': message, 'stream': stream, 'local_id': local_id,
             'sender_queue_id': sender_queue_id, 'realm': realm,
@@ -3583,12 +3587,13 @@ def do_rename_stream(stream: Stream,
         sender,
         stream,
         Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
-        _('@_**%(user_name)s|%(user_id)d** renamed stream **%(old_stream_name)s** to '
-          '**%(new_stream_name)s**.') % {
-              'user_name': user_profile.full_name,
-              'user_id': user_profile.id,
-              'old_stream_name': old_name,
-              'new_stream_name': new_name},
+        _('@_**{user_name}|{user_id}** renamed stream **{old_stream_name}** to '
+          '**{new_stream_name}**.').format(
+            user_name=user_profile.full_name,
+            user_id=user_profile.id,
+            old_stream_name=old_name,
+            new_stream_name=new_name,
+        ),
     )
     # Even though the token doesn't change, the web client needs to update the
     # email forwarding address to display the correctly-escaped new name.
@@ -3734,7 +3739,7 @@ def lookup_default_stream_groups(default_stream_group_names: List[str],
             default_stream_group = DefaultStreamGroup.objects.get(
                 name=group_name, realm=realm)
         except DefaultStreamGroup.DoesNotExist:
-            raise JsonableError(_('Invalid default stream group %s') % (group_name,))
+            raise JsonableError(_('Invalid default stream group {}').format(group_name))
         default_stream_groups.append(default_stream_group)
     return default_stream_groups
 
@@ -3771,15 +3776,16 @@ def do_create_default_stream_group(realm: Realm, group_name: str,
     for stream in streams:
         if stream in default_streams:
             raise JsonableError(_(
-                "'%(stream_name)s' is a default stream and cannot be added to '%(group_name)s'")
-                % {'stream_name': stream.name, 'group_name': group_name})
+                "'{stream_name}' is a default stream and cannot be added to '{group_name}'",
+            ).format(stream_name=stream.name, group_name=group_name))
 
     check_default_stream_group_name(group_name)
     (group, created) = DefaultStreamGroup.objects.get_or_create(
         name=group_name, realm=realm, description=description)
     if not created:
-        raise JsonableError(_("Default stream group '%(group_name)s' already exists")
-                            % {'group_name': group_name})
+        raise JsonableError(_(
+            "Default stream group '{group_name}' already exists",
+        ).format(group_name=group_name))
 
     group.streams.set(streams)
     notify_default_stream_groups(realm)
@@ -3790,12 +3796,12 @@ def do_add_streams_to_default_stream_group(realm: Realm, group: DefaultStreamGro
     for stream in streams:
         if stream in default_streams:
             raise JsonableError(_(
-                "'%(stream_name)s' is a default stream and cannot be added to '%(group_name)s'")
-                % {'stream_name': stream.name, 'group_name': group.name})
+                "'{stream_name}' is a default stream and cannot be added to '{group_name}'",
+            ).format(stream_name=stream.name, group_name=group.name))
         if stream in group.streams.all():
             raise JsonableError(_(
-                "Stream '%(stream_name)s' is already present in default stream group '%(group_name)s'")
-                % {'stream_name': stream.name, 'group_name': group.name})
+                "Stream '{stream_name}' is already present in default stream group '{group_name}'",
+            ).format(stream_name=stream.name, group_name=group.name))
         group.streams.add(stream)
 
     group.save()
@@ -3806,8 +3812,8 @@ def do_remove_streams_from_default_stream_group(realm: Realm, group: DefaultStre
     for stream in streams:
         if stream not in group.streams.all():
             raise JsonableError(_(
-                "Stream '%(stream_name)s' is not present in default stream group '%(group_name)s'")
-                % {'stream_name': stream.name, 'group_name': group.name})
+                "Stream '{stream_name}' is not present in default stream group '{group_name}'",
+            ).format(stream_name=stream.name, group_name=group.name))
         group.streams.remove(stream)
 
     group.save()
@@ -3816,10 +3822,10 @@ def do_remove_streams_from_default_stream_group(realm: Realm, group: DefaultStre
 def do_change_default_stream_group_name(realm: Realm, group: DefaultStreamGroup,
                                         new_group_name: str) -> None:
     if group.name == new_group_name:
-        raise JsonableError(_("This default stream group is already named '%s'") % (new_group_name,))
+        raise JsonableError(_("This default stream group is already named '{}'").format(new_group_name))
 
     if DefaultStreamGroup.objects.filter(name=new_group_name, realm=realm).exists():
-        raise JsonableError(_("Default stream group '%s' already exists") % (new_group_name,))
+        raise JsonableError(_("Default stream group '{}' already exists").format(new_group_name))
 
     group.name = new_group_name
     group.save()
@@ -4172,9 +4178,9 @@ def do_update_message_flags(user_profile: UserProfile,
     valid_flags = [item for item in UserMessage.flags
                    if item not in UserMessage.NON_API_FLAGS]
     if flag not in valid_flags:
-        raise JsonableError(_("Invalid flag: '%s'") % (flag,))
+        raise JsonableError(_("Invalid flag: '{}'").format(flag))
     if flag in UserMessage.NON_EDITABLE_FLAGS:
-        raise JsonableError(_("Flag not editable: '%s'") % (flag,))
+        raise JsonableError(_("Flag not editable: '{}'").format(flag))
     flagattr = getattr(UserMessage.flags, flag)
 
     assert messages is not None
@@ -4251,15 +4257,19 @@ def notify_topic_moved_streams(user_profile: UserProfile,
     if send_notification_to_new_thread:
         internal_send_stream_message(
             new_stream.realm, sender, new_stream, new_topic,
-            _("This topic was moved here from %(old_location)s by %(user)s")
-            % dict(old_location=old_topic_link, user=user_mention))
+            _("This topic was moved here from {old_location} by {user}").format(
+                old_location=old_topic_link, user=user_mention,
+            ),
+        )
 
     if send_notification_to_old_thread:
         # Send a notification to the old stream that the topic was moved.
         internal_send_stream_message(
             old_stream.realm, sender, old_stream, old_topic,
-            _("This topic was moved by %(user)s to %(new_location)s")
-            % dict(user=user_mention, new_location=new_topic_link))
+            _("This topic was moved by {user} to {new_location}").format(
+                user=user_mention, new_location=new_topic_link,
+            ),
+        )
 
 def get_user_info_for_message_updates(message_id: int) -> MessageUpdateUserInfoResult:
 
@@ -4993,8 +5003,8 @@ def estimate_recent_invites(realms: Iterable[Realm], *, days: int) -> int:
 def check_invite_limit(realm: Realm, num_invitees: int) -> None:
     '''Discourage using invitation emails as a vector for carrying spam.'''
     msg = _("You do not have enough remaining invites. "
-            "Please contact %s to have your limit raised. "
-            "No invitations were sent.") % (settings.ZULIP_ADMINISTRATOR,)
+            "Please contact {email} to have your limit raised. "
+            "No invitations were sent.").format(email=settings.ZULIP_ADMINISTRATOR)
     if not settings.OPEN_REALM_CREATION:
         return
 
@@ -5618,7 +5628,7 @@ def check_add_user_group(realm: Realm, name: str, initial_members: List[UserProf
         user_group = create_user_group(name, initial_members, realm, description=description)
         do_send_create_user_group_event(user_group, initial_members)
     except django.db.utils.IntegrityError:
-        raise JsonableError(_("User group '%s' already exists.") % (name,))
+        raise JsonableError(_("User group '{}' already exists.").format(name))
 
 def do_send_user_group_update_event(user_group: UserGroup, data: Dict[str, Any]) -> None:
     event = dict(type="user_group", op='update', group_id=user_group.id, data=data)
@@ -5629,7 +5639,7 @@ def do_update_user_group_name(user_group: UserGroup, name: str) -> None:
         user_group.name = name
         user_group.save(update_fields=['name'])
     except django.db.utils.IntegrityError:
-        raise JsonableError(_("User group '%s' already exists.") % (name,))
+        raise JsonableError(_("User group '{}' already exists.").format(name))
     do_send_user_group_update_event(user_group, dict(name=name))
 
 def do_update_user_group_description(user_group: UserGroup, description: str) -> None:

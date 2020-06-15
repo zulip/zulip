@@ -174,7 +174,7 @@ def get_existing_user_errors(
 
         if existing_user_profile.is_active:
             if verbose:
-                msg = _('%s already has an account') % (email,)
+                msg = _('{email} already has an account').format(email=email)
             else:
                 msg = _("Already has an account.")
         else:

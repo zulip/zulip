@@ -479,8 +479,9 @@ def create_user_backend(request: HttpRequest, user_profile: UserProfile,
     try:
         email_allowed_for_realm(email, user_profile.realm)
     except DomainNotAllowedForRealmError:
-        return json_error(_("Email '%(email)s' not allowed in this organization") %
-                          {'email': email})
+        return json_error(_("Email '{email}' not allowed in this organization").format(
+            email=email,
+        ))
     except DisposableEmailError:
         return json_error(_("Disposable email addresses are not allowed in this organization"))
     except EmailContainsPlusError:
@@ -488,7 +489,7 @@ def create_user_backend(request: HttpRequest, user_profile: UserProfile,
 
     try:
         get_user_by_delivery_email(email, user_profile.realm)
-        return json_error(_("Email '%s' already in use") % (email,))
+        return json_error(_("Email '{}' already in use").format(email))
     except UserProfile.DoesNotExist:
         pass
 

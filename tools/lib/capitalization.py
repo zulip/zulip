@@ -171,7 +171,7 @@ SPLIT_BOUNDARY_REGEX = re.compile(fr'[{SPLIT_BOUNDARY}]')
 
 # Regexes which check capitalization in sentences.
 DISALLOWED_REGEXES = [re.compile(regex) for regex in [
-    r'^[a-z]',  # Checks if the sentence starts with a lower case character.
+    r'^[a-z](?!\})',  # Checks if the sentence starts with a lower case character.
     r'^[A-Z][a-z]+[\sa-z0-9]+[A-Z]',  # Checks if an upper case character exists
     # after a lower case character when the first character is in upper case.
 ]]

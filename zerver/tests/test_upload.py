@@ -164,7 +164,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # would be 1MB.
         with self.settings(MAX_FILE_UPLOAD_SIZE=0):
             result = self.client_post("/json/user_uploads", {'f1': fp})
-        self.assert_json_error(result, 'Uploaded file is larger than the allowed limit of 0 MB')
+        self.assert_json_error(result, 'Uploaded file is larger than the allowed limit of 0 MiB')
 
     def test_multiple_upload_failure(self) -> None:
         """
@@ -1163,7 +1163,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         with get_test_image_file(self.correct_files[0][0]) as fp:
             with self.settings(MAX_AVATAR_FILE_SIZE=0):
                 result = self.client_post("/json/users/me/avatar", {'file': fp})
-        self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MB")
+        self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
 
     def tearDown(self) -> None:
         destroy_uploads()
@@ -1336,7 +1336,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         with get_test_image_file(self.correct_files[0][0]) as fp:
             with self.settings(MAX_ICON_FILE_SIZE=0):
                 result = self.client_post("/json/realm/icon", {'file': fp})
-        self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MB")
+        self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
 
     def tearDown(self) -> None:
         destroy_uploads()
@@ -1479,7 +1479,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
             with self.settings(MAX_LOGO_FILE_SIZE=0):
                 result = self.client_post("/json/realm/logo", {'file': fp, 'night':
                                                                ujson.dumps(self.night)})
-        self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MB")
+        self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
 
     def tearDown(self) -> None:
         destroy_uploads()

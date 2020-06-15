@@ -243,7 +243,7 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
         labels_sort_function = None
         include_empty_subgroups = True
     else:
-        raise JsonableError(_("Unknown chart name: %s") % (chart_name,))
+        raise JsonableError(_("Unknown chart name: {}").format(chart_name))
 
     # Most likely someone using our API endpoint. The /stats page does not
     # pass a start or end in its requests.
@@ -252,8 +252,9 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
     if end is not None:
         end = convert_to_UTC(end)
     if start is not None and end is not None and start > end:
-        raise JsonableError(_("Start time is later than end time. Start: %(start)s, End: %(end)s") %
-                            {'start': start, 'end': end})
+        raise JsonableError(_("Start time is later than end time. Start: {start}, End: {end}").format(
+            start=start, end=end,
+        ))
 
     if realm is None:
         # Note that this value is invalid for Remote tables; be
