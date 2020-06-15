@@ -10,17 +10,6 @@ from zulint.custom_rules import Rule, RuleList
 # 'exclude_line': 'set([(<path>, <line>), ...])' - excludes all lines matching <line> in the file <path> from linting.
 # 'include_only': 'set([<path>, ...])' - includes only those files where <path> is a substring of the filepath.
 
-PYDELIMS = r'''"'()\[\]{}#\\'''
-PYREG = fr"[^{PYDELIMS}]"
-PYSQ = r'"(?:[^"\\]|\\.)*"'
-PYDQ = r"'(?:[^'\\]|\\.)*'"
-PYLEFT = r"[(\[{]"
-PYRIGHT = r"[)\]}]"
-PYCODE = PYREG
-for depth in range(5):
-    PYGROUP = fr"""(?:{PYSQ}|{PYDQ}|{PYLEFT}{PYCODE}*{PYRIGHT})"""
-    PYCODE = fr"""(?:{PYREG}|{PYGROUP})"""
-
 FILES_WITH_LEGACY_SUBJECT = {
     # This basically requires a big DB migration:
     'zerver/lib/topic.py',
@@ -250,21 +239,6 @@ python_rules = RuleList(
          'description': 'Unnecessary whitespace between "," and ")"',
          'good_lines': ['foo = (1, 2, 3,)', 'foo(bar, 42)'],
          'bad_lines': ['foo = (1, 2, 3, )']},
-        {'pattern': "%  [(]",
-         'description': 'Unnecessary whitespace between "%" and "("',
-         'good_lines': ['"foo %s bar" % ("baz",)'],
-         'bad_lines': ['"foo %s bar" %  ("baz",)']},
-        # This next check could have false positives, but it seems pretty
-        # rare; if we find any, they can be added to the exclude list for
-        # this rule.
-        {'pattern': fr"""^(?:[^'"#\\]|{PYSQ}|{PYDQ})*(?:{PYSQ}|{PYDQ})\s*%\s*(?![\s({{\\]|dict\(|tuple\()(?:[^,{PYDELIMS}]|{PYGROUP})+(?:$|[,#\\]|{PYRIGHT})""",
-         'description': 'Used % formatting without a tuple',
-         'good_lines': ['"foo %s bar" % ("baz",)'],
-         'bad_lines': ['"foo %s bar" % "baz"']},
-        {'pattern': fr"""^(?:[^'"#\\]|{PYSQ}|{PYDQ})*(?:{PYSQ}|{PYDQ})\s*%\s*\((?:[^,{PYDELIMS}]|{PYGROUP})*\)""",
-         'description': 'Used % formatting with parentheses that do not form a tuple',
-         'good_lines': ['"foo %s bar" % ("baz",)"'],
-         'bad_lines': ['"foo %s bar" % ("baz")']},
         {'pattern': 'sudo',
          'include_only': {'scripts/'},
          'exclude': {'scripts/lib/setup_venv.py'},
@@ -303,11 +277,6 @@ python_rules = RuleList(
         {'pattern': r'''\WJsonableError\(["'].+\)''',
          'exclude': {'zerver/tests', 'zerver/views/development/'},
          'description': 'Argument to JsonableError should be a literal string enclosed by _()'},
-        {'pattern': fr"""\b_\((?:\s|{PYSQ}|{PYDQ})*[^\s'")]""",
-         'description': 'Called _() on a computed string',
-         'exclude_line': {('zerver/lib/i18n.py', 'result = _(string)')},
-         'good_lines': ["return json_error(_('No presence data for %s') % (target.email,))"],
-         'bad_lines': ["return json_error(_('No presence data for %s' % (target.email,)))"]},
         {'pattern': r'''([a-zA-Z0-9_]+)=REQ\(['"]\1['"]''',
          'description': 'REQ\'s first argument already defaults to parameter name'},
         {'pattern': r'self\.client\.(get|post|patch|put|delete)',
