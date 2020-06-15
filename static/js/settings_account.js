@@ -590,7 +590,7 @@ exports.set_up = function () {
             contentType: false,
             success: function () {
                 display_avatar_upload_complete();
-                $("#user_avatar_file_input_error").hide();
+                $("#user-avatar-upload-widget .image_file_input_error").hide();
                 $("#user-avatar-source").hide();
                 // Rest of the work is done via the user_events -> avatar_url event we will get
             },
@@ -599,7 +599,7 @@ exports.set_up = function () {
                 if (page_params.avatar_source === 'G') {
                     $("#user-avatar-source").show();
                 }
-                const $error = $("#user_avatar_file_input_error");
+                const $error = $("#user-avatar-upload-widget .image_file_input_error");
                 $error.text(JSON.parse(xhr.responseText).msg);
                 $error.show();
             },

@@ -71,7 +71,7 @@ exports.build_user_avatar_widget = function (upload_function) {
     if (settings_account.user_can_change_avatar()) {
         return upload_widget.build_direct_upload_widget(
             get_file_input,
-            $("#user_avatar_file_input_error").expectOne(),
+            $("#user-avatar-upload-widget .image_file_input_error").expectOne(),
             $("#user-avatar-upload-widget .image_upload_button").expectOne(),
             upload_function,
             page_params.max_avatar_file_size_mib
