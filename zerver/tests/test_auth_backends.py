@@ -2099,7 +2099,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         if subdomain:
             params['subdomain'] = subdomain
 
-        url += "&%s" % (urllib.parse.urlencode(params),)
+        url += f"&{urllib.parse.urlencode(params)}"
         return url, headers
 
     def social_auth_test(self, account_data_dict: Dict[str, str],
