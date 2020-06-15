@@ -49,9 +49,8 @@ function make_tab_data(filter) {
 
 exports.colorize_tab_bar = function () {
     const filter = narrow_state.filter();
-    if (filter === undefined || !filter.has_operator('stream') || !filter._stream_params) {return;}
-    const color_for_stream = stream_data.get_color(filter._stream_params._stream_name);
-    $("#tab_list .stream > .fa").css('color', color_for_stream);
+    if (filter === undefined || !filter._sub) {return;}
+    $("#tab_list .stream > .fa").css('color', filter._sub.color);
 };
 
 function append_and_display_title_area(tab_bar_data) {
