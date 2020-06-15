@@ -37,13 +37,6 @@ define service{
 define service{
         use                             generic-service
         host_name                       nagios
-        service_description             Check postgres replication lag
-        check_command                   check_postgres_replication_lag
-        }
-
-define service{
-        use                             generic-service
-        host_name                       nagios
         service_description             Check Camo is operational
         check_command                   check_website_response!<%= @nagios_camo_check_url %>!6000!12000!
         }
