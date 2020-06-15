@@ -44,6 +44,7 @@ class CustomerPlan(models.Model):
         'LicenseLedger', null=True, on_delete=CASCADE, related_name='+')
     DONE = 1
     STARTED = 2
+    INITIAL_INVOICE_TO_BE_SENT = 3
     invoicing_status: int = models.SmallIntegerField(default=DONE)
 
     STANDARD = 1
@@ -54,6 +55,7 @@ class CustomerPlan(models.Model):
     ACTIVE = 1
     DOWNGRADE_AT_END_OF_CYCLE = 2
     FREE_TRIAL = 3
+    SWITCH_TO_ANNUAL_AT_END_OF_CYCLE = 4
     # "Live" plans should have a value < LIVE_STATUS_THRESHOLD.
     # There should be at most one live plan per customer.
     LIVE_STATUS_THRESHOLD = 10

@@ -197,14 +197,17 @@ def billing_home(request: HttpRequest) -> HttpResponse:
     plan = get_current_plan_by_customer(customer)
     if plan is not None:
         now = timezone_now()
-        last_ledger_entry = make_end_of_cycle_updates_if_needed(plan, now)
+        new_plan, last_ledger_entry = make_end_of_cycle_updates_if_needed(plan, now)
         if last_ledger_entry is not None:
+            if new_plan is not None:  # nocoverage
+                plan = new_plan
             plan_name = {
                 CustomerPlan.STANDARD: 'Zulip Standard',
                 CustomerPlan.PLUS: 'Zulip Plus',
             }[plan.tier]
             free_trial = plan.status == CustomerPlan.FREE_TRIAL
             downgrade_at_end_of_cycle = plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
+            switch_to_annual_at_end_of_cycle = plan.status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE
             licenses = last_ledger_entry.licenses
             licenses_used = get_latest_seat_count(user.realm)
             # Should do this in javascript, using the user's timezone
@@ -222,6 +225,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
                 'has_active_plan': True,
                 'free_trial': free_trial,
                 'downgrade_at_end_of_cycle': downgrade_at_end_of_cycle,
+                'switch_to_annual_at_end_of_cycle': switch_to_annual_at_end_of_cycle,
                 'licenses': licenses,
                 'licenses_used': licenses_used,
                 'renewal_date': renewal_date,
@@ -240,7 +244,8 @@ def billing_home(request: HttpRequest) -> HttpResponse:
 @has_request_variables
 def change_plan_status(request: HttpRequest, user: UserProfile,
                        status: int=REQ("status", validator=check_int)) -> HttpResponse:
-    assert(status in [CustomerPlan.ACTIVE, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE, CustomerPlan.ENDED])
+    assert(status in [CustomerPlan.ACTIVE, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
+                      CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE, CustomerPlan.ENDED])
 
     plan = get_current_plan_by_realm(user.realm)
     assert(plan is not None)  # for mypy
@@ -250,6 +255,11 @@ def change_plan_status(request: HttpRequest, user: UserProfile,
         do_change_plan_status(plan, status)
     elif status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
         assert(plan.status == CustomerPlan.ACTIVE)
+        do_change_plan_status(plan, status)
+    elif status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE:
+        assert(plan.billing_schedule == CustomerPlan.MONTHLY)
+        assert(plan.status == CustomerPlan.ACTIVE)
+        assert(plan.fixed_price is None)
         do_change_plan_status(plan, status)
     elif status == CustomerPlan.ENDED:
         assert(plan.status == CustomerPlan.FREE_TRIAL)

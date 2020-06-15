@@ -2670,6 +2670,7 @@ class AbstractRealmAuditLog(models.Model):
 
     CUSTOMER_CREATED = 501
     CUSTOMER_PLAN_CREATED = 502
+    CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN = 503
 
     event_type: int = models.PositiveSmallIntegerField()
 
