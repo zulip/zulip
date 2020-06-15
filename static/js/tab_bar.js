@@ -25,30 +25,31 @@ function make_tab_data(filter) {
     }
     tab_data.title = filter.get_title();
     tab_data.icon = filter.get_icon();
+    if (tab_data.icon === 'question-circle-o') {
+        tab_data.sub_count = '0';
+        tab_data.formatted_sub_count = '0';
+        tab_data.rendered_narrow_description = i18n.t("This stream does not exist or is private.");
+        return tab_data;
+    }
     if (['hashtag', 'lock', 'globe'].includes(tab_data.icon)) {
         const stream = filter.operands("stream")[0];
-        const current_stream  = stream_data.get_sub_by_name(stream);
-        if (current_stream) {
-            tab_data.rendered_narrow_description = current_stream.rendered_description;
-            tab_data.sub_count = get_sub_count(current_stream);
-            tab_data.formatted_sub_count = get_formatted_sub_count(current_stream);
-            // the "title" is passed as a variable and doesn't get translated (nor should it)
-            tab_data.sub_count_tooltip_text =
-            i18n.t("__count__ users are subscribed to #__title__", {count: tab_data.sub_count, title: tab_data.title});
-            tab_data.stream_settings_link = "#streams/" + current_stream.stream_id + "/" + current_stream.name;
-        } else {
-            tab_data.title = i18n.t('Unknown stream');
-            tab_data.sub_count = '0';
-            tab_data.formatted_sub_count = '0';
-            tab_data.rendered_narrow_description = i18n.t("This stream does not exist or is private.");
-        }
+        // We can rely on current_stream because if the stream doesn't
+        // exist then the "question-circle-o" case would case early exit.
+        const current_stream = stream_data.get_sub_by_name(stream);
+        tab_data.rendered_narrow_description = current_stream.rendered_description;
+        tab_data.sub_count = get_sub_count(current_stream);
+        tab_data.formatted_sub_count = get_formatted_sub_count(current_stream);
+        // the "title" is passed as a variable and doesn't get translated (nor should it)
+        tab_data.sub_count_tooltip_text =
+            i18n.t("__count__ users are subscribed to #__title__", { count: tab_data.sub_count, title: tab_data.title });
+        tab_data.stream_settings_link = "#streams/" + current_stream.stream_id + "/" + current_stream.name;
     }
     return tab_data;
 }
 
 exports.colorize_tab_bar = function () {
     const filter = narrow_state.filter();
-    if (filter === undefined || !filter.has_operator('stream')) {return;}
+    if (filter === undefined || !filter.has_operator('stream') || !filter._stream_params) {return;}
     const color_for_stream = stream_data.get_color(filter._stream_params._stream_name);
     const stream_light = colorspace.getHexColor(colorspace.getDecimalColor(color_for_stream));
     $("#tab_list .fa-hashtag").css('color', stream_light);

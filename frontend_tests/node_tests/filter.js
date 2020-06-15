@@ -1375,11 +1375,17 @@ run_test('navbar_helpers', () => {
         { operator: 'stream', operand: 'foo' },
         { operator: 'topic', operand: 'bar' },
     ];
+    // foo stream exists
     const stream_operator = [{ operator: 'stream', operand: 'foo'}];
     make_private_sub('psub', '22');
     const private_stream_operator = [{ operator: 'stream', operand: 'psub'}];
     make_web_public_sub('webPublicSub', '12'); // capitalized just to try be tricky and robust.
     const web_public_stream_operator = [{ operator: 'stream', operand: 'webPublicSub'}];
+    const non_existent_stream = [{ operator: 'stream', operand: 'Elephant' }];
+    const non_existent_stream_topic = [
+        { operator: 'stream', operand: 'Elephant' },
+        { operator: 'topic', operand: 'pink' },
+    ];
     const pm_with = [{ operator: 'pm-with', operand: 'joe@example.com'}];
     const group_pm = [{ operator: 'pm-with', operand: 'joe@example.com,STEVE@foo.com'}];
     const group_pm_including_missing_person = [{ operator: 'pm-with', operand: 'joe@example.com,STEVE@foo.com,sally@doesnotexist.com'}];
@@ -1440,6 +1446,20 @@ run_test('navbar_helpers', () => {
             icon: 'hashtag',
             title: 'Foo',
             redirect_url_with_search: '/#narrow/stream/42-Foo',
+        },
+        {
+            operator: non_existent_stream,
+            is_common_narrow: true,
+            icon: 'question-circle-o',
+            title: 'translated: Unknown stream',
+            redirect_url_with_search: '#',
+        },
+        {
+            operator: non_existent_stream_topic,
+            is_common_narrow: true,
+            icon: 'question-circle-o',
+            title: 'translated: Unknown stream',
+            redirect_url_with_search: '#',
         },
         {
             operator: private_stream_operator,
