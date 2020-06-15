@@ -650,15 +650,17 @@ nav {
     }
 }
 
-.portico-landing.features-app .feature-block h3 {
-    font-size: 1.2em;
-    font-weight: 600;
-}
+.portico-landing.features-app .feature-block {
+    h3 {
+        font-size: 1.2em;
+        font-weight: 600;
+    }
 
-.portico-landing.features-app .feature-block p {
-    margin: 0;
+    p {
+        margin: 0;
 
-    opacity: 0.8;
+        opacity: 0.8;
+    }
 }
 
 /* -- hello page -- */
