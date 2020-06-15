@@ -57,10 +57,8 @@ rules:
     languages: [python]
     patterns:
       - pattern-either:
-          - pattern: logging.$Y(... % ...)
           - pattern: logging.$Y(... .format(...))
           - pattern: logging.$Y(f"...")
-          - pattern: logger.$Y(... % ...)
           - pattern: logger.$Y(... .format(...))
           - pattern: logger.$Y(f"...")
       - pattern-where-python: "vars['$Y'] in ['debug', 'info', 'warning', 'error', 'critical', 'exception']"
@@ -70,14 +68,14 @@ rules:
   - id: sql-format
     languages: [python]
     pattern-either:
-      - pattern: ... .execute(... % ...)
       - pattern: ... .execute("...".format(...))
-      - pattern: psycopg2.sql.SQL(... % ...)
+      - pattern: ... .execute(f"...")
       - pattern: psycopg2.sql.SQL(... .format(...))
-      - pattern: django.db.migrations.RunSQL(..., ... % ..., ...)
+      - pattern: psycopg2.sql.SQL(f"...")
       - pattern: django.db.migrations.RunSQL(..., "..." .format(...), ...)
-      - pattern: django.db.migrations.RunSQL(..., [..., ... % ..., ...], ...)
+      - pattern: django.db.migrations.RunSQL(..., f"...", ...)
       - pattern: django.db.migrations.RunSQL(..., [..., "..." .format(...), ...], ...)
+      - pattern: django.db.migrations.RunSQL(..., [..., f"...", ...], ...)
     severity: ERROR
     message: "Do not write a SQL injection vulnerability please"
 
