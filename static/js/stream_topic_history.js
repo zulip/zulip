@@ -196,10 +196,10 @@ exports.per_stream_history = function (stream_id) {
     return self;
 };
 
-exports.remove_message = function (opts) {
+exports.remove_messages = function (opts) {
     const stream_id = opts.stream_id;
     const topic_name = opts.topic_name;
-    const num_messages = opts.num_messages || 1;
+    const num_messages = opts.num_messages;
     const history = stream_dict.get(stream_id);
 
     // This is the special case of "removing" a message from

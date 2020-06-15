@@ -29,7 +29,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         unread_ops.process_read_messages_event(msg_ids);
 
         if (event.message_type === 'stream') {
-            stream_topic_history.remove_message({
+            stream_topic_history.remove_messages({
                 stream_id: event.stream_id,
                 topic_name: event.topic,
                 num_messages: msg_ids.length,

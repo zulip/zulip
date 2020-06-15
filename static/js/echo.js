@@ -193,9 +193,10 @@ exports.edit_locally = function (message, request) {
     if (request.new_topic !== undefined || request.new_stream_id !== undefined) {
         const new_stream_id = request.new_stream_id;
         const new_topic = request.new_topic;
-        stream_topic_history.remove_message({
+        stream_topic_history.remove_messages({
             stream_id: message.stream_id,
             topic_name: message.topic,
+            num_messages: 1,
         });
 
         if (new_stream_id !== undefined) {

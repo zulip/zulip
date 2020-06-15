@@ -187,9 +187,10 @@ exports.update_messages = function update_messages(events) {
                 // complexity; the present loop assumes stream_topic_history has
                 // only messages in message_store, but that's been false
                 // since we added the server_history feature.
-                stream_topic_history.remove_message({
+                stream_topic_history.remove_messages({
                     stream_id: msg.stream_id,
                     topic_name: msg.topic,
+                    num_messages: 1,
                 });
 
                 // Update the unread counts; again, this must be called

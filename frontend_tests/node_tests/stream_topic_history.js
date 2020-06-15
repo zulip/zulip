@@ -41,9 +41,10 @@ run_test('basics', () => {
     assert.deepEqual(max_message_id, 103);
 
     // Removing first topic1 message has no effect.
-    stream_topic_history.remove_message({
+    stream_topic_history.remove_messages({
         stream_id: stream_id,
         topic_name: 'toPic1',
+        num_messages: 1,
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, ['topic2', 'Topic1']);
@@ -52,24 +53,27 @@ run_test('basics', () => {
     assert.deepEqual(max_message_id, 103);
 
     // Removing second topic1 message removes the topic.
-    stream_topic_history.remove_message({
+    stream_topic_history.remove_messages({
         stream_id: stream_id,
         topic_name: 'Topic1',
+        num_messages: 1,
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, ['topic2']);
 
     // Test that duplicate remove does not crash us.
-    stream_topic_history.remove_message({
+    stream_topic_history.remove_messages({
         stream_id: stream_id,
         topic_name: 'Topic1',
+        num_messages: 1,
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, ['topic2']);
 
     // get to 100% coverage for defensive code
-    stream_topic_history.remove_message({
+    stream_topic_history.remove_messages({
         stream_id: 9999999,
+        num_messages: 1,
     });
 });
 
@@ -173,18 +177,20 @@ run_test('server_history', () => {
 
     // Removing a local message removes the topic if we have
     // our counts right.
-    stream_topic_history.remove_message({
+    stream_topic_history.remove_messages({
         stream_id: stream_id,
         topic_name: 'local',
+        num_messages: 1,
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, ['hist2', 'hist1']);
 
     // We can try to remove a historical message, but it should
     // have no effect.
-    stream_topic_history.remove_message({
+    stream_topic_history.remove_messages({
         stream_id: stream_id,
         topic_name: 'hist2',
+        num_messages: 1,
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, ['hist2', 'hist1']);

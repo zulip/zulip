@@ -811,11 +811,12 @@ with_overrides(function (override) {
         assert_same(args.message_ids, [1337]);
     });
     global.with_stub(function (stub) {
-        override('stream_topic_history.remove_message', stub.f);
+        override('stream_topic_history.remove_messages', stub.f);
         dispatch(event);
         const args = stub.get_args('opts');
         assert_same(args.opts.stream_id, 99);
         assert_same(args.opts.topic_name, 'topic1');
+        assert_same(args.opts.num_messages, 1);
     });
 });
 
