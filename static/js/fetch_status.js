@@ -8,14 +8,20 @@ const FetchStatus = function () {
     let found_newest = false;
     let history_limited = false;
 
-    self.start_older_batch = function () {
+    self.start_older_batch = function (opts) {
         loading_older = true;
+        if (opts.update_loading_indicator) {
+            message_scroll.show_loading_older();
+        }
     };
 
     self.finish_older_batch = function (opts) {
         loading_older = false;
         found_oldest = opts.found_oldest;
         history_limited = opts.history_limited;
+        if (opts.update_loading_indicator) {
+            message_scroll.hide_loading_older();
+        }
     };
 
     self.can_load_older_messages = function () {
