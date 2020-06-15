@@ -1,4 +1,8 @@
 const FetchStatus = zrequire('fetch_status');
+set_global('message_scroll', {
+    hide_loading_newer: () => {},
+    show_loading_newer: () => {},
+});
 
 let fetch_status = FetchStatus();
 
@@ -49,7 +53,7 @@ function blocked_history() {
 run_test('basics', () => {
     reset();
 
-    fetch_status.start_newer_batch();
+    fetch_status.start_newer_batch({ update_loading_indicator: false });
     fetch_status.start_older_batch();
 
     blocked_newer();
@@ -59,6 +63,7 @@ run_test('basics', () => {
     has_not_found_newest();
 
     let data = {
+        update_loading_indicator: false,
         found_oldest: true,
         found_newest: true,
         history_limited: true,
@@ -74,7 +79,7 @@ run_test('basics', () => {
 
     reset();
 
-    fetch_status.start_newer_batch();
+    fetch_status.start_newer_batch({ update_loading_indicator: true });
     fetch_status.start_older_batch();
 
     blocked_newer();
@@ -82,6 +87,7 @@ run_test('basics', () => {
     can_load_history();
 
     data = {
+        update_loading_indicator: false,
         found_oldest: false,
         found_newest: false,
         history_limited: false,
@@ -132,24 +138,26 @@ run_test('basics', () => {
     can_load_older();
     can_load_newer();
 
-    fetch_status.start_newer_batch();
+    fetch_status.start_newer_batch({ update_loading_indicator: false });
 
     can_load_older();
     blocked_newer();
 
     fetch_status.finish_newer_batch({
+        update_loading_indicator: true,
         found_newest: false,
     });
 
     can_load_older();
     can_load_newer();
 
-    fetch_status.start_newer_batch();
+    fetch_status.start_newer_batch({ update_loading_indicator: true });
 
     can_load_older();
     blocked_newer();
 
     fetch_status.finish_newer_batch({
+        update_loading_indicator: true,
         found_newest: true,
     });
 

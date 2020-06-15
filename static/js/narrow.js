@@ -150,6 +150,7 @@ exports.activate = function (raw_operators, opts) {
     update_narrow_title(filter);
     notifications.hide_history_limit_notice();
     notifications.hide_end_of_results_notice();
+    message_scroll.hide_indicators();
 
     blueslip.debug("Narrowed", {operators: operators.map(e => e.operator),
                                 trigger: opts ? opts.trigger : undefined,
@@ -293,7 +294,6 @@ exports.activate = function (raw_operators, opts) {
         });
     }());
 
-    message_scroll.hide_indicators();
     if (select_immediately) {
         exports.update_selection({
             id_info: id_info,
