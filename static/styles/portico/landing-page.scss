@@ -642,8 +642,10 @@ nav {
     transition: all 0.3s ease;
 }
 
-.portico-landing.features-app .cta:hover::after {
-    margin-left: 10px;
+.portico-landing.features-app .cta:hover {
+    &::after {
+        margin-left: 10px;
+    }
 }
 
 .portico-landing.features-app .feature-block h3 {
