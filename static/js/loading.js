@@ -1,6 +1,6 @@
 const render_loader = require("../templates/loader.hbs");
 
-exports.make_indicator = function (outer_container, opts) {
+exports.make_indicator = function (outer_container, opts, name) {
     opts = opts || {};
     let container = outer_container;
 
@@ -27,7 +27,9 @@ exports.make_indicator = function (outer_container, opts) {
     }
 
     const spinner_elem = $('<div class="loading_indicator_spinner"></div>');
-    spinner_elem.html(render_loader({ container_id: outer_container.attr("id") }));
+    let temp;
+    if (name !== undefined) {temp = name.data.filter.operators().map(item => item.operand).join(" ");}
+    spinner_elem.html(render_loader({ container_id: outer_container.attr("id"), text: temp }));
     container.append(spinner_elem);
     let text_width = 0;
 

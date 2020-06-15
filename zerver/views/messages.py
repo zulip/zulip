@@ -1014,6 +1014,8 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         history_limited=query_info['history_limited'],
         anchor=anchor,
     )
+    # import time
+    # time.sleep(5)
     return json_success(ret)
 
 def limit_query_to_range(query: Query,

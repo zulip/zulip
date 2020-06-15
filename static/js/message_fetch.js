@@ -351,6 +351,7 @@ exports.initialize = function () {
                                      target_scroll_offset: page_params.initial_offset});
         }
 
+        // comment out this block
         if (data.found_newest) {
             server_events.home_view_loaded();
             exports.start_backfilling_messages();
@@ -362,6 +363,7 @@ exports.initialize = function () {
         const messages = data.messages;
         const latest_id = messages[messages.length - 1].id;
 
+        // console.log("fetching home messages");
         exports.load_messages({
             anchor: latest_id.toFixed(),
             num_before: 0,

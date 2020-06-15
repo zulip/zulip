@@ -2,10 +2,10 @@ let actively_scrolling = false;
 
 let loading_older_messages_indicator_showing = false;
 let loading_newer_messages_indicator_showing = false;
-exports.show_loading_older = function () {
+exports.show_loading_older = function (name) {
     if (!loading_older_messages_indicator_showing) {
         loading.make_indicator($('#loading_older_messages_indicator'),
-                               {abs_positioned: true});
+                               {abs_positioned: true}, name);
         loading_older_messages_indicator_showing = true;
         floating_recipient_bar.hide();
     }
@@ -18,11 +18,11 @@ exports.hide_loading_older = function () {
     }
 };
 
-exports.show_loading_newer = function () {
+exports.show_loading_newer = function (name) {
     if (!loading_newer_messages_indicator_showing) {
         $(".bottom-messages-logo").show();
         loading.make_indicator($('#loading_newer_messages_indicator'),
-                               {abs_positioned: true});
+                               {abs_positioned: true}, name);
         loading_newer_messages_indicator_showing = true;
         floating_recipient_bar.hide();
     }
