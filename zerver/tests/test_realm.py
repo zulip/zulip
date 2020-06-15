@@ -636,7 +636,7 @@ class RealmTest(ZulipTestCase):
 
         req = dict(message_retention_days=ujson.dumps(10))
         result = self.client_patch('/json/realm', req)
-        self.assert_json_error(result, "Only organization owners can change message retention period.")
+        self.assert_json_error(result, "Must be an organization owner")
 
         self.login('desdemona')
 

@@ -4711,7 +4711,7 @@ class TestAdminSetBackends(ZulipTestCase):
         self.login('iago')
         result = self.client_patch("/json/realm", {
             'authentication_methods': ujson.dumps({'Email': False, 'Dev': True})})
-        self.assert_json_error(result, 'Only organization owners can configure authentication methods.')
+        self.assert_json_error(result, 'Must be an organization owner')
 
         self.login('desdemona')
         result = self.client_patch("/json/realm", {

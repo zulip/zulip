@@ -20,6 +20,7 @@ from zerver.lib.actions import (
     do_set_realm_signup_notifications_stream,
 )
 from zerver.lib.domains import validate_domain
+from zerver.lib.exceptions import OrganizationOwnerRequired
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.request import REQ, JsonableError, has_request_variables
 from zerver.lib.response import json_error, json_success
@@ -100,7 +101,7 @@ def update_realm(
         return json_error(_("Organization name is too long."))
     if authentication_methods is not None:
         if not user_profile.is_realm_owner:
-            return json_error(_("Only organization owners can configure authentication methods."))
+            raise OrganizationOwnerRequired()
         if True not in list(authentication_methods.values()):
             return json_error(_("At least one authentication method must be enabled."))
     if (video_chat_provider is not None and
@@ -114,7 +115,7 @@ def update_realm(
 
     if message_retention_days is not None:
         if not user_profile.is_realm_owner:
-            return json_error(_("Only organization owners can change message retention period."))
+            raise OrganizationOwnerRequired()
         realm.ensure_not_on_limited_plan()
 
     # The user of `locals()` here is a bit of a code smell, but it's

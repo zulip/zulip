@@ -29,7 +29,7 @@ from zerver.lib.actions import (
 from zerver.lib.avatar import avatar_url, get_gravatar_url
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.email_validation import email_allowed_for_realm
-from zerver.lib.exceptions import CannotDeactivateLastUserError
+from zerver.lib.exceptions import CannotDeactivateLastUserError, OrganizationOwnerRequired
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
@@ -87,7 +87,7 @@ def deactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
                             user_id: int) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id)
     if target.is_realm_owner and not user_profile.is_realm_owner:
-        return json_error(_('Only owners can deactivate other organization owners.'))
+        raise OrganizationOwnerRequired()
     if check_last_owner(target):
         return json_error(_('Cannot deactivate the only organization owner'))
     return _deactivate_user_profile_backend(request, user_profile, target)
@@ -134,7 +134,7 @@ def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id
         if target.role == UserProfile.ROLE_REALM_OWNER and check_last_owner(user_profile):
             return json_error(_('The owner permission cannot be removed from the only organization owner.'))
         if UserProfile.ROLE_REALM_OWNER in [role, target.role] and not user_profile.is_realm_owner:
-            return json_error(_('Only organization owners can add or remove the owner permission.'))
+            raise OrganizationOwnerRequired()
         do_change_user_role(target, role)
 
     if (full_name is not None and target.full_name != full_name and

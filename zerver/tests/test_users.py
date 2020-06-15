@@ -183,7 +183,7 @@ class PermissionTest(ZulipTestCase):
         self.login('iago')
         with tornado_redirected_to_list([]):
             result = self.client_patch(f'/json/users/{desdemona.id}', req)
-        self.assert_json_error(result, 'Only organization owners can add or remove the owner permission.')
+        self.assert_json_error(result, 'Must be an organization owner')
 
     def test_admin_api(self) -> None:
         self.login('desdemona')
@@ -1160,7 +1160,7 @@ class ActivateTest(ZulipTestCase):
 
         # Organization Administrator cannot deactivate organization owner.
         result = self.client_delete(f'/json/users/{self.example_user("desdemona").id}')
-        self.assert_json_error(result, 'Only owners can deactivate other organization owners.')
+        self.assert_json_error(result, 'Must be an organization owner')
 
         iago = self.example_user('iago')
         desdemona = self.example_user('desdemona')
