@@ -633,18 +633,20 @@ nav {
     }
 }
 
-.portico-landing.features-app .cta::after {
-    content: "\2192";
-
-    margin-left: 5px;
-    transform: scaleX(2);
-
-    transition: all 0.3s ease;
-}
-
-.portico-landing.features-app .cta:hover {
+.portico-landing.features-app .cta {
     &::after {
-        margin-left: 10px;
+        content: "\2192";
+
+        margin-left: 5px;
+        transform: scaleX(2);
+
+        transition: all 0.3s ease;
+    }
+
+    &:hover {
+        &::after {
+            margin-left: 10px;
+        }
     }
 }
 
