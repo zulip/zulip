@@ -26,6 +26,8 @@ set_global('ui_report', {
 set_global('channel', {});
 set_global('document', 'document-stub');
 set_global('message_scroll', {
+    show_loading_older: noop,
+    hide_loading_older: noop,
     show_loading_newer: noop,
     hide_loading_newer: noop,
 });

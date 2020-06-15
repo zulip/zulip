@@ -299,8 +299,6 @@ exports.activate = function (raw_operators, opts) {
             id_info: id_info,
             select_offset: then_select_offset,
         });
-    } else {
-        message_scroll.show_loading_older();
     }
 
     // Put the narrow operators in the URL fragment.

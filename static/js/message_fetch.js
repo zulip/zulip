@@ -64,11 +64,13 @@ function get_messages_success(data, opts) {
     const update_loading_indicator = opts.msg_list === current_msg_list;
     if (opts.num_before > 0) {
         opts.msg_list.data.fetch_status.finish_older_batch({
+            update_loading_indicator: update_loading_indicator,
             found_oldest: data.found_oldest,
             history_limited: data.history_limited,
         });
         if (opts.msg_list === home_msg_list) {
             message_list.all.data.fetch_status.finish_older_batch({
+                update_loading_indicator: update_loading_indicator,
                 found_oldest: data.found_oldest,
                 history_limited: data.history_limited,
             });
@@ -166,9 +168,13 @@ exports.load_messages = function (opts) {
 
     const update_loading_indicator = opts.msg_list === current_msg_list;
     if (opts.num_before > 0) {
-        opts.msg_list.data.fetch_status.start_older_batch();
+        opts.msg_list.data.fetch_status.start_older_batch({
+            update_loading_indicator: update_loading_indicator,
+        });
         if (opts.msg_list === home_msg_list) {
-            message_list.all.data.fetch_status.start_older_batch();
+            message_list.all.data.fetch_status.start_older_batch({
+                update_loading_indicator: update_loading_indicator,
+            });
         }
     }
 
@@ -276,13 +282,9 @@ exports.maybe_load_older_messages = function (opts) {
         return;
     }
 
-    opts.show_loading();
     exports.do_backfill({
         msg_list: msg_list,
         num_before: consts.backward_batch_size,
-        cont: function () {
-            opts.hide_loading();
-        },
     });
 };
 
