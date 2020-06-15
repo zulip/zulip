@@ -566,13 +566,17 @@ def fetch_events(query: Mapping[str, Any]) -> Dict[str, Any]:
                 client.event_queue.newest_pruned_id is not None
                 and last_event_id < client.event_queue.newest_pruned_id
             ):
-                raise JsonableError(_("An event newer than %s has already been pruned!") % (last_event_id,))
+                raise JsonableError(_("An event newer than {event_id} has already been pruned!").format(
+                    event_id=last_event_id,
+                ))
             client.event_queue.prune(last_event_id)
             if (
                 client.event_queue.newest_pruned_id is not None
                 and last_event_id != client.event_queue.newest_pruned_id
             ):
-                raise JsonableError(_("Event %s was not in this queue") % (last_event_id,))
+                raise JsonableError(_("Event {event_id} was not in this queue").format(
+                    event_id=last_event_id,
+                ))
             was_connected = client.finish_current_handler()
 
         if not client.event_queue.empty() or dont_block:

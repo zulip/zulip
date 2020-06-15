@@ -21,7 +21,7 @@ def check_supported_events_narrow_filter(narrow: Iterable[Sequence[str]]) -> Non
     for element in narrow:
         operator = element[0]
         if operator not in ["stream", "topic", "sender", "is"]:
-            raise JsonableError(_("Operator %s not supported.") % (operator,))
+            raise JsonableError(_("Operator {} not supported.").format(operator))
 
 def is_web_public_compatible(narrow: Iterable[Dict[str, str]]) -> bool:
     for element in narrow:

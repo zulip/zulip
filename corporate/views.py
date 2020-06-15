@@ -1,6 +1,6 @@
 import logging
 from decimal import Decimal
-from typing import Any, Dict, Optional, Union, cast
+from typing import Any, Dict, Optional, Union
 
 import stripe
 from django.conf import settings
@@ -85,14 +85,17 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
     if stripe_source is None:  # nocoverage
         return _("No payment method on file")
     if stripe_source.object == "card":
-        return _("%(brand)s ending in %(last4)s") % {
-            'brand': cast(stripe.Card, stripe_source).brand,
-            'last4': cast(stripe.Card, stripe_source).last4}
+        assert isinstance(stripe_source, stripe.Card)
+        return _("{brand} ending in {last4}").format(
+            brand=stripe_source.brand, last4=stripe_source.last4,
+        )
     # There might be one-off stuff we do for a particular customer that
     # would land them here. E.g. by default we don't support ACH for
     # automatic payments, but in theory we could add it for a customer via
     # the Stripe dashboard.
-    return _("Unknown payment method. Please contact %s.") % (settings.ZULIP_ADMINISTRATOR,)  # nocoverage
+    return _("Unknown payment method. Please contact {email}.").format(
+        email=settings.ZULIP_ADMINISTRATOR,
+    )  # nocoverage
 
 @has_request_variables
 def upgrade(request: HttpRequest, user: UserProfile,

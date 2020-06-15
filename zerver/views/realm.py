@@ -94,7 +94,7 @@ def update_realm(
     # Additional validation/error checking beyond types go here, so
     # the entire request can succeed or fail atomically.
     if default_language is not None and default_language not in get_available_language_codes():
-        raise JsonableError(_("Invalid language '%s'") % (default_language,))
+        raise JsonableError(_("Invalid language '{}'").format(default_language))
     if description is not None and len(description) > 1000:
         return json_error(_("Organization description is too long."))
     if name is not None and len(name) > Realm.MAX_REALM_NAME_LENGTH:

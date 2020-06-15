@@ -52,7 +52,7 @@ def emoji_name_to_emoji_code(realm: Realm, emoji_name: str) -> Tuple[str, str]:
         return emoji_name, Reaction.ZULIP_EXTRA_EMOJI
     if emoji_name in name_to_codepoint:
         return name_to_codepoint[emoji_name], Reaction.UNICODE_EMOJI
-    raise JsonableError(_("Emoji '%s' does not exist") % (emoji_name,))
+    raise JsonableError(_("Emoji '{}' does not exist").format(emoji_name))
 
 def check_emoji_request(realm: Realm, emoji_name: str, emoji_code: str,
                         emoji_type: str) -> None:

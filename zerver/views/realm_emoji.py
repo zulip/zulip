@@ -32,8 +32,9 @@ def upload_emoji(request: HttpRequest, user_profile: UserProfile,
         return json_error(_("You must upload exactly one file."))
     emoji_file = list(request.FILES.values())[0]
     if (settings.MAX_EMOJI_FILE_SIZE * 1024 * 1024) < emoji_file.size:
-        return json_error(_("Uploaded file is larger than the allowed limit of %s MB") % (
-            settings.MAX_EMOJI_FILE_SIZE))
+        return json_error(_("Uploaded file is larger than the allowed limit of {} MiB").format(
+            settings.MAX_EMOJI_FILE_SIZE,
+        ))
 
     realm_emoji = check_add_realm_emoji(user_profile.realm,
                                         emoji_name,
@@ -49,7 +50,7 @@ def delete_emoji(request: HttpRequest, user_profile: UserProfile,
     if not RealmEmoji.objects.filter(realm=user_profile.realm,
                                      name=emoji_name,
                                      deactivated=False).exists():
-        raise JsonableError(_("Emoji '%s' does not exist") % (emoji_name,))
+        raise JsonableError(_("Emoji '{}' does not exist").format(emoji_name))
     check_emoji_admin(user_profile, emoji_name)
     do_remove_realm_emoji(user_profile.realm, emoji_name)
     return json_success()

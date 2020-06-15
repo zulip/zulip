@@ -95,7 +95,7 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
         except RateLimited as e:
             secs_to_freedom = int(float(str(e)))
             return json_error(
-                _("You're making too many attempts! Try again in %s seconds.") % (secs_to_freedom,),
+                _("You're making too many attempts! Try again in {} seconds.").format(secs_to_freedom),
             )
 
         if not check_password_strength(new_password):
@@ -221,7 +221,7 @@ def json_change_notify_settings(
 
     if (notification_sound is not None and
             notification_sound not in get_available_notification_sounds()):
-        raise JsonableError(_("Invalid notification sound '%s'") % (notification_sound,))
+        raise JsonableError(_("Invalid notification sound '{}'").format(notification_sound))
 
     req_vars = {k: v for k, v in list(locals().items()) if k in user_profile.notification_setting_types}
 
@@ -241,8 +241,9 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
 
     user_file = list(request.FILES.values())[0]
     if ((settings.MAX_AVATAR_FILE_SIZE * 1024 * 1024) < user_file.size):
-        return json_error(_("Uploaded file is larger than the allowed limit of %s MB") % (
-            settings.MAX_AVATAR_FILE_SIZE))
+        return json_error(_("Uploaded file is larger than the allowed limit of {} MiB").format(
+            settings.MAX_AVATAR_FILE_SIZE,
+        ))
     upload_avatar_image(user_file, user_profile, user_profile)
     do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_USER)
     user_avatar_url = avatar_url(user_profile)

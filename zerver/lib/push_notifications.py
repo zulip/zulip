@@ -238,15 +238,17 @@ def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
         else:  # `'event': 'remove'`, presumably
             priority = 'normal'
     if priority not in ('normal', 'high'):
-        raise JsonableError(_("Invalid GCM option to bouncer: priority %r")
-                            % (priority,))
+        raise JsonableError(_(
+            "Invalid GCM option to bouncer: priority {!r}",
+        ).format(priority))
 
     if options:
         # We're strict about the API; there is no use case for a newer Zulip
         # server talking to an older bouncer, so we only need to provide
         # one-way compatibility.
-        raise JsonableError(_("Invalid GCM options to bouncer: %s")
-                            % (ujson.dumps(options),))
+        raise JsonableError(_(
+            "Invalid GCM options to bouncer: {}",
+        ).format(ujson.dumps(options)))
 
     return priority  # when this grows a second option, can make it a tuple
 
@@ -600,9 +602,9 @@ def get_apns_alert_subtitle(message: Message) -> str:
     On an iOS notification, this is the second bolded line.
     """
     if message.trigger == "mentioned":
-        return _("%(full_name)s mentioned you:") % dict(full_name=message.sender.full_name)
+        return _("{full_name} mentioned you:").format(full_name=message.sender.full_name)
     elif message.trigger == "wildcard_mentioned":
-        return _("%(full_name)s mentioned everyone:") % dict(full_name=message.sender.full_name)
+        return _("{full_name} mentioned everyone:").format(full_name=message.sender.full_name)
     elif message.recipient.type == Recipient.PERSONAL:
         return ""
     # For group PMs, or regular messages to a stream, just use a colon to indicate this is the sender.

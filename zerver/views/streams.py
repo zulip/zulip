@@ -356,12 +356,14 @@ def you_were_just_subscribed_message(acting_user: UserProfile,
                                      stream_names: Set[str]) -> str:
     subscriptions = sorted(list(stream_names))
     if len(subscriptions) == 1:
-        return _("@**%(full_name)s** subscribed you to the stream #**%(stream_name)s**.") % \
-            {"full_name": acting_user.full_name,
-             "stream_name": subscriptions[0]}
+        return _("@**{full_name}** subscribed you to the stream #**{stream_name}**.").format(
+            full_name=acting_user.full_name,
+            stream_name=subscriptions[0],
+        )
 
-    message = _("@**%(full_name)s** subscribed you to the following streams:") % \
-        {"full_name": acting_user.full_name}
+    message = _("@**{full_name}** subscribed you to the following streams:").format(
+        full_name=acting_user.full_name,
+    )
     message += "\n\n"
     for stream_name in subscriptions:
         message += f"* #**{stream_name}**\n"
@@ -416,7 +418,9 @@ def add_subscriptions_backend(
     authorized_streams, unauthorized_streams = \
         filter_stream_authorization(user_profile, existing_streams)
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:
-        return json_error(_("Unable to access stream (%s).") % unauthorized_streams[0].name)
+        return json_error(_("Unable to access stream ({stream_name}).").format(
+            stream_name=unauthorized_streams[0].name,
+        ))
     # Newly created streams are also authorized for the creator
     streams = authorized_streams + created_streams
 
@@ -519,9 +523,10 @@ def add_subscriptions_backend(
                     sender=sender,
                     stream=stream,
                     topic=Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
-                    content=_('Stream created by @_**%(user_name)s|%(user_id)d**.') % {
-                        'user_name': user_profile.full_name,
-                        'user_id': user_profile.id},
+                    content=_('Stream created by @_**{user_name}|{user_id}**.').format(
+                        user_name=user_profile.full_name,
+                        user_id=user_profile.id,
+                    ),
                 ),
             )
 
@@ -675,11 +680,11 @@ def update_subscription_properties_backend(
         value = change["value"]
 
         if property not in property_converters:
-            return json_error(_("Unknown subscription property: %s") % (property,))
+            return json_error(_("Unknown subscription property: {}").format(property))
 
         (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
         if sub is None:
-            return json_error(_("Not subscribed to stream id %d") % (stream_id,))
+            return json_error(_("Not subscribed to stream id {}").format(stream_id))
 
         property_conversion = property_converters[property](property, value)
         if property_conversion:

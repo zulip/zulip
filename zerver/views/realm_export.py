@@ -43,8 +43,9 @@ def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
                                                    property='messages_sent:client:day'))
     if (total_messages > MAX_MESSAGE_HISTORY or
             user.realm.currently_used_upload_space_bytes() > MAX_UPLOAD_QUOTA):
-        return json_error(_('Please request a manual export from %s.') % (
-            settings.ZULIP_ADMINISTRATOR,))
+        return json_error(_('Please request a manual export from {email}.').format(
+            email=settings.ZULIP_ADMINISTRATOR,
+        ))
 
     row = RealmAuditLog.objects.create(realm=realm,
                                        event_type=event_type,
