@@ -140,20 +140,9 @@ exports.update_stream_name = function (sub, new_name) {
         compose_state.stream_name(new_name);
     }
 
-    // Update navbar stream name if needed
+    // Update navbar if needed
     const filter = narrow_state.filter();
-    if (filter && filter.operands("stream")[0] === old_name) {
-        // This works, but it relies on `filter.fix_stream_params` masking
-        // some bad behaviour in the Filter object. In particular, the fact
-        // that the Filter object relies on the search box which doesn't
-        // rename the currently focused stream.
-        //
-        // This will likely be improved as we migrate to using search pills
-        // and then a stream ID based representation of the stream in Filter.
-
-        // update the stream_params stored in the filter object
-        filter.fix_stream_params();
-        // use these to update the navbar
+    if (filter && filter._sub && filter._sub.stream_id === sub.stream_id) {
         tab_bar.render_title_area();
     }
 };
@@ -171,7 +160,7 @@ exports.update_stream_description = function (sub, description, rendered_descrip
 
     // Update navbar if needed
     const filter = narrow_state.filter();
-    if (filter && filter.operands("stream")[0] === sub.name) {
+    if (filter && filter._sub && filter._sub.stream_id === sub.stream_id) {
         tab_bar.render_title_area();
     }
 };
@@ -189,12 +178,9 @@ exports.update_stream_privacy = function (sub, values) {
     stream_ui_updates.update_add_subscriptions_elements(sub);
     stream_list.redraw_stream_privacy(sub);
 
-    // Update navbar stream name if needed
+    // Update navbar if needed
     const filter = narrow_state.filter();
-    if (filter && filter.operands("stream")[0] === sub.name) {
-        // update the stream_params stored in the filter object
-        filter.fix_stream_params();
-        // use these to update the navbar
+    if (filter && filter._sub && filter._sub.stream_id === sub.stream_id) {
         tab_bar.render_title_area();
     }
 };
