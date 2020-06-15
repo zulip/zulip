@@ -4160,7 +4160,6 @@ def do_update_message_flags(user_profile: UserProfile,
         raise JsonableError(_("Flag not editable: '%s'") % (flag,))
     flagattr = getattr(UserMessage.flags, flag)
 
-    assert messages is not None
     msgs = UserMessage.objects.filter(user_profile=user_profile,
                                       message__id__in=messages)
     # This next block allows you to star any message, even those you
