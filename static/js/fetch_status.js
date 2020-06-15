@@ -30,13 +30,19 @@ const FetchStatus = function () {
         return history_limited;
     };
 
-    self.start_newer_batch = function () {
+    self.start_newer_batch = function (opts) {
         loading_newer = true;
+        if (opts.update_loading_indicator) {
+            message_scroll.show_loading_newer();
+        }
     };
 
     self.finish_newer_batch = function (opts) {
         loading_newer = false;
         found_newest = opts.found_newest;
+        if (opts.update_loading_indicator) {
+            message_scroll.hide_loading_newer();
+        }
     };
 
     self.can_load_newer_messages = function () {
