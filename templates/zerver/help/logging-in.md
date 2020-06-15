@@ -1,8 +1,8 @@
 # Logging in
 
 By default, Zulip allows logging in via email/password as well as
-various social authentication providers like Google, GitHub, and
-GitLab.
+various social authentication providers like Google, GitHub, GitLab,
+and Apple.
 
 Organization administrators can
 [add other authentication methods](/help/configure-authentication-methods),
