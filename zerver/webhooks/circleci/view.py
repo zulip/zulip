@@ -99,9 +99,19 @@ def get_authors_and_committer_info(payload: Dict[str, Any]) -> str:
 
     return body
 
+def super_minimal_body(payload: Dict[str, Any]) -> str:
+    branch_name = payload["branch"]
+    status = payload["status"]
+    formatted_status = outcome_to_formatted_status_map.get(status, status)
+    build_url = payload["build_url"]
+    username = payload["username"]
+    return f"[Build]({build_url}) triggered by {username} on branch `{branch_name}` {formatted_status}."
 
 def get_body(payload: Dict[str, Any]) -> str:
-    build_num = payload["build_num"]
+    build_num = payload.get("build_num", None)
+    if not build_num:
+        return super_minimal_body(payload)
+
     build_url = payload["build_url"]
 
     outcome = payload["outcome"]
