@@ -1061,6 +1061,20 @@ ul.grey-box {
                 margin-right: 5px;
             }
         }
+
+        input[type=text] {
+            width: 5ch;
+            text-align: right;
+        }
+
+        label.dropdown-title {
+            display: block;
+        }
+
+        select {
+            width: auto;
+            margin-bottom: 0px;
+        }
     }
 }
 

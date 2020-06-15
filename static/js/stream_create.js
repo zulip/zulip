@@ -169,6 +169,13 @@ function create_stream() {
 
     data.stream_post_policy = JSON.stringify(stream_post_policy);
 
+    let message_retention_selection = $('#stream_creation_form select[name=stream_message_retention_setting]').val();
+    if (message_retention_selection === "retain_for_period") {
+        message_retention_selection = parseInt($('#stream_creation_form input[name=stream-message-retention-days]').val(), 10);
+    }
+
+    data.message_retention_days = JSON.stringify(message_retention_selection);
+
     const announce = stream_data.realm_has_notifications_stream() &&
         $('#announce-new-stream input').prop('checked');
     data.announce = JSON.stringify(announce);
@@ -266,6 +273,8 @@ exports.show_new_stream_modal = function () {
     // Make the options default to the same each time:
     // public, "announce stream" on.
     $('#make-invite-only input:radio[value=public]').prop('checked', true);
+    $("#stream_creation_form .stream-message-retention-days-input").hide();
+    $("#stream_creation_form select[name=stream_message_retention_setting]").val("realm_default");
 
     if (stream_data.realm_has_notifications_stream()) {
         $('#announce-new-stream').show();

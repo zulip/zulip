@@ -55,6 +55,9 @@ exports.update_property = function (stream_id, property, value, other_values) {
     case 'stream_post_policy':
         subs.update_stream_post_policy(sub, value);
         break;
+    case 'message_retention_days':
+        stream_data.update_message_retention_setting(sub, value);
+        break;
     default:
         blueslip.warn("Unexpected subscription property type", {property: property,
                                                                 value: value});

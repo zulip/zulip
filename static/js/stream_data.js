@@ -427,6 +427,10 @@ exports.update_stream_privacy = function (sub, values) {
     sub.history_public_to_subscribers = values.history_public_to_subscribers;
 };
 
+exports.update_message_retention_setting  = function (sub, message_retention_days) {
+    sub.message_retention_days = message_retention_days;
+};
+
 exports.receives_notifications = function (stream_name, notification_name) {
     const sub = exports.get_sub(stream_name);
     if (sub === undefined) {
