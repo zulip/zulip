@@ -127,6 +127,7 @@ COMMON_DEPENDENCIES = [
     "curl",                 # Used for fetching PhantomJS as wget occasionally fails on redirects
     "moreutils",            # Used for sponge command
     "unzip",                # Needed for Slack import
+    "crudini",              # Used for shell tooling w/ zulip.conf
 
     # Puppeteer dependencies from here
     "gconf-service",
