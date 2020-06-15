@@ -585,7 +585,7 @@ exports.render_emoji_popover = function (elt, id) {
     };
     show_emoji_catalog();
 
-    refill_section_head_offsets(popover);
+    elt.ready(() => refill_section_head_offsets(popover));
     register_popover_events(popover);
 };
 
