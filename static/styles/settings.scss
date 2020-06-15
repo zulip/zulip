@@ -1207,11 +1207,19 @@ input[type=checkbox] {
         right: 20px;
     }
 
-     .image_upload_spinner {
+    .image_upload_spinner {
         top: 40%;
         right: 40%;
         width: 50px;
         height: 50px;
+    }
+
+    .image-block {
+        border-radius: 5px;
+        box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
+        width: 200px;
+        height: 200px;
+        top: 0px;
     }
 }
 
@@ -1223,8 +1231,12 @@ input[type=checkbox] {
 
     transition: all 0.3s ease;
 
-    #realm-icon-block,
-    #user-avatar-block {
+    #realm-icon-block {
+        background-size: 100%;
+        height: 100%;
+    }
+
+    .image-block {
         background-size: 100%;
         height: 100%;
     }
@@ -1239,14 +1251,6 @@ input[type=checkbox] {
         position: absolute;
         display: none;
         cursor: pointer;
-    }
-
-    #user-avatar-block {
-        border-radius: 5px;
-        box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
-        width: 200px;
-        height: 200px;
-        top: 0px;
     }
 
     .settings-page-delete-button {
