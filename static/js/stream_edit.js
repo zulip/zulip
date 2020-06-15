@@ -63,6 +63,34 @@ exports.get_users_from_subscribers = function (subscribers) {
     });
 };
 
+exports.get_display_text_for_realm_message_retention_setting = function () {
+    const realm_message_retention_days = page_params.realm_message_retention_days;
+    if (realm_message_retention_days === -1 || realm_message_retention_days === null) {
+        return i18n.t("(forever)");
+    }
+    return i18n.t("(__message_retention_days__ days)", {message_retention_days: realm_message_retention_days});
+};
+
+function change_stream_message_retention_days_block_display_property(value) {
+    if (value === "retain_for_period") {
+        $('.stream-message-retention-days-input').show();
+    } else {
+        $('.stream-message-retention-days-input').hide();
+    }
+}
+
+function set_stream_message_retention_setting_dropdown(stream) {
+    let value = "retain_for_period";
+    if (stream.message_retention_days === null) {
+        value = "realm_default";
+    } else if (stream.message_retention_days === -1) {
+        value = "forever";
+    }
+
+    $(".stream_message_retention_setting").val(value);
+    change_stream_message_retention_days_block_display_property(value);
+}
+
 function clear_edit_panel() {
     $(".display-type #add_new_stream_title").hide();
     $(".display-type #stream_settings_title, .right .settings").show();
@@ -380,6 +408,7 @@ function change_stream_privacy(e) {
 
     const privacy_setting = $('#stream_privacy_modal input[name=privacy]:checked').val();
     const stream_post_policy = parseInt($('#stream_privacy_modal input[name=stream-post-policy]:checked').val(), 10);
+    let message_retention_days = $('#stream_privacy_modal select[name=stream_message_retention_setting]').val();
 
     let invite_only;
     let history_public_to_subscribers;
@@ -395,6 +424,10 @@ function change_stream_privacy(e) {
         history_public_to_subscribers = true;
     }
 
+    if (message_retention_days === 'retain_for_period') {
+        message_retention_days = parseInt($('#stream_privacy_modal input[name=stream-message-retention-days]').val(), 10);
+    }
+
     $(".stream_change_property_info").hide();
     const data = {
         stream_name: sub.name,
@@ -402,6 +435,7 @@ function change_stream_privacy(e) {
         is_private: JSON.stringify(invite_only),
         stream_post_policy: JSON.stringify(stream_post_policy),
         history_public_to_subscribers: JSON.stringify(history_public_to_subscribers),
+        message_retention_days: JSON.stringify(message_retention_days),
     };
 
     channel.patch({
@@ -523,10 +557,17 @@ exports.initialize = function () {
             is_private_with_public_history: stream.invite_only &&
                 stream.history_public_to_subscribers,
             is_admin: page_params.is_admin,
+            zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,
+            stream_message_retention_days: stream.message_retention_days,
+            realm_message_retention_setting:
+                exports.get_display_text_for_realm_message_retention_setting(),
+            upgrade_text_for_wide_organization_logo:
+                page_params.upgrade_text_for_wide_organization_logo,
         };
         const change_privacy_modal = render_subscription_stream_privacy_modal(template_data);
         $("#stream_privacy_modal").remove();
         $("#subscriptions_table").append(change_privacy_modal);
+        set_stream_message_retention_setting_dropdown(stream);
         overlays.open_modal('#stream_privacy_modal');
         e.preventDefault();
         e.stopPropagation();
@@ -686,6 +727,11 @@ exports.initialize = function () {
         if ($(e.target).closest(".check, .subscription_settings").length === 0) {
             exports.open_edit_panel_for_row(this);
         }
+    });
+
+    $("#subscriptions_table").on("change", ".stream_message_retention_setting", function (e) {
+        const dropdown_value = e.target.value;
+        change_stream_message_retention_days_block_display_property(dropdown_value);
     });
 };
 

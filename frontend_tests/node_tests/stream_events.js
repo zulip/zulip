@@ -156,6 +156,17 @@ run_test('update_property', () => {
             assert.equal(args.val, stream_data.stream_post_policy_values.admins.code);
         });
     });
+
+    // Test stream message_retention_days change event
+    with_overrides(function (override) {
+        global.with_stub(function (stub) {
+            override('stream_data.update_message_retention_setting', stub.f);
+            stream_events.update_property(1, 'message_retention_days', 20);
+            const args = stub.get_args('sub', 'val');
+            assert.equal(args.sub.stream_id, 1);
+            assert.equal(args.val, 20);
+        });
+    });
 });
 
 run_test('marked_subscribed', () => {
