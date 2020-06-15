@@ -33,7 +33,7 @@ recovery_val = run(['psql', '-v', 'ON_ERROR_STOP=1', '-t', '-c', 'SELECT pg_is_i
 # Assertion to check that we're extracting the value correctly.
 assert recovery_val in ['t', 'f']
 if recovery_val == 't':
-    # Only run if we're the master
+    # Only run if we're the primary
     sys.exit(0)
 
 is_rhel_based = os.path.exists("/etc/redhat-release")
