@@ -66,6 +66,7 @@ Issue **{title}** was ignored by **{actor}**.
 platforms_map = {
     "go": "go",
     "node": "javascript",
+    "javascript": "javascript",
     "python": "python3",
 }  # We can expand this as and when users use this integration with different platforms.
 
