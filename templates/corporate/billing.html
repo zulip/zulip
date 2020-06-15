@@ -51,6 +51,8 @@
                                 <strong>${{ renewal_amount }}</strong>.
                                 {% elif downgrade_at_end_of_cycle %}
                                 Your plan will be downgraded to <strong>Zulip Limited</strong> on <strong>{{ renewal_date }}</strong>.
+                                {% elif switch_to_annual_at_end_of_cycle %}
+                                Your plan will be switched from monthly to annual billing on <strong>{{ renewal_date }}</strong>.
                                 {% else %}
                                 Your plan will renew on <strong>{{ renewal_date }}</strong> for
                                 <strong>${{ renewal_amount }}</strong>.
