@@ -415,7 +415,7 @@ class AuthBackendTest(ZulipTestCase):
                                             realm=get_realm('zephyr')))
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',))
-    @override_settings(SSO_APPEND_DOMAIN='zulip.com')
+    @override_settings(REMOTE_USER_AUTH_DOMAIN='zulip.com')
     def test_remote_user_backend_sso_append_domain(self) -> None:
         username = self.get_username(email_to_username)
         self.verify_backend(ZulipRemoteUserBackend(),
@@ -3301,12 +3301,69 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assert_logged_in_user_id(user_profile.id)
 
+    @override_settings(REMOTE_USER_AUTH_USER_HEADER="X-Remote-User")
+    def test_http_header_login_success(self) -> None:
+        user_profile = self.example_user('hamlet')
+        email = user_profile.delivery_email
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
+            result = self.client_post('/accounts/login/sso/', HTTP_X_REMOTE_USER=email)
+            self.assertEqual(result.status_code, 302)
+            self.assert_logged_in_user_id(user_profile.id)
+
+    @override_settings(REMOTE_USER_AUTH_USER_HEADER="X-Remote-User")
+    @override_settings(REMOTE_USER_AUTH_SECRET_HEADER="X-Remote-Secret")
+    @override_settings(REMOTE_USER_AUTH_SECRET="HTTP-SECRET")
+    def test_http_header_login_success_with_secret(self) -> None:
+        user_profile = self.example_user('hamlet')
+        email = user_profile.delivery_email
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
+            result = self.client_post('/accounts/login/sso/', HTTP_X_REMOTE_USER=email, HTTP_X_REMOTE_SECRET="HTTP-SECRET")
+            self.assertEqual(result.status_code, 302)
+            self.assert_logged_in_user_id(user_profile.id)
+
+    @override_settings(REMOTE_USER_AUTH_USER_HEADER="X-Remote-User")
+    def test_http_header_missing_user_header(self) -> None:
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
+            result = self.client_post('/accounts/login/sso/')
+            self.assertEqual(result.status_code, 302)
+
+        result = self.client_get(result["Location"])
+        self.assert_in_response("The HTTP user header X-Remote-User is not set", result)
+        self.assert_logged_in_user_id(None)
+
+    @override_settings(REMOTE_USER_AUTH_USER_HEADER="X-Remote-User")
+    @override_settings(REMOTE_USER_AUTH_SECRET_HEADER="X-Remote-Secret")
+    def test_http_header_missing_secret_header(self) -> None:
+        user_profile = self.example_user('hamlet')
+        email = user_profile.delivery_email
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
+            result = self.client_post('/accounts/login/sso/', HTTP_X_REMOTE_USER=email)
+            self.assertEqual(result.status_code, 302)
+
+        result = self.client_get(result["Location"])
+        self.assert_in_response("The HTTP secret header X-Remote-Secret is not set", result)
+        self.assert_logged_in_user_id(None)
+
+    @override_settings(REMOTE_USER_AUTH_USER_HEADER="X-Remote-User")
+    @override_settings(REMOTE_USER_AUTH_SECRET_HEADER="X-Remote-Secret")
+    @override_settings(REMOTE_USER_AUTH_SECRET="HTTP-SECRET")
+    def test_http_header_login_with_incorrect_secret(self) -> None:
+        user_profile = self.example_user('hamlet')
+        email = user_profile.delivery_email
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
+            result = self.client_post('/accounts/login/sso/', HTTP_X_REMOTE_USER=email, HTTP_X_REMOTE_SECRET="INCORRECT-SECRET")
+            self.assertEqual(result.status_code, 302)
+
+        result = self.client_get(result["Location"])
+        self.assert_in_response("The HTTP header secret in X-Remote-Secret is incorrect", result)
+        self.assert_logged_in_user_id(None)
+
     def test_login_success_with_sso_append_domain(self) -> None:
         username = 'hamlet'
         user_profile = self.example_user('hamlet')
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',),
-                           SSO_APPEND_DOMAIN='zulip.com'):
-            result = self.client_get('/accounts/login/sso/', REMOTE_USER=username)
+                           REMOTE_USER_AUTH_DOMAIN='zulip.com'):
+            result = self.client_post('/accounts/login/sso/', REMOTE_USER=username)
             self.assertEqual(result.status_code, 302)
             self.assert_logged_in_user_id(user_profile.id)
 
@@ -3413,7 +3470,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         self.assertIn('Zulip on Android', mail.outbox[0].body)
 
     @override_settings(SEND_LOGIN_EMAILS=True)
-    @override_settings(SSO_APPEND_DOMAIN="zulip.com")
+    @override_settings(REMOTE_USER_AUTH_DOMAIN="zulip.com")
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',))
     def test_login_mobile_flow_otp_success_username(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -3484,7 +3541,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         self.verify_desktop_flow_end_page(result, email, desktop_flow_otp)
 
     @override_settings(SEND_LOGIN_EMAILS=True)
-    @override_settings(SSO_APPEND_DOMAIN="zulip.com")
+    @override_settings(REMOTE_USER_AUTH_DOMAIN="zulip.com")
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',
                                                 'zproject.backends.ZulipDummyBackend'))
     def test_login_desktop_flow_otp_success_username(self) -> None:

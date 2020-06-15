@@ -1303,8 +1303,8 @@ def receives_stream_notifications(user_profile: UserProfile) -> bool:
             not user_profile.is_bot)
 
 def remote_user_to_email(remote_user: str) -> str:
-    if settings.SSO_APPEND_DOMAIN is not None:
-        remote_user += "@" + settings.SSO_APPEND_DOMAIN
+    if settings.REMOTE_USER_AUTH_DOMAIN is not None:
+        remote_user += "@" + settings.REMOTE_USER_AUTH_DOMAIN
     return remote_user
 
 # Make sure we flush the UserProfile object from our remote cache

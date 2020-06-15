@@ -431,6 +431,24 @@ the bottom of the problem:
   this file (feel free to anonymize any email addresses to
   `username@example.com`) in your report.
 
+## Authenticating Proxy SSO
+
+You can configure Zulip to let an HTTP reverse proxy handle authentication and send
+through the authenticated username in an HTTP header. It is recommended to configure
+an optional header with a shared secret between the proxy and Zulip.
+
+### Setup instructions for Authenticating Proxy SSO
+
+In `/etc/zulip/settings.py`, configure these settings settings:
+
+1. `AUTHENTICATION_BACKENDS`: `'zproject.backends.ZulipRemoteUserBackend'`.
+2. `REMOTE_USER_AUTH_USER_HEADER`: the name of the HTTP header that will contain the username.
+3. (Optional) `REMOTE_USER_AUTH_SECRET_HEADER`: the name of the HTTP header that will contain the shared secret.
+   * Add the shared secret to `/etc/zulip/zulip-secrets.conf` by setting
+     `remote_sso_secret`. This should be a long random string.
+4. (Optional) `REMOTE_USER_AUTH_DOMAIN`: see documentation in `settings.py`.
+
+
 ## Apache-based SSO with `REMOTE_USER`
 
 If you have any existing SSO solution where a preferred way to deploy
@@ -445,7 +463,7 @@ straightforward way to deploy that SSO solution with Zulip.
    * `AUTHENTICATION_BACKENDS`: `'zproject.backends.ZulipRemoteUserBackend'`,
      and no other entries.
 
-   * `SSO_APPEND_DOMAIN`: see documentation in `settings.py`.
+   * `REMOTE_USER_AUTH_DOMAIN`: see documentation in `settings.py`.
 
    Make sure that you've restarted the Zulip server since making this
    configuration change.

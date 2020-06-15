@@ -357,10 +357,30 @@ def remote_user_sso(
     if not auth_enabled_helper([ZulipRemoteUserBackend.auth_backend_name], realm):
         return redirect_to_config_error("remoteuser/backend_disabled")
 
-    try:
-        remote_user = request.META["REMOTE_USER"]
-    except KeyError:
-        return redirect_to_config_error("remoteuser/remote_user_header_missing")
+    if not settings.REMOTE_USER_AUTH_USER_HEADER:
+        # Look for REMOTE_USER environment variable header
+        try:
+            remote_user = request.META["REMOTE_USER"]
+        except KeyError:
+            return redirect_to_config_error("remoteuser/remote_user_header_missing")
+    else:
+        user_header = settings.REMOTE_USER_AUTH_USER_HEADER
+        secret_header = settings.REMOTE_USER_AUTH_SECRET_HEADER
+        if secret_header:
+            # Check the shared secret header exists and contains the correct value
+            try:
+                if request.headers[secret_header] != settings.REMOTE_USER_AUTH_SECRET:
+                    logging.warning(f"SSO shared secret doesn't match value from {secret_header}")
+                    return redirect_to_config_error("remoteuser/remote_user_http_secret_incorrect")
+            except KeyError:
+                logging.warning(f"SSO request missing shared secret header: {secret_header}")
+                return redirect_to_config_error("remoteuser/remote_user_http_secret_missing")
+
+        logging.debug(f"Looking for SSO HEADER {user_header}")
+        try:
+            remote_user = request.headers[user_header]
+        except KeyError:
+            return redirect_to_config_error("remoteuser/remote_user_http_header_missing")
 
     # Django invokes authenticate methods by matching arguments, and this
     # authentication flow will not invoke LDAP authentication because of
@@ -1012,6 +1032,18 @@ def config_error_view(request: HttpRequest, error_category_name: str) -> HttpRes
         'smtp': {'error_name': 'smtp_error'},
         'backend_disabled': {'error_name': 'remoteuser_error_backend_disabled'},
         'remote_user_header_missing': {'error_name': 'remoteuser_error_remote_user_header_missing'},
+        'remote_user_http_header_missing': {
+            'error_name': 'remoteuser_error_remote_user_http_header_missing',
+            'header_name': settings.REMOTE_USER_AUTH_USER_HEADER,
+        },
+        'remote_user_http_secret_missing': {
+            'error_name': 'remoteuser_error_remote_user_http_secret_missing',
+            'header_name': settings.REMOTE_USER_AUTH_SECRET_HEADER,
+        },
+        'remote_user_http_secret_incorrect': {
+            'error_name': 'remoteuser_error_remote_user_http_secret_incorrect',
+            'header_name': settings.REMOTE_USER_AUTH_SECRET_HEADER,
+        },
     }
 
     return TemplateView.as_view(template_name='zerver/config_error.html',

@@ -83,6 +83,10 @@ SOCIAL_AUTH_APPLE_EMAIL_AS_USERNAME = True
 
 # Other auth
 SSO_APPEND_DOMAIN: Optional[str] = None
+REMOTE_USER_AUTH_DOMAIN: Optional[str] = None
+REMOTE_USER_AUTH_USER_HEADER: Optional[str] = None
+REMOTE_USER_AUTH_SECRET_HEADER: Optional[str] = None
+REMOTE_USER_AUTH_SECRET = get_secret('remote_sso_secret')
 
 VIDEO_ZOOM_CLIENT_ID = get_secret('video_zoom_client_id', development_only=True)
 VIDEO_ZOOM_CLIENT_SECRET = get_secret('video_zoom_client_secret')

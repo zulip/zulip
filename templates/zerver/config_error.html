@@ -95,6 +95,21 @@
                         The REMOTE_USER header is not set.
                     </p>
                     {% endif %}
+                    {% if error_name == "remoteuser_error_remote_user_http_header_missing" %}
+                    <p>
+                        The HTTP user header {{ header_name }} is not set.
+                    </p>
+                    {% endif %}
+                    {% if error_name == "remoteuser_error_remote_user_http_secret_missing" %}
+                    <p>
+                        The HTTP secret header {{ header_name }} is not set.
+                    </p>
+                    {% endif %}
+                    {% if error_name == "remoteuser_error_remote_user_http_secret_incorrect" %}
+                    <p>
+                        The HTTP header secret in {{ header_name }} is incorrect.
+                    </p>
+                    {% endif %}
                     <p>After making your changes, remember to restart
                     the Zulip server.</p>
                 </div>

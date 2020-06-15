@@ -43,6 +43,7 @@ from .configured_settings import (
     REMOTE_POSTGRES_HOST,
     REMOTE_POSTGRES_PORT,
     REMOTE_POSTGRES_SSLMODE,
+    REMOTE_USER_AUTH_DOMAIN,
     SENDFILE_BACKEND,
     SOCIAL_AUTH_APPLE_SERVICES_ID,
     SOCIAL_AUTH_GITHUB_KEY,
@@ -51,6 +52,7 @@ from .configured_settings import (
     SOCIAL_AUTH_GOOGLE_KEY,
     SOCIAL_AUTH_SAML_ENABLED_IDPS,
     SOCIAL_AUTH_SAML_SECURITY_CONFIG,
+    SSO_APPEND_DOMAIN,
     STATSD_HOST,
     USING_PGROONGA,
     ZULIP_ADMINISTRATOR,
@@ -962,6 +964,10 @@ POLL_TIMEOUT = 90 * 1000
 ########################################################################
 
 USING_APACHE_SSO = ('zproject.backends.ZulipRemoteUserBackend' in AUTHENTICATION_BACKENDS)
+
+# Backwards compatibility with previous SSO variable.
+if SSO_APPEND_DOMAIN and not REMOTE_USER_AUTH_DOMAIN:
+    REMOTE_USER_AUTH_DOMAIN = SSO_APPEND_DOMAIN
 
 ONLY_LDAP = False
 if len(AUTHENTICATION_BACKENDS) == 1 and (AUTHENTICATION_BACKENDS[0] ==

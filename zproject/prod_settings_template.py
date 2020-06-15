@@ -309,13 +309,26 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 #SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = ''
 
 ########
-# SSO via REMOTE_USER.
+# SSO via REMOTE_USER and Authenticating Proxy SSO
 #
 # If you are using the ZulipRemoteUserBackend authentication backend,
 # set this to your domain (e.g. if REMOTE_USER is "username" and the
 # corresponding email address is "username@example.com", set
-# SSO_APPEND_DOMAIN = "example.com")
-SSO_APPEND_DOMAIN = None  # type: Optional[str]
+# REMOTE_USER_AUTH_DOMAIN = "example.com")
+REMOTE_USER_AUTH_DOMAIN = None  # type: Optional[str]
+
+########
+# Authenticating Proxy SSO
+#
+# If you are using a remote HTTP proxy for authentication then set REMOTE_USER_AUTH_USER_HEADER
+# to the name of the HTTP header that will contain the username.
+# REMOTE_USER_AUTH_USER_HEADER = "X-Remote-User"
+
+# It is recommened to configure a shared secret between the proxy and Zulip.
+# The name of the HTTP header containing the shared secret between
+# the authenticating proxy and Zulip. If this is set you must also define
+# remote_sso_secret with the shared secret in your zulip-secrets.conf
+# REMOTE_USER_AUTH_SECRET_HEADER = "X-Remote-Secret"
 
 ################
 # Miscellaneous settings.
