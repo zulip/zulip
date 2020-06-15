@@ -479,6 +479,10 @@ Filter.prototype = {
 
         // this comes first because it has 3 term_types but is not a "complex filter"
         if (_.isEqual(term_types, ['stream', 'topic', 'search'])) {
+            // if stream does not exist, redirect to All
+            if (!this._stream_params) {
+                return "#";
+            }
             return  '/#narrow/stream/' + stream_data.name_to_slug(this.operands('stream')[0]) + '/topic/' + this.operands('topic')[0];
         }
 
@@ -490,6 +494,10 @@ Filter.prototype = {
         if (term_types[1] === 'search') {
             switch (term_types[0]) {
             case 'stream':
+                // if stream does not exist, redirect to All
+                if (!this._stream_params) {
+                    return "#";
+                }
                 return  '/#narrow/stream/' + stream_data.name_to_slug(this.operands('stream')[0]);
             case 'is-private':
                 return  '/#narrow/is/private';
@@ -541,6 +549,9 @@ Filter.prototype = {
         case 'in-all':
             return 'home';
         case 'stream':
+            if (!this._stream_params) {
+                return 'question-circle-o';
+            }
             if (this._stream_params._is_stream_private) {
                 return 'lock';
             }
@@ -564,6 +575,9 @@ Filter.prototype = {
         const term_types = this.sorted_term_types();
         if (term_types.length === 3 && _.isEqual(term_types, ['stream', 'topic', 'search']) ||
             term_types.length === 2 && _.isEqual(term_types, ['stream', 'topic'])) {
+            if (!this._stream_params) {
+                return i18n.t('Unknown stream');
+            }
             return this._stream_params._stream_name;
         }
         if (term_types.length === 1 || term_types.length === 2 && term_types[1] === 'search') {
@@ -575,6 +589,9 @@ Filter.prototype = {
             case 'streams-public':
                 return i18n.t('Public stream messages in organization');
             case 'stream':
+                if (!this._stream_params) {
+                    return i18n.t('Unknown stream');
+                }
                 return this._stream_params._stream_name;
             case 'is-starred':
                 return i18n.t('Starred messages');
