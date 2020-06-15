@@ -199,9 +199,6 @@ exports.per_stream_history = function (stream_id) {
 exports.remove_message = function (opts) {
     const stream_id = opts.stream_id;
     const topic_name = opts.topic_name;
-    // Number of messages to remove
-    // TODO: Use this option when moving
-    // topic between stream in message_events.js
     const num_messages = opts.num_messages || 1;
     const history = stream_dict.get(stream_id);
 

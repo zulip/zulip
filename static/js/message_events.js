@@ -179,6 +179,14 @@ exports.update_messages = function update_messages(events) {
 
                 // Remove the recent topics entry for the old topics;
                 // must be called before we call set_message_topic.
+                //
+                // TODO: Use a single bulk request to do this removal.
+                // Note that we need to be careful to only remove IDs
+                // that were present in stream_topic_history data.
+                // This may not be possible to do correctly without extra
+                // complexity; the present loop assumes stream_topic_history has
+                // only messages in message_store, but that's been false
+                // since we added the server_history feature.
                 stream_topic_history.remove_message({
                     stream_id: msg.stream_id,
                     topic_name: msg.topic,
