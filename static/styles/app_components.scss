@@ -432,3 +432,43 @@
     font-weight: 300;
     line-height: 38px;
 }
+
+.upgrade-tip {
+    &::before {
+        content: "\f135";
+    }
+
+    &:hover {
+        color: hsl(0, 0%, 20%);
+        border: 1px solid hsl(49, 20%, 60%);
+        box-shadow: 0px 0px 4px hsla(199, 79%, 56%, .2);
+
+        text-decoration: none;
+    }
+}
+
+.upgrade-tip,
+.tip {
+    position: relative;
+    display: block;
+    background-color: hsl(46, 63%, 95%);
+    border: 1px solid hsl(49, 20%, 84%);
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0px;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: hsl(0, 0%, 40%);
+
+    &::before {
+        display: inline;
+        margin-right: 8px;
+
+        font-family: FontAwesome, "Yantramanav", Source Sans Pro;
+        font-weight: 600;
+    }
+}
+
+.tip::before {
+    content: "\f0a2";
+}
