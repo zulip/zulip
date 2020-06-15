@@ -42,7 +42,7 @@ exports.build_bot_edit_widget = function (target) {
 
 exports.build_user_avatar_widget = function (upload_function) {
     const get_file_input = function () {
-        return $('#user_avatar_file_input').expectOne();
+        return $('#user-avatar-upload-widget .image_file_input').expectOne();
     };
 
     if (page_params.avatar_source === 'G') {
