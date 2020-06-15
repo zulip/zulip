@@ -13,10 +13,6 @@ class zulip::postgres_appdb_tuned {
   $replication = zulipconf('postgresql', 'replication', undef)
   $listen_addresses = zulipconf('postgresql', 'listen_addresses', undef)
 
-  $ssl_cert_file = zulipconf('postgresql', 'ssl_cert_file', undef)
-  $ssl_key_file = zulipconf('postgresql', 'ssl_key_file', undef)
-  $ssl_ca_file = zulipconf('postgresql', 'ssl_ca_file', undef)
-
   file { $zulip::postgres_appdb_base::postgres_confdirs:
     ensure => directory,
     owner  => 'postgres',

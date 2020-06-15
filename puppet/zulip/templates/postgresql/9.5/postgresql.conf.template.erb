@@ -676,12 +676,6 @@ archive_command = '/usr/local/bin/env-wal-g wal-push %p'
 hot_standby = on
 <% end -%>
 
-<% if @ssl_cert_file != '' -%>
-ssl_cert_file = '<%= @ssl_cert_file %>'		# (change requires restart)
-<% end -%>
-<% if @ssl_key_file != '' -%>
-ssl_key_file = '<%= @ssl_key_file %>'		# (change requires restart)
-<% end -%>
-<% if @ssl_ca_file != '' -%>
-ssl_ca_file = '<%= @ssl_ca_file %>'		# (change requires restart)
-<% end -%>
+ssl_cert_file = '/etc/ssl/certs/server.crt'		# (change requires restart)
+ssl_key_file = '/etc/ssl/pricate/server.key'		# (change requires restart)
+ssl_ca_file = '/etc/ssl/certs/root.crt'		# (change requires restart)
