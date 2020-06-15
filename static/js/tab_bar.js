@@ -51,9 +51,7 @@ exports.colorize_tab_bar = function () {
     const filter = narrow_state.filter();
     if (filter === undefined || !filter.has_operator('stream') || !filter._stream_params) {return;}
     const color_for_stream = stream_data.get_color(filter._stream_params._stream_name);
-    $("#tab_list .fa-hashtag").css('color', color_for_stream);
-    $("#tab_list .fa-lock").css('color', color_for_stream);
-    $("#tab_list .fa-globe").css('color', color_for_stream);
+    $("#tab_list .stream > .fa").css('color', color_for_stream);
 };
 
 function append_and_display_title_area(tab_bar_data) {
