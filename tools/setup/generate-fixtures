@@ -3,7 +3,8 @@ set -e
 
 run()
 {
-    "$(dirname "$0")/../../scripts/setup/terminate-psql-sessions" zulip zulip_test zulip_test_base zulip_test_template
+    PGHOST=localhost PGUSER=zulip \
+        "$(dirname "$0")/../../scripts/setup/terminate-psql-sessions" zulip_test zulip_test_base zulip_test_template
     psql -v ON_ERROR_STOP=1 -h localhost postgres zulip_test << EOF
 DROP DATABASE IF EXISTS zulip_test;
 CREATE DATABASE zulip_test TEMPLATE zulip_test_template;
