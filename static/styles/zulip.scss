@@ -1506,6 +1506,8 @@ div.focused_table {
             overflow: hidden;
             color: inherit;
             text-decoration: none;
+            // The first ~3px of padding here overlaps with the left padding from sub_count for some reason.
+            padding-right: calc(3px + 10px);
         }
 
         .sub_count,
@@ -1518,7 +1520,8 @@ div.focused_table {
         }
 
         .sub_count {
-            margin-left: 10px;
+            padding-left: 10px;
+            margin-left: 1px;
             padding-right: 10px;
             margin-right: 1px;
             .fa.fa-user-o {
@@ -1539,7 +1542,12 @@ div.focused_table {
             }
 
             &::before {
-                left: -5px;
+                left: -3px;
+                @media (max-width: 500px) {
+                    // this ensures the before "|" doesn't overlap
+                    // with the stream name text on small narrows
+                    left: 0px;
+                }
             }
 
             &::after {
