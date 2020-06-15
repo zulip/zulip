@@ -1201,6 +1201,11 @@ input[type=checkbox] {
         top: 90px;
         right: 40px;
     }
+
+    .settings-page-upload-text {
+        top: 90px;
+        right: 20px;
+    }
 }
 
 .avatar-icon-logo-settings {
@@ -1290,11 +1295,6 @@ input[type=checkbox] {
         position: absolute;
         z-index: 99;
         visibility: hidden;
-    }
-
-    #user_avatar_upload_button {
-        top: 90px;
-        right: 20px;
     }
 
     #realm_icon_upload {

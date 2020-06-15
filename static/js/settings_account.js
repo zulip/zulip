@@ -67,17 +67,17 @@ exports.update_email_change_display = function () {
 
 exports.update_avatar_change_display = function () {
     if (!exports.user_can_change_avatar()) {
-        $('#user_avatar_upload_button .button').attr('disabled', 'disabled');
+        $('#user-avatar-upload-widget .image_upload_button').attr('disabled', 'disabled');
         $("#user-avatar-upload-widget .settings-page-delete-button .button").attr('disabled', 'disabled');
     } else {
-        $('#user_avatar_upload_button .button').attr('disabled', false);
+        $('#user-avatar-upload-widget .image_upload_button').attr('disabled', false);
         $('#user-avatar-upload-widget .settings-page-delete-button .button').attr('disabled', false);
     }
 };
 
 function display_avatar_upload_complete() {
     $('#avatar-spinner-background').css({visibility: 'hidden'});
-    $('#user_avatar_upload_button').show();
+    $('#user-avatar-upload-widget .settings-page-upload-text').show();
     $('#user-avatar-upload-widget .settings-page-delete-button').show();
 
 }
@@ -85,7 +85,7 @@ function display_avatar_upload_complete() {
 function display_avatar_upload_started() {
     $("#user-avatar-source").hide();
     $('#avatar-spinner-background').css({visibility: 'visible'});
-    $('#user_avatar_upload_button').hide();
+    $('#user-avatar-upload-widget .settings-page-upload-text').hide();
     $('#user-avatar-upload-widget .settings-page-delete-button').hide();
 }
 
