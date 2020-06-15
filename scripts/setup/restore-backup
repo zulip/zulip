@@ -84,17 +84,17 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
         db_dir = os.path.join(tmp, "zulip-backup", "database")
         os.setresuid(0, 0, 0)
         run(["chown", "-R", POSTGRES_USER, "--", tmp])
+        as_postgres = ["su", "-s", "/usr/bin/env", "-", "--", POSTGRES_USER]
         run(
             [
+                *as_postgres,
                 os.path.join(
                     settings.DEPLOY_ROOT, "scripts", "setup", "terminate-psql-sessions",
                 ),
                 "zulip",
-                "zulip",
                 "zulip_base",
             ],
         )
-        as_postgres = ["su", "-s", "/usr/bin/env", "-", "--", POSTGRES_USER]
         run(as_postgres + ["dropdb", "--if-exists", "--", db_name])
         run(as_postgres + ["createdb", "-O", "zulip", "-T", "template0", "--", db_name])
 
