@@ -47,10 +47,6 @@ Copyright: 2005 Francesc Guasch
 License: GPL-2.0
 Comment: Not linked.
 
-Files: puppet/zulip/files/nagios_plugins/zulip_postgres_common/check_postgres.pl
-Copyright: 2007-2015 Greg Sabino Mullane
-License: BSD-2-Clause
-
 Files: puppet/zulip/files/nagios_plugins/zulip_nagios_server/check_website_response.sh
 Copyright: 2011 Chris Freeman
 License: GPL-2.0
