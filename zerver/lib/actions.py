@@ -4382,6 +4382,15 @@ def do_update_embedded_data(user_profile: UserProfile,
         }
     send_event(user_profile.realm, event, list(map(user_info, ums)))
 
+class DeleteMessagesEvent(TypedDict, total=False):
+    type: str
+    message_ids: List[int]
+    message_type: str
+    sender_id: int
+    recipient_id: int
+    topic: str
+    stream_id: int
+
 # We use transaction.atomic to support select_for_update in the attachment codepath.
 @transaction.atomic
 def do_update_message(user_profile: UserProfile, message: Message,
@@ -4601,7 +4610,7 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
     if not message_ids:
         return
 
-    event: Dict[str, Any] = {
+    event: DeleteMessagesEvent = {
         'type': 'delete_message',
         'message_ids': message_ids,
     }
