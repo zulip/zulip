@@ -664,10 +664,10 @@ class DesktopFlowTestingLib(ZulipTestCase):
         desktop_data = soup.find("input", value=True)["value"]
         browser_url = soup.find("a", href=True)["href"]
 
+        self.assertEqual(browser_url, '/login/')
         decrypted_key = self.verify_desktop_data_and_return_key(desktop_data, desktop_flow_otp)
-        self.assertEqual(browser_url, f'http://zulip.testserver/accounts/login/subdomain/{decrypted_key}')
 
-        result = self.client_get(browser_url)
+        result = self.client_get(f'http://zulip.testserver/accounts/login/subdomain/{decrypted_key}')
         self.assertEqual(result.status_code, 302)
         realm = get_realm("zulip")
         user_profile = get_user_by_delivery_email(email, realm)
