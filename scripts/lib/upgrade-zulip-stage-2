@@ -5,7 +5,6 @@
 # always run from the new version of Zulip, so any bug fixes take
 # effect on the very next upgrade.
 import argparse
-import configparser
 import glob
 import hashlib
 import logging
@@ -25,6 +24,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from scripts.lib.zulip_tools import (
     DEPLOYMENTS_DIR,
     assert_running_as_root,
+    get_config,
+    get_config_file,
     parse_os_release,
     su_to_zulip,
 )
@@ -75,12 +76,8 @@ args = parser.parse_args()
 deploy_path = args.deploy_path
 os.chdir(deploy_path)
 
-config_file = configparser.RawConfigParser()
-config_file.read("/etc/zulip/zulip.conf")
-try:
-    tornado_processes = int(config_file.get('application_server', 'tornado_processes'))
-except (configparser.NoSectionError, configparser.NoOptionError):
-    tornado_processes = 1
+config_file = get_config_file()
+tornado_processes = int(get_config(config_file, 'application_server', 'tornado_processes', '1'))
 
 IS_SERVER_UP = True
 
