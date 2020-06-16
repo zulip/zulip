@@ -56,7 +56,7 @@ function process_result(data, opts) {
     stream_list.maybe_scroll_narrow_into_view();
 
     if (opts.cont !== undefined) {
-        opts.cont(data);
+        opts.cont(data, opts);
     }
 }
 
@@ -83,19 +83,21 @@ function get_messages_success(data, opts) {
     }
 
     if (opts.num_after > 0) {
-        opts.msg_list.data.fetch_status.finish_newer_batch(data.messages, {
-            update_loading_indicator: update_loading_indicator,
-            found_newest: data.found_newest,
-        });
+        opts.fetch_again = opts.msg_list.data.fetch_status.finish_newer_batch(
+            data.messages, {
+                update_loading_indicator: update_loading_indicator,
+                found_newest: data.found_newest,
+            });
         if (opts.msg_list === home_msg_list) {
             // When we update home_msg_list, we need to also update
             // the fetch_status data structure for message_list.all,
             // which is never rendered (and just used for
             // prepopulating narrowed views).
-            message_list.all.data.fetch_status.finish_newer_batch(data.messages, {
-                update_loading_indicator: false,
-                found_newest: data.found_newest,
-            });
+            opts.fetch_again = message_list.all.data.fetch_status.finish_newer_batch(
+                data.messages, {
+                    update_loading_indicator: false,
+                    found_newest: data.found_newest,
+                });
         }
     }
 
@@ -326,11 +328,18 @@ exports.maybe_load_newer_messages = function (opts) {
 
     const anchor = exports.get_frontfill_anchor(msg_list).toFixed();
 
+    function load_more(data, args) {
+        if (args.fetch_again && args.msg_list === current_msg_list) {
+            exports.maybe_load_newer_messages({ msg_list: current_msg_list });
+        }
+    }
+
     exports.load_messages({
         anchor: anchor,
         num_before: 0,
         num_after: consts.forward_batch_size,
         msg_list: msg_list,
+        cont: load_more,
     });
 };
 
