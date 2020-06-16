@@ -325,7 +325,7 @@ run_test("basic_chars", () => {
     assert_mapping("u", "popovers.show_sender_info");
     assert_mapping("i", "popovers.open_message_menu");
     assert_mapping(":", "reactions.open_reactions_popover", true);
-    assert_mapping(">", "compose_actions.quote_and_reply");
+    assert_mapping(">", "compose_actions.quote_selected_text_and_reply");
     assert_mapping("e", "message_edit.start");
 
     overlays.is_active = return_true;

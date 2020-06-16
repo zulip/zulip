@@ -260,6 +260,21 @@ exports.cancel = function () {
     $(document).trigger($.Event("compose_canceled.zulip"));
 };
 
+exports.quote_selected_text_and_reply = function (opts) {
+    const selected_text = window.getSelection().toString();
+
+    if (selected_text !== "") {
+        const analysis = copy_and_paste.analyze_selection(window.getSelection());
+        if (!analysis.skip_same_td_check && analysis.start_id === analysis.end_id) {
+            // Quote the selected text iff a single message's text is selected.
+            // Otherwise, just quote the selected message.
+            opts.selected_text = selected_text.trim();
+            opts.start_message_id = analysis.start_id;
+        }
+    }
+    compose_actions.quote_and_reply(opts);
+};
+
 exports.respond_to_message = function (opts) {
     let msg_type;
     // Before initiating a reply to a message, if there's an
@@ -393,8 +408,13 @@ exports.on_topic_narrow = function () {
 
 exports.quote_and_reply = function (opts) {
     const textarea = $("#compose-textarea");
-    const message_id = current_msg_list.selected_id();
-    const message = current_msg_list.selected_message();
+    let message_id = current_msg_list.selected_id();
+    let message = current_msg_list.selected_message();
+
+    if (opts.start_message_id) {
+        message_id = opts.start_message_id;
+        message = current_msg_list.get(message_id);
+    }
 
     if (compose_state.has_message_content()) {
         // The user already started typing a message,
@@ -434,7 +454,16 @@ exports.quote_and_reply = function (opts) {
         autosize.update($("#compose-textarea"));
     }
 
-    if (message && message.raw_content) {
+    if (message && opts.selected_text !== undefined) {
+        // The copied text is plain text, therefore, the quoted text
+        // is not stylized as well.
+        message.raw_content = opts.selected_text;
+        replace_content(message);
+        // Resets the raw_content, otherwise this can cause the
+        // selected text to get quoted next time the hotkey is used.
+        message.raw_content = undefined;
+        return;
+    } else if (message && message.raw_content) {
         replace_content(message);
         return;
     }
