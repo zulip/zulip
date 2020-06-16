@@ -525,6 +525,14 @@ exports.initialize = function () {
     $('body').on('focus', '.draft-info-box', (e) => {
         activate_element(e.target);
     });
+
+    $('body').on('click', '#drafts-save-btn', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        compose_actions.cancel();
+        exports.update_draft();
+    });
+
 };
 
 window.drafts = exports;

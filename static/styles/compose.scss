@@ -21,7 +21,8 @@
             }
         }
 
-        .drafts-link {
+        .drafts-link,
+        #drafts-save-btn {
             float: left;
         }
 
@@ -122,9 +123,10 @@
         box-shadow: none !important;
     }
 
-    .drafts-link {
+    .drafts-link,
+    #drafts-save-btn {
         position: relative;
-        margin-right: 1em;
+        margin-right: 0.2em;
         margin-left: 5px;
         top: 2px;
     }
