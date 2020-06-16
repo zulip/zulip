@@ -56,6 +56,7 @@ from zerver.lib.message import (
     get_first_visible_message_id,
     get_raw_unread_data,
     get_recent_private_conversations,
+    has_message_access,
     maybe_update_first_visible_message_id,
     messages_for_ids,
     render_markdown,
@@ -3559,7 +3560,7 @@ class EditMessageTest(ZulipTestCase):
                 'propagate_mode': 'change_all',
                 'topic': 'new topic',
             })
-        self.assertEqual(len(queries), 49)
+        self.assertEqual(len(queries), 52)
 
         messages = get_topic_messages(user_profile, old_stream, "test")
         self.assertEqual(len(messages), 1)
@@ -3569,6 +3570,29 @@ class EditMessageTest(ZulipTestCase):
         self.assertEqual(len(messages), 4)
         self.assertEqual(messages[3].content, f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**")
         self.assert_json_success(result)
+
+    def test_inaccessible_msg_after_stream_change(self) -> None:
+        """Simulates the case where message is moved to a stream where user is not a subscribed"""
+        (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test")
+
+        guest_user = self.example_user('polonius')
+        self.subscribe(guest_user, old_stream.name)
+        msg_id_to_test_acesss = self.send_stream_message(user_profile, old_stream.name,
+                                                         topic_name='test', content="fourth")
+
+        self.assertEqual(has_message_access(guest_user, Message.objects.get(id=msg_id_to_test_acesss), None), True)
+
+        result = self.client_patch("/json/messages/" + str(msg_id), {
+            'message_id': msg_id,
+            'stream_id': new_stream.id,
+            'propagate_mode': 'change_all',
+            'topic': 'new topic'
+        })
+        self.assert_json_success(result)
+
+        self.assertEqual(has_message_access(guest_user, Message.objects.get(id=msg_id_to_test_acesss), None), False)
+        self.assertEqual(has_message_access(self.example_user('iago'), Message.objects.get(id=msg_id_to_test_acesss), None), True)
 
     def test_no_notify_move_message_to_stream(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
