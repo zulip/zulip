@@ -461,6 +461,7 @@ exports.update_calculated_fields = function (sub) {
                                  !sub.invite_only;
     sub.preview_url = hash_util.by_stream_uri(sub.stream_id);
     sub.can_add_subscribers = !page_params.is_guest && (!sub.invite_only || sub.subscribed);
+    sub.is_old_stream = sub.stream_weekly_traffic !== null;
     if (sub.rendered_description !== undefined) {
         sub.rendered_description = sub.rendered_description.replace('<p>', '').replace('</p>', '');
     }

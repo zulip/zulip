@@ -10,6 +10,12 @@ below features are supported.
 
 ## Changes in Zulip 2.2
 
+**Feature level 14**
+
+* [`GET users/me/subscriptions`](/api/get-subscribed-streams): Removed
+  the `is_old_stream` field from Stream objects.  This field was
+  always equivalent to `stream_weekly_traffic != null` on the same object.
+
 **Feature level 13**
 
 * [`POST /register`](/api/register-queue): Added
