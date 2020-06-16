@@ -12,6 +12,10 @@ import os
 import subprocess
 import sys
 import time
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import NoReturn
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
@@ -27,6 +31,7 @@ from scripts.lib.zulip_tools import (
     get_config,
     get_config_file,
     parse_os_release,
+    set_config,
     su_to_zulip,
 )
 
@@ -35,6 +40,17 @@ assert_running_as_root()
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s upgrade-zulip-stage-2: %(message)s",
                     level=logging.INFO)
+
+
+def error_desupported_os(vendor: str, os_version: str) -> "NoReturn":
+    # Link to documentation for how to correctly upgrade the OS.
+    logging.critical("Unsupported platform: %s %s", vendor, os_version)
+    logging.info("Sorry! The support for your OS has been discontinued.\n"
+                 "Please upgrade your OS to a supported release first.\n"
+                 "See https://zulip.readthedocs.io/en/latest/production/"
+                 "upgrade-or-modify.html#upgrading-the-operating-system")
+    sys.exit(1)
+
 
 # Do not upgrade on unsupported OS versions.
 UNSUPPORTED_DISTROS = [
@@ -47,13 +63,7 @@ vendor = distro_info['ID']
 os_version = distro_info['VERSION_ID']
 
 if (vendor, os_version) in UNSUPPORTED_DISTROS:
-    # Link to documentation for how to correctly upgrade the OS.
-    logging.critical("Unsupported platform: %s %s", vendor, os_version)
-    logging.info("Sorry! The support for your OS has been discontinued.\n"
-                 "Please upgrade your OS to a supported release first.\n"
-                 "See https://zulip.readthedocs.io/en/latest/production/"
-                 "upgrade-or-modify.html#upgrading-the-operating-system")
-    sys.exit(1)
+    error_desupported_os(vendor, os_version)
 
 # make sure we have appropriate file permissions
 os.umask(0o22)
@@ -95,6 +105,23 @@ def shutdown_server() -> None:
     subprocess.check_call(["supervisorctl", "stop"] + core_server_services + worker_services,
                           preexec_fn=su_to_zulip)
     IS_SERVER_UP = False
+
+# postgresql.version is required for database servers, but wasn't
+# previously; fill it in based on what the OS provides.
+if os.path.exists('/etc/init.d/postgresql'):
+    postgres_version = get_config(config_file, 'postgresql', 'version')
+    if not postgres_version:
+        default_postgres_version = {
+            ('debian', '10'): '11',
+            ('ubuntu', '18.04'): '10',
+            ('ubuntu', '20.04'): '12',
+            ('centos', '7'): '11',
+        }
+        if (vendor, os_version) in default_postgres_version:
+            postgres_version = default_postgres_version[(vendor, os_version)]
+        else:
+            error_desupported_os(vendor, os_version)
+        set_config(config_file, 'postgresql', 'version', postgres_version)
 
 if glob.glob("/usr/share/postgresql/*/extension/tsearch_extras.control"):
     # Remove legacy tsearch_extras package references

@@ -56,20 +56,7 @@ class zulip::base {
   }
   package { $base_packages: ensure => 'installed' }
 
-  $postgres_version = zulipconf('postgresql', 'version', $release_name ? {
-    'wheezy'  => '9.1',
-    'jessie'  => '9.4',
-    'stretch' => '9.6',
-    'buster'  => '11',
-    'precise' => '9.1',
-    'trusty'  => '9.3',
-    'vivid'   => '9.4',
-    'wily'    => '9.4',
-    'xenial'  => '9.5',
-    'bionic'  => '10',
-    'CentOS7' => '10',
-    'focal'   => '12',
-  })
+  $postgres_version = zulipconf('postgresql', 'version', undef)
 
   $normal_queues = [
     'deferred_work',
