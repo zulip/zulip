@@ -35,10 +35,7 @@ function make_tab_data(filter) {
         // We can now be certain that the narrow
         // involves a stream which exists and
         // the current user can access.
-        const stream = filter.operands("stream")[0];
-        // We can rely on current_stream because if the stream doesn't
-        // exist then the "question-circle-o" case would case early exit.
-        const current_stream = stream_data.get_sub_by_name(stream);
+        const current_stream = filter._sub;
         tab_data.rendered_narrow_description = current_stream.rendered_description;
         tab_data.sub_count = get_sub_count(current_stream);
         tab_data.formatted_sub_count = get_formatted_sub_count(current_stream);
