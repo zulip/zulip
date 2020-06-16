@@ -171,6 +171,11 @@
             display: block;
         }
 
+        i.zulip-icon {
+            margin: 0px 2px 2px 2px;
+            vertical-align: middle;
+        }
+
         @media (max-width: 500px) {
             padding: 10px;
         }
