@@ -292,6 +292,18 @@ EOF
 auto_renew = yes
 EOF
     fi
+
+    if [ -e "/etc/init.d/postgresql" ]; then
+        case " $os_id $os_id_like " in
+            *' debian '*)
+                cat <<EOF
+
+[postgresql]
+version = 12
+EOF
+                ;;
+        esac
+    fi
 ) > /etc/zulip/zulip.conf
 
 case ",$PUPPET_CLASSES," in
