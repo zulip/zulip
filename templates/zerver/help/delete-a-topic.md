@@ -24,7 +24,7 @@ whereas [deleting a stream](/help/delete-a-stream) does not.
 
 1. Hover over the topic in the **left sidebar**.
 
-1. Click the down chevron (<i class="fa fa-chevron-down"></i>).
+1. Click the ellipsis (<i class="zulip-icon ellipsis-v-solid"></i>).
 
 1. Click **Delete all messages in `<topic>`**.
 
