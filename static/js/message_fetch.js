@@ -174,7 +174,7 @@ exports.load_messages = function (opts) {
         data.narrow = JSON.stringify(page_params.narrow);
     }
 
-    const update_loading_indicator = opts.msg_list === current_msg_list;
+    let update_loading_indicator = opts.msg_list === current_msg_list;
     if (opts.num_before > 0) {
         opts.msg_list.data.fetch_status.start_older_batch({
             update_loading_indicator: update_loading_indicator,
@@ -187,6 +187,8 @@ exports.load_messages = function (opts) {
     }
 
     if (opts.num_after > 0) {
+        // We hide the bottom loading indicator when we're fetching both top and bottom messages.
+        update_loading_indicator = update_loading_indicator && opts.num_before === 0;
         opts.msg_list.data.fetch_status.start_newer_batch({
             update_loading_indicator: update_loading_indicator,
         });
@@ -243,10 +245,7 @@ exports.load_messages_for_narrow = function (opts) {
         num_before: consts.narrow_before,
         num_after: consts.narrow_after,
         msg_list: msg_list,
-        cont: function () {
-            message_scroll.hide_indicators();
-            opts.cont();
-        },
+        cont: opts.cont,
     });
 };
 
