@@ -66,7 +66,6 @@ Issue **{title}** was ignored by **{actor}**.
 platforms_map = {
     "go": "go",
     "node": "javascript",
-    "javascript": "javascript",
     "python": "python3",
 }  # We can expand this as and when users use this integration with different platforms.
 
@@ -102,7 +101,10 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
         # (in the Python Sentry SDK) or something similar.
 
         filename = event["metadata"]["filename"]
-        platform = platforms_map[event["platform"]]
+        platform_name = event["platform"]
+        platform = platforms_map.get(platform_name)
+        if platform is None:  # nocoverage
+            raise UnexpectedWebhookEventType("Sentry", f"platform {platform_name}")
 
         stacktrace = None
         for value in event["exception"]["values"]:
