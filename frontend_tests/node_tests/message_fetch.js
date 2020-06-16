@@ -84,10 +84,12 @@ function config_fake_channel(conf) {
     let called;
 
     channel.get = function (opts) {
-        if (called) {
+        if (called && !conf.can_call_again) {
             throw "only use this for one call";
         }
-        assert(self.success === undefined);
+        if (!conf.can_call_again) {
+            assert(self.success === undefined);
+        }
         assert.equal(opts.url, '/json/messages');
         assert.deepEqual(opts.data, conf.expected_opts_data);
         self.success = opts.success;
@@ -306,6 +308,7 @@ run_test('loading_newer', () => {
 
         const fetch = config_fake_channel({
             expected_opts_data: data.req,
+            can_call_again: true,
         });
 
         message_fetch.maybe_load_newer_messages({
@@ -361,7 +364,8 @@ run_test('loading_newer', () => {
 
         // To handle this special case we should allow another fetch to occur,
         // since the last message event's data had been discarded.
-        assert.equal(msg_list.data.fetch_status.can_load_newer_messages(), true);
+        // This fetch goes on until the newest message has been found.
+        assert.equal(msg_list.data.fetch_status.can_load_newer_messages(), false);
     }());
 
     (function test_home() {
