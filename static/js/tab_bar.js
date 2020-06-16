@@ -25,13 +25,16 @@ function make_tab_data(filter) {
     }
     tab_data.title = filter.get_title();
     tab_data.icon = filter.get_icon();
-    if (tab_data.icon === 'question-circle-o') {
+    if (filter.has_operator('stream') && !filter._sub) {
         tab_data.sub_count = '0';
         tab_data.formatted_sub_count = '0';
         tab_data.rendered_narrow_description = i18n.t("This stream does not exist or is private.");
         return tab_data;
     }
-    if (['hashtag', 'lock', 'globe'].includes(tab_data.icon)) {
+    if (filter._sub) {
+        // We can now be certain that the narrow
+        // involves a stream which exists and
+        // the current user can access.
         const stream = filter.operands("stream")[0];
         // We can rely on current_stream because if the stream doesn't
         // exist then the "question-circle-o" case would case early exit.
