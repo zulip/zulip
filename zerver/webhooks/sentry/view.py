@@ -89,6 +89,11 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
     if int(event["version"]) < 7:
         raise UnexpectedWebhookEventType("Sentry", "Raven SDK")
 
+    platform_name = event["platform"]
+    platform = platforms_map.get(platform_name)
+    if platform is None:  # nocoverage
+        raise UnexpectedWebhookEventType("Sentry", f"platform {platform_name}")
+
     context = {
         "title": subject,
         "level": event["level"],
@@ -101,10 +106,6 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
         # (in the Python Sentry SDK) or something similar.
 
         filename = event["metadata"]["filename"]
-        platform_name = event["platform"]
-        platform = platforms_map.get(platform_name)
-        if platform is None:  # nocoverage
-            raise UnexpectedWebhookEventType("Sentry", f"platform {platform_name}")
 
         stacktrace = None
         for value in event["exception"]["values"]:
