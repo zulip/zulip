@@ -2,7 +2,7 @@ const noop = () => {};
 const { JSDOM } = require("jsdom");
 const fs = require("fs");
 
-const template = fs.readFileSync("templates/corporate/billing.html", "utf-8");
+const template = fs.readFileSync("corporate/templates/billing.html", "utf-8");
 const dom = new JSDOM(template, { pretendToBeVisual: true });
 const document = dom.window.document;
 

@@ -516,8 +516,8 @@ html_rules: List["Rule"] = whitespace_rules + prose_style_rules + [
      'bad_lines': ['<button aria-label="foo"></button>']},
     {'pattern': 'script src="http',
      'description': "Don't directly load dependencies from CDNs.  See docs/subsystems/html-css.md",
-     'exclude': {"templates/corporate/billing.html", "templates/zerver/hello.html",
-                 "templates/corporate/upgrade.html"},
+     'exclude': {"corporate/templates/billing.html", "corporate/templates/hello.html",
+                 "corporate/templates/upgrade.html"},
      'good_lines': ["{{ render_entrypoint('landing-page') }}"],
      'bad_lines': ['<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>']},
     {'pattern': "title='[^{]",
@@ -546,7 +546,7 @@ html_rules: List["Rule"] = whitespace_rules + prose_style_rules + [
      'description': "Don't use inline event handlers (onclick=, etc. attributes) in HTML. Instead,"
      "attach a jQuery event handler ($('#foo').on('click', function () {...})) when "
      "the DOM is ready (inside a $(function () {...}) block).",
-     'exclude': {'templates/zerver/dev_login.html', 'templates/corporate/upgrade.html'},
+     'exclude': {'templates/zerver/dev_login.html', 'corporate/templates/upgrade.html'},
      'good_lines': ["($('#foo').on('click', function () {}"],
      'bad_lines': ["<button id='foo' onclick='myFunction()'>Foo</button>", "<input onchange='myFunction()'>"]},
     {'pattern': 'style ?=',
@@ -587,13 +587,13 @@ html_rules: List["Rule"] = whitespace_rules + prose_style_rules + [
          'static/templates/pm_list_item.hbs',
 
          # Inline styling for an svg; could be moved to CSS files?
-         'templates/zerver/landing_nav.html',
-         'templates/zerver/billing_nav.html',
+         'corporate/templates/zerver/default-header.html',
+         'corporate/templates/billing_nav.html',
          'templates/zerver/app/home.html',
-         'templates/zerver/features.html',
+         'corporate/templates/features.html',
          'templates/zerver/portico-header.html',
-         'templates/corporate/billing.html',
-         'templates/corporate/upgrade.html',
+         'corporate/templates/billing.html',
+         'corporate/templates/upgrade.html',
 
          # Miscellaneous violations to be cleaned up
          'static/templates/user_info_popover_title.hbs',
@@ -607,8 +607,8 @@ html_rules: List["Rule"] = whitespace_rules + prose_style_rules + [
          'templates/zerver/integrations/index.html',
          'templates/zerver/documentation_main.html',
          'templates/analytics/realm_summary_table.html',
-         'templates/corporate/zephyr.html',
-         'templates/corporate/zephyr-mirror.html',
+         'corporate/templates/zephyr.html',
+         'corporate/templates/zephyr-mirror.html',
      },
      'good_lines': ['#my-style {color: blue;}', 'style="display: none"', "style='display: none"],
      'bad_lines': ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"']},

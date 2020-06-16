@@ -46,8 +46,8 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
     logging.basicConfig(format='%(levelname)s:%(message)s')
     templates = sorted(fn for fn in templates if 'casperjs' not in fn)
     # Use of underscore templates <%= %>.
-    if 'templates/zerver/team.html' in templates:
-        templates.remove('templates/zerver/team.html')
+    if 'corporate/templates/team.html' in templates:
+        templates.remove('corporate/templates/team.html')
 
     def check_for_duplicate_ids(templates: List[str]) -> Dict[str, List[str]]:
         template_id_dict = build_id_dict(templates)
@@ -117,7 +117,7 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
         bad_files = [
             # These use various whitespace-dependent formatting that
             # prevent cleaning them.
-            'templates/corporate/zephyr-mirror.html',
+            'corporate/templates/zephyr-mirror.html',
             # Can't clean this because of `preserve_spaces`
             'templates/zerver/app/markdown_help.html',
         ]
@@ -128,7 +128,7 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
         # zephyr-mirror.html has some whitespace-dependent formatting
         # for code blocks that prevent cleaning it.  Might make sense
         # to convert it to a /help/ markdown article.
-        'templates/corporate/zephyr-mirror.html',
+        'corporate/templates/zephyr-mirror.html',
         # Can't clean this because of `preserve_spaces`
         'templates/zerver/app/markdown_help.html',
     ]

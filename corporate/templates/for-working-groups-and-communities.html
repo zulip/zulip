@@ -2,7 +2,7 @@
 {% set entrypoint = "landing-page" %}
 
 {% block title %}
-<title>Migrating from HipChat and Stride</title>
+<title>Zulip: the best group chat for working groups and communities</title>
 {% endblock %}
 
 {% block customhead %}
@@ -11,21 +11,15 @@
 
 {% block portico_content %}
 
-{% include 'zerver/landing_nav.html' %}
-
 <div class="portico-landing why-page">
-    <div class="hero bg-pycon atlassian">
-        <div class="bg-dimmer"></div>
-        <div class="content">
-            <h1 class="center">Migrating from HipChat and Stride</h1>
-            <p></p>
-        </div>
+    <div class="hero">
+        <h1 class="center">{% trans %}The best chat for working groups and communities.{% endtrans %}</h1>
+        <p>Make good use of your users’ time, and engage your community with thoughtful, organized discussion.</p>
     </div>
-
     <div class="main">
         <div class="padded-content">
             <div class="inner-content markdown">
-                {{ render_markdown_path('zerver/atlassian.md') }}
+                {{ render_markdown_path('for/working-groups-and-communities.md') }}
             </div>
         </div>
     </div>

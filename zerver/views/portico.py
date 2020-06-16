@@ -8,13 +8,14 @@ from zerver.context_processors import get_realm_from_request, latest_info_contex
 from zerver.decorator import add_google_analytics, redirect_to_login
 from zerver.models import Realm
 
+# TODO: move landing pages to corporate/
 
 @add_google_analytics
 def apps_view(request: HttpRequest, _: str) -> HttpResponse:
     if settings.ZILENCER_ENABLED:
         return TemplateResponse(
             request,
-            'zerver/apps.html',
+            'apps.html',
             context={
                 "page_params": {
                     'electron_app_version': LATEST_DESKTOP_VERSION,
@@ -36,7 +37,7 @@ def plans_view(request: HttpRequest) -> HttpResponse:
             return redirect_to_login(next="plans")
     return TemplateResponse(
         request,
-        "zerver/plans.html",
+        "plans.html",
         context={"realm_plan_type": realm_plan_type, 'free_trial_days': free_trial_days},
     )
 
@@ -53,7 +54,7 @@ def team_view(request: HttpRequest) -> HttpResponse:
 
     return TemplateResponse(
         request,
-        'zerver/team.html',
+        'team.html',
         context={
             'page_params': {
                 'contrib': data['contrib'],
@@ -72,7 +73,7 @@ def landing_view(request: HttpRequest, template_name: str) -> HttpResponse:
 
 @add_google_analytics
 def hello_view(request: HttpRequest) -> HttpResponse:
-    return TemplateResponse(request, 'zerver/hello.html', latest_info_context())
+    return TemplateResponse(request, 'hello.html', latest_info_context())
 
 @add_google_analytics
 def terms_view(request: HttpRequest) -> HttpResponse:

@@ -9,10 +9,10 @@ from zerver.lib.rest import rest_dispatch
 
 i18n_urlpatterns: Any = [
     # Zephyr/MIT
-    path('zephyr/', TemplateView.as_view(template_name='corporate/zephyr.html')),
-    path('zephyr-mirror/', TemplateView.as_view(template_name='corporate/zephyr-mirror.html')),
+    path('zephyr/', TemplateView.as_view(template_name='zephyr.html')),
+    path('zephyr-mirror/', TemplateView.as_view(template_name='zephyr-mirror.html')),
 
-    path('jobs/', TemplateView.as_view(template_name='corporate/jobs.html')),
+    path('jobs/', TemplateView.as_view(template_name='jobs.html')),
 
     # Billing
     path('billing/', corporate.views.billing_home, name='corporate.views.billing_home'),

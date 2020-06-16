@@ -176,7 +176,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
             'percent_off': float(percent_off),
         },
     }
-    response = render(request, 'corporate/upgrade.html', context=context)
+    response = render(request, 'upgrade.html', context=context)
     return response
 
 @zulip_login_required
@@ -190,7 +190,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
 
     if not user.is_realm_admin and not user.is_billing_admin:
         context: Dict[str, Any] = {'admin_access': False}
-        return render(request, 'corporate/billing.html', context=context)
+        return render(request, 'billing.html', context=context)
 
     context = {
         'admin_access': True,
@@ -243,7 +243,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
                 'onboarding': request.GET.get("onboarding") is not None,
             })
 
-    return render(request, 'corporate/billing.html', context=context)
+    return render(request, 'billing.html', context=context)
 
 @require_billing_access
 @has_request_variables

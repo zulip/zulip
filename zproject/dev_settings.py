@@ -159,7 +159,7 @@ BILLING_ENABLED = True
 LANDING_PAGE_NAVBAR_MESSAGE = None
 
 # Test Custom TOS template rendering
-TERMS_OF_SERVICE = 'corporate/terms.md'
+TERMS_OF_SERVICE = 'terms.md'
 
 # Our run-dev.py proxy uses X-Forwarded-Port to communicate to Django
 # that the request is actually on port 9991, not port 9992 (the Django

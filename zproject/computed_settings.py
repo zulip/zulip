@@ -648,6 +648,10 @@ TEMPLATES = [
     non_html_template_engine_settings,
     two_factor_template_engine_settings,
 ]
+
+if CORPORATE_ENABLED:
+    default_template_engine_settings['DIRS'].insert(0, os.path.join(DEPLOY_ROOT, 'corporate/templates'))
+
 ########################################################################
 # LOGGING SETTINGS
 ########################################################################

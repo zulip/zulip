@@ -1,6 +1,6 @@
 const { JSDOM } = require("jsdom");
 const fs = require("fs");
-const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
+const template = fs.readFileSync("corporate/templates/upgrade.html", "utf-8");
 const dom = new JSDOM(template, { pretendToBeVisual: true });
 const jquery = require('jquery')(dom.window);
 

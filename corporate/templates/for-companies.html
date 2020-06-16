@@ -11,8 +11,6 @@
 
 {% block portico_content %}
 
-{% include 'zerver/landing_nav.html' %}
-
 <div class="portico-landing why-page">
     <div class="hero">
         <h1 class="center">{% trans %}The best chat for workplaces.{% endtrans %}</h1>
@@ -21,7 +19,7 @@
     <div class="main">
         <div class="padded-content">
             <div class="inner-content markdown">
-                {{ render_markdown_path('zerver/for/companies.md') }}
+                {{ render_markdown_path('for/companies.md') }}
             </div>
         </div>
     </div>

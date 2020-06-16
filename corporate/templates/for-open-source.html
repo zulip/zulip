@@ -14,8 +14,6 @@
 
 {% block portico_content %}
 
-{% include 'zerver/landing_nav.html' %}
-
 <div class="portico-landing why-page no-slide">
     <div class="hero bg-pycon">
         <div class="bg-dimmer"></div>
@@ -27,7 +25,7 @@
     <div class="main">
         <div class="padded-content">
             <div class="inner-content markdown">
-                {{ render_markdown_path('zerver/for/open-source.md') }}
+                {{ render_markdown_path('for/open-source.md') }}
             </div>
         </div>
     </div>
