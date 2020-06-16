@@ -10,15 +10,15 @@ def set_initial_value_for_invited_as(apps: StateApps, schema_editor: DatabaseSch
     PreregistrationUser = apps.get_model("zerver", "PreregistrationUser")
     for user in PreregistrationUser.objects.all():
         if user.invited_as_admin:
-            user.invited_as = 1     # PreregistrationUser.INVITE_AS['REALM_ADMIN']
+            user.invited_as = 2     # PreregistrationUser.INVITE_AS['REALM_ADMIN']
         else:
-            user.invited_as = 2     # PreregistrationUser.INVITE_AS['MEMBER']
+            user.invited_as = 1     # PreregistrationUser.INVITE_AS['MEMBER']
         user.save(update_fields=["invited_as"])
 
 def reverse_code(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     PreregistrationUser = apps.get_model("zerver", "PreregistrationUser")
     for user in PreregistrationUser.objects.all():
-        if user.invited_as == 1:    # PreregistrationUser.INVITE_AS['REALM_ADMIN']
+        if user.invited_as == 2:    # PreregistrationUser.INVITE_AS['REALM_ADMIN']
             user.invited_as_admin = True
         else:                       # PreregistrationUser.INVITE_AS['MEMBER']
             user.invited_as_admin = False
