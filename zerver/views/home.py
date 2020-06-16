@@ -23,13 +23,11 @@ from zerver.lib.i18n import (
 )
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
-from zerver.lib.subdomains import get_subdomain
 from zerver.lib.users import compute_show_invites_and_add_streams
 from zerver.lib.utils import generate_random_token, statsd
 from zerver.models import Message, PreregistrationUser, Realm, Stream, UserProfile
 from zerver.views.compatibility import is_outdated_desktop_app, is_unsupported_browser
 from zerver.views.messages import get_latest_update_message_flag_activity
-from zerver.views.portico import hello_view
 
 
 def need_accept_tos(user_profile: Optional[UserProfile]) -> bool:
@@ -135,21 +133,8 @@ def compute_navbar_logo_url(page_params: Dict[str, Any]) -> str:
         navbar_logo_url = page_params["realm_logo_url"]
     return navbar_logo_url
 
-def home(request: HttpRequest) -> HttpResponse:
-    if not settings.ROOT_DOMAIN_LANDING_PAGE:
-        return home_real(request)
-
-    # If settings.ROOT_DOMAIN_LANDING_PAGE, sends the user the landing
-    # page, not the login form, on the root domain
-
-    subdomain = get_subdomain(request)
-    if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
-        return home_real(request)
-
-    return hello_view(request)
-
 @zulip_login_required
-def home_real(request: HttpRequest) -> HttpResponse:
+def home(request: HttpRequest) -> HttpResponse:
     # Before we do any real work, check if the app is banned.
     client_user_agent = request.META.get("HTTP_USER_AGENT", "")
     (insecure_desktop_app, banned_desktop_app, auto_update_broken) = is_outdated_desktop_app(

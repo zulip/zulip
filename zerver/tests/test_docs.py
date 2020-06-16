@@ -334,7 +334,7 @@ class AboutPageTest(ZulipTestCase):
         self.assert_in_success_response(['2017-11-20'], result)
         self.assert_in_success_response(['timabbott', 'showell', 'gnprice', 'rishig'], result)
 
-        with mock.patch("zerver.views.portico.open", side_effect=FileNotFoundError) as m:
+        with mock.patch("corporate.landing.open", side_effect=FileNotFoundError) as m:
             result = self.client_get('/team/')
             self.assertEqual(result.status_code, 200)
             self.assert_in_success_response(['Never ran'], result)

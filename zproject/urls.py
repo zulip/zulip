@@ -10,7 +10,7 @@ from django.contrib.auth.views import (
     PasswordResetDoneView,
 )
 from django.utils.module_loading import import_string
-from django.views.generic import RedirectView, TemplateView
+from django.views.generic import TemplateView
 
 import zerver.forms
 import zerver.tornado.views
@@ -23,9 +23,9 @@ import zerver.views.digest
 import zerver.views.documentation
 import zerver.views.email_mirror
 import zerver.views.home
+import zerver.views.legal
 import zerver.views.messages
 import zerver.views.muting
-import zerver.views.portico
 import zerver.views.realm
 import zerver.views.realm_export
 import zerver.views.registration
@@ -557,29 +557,9 @@ i18n_urls = [
         name="zerver.views.documentation.integration_doc"),
     url(r'^integrations/(.*)$', IntegrationView.as_view()),
 
-    # Landing page, features pages, signup form, etc.
-    url(r'^hello/$', zerver.views.portico.hello_view, name='landing-page'),
-    url(r'^new-user/$', RedirectView.as_view(url='/hello', permanent=True)),
-    url(r'^features/$', zerver.views.portico.landing_view, {'template_name': 'features.html'}),
-    url(r'^plans/$', zerver.views.portico.plans_view, name='plans'),
-    url(r'^apps/(.*)$', zerver.views.portico.apps_view, name='zerver.views.home.apps_view'),
-    url(r'^team/$', zerver.views.portico.team_view),
-    url(r'^history/$', zerver.views.portico.landing_view, {'template_name': 'history.html'}),
-    url(r'^why-zulip/$', zerver.views.portico.landing_view, {'template_name': 'why-zulip.html'}),
-    url(r'^for/open-source/$', zerver.views.portico.landing_view,
-        {'template_name': 'for-open-source.html'}),
-    url(r'^for/research/$', zerver.views.portico.landing_view,
-        {'template_name': 'for-research.html'}),
-    url(r'^for/companies/$', zerver.views.portico.landing_view,
-        {'template_name': 'for-companies.html'}),
-    url(r'^for/working-groups-and-communities/$', zerver.views.portico.landing_view,
-        {'template_name': 'for-working-groups-and-communities.html'}),
-    url(r'^security/$', zerver.views.portico.landing_view, {'template_name': 'security.html'}),
-    url(r'^atlassian/$', zerver.views.portico.landing_view, {'template_name': 'atlassian.html'}),
-
     # Terms of Service and privacy pages.
-    url(r'^terms/$', zerver.views.portico.terms_view, name='terms'),
-    url(r'^privacy/$', zerver.views.portico.privacy_view, name='privacy'),
+    url(r'^terms/$', zerver.views.legal.terms_view, name='terms'),
+    url(r'^privacy/$', zerver.views.legal.privacy_view, name='privacy'),
     url(r'^config-error/(?P<error_category_name>[\w,-]+)$', zerver.views.auth.config_error_view,
         name='config_error'),
     url(r'^config-error/remoteuser/(?P<error_category_name>[\w,-]+)$', zerver.views.auth.config_error_view),
@@ -699,14 +679,6 @@ urls += [
         name='zerver.views.email_mirror.email_mirror_message'),
 ]
 
-# Include URL configuration files for site-specified extra installed
-# Django apps
-for app_name in settings.EXTRA_INSTALLED_APPS:
-    app_dir = os.path.join(settings.DEPLOY_ROOT, app_name)
-    if os.path.exists(os.path.join(app_dir, 'urls.py')):
-        urls += [url(r'^', include(f'{app_name}.urls'))]
-        i18n_urls += import_string(f"{app_name}.urls.i18n_urlpatterns")
-
 # Tornado views
 urls += [
     # Used internally for communication between Django and Tornado processes
@@ -739,7 +711,18 @@ if settings.DEVELOPMENT:
     urls += dev_urls.urls
     i18n_urls += dev_urls.i18n_urls
 
+extra_urls = []
+extra_i18n_urls = []
+
+# Include URL configuration files for site-specified extra installed
+# Django apps
+for app_name in settings.EXTRA_INSTALLED_APPS:
+    app_dir = os.path.join(settings.DEPLOY_ROOT, app_name)
+    if os.path.exists(os.path.join(app_dir, 'urls.py')):
+        extra_urls += [url(r'^', include(f'{app_name}.urls'))]
+        extra_i18n_urls += import_string(f"{app_name}.urls.i18n_urlpatterns")
+
 # The sequence is important; if i18n urls don't come first then
 # reverse url mapping points to i18n urls which causes the frontend
 # tests to fail
-urlpatterns = i18n_patterns(*i18n_urls) + urls + legacy_urls
+urlpatterns = i18n_patterns(*extra_i18n_urls, *i18n_urls) + extra_urls + urls + legacy_urls
