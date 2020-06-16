@@ -4062,6 +4062,20 @@ def do_update_user_status(user_profile: UserProfile,
 def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
     log_statsd_event('bankruptcy')
 
+    # First, we clear mobile push notifications.  This is safer in the
+    # event that the below logic times out and we're killed.
+    while True:
+        all_push_message_ids = UserMessage.objects.filter(
+            user_profile=user_profile,
+        ).extra(
+            where=[UserMessage.where_active_push_notification()],
+        ).values_list("message_id", flat=True)[0:10000]
+
+        if len(all_push_message_ids) == 0:
+            break
+
+        do_clear_mobile_push_notifications_for_ids(user_profile, all_push_message_ids)
+
     msgs = UserMessage.objects.filter(
         user_profile=user_profile,
     ).extra(
@@ -4087,13 +4101,6 @@ def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
                               None, event_time, increment=count)
     do_increment_logging_stat(user_profile, COUNT_STATS['messages_read_interactions::hour'],
                               None, event_time, increment=min(1, count))
-
-    all_push_message_ids = UserMessage.objects.filter(
-        user_profile=user_profile,
-    ).extra(
-        where=[UserMessage.where_active_push_notification()],
-    ).values_list("message_id", flat=True)[0:10000]
-    do_clear_mobile_push_notifications_for_ids(user_profile, all_push_message_ids)
 
     return count
 
