@@ -283,9 +283,9 @@ def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile,
     key = bytes.fromhex(otp)
     iv = os.urandom(12)
     desktop_data = (iv + AESGCM(key).encrypt(iv, token.encode(), b"")).hex()
-    browser_url = user_profile.realm.uri + reverse('zerver.views.auth.log_into_subdomain', args=[token])
     context = {'desktop_data': desktop_data,
-               'browser_url': browser_url,
+               'browser_url': reverse('zerver.views.auth.login_page',
+                                      kwargs = {'template_name': 'zerver/login.html'}),
                'realm_icon_url': realm_icon_url(user_profile.realm)}
     return render(request, 'zerver/desktop_redirect.html', context=context)
 
