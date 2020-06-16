@@ -129,11 +129,9 @@ class Addressee:
                 raise JsonableError(_("Missing topic"))
 
             if isinstance(stream_name_or_id, int):
-                stream_id = cast(int, stream_name_or_id)
-                return Addressee.for_stream_id(stream_id, topic_name)
+                return Addressee.for_stream_id(stream_name_or_id, topic_name)
 
-            stream_name = cast(str, stream_name_or_id)
-            return Addressee.for_stream_name(stream_name, topic_name)
+            return Addressee.for_stream_name(stream_name_or_id, topic_name)
         elif message_type_name == 'private':
             if not message_to:
                 raise JsonableError(_("Message must have recipients"))
