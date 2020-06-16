@@ -4521,6 +4521,29 @@ def do_update_message(user_profile: UserProfile, message: Message,
         event["new_stream_id"] = new_stream.id
         event["propagate_mode"] = propagate_mode
 
+        # When messages are moved from one stream to another, some
+        # users may lose access to those messages, including guest
+        # users and users not subscribed to the new stream (if it is a
+        # private stream).  For those users, their experience is as
+        # though the messages were deleted, and we should send a
+        # delete_message event to them instead.
+
+        subscribers = get_active_subscriptions_for_stream_id(
+            stream_id).select_related("user_profile")
+        subs_to_new_stream = list(get_active_subscriptions_for_stream_id(
+            new_stream.id).select_related("user_profile"))
+
+        new_stream_sub_ids = [user.user_profile_id for user in subs_to_new_stream]
+
+        # Get guest users who aren't subscribed to the new_stream.
+        guest_subs_losing_access = [
+            sub for sub in subscribers
+            if sub.user_profile.is_guest
+            and sub.user_profile_id not in new_stream_sub_ids
+        ]
+        ums = ums.exclude(user_profile_id__in=[
+            sub.user_profile_id for sub in guest_subs_losing_access])
+
     if topic_name is not None:
         topic_name = truncate_topic(topic_name)
         message.set_topic_name(topic_name)
@@ -4541,6 +4564,29 @@ def do_update_message(user_profile: UserProfile, message: Message,
             new_stream=new_stream,
         )
         changed_messages += messages_list
+
+        if new_stream is not None:
+            assert stream_being_edited is not None
+
+            message_ids = [msg.id for msg in changed_messages]
+            # Delete UserMessage objects from guest users who will no
+            # longer have access to these messages.  Note: This could be
+            # very expensive, since it's N guest users x M messages.
+            UserMessage.objects.filter(
+                user_profile_id__in=[sub.user_profile_id for sub in
+                                     guest_subs_losing_access],
+                message_id__in=message_ids,
+            ).delete()
+
+            delete_event: DeleteMessagesEvent = {
+                'type': 'delete_message',
+                'message_ids': message_ids,
+                'message_type': 'stream',
+                'stream_id': stream_being_edited.id,
+                'topic': orig_topic_name,
+            }
+            delete_event_notify_user_ids = [sub.user_profile_id for sub in guest_subs_losing_access]
+            send_event(user_profile.realm, delete_event, delete_event_notify_user_ids)
 
     if message.edit_history is not None:
         edit_history = ujson.loads(message.edit_history)
@@ -4586,8 +4632,31 @@ def do_update_message(user_profile: UserProfile, message: Message,
             # Remove duplicates by excluding the id of users already in users_to_be_notified list.
             # This is the case where a user both has a UserMessage row and is a current Subscriber
             subscribers = subscribers.exclude(user_profile_id__in=[um.user_profile_id for um in ums])
+
+            if new_stream is not None:
+                assert guest_subs_losing_access is not None
+                # Exclude guest users who are not subscribed to the new stream from receing this event.
+                subscribers = subscribers.exclude(user_profile_id__in=[sub.user_profile_id for sub in guest_subs_losing_access])
+
             # All users that are subscribed to the stream must be notified when a message is edited
             subscribers_ids = [user.user_profile_id for user in subscribers]
+
+            if new_stream is not None:
+                # TODO: Guest users don't see the new moved topic unless breadcrumb message for
+                # new stream is enabled. Excluding these users from receiving this event helps
+                # us avoid a error trackeback for our clients. We should figure out a way to
+                # inform the guest users of this new topic if sending a 'message' event for these messages
+                # is not an option.
+                # Don't send this event to guest subs who are not subscrbied to the old stream but
+                # are subscribed to the new stream
+                old_stream_unsubed_guests = [
+                    sub for sub in subs_to_new_stream
+                    if sub.user_profile.is_guest
+                    and sub.user_profile_id not in subscribers_ids
+                ]
+                subscribers = subscribers.exclude(user_profile_id__in=[sub.user_profile_id for sub in old_stream_unsubed_guests])
+                subscribers_ids = [user.user_profile_id for user in subscribers]
+
             users_to_be_notified += list(map(subscriber_info, subscribers_ids))
 
     send_event(user_profile.realm, event, users_to_be_notified)
