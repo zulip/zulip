@@ -32,22 +32,6 @@ EXCLUDE_PROPERTIES = {
             '200': ['result', 'msg', 'message'],
         },
     },
-    '/users/me': {
-        'get': {
-            # Some responses contain undocumented keys
-            '200': ['delivery_email'],
-        },
-    },
-    '/users/{user_id}': {
-        'get': {
-            # Some responses contain undocumented keys
-            '200': ['delivery_email'],
-        },
-        'delete': {
-            # Some responses contain undocumented keys
-            '200': ['delivery_email'],
-        }
-    },
     '/fetch_api_key': {
         'post': {
             # Required key not present in response

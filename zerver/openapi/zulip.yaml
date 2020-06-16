@@ -1831,85 +1831,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                - $ref: '#/components/schemas/JsonSuccess'
+                - $ref: '#/components/schemas/User'
                 - properties:
-                    avatar_url:
-                      type: string
-                      description: |
-                        URL for the user's avatar.
-
-                        **Changes**: New in Zulip 2.1.0.
-                      example: "x"
-                    avatar_version:
-                      type: integer
-                      description: |
-                        Version for the the user's avatar.  Used for cache-busting requests
-                        for the user's avatar.  Clients generally shouldn't need to use this;
-                        most avatar URLs sent by Zulip will already end with `?v={avatar_version}`.
-
-                        **Changes**: New in Zulip 2.2 (feature level 10). Previous
-                        versions do not return this field.
-                      example: 1
-                    email:
-                      type: string
-                      description: |
-                        Email of the requesting user.
-                      example: "iago@zulip.com"
-                    full_name:
-                      type: string
-                      description: |
-                        Full name of the requesting user.
-                      example: "Iago"
-                    is_admin:
-                      type: boolean
-                      description: |
-                        A boolean indicating if the requesting user is an admin.
-                      example: true
-                    is_owner:
-                      type: boolean
-                      description: |
-                        A boolean indicating if the requesting user is
-                        an organization owner.
-
-                        **Changes**: New in Zulip 2.2 (feature level 8).
-                      example: false
-                    is_guest:
-                      type: boolean
-                      description: |
-                        A boolean indicating if the requesting user is a guest.
-
-                        **Changes**: New in Zulip 2.2 (feature level 10). Previous
-                        versions do not return this field.
-                      example: false
-                    is_bot:
-                      type: boolean
-                      description: |
-                        A boolean indicating if the requesting user is a bot.
-                      example: false
-                    is_active:
-                      type: boolean
-                      description: |
-                        A boolean specifying whether the user account has been deactivated.
-
-                        **Changes**: New in Zulip 2.2 (feature level 10). Previous
-                        versions do not return this field.
-                      example: true
-                    timezone:
-                      type: string
-                      description: |
-                        The time zone of the user.
-
-                        **Changes**: New in Zulip 2.2 (feature level 10). Previous
-                        versions do not return this field.
-                      example: ""
-                    date_joined:
-                      type: string
-                      description: |
-                        The time the user account was created.
-
-                        **Changes**: New in Zulip 2.2 (feature level 10). Previous
-                        versions do not return this field.
-                      example: "2019-10-20T07:50:53.728864+00:00"
                     max_message_id:
                       type: integer
                       description: |
@@ -1925,13 +1848,13 @@ paths:
 
                         **Deprecated**.  We plan to remove the `pointer` as a concept in Zulip.
                       example: -1
-                    user_id:
-                      type: integer
-                      description: |
-                        The user's ID.
-                      example: 1
-                    profile_data:
-                      $ref: '#/components/schemas/profile_data'
+                    msg:
+                      type: string
+                    result:
+                      type: string
+                - required:
+                  - msg
+                  - result
                 - example:
                     {
                         "avatar_url": "https://secure.gravatar.com/avatar/af4f06322c177ef4e1e9b2c424986b54?d=identicon&version=1",
@@ -4332,6 +4255,7 @@ components:
 
             If you do not have permission to view the email address of the target user,
             this will be a fake email address that is usable for the Zulip API but nothing else.
+          example: "iago@zulip.com"
         is_bot:
          type: boolean
          description: |
@@ -4343,20 +4267,29 @@ components:
             URL for the the user's avatar.  Will be `null` if the `client_gravatar`
             query parameter was set to `True` and the user's avatar is hosted by
             the Gravatar provider (i.e. the user has never uploaded an avatar).
+
+            **Changes**: New in Zulip 2.1.0.
+          example: "x"
         avatar_version:
           type: integer
           description: |
             Version for the the user's avatar.  Used for cache-busting requests
             for the user's avatar.  Clients generally shouldn't need to use this;
             most avatar URLs sent by Zulip will already end with `?v={avatar_version}`.
+
+            **Changes**: New in Zulip 2.2 (feature level 10). Previous
+            versions do not return this field.
+          example: 1
         full_name:
           type: string
           description: |
             Full name of the user or bot, used for all display purposes.
+          example: "Iago"
         is_admin:
           type: boolean
           description: |
             A boolean specifying whether the user is an organization administrator.
+          example: true
         is_owner:
           type: boolean
           description: |
@@ -4364,6 +4297,7 @@ components:
             If true, is_admin will also be true.
 
             **Changes**: New in Zulip 2.2 (feature level 8).
+          example: false
         bot_type:
           type: integer
           nullable: true
@@ -4378,6 +4312,7 @@ components:
           type: integer
           description: |
             The unique ID of the user.
+          example: 1
         bot_owner_id:
           type: integer
           nullable: true
@@ -4395,18 +4330,38 @@ components:
           type: boolean
           description: |
             A boolean specifying whether the user account has been deactivated.
+
+            **Changes**: New in Zulip 2.2 (feature level 10). Previous
+            versions do not return this field.
+          example: true
         is_guest:
           type: boolean
           description: |
             A boolean specifying whether the user is a guest user.
+
+            **Changes**: New in Zulip 2.2 (feature level 10). Previous
+            versions do not return this field.
+          example: false
         timezone:
           type: string
           description: |
             The time zone of the user.
+
+            **Changes**: New in Zulip 2.2 (feature level 10). Previous
+            versions do not return this field.
+          example: ""
         date_joined:
           type: string
           description: |
             The time the user account was created.
+
+            **Changes**: New in Zulip 2.2 (feature level 10). Previous
+            versions do not return this field.
+          example: "2019-10-20T07:50:53.728864+00:00"
+        delivery_email:
+          type: string
+          description: |
+            The email where message notifications are delivered.
         profile_data:
           $ref: '#/components/schemas/profile_data'
     profile_data:
