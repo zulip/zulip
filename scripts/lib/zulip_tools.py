@@ -489,6 +489,16 @@ def get_config(
         return config_file.get(section, key)
     return default_value
 
+def set_config(
+    config_file: configparser.RawConfigParser,
+    section: str,
+    key: str,
+    value: str,
+) -> None:
+    if not config_file.has_section(section):
+        config_file.add_section(section)
+    config_file.set(section, key, value)
+
 def get_config_file() -> configparser.RawConfigParser:
     config_file = configparser.RawConfigParser()
     config_file.read("/etc/zulip/zulip.conf")
