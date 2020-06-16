@@ -152,8 +152,8 @@ class TextTestResult(runner.TextTestResult):
         self.failed_tests: List[str] = []
 
     def addInfo(self, test: TestCase, msg: str) -> None:
-        self.stream.write(msg)  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
-        self.stream.flush()  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
+        self.stream.write(msg)
+        self.stream.flush()
 
     def addInstrumentation(self, test: TestCase, data: Dict[str, Any]) -> None:
         append_instrumentation_data(data)
@@ -161,7 +161,7 @@ class TextTestResult(runner.TextTestResult):
     def startTest(self, test: TestCase) -> None:
         TestResult.startTest(self, test)
         self.stream.writeln(f"Running {full_test_name(test)}")  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
-        self.stream.flush()  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
+        self.stream.flush()
 
     def addSuccess(self, *args: Any, **kwargs: Any) -> None:
         TestResult.addSuccess(self, *args, **kwargs)
@@ -181,7 +181,7 @@ class TextTestResult(runner.TextTestResult):
         self.stream.writeln("** Skipping {}: {}".format(  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
             full_test_name(test),
             reason))
-        self.stream.flush()  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
+        self.stream.flush()
 
 class RemoteTestResult(django_runner.RemoteTestResult):
     """
