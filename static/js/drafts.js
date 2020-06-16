@@ -120,7 +120,7 @@ exports.restore_message = function (draft) {
 
 function draft_notify() {
     $(".alert-draft").css("display", "inline-block");
-    $(".alert-draft").delay(1000).fadeOut(500);
+    $(".alert-draft").delay(2000).fadeOut(1000);
 }
 
 exports.update_draft = function () {
