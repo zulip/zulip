@@ -1501,7 +1501,7 @@ class Stream(models.Model):
     # * "deactivated" streams are filtered from the API entirely.
     # * "realm" and "recipient" are not exposed to clients via the API.
     # * "date_created" should probably be added here, as it's useful information
-    #   to subscribers and is needed to compute is_old_stream.
+    #   to subscribers.
     # * message_retention_days should be added here once the feature is
     #   complete.
     API_FIELDS = [

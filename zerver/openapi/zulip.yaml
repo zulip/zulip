@@ -2230,14 +2230,6 @@ paths:
                               Legacy property for if the given stream is muted, with inverted meeting.
 
                               **Deprecated**; clients should use is_muted where available.
-                          is_old_stream:
-                            type: boolean
-                            description: |
-                              Whether the stream is old enough to have data in
-                              `stream_weekly_traffic`.
-
-                              **Deprecated**: To me removed.  Clients should simply check
-                              whether stream_weekly_traffic is null.
                           is_announcement_only:
                             type: boolean
                             description: |
