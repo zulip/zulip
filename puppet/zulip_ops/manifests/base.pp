@@ -35,7 +35,7 @@ class zulip_ops::base {
     'git',
     'nagios-plugins-contrib',
   ]
-  package { $org_base_packages: ensure => 'installed' }
+  zulip::safepackage { $org_base_packages: ensure => 'installed' }
 
   # Add system users here
   $users = []
