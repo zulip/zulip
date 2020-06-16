@@ -160,7 +160,7 @@ run_test('update_property', () => {
     // Test stream message_retention_days change event
     with_overrides(function (override) {
         global.with_stub(function (stub) {
-            override('stream_data.update_message_retention_setting', stub.f);
+            override('subs.update_message_retention_setting', stub.f);
             stream_events.update_property(1, 'message_retention_days', 20);
             const args = stub.get_args('sub', 'val');
             assert.equal(args.sub.stream_id, 1);
