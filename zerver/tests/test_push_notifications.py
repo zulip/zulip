@@ -923,15 +923,16 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=True), \
                 mock.patch('zerver.lib.push_notifications'
-                           '.send_notifications_to_bouncer') as mock_send_android, \
-                mock.patch('zerver.lib.push_notifications.get_base_payload',
-                           return_value={'gcm': True}):
+                           '.send_notifications_to_bouncer') as mock_send_android:
             handle_remove_push_notification(user_profile.id, [message.id])
             mock_send_android.assert_called_with(
                 user_profile.id,
                 {},
                 {
-                    'gcm': True,
+                    'server': 'testserver',
+                    'realm_id': self.sender.realm.id,
+                    'realm_uri': 'http://zulip.testserver',
+                    'user_id': self.user_profile.id,
                     'event': 'remove',
                     'zulip_message_ids': str(message.id),
                     'zulip_message_id': message.id,
@@ -956,14 +957,15 @@ class HandlePushNotificationTest(PushNotificationTest):
                                            kind=PushDeviceToken.GCM))
 
         with mock.patch('zerver.lib.push_notifications'
-                        '.send_android_push_notification') as mock_send_android, \
-                mock.patch('zerver.lib.push_notifications.get_base_payload',
-                           return_value={'gcm': True}):
+                        '.send_android_push_notification') as mock_send_android:
             handle_remove_push_notification(self.user_profile.id, [message.id])
             mock_send_android.assert_called_with(
                 android_devices,
                 {
-                    'gcm': True,
+                    'server': 'testserver',
+                    'realm_id': self.sender.realm.id,
+                    'realm_uri': 'http://zulip.testserver',
+                    'user_id': self.user_profile.id,
                     'event': 'remove',
                     'zulip_message_ids': str(message.id),
                     'zulip_message_id': message.id,
