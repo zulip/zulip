@@ -13,17 +13,12 @@ async function message_basic_tests(page) {
         { recipient: 'cordelia@zulip.com', content: 'pm c' },
     ]);
 
-    await common.check_messages_sent(page, 'zhome', {
-        'Verona > test': [
-            'verona test a', 'verona test b',
-        ],
-        'Verona > other topic': ['verona other topic c'],
-        'You and Cordelia Lear, King Hamlet': [
-            'group pm a',
-            'group pm b',
-        ],
-        'You and Cordelia Lear': ['pm c'],
-    });
+    await common.check_messages_sent(page, 'zhome', [
+        ['Verona > test', ['verona test a', 'verona test b']],
+        ['Verona > other topic', ['verona other topic c']],
+        ['You and Cordelia Lear, King Hamlet', ['group pm a', 'group pm b']],
+        ['You and Cordelia Lear', ['pm c']],
+    ]);
 
     await common.log_out(page);
 }

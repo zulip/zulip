@@ -246,14 +246,17 @@ class CommonUtils {
     }
 
     /**
-     * This method returns a Map, whose key is "stream > topic",
-     * and the value is an array with messages under that stream
-     * and topic. The messages are sorted chronologically. The key
-     * for private, and group messages is "You and ...".
+     * This method returns a array, which is formmated as:
+     *  [
+     *    ['stream > topic', ['message 1', 'message 2']],
+     *    ['You and Cordelia Lear', ['message 1', 'message 2']]
+     *  ]
+     *
+     * The messages are sorted chronologically.
      */
     async get_rendered_messages(page, table = 'zhome') {
-        const map_array = await page.evaluate((table) => {
-            const data = new Map();
+        return await page.evaluate((table) => {
+            const data = [];
             const $recipient_rows = $(`#${table}`).find('.recipient_row');
             $.map($recipient_rows, (element) => {
                 const $el = $(element);
@@ -267,25 +270,16 @@ class CommonUtils {
                     key = `${stream_name} > ${topic_name}`;
                 }
 
-                if (!data.has(key)) {
-                    data.set(key, []);
-                }
-
-                const messages = data.get(key);
+                const messages = [];
                 $.map($el.find('.message_row .message_content'), (message_row) => {
                     messages.push(message_row.innerText.trim());
                 });
+
+                data.push([key, messages]);
             });
 
-            // Map cannot be seralized by puppeteer when sending
-            // it over to node from the browser. Array.from(<Map>)
-            // convert the map into an array which can be sent over,
-            // and is in a format from which we can get a Map by
-            // calling new Map(<array>).
-            return Array.from(data);
+            return data;
         }, table);
-
-        return new Map(map_array);
     }
 
     // This method takes in page, table to fetch the messages
@@ -296,21 +290,11 @@ class CommonUtils {
     async check_messages_sent(page, table, messages) {
         await page.waitForSelector('#' + table);
         const rendered_messages = await this.get_rendered_messages(page, table);
-        for (const [key, expected_messages] of Object.entries(messages)) {
-            const actual_messages = rendered_messages.get(key);
-            try {
-                // We only check the last n messages because if we run
-                // the test with --interactive there will be duplicates.
-                const last_n_messages = actual_messages.slice(-expected_messages.length);
-                assert.deepStrictEqual(last_n_messages, expected_messages);
-            } catch (error) {
-                // Only printing the array diff from the assertion error
-                // does not provide enough infromation to debug the faliure.
-                // So we print additonal debug information.
-                console.log(`Messages under ${key} do not match the expected messages:`);
-                throw error;
-            }
-        }
+
+        // We only check the last n messages because if we run
+        // the test with --interactive there will be duplicates.
+        const last_n_messages = rendered_messages.slice(-messages.length);
+        assert.deepStrictEqual(last_n_messages, messages);
     }
 
     async run_test(test_function) {
