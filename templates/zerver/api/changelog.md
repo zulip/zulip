@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 2.2
 
+**Feature level 15**
+
+* Added [spoilers](/help/format-your-message-using-markdown#spoilers)
+  to supported markdown features.
+
 **Feature level 14**
 
 * [`GET users/me/subscriptions`](/api/get-subscribed-streams): Removed
@@ -67,6 +72,8 @@ below features are supported.
 * [`GET /users`](/api/get-all-users), [`GET /users/{user_id}`](/api/get-user)
   and [`GET /users/me`](/api/get-profile): User objects now contain the
   `is_owner` field as well.
+* Added [time mentions](/help/format-your-message-using-markdown#mention-a-time)
+  to supported markdown features.
 
 **Feature level 7**
 
