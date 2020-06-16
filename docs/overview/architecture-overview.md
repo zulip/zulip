@@ -293,6 +293,13 @@ self-explanatory names.
     topic]", or "Link to this conversation". To avoid visual clutter,
     the chevron only appears in the web UI upon hover.
 
+* **ellipsis**: A small vertical three dot icon(technically called
+    as ellipsis-v), present in sidebars as a menu icon.
+    It offers contextual options for Global Filters(All messages
+    and Starred messages), Stream Filters and Topics in left
+    sidebar and User in right sidebar. To avoid visual clutter
+    ellipsis only appears in the web UI upon hover.
+
 * **huddle**: What the codebase calls a "group private message".
 
 * **message editing**: If the realm admin allows it, then after a user
