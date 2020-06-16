@@ -521,8 +521,13 @@ def apply_event(state: Dict[str, Any],
                     stream_data = copy.deepcopy(stream)
                     if include_subscribers:
                         stream_data['subscribers'] = []
+
+                    # We know the stream has no traffic, and this
+                    # field is not present in the event.
+                    #
+                    # TODO: Probably this should just be added to the event.
                     stream_data['stream_weekly_traffic'] = None
-                    stream_data['stream_post_policy'] = Stream.STREAM_POST_POLICY_EVERYONE
+
                     # Add stream to never_subscribed (if not invite_only)
                     state['never_subscribed'].append(stream_data)
                 state['streams'].append(stream)
