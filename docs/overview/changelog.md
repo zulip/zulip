@@ -156,6 +156,35 @@ in bursts.
   system was always a hack, was only ever used for one endpoint, and
   did not provide a measureable latency benefit over HTTP/2.
 
+### 2.1.5 -- 2020-06-16
+
+- CVE-2020-12759: Fix reflected XSS vulnerability in Dropbox webhook.
+- CVE-2020-14194: Prevent reverse tabnapping via topic header links.
+- CVE-2020-14215: Fixed use of invitation role data from expired
+  invitations on signup via external authentication methods.
+- CVE-2020-14215: Fixed buggy `0198_preregistrationuser_invited_as`
+  database migration from the 2.0.0-rc1 release, which incorrectly added
+  the administrator role to invitations.
+- CVE-2020-14215: Added migration to clear the administrator role from
+  any invitation objects already corrupted by the buggy version of the
+  `0198_preregistrationuser_invited_as` migration.
+- Fixed missing quoting of certain attributes in HTML templates.
+- Allow /etc/zulip to be a symlink (for docker-zulip).
+- Disabled access from insecure Zulip Desktop releases below version 5.2.0.
+- Adjusted Slack import documentation to help administrators avoid OOM
+  kills when doing Slack import on low-RAM systems.
+- Fixed a race condition fetching users' personal API keys.
+- Fixed a few bugs with Slack data import.
+
+Administrators of servers originally installed with Zulip 1.9 or older
+should audit for unexpected [organization
+administrators][audit-org-admin] following this upgrade, as it is
+possible CVE-2020-14215 caused a user to incorrectly join as an
+organization administrator in the past.  See the release blog post for
+details.
+
+[audit-org-admin]: https://zulip.com/help/change-a-users-role
+
 ### 2.1.4 -- 2020-04-16
 
 - Fixed a regression in 2.1.3 that impacted creating the very first
