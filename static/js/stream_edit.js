@@ -63,6 +63,30 @@ exports.get_users_from_subscribers = function (subscribers) {
     });
 };
 
+exports.get_retention_policy_text_for_subscription_type = function (sub) {
+    let message_retention_days = sub.message_retention_days;
+    // If both this stream and the organization-level policy are to retain forever,
+    // there's no need to comment on retention policies when describing the stream.
+    if ((page_params.realm_message_retention_days === -1 ||
+         page_params.realm_message_retention_days === null)
+            && (sub.message_retention_days === null || sub.message_retention_days === -1)) {
+        return;
+    }
+
+    // Forever for this stream, overriding the organization default
+    if (sub.message_retention_days === -1) {
+        return i18n.t("Messages in this stream will be retained forever.");
+    }
+
+    // If we are deleting messages, even if it's the organization
+    // default, it's worth commenting on the policy.
+    if (message_retention_days === null)  {
+        message_retention_days = page_params.realm_message_retention_days;
+    }
+
+    return i18n.t("Messages in this stream will be automatically deleted after __retention_days__ days.", {retention_days: message_retention_days});
+};
+
 exports.get_display_text_for_realm_message_retention_setting = function () {
     const realm_message_retention_days = page_params.realm_message_retention_days;
     if (realm_message_retention_days === -1 || realm_message_retention_days === null) {
@@ -315,6 +339,7 @@ exports.show_settings_for = function (node) {
         sub: sub,
         settings: exports.stream_settings(sub),
         stream_post_policy_values: stream_data.stream_post_policy_values,
+        message_retention_text: exports.get_retention_policy_text_for_subscription_type(sub),
     });
     ui.get_content_element($('.subscriptions .right .settings')).html(html);
 

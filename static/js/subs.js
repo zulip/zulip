@@ -192,6 +192,11 @@ exports.update_stream_post_policy = function (sub, new_value) {
     stream_ui_updates.update_stream_subscription_type_text(sub);
 };
 
+exports.update_message_retention_setting = function (sub, new_value) {
+    stream_data.update_message_retention_setting(sub, new_value);
+    stream_ui_updates.update_stream_subscription_type_text(sub);
+};
+
 exports.set_color = function (stream_id, color) {
     const sub = stream_data.get_sub_by_id(stream_id);
     stream_edit.set_stream_property(sub, 'color', color);
