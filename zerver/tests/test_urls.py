@@ -7,7 +7,7 @@ import orjson
 from django.test import Client
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Stream
+from zerver.models import Realm, Stream
 from zproject import urls
 
 
@@ -97,6 +97,24 @@ class PublicURLTest(ZulipTestCase):
             data = orjson.loads(resp.content)
             self.assertEqual('success', data['result'])
             self.assertEqual('ABCD', data['google_client_id'])
+
+    def test_config_error_endpoints_dev_env(self) -> None:
+        '''
+        The content of these pages is tested separately.
+        Here we simply sanity-check that all the URLs load
+        correctly.
+        '''
+        auth_types = [auth.lower() for auth in Realm.AUTHENTICATION_FLAGS]
+        for auth in ['azuread', 'email', 'remoteuser']:  # We do not have configerror pages for AzureAD and Email.
+            auth_types.remove(auth)
+
+        auth_types += ['smtp', 'remoteuser/remote_user_backend_disabled',
+                       'remoteuser/remote_user_header_missing']
+        urls = [f'/config-error/{auth_type}' for auth_type in auth_types]
+        with self.settings(DEVELOPMENT=True):
+            for url in urls:
+                response = self.client_get(url)
+                self.assert_in_success_response(['Configuration error'], response)
 
 class URLResolutionTest(ZulipTestCase):
     def get_callback_string(self, pattern: django.urls.resolvers.URLPattern) -> Optional[str]:

@@ -884,16 +884,13 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         with self.settings(**{self.CLIENT_KEY_SETTING: None}):
             result = self.social_auth_test(account_data_dict,
                                            subdomain='zulip', next='/user_uploads/image')
-            self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, self.CONFIG_ERROR_URL)
+            self.assert_in_success_response(["Configuration error"], result)
 
     def test_config_error_development(self) -> None:
         if hasattr(self, 'CLIENT_KEY_SETTING') and hasattr(self, 'CLIENT_SECRET_SETTING'):
             with self.settings(**{self.CLIENT_KEY_SETTING: None}):
                 result = self.client_get(self.LOGIN_URL)
-                self.assertEqual(result.status_code, 302)
-                self.assertEqual(result.url, self.CONFIG_ERROR_URL)
-                result = self.client_get(result.url)
+                self.assert_in_success_response(["Configuration error"], result)
                 self.assert_in_success_response([self.CLIENT_KEY_SETTING.lower()], result)
                 self.assert_in_success_response([self.CLIENT_SECRET_SETTING.lower()], result)
                 self.assert_in_success_response(["zproject/dev-secrets.conf"], result)
@@ -907,9 +904,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         if hasattr(self, 'CLIENT_KEY_SETTING') and hasattr(self, 'CLIENT_SECRET_SETTING'):
             with self.settings(**{self.CLIENT_KEY_SETTING: None}):
                 result = self.client_get(self.LOGIN_URL)
-                self.assertEqual(result.status_code, 302)
-                self.assertEqual(result.url, self.CONFIG_ERROR_URL)
-                result = self.client_get(result.url)
+                self.assert_in_success_response(["Configuration error"], result)
                 self.assert_in_success_response([self.CLIENT_KEY_SETTING], result)
                 self.assert_in_success_response(["/etc/zulip/settings.py"], result)
                 self.assert_in_success_response([self.CLIENT_SECRET_SETTING.lower()], result)
@@ -1595,14 +1590,12 @@ class SAMLAuthBackendTest(SocialAuthBase):
         with self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=None):
             result = self.social_auth_test(account_data_dict,
                                            subdomain='zulip', next='/user_uploads/image')
-            self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, self.CONFIG_ERROR_URL)
+            self.assert_in_success_response(["Configuration error", "SAML authentication"], result)
 
             # Test the signup path too:
             result = self.social_auth_test(account_data_dict, is_signup=True,
                                            subdomain='zulip', next='/user_uploads/image')
-            self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, self.CONFIG_ERROR_URL)
+            self.assert_in_success_response(["Configuration error", "SAML authentication"], result)
 
     def test_config_error_page(self) -> None:
         with self.assertLogs(level='INFO') as info_log:
@@ -1610,10 +1603,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.assertEqual(info_log.output, [
             'INFO:root:Attempted to initiate SAML authentication with wrong idp argument: None'
         ])
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/config-error/saml')
-        result = self.client_get(result.url)
-        self.assert_in_success_response(["SAML authentication"], result)
+        self.assert_in_success_response(["Configuration error", "SAML authentication"], result)
 
     def test_saml_auth_works_without_private_public_keys(self) -> None:
         with self.settings(SOCIAL_AUTH_SAML_SP_PUBLIC_CERT='', SOCIAL_AUTH_SAML_SP_PRIVATE_KEY=''):
@@ -1862,8 +1852,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             with self.assertLogs(level='INFO') as info_log:
                 result = self.client_get(f'/accounts/{action}/social/saml')
             # Missing idp argument.
-            self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, '/config-error/saml')
+            self.assert_in_success_response(["Configuration error", "SAML authentication"], result)
             self.assertEqual(info_log.output, [
                 'INFO:root:Attempted to initiate SAML authentication with wrong idp argument: None'
             ])
@@ -1871,11 +1860,10 @@ class SAMLAuthBackendTest(SocialAuthBase):
             with self.assertLogs(level='INFO') as info_log:
                 result = self.client_get(f'/accounts/{action}/social/saml/nonexistent_idp')
             # No such IdP is configured.
-            self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, '/config-error/saml')
             self.assertEqual(info_log.output, [
                 'INFO:root:Attempted to initiate SAML authentication with wrong idp argument: nonexistent_idp'
             ])
+            self.assert_in_success_response(["Configuration error", "SAML authentication"], result)
 
             result = self.client_get(f'/accounts/{action}/social/saml/')
             # No matching url pattern.
@@ -3615,7 +3603,7 @@ class TestDevAuthBackend(ZulipTestCase):
         data = {'direct_email': email}
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',)):
             response = self.client_post('/accounts/login/local/', data)
-            self.assertRedirects(response, reverse('config_error', kwargs={'error_category_name': 'dev'}))
+        self.assert_in_success_response(["Configuration error", "DevAuthBackend"], response)
 
     def test_dev_direct_production_config_error(self) -> None:
         result = self.client_get("/config-error/dev")
@@ -3627,7 +3615,7 @@ class TestDevAuthBackend(ZulipTestCase):
         data = {'direct_email': email}
 
         response = self.client_post('/accounts/login/local/', data)
-        self.assertRedirects(response, reverse('config_error', kwargs={'error_category_name': 'dev'}))
+        self.assert_in_success_response(["Configuration error", "DevAuthBackend"], response)
 
 class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
     def test_start_remote_user_sso(self) -> None:
@@ -3672,10 +3660,8 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
     def test_login_failure(self) -> None:
         email = self.example_email("hamlet")
         result = self.client_get('/accounts/login/sso/', REMOTE_USER=email)
-        self.assertEqual(result.status_code, 302)
-
-        result = self.client_get(result["Location"])
-        self.assert_in_response("Authentication via the REMOTE_USER header is", result)
+        self.assert_in_success_response(["Configuration error", "Authentication via the REMOTE_USER header is"],
+                                        result)
         self.assert_logged_in_user_id(None)
 
     def test_login_failure_due_to_nonexisting_user(self) -> None:
@@ -3695,10 +3681,8 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
     def test_login_failure_due_to_missing_field(self) -> None:
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
             result = self.client_get('/accounts/login/sso/')
-            self.assertEqual(result.status_code, 302)
-
-            result = self.client_get(result["Location"])
-            self.assert_in_response("The REMOTE_USER header is not set.", result)
+            self.assert_in_success_response(["Configuration error", "The REMOTE_USER header is not set."],
+                                            result)
 
     def test_login_failure_due_to_wrong_subdomain(self) -> None:
         email = self.example_email("hamlet")
@@ -5034,12 +5018,9 @@ class LDAPBackendTest(ZulipTestCase):
                 mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn'), \
                 self.assertLogs('django_auth_ldap', 'WARNING') as warn_log:
             response = self.client_post('/login/', data)
-            self.assertEqual(response.status_code, 302)
-            self.assertEqual(response.url, reverse('config_error', kwargs={'error_category_name': 'ldap'}))
-            response = self.client_get(response.url)
-            self.assert_in_response('You are trying to log in using LDAP '
-                                    'without creating an',
-                                    response)
+            self.assert_in_success_response(["Configuration error",
+                                             "You are trying to log in using LDAP without creating an"],
+                                            response)
         self.assertEqual(warn_log.output, [
             "WARNING:django_auth_ldap:('Realm is None', 1) while authenticating hamlet"
         ])
