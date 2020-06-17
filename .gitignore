@@ -31,6 +31,8 @@ package-lock.json
 
 /.dmypy.json
 
+core
+
 # Dockerfiles generated for CircleCI
 /tools/circleci/images
 
