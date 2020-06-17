@@ -618,9 +618,8 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
             return super().done(form_list, **kwargs)
 
 @has_request_variables
-def login_page(
-    request: HttpRequest, next: str = REQ(default="/"), **kwargs: Any,
-) -> HttpResponse:
+def login_page(request: HttpRequest,
+               next: str = REQ(default="/"), **kwargs: Any) -> HttpResponse:
     # To support previewing the Zulip login pages, we have a special option
     # that disables the default behavior of redirecting logged-in users to the
     # logged-in app.
