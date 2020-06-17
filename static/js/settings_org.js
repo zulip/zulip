@@ -962,15 +962,15 @@ exports.build_page = function () {
             error_field = $("#realm-icon-upload-widget .image_file_input_error");
         } else {
             if (night) {
-                error_field = $("#night-logo-section .realm-logo-file-input-error");
-                spinner = $("#night-logo-section .upload-logo-spinner");
-                upload_text = $('#night-logo-section .realm_logo_upload');
-                delete_button = $('#night-logo-section .realm-logo-delete-button');
+                error_field = $("#realm-night-logo-upload-widget .image_file_input_error");
+                spinner = $("#realm-night-logo-upload-widget .upload-spinner-background");
+                upload_text = $('#realm-night-logo-upload-widget .settings-page-upload-text');
+                delete_button = $('#realm-night-logo-upload-widget .settings-page-delete-button');
             } else {
-                error_field = $("#day-logo-section .realm-logo-file-input-error");
-                spinner = $("#day-logo-section .upload-logo-spinner");
-                upload_text = $('#day-logo-section .realm_logo_upload');
-                delete_button = $('#day-logo-section .realm-logo-delete-button');
+                error_field = $("#realm-day-logo-upload-widget .image_file_input_error");
+                spinner = $("#realm-day-logo-upload-widget .upload-spinner-background");
+                upload_text = $('#realm-day-logo-upload-widget .settings-page-upload-text');
+                delete_button = $('#realm-day-logo-upload-widget .settings-page-delete-button');
             }
             url = '/json/realm/logo';
             form_data.append('night', JSON.stringify(night));

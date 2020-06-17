@@ -61,6 +61,7 @@ exports.build_page = function () {
         is_admin: page_params.is_admin,
         is_guest: page_params.is_guest,
         is_owner: page_params.is_owner,
+        user_can_change_logo: settings_data.user_can_change_logo(),
         realm_icon_source: page_params.realm_icon_source,
         realm_icon_url: page_params.realm_icon_url,
         realm_logo_source: page_params.realm_logo_source,

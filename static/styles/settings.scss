@@ -97,13 +97,6 @@ h3 .fa-question-circle-o {
     }
 }
 
-.realm-logo-block {
-    width: 220px;
-    height: 55px;
-    text-align: center;
-    margin-bottom: 10px;
-}
-
 .user-avatar-section {
     float: right;
 
@@ -1241,6 +1234,39 @@ input[type=checkbox] {
     }
 }
 
+#realm-day-logo-upload-widget,
+#realm-night-logo-upload-widget {
+    width: 220px;
+    height: 55px;
+    text-align: center;
+    margin-bottom: 10px;
+
+    .settings-page-upload-text,
+    .settings-page-delete-text {
+        top: 17px;
+        right: 80px;
+    }
+
+    .upload-spinner-background {
+        left: 0;
+    }
+
+    .image_upload_spinner {
+        width: 45px;
+        height: 55px;
+        top: 30%;
+        right: 30%;
+    }
+}
+
+#realm-day-logo-upload-widget {
+    background-color: hsla(0, 100%, 100%, 1);
+}
+
+#realm-night-logo-upload-widget {
+    background-color: hsl(212, 28%, 18%);
+}
+
 .avatar-icon-logo-settings {
     position: relative;
     border-radius: 5px;
@@ -1302,11 +1328,6 @@ input[type=checkbox] {
         z-index: 99;
     }
 
-    .realm_logo_delete {
-        top: 17px;
-        right: 80px;
-    }
-
     .settings-page-upload-text {
         cursor: pointer;
         font-size: 0.85rem;
@@ -1314,11 +1335,6 @@ input[type=checkbox] {
         position: absolute;
         z-index: 99;
         visibility: hidden;
-    }
-
-    .realm_logo_upload {
-        top: 17px;
-        right: 80px;
     }
 
     .settings-page-upload-text:hover {
@@ -1341,17 +1357,6 @@ input[type=checkbox] {
         position: absolute;
         z-index: 99;
         display: block;
-    }
-
-    .upload-logo-spinner {
-        left: 0;
-    }
-
-    .realm-logo-spinner {
-        width: 45px;
-        height: 55px;
-        top: 30%;
-        right: 30%;
     }
 
     .guest-avatar::after {
@@ -1398,14 +1403,6 @@ input[type=checkbox] {
        settings UI looks bad beyond ~500px, so we limit the width here */
     height: 55px;
     max-width: 500px;
-}
-
-#night-logo-section .realm-logo-block {
-    background-color: hsl(212, 28%, 18%);
-}
-
-#day-logo-section .realm-logo-block {
-    background-color: hsla(0, 100%, 100%, 1);
 }
 
 .invite-user-link i {

@@ -47,3 +47,7 @@ exports.get_time_preferences = function (user_timezone) {
         format: "h:mm A",
     };
 };
+
+exports.user_can_change_logo = function () {
+    return page_params.is_admin && page_params.zulip_plan_is_not_limited;
+};
