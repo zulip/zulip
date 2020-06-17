@@ -156,8 +156,8 @@
             <h3>{{t "Profile picture" }}</h3>
             {{> image_upload_widget
               widget = "user-avatar"
-              upload_text = "Upload new profile picture"
-              delete_text = "Delete profile picture"
+              upload_text = (t "Upload new profile picture")
+              delete_text = (t "Delete profile picture")
               is_editable_by_current_user = user_can_change_avatar
               image = page_params.avatar_url_medium}}
             <div id="user-avatar-source">
