@@ -255,56 +255,58 @@ fi
 
 # Generate /etc/zulip/zulip.conf .
 mkdir -p /etc/zulip
-(
-    cat <<EOF
+if [ -z "$NO_OVERWRITE_SETTINGS" ] || ! [ -e "/etc/zulip/zulip.conf" ]; then
+    (
+        cat <<EOF
 [machine]
 puppet_classes = $PUPPET_CLASSES
 deploy_type = $DEPLOYMENT_TYPE
 EOF
 
-    # Note: there are four dpkg-query outputs to consider:
-    #
-    # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
-    # root@host# apt install rabbitmq-server
-    # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
-    # install ok installed
-    # root@host# apt remove rabbitmq-server
-    # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
-    # deinstall ok config-files
-    # root@host# apt purge rabbitmq-server
-    # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
-    # unknown ok not-installed
-    #
-    # (There are more possibilities in the case of dpkg errors.)  Here
-    # we are checking for either empty or not-installed.
-    if ! dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null | grep -vq ' not-installed$'; then
-        cat <<EOF
+        # Note: there are four dpkg-query outputs to consider:
+        #
+        # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
+        # root@host# apt install rabbitmq-server
+        # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
+        # install ok installed
+        # root@host# apt remove rabbitmq-server
+        # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
+        # deinstall ok config-files
+        # root@host# apt purge rabbitmq-server
+        # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
+        # unknown ok not-installed
+        #
+        # (There are more possibilities in the case of dpkg errors.)  Here
+        # we are checking for either empty or not-installed.
+        if ! dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null | grep -vq ' not-installed$'; then
+            cat <<EOF
 
 [rabbitmq]
 nodename = zulip@localhost
 EOF
-    fi
+        fi
 
-    if [ -n "$USE_CERTBOT" ]; then
-        cat <<EOF
+        if [ -n "$USE_CERTBOT" ]; then
+            cat <<EOF
 
 [certbot]
 auto_renew = yes
 EOF
-    fi
+        fi
 
-    if [ -e "/etc/init.d/postgresql" ]; then
-        case " $os_id $os_id_like " in
-            *' debian '*)
-                cat <<EOF
+        if [ -e "/etc/init.d/postgresql" ]; then
+            case " $os_id $os_id_like " in
+                *' debian '*)
+                    cat <<EOF
 
 [postgresql]
 version = 12
 EOF
-                ;;
-        esac
-    fi
-) > /etc/zulip/zulip.conf
+                    ;;
+            esac
+        fi
+    ) > /etc/zulip/zulip.conf
+fi
 
 case ",$PUPPET_CLASSES," in
     *,zulip::voyager,* | *,zulip::dockervoyager,* | *,zulip::app_frontend,*)
