@@ -356,6 +356,11 @@ class S3UploadBackend(ZulipUploadBackend):
     def __init__(self) -> None:
         self.session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
 
+        self.avatar_bucket = get_bucket(self.session, settings.S3_AVATAR_BUCKET)
+        network_location = urllib.parse.urlparse(
+            self.avatar_bucket.meta.client.meta.endpoint_url).netloc
+        self.avatar_bucket_url = f"https://{self.avatar_bucket.name}.{network_location}"
+
     def delete_file_from_s3(self, path_id: str, bucket_name: str) -> bool:
         bucket = get_bucket(self.session, bucket_name)
         key = bucket.Object(path_id)
@@ -468,15 +473,13 @@ class S3UploadBackend(ZulipUploadBackend):
         self.write_avatar_images(s3_target_file_name, target_profile, image_data, content_type)
 
     def get_avatar_url(self, hash_key: str, medium: bool=False) -> str:
-        bucket = settings.S3_AVATAR_BUCKET
         medium_suffix = "-medium.png" if medium else ""
         # ?x=x allows templates to append additional parameters with &s
-        return f"https://{bucket}.s3.amazonaws.com/{hash_key}{medium_suffix}?x=x"
+        return f"{self.avatar_bucket_url}/{hash_key}{medium_suffix}?x=x"
 
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
-        bucket = settings.S3_AVATAR_BUCKET
         # export_path has a leading /
-        return f"https://{bucket}.s3.amazonaws.com{export_path}"
+        return f"{self.avatar_bucket_url}{export_path}"
 
     def realm_avatar_and_logo_path(self, realm: Realm) -> str:
         return os.path.join(str(realm.id), 'realm')
@@ -507,9 +510,8 @@ class S3UploadBackend(ZulipUploadBackend):
         # that users use gravatar.)
 
     def get_realm_icon_url(self, realm_id: int, version: int) -> str:
-        bucket = settings.S3_AVATAR_BUCKET
         # ?x=x allows templates to append additional parameters with &s
-        return f"https://{bucket}.s3.amazonaws.com/{realm_id}/realm/icon.png?version={version}"
+        return f"{self.avatar_bucket_url}/{realm_id}/realm/icon.png?version={version}"
 
     def upload_realm_logo_image(self, logo_file: File, user_profile: UserProfile,
                                 night: bool) -> None:
@@ -542,13 +544,12 @@ class S3UploadBackend(ZulipUploadBackend):
         # that users use gravatar.)
 
     def get_realm_logo_url(self, realm_id: int, version: int, night: bool) -> str:
-        bucket = settings.S3_AVATAR_BUCKET
         # ?x=x allows templates to append additional parameters with &s
         if not night:
             file_name = 'logo.png'
         else:
             file_name = 'night_logo.png'
-        return f"https://{bucket}.s3.amazonaws.com/{realm_id}/realm/{file_name}?version={version}"
+        return f"{self.avatar_bucket_url}/{realm_id}/realm/{file_name}?version={version}"
 
     def ensure_medium_avatar_image(self, user_profile: UserProfile) -> None:
         file_path = user_avatar_path(user_profile)
@@ -615,10 +616,9 @@ class S3UploadBackend(ZulipUploadBackend):
         )
 
     def get_emoji_url(self, emoji_file_name: str, realm_id: int) -> str:
-        bucket = settings.S3_AVATAR_BUCKET
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(realm_id=realm_id,
                                                         emoji_file_name=emoji_file_name)
-        return f"https://{bucket}.s3.amazonaws.com/{emoji_path}"
+        return f"{self.avatar_bucket_url}/{emoji_path}"
 
     def upload_export_tarball(self, realm: Optional[Realm], tarball_path: str) -> str:
         def percent_callback(bytes_transferred: Any) -> None:
