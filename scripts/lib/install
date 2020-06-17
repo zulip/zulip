@@ -2,24 +2,43 @@
 set -e
 
 usage() {
-    cat <<EOF
+    # A subset of this documentation also appears in docs/production/install.md
+    cat <<'EOF'
 Usage:
   install --hostname=zulip.example.com --email=zulip-admin@example.com [options...]
   install --help
 
-Other options:
+Options:
+  --hostname=zulip.example.com
+      The user-accessible domain name for this Zulip server, i.e., what users will type
+      in their web browser.  Required, unless --no-init-db is set and --certbot is not.
+  --email=zulip-admin@example.com
+      The email address of the person or team who should get support and error emails
+      from this Zulip server.  Required, unless --no-init-db is set and --certbot is
+      not.
+
   --certbot
+      Obtains a free SSL certificate for the server using Certbot,
+      https://certbot.eff.org/  Recommended.  Conflicts with --self-signed-cert.
   --self-signed-cert
-  --cacert=/path/to
+      Generate a self-signed SSL certificate for the server. This isn’t suitable for
+      production use, but may be convenient for testing.  Conflicts with --certbot.
+  --cacert=/path/to/ca.pem
+      Set the CA which used to establish TLS to all public internet sites during the
+      install process; used when this command is run once in a highly-controlled
+      environment to produce an image which is used elsewhere.  Uncommon.
 
   --postgres-missing-dictionaries
+      Set postgresql.missing_dictionaries, which alters the initial database.  Use with
+      cloud managed databases like RDS.  Conflicts with --no-overwrite-settings.
   --no-init-db
+      Does not do any database initialization; use when you already have a Zulip
+      database.
 
   --no-overwrite-settings
+      Preserve existing `/etc/zulip` configuration files.
   --no-dist-upgrade
-
-The --hostname and --email options are required,
-unless --no-init-db is set and --certbot is not.
+      Skip the initial `apt-get dist-upgrade`.
 
 EOF
 };
