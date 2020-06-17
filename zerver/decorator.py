@@ -40,7 +40,6 @@ from zerver.lib.exceptions import (
     OrganizationOwnerRequired,
     UnexpectedWebhookEventType,
 )
-from zerver.lib.logging_util import log_to_file
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import RateLimitedUser
 from zerver.lib.request import REQ, has_request_variables
@@ -62,12 +61,9 @@ else:  # nocoverage # Hack here basically to make impossible code paths compile
 
 ReturnT = TypeVar('ReturnT')
 
-webhook_logger = logging.getLogger("zulip.zerver.webhooks")
-log_to_file(webhook_logger, settings.API_KEY_ONLY_WEBHOOK_LOG_PATH)
-
-webhook_unexpected_events_logger = logging.getLogger("zulip.zerver.lib.webhooks.common")
-log_to_file(webhook_unexpected_events_logger,
-            settings.WEBHOOK_UNEXPECTED_EVENTS_LOG_PATH)
+# These loggers are configured in zproject/computed_settings.py:
+webhook_logger = logging.getLogger('zulip.zerver.webhooks')
+webhook_unexpected_events_logger = logging.getLogger('zulip.zerver.lib.webhooks.common')
 
 def cachify(method: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
     dct: Dict[Tuple[Any, ...], ReturnT] = {}

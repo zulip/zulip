@@ -718,6 +718,9 @@ LOGGING: Dict[str, Any] = {
         'default': {
             '()': 'zerver.lib.logging_util.ZulipFormatter',
         },
+        'webhooks': {
+            'format': '%(asctime)s %(levelname)-8s %(message)s',
+        },
     },
     'filters': {
         'ZulipLimiter': {
@@ -792,6 +795,18 @@ LOGGING: Dict[str, Any] = {
             'class': 'logging.handlers.WatchedFileHandler',
             'formatter': 'default',
             'filename': SLOW_QUERIES_LOG_PATH,
+        },
+        'webhook_errors_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.WatchedFileHandler',
+            'formatter': 'webhooks',
+            'filename': API_KEY_ONLY_WEBHOOK_LOG_PATH,
+        },
+        'webhook_unexpected_events_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.WatchedFileHandler',
+            'formatter': 'webhooks',
+            'filename': WEBHOOK_UNEXPECTED_EVENTS_LOG_PATH,
         },
     },
     'loggers': {
@@ -932,12 +947,12 @@ LOGGING: Dict[str, Any] = {
         },
         'zulip.zerver.lib.webhooks.common': {
             'level': 'DEBUG',
-            'handlers': ['file', 'errors_file'],
+            'handlers': ['file', 'errors_file', 'webhook_unexpected_events_file'],
             'propagate': False,
         },
         'zulip.zerver.webhooks': {
             'level': 'DEBUG',
-            'handlers': ['file', 'errors_file'],
+            'handlers': ['file', 'errors_file', 'webhook_errors_file'],
             'propagate': False,
         },
     },
