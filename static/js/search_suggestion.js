@@ -710,37 +710,37 @@ exports.get_search_result_legacy = function (query) {
     let suggestion;
 
     // Add an entry for narrow by operators.
-    const operators = Filter.parse(query);
+    const search_operators = Filter.parse(query);
     let last = {operator: '', operand: '', negated: false};
-    if (operators.length > 0) {
-        last = operators.slice(-1)[0];
+    if (search_operators.length > 0) {
+        last = search_operators.slice(-1)[0];
     }
 
     const person_suggestion_ops = ['sender', 'pm-with', 'from', 'group-pm'];
-    const operators_len = operators.length;
+    const search_operators_len = search_operators.length;
 
-    // Handle spaces in person name in new suggestions only. Checks if the last operator is
-    // 'search' and the second last operator is one out of person_suggestion_ops.
+    // Handle spaces in person name in new suggestions only. Checks if the last operator is 'search'
+    // and the second last operator in search_operators is one out of person_suggestion_ops.
     // e.g for `sender:Ted sm`, initially last = {operator: 'search', operand: 'sm'....}
     // and second last is {operator: 'sender', operand: 'sm'....}. If the second last operand
     // is an email of a user, both of these operators remain unchanged. Otherwise search operator
     // will be deleted and new last will become {operator:'sender', operand: 'Ted sm`....}.
-    if (operators_len > 1 &&
+    if (search_operators_len > 1 &&
         last.operator === 'search' &&
-        person_suggestion_ops.includes(operators[operators_len - 2].operator)) {
-        const person_op = operators[operators_len - 2];
+        person_suggestion_ops.includes(search_operators[search_operators_len - 2].operator)) {
+        const person_op = search_operators[search_operators_len - 2];
         if (!people.reply_to_to_user_ids_string(person_op.operand)) {
             last = {
                 operator: person_op.operator,
                 operand: person_op.operand + ' ' + last.operand,
                 negated: person_op.negated,
             };
-            operators[operators_len - 2] = last;
-            operators.splice(-1, 1);
+            search_operators[search_operators_len - 2] = last;
+            search_operators.splice(-1, 1);
         }
     }
 
-    const base = get_default_suggestion(operators.slice(0, -1));
+    const base = get_default_suggestion(search_operators.slice(0, -1));
     const attacher = make_attacher(base);
 
     // Display the default first
@@ -748,7 +748,7 @@ exports.get_search_result_legacy = function (query) {
     // is not displayed in that case. e.g. `messages with one or more abc` as
     // a suggestion for `has:abc`does not make sense.
     if (last.operator !== '' && last.operator !== 'has' && last.operator !== 'is') {
-        suggestion = get_default_suggestion(operators);
+        suggestion = get_default_suggestion(search_operators);
         attacher.push(suggestion);
     }
 
@@ -776,7 +776,7 @@ exports.get_search_result_legacy = function (query) {
         get_has_filter_suggestions,
     ];
 
-    const base_operators = operators.slice(0, -1);
+    const base_operators = search_operators.slice(0, -1);
     const max_items = exports.max_num_of_search_results;
 
     for (const filterer of filterers) {
@@ -792,7 +792,7 @@ exports.get_search_result_legacy = function (query) {
     // where the user just deletes one or more pills.  So you
     // won't see this is in the new code.
     if (attacher.result.length < max_items) {
-        const subset_suggestions = get_operator_subset_suggestions(operators);
+        const subset_suggestions = get_operator_subset_suggestions(search_operators);
         attacher.concat(subset_suggestions);
     }
 
