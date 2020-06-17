@@ -79,14 +79,14 @@ below.
 #### Step 1: Setup Zulip
 
 Follow the [standard instructions](../production/install.md), with one
-change.  When running the installer, pass the `--remote-postgres`
+change.  When running the installer, pass the `--no-init-db`
 flag, e.g.:
 
 ```
 sudo -s  # If not already root
 ./zulip-server-*/scripts/setup/install --certbot \
     --email=YOUR_EMAIL --hostname=YOUR_HOSTNAME \
-    --remote-postgres --postgres-missing-dictionaries
+    --no-init-db --postgres-missing-dictionaries
 ```
 
 The script also installs and starts Postgres on the server by
