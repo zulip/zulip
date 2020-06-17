@@ -186,7 +186,7 @@ For help and more details, see our SSL documentation:
 Once fixed, just rerun scripts/setup/install; it'll pick up from here!
 
 EOF
-   exit 1
+    exit 1
 fi
 
 # don't run dist-upgrade in one click apps to make the
