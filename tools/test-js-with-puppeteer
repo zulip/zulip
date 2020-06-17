@@ -45,7 +45,7 @@ from tools.lib import sanity_check
 
 sanity_check.check_venv(__file__)
 
-from typing import Iterable
+from typing import Iterable, Tuple
 
 from tools.lib.test_script import (
     assert_provisioning_status_ok,
@@ -59,16 +59,18 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
     test_dir = os.path.join(ZULIP_PATH, 'frontend_tests/puppeteer_tests')
     test_files = find_js_test_files(test_dir, files)
 
-    def run_tests() -> int:
+    def run_tests(test_number: int=0) -> Tuple[int, int]:
         ret = 1
-        for test_file in test_files:
+        current_test_num = test_number
+        for test_file in test_files[test_number:]:
             test_name = os.path.basename(test_file)
             cmd = ["node"] + [test_file]
             print("\n\n===================== {}\nRunning {}\n\n".format(test_name, " ".join(map(shlex.quote, cmd))), flush=True)
             ret = subprocess.call(cmd)
             if ret != 0:
-                return ret
-        return 0
+                return ret, current_test_num
+            current_test_num += 1
+        return 0, -1
 
     with test_server_running(False, external_host):
         # Important: do this next call inside the `with` block, when Django
@@ -77,13 +79,14 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
         if options.interactive:
             response = input('Press Enter to run tests, "q" to quit: ')
             ret = 1
-            while response != 'q':
-                ret = run_tests()
+            failed_test_num = 0
+            while response != 'q' and failed_test_num != -1:
+                ret, failed_test_num = run_tests(failed_test_num)
                 if ret != 0:
                     response = input('Tests failed. Press Enter to re-run tests, "q" to quit: ')
         else:
             ret = 1
-            ret = run_tests()
+            ret = run_tests()[0]
     if ret != 0:
         print("""
 The Puppeteer frontend tests failed! Please report and ask for help in chat.zulip.org""", file=sys.stderr)
