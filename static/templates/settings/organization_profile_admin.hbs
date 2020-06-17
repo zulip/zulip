@@ -29,8 +29,8 @@
         <div class="realm-icon-section">
             {{> image_upload_widget
               widget = "realm-icon"
-              upload_text = "Upload icon"
-              delete_text = "Delete icon"
+              upload_text = (t "Upload icon")
+              delete_text = (t "Delete icon")
               is_editable_by_current_user = is_admin
               image = realm_icon_url }}
         </div>
@@ -50,16 +50,16 @@
         <div class="realm-logo-block realm-logo-section">
             {{> image_upload_widget
               widget = "realm-day-logo"
-              upload_text = "Upload logo"
-              delete_text = "Delete logo"
+              upload_text = (t "Upload logo")
+              delete_text = (t "Delete logo")
               is_editable_by_current_user = user_can_change_logo
               image = realm_icon_url }}
         </div>
         <div class="realm-logo-block realm-logo-section">
             {{> image_upload_widget
               widget = "realm-night-logo"
-              upload_text = "Upload logo"
-              delete_text = "Delete logo"
+              upload_text = (t "Upload logo")
+              delete_text = (t "Delete logo")
               is_editable_by_current_user = user_can_change_logo
               image = realm_icon_url }}
         </div>
