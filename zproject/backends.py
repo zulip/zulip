@@ -155,9 +155,6 @@ def any_social_backend_enabled(realm: Optional[Realm]=None) -> bool:
                             for social_auth_subclass in EXTERNAL_AUTH_METHODS]
     return auth_enabled_helper(social_backend_names, realm)
 
-def redirect_to_config_error(error_type: str) -> HttpResponseRedirect:
-    return HttpResponseRedirect(f"/config-error/{error_type}")
-
 def require_email_format_usernames(realm: Optional[Realm]=None) -> bool:
     if ldap_auth_enabled(realm):
         if settings.LDAP_EMAIL_ATTR or settings.LDAP_APPEND_DOMAIN:
@@ -1572,7 +1569,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
     SCOPE_SEPARATOR = "%20"  # https://github.com/python-social-auth/social-core/issues/470
 
     @classmethod
-    def check_config(cls) -> Optional[HttpResponse]:
+    def check_config(cls) -> bool:
         obligatory_apple_settings_list = [
             settings.SOCIAL_AUTH_APPLE_TEAM,
             settings.SOCIAL_AUTH_APPLE_SERVICES_ID,
@@ -1580,9 +1577,9 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
             settings.SOCIAL_AUTH_APPLE_SECRET,
         ]
         if any(not setting for setting in obligatory_apple_settings_list):
-            return redirect_to_config_error("apple")
+            return False
 
-        return None
+        return True
 
     def is_native_flow(self) -> bool:
         return self.strategy.request_data().get('native_flow', False)
@@ -1955,7 +1952,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         return True
 
     @classmethod
-    def check_config(cls) -> Optional[HttpResponse]:
+    def check_config(cls) -> bool:
         obligatory_saml_settings_list = [
             settings.SOCIAL_AUTH_SAML_SP_ENTITY_ID,
             settings.SOCIAL_AUTH_SAML_ORG_INFO,
@@ -1964,9 +1961,9 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             settings.SOCIAL_AUTH_SAML_ENABLED_IDPS,
         ]
         if any(not setting for setting in obligatory_saml_settings_list):
-            return redirect_to_config_error("saml")
+            return False
 
-        return None
+        return True
 
     @classmethod
     def dict_representation(cls, realm: Optional[Realm]=None) -> List[ExternalAuthMethodDictT]:
