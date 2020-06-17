@@ -1,6 +1,6 @@
 import os
 
-ZULIP_VERSION = "2.1.5"
+ZULIP_VERSION = "2.1.6"
 # Add information on number of commits and commit hash to version, if available
 zulip_git_version_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'zulip-git-version')
 if os.path.exists(zulip_git_version_file):
@@ -10,7 +10,7 @@ if os.path.exists(zulip_git_version_file):
             ZULIP_VERSION = version
 
 LATEST_MAJOR_VERSION = "2.1"
-LATEST_RELEASE_VERSION = "2.1.5"
+LATEST_RELEASE_VERSION = "2.1.6"
 LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.org/2019/12/13/zulip-2-1-released/"
 
 # Versions of the desktop app below DESKTOP_MINIMUM_VERSION will be

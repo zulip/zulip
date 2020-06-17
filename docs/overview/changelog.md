@@ -7,6 +7,11 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+### 2.1.6 -- 2020-06-17
+
+- Fixed use of Python 3.6+ syntax in 2.1.5 release that prevented
+  installation on Ubuntu Xenial.
+
 ### 2.1.5 -- 2020-06-16
 
 - CVE-2020-12759: Fix reflected XSS vulnerability in Dropbox webhook.
