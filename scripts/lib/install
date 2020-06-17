@@ -70,6 +70,14 @@ if [ -n "$SELF_SIGNED_CERT" ] && [ -n "$USE_CERTBOT" ]; then
     exit 1
 fi
 
+if [ -n "$POSTGRES_MISSING_DICTIONARIES" ] && [ -n "$NO_OVERWRITE_SETTINGS" ]; then
+    set +x
+    echo "error: --postgres-missing-dictionaries and --no-overwrite-settings are incompatible" >&2
+    echo >&2
+    usage >&2
+    exit 1
+fi
+
 if [ -z "$EXTERNAL_HOST" ] || [ -z "$ZULIP_ADMINISTRATOR" ]; then
     if [ -n "$USE_CERTBOT" ] || [ -z "$NO_INIT_DB" ]; then
         usage >&2
