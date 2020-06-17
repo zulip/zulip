@@ -56,6 +56,19 @@
  *  You can set an on_escape hook to take extra actions when the user hits
  *  the `Esc` key.  We use this in our navbar code to close the navbar when
  *  a user hits escape while in the typeahead.
+ *
+ * 5. Help on empty strings:
+ *
+ *   This adds support for displaying the typeahead for an empty string.
+ *   It is helpful when we want to render the typeahead, based on already
+ *   entered data (in the form of contenteditable elements) every time the
+ *   input block gains focus but is empty.
+ *
+ *   We also have logic so that there is an exception to this rule when this
+ *   option is set as true. We prevent the lookup of the typeahead and hide it
+ *   so that the `Backspace` key is free to interact with the other elements.
+ *
+ *   Our custom changes include all mentions of `helpOnEmptyStrings` and `hideOnEmpty`.
  * ============================================================ */
 
 !function($){
@@ -185,12 +198,12 @@
       return this
     }
 
-  , lookup: function (event) {
+  , lookup: function (hideOnEmpty) {
       var items
 
       this.query = this.$element.is("[contenteditable]") ? this.$element.text() :  this.$element.val();
 
-      if (!this.options.helpOnEmptyStrings) {
+      if (!this.options.helpOnEmptyStrings || hideOnEmpty) {
         if (!this.query || this.query.length < this.options.minLength) {
           return this.shown ? this.hide() : this
         }
@@ -378,7 +391,11 @@
             if (!this.shown) return;
             this.select(e);
           }
-          this.lookup()
+          var hideOnEmpty = false
+          if (e.keyCode === 8 && this.options.helpOnEmptyStrings) { // backspace
+            hideOnEmpty = true
+          }
+          this.lookup(hideOnEmpty)
       }
 
       if ((this.options.stopAdvance || (e.keyCode != 9 && e.keyCode != 13))
