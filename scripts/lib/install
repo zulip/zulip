@@ -13,7 +13,6 @@ Other options:
   --cacert=/path/to
 
   --postgres-missing-dictionaries
-  --remote-postgres
   --no-init-db
 
   --no-overwrite-settings
@@ -27,7 +26,7 @@ EOF
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgres-missing-dictionaries,remote-postgres,no-init-db,no-overwrite-settings,no-dist-upgrade -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgres-missing-dictionaries,no-init-db,no-overwrite-settings,no-dist-upgrade -n "$0" -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
@@ -41,7 +40,6 @@ while true; do
         --self-signed-cert) SELF_SIGNED_CERT=1; shift;;
 
         --postgres-missing-dictionaries) POSTGRES_MISSING_DICTIONARIES=1; shift;;
-        --remote-postgres) REMOTE_POSTGRES=1; shift;;
         --no-init-db) NO_INIT_DB=1; shift;;
 
         --no-overwrite-settings) NO_OVERWRITE_SETTINGS=1; shift;;
@@ -369,10 +367,6 @@ if [ -n "$POSTGRES_MISSING_DICTIONARIES" ]; then
     crudini --set /etc/zulip/zulip.conf postgresql missing_dictionaries true
 fi
 
-if [ -n "$REMOTE_POSTGRES" ]; then
-  has_postgres=1
-fi
-
 # These server restarting bits should be moveable into puppet-land, ideally
 case " $os_id $os_id_like " in
     *' debian '*)
@@ -446,13 +440,13 @@ if [ -e "/var/run/supervisor.sock" ]; then
     chown zulip:zulip /var/run/supervisor.sock
 fi
 
-if [ -n "$NO_INIT_DB" ] || [ -n "$REMOTE_POSTGRES" ]; then
+if [ -n "$NO_INIT_DB" ]; then
     set +x
     cat <<EOF
 
  Success!
 
- Stopping because --no-init-db or --remote-postgres was passed.
+ Stopping because --no-init-db was passed.
  To complete the installation, configure postgres and then run:
 
    su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database'
