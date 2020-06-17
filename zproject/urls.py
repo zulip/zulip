@@ -26,7 +26,6 @@ from zerver.views.auth import (
     api_fetch_api_key,
     api_fetch_google_client_id,
     api_get_server_settings,
-    config_error_view,
     dev_direct_login,
     json_fetch_api_key,
     log_into_subdomain,
@@ -747,10 +746,6 @@ i18n_urls = [
     # Terms of Service and privacy pages.
     path('terms/', terms_view),
     path('privacy/', privacy_view),
-    path('config-error/<error_category_name>', config_error_view,
-         name='config_error'),
-    path('config-error/remoteuser/<error_category_name>',
-         config_error_view),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
