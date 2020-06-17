@@ -125,10 +125,10 @@ exports.build_direct_upload_widget = function (
     max_file_upload_size = max_file_upload_size || default_max_file_size;
     function accept() {
         input_error.hide();
-        const realm_logo_section = upload_button.closest(".realm-logo-section");
-        if (realm_logo_section.attr('id') === "night-logo-section") {
+        const realm_logo_section = upload_button.closest(".avatar-icon-logo-settings");
+        if (realm_logo_section.attr('id') === "realm-night-logo-upload-widget") {
             upload_function(get_file_input(), true, false);
-        } else if (realm_logo_section.attr('id') === "day-logo-section") {
+        } else if (realm_logo_section.attr('id') === "realm-day-logo-upload-widget") {
             upload_function(get_file_input(), false, false);
         } else {
             upload_function(get_file_input(), null, true);

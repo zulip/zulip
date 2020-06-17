@@ -1,16 +1,16 @@
 exports.build_realm_logo_widget = function (upload_function, is_night) {
-    let logo_section_id = '#day-logo-section';
+    let logo_section_id = '#realm-day-logo-upload-widget';
     let logo_source = page_params.realm_logo_source;
 
     if (is_night) {
-        logo_section_id = '#night-logo-section';
+        logo_section_id = '#realm-night-logo-upload-widget';
         logo_source = page_params.realm_night_logo_source;
     }
 
-    const delete_button_elem = $(logo_section_id + " .realm-logo-delete-button");
-    const file_input_elem = $(logo_section_id + " .realm-logo-file-input");
-    const file_input_error_elem = $(logo_section_id + " .realm-logo-file-input-error");
-    const upload_button_elem = $(logo_section_id + " .realm-logo-upload-button");
+    const delete_button_elem = $(logo_section_id + " .settings-page-delete-button");
+    const file_input_elem = $(logo_section_id + " .image_file_input");
+    const file_input_error_elem = $(logo_section_id + " .image_file_input_error");
+    const upload_button_elem = $(logo_section_id + " .image_upload_button");
 
     const get_file_input = function () {
         return file_input_elem.expectOne();
@@ -57,9 +57,9 @@ function change_logo_delete_button(logo_source, logo_delete_button, file_input) 
 }
 
 exports.rerender = function () {
-    const file_input = $("#day-logo-section .realm-logo-file-input");
-    const night_file_input = $("#night-logo-section .realm-logo-file-input");
-    $("#day-logo-section .realm-logo-img").attr("src", page_params.realm_logo_url);
+    const file_input = $("#realm-day-logo-upload-widget .image_file_input");
+    const night_file_input = $("#realm-night-logo-upload-widget .realm-logo-file-input");
+    $("#realm-day-logo-upload-widget .image-block").attr("src", page_params.realm_logo_url);
 
     if (page_params.realm_night_logo_source === 'D' &&
             page_params.realm_logo_source !== 'D') {
@@ -68,9 +68,9 @@ exports.rerender = function () {
         // of transparent background logos that look good on both
         // night and day themes.  See also similar code in admin.js.
 
-        $("#night-logo-section .realm-logo-img").attr("src", page_params.realm_logo_url);
+        $("#realm-night-logo-upload-widget .image-block").attr("src", page_params.realm_logo_url);
     } else {
-        $("#night-logo-section .realm-logo-img").attr("src", page_params.realm_night_logo_url);
+        $("#realm-night-logo-upload-widget .image-block").attr("src", page_params.realm_night_logo_url);
     }
 
     if (page_params.night_mode && page_params.realm_night_logo_source !== 'D') {
@@ -80,10 +80,10 @@ exports.rerender = function () {
     }
 
     change_logo_delete_button(page_params.realm_logo_source,
-                              $("#day-logo-section .realm-logo-delete-button"),
+                              $("#realm-day-logo-upload-widget .settings-page-delete-button"),
                               file_input);
     change_logo_delete_button(page_params.realm_night_logo_source,
-                              $("#night-logo-section .realm-logo-delete-button"),
+                              $("#realm-night-logo-upload-widget .settings-page-delete-button"),
                               night_file_input);
 };
 

@@ -47,14 +47,22 @@
         </div>
 
         <p>{{t "A wide image for the upper left corner of the app." }}</p>
-        {{> realm-logo-widget
-          theme_mode="day"
-          logo_url=realm_logo_url}}
-
-        {{> realm-logo-widget
-          theme_mode="night"
-          logo_url=realm_night_logo_url}}
-
+        <div class="realm-logo-block realm-logo-section">
+            {{> image_upload_widget
+              widget = "realm-day-logo"
+              upload_text = "Upload logo"
+              delete_text = "Delete logo"
+              is_editable_by_current_user = user_can_change_logo
+              image = realm_icon_url }}
+        </div>
+        <div class="realm-logo-block realm-logo-section">
+            {{> image_upload_widget
+              widget = "realm-night-logo"
+              upload_text = "Upload logo"
+              delete_text = "Delete logo"
+              is_editable_by_current_user = user_can_change_logo
+              image = realm_icon_url }}
+        </div>
         <h3 class="light">
             {{t "Deactivate organization" }}
             <i class="fa fa-info-circle settings-info-icon realm_allow_message_deleting_tooltip" data-toggle="tooltip" aria-hidden="true" title="{{t 'Only owners can deactivate the organization.' }}"></i>
