@@ -1,5 +1,5 @@
 function collapse_spoiler(spoiler) {
-    const spoiler_height = spoiler.prop('scrollHeight');
+    const spoiler_height = spoiler.height();
 
     // Set height to rendered height on next frame, then to zero on following
     // frame to allow CSS transition animation to work
@@ -34,19 +34,29 @@ function expand_spoiler(spoiler) {
 }
 
 exports.initialize = function () {
-    $("body").on("click", ".spoiler-button", function (e) {
+    $("body").on("click", ".spoiler-header", function (e) {
+        const button = $(this).children('.spoiler-button');
+        const arrow = button.children('.spoiler-arrow');
+        const spoiler_content = $(this).siblings(".spoiler-content");
+        const target = $(e.target);
+
+        // Spoiler headers can contain markdown, including links. We follow the link
+        // and don't expand the spoiler if a link has been clicked (unless it's the dropdown arrow)
+        // This can be accomplished by just breaking from this function before preventing default
+        // or toggling the state of the spoiler block.
+        if (target.is('a') && !target.hasClass('.spoiler-button')) {
+            return;
+        }
+
         e.preventDefault();
         e.stopPropagation();
-
-        const arrow = $(this).children('.spoiler-arrow');
-        const spoiler_content = $(this).parent().siblings(".spoiler-content");
 
         if (spoiler_content.hasClass("spoiler-content-open")) {
             // Content was open, we are collapsing
             arrow.removeClass("spoiler-button-open");
 
             // Modify ARIA roles for screen readers
-            $(this).attr("aria-expanded", "false");
+            button.attr("aria-expanded", "false");
             spoiler_content.attr("aria-hidden", "true");
 
             collapse_spoiler(spoiler_content);
@@ -55,7 +65,7 @@ exports.initialize = function () {
             arrow.addClass("spoiler-button-open");
 
             // Modify ARIA roles for screen readers
-            $(this).attr("aria-expanded", "true");
+            button.attr("aria-expanded", "true");
             spoiler_content.attr("aria-hidden", "false");
 
             expand_spoiler(spoiler_content);
