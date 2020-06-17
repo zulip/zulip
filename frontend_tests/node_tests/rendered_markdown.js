@@ -68,7 +68,7 @@ const get_content_element = () => {
     $content.set_find_results('.user-group-mention', $array([]));
     $content.set_find_results('a.stream', $array([]));
     $content.set_find_results('a.stream-topic', $array([]));
-    $content.set_find_results('span.timestamp', $array([]));
+    $content.set_find_results('time', $array([]));
     $content.set_find_results('.emoji', $array([]));
     $content.set_find_results('div.spoiler-header', $array([]));
     return $content;
@@ -160,11 +160,10 @@ run_test('timestamp', () => {
     // Setup
     const $content = get_content_element();
     const $timestamp = $.create('timestamp(valid)');
-    $timestamp.attr('data-timestamp', 1);
+    $timestamp.attr('datetime', '1970-01-01T00:00:01Z');
     const $timestamp_invalid = $.create('timestamp(invalid)');
-    $timestamp.addClass('timestamp');
-    $timestamp_invalid.addClass('timestamp');
-    $content.set_find_results('span.timestamp', $array([$timestamp, $timestamp_invalid]));
+    $timestamp_invalid.attr('datetime', 'invalid');
+    $content.set_find_results('time', $array([$timestamp, $timestamp_invalid]));
 
     // Initial asserts
     assert.equal($timestamp.text(), 'never-been-set');
@@ -173,12 +172,9 @@ run_test('timestamp', () => {
     rm.update_elements($content);
 
     // Final asserts
-    assert($timestamp.hasClass('timestamp'));
-    assert(!$timestamp_invalid.hasClass('timestamp'));
     assert.equal($timestamp.text(), 'Thu, Jan 1 1970, 12:00 AM');
     assert.equal($timestamp.attr('title'), "This time is in your timezone. Original text was 'never-been-set'.");
-    assert.equal($timestamp_invalid.text(), 'never-been-set');
-    assert.equal($timestamp_invalid.attr('title'), 'Could not parse timestamp.');
+    assert.equal($timestamp_invalid.text(), 'translated: Could not parse timestamp.');
 });
 
 run_test('emoji', () => {

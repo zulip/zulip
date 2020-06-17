@@ -137,19 +137,27 @@ exports.update_elements = (content) => {
         }
     });
 
-    content.find('span.timestamp').each(function () {
+    content.find('time').each(function () {
         // Populate each timestamp span with mentioned time
         // in user's local timezone.
-        const timestamp = moment.unix($(this).attr('data-timestamp'));
-        if (timestamp.isValid() && $(this).attr('data-timestamp') !== null) {
+        const time_str = $(this).attr('datetime');
+        if (time_str === undefined) {
+            return;
+        }
+
+        // Moment throws a large deprecation warning when it has to fallback
+        // to the Date() constructor. We needn't worry here and can let bugdown
+        // handle any dates that moment misses.
+        moment.suppressDeprecationWarnings = true;
+        const timestamp = moment(time_str);
+        if (timestamp.isValid()) {
             const text = $(this).text();
             const rendered_time = timerender.render_markdown_timestamp(timestamp,
                                                                        null, text);
             $(this).text(rendered_time.text);
             $(this).attr('title', rendered_time.title);
         } else {
-            $(this).removeClass('timestamp');
-            $(this).attr('title', 'Could not parse timestamp.');
+            $(this).text(i18n.t('Could not parse timestamp.'));
         }
     });
 
