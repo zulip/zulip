@@ -2957,6 +2957,475 @@ paths:
                         "result": "success",
                         "msg": ""
                     }
+  /realm:
+    patch:
+      operationId: update_realm
+      tags: ["server_and_organizations"]
+      description: |
+        Updates the organization settings such as default user settings and
+        message editing policies.
+
+        `PATCH {{ api_url }}/v1/realm`
+      parameters:
+      - name: name
+        in: query
+        description: New organization name.
+        content:
+          application/json:
+            schema:
+              type: string
+              nullable: true
+            example: Zulip Dev
+        required: false
+      - name: description
+        in: query
+        description: Organization description.
+        content:
+          application/json:
+            schema:
+              type: string
+              nullable: true
+            example: |
+              The Zulip development environment default organization.
+              It is great for testing!
+        required: false
+      - name: emails_restricted_to_domains
+        in: query
+        description: |
+          A boolean indicating whether or not there are restricted email domains
+          for new users.
+        schema:
+          type: boolean
+          nullable: true
+        example: false
+        required: false
+      - name: disallow_disposable_email_addresses
+        in: query
+        description: |
+          A boolean indicating whether or not new users can use disposable
+          email addresses.
+        schema:
+          type: boolean
+          nullable: true
+        example: true
+        required: false
+      - name: invite_required
+        in: query
+        description: |
+          A boolean indicating whether or not an invitation is required in
+          order to a user join the organization.
+        schema:
+          type: boolean
+          nullable: true
+        example: true
+        required: false
+      - name: invite_by_admins_only
+        in: query
+        description: |
+          A boolean indicating whether or not only admins can send invitations.
+          If false, that means admins and members can send invitations.
+        schema:
+          type: boolean
+          nullable: true
+        example: true
+        required: false
+      - name: name_changes_disabled
+        in: query
+        description: |
+          A boolean that indicates whether a user can change their name or not.
+        schema:
+          type: boolean
+          nullable: true
+        example: true
+        required: false
+      - name: email_changes_disabled
+        in: query
+        description: |
+          A boolean that indicates whether a user can change their email
+          address or not.
+        schema:
+          type: boolean
+          nullable: true
+        example: false
+        required: false
+      - name: avatar_changes_disabled
+        in: query
+        description: |
+          A boolean that indicates whether a user can change their avatar picture
+          or not.
+        schema:
+          type: boolean
+          nullable: true
+        example: false
+        required: false
+      - name: inline_image_preview
+        in: query
+        description: |
+          A boolean that indicates if images preview are allowed or not.
+        schema:
+          type: boolean
+          nullable: true
+        example: true
+        required: false
+      - name: inline_url_embed_preview
+        in: query
+        description: |
+          A boolean that indicates if showing the preview of linked websites
+          are allowed or not.
+        schema:
+          type: boolean
+          nullable: true
+        example: true
+        required: false
+      - name: add_emoji_by_admins_only
+        in: query
+        description: |
+          A boolean that indicates if only admins can add emojis or not.
+          If false, it means that admins and members can add emojis.
+        schema:
+          type: boolean
+          nullable: true
+        example: false
+        required: false
+      - name: allow_message_deleting
+        in: query
+        description: |
+          A boolean that indicates if message deleting is allowed.
+        schema:
+          type: boolean
+          nullable: true
+        example: true
+        required: false
+      - name: message_content_delete_limit_seconds
+        in: query
+        description: |
+          Time, in seconds, after posting for which deleting a message is allowed.
+          Admins can delete messages at any time.
+        schema:
+          type: integer
+          nullable: true
+        example: 120
+        required: false
+      - name: allow_message_editing
+        in: query
+        description: |
+          A boolean indicating whether message editing is allowed.
+        schema:
+          type: boolean
+          nullable: true
+        example: true
+        required: false
+      - name: allow_community_topic_editing
+        in: query
+        description: |
+          A boolean indicating if users can edit the topic of any message.
+        schema:
+          type: boolean
+          nullable: true
+        example: true
+        required: false
+      - name:  mandatory_topics
+        in: query
+        description: |
+          A boolean indicating whether is mandatory that all stream messages
+          have topics.
+        schema:
+          type: boolean
+          nullable: true
+        example: true
+        required: false
+      - name: message_content_edit_limit_seconds
+        in: query
+        description: |
+          Time, in seconds, after posting for which editing a message is allowed.
+          Admins can delete messages at any time.
+        schema:
+          type: integer
+          nullable: true
+        example: 120
+        required: false
+      - name: allow_edit_history
+        in: query
+        description: |
+          A boolean indicating whether it is allowed to edit history.
+        schema:
+          type: boolean
+          nullable: true
+        example: true
+        required: false
+      - name: default_language
+        in: query
+        description: The default language of the realm.
+        content:
+          application/json:
+            schema:
+              type: string
+              nullable: true
+            example: en-gb
+        required: false
+      - name: waiting_period_threshold
+        in: query
+        description: |
+          Waiting period, in days, before new members turn into full members.
+        schema:
+          type: integer
+          nullable: true
+        example: 3
+        required: false
+      - name: authentication_methods
+        in: query
+        description: |
+          Each key-value pair in the object indicates whether the authentication
+          method is enabled on this server.
+
+          **Changes**: Deprecated in Zulip 2.1, in favor of the more expressive
+          `external_authentication_methods`.
+        schema:
+          type: object
+          nullable: true
+        example:
+          {
+            "Apple": true,
+            "Dev": true,
+            "Email": true,
+            "GitHub": false,
+            "GitLab": false,
+            "Google": true,
+            "SAML": false
+          }
+        required: false
+      - name: notifications_stream_id
+        in: query
+        description: |
+          ID of the stream that will notify stream creations.
+        schema:
+          type: integer
+          nullable: true
+        example: 3
+        required: false
+      - name: signup_notifications_stream_id
+        in: query
+        description: |
+          ID of the stream that will notify when new users join the realm.
+          -1 if there are no streams that notify when new users join.
+        schema:
+          type: integer
+          nullable: true
+        example: 3
+        required: false
+      - name: message_retention_days
+        in: query
+        description: |
+          Number of days that messages sent to this stream will be stored
+          before being automatically deleted by the [message retention
+          policy](/help/message-retention-policy).  There are two special values:
+
+          * `null`, the default, means the stream will inherit the organization
+            level setting.
+          * `-1` encodes retaining messages in this stream forever.
+
+          **Changes**: New in Zulip 2.2 (feature level 17).
+        schema:
+          oneOf:
+            - type: string
+            - type: integer
+        example: 3
+        required: false
+      - name: send_welcome_emails
+        in: query
+        description: |
+          A boolean indicating whether emails introducing Zulip to new users
+          will be sent.
+        schema:
+          type: boolean
+          nullable: true
+        example: true
+        required: false
+      - name: digest_emails_enabled
+        in: query
+        description: |
+          A boolean indicating whether weekly emails to inactive users.
+        schema:
+          type: boolean
+          nullable: true
+        example: false
+        required: false
+      - name: message_content_allowed_in_email_notifications
+        in: query
+        description: |
+          A boolean indicating whether or not the message content is allowed in
+          missed messages emails.
+        schema:
+          type: boolean
+          nullable: true
+        example: true
+        required: false
+      - name: bot_creation_policy
+        in: query
+        description: |
+          An integer that defines who can add bots.
+
+          * 1: Admins and member can add bots.
+          * 2: Admins and members, but only admins can add generic bots.
+          * 3: Only admins can add bots.
+        schema:
+          type: integer
+          nullable: true
+        example: 2
+        required: false
+      - name: create_stream_policy
+        in: query
+        description: |
+          An integer that defines who can create streams.
+
+          * 1: Admins and member can create streams.
+          * 2: Only admins can create streams.
+          * 3: Admins and full members can create streams.
+        schema:
+          type: integer
+          nullable: true
+        example: 1
+        required: false
+      - name: invite_to_stream_policy
+        in: query
+        description: |
+          An integer that defines who can add users to stream.
+
+          * 1: Admins and memebers can add users to streams.
+          * 2: Only admins can add users to streams.
+          * 3: Admins and full members can add users to streams.
+        schema:
+          type: integer
+          nullable: true
+        example: 1
+        required: false
+      - name: user_group_edit_policy
+        in: query
+        description: |
+          An integer that defines who can create and manage user groups.
+
+          * 1: Admins and memebers can create and manage user groups.
+          * 2: Only admins can create and manage user groups.
+        schema:
+          type: integer
+          nullable: true
+        example: 2
+        required: false
+      - name: private_message_policy
+        in: query
+        description: |
+          An integer that defines who can use private messages. This feature is
+          beta and it is only available to organization owners and admins.
+
+          * 1: Admins, members, and guests are allowed to use private messages.
+          * 2: Private messages disabled.
+        schema:
+          type: integer
+          nullable: true
+        example: 1
+        required: false
+      - name: email_address_visibility
+        in: query
+        description: |
+          An integer that defines who can access user email addresses.
+
+          * 1: Admins, members, and guests.
+          * 3: Admins only.
+          * 4: Nobody.
+        schema:
+          type: integer
+          nullable: true
+        example: 1
+        required: false
+      - name: default_twenty_four_hour_time
+        in: query
+        description: |
+          A boolean that indicates whether the twenty-four-hour-time or the
+          twelve-hour-time.
+        schema:
+          type: boolean
+          nullable: true
+        example: true
+        required: false
+      - name: video_chat_provider
+        in: query
+        description: |
+          An integer that indicates which is the organization video chat provider.
+
+          * 0: None.
+          * 1: Jitsi meet.
+          * 3: Zoom.
+        schema:
+          type: integer
+          nullable: true
+        example: 1
+        required: false
+      - name: default_code_block_language
+        in: query
+        description: |
+          A string that indicates the default language for code blocks.
+        content:
+          application/json:
+            schema:
+              type: string
+              nullable: true
+            example: python
+        required: false
+      - name: digest_weekday
+        in: query
+        description: |
+          An integer that indicates the day that the weekly digest emails will
+          be sent to inactive users.
+
+          * 0: Monday.
+          * 1: Tuesday, and so on.
+        schema:
+          type: integer
+          nullable: true
+        example: 0
+        required: false
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    signup_notifications_stream_id:
+                      type: integer
+                      description: |
+                        ID of the stream that will notify when new users join the realm.
+                        -1 if there are no streams that notify when new users join.
+                    digest_weekday:
+                      type: integer
+                      description: |
+                        An integer that indicates the day that the weekly digest emails will
+                        be sent to inactive users.
+
+                        * 0: Monday.
+                        * 1: Tuesday, and so on.
+                - example:
+                    {
+                        "result": "success",
+                        "msg": "",
+                        "digest_weekday": 0,
+                        "signup_notifications_stream_id": -1
+                    }
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/CodedError'
+                - example:
+                    {
+                        "code": "UNAUTHORIZED_PRINCIPAL",
+                        "msg": "Must be an organization owner",
+                        "result": "error"
+                    }
   /realm/filters:
     get:
       operationId: get_linkifiers
