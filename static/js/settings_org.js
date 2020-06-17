@@ -944,10 +944,7 @@ exports.build_page = function () {
 
     function upload_realm_logo_or_icon(file_input, night, icon) {
         const form_data = new FormData();
-        let spinner;
-        let error_field;
-        let upload_text;
-        let delete_button;
+        let widget;
         let url;
 
         form_data.append('csrfmiddlewaretoken', csrf_token);
@@ -956,29 +953,20 @@ exports.build_page = function () {
         }
         if (icon) {
             url = '/json/realm/icon';
-            spinner = $('#realm-icon-upload-widget .upload-spinner-background');
-            upload_text =  $('#realm-icon-upload-widget .settings-page-upload-text');
-            delete_button = $('#realm-icon-upload-widget .settings-page-delete-button');
-            error_field = $("#realm-icon-upload-widget .image_file_input_error");
+            widget = '#realm-icon-upload-widget';
         } else {
             if (night) {
-                error_field = $("#realm-night-logo-upload-widget .image_file_input_error");
-                spinner = $("#realm-night-logo-upload-widget .upload-spinner-background");
-                upload_text = $('#realm-night-logo-upload-widget .settings-page-upload-text');
-                delete_button = $('#realm-night-logo-upload-widget .settings-page-delete-button');
+                widget = '#realm-night-logo-upload-widget';
             } else {
-                error_field = $("#realm-day-logo-upload-widget .image_file_input_error");
-                spinner = $("#realm-day-logo-upload-widget .upload-spinner-background");
-                upload_text = $('#realm-day-logo-upload-widget .settings-page-upload-text');
-                delete_button = $('#realm-day-logo-upload-widget .settings-page-delete-button');
+                widget = '#realm-day-logo-upload-widget';
             }
             url = '/json/realm/logo';
             form_data.append('night', JSON.stringify(night));
         }
-        spinner.expectOne();
-        upload_text.expectOne();
-        delete_button.expectOne();
-        error_field.expectOne();
+        const spinner = $(`${widget} .upload-spinner-background`).expectOne();
+        const upload_text =  $(`${widget}  .settings-page-upload-text`).expectOne();
+        const delete_button = $(`${widget}  .settings-page-delete-button`).expectOne();
+        const error_field = $(`${widget}  .image_file_input_error`).expectOne();
         realm_icon_logo_upload_start(spinner, upload_text, delete_button);
         error_field.hide();
         channel.post({
