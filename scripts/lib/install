@@ -10,11 +10,14 @@ Usage:
 Other options:
   --certbot
   --self-signed-cert
-  --no-init-db
-  --cacert
-  --no-dist-upgrade
+  --cacert=/path/to
+
   --postgres-missing-dictionaries
   --remote-postgres
+  --no-init-db
+
+  --no-overwrite-settings
+  --no-dist-upgrade
 
 The --hostname and --email options are required,
 unless --no-init-db is set and --certbot is not.
@@ -24,21 +27,25 @@ EOF
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,no-init-db,no-dist-upgrade,no-overwrite-settings,self-signed-cert,certbot,postgres-missing-dictionaries,remote-postgres,hostname:,email:,cacert: -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgres-missing-dictionaries,remote-postgres,no-init-db,no-overwrite-settings,no-dist-upgrade -n "$0" -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
         --help) usage; exit 0;;
-        --self-signed-cert) SELF_SIGNED_CERT=1; shift;;
-        --cacert) export CUSTOM_CA_CERTIFICATES="$2"; shift; shift;;
-        --certbot) USE_CERTBOT=1; shift;;
+
         --hostname) EXTERNAL_HOST="$2"; shift; shift;;
         --email) ZULIP_ADMINISTRATOR="$2"; shift; shift;;
-        --no-overwrite-settings) NO_OVERWRITE_SETTINGS=1; shift;;
-        --no-init-db) NO_INIT_DB=1; shift;;
-        --no-dist-upgrade) NO_DIST_UPGRADE=1; shift;;
+
+        --certbot) USE_CERTBOT=1; shift;;
+        --cacert) export CUSTOM_CA_CERTIFICATES="$2"; shift; shift;;
+        --self-signed-cert) SELF_SIGNED_CERT=1; shift;;
+
         --postgres-missing-dictionaries) POSTGRES_MISSING_DICTIONARIES=1; shift;;
         --remote-postgres) REMOTE_POSTGRES=1; shift;;
+        --no-init-db) NO_INIT_DB=1; shift;;
+
+        --no-overwrite-settings) NO_OVERWRITE_SETTINGS=1; shift;;
+        --no-dist-upgrade) NO_DIST_UPGRADE=1; shift;;
         --) shift; break;;
     esac
 done
