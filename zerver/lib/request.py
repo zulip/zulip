@@ -394,7 +394,18 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
                 except Exception:
                     raise JsonableError(_('Argument "{}" is not valid JSON.').format(post_var_name))
 
-                error = param.validator(post_var_name, val)
+                # TODO: set these up when has_request_variables
+                #       is called, rather than every time
+                if param.validator.__name__ == 'auto':
+                    # TODO: break circular deps so we can move this to
+                    #       the top with other imports
+                    from zerver.lib.validator import build_auto_validator
+                    var_type = type_hints[func_var_name]
+                    validator = build_auto_validator(var_type)
+                else:
+                    validator = param.validator
+
+                error = validator(post_var_name, val)
                 if error:
                     raise JsonableError(error)
 

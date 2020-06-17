@@ -65,6 +65,7 @@ from zerver.lib.streams import (
 )
 from zerver.lib.topic import get_topic_history_for_stream, messages_for_topic
 from zerver.lib.validator import (
+    auto,
     check_bool,
     check_capped_string,
     check_color,
@@ -149,7 +150,7 @@ def deactivate_stream_backend(request: HttpRequest,
 @has_request_variables
 def add_default_stream(request: HttpRequest,
                        user_profile: UserProfile,
-                       stream_id: int=REQ(validator=check_int)) -> HttpResponse:
+                       stream_id: int=REQ(validator=auto)) -> HttpResponse:
     (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
     do_add_default_stream(stream)
     return json_success()
@@ -158,7 +159,7 @@ def add_default_stream(request: HttpRequest,
 @has_request_variables
 def create_default_stream_group(request: HttpRequest, user_profile: UserProfile,
                                 group_name: str=REQ(), description: str=REQ(),
-                                stream_names: List[str]=REQ(validator=check_list(check_string))) -> None:
+                                stream_names: List[str]=REQ(validator=auto)) -> None:
     streams = []
     for stream_name in stream_names:
         (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
@@ -169,8 +170,8 @@ def create_default_stream_group(request: HttpRequest, user_profile: UserProfile,
 @require_realm_admin
 @has_request_variables
 def update_default_stream_group_info(request: HttpRequest, user_profile: UserProfile, group_id: int,
-                                     new_group_name: Optional[str]=REQ(validator=check_string, default=None),
-                                     new_description: Optional[str]=REQ(validator=check_string,
+                                     new_group_name: Optional[str]=REQ(validator=auto, default=None),
+                                     new_description: Optional[str]=REQ(validator=auto,
                                                                         default=None)) -> None:
     if not new_group_name and not new_description:
         return json_error(_('You must pass "new_description" or "new_group_name".'))
@@ -187,7 +188,7 @@ def update_default_stream_group_info(request: HttpRequest, user_profile: UserPro
 def update_default_stream_group_streams(request: HttpRequest, user_profile: UserProfile,
                                         group_id: int, op: str=REQ(),
                                         stream_names: List[str]=REQ(
-                                            validator=check_list(check_string))) -> None:
+                                            validator=auto)) -> None:
     group = access_default_stream_group_by_id(user_profile.realm, group_id)
     streams = []
     for stream_name in stream_names:
@@ -285,7 +286,7 @@ def update_stream_backend(
 def list_subscriptions_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    include_subscribers: bool=REQ(validator=check_bool, default=False),
+    include_subscribers: bool=REQ(validator=auto, default=False),
 ) -> HttpResponse:
     subscribed, _ = gather_subscriptions(
         user_profile, include_subscribers=include_subscribers,
@@ -401,16 +402,16 @@ def add_subscriptions_backend(
                     ('description', check_capped_string(Stream.MAX_DESCRIPTION_LENGTH)),
                 ]),
             )),
-        invite_only: bool=REQ(validator=check_bool, default=False),
+        invite_only: bool=REQ(validator=auto, default=False),
         stream_post_policy: int=REQ(validator=check_int_in(
             Stream.STREAM_POST_POLICY_TYPES), default=Stream.STREAM_POST_POLICY_EVERYONE),
         history_public_to_subscribers: Optional[bool]=REQ(validator=check_bool, default=None),
         message_retention_days: Union[str, int]=REQ(validator=check_string_or_int,
                                                     default="realm_default"),
-        announce: bool=REQ(validator=check_bool, default=False),
+        announce: bool=REQ(validator=auto, default=False),
         principals: Union[Sequence[str], Sequence[int]]=REQ(validator=check_union([
             check_list(check_string), check_list(check_int)]), default=[]),
-        authorization_errors_fatal: bool=REQ(validator=check_bool, default=True),
+        authorization_errors_fatal: bool=REQ(validator=auto, default=True),
 ) -> HttpResponse:
     stream_dicts = []
     color_map = {}
@@ -577,11 +578,11 @@ def get_subscribers_backend(request: HttpRequest, user_profile: UserProfile,
 @has_request_variables
 def get_streams_backend(
         request: HttpRequest, user_profile: UserProfile,
-        include_public: bool=REQ(validator=check_bool, default=True),
-        include_subscribed: bool=REQ(validator=check_bool, default=True),
-        include_all_active: bool=REQ(validator=check_bool, default=False),
-        include_default: bool=REQ(validator=check_bool, default=False),
-        include_owner_subscribed: bool=REQ(validator=check_bool, default=False),
+        include_public: bool=REQ(validator=auto, default=True),
+        include_subscribed: bool=REQ(validator=auto, default=True),
+        include_all_active: bool=REQ(validator=auto, default=False),
+        include_default: bool=REQ(validator=auto, default=False),
+        include_owner_subscribed: bool=REQ(validator=auto, default=False),
 ) -> HttpResponse:
 
     streams = do_get_streams(user_profile, include_public=include_public,
@@ -627,7 +628,7 @@ def delete_in_topic(request: HttpRequest, user_profile: UserProfile,
 @authenticated_json_post_view
 @has_request_variables
 def json_stream_exists(request: HttpRequest, user_profile: UserProfile, stream_name: str=REQ("stream"),
-                       autosubscribe: bool=REQ(validator=check_bool, default=False)) -> HttpResponse:
+                       autosubscribe: bool=REQ(validator=auto, default=False)) -> HttpResponse:
     check_stream_name(stream_name)
 
     try:
@@ -658,7 +659,7 @@ def json_get_stream_id(request: HttpRequest,
 @has_request_variables
 def update_subscriptions_property(request: HttpRequest,
                                   user_profile: UserProfile,
-                                  stream_id: int=REQ(validator=check_int),
+                                  stream_id: int=REQ(validator=auto),
                                   property: str=REQ(),
                                   value: str=REQ()) -> HttpResponse:
     subscription_data = [{"property": property,

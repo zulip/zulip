@@ -514,3 +514,36 @@ def validate_the_validator(func: FuncT, mypy_type: Any) -> None:
             raise AssertionError('unknown validator')
 
         check(func.type_structure, mypy_type)  # type: ignore[attr-defined] # type_structure
+
+def debug(var_name: str, val: object) -> Optional[str]:
+    # TODO: Remove!
+    print('auto', var_name, val)
+    return None
+
+def auto(var_name: str, val: object) -> Optional[str]:
+    # This is a hack for mypy.  The `auto` function is used
+    # to signify to REQ that we want to use the result
+    # of build_auto_validator for validation.
+    raise Exception('REQ did not detect auto.')
+
+def build_auto_validator(type_info: Any) -> Validator:
+    if type_info == bool:
+        return check_bool
+    if type_info == int:
+        return check_int
+    if type_info == str:
+        return check_string
+    if type_info == float:
+        return check_float
+
+    if type_info.__origin__ is Union:
+        args = type_info.__args__
+        assert len(args) == 2
+        assert args[1].__name__ == 'NoneType'
+        return build_auto_validator(args[0])
+
+    if type_info.__origin__ is List:
+        args = type_info.__args__
+        assert len(args) == 1
+        return check_list(build_auto_validator(args[0]))
+    return debug
