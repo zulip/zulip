@@ -93,6 +93,7 @@ exports.initialize = function () {
             if (page_params.search_pills_enabled) {
                 search_pill.append_search_string(search_string,
                                                  search_pill_widget.widget);
+                return search_query_box.val();
             }
             return exports.narrow_or_search_for_term(search_string);
         },
