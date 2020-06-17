@@ -756,11 +756,14 @@ class ZulipTestCase(TestCase):
     # Subscribe to a stream by making an API request
     def common_subscribe_to_streams(self, user: UserProfile, streams: Iterable[str],
                                     extra_post_data: Dict[str, Any]={}, invite_only: bool=False,
+                                    allow_fail: bool=False,
                                     **kwargs: Any) -> HttpResponse:
         post_data = {'subscriptions': ujson.dumps([{"name": stream} for stream in streams]),
                      'invite_only': ujson.dumps(invite_only)}
         post_data.update(extra_post_data)
         result = self.api_post(user, "/api/v1/users/me/subscriptions", post_data, **kwargs)
+        if not allow_fail:
+            self.assert_json_success(result)
         return result
 
     def check_user_subscribed_only_to_streams(self, user_name: str,
