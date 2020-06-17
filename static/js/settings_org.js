@@ -956,10 +956,10 @@ exports.build_page = function () {
         }
         if (icon) {
             url = '/json/realm/icon';
-            spinner = $('#icon-spinner-background');
-            upload_text =  $('#realm_icon_upload');
-            delete_button = $('#realm_icon_delete_button');
-            error_field = $("#realm_icon_file_input_error");
+            spinner = $('#realm-icon-upload-widget .upload-spinner-background');
+            upload_text =  $('#realm-icon-upload-widget .settings-page-upload-text');
+            delete_button = $('#realm-icon-upload-widget .settings-page-delete-button');
+            error_field = $("#realm-icon-upload-widget .image_file_input_error");
         } else {
             if (night) {
                 error_field = $("#night-logo-section .realm-logo-file-input-error");

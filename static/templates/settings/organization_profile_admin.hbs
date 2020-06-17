@@ -27,31 +27,12 @@
 
         <div>{{t "Organization profile picture" }}</div>
         <div class="realm-icon-section">
-            <div class="inline-block">
-                <div class="avatar-icon-logo-settings">
-                    {{#if is_admin}}
-                    <div id="realm_icon_upload_button">
-                        <div class="settings-page-image-background"></div>
-                        <span id="realm_icon_delete_button" class="settings-page-delete-button" aria-label="{{t 'Delete organization icon'}}" role="button" tabindex="0">
-                            &times;
-                        </span>
-                        <span id="realm_icon_delete" class="settings-page-delete-text" aria-label="{{t 'Delete organization icon'}}" tabindex="0">
-                            {{t 'Delete icon' }}
-                        </span>
-                        <span id="realm_icon_upload" class="settings-page-upload-text" aria-label="{{t 'Upload organization icon'}}" role="button" tabindex="0">
-                            {{t 'Upload icon' }}
-                        </span>
-                        <span id="icon-spinner-background" class="upload-spinner-background">
-                            <object id="realm-icon-spinner" type="image/svg+xml" data="/static/images/tail-spin.svg"></object>
-                        </span>
-                    </div>
-                    {{/if}}
-                    <img id="realm-icon-block" src="{{ realm_icon_url }}"/>
-                    <input type="file" name="realm_icon_file_input" class="notvisible"
-                      id="realm_icon_file_input" value="{{t 'Upload profile picture' }}"/>
-                </div>
-                <div id="realm_icon_file_input_error" class="text-error m-t-10"></div>
-            </div>
+            {{> image_upload_widget
+              widget = "realm-icon"
+              upload_text = "Upload icon"
+              delete_text = "Delete icon"
+              is_editable_by_current_user = is_admin
+              image = realm_icon_url }}
         </div>
         <a href="/login/?preview=true" target="_blank" class="button rounded sea-green w-200 block" id="id_org_profile_preview">
             {{t 'Preview organization profile' }}
