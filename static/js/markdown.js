@@ -300,15 +300,17 @@ function handleTimestamp(time) {
         // JavaScript dates are in milliseconds, Unix timestamps are in seconds
         timeobject = moment(time * 1000);
     }
-    const istimevalid = !(timeobject === null || !timeobject.isValid());
 
-    // Generate HTML
-    let timestring = '<span class="timestamp"';
-    if (istimevalid) {
-        timestring += ' data-timestamp="' + timeobject.unix() + '"';
+    const escaped_time = _.escape(time);
+    if (timeobject === null || !timeobject.isValid()) {
+        // Unsupported time format: rerender accordingly.
+        return `<span class="timestamp-error">Invalid time format: ${escaped_time}</span>`;
     }
-    timestring += '>' + _.escape(time) + '</span>';
-    return timestring;
+
+    // Use html5 <time> tag for valid timestamps.
+    // render time without milliseconds.
+    const escaped_isotime = _.escape(timeobject.toISOString().split('.')[0] + 'Z');
+    return `<time datetime="${escaped_isotime}">${escaped_time}</time>`;
 }
 
 function handleStream(stream_name) {

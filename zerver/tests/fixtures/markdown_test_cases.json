@@ -743,34 +743,34 @@
     {
       "name": "timestamp_bugdown_only",
       "input": "!time(Jun 5th 2017, 10:30PM)",
-      "expected_output": "<p><span class=\"timestamp\" data-timestamp=\"1496701800\">Jun 5th 2017, 10:30PM</span></p>",
-      "marked_expected_output": "<p><span class=\"timestamp\">Jun 5th 2017, 10:30PM</span></p>"
+      "expected_output": "<p><time datetime=\"2017-06-05T22:30:00Z\">Jun 5th 2017, 10:30PM</time></p>",
+      "marked_expected_output": "<p><span class=\"timestamp-error\">Invalid time format: Jun 5th 2017, 10:30PM</span></p>"
     },
     {
       "name": "timestamp_bugdown_and_marked",
       "input": "!time(31 Dec 2017)",
-      "expected_output": "<p><span class=\"timestamp\" data-timestamp=\"1514678400\">31 Dec 2017</span></p>"
+      "expected_output": "<p><time datetime=\"2017-12-31T00:00:00Z\">31 Dec 2017</time></p>"
     },
     {
       "name": "timestamp_invalid_input",
       "input": "!time(<alert(1)>)",
-      "expected_output": "<p><span class=\"timestamp\">&lt;alert(1</span>&gt;)</p>"
+      "expected_output": "<p><span class=\"timestamp-error\">Invalid time format: &lt;alert(1</span>&gt;)</p>"
     },
     {
       "name": "timestamp_timezone",
       "input": "!time(31 Dec 2017 5:30 am IST)",
-      "expected_output": "<p><span class=\"timestamp\" data-timestamp=\"1514678400\">31 Dec 2017 5:30 am IST</span></p>",
-      "marked_expected_output": "<p><span class=\"timestamp\">31 Dec 2017 5:30 am IST</span></p>"
+      "expected_output": "<p><time datetime=\"2017-12-31T00:00:00Z\">31 Dec 2017 5:30 am IST</time></p>",
+      "marked_expected_output": "<p><span class=\"timestamp-error\">Invalid time format: 31 Dec 2017 5:30 am IST</span></p>"
     },
     {
       "name": "timestamp_incorrect",
-      "input": "!time(hello world)",
-      "expected_output": "<p><span class=\"timestamp\">hello world</span></p>"
+      "input": "!time(**hello world**)",
+      "expected_output": "<p><span class=\"timestamp-error\">Invalid time format: **hello world**</span></p>"
     },
     {
       "name": "timestamp_unix",
       "input": "!time(1496701800)",
-      "expected_output": "<p><span class=\"timestamp\" data-timestamp=\"1496701800\">1496701800</span></p>"
+      "expected_output": "<p><time datetime=\"2017-06-05T22:30:00Z\">1496701800</time></p>"
     },
     {
       "name": "tex_inline",

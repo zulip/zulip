@@ -33,6 +33,7 @@ import ahocorasick
 import dateutil.parser
 import dateutil.tz
 import markdown
+import pytz
 import requests
 from django.conf import settings
 from django.db.models import Q
@@ -1229,23 +1230,34 @@ def possible_avatar_emails(content: str) -> Set[str]:
 
 class Timestamp(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
-        span = Element('span')
-        span.set('class', 'timestamp')
+        time_input_string = match.group('time')
         timestamp = None
         try:
-            timestamp = dateutil.parser.parse(match.group('time'), tzinfos=get_common_timezones())
+            timestamp = dateutil.parser.parse(time_input_string, tzinfos=get_common_timezones())
         except ValueError:
             try:
-                timestamp = datetime.fromtimestamp(float(match.group('time')))
+                timestamp = datetime.fromtimestamp(float(time_input_string))
             except ValueError:
                 pass
-        if timestamp:
-            if timestamp.tzinfo:
-                timestamp = timestamp - timestamp.utcoffset()
-            span.set('data-timestamp', timestamp.strftime("%s"))
-        # Set text to initial input, so even if parsing fails, the data remains intact.
-        span.text = markdown.util.AtomicString(match.group('time'))
-        return span
+
+        if not timestamp:
+            error_element = Element('span')  # Assume we did not find a match.
+            error_element.set('class', 'timestamp-error')
+            error_element.text = markdown.util.AtomicString(
+                f"Invalid time format: {time_input_string}")
+            return error_element
+
+        # Use HTML5 <time> element for valid timestamps.
+        time_element = Element('time')
+        if timestamp.tzinfo:
+            timestamp = timestamp.astimezone(pytz.utc)
+        else:
+            timestamp = pytz.utc.localize(timestamp)
+        time_element.set('datetime', timestamp.isoformat().replace('+00:00', 'Z'))
+        # Set text to initial input, so simple clients translating
+        # HTML to text will at least display something.
+        time_element.text = markdown.util.AtomicString(time_input_string)
+        return time_element
 
 # All of our emojis(non ZWJ sequences) belong to one of these unicode blocks:
 # \U0001f100-\U0001f1ff - Enclosed Alphanumeric Supplement
