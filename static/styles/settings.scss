@@ -1222,6 +1222,25 @@ input[type=checkbox] {
     }
 }
 
+#realm-icon-upload-widget {
+    .settings-page-delete-text {
+        top: 40px;
+        right: 18px;
+    }
+
+    .settings-page-upload-text {
+        top: 40px;
+        right: 18px;
+    }
+
+    .image_upload_spinner {
+        width: 40px;
+        height: 40px;
+        top: 30%;
+        right: 30%;
+    }
+}
+
 .avatar-icon-logo-settings {
     position: relative;
     border-radius: 5px;
@@ -1229,11 +1248,6 @@ input[type=checkbox] {
 
 
     transition: all 0.3s ease;
-
-    #realm-icon-block {
-        background-size: 100%;
-        height: 100%;
-    }
 
     .image-block {
         background-size: 100%;
@@ -1288,11 +1302,6 @@ input[type=checkbox] {
         z-index: 99;
     }
 
-    #realm_icon_delete {
-        top: 40px;
-        right: 18px;
-    }
-
     .realm_logo_delete {
         top: 17px;
         right: 80px;
@@ -1305,11 +1314,6 @@ input[type=checkbox] {
         position: absolute;
         z-index: 99;
         visibility: hidden;
-    }
-
-    #realm_icon_upload {
-        top: 40px;
-        right: 18px;
     }
 
     .realm_logo_upload {
@@ -1337,19 +1341,6 @@ input[type=checkbox] {
         position: absolute;
         z-index: 99;
         display: block;
-    }
-
-    #realm-icon-spinner {
-        position: absolute;
-        z-index: 99;
-        display: block;
-    }
-
-    #realm-icon-spinner {
-        width: 40px;
-        height: 40px;
-        top: 30%;
-        right: 30%;
     }
 
     .upload-logo-spinner {
