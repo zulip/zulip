@@ -402,7 +402,7 @@ EOF
     "$ZULIP_PATH"/scripts/setup/configure-rabbitmq
 fi
 
-if [ "$has_postgres" = 0 ]; then
+if [ "$has_postgres" = 0 ] && [ -z "$NO_INIT_DB" ]; then
     "$ZULIP_PATH"/scripts/setup/postgres-init-db
 fi
 
