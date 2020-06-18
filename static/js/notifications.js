@@ -387,16 +387,23 @@ function process_notification(notification) {
             msg_count: msg_count,
             message_id: message.id,
         });
-        notification_object.addEventListener("click", () => {
-            notification_object.close();
-            if (message.type !== "test-notification") {
-                narrow.by_topic(message.id, {trigger: 'notification'});
-            }
-            window.focus();
-        });
-        notification_object.addEventListener("close", () => {
-            notice_memory.delete(key);
-        });
+
+        if (_.isFunction(notification_object.addEventListener)) {
+            // Sadly, some third-party Electron apps like Franz/Ferdi
+            // misimplement the Notification API not inheriting from
+            // EventTarget.  This results in addEventListener being
+            // unavailable for them.
+            notification_object.addEventListener("click", () => {
+                notification_object.close();
+                if (message.type !== "test-notification") {
+                    narrow.by_topic(message.id, {trigger: 'notification'});
+                }
+                window.focus();
+            });
+            notification_object.addEventListener("close", () => {
+                notice_memory.delete(key);
+            });
+        }
     } else {
         in_browser_notify(message, title, content, raw_operators, opts);
     }
