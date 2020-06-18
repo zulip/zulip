@@ -284,6 +284,7 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
 
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        used_params = set()
         for param in post_params:
             func_var_name = param.func_var_name
             if param.path_only:
@@ -329,6 +330,7 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
                     assert req_var is not None
                     raise RequestConfusingParmsError(post_var_name, req_var)
                 post_var_name = req_var
+                used_params.add(post_var_name)
 
             if post_var_name is None:
                 post_var_name = param.post_var_name
@@ -366,6 +368,18 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
                     raise JsonableError(error.message)
 
             kwargs[func_var_name] = val
+
+        request._unsupported_params = []
+
+        if hasattr(request, 'method'):
+            req_params = set()
+            if request.method == 'POST':
+                req_params = set(request.POST.keys())
+            elif request.method == 'GET':
+                req_params = set(request.GET.keys())
+
+            if len(req_params) > 0:
+                request._unsupported_params = list(req_params - used_params)
 
         return view_func(request, *args, **kwargs)
 
