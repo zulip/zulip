@@ -51,6 +51,7 @@ def resolve_conflicts(conflicts: List[str], files_list: List[str]) -> None:
 
 if __name__ == '__main__':
 
+    MIGRATIONS_TO_SKIP = {'0209', '0261'}
     while True:
         conflicts: List[str] = []
         stack: List[str] = []
@@ -61,11 +62,12 @@ if __name__ == '__main__':
             migration_number = file[0:4]
             counter = file_index.count(migration_number)
 
-            # There are 2 migrations 0209 because of a security
-            # release requiring a migration.
-            if counter > 1 and file[0:4] not in stack and migration_number != "0209":
-                conflicts += [file_name for file_name in files_list if file_name.startswith(migration_number)]
-                stack.append(migration_number)
+            if counter > 1 and file[0:4] not in stack:
+                # There are two pairs of migrations with the same number
+                # because of security releases requiring a migration.
+                if migration_number not in MIGRATIONS_TO_SKIP:
+                    conflicts += [file_name for file_name in files_list if file_name.startswith(migration_number)]
+                    stack.append(migration_number)
 
         if len(conflicts) > 0:
             resolve_conflicts(conflicts, files_list)
