@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 2.2
 
+**Feature level 16**
+
+* [`GET /users/me`]: Removed `pointer` from the response, as the
+  "pointer" concept is being removed in Zulip.
+
 **Feature level 15**
 
 * Added [spoilers](/help/format-your-message-using-markdown#spoilers)
