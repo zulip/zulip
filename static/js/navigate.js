@@ -128,13 +128,17 @@ exports.scroll_to_selected = function () {
     }
 };
 
+let scroll_to_selected_planned = false;
+exports.plan_scroll_to_selected = function () {
+    scroll_to_selected_planned = true;
+};
 
 exports.maybe_scroll_to_selected = function () {
-    // If we have been previously instructed to re-center to the
-    // selected message, then do so
-    if (pointer.recenter_pointer_on_display) {
+    // If we have made a plan to scroll to the selected message but
+    // deferred doing so, do so here.
+    if (scroll_to_selected_planned) {
         exports.scroll_to_selected();
-        pointer.set_recenter_pointer_on_display(false);
+        scroll_to_selected_planned = false;
     }
 };
 

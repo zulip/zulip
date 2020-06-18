@@ -1,11 +1,6 @@
 // See https://zulip.readthedocs.io/en/latest/subsystems/pointer.html for notes on
 // how this system is designed.
 
-exports.recenter_pointer_on_display = false;
-exports.set_recenter_pointer_on_display = function (value) {
-    exports.recenter_pointer_on_display = value;
-};
-
 exports.initialize = function initialize() {
     $(document).on('message_selected.zulip', function (event) {
         if (event.id === -1) {
