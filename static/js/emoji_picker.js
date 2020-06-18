@@ -390,6 +390,8 @@ exports.navigate = function (event_name) {
         return;
     }
 
+    const $emoji_map = $(".emoji-popover-emoji-map");
+
     const selected_emoji = get_rendered_emoji(current_section, current_index);
     const is_filter_focused = $('.emoji-popover-filter').is(':focus');
     let next_section = 0;
@@ -402,7 +404,7 @@ exports.navigate = function (event_name) {
            is_cursor_at_end && event_name === "right_arrow") {
             selected_emoji.focus();
             if (current_section === 0 && current_index < 6) {
-                ui.get_scroll_element($(".emoji-popover-emoji-map")).scrollTop(0);
+                ui.get_scroll_element($emoji_map).scrollTop(0);
             }
             update_emoji_showcase(selected_emoji);
             return true;
@@ -424,7 +426,7 @@ exports.navigate = function (event_name) {
             // consistent (cursor goes to the end of the filter
             // string).
             $('.emoji-popover-filter').focus().caret(Infinity);
-            ui.get_scroll_element($(".emoji-popover-emoji-map")).scrollTop(0);
+            ui.get_scroll_element($emoji_map).scrollTop(0);
             ui.get_scroll_element($(".emoji-search-results-container")).scrollTop(0);
             current_section = 0;
             current_index = 0;
@@ -464,7 +466,6 @@ exports.navigate = function (event_name) {
             break;
         }
 
-        const $emoji_map = $(".emoji-popover-emoji-map");
         return maybe_change_focused_emoji($emoji_map, next_coord.section, next_coord.index);
     }
     return false;
