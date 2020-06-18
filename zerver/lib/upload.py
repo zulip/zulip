@@ -281,14 +281,12 @@ def get_bucket(session: Session, bucket_name: str) -> ServiceResource:
     return bucket
 
 def upload_image_to_s3(
-        bucket_name: str,
+        # See https://github.com/python/typeshed/issues/2706
+        bucket: ServiceResource,
         file_name: str,
         content_type: Optional[str],
         user_profile: UserProfile,
         contents: bytes) -> None:
-
-    session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
-    bucket = get_bucket(session, bucket_name)
     key = bucket.Object(file_name)
     metadata = {
         "user_profile_id": str(user_profile.id),
@@ -361,8 +359,9 @@ class S3UploadBackend(ZulipUploadBackend):
             self.avatar_bucket.meta.client.meta.endpoint_url).netloc
         self.avatar_bucket_url = f"https://{self.avatar_bucket.name}.{network_location}"
 
-    def delete_file_from_s3(self, path_id: str, bucket_name: str) -> bool:
-        bucket = get_bucket(self.session, bucket_name)
+        self.uploads_bucket = get_bucket(self.session, settings.S3_AUTH_UPLOADS_BUCKET)
+
+    def delete_file_from_s3(self, path_id: str, bucket: ServiceResource) -> bool:
         key = bucket.Object(path_id)
 
         try:
@@ -377,7 +376,6 @@ class S3UploadBackend(ZulipUploadBackend):
     def upload_message_file(self, uploaded_file_name: str, uploaded_file_size: int,
                             content_type: Optional[str], file_data: bytes,
                             user_profile: UserProfile, target_realm: Optional[Realm]=None) -> str:
-        bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
         if target_realm is None:
             target_realm = user_profile.realm
         s3_file_name = "/".join([
@@ -388,7 +386,7 @@ class S3UploadBackend(ZulipUploadBackend):
         url = f"/user_uploads/{s3_file_name}"
 
         upload_image_to_s3(
-            bucket_name,
+            self.uploads_bucket,
             s3_file_name,
             content_type,
             user_profile,
@@ -399,14 +397,12 @@ class S3UploadBackend(ZulipUploadBackend):
         return url
 
     def delete_message_image(self, path_id: str) -> bool:
-        return self.delete_file_from_s3(path_id, settings.S3_AUTH_UPLOADS_BUCKET)
+        return self.delete_file_from_s3(path_id, self.uploads_bucket)
 
     def write_avatar_images(self, s3_file_name: str, target_user_profile: UserProfile,
                             image_data: bytes, content_type: Optional[str]) -> None:
-        bucket_name = settings.S3_AVATAR_BUCKET
-
         upload_image_to_s3(
-            bucket_name,
+            self.avatar_bucket,
             s3_file_name + ".original",
             content_type,
             target_user_profile,
@@ -416,7 +412,7 @@ class S3UploadBackend(ZulipUploadBackend):
         # custom 500px wide version
         resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
         upload_image_to_s3(
-            bucket_name,
+            self.avatar_bucket,
             s3_file_name + "-medium.png",
             "image/png",
             target_user_profile,
@@ -425,7 +421,7 @@ class S3UploadBackend(ZulipUploadBackend):
 
         resized_data = resize_avatar(image_data)
         upload_image_to_s3(
-            bucket_name,
+            self.avatar_bucket,
             s3_file_name,
             'image/png',
             target_user_profile,
@@ -448,18 +444,15 @@ class S3UploadBackend(ZulipUploadBackend):
 
     def delete_avatar_image(self, user: UserProfile) -> None:
         path_id = user_avatar_path(user)
-        bucket_name = settings.S3_AVATAR_BUCKET
 
-        self.delete_file_from_s3(path_id + ".original", bucket_name)
-        self.delete_file_from_s3(path_id + "-medium.png", bucket_name)
-        self.delete_file_from_s3(path_id, bucket_name)
+        self.delete_file_from_s3(path_id + ".original", self.avatar_bucket)
+        self.delete_file_from_s3(path_id + "-medium.png", self.avatar_bucket)
+        self.delete_file_from_s3(path_id, self.avatar_bucket)
 
     def get_avatar_key(self, file_name: str) -> ServiceResource:
         # See https://github.com/python/typeshed/issues/2706
         # for why this return type is a `ServiceResource`.
-        bucket = get_bucket(self.session, settings.S3_AVATAR_BUCKET)
-
-        key = bucket.Object(file_name)
+        key = self.avatar_bucket.Object(file_name)
         return key
 
     def copy_avatar(self, source_profile: UserProfile, target_profile: UserProfile) -> None:
@@ -486,12 +479,11 @@ class S3UploadBackend(ZulipUploadBackend):
 
     def upload_realm_icon_image(self, icon_file: File, user_profile: UserProfile) -> None:
         content_type = guess_type(icon_file.name)[0]
-        bucket_name = settings.S3_AVATAR_BUCKET
         s3_file_name = os.path.join(self.realm_avatar_and_logo_path(user_profile.realm), 'icon')
 
         image_data = icon_file.read()
         upload_image_to_s3(
-            bucket_name,
+            self.avatar_bucket,
             s3_file_name + ".original",
             content_type,
             user_profile,
@@ -500,7 +492,7 @@ class S3UploadBackend(ZulipUploadBackend):
 
         resized_data = resize_avatar(image_data)
         upload_image_to_s3(
-            bucket_name,
+            self.avatar_bucket,
             s3_file_name + ".png",
             'image/png',
             user_profile,
@@ -516,7 +508,6 @@ class S3UploadBackend(ZulipUploadBackend):
     def upload_realm_logo_image(self, logo_file: File, user_profile: UserProfile,
                                 night: bool) -> None:
         content_type = guess_type(logo_file.name)[0]
-        bucket_name = settings.S3_AVATAR_BUCKET
         if night:
             basename = 'night_logo'
         else:
@@ -525,7 +516,7 @@ class S3UploadBackend(ZulipUploadBackend):
 
         image_data = logo_file.read()
         upload_image_to_s3(
-            bucket_name,
+            self.avatar_bucket,
             s3_file_name + ".original",
             content_type,
             user_profile,
@@ -534,7 +525,7 @@ class S3UploadBackend(ZulipUploadBackend):
 
         resized_data = resize_logo(image_data)
         upload_image_to_s3(
-            bucket_name,
+            self.avatar_bucket,
             s3_file_name + ".png",
             'image/png',
             user_profile,
@@ -555,14 +546,12 @@ class S3UploadBackend(ZulipUploadBackend):
         file_path = user_avatar_path(user_profile)
         s3_file_name = file_path
 
-        bucket_name = settings.S3_AVATAR_BUCKET
-        bucket = get_bucket(self.session, bucket_name)
-        key = bucket.Object(file_path + ".original")
+        key = self.avatar_bucket.Object(file_path + ".original")
         image_data = key.get()['Body'].read()
 
         resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
         upload_image_to_s3(
-            bucket_name,
+            self.avatar_bucket,
             s3_file_name + "-medium.png",
             "image/png",
             user_profile,
@@ -575,14 +564,12 @@ class S3UploadBackend(ZulipUploadBackend):
         # Also TODO: Migrate to user_avatar_path(user_profile) + ".png".
         s3_file_name = file_path
 
-        bucket_name = settings.S3_AVATAR_BUCKET
-        bucket = get_bucket(self.session, bucket_name)
-        key = bucket.Object(file_path + ".original")
+        key = self.avatar_bucket.Object(file_path + ".original")
         image_data = key.get()['Body'].read()
 
         resized_avatar = resize_avatar(image_data)
         upload_image_to_s3(
-            bucket_name,
+            self.avatar_bucket,
             s3_file_name,
             "image/png",
             user_profile,
@@ -592,7 +579,6 @@ class S3UploadBackend(ZulipUploadBackend):
     def upload_emoji_image(self, emoji_file: File, emoji_file_name: str,
                            user_profile: UserProfile) -> None:
         content_type = guess_type(emoji_file.name)[0]
-        bucket_name = settings.S3_AVATAR_BUCKET
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=user_profile.realm_id,
             emoji_file_name=emoji_file_name,
@@ -601,14 +587,14 @@ class S3UploadBackend(ZulipUploadBackend):
         image_data = emoji_file.read()
         resized_image_data = resize_emoji(image_data)
         upload_image_to_s3(
-            bucket_name,
+            self.avatar_bucket,
             ".".join((emoji_path, "original")),
             content_type,
             user_profile,
             image_data,
         )
         upload_image_to_s3(
-            bucket_name,
+            self.avatar_bucket,
             emoji_path,
             content_type,
             user_profile,
@@ -625,11 +611,9 @@ class S3UploadBackend(ZulipUploadBackend):
             sys.stdout.write('.')
             sys.stdout.flush()
 
-        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
         # We use the avatar bucket, because it's world-readable.
-        bucket = get_bucket(session, settings.S3_AVATAR_BUCKET)
-        key = bucket.Object(os.path.join("exports", generate_random_token(32),
-                                         os.path.basename(tarball_path)))
+        key = self.avatar_bucket.Object(os.path.join("exports", generate_random_token(32),
+                                                     os.path.basename(tarball_path)))
 
         key.upload_file(tarball_path, Callback=percent_callback)
 
@@ -639,7 +623,7 @@ class S3UploadBackend(ZulipUploadBackend):
         public_url = session.create_client('s3', config=config).generate_presigned_url(
             'get_object',
             Params={
-                'Bucket': bucket.name,
+                'Bucket': self.avatar_bucket.name,
                 'Key': key.key,
             },
             ExpiresIn=0,
@@ -647,7 +631,7 @@ class S3UploadBackend(ZulipUploadBackend):
         return public_url
 
     def delete_export_tarball(self, path_id: str) -> Optional[str]:
-        if self.delete_file_from_s3(path_id, settings.S3_AVATAR_BUCKET):
+        if self.delete_file_from_s3(path_id, self.avatar_bucket):
             return path_id
         return None
 
