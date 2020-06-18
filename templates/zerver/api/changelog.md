@@ -14,6 +14,9 @@ below features are supported.
 
 * [`GET /users/me`]: Removed `pointer` from the response, as the
   "pointer" concept is being removed in Zulip.
+* Changed the rendered HTML markup for mentioning a time to use the
+  `<time>` HTML tag.  It is OK for clients to ignore the previous time
+  mention markup, as the feature was not advertised before this change.
 
 **Feature level 15**
 
