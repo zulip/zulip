@@ -31,10 +31,12 @@ exports.update_is_muted = function (sub, value) {
             }
         }
 
-        // In case we added messages to what's visible in the home view, we need to re-scroll to
-        // make sure the pointer is still visible. We don't want the auto-scroll handler to move
-        // our pointer to the old scroll location before we have a chance to update it.
-        pointer.set_recenter_pointer_on_display(true);
+        // In case we added messages to what's visible in the home
+        // view, we need to re-scroll to make sure the pointer is
+        // still visible. We don't want the auto-scroll handler to
+        // move our pointer to the old scroll location before we have
+        // a chance to update it.
+        navigate.plan_scroll_to_selected();
         message_scroll.suppress_selection_update_on_next_scroll();
 
         if (!home_msg_list.empty()) {
