@@ -23,7 +23,7 @@ More examples and documentation can be found [here](https://github.com/zulip/zul
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
 {generate_api_arguments_table|zulip.yaml|/users:post}
 

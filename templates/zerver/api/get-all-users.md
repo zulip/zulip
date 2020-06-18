@@ -41,9 +41,9 @@ You may pass the `client_gravatar` query parameter as follows:
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
-**Note**: The following arguments are all URL query parameters.
+**Note**: The following parameters are all URL query parameters.
 
 {generate_api_arguments_table|zulip.yaml|/users:get}
 

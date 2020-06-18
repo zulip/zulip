@@ -32,9 +32,9 @@ zulip(config).then((client) => {
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
-**Note**: The following arguments are all URL query parameters.
+**Note**: The following parameters are all URL query parameters.
 
 {generate_api_arguments_table|zulip.yaml|/get_stream_id:get}
 

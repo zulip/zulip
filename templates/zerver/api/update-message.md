@@ -45,7 +45,7 @@ You only have permission to edit a message if:
 2. This is a topic-only edit for a (no topic) message, **OR**:
 3. This is a topic-only edit and you are an admin.
 
-## Arguments
+## Parameters
 
 {generate_api_arguments_table|zulip.yaml|/messages/{message_id}:patch}
 

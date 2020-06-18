@@ -2426,7 +2426,7 @@ paths:
 
         If any of the specified streams do not exist, they are automatically
         created, and configured using the `invite_only` setting specified in
-        the arguments (see below).
+        the parameters (see below).
       parameters:
       - name: subscriptions
         in: query
@@ -2438,7 +2438,7 @@ paths:
           appropriate value.
 
 
-          **Note**: This argument is called `streams` and not `subscriptions`
+          **Note**: This parameter is called `streams` and not `subscriptions`
           in our Python API."
         schema:
           type: array
@@ -2661,7 +2661,7 @@ paths:
       - name: subscriptions
         in: query
         description: |
-          A list of stream names to unsubscribe from. This argument is called
+          A list of stream names to unsubscribe from. This parameter is called
           `streams` in our Python API.
         schema:
           type: array
@@ -3210,10 +3210,10 @@ paths:
       - name: fetch_event_types
         in: query
         description: |
-          Same as the `event_types` argument except that the values in
+          Same as the `event_types` parameter except that the values in
           `fetch_event_types` are used to fetch initial data. If
           `fetch_event_types` is not provided, `event_types` is used and if
-          `event_types` is not provided, this argument defaults to `None`.
+          `event_types` is not provided, this parameter defaults to `None`.
         schema:
           type: array
           items:
@@ -4276,7 +4276,7 @@ paths:
                     }
   /real-time:
     # This entry is a hack; it exists to give us a place to put the text
-    # documenting the arguments for call_on_each_event and friends.
+    # documenting the parameters for call_on_each_event and friends.
     post:
       tags: ["real_time_events"]
       description: |
@@ -4676,7 +4676,7 @@ components:
           var_name:
             type: string
             description: |
-              It contains the information about the missing argument.
+              It contains the information about the missing parameter.
       - example:
           {
               "code": "REQUEST_VARIABLE_MISSING",
@@ -4721,7 +4721,7 @@ components:
           * **realm_user** (changes to users in the organization and
             their properties, such as their name).
 
-        If you do not specify this argument, you will receive all
+        If you do not specify this parameter, you will receive all
         events, and have to filter out the events not relevant to
         your client in your client code.  For most applications, one
         is only interested in messages, so one specifies:
@@ -4928,7 +4928,7 @@ components:
       description: |
         A list of user ids (preferred) or Zulip display email
         addresses of the users to be subscribed to or unsubscribed
-        from the streams specified in the `subscriptions` argument. If
+        from the streams specified in the `subscriptions` parameter. If
         not provided, then the requesting user/bot is subscribed.
 
         **Changes**: The integer format is new in Zulip 2.2 (Feature level 9).

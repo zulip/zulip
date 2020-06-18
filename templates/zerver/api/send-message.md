@@ -62,12 +62,12 @@ zulip-send --stream Denmark --subject Castle \
     --user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
 ```
 
-You can omit the `user` and `api-key` arguments if you have a `~/.zuliprc`
+You can omit the `user` and `api-key` parameters if you have a `~/.zuliprc`
 file.
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
 {generate_api_arguments_table|zulip.yaml|/messages:post}
 
