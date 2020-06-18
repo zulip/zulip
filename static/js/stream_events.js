@@ -104,7 +104,7 @@ exports.mark_subscribed = function (sub, subscribers, color) {
     // need its unread counts re-calculated
     message_util.do_unread_count_updates(message_list.all.all_messages());
 
-    $(document).trigger($.Event('subscription_add_done.zulip', {sub: sub}));
+    stream_list.add_sidebar_row(sub);
 };
 
 exports.mark_unsubscribed = function (sub) {
@@ -126,7 +126,7 @@ exports.mark_unsubscribed = function (sub) {
         current_msg_list.update_trailing_bookend();
     }
 
-    $(document).trigger($.Event('subscription_remove_done.zulip', {sub: sub}));
+    stream_list.remove_sidebar_row(sub.stream_id);
 };
 
 exports.remove_deactivated_user_from_all_streams = function (user_id) {
