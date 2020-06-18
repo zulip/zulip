@@ -48,6 +48,7 @@ from zerver.lib.response import json_error, json_success, json_unauthorized
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.types import ViewFuncT
+from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.utils import has_api_key_format, statsd
 from zerver.models import Realm, UserProfile, get_client, get_user_profile_by_api_key
 
@@ -136,8 +137,6 @@ def require_billing_access(func: ViewFuncT) -> ViewFuncT:
             raise JsonableError(_("Must be a billing administrator or an organization administrator"))
         return func(request, user_profile, *args, **kwargs)
     return wrapper  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
-
-from zerver.lib.user_agent import parse_user_agent
 
 
 def get_client_name(request: HttpRequest) -> str:

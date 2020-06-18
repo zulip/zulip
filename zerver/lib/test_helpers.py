@@ -1,3 +1,8 @@
+import collections
+import os
+import re
+import sys
+import time
 from contextlib import contextmanager
 from typing import (
     IO,
@@ -15,14 +20,19 @@ from typing import (
     TypeVar,
     Union,
 )
+from unittest import mock
 
 import boto3
+import fakeldap
+import ldap
+import ujson
 from boto3.resources.base import ServiceResource
 from django.conf import settings
 from django.db.migrations.state import StateApps
 from django.http import HttpResponse, HttpResponseRedirect
 from django.test import override_settings
 from django.urls import URLResolver
+from moto import mock_s3
 
 import zerver.lib.upload
 from zerver.lib import cache
@@ -49,19 +59,7 @@ from zproject.backends import ExternalAuthDataDict, ExternalAuthResult
 
 if TYPE_CHECKING:
     # Avoid an import cycle; we only need these for type annotations.
-    from zerver.lib.test_classes import ZulipTestCase, MigrationsTestCase
-
-import collections
-import os
-import re
-import sys
-import time
-from unittest import mock
-
-import fakeldap
-import ldap
-import ujson
-from moto import mock_s3
+    from zerver.lib.test_classes import MigrationsTestCase, ZulipTestCase
 
 
 class MockLDAP(fakeldap.MockLDAP):

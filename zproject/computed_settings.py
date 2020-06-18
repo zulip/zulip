@@ -5,6 +5,8 @@ from copy import deepcopy
 from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urljoin
 
+from django.template.loaders import app_directories
+
 import zerver.lib.logging_util
 from zerver.lib.db import TimeTrackingConnection
 
@@ -161,8 +163,6 @@ ALLOWED_HOSTS += [EXTERNAL_HOST.split(":")[0],
                   '.' + EXTERNAL_HOST.split(":")[0]]
 # ... and with the hosts in REALM_HOSTS.
 ALLOWED_HOSTS += REALM_HOSTS.values()
-
-from django.template.loaders import app_directories
 
 
 class TwoFactorLoader(app_directories.Loader):
