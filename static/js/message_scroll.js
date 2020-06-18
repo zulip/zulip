@@ -44,7 +44,7 @@ exports.hide_indicators = function () {
 exports.show_history_limit_notice = function () {
     $(".top-messages-logo").hide();
     $(".history-limited-box").show();
-    exports.hide_empty_narrow_message();
+    narrow.hide_empty_narrow_message();
 };
 
 exports.hide_history_limit_notice = function () {
