@@ -91,7 +91,15 @@ exports.initialize = function () {
             if (page_params.search_pills_enabled) {
                 search_pill.append_search_string(search_string,
                                                  search_pill_widget.widget);
-                return search_query_box.val();
+                if (search_query_box.is(':focus')) {
+                    // We usually allow the user to continue
+                    // typing until the enter key is pressed.
+                    // But we narrow when the user clicks on a
+                    // typeahead suggestion. This change in behaviour
+                    // is a workaround to be able to display the
+                    // navbar every time search_query_box loses focus.
+                    return search_query_box.val();
+                }
             }
             return exports.narrow_or_search_for_term(search_string);
         },
@@ -167,25 +175,17 @@ exports.initialize = function () {
         // selecting something in the typeahead menu causes
         // the box to lose focus a moment before.
         //
-        // The workaround is to check 100ms later -- long
+        // The workaround is to check 300ms later -- long
         // enough for the search to have gone through, but
         // short enough that the user won't notice (though
         // really it would be OK if they did).
 
         setTimeout(function () {
             exports.update_button_visibility();
-        }, 100);
-    });
-
-    if (page_params.search_pills_enabled) {
-        // Uses jquery instead of pure css as the `:focus` event occurs on `#search_query`,
-        // while we want to add box-shadow to `#searchbox`. This could have been done
-        // with `:focus-within` CSS selector, but it is not supported in IE or Opera.
-        searchbox.on('focusout', function () {
             tab_bar.close_search_bar_and_open_narrow_description();
             searchbox.css({"box-shadow": "unset"});
-        });
-    }
+        }, 300);
+    });
 };
 
 exports.focus_search = function () {
