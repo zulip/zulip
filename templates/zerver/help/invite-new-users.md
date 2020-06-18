@@ -12,7 +12,7 @@ the article below describes each in more detail.
 * Share a **reusable invitation link**.
 
 The last two, invite-based, techniques also allow you to control the
-[role (admin, member, or guest)](/help/roles-and-permissions) that the
+[role (owner, admin, member, or guest)](/help/roles-and-permissions) that the
 invited people will have.
 
 You can also manage access by
@@ -134,7 +134,8 @@ restrict invites to admins only.
 ## Manage pending invitations
 
 Organization administrators can revoke or resend any invitation or reusable
-invitation link.
+invitation link. Only organization owners can revoke or resend owner invitaiton
+or reusable owner invitation link.
 
 {start_tabs}
 

@@ -942,6 +942,26 @@ class InviteUserTest(InviteUserBase):
             inviter.email,
         )
 
+    def test_successful_invite_user_as_owner_from_owner_account(self) -> None:
+        self.login('desdemona')
+        invitee = self.nonreg_email('alice')
+        result = self.invite(invitee, ["Denmark"],
+                             invite_as=PreregistrationUser.INVITE_AS['REALM_OWNER'])
+        self.assert_json_success(result)
+        self.assertTrue(find_key_by_email(invitee))
+
+        self.submit_reg_form_for_user(invitee, "password")
+        invitee_profile = self.nonreg_user('alice')
+        self.assertTrue(invitee_profile.is_realm_owner)
+        self.assertFalse(invitee_profile.is_guest)
+
+    def test_invite_user_as_owner_from_admin_account(self) -> None:
+        self.login('iago')
+        invitee = self.nonreg_email('alice')
+        response = self.invite(invitee, ["Denmark"],
+                               invite_as=PreregistrationUser.INVITE_AS['REALM_OWNER'])
+        self.assert_json_error(response, "Must be an organization owner")
+
     def test_successful_invite_user_as_admin_from_admin_account(self) -> None:
         """
         Test that a new user invited to a stream receives some initial
@@ -957,13 +977,10 @@ class InviteUserTest(InviteUserBase):
         self.submit_reg_form_for_user(invitee, "password")
         invitee_profile = self.nonreg_user('alice')
         self.assertTrue(invitee_profile.is_realm_admin)
+        self.assertFalse(invitee_profile.is_realm_owner)
         self.assertFalse(invitee_profile.is_guest)
 
     def test_invite_user_as_admin_from_normal_account(self) -> None:
-        """
-        Test that a new user invited to a stream receives some initial
-        history but only from public streams.
-        """
         self.login('hamlet')
         invitee = self.nonreg_email('alice')
         response = self.invite(invitee, ["Denmark"],
@@ -1721,6 +1738,26 @@ class InvitationsTestCase(InviteUserBase):
                           lambda: ScheduledEmail.objects.get(address__iexact=invitee,
                                                              type=ScheduledEmail.INVITATION_REMINDER))
 
+    def test_delete_owner_invitation(self) -> None:
+        self.login('desdemona')
+        owner = self.example_user('desdemona')
+
+        invitee = "DeleteMe@zulip.com"
+        self.assert_json_success(self.invite(invitee, ['Denmark'],
+                                 invite_as=PreregistrationUser.INVITE_AS['REALM_OWNER']))
+        prereg_user = PreregistrationUser.objects.get(email=invitee)
+        result = self.api_delete(self.example_user('iago'),
+                                 '/api/v1/invites/' + str(prereg_user.id))
+        self.assert_json_error(result, "Must be an organization owner")
+
+        result = self.api_delete(owner, '/api/v1/invites/' + str(prereg_user.id))
+        self.assert_json_success(result)
+        result = self.api_delete(owner, '/api/v1/invites/' + str(prereg_user.id))
+        self.assert_json_error(result,  "No such invitation")
+        self.assertRaises(ScheduledEmail.DoesNotExist,
+                          lambda: ScheduledEmail.objects.get(address__iexact=invitee,
+                                                             type=ScheduledEmail.INVITATION_REMINDER))
+
     def test_delete_multiuse_invite(self) -> None:
         """
         A DELETE call to /json/invites/multiuse<ID> should delete the
@@ -1737,6 +1774,18 @@ class InvitationsTestCase(InviteUserBase):
         # Test that trying to double-delete fails
         error_result = self.client_delete('/json/invites/multiuse/' + str(multiuse_invite.id))
         self.assert_json_error(error_result, "No such invitation")
+
+        # Test deleting owner mutiuse_invite.
+        multiuse_invite = MultiuseInvite.objects.create(referred_by=self.example_user("desdemona"), realm=zulip_realm,
+                                                        invited_as=PreregistrationUser.INVITE_AS['REALM_OWNER'])
+        create_confirmation_link(multiuse_invite, Confirmation.MULTIUSE_INVITE)
+        error_result = self.client_delete('/json/invites/multiuse/' + str(multiuse_invite.id))
+        self.assert_json_error(error_result, 'Must be an organization owner')
+
+        self.login('desdemona')
+        result = self.client_delete('/json/invites/multiuse/' + str(multiuse_invite.id))
+        self.assert_json_success(result)
+        self.assertIsNone(MultiuseInvite.objects.filter(id=multiuse_invite.id).first())
 
         # Test deleting multiuse invite from another realm
         mit_realm = get_realm("zephyr")
@@ -1832,6 +1881,36 @@ class InvitationsTestCase(InviteUserBase):
         prereg_user = PreregistrationUser.objects.get(email=invitee)
         error_result = self.client_post('/json/invites/' + str(prereg_user.id) + '/resend')
         self.assert_json_error(error_result, "Must be an organization administrator")
+
+    def test_resend_owner_invitation(self) -> None:
+        self.login("desdemona")
+
+        invitee = "resend_owner@zulip.com"
+        self.assert_json_success(self.invite(invitee, ['Denmark'],
+                                             invite_as=PreregistrationUser.INVITE_AS['REALM_OWNER']))
+        self.check_sent_emails([invitee], custom_from_name="Zulip")
+        scheduledemail_filter = ScheduledEmail.objects.filter(
+            address__iexact=invitee, type=ScheduledEmail.INVITATION_REMINDER)
+        self.assertEqual(scheduledemail_filter.count(), 1)
+        original_timestamp = scheduledemail_filter.values_list('scheduled_timestamp', flat=True)
+
+        # Test only organization owners can resend owner invitation.
+        self.login('iago')
+        prereg_user = PreregistrationUser.objects.get(email=invitee)
+        error_result = self.client_post('/json/invites/' + str(prereg_user.id) + '/resend')
+        self.assert_json_error(error_result, "Must be an organization owner")
+
+        self.login('desdemona')
+        result = self.client_post('/json/invites/' + str(prereg_user.id) + '/resend')
+        self.assert_json_success(result)
+
+        self.assertEqual(ScheduledEmail.objects.filter(
+            address__iexact=invitee, type=ScheduledEmail.INVITATION_REMINDER).count(), 1)
+
+        # Check that we have exactly one scheduled email, and that it is different
+        self.assertEqual(scheduledemail_filter.count(), 1)
+        self.assertNotEqual(original_timestamp,
+                            scheduledemail_filter.values_list('scheduled_timestamp', flat=True))
 
     def test_accessing_invites_in_another_realm(self) -> None:
         inviter = UserProfile.objects.exclude(realm=get_realm('zulip')).first()
@@ -2041,6 +2120,20 @@ class MultiuseInviteTest(ZulipTestCase):
         self.login('hamlet')
         result = self.client_post('/json/invites/multiuse')
         self.assert_json_error(result, "Must be an organization administrator")
+
+    def test_multiuse_link_for_inviting_as_owner(self) -> None:
+        self.login('iago')
+        result = self.client_post('/json/invites/multiuse',
+                                  {"invite_as": ujson.dumps(PreregistrationUser.INVITE_AS['REALM_OWNER'])})
+        self.assert_json_error(result, "Must be an organization owner")
+
+        self.login('desdemona')
+        result = self.client_post('/json/invites/multiuse',
+                                  {"invite_as": ujson.dumps(PreregistrationUser.INVITE_AS['REALM_OWNER'])})
+        self.assert_json_success(result)
+
+        invite_link = result.json()["invite_link"]
+        self.check_user_able_to_register(self.nonreg_email("test"), invite_link)
 
     def test_create_multiuse_link_invalid_stream_api_call(self) -> None:
         self.login('iago')
