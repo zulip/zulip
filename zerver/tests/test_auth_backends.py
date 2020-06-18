@@ -2017,25 +2017,6 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.AppleAuthBackend',)):
             self.assertTrue(apple_auth_enabled())
 
-    def test_get_apple_locale(self) -> None:
-        language_locale = [('ar', 'ar_SA'), ('ca', 'ca_ES'), ('cs', 'cs_CZ'),
-                           ('da', 'da_DK'), ('de', 'de_DE'), ('el', 'el_GR'),
-                           ('en', 'en_US'), ('es', 'es_ES'), ('fi', 'fi_FI'),
-                           ('fr', 'fr_FR'), ('hr', 'hr_HR'), ('hu', 'hu_HU'),
-                           ('id', 'id_ID'), ('it', 'it_IT'), ('iw', 'iw_IL'),
-                           ('ja', 'ja_JP'), ('ko', 'ko_KR'), ('ms', 'ms_MY'),
-                           ('nl', 'nl_NL'), ('no', 'no_NO'), ('pl', 'pl_PL'),
-                           ('pt', 'pt_PT'), ('ro', 'ro_RO'), ('ru', 'ru_RU'),
-                           ('sk', 'sk_SK'), ('sv', 'sv_SE'), ('th', 'th_TH'),
-                           ('tr', 'tr_TR'), ('uk', 'uk_UA'), ('vi', 'vi_VI'),
-                           ('zh', 'zh_CN')]
-
-        for language_code, locale in language_locale:
-            self.assertEqual(AppleAuthBackend.get_apple_locale(language_code), locale)
-
-        # return 'en_US' if invalid `language_code` is given.
-        self.assertEqual(AppleAuthBackend.get_apple_locale(':)'), 'en_US')
-
     def test_auth_registration_with_no_name_sent_from_apple(self) -> None:
         """
         Apple doesn't send the name in consecutive attempts if user registration

@@ -1548,6 +1548,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
     sort_order = 10
     name = "apple"
     auth_backend_name = "Apple"
+    display_icon = "/static/images/landing-page/logos/apple-icon.png"
 
     # Apple only sends `name` in its response the first time a user
     # tries to sign up, so we won't have it in consecutive attempts.
@@ -1555,28 +1556,6 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
     # so it's appropriate to set full_name_validated here.
     full_name_validated = True
     REDIS_EXPIRATION_SECONDS = 60*10
-
-    @staticmethod
-    def get_apple_locale(django_language_code: str) -> str:
-        '''
-        Get the suitable apple supported locale with language code
-        for the Sign in / Continue with Apple buttons it provides.
-        '''
-        # The following is a list of locale values supported by Apple to send
-        # as params to URL which renders "Sign in with Apple" and "Continue with Apple"
-        # buttons. Gathered from
-        # https://developer.apple.com/documentation/signinwithapplejs/incorporating_sign_in_with_apple_into_other_platforms .
-        supported_locales = ['ar_SA', 'ca_ES', 'cs_CZ', 'da_DK', 'de_DE',
-                             'el_GR', 'en_US', 'es_ES', 'fi_FI', 'fr_FR',
-                             'hr_HR', 'hu_HU', 'id_ID', 'it_IT', 'iw_IL',
-                             'ja_JP', 'ko_KR', 'ms_MY', 'nl_NL', 'no_NO',
-                             'pl_PL', 'pt_PT', 'ro_RO', 'ru_RU', 'sk_SK',
-                             'sv_SE', 'th_TH', 'tr_TR', 'uk_UA', 'vi_VI',
-                             'zh_CN']
-        for locale in supported_locales:
-            if django_language_code in locale:
-                return locale
-        return 'en_US'
 
     def is_native_flow(self) -> bool:
         return self.strategy.request_data().get('native_flow', False)

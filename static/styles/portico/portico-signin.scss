@@ -699,29 +699,6 @@ button.login-social-button {
     }
 }
 
-/*
-Apple is very particular about the appearance of its authentication
-buttons, which means we cannot use our generic label+icon system for
-their authentication backend while complying with their policies.
-
-So here we use the buttons provided by Apple, which include the sign
-in text (Sign in with Apple/Continue with Apple).  To make these
-consistent with other buttons, we request buttons of size 328x50 and
-the following styling sets the appropriate width and height to make it
-fit with other other social authentication buttons.  We also set the
-font size to zero to hide the text our own code in the
-login/registration pages would generate, to avoid extra conditionals
-in the HTML templates.
-*/
-button#login_auth_button_apple,
-button#register_auth_button_apple {
-    width: 328px;
-    height: 50px;
-    background-size: auto 100%;
-    background-position: 0px 100%;
-    font-size: 0px;
-}
-
 #find-account-section {
     text-decoration: none;
     font-weight: 600;
