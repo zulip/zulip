@@ -164,7 +164,7 @@ exports.initialize = function () {
     // more work to re-order everything and make them private.
 
     search_query_box.on('focus', exports.focus_search);
-    search_query_box.on('blur', function () {
+    search_query_box.on('blur', function (e) {
         // The search query box is a visual cue as to
         // whether search or narrowing is active.  If
         // the user blurs the search box, then we should
@@ -180,6 +180,18 @@ exports.initialize = function () {
         // short enough that the user won't notice (though
         // really it would be OK if they did).
 
+        if (page_params.search_pills_enabled) {
+            const pill_id = $(e.relatedTarget).closest(".pill").data('id');
+            const search_pill = search_pill_widget.widget.getByID(pill_id);
+            if (search_pill) {
+                // The searchbox loses focus while the search
+                // pill element gains focus.
+                // We do not consider the searchbox to actually
+                // lose focus when a pill inside it gets selected
+                // or deleted by a click.
+                return;
+            }
+        }
         setTimeout(function () {
             exports.update_button_visibility();
             tab_bar.close_search_bar_and_open_narrow_description();
