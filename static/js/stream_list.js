@@ -61,6 +61,12 @@ function get_search_term() {
     return search_term;
 }
 
+exports.add_sidebar_row = function (sub) {
+    exports.create_sidebar_row(sub);
+    exports.build_stream_list();
+    exports.stream_cursor.redraw();
+};
+
 exports.remove_sidebar_row = function (stream_id) {
     exports.stream_sidebar.remove_row(stream_id);
     exports.build_stream_list();
@@ -473,17 +479,6 @@ exports.initialize = function () {
 };
 
 exports.set_event_handlers = function () {
-    $(document).on('subscription_add_done.zulip', function (event) {
-        exports.create_sidebar_row(event.sub);
-        exports.build_stream_list();
-        exports.stream_cursor.redraw();
-    });
-
-    $(document).on('subscription_remove_done.zulip', function (event) {
-        exports.remove_sidebar_row(event.sub.stream_id);
-    });
-
-
     $('#stream_filters').on('click', 'li .subscription_block', function (e) {
         if (e.metaKey || e.ctrlKey) {
             return;
