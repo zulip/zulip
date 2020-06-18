@@ -6,8 +6,8 @@ const consts = {
     backfill_batch_size: 1000,
     narrow_before: 50,
     narrow_after: 50,
-    num_before_pointer: 200,
-    num_after_pointer: 200,
+    num_before_home_anchor: 200,
+    num_after_home_anchor: 200,
     backward_batch_size: 100,
     forward_batch_size: 100,
     catch_up_batch_size: 1000,
@@ -408,8 +408,8 @@ exports.initialize = function () {
     }
     exports.load_messages({
         anchor: anchor,
-        num_before: consts.num_before_pointer,
-        num_after: consts.num_after_pointer,
+        num_before: consts.num_before_home_anchor,
+        num_after: consts.num_after_home_anchor,
         msg_list: home_msg_list,
         cont: load_more,
     });
