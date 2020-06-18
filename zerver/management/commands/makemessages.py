@@ -46,6 +46,7 @@ strip_whitespace_left = re.compile(f"\\s+({BLOCK_TAG_START}-\\s*(endtrans|plural
 regexes = [r'{{#tr .*?}}([\s\S]*?){{/tr}}',  # '.' doesn't match '\n' by default
            r'{{\s*t "(.*?)"\W*}}',
            r"{{\s*t '(.*?)'\W*}}",
+           r'\(t "(.*?)"\)',
            r'=\(t "(.*?)"\)(?=[^{]*}})',
            r"=\(t '(.*?)'\)(?=[^{]*}})",
            r"i18n\.t\('([^']*?)'\)",
