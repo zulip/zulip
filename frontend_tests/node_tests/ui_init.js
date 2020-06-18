@@ -107,7 +107,6 @@ zrequire('search_suggestion');
 zrequire('search');
 zrequire('tutorial');
 zrequire('notifications');
-zrequire('pointer');
 zrequire('pm_conversations');
 zrequire('pm_list');
 zrequire('list_cursor');

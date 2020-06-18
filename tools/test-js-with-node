@@ -92,7 +92,6 @@ EXEMPT_FILES = {
     'static/js/page_params.js',
     'static/js/panels.js',
     'static/js/pm_list_dom.js',
-    'static/js/pointer.js',
     'static/js/poll_widget.js',
     'static/js/popovers.js',
     'static/js/ready.js',
