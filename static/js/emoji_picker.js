@@ -704,12 +704,16 @@ exports.register_click_handlers = function () {
     $("body").on("click", ".emoji-popover-tab-item", function (e) {
         e.stopPropagation();
         e.preventDefault();
+
+        const $popover = $(e.currentTarget).closest('.emoji-info-popover').expectOne();
+        const $emoji_map = $popover.find(".emoji-popover-emoji-map");
+
         const offset = section_head_offsets.find(function (o) {
             return o.section === $(this).attr("data-tab-name");
         }.bind(this));
 
         if (offset) {
-            ui.get_scroll_element($(".emoji-popover-emoji-map")).scrollTop(offset.position_y);
+            ui.get_scroll_element($emoji_map).scrollTop(offset.position_y);
         }
     });
 
