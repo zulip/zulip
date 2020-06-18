@@ -1,5 +1,6 @@
 # Zulip's main markdown implementation.  See docs/subsystems/markdown.md for
 # detailed documentation on our markdown syntax.
+import datetime
 import functools
 import html
 import logging
@@ -10,7 +11,6 @@ import urllib
 import urllib.parse
 from collections import defaultdict, deque
 from dataclasses import dataclass
-from datetime import datetime
 from io import StringIO
 from typing import (
     Any,
@@ -1236,7 +1236,7 @@ class Timestamp(markdown.inlinepatterns.Pattern):
             timestamp = dateutil.parser.parse(time_input_string, tzinfos=get_common_timezones())
         except ValueError:
             try:
-                timestamp = datetime.fromtimestamp(float(time_input_string))
+                timestamp = datetime.datetime.fromtimestamp(float(time_input_string))
             except ValueError:
                 pass
 
