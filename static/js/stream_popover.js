@@ -361,7 +361,7 @@ exports.register_stream_handlers = function () {
     // Mark all messages as read
     $('body').on('click', '#mark_all_messages_as_read', function (e) {
         exports.hide_all_messages_popover();
-        pointer.fast_forward_pointer();
+        unread_ops.mark_all_as_read();
         e.stopPropagation();
     });
 

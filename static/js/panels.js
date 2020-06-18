@@ -94,7 +94,7 @@ exports.initialize = function () {
         e.preventDefault();
         $(this).closest(".alert").hide();
         $('.bankruptcy-loader').show();
-        setTimeout(pointer.fast_forward_pointer, 1000);
+        setTimeout(unread_ops.mark_all_as_read, 1000);
         resize_app();
     });
 

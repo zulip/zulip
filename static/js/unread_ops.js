@@ -1,11 +1,19 @@
-exports.mark_all_as_read = function (cont) {
+exports.mark_all_as_read = function () {
     unread.declare_bankruptcy();
     unread_ui.update_unread_counts();
 
     channel.post({
         url: '/json/mark_all_as_read',
         idempotent: true,
-        success: cont});
+        success: () => {
+            // After marking all messages as read, we reload the browser.
+            // This is useful to avoid leaving ourselves deep in the past.
+            reload.initiate({immediate: true,
+                             save_pointer: false,
+                             save_narrow: true,
+                             save_compose: true});
+        },
+    });
 };
 
 function process_newly_read_message(message, options) {

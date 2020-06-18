@@ -51,37 +51,6 @@ exports.send_pointer_update = function () {
     }
 };
 
-function unconditionally_send_pointer_update() {
-    if (pointer_update_in_flight) {
-        // Keep trying.
-        const deferred = $.Deferred();
-
-        setTimeout(function () {
-            deferred.resolve(unconditionally_send_pointer_update());
-        }, 100);
-        return deferred;
-    }
-    return update_pointer();
-}
-
-exports.fast_forward_pointer = function () {
-    channel.get({
-        url: '/json/users/me',
-        idempotent: true,
-        success: function (data) {
-            unread_ops.mark_all_as_read(function () {
-                exports.furthest_read = data.max_message_id;
-                unconditionally_send_pointer_update().then(function () {
-                    reload.initiate({immediate: true,
-                                     save_pointer: false,
-                                     save_narrow: true,
-                                     save_compose: true});
-                });
-            });
-        },
-    });
-};
-
 exports.initialize = function initialize() {
     exports.server_furthest_read = page_params.pointer;
     exports.furthest_read = exports.server_furthest_read;
