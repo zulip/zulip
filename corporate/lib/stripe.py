@@ -241,6 +241,7 @@ def do_replace_payment_source(user: UserProfile, stripe_token: str,
 
 # event_time should roughly be timezone_now(). Not designed to handle
 # event_times in the past or future
+@transaction.atomic
 def make_end_of_cycle_updates_if_needed(plan: CustomerPlan,
                                         event_time: datetime) -> Tuple[Optional[CustomerPlan], Optional[LicenseLedger]]:
     last_ledger_entry = LicenseLedger.objects.filter(plan=plan).order_by('-id').first()
