@@ -110,7 +110,6 @@ import "../info_overlay.js";
 import "../ui.js";
 import "../night_mode.js";
 import "../ui_util.js";
-import "../pointer.js";
 import "../click_handlers.js";
 import "../settings_panel_menu.js";
 import "../settings_toggle.js";

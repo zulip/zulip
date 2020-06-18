@@ -471,7 +471,6 @@ exports.initialize_everything = function () {
     settings_sections.initialize();
     settings_toggle.initialize();
     hashchange.initialize();
-    pointer.initialize();
     unread_ui.initialize();
     presence.initialize(presence_params);
     activity.initialize();
