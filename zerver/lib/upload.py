@@ -32,14 +32,7 @@ from PIL.Image import DecompressionBombError
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.utils import generate_random_token
-from zerver.models import (
-    Attachment,
-    Message,
-    Realm,
-    RealmEmoji,
-    UserProfile,
-    get_user_profile_by_id,
-)
+from zerver.models import Attachment, Message, Realm, RealmEmoji, UserProfile
 
 DEFAULT_AVATAR_SIZE = 100
 MEDIUM_AVATAR_SIZE = 500
@@ -338,17 +331,6 @@ def get_signed_upload_url(path: str) -> str:
                                              'Key': path},
                                          ExpiresIn=SIGNED_UPLOAD_URL_DURATION,
                                          HttpMethod='GET')
-
-def get_realm_for_filename(path: str) -> Optional[int]:
-    session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
-    bucket = get_bucket(session, settings.S3_AUTH_UPLOADS_BUCKET)
-    key = bucket.Object(path)
-
-    try:
-        user_profile_id = key.metadata['user_profile_id']
-    except botocore.exceptions.ClientError:
-        return None
-    return get_user_profile_by_id(user_profile_id).realm_id
 
 class S3UploadBackend(ZulipUploadBackend):
     def __init__(self) -> None:

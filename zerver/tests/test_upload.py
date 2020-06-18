@@ -53,7 +53,6 @@ from zerver.lib.upload import (
     delete_export_tarball,
     delete_message_image,
     exif_rotate,
-    get_realm_for_filename,
     resize_avatar,
     resize_emoji,
     sanitize_name,
@@ -1787,19 +1786,6 @@ class S3Test(ZulipTestCase):
             bucket.Object(avatar_original_image_path_id).load()
         with self.assertRaises(botocore.exceptions.ClientError):
             bucket.Object(avatar_medium_path_id).load()
-
-    @use_s3_backend
-    def test_get_realm_for_filename(self) -> None:
-        create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
-
-        user_profile = self.example_user('hamlet')
-        uri = upload_message_file('dummy.txt', len(b'zulip!'), 'text/plain', b'zulip!', user_profile)
-        path_id = re.sub('/user_uploads/', '', uri)
-        self.assertEqual(user_profile.realm_id, get_realm_for_filename(path_id))
-
-    @use_s3_backend
-    def test_get_realm_for_filename_when_key_doesnt_exist(self) -> None:
-        self.assertIsNone(get_realm_for_filename('non-existent-file-path'))
 
     @use_s3_backend
     def test_upload_realm_icon_image(self) -> None:
