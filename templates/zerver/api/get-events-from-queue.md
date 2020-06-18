@@ -18,7 +18,7 @@ client = zulip.Client(config_file="~/zuliprc")
 
 # If you already have a queue registered and thus, have a queue_id
 # on hand, you may use client.get_events() and pass in the above
-# arguments, like so:
+# parameters, like so:
 print(client.get_events(
     queue_id="1515010080:4",
     last_event_id=-1
@@ -63,13 +63,13 @@ zulip(config).then((client) => {
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
 {generate_api_arguments_table|zulip.yaml|/events:get}
 
-**Note**: The arguments documented above are optional in the sense that
+**Note**: The parameters documented above are optional in the sense that
 even if you haven't registered a queue by explicitly requesting the
-`{{ api_url}}/v1/register` endpoint, you could pass the arguments for
+`{{ api_url}}/v1/register` endpoint, you could pass the parameters for
 [the `{{ api_url}}/v1/register` endpoint](/api/register-queue) to this
 endpoint and a queue would be registered in the absence of a `queue_id`.
 

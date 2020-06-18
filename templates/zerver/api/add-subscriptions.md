@@ -32,7 +32,7 @@ zulip(config).then((client) => {
     client.users.me.subscriptions.add(meParams).then(console.log);
 
     // To subscribe another user to a stream, you may pass in
-    // the `principals` argument, like so:
+    // the `principals` parameter, like so:
     const anotherUserParams = {
         subscriptions: JSON.stringify([
             {'name': 'Verona'},
@@ -49,13 +49,13 @@ zulip(config).then((client) => {
 {generate_code_example(curl, include=["subscriptions"])|/users/me/subscriptions:post|example}
 
 To subscribe another user to a stream, you may pass in
-the `principals` argument, like so:
+the `principals` parameter, like so:
 
 {generate_code_example(curl, include=["subscriptions", "principals"])|/users/me/subscriptions:post|example}
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
 {generate_api_arguments_table|zulip.yaml|/users/me/subscriptions:post}
 

@@ -132,7 +132,7 @@ Response: stream: followup topic: foo_sender@zulip.com
 
 ```
 
-Note that the `-b` (aka `--bot-config-file`) argument is for an optional third party
+Note that the `-b` (aka `--bot-config-file`) parameter is for an optional third party
 config file (e.g. ~/giphy.conf), which only applies to certain types of bots.
 
 ## Bot API
@@ -157,7 +157,7 @@ explicit recipient).
 
 is called to retrieve information about the bot.
 
-#### Arguments
+#### Parameters
 
 * self - the instance the method is called on.
 
@@ -184,7 +184,7 @@ def usage(self):
 
 handles user message.
 
-#### Arguments
+#### Parameters
 
 * self - the instance the method is called on.
 
@@ -220,7 +220,7 @@ will send a message as the bot user.  Generally, this is less
 convenient than *send_reply*, but it offers additional flexibility
 about where the message is sent to.
 
-#### Arguments
+#### Parameters
 
 * message - a dictionary describing the message to be sent by the bot
 
@@ -242,7 +242,7 @@ bot_handler.send_message(dict(
 will reply to the triggering message to the same place the original
 message was sent to, with the content of the reply being *response*.
 
-#### Arguments
+#### Parameters
 
 * message - Dictionary containing information on message to respond to
  (provided by `handle_message`).
@@ -254,7 +254,7 @@ message was sent to, with the content of the reply being *response*.
 
 will edit the content of a previously sent message.
 
-#### Arguments
+#### Parameters
 
 * message - dictionary defining what message to edit and the new content
 
@@ -297,7 +297,7 @@ automatically.
 
 will store the value `value` in the entry `key`.
 
-##### Arguments
+##### Parameters
 
 * key - a UTF-8 string
 * value - a UTF-8 string
@@ -314,7 +314,7 @@ bot_handler.storage.put("foo", "bar")  # set entry "foo" to "bar"
 
 will retrieve the value for the entry `key`.
 
-###### Arguments
+###### Parameters
 
 * key - a UTF-8 string
 
@@ -331,7 +331,7 @@ print(bot_handler.storage.get("foo"))  # print "bar"
 
 will check if the entry `key` exists.
 
-##### Arguments
+##### Parameters
 
 * key - a UTF-8 string
 

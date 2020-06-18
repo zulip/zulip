@@ -15,7 +15,7 @@
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
 {generate_api_arguments_table|zulip.yaml|/users/{user_id}/subscriptions/{stream_id}:get}
 

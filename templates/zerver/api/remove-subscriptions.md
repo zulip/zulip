@@ -40,7 +40,7 @@ zulip(config).then((client) => {
 
 {generate_code_example(curl, include=["subscriptions"])|/users/me/subscriptions:delete|example}
 
-You may specify the `principals` argument like so:
+You may specify the `principals` parameter like so:
 
 {generate_code_example(curl)|/users/me/subscriptions:delete|example}
 
@@ -49,7 +49,7 @@ administrative privileges.
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
 {generate_api_arguments_table|zulip.yaml|/users/me/subscriptions:delete}
 

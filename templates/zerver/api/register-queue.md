@@ -32,7 +32,7 @@ browser reloading the Zulip webapp when your laptop comes back online
 after being offline for more than 10 minutes).
 
 When prototyping with this API, we recommend first calling `register`
-with no `event_types` argument to see all the available data from all
+with no `event_types` parameter to see all the available data from all
 supported event types.  Before using your client in production, you
 should set appropriate `event_types` and `fetch_event_types` filters
 so that your client only requests the data it needs.  A few minutes
@@ -79,7 +79,7 @@ zulip(config).then((client) => {
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
 {generate_api_arguments_table|zulip.yaml|/register:post}
 

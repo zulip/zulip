@@ -38,7 +38,7 @@ You may pass the `include_subscribers` query parameter as follows:
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
 {generate_api_arguments_table|zulip.yaml|/users/me/subscriptions:get}
 

@@ -15,7 +15,7 @@
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
 {generate_api_arguments_table|zulip.yaml|/mark_all_as_read:post}
 
@@ -47,7 +47,7 @@ Mark all the unread messages in a stream as read.
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
 {generate_api_arguments_table|zulip.yaml|/mark_stream_as_read:post}
 
@@ -79,7 +79,7 @@ Mark all the unread messages in a topic as read.
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
 {generate_api_arguments_table|zulip.yaml|/mark_topic_as_read:post}
 

@@ -23,9 +23,9 @@ A typical failed JSON response for when the API key is invalid:
 
 {generate_code_example|/rest-error-handling:post|fixture(400_0)}
 
-## Missing request argument(s)
+## Missing request parameter(s)
 
-A typical failed JSON response for when a required request argument
+A typical failed JSON response for when a required request parameter
 is not supplied:
 
 {generate_code_example|/rest-error-handling:post|fixture(400_1)}

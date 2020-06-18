@@ -33,9 +33,9 @@ zulip(config).then((client) => {
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
-This endpoint takes no arguments.
+This endpoint takes no parameters.
 
 ## Response
 

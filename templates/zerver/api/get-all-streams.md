@@ -38,9 +38,9 @@ as URL query parameters, like so:
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
-**Note**: The following arguments are all URL query parameters.
+**Note**: The following parameters are all URL query parameters.
 
 {generate_api_arguments_table|zulip.yaml|/streams:get}
 
