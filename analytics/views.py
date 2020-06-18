@@ -57,11 +57,6 @@ from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain_from_hostname
 from zerver.lib.timestamp import convert_to_UTC, timestamp_to_datetime
 from zerver.lib.validator import to_non_negative_int
-from zerver.views.invite import get_invitee_emails_set
-
-if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import attach_discount_to_realm, get_discount_for_realm
-
 from zerver.models import (
     Client,
     MultiuseInvite,
@@ -72,6 +67,10 @@ from zerver.models import (
     UserProfile,
     get_realm,
 )
+from zerver.views.invite import get_invitee_emails_set
+
+if settings.BILLING_ENABLED:
+    from corporate.lib.stripe import attach_discount_to_realm, get_discount_for_realm
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteInstallationCount, RemoteRealmCount, RemoteZulipServer

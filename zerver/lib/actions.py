@@ -1,3 +1,11 @@
+import datetime
+import itertools
+import logging
+import os
+import platform
+import time
+from collections import defaultdict
+from operator import itemgetter
 from typing import (
     AbstractSet,
     Any,
@@ -16,6 +24,7 @@ from typing import (
 )
 
 import django.db.utils
+import ujson
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -225,18 +234,7 @@ from zerver.models import (
 from zerver.tornado.event_queue import send_event
 
 if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import update_license_ledger_if_needed, downgrade_now
-
-import datetime
-import itertools
-import logging
-import os
-import platform
-import time
-from collections import defaultdict
-from operator import itemgetter
-
-import ujson
+    from corporate.lib.stripe import downgrade_now, update_license_ledger_if_needed
 
 # This will be used to type annotate parameters in a function if the function
 # works on both str and unicode in python 2 but in python 3 it only works on str.

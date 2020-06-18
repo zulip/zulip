@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import argparse
+import io
 import os
 import sys
 
@@ -13,9 +15,6 @@ os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
 import django
 
 django.setup()
-
-import argparse
-import io
 
 import cairosvg
 from PIL import Image
