@@ -1,5 +1,13 @@
 let actively_scrolling = false;
 
+// Tracks whether the next scroll that will complete is initiated by
+// code, not the user, and thus should avoid moving the selected
+// message.
+let update_selection_on_next_scroll = true;
+exports.suppress_selection_update_on_next_scroll = function () {
+    update_selection_on_next_scroll = false;
+};
+
 let loading_older_messages_indicator_showing = false;
 let loading_newer_messages_indicator_showing = false;
 exports.show_loading_older = function () {
@@ -111,10 +119,10 @@ exports.scroll_finished = function () {
         return;
     }
 
-    if (!pointer.suppress_scroll_pointer_update) {
+    if (update_selection_on_next_scroll) {
         message_viewport.keep_pointer_in_view();
     } else {
-        pointer.set_suppress_scroll_pointer_update(false);
+        update_selection_on_next_scroll = true;
     }
 
     floating_recipient_bar.update();
