@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 2.2
 
+**Feature level 20**
+
+* Added support for inviting users as organization owners to the
+  invitation endpoints.
+
 **Feature level 19**
 
 * [`GET /events`](/api/get-events): `subscriptions` event with

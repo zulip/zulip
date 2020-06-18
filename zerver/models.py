@@ -1355,6 +1355,7 @@ class PreregistrationUser(models.Model):
         MEMBER = 1,
         REALM_ADMIN = 2,
         GUEST_USER = 3,
+        REALM_OWNER = 4,
     )
     invited_as: int = models.PositiveSmallIntegerField(default=INVITE_AS['MEMBER'])
 
