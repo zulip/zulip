@@ -33,7 +33,6 @@ import ahocorasick
 import dateutil.parser
 import dateutil.tz
 import markdown
-import pytz
 import requests
 from django.conf import settings
 from django.db.models import Q
@@ -1250,9 +1249,9 @@ class Timestamp(markdown.inlinepatterns.Pattern):
         # Use HTML5 <time> element for valid timestamps.
         time_element = Element('time')
         if timestamp.tzinfo:
-            timestamp = timestamp.astimezone(pytz.utc)
+            timestamp = timestamp.astimezone(datetime.timezone.utc)
         else:
-            timestamp = pytz.utc.localize(timestamp)
+            timestamp = timestamp.replace(tzinfo=datetime.timezone.utc)
         time_element.set('datetime', timestamp.isoformat().replace('+00:00', 'Z'))
         # Set text to initial input, so simple clients translating
         # HTML to text will at least display something.
