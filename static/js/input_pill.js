@@ -372,6 +372,7 @@ exports.create = function (opts) {
         appendValue: funcs.appendPill.bind(funcs),
         appendValidatedData: funcs.appendValidatedData.bind(funcs),
 
+        getByID: funcs.getByID,
         items: funcs.items,
 
         onPillCreate: function (callback) {
