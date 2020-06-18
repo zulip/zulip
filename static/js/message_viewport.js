@@ -123,7 +123,7 @@ exports.set_message_position = function (message_top, message_height, viewport_i
         message_top
         - message_offset;
 
-    pointer.set_suppress_scroll_pointer_update(true); // Gets set to false in the scroll handler.
+    message_scroll.suppress_selection_update_on_next_scroll();
     exports.scrollTop(new_scroll_top);
 };
 
@@ -280,7 +280,7 @@ exports.is_narrow = function () {
 };
 
 exports.system_initiated_animate_scroll = function (scroll_amount) {
-    pointer.set_suppress_scroll_pointer_update(true); // Gets set to false in the scroll handler.
+    message_scroll.suppress_selection_update_on_next_scroll();
     const viewport_offset = exports.scrollTop();
     in_stoppable_autoscroll = true;
     exports.message_pane.animate({
@@ -292,7 +292,7 @@ exports.system_initiated_animate_scroll = function (scroll_amount) {
 };
 
 exports.user_initiated_animate_scroll = function (scroll_amount) {
-    pointer.set_suppress_scroll_pointer_update(true); // Gets set to false in the scroll handler.
+    message_scroll.suppress_selection_update_on_next_scroll();
     in_stoppable_autoscroll = false; // defensive
 
     const viewport_offset = exports.scrollTop();

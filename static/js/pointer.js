@@ -6,13 +6,6 @@ exports.set_recenter_pointer_on_display = function (value) {
     exports.recenter_pointer_on_display = value;
 };
 
-// Toggles re-centering the pointer in the window
-// when All Messages is next clicked by the user
-exports.suppress_scroll_pointer_update = false;
-exports.set_suppress_scroll_pointer_update = function (value) {
-    exports.suppress_scroll_pointer_update = value;
-};
-
 exports.initialize = function initialize() {
     $(document).on('message_selected.zulip', function (event) {
         if (event.id === -1) {
