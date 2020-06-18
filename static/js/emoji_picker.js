@@ -390,7 +390,8 @@ exports.navigate = function (event_name) {
         return;
     }
 
-    const $emoji_map = $(".emoji-popover-emoji-map");
+    const $popover = $(".emoji-popover").expectOne();
+    const $emoji_map = $popover.find(".emoji-popover-emoji-map").expectOne();
 
     const selected_emoji = get_rendered_emoji(current_section, current_index);
     const is_filter_focused = $('.emoji-popover-filter').is(':focus');
