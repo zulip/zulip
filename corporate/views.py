@@ -204,6 +204,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         if last_ledger_entry is not None:
             if new_plan is not None:  # nocoverage
                 plan = new_plan
+            assert(plan is not None)  # for mypy
             plan_name = {
                 CustomerPlan.STANDARD: 'Zulip Standard',
                 CustomerPlan.PLUS: 'Zulip Plus',
