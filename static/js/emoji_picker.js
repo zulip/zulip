@@ -299,7 +299,7 @@ function update_emoji_showcase($focused_emoji) {
     $(".emoji-showcase-container").html(rendered_showcase);
 }
 
-function may_be_change_focused_emoji(next_section, next_index, preserve_scroll) {
+function maybe_change_focused_emoji(next_section, next_index, preserve_scroll) {
     const next_emoji = get_rendered_emoji(next_section, next_index);
     if (next_emoji) {
         current_section = next_section;
@@ -320,14 +320,14 @@ function may_be_change_focused_emoji(next_section, next_index, preserve_scroll) 
     return false;
 }
 
-function may_be_change_active_section(next_section) {
+function maybe_change_active_section(next_section) {
     if (next_section >= 0 && next_section < get_total_sections()) {
         current_section = next_section;
         current_index = 0;
         const offset = section_head_offsets[current_section];
         if (offset) {
             ui.get_scroll_element($(".emoji-popover-emoji-map")).scrollTop(offset.position_y);
-            may_be_change_focused_emoji(current_section, current_index);
+            maybe_change_focused_emoji(current_section, current_index);
         }
     }
 }
@@ -440,11 +440,11 @@ exports.navigate = function (event_name) {
         return true;
     } else if (event_name === 'page_up') {
         next_section = current_section - 1;
-        may_be_change_active_section(next_section);
+        maybe_change_active_section(next_section);
         return true;
     } else if (event_name === 'page_down') {
         next_section = current_section + 1;
-        may_be_change_active_section(next_section);
+        maybe_change_active_section(next_section);
         return true;
     } else if (!is_filter_focused) {
         let next_coord = {};
@@ -462,7 +462,7 @@ exports.navigate = function (event_name) {
             next_coord = get_next_emoji_coordinates(1);
             break;
         }
-        return may_be_change_focused_emoji(next_coord.section, next_coord.index);
+        return maybe_change_focused_emoji(next_coord.section, next_coord.index);
     }
     return false;
 };
@@ -718,7 +718,7 @@ exports.register_click_handlers = function () {
         const emoji_id = $(this).data("emoji-id");
         const emoji_coordinates = get_emoji_coordinates(emoji_id);
 
-        may_be_change_focused_emoji(emoji_coordinates.section, emoji_coordinates.index, true);
+        maybe_change_focused_emoji(emoji_coordinates.section, emoji_coordinates.index, true);
     });
 };
 
