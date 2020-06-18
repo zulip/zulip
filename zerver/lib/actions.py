@@ -4406,7 +4406,9 @@ def do_update_message(user_profile: UserProfile, message: Message,
     * the message's content (in which case the caller will have
       set both content and rendered_content),
     * the topic, in which case the caller will have set topic_name
-    * or both
+    * both content & topic
+    * stream of a topic
+    * both stream & topic of a set of messages
 
     With topic edits, propagate_mode determines whether other message
     also have their topics edited.
@@ -4542,16 +4544,19 @@ def do_update_message(user_profile: UserProfile, message: Message,
             new_stream=new_stream,
         )
         changed_messages += messages_list
+    # Add edit history to all the messages that are effected.
+    # Primary purpose of this was to track the stream of the
+    # messages that were edited.
+    for msg in changed_messages:
+        if msg.edit_history is not None:
+            edit_history = ujson.loads(msg.edit_history)
+            edit_history.insert(0, edit_history_event)
+        else:
+            edit_history = [edit_history_event]
+        msg.edit_history = ujson.dumps(edit_history)
 
-    if message.edit_history is not None:
-        edit_history = ujson.loads(message.edit_history)
-        edit_history.insert(0, edit_history_event)
-    else:
-        edit_history = [edit_history_event]
-    message.edit_history = ujson.dumps(edit_history)
-
-    # This does message.save(update_fields=[...])
-    save_message_for_edit_use_case(message=message)
+        # This does message.save(update_fields=[...])
+        save_message_for_edit_use_case(message=msg)
 
     realm_id: Optional[int] = None
     if stream_being_edited is not None:

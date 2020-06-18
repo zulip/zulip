@@ -751,6 +751,17 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
             # If the cause is a race with the message being deleted,
             # that's normal and we have no need to log an error.
             return
+
+        # We don't log error for a special case: message was moved to a different
+        # stream where user is not present before we were able to send push notifications for it.
+        message = Message.objects.filter(id=missed_message['message_id']).get()
+        if message.is_stream_message() and message.edit_history is not None:
+            edit_history = ujson.loads(message.edit_history)
+            # We only check the last edit event as this is supposed
+            # to be a recent event.
+            if edit_history[0].get('prev_stream') == message.recipient_id:
+                return
+
         logging.error(
             "Unexpected message access failure handling push notifications: %s %s",
             user_profile.id, missed_message['message_id'],

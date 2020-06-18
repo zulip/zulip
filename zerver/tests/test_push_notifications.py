@@ -850,6 +850,42 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_check.assert_not_called()
             mock_logging_error.assert_called_once()
 
+    def test_inaccessible_msg_via_stream_change(self) -> None:
+        """Simulates the race where message is moved to a stream where user is not a subscribed when handling push notifications"""
+        user_profile = self.example_user('iago')
+        notify_user = self.example_user('polonius')
+        self.login('iago')
+
+        stream = self.make_stream('old_stream')
+        self.subscribe(user_profile, stream.name)
+        self.subscribe(notify_user, stream.name)
+        # user to be notified is not subscribed to this stream
+        new_stream = self.make_stream('new_stream')
+
+        msg_id = self.send_stream_message(user_profile, stream.name)
+
+        # Move message to a stream where the user to be notified is not subscribed
+        result = self.client_patch("/json/messages/" + str(msg_id), {
+                    'message_id': msg_id,
+                    'stream_id': new_stream.id,
+                    'propagate_mode': 'change_all'
+                }, subdomain='zulip')
+        self.assert_json_success(result)
+
+        missed_message = {
+            'message_id': msg_id,
+            'trigger': 'stream_push_notify',
+        }
+
+        with mock.patch('zerver.lib.push_notifications.uses_notification_bouncer') as mock_check, \
+                mock.patch('logging.error') as mock_logging_error, \
+                mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value = True) as mock_push_notifications:
+            handle_push_notification(notify_user.id, missed_message)
+            mock_push_notifications.assert_called_once()
+            # Check we didn't proceed through and didn't log anything.
+            mock_check.assert_not_called()
+            mock_logging_error.assert_not_called()
+
     def test_send_notifications_to_bouncer(self) -> None:
         user_profile = self.example_user('hamlet')
         message = self.get_message(Recipient.PERSONAL, type_id=1)
