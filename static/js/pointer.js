@@ -12,69 +12,11 @@ exports.suppress_scroll_pointer_update = false;
 exports.set_suppress_scroll_pointer_update = function (value) {
     exports.suppress_scroll_pointer_update = value;
 };
-exports.furthest_read = -1;
-exports.set_furthest_read = function (value) {
-    exports.furthest_read = value;
-};
-exports.server_furthest_read = -1;
-exports.set_server_furthest_read = function (value) {
-    exports.server_furthest_read = value;
-};
-
-let pointer_update_in_flight = false;
-
-function update_pointer() {
-    if (!pointer_update_in_flight) {
-        pointer_update_in_flight = true;
-        return channel.post({
-            url: '/json/users/me/pointer',
-            idempotent: true,
-            data: {pointer: exports.furthest_read},
-            success: function () {
-                exports.server_furthest_read = exports.furthest_read;
-                pointer_update_in_flight = false;
-            },
-            error: function () {
-                pointer_update_in_flight = false;
-            },
-        });
-    }
-    // Return an empty, resolved Deferred.
-    return $.when();
-}
-
-
-exports.send_pointer_update = function () {
-    // Only bother if you've read new messages.
-    if (exports.furthest_read > exports.server_furthest_read) {
-        update_pointer();
-    }
-};
 
 exports.initialize = function initialize() {
-    exports.server_furthest_read = page_params.pointer;
-    exports.furthest_read = exports.server_furthest_read;
-
-    // We only send pointer updates when the user has been idle for a
-    // short while to avoid hammering the server
-    $(document).idle({idle: 1000,
-                      onIdle: exports.send_pointer_update,
-                      keepTracking: true});
-
     $(document).on('message_selected.zulip', function (event) {
-        // Only advance the pointer when not narrowed
         if (event.id === -1) {
             return;
-        }
-        // Additionally, don't advance the pointer server-side
-        // if the selected message is local-only
-        if (event.msg_list === home_msg_list && page_params.narrow_stream === undefined) {
-            if (event.id > exports.furthest_read) {
-                const msg = home_msg_list.get(event.id);
-                if (!msg.locally_echoed) {
-                    exports.furthest_read = event.id;
-                }
-            }
         }
 
         if (event.mark_read && event.previously_selected !== -1) {
