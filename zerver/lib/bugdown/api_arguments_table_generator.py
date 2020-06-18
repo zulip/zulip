@@ -72,7 +72,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                 if arguments:
                     text = self.render_table(arguments)
                 else:
-                    text = ['This endpoint does not consume any arguments.']
+                    text = ['This endpoint does not accept any parameters.']
                 # The line that contains the directive to include the macro
                 # may be preceded or followed by text or tags, in that case
                 # we need to make sure that any preceding or following text
