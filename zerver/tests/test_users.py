@@ -26,7 +26,6 @@ from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     get_subscription,
-    most_recent_message,
     queries_captured,
     reset_emails_in_zulip_realm,
     simulated_empty_cache,
@@ -1512,22 +1511,11 @@ class GetProfileTest(ZulipTestCase):
         result = self.client_post("/json/users/me/pointer", {"pointer": pointer})
         self.assert_json_success(result)
 
-    def common_get_profile(self, user_id: str) -> Dict[str, Any]:
-        # Assumes all users are example users in realm 'zulip'
+    def common_get_pointer(self, user_id: str) -> Dict[str, Any]:
         user_profile = self.example_user(user_id)
-        self.send_stream_message(user_profile, "Verona", "hello")
-
-        result = self.api_get(user_profile, "/api/v1/users/me")
-
-        max_id = most_recent_message(user_profile).id
-
+        result = self.api_get(user_profile, "/json/users/me/pointer")
         self.assert_json_success(result)
         json = result.json()
-
-        self.assertIn("max_message_id", json)
-        self.assertIn("pointer", json)
-
-        self.assertEqual(json["max_message_id"], max_id)
         return json
 
     def test_get_pointer(self) -> None:
@@ -1608,8 +1596,8 @@ class GetProfileTest(ZulipTestCase):
         """
         Ensure GET /users/me returns a max message id and returns successfully
         """
-        json = self.common_get_profile("othello")
-        self.assertEqual(json["pointer"], -1)
+        json = self.common_get_pointer("othello")
+        self.assertEqual(json['pointer'], -1)
 
     def test_profile_with_pointer(self) -> None:
         """
@@ -1619,15 +1607,13 @@ class GetProfileTest(ZulipTestCase):
         id1 = self.send_stream_message(self.example_user("othello"), "Verona")
         id2 = self.send_stream_message(self.example_user("othello"), "Verona")
 
-        json = self.common_get_profile("hamlet")
-
         hamlet = self.example_user('hamlet')
         self.common_update_pointer(hamlet, id2)
-        json = self.common_get_profile("hamlet")
+        json = self.common_get_pointer("hamlet")
         self.assertEqual(json["pointer"], id2)
 
         self.common_update_pointer(hamlet, id1)
-        json = self.common_get_profile("hamlet")
+        json = self.common_get_pointer("hamlet")
         self.assertEqual(json["pointer"], id2)  # pointer does not move backwards
 
         result = self.client_post("/json/users/me/pointer", {"pointer": 99999999})

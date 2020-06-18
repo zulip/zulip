@@ -2006,13 +2006,6 @@ paths:
                         **Deprecated**.  We plan to remove this in favor of recommending
                         using `GET /messages` with `anchor="newest"`.
                       example: 30
-                    pointer:
-                      type: integer
-                      description: |
-                        The integer ID of the message that the pointer is currently on.
-
-                        **Deprecated**.  We plan to remove the `pointer` as a concept in Zulip.
-                      example: -1
                     user_id:
                       type: integer
                       description: |
@@ -2035,7 +2028,6 @@ paths:
                         "date_joined": "2019-10-20T07:50:53.728864+00:00",
                         "max_message_id": 30,
                         "msg": "",
-                        "pointer": -1,
                         "result": "success",
                         "user_id": 5,
                         "profile_data": {

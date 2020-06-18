@@ -505,7 +505,6 @@ def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     result: Dict[str, Any] = raw_user_data[user_profile.id]
 
     result['max_message_id'] = -1
-    result['pointer'] = user_profile.pointer
 
     messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[:1]
     if messages:
