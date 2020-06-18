@@ -45,9 +45,8 @@ def transfer_message_files_to_s3(processes: int) -> None:
         file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "files", attachment.path_id)
         try:
             with open(file_path, 'rb') as f:
-                bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
                 guessed_type = guess_type(attachment.file_name)[0]
-                upload_image_to_s3(bucket_name, attachment.path_id, guessed_type, attachment.owner, f.read())
+                upload_image_to_s3(s3backend.uploads_bucket, attachment.path_id, guessed_type, attachment.owner, f.read())
                 logging.info("Uploaded message file in path %s", file_path)
         except FileNotFoundError:  # nocoverage
             pass
