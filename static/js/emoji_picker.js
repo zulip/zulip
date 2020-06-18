@@ -717,11 +717,11 @@ exports.register_click_handlers = function () {
         reset_emoji_showcase();
     });
 
-    $("body").on("mouseenter", ".emoji-popover-emoji", function () {
-        const emoji_id = $(this).data("emoji-id");
+    $("body").on("mouseenter", ".emoji-popover-emoji", function (e) {
+        const emoji_id = $(e.currentTarget).data("emoji-id");
         const emoji_coordinates = get_emoji_coordinates(emoji_id);
 
-        const $emoji_map = $(".emoji-popover-emoji-map");
+        const $emoji_map = $(e.currentTarget).closest(".emoji-popover-emoji-map").expectOne();
         maybe_change_focused_emoji(
             $emoji_map,
             emoji_coordinates.section,
