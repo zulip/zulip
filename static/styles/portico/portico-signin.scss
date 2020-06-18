@@ -682,6 +682,13 @@ button.login-social-button {
     }
 }
 
+button#login_auth_button_gitlab,
+button#register_auth_button_gitlab {
+    // GitLab icon size looks a bit inconsistent with others. This fixes it.
+    background-size: auto 90%;
+    background-position-x: 3px;
+}
+
 .login-page-container .right-side .actions,
 .back-to-login-wrapper {
     margin: 20px 0px 0px;
