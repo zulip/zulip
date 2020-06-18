@@ -4,7 +4,7 @@ from unittest import mock
 import ujson
 from django.db import connection
 
-from zerver.lib.fix_unreads import fix, fix_pre_pointer, fix_unsubscribed
+from zerver.lib.fix_unreads import fix, fix_unsubscribed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription, tornado_redirected_to_list
 from zerver.lib.topic_mutes import add_topic_mute
@@ -403,44 +403,24 @@ class FixUnreadTests(ZulipTestCase):
         um_muted_topic_id = send_message('Verona', 'muted_topic')
         um_muted_stream_id = send_message('Denmark', 'whatever')
 
-        user.pointer = self.get_last_message().id
-        user.save()
-
-        um_post_pointer_id = send_message('Verona', 'muted_topic')
-
         self.subscribe(user, 'temporary')
         um_unsubscribed_id = send_message('temporary', 'whatever')
         force_unsubscribe('temporary')
 
-        # verify data setup
+        # Verify the setup
         assert_unread(um_normal_id)
         assert_unread(um_muted_topic_id)
         assert_unread(um_muted_stream_id)
-        assert_unread(um_post_pointer_id)
-        assert_unread(um_unsubscribed_id)
-
-        with connection.cursor() as cursor:
-            fix_pre_pointer(cursor, user)
-
-        # The only message that should have been fixed is the "normal"
-        # unumuted message before the pointer.
-        assert_read(um_normal_id)
-
-        # We don't "fix" any messages that are either muted or after the
-        # pointer, because they can be legitimately unread.
-        assert_unread(um_muted_topic_id)
-        assert_unread(um_muted_stream_id)
-        assert_unread(um_post_pointer_id)
         assert_unread(um_unsubscribed_id)
 
         # fix unsubscribed
         with connection.cursor() as cursor:
             fix_unsubscribed(cursor, user)
 
-        # Most messages don't change.
+        # Muted messages don't change.
         assert_unread(um_muted_topic_id)
         assert_unread(um_muted_stream_id)
-        assert_unread(um_post_pointer_id)
+        assert_unread(um_normal_id)
 
         # The unsubscribed entry should change.
         assert_read(um_unsubscribed_id)
@@ -448,10 +428,9 @@ class FixUnreadTests(ZulipTestCase):
         # test idempotency
         fix(user)
 
-        assert_read(um_normal_id)
+        assert_unread(um_normal_id)
         assert_unread(um_muted_topic_id)
         assert_unread(um_muted_stream_id)
-        assert_unread(um_post_pointer_id)
         assert_read(um_unsubscribed_id)
 
 class PushNotificationMarkReadFlowsTest(ZulipTestCase):
