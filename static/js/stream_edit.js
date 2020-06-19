@@ -636,6 +636,12 @@ exports.initialize = function () {
         const user_ids = user_pill.get_user_ids(exports.pill_widget);
         const stream_subscription_info_elem = $('.stream_subscription_info').expectOne();
 
+        if (user_ids.length === 0) {
+            stream_subscription_info_elem.text(i18n.t("No user to subscribe."))
+                .addClass("text-error").removeClass("text-success");
+            return;
+        }
+
         function invite_success(data) {
             exports.pill_widget.clear();
             if (!Object.entries(data.already_subscribed).length) {
