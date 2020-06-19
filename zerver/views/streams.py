@@ -408,7 +408,7 @@ def add_subscriptions_backend(
         message_retention_days: Union[str, int]=REQ(validator=check_string_or_int,
                                                     default="realm_default"),
         announce: bool=REQ(validator=check_bool, default=False),
-        principals: Sequence[Union[str, int]]=REQ(validator=check_variable_type([
+        principals: Union[Sequence[str], Sequence[int]]=REQ(validator=check_variable_type([
             check_list(check_string), check_list(check_int)]), default=[]),
         authorization_errors_fatal: bool=REQ(validator=check_bool, default=True),
 ) -> HttpResponse:
