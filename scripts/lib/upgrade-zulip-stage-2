@@ -122,6 +122,8 @@ if os.path.exists('/etc/init.d/postgresql'):
         else:
             error_desupported_os(vendor, os_version)
         set_config(config_file, 'postgresql', 'version', postgres_version)
+        with open('/etc/zulip/zulip.conf', 'w') as zulipconf:
+            config_file.write(zulipconf)
 
 if glob.glob("/usr/share/postgresql/*/extension/tsearch_extras.control"):
     # Remove legacy tsearch_extras package references
