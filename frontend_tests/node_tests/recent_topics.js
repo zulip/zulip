@@ -8,7 +8,7 @@ set_global('hashchange', {
     exit_overlay: noop,
 });
 set_global('stream_data', {
-    get_sub: () => {
+    get_sub_by_id: () => {
         return {
             color: "",
             invite_only: false,
