@@ -1,4 +1,4 @@
-# Get profile
+# Get own user
 
 {generate_api_description(/users/me:get)}
 

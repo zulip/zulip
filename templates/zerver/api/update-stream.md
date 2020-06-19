@@ -1,4 +1,4 @@
-# Update stream
+# Update a stream
 
 {generate_api_description(/streams/{stream_id}:patch)}
 

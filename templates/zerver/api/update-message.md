@@ -1,4 +1,4 @@
-# Update a message
+# Edit a message
 
 {generate_api_description(/messages/{message_id}:patch)}
 

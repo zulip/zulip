@@ -1,4 +1,4 @@
-# Get global settings
+# Get server settings
 
 {generate_api_description(/server_settings:get)}
 

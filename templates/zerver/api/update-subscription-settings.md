@@ -1,4 +1,4 @@
-# Update subscription properties
+# Update subscription settings
 
 {generate_api_description(/users/me/subscriptions/properties:post)}
 

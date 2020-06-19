@@ -1,4 +1,4 @@
-# Create User Group
+# Create a user group
 
 {generate_api_description(/user_groups/create:post)}
 

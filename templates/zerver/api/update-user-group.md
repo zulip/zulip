@@ -1,4 +1,4 @@
-# Update User Group
+# Update a user group
 
 {generate_api_description(/user_groups/{group_id}:patch)}
 

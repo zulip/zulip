@@ -1,4 +1,4 @@
-# Delete stream
+# Delete a stream
 
 {generate_api_description(/streams/{stream_id}:delete)}
 

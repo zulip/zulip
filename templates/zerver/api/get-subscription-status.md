@@ -1,4 +1,4 @@
-# Get user subscription status
+# Get subscription status
 
 {generate_api_description(/users/{user_id}/subscriptions/{stream_id}:get)}
 

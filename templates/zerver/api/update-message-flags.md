@@ -1,4 +1,4 @@
-# Update a message's flags
+# Update personal message flags
 
 {generate_api_description(/messages/flags:post)}
 

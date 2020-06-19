@@ -1,4 +1,4 @@
-# Remove subscriptions
+# Unsubscribe from a stream
 
 {generate_api_description(/users/me/subscriptions:delete)}
 

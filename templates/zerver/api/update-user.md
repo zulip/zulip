@@ -1,4 +1,4 @@
-# Update User
+# Update a user
 
 {!api-admin-only.md!}
 

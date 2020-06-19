@@ -1,4 +1,4 @@
-# List linkifiers
+# Get linkifiers
 
 {generate_api_description(/realm/filters:get)}
 
