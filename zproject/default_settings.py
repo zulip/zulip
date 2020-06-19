@@ -171,7 +171,7 @@ TWO_FACTOR_AUTHENTICATION_ENABLED = False
 ALWAYS_SEND_ALL_HOTSPOTS = False
 
 # In-development search pills feature.
-SEARCH_PILLS_ENABLED = False
+SEARCH_PILLS_ENABLED = True
 
 # We log emails in development environment for accessing
 # them easily through /emails page
