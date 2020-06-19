@@ -585,42 +585,6 @@ paths:
                         matching the narrow is fetched.
                     messages:
                       type: array
-                      items:
-                        type: object
-                - properties:
-                    anchor:
-                      type: integer
-                      description: |
-                        The same `anchor` specified in the request (or the computed one, if
-                        `use_first_unread_anchor` is `true`).
-                    found_newest:
-                      type: boolean
-                      description: |
-                        Whether the `messages` list includes the very newest messages matching
-                        the narrow (used by clients that paginate their requests to decide
-                        whether there are more messages to fetch).
-                    found_oldest:
-                      type: boolean
-                      description: |
-                        Whether the `messages` list includes the very oldest messages matching
-                        the narrow (used by clients that paginate their requests to decide
-                        whether there are more messages to fetch).
-                    found_anchor:
-                      type: boolean
-                      description: |
-                        Whether the anchor message is included in the
-                        response. If the message with the ID specified
-                        in the request does not exist or did not match
-                        the narrow, this will be false.
-                    history_limited:
-                      type: boolean
-                      description: |
-                        Whether the message history was limited due to
-                        plan restrictions. This flag is set to `true`
-                        only when the oldest messages(`found_oldest`)
-                        matching the narrow is fetched.
-                    messages:
-                      type: array
                       description: |
                         an array of `message` objects, each containing the following
                         fields:
