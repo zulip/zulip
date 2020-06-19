@@ -123,7 +123,7 @@ BOT_CONFIG_SIZE_LIMIT = 10000
 # External service configuration
 CAMO_URI = ''
 MEMCACHED_LOCATION = '127.0.0.1:11211'
-MEMCACHED_USERNAME = None if get_secret("memcached_password") is None else "zulip"
+MEMCACHED_USERNAME = None if get_secret("memcached_password") is None else "zulip@localhost"
 RABBITMQ_HOST = '127.0.0.1'
 RABBITMQ_USERNAME = 'zulip'
 REDIS_HOST = '127.0.0.1'

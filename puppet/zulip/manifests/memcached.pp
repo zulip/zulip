@@ -31,17 +31,29 @@ class zulip::memcached {
     content => zulipsecret('secrets', 'memcached_password', ''),
     notify  => Exec[generate_memcached_sasldb2],
   }
+  file { '/var/lib/zulip/memcached-sasldb2.stamp':
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    content => '1',
+    notify  => Exec[generate_memcached_sasldb2],
+  }
   exec { 'generate_memcached_sasldb2':
     require     => [
       Package[$memcached_packages],
       Package[$zulip::sasl_modules::sasl_module_packages],
-      File['/etc/sasl2/memcached-zulip-password'],
     ],
     refreshonly => true,
-    # Pass the hostname explicitly because otherwise saslpasswd2
-    # lowercases it and memcached does not.
-    command     => "bash -c 'saslpasswd2 -p -f /etc/sasl2/memcached-sasldb2 \
--a memcached -u \"\$HOSTNAME\" zulip < /etc/sasl2/memcached-zulip-password'",
+    # Use localhost for the currently recommended MEMCACHED_USERNAME =
+    # "zulip@localhost" and the hostname for compatibility with
+    # MEMCACHED_USERNAME = "zulip".
+    command     => "bash -euc '
+rm -f /etc/sasl2/memcached-sasldb2
+saslpasswd2 -p -f /etc/sasl2/memcached-sasldb2 \
+    -a memcached -u localhost zulip < /etc/sasl2/memcached-zulip-password
+saslpasswd2 -p -f /etc/sasl2/memcached-sasldb2 \
+    -a memcached -u \"\$HOSTNAME\" zulip < /etc/sasl2/memcached-zulip-password
+'",
   }
   file { '/etc/sasl2/memcached-sasldb2':
     require => Exec[generate_memcached_sasldb2],

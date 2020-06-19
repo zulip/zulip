@@ -615,8 +615,8 @@ CAMO_URI = '/external_content/'
 # Format HOST:PORT
 # MEMCACHED_LOCATION = 127.0.0.1:11211
 # To authenticate to memcached, set memcached_password in zulip-secrets.conf,
-# and optionally change the default username 'zulip' here.
-# MEMCACHED_USERNAME = 'zulip'
+# and optionally change the default username 'zulip@localhost' here.
+# MEMCACHED_USERNAME = 'zulip@localhost'
 
 # Redis configuration
 #
