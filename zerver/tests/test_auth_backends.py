@@ -6,7 +6,7 @@ import re
 import time
 import urllib
 from contextlib import contextmanager
-from typing import Any, Callable, Dict, Iterator, List, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional, Sequence, Tuple
 from unittest import mock
 
 import jwt
@@ -739,7 +739,12 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         params = {}
         headers = {}
         if subdomain is not None:
-            headers['HTTP_HOST'] = subdomain + ".testserver"
+            if subdomain == '':
+                # "testserver" may trip up some libraries' URL validation,
+                # so let's use the equivalent www. version.
+                headers['HTTP_HOST'] = 'www.testserver'
+            else:
+                headers['HTTP_HOST'] = subdomain + ".testserver"
         if mobile_flow_otp is not None:
             params['mobile_flow_otp'] = mobile_flow_otp
             headers['HTTP_USER_AGENT'] = "ZulipAndroid"
@@ -1458,6 +1463,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
                          next: str='',
                          multiuse_object_key: str='',
                          user_agent: Optional[str]=None,
+                         extra_attributes: Mapping[str, List[str]]={},
                          **extra_data: Any) -> HttpResponse:
         url, headers = self.prepare_login_url_and_headers(
             subdomain,
@@ -1496,7 +1502,9 @@ class SAMLAuthBackendTest(SocialAuthBase):
         if is_signup:
             self.assertEqual(data['is_signup'], '1')
 
-        saml_response = self.generate_saml_response(**account_data_dict)
+        saml_response = self.generate_saml_response(email=account_data_dict['email'],
+                                                    name=account_data_dict['name'],
+                                                    extra_attributes=extra_attributes)
         post_params = {"SAMLResponse": saml_response, "RelayState": relay_state}
         # The mock below is necessary, so that python3-saml accepts our SAMLResponse,
         # and doesn't verify the cryptographic signatures etc., since generating
@@ -1511,7 +1519,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
         return result
 
-    def generate_saml_response(self, email: str, name: str) -> str:
+    def generate_saml_response(self, email: str, name: str, extra_attributes: Mapping[str, List[str]]={}) -> str:
         """
         The samlresponse.txt fixture has a pre-generated SAMLResponse,
         with {email}, {first_name}, {last_name} placeholders, that can
@@ -1521,10 +1529,22 @@ class SAMLAuthBackendTest(SocialAuthBase):
         first_name = name_parts[0]
         last_name = name_parts[1]
 
+        extra_attrs = ''
+        for extra_attr_name, extra_attr_values in extra_attributes.items():
+            values = ''.join(
+                ['<saml2:AttributeValue xmlns:xs="http://www.w3.org/2001/XMLSchema" ' +
+                 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:string">' +
+                 f'{value}</saml2:AttributeValue>' for value in extra_attr_values]
+            )
+            extra_attrs += f'<saml2:Attribute Name="{extra_attr_name}" ' + \
+                           'NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:unspecified">' + \
+                           f'{values}</saml2:Attribute>'
+
         unencoded_saml_response = self.fixture_data("samlresponse.txt", type="saml").format(
             email=email,
             first_name=first_name,
             last_name=last_name,
+            extra_attrs=extra_attrs,
         )
         # SAMLResponse needs to be base64-encoded.
         saml_response: str = base64.b64encode(unencoded_saml_response.encode()).decode()
@@ -1931,6 +1951,72 @@ class SAMLAuthBackendTest(SocialAuthBase):
             self.assertEqual('/login/', result.url)
         self.assertEqual(m.output, [self.logger_output(
             "/complete/saml/: Can't figure out subdomain for this authentication request. relayed_params: {}",
+            "info",
+        )])
+
+    def test_social_auth_saml_idp_org_membership_success(self) -> None:
+        idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
+        idps_dict['test_idp']['attr_org_membership'] = 'member'
+        with self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict):
+            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+            result = self.social_auth_test(account_data_dict,
+                                           subdomain='zulip',
+                                           expect_choose_email_screen=False,
+                                           extra_attributes=dict(member=['zulip']))
+            data = load_subdomain_token(result)
+            self.assertEqual(data['email'], self.email)
+            self.assertEqual(data['full_name'], self.name)
+            self.assertEqual(data['subdomain'], 'zulip')
+            self.assertEqual(result.status_code, 302)
+
+    def test_social_auth_saml_idp_org_membership_root_subdomain(self) -> None:
+        realm = get_realm("zulip")
+        realm.string_id = ''
+        realm.save()
+
+        idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
+        idps_dict['test_idp']['attr_org_membership'] = 'member'
+        with self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict):
+            # Having one of the settings.ROOT_SUBDOMAIN_ALIASES in the membership attributes
+            # authorizes the user to access the root subdomain.
+            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+            result = self.social_auth_test(account_data_dict,
+                                           subdomain='',
+                                           expect_choose_email_screen=False,
+                                           extra_attributes=dict(member=['www']))
+            data = load_subdomain_token(result)
+            self.assertEqual(data['email'], self.email)
+            self.assertEqual(data['full_name'], self.name)
+            self.assertEqual(data['subdomain'], '')
+            self.assertEqual(result.status_code, 302)
+
+            # Failure, the user doesn't have entitlements for the root subdomain.
+            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+            with self.assertLogs(self.logger_string, level='INFO') as m:
+                result = self.social_auth_test(account_data_dict,
+                                               subdomain='',
+                                               expect_choose_email_screen=False,
+                                               extra_attributes=dict(member=['zephyr']))
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(m.output, [self.logger_output(
+                "AuthFailed: Authentication failed: SAML user from IdP test_idp rejected due to " +
+                "missing entitlement for subdomain ''. User entitlements: ['zephyr'].",
+                "info",
+            )])
+
+    def test_social_auth_saml_idp_org_membership_failed(self) -> None:
+        idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
+        idps_dict['test_idp']['attr_org_membership'] = 'member'
+        with self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict):
+            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+            with self.assertLogs(self.logger_string, level='INFO') as m:
+                result = self.social_auth_test(account_data_dict, subdomain='zulip',
+                                               extra_attributes=dict(member=['zephyr', 'othersubdomain']))
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual('/login/', result.url)
+        self.assertEqual(m.output, [self.logger_output(
+            "AuthFailed: Authentication failed: SAML user from IdP test_idp rejected due to " +
+            "missing entitlement for subdomain 'zulip'. User entitlements: ['zephyr', 'othersubdomain'].",
             "info",
         )])
 

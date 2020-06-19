@@ -162,6 +162,28 @@ authenticate the user to when they visit your SSO URL from the IdP.
 ```eval_rst
 .. _ldap:
 ```
+
+### Restricting access to organizations based on SAML attributes
+
+SAML attributes can be used to filter which organizations the user can access.
+`attr_org_membership` in the IdP configuration can be set to the attribute name
+which contains a list of organization subdomains the user is allowed to access.
+For the root subdomain, `www` in the list will work, or any other of
+`settings.ROOT_SUBDOMAIN_ALIASES`.
+
+For example, with `attr_org_membership` set to `member`, a user with the following attribute in their
+`AttributeStatement` will have access to the root and `engineering` subdomains:
+```
+<saml2:Attribute Name="member" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:unspecified">
+  <saml2:AttributeValue xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:string">
+    www
+  </saml2:AttributeValue>
+  <saml2:AttributeValue xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:string">
+    engineering
+  </saml2:AttributeValue>
+</saml2:Attribute>
+```
+
 ## LDAP (including Active Directory)
 
 Zulip supports retrieving information about users via LDAP, and

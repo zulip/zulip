@@ -244,6 +244,11 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS = {
         "attr_last_name": "last_name",
         "attr_username": "email",
         "attr_email": "email",
+
+        # "attr_org_membership" can be set to the attribute name which contains a list of
+        # organization subdomains the user is allowed to access.
+        # "attr_org_membership": "member",
+
         # The "x509cert" attribute is automatically read from
         # /etc/zulip/saml/idps/{idp_name}.crt; don't specify it here.
 
