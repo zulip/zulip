@@ -158,7 +158,7 @@ function format_topic(topic_data) {
     const last_msg = message_store.get(topic_data.last_msg_id);
     const stream = last_msg.stream;
     const stream_id = last_msg.stream_id;
-    const stream_info = stream_data.get_sub(stream);
+    const stream_info = stream_data.get_sub_by_id(stream_id);
     const topic = last_msg.topic;
     const time = new XDate(last_msg.timestamp * 1000);
     const last_msg_time = timerender.last_seen_status_from_date(time);
