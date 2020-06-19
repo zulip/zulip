@@ -41,6 +41,8 @@ from zerver.lib.types import ProfileFieldData, Validator
 FuncT = Callable[..., Any]
 TypeStructure = TypeVar("TypeStructure")
 
+USING_TYPE_STRUCTURE = settings.LOG_API_EVENT_TYPES
+
 # The type_structure system is designed to support using the validators in
 # test_events.py to create documentation for our event formats.
 #
@@ -48,7 +50,7 @@ TypeStructure = TypeVar("TypeStructure")
 # parallel system.
 def set_type_structure(type_structure: TypeStructure) -> Callable[[FuncT], Any]:
     def _set_type_structure(func: FuncT) -> FuncT:
-        if settings.LOG_API_EVENT_TYPES:
+        if USING_TYPE_STRUCTURE:
             func.type_structure = type_structure  # type: ignore[attr-defined] # monkey-patching
         return func
     return _set_type_structure
@@ -165,7 +167,7 @@ def check_color(var_name: str, val: object) -> Optional[str]:
     return None
 
 def check_none_or(sub_validator: Validator) -> Validator:
-    if settings.LOG_API_EVENT_TYPES:
+    if USING_TYPE_STRUCTURE:
         type_structure = 'none_or_' + sub_validator.type_structure  # type: ignore[attr-defined] # monkey-patching
     else:
         type_structure = None
@@ -179,7 +181,7 @@ def check_none_or(sub_validator: Validator) -> Validator:
     return f
 
 def check_list(sub_validator: Optional[Validator], length: Optional[int]=None) -> Validator:
-    if settings.LOG_API_EVENT_TYPES:
+    if USING_TYPE_STRUCTURE:
         if sub_validator:
             type_structure = [sub_validator.type_structure]  # type: ignore[attr-defined] # monkey-patching
         else:
@@ -227,7 +229,7 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
             error = sub_validator(vname, val[k])
             if error:
                 return error
-            if settings.LOG_API_EVENT_TYPES:
+            if USING_TYPE_STRUCTURE:
                 type_structure[k] = sub_validator.type_structure  # type: ignore[attr-defined] # monkey-patching
 
         for k, sub_validator in optional_keys:
@@ -236,7 +238,7 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
                 error = sub_validator(vname, val[k])
                 if error:
                     return error
-            if settings.LOG_API_EVENT_TYPES:
+            if USING_TYPE_STRUCTURE:
                 type_structure[k] = sub_validator.type_structure  # type: ignore[attr-defined] # monkey-patching
 
         if value_validator:
@@ -245,7 +247,7 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
                 error = value_validator(vname, val[key])
                 if error:
                     return error
-            if settings.LOG_API_EVENT_TYPES:
+            if USING_TYPE_STRUCTURE:
                 type_structure['any'] = value_validator.type_structure  # type: ignore[attr-defined] # monkey-patching
 
         if _allow_only_listed_keys:
@@ -272,7 +274,7 @@ def check_union(allowed_type_funcs: Iterable[Validator]) -> Validator:
     types for this variable.
     """
 
-    if settings.LOG_API_EVENT_TYPES:
+    if USING_TYPE_STRUCTURE:
         type_structure = f'any("{[x.type_structure for x in allowed_type_funcs]}")'  # type: ignore[attr-defined] # monkey-patching
     else:
         type_structure = None  # type: ignore[assignment] # monkey-patching
