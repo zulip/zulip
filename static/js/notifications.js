@@ -467,7 +467,7 @@ exports.should_send_desktop_notification = function (message) {
     // For streams, send if desktop notifications are enabled for all
     // message on this stream.
     if (message.type === "stream" &&
-        stream_data.receives_notifications(message.stream, "desktop_notifications")) {
+        stream_data.receives_notifications(message.stream_id, "desktop_notifications")) {
         return true;
     }
 
@@ -493,7 +493,7 @@ exports.should_send_desktop_notification = function (message) {
 
     // wildcard mentions
     if (message.mentioned &&
-            stream_data.receives_notifications(message.stream, "wildcard_mentions_notify")) {
+            stream_data.receives_notifications(message.stream_id, "wildcard_mentions_notify")) {
         return true;
     }
 
@@ -504,7 +504,7 @@ exports.should_send_audible_notification = function (message) {
     // For streams, ding if sounds are enabled for all messages on
     // this stream.
     if (message.type === "stream" &&
-        stream_data.receives_notifications(message.stream, "audible_notifications")) {
+        stream_data.receives_notifications(message.stream_id, "audible_notifications")) {
         return true;
     }
 
@@ -529,7 +529,7 @@ exports.should_send_audible_notification = function (message) {
 
     // wildcard mentions
     if (message.mentioned &&
-            stream_data.receives_notifications(message.stream, "wildcard_mentions_notify")) {
+            stream_data.receives_notifications(message.stream_id, "wildcard_mentions_notify")) {
         return true;
     }
 

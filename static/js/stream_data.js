@@ -431,8 +431,8 @@ exports.update_message_retention_setting  = function (sub, message_retention_day
     sub.message_retention_days = message_retention_days;
 };
 
-exports.receives_notifications = function (stream_name, notification_name) {
-    const sub = exports.get_sub(stream_name);
+exports.receives_notifications = function (stream_id, notification_name) {
+    const sub = exports.get_sub_by_id(stream_id);
     if (sub === undefined) {
         return false;
     }
@@ -753,7 +753,7 @@ exports.get_unmatched_streams_for_notification_settings = function () {
         for (const notification_name of settings_config.stream_specific_notification_settings) {
             const prepend = notification_name === 'wildcard_mentions_notify' ? "" : "enable_stream_";
             const default_setting = page_params[prepend + notification_name];
-            const stream_setting = exports.receives_notifications(row.name, notification_name);
+            const stream_setting = exports.receives_notifications(row.stream_id, notification_name);
 
             settings_values[notification_name] = stream_setting;
             if (stream_setting !== default_setting) {

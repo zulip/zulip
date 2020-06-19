@@ -645,60 +645,60 @@ run_test('notifications', () => {
     stream_data.clear_subscriptions();
     stream_data.add_sub(india);
 
-    assert(!stream_data.receives_notifications('Indiana', "desktop_notifications"));
-    assert(!stream_data.receives_notifications('Indiana', "audible_notifications"));
+    assert(!stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
+    assert(!stream_data.receives_notifications(india.stream_id, "audible_notifications"));
 
     page_params.enable_stream_desktop_notifications = true;
     page_params.enable_stream_audible_notifications = true;
-    assert(stream_data.receives_notifications('India', "desktop_notifications"));
-    assert(stream_data.receives_notifications('India', "audible_notifications"));
+    assert(stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
+    assert(stream_data.receives_notifications(india.stream_id, "audible_notifications"));
 
     page_params.enable_stream_desktop_notifications = false;
     page_params.enable_stream_audible_notifications = false;
-    assert(!stream_data.receives_notifications('India', "desktop_notifications"));
-    assert(!stream_data.receives_notifications('India', "audible_notifications"));
+    assert(!stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
+    assert(!stream_data.receives_notifications(india.stream_id, "audible_notifications"));
 
     india.desktop_notifications = true;
     india.audible_notifications = true;
-    assert(stream_data.receives_notifications('India', "desktop_notifications"));
-    assert(stream_data.receives_notifications('India', "audible_notifications"));
+    assert(stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
+    assert(stream_data.receives_notifications(india.stream_id, "audible_notifications"));
 
     india.desktop_notifications = false;
     india.audible_notifications = false;
     page_params.enable_stream_desktop_notifications = true;
     page_params.enable_stream_audible_notifications = true;
-    assert(!stream_data.receives_notifications('India', "desktop_notifications"));
-    assert(!stream_data.receives_notifications('India', "audible_notifications"));
+    assert(!stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
+    assert(!stream_data.receives_notifications(india.stream_id, "audible_notifications"));
 
     page_params.wildcard_mentions_notify = true;
-    assert(stream_data.receives_notifications('India', "wildcard_mentions_notify"));
+    assert(stream_data.receives_notifications(india.stream_id, "wildcard_mentions_notify"));
     page_params.wildcard_mentions_notify = false;
-    assert(!stream_data.receives_notifications('India', "wildcard_mentions_notify"));
+    assert(!stream_data.receives_notifications(india.stream_id, "wildcard_mentions_notify"));
     india.wildcard_mentions_notify = true;
-    assert(stream_data.receives_notifications('India', "wildcard_mentions_notify"));
+    assert(stream_data.receives_notifications(india.stream_id, "wildcard_mentions_notify"));
     page_params.wildcard_mentions_notify = true;
     india.wildcard_mentions_notify = false;
-    assert(!stream_data.receives_notifications('India', "wildcard_mentions_notify"));
+    assert(!stream_data.receives_notifications(india.stream_id, "wildcard_mentions_notify"));
 
     page_params.enable_stream_push_notifications = true;
-    assert(stream_data.receives_notifications('India', "push_notifications"));
+    assert(stream_data.receives_notifications(india.stream_id, "push_notifications"));
     page_params.enable_stream_push_notifications = false;
-    assert(!stream_data.receives_notifications('India', "push_notifications"));
+    assert(!stream_data.receives_notifications(india.stream_id, "push_notifications"));
     india.push_notifications = true;
-    assert(stream_data.receives_notifications('India', "push_notifications"));
+    assert(stream_data.receives_notifications(india.stream_id, "push_notifications"));
     page_params.enable_stream_push_notifications = true;
     india.push_notifications = false;
-    assert(!stream_data.receives_notifications('India', "push_notifications"));
+    assert(!stream_data.receives_notifications(india.stream_id, "push_notifications"));
 
     page_params.enable_stream_email_notifications = true;
-    assert(stream_data.receives_notifications('India', "email_notifications"));
+    assert(stream_data.receives_notifications(india.stream_id, "email_notifications"));
     page_params.enable_stream_email_notifications = false;
-    assert(!stream_data.receives_notifications('India', "email_notifications"));
+    assert(!stream_data.receives_notifications(india.stream_id, "email_notifications"));
     india.email_notifications = true;
-    assert(stream_data.receives_notifications('India', "email_notifications"));
+    assert(stream_data.receives_notifications(india.stream_id, "email_notifications"));
     page_params.enable_stream_email_notifications = true;
     india.email_notifications = false;
-    assert(!stream_data.receives_notifications('India', "email_notifications"));
+    assert(!stream_data.receives_notifications(india.stream_id, "email_notifications"));
 
     const canada = {
         stream_id: 103,
