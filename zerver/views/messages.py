@@ -1757,16 +1757,12 @@ def messages_in_narrow_backend(request: HttpRequest, user_profile: UserProfile,
         message_id = row['message_id']
         topic_name = row[DB_TOPIC_NAME]
         rendered_content = row['rendered_content']
-
         if 'content_matches' in row:
             content_matches = row['content_matches']
             topic_matches = row['topic_matches']
-            search_fields[message_id] = get_search_fields(rendered_content, topic_name,
-                                                          content_matches, topic_matches)
         else:
-            search_fields[message_id] = {
-                'match_content': rendered_content,
-                MATCH_TOPIC: escape_html(topic_name),
-            }
+            content_matches = topic_matches = []
+        search_fields[message_id] = get_search_fields(rendered_content, topic_name,
+                                                      content_matches, topic_matches)
 
     return json_success({"messages": search_fields})
