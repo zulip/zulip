@@ -1000,7 +1000,6 @@ class StreamAdminTest(ZulipTestCase):
         with self.assertRaisesRegex(JsonableError, "Available on Zulip Standard. Upgrade to access."):
             list_to_streams(streams_raw, owner, autocreate=True)
 
-
         do_change_plan_type(realm, Realm.SELF_HOSTED)
         result = list_to_streams(streams_raw, owner, autocreate=True)
         self.assert_length(result[0], 0)
