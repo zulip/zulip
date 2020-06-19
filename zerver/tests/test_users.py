@@ -853,6 +853,14 @@ class UserProfileTest(ZulipTestCase):
         self.assert_length(accounts, 1)
         check_account_present_in_accounts(self.example_user("iago"), accounts)
 
+        # We verify that get_accounts_for_email don't return deactivated users accounts
+        user = self.example_user("hamlet")
+        do_deactivate_user(user)
+        email = self.example_email("hamlet")
+        accounts = get_accounts_for_email(email)
+        with self.assertRaises(AssertionError):
+            check_account_present_in_accounts(user, accounts)
+
     def test_get_source_profile(self) -> None:
         reset_emails_in_zulip_realm()
         iago = get_source_profile("iago@zulip.com", "zulip")
