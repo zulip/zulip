@@ -18,9 +18,9 @@ below features are supported.
 **Feature level 17**
 
 * [`GET users/me/subscriptions`](/api/get-subscribed-streams),
-  [`GET /streams`](api/get-all-streams): Added
+  [`GET /streams`](api/get-streams): Added
   `message_retention_days` to Stream objects.
-* [`POST users/me/subscriptions`](/api/add-subscriptions), [`PATCH
+* [`POST users/me/subscriptions`](/api/subscribe), [`PATCH
   streams/{stream_id}`](/api/update-stream): Added `message_retention_days`
   parameter.
 
@@ -39,7 +39,7 @@ below features are supported.
 
 **Feature level 14**
 
-* [`GET users/me/subscriptions`](/api/get-subscribed-streams): Removed
+* [`GET users/me/subscriptions`](/api/get-subscriptions): Removed
   the `is_old_stream` field from Stream objects.  This field was
   always equivalent to `stream_weekly_traffic != null` on the same object.
 
@@ -47,7 +47,7 @@ below features are supported.
 
 * [`POST /register`](/api/register-queue): Added
   `bulk_message_deletion` to supported `client_capabilities`.
-* [`GET /events`](/api/get-events-from-queue): `message_deleted`
+* [`GET /events`](/api/get-events): `message_deleted`
   events have new behavior.  The `sender` and `sender_id` fields were
   removed, and the `message_id` field was replaced by a `message_ids`
   list for clients with the `bulk_message_deletion` client capability.
