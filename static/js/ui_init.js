@@ -467,12 +467,12 @@ exports.initialize_everything = function () {
     tutorial.initialize();
     notifications.initialize();
     gear_menu.initialize();
+    presence.initialize(presence_params);
     settings_panel_menu.initialize();
     settings_sections.initialize();
     settings_toggle.initialize();
     hashchange.initialize();
     unread_ui.initialize();
-    presence.initialize(presence_params);
     activity.initialize();
     emoji_picker.initialize();
     pm_list.initialize();
