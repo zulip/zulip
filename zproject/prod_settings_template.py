@@ -244,6 +244,7 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS = {
         "attr_last_name": "last_name",
         "attr_username": "email",
         "attr_email": "email",
+
         # The "x509cert" attribute is automatically read from
         # /etc/zulip/saml/idps/{idp_name}.crt; don't specify it here.
 
@@ -259,6 +260,10 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS = {
         # If you want this IdP to only be enabled for authentication
         # to certain subdomains, uncomment and edit the setting below.
         # "limit_to_subdomains": ["subdomain1", "subdomain2"],
+
+        # You can also limit subdomains by setting "attr_org_membership"
+        # to be a SAML attribute containing the allowed subdomains for a user.
+        # "attr_org_membership": "member",
     },
 }
 

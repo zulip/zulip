@@ -45,7 +45,7 @@ from social_core.backends.base import BaseAuth
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, GithubTeamOAuth2
 from social_core.backends.gitlab import GitLabOAuth2
 from social_core.backends.google import GoogleOAuth2
-from social_core.backends.saml import SAMLAuth
+from social_core.backends.saml import SAMLAuth, SAMLIdentityProvider
 from social_core.exceptions import (
     AuthCanceled,
     AuthFailed,
@@ -1840,6 +1840,44 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             return None
         else:
             return request_subdomain
+
+    def _check_entitlements(self, idp: SAMLIdentityProvider, attributes: Dict[str, List[str]]) -> None:
+        """
+        Below is the docstring from the social_core SAML backend.
+
+        Additional verification of a SAML response before
+        authenticating the user.
+
+        Subclasses can override this method if they need custom
+        validation code, such as requiring the presence of an
+        eduPersonEntitlement.
+
+        raise social_core.exceptions.AuthForbidden if the user should not
+        be authenticated, or do nothing to allow the login pipeline to
+        continue.
+        """
+        org_membership_attribute = idp.conf.get('attr_org_membership', None)
+        if org_membership_attribute is None:
+            return
+
+        subdomain = self.strategy.session_get('subdomain')
+        entitlements: Union[str, List[str]] = attributes.get(org_membership_attribute, [])
+        if subdomain in entitlements:
+            return
+
+        # The root subdomain is a special case, as sending an
+        # empty string in the list of values of the attribute may
+        # not be viable. So, any of the ROOT_SUBDOMAIN_ALIASES can
+        # be used to signify the user is authorized for the root
+        # subdomain.
+        if (subdomain == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+                and not settings.ROOT_DOMAIN_LANDING_PAGE
+                and any(alias in entitlements for alias in settings.ROOT_SUBDOMAIN_ALIASES)):
+            return
+
+        error_msg = f"SAML user from IdP {idp.name} rejected due to missing entitlement " + \
+                    f"for subdomain '{subdomain}'. User entitlements: {entitlements}."
+        raise AuthFailed(self, error_msg)
 
     def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
         """
