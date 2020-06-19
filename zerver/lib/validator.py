@@ -27,6 +27,7 @@ To extend this concept, it's simply a matter of writing your own validator
 for any particular type of object.
 
 '''
+import os
 import re
 from datetime import datetime
 from typing import (
@@ -35,7 +36,9 @@ from typing import (
     Dict,
     Iterable,
     List,
+    Mapping,
     Optional,
+    Sequence,
     Set,
     Tuple,
     TypeVar,
@@ -45,7 +48,6 @@ from typing import (
 )
 
 import ujson
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.utils.translation import ugettext as _
@@ -56,7 +58,7 @@ from zerver.lib.types import ProfileFieldData, Validator
 FuncT = Callable[..., Any]
 TypeStructure = TypeVar("TypeStructure")
 
-USING_TYPE_STRUCTURE = settings.LOG_API_EVENT_TYPES
+USING_TYPE_STRUCTURE = os.environ.get('USING_TYPE_STRUCTURE')
 
 # The type_structure system is designed to support using the validators in
 # test_events.py to create documentation for our event formats.
@@ -465,3 +467,74 @@ def check_string_or_int(var_name: str, val: object) -> Union[str, int]:
         return val
 
     raise ValidationError(_('{var_name} is not a string or integer').format(var_name=var_name))
+def is_none_type(mypy_type: Any) -> bool:
+    return getattr(mypy_type, '__name__', None) == 'NoneType'
+
+def is_union_type(mypy_type: Any) -> bool:
+    return getattr(mypy_type, '__origin__', None) == Union
+
+def is_sequence_type(mypy_type: Any) -> bool:
+    return getattr(mypy_type, '__origin__', None) in [Iterable, List, Sequence]
+
+def is_mapping_type(mypy_type: Any) -> bool:
+    return getattr(mypy_type, '__origin__', None) in {Dict, Mapping}
+
+def get_args(mypy_type: Any) -> List[Any]:
+    return mypy_type.__args__
+
+def mypy_signature(mypy_type: Any) -> str:
+    '''
+    This is a simplified, canonical representation of
+    a mypy type.
+    '''
+
+    if is_union_type(mypy_type):
+        args = get_args(mypy_type)
+        sigs = [mypy_signature(arg) for arg in args]
+
+        def format(sigs: List[str]) -> str:
+            actual_sigs = [
+                sig for sig in sigs
+                if sig != 'None'
+            ]
+
+            if len(actual_sigs) == 1:
+                return actual_sigs[0]
+
+            innards = ', '.join(sorted(actual_sigs))
+            return f'Union[{innards}]'
+
+        if 'None' in sigs:
+            return f'Optional[{format(sigs)}]'
+
+        return format(sigs)
+
+    if is_sequence_type(mypy_type):
+        arg = get_args(mypy_type)[0]
+        return f'List[{mypy_signature(arg)}]'
+
+    if is_mapping_type(mypy_type):
+        args = get_args(mypy_type)
+        k = mypy_signature(args[0])
+
+        # we lie about the value here, since legacy
+        # code often promises a more strict type
+        # then we are actually enforcing
+        return f'Dict[{k}, Any]'
+
+    # There should be a more generic way to get the name
+    # of primitives, like __name__, but I ran into problems
+    # on different Python versions.
+    if mypy_type == int:
+        return 'int'
+
+    if mypy_type == str:
+        return 'str'
+
+    if mypy_type == bool:
+        return 'bool'
+
+    if is_none_type(mypy_type):
+        return 'None'
+
+    raise AssertionError('unknown type: ' + str(mypy_type))  # nocoverage

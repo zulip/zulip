@@ -375,6 +375,8 @@ def main() -> None:
     # setting when they run.
     os.environ['TEST_INSTRUMENT_URL_COVERAGE'] = 'TRUE'
 
+    os.environ['USING_TYPE_STRUCTURE'] = 'TRUE'
+
     # setup() needs to be called after coverage is started to get proper coverage reports of model
     # files, since part of setup is importing the models for all applications in INSTALLED_APPS.
     django.setup()

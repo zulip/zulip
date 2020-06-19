@@ -12,6 +12,7 @@ from typing import (
     TypeVar,
     Union,
     cast,
+    get_type_hints,
     overload,
 )
 
@@ -254,6 +255,7 @@ arguments_map: Dict[str, List[str]] = defaultdict(list)
 # expected to call json_error or json_success, as it uses json_error
 # internally when it encounters an error
 def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
+    type_hints = get_type_hints(view_func)
     num_params = view_func.__code__.co_argcount
     default_param_values = cast(FunctionType, view_func).__defaults__
     if default_param_values is None:
@@ -278,6 +280,18 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
                     and not value.documentation_pending
                     and not value.path_only):
                 arguments_map[view_func_full_name].append(value.post_var_name)
+
+    for param in post_params:
+        if param.validator and param.func_var_name:
+            full_var_name = f'{view_func_full_name}:{param.func_var_name}'
+            mypy_type = type_hints[param.func_var_name]
+
+            maybe_validate_the_validator(
+                full_var_name,
+                param.validator,
+                mypy_type,
+                param.default,
+            )
 
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
@@ -367,3 +381,43 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
         return view_func(request, *args, **kwargs)
 
     return cast(ViewFuncT, _wrapped_view_func)
+
+def maybe_validate_the_validator(full_var_name: str,
+                                 validator: Any,
+                                 mypy_type: Any,
+                                 default_val: Any) -> None:
+
+    if not hasattr(validator, 'type_structure'):
+        # Either the validator is outside of validator.py,
+        # or we are not running in test mode.
+        return
+
+    type_sig = str(validator.type_structure)  # type: ignore[attr-defined] # monkey-patch
+
+    # we have some circular deps that force us to lazily
+    # import the validator
+    from zerver.lib.validator import mypy_signature
+
+    mypy_sig = mypy_signature(mypy_type)
+
+    if default_val is None:
+        type_sig = f'Optional[{type_sig}]'
+    elif default_val == '':
+        if mypy_sig != 'str':
+            raise AssertionError(full_var_name + ' should have a mypy type of str')
+    elif default_val != _REQ.NotSpecified:
+        # validate the default value!
+        validator(full_var_name, default_val)
+
+    if mypy_sig != type_sig:
+        raise AssertionError(f'''
+            REQ validator for
+            {full_var_name}
+            does not match its mypy type:
+
+                {mypy_type}
+
+             type checker sig: {type_sig}
+             mypy signature: {mypy_sig}
+            (scroll up for more detail)
+            ''')
