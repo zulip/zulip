@@ -21,7 +21,11 @@ exports.create_pills = function (pill_container) {
 };
 
 exports.append_search_string = function (search_string, pill_widget) {
-    pill_widget.appendValue(search_string);
+    const operators = Filter.parse(search_string);
+    for (const operator of operators) {
+        const input = Filter.unparse([operator]);
+        pill_widget.appendValue(input);
+    }
     if (pill_widget.clear_text !== undefined) {
         pill_widget.clear_text();
     }
