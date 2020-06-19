@@ -10,6 +10,24 @@ class CommonUtils {
         this.browser = null;
         this.screenshot_id = 0;
         this.realm_url = "http://zulip.zulipdev.com:9981/";
+        this.pm_recipient = {
+            async set(page, recipient) {
+                await page.type("#private_message_recipient", recipient);
+                await page.keyboard.press("Enter");
+            },
+
+            async expect(page, expected) {
+                const actual_recipients = await page.evaluate(() =>
+                    compose_state.private_message_recipient(),
+                );
+                assert.equal(actual_recipients, expected);
+            },
+        };
+        this.fullname = {
+            cordelia: "Cordelia Lear",
+            othello: "Othello, the Moor of Venice",
+            hamlet: "King Hamlet",
+        };
     }
 
     async ensure_browser() {
@@ -82,6 +100,43 @@ class CommonUtils {
                 await page.type(name_selector, params[name]);
             }
         }
+    }
+
+    async check_form_contents(page, form_selector, params) {
+        for (const name of Object.keys(params)) {
+            const name_selector = `${form_selector} [name="${name}"]`;
+            const expected_value = params[name];
+            if (typeof expected_value === "boolean") {
+                assert.equal(
+                    await page.$eval(name_selector, (el) => el.checked),
+                    expected_value,
+                    "Form content is not as expected.",
+                );
+            } else {
+                assert.equal(
+                    await page.$eval(name_selector, (el) => el.value),
+                    expected_value,
+                    "Form content is not as expected.",
+                );
+            }
+        }
+    }
+
+    async get_user_id_from_name(page, name) {
+        if (this.fullname[name] !== undefined) {
+            name = this.fullname[name];
+        }
+        return await page.evaluate((name) => people.get_user_id_from_name(name), name);
+    }
+
+    async get_internal_email_from_name(page, name) {
+        if (this.fullname[name] !== undefined) {
+            name = this.fullname[name];
+        }
+        return await page.evaluate((fullname) => {
+            const user_id = people.get_user_id_from_name(fullname);
+            return people.get_by_user_id(user_id).email;
+        }, name);
     }
 
     async log_in(page, credentials = null) {
@@ -241,6 +296,8 @@ class CommonUtils {
         await page.evaluate(() => {
             compose_actions.cancel();
         });
+        // Make sure the compose box is closed.
+        await page.waitForSelector("#compose-textarea", {hidden: true});
     }
 
     async send_multiple_messages(page, msgs) {
