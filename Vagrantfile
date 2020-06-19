@@ -113,8 +113,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     d.create_args = ["--ulimit", "nofile=1024:65536"]
   end
 
-  config.vm.provider "virtualbox" do |vb, override|
+ config.vm.provider "virtualbox" do |vb, override|
     override.vm.box = "hashicorp/bionic64"
+    # An unnecessary log file gets generated when running vagrant up for the
+    # first time with the Ubuntu Bionic box. This looks like it is being
+    # caused upstream by the base box containing a Vagrantfile with a similar
+    # line to the one below.
+    # see https://github.com/hashicorp/vagrant/issues/9425
+    vb.customize [ "modifyvm", :id, "--uartmode1", "disconnected" ]
     # It's possible we can get away with just 1.5GB; more testing needed
     vb.memory = vm_memory
     vb.cpus = vm_num_cpus
@@ -175,11 +181,19 @@ fi
 ln -nsf /srv/zulip ~/zulip
 /srv/zulip/tools/provision
 
+# Activate the virtual environment
+case `grep -cF 'source /srv/zulip-py3-venv/bin/activate' ~/.zprofile` in
+   0)
+      echo "source /srv/zulip-py3-venv/bin/activate" | cat ~/.zprofile - > temp && mv temp ~/.zprofile
+   ;;
+esac
+
 # Run any custom provision hooks the user has configured
 if [ -f /srv/zulip/tools/custom_provision ]; then
     chmod +x /srv/zulip/tools/custom_provision
     /srv/zulip/tools/custom_provision
 fi
+
 SCRIPT
 
   config.vm.provision "shell",
