@@ -17,8 +17,8 @@ below features are supported.
 
 **Feature level 17**
 
-* [`GET users/me/subscriptions`](/api/get-subscribed-streams),
-  [`GET /streams`](api/get-streams): Added
+* [`GET users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams): Added
   `message_retention_days` to Stream objects.
 * [`POST users/me/subscriptions`](/api/subscribe), [`PATCH
   streams/{stream_id}`](/api/update-stream): Added `message_retention_days`
