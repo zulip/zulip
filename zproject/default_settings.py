@@ -367,10 +367,6 @@ CUSTOM_LOGO_URL: Optional[str] = None
 # development.
 INITIAL_PASSWORD_SALT: Optional[str] = None
 
-# Settings configuring the special instrumention of the send_event
-# code path used in generating API documentation for /events.
-LOG_API_EVENT_TYPES = False
-
 # Used to control whether certain management commands are run on
 # the server.
 # TODO: Replace this with a smarter "run on only one server" system.

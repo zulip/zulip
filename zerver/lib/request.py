@@ -12,6 +12,7 @@ from typing import (
     TypeVar,
     Union,
     cast,
+    get_type_hints,
     overload,
 )
 
@@ -254,6 +255,7 @@ arguments_map: Dict[str, List[str]] = defaultdict(list)
 # expected to call json_error or json_success, as it uses json_error
 # internally when it encounters an error
 def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
+    type_hints = get_type_hints(view_func)
     num_params = view_func.__code__.co_argcount
     default_param_values = cast(FunctionType, view_func).__defaults__
     if default_param_values is None:
@@ -278,6 +280,48 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
                     and not value.documentation_pending
                     and not value.path_only):
                 arguments_map[view_func_full_name].append(value.post_var_name)
+
+    for param in post_params:
+        if param.validator and param.func_var_name:
+            if param.validator.__name__ == 'ensure_keys':
+                continue
+
+            from zerver.lib.validator import validate_the_validator
+
+            mypy_type = type_hints[param.func_var_name]
+
+            if hasattr(mypy_type, '__origin__'):
+                '''
+                We have a lot of cases where our validator goes
+                against a non-None type, but then the default
+                value for the parameter is None.  In those
+                cases the mypy annotation is something like
+                Optional[List], but we want to treat it like
+                List for purpose of making sure that our
+                validator matches the mypy type.
+                '''
+
+                if mypy_type.__origin__ == Union:
+                    args = mypy_type.__args__
+                    if len(args) == 2 and args[1].__name__ == 'NoneType':
+                        mypy_type = args[0]
+
+            try:
+                validate_the_validator(
+                    param.validator,
+                    mypy_type,
+                )
+            except AssertionError:  # nocoverage
+                raise AssertionError(f'''
+                    REQ validator for {param.func_var_name}
+                    in {view_func_full_name} does not
+                    match its mypy type:
+
+                        {mypy_type}
+
+                    (scroll up for more detail)
+                    ''')
+                raise
 
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:

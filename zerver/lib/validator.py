@@ -25,12 +25,26 @@ A simple example of composition is this:
 To extend this concept, it's simply a matter of writing your own validator
 for any particular type of object.
 '''
+import os
 import re
 from datetime import datetime
-from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, TypeVar, Union, cast
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+    cast,
+)
 
 import ujson
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.utils.translation import ugettext as _
@@ -41,7 +55,7 @@ from zerver.lib.types import ProfileFieldData, Validator
 FuncT = Callable[..., Any]
 TypeStructure = TypeVar("TypeStructure")
 
-USING_TYPE_STRUCTURE = settings.LOG_API_EVENT_TYPES
+USING_TYPE_STRUCTURE = os.environ.get('USING_TYPE_STRUCTURE')
 
 # The type_structure system is designed to support using the validators in
 # test_events.py to create documentation for our event formats.
@@ -443,3 +457,60 @@ def check_string_or_int(var_name: str, val: object) -> Optional[str]:
         return None
 
     return _('{var_name} is not a string or integer').format(var_name=var_name)
+
+def validate_the_validator(func: FuncT, mypy_type: Any) -> None:
+    if USING_TYPE_STRUCTURE:
+        def check(type_structure: TypeStructure, mypy_type: Any) -> None:
+            if type_structure == 'skip':
+                return
+
+            if isinstance(type_structure, tuple):
+                if type_structure[0] == Union:
+                    assert mypy_type.__origin__ in [Union]
+
+                    sub_type_structures = type_structure[1]
+                    args = mypy_type.__args__
+
+                    sub_mypy_types = [
+                        arg for arg in args
+                        if arg.__name__ != 'NoneType'
+                    ]
+
+                    assert len(sub_type_structures) == len(sub_mypy_types)
+                    return
+
+                if type_structure[0] == List:
+                    assert mypy_type.__origin__ in [Iterable, List, Sequence]
+
+                    sub_type_structure = type_structure[1]
+                    sub_mypy_type = mypy_type.__args__[0]
+                    check(sub_type_structure, sub_mypy_type)
+                    return
+
+                if type_structure[0] == Dict:
+                    assert mypy_type.__origin__ in [Dict, Mapping]
+                    args = mypy_type.__args__
+                    key_type = args[0]
+                    val_type = args[1]
+                    print(val_type)
+
+                    assert key_type == str
+                    return
+
+                raise AssertionError('unknown validator')
+
+            if type_structure == 'bool':
+                assert mypy_type == bool
+                return
+
+            if type_structure == 'int':
+                assert mypy_type == int
+                return
+
+            if type_structure == 'str':
+                assert mypy_type == str
+                return
+
+            raise AssertionError('unknown validator')
+
+        check(func.type_structure, mypy_type)  # type: ignore[attr-defined] # type_structure
