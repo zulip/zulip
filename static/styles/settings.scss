@@ -1790,24 +1790,6 @@ input[type=checkbox] {
     }
 }
 
-.modal {
-    box-shadow: 0px 0px 75px hsla(0, 0%, 0%, 0.5);
-    outline: 10000px solid hsla(0, 0%, 0%, 0.3);
-    border: none;
-    border-radius: 0px;
-
-    &.fade {
-        /* Ensure the modal is entirely off-screen while we fade the background */
-        top: -50%;
-        transition: opacity 0.3s linear;
-        transform: translateY(-50%);
-
-        &.in {
-            top: 50%;
-            pointer-events: all;
-        }
-    }
-}
 
 #account-settings,
 #admin-human-form {
