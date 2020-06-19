@@ -4078,17 +4078,12 @@ def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
 
     # First, we clear mobile push notifications.  This is safer in the
     # event that the below logic times out and we're killed.
-    while True:
-        all_push_message_ids = UserMessage.objects.filter(
-            user_profile=user_profile,
-        ).extra(
-            where=[UserMessage.where_active_push_notification()],
-        ).values_list("message_id", flat=True)[0:10000]
-
-        if len(all_push_message_ids) == 0:
-            break
-
-        do_clear_mobile_push_notifications_for_ids(user_profile, all_push_message_ids)
+    all_push_message_ids = UserMessage.objects.filter(
+        user_profile=user_profile,
+    ).extra(
+        where=[UserMessage.where_active_push_notification()],
+    ).values_list("message_id", flat=True)[0:10000]
+    do_clear_mobile_push_notifications_for_ids(user_profile, all_push_message_ids)
 
     msgs = UserMessage.objects.filter(
         user_profile=user_profile,
