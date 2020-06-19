@@ -580,8 +580,7 @@ function make_attacher(base) {
 
     function prepend_base(suggestion) {
         if (base && base.description.length > 0) {
-            const sep = page_params.search_pills_enabled ? ", " : " ";
-            suggestion.search_string = base.search_string + sep + suggestion.search_string;
+            suggestion.search_string = base.search_string + " " + suggestion.search_string;
             suggestion.description = base.description + ", " + suggestion.description;
         }
     }
