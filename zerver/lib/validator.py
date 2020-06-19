@@ -167,29 +167,17 @@ def check_color(var_name: str, val: object) -> Optional[str]:
     return None
 
 def check_none_or(sub_validator: Validator) -> Validator:
-    if USING_TYPE_STRUCTURE:
-        type_structure = 'none_or_' + sub_validator.type_structure  # type: ignore[attr-defined] # monkey-patching
-    else:
-        type_structure = None
-
-    @set_type_structure(type_structure)
     def f(var_name: str, val: object) -> Optional[str]:
         if val is None:
             return None
         else:
             return sub_validator(var_name, val)
+
+    if USING_TYPE_STRUCTURE:
+        f.type_structure = (None, sub_validator)  # type: ignore[attr-defined] # monkey-patching
     return f
 
 def check_list(sub_validator: Optional[Validator], length: Optional[int]=None) -> Validator:
-    if USING_TYPE_STRUCTURE:
-        if sub_validator:
-            type_structure = [sub_validator.type_structure]  # type: ignore[attr-defined] # monkey-patching
-        else:
-            type_structure = 'list'  # type: ignore[assignment] # monkey-patching
-    else:
-        type_structure = None  # type: ignore[assignment] # monkey-patching
-
-    @set_type_structure(type_structure)
     def f(var_name: str, val: object) -> Optional[str]:
         if not isinstance(val, list):
             return _('{var_name} is not a list').format(var_name=var_name)
@@ -207,15 +195,20 @@ def check_list(sub_validator: Optional[Validator], length: Optional[int]=None) -
                     return error
 
         return None
+
+    if USING_TYPE_STRUCTURE:
+        if sub_validator is None:
+            param = 'skip'
+        else:
+            param = sub_validator.type_structure  # type: ignore[attr-defined] # monkey-patching
+        f.type_structure = (List, param)  # type: ignore[attr-defined] # monkey-patching
     return f
 
 def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
                optional_keys: Iterable[Tuple[str, Validator]]=[],
                value_validator: Optional[Validator]=None,
                _allow_only_listed_keys: bool=False) -> Validator:
-    type_structure: Dict[str, Any] = {}
 
-    @set_type_structure(type_structure)
     def f(var_name: str, val: object) -> Optional[str]:
         if not isinstance(val, dict):
             return _('{var_name} is not a dict').format(var_name=var_name)
@@ -229,8 +222,6 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
             error = sub_validator(vname, val[k])
             if error:
                 return error
-            if USING_TYPE_STRUCTURE:
-                type_structure[k] = sub_validator.type_structure  # type: ignore[attr-defined] # monkey-patching
 
         for k, sub_validator in optional_keys:
             if k in val:
@@ -238,8 +229,6 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
                 error = sub_validator(vname, val[k])
                 if error:
                     return error
-            if USING_TYPE_STRUCTURE:
-                type_structure[k] = sub_validator.type_structure  # type: ignore[attr-defined] # monkey-patching
 
         if value_validator:
             for key in val:
@@ -247,8 +236,6 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
                 error = value_validator(vname, val[key])
                 if error:
                     return error
-            if USING_TYPE_STRUCTURE:
-                type_structure['any'] = value_validator.type_structure  # type: ignore[attr-defined] # monkey-patching
 
         if _allow_only_listed_keys:
             required_keys_set = {x[0] for x in required_keys}
@@ -259,6 +246,15 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
 
         return None
 
+    if USING_TYPE_STRUCTURE:
+        params = dict(
+            required=[(k, f.type_structure) for k, f in required_keys],  # type: ignore[attr-defined] # monkey-patching
+            optional=[(k, f.type_structure) for k, f in optional_keys],  # type: ignore[attr-defined] # monkey-patching
+            value=getattr(value_validator, 'type_structure', None),
+            strict=_allow_only_listed_keys,
+        )  # type: ignore[attr-defined] # monkey-patching
+
+        f.type_structure = (Dict, params)  # type: ignore[attr-defined] # monkey-patching
     return f
 
 def check_dict_only(required_keys: Iterable[Tuple[str, Validator]],
@@ -274,17 +270,16 @@ def check_union(allowed_type_funcs: Iterable[Validator]) -> Validator:
     types for this variable.
     """
 
-    if USING_TYPE_STRUCTURE:
-        type_structure = f'any("{[x.type_structure for x in allowed_type_funcs]}")'  # type: ignore[attr-defined] # monkey-patching
-    else:
-        type_structure = None  # type: ignore[assignment] # monkey-patching
-
-    @set_type_structure(type_structure)
     def enumerated_type_check(var_name: str, val: object) -> Optional[str]:
         for func in allowed_type_funcs:
             if not func(var_name, val):
                 return None
         return _('{var_name} is not an allowed_type').format(var_name=var_name)
+
+    if USING_TYPE_STRUCTURE:
+        sub_types = [f.type_structure for f in allowed_type_funcs]  # type: ignore[attr-defined] # monkey-patching
+        enumerated_type_check.type_structure = (Union, sub_types)  # type: ignore[attr-defined] # monkey-patching
+
     return enumerated_type_check
 
 def equals(expected_val: object) -> Validator:
@@ -432,7 +427,7 @@ def to_positive_or_allowed_int(allowed_integer: int) -> Callable[[str], int]:
         return to_non_negative_int(s)
     return convertor
 
-@set_type_structure('any(List[int], str)]')
+@set_type_structure((Union, ['str', (List, 'int')]))
 def check_string_or_int_list(var_name: str, val: object) -> Optional[str]:
     if isinstance(val, str):
         return None
@@ -442,7 +437,7 @@ def check_string_or_int_list(var_name: str, val: object) -> Optional[str]:
 
     return check_list(check_int)(var_name, val)
 
-@set_type_structure('any(int, str)')
+@set_type_structure((Union, ['str', 'int']))
 def check_string_or_int(var_name: str, val: object) -> Optional[str]:
     if isinstance(val, str) or isinstance(val, int):
         return None
