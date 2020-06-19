@@ -296,7 +296,7 @@
         font-size: 0.857em;
         unicode-bidi: embed;
         direction: ltr;
-        white-space: pre-wrap;
+        white-space: initial;
         padding: 0px;
         padding-right: 4px;
         background-color: hsl(0, 0%, 100%);
@@ -304,6 +304,9 @@
 
     pre {
         line-height: 15px;
+        code {
+            white-space: pre-wrap;
+        }
     }
 
     .code-section {
