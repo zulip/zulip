@@ -583,6 +583,8 @@ function handle_bot_owner_profile(tbody) {
 
 function handle_human_form(tbody, status_field) {
     tbody.on("click", ".open-user-form", function (e) {
+        e.stopPropagation();
+        e.preventDefault();
         const user_id = parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const person = people.get_by_user_id(user_id);
 
@@ -617,6 +619,8 @@ function handle_human_form(tbody, status_field) {
 
 function handle_bot_form(tbody, status_field) {
     tbody.on("click", ".open-user-form", function (e) {
+        e.stopPropagation();
+        e.preventDefault();
         const user_id = parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const bot = people.get_by_user_id(user_id);
 
