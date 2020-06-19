@@ -1893,7 +1893,8 @@ class AbstractReaction(models.Model):
 
     class Meta:
         abstract = True
-        unique_together = ("user_profile", "message", "emoji_name")
+        unique_together = (("user_profile", "message", "emoji_name"),
+                           ("user_profile", "message", "reaction_type", "emoji_code"))
 
 class Reaction(AbstractReaction):
     message: Message = models.ForeignKey(Message, on_delete=CASCADE)
