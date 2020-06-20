@@ -8,6 +8,78 @@ let topics_widget;
 const MAX_AVATAR = 4;
 let filters = new Set();
 
+// Use this to set the focused element.
+//
+// We set it's value to `table` in case the
+// focus in one of the table rows, since the
+// table rows are constantly updated and tracking
+// the selected element in them would be tedious via
+// jquery.
+//
+// So, we use table as a grid system and
+// track the coordinates of the focus element via
+// `row_focus` and `col_focus`.
+let current_focus_elem;
+let row_focus = 0;
+// Start focus on the topic column, so Down+Enter works to visit a topic.
+let col_focus = 1;
+
+// The number of selectable actions in a recent_topics.  Used to
+// implement wraparound of elements with the right/left keys.  Must be
+// increased when we add new actions, or rethought if we add optional
+// actions that only appear in some rows.
+const MAX_SELECTABLE_COLS = 4;
+
+function set_default_focus() {
+    // If at any point we are confused about the currently
+    // focused element, we switch focus to search.
+    current_focus_elem = $("#recent_topics_search");
+    current_focus_elem.focus();
+}
+
+function set_table_focus(row, col) {
+    const topic_rows = $("#recent_topics_table table tbody tr");
+    if (topic_rows.length === 0 || row < 0 || row >= topic_rows.length) {
+        row_focus = 0;
+        // return focus back to filters if we cannot focus on the table.
+        set_default_focus();
+        return true;
+    }
+
+    // The first two "columns" are the stream/topic links.
+    if (col === 0 || col === 1) {
+        topic_rows.eq(row).children().eq(col).find('a').focus();
+    } else {
+        topic_rows.eq(row).children().eq(2).children().eq(col - 2).focus();
+    }
+    current_focus_elem = 'table';
+    return true;
+}
+
+function revive_current_focus() {
+    // After re-render, the current_focus_elem is no longer linked
+    // to the focused element, this function attempts to revive the
+    // link and focus to the element prior to the rerender.
+    if (!current_focus_elem) {
+        set_default_focus();
+        return false;
+    }
+
+    if (current_focus_elem === 'table') {
+        set_table_focus(row_focus, col_focus);
+        return true;
+    }
+
+    const filter_button = current_focus_elem.data('filter');
+    if (!filter_button) {
+        set_default_focus();
+    } else {
+        current_focus_elem = $("#recent_topics_filter_buttons").find("[data-filter='" + filter_button + "']");
+        current_focus_elem.focus();
+    }
+    return true;
+}
+
 function get_topic_key(stream_id, topic) {
     return stream_id + ":" + topic.toLowerCase();
 }
@@ -208,6 +280,7 @@ exports.inplace_rerender = function (topic_key) {
     } else {
         topic_row.show();
     }
+    revive_current_focus();
     return true;
 };
 
@@ -276,8 +349,8 @@ exports.update_filters_view = function () {
     show_selected_filters();
 
     topics_widget.hard_redraw();
+    revive_current_focus();
 };
-
 
 function stream_sort(a, b) {
     const a_stream = message_store.get(a.last_msg_id).stream;
@@ -341,6 +414,7 @@ exports.complete_rerender = function () {
         },
         html_selector: get_topic_row,
     });
+    revive_current_focus();
 };
 
 exports.launch = function () {
@@ -352,7 +426,109 @@ exports.launch = function () {
         },
     });
     exports.complete_rerender();
-    $("#recent_topics_search").select();
+};
+
+exports.change_focused_element = function (e, input_key) {
+    // Called from hotkeys.js; like all logic in that module,
+    // returning true will cause the caller to do
+    // preventDefault/stopPropagation; false will let the browser
+    // handle the key.
+    if (input_key === 'tab') {
+        input_key = 'right_arrow';
+    } else if (input_key === 'shift_tab') {
+        input_key = 'left_arrow';
+    }
+
+    const $elem = $(e.target);
+
+    if ($("#recent_topics_table").find(':focus').length === 0) {
+        // This is a failsafe to return focus back to recent topics overlay,
+        // in case it loses focus due to some unknown reason.
+        set_default_focus();
+        return false;
+    }
+
+    if (e.target.id === 'recent_topics_search') {
+        // Since the search box a text area, we want the browser to handle
+        // Left/Right and selection within the widget; but if the user
+        // arrows off the edges, we should move focus to the adjacent widgets..
+        const textInput = $("#recent_topics_search").get(0);
+        const start = textInput.selectionStart;
+        const end = textInput.selectionEnd;
+        const text_length = textInput.value.length;
+        let is_selected = false;
+        if (end - start > 0) {
+            is_selected = true;
+        }
+
+        switch (input_key) {
+        case 'left_arrow':
+            if (start !== 0 || is_selected) {
+                return false;
+            }
+            current_focus_elem = $elem.prev().children().last();
+            break;
+        case 'right_arrow':
+            if (end !== text_length || is_selected) {
+                return false;
+            }
+            current_focus_elem = $elem.prev().children().first();
+            break;
+        case 'down_arrow':
+            set_table_focus(row_focus, col_focus);
+            return true;
+        }
+    } else if ($elem.hasClass('btn-recent-filters')) {
+        switch (input_key) {
+        case 'left_arrow':
+            if ($elem.parent().children().first()[0] === $elem[0]) {
+                current_focus_elem = $("#recent_topics_search");
+            } else {
+                current_focus_elem = $elem.prev();
+            }
+            break;
+        case 'right_arrow':
+            if ($elem.parent().children().last()[0] === $elem[0]) {
+                current_focus_elem = $("#recent_topics_search");
+            } else {
+                current_focus_elem = $elem.next();
+            }
+            break;
+        case 'down_arrow':
+            set_table_focus(row_focus, col_focus);
+            return true;
+        }
+    } else if (current_focus_elem === 'table') {
+        // For arrowing around the table of topics, we implement left/right
+        // wraparound.  Going off the top or the bottom takes one
+        // to the navigation at the top (see set_table_focus).
+        switch (input_key) {
+        case 'left_arrow':
+            col_focus -= 1;
+            if (col_focus < 0) {
+                col_focus = MAX_SELECTABLE_COLS - 1;
+            }
+            break;
+        case 'right_arrow':
+            col_focus += 1;
+            if (col_focus >= MAX_SELECTABLE_COLS) {
+                col_focus = 0;
+            }
+            break;
+        case 'down_arrow':
+            row_focus += 1;
+            break;
+        case 'up_arrow':
+            row_focus -= 1;
+        }
+        set_table_focus(row_focus, col_focus);
+        return true;
+    }
+    if (current_focus_elem) {
+        current_focus_elem.focus();
+    }
+
+    return true;
 };
 
 window.recent_topics = exports;
