@@ -358,7 +358,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                     return;
                 }
 
-                if (!stream_data.remove_subscriber(sub.name, user_id)) {
+                if (!stream_data.remove_subscriber(sub.stream_id, user_id)) {
                     blueslip.warn('Cannot process peer_remove event.');
                     return;
                 }

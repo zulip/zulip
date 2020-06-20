@@ -176,7 +176,7 @@ exports.is_subscriber_subset = function (sub1, sub2) {
 exports.unsubscribe_myself = function (sub) {
     // Remove user from subscriber's list
     const user_id = people.my_current_user_id();
-    exports.remove_subscriber(sub.name, user_id);
+    exports.remove_subscriber(sub.stream_id, user_id);
     sub.subscribed = false;
     sub.newly_subscribed = false;
     stream_info.set_false(sub.name, sub);
@@ -644,10 +644,10 @@ exports.add_subscriber = function (stream_id, user_id) {
     return true;
 };
 
-exports.remove_subscriber = function (stream_name, user_id) {
-    const sub = exports.get_sub(stream_name);
+exports.remove_subscriber = function (stream_id, user_id) {
+    const sub = exports.get_sub_by_id(stream_id);
     if (typeof sub === 'undefined') {
-        blueslip.warn("We got a remove_subscriber call for a non-existent stream " + stream_name);
+        blueslip.warn("We got a remove_subscriber call for a non-existent stream " + stream_id);
         return false;
     }
     if (!sub.subscribers.has(user_id)) {
