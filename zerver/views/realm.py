@@ -61,7 +61,7 @@ def update_realm(
         allow_edit_history: Optional[bool]=REQ(validator=check_bool, default=None),
         default_language: Optional[str]=REQ(validator=check_string, default=None),
         waiting_period_threshold: Optional[int]=REQ(converter=to_non_negative_int, default=None),
-        authentication_methods: Optional[Dict[Any, Any]]=REQ(validator=check_dict([]), default=None),
+        authentication_methods: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None),
         notifications_stream_id: Optional[int]=REQ(validator=check_int, default=None),
         signup_notifications_stream_id: Optional[int]=REQ(validator=check_int, default=None),
         message_retention_days: Optional[int] = REQ(converter=to_positive_or_allowed_int(
