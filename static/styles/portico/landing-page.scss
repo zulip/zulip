@@ -678,33 +678,6 @@ nav {
     overflow: hidden;
 }
 
-.portico-landing.hello .gradients .gradient {
-    position: absolute;
-    left: 0;
-    width: 100%;
-    height: 1100px;
-}
-
-.portico-landing.hello .gradients .gradient.dark-blue {
-    background: linear-gradient(10deg, hsla(196, 58%, 14%, 0) 50%, hsla(196, 58%, 14%, 0.7));
-}
-
-.portico-landing.hello .gradients .gradient.green {
-    background: linear-gradient(-25deg, hsla(156, 47%, 47%, 0) 40%, hsl(156, 47%, 47%));
-}
-
-.portico-landing.hello .gradients .gradient.blue {
-    background: linear-gradient(25deg, hsla(196, 38%, 51%, 0) 40%, hsl(196, 38%, 51%));
-}
-
-.portico-landing.hello .gradients .gradient.sunburst {
-    background: linear-gradient(5deg, hsla(49, 71%, 68%, 0) 20%, hsl(49, 71%, 68%));
-}
-
-.portico-landing.hello .gradients .gradient.white-fade {
-    background: linear-gradient(0deg, hsl(0, 0%, 98%) 0%, hsla(0, 0%, 98%, 0) 40%);
-}
-
 .portico-landing.hello .hero .waves {
     position: absolute;
 
@@ -750,34 +723,6 @@ nav {
 
     animation-name: wavesBackward;
     animation-duration: 21s;
-}
-
-@keyframes waves {
-    0% {
-        transform: rotate(0);
-    }
-
-    50% {
-        transform: rotate(180deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
-@keyframes wavesBackward {
-    0% {
-        transform: rotate(0);
-    }
-
-    50% {
-        transform: rotate(-180deg);
-    }
-
-    100% {
-        transform: rotate(-360deg);
-    }
 }
 
 .portico-landing.hello .hero .content {
@@ -853,6 +798,61 @@ nav {
     margin-top: 10px;
 
     font-weight: normal;
+}
+
+.portico-landing.hello .gradients .gradient {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 1100px;
+}
+
+.portico-landing.hello .gradients .gradient.dark-blue {
+    background: linear-gradient(10deg, hsla(196, 58%, 14%, 0) 50%, hsla(196, 58%, 14%, 0.7));
+}
+
+.portico-landing.hello .gradients .gradient.green {
+    background: linear-gradient(-25deg, hsla(156, 47%, 47%, 0) 40%, hsl(156, 47%, 47%));
+}
+
+.portico-landing.hello .gradients .gradient.blue {
+    background: linear-gradient(25deg, hsla(196, 38%, 51%, 0) 40%, hsl(196, 38%, 51%));
+}
+
+.portico-landing.hello .gradients .gradient.sunburst {
+    background: linear-gradient(5deg, hsla(49, 71%, 68%, 0) 20%, hsl(49, 71%, 68%));
+}
+
+.portico-landing.hello .gradients .gradient.white-fade {
+    background: linear-gradient(0deg, hsl(0, 0%, 98%) 0%, hsla(0, 0%, 98%, 0) 40%);
+}
+
+@keyframes waves {
+    0% {
+        transform: rotate(0);
+    }
+
+    50% {
+        transform: rotate(180deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes wavesBackward {
+    0% {
+        transform: rotate(0);
+    }
+
+    50% {
+        transform: rotate(-180deg);
+    }
+
+    100% {
+        transform: rotate(-360deg);
+    }
 }
 
 .portico-landing.hello .col-3-5,
@@ -3397,16 +3397,16 @@ nav {
         width: auto;
     }
 
-    .portico-landing.hello .screen.hero-screen {
-        display: none;
-    }
-
     .portico-landing.hello .hero {
         padding-bottom: 100px;
     }
 
     .portico-landing.hello .hero .waves {
         height: 450px;
+    }
+
+    .portico-landing.hello .screen.hero-screen {
+        display: none;
     }
 
     nav {
