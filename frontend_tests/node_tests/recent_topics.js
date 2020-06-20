@@ -318,20 +318,12 @@ run_test("test_recent_topics_launch", () => {
         return '<recent_topics table stub>';
     });
 
-    $("#recent_topics_search").selected = false;
-    $("#recent_topics_search").select = () => {
-        $("#recent_topics_search").selected = true;
-    };
-
     const rt = zrequire('recent_topics');
     rt.process_messages(messages);
-
-    assert.equal($("#recent_topics_search").selected, false);
 
     rt.launch();
 
     // Test if search text is selected
-    assert.equal($("#recent_topics_search").selected, true);
     overlays.close_callback();
 
     // incorrect topic_key

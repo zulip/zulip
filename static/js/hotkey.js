@@ -422,6 +422,19 @@ exports.process_shift_tab_key = function () {
 exports.process_hotkey = function (e, hotkey) {
     const event_name = hotkey.name;
 
+
+    switch (event_name) {
+    case 'up_arrow':
+    case 'down_arrow':
+    case 'left_arrow':
+    case 'right_arrow':
+    case 'tab':
+    case 'shift_tab':
+        if (overlays.recent_topics_open()) {
+            return recent_topics.change_focused_element(e, event_name);
+        }
+    }
+
     // We handle the most complex keys in their own functions.
     switch (event_name) {
     case 'escape':
