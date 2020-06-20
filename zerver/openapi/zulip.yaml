@@ -383,10 +383,13 @@ paths:
                               `{server_url}/user_uploads/{realm_id}/ab/cdef/temp_file.py`.
                           size:
                             type: integer
+                            nullable: true
                             description: |
                               Size of the file in bytes.
                           create_time:
-                            type: integer
+                            oneOf:
+                            - type: number
+                            - type: integer
                             description: |
                               Time when the attachment was uploaded.
                           messages:
@@ -593,6 +596,7 @@ paths:
                         properties:
                           avatar_url:
                             type: string
+                            nullable: true
                             description: |
                               The URL of the user's avatar.
                           client:
@@ -643,7 +647,9 @@ paths:
                               type: object
                               properties:
                                 emoji_code:
-                                  type: integer
+                                  oneOf:
+                                  - type: string
+                                  - type: integer
                                   description: |
                                     An encoded version of the emoji's unicode codepoint.
                                 emoji_name:
@@ -3918,6 +3924,7 @@ paths:
                               assumption, as we may change that behavior in the future.
                           first_message_id:
                             type: integer
+                            nullable: true
                             description: |
                               The id of the first message in the stream.
 

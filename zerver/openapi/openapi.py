@@ -12,6 +12,18 @@ OPENAPI_SPEC_PATH = os.path.abspath(os.path.join(
 # The validator will ignore these keys when they appear in the "content"
 # passed.
 EXCLUDE_PROPERTIES = {
+    '/attachments': {
+        'get': {
+            # Opaque object
+            '200': ['messages'],
+        }
+    },
+    '/events': {
+        'get': {
+            # Array with opaque object
+            '200': ['events']
+        }
+    },
     '/register': {
         'post': {
             '200': ['max_message_id', 'realm_emoji', 'pointer'],
@@ -26,11 +38,21 @@ EXCLUDE_PROPERTIES = {
                     'realm_name_in_notifications', 'presence_enabled'],
         },
     },
-
+    '/streams': {
+        'get': {
+            # Some responses contain undocumented keys
+            '200': ['is_default'],
+        }
+    },
     '/zulip-outgoing-webhook': {
         'post': {
             '200': ['result', 'msg', 'message'],
         },
+    },
+    '/users': {
+        'get': {
+            '200': ['delivery_email'],
+        }
     },
     '/users/me': {
         'get': {
@@ -55,11 +77,17 @@ EXCLUDE_PROPERTIES = {
         }
     },
     '/messages': {
+        'get': {
+            # Some responses contain undocumented keys and
+            # 'user' is opaque
+            '200': ['last_edit_timestamp', 'display_recipient',
+                    'match_content', 'match_subject', 'user'],
+        },
         'post': {
             # Extraneous
             '200': ['deliver_at'],
         }
-    }
+    },
 }
 
 # A list of endpoint-methods such that the endpoint
@@ -261,33 +289,41 @@ def validate_against_openapi_schema(content: Dict[str, Any], endpoint: str,
 
 def validate_array(content: List[Any], schema: Dict[str, Any], exclusion_list: List[str]) -> None:
     valid_types: List[type] = []
+    obj_schema: Optional[Dict[str, Any]] = None
+    array_schema: Optional[Dict[str, Any]] = None
     if 'oneOf' in schema['items']:
-        for valid_type in schema['items']['oneOf']:
-            valid_types.append(to_python_type(valid_type['type']))
+        for oneof_schema in schema['items']['oneOf']:
+            if oneof_schema['type'] == 'array':
+                array_schema = oneof_schema
+            elif oneof_schema['type'] == 'object':
+                obj_schema = oneof_schema
+            valid_types.append(to_python_type(oneof_schema['type']))
     else:
         valid_types.append(to_python_type(schema['items']['type']))
+        if schema['items']['type'] == 'array':
+            array_schema = schema['items']
+        elif schema['items']['type'] == 'object':
+            obj_schema = schema['items']
+
     for item in content:
         if type(item) not in valid_types:
             raise SchemaError('Wrong data type in array')
         # We can directly check for objects and arrays as
         # there are no mixed arrays consisting of objects
         # and arrays.
-        if 'object' in valid_types:
-            if 'oneOf' not in schema['items']:
-                if 'properties' not in schema['items']:
-                    raise SchemaError('Opaque object in array')
-                validate_object(item, schema['items'], exclusion_list)
-            continue
-        # If the object was not an opaque object then
-        # the continue statement above should have
-        # been executed.
-        if type(item) is dict:
-            raise SchemaError('Opaque object in array')
-        if 'items' in schema['items']:
-            validate_array(item, schema['items'], exclusion_list)
+        if type(item) == dict:
+            assert obj_schema is not None
+            if 'properties' not in obj_schema:
+                raise SchemaError('Opaque object in array')
+            validate_object(item, obj_schema, exclusion_list)
+        if type(item) == list:
+            assert(array_schema is not None)
+            validate_array(item, array_schema, exclusion_list)
 
 def validate_object(content: Dict[str, Any], schema: Dict[str, Any], exclusion_list: List[str]) -> None:
     for key, value in content.items():
+        obj_schema: Optional[Dict[str, Any]] = None
+        array_schema: Optional[Dict[str, Any]] = None
         if key in exclusion_list:
             continue
         # Check that the key is defined in the schema
@@ -299,8 +335,17 @@ def validate_object(content: Dict[str, Any], schema: Dict[str, Any], exclusion_l
         if 'oneOf' in schema['properties'][key]:
             for types in schema['properties'][key]['oneOf']:
                 expected_type.append(to_python_type(types['type']))
+                if types['type'] == 'object':
+                    obj_schema = types
+                elif types['type'] == 'array':
+                    array_schema = types
         else:
             expected_type.append(to_python_type(schema['properties'][key]['type']))
+            if schema['properties'][key]['type'] == 'object':
+                obj_schema = schema['properties'][key]
+            elif schema['properties'][key]['type'] == 'array':
+                array_schema = schema['properties'][key]
+
         actual_type = type(value)
         # We have only define nullable property if it is nullable
         if value is None and 'nullable' in schema['properties'][key]:
@@ -308,14 +353,17 @@ def validate_object(content: Dict[str, Any], schema: Dict[str, Any], exclusion_l
         if actual_type not in expected_type:
             raise SchemaError('Expected type {} for key "{}", but actually '
                               'got {}'.format(expected_type, key, actual_type))
-        if expected_type is list:
-            validate_array(value, schema['properties'][key], exclusion_list)
-        if 'properties' in schema['properties'][key]:
-            validate_object(value, schema['properties'][key], exclusion_list)
-            continue
+        if actual_type == list:
+            assert array_schema is not None
+            validate_array(value, array_schema, exclusion_list)
+        if actual_type == dict:
+            assert obj_schema is not None
+            if 'properties' in obj_schema:
+                validate_object(value, obj_schema, exclusion_list)
+                continue
         if 'additionalProperties' in schema['properties'][key]:
             for child_keys in value:
-                if type(value[child_keys]) is list:
+                if type(value[child_keys]) == list:
                     validate_array(value[child_keys],
                                    schema['properties'][key]['additionalProperties'], exclusion_list)
                     continue
@@ -324,7 +372,7 @@ def validate_object(content: Dict[str, Any], schema: Dict[str, Any], exclusion_l
             continue
         # If the object is not opaque then continue statements
         # will be executed above and this will be skipped
-        if expected_type is dict:
+        if actual_type == dict:
             raise SchemaError(f'Opaque object "{key}"')
     # Check that at least all the required keys are present
     if 'required' in schema:
