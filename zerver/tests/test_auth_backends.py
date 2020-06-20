@@ -722,7 +722,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
     def prepare_login_url_and_headers(
         self,
-        subdomain: Optional[str]=None,
+        subdomain: str,
         mobile_flow_otp: Optional[str]=None,
         desktop_flow_otp: Optional[str]=None,
         is_signup: bool=False,
@@ -738,13 +738,12 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
         params = {}
         headers = {}
-        if subdomain is not None:
-            if subdomain == '':
-                # "testserver" may trip up some libraries' URL validation,
-                # so let's use the equivalent www. version.
-                headers['HTTP_HOST'] = 'www.testserver'
-            else:
-                headers['HTTP_HOST'] = subdomain + ".testserver"
+        if subdomain == '':
+            # "testserver" may trip up some libraries' URL validation,
+            # so let's use the equivalent www. version.
+            headers['HTTP_HOST'] = 'www.testserver'
+        else:
+            headers['HTTP_HOST'] = subdomain + ".testserver"
         if mobile_flow_otp is not None:
             params['mobile_flow_otp'] = mobile_flow_otp
             headers['HTTP_USER_AGENT'] = "ZulipAndroid"
@@ -778,7 +777,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         })
 
     def social_auth_test(self, account_data_dict: Dict[str, str],
-                         *, subdomain: Optional[str]=None,
+                         *, subdomain: str,
                          mobile_flow_otp: Optional[str]=None,
                          desktop_flow_otp: Optional[str]=None,
                          is_signup: bool=False,
@@ -1456,7 +1455,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
     # We have to define our own social_auth_test as the flow of SAML authentication
     # is different from the other social backends.
     def social_auth_test(self, account_data_dict: Dict[str, str],
-                         *, subdomain: Optional[str]=None,
+                         *, subdomain: str,
                          mobile_flow_otp: Optional[str]=None,
                          desktop_flow_otp: Optional[str]=None,
                          is_signup: bool=False,
@@ -2161,7 +2160,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
 
     def prepare_login_url_and_headers(
         self,
-        subdomain: Optional[str]=None,
+        subdomain: str,
         mobile_flow_otp: Optional[str]=None,
         desktop_flow_otp: Optional[str]=None,
         is_signup: bool=False,
@@ -2193,7 +2192,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         return url, headers
 
     def social_auth_test(self, account_data_dict: Dict[str, str],
-                         *, subdomain: Optional[str]=None,
+                         *, subdomain: str,
                          mobile_flow_otp: Optional[str]=None,
                          desktop_flow_otp: Optional[str]=None,
                          is_signup: bool=False,
@@ -2625,6 +2624,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         result = self.social_auth_test(account_data_dict,
                                        email_data=email_data,
                                        is_signup=True,
+                                       subdomain='zulip',
                                        expect_choose_email_screen=True,
                                        next='/user_uploads/image')
         data = load_subdomain_token(result)
