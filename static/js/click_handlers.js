@@ -4,6 +4,13 @@ const util = require("./util");
 const render_buddy_list_tooltip = require('../templates/buddy_list_tooltip.hbs');
 const render_buddy_list_tooltip_content = require('../templates/buddy_list_tooltip_content.hbs');
 
+function convert_enter_to_click(e) {
+    const key = e.which;
+    if (key === 13) {  // enter
+        $(e.currentTarget).click();
+    }
+}
+
 exports.initialize = function () {
 
     // MESSAGE CLICKING
@@ -346,12 +353,16 @@ exports.initialize = function () {
         muting_ui.mute(stream_id, topic);
     });
 
+    $('body').on('keydown', '.on_hover_topic_mute', convert_enter_to_click);
+
     $('body').on('click', '.on_hover_topic_unmute', function (e) {
         e.stopPropagation();
         const stream_id = parseInt($(e.currentTarget).attr('data-stream-id'), 10);
         const topic = $(e.currentTarget).attr('data-topic-name');
         muting_ui.unmute(stream_id, topic);
     });
+
+    $('body').on('keydown', '.on_hover_topic_unmute', convert_enter_to_click);
 
     // RECENT TOPICS
 
@@ -361,6 +372,8 @@ exports.initialize = function () {
         const topic = $(e.currentTarget).attr('data-topic-name');
         unread_ops.mark_topic_as_read(stream_id, topic);
     });
+
+    $('body').on('keydown', '.on_hover_topic_read', convert_enter_to_click);
 
     $('body').on('click', '.btn-recent-filters', function (e) {
         e.stopPropagation();
