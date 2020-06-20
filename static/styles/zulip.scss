@@ -680,7 +680,7 @@ td.pointer {
 
     > div {
         opacity: 0;
-        pointer-events: none;
+        visibility: hidden;
         transition: all 0.2s ease;
         padding: 0px 1px;
     }
@@ -752,7 +752,7 @@ td.pointer {
 
         > div {
             opacity: 1;
-            pointer-events: all;
+            visibility: visible;
         }
     }
 
@@ -1150,6 +1150,7 @@ td.pointer {
 
 .has_actions_popover .info {
     opacity: 1;
+    visibility: visible;
 }
 
 /* Brighten text because of the dark background */
