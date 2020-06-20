@@ -471,6 +471,9 @@ export function dispatch_normal_event(event) {
                 case "update":
                     stream_events.update_property(event.stream_id, event.property, event.value);
                     break;
+                default:
+                    blueslip.error("Unexpected event type subscription/" + event.op);
+                    break;
             }
             break;
         case "typing":
