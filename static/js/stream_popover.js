@@ -193,6 +193,7 @@ function build_topic_popover(opts) {
         can_mute_topic: can_mute_topic,
         can_unmute_topic: can_unmute_topic,
         is_admin: sub.is_admin,
+        color: sub.color,
     });
 
     $(elt).popover({
