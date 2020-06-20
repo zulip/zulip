@@ -294,7 +294,7 @@ def add_bot_backend(
         request: HttpRequest, user_profile: UserProfile,
         full_name_raw: str=REQ("full_name"), short_name_raw: str=REQ("short_name"),
         bot_type: int=REQ(validator=check_int, default=UserProfile.DEFAULT_BOT),
-        payload_url: Optional[str]=REQ(validator=check_url, default=""),
+        payload_url: str=REQ(validator=check_url, default=""),
         service_name: Optional[str]=REQ(default=None),
         config_data: Dict[str, str]=REQ(default={},
                                         validator=check_dict(value_validator=check_string)),
