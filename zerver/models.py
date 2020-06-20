@@ -2053,7 +2053,8 @@ class AbstractAttachment(models.Model):
     create_time: datetime.datetime = models.DateTimeField(
         default=timezone_now, db_index=True,
     )
-    size: Optional[int] = models.IntegerField(null=True)
+    # Size of the uploaded file, in bytes
+    size: int = models.IntegerField()
 
     # Whether this attachment has been posted to a public stream, and
     # thus should be available to all non-guest users in the

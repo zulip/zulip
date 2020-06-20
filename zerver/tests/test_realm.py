@@ -795,12 +795,12 @@ class ScrubRealmTest(ZulipTestCase):
             self.send_stream_message(king, "Shakespeare")
 
         Attachment.objects.filter(realm=zulip).delete()
-        Attachment.objects.create(realm=zulip, owner=iago, path_id="a/b/temp1.txt")
-        Attachment.objects.create(realm=zulip, owner=othello, path_id="a/b/temp2.txt")
+        Attachment.objects.create(realm=zulip, owner=iago, path_id="a/b/temp1.txt", size=512)
+        Attachment.objects.create(realm=zulip, owner=othello, path_id="a/b/temp2.txt", size=512)
 
         Attachment.objects.filter(realm=lear).delete()
-        Attachment.objects.create(realm=lear, owner=cordelia, path_id="c/d/temp1.txt")
-        Attachment.objects.create(realm=lear, owner=king, path_id="c/d/temp2.txt")
+        Attachment.objects.create(realm=lear, owner=cordelia, path_id="c/d/temp1.txt", size=512)
+        Attachment.objects.create(realm=lear, owner=king, path_id="c/d/temp2.txt", size=512)
 
         CustomProfileField.objects.create(realm=lear)
 
