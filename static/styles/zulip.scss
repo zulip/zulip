@@ -1702,7 +1702,6 @@ div.focused_table {
 
     .search_icon {
         position: absolute;
-        display: table;
         height: 100%;
         color: hsl(0, 0%, 80%);
         text-decoration: none;
@@ -1724,6 +1723,9 @@ div.focused_table {
     }
 
     .pill-container {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
         border: none;
         padding: 0px;
     }
