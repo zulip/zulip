@@ -94,7 +94,7 @@ function fade_messages() {
 
 exports.would_receive_message = function (user_id) {
     if (focused_recipient.type === 'stream') {
-        const sub = stream_data.get_sub(focused_recipient.stream);
+        const sub = stream_data.get_sub_by_id(focused_recipient.stream_id);
         if (!sub) {
             // If the stream isn't valid, there is no risk of a mix
             // yet, so we sort of "lie" and say they would receive a
@@ -154,7 +154,7 @@ function want_normal_display() {
     if (focused_recipient.type === "stream") {
         // If a stream doesn't exist, there is no real chance of a mix, so fading
         // is just noise to the user.
-        if (!stream_data.get_sub(focused_recipient.stream)) {
+        if (!stream_data.get_sub_by_id(focused_recipient.stream_id)) {
             return true;
         }
 
