@@ -777,14 +777,14 @@ nav {
     box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.2);
 
     transition: all 0.2s ease;
-}
 
-.portico-landing.hello .hero header button:hover {
-    box-shadow: 0px 3px 10px hsla(0, 0%, 100%, 0.2);
-}
+    &:hover {
+        box-shadow: 0px 3px 10px hsla(0, 0%, 100%, 0.2);
+    }
 
-.portico-landing.hello .hero header button:active {
-    box-shadow: 0px 3px 20px hsla(0, 0%, 100%, 0.5);
+    &:active {
+        box-shadow: 0px 3px 20px hsla(0, 0%, 100%, 0.5);
+    }
 }
 
 .portico-landing.hello .hero header .download-button {
