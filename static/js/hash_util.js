@@ -148,6 +148,13 @@ exports.stream_edit_uri = function (sub) {
     return hash;
 };
 
+exports.search_public_streams_notice_url = function () {
+    // Computes the URL of the current narrow if streams:public were added.
+    const operators = narrow_state.filter().operators();
+    const public_operator = {operator: 'streams', operand: 'public'};
+    return exports.operators_to_hash([public_operator].concat(operators));
+};
+
 exports.parse_narrow = function (hash) {
     let i;
     const operators = [];

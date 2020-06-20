@@ -70,9 +70,8 @@ exports.show_end_of_results_notice = function () {
     // It's a bit hacky to use the href, but
     // !filter.includes_full_stream_history() implies streams:public
     // wasn't already present.
-    $(".all-messages-search-caution a.search-shared-history").attr(
-        "href", window.location.hash.replace("#narrow/", "#narrow/streams/public/")
-    );
+    const update_hash = hash_util.search_public_streams_notice_url();
+    $(".all-messages-search-caution a.search-shared-history").attr("href", update_hash);
 };
 
 exports.update_top_of_narrow_notices = function (msg_list) {
