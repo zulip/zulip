@@ -36,15 +36,6 @@ exports.settings_for_sub = function (sub) {
     return $("#subscription_overlay .subscription_settings[data-stream-id='" + sub.stream_id + "']");
 };
 
-exports.rerender = function (stream_name) {
-    // This is a shim--our caller should call
-    // rerender_subscriptions_settings directly,
-    // but we are in the middle of a stream_name -> stream_id
-    // refactoring.
-    const sub = stream_data.get_sub(stream_name);
-    subs.rerender_subscriptions_settings(sub);
-};
-
 exports.is_sub_settings_active = function (sub) {
     // This function return whether the provided given sub object is
     // currently being viewed/edited in the stream edit UI.  This is
