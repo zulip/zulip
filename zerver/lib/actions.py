@@ -4034,9 +4034,9 @@ def do_update_pointer(user_profile: UserProfile, client: Client,
         event_time = timezone_now()
 
         count = len(app_message_ids)
-        do_increment_logging_stat(user_profile, COUNT_STATS['messages_read::hour'],
+        do_increment_logging_stat(user_profile, COUNT_STATS['messages_read::day'],
                                   None, event_time, increment=count)
-        do_increment_logging_stat(user_profile, COUNT_STATS['messages_read_interactions::hour'],
+        do_increment_logging_stat(user_profile, COUNT_STATS['messages_read_interactions::day'],
                                   None, event_time, increment=min(1, count))
 
     event = dict(type='pointer', pointer=pointer)
@@ -4106,9 +4106,9 @@ def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
 
     send_event(user_profile.realm, event, [user_profile.id])
 
-    do_increment_logging_stat(user_profile, COUNT_STATS['messages_read::hour'],
+    do_increment_logging_stat(user_profile, COUNT_STATS['messages_read::day'],
                               None, event_time, increment=count)
-    do_increment_logging_stat(user_profile, COUNT_STATS['messages_read_interactions::hour'],
+    do_increment_logging_stat(user_profile, COUNT_STATS['messages_read_interactions::day'],
                               None, event_time, increment=min(1, count))
 
     return count
@@ -4154,9 +4154,9 @@ def do_mark_stream_messages_as_read(user_profile: UserProfile,
     send_event(user_profile.realm, event, [user_profile.id])
     do_clear_mobile_push_notifications_for_ids(user_profile, message_ids)
 
-    do_increment_logging_stat(user_profile, COUNT_STATS['messages_read::hour'],
+    do_increment_logging_stat(user_profile, COUNT_STATS['messages_read::day'],
                               None, event_time, increment=count)
-    do_increment_logging_stat(user_profile, COUNT_STATS['messages_read_interactions::hour'],
+    do_increment_logging_stat(user_profile, COUNT_STATS['messages_read_interactions::day'],
                               None, event_time, increment=min(1, count))
     return count
 
@@ -4243,9 +4243,9 @@ def do_update_message_flags(user_profile: UserProfile,
         event_time = timezone_now()
         do_clear_mobile_push_notifications_for_ids(user_profile, messages)
 
-        do_increment_logging_stat(user_profile, COUNT_STATS['messages_read::hour'],
+        do_increment_logging_stat(user_profile, COUNT_STATS['messages_read::day'],
                                   None, event_time, increment=count)
-        do_increment_logging_stat(user_profile, COUNT_STATS['messages_read_interactions::hour'],
+        do_increment_logging_stat(user_profile, COUNT_STATS['messages_read_interactions::day'],
                                   None, event_time, increment=min(1, count))
     return count
 

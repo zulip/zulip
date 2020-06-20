@@ -182,7 +182,7 @@ class TestGetChartData(ZulipTestCase):
         })
 
     def test_messages_read_over_time(self) -> None:
-        stat = COUNT_STATS['messages_read::hour']
+        stat = COUNT_STATS['messages_read::day']
         self.insert_data(stat, [None], [])
         result = self.client_get('/json/analytics/chart_data',
                                  {'chart_name': 'messages_read_over_time'})
@@ -190,8 +190,8 @@ class TestGetChartData(ZulipTestCase):
         data = result.json()
         self.assertEqual(data, {
             'msg': '',
-            'end_times': [datetime_to_timestamp(dt) for dt in self.end_times_hour],
-            'frequency': CountStat.HOUR,
+            'end_times': [datetime_to_timestamp(dt) for dt in self.end_times_day],
+            'frequency': CountStat.DAY,
             'everyone': {'read': self.data(100)},
             'user': {'read': self.data(0)},
             'display_order': None,

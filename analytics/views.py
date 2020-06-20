@@ -236,7 +236,7 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
         labels_sort_function = sort_client_labels
         include_empty_subgroups = False
     elif chart_name == 'messages_read_over_time':
-        stats = [COUNT_STATS['messages_read::hour']]
+        stats = [COUNT_STATS['messages_read::day']]
         tables = [aggregate_table, UserCount]
         subgroup_to_label = {stats[0]: {None: 'read'}}
         labels_sort_function = None

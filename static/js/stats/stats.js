@@ -809,22 +809,17 @@ function populate_messages_read_over_time(data) {
     }
 
     const start_dates = data.end_times.map(function (timestamp) {
-        // data.end_times are the ends of hour long intervals.
-        return new Date(timestamp * 1000 - 60 * 60 * 1000);
+        // data.end_times are the ends of day long intervals.
+        return new Date(timestamp * 1000 - 60 * 60 * 24 * 1000);
     });
 
     function aggregate_data(aggregation) {
         let start;
         let is_boundary;
-        if (aggregation === 'day') {
-            start = floor_to_local_day(start_dates[0]);
-            is_boundary = function (date) {
-                return date.getHours() === 0;
-            };
-        } else if (aggregation === 'week') {
+        if (aggregation === 'week') {
             start = floor_to_local_week(start_dates[0]);
             is_boundary = function (date) {
-                return date.getHours() === 0 && date.getDay() === 0;
+                return date.getDay() === 0;
             };
         }
         const dates = [start];
@@ -851,36 +846,35 @@ function populate_messages_read_over_time(data) {
         return {
             dates: dates, values: values,
             last_value_is_partial: !is_boundary(new Date(
-                start_dates[start_dates.length - 1].getTime() + 60 * 60 * 1000))};
+                start_dates[start_dates.length - 1].getTime() + 60 * 60 * 24 * 1000))};
     }
 
     // Generate traces
-    let date_formatter = function (date) {
-        return format_date(date, true);
-    };
-    let values = {me: data.user.read, everyone: data.everyone.read};
 
-    let info = aggregate_data('day');
-    date_formatter = function (date) {
+    let dates = data.end_times.map(function (timestamp) {
+        return new Date(timestamp * 1000 - 60 * 60 * 24 * 1000);
+    });
+    let values = {everyone: data.everyone.read,
+                  me: data.user.read};
+    let date_formatter = function (date) {
         return format_date(date, false);
     };
-    const last_day_is_partial = info.last_value_is_partial;
-    const daily_traces = make_traces(info.dates, info.values, 'bar', date_formatter);
+    const daily_traces = make_traces(dates, values, 'bar', date_formatter);
 
-    info = aggregate_data('week');
+    const info = aggregate_data('week');
     date_formatter = function (date) {
         return i18n.t("Week of __date__", {date: format_date(date, false)});
     };
     const last_week_is_partial = info.last_value_is_partial;
     const weekly_traces = make_traces(info.dates, info.values, 'bar', date_formatter);
 
-    const dates = data.end_times.map(function (timestamp) {
+    dates = data.end_times.map(function (timestamp) {
         return new Date(timestamp * 1000);
     });
     values = {everyone: partial_sums(data.everyone.read),
               me: partial_sums(data.user.read)};
     date_formatter = function (date) {
-        return format_date(date, true);
+        return format_date(date, false);
     };
     const cumulative_traces = make_traces(dates, values, 'scatter', date_formatter);
 
@@ -916,7 +910,7 @@ function populate_messages_read_over_time(data) {
 
     // Click handlers for aggregation buttons
     $('#read_daily_button').click(function () {
-        draw_or_update_plot(daily_rangeselector, daily_traces, last_day_is_partial, false);
+        draw_or_update_plot(daily_rangeselector, daily_traces, false, false);
         $(this).addClass("selected");
         clicked_cumulative = false;
     });
@@ -936,7 +930,7 @@ function populate_messages_read_over_time(data) {
 
     // Initial drawing of plot
     if (weekly_traces.everyone.x.length < 12) {
-        draw_or_update_plot(daily_rangeselector, daily_traces, last_day_is_partial, true);
+        draw_or_update_plot(daily_rangeselector, daily_traces, false, true);
         $('#read_daily_button').addClass("selected");
     } else {
         draw_or_update_plot(weekly_rangeselector, weekly_traces, last_week_is_partial, true);

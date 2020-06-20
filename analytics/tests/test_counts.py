@@ -1155,8 +1155,8 @@ class TestLoggingCountStats(AnalyticsTestCase):
         assertInviteCountEquals(6)
 
     def test_messages_read_hour(self) -> None:
-        read_count_property = 'messages_read::hour'
-        interactions_property = 'messages_read_interactions::hour'
+        read_count_property = 'messages_read::day'
+        interactions_property = 'messages_read_interactions::day'
 
         user1 = self.create_user()
         user2 = self.create_user()

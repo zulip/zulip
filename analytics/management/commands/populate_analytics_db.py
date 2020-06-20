@@ -223,7 +223,7 @@ class Command(BaseCommand):
         FillState.objects.create(property=stat.property, end_time=last_end_time,
                                  state=FillState.DONE)
 
-        stat = COUNT_STATS['messages_read::hour']
+        stat = COUNT_STATS['messages_read::day']
         user_data = {
             None: self.generate_fixture_data(stat, 7, 3, 2, .6, 8, holiday_rate=.1),
         }
