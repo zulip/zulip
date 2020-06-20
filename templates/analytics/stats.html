@@ -57,24 +57,23 @@
                 </div>
 
                 <div class="chart-container">
-                    <h1>{{ _("Messages read over time") }}</h1>
+                    <h1>{{ _("Active users") }}</h1>
                     <div class="button-container">
-                        <label>{{ _("Aggregation") }}</label>
-                        <div class="buttons">
-                            <button class="button" type="button" id='read_daily_button'>{{ _("Daily") }} </button>
-                            <button class="button" type="button" id='read_weekly_button'>{{ _("Weekly") }} </button>
-                            <button class="button" type="button" id='read_cumulative_button'>{{ _("Cumulative") }} </button>
+                        <div class="buttons button-active-users">
+                            <button class="button" type="button" id="1day_actives_button">{{ _("Daily actives") }}</button>
+                            <button class="button" type="button" id="15day_actives_button">{{ _("15 day actives") }}</button>
+                            <button class="button" type="button" id="all_time_actives_button">{{ _("Total users") }}</button>
                         </div>
                     </div>
-                    <div id="id_messages_read_over_time">
+                    <div id="id_number_of_users">
                         <div class="spinner"></div>
                     </div>
-                    <div id="read_hover_info">
-                        <span id="read_hover_date"></span>
-                        <span id="read_hover_me">{{ _("Me") }}:</span>
-                        <span id="read_hover_me_value"></span>
-                        <b id="read_hover_everyone">{{ _("Everyone") }}:</b>
-                        <span id="read_hover_everyone_value"></span>
+                    <div id="users_hover_info" class="number-stat">
+                        <span id="users_hover_date"></span>
+                        <b id="users_hover_humans">{{ _("Users") }}: </b>
+                        <span id="users_hover_1day_value"></span>
+                        <span id="users_hover_15day_value"></span>
+                        <span id="users_hover_all_time_value"></span>
                     </div>
                 </div>
             </div>
@@ -98,23 +97,24 @@
                     </div>
                 </div>
                 <div class="chart-container">
-                    <h1>{{ _("Active users") }}</h1>
+                    <h1>{{ _("Messages read over time") }}</h1>
                     <div class="button-container">
-                        <div class="buttons button-active-users">
-                            <button class="button" type="button" id="1day_actives_button">{{ _("Daily actives") }}</button>
-                            <button class="button" type="button" id="15day_actives_button">{{ _("15 day actives") }}</button>
-                            <button class="button" type="button" id="all_time_actives_button">{{ _("Total users") }}</button>
+                        <label>{{ _("Aggregation") }}</label>
+                        <div class="buttons">
+                            <button class="button" type="button" id='read_daily_button'>{{ _("Daily") }} </button>
+                            <button class="button" type="button" id='read_weekly_button'>{{ _("Weekly") }} </button>
+                            <button class="button" type="button" id='read_cumulative_button'>{{ _("Cumulative") }} </button>
                         </div>
                     </div>
-                    <div id="id_number_of_users">
+                    <div id="id_messages_read_over_time">
                         <div class="spinner"></div>
                     </div>
-                    <div id="users_hover_info" class="number-stat">
-                        <span id="users_hover_date"></span>
-                        <b id="users_hover_humans">{{ _("Users") }}: </b>
-                        <span id="users_hover_1day_value"></span>
-                        <span id="users_hover_15day_value"></span>
-                        <span id="users_hover_all_time_value"></span>
+                    <div id="read_hover_info">
+                        <span id="read_hover_date"></span>
+                        <span id="read_hover_me">{{ _("Me") }}:</span>
+                        <span id="read_hover_me_value"></span>
+                        <b id="read_hover_everyone">{{ _("Everyone") }}:</b>
+                        <span id="read_hover_everyone_value"></span>
                     </div>
                 </div>
             </div>
