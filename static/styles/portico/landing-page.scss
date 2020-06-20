@@ -739,63 +739,63 @@ nav {
     width: 850px;
     display: inline-block;
     text-align: left;
-}
 
-.portico-landing.hello .hero header h1 {
-    font-size: 3em;
-    font-weight: 400;
+    h1 {
+        font-size: 3em;
+        font-weight: 400;
 
-    text-shadow: 0px 0px 20px hsla(0, 0%, 100%, 0.2);
-}
-
-.portico-landing.hello .hero header p {
-    margin: 30px 0px;
-
-    font-size: 1.5em;
-    font-weight: 300;
-    line-height: 1.4;
-    text-shadow: 0px 0px 5px hsla(164, 74%, 15%, 0.3), 0px 0px 20px hsla(0, 0%, 100%, 0.2);
-}
-
-.portico-landing.hello .hero header a {
-    display: block;
-    margin: 20px auto 0px auto;
-    text-align: center;
-}
-
-.portico-landing.hello .hero header button {
-    margin-top: 0px;
-    padding: 12px 20px;
-
-    background-color: hsl(0, 0%, 100%);
-    border: 2px solid hsl(0, 0%, 100%);
-
-    font-size: 1.2em;
-    font-weight: 500;
-    color: hsl(148, 23%, 51%);
-
-    box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.2);
-
-    transition: all 0.2s ease;
-
-    &:hover {
-        box-shadow: 0px 3px 10px hsla(0, 0%, 100%, 0.2);
+        text-shadow: 0px 0px 20px hsla(0, 0%, 100%, 0.2);
     }
 
-    &:active {
-        box-shadow: 0px 3px 20px hsla(0, 0%, 100%, 0.5);
+    p {
+        margin: 30px 0px;
+
+        font-size: 1.5em;
+        font-weight: 300;
+        line-height: 1.4;
+        text-shadow: 0px 0px 5px hsla(164, 74%, 15%, 0.3), 0px 0px 20px hsla(0, 0%, 100%, 0.2);
     }
-}
 
-.portico-landing.hello .hero header .download-button {
-    margin-top: 10px;
-}
+    a {
+        display: block;
+        margin: 20px auto 0px auto;
+        text-align: center;
+    }
 
-.portico-landing.hello .hero header #see_all_apps {
-    display: inline-block;
-    margin-top: 10px;
+    button {
+        margin-top: 0px;
+        padding: 12px 20px;
 
-    font-weight: normal;
+        background-color: hsl(0, 0%, 100%);
+        border: 2px solid hsl(0, 0%, 100%);
+
+        font-size: 1.2em;
+        font-weight: 500;
+        color: hsl(148, 23%, 51%);
+
+        box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.2);
+
+        transition: all 0.2s ease;
+
+        &:hover {
+            box-shadow: 0px 3px 10px hsla(0, 0%, 100%, 0.2);
+        }
+
+        &:active {
+            box-shadow: 0px 3px 20px hsla(0, 0%, 100%, 0.5);
+        }
+    }
+
+    .download-button {
+        margin-top: 10px;
+    }
+
+    #see_all_apps {
+        display: inline-block;
+        margin-top: 10px;
+
+        font-weight: normal;
+    }
 }
 
 .portico-landing.hello .gradients .gradient {
