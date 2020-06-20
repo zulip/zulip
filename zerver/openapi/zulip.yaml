@@ -1755,15 +1755,16 @@ paths:
       - name: role
         in: query
         description: |
-          New [role](/help/roles-and-permissions) for the user.  Supported roles include:
-            * Organization owner: 100
-            * Organization administrator: 200
-            * Member: 400
-            * Guest: 600
+          New [role](/help/roles-and-permissions) for the user.  Roles are encoded as:
 
-          Only organization owners can add or remove the owner permission.
+          * Organization owner: 100
+          * Organization administrator: 200
+          * Member: 400
+          * Guest: 600
 
-          The owner permission cannot be removed from the only organization owner.
+          Only organization owners can add or remove the owner role.
+
+          The owner role cannot be removed from the only organization owner.
 
           **Changes**: New in Zulip 2.2 (feature level 8), replacing the previous
           pair of `is_admin` and `is_guest` boolean parameters.
@@ -3690,11 +3691,11 @@ paths:
       - name: desktop_icon_count_display
         in: query
         description: |
-          > Unread count summary (appears in desktop sidebar and browser tab)
+          Unread count summary (appears in desktop sidebar and browser tab)
 
-           * 1 - All unreads
-           * 2 - Private messages and mentions
-           * 3 - None
+          * 1 - All unreads
+          * 2 - Private messages and mentions
+          * 3 - None
         schema:
           type: integer
           enum:
