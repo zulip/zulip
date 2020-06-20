@@ -157,7 +157,7 @@ exports.rename_sub = function (sub, new_name) {
 
 exports.subscribe_myself = function (sub) {
     const user_id = people.my_current_user_id();
-    exports.add_subscriber(sub.name, user_id);
+    exports.add_subscriber(sub.stream_id, user_id);
     sub.subscribed = true;
     sub.newly_subscribed = true;
     stream_info.set_true(sub.name, sub);
@@ -628,8 +628,8 @@ exports.set_subscribers = function (sub, user_ids) {
     sub.subscribers = new LazySet(user_ids || []);
 };
 
-exports.add_subscriber = function (stream_name, user_id) {
-    const sub = exports.get_sub(stream_name);
+exports.add_subscriber = function (stream_id, user_id) {
+    const sub = exports.get_sub_by_id(stream_id);
     if (typeof sub === 'undefined') {
         blueslip.warn("We got an add_subscriber call for a non-existent stream.");
         return false;

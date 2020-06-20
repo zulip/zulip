@@ -240,9 +240,9 @@ run_test('sort_recipients', () => {
     const subscriber_email_1 = "b_user_2@zulip.net";
     const subscriber_email_2 = "b_user_3@zulip.net";
     const subscriber_email_3 = "b_bot@example.com";
-    stream_data.add_subscriber("Dev", people.get_user_id(subscriber_email_1));
-    stream_data.add_subscriber("Dev", people.get_user_id(subscriber_email_2));
-    stream_data.add_subscriber("Dev", people.get_user_id(subscriber_email_3));
+    stream_data.add_subscriber(1, people.get_user_id(subscriber_email_1));
+    stream_data.add_subscriber(1, people.get_user_id(subscriber_email_2));
+    stream_data.add_subscriber(1, people.get_user_id(subscriber_email_3));
 
     const dev_sub = stream_data.get_sub("Dev");
     const linux_sub = stream_data.get_sub("Linux");
