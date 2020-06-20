@@ -394,50 +394,59 @@ export function dispatch_normal_event(event) {
         }
 
         case "subscription":
-            if (event.op === "add") {
-                for (const rec of event.subscriptions) {
-                    const sub = stream_data.get_sub_by_id(rec.stream_id);
-                    if (sub) {
-                        stream_data.update_stream_email_address(sub, rec.email_address);
-                        stream_events.mark_subscribed(sub, rec.subscribers, rec.color);
-                    } else {
-                        blueslip.error("Subscribing to unknown stream with ID " + rec.stream_id);
+            switch (event.op) {
+                case "add":
+                    for (const rec of event.subscriptions) {
+                        const sub = stream_data.get_sub_by_id(rec.stream_id);
+                        if (sub) {
+                            stream_data.update_stream_email_address(sub, rec.email_address);
+                            stream_events.mark_subscribed(sub, rec.subscribers, rec.color);
+                        } else {
+                            blueslip.error(
+                                "Subscribing to unknown stream with ID " + rec.stream_id,
+                            );
+                        }
                     }
+                    break;
+                case "peer_add": {
+                    const stream_ids = stream_data.validate_stream_ids(event.stream_ids);
+                    const user_ids = people.validate_user_ids(event.user_ids);
+
+                    peer_data.bulk_add_subscribers({stream_ids, user_ids});
+
+                    for (const stream_id of stream_ids) {
+                        const sub = stream_data.get_sub_by_id(stream_id);
+                        subs.update_subscribers_ui(sub);
+                    }
+
+                    compose_fade.update_faded_users();
+                    break;
                 }
-            } else if (event.op === "peer_add") {
-                const stream_ids = stream_data.validate_stream_ids(event.stream_ids);
-                const user_ids = people.validate_user_ids(event.user_ids);
+                case "peer_remove": {
+                    const stream_ids = stream_data.validate_stream_ids(event.stream_ids);
+                    const user_ids = people.validate_user_ids(event.user_ids);
 
-                peer_data.bulk_add_subscribers({stream_ids, user_ids});
+                    peer_data.bulk_remove_subscribers({stream_ids, user_ids});
 
-                for (const stream_id of stream_ids) {
-                    const sub = stream_data.get_sub_by_id(stream_id);
-                    subs.update_subscribers_ui(sub);
+                    for (const stream_id of stream_ids) {
+                        const sub = stream_data.get_sub_by_id(stream_id);
+                        subs.update_subscribers_ui(sub);
+                    }
+
+                    compose_fade.update_faded_users();
+                    break;
                 }
-
-                compose_fade.update_faded_users();
-            } else if (event.op === "peer_remove") {
-                const stream_ids = stream_data.validate_stream_ids(event.stream_ids);
-                const user_ids = people.validate_user_ids(event.user_ids);
-
-                peer_data.bulk_remove_subscribers({stream_ids, user_ids});
-
-                for (const stream_id of stream_ids) {
-                    const sub = stream_data.get_sub_by_id(stream_id);
-                    subs.update_subscribers_ui(sub);
-                }
-
-                compose_fade.update_faded_users();
-            } else if (event.op === "remove") {
-                for (const rec of event.subscriptions) {
-                    const sub = stream_data.get_sub_by_id(rec.stream_id);
-                    stream_events.mark_unsubscribed(sub);
-                }
-            } else if (event.op === "update") {
-                stream_events.update_property(event.stream_id, event.property, event.value);
+                case "remove":
+                    for (const rec of event.subscriptions) {
+                        const sub = stream_data.get_sub_by_id(rec.stream_id);
+                        stream_events.mark_unsubscribed(sub);
+                    }
+                    break;
+                case "update":
+                    stream_events.update_property(event.stream_id, event.property, event.value);
+                    break;
             }
             break;
-
         case "typing":
             if (event.sender.user_id === page_params.user_id) {
                 // typing notifications are sent to the user who is typing
