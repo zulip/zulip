@@ -101,6 +101,9 @@ export default (env?: string): webpack.Configuration[] => {
                         {
                             loader: 'postcss-loader',
                             options: {
+                                config: {
+                                    path: resolve(__dirname, '../postcss.config.js'),
+                                },
                                 sourceMap: true,
                             },
                         },
