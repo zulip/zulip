@@ -201,7 +201,7 @@ def patch_bot_backend(
         config_data: Optional[Dict[str, str]]=REQ(default=None,
                                                   validator=check_dict(value_validator=check_string)),
         service_payload_url: Optional[str]=REQ(validator=check_url, default=None),
-        service_interface: Optional[int]=REQ(validator=check_int, default=1),
+        service_interface: int=REQ(validator=check_int, default=1),
         default_sending_stream: Optional[str]=REQ(default=None),
         default_events_register_stream: Optional[str]=REQ(default=None),
         default_all_public_streams: Optional[bool]=REQ(default=None, validator=check_bool),
