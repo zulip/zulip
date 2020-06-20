@@ -676,125 +676,125 @@ nav {
     color: hsl(0, 0%, 100%);
 
     overflow: hidden;
-}
 
-.portico-landing.hello .hero .waves {
-    position: absolute;
-
-    width: 150vw;
-    height: 150vw;
-
-    top: 650px;
-    left: -25vw;
-
-    z-index: 0;
-    opacity: 0.3;
-
-    .wave {
+    .waves {
         position: absolute;
 
-        width: 100%;
-        height: 100%;
+        width: 150vw;
+        height: 150vw;
 
-        background-color: hsl(0, 0%, 100%);
-        border-radius: 35%;
+        top: 650px;
+        left: -25vw;
 
+        z-index: 0;
         opacity: 0.3;
 
-        animation-name: waves;
-        animation-duration: 15s;
-        animation-iteration-count: infinite;
-        animation-timing-function: linear;
+        .wave {
+            position: absolute;
 
-        &.dark-blue {
-            background-color: hsl(219, 39%, 13%);
+            width: 100%;
+            height: 100%;
+
+            background-color: hsl(0, 0%, 100%);
+            border-radius: 35%;
+
+            opacity: 0.3;
+
+            animation-name: waves;
+            animation-duration: 15s;
+            animation-iteration-count: infinite;
+            animation-timing-function: linear;
+
+            &.dark-blue {
+                background-color: hsl(219, 39%, 13%);
+            }
+
+            &.light-blue {
+                background-color: hsla(0, 67%, 57%, 0.9);
+                animation-duration: 18s;
+            }
+
+            &.light-green {
+                background-color: hsla(187, 98%, 75%, 0.75);
+                animation-name: wavesBackward;
+                animation-duration: 21s;
+            }
         }
-
-        &.light-blue {
-            background-color: hsla(0, 67%, 57%, 0.9);
-            animation-duration: 18s;
-        }
-
-        &.light-green {
-            background-color: hsla(187, 98%, 75%, 0.75);
-            animation-name: wavesBackward;
-            animation-duration: 21s;
-        }
-    }
-}
-
-.portico-landing.hello .hero .content {
-    position: relative;
-    z-index: 1;
-
-    text-align: center;
-
-    p {
-        font-weight: 400;
-        opacity: 0.85;
-    }
-}
-
-.portico-landing.hello .hero header {
-    width: 850px;
-    display: inline-block;
-    text-align: left;
-
-    h1 {
-        font-size: 3em;
-        font-weight: 400;
-
-        text-shadow: 0px 0px 20px hsla(0, 0%, 100%, 0.2);
     }
 
-    p {
-        margin: 30px 0px;
+    .content {
+        position: relative;
+        z-index: 1;
 
-        font-size: 1.5em;
-        font-weight: 300;
-        line-height: 1.4;
-        text-shadow: 0px 0px 5px hsla(164, 74%, 15%, 0.3), 0px 0px 20px hsla(0, 0%, 100%, 0.2);
-    }
-
-    a {
-        display: block;
-        margin: 20px auto 0px auto;
         text-align: center;
-    }
 
-    button {
-        margin-top: 0px;
-        padding: 12px 20px;
-
-        background-color: hsl(0, 0%, 100%);
-        border: 2px solid hsl(0, 0%, 100%);
-
-        font-size: 1.2em;
-        font-weight: 500;
-        color: hsl(148, 23%, 51%);
-
-        box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.2);
-
-        transition: all 0.2s ease;
-
-        &:hover {
-            box-shadow: 0px 3px 10px hsla(0, 0%, 100%, 0.2);
-        }
-
-        &:active {
-            box-shadow: 0px 3px 20px hsla(0, 0%, 100%, 0.5);
+        p {
+            font-weight: 400;
+            opacity: 0.85;
         }
     }
 
-    .download-button {
-        margin-top: 10px;
-    }
-
-    #see_all_apps {
+    header {
+        width: 850px;
         display: inline-block;
-        margin-top: 10px;
+        text-align: left;
 
-        font-weight: normal;
+        h1 {
+            font-size: 3em;
+            font-weight: 400;
+
+            text-shadow: 0px 0px 20px hsla(0, 0%, 100%, 0.2);
+        }
+
+        p {
+            margin: 30px 0px;
+
+            font-size: 1.5em;
+            font-weight: 300;
+            line-height: 1.4;
+            text-shadow: 0px 0px 5px hsla(164, 74%, 15%, 0.3), 0px 0px 20px hsla(0, 0%, 100%, 0.2);
+        }
+
+        a {
+            display: block;
+            margin: 20px auto 0px auto;
+            text-align: center;
+        }
+
+        button {
+            margin-top: 0px;
+            padding: 12px 20px;
+
+            background-color: hsl(0, 0%, 100%);
+            border: 2px solid hsl(0, 0%, 100%);
+
+            font-size: 1.2em;
+            font-weight: 500;
+            color: hsl(148, 23%, 51%);
+
+            box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.2);
+
+            transition: all 0.2s ease;
+
+            &:hover {
+                box-shadow: 0px 3px 10px hsla(0, 0%, 100%, 0.2);
+            }
+
+            &:active {
+                box-shadow: 0px 3px 20px hsla(0, 0%, 100%, 0.5);
+            }
+        }
+
+        .download-button {
+            margin-top: 10px;
+        }
+
+        #see_all_apps {
+            display: inline-block;
+            margin-top: 10px;
+
+            font-weight: normal;
+        }
     }
 }
 
@@ -3120,8 +3120,10 @@ nav {
         left: 0;
     }
 
-    .portico-landing.hello .hero header {
-        width: calc(100% - 50px);
+    .portico-landing.hello .hero {
+        header {
+            width: calc(100% - 50px);
+        }
     }
 }
 
@@ -3285,8 +3287,10 @@ nav {
         width: 100% !important;
     }
 
-    .portico-landing.hello .hero header {
-        width: 600px;
+    .portico-landing.hello .hero {
+        header {
+            width: 600px;
+        }
     }
 
     .portico-landing.hello .apps .left-side .content {
@@ -3391,16 +3395,16 @@ nav {
         margin: 0 auto;
     }
 
-    .portico-landing.hello .hero header {
-        width: auto;
-    }
-
     .portico-landing.hello .hero {
         padding-bottom: 100px;
-    }
 
-    .portico-landing.hello .hero .waves {
-        height: 450px;
+        .waves {
+            height: 450px;
+        }
+
+        header {
+            width: auto;
+        }
     }
 
     .portico-landing.hello .screen.hero-screen {
