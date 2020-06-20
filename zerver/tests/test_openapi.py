@@ -1,4 +1,5 @@
 import inspect
+import os
 import re
 import sys
 from collections import abc
@@ -18,6 +19,7 @@ from typing import (
 from unittest import mock
 from unittest.mock import MagicMock, patch
 
+import yaml
 from django.http import HttpResponse
 
 from zerver.lib.request import _REQ, arguments_map
@@ -163,6 +165,32 @@ class OpenAPIToolsTest(ZulipTestCase):
                                             TEST_RESPONSE_SUCCESS)
         finally:
             openapi.EXCLUDE_PROPERTIES = exclude_properties
+        test_dict: Dict[str, Any] = {}
+
+        # Check that validate_against_openapi_schema correctly
+        # descends into 'deep' objects and arrays.  Test 1 should
+        # pass, Test 2 has a 'deep' extraneous key and Test 3 has a
+        # 'deep' opaque object. Also the parameters are a heterogenous
+        # mix of arrays and objects to verify that our descent logic
+        # correctly gets to the the deeply nested objects.
+        with open(os.path.join(os.path.dirname(OPENAPI_SPEC_PATH),
+                  "testing.yaml")) as test_file:
+            test_dict = yaml.safe_load(test_file)
+        openapi_spec.spec()['paths']['testing'] = test_dict
+        try:
+            validate_against_openapi_schema((test_dict['test1']['responses']['200']['content']
+                                            ['application/json']['example']),
+                                            'testing', 'test1', '200')
+            with self.assertRaises(SchemaError, msg = 'Extraneous key "str4" in response\'s content'):
+                validate_against_openapi_schema((test_dict['test2']['responses']['200']
+                                                ['content']['application/json']['example']),
+                                                'testing', 'test2', '200')
+            with self.assertRaises(SchemaError, msg = 'Opaque object "obj"'):
+                validate_against_openapi_schema((test_dict['test3']['responses']['200']
+                                                ['content']['application/json']['example']),
+                                                'testing', 'test3', '200')
+        finally:
+            openapi_spec.spec()['paths'].pop('testing', None)
 
     def test_to_python_type(self) -> None:
         TYPES = {

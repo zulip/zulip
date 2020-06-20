@@ -386,9 +386,13 @@ paths:
                             description: |
                               Size of the file in bytes.
                           create_time:
-                            type: integer
+                            # TODO: Make this value always return integers.
+                            oneOf:
+                              - type: integer
+                              - type: number
                             description: |
-                              Time when the attachment was uploaded.
+                              Time when the attachment was uploaded as a UNIX timestamp
+                              multiplied by 1000 (matching the format of getTime() in JavaScript).
                           messages:
                             type: array
                             description: |
@@ -593,8 +597,12 @@ paths:
                         properties:
                           avatar_url:
                             type: string
+                            nullable: true
                             description: |
-                              The URL of the user's avatar.
+                              The URL of the user's avatar.  Can be null only if client_gravatar was passed,
+                              which means that the user has not uploaded an avatar in Zulip, and the
+                              client should compute the gravatar URL by hashing the
+                              user's email address itself for this user.
                           client:
                             type: string
                             description: |
@@ -643,9 +651,15 @@ paths:
                               type: object
                               properties:
                                 emoji_code:
-                                  type: integer
+                                  oneOf:
+                                  - type: string
+                                  - type: integer
                                   description: |
-                                    An encoded version of the emoji's unicode codepoint.
+                                    A unique identifier, defining the specific emoji codepoint requested,
+                                    within the namespace of the `reaction_type`.
+
+                                    For example, for `unicode_emoji`, this will be an encoding of the
+                                    unicode codepoint.
                                 emoji_name:
                                   type: string
                                   description: |
@@ -653,8 +667,14 @@ paths:
                                 reaction_type:
                                   type: string
                                   description: |
-                                    If the reaction uses a [custom emoji](/help/add-custom-emoji),
-                                    `reaction_type` will be set to `realm_emoji`.
+                                    One of the following values:
+
+                                    * `unicode_emoji`: Unicode emoji (`emoji_code` will be its unicode
+                                      codepoint).
+                                    * `realm_emoji`: [Custom emoji](/help/add-custom-emoji).
+                                      (`emoji_code` will be its ID).
+                                    * `zulip_extra_emoji`: Special emoji included with Zulip.  Exists to
+                                      namespace the `zulip` emoji.
                                 user_id:
                                   type: integer
                                   description: |
@@ -2425,6 +2445,8 @@ paths:
                               Intended to help clients determine whether they need to display
                               UI like the "more topics" widget that would suggest the stream
                               has older history that can be accessed.
+
+                              Null is used for streams with no message history.
                           stream_weekly_traffic:
                             type: integer
                             nullable: true
@@ -3918,12 +3940,15 @@ paths:
                               assumption, as we may change that behavior in the future.
                           first_message_id:
                             type: integer
+                            nullable: true
                             description: |
                               The id of the first message in the stream.
 
                               Intended to help clients determine whether they need to display
                               UI like the "more topics" widget that would suggest the stream
                               has older history that can be accessed.
+
+                              Null is used for streams with no message history.
                           is_announcement_only:
                             type: boolean
                             description: |
@@ -5053,7 +5078,7 @@ components:
       name: emoji_code
       in: query
       description: |
-        A unique ID, defining the specific emoji codepoint requested,
+        A unique identifier, defining the specific emoji codepoint requested,
         within the namespace of the `reaction_type`.
 
         For most API clients, you won't need this, but it's important
