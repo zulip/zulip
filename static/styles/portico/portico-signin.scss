@@ -93,6 +93,14 @@ html {
     &.goto-account-page-container {
         width: 500px;
         font-weight: 400;
+
+        .realm-redirect-form {
+            text-align: center;
+
+            .inline-block {
+                text-align: center;
+            }
+        }
     }
 
     &.confirm-continue-page-container {
