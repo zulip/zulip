@@ -67,8 +67,8 @@ from zerver.lib.validator import (
     check_string_in,
     check_string_or_int,
     check_string_or_int_list,
+    check_union,
     check_url,
-    check_variable_type,
     equals,
     to_non_negative_int,
     to_positive_or_allowed_int,
@@ -960,15 +960,15 @@ class ValidatorTestCase(TestCase):
         nonperson = 'misconfigured data'
         self.assertEqual(check_person(nonperson), 'This is not a valid person')
 
-    def test_check_variable_type(self) -> None:
+    def test_check_union(self) -> None:
         x: Any = 5
-        self.assertEqual(check_variable_type([check_string, check_int])('x', x), None)
+        self.assertEqual(check_union([check_string, check_int])('x', x), None)
 
         x = 'x'
-        self.assertEqual(check_variable_type([check_string, check_int])('x', x), None)
+        self.assertEqual(check_union([check_string, check_int])('x', x), None)
 
         x = [{}]
-        self.assertEqual(check_variable_type([check_string, check_int])('x', x), 'x is not an allowed_type')
+        self.assertEqual(check_union([check_string, check_int])('x', x), 'x is not an allowed_type')
 
     def test_equals(self) -> None:
         x: Any = 5
