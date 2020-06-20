@@ -2,6 +2,8 @@
 zrequire('hash_util');
 zrequire('stream_data');
 zrequire('people');
+zrequire('Filter', 'js/filter');
+zrequire('narrow_state');
 
 set_global('location', {
     protocol: "https:",
@@ -160,4 +162,24 @@ run_test('test_by_conversation_and_time_uri', () => {
 
     assert.equal(hash_util.by_conversation_and_time_uri(message),
                  'https://example.com/#narrow/pm-with/1-pm/near/43');
+});
+
+run_test('test_search_public_streams', () => {
+    function set_uri(uri) {
+        const operators = hash_util.parse_narrow(uri.split('/'));
+        narrow_state.set_current_filter(new Filter(operators));
+    }
+
+    set_uri("#narrow/search/abc");
+    assert.equal(hash_util.search_public_streams(),
+                 "#narrow/streams/public/search/abc");
+
+
+    set_uri("#narrow/has/link/has/image/has/attachment");
+    assert.equal(hash_util.search_public_streams(),
+                 "#narrow/streams/public/has/link/has/image/has/attachment");
+
+    set_uri("#narrow/has/image/has/link/has/attachment/search/abc");
+    assert.equal(hash_util.search_public_streams(),
+                 "#narrow/streams/public/has/image/has/link/has/attachment/search/abc");
 });
