@@ -798,30 +798,32 @@ nav {
     }
 }
 
-.portico-landing.hello .gradients .gradient {
-    position: absolute;
-    left: 0;
-    width: 100%;
-    height: 1100px;
+.portico-landing.hello .gradients {
+    .gradient {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        height: 1100px;
 
-    &.dark-blue {
-        background: linear-gradient(10deg, hsla(196, 58%, 14%, 0) 50%, hsla(196, 58%, 14%, 0.7));
-    }
+        &.dark-blue {
+            background: linear-gradient(10deg, hsla(196, 58%, 14%, 0) 50%, hsla(196, 58%, 14%, 0.7));
+        }
 
-    &.green {
-        background: linear-gradient(-25deg, hsla(156, 47%, 47%, 0) 40%, hsl(156, 47%, 47%));
-    }
+        &.green {
+            background: linear-gradient(-25deg, hsla(156, 47%, 47%, 0) 40%, hsl(156, 47%, 47%));
+        }
 
-    &.blue {
-        background: linear-gradient(25deg, hsla(196, 38%, 51%, 0) 40%, hsl(196, 38%, 51%));
-    }
+        &.blue {
+            background: linear-gradient(25deg, hsla(196, 38%, 51%, 0) 40%, hsl(196, 38%, 51%));
+        }
 
-    &.sunburst {
-        background: linear-gradient(5deg, hsla(49, 71%, 68%, 0) 20%, hsl(49, 71%, 68%));
-    }
+        &.sunburst {
+            background: linear-gradient(5deg, hsla(49, 71%, 68%, 0) 20%, hsl(49, 71%, 68%));
+        }
 
-    &.white-fade {
-        background: linear-gradient(0deg, hsl(0, 0%, 98%) 0%, hsla(0, 0%, 98%, 0) 40%);
+        &.white-fade {
+            background: linear-gradient(0deg, hsl(0, 0%, 98%) 0%, hsla(0, 0%, 98%, 0) 40%);
+        }
     }
 }
 
@@ -2951,8 +2953,10 @@ nav {
 }
 
 @media (max-width: 1024px) {
-    .portico-landing.hello .gradients .gradient {
-        height: 1400px;
+    .portico-landing.hello .gradients {
+        .gradient {
+            height: 1400px;
+        }
     }
 
     .portico-landing {
