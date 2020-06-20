@@ -264,6 +264,23 @@ def get_subscription_status(client: Client) -> None:
     # {code_example|end}
     validate_against_openapi_schema(result, '/users/{user_id}/subscriptions/{stream_id}', 'get', '200')
 
+@openapi_test_function("/realm:patch")
+def update_realm(client: Client) -> None:
+    # {code_example|start}
+    # Change message retention days policy.
+    request = {
+        'digest_weekday': 0,
+        'signup_notifications_stream_id': -1
+    }
+    result = client.call_endpoint(
+        url='realm',
+        method='PATCH',
+        request=request
+    )
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/realm', 'patch', '200')
+
 @openapi_test_function("/realm/filters:get")
 def get_realm_filters(client: Client) -> None:
 
@@ -1217,6 +1234,7 @@ def test_queues(client: Client) -> None:
 
 def test_server_organizations(client: Client, owner_client: Client) -> None:
 
+    update_realm(client)
     get_realm_filters(client)
     add_realm_filter(client)
     get_server_settings(client)
