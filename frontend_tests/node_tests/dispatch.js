@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
@@ -874,4 +875,9 @@ run_test("realm_export", (override) => {
     assert.equal(stub.num_calls, 1);
     const args = stub.get_args("exports");
     assert.equal(args.exports, event.exports);
+});
+
+run_test("server_event_dispatch_op_errors", () => {
+    blueslip.expect("error", "Unexpected event type subscription/other");
+    server_events_dispatch.dispatch_normal_event({type: "subscription", op: "other"});
 });
