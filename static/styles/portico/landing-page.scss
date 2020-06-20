@@ -706,23 +706,21 @@ nav {
     animation-duration: 15s;
     animation-iteration-count: infinite;
     animation-timing-function: linear;
-}
 
-.portico-landing.hello .hero .waves .wave.dark-blue {
-    background-color: hsl(219, 39%, 13%);
-}
+    &.dark-blue {
+        background-color: hsl(219, 39%, 13%);
+    }
 
-.portico-landing.hello .hero .waves .wave.light-blue {
-    background-color: hsla(0, 67%, 57%, 0.9);
+    &.light-blue {
+        background-color: hsla(0, 67%, 57%, 0.9);
+        animation-duration: 18s;
+    }
 
-    animation-duration: 18s;
-}
-
-.portico-landing.hello .hero .waves .wave.light-green {
-    background-color: hsla(187, 98%, 75%, 0.75);
-
-    animation-name: wavesBackward;
-    animation-duration: 21s;
+    &.light-green {
+        background-color: hsla(187, 98%, 75%, 0.75);
+        animation-name: wavesBackward;
+        animation-duration: 21s;
+    }
 }
 
 .portico-landing.hello .hero .content {
