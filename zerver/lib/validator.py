@@ -263,7 +263,7 @@ def check_dict_only(required_keys: Iterable[Tuple[str, Validator]],
                     optional_keys: Iterable[Tuple[str, Validator]]=[]) -> Validator:
     return check_dict(required_keys, optional_keys, _allow_only_listed_keys=True)
 
-def check_variable_type(allowed_type_funcs: Iterable[Validator]) -> Validator:
+def check_union(allowed_type_funcs: Iterable[Validator]) -> Validator:
     """
     Use this validator if an argument is of a variable type (e.g. processing
     properties that might be strings or booleans).

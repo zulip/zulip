@@ -75,7 +75,7 @@ from zerver.lib.validator import (
     check_list,
     check_string,
     check_string_or_int,
-    check_variable_type,
+    check_union,
     to_non_negative_int,
 )
 from zerver.models import (
@@ -338,7 +338,7 @@ def compose_views(
 def remove_subscriptions_backend(
         request: HttpRequest, user_profile: UserProfile,
         streams_raw: Iterable[str]=REQ("subscriptions", validator=check_list(check_string)),
-        principals: Optional[Union[List[str], List[int]]]=REQ(validator=check_variable_type([
+        principals: Optional[Union[List[str], List[int]]]=REQ(validator=check_union([
             check_list(check_string), check_list(check_int)]), default=None),
 ) -> HttpResponse:
 
@@ -408,7 +408,7 @@ def add_subscriptions_backend(
         message_retention_days: Union[str, int]=REQ(validator=check_string_or_int,
                                                     default="realm_default"),
         announce: bool=REQ(validator=check_bool, default=False),
-        principals: Union[Sequence[str], Sequence[int]]=REQ(validator=check_variable_type([
+        principals: Union[Sequence[str], Sequence[int]]=REQ(validator=check_union([
             check_list(check_string), check_list(check_int)]), default=[]),
         authorization_errors_fatal: bool=REQ(validator=check_bool, default=True),
 ) -> HttpResponse:
@@ -674,7 +674,7 @@ def update_subscription_properties_backend(
             validator=check_list(
                 check_dict([("stream_id", check_int),
                             ("property", check_string),
-                            ("value", check_variable_type([check_string, check_bool]))]),
+                            ("value", check_union([check_string, check_bool]))]),
             ),
         ),
 ) -> HttpResponse:
