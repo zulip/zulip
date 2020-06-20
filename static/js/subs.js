@@ -914,21 +914,6 @@ exports.initialize = function () {
         selectText(this);
     });
 
-    $('.empty_feed_sub_unsub').click(function (e) {
-        e.preventDefault();
-
-        $('#subscription-status').hide();
-        const stream_name = narrow_state.stream();
-        if (stream_name === undefined) {
-            return;
-        }
-        const sub = stream_data.get_sub(stream_name);
-        exports.sub_or_unsub(sub);
-
-        $('.empty_feed_notice').hide();
-        $('#empty_narrow_message').show();
-    });
-
     $("#subscriptions_table").on("click", ".stream-row, .create_stream_button", function () {
         $(".right").addClass("show");
         $(".subscriptions-header").addClass("slide-left");
