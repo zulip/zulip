@@ -27,6 +27,7 @@
 # message or group of messages) as we use for message retention policy
 # deletions.
 import logging
+import time
 from datetime import timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -135,9 +136,9 @@ def run_archiving_in_chunks(
 
     message_count = 0
     while True:
+        start_time = time.time()
         with transaction.atomic():
             archive_transaction = ArchiveTransaction.objects.create(type=type, realm=realm)
-            logger.info("Archiving in %s", archive_transaction)
             new_chunk = move_rows(
                 Message,
                 query,
@@ -152,11 +153,14 @@ def run_archiving_in_chunks(
                 message_count += len(new_chunk)
             else:
                 archive_transaction.delete()  # Nothing was archived
+        total_time = time.time() - start_time
 
         # This line needs to be outside of the atomic block, to capture the actual moment
         # archiving of the chunk is finished (since Django does some significant additional work
         # when leaving the block).
-        logger.info("Finished. Archived %s messages in this transaction.", len(new_chunk))
+        if len(new_chunk) > 0:
+            logger.info("Archived %s messages in %.2fs in transaction %s.",
+                        len(new_chunk), total_time, archive_transaction.id)
 
         # We run the loop, until the query returns fewer results than chunk_size,
         # which means we are done:
