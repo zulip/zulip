@@ -671,7 +671,7 @@ exports.initialize = function () {
     });
 
     $("#subscriptions_table").on("keyup", ".subscriber_list_add form", function (e) {
-        if (e.which == 13) {
+        if (e.which === 13) {
             submit_add_subscriber_form(e);
         }
     });
