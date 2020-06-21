@@ -14,22 +14,8 @@ You can also [fetch details on a single user](/api/get-user).
 {tab|js}
 
 More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
-```js
-const zulip = require('zulip-js');
 
-// Pass the path to your zuliprc file here.
-const config = {
-    zuliprc: 'zuliprc',
-};
-
-zulip(config).then((client) => {
-    // Get all users in the realm
-    client.users.retrieve().then(console.log);
-
-    // You may pass the `client_gravatar` query parameter as follows:
-    client.users.retrieve({client_gravatar: true}).then(console.log);
-});
-```
+{generate_code_example(javascript)|/users:get|example}
 
 {tab|curl}
 

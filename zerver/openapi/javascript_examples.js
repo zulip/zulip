@@ -44,6 +44,7 @@ const ExamplesHandler = function () {
         await generate_validation_data(client, examples.get_stream_id);
         await generate_validation_data(client, examples.get_stream_topics);
         await generate_validation_data(client, examples.get_subscriptions);
+        await generate_validation_data(client, examples.get_users);
 
         console.log(JSON.stringify(response_data));
         return;
@@ -172,6 +173,19 @@ add_example('get_subscriptions', '/users/me/subscriptions:get', 200, async (clie
     // Get all streams that the user is subscribed to
     return await client.streams.subscriptions.retrieve();
     // {code_example|end}
+});
+
+add_example('get_users', '/users:get', 200, async (client) => {
+    // {code_example|start}
+    // Get all users in the realm
+    const result_1 = await client.users.retrieve();
+    // {code_example|end}
+
+    // {code_example|start}
+    // You may pass the `client_gravatar` query parameter as follows:
+    const result_2 = await client.users.retrieve({client_gravatar: true});
+    // {code_example|end}
+    return [result_1, result_2];
 });
 
 main();
