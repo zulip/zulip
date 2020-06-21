@@ -13,7 +13,7 @@ class Command(BaseCommand):
         parser.add_argument('--processes',
                             dest='processes',
                             action="store",
-                            default=6,
+                            default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
                             help='Processes to use for exporting uploads in parallel')
 
     def handle(self, *args: Any, **options: Any) -> None:
