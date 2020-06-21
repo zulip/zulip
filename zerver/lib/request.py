@@ -137,7 +137,10 @@ class _REQ(Generic[ResultT]):
 # functions using has_request_variables. In reality, REQ returns an
 # instance of class _REQ to enable the decorator to scan the parameter
 # list for _REQ objects and patch the parameters as the true types.
-
+#
+# See also this documentation to learn how @overload helps here.
+# https://zulip.readthedocs.io/en/latest/testing/mypy.html#using-overload-to-accurately-describe-variations
+#
 # Overload 1: converter
 @overload
 def REQ(
