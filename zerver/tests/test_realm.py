@@ -635,7 +635,15 @@ class RealmTest(ZulipTestCase):
         self.assert_json_error(
             result, "Bad value for 'message_retention_days': -10")
 
-        req = dict(message_retention_days=ujson.dumps(Realm.RETAIN_MESSAGE_FOREVER))
+        req = dict(message_retention_days=ujson.dumps('invalid'))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(result, "Bad value for 'message_retention_days': invalid")
+
+        req = dict(message_retention_days=ujson.dumps(-1))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(result, "Bad value for 'message_retention_days': -1")
+
+        req = dict(message_retention_days=ujson.dumps('forever'))
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
 

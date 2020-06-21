@@ -52,8 +52,9 @@ from zerver.lib.actions import (
     internal_prep_stream_message,
 )
 from zerver.lib.exceptions import ErrorCode, JsonableError, OrganizationOwnerRequired
-from zerver.lib.request import REQ, RequestVariableConversionError, has_request_variables
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
+from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.streams import (
     access_default_stream_group_by_id,
     access_stream_by_id,
@@ -128,16 +129,6 @@ def check_if_removing_someone_else(user_profile: UserProfile,
         return principals[0] != user_profile.id
     else:
         return principals[0] != user_profile.email
-
-def parse_message_retention_days(value: Union[int, str]) -> Optional[int]:
-    if value == "forever":
-        return -1
-    if value == "realm_default":
-        return None
-    if isinstance(value, str) or value <= 0:
-        raise RequestVariableConversionError('message_retention_days', value)
-    assert isinstance(value, int)
-    return value
 
 @require_realm_admin
 def deactivate_stream_backend(request: HttpRequest,
@@ -248,7 +239,8 @@ def update_stream_backend(
         if not user_profile.is_realm_owner:
             raise OrganizationOwnerRequired()
         user_profile.realm.ensure_not_on_limited_plan()
-        message_retention_days_value = parse_message_retention_days(message_retention_days)
+        message_retention_days_value = parse_message_retention_days(
+            message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP)
         do_change_stream_message_retention_days(stream, message_retention_days_value)
 
     if description is not None:
@@ -440,7 +432,8 @@ def add_subscriptions_backend(
         stream_dict_copy["invite_only"] = invite_only
         stream_dict_copy["stream_post_policy"] = stream_post_policy
         stream_dict_copy["history_public_to_subscribers"] = history_public_to_subscribers
-        stream_dict_copy["message_retention_days"] = parse_message_retention_days(message_retention_days)
+        stream_dict_copy["message_retention_days"] = parse_message_retention_days(
+            message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP)
         stream_dicts.append(stream_dict_copy)
 
     # Validation of the streams arguments, including enforcement of

@@ -28,7 +28,7 @@
 # deletions.
 import logging
 from datetime import timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from django.conf import settings
 from django.db import connection, transaction
@@ -37,6 +37,7 @@ from django.utils.timezone import now as timezone_now
 from psycopg2.sql import SQL, Composable, Identifier, Literal
 
 from zerver.lib.logging_util import log_to_file
+from zerver.lib.request import RequestVariableConversionError
 from zerver.models import (
     ArchivedAttachment,
     ArchivedReaction,
@@ -589,3 +590,12 @@ def clean_archived_data() -> None:
         count += len(transaction_block)
 
     logger.info("Deleted %s old ArchiveTransactions.", count)
+
+def parse_message_retention_days(value: Union[int, str],
+                                 special_values_map: Dict[str, Optional[int]]) -> Optional[int]:
+    if isinstance(value, str) and value in special_values_map.keys():
+        return special_values_map[value]
+    if isinstance(value, str) or value <= 0:
+        raise RequestVariableConversionError('message_retention_days', value)
+    assert isinstance(value, int)
+    return value
