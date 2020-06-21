@@ -12,20 +12,8 @@
 {tab|js}
 
 More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
-```js
-const zulip = require('zulip-js');
 
-// Pass the path to your zuliprc file here.
-const config = {
-    zuliprc: 'zuliprc',
-};
-
-zulip(config).then((client) => {
-    // Get all the topics in stream with ID 1
-    return client.streams.topics.retrieve({ stream_id: 1 });
-}).then(console.log);
-
-```
+{generate_code_example(javascript)|/users/me/{stream_id}/topics:get|example}
 
 {tab|curl}
 

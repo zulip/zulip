@@ -42,6 +42,7 @@ const ExamplesHandler = function () {
         await generate_validation_data(client, examples.get_messages);
         await generate_validation_data(client, examples.get_own_user);
         await generate_validation_data(client, examples.get_stream_id);
+        await generate_validation_data(client, examples.get_stream_topics);
 
         console.log(JSON.stringify(response_data));
         return;
@@ -155,6 +156,13 @@ add_example('get_stream_id', '/get_stream_id:get', 200, async (client) => {
     // {code_example|start}
     // Get the ID of a given stream
     return await client.streams.getStreamId('Denmark');
+    // {code_example|end}
+});
+
+add_example('get_stream_topics', '/users/me/{stream_id}/topics:get', 200, async (client) => {
+    // {code_example|start}
+    // Get all the topics in stream with ID 1
+    return client.streams.topics.retrieve({ stream_id: 1 });
     // {code_example|end}
 });
 
