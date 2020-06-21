@@ -547,7 +547,7 @@ li.actual-dropdown-menu i {
 }
 
 .settings-dropdown-cog {
-    padding-right: 14px;
+    padding: 6px 12px;
 }
 
 .message_area_padder {
@@ -1803,8 +1803,8 @@ div.focused_table {
             box-shadow: inherit;
             display: block;
             position: absolute;
-            right: 0px;
-            top: 3px;
+            right: 6px;
+            top: -3px;
         }
 
         .dropdown-toggle,
@@ -1879,7 +1879,7 @@ div.focused_table {
         width: 0px;
         height: 0px;
         top: -7px;
-        right: 14px;
+        right: 19px;
         display: inline-block;
         border-right: 7px solid transparent;
         border-bottom: 7px solid hsl(0, 0%, 67%);
@@ -2560,10 +2560,6 @@ select.inline_select_topic_edit {
         right: 21px;
     }
 
-    .settings-dropdown-cog {
-        padding-right: 21px;
-    }
-
     .column-middle {
         margin-right: 7px;
     }
@@ -2571,7 +2567,7 @@ select.inline_select_topic_edit {
     .top-navbar-container,
     #searchbox_legacy .navbar-search.expanded,
     #searchbox .navbar-search.expanded {
-        width: calc(100% - 91px);
+        width: calc(100% - 84px);
     }
 
     .search_closed .fa-search {
@@ -2660,14 +2656,14 @@ select.inline_select_topic_edit {
 
     .top-navbar-border {
         margin-left: 40px;
-        width: calc(100% - 116px);
+        width: calc(100% - 108px);
     }
     // todo: Figure out why this has to be different
     // from above at this width and resolve it
     // #searchbox_legacy .navbar-search.expanded,
     #searchbox_legacy .navbar-search.expanded,
     #searchbox .navbar-search.expanded {
-        width: calc(100% - 131px);
+        width: calc(100% - 123px);
     }
 
     .search_closed .fa-search {
@@ -2738,7 +2734,7 @@ select.inline_select_topic_edit {
 
     #navbar-buttons ul.nav .dropdown-toggle,
     #navbar-buttons ul.nav li.active .dropdown-toggle {
-        top: -5px;
+        top: -8px;
     }
 
     #searchbox,
