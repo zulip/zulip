@@ -12,29 +12,8 @@
 {tab|js}
 
 More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
-```js
-const zulip = require('zulip-js');
 
-// Pass the path to your zuliprc file here.
-const config = {
-    zuliprc: 'zuliprc',
-};
-
-zulip(config).then((client) => {
-    // Unsubscribe from the stream "Denmark"
-    const meParams = {
-        subscriptions: JSON.stringify(['Denmark']),
-    };
-    client.users.me.subscriptions.remove(meParams).then(console.log);
-
-    // Unsubscribe Zoe from the stream "Denmark"
-    const zoeParams = {
-        subscriptions: JSON.stringify(['Denmark']),
-        principals: JSON.stringify(['ZOE@zulip.org']),
-    };
-    client.users.me.subscriptions.remove(zoeParams).then(console.log);
-});
-```
+{generate_code_example(javascript)|/users/me/subscriptions:delete|example}
 
 {tab|curl}
 

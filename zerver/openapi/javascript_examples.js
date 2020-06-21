@@ -49,6 +49,7 @@ const ExamplesHandler = function () {
         await generate_validation_data(client, examples.render_message);
         await generate_validation_data(client, examples.set_typing_status);
         await generate_validation_data(client, examples.add_subscriptions);
+        await generate_validation_data(client, examples.remove_subscriptions);
 
         console.log(JSON.stringify(response_data));
         return;
@@ -253,6 +254,27 @@ add_example('add_subscriptions', '/users/me/subscriptions:post', 200, async (cli
         principals: JSON.stringify([user_id]),
     };
     const result_2 = await client.users.me.subscriptions.add(anotherUserParams);
+    // {code_example|end}
+    return [result_1, result_2];
+});
+
+add_example('remove_subscriptions', '/users/me/subscriptions:delete', 200, async (client) => {
+    // {code_example|start}
+    // Unsubscribe from the stream "Denmark"
+    const meParams = {
+        subscriptions: JSON.stringify(['Denmark']),
+    };
+    const result_1 = await client.users.me.subscriptions.remove(meParams);
+    // {code_example|end}
+
+    // {code_example|start}
+    const user_id = 7;
+    // Unsubscribe Zoe from the stream "Denmark"
+    const zoeParams = {
+        subscriptions: JSON.stringify(['Denmark']),
+        principals: JSON.stringify([user_id]),
+    };
+    const result_2 = await client.users.me.subscriptions.remove(zoeParams);
     // {code_example|end}
     return [result_1, result_2];
 });
