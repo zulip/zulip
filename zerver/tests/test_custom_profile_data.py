@@ -525,8 +525,10 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             })
 
         # Update value of field
-        result = self.client_patch("/json/users/me/profile_data",
-                                   {'data': ujson.dumps(data)})
+        result = self.client_patch(
+            "/json/users/me/profile_data",
+            {"data": ujson.dumps([{"id": f["id"], "value": f["value"]} for f in data])},
+        )
         self.assert_json_success(result)
 
         iago = self.example_user('iago')

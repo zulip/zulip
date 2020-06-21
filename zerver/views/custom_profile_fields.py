@@ -26,6 +26,8 @@ from zerver.lib.validator import (
     check_dict,
     check_int,
     check_list,
+    check_string,
+    check_union,
     validate_choice_field_data,
 )
 from zerver.models import CustomProfileField, UserProfile, custom_profile_fields_for_realm
@@ -176,10 +178,17 @@ def remove_user_custom_profile_data(request: HttpRequest, user_profile: UserProf
 @human_users_only
 @has_request_variables
 def update_user_custom_profile_data(
-        request: HttpRequest,
-        user_profile: UserProfile,
-        data: List[Dict[str, Union[int, str, List[int]]]]=REQ(validator=check_list(
-            check_dict([('id', check_int)])))) -> HttpResponse:
+    request: HttpRequest,
+    user_profile: UserProfile,
+    data: List[Dict[str, Union[int, str, List[int]]]] = REQ(
+        validator=check_list(
+            check_dict(
+                [('id', check_int)],
+                value_validator=check_union([check_int, check_string, check_list(check_int)]),
+            ),
+        )
+    ),
+) -> HttpResponse:
 
     validate_user_custom_profile_data(user_profile.realm.id, data)
     do_update_user_custom_profile_data_if_changed(user_profile, data)
