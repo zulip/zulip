@@ -387,9 +387,7 @@ paths:
                               Size of the file in bytes.
                           create_time:
                             # TODO: Make this value always return integers.
-                            oneOf:
-                              - type: integer
-                              - type: number
+                            type: number
                             description: |
                               Time when the attachment was uploaded as a UNIX timestamp
                               multiplied by 1000 (matching the format of getTime() in JavaScript).
@@ -418,7 +416,7 @@ paths:
                                 "name": "166050.jpg",
                                 "path_id": "2/ce/DfOkzwdg_IwlrN3myw3KGtiJ/166050.jpg",
                                 "size": 571946,
-                                "create_time": 1588145417000,
+                                "create_time": 1588145417000.0,
                                 "messages": [
                                     {
                                         "id": 102,
@@ -651,9 +649,7 @@ paths:
                               type: object
                               properties:
                                 emoji_code:
-                                  oneOf:
-                                  - type: string
-                                  - type: integer
+                                  type: string
                                   description: |
                                     A unique identifier, defining the specific emoji codepoint requested,
                                     within the namespace of the `reaction_type`.
