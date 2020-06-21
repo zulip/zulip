@@ -24,7 +24,7 @@ MESSAGE_TEMPLATE = (
 @has_request_variables
 def api_travis_webhook(request: HttpRequest, user_profile: UserProfile,
                        ignore_pull_requests: bool = REQ(validator=check_bool, default=True),
-                       message: Dict[str, str]=REQ('payload', validator=check_dict([
+                       message: Dict[str, object]=REQ('payload', validator=check_dict([
                            ('author_name', check_string),
                            ('status_message', check_string),
                            ('compare_url', check_string),
