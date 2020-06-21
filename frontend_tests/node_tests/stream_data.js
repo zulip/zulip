@@ -864,17 +864,18 @@ run_test('create_sub', () => {
         return '#bd86e5';
     };
 
-    const india_sub = stream_data.create_sub_from_server_data('India', india);
+    const india_sub = stream_data.create_sub_from_server_data(india);
     assert(india_sub);
     assert.equal(india_sub.color, '#bd86e5');
-    const new_sub = stream_data.create_sub_from_server_data('India', india); // make sure sub doesn't get created twice
+    const new_sub = stream_data.create_sub_from_server_data(india);
+    // make sure sub doesn't get created twice
     assert.equal(india_sub, new_sub);
 
     assert.throws(() => {
         stream_data.create_sub_from_server_data('Canada', canada);
     }, {message: 'We cannot create a sub without a stream_id'});
 
-    const antarctica_sub = stream_data.create_sub_from_server_data('Antarctica', antarctica);
+    const antarctica_sub = stream_data.create_sub_from_server_data(antarctica);
     assert(antarctica_sub);
     assert.equal(antarctica_sub.color, '#76ce90');
 });
@@ -1062,7 +1063,7 @@ run_test('all_topics_in_cache', () => {
         {id: 2, stream_id: 21},
         {id: 3, stream_id: 21},
     ];
-    const sub = stream_data.create_sub_from_server_data('general', general);
+    const sub = stream_data.create_sub_from_server_data(general);
 
     assert.equal(stream_data.all_topics_in_cache(sub), false);
 
