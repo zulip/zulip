@@ -134,7 +134,7 @@ def parse_message_retention_days(value: Union[int, str]) -> Optional[int]:
         return -1
     if value == "realm_default":
         return None
-    if isinstance(value, str) or value < 0:
+    if isinstance(value, str) or value <= 0:
         raise RequestVariableConversionError('message_retention_days', value)
     assert isinstance(value, int)
     return value

@@ -938,6 +938,10 @@ class StreamAdminTest(ZulipTestCase):
                                    {'message_retention_days': ujson.dumps(-1)})
         self.assert_json_error(result, "Bad value for 'message_retention_days': -1")
 
+        result = self.client_patch(f'/json/streams/{stream.id}',
+                                   {'message_retention_days': ujson.dumps(0)})
+        self.assert_json_error(result, "Bad value for 'message_retention_days': 0")
+
     def test_change_stream_message_retention_days_requires_realm_owner(self) -> None:
         user_profile = self.example_user('iago')
         self.login_user(user_profile)
