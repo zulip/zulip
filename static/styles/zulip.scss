@@ -1649,6 +1649,8 @@ div.focused_table {
     .input-append {
         position: relative;
         width: 100%;
+        width: max-content;
+        min-width: 100%;
 
         .fa-search {
             padding: 0px;
