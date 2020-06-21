@@ -78,15 +78,6 @@ class OpenGraphTest(ZulipTestCase):
              "Restrict message editing"],
         )
 
-    def test_double_quotes(self) -> None:
-        # night-mode has a quoted string "night mode"
-        self.check_title_and_description(
-            '/help/night-mode',
-            "Night mode (Zulip Help Center)",
-            ['Zulip provides both a white background and a "night mode", which is great for working in a dark space.'],
-            []
-        )
-
     def test_settings_tab(self) -> None:
         # deactivate-your-account starts with {settings_tab|your-account}
         self.check_title_and_description(
