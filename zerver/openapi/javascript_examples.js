@@ -39,6 +39,7 @@ const ExamplesHandler = function () {
         await generate_validation_data(client, examples.create_user);
         await generate_validation_data(client, examples.get_custom_emoji);
         await generate_validation_data(client, examples.delete_queue);
+        await generate_validation_data(client, examples.get_messages);
 
         console.log(JSON.stringify(response_data));
         return;
@@ -122,6 +123,21 @@ add_example('delete_queue', '/events:delete', 200, async (client) => {
     };
 
     return await client.queues.deregister(deregisterParams);
+    // {code_example|end}
+});
+
+add_example('get_messages', '/messages:get', 200, async (client) => {
+    // {code_example|start}
+    const readParams = {
+        anchor: 'newest',
+        num_before: 100,
+        num_after: 0,
+        narrow: [{operator: 'sender', operand: 'iago@zulip.com'},
+                 {operator: 'stream', operand: 'Verona'}],
+    };
+
+    // Get the 100 last messages sent by "iago@zulip.com" to the stream "Verona"
+    return await client.messages.retrieve(readParams);
     // {code_example|end}
 });
 
