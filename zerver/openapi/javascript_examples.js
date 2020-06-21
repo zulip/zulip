@@ -40,6 +40,7 @@ const ExamplesHandler = function () {
         await generate_validation_data(client, examples.get_custom_emoji);
         await generate_validation_data(client, examples.delete_queue);
         await generate_validation_data(client, examples.get_messages);
+        await generate_validation_data(client, examples.get_own_user);
 
         console.log(JSON.stringify(response_data));
         return;
@@ -138,6 +139,14 @@ add_example('get_messages', '/messages:get', 200, async (client) => {
 
     // Get the 100 last messages sent by "iago@zulip.com" to the stream "Verona"
     return await client.messages.retrieve(readParams);
+    // {code_example|end}
+});
+
+add_example('get_own_user', '/users/me:get', 200, async (client) => {
+    // {code_example|start}
+    // Get the profile of the user/bot that requests this endpoint,
+    // which is `client` in this case:
+    return await client.users.me.getProfile();
     // {code_example|end}
 });
 
