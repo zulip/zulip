@@ -38,6 +38,7 @@ const ExamplesHandler = function () {
         await generate_validation_data(client, examples.send_message);
         await generate_validation_data(client, examples.create_user);
         await generate_validation_data(client, examples.get_custom_emoji);
+        await generate_validation_data(client, examples.delete_queue);
 
         console.log(JSON.stringify(response_data));
         return;
@@ -104,6 +105,23 @@ add_example('create_user', '/users:post', 200, async (client) => {
 add_example('get_custom_emoji', '/realm/emoji:get', 200, async (client) => {
     // {code_example|start}
     return await client.emojis.retrieve();
+    // {code_example|end}
+});
+
+add_example('delete_queue', '/events:delete', 200, async (client) => {
+    // {code_example|start}
+    // Register a queue
+    const queueParams = {
+        event_types: ['message'],
+    };
+    const res = await client.queues.register(queueParams);
+
+    // Delete a queue
+    const deregisterParams = {
+        queue_id: res.queue_id,
+    };
+
+    return await client.queues.deregister(deregisterParams);
     // {code_example|end}
 });
 
