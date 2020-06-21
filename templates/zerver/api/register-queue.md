@@ -55,23 +55,8 @@ potentially messy races, etc.
 {tab|js}
 
 More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
-```js
-const zulip = require('zulip-js');
 
-// Pass the path to your zuliprc file here.
-const config = {
-    zuliprc: 'zuliprc',
-};
-
-zulip(config).then((client) => {
-    // Register a queue
-    const params = {
-        event_types: ['message']
-    };
-    client.queues.register(params).then(console.log);
-});
-
-```
+{generate_code_example(javascript)|/register:post|example}
 
 {tab|curl}
 

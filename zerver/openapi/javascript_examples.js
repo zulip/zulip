@@ -45,6 +45,7 @@ const ExamplesHandler = function () {
         await generate_validation_data(client, examples.get_stream_topics);
         await generate_validation_data(client, examples.get_subscriptions);
         await generate_validation_data(client, examples.get_users);
+        await generate_validation_data(client, examples.register_queue);
 
         console.log(JSON.stringify(response_data));
         return;
@@ -186,6 +187,17 @@ add_example('get_users', '/users:get', 200, async (client) => {
     const result_2 = await client.users.retrieve({client_gravatar: true});
     // {code_example|end}
     return [result_1, result_2];
+});
+
+add_example('register_queue', '/register:post', 200, async (client) => {
+    // {code_example|start}
+    // Register a queue
+    const params = {
+        event_types: ['message'],
+    };
+
+    return await client.queues.register(params);
+    // {code_example|end}
 });
 
 main();
