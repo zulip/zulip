@@ -41,6 +41,7 @@ const ExamplesHandler = function () {
         await generate_validation_data(client, examples.delete_queue);
         await generate_validation_data(client, examples.get_messages);
         await generate_validation_data(client, examples.get_own_user);
+        await generate_validation_data(client, examples.get_stream_id);
 
         console.log(JSON.stringify(response_data));
         return;
@@ -147,6 +148,13 @@ add_example('get_own_user', '/users/me:get', 200, async (client) => {
     // Get the profile of the user/bot that requests this endpoint,
     // which is `client` in this case:
     return await client.users.me.getProfile();
+    // {code_example|end}
+});
+
+add_example('get_stream_id', '/get_stream_id:get', 200, async (client) => {
+    // {code_example|start}
+    // Get the ID of a given stream
+    return await client.streams.getStreamId('Denmark');
     // {code_example|end}
 });
 
