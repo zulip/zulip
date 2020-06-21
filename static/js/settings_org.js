@@ -237,6 +237,9 @@ function set_message_retention_setting_dropdown() {
     $("#id_realm_message_retention_setting").val(value);
     change_element_block_display_property('id_realm_message_retention_days',
                                           value === "retain_for_period");
+    if (get_property_value('realm_message_retention_days') === settings_config.retain_message_forever) {
+        $("#id_realm_message_retention_days").val('');
+    }
 }
 
 function set_org_join_restrictions_dropdown() {
@@ -721,8 +724,8 @@ exports.build_page = function () {
             if (message_retention_setting_value === 'retain_forever') {
                 data.message_retention_days = JSON.stringify('forever');
             } else {
-                data.message_retention_days = exports.get_input_element_value(
-                    $('#id_realm_message_retention_days'));
+                data.message_retention_days = JSON.stringify(exports.get_input_element_value(
+                    $('#id_realm_message_retention_days')));
             }
         } else if (subsection === 'other_settings') {
             const code_block_language_value = exports.default_code_language_widget.value();
