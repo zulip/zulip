@@ -299,7 +299,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
             'storage': ujson.dumps({'foo': [1, 2, 3]}),
         }
         result = self.client_put('/json/bot_storage', params)
-        self.assert_json_error(result, "Value type is <class 'list'>, but should be str.")
+        self.assert_json_error(result, "storage contains a value that is not a string")
 
         # Remove some entries.
         keys_to_remove = ['key 1', 'key 2']
