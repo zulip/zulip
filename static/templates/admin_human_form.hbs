@@ -16,7 +16,9 @@
                     <input type="text" autocomplete="off" name="email" value="{{ email }}" readonly/>
                 </div>
                 <div class="input-group">
-                    <label class="input-label" for="user-role-select">{{t 'User role' }}</label>
+                    <label class="input-label" for="user-role-select">{{t 'User role' }}
+                        {{> help_link_widget link="/help/roles-and-permissions" }}
+                    </label>
                     <select name="user-role-select" id="user-role-select" data-setting-widget-type="number" {{#if disable_role_dropdown}}disabled{{/if}}>
                         {{> settings/dropdown_options_widget option_values=user_role_values}}
                     </select>
