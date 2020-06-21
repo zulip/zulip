@@ -48,6 +48,7 @@ const ExamplesHandler = function () {
         await generate_validation_data(client, examples.register_queue);
         await generate_validation_data(client, examples.render_message);
         await generate_validation_data(client, examples.set_typing_status);
+        await generate_validation_data(client, examples.add_subscriptions);
 
         console.log(JSON.stringify(response_data));
         return;
@@ -226,6 +227,34 @@ add_example('set_typing_status', '/typing:post', 200, async (client) => {
     // The user has started to type in the group PM with Iago and Polonius
     return await client.typing.send(typingParams);
     // {code_example|end}
+});
+
+add_example('add_subscriptions', '/users/me/subscriptions:post', 200, async (client) => {
+    // {code_example|start}
+    // Subscribe to the streams "Verona" and "Denmark"
+    const meParams = {
+        subscriptions: JSON.stringify([
+            {name: 'Verona'},
+            {name: 'Denmark'},
+        ]),
+    };
+    const result_1 = await client.users.me.subscriptions.add(meParams);
+    // {code_example|end}
+
+    // {code_example|start}
+    // To subscribe another user to a stream, you may pass in
+    // the `principals` parameter, like so:
+    const user_id = 7;
+    const anotherUserParams = {
+        subscriptions: JSON.stringify([
+            {name: 'Verona'},
+            {name: 'Denmark'},
+        ]),
+        principals: JSON.stringify([user_id]),
+    };
+    const result_2 = await client.users.me.subscriptions.add(anotherUserParams);
+    // {code_example|end}
+    return [result_1, result_2];
 });
 
 main();

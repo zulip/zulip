@@ -13,36 +13,7 @@
 
 More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
 
-```js
-const zulip = require('zulip-js');
-
-// Pass the path to your zuliprc file here.
-const config = {
-    zuliprc: 'zuliprc',
-};
-
-zulip(config).then((client) => {
-    // Subscribe to the streams "Verona" and "Denmark"
-    const meParams = {
-        subscriptions: JSON.stringify([
-            {'name': 'Verona'},
-            {'name': 'Denmark'}
-        ]),
-    };
-    client.users.me.subscriptions.add(meParams).then(console.log);
-
-    // To subscribe another user to a stream, you may pass in
-    // the `principals` parameter, like so:
-    const anotherUserParams = {
-        subscriptions: JSON.stringify([
-            {'name': 'Verona'},
-            {'name': 'Denmark'}
-        ]),
-        principals: JSON.stringify(['ZOE@zulip.org']),
-    };
-    client.users.me.subscriptions.add(anotherUserParams).then(console.log);
-});
-```
+{generate_code_example(javascript)|/users/me/subscriptions:post|example}
 
 {tab|curl}
 
