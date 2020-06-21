@@ -56,6 +56,8 @@
         margin: 0px;
         padding: 15px;
         overflow: hidden !important;
+        display: flex;
+        flex-direction: column;
 
         a {
             color: hsl(205, 47%, 42%);
@@ -85,7 +87,6 @@
             padding: 10px;
             padding-top: 0px !important;
             overflow-y: auto;
-            max-height: 100%;
         }
 
         .table_fix_head table {
