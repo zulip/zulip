@@ -307,7 +307,9 @@ class Realm(models.Model):
         "Stream", related_name="+", null=True, blank=True, on_delete=CASCADE,
     )
 
-    RETAIN_MESSAGE_FOREVER = -1
+    MESSAGE_RETENTION_SPECIAL_VALUES_MAP = {
+        'forever': -1,
+    }
     # For old messages being automatically deleted
     message_retention_days: Optional[int] = models.IntegerField(null=True)
 
@@ -1475,6 +1477,10 @@ class Stream(models.Model):
     # Value NULL means "use retention policy of the realm".
     # Value -1 means "disable retention policy for this stream unconditionally".
     # Non-negative values have the natural meaning of "archive messages older than <value> days".
+    MESSAGE_RETENTION_SPECIAL_VALUES_MAP = {
+        'forever': -1,
+        'realm_default': None,
+    }
     message_retention_days: Optional[int] = models.IntegerField(null=True, default=None)
 
     # The very first message ID in the stream.  Used to help clients

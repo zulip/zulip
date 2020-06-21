@@ -23,6 +23,7 @@ from zerver.lib.exceptions import OrganizationOwnerRequired
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.request import REQ, JsonableError, has_request_variables
 from zerver.lib.response import json_error, json_success
+from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.validator import (
     check_bool,
@@ -30,8 +31,8 @@ from zerver.lib.validator import (
     check_int,
     check_int_in,
     check_string,
+    check_string_or_int,
     to_non_negative_int,
-    to_positive_or_allowed_int,
 )
 from zerver.models import Realm, UserProfile
 
@@ -64,8 +65,7 @@ def update_realm(
         authentication_methods: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None),
         notifications_stream_id: Optional[int]=REQ(validator=check_int, default=None),
         signup_notifications_stream_id: Optional[int]=REQ(validator=check_int, default=None),
-        message_retention_days: Optional[int] = REQ(converter=to_positive_or_allowed_int(
-            Realm.RETAIN_MESSAGE_FOREVER), default=None),
+        message_retention_days: Optional[int] = REQ(validator=check_string_or_int, default=None),
         send_welcome_emails: Optional[bool]=REQ(validator=check_bool, default=None),
         digest_emails_enabled: Optional[bool]=REQ(validator=check_bool, default=None),
         message_content_allowed_in_email_notifications: Optional[bool]=REQ(
@@ -110,6 +110,8 @@ def update_realm(
         if not user_profile.is_realm_owner:
             raise OrganizationOwnerRequired()
         realm.ensure_not_on_limited_plan()
+        message_retention_days = parse_message_retention_days(
+            message_retention_days, Realm.MESSAGE_RETENTION_SPECIAL_VALUES_MAP)
 
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.

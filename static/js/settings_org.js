@@ -719,7 +719,7 @@ exports.build_page = function () {
         } else if (subsection === 'message_retention') {
             const message_retention_setting_value = $('#id_realm_message_retention_setting').val();
             if (message_retention_setting_value === 'retain_forever') {
-                data.message_retention_days = settings_config.retain_message_forever;
+                data.message_retention_days = JSON.stringify('forever');
             } else {
                 data.message_retention_days = exports.get_input_element_value(
                     $('#id_realm_message_retention_days'));
