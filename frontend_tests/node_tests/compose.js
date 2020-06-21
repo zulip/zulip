@@ -1,3 +1,4 @@
+const rewiremock = require("rewiremock/node");
 const { JSDOM } = require("jsdom");
 
 set_global('bridge', false);
@@ -70,7 +71,11 @@ zrequire('input_pill');
 zrequire('user_pill');
 zrequire('compose_pm_pill');
 zrequire('echo');
-zrequire('compose');
+rewiremock.proxy(() => zrequire('compose'), {
+    "../../static/js/rendered_markdown": {
+        update_elements: () => {},
+    },
+});
 zrequire('upload');
 zrequire('server_events_dispatch');
 

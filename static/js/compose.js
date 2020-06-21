@@ -1,3 +1,4 @@
+const rendered_markdown = require("./rendered_markdown");
 const util = require("./util");
 const render_compose_all_everyone = require("../templates/compose_all_everyone.hbs");
 const render_compose_announce = require("../templates/compose_announce.hbs");
@@ -802,12 +803,7 @@ exports.render_and_show_preview = function (preview_spinner, preview_content_box
         }
 
         preview_content_box.html(util.clean_user_content_links(rendered_preview_html));
-        if (page_params.emojiset === "text") {
-            preview_content_box.find(".emoji").replaceWith(function () {
-                const text = $(this).attr("title");
-                return ":" + text + ":";
-            });
-        }
+        rendered_markdown.update_elements(preview_content_box);
     }
 
     if (content.length === 0) {
