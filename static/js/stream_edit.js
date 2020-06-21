@@ -665,6 +665,13 @@ exports.initialize = function () {
     $("#subscriptions_table").on("click", ".sub_setting_checkbox",
                                  exports.stream_setting_clicked);
 
+    $("#subscriptions_table").on("keyup", ".subscriber_list_add form", function (e) {
+        if (e.which === 13) {
+            e.preventDefault();
+            submit_add_subscriber_form(e);
+        }
+    });
+
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
         e.preventDefault();
         submit_add_subscriber_form(e);
