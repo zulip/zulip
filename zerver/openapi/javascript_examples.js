@@ -43,6 +43,7 @@ const ExamplesHandler = function () {
         await generate_validation_data(client, examples.get_own_user);
         await generate_validation_data(client, examples.get_stream_id);
         await generate_validation_data(client, examples.get_stream_topics);
+        await generate_validation_data(client, examples.get_subscriptions);
 
         console.log(JSON.stringify(response_data));
         return;
@@ -72,7 +73,7 @@ add_example('send_message', '/messages:post', 200, async (client) => {
     // {code_example|start}
     // Send a stream message
     let params = {
-        to: 'Denmark',
+        to: 'social',
         type: 'stream',
         topic: 'Castle',
         content: 'I come not, friends, to steal away your hearts.',
@@ -163,6 +164,13 @@ add_example('get_stream_topics', '/users/me/{stream_id}/topics:get', 200, async 
     // {code_example|start}
     // Get all the topics in stream with ID 1
     return client.streams.topics.retrieve({ stream_id: 1 });
+    // {code_example|end}
+});
+
+add_example('get_subscriptions', '/users/me/subscriptions:get', 200, async (client) => {
+    // {code_example|start}
+    // Get all streams that the user is subscribed to
+    return await client.streams.subscriptions.retrieve();
     // {code_example|end}
 });
 
