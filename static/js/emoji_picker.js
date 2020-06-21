@@ -727,7 +727,7 @@ exports.register_click_handlers = function () {
         const emoji_id = $(e.currentTarget).data("emoji-id");
         const emoji_coordinates = get_emoji_coordinates(emoji_id);
 
-        const $emoji_map = $(e.currentTarget).closest(".emoji-popover-emoji-map").expectOne();
+        const $emoji_map = $(e.currentTarget).closest(".emoji-popover").expectOne().find(".emoji-popover-emoji-map");
         maybe_change_focused_emoji(
             $emoji_map,
             emoji_coordinates.section,
