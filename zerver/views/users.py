@@ -58,7 +58,9 @@ from zerver.lib.validator import (
     check_int,
     check_int_in,
     check_list,
+    check_none_or,
     check_string,
+    check_union,
     check_url,
 )
 from zerver.models import (
@@ -121,13 +123,24 @@ def reactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
     return json_success()
 
 @has_request_variables
-def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id: int,
-                        full_name: Optional[str]=REQ(default=None, validator=check_string),
-                        role: Optional[int]=REQ(default=None, validator=check_int_in(
-                            UserProfile.ROLE_TYPES)),
-                        profile_data: Optional[List[Dict[str, Union[int, str, List[int]]]]]=
-                        REQ(default=None,
-                            validator=check_list(check_dict([('id', check_int)])))) -> HttpResponse:
+def update_user_backend(
+    request: HttpRequest, user_profile: UserProfile, user_id: int,
+    full_name: Optional[str] = REQ(default=None, validator=check_string),
+    role: Optional[int] = REQ(default=None, validator=check_int_in(
+        UserProfile.ROLE_TYPES,
+    )),
+    profile_data: Optional[List[Dict[str, Optional[Union[int, str, List[int]]]]]] = REQ(
+        default=None,
+        validator=check_list(
+            check_dict(
+                [('id', check_int)],
+                value_validator=check_none_or(check_union([
+                    check_int, check_string, check_list(check_int),
+                ])),
+            ),
+        ),
+    ),
+) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, allow_deactivated=True, allow_bots=True)
 
     if role is not None and target.role != role:
@@ -146,11 +159,15 @@ def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id
     if profile_data is not None:
         clean_profile_data = []
         for entry in profile_data:
-            if not entry["value"]:
+            assert isinstance(entry["id"], int)
+            if entry["value"] is None or not entry["value"]:
                 field_id = entry["id"]
                 check_remove_custom_profile_field_value(target, field_id)
             else:
-                clean_profile_data.append(entry)
+                clean_profile_data.append({
+                    "id": entry["id"],
+                    "value": entry["value"],
+                })
         validate_user_custom_profile_data(target.realm.id, clean_profile_data)
         do_update_user_custom_profile_data_if_changed(target, clean_profile_data)
 
