@@ -91,15 +91,6 @@ exports.initialize = function () {
             if (page_params.search_pills_enabled) {
                 search_pill.append_search_string(search_string,
                                                  search_pill_widget.widget);
-                if (search_query_box.is(':focus')) {
-                    // We usually allow the user to continue
-                    // typing until the enter key is pressed.
-                    // But we narrow when the user clicks on a
-                    // typeahead suggestion. This change in behaviour
-                    // is a workaround to be able to display the
-                    // navbar every time search_query_box loses focus.
-                    return search_query_box.val();
-                }
             }
             return exports.narrow_or_search_for_term(search_string);
         },

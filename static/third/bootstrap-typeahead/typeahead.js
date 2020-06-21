@@ -63,13 +63,9 @@
  *   It is helpful when we want to render the typeahead, based on already
  *   entered data (in the form of contenteditable elements) every time the
  *   input block gains focus but is empty.
- *
- *   We also have logic so that there is an exception to this rule when this
- *   option is set as true. We prevent the lookup of the typeahead and hide it
- *   so that the `Backspace` key is free to interact with the other elements.
- *
- *   Our custom changes include all mentions of `helpOnEmptyStrings` and `hideOnEmpty`.
  * 
+ *   Our custom changes include all mentions of `helpOnEmptyStrings`.
+ *
  * 6. Advance Key Codes:
  * 
  *   This adds support to allow specific key code's events to propagate.
@@ -206,12 +202,12 @@
       return this
     }
 
-  , lookup: function (hideOnEmpty) {
+  , lookup: function () {
       var items
 
       this.query = this.$element.is("[contenteditable]") ? this.$element.text() :  this.$element.val();
 
-      if (!this.options.helpOnEmptyStrings || hideOnEmpty) {
+      if (!this.options.helpOnEmptyStrings) {
         if (!this.query || this.query.length < this.options.minLength) {
           return this.shown ? this.hide() : this
         }
@@ -399,11 +395,7 @@
             if (!this.shown) return;
             this.select(e);
           }
-          var hideOnEmpty = false
-          if (e.keyCode === 8 && this.options.helpOnEmptyStrings) { // backspace
-            hideOnEmpty = true
-          }
-          this.lookup(hideOnEmpty)
+          this.lookup()
       }
 
       if ((this.options.stopAdvance || (e.keyCode != 9 && e.keyCode != 13))
