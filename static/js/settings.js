@@ -1,5 +1,6 @@
 const settings_config = require("./settings_config");
 const render_settings_tab = require('../templates/settings_tab.hbs');
+const screenfull = require('screenfull');
 
 $("body").ready(function () {
     $("#settings_overlay_container").click(function (e) {
@@ -70,6 +71,13 @@ exports.build_page = function () {
     });
 
     $(".settings-box").html(rendered_settings_tab);
+
+    $('#fullscreen-button').on('click', (e) => {
+        if (screenfull.isEnabled) {
+            screenfull.request();
+        }
+        $(e.target).removeClass("b");
+    });
 };
 
 exports.launch = function (section) {
