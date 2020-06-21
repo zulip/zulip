@@ -1,16 +1,18 @@
-from markdown.extensions import Extension
-from typing import Any, Dict, Optional, List, Tuple
-import markdown
-from xml.etree.cElementTree import Element
+from typing import Any, Dict, List, Optional, Tuple
+from xml.etree.ElementTree import Element, SubElement
 
-from zerver.lib.bugdown import walk_tree_with_family, ResultWithFamily
+import markdown
+from markdown.extensions import Extension
+
+from zerver.lib.bugdown import ResultWithFamily, walk_tree_with_family
+
 
 class NestedCodeBlocksRenderer(Extension):
     def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
         md.treeprocessors.add(
             'nested_code_blocks',
             NestedCodeBlocksRendererTreeProcessor(md, self.getConfigs()),
-            '_end'
+            '_end',
         )
 
 class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocessor):
@@ -33,8 +35,8 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
         return None
 
     def get_nested_code_blocks(
-            self, code_tags: List[ResultWithFamily]
-    ) -> List[ResultWithFamily]:
+        self, code_tags: List[ResultWithFamily[Tuple[str, Optional[str]]]],
+    ) -> List[ResultWithFamily[Tuple[str, Optional[str]]]]:
         nested_code_blocks = []
         for code_tag in code_tags:
             parent: Any = code_tag.family.parent
@@ -49,23 +51,22 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
 
         return nested_code_blocks
 
-    def get_codehilite_block(self, code_block_text: str) -> Element:
-        div = markdown.util.etree.Element("div")
+    def get_codehilite_block(self, code_block_text: Optional[str]) -> Element:
+        div = Element("div")
         div.set("class", "codehilite")
-        pre = markdown.util.etree.SubElement(div, "pre")
+        pre = SubElement(div, "pre")
         pre.text = code_block_text
         return div
 
     def replace_element(
             self, parent: Optional[Element],
-            replacement: markdown.util.etree.Element,
-            element_to_replace: Element
+            replacement: Element,
+            element_to_replace: Element,
     ) -> None:
         if parent is None:
             return
 
-        children = parent.getchildren()
-        for index, child in enumerate(children):
+        for index, child in enumerate(parent):
             if child is element_to_replace:
                 parent.insert(index, replacement)
                 parent.remove(element_to_replace)

@@ -1,12 +1,10 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+from typing import Any
 
 from django.conf import settings
 from django.db import migrations
 from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
-from typing import Any
 
 def fix_messages(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     """Conceptually, this migration cleans up the old NEW_USER_BOT and FEEDBACK_BOT
@@ -16,7 +14,7 @@ def fix_messages(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     * Changing their sent messages to have been sent by NOTIFICATION_BOT.
     * Changing their 1:1 PMs to be PMs with NOTIFICATION_BOT and deleting their
       PM recipient object.
-    * Deleting any Huddles that involve them (zulipchat.com data suggests there are none,
+    * Deleting any Huddles that involve them (zulip.com data suggests there are none,
       so this is mainly out of caution) and Recipient objects (which will cascade to
       associated Subscription, Message, and UserMessage objects if they exist).
     * Deleting their UserProfile objects.

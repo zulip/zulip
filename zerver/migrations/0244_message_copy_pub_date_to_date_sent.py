@@ -4,18 +4,21 @@ from django.db import connection, migrations
 from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import Min
+from psycopg2.sql import SQL
 
 BATCH_SIZE = 1000
 
 def sql_copy_pub_date_to_date_sent(id_range_lower_bound: int, id_range_upper_bound: int) -> None:
-    query = """
+    query = SQL("""
             UPDATE zerver_message
             SET date_sent = pub_date
-            WHERE id BETWEEN {lower_bound} AND {upper_bound}
-    """
-    query = query.format(lower_bound=id_range_lower_bound, upper_bound=id_range_upper_bound)
+            WHERE id BETWEEN %(lower_bound)s AND %(upper_bound)s
+    """)
     with connection.cursor() as cursor:
-        cursor.execute(query)
+        cursor.execute(query, {
+            "lower_bound": id_range_lower_bound,
+            "upper_bound": id_range_upper_bound,
+        })
 
 def copy_pub_date_to_date_sent(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     Message = apps.get_model('zerver', 'Message')
@@ -23,7 +26,7 @@ def copy_pub_date_to_date_sent(apps: StateApps, schema_editor: DatabaseSchemaEdi
         # Nothing to do
         return
 
-    first_uncopied_id = Message.objects.filter(date_sent__isnull=True
+    first_uncopied_id = Message.objects.filter(date_sent__isnull=True,
                                                ).aggregate(Min('id'))['id__min']
     # Note: the below id can fall in a segment
     # where date_sent = pub_date already, but it's not a big problem
@@ -69,5 +72,5 @@ class Migration(migrations.Migration):
         # in a normal migration with AlterField of date_sent to have db_index=True:
         migrations.RunSQL("""
         CREATE INDEX CONCURRENTLY zerver_message_date_sent_3b5b05d8 ON zerver_message (date_sent);
-        """)
+        """),
     ]

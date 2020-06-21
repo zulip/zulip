@@ -1,18 +1,24 @@
 import importlib
+from typing import Any, Callable, Dict, Optional, Union
 from urllib.parse import unquote
 
 from django.http import HttpRequest
 from django.utils.translation import ugettext as _
-from typing import Optional, Dict, Union, Any, Callable
 
-from zerver.lib.actions import check_send_stream_message, \
-    check_send_private_message, send_rate_limited_pm_notification_to_bot_owner
-from zerver.lib.exceptions import StreamDoesNotExistError, JsonableError, \
-    ErrorCode, UnexpectedWebhookEventType
+from zerver.lib.actions import (
+    check_send_private_message,
+    check_send_stream_message,
+    send_rate_limited_pm_notification_to_bot_owner,
+)
+from zerver.lib.exceptions import (
+    ErrorCode,
+    JsonableError,
+    StreamDoesNotExistError,
+    UnexpectedWebhookEventType,
+)
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.send_email import FromAddress
 from zerver.models import UserProfile
-
 
 MISSING_EVENT_HEADER_MESSAGE = """
 Hi there!  Your bot {bot_name} just sent an HTTP request to {request_path} that
@@ -36,7 +42,7 @@ def notify_bot_owner_about_invalid_json(user_profile: UserProfile,
                                         webhook_client_name: str) -> None:
     send_rate_limited_pm_notification_to_bot_owner(
         user_profile, user_profile.realm,
-        INVALID_JSON_MESSAGE.format(webhook_name=webhook_client_name).strip()
+        INVALID_JSON_MESSAGE.format(webhook_name=webhook_client_name).strip(),
     )
 
 class MissingHTTPEventHeader(JsonableError):
@@ -55,7 +61,7 @@ def check_send_webhook_message(
         request: HttpRequest, user_profile: UserProfile,
         topic: str, body: str, stream: Optional[str]=REQ(default=None),
         user_specified_topic: Optional[str]=REQ("topic", default=None),
-        unquote_url_parameters: Optional[bool]=False
+        unquote_url_parameters: bool=False,
 ) -> None:
 
     if stream is None:
@@ -100,7 +106,7 @@ def standardize_headers(input_headers: Union[None, Dict[str, Any]]) -> Dict[str,
 
     for raw_header in input_headers:
         polished_header = raw_header.upper().replace("-", "_")
-        if polished_header not in["CONTENT_TYPE", "CONTENT_LENGTH"]:
+        if polished_header not in ["CONTENT_TYPE", "CONTENT_LENGTH"]:
             if not polished_header.startswith("HTTP_"):
                 polished_header = "HTTP_" + polished_header
         canonical_headers[polished_header] = str(input_headers[raw_header])
@@ -109,7 +115,7 @@ def standardize_headers(input_headers: Union[None, Dict[str, Any]]) -> Dict[str,
 
 def validate_extract_webhook_http_header(request: HttpRequest, header: str,
                                          integration_name: str,
-                                         fatal: Optional[bool]=True) -> Optional[str]:
+                                         fatal: bool=True) -> Optional[str]:
     extracted_header = request.META.get(DJANGO_HTTP_PREFIX + header)
     if extracted_header is None and fatal:
         message_body = MISSING_EVENT_HEADER_MESSAGE.format(
@@ -134,9 +140,7 @@ def get_fixture_http_headers(integration_name: str,
     function from the target integration module to determine what set
     of HTTP headers goes with the given test fixture.
     """
-    view_module_name = "zerver.webhooks.{integration_name}.view".format(
-        integration_name=integration_name
-    )
+    view_module_name = f"zerver.webhooks.{integration_name}.view"
     try:
         # TODO: We may want to migrate to a more explicit registration
         # strategy for this behavior rather than a try/except import.

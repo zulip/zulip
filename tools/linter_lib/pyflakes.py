@@ -1,5 +1,4 @@
 import argparse
-
 from typing import List
 
 from zulint.linters import run_pyflakes
@@ -16,11 +15,10 @@ def check_pyflakes(files: List[str], options: argparse.Namespace) -> bool:
         ("scripts/lib/pythonrc.py",
          " import *' used; unable to detect undefined names"),
 
-        # Special dev_settings.py import
-        ('', "from .prod_settings_template import *"),
-
         ("settings.py", "settings import *' used; unable to detect undefined names"),
-        ("settings.py", "may be undefined, or defined from star imports"),
+        ("settings.py", "'from .prod_settings_template import *' used; unable to detect undefined names"),
+        ("settings.py", "settings.*' imported but unused"),
+        ("settings.py", "'.prod_settings_template.*' imported but unused"),
 
         # Sphinx adds `tags` specially to the environment when running conf.py.
         ("docs/conf.py", "undefined name 'tags'"),

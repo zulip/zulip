@@ -95,22 +95,21 @@ exports.active_stream = function () {
     }
 };
 
-exports.toggle_home = function (sub) {
+exports.toggle_home = function (sub, status_element) {
     stream_muting.update_is_muted(sub, !sub.is_muted);
-    stream_edit.set_stream_property(sub, 'is_muted', sub.is_muted);
+    stream_edit.set_stream_property(sub, 'is_muted', sub.is_muted, status_element);
 };
 
 exports.toggle_pin_to_top_stream = function (sub) {
     stream_edit.set_stream_property(sub, 'pin_to_top', !sub.pin_to_top);
 };
 
+let subscribed_only = true;
+
 exports.is_subscribed_stream_tab_active = function () {
     // Returns true if "Subscribed" tab in stream settings is open
     // otherwise false.
-    if ($("#subscriptions_table .search-container .tab-switcher .first").hasClass("selected")) {
-        return true;
-    }
-    return false;
+    return subscribed_only;
 };
 
 exports.update_stream_name = function (sub, new_name) {
@@ -141,10 +140,10 @@ exports.update_stream_name = function (sub, new_name) {
         compose_state.stream_name(new_name);
     }
 
-    // Update navbar stream name if needed
+    // Update navbar if needed
     const filter = narrow_state.filter();
-    if (filter && filter.operands("stream")[0] === old_name) {
-        tab_bar.update_stream_name(new_name);
+    if (filter && filter._sub && filter._sub.stream_id === sub.stream_id) {
+        tab_bar.render_title_area();
     }
 };
 
@@ -159,10 +158,10 @@ exports.update_stream_description = function (sub, description, rendered_descrip
     // Update stream settings
     stream_edit.update_stream_description(sub);
 
-    // Update navbar stream description if needed
+    // Update navbar if needed
     const filter = narrow_state.filter();
-    if (filter && filter.operands("stream")[0] === sub.name) {
-        tab_bar.update_stream_description(sub.rendered_description);
+    if (filter && filter._sub && filter._sub.stream_id === sub.stream_id) {
+        tab_bar.render_title_area();
     }
 };
 
@@ -178,12 +177,23 @@ exports.update_stream_privacy = function (sub, values) {
     stream_ui_updates.update_subscribers_count(sub);
     stream_ui_updates.update_add_subscriptions_elements(sub);
     stream_list.redraw_stream_privacy(sub);
+
+    // Update navbar if needed
+    const filter = narrow_state.filter();
+    if (filter && filter._sub && filter._sub.stream_id === sub.stream_id) {
+        tab_bar.render_title_area();
+    }
 };
 
 exports.update_stream_post_policy = function (sub, new_value) {
     stream_data.update_stream_post_policy(sub, new_value);
     stream_data.update_calculated_fields(sub);
 
+    stream_ui_updates.update_stream_subscription_type_text(sub);
+};
+
+exports.update_message_retention_setting = function (sub, new_value) {
+    stream_data.update_message_retention_setting(sub, new_value);
     stream_ui_updates.update_stream_subscription_type_text(sub);
 };
 
@@ -255,7 +265,7 @@ exports.remove_stream = function (stream_id) {
     row.remove();
     const sub = stream_data.get_sub_by_id(stream_id);
     if (stream_edit.is_sub_settings_active(sub)) {
-        exports.show_subs_pane.nothing_selected();
+        stream_edit.open_edit_panel_empty();
     }
 };
 
@@ -453,7 +463,6 @@ exports.filter_table = function (query) {
     ui.get_scroll_element($(".streams-list")).scrollTop(streams_list_scrolltop);
 };
 
-let subscribed_only = true;
 let sort_order = "by-stream-name";
 
 exports.get_search_params = function () {
@@ -582,6 +591,11 @@ exports.setup_page = function (callback) {
             is_admin: page_params.is_admin,
             stream_post_policy_values: stream_data.stream_post_policy_values,
             stream_post_policy: stream_data.stream_post_policy_values.everyone.code,
+            zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,
+            realm_message_retention_setting:
+                stream_edit.get_display_text_for_realm_message_retention_setting,
+            upgrade_text_for_wide_organization_logo:
+                page_params.upgrade_text_for_wide_organization_logo,
         };
 
         const rendered = render_subscription_table_body(template_data);
@@ -898,21 +912,6 @@ exports.initialize = function () {
 
     $("#subscriptions_table").on("click", ".email-address", function () {
         selectText(this);
-    });
-
-    $('.empty_feed_sub_unsub').click(function (e) {
-        e.preventDefault();
-
-        $('#subscription-status').hide();
-        const stream_name = narrow_state.stream();
-        if (stream_name === undefined) {
-            return;
-        }
-        const sub = stream_data.get_sub(stream_name);
-        exports.sub_or_unsub(sub);
-
-        $('.empty_feed_notice').hide();
-        $('#empty_narrow_message').show();
     });
 
     $("#subscriptions_table").on("click", ".stream-row, .create_stream_button", function () {

@@ -7,15 +7,16 @@
 #
 # The decryption logic here isn't actually used by the flow; we just
 # have it here as part of testing the overall library.
-
 import binascii
+
 from zerver.models import UserProfile
+
 
 def xor_hex_strings(bytes_a: str, bytes_b: str) -> str:
     """Given two hex strings of equal length, return a hex string with
     the bitwise xor of the two hex strings."""
     assert len(bytes_a) == len(bytes_b)
-    return ''.join(["%x" % (int(x, 16) ^ int(y, 16),)
+    return ''.join([f"{int(x, 16) ^ int(y, 16):x}"
                     for x, y in zip(bytes_a, bytes_b)])
 
 def ascii_to_hex(input_string: str) -> str:

@@ -1,20 +1,31 @@
-import os
-import dateutil.parser
 import logging
+import os
 import subprocess
-import ujson
+from typing import Any, Dict, List, Set, Tuple
 
+import dateutil.parser
+import ujson
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
-from typing import Any, Dict, List, Set, Tuple
 
-from zerver.models import UserProfile, Recipient
+from zerver.data_import.import_util import (
+    ZerverFieldsT,
+    build_avatar,
+    build_defaultstream,
+    build_message,
+    build_realm,
+    build_recipient,
+    build_stream,
+    build_subscription,
+    build_usermessages,
+    build_zerver_realm,
+    create_converted_data_files,
+    make_subscriber_map,
+    process_avatars,
+)
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
-from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
-    build_avatar, build_subscription, build_recipient, build_usermessages, \
-    build_defaultstream, process_avatars, build_realm, build_stream, \
-    build_message, create_converted_data_files, make_subscriber_map
+from zerver.models import Recipient, UserProfile
 
 # stubs
 GitterDataT = List[Dict[str, Any]]
@@ -97,7 +108,7 @@ def build_userprofile(timestamp: Any, domain_name: str,
 
 def get_user_email(user_data: ZerverFieldsT, domain_name: str) -> str:
     # TODO Get user email from github
-    email = ("%s@users.noreply.github.com" % (user_data['username'],))
+    email = ("{}@users.noreply.github.com".format(user_data['username']))
     return email
 
 def build_stream_map(timestamp: Any,
@@ -224,7 +235,7 @@ def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
 
         message_json['zerver_message'] = zerver_message
         message_json['zerver_usermessage'] = zerver_usermessage
-        message_filename = os.path.join(output_dir, "messages-%06d.json" % (dump_file_id,))
+        message_filename = os.path.join(output_dir, f"messages-{dump_file_id:06}.json")
         logging.info("Writing Messages to %s\n", message_filename)
         write_data_to_file(os.path.join(message_filename), message_json)
 
@@ -240,14 +251,14 @@ def get_usermentions(message: Dict[str, Any], user_map: Dict[str, int],
     if 'mentions' in message:
         for mention in message['mentions']:
             if mention.get('userId') in user_map:
-                gitter_mention = '@%s' % (mention['screenName'],)
+                gitter_mention = '@{}'.format(mention['screenName'])
                 if mention['screenName'] not in user_short_name_to_full_name:
                     logging.info("Mentioned user %s never sent any messages, so has no full name data",
                                  mention['screenName'])
                     full_name = mention['screenName']
                 else:
                     full_name = user_short_name_to_full_name[mention['screenName']]
-                zulip_mention = ('@**%s**' % (full_name,))
+                zulip_mention = (f'@**{full_name}**')
                 message['text'] = message['text'].replace(gitter_mention, zulip_mention)
 
                 mentioned_user_ids.append(user_map[mention['userId']])

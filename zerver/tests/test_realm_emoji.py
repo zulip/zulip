@@ -1,10 +1,10 @@
-import mock
+from unittest import mock
 
-from zerver.lib.actions import do_create_realm, do_create_user, \
-    check_add_realm_emoji
+from zerver.lib.actions import check_add_realm_emoji, do_create_realm, do_create_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
 from zerver.models import Realm, RealmEmoji, UserProfile, get_realm
+
 
 class RealmEmojiTest(ZulipTestCase):
 
@@ -42,7 +42,7 @@ class RealmEmojiTest(ZulipTestCase):
         content = result.json()
         self.assertEqual(len(content["emoji"]), 2)
         test_emoji = content["emoji"][str(realm_emoji.id)]
-        self.assertIsNone(test_emoji['author'])
+        self.assertIsNone(test_emoji['author_id'])
 
     def test_list_admins_only(self) -> None:
         # Test that realm emoji list is public and realm emojis
@@ -58,7 +58,7 @@ class RealmEmojiTest(ZulipTestCase):
         content = result.json()
         self.assertEqual(len(content["emoji"]), 2)
         test_emoji = content["emoji"][str(realm_emoji.id)]
-        self.assertIsNone(test_emoji['author'])
+        self.assertIsNone(test_emoji['author_id'])
 
     def test_upload(self) -> None:
         user = self.example_user('iago')
@@ -77,15 +77,16 @@ class RealmEmojiTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(len(content["emoji"]), 2)
         test_emoji = content["emoji"][str(realm_emoji.id)]
-        self.assertIn('author', test_emoji)
-        self.assertEqual(test_emoji['author']['email'], email)
+        self.assertIn('author_id', test_emoji)
+        author = UserProfile.objects.get(id = test_emoji['author_id'])
+        self.assertEqual(author.email, email)
 
     def test_realm_emoji_repr(self) -> None:
         realm_emoji = RealmEmoji.objects.get(name='green_tick')
         file_name = str(realm_emoji.id) + '.png'
         self.assertEqual(
             str(realm_emoji),
-            '<RealmEmoji(zulip): %s green_tick False %s>' % (realm_emoji.id, file_name)
+            f'<RealmEmoji(zulip): {realm_emoji.id} green_tick False {file_name}>',
         )
 
     def test_upload_exception(self) -> None:
@@ -210,7 +211,7 @@ class RealmEmojiTest(ZulipTestCase):
         with get_test_image_file('img.png') as fp:
             with self.settings(MAX_EMOJI_FILE_SIZE=0):
                 result = self.client_post('/json/realm/emoji/my_emoji', {'file': fp})
-        self.assert_json_error(result, 'Uploaded file is larger than the allowed limit of 0 MB')
+        self.assert_json_error(result, 'Uploaded file is larger than the allowed limit of 0 MiB')
 
     def test_upload_already_existed_emoji(self) -> None:
         self.login('iago')

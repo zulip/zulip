@@ -14,5 +14,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(set_tutorial_status_to_finished, elidable=True)
+        migrations.RunPython(set_tutorial_status_to_finished, elidable=True),
     ]

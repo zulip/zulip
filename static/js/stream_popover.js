@@ -193,6 +193,7 @@ function build_topic_popover(opts) {
         can_mute_topic: can_mute_topic,
         can_unmute_topic: can_unmute_topic,
         is_admin: sub.is_admin,
+        color: sub.color,
     });
 
     $(elt).popover({
@@ -273,11 +274,24 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
     // streams in the future.
     const available_streams = stream_data.subscribed_subs()
         .filter(s => s.stream_id !== current_stream_id);
-    const args = { available_streams, topic_name, current_stream_id };
+    const current_stream_name = stream_data.maybe_get_stream_name(current_stream_id);
+    const args = {
+        available_streams, topic_name, current_stream_id, current_stream_name,
+        notify_new_thread: message_edit.notify_new_thread_default,
+        notify_old_thread: message_edit.notify_old_thread_default,
+    };
 
     exports.hide_topic_popover();
 
     $("#move-a-topic-modal-holder").html(render_move_topic_to_stream(args));
+
+    const stream_header_colorblock = $(".topic_stream_edit_header").find(".stream_header_colorblock");
+    ui_util.decorate_stream_bar(current_stream_name, stream_header_colorblock, false);
+    $("#select_stream_id").change(function () {
+        const stream_name = stream_data.maybe_get_stream_name(parseInt(this.value, 10));
+        ui_util.decorate_stream_bar(stream_name, stream_header_colorblock, false);
+    });
+
     $('#move_topic_modal').modal('show');
     e.stopPropagation();
 }
@@ -348,7 +362,7 @@ exports.register_stream_handlers = function () {
     // Mark all messages as read
     $('body').on('click', '#mark_all_messages_as_read', function (e) {
         exports.hide_all_messages_popover();
-        pointer.fast_forward_pointer();
+        unread_ops.mark_all_as_read();
         e.stopPropagation();
     });
 
@@ -400,9 +414,10 @@ exports.register_stream_handlers = function () {
         e.stopPropagation();
     });
 
-    // Choose custom color
-    $('body').on('click', '.custom_color', function (e) {
+    // Choose a different color.
+    $('body').on('click', '.choose_stream_color', function (e) {
         update_spectrum($(e.target).closest('.streams_popover'), function (colorpicker) {
+            $('.colorpicker-container').show();
             colorpicker.spectrum("destroy");
             colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options_full);
             // In theory this should clean up the old color picker,
@@ -535,14 +550,29 @@ exports.register_topic_handlers = function () {
     });
 
     $('body').on('click', '#do_move_topic_button', function (e) {
+        function show_error_msg(msg) {
+            $("#topic_stream_edit_form_error .error-msg").text(msg);
+            $("#topic_stream_edit_form_error").show();
+        }
+
         const params = $('#move_topic_form').serializeArray().reduce(function (obj, item) {
             obj[item.name] = item.value;
             return obj;
         }, {});
 
         const {old_topic_name, select_stream_id} = params;
-        let {current_stream_id, new_topic_name} = params;
+        let {current_stream_id, new_topic_name,
+             send_notification_to_new_thread, send_notification_to_old_thread} = params;
+        new_topic_name = new_topic_name.trim();
+        send_notification_to_new_thread = send_notification_to_new_thread === 'on';
+        send_notification_to_old_thread = send_notification_to_old_thread === 'on';
         current_stream_id = parseInt(current_stream_id, 10);
+
+        if (current_stream_id === parseInt(select_stream_id, 10) &&
+            new_topic_name.toLowerCase() === old_topic_name.toLowerCase()) {
+            show_error_msg("Please select a different stream or change topic name.");
+            return false;
+        }
 
         // The API endpoint for editing messages to change their
         // content, topic, or stream requires a message ID.
@@ -583,13 +613,14 @@ exports.register_topic_handlers = function () {
 
                 if (old_topic_name && select_stream_id) {
                     message_edit.move_topic_containing_message_to_stream(
-                        message_id, select_stream_id, new_topic_name);
+                        message_id, select_stream_id, new_topic_name,
+                        send_notification_to_new_thread,
+                        send_notification_to_old_thread);
                     $('#move_topic_modal').modal('hide');
                 }
             },
             error: function (xhr) {
-                $("#topic_stream_edit_form_error .error-msg").text(xhr.responseJSON.msg);
-                $("#topic_stream_edit_form_error").show();
+                show_error_msg(xhr.responseJSON.msg);
             },
         });
         e.preventDefault();

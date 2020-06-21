@@ -1,5 +1,7 @@
+from unittest.mock import patch
+
 import ujson
-from mock import patch
+
 from zerver.lib.test_classes import WebhookTestCase
 
 

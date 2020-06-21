@@ -1,6 +1,7 @@
 # Invite new users
 
-There are a number of ways to grant access to your Zulip organization.
+There are a number of ways to grant access to your Zulip organization;
+the article below describes each in more detail.
 
 * Allow **anyone to join** without an invitation.
 
@@ -10,7 +11,9 @@ There are a number of ways to grant access to your Zulip organization.
 
 * Share a **reusable invitation link**.
 
-This article will cover these methods in detail.
+The last two, invite-based, techniques also allow you to control the
+[role (owner, admin, member, or guest)](/help/roles-and-permissions) that the
+invited people will have.
 
 You can also manage access by
 [controlling how users authenticate](/help/configure-authentication-methods)
@@ -75,7 +78,8 @@ and reusable invitation links expire 10 days after they are sent.
 
 1. Enter a list of email addresses.
 
-1. Decide whether the users should join as admins, members, or guests.
+1. Decide whether the users should join as [admins, members, or
+   guests](/help/roles-and-permissions).
 
 1. Select which streams they should join. If you send invitations often, you
    may want to configure a set of
@@ -93,8 +97,8 @@ and reusable invitation links expire 10 days after they are sent.
 
 1. Click **Generate invite link**.
 
-1. Decide whether users using the link should join as admins, members, or
-   guests.
+1. Decide whether users using the link should join as [admins,
+   members, or guests](/help/roles-and-permissions).
 
 1. Select which streams they should join. If you send invitations often, you
    may want to configure a set of
@@ -129,8 +133,9 @@ restrict invites to admins only.
 
 ## Manage pending invitations
 
-Organization administrators can revoke or resend any invitation or reusable
-invitation link.
+Organization owners can revoke or resend any invitation or reusable
+invitation link. Organization administrators can can do the same
+except for invitations for the organization owners role.
 
 {start_tabs}
 
@@ -140,3 +145,8 @@ invitation link.
    and invitation links, or **Resend** email invitations.
 
 {end_tabs}
+
+## Related articles
+
+* [Stream permissions](/help/stream-permissions)
+* [Roles and permissions](/help/roles-and-permissions)

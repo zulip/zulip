@@ -41,7 +41,8 @@ page can be easily identified in it's respective JavaScript file. -->
                 {% else %}
                     {% if password_auth_enabled %}
                         <form name="login_form" id="login_form" method="post" class="login-form"
-                          action="{{ url('django.contrib.auth.views.login') }}?next={{ next }}">
+                          action="{{ url('django.contrib.auth.views.login') }}">
+                            <input type="hidden" name="next" value="{{ next }}">
 
                             {% if two_factor_authentication_enabled %}
                             {{ wizard.management_form }}
@@ -113,8 +114,7 @@ page can be easily identified in it's respective JavaScript file. -->
                         <form class="social_login_form form-inline" action="{{ backend.login_url }}" method="get">
                             <input type="hidden" name="next" value="{{ next }}">
                             <button id="login_{{ backend.button_id_suffix }}" class="login-social-button"
-                              {% if backend.display_icon %} style="background-image:url({{ backend.display_icon }})"  {% endif %}>
-                                {{ _('Log in with %(identity_provider)s', identity_provider=backend.display_name) }}
+                              {% if backend.display_icon %} style="background-image:url({{ backend.display_icon }})"  {% endif %}>                                {{ _('Log in with %(identity_provider)s', identity_provider=backend.display_name) }}
                             </button>
                         </form>
                     </div>
@@ -131,6 +131,12 @@ page can be easily identified in it's respective JavaScript file. -->
                 {% endif %}
             </div>
         </div>
+
+        {% if realm_invite_required %}
+        <div class="contact-admin">
+            <p class="invite-hint">{{ _("Don't have an account yet? You need to be invited to join this organization.") }}</p>
+        </div>
+        {% endif %}
     </div>
 </div>
 

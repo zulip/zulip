@@ -1,24 +1,12 @@
+from typing import Any, Dict, Set
+
 import ujson
 
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-from zerver.lib.test_helpers import (
-    EventInfo,
-    capture_event,
-)
-from zerver.lib.user_status import (
-    get_user_info_dict,
-    update_user_status,
-)
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import EventInfo, capture_event
+from zerver.lib.user_status import get_user_info_dict, update_user_status
+from zerver.models import UserProfile, UserStatus, get_client
 
-from zerver.models import (
-    get_client,
-    UserProfile,
-    UserStatus,
-)
-
-from typing import Any, Dict, Set
 
 def get_away_user_ids(realm_id: int) -> Set[int]:
     user_dict = get_user_info_dict(realm_id)
@@ -147,7 +135,7 @@ class UserStatusTest(ZulipTestCase):
 
         self.assertEqual(
             user_info(hamlet),
-            dict(status_text='in a meeting')
+            dict(status_text='in a meeting'),
         )
 
         away_user_ids = get_away_user_ids(realm_id=realm_id)

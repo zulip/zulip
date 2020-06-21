@@ -1,0 +1,66 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "landing-page" %}
+
+{% set OPEN_GRAPH_TITLE = 'Modern team chat for researchers' %}
+{% set OPEN_GRAPH_DESCRIPTION = 'No message limits, rich moderation
+features, LaTeX support, and a threading model that supports both
+conversations and focus work.' %}
+
+{% block title %}
+<title>Zulip: team chat for thoughtful distributed collaboration</title>
+{% endblock %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing why-page no-slide">
+    <div class="hero bg-pycon">
+        <div class="bg-dimmer"></div>
+        <div class="content">
+            <h1 class="center">{% trans %}Zulip for researchers.{% endtrans %}</h1>
+            <p>Modern team chat with native LaTeX support.  Free for academic research.</p>
+        </div>
+    </div>
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content markdown">
+                {{ render_markdown_path('zerver/for/research.md') }}
+            </div>
+        </div>
+    </div>
+    <div class="testimonials">
+        <div class="padded-content">
+            <div id="research-quote-carousel" class="carousel slide" data-ride="carousel">
+                <div class="carousel-quotes">
+                    <div class="carousel-inner">
+                        <div class="item active quote-container">
+                            <blockquote>
+                                I have to use Slack for some other
+                                research groups I collaborate with, but my
+                                own graduate students voted to switch to
+                                Zulip a few years ago and it's just vastly
+                                better. Having infinite well-organized
+                                history (tagged by topic and accessible
+                                with a click) is super-helpful when my
+                                group is involved in a bunch of different
+                                projects and I meet with each student once
+                                or twice a week and often need help
+                                remembering, 'Wait, what did we decide
+                                about this a month ago when we last talked
+                                about it?'
+                            </blockquote>
+                            <cite>Keith Winstein, Stanford University Computer Science</cite>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

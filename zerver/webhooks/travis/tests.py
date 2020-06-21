@@ -25,7 +25,7 @@ class TravisHookTests(WebhookTestCase):
             'build',
             self.TOPIC,
             expected_message,
-            content_type="application/x-www-form-urlencoded"
+            content_type="application/x-www-form-urlencoded",
         )
 
     def test_ignore_travis_pull_request_by_default(self) -> None:
@@ -33,14 +33,14 @@ class TravisHookTests(WebhookTestCase):
         result = self.client_post(
             self.url,
             self.get_body('pull_request'),
-            content_type="application/x-www-form-urlencoded"
+            content_type="application/x-www-form-urlencoded",
         )
         self.assert_json_success(result)
         msg = self.get_last_message()
-        self.assertNotEquals(msg.topic_name(), self.TOPIC)
+        self.assertNotEqual(msg.topic_name(), self.TOPIC)
 
     def test_travis_pull_requests_are_not_ignored_when_applicable(self) -> None:
-        self.url = "{}&ignore_pull_requests=false".format(self.build_webhook_url())
+        self.url = f"{self.build_webhook_url()}&ignore_pull_requests=false"
         expected_message = ("Author: josh_mandel\nBuild status: Passed :thumbs_up:\n"
                             "Details: [changes](https://github.com/hl7-fhir/fhir-sv"
                             "n/compare/6dccb98bcfd9...6c457d366a31), [build log](ht"
@@ -50,7 +50,7 @@ class TravisHookTests(WebhookTestCase):
             'pull_request',
             self.TOPIC,
             expected_message,
-            content_type="application/x-www-form-urlencoded"
+            content_type="application/x-www-form-urlencoded",
         )
 
     def get_body(self, fixture_name: str) -> str:

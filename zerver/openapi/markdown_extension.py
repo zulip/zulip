@@ -1,20 +1,20 @@
-import re
-import json
 import inspect
+import json
+import re
+from typing import Any, Dict, List, Optional, Pattern, Tuple
 
+import markdown
 from django.conf import settings
-
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
-from typing import Any, Dict, Optional, List, Tuple, Pattern
-import markdown
 
 import zerver.openapi.python_examples
-from zerver.openapi.openapi import get_openapi_fixture, openapi_spec, get_openapi_description
+from zerver.openapi.openapi import get_openapi_description, get_openapi_fixture, openapi_spec
 
 MACRO_REGEXP = re.compile(
     r'\{generate_code_example(\(\s*(.+?)\s*\))*\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+)\s*\))?\}')
 PYTHON_EXAMPLE_REGEX = re.compile(r'\# \{code_example\|\s*(.+?)\s*\}')
+JS_EXAMPLE_REGEX = re.compile(r'\/\/ \{code_example\|\s*(.+?)\s*\}')
 MACRO_REGEXP_DESC = re.compile(r'\{generate_api_description(\(\s*(.+?)\s*\))}')
 
 PYTHON_CLIENT_CONFIG = """
@@ -34,6 +34,22 @@ import zulip
 
 # The user for this zuliprc file must be an organization administrator
 client = zulip.Client(config_file="~/zuliprc-admin")
+
+"""
+
+JS_CLIENT_CONFIG = """
+const Zulip = require('zulip-js');
+
+// Pass the path to your zuliprc file here.
+const config = { zuliprc: 'zuliprc' };
+
+"""
+
+JS_CLIENT_ADMIN_CONFIG = """
+const Zulip = require('zulip-js');
+
+// The user for this zuliprc file must be an organization administrator.
+const config = { zuliprc: 'zuliprc-admin' };
 
 """
 
@@ -61,8 +77,8 @@ def parse_language_and_options(input_str: Optional[str]) -> Tuple[str, Dict[str,
         return (language, options)
     return (language, {})
 
-def extract_code_example(source: List[str], snippet: List[str],
-                         example_regex: Pattern[str]) -> List[str]:
+def extract_code_example(source: List[str], snippet: List[Any],
+                         example_regex: Pattern[str]) -> List[Any]:
     start = -1
     end = -1
     for line in source:
@@ -77,11 +93,11 @@ def extract_code_example(source: List[str], snippet: List[str],
     if (start == -1 and end == -1):
         return snippet
 
-    snippet.extend(source[start + 1: end])
+    snippet.append(source[start + 1: end])
     source = source[end + 1:]
     return extract_code_example(source, snippet, example_regex)
 
-def render_python_code_example(function: str, admin_config: Optional[bool]=False,
+def render_python_code_example(function: str, admin_config: bool=False,
                                **kwargs: Any) -> List[str]:
     method = zerver.openapi.python_examples.TEST_FUNCTIONS[function]
     function_source_lines = inspect.getsourcelines(method)[0]
@@ -91,18 +107,57 @@ def render_python_code_example(function: str, admin_config: Optional[bool]=False
     else:
         config = PYTHON_CLIENT_CONFIG.splitlines()
 
-    snippet = extract_code_example(function_source_lines, [], PYTHON_EXAMPLE_REGEX)
+    snippets = extract_code_example(function_source_lines, [], PYTHON_EXAMPLE_REGEX)
 
     code_example = []
     code_example.append('```python')
     code_example.extend(config)
 
-    for line in snippet:
-        # Remove one level of indentation and strip newlines
-        code_example.append(line[4:].rstrip())
+    for snippet in snippets:
+        for line in snippet:
+            # Remove one level of indentation and strip newlines
+            code_example.append(line[4:].rstrip())
 
     code_example.append('print(result)')
     code_example.append('\n')
+    code_example.append('```')
+
+    return code_example
+
+def render_javascript_code_example(function: str, admin_config: bool=False,
+                                   **kwargs: Any) -> List[str]:
+    function_source_lines = []
+    with open('zerver/openapi/javascript_examples.js') as f:
+        parsing = False
+        for line in f:
+            if line.startswith("}"):
+                parsing = False
+            if parsing:
+                function_source_lines.append(line.rstrip())
+            if line.startswith("add_example(") and function in line:
+                parsing = True
+
+    snippets = extract_code_example(function_source_lines, [], JS_EXAMPLE_REGEX)
+
+    if admin_config:
+        config = JS_CLIENT_ADMIN_CONFIG.splitlines()
+    else:
+        config = JS_CLIENT_CONFIG.splitlines()
+
+    code_example = []
+    code_example.append('```js')
+    code_example.extend(config)
+    for snippet in snippets:
+        code_example.append("Zulip(config).then(async (client) => {")
+        for line in snippet:
+            result = re.search('const result.*=(.*);', line)
+            if result:
+                line = f"    return{result.group(1)};"
+            # Strip newlines
+            code_example.append(line.rstrip())
+        code_example.append("}).then(console.log).catch(console.err);")
+        code_example.append(" ")
+
     code_example.append('```')
 
     return code_example
@@ -111,7 +166,7 @@ def curl_method_arguments(endpoint: str, method: str,
                           api_url: str) -> List[str]:
     # We also include the -sS verbosity arguments here.
     method = method.upper()
-    url = "{}/v1{}".format(api_url, endpoint)
+    url = f"{api_url}/v1{endpoint}"
     valid_methods = ["GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"]
     if method == "GET":
         # Then we need to make sure that each -d option translates to becoming
@@ -121,12 +176,16 @@ def curl_method_arguments(endpoint: str, method: str,
     elif method in valid_methods:
         return ["-sSX", method, url]
     else:
-        msg = "The request method {} is not one of {}".format(method,
-                                                              valid_methods)
+        msg = f"The request method {method} is not one of {valid_methods}"
         raise ValueError(msg)
 
 def get_openapi_param_example_value_as_string(endpoint: str, method: str, param: Dict[str, Any],
                                               curl_argument: bool=False) -> str:
+    jsonify = False
+    param_name = param["name"]
+    if "content" in param:
+        param = param["content"]["application/json"]
+        jsonify = True
     if "type" in param["schema"]:
         param_type = param["schema"]["type"]
     else:
@@ -135,27 +194,26 @@ def get_openapi_param_example_value_as_string(endpoint: str, method: str, param:
         # union type.  But for this logic's purpose, it's good enough
         # to just check the first parameter.
         param_type = param["schema"]["oneOf"][0]["type"]
-    param_name = param["name"]
     if param_type in ["object", "array"]:
         example_value = param.get("example", None)
         if not example_value:
-            msg = """All array and object type request parameters must have
-concrete examples. The openAPI documentation for {}/{} is missing an example
-value for the {} parameter. Without this we cannot automatically generate a
-cURL example.""".format(endpoint, method, param_name)
+            msg = f"""All array and object type request parameters must have
+concrete examples. The openAPI documentation for {endpoint}/{method} is missing an example
+value for the {param_name} parameter. Without this we cannot automatically generate a
+cURL example."""
             raise ValueError(msg)
         ordered_ex_val_str = json.dumps(example_value, sort_keys=True)
         if curl_argument:
-            return "    --data-urlencode {}='{}'".format(param_name, ordered_ex_val_str)
+            return f"    --data-urlencode {param_name}='{ordered_ex_val_str}'"
         return ordered_ex_val_str  # nocoverage
     else:
         example_value = param.get("example", DEFAULT_EXAMPLE[param_type])
         if isinstance(example_value, bool):
             example_value = str(example_value).lower()
-        if param["schema"].get("format", "") == "json":
+        if jsonify:
             example_value = json.dumps(example_value)
         if curl_argument:
-            return "    -d '{}={}'".format(param_name, example_value)
+            return f"    -d '{param_name}={example_value}'"
         return example_value
 
 def generate_curl_example(endpoint: str, method: str,
@@ -210,7 +268,7 @@ def generate_curl_example(endpoint: str, method: str,
         raise AssertionError("Unhandled securityScheme. Please update the code to handle this scheme.")
 
     if authentication_required:
-        lines.append("    -u %s:%s" % (auth_email, auth_api_key))
+        lines.append(f"    -u {auth_email}:{auth_api_key}")
 
     for param in operation_params:
         if param["in"] == "path":
@@ -263,8 +321,13 @@ SUPPORTED_LANGUAGES: Dict[str, Any] = {
         'render': render_python_code_example,
     },
     'curl': {
-        'render': render_curl_example
-    }
+        'render': render_curl_example,
+    },
+    'javascript': {
+        'client_config': JS_CLIENT_CONFIG,
+        'admin_config': JS_CLIENT_ADMIN_CONFIG,
+        'render': render_javascript_code_example,
+    },
 }
 
 class APIMarkdownExtension(Extension):
@@ -272,16 +335,16 @@ class APIMarkdownExtension(Extension):
         self.config = {
             'api_url': [
                 api_url,
-                'API URL to use when rendering curl examples'
-            ]
+                'API URL to use when rendering curl examples',
+            ],
         }
 
     def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
         md.preprocessors.add(
-            'generate_code_example', APICodeExamplesPreprocessor(md, self.getConfigs()), '_begin'
+            'generate_code_example', APICodeExamplesPreprocessor(md, self.getConfigs()), '_begin',
         )
         md.preprocessors.add(
-            'generate_api_description', APIDescriptionPreprocessor(md, self.getConfigs()), '_begin'
+            'generate_api_description', APIDescriptionPreprocessor(md, self.getConfigs()), '_begin',
         )
 
 class APICodeExamplesPreprocessor(Preprocessor):

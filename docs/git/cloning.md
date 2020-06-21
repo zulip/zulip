@@ -128,8 +128,11 @@ you can create a pull request that you already know passes the tests.
 
 First, sign in to [CircleCI][circle-ci] with your GitHub account and authorize
 CircleCI to access your GitHub account and repositories. Once you've logged
-in click on **Add Projects** in right sidebar. This will list all your GitHub
+in you'll be in the  **Projects** section which will list all your GitHub
 repositories. Now goto the row of Zulip and click on **Set Up Project**.
+You'll then see a sample hello world config. As your forked repository from Zulip
+will already have the config file, so click on **Start Building** and then choose
+the **Add Manually** option. After that click on **Start Building** to run the build.
 ![Screencast of CircleCI setup](../images/zulip-circleci.gif)
 
 [gitbook-rebase]: https://git-scm.com/book/en/v2/Git-Branching-Rebasing

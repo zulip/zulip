@@ -1,30 +1,46 @@
-from typing import Any, Dict, List, Optional, Union
 import datetime
 import logging
+from typing import Any, Dict, List, Optional, Union
 
 from django.core.exceptions import ValidationError
-from django.core.validators import validate_email, URLValidator
+from django.core.validators import URLValidator, validate_email
 from django.db import IntegrityError, transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
-from django.utils.timezone import utc as timezone_utc
-from django.utils.translation import ugettext as _, ugettext as err_
+from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as err_
 from django.views.decorators.csrf import csrf_exempt
 
 from analytics.lib.counts import COUNT_STATS
-from zerver.decorator import require_post, InvalidZulipServerKeyError
+from zerver.decorator import InvalidZulipServerKeyError, require_post
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.push_notifications import send_android_push_notification, \
-    send_apple_push_notification
+from zerver.lib.push_notifications import (
+    send_android_push_notification,
+    send_apple_push_notification,
+)
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
-from zerver.lib.validator import check_int, check_string, \
-    check_capped_string, check_string_fixed_length, check_float, check_none_or, \
-    check_dict_only, check_list, check_bool
+from zerver.lib.validator import (
+    check_bool,
+    check_capped_string,
+    check_dict_only,
+    check_float,
+    check_int,
+    check_list,
+    check_none_or,
+    check_string,
+    check_string_fixed_length,
+)
 from zerver.models import UserProfile
 from zerver.views.push_notifications import validate_token
-from zilencer.models import RemotePushDeviceToken, RemoteZulipServer, \
-    RemoteRealmCount, RemoteInstallationCount, RemoteRealmAuditLog
+from zilencer.models import (
+    RemoteInstallationCount,
+    RemotePushDeviceToken,
+    RemoteRealmAuditLog,
+    RemoteRealmCount,
+    RemoteZulipServer,
+)
+
 
 def validate_entity(entity: Union[UserProfile, RemoteZulipServer]) -> RemoteZulipServer:
     if not isinstance(entity, RemoteZulipServer):
@@ -58,7 +74,7 @@ def register_remote_server(
         url_validator = URLValidator()
         url_validator('http://' + hostname)
     except ValidationError:
-        raise JsonableError(_('%s is not a valid hostname') % (hostname,))
+        raise JsonableError(_('{} is not a valid hostname').format(hostname))
 
     try:
         validate_email(contact_email)
@@ -141,13 +157,13 @@ def remote_server_notify_push(request: HttpRequest, entity: Union[UserProfile, R
     android_devices = list(RemotePushDeviceToken.objects.filter(
         user_id=user_id,
         kind=RemotePushDeviceToken.GCM,
-        server=server
+        server=server,
     ))
 
     apple_devices = list(RemotePushDeviceToken.objects.filter(
         user_id=user_id,
         kind=RemotePushDeviceToken.APNS,
-        server=server
+        server=server,
     ))
 
     if android_devices:
@@ -163,7 +179,7 @@ def validate_incoming_table_data(server: RemoteZulipServer, model: Any,
     last_id = get_last_id_from_server(server, model)
     for row in rows:
         if is_count_stat and row['property'] not in COUNT_STATS:
-            raise JsonableError(_("Invalid property %s") % (row['property'],))
+            raise JsonableError(_("Invalid property {}").format(row['property']))
         if row['id'] <= last_id:
             raise JsonableError(_("Data is out of order."))
         last_id = row['id']
@@ -224,7 +240,7 @@ def remote_server_post_analytics(request: HttpRequest,
         realm_id=row['realm'],
         remote_id=row['id'],
         server=server,
-        end_time=datetime.datetime.fromtimestamp(row['end_time'], tz=timezone_utc),
+        end_time=datetime.datetime.fromtimestamp(row['end_time'], tz=datetime.timezone.utc),
         subgroup=row['subgroup'],
         value=row['value']) for row in realm_counts]
     batch_create_table_data(server, RemoteRealmCount, row_objects)
@@ -233,7 +249,7 @@ def remote_server_post_analytics(request: HttpRequest,
         property=row['property'],
         remote_id=row['id'],
         server=server,
-        end_time=datetime.datetime.fromtimestamp(row['end_time'], tz=timezone_utc),
+        end_time=datetime.datetime.fromtimestamp(row['end_time'], tz=datetime.timezone.utc),
         subgroup=row['subgroup'],
         value=row['value']) for row in installation_counts]
     batch_create_table_data(server, RemoteInstallationCount, row_objects)
@@ -243,7 +259,7 @@ def remote_server_post_analytics(request: HttpRequest,
             realm_id=row['realm'],
             remote_id=row['id'],
             server=server,
-            event_time=datetime.datetime.fromtimestamp(row['event_time'], tz=timezone_utc),
+            event_time=datetime.datetime.fromtimestamp(row['event_time'], tz=datetime.timezone.utc),
             backfilled=row['backfilled'],
             extra_data=row['extra_data'],
             event_type=row['event_type']) for row in realmauditlog_rows]

@@ -2,8 +2,7 @@ from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import REQ, api_key_only_webhook_view, \
-    has_request_variables
+from zerver.decorator import REQ, api_key_only_webhook_view, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
@@ -45,6 +44,6 @@ def get_body_for_http_request(payload: Dict[str, Any]) -> str:
         "commit_message": event_data['commitMessage'],
         "commit_id": event_data['commitId'],
         "started": event_data['started'],
-        "finished": event_data['finished']
+        "finished": event_data['finished'],
     }
     return APPVEYOR_MESSAGE_TEMPLATE.format(**data)

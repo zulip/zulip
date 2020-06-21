@@ -1,4 +1,12 @@
 {% if not isolated_page %}
+    {% if landing_page_navbar_message %}
+    <div id="navbar-custom-message">
+        {{ landing_page_navbar_message |safe }}
+    </div>
+    {% endif %}
+{% endif %}
+
+{% if not isolated_page %}
 <nav class="portico-header">
     <div class="content">
         <a class="brand logo" href="{{ root_domain_uri }}">

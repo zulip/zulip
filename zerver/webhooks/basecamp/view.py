@@ -7,8 +7,7 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import UnexpectedWebhookEventType, \
-    check_send_webhook_message
+from zerver.lib.webhooks.common import UnexpectedWebhookEventType, check_send_webhook_message
 from zerver.models import UserProfile
 
 from .support_event import SUPPORT_EVENTS
@@ -80,7 +79,7 @@ def get_verb(event: str, prefix: str) -> str:
 
 def add_punctuation_if_necessary(body: str, title: str) -> str:
     if title[-1] not in string.punctuation:
-        body = '{}.'.format(body)
+        body = f'{body}.'
     return body
 
 def get_document_body(event: str, payload: Dict[str, Any]) -> str:
@@ -97,7 +96,7 @@ def get_questions_answer_body(event: str, payload: Dict[str, Any]) -> str:
         verb=verb,
         answer_url=get_subject_url(payload),
         question_title=title,
-        question_url=question['app_url']
+        question_url=question['app_url'],
     )
 
 def get_comment_body(event: str, payload: Dict[str, Any]) -> str:
@@ -110,7 +109,7 @@ def get_comment_body(event: str, payload: Dict[str, Any]) -> str:
         verb=verb,
         answer_url=get_subject_url(payload),
         task_title=task['title'],
-        task_url=task['app_url']
+        task_url=task['app_url'],
     )
 
 def get_questions_body(event: str, payload: Dict[str, Any]) -> str:

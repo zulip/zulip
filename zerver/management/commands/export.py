@@ -3,6 +3,7 @@ import tempfile
 from argparse import ArgumentParser
 from typing import Any
 
+from django.conf import settings
 from django.core.management.base import CommandError
 
 from zerver.lib.export import export_realm_wrapper
@@ -87,7 +88,7 @@ class Command(ZulipBaseCommand):
         parser.add_argument('--threads',
                             dest='threads',
                             action="store",
-                            default=6,
+                            default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
                             help='Threads to use in exporting UserMessage objects in parallel')
         parser.add_argument('--public-only',
                             action="store_true",
@@ -121,8 +122,7 @@ class Command(ZulipBaseCommand):
             if os.path.exists(output_dir):
                 if os.listdir(output_dir):
                     raise CommandError(
-                        "Refusing to overwrite nonempty directory: %s. Aborting..."
-                        % (output_dir,)
+                        f"Refusing to overwrite nonempty directory: {output_dir}. Aborting...",
                     )
             else:
                 os.makedirs(output_dir)
@@ -131,9 +131,9 @@ class Command(ZulipBaseCommand):
         try:
             os.close(os.open(tarball_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o666))
         except FileExistsError:
-            raise CommandError("Refusing to overwrite existing tarball: %s. Aborting..." % (tarball_path,))
+            raise CommandError(f"Refusing to overwrite existing tarball: {tarball_path}. Aborting...")
 
-        print("\033[94mExporting realm\033[0m: %s" % (realm.string_id,))
+        print(f"\033[94mExporting realm\033[0m: {realm.string_id}")
 
         num_threads = int(options['threads'])
         if num_threads < 1:
@@ -164,9 +164,9 @@ class Command(ZulipBaseCommand):
                 if reaction.user_profile.realm != realm:
                     raise CommandError("Users from a different realm reacted to message. Aborting...")
 
-            print("\n\033[94mMessage content:\033[0m\n{}\n".format(message.content))
+            print(f"\n\033[94mMessage content:\033[0m\n{message.content}\n")
 
-            print("\033[94mNumber of users that reacted outbox:\033[0m {}\n".format(len(reactions)))
+            print(f"\033[94mNumber of users that reacted outbox:\033[0m {len(reactions)}\n")
 
         # Allows us to trigger exports separately from command line argument parsing
         export_realm_wrapper(realm=realm, output_dir=output_dir,

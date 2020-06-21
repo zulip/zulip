@@ -2,7 +2,7 @@
 
 This page covers how Zulip interacts with the EU's landmark GDPR
 legislation; you can read the
-[Zulip Cloud privacy policy](https://zulipchat.com/privacy) for our
+[Zulip Cloud privacy policy](https://zulip.com/privacy) for our
 general privacy policies.
 
 ## What is GDPR?
@@ -112,10 +112,10 @@ GDPR:
   user's Zulip profile, which you can access from the right sidebar.
 * The [Zulip Cloud export](/help/export-your-organization) supports exporting
   all the data related to a Zulip user or organization.
-* The [Zulip REST API](https://zulipchat.com/api/rest) lets you
+* The [Zulip REST API](/api/rest) lets you
   automate your processes for handling GDPR requests.
 
-Contact [support@zulipchat.com](mailto:support@zulipchat.com) for
+Contact [support@zulip.com](mailto:support@zulip.com) for
 any assistance related to this topic.
 
 ## GDPR compliance on-premises
@@ -141,5 +141,5 @@ may be useful:
 There's a lot more that goes into GDPR compliance, including securing
 your server infrastructure responsibly, internal policies around
 access, logging, and backups, etc.  If you need detailed guidance, we
-recommend contacting support@zulipchat.com; our paid support contracts
+recommend contacting support@zulip.com; our paid support contracts
 include assistance with understanding GDPR compliance with Zulip.

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import argparse
 import os
 import sys
@@ -13,6 +12,7 @@ setup_path()
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 
 import django
+
 django.setup()
 from zerver.worker.queue_processors import get_active_worker_queues
 

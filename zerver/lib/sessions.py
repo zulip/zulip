@@ -1,15 +1,15 @@
 import logging
-
 from datetime import timedelta
+from importlib import import_module
+from typing import Any, List, Mapping, Optional
+
 from django.conf import settings
 from django.contrib.auth import SESSION_KEY, get_user_model
 from django.contrib.sessions.models import Session
 from django.utils.timezone import now as timezone_now
-from importlib import import_module
-from typing import Any, List, Mapping, Optional
 
-from zerver.models import Realm, UserProfile, get_user_profile_by_id
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
+from zerver.models import Realm, UserProfile, get_user_profile_by_id
 
 session_engine = import_module(settings.SESSION_ENGINE)
 
@@ -67,8 +67,8 @@ def get_expirable_session_var(session: Session, var_name: str, default_value: An
 
     try:
         value, expire_at = (session[var_name]['value'], session[var_name]['expire_at'])
-    except (KeyError, TypeError) as e:
-        logging.warning("get_expirable_session_var: Variable %s: %s", var_name, e)
+    except (KeyError, TypeError):
+        logging.warning("get_expirable_session_var: error getting %s", var_name, exc_info=True)
         return default_value
 
     if timestamp_to_datetime(expire_at) < timezone_now():

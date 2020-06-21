@@ -3,8 +3,7 @@ from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import REQ, api_key_only_webhook_view, \
-    has_request_variables
+from zerver.decorator import REQ, api_key_only_webhook_view, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
@@ -20,7 +19,7 @@ State changed to **{state}**:
 @has_request_variables
 def api_insping_webhook(
         request: HttpRequest, user_profile: UserProfile,
-        payload: Dict[str, Dict[str, Any]]=REQ(argument_type='body')
+        payload: Dict[str, Dict[str, Any]]=REQ(argument_type='body'),
 ) -> HttpResponse:
 
     data = payload['webhook_event_data']
@@ -35,7 +34,7 @@ def api_insping_webhook(
 
     body = MESSAGE_TEMPLATE.format(
         state=state_name, url=url_tested,
-        response_time=response_time, timestamp=time_formatted
+        response_time=response_time, timestamp=time_formatted,
     )
 
     topic = 'insping'

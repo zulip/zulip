@@ -93,7 +93,7 @@ run_test('people_slugs', () => {
         full_name: 'Alice Smith',
     };
 
-    people.add(alice);
+    people.add_active_user(alice);
     operators = [
         {operator: 'sender', operand: 'alice@example.com'},
     ];

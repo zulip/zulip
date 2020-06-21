@@ -120,9 +120,9 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
     ```
 {end_tabs}
 
-### Import into zulipchat.com
+### Import into Zulip Cloud
 
-Email support@zulipchat.com with your exported archive,
+Email support@zulip.com with your exported archive,
 the name of the Mattermost team you want to import, and your desired Zulip
 subdomain. Your imported organization will be hosted at
 `<subdomain>.zulipchat.com`.
@@ -149,12 +149,16 @@ the most common configuration, run the following commands, replacing
 cd /home/zulip
 tar -xzvf export.tar.gz
 cd /home/zulip/deployments/current
+supervisorctl stop all  # Stop the Zulip server
 ./manage.py convert_mattermost_data /home/zulip/mattermost --output /home/zulip/converted_mattermost_data
 ./manage.py import "" /home/zulip/converted_mattermost_data/<team-name>
+./scripts/restart-server
 ```
 
-This could take several minutes to run, depending on how much data you're
-importing.
+This could take several minutes to run, depending on how much data
+you're importing.  The server stop/restart is only necessary when
+importing on a server with minimal RAM, where an OOM kill might
+otherwise occur.
 
 **Import options**
 

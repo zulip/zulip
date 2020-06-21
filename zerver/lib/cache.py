@@ -1,32 +1,41 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/caching.html for docs
-from functools import wraps
-
-from django.utils.lru_cache import lru_cache
-from django.core.cache import cache as djcache
-from django.core.cache import caches
-from django.conf import settings
-from django.db.models import Q
-from django.core.cache.backends.base import BaseCache
-from django.http import HttpRequest
-
-from typing import Any, Callable, Dict, Iterable, List, \
-    Optional, Sequence, TypeVar, Tuple, TYPE_CHECKING
-
-from zerver.lib.utils import statsd, statsd_key, make_safe_digest
-import time
 import base64
+import hashlib
 import logging
+import os
 import random
 import re
 import sys
+import time
 import traceback
-import os
-import hashlib
+from functools import wraps
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    TypeVar,
+)
+
+from django.conf import settings
+from django.core.cache import cache as djcache
+from django.core.cache import caches
+from django.core.cache.backends.base import BaseCache
+from django.db.models import Q
+from django.http import HttpRequest
+from django.utils.lru_cache import lru_cache
+
+from zerver.lib.utils import make_safe_digest, statsd, statsd_key
 
 if TYPE_CHECKING:
     # These modules have to be imported for type annotations but
     # they cannot be imported at runtime due to cyclic dependency.
-    from zerver.models import UserProfile, Realm, Message
+    from zerver.models import Message, Realm, UserProfile
 
 MEMCACHED_MAX_KEY_LENGTH = 250
 
@@ -117,7 +126,7 @@ def get_cache_backend(cache_name: Optional[str]) -> BaseCache:
 
 def get_cache_with_key(
         keyfunc: Callable[..., str],
-        cache_name: Optional[str]=None
+        cache_name: Optional[str]=None,
 ) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]:
     """
     The main goal of this function getting value from the cache like in the "cache_with_key".
@@ -145,7 +154,7 @@ def get_cache_with_key(
 
 def cache_with_key(
         keyfunc: Callable[..., str], cache_name: Optional[str]=None,
-        timeout: Optional[int]=None, with_statsd_key: Optional[str]=None
+        timeout: Optional[int]=None, with_statsd_key: Optional[str]=None,
 ) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]:
     """Decorator which applies Django caching to a function.
 
@@ -176,7 +185,7 @@ def cache_with_key(
                 metric_key = statsd_key(key)
 
             status = "hit" if val is not None else "miss"
-            statsd.incr("cache%s.%s.%s" % (extra, metric_key, status))
+            statsd.incr(f"cache{extra}.{metric_key}.{status}")
 
             # Values are singleton tuples so that we can distinguish
             # a result of None from a missing key.
@@ -216,7 +225,7 @@ def validate_cache_key(key: str) -> None:
     if not bool(re.fullmatch(r"([!-~])+", key)):
         raise InvalidCacheKeyException("Invalid characters in the cache key: " + key)
     if len(key) > MEMCACHED_MAX_KEY_LENGTH:
-        raise InvalidCacheKeyException("Cache key too long: {} Length: {}".format(key, len(key)))
+        raise InvalidCacheKeyException(f"Cache key too long: {key} Length: {len(key)}")
 
 def cache_set(key: str, val: Any, cache_name: Optional[str]=None, timeout: Optional[int]=None) -> None:
     final_key = KEY_PREFIX + key
@@ -382,7 +391,7 @@ def generic_bulk_cached_fetch(
         cache_keys[object_id] = cache_key_function(object_id)
 
     cached_objects_compressed: Dict[str, Tuple[CompressedItemT]] = safe_cache_get_many(
-        [cache_keys[object_id] for object_id in object_ids]
+        [cache_keys[object_id] for object_id in object_ids],
     )
 
     cached_objects: Dict[str, CacheItemT] = {}
@@ -409,10 +418,10 @@ def generic_bulk_cached_fetch(
             if cache_keys[object_id] in cached_objects}
 
 def preview_url_cache_key(url: str) -> str:
-    return "preview_url:%s" % (make_safe_digest(url),)
+    return f"preview_url:{make_safe_digest(url)}"
 
 def display_recipient_cache_key(recipient_id: int) -> str:
-    return "display_recipient_dict:%d" % (recipient_id,)
+    return f"display_recipient_dict:{recipient_id}"
 
 def display_recipient_bulk_get_users_by_id_cache_key(user_id: int) -> str:
     # Cache key function for a function for bulk fetching users, used internally
@@ -423,59 +432,65 @@ def user_profile_by_email_cache_key(email: str) -> str:
     # See the comment in zerver/lib/avatar_hash.py:gravatar_hash for why we
     # are proactively encoding email addresses even though they will
     # with high likelihood be ASCII-only for the foreseeable future.
-    return 'user_profile_by_email:%s' % (make_safe_digest(email.strip()),)
+    return f'user_profile_by_email:{make_safe_digest(email.strip())}'
 
 def user_profile_cache_key_id(email: str, realm_id: int) -> str:
-    return "user_profile:%s:%s" % (make_safe_digest(email.strip()), realm_id,)
+    return f"user_profile:{make_safe_digest(email.strip())}:{realm_id}"
 
 def user_profile_cache_key(email: str, realm: 'Realm') -> str:
     return user_profile_cache_key_id(email, realm.id)
 
 def bot_profile_cache_key(email: str) -> str:
-    return "bot_profile:%s" % (make_safe_digest(email.strip()),)
+    return f"bot_profile:{make_safe_digest(email.strip())}"
 
 def user_profile_by_id_cache_key(user_profile_id: int) -> str:
-    return "user_profile_by_id:%s" % (user_profile_id,)
+    return f"user_profile_by_id:{user_profile_id}"
 
 def user_profile_by_api_key_cache_key(api_key: str) -> str:
-    return "user_profile_by_api_key:%s" % (api_key,)
+    return f"user_profile_by_api_key:{api_key}"
 
 realm_user_dict_fields: List[str] = [
     'id', 'full_name', 'short_name', 'email',
     'avatar_source', 'avatar_version', 'is_active',
     'role', 'is_bot', 'realm_id', 'timezone',
     'date_joined', 'bot_owner_id', 'delivery_email',
-    'bot_type'
+    'bot_type', 'long_term_idle'
 ]
 
 def realm_user_dicts_cache_key(realm_id: int) -> str:
-    return "realm_user_dicts:%s" % (realm_id,)
+    return f"realm_user_dicts:{realm_id}"
 
 def get_realm_used_upload_space_cache_key(realm: 'Realm') -> str:
-    return 'realm_used_upload_space:%s' % (realm.id,)
+    return f'realm_used_upload_space:{realm.id}'
 
 def active_user_ids_cache_key(realm_id: int) -> str:
-    return "active_user_ids:%s" % (realm_id,)
+    return f"active_user_ids:{realm_id}"
 
 def active_non_guest_user_ids_cache_key(realm_id: int) -> str:
-    return "active_non_guest_user_ids:%s" % (realm_id,)
+    return f"active_non_guest_user_ids:{realm_id}"
 
 bot_dict_fields: List[str] = [
-    'id', 'full_name', 'short_name', 'bot_type', 'email',
-    'is_active', 'default_sending_stream__name',
-    'realm_id',
-    'default_events_register_stream__name',
-    'default_all_public_streams', 'api_key',
-    'bot_owner__email', 'avatar_source',
+    'api_key',
+    'avatar_source',
     'avatar_version',
+    'bot_owner__id',
+    'bot_type',
+    'default_all_public_streams',
+    'default_events_register_stream__name',
+    'default_sending_stream__name',
+    'email',
+    'full_name',
+    'id',
+    'is_active',
+    'realm_id',
+    'short_name',
 ]
 
 def bot_dicts_in_realm_cache_key(realm: 'Realm') -> str:
-    return "bot_dicts_in_realm:%s" % (realm.id,)
+    return f"bot_dicts_in_realm:{realm.id}"
 
 def get_stream_cache_key(stream_name: str, realm_id: int) -> str:
-    return "stream_by_realm_and_name:%s:%s" % (
-        realm_id, make_safe_digest(stream_name.strip().lower()))
+    return f"stream_by_realm_and_name:{realm_id}:{make_safe_digest(stream_name.strip().lower())}"
 
 def delete_user_profile_caches(user_profiles: Iterable['UserProfile']) -> None:
     # Imported here to avoid cyclic dependency.
@@ -564,16 +579,16 @@ def flush_realm(sender: Any, **kwargs: Any) -> None:
         cache_delete(realm_text_description_cache_key(realm))
 
 def realm_alert_words_cache_key(realm: 'Realm') -> str:
-    return "realm_alert_words:%s" % (realm.string_id,)
+    return f"realm_alert_words:{realm.string_id}"
 
 def realm_alert_words_automaton_cache_key(realm: 'Realm') -> str:
-    return "realm_alert_words_automaton:%s" % (realm.string_id,)
+    return f"realm_alert_words_automaton:{realm.string_id}"
 
 def realm_rendered_description_cache_key(realm: 'Realm') -> str:
-    return "realm_rendered_description:%s" % (realm.string_id,)
+    return f"realm_rendered_description:{realm.string_id}"
 
 def realm_text_description_cache_key(realm: 'Realm') -> str:
-    return "realm_text_description:%s" % (realm.string_id,)
+    return f"realm_text_description:{realm.string_id}"
 
 # Called by models.py to flush the stream cache whenever we save a stream
 # object.
@@ -597,13 +612,13 @@ def flush_used_upload_space_cache(sender: Any, **kwargs: Any) -> None:
         cache_delete(get_realm_used_upload_space_cache_key(attachment.owner.realm))
 
 def to_dict_cache_key_id(message_id: int) -> str:
-    return 'message_dict:%d' % (message_id,)
+    return f'message_dict:{message_id}'
 
-def to_dict_cache_key(message: 'Message') -> str:
+def to_dict_cache_key(message: 'Message', realm_id: Optional[int]=None) -> str:
     return to_dict_cache_key_id(message.id)
 
 def open_graph_description_cache_key(content: Any, request: HttpRequest) -> str:
-    return 'open_graph_description_path:%s' % (make_safe_digest(request.META['PATH_INFO']),)
+    return 'open_graph_description_path:{}'.format(make_safe_digest(request.META['PATH_INFO']))
 
 def flush_message(sender: Any, **kwargs: Any) -> None:
     message = kwargs['instance']

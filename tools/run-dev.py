@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import argparse
 import os
 import pwd
@@ -7,26 +6,21 @@ import signal
 import subprocess
 import sys
 import traceback
-
+from typing import Any, Callable, Generator, List, Sequence
 from urllib.parse import urlunparse
 
 # check for the venv
 from lib import sanity_check
+
 sanity_check.check_venv(__file__)
 
-from tornado import httpclient
-from tornado import httputil
-from tornado import gen
-from tornado import web
+from tornado import gen, httpclient, httputil, web
 from tornado.ioloop import IOLoop
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
-from tools.lib.test_script import (
-    assert_provisioning_status_ok,
-)
 
-from typing import Any, Callable, Generator, List, Optional
+from tools.lib.test_script import assert_provisioning_status_ok
 
 if 'posix' in os.name and os.geteuid() == 0:
     raise RuntimeError("run-dev.py should not be run as root.")
@@ -98,12 +92,12 @@ if options.test:
 else:
     settings_module = "zproject.settings"
 
-manage_args = ['--settings=%s' % (settings_module,)]
+manage_args = [f'--settings={settings_module}']
 os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from scripts.lib.zulip_tools import CYAN, WARNING, FAIL, ENDC
+from scripts.lib.zulip_tools import CYAN, ENDC, FAIL, WARNING
 
 proxy_port = base_port
 django_port = base_port + 1
@@ -142,9 +136,9 @@ with open(pid_file_path, 'w+') as f:
 def server_processes() -> List[List[str]]:
     main_cmds = [
         ['./manage.py', 'runserver'] +
-        manage_args + runserver_args + ['127.0.0.1:%d' % (django_port,)],
+        manage_args + runserver_args + [f'127.0.0.1:{django_port}'],
         ['env', 'PYTHONUNBUFFERED=1', './manage.py', 'runtornado'] +
-        manage_args + ['127.0.0.1:%d' % (tornado_port,)],
+        manage_args + [f'127.0.0.1:{tornado_port}'],
     ]
 
     if options.streamlined:
@@ -158,7 +152,7 @@ def server_processes() -> List[List[str]]:
          './puppet/zulip/files/postgresql/process_fts_updates', '--quiet'],
         ['./manage.py', 'deliver_scheduled_messages'],
         ['/srv/zulip-thumbor-venv/bin/thumbor', '-c', './zthumbor/thumbor.conf',
-         '-p', '%s' % (thumbor_port,)],
+         '-p', f'{thumbor_port}'],
     ]
 
     # NORMAL (but slower) operation:
@@ -203,7 +197,7 @@ def fetch_request(url: str, callback: Any, **kwargs: Any) -> "Generator[Callable
         connect_timeout=240.0,
         request_timeout=240.0,
         decompress_response=False,
-        **kwargs
+        **kwargs,
     )
     client = httpclient.AsyncHTTPClient()
     # wait for response
@@ -218,9 +212,8 @@ class BaseHandler(web.RequestHandler):
     target_port: int
 
     def _add_request_headers(
-        self, exclude_lower_headers_list: Optional[List[str]] = None
+        self, exclude_lower_headers_list: Sequence[str] = [],
     ) -> httputil.HTTPHeaders:
-        exclude_lower_headers_list = exclude_lower_headers_list or []
         headers = httputil.HTTPHeaders()
         for header, v in self.request.headers.get_all():
             if header.lower() not in exclude_lower_headers_list:
@@ -284,7 +277,7 @@ class BaseHandler(web.RequestHandler):
                 headers=self._add_request_headers(["upgrade-insecure-requests"]),
                 follow_redirects=False,
                 body=getattr(self.request, 'body'),
-                allow_nonstandard_methods=True
+                allow_nonstandard_methods=True,
             )
         except httpclient.HTTPError as e:
             if hasattr(e, 'response') and e.response:
@@ -329,7 +322,7 @@ class Application(web.Application):
             (r"/api/v1/events.*", TornadoHandler),
             (r"/webpack.*", WebPackHandler),
             (r"/thumbor.*", ThumborHandler if using_thumbor() else ErrorHandler),
-            (r"/.*", DjangoHandler)
+            (r"/.*", DjangoHandler),
         ]
         super().__init__(handlers, enable_logging=enable_logging)
 

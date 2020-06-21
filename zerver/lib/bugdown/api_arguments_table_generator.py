@@ -1,21 +1,20 @@
-import re
-import os
 import json
+import os
+import re
+from typing import Any, Dict, List, Mapping, Sequence
 
+import markdown
 from django.utils.html import escape as escape_html
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
+
 from zerver.openapi.openapi import get_openapi_parameters
-from typing import Any, Dict, Optional, List
-import markdown
 
 REGEXP = re.compile(r'\{generate_api_arguments_table\|\s*(.+?)\s*\|\s*(.+)\s*\}')
 
 
 class MarkdownArgumentsTableGenerator(Extension):
-    def __init__(self, configs: Optional[Dict[str, Any]]=None) -> None:
-        if configs is None:
-            configs = {}
+    def __init__(self, configs: Mapping[str, Any] = {}) -> None:
         self.config = {
             'base_path': ['.', 'Default location from which to evaluate relative paths for the JSON files.'],
         }
@@ -24,7 +23,7 @@ class MarkdownArgumentsTableGenerator(Extension):
 
     def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
         md.preprocessors.add(
-            'generate_api_arguments', APIArgumentsTablePreprocessor(md, self.getConfigs()), '_begin'
+            'generate_api_arguments', APIArgumentsTablePreprocessor(md, self.getConfigs()), '_begin',
         )
 
 
@@ -73,7 +72,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                 if arguments:
                     text = self.render_table(arguments)
                 else:
-                    text = ['This endpoint does not consume any arguments.']
+                    text = ['This endpoint does not accept any parameters.']
                 # The line that contains the directive to include the macro
                 # may be preceded or followed by text or tags, in that case
                 # we need to make sure that any preceding or following text
@@ -88,7 +87,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                 done = True
         return lines
 
-    def render_table(self, arguments: List[Dict[str, Any]]) -> List[str]:
+    def render_table(self, arguments: Sequence[Mapping[str, Any]]) -> List[str]:
         # TODO: Fix naming now that this no longer renders a table.
         table = []
         argument_template = """
@@ -105,7 +104,6 @@ class APIArgumentsTablePreprocessor(Preprocessor):
 
         for argument in arguments:
             description = argument['description']
-
             oneof = ['`' + str(item) + '`'
                      for item in argument.get('schema', {}).get('enum', [])]
             if oneof:
@@ -113,17 +111,31 @@ class APIArgumentsTablePreprocessor(Preprocessor):
 
             default = argument.get('schema', {}).get('default')
             if default is not None:
-                description += '\nDefaults to `{}`.'.format(json.dumps(default))
+                description += f'\nDefaults to `{json.dumps(default)}`.'
 
             # TODO: OpenAPI allows indicating where the argument goes
             # (path, querystring, form data...).  We should document this detail.
+            example = ""
+            if 'example' in argument:
+                example = argument['example']
+            else:
+                example = json.dumps(argument['content']['application/json']['example'])
+
+            required_string: str = "required"
+            if argument.get('in', '') == 'path':
+                # Any path variable is required
+                assert argument['required']
+                required_string = 'required in path'
+
+            if argument.get('required', False):
+                required_block = f'<span class="api-argument-required">{required_string}</span>'
+            else:
+                required_block = '<span class="api-argument-optional">optional</span>'
+
             table.append(argument_template.format(
                 argument=argument.get('argument') or argument.get('name'),
-                # Show this as JSON to avoid changing the quoting style, which
-                # may cause problems with JSON encoding.
-                example=escape_html(json.dumps(argument['example'])),
-                required='<span class="api-argument-required">required</span>' if argument.get('required')
-                else '<span class="api-argument-optional">optional</span>',
+                example=escape_html(example),
+                required=required_block,
                 description=md_engine.convert(description),
             ))
 

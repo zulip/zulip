@@ -7,7 +7,7 @@ Zulip has, and how we manage them.  Zulip's dependency management has
 some really nice properties:
 
 * **Fast provisioning**.  When switching to a different commit in the
-  Zulip project with the same dependencies, it takes under 10 seconds
+  Zulip project with the same dependencies, it takes under 5 seconds
   to re-provision a working Zulip development environment after
   switching.  If there are new dependencies, one only needs to wait to
   download the new ones, not all the pre-existing dependencies.

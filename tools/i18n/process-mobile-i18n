@@ -5,8 +5,9 @@ import re
 from subprocess import check_output
 from typing import Dict, List
 
+
 def get_json_filename(locale: str) -> str:
-    return "locale/{}/mobile.json".format(locale)
+    return f"locale/{locale}/mobile.json"
 
 def get_locales() -> List[str]:
     output = check_output(['git', 'ls-files', 'locale'])

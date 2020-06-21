@@ -1,6 +1,6 @@
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.models import UserProfile
+
 
 class ZcommandTest(ZulipTestCase):
 
@@ -25,7 +25,7 @@ class ZcommandTest(ZulipTestCase):
     def test_night_zcommand(self) -> None:
         self.login('hamlet')
         user = self.example_user('hamlet')
-        user.night_mode = False
+        user.color_scheme = UserProfile.COLOR_SCHEME_LIGHT
         user.save()
 
         payload = dict(command="/night")
@@ -40,7 +40,7 @@ class ZcommandTest(ZulipTestCase):
     def test_day_zcommand(self) -> None:
         self.login('hamlet')
         user = self.example_user('hamlet')
-        user.night_mode = True
+        user.color_scheme = UserProfile.COLOR_SCHEME_NIGHT
         user.save()
 
         payload = dict(command="/day")

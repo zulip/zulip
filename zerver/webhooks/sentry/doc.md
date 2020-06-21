@@ -1,5 +1,9 @@
 Get Zulip notifications for the issues in your Sentry projects!
 
+This integration supports Sentry's Node, Python, and Go
+[platforms](https://sentry.io/platforms/).  [Contact
+us](/help/contact-support) if a platform you care about is missing.
+
 1. {!create-stream.md!}
 
 2. {!create-bot-construct-url-indented.md!}

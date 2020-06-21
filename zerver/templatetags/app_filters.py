@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Mapping, Optional
 
 import markdown
 import markdown.extensions.admonition
@@ -9,24 +9,26 @@ from django.template import Library, engines
 from django.utils.safestring import mark_safe
 from jinja2.exceptions import TemplateNotFound
 
-import zerver.lib.bugdown.fenced_code
 import zerver.lib.bugdown.api_arguments_table_generator
-import zerver.openapi.markdown_extension
+import zerver.lib.bugdown.api_return_values_table_generator
+import zerver.lib.bugdown.fenced_code
+import zerver.lib.bugdown.help_emoticon_translations_table
+import zerver.lib.bugdown.help_relative_links
+import zerver.lib.bugdown.help_settings_links
+import zerver.lib.bugdown.include
 import zerver.lib.bugdown.nested_code_blocks
 import zerver.lib.bugdown.tabbed_sections
-import zerver.lib.bugdown.help_settings_links
-import zerver.lib.bugdown.help_relative_links
-import zerver.lib.bugdown.help_emoticon_translations_table
-import zerver.lib.bugdown.include
-from zerver.lib.cache import ignore_unhashable_lru_cache, dict_to_items_tuple, items_tuple_to_dict
+import zerver.openapi.markdown_extension
+from zerver.lib.cache import dict_to_items_tuple, ignore_unhashable_lru_cache, items_tuple_to_dict
 
 register = Library()
 
 def and_n_others(values: List[str], limit: int) -> str:
     # A helper for the commonly appended "and N other(s)" string, with
     # the appropriate pluralization.
-    return " and %d other%s" % (len(values) - limit,
-                                "" if len(values) == limit + 1 else "s")
+    return " and {} other{}".format(
+        len(values) - limit, "" if len(values) == limit + 1 else "s",
+    )
 
 @register.filter(name='display_list', is_safe=True)
 def display_list(values: List[str], display_limit: int) -> str:
@@ -43,16 +45,16 @@ def display_list(values: List[str], display_limit: int) -> str:
     """
     if len(values) == 1:
         # One value, show it.
-        display_string = "%s" % (values[0],)
+        display_string = f"{values[0]}"
     elif len(values) <= display_limit:
         # Fewer than `display_limit` values, show all of them.
         display_string = ", ".join(
-            "%s" % (value,) for value in values[:-1])
-        display_string += " and %s" % (values[-1],)
+            f"{value}" for value in values[:-1])
+        display_string += f" and {values[-1]}"
     else:
         # More than `display_limit` values, only mention a few.
         display_string = ", ".join(
-            "%s" % (value,) for value in values[:display_limit])
+            f"{value}" for value in values[:display_limit])
         display_string += and_n_others(values, display_limit)
 
     return display_string
@@ -74,16 +76,13 @@ docs_without_macros = [
 @items_tuple_to_dict
 @register.filter(name='render_markdown_path', is_safe=True)
 def render_markdown_path(markdown_file_path: str,
-                         context: Optional[Dict[Any, Any]]=None,
-                         pure_markdown: Optional[bool]=False) -> str:
+                         context: Mapping[str, Any]={},
+                         pure_markdown: bool=False) -> str:
     """Given a path to a markdown file, return the rendered html.
 
     Note that this assumes that any HTML in the markdown file is
     trusted; it is intended to be used for documentation, not user
     data."""
-
-    if context is None:
-        context = {}
 
     # We set this global hackishly
     from zerver.lib.bugdown.help_settings_links import set_relative_settings_links
@@ -100,12 +99,14 @@ def render_markdown_path(markdown_file_path: str,
             markdown.extensions.admonition.makeExtension(),
             markdown.extensions.codehilite.makeExtension(
                 linenums=False,
-                guess_lang=False
+                guess_lang=False,
             ),
             zerver.lib.bugdown.fenced_code.makeExtension(
-                run_content_validators=context.get('run_content_validators', False)
+                run_content_validators=context.get('run_content_validators', False),
             ),
             zerver.lib.bugdown.api_arguments_table_generator.makeExtension(
+                base_path='templates/zerver/api/'),
+            zerver.lib.bugdown.api_return_values_table_generator.makeExtension(
                 base_path='templates/zerver/api/'),
             zerver.lib.bugdown.nested_code_blocks.makeExtension(),
             zerver.lib.bugdown.tabbed_sections.makeExtension(),
@@ -127,7 +128,7 @@ def render_markdown_path(markdown_file_path: str,
             api_url=context["api_url"],
         )]
     if not any(doc in markdown_file_path for doc in docs_without_macros):
-        extensions = extensions + [md_macro_extension]
+        extensions = [md_macro_extension] + extensions
 
     md_engine = markdown.Markdown(extensions=extensions)
     md_engine.reset()

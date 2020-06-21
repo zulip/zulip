@@ -6,13 +6,13 @@ please feel free to ask questions in [#production
 help](https://chat.zulip.org/#narrow/stream/31-production-help) on the
 [Zulip community server](../contributing/chat-zulip-org.md) (or if you
 think you've found a security bug, please report it to
-security@zulipchat.com so we can do a responsible security
+security@zulip.com so we can do a responsible security
 announcement).
 
 ## Secure your Zulip server like your email server
 
 * It's reasonable to think about security for a Zulip server like you
-  do security for a team email server -- only trusted administrators
+  do security for a team email server -- only trusted individuals
   within an organization should have shell access to the server.
 
   In particular, anyone with root access to a Zulip application server
@@ -102,18 +102,19 @@ strength allowed is controlled by two settings in
     without joining the stream.  Guests can only access streams that
     another user adds them to.
 
-  * Organization admins can see and modify most aspects of a private
-    stream, including the membership and estimated traffic. Admins
-    generally cannot see messages sent to private streams or do things
-    that would indirectly give them access to those messages, like
-    adding members or changing the stream privacy settings.
+  * Organization owners and administrators can see and modify most
+    aspects of a private stream, including the membership and
+    estimated traffic. Owners and administrators generally cannot see
+    messages sent to private streams or do things that would
+    indirectly give them access to those messages, like adding members
+    or changing the stream privacy settings.
 
   * Non-admins cannot easily see which private streams exist, or interact
     with them in any way until they are added. Given a stream name, they can
     figure out whether a stream with that name exists, but cannot see any
     other details about the stream.
 
-  * See [Stream permissions](https://zulipchat.com/help/stream-permissions) for more details.
+  * See [Stream permissions](https://zulip.com/help/stream-permissions) for more details.
 
 * Zulip supports editing the content and topics of messages that have
   already been sent. As a general philosophy, our policies provide
@@ -124,29 +125,31 @@ strength allowed is controlled by two settings in
 
   * Message content can only ever be modified by the original author.
 
-  * Any message visible to an organization administrator can be deleted at
-    any time by that administrator.
+  * Any message visible to an organization owner or administrator can
+    be deleted at any time by that administrator.
 
   * See
-    [Configuring message editing and deletion](https://zulipchat.com/help/configure-message-editing-and-deletion)
+    [Configuring message editing and deletion](https://zulip.com/help/configure-message-editing-and-deletion)
     for more details.
 
 ## Users and Bots
 
-* There are four types of users in a Zulip organization: Organization
-  Administrators, Members (normal users), Guests, and Bots.
+* There are several types of users in a Zulip organization: Organization
+  Owners, Organization Administrators, Members (normal users), Guests,
+  and Bots.
 
-* Administrators have the ability to deactivate and reactivate other
-  human and bot users, delete streams, add/remove administrator
-  privileges, as well as change configuration for the organization.
+* Owners and Administrators have the ability to deactivate and
+  reactivate other human and bot users, delete streams, add/remove
+  administrator privileges, as well as change configuration for the
+  organization.
 
   Being an organization administrator does not generally provide the ability
   to read other users' private messages or messages sent to private
   streams to which the administrator is not subscribed. There are two
   exceptions:
 
-  * Administrators may get access to private messages via some types of
-    [data export](https://zulipchat.com/help/export-your-organization).
+  * Organization owners may get access to private messages via some types of
+    [data export](https://zulip.com/help/export-your-organization).
 
   * Administrators can change the ownership of a bot. If a bot is subscribed
     to a private stream, then an administrator can indirectly get access to
@@ -164,7 +167,7 @@ strength allowed is controlled by two settings in
   SSO system, since neither of those prevents authenticating with the
   user's API key or those of bots the user has created.  Instead, you
   should
-  [deactivate the user's account](https://zulipchat.com/help/deactivate-or-reactivate-a-user)
+  [deactivate the user's account](https://zulip.com/help/deactivate-or-reactivate-a-user)
   via Zulip's "Organization settings" interface.
 
 * The Zulip mobile apps authenticate to the server by sending the
@@ -189,7 +192,7 @@ strength allowed is controlled by two settings in
     integrations like the Jabber, IRC, and Zephyr mirrors.
 
     API super user bots cannot be created by Zulip users, including
-    organization administrators. They can only be created on the command
+    organization owners. They can only be created on the command
     line (via `manage.py knight --permission=api_super_user`).
 
 ## User-uploaded content
@@ -243,9 +246,8 @@ strength allowed is controlled by two settings in
 ## Final notes and security response
 
 If you find some aspect of Zulip that seems inconsistent with this
-security model, please report it to security@zulipchat.com so that we
-can investigate and coordinate an appropriate security release if
-needed.
+security model, please report it to security@zulip.com so that we can
+investigate and coordinate an appropriate security release if needed.
 
 Zulip security announcements will be sent to
 zulip-announce@googlegroups.com, so you should subscribe if you are

@@ -1,6 +1,7 @@
-from zerver.models import UserProfile, UserActivityInterval
-
 from datetime import datetime, timedelta
+
+from zerver.models import UserActivityInterval, UserProfile
+
 
 # Return the amount of Zulip usage for this user between the two
 # given dates

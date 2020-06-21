@@ -1,19 +1,17 @@
 import os
-import ujson
 from typing import Any, Dict, List, Optional
 
+import ujson
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.test import Client
 
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
-from zerver.lib.request import has_request_variables, REQ
-from zerver.lib.response import json_success, json_error
-from zerver.models import UserProfile, get_realm
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_bool
-from zerver.lib.webhooks.common import get_fixture_http_headers, \
-    standardize_headers
-
+from zerver.lib.webhooks.common import get_fixture_http_headers, standardize_headers
+from zerver.models import UserProfile, get_realm
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
 
@@ -53,12 +51,10 @@ def get_fixtures(request: HttpResponse,
                  integration_name: str=REQ()) -> HttpResponse:
     valid_integration_name = get_valid_integration_name(integration_name)
     if not valid_integration_name:
-        return json_error("\"{integration_name}\" is not a valid webhook integration.".format(
-            integration_name=integration_name), status=404)
+        return json_error(f"\"{integration_name}\" is not a valid webhook integration.", status=404)
 
     fixtures = {}
-    fixtures_dir = os.path.join(ZULIP_PATH, "zerver/webhooks/{valid_integration_name}/fixtures".format(
-        valid_integration_name=valid_integration_name))
+    fixtures_dir = os.path.join(ZULIP_PATH, f"zerver/webhooks/{valid_integration_name}/fixtures")
     if not os.path.exists(fixtures_dir):
         msg = ("The integration \"{valid_integration_name}\" does not have fixtures.").format(
             valid_integration_name=valid_integration_name)
@@ -96,7 +92,7 @@ def check_send_webhook_fixture_message(request: HttpRequest,
     try:
         custom_headers_dict = ujson.loads(custom_headers)
     except ValueError as ve:
-        return json_error("Custom HTTP headers are not in a valid JSON format. {}".format(ve))  # nolint
+        return json_error(f"Custom HTTP headers are not in a valid JSON format. {ve}")  # nolint
 
     response = send_webhook_fixture_message(url, body, is_json,
                                             custom_headers_dict)
@@ -114,11 +110,9 @@ def send_all_webhook_fixture_messages(request: HttpRequest,
                                       integration_name: str=REQ()) -> HttpResponse:
     valid_integration_name = get_valid_integration_name(integration_name)
     if not valid_integration_name:
-        return json_error("\"{integration_name}\" is not a valid webhook integration.".format(
-            integration_name=integration_name), status=404)
+        return json_error(f"\"{integration_name}\" is not a valid webhook integration.", status=404)
 
-    fixtures_dir = os.path.join(ZULIP_PATH, "zerver/webhooks/{valid_integration_name}/fixtures".format(
-        valid_integration_name=valid_integration_name))
+    fixtures_dir = os.path.join(ZULIP_PATH, f"zerver/webhooks/{valid_integration_name}/fixtures")
     if not os.path.exists(fixtures_dir):
         msg = ("The integration \"{valid_integration_name}\" does not have fixtures.").format(
             valid_integration_name=valid_integration_name)

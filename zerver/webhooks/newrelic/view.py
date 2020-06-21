@@ -7,8 +7,7 @@ from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_dict
-from zerver.lib.webhooks.common import UnexpectedWebhookEventType, \
-    check_send_webhook_message
+from zerver.lib.webhooks.common import UnexpectedWebhookEventType, check_send_webhook_message
 from zerver.models import UserProfile
 
 ALERT_TEMPLATE = "{long_description} ([view alert]({alert_url}))."
@@ -31,7 +30,7 @@ Changelog:
 @has_request_variables
 def api_newrelic_webhook(request: HttpRequest, user_profile: UserProfile,
                          alert: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None),
-                         deployment: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None)
+                         deployment: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None),
                          ) -> HttpResponse:
     if alert:
         # Use the message as the subject because it stays the same for
@@ -40,7 +39,7 @@ def api_newrelic_webhook(request: HttpRequest, user_profile: UserProfile,
         subject = alert['message']
         content = ALERT_TEMPLATE.format(**alert)
     elif deployment:
-        subject = "%s deploy" % (deployment['application_name'],)
+        subject = "{} deploy".format(deployment['application_name'])
         content = DEPLOY_TEMPLATE.format(**deployment)
     else:
         raise UnexpectedWebhookEventType('New Relic', 'Unknown Event Type')

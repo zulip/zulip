@@ -5,7 +5,7 @@
       <span class="message_sender{% if status_message %} sender_info_hover{% endif %} no-select">
           {% if include_sender %}
           <div class="inline_profile_picture">
-              <img src={{ avatar_url }} alt="" class="no-drag"/>
+              <img src="{{ avatar_url }}" alt="" class="no-drag"/>
           </div>
               {% if status_message %}
                   <span class="sender-status">

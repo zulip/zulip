@@ -1,16 +1,18 @@
+import ujson
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 
-from zerver.lib.actions import do_change_is_admin, \
-    do_change_realm_domain, do_create_realm, \
-    do_remove_realm_domain, do_set_realm_property
-from zerver.lib.email_validation import email_allowed_for_realm
+from zerver.lib.actions import (
+    do_change_realm_domain,
+    do_change_user_role,
+    do_create_realm,
+    do_remove_realm_domain,
+    do_set_realm_property,
+)
 from zerver.lib.domains import validate_domain
+from zerver.lib.email_validation import email_allowed_for_realm
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import get_realm, \
-    RealmDomain, DomainNotAllowedForRealmError
-
-import ujson
+from zerver.models import DomainNotAllowedForRealmError, RealmDomain, UserProfile, get_realm
 
 
 class RealmDomainTest(ZulipTestCase):
@@ -59,7 +61,7 @@ class RealmDomainTest(ZulipTestCase):
         mit_user_profile = self.mit_user("sipbtest")
         self.login_user(mit_user_profile)
 
-        do_change_is_admin(mit_user_profile, True)
+        do_change_user_role(mit_user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
         result = self.client_post("/json/realm/domains", info=data,
                                   HTTP_HOST=mit_user_profile.realm.host)

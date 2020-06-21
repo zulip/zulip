@@ -392,7 +392,7 @@ refactor them.
 from zulip_bots.test_lib import StubBotTestCase
 
 class TestHelpBot(StubBotTestCase):
-    bot_name = "helloworld"  # type: str
+    bot_name: str = "helloworld"
 
     def test_bot(self) -> None:
         dialog = [

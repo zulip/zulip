@@ -31,7 +31,7 @@ const me = {
 };
 
 // set up user data
-people.add(me);
+people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
 function contains_sub(subs, sub) {
@@ -181,9 +181,9 @@ run_test('subscribers', () => {
         full_name: 'George',
         user_id: 103,
     };
-    people.add(fred);
-    people.add(not_fred);
-    people.add(george);
+    people.add_active_user(fred);
+    people.add_active_user(not_fred);
+    people.add_active_user(george);
 
     function potential_subscriber_ids() {
         const users = stream_data.potential_subscribers(sub);
@@ -221,7 +221,7 @@ run_test('subscribers', () => {
         full_name: 'Brutus',
         user_id: 104,
     };
-    people.add(brutus);
+    people.add_active_user(brutus);
     assert(!stream_data.is_user_subscribed('Rome', brutus.user_id));
 
     // add
@@ -474,6 +474,7 @@ run_test('stream_settings', () => {
         invite_only: true,
         history_public_to_subscribers: true,
         stream_post_policy: stream_data.stream_post_policy_values.admins.code,
+        message_retention_days: 10,
     };
     stream_data.clear_subscriptions();
     stream_data.add_sub(cinnamon);
@@ -496,6 +497,7 @@ run_test('stream_settings', () => {
     assert.equal(sub_rows[0].history_public_to_subscribers, true);
     assert.equal(sub_rows[0].stream_post_policy ===
         stream_data.stream_post_policy_values.admins.code, true);
+    assert.equal(sub_rows[0].message_retention_days, 10);
 
     const sub = stream_data.get_sub('a');
     stream_data.update_stream_privacy(sub, {
@@ -503,11 +505,13 @@ run_test('stream_settings', () => {
         history_public_to_subscribers: false,
     });
     stream_data.update_stream_post_policy(sub, 1);
+    stream_data.update_message_retention_setting(sub, -1);
     stream_data.update_calculated_fields(sub);
     assert.equal(sub.invite_only, false);
     assert.equal(sub.history_public_to_subscribers, false);
     assert.equal(sub.stream_post_policy,
                  stream_data.stream_post_policy_values.everyone.code);
+    assert.equal(sub.message_retention_days, -1);
 
     // For guest user only retrieve subscribed streams
     sub_rows = stream_data.get_updated_unsorted_subs();
@@ -608,7 +612,7 @@ run_test('get_subscriber_count', () => {
         full_name: 'Fred',
         user_id: 101,
     };
-    people.add(fred);
+    people.add_active_user(fred);
     stream_data.add_subscriber('India', 102);
     assert.equal(stream_data.get_subscriber_count('India'), 1);
     const george = {
@@ -616,7 +620,7 @@ run_test('get_subscriber_count', () => {
         full_name: 'George',
         user_id: 103,
     };
-    people.add(george);
+    people.add_active_user(george);
     stream_data.add_subscriber('India', 103);
     assert.equal(stream_data.get_subscriber_count('India'), 2);
 
@@ -1064,7 +1068,7 @@ run_test('all_topics_in_cache', () => {
 
     message_list.all.data.add_messages(messages);
     assert.equal(stream_data.all_topics_in_cache(sub), false);
-    message_list.all.fetch_status.has_found_newest = () => {return true;};
+    message_list.all.data.fetch_status.has_found_newest = () => {return true;};
     assert.equal(stream_data.all_topics_in_cache(sub), true);
 
     sub.first_message_id = 0;

@@ -1,10 +1,10 @@
-# -*- coding: utf-8 -*-
-
-from django.db import migrations
-from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
-from django.db.migrations.state import StateApps
-import ujson
 from typing import Dict, List
+
+import ujson
+from django.db import migrations
+from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.migrations.state import StateApps
+
 
 def move_to_seperate_table(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     UserProfile = apps.get_model('zerver', 'UserProfile')
@@ -28,7 +28,7 @@ def move_back_to_user_profile(apps: StateApps, schema_editor: DatabaseSchemaEdit
     UserProfile = apps.get_model('zerver', 'UserProfile')
 
     user_ids_and_words = AlertWord.objects.all().values("user_profile_id", "word")
-    user_ids_with_words = dict()  # type: Dict[int, List[str]]
+    user_ids_with_words: Dict[int, List[str]] = dict()
 
     for id_and_word in user_ids_and_words:
         user_ids_with_words.setdefault(id_and_word["user_profile_id"], [])
@@ -46,5 +46,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(move_to_seperate_table, move_back_to_user_profile, elidable=True)
+        migrations.RunPython(move_to_seperate_table, move_back_to_user_profile, elidable=True),
     ]

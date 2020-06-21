@@ -1,7 +1,6 @@
 import cProfile
-
 from functools import wraps
-from typing import Any, TypeVar, Callable
+from typing import Any, Callable, TypeVar
 
 ReturnT = TypeVar('ReturnT')
 

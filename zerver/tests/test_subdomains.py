@@ -1,10 +1,11 @@
-import mock
-from typing import Any, Dict, List
+from typing import Any, Mapping, Sequence
+from unittest import mock
 
 from django.test import TestCase
 
 from zerver.lib.subdomains import get_subdomain
 from zerver.models import Realm
+
 
 class SubdomainsTest(TestCase):
     def test_get_subdomain(self) -> None:
@@ -16,8 +17,8 @@ class SubdomainsTest(TestCase):
 
         def test(expected: str, host: str, *, plusport: bool=True,
                  external_host: str='example.org',
-                 realm_hosts: Dict[str, str]={},
-                 root_aliases: List[str]=[]) -> None:
+                 realm_hosts: Mapping[str, str]={},
+                 root_aliases: Sequence[str]=[]) -> None:
             with self.settings(EXTERNAL_HOST=external_host,
                                REALM_HOSTS=realm_hosts,
                                ROOT_SUBDOMAIN_ALIASES=root_aliases):

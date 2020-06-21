@@ -7,7 +7,7 @@
 {% block content %}
 <p>{{ _("Hi again,") }}</p>
 
-<p>{% trans %}This is a friendly reminder that {{ referrer_name }} (<a href="mailto:{{ referrer_email }}">{{ referrer_email }}</a>) wants you to join them on Zulip &mdash; the team communication tool designed for productivity.{% endtrans %}</p>
+<p>{% trans %}This is a friendly reminder that <a href="mailto:{{ referrer_email }}">{{ referrer_name }} ({{ referrer_email }})</a> wants you to join them on Zulip &mdash; the team communication tool designed for productivity.{% endtrans %}</p>
 
 <p>
     {{ _("To get started, click the button below.") }}
@@ -19,6 +19,10 @@
 </p>
 
 <p>
-    {% trans %}This invitation expires in two days. If the invitation expires, you'll need to ask {{ referrer_name }} for another one.{% endtrans %}
+    {% trans %}
+    This invitation expires in two days. If the invitation expires,
+    you'll need to ask <a href="mailto:{{ referrer_email }}">{{ referrer_name }}</a>
+    for another one.
+    {% endtrans %}
 </p>
 {% endblock %}

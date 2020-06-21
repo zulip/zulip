@@ -1,5 +1,3 @@
-const emoji_codes = require("../generated/emoji/emoji_codes.json");
-
 function do_narrow_action(action) {
     action(current_msg_list.selected_id(), {trigger: 'hotkey'});
     return true;
@@ -106,6 +104,7 @@ const keypress_mappings = {
     113: {name: 'query_streams', message_view_only: true}, // 'q'
     114: {name: 'reply_message', message_view_only: true}, // 'r'
     115: {name: 'narrow_by_recipient', message_view_only: true}, // 's'
+    116: {name: 'open_recent_topics', message_view_only: true}, // 't'
     117: {name: 'show_sender_info', message_view_only: true}, // 'u'
     118: {name: 'show_lightbox', message_view_only: true}, // 'v'
     119: {name: 'query_users', message_view_only: true}, // 'w'
@@ -423,6 +422,19 @@ exports.process_shift_tab_key = function () {
 exports.process_hotkey = function (e, hotkey) {
     const event_name = hotkey.name;
 
+    // This block needs to be before the `tab` handler.
+    switch (event_name) {
+    case 'up_arrow':
+    case 'down_arrow':
+    case 'left_arrow':
+    case 'right_arrow':
+    case 'tab':
+    case 'shift_tab':
+        if (overlays.recent_topics_open()) {
+            return recent_topics.change_focused_element(e, event_name);
+        }
+    }
+
     // We handle the most complex keys in their own functions.
     switch (event_name) {
     case 'escape':
@@ -462,6 +474,10 @@ exports.process_hotkey = function (e, hotkey) {
         }
         if (event_name === 'open_drafts' && overlays.drafts_open()) {
             overlays.close_overlay('drafts');
+            return true;
+        }
+        if (event_name === 'open_recent_topics' && overlays.recent_topics_open()) {
+            overlays.close_overlay('recent_topics');
             return true;
         }
         return false;
@@ -666,6 +682,9 @@ exports.process_hotkey = function (e, hotkey) {
     case 'copy_with_c':
         copy_and_paste.copy_handler();
         return true;
+    case 'open_recent_topics':
+        hashchange.go_to_location('recent_topics');
+        return true;
     }
 
     if (current_msg_list.empty()) {
@@ -731,7 +750,7 @@ exports.process_hotkey = function (e, hotkey) {
     case 'thumbs_up_emoji': { // '+': reacts with thumbs up emoji on selected message
         // Use canonical name.
         const thumbs_up_emoji_code = '1f44d';
-        const canonical_name = emoji_codes.codepoint_to_name[thumbs_up_emoji_code];
+        const canonical_name = emoji.get_emoji_name(thumbs_up_emoji_code);
         reactions.toggle_emoji_reaction(msg.id, canonical_name);
         return true;
     }
@@ -775,9 +794,6 @@ exports.process_keydown = function (e) {
 
 $(document).keydown(function (e) {
     if (exports.process_keydown(e)) {
-        // TODO: We should really move this resize code
-        // so it only executes as part of navigation actions.
-        resize.resize_bottom_whitespace();
         e.preventDefault();
     }
 });

@@ -1,11 +1,13 @@
+const huddle_data = require("./huddle_data");
+
 const consts = {
     backfill_idle_time: 10 * 1000,
     error_retry_time: 5000,
     backfill_batch_size: 1000,
     narrow_before: 50,
     narrow_after: 50,
-    num_before_pointer: 200,
-    num_after_pointer: 200,
+    num_before_home_anchor: 200,
+    num_after_home_anchor: 200,
     backward_batch_size: 100,
     forward_batch_size: 100,
     catch_up_batch_size: 1000,
@@ -46,44 +48,56 @@ function process_result(data, opts) {
         message_util.add_old_messages(messages, opts.msg_list);
     }
 
-    activity.process_loaded_messages(messages);
+    huddle_data.process_loaded_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
-
-    if (opts.pre_scroll_cont !== undefined) {
-        opts.pre_scroll_cont(data);
-    }
+    recent_topics.process_messages(messages);
 
     stream_list.maybe_scroll_narrow_into_view();
 
     if (opts.cont !== undefined) {
-        opts.cont(data);
+        opts.cont(data, opts);
     }
 }
 
 function get_messages_success(data, opts) {
+    const update_loading_indicator = opts.msg_list === current_msg_list;
     if (opts.num_before > 0) {
-        opts.msg_list.fetch_status.finish_older_batch({
+        opts.msg_list.data.fetch_status.finish_older_batch({
+            update_loading_indicator: update_loading_indicator,
             found_oldest: data.found_oldest,
             history_limited: data.history_limited,
         });
         if (opts.msg_list === home_msg_list) {
-            message_list.all.fetch_status.finish_older_batch({
+            // When we update home_msg_list, we need to also update
+            // the fetch_status data structure for message_list.all,
+            // which is never rendered (and just used for
+            // prepopulating narrowed views).
+            message_list.all.data.fetch_status.finish_older_batch({
+                update_loading_indicator: false,
                 found_oldest: data.found_oldest,
                 history_limited: data.history_limited,
             });
         }
-        notifications.hide_or_show_history_limit_message(opts.msg_list);
+        message_scroll.update_top_of_narrow_notices(opts.msg_list);
     }
 
     if (opts.num_after > 0) {
-        opts.msg_list.fetch_status.finish_newer_batch({
-            found_newest: data.found_newest,
-        });
-        if (opts.msg_list === home_msg_list) {
-            message_list.all.fetch_status.finish_newer_batch({
+        opts.fetch_again = opts.msg_list.data.fetch_status.finish_newer_batch(
+            data.messages, {
+                update_loading_indicator: update_loading_indicator,
                 found_newest: data.found_newest,
             });
+        if (opts.msg_list === home_msg_list) {
+            // When we update home_msg_list, we need to also update
+            // the fetch_status data structure for message_list.all,
+            // which is never rendered (and just used for
+            // prepopulating narrowed views).
+            opts.fetch_again = message_list.all.data.fetch_status.finish_newer_batch(
+                data.messages, {
+                    update_loading_indicator: false,
+                    found_newest: data.found_newest,
+                });
         }
     }
 
@@ -102,7 +116,6 @@ function get_messages_success(data, opts) {
     }
 
     process_result(data, opts);
-    resize.resize_bottom_whitespace();
 }
 
 // This function modifies the data.narrow filters to use user IDs
@@ -163,17 +176,28 @@ exports.load_messages = function (opts) {
         data.narrow = JSON.stringify(page_params.narrow);
     }
 
+    let update_loading_indicator = opts.msg_list === current_msg_list;
     if (opts.num_before > 0) {
-        opts.msg_list.fetch_status.start_older_batch();
+        opts.msg_list.data.fetch_status.start_older_batch({
+            update_loading_indicator: update_loading_indicator,
+        });
         if (opts.msg_list === home_msg_list) {
-            message_list.all.fetch_status.start_older_batch();
+            message_list.all.data.fetch_status.start_older_batch({
+                update_loading_indicator: update_loading_indicator,
+            });
         }
     }
 
     if (opts.num_after > 0) {
-        opts.msg_list.fetch_status.start_newer_batch();
+        // We hide the bottom loading indicator when we're fetching both top and bottom messages.
+        update_loading_indicator = update_loading_indicator && opts.num_before === 0;
+        opts.msg_list.data.fetch_status.start_newer_batch({
+            update_loading_indicator: update_loading_indicator,
+        });
         if (opts.msg_list === home_msg_list) {
-            message_list.all.fetch_status.start_newer_batch();
+            message_list.all.data.fetch_status.start_newer_batch({
+                update_loading_indicator: update_loading_indicator,
+            });
         }
     }
 
@@ -223,27 +247,24 @@ exports.load_messages_for_narrow = function (opts) {
         num_before: consts.narrow_before,
         num_after: consts.narrow_after,
         msg_list: msg_list,
-        pre_scroll_cont: opts.pre_scroll_cont,
-        cont: function () {
-            message_scroll.hide_indicators();
-            opts.cont();
-        },
+        cont: opts.cont,
     });
 };
 
 exports.get_backfill_anchor = function (msg_list) {
-    let oldest_message_id;
-
     if (msg_list === home_msg_list) {
         msg_list = message_list.all;
     }
 
-    if (msg_list.first() === undefined) {
-        oldest_message_id = page_params.pointer;
-    } else {
-        oldest_message_id = msg_list.first().id;
+    const oldest_msg = msg_list.first();
+    if (oldest_msg) {
+        return oldest_msg.id;
     }
-    return oldest_message_id;
+
+    // msg_list is empty, which is an impossible
+    // case, raise a fatal error.
+    blueslip.fatal("There are no message available to backfill.");
+    return;
 };
 
 exports.get_frontfill_anchor = function (msg_list) {
@@ -257,7 +278,13 @@ exports.get_frontfill_anchor = function (msg_list) {
         return last_msg.id;
     }
 
-    return page_params.pointer;
+    // Although it is impossible that we reach here since we
+    // are already checking `msg_list.fetch_status.can_load_newer_messages`
+    // and user cannot be scrolling down on an empty message_list to
+    // fetch more data, and if user is, then the available data is wrong
+    // and we raise a fatal error.
+    blueslip.fatal("There are no message available to frontfill.");
+    return;
 };
 
 exports.maybe_load_older_messages = function (opts) {
@@ -265,19 +292,15 @@ exports.maybe_load_older_messages = function (opts) {
     // of your window, and you want to get messages older
     // than what the browsers originally fetched.
     const msg_list = opts.msg_list;
-    if (!msg_list.fetch_status.can_load_older_messages()) {
+    if (!msg_list.data.fetch_status.can_load_older_messages()) {
         // We may already be loading old messages or already
         // got the oldest one.
         return;
     }
 
-    opts.show_loading();
     exports.do_backfill({
         msg_list: msg_list,
         num_before: consts.backward_batch_size,
-        cont: function () {
-            opts.hide_loading();
-        },
     });
 };
 
@@ -299,12 +322,12 @@ exports.do_backfill = function (opts) {
 };
 
 exports.maybe_load_newer_messages = function (opts) {
-    // This function gets called when you scroll to the top
+    // This function gets called when you scroll to the bottom
     // of your window, and you want to get messages newer
     // than what the browsers originally fetched.
     const msg_list = opts.msg_list;
 
-    if (!msg_list.fetch_status.can_load_newer_messages()) {
+    if (!msg_list.data.fetch_status.can_load_newer_messages()) {
         // We may already be loading new messages or already
         // got the newest one.
         return;
@@ -312,11 +335,18 @@ exports.maybe_load_newer_messages = function (opts) {
 
     const anchor = exports.get_frontfill_anchor(msg_list).toFixed();
 
+    function load_more(data, args) {
+        if (args.fetch_again && args.msg_list === current_msg_list) {
+            exports.maybe_load_newer_messages({ msg_list: current_msg_list });
+        }
+    }
+
     exports.load_messages({
         anchor: anchor,
         num_before: 0,
         num_after: consts.forward_batch_size,
         msg_list: msg_list,
+        cont: load_more,
     });
 };
 
@@ -334,13 +364,13 @@ exports.start_backfilling_messages = function () {
 exports.initialize = function () {
     // get the initial message list
     function load_more(data) {
-        // If we received the initially selected message, select it on the client side,
-        // but not if the user has already selected another one during load.
-        //
-        // We fall back to the closest selected id, as the user may have removed
-        // a stream from the home before already
+        // If we haven't selected a message in the home view yet, and
+        // the home view isn't empty, we select the anchor message here.
         if (home_msg_list.selected_id() === -1 && !home_msg_list.empty()) {
-            home_msg_list.select_id(page_params.pointer,
+            // We fall back to the closest selected id, as the user
+            // may have removed a stream from the home view while we
+            // were loading data.
+            home_msg_list.select_id(data.anchor,
                                     {then_scroll: true, use_closest: true,
                                      target_scroll_offset: page_params.initial_offset});
         }
@@ -366,17 +396,23 @@ exports.initialize = function () {
 
     }
 
-    if (page_params.have_initial_messages) {
-        exports.load_messages({
-            anchor: page_params.pointer,
-            num_before: consts.num_before_pointer,
-            num_after: consts.num_after_pointer,
-            msg_list: home_msg_list,
-            cont: load_more,
-        });
+    let anchor;
+    if (page_params.initial_pointer) {
+        // If we're doing a server-initiated reload, similar to a
+        // near: narrow query, we want to select a specific message.
+        anchor = page_params.initial_pointer;
     } else {
-        server_events.home_view_loaded();
+        // Otherwise, we should just use the first unread message in
+        // the user's unmuted history as our anchor.
+        anchor = "first_unread";
     }
+    exports.load_messages({
+        anchor: anchor,
+        num_before: consts.num_before_home_anchor,
+        num_after: consts.num_after_home_anchor,
+        msg_list: home_msg_list,
+        cont: load_more,
+    });
 };
 
 window.message_fetch = exports;

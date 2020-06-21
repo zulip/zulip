@@ -67,28 +67,25 @@ exports.update_email_change_display = function () {
 
 exports.update_avatar_change_display = function () {
     if (!exports.user_can_change_avatar()) {
-        $('#user_avatar_upload_button .button').attr('disabled', 'disabled');
-        $('#user_avatar_delete_button .button').attr('disabled', 'disabled');
+        $('#user-avatar-upload-widget .image_upload_button').attr('disabled', 'disabled');
+        $("#user-avatar-upload-widget .settings-page-delete-button .button").attr('disabled', 'disabled');
     } else {
-        $('#user_avatar_upload_button .button').attr('disabled', false);
-        $('#user_avatar_delete_button .button').attr('disabled', false);
+        $('#user-avatar-upload-widget .image_upload_button').attr('disabled', false);
+        $('#user-avatar-upload-widget .settings-page-delete-button .button').attr('disabled', false);
     }
 };
 
 function display_avatar_upload_complete() {
-    $('#user-avatar-background').css({display: 'none'});
-    $('#user-avatar-spinner').css({display: 'none'});
-    $('#user_avatar_upload_button').show();
-    $('#user_avatar_delete_button').show();
-
+    $('#user-avatar-upload-widget .upload-spinner-background').css({visibility: 'hidden'});
+    $('#user-avatar-upload-widget .settings-page-upload-text').show();
+    $('#user-avatar-upload-widget .settings-page-delete-button').show();
 }
 
 function display_avatar_upload_started() {
     $("#user-avatar-source").hide();
-    $('#user-avatar-background').css({display: 'block'});
-    $('#user-avatar-spinner').css({display: 'block'});
-    $('#user_avatar_upload_button').hide();
-    $('#user_avatar_delete_button').hide();
+    $('#user-avatar-upload-widget .upload-spinner-background').css({visibility: 'visible'});
+    $('#user-avatar-upload-widget .settings-page-upload-text').hide();
+    $('#user-avatar-upload-widget .settings-page-delete-button').hide();
 }
 
 
@@ -176,7 +173,9 @@ exports.append_custom_profile_fields = function (element_id, user_id) {
 exports.initialize_custom_date_type_fields = function (element_id) {
     $(element_id).find(".custom_user_field .datepicker").flatpickr({
         altInput: true,
-        altFormat: "F j, Y"});
+        altFormat: "F j, Y",
+        allowInput: true,
+    });
 
     $(element_id).find(".custom_user_field .datepicker").on("mouseenter", function () {
         if ($(this).val().length <= 0) {
@@ -279,21 +278,7 @@ exports.set_up = function () {
     $("#account-settings-status").hide();
 
     const setup_api_key_modal = _.once(function () {
-        $('.account-settings-form').append(render_settings_api_key_modal());
-        $("#api_key_value").text("");
-        $("#show_api_key").hide();
-
-        if (page_params.realm_password_auth_enabled === false) {
-            // Skip the password prompt step, since the user doesn't have one.
-            $("#get_api_key_button").click();
-        }
-
-        $("#get_api_key_button").on("click", function (e) {
-            const data = {};
-            e.preventDefault();
-            e.stopPropagation();
-
-            data.password = $("#get_api_key_password").val();
+        function request_api_key(data) {
             channel.post({
                 url: '/json/fetch_api_key',
                 data: data,
@@ -313,7 +298,25 @@ exports.set_up = function () {
                     $("#api_key_modal").show();
                 },
             });
-        });
+        }
+
+        $('.account-settings-form').append(render_settings_api_key_modal());
+        $("#api_key_value").text("");
+        $("#show_api_key").hide();
+
+        if (page_params.realm_password_auth_enabled === false) {
+            // Skip the password prompt step, since the user doesn't have one.
+            request_api_key({});
+        } else {
+            $("#get_api_key_button").on("click", function (e) {
+                const data = {};
+                e.preventDefault();
+                e.stopPropagation();
+
+                data.password = $("#get_api_key_password").val();
+                request_api_key(data);
+            });
+        }
 
         $("#show_api_key").on("click", "button.regenerate_api_key", function (e) {
             channel.post({
@@ -342,7 +345,7 @@ exports.set_up = function () {
 
     $('#api_key_button').click(function (e) {
         setup_api_key_modal();
-        overlays.open_modal('api_key_modal');
+        overlays.open_modal('#api_key_modal');
         e.preventDefault();
         e.stopPropagation();
     });
@@ -361,14 +364,14 @@ exports.set_up = function () {
         e.stopPropagation();
         if (exports.user_can_change_name()) {
             $('#change_full_name_modal').find("input[name='full_name']").val(page_params.full_name);
-            overlays.open_modal('change_full_name_modal');
+            overlays.open_modal('#change_full_name_modal');
         }
     });
 
     $('#change_password').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        overlays.open_modal('change_password_modal');
+        overlays.open_modal('#change_password_modal');
         $('#pw_change_controls').show();
         if (page_params.realm_password_auth_enabled !== false) {
             // zxcvbn.js is pretty big, and is only needed on password
@@ -419,7 +422,7 @@ exports.set_up = function () {
 
         const opts = {
             success_continuation: function () {
-                overlays.close_modal("change_password_modal");
+                overlays.close_modal("#change_password_modal");
             },
             error_msg_element: change_password_error,
         };
@@ -443,7 +446,7 @@ exports.set_up = function () {
 
         const opts = {
             success_continuation: function () {
-                overlays.close_modal("change_full_name_modal");
+                overlays.close_modal("#change_full_name_modal");
             },
             error_msg_element: change_full_name_error,
         };
@@ -464,7 +467,7 @@ exports.set_up = function () {
                     const email_msg = render_settings_dev_env_email_access();
                     ui_report.success(email_msg, $("#dev-account-settings-status").expectOne(), 4000);
                 }
-                overlays.close_modal('change_email_modal');
+                overlays.close_modal('#change_email_modal');
             },
             error_msg_element: change_email_error,
             success_msg: i18n.t('Check your email (%s) to confirm the new address.').replace(
@@ -478,7 +481,7 @@ exports.set_up = function () {
         e.preventDefault();
         e.stopPropagation();
         if (!page_params.realm_email_changes_disabled || page_params.is_admin) {
-            overlays.open_modal('change_email_modal');
+            overlays.open_modal('#change_email_modal');
             const email = $('#email_value').text().trim();
             $('.email_change_container').find("input[name='email']").val(email);
         }
@@ -587,7 +590,7 @@ exports.set_up = function () {
             contentType: false,
             success: function () {
                 display_avatar_upload_complete();
-                $("#user_avatar_file_input_error").hide();
+                $("#user-avatar-upload-widget .image_file_input_error").hide();
                 $("#user-avatar-source").hide();
                 // Rest of the work is done via the user_events -> avatar_url event we will get
             },
@@ -596,7 +599,7 @@ exports.set_up = function () {
                 if (page_params.avatar_source === 'G') {
                     $("#user-avatar-source").show();
                 }
-                const $error = $("#user_avatar_file_input_error");
+                const $error = $("#user-avatar-upload-widget .image_file_input_error");
                 $error.text(JSON.parse(xhr.responseText).msg);
                 $error.show();
             },

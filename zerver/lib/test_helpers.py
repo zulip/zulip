@@ -1,57 +1,66 @@
+import collections
+import os
+import re
+import sys
+import time
 from contextlib import contextmanager
 from typing import (
-    Any, Callable, Dict, Generator, Iterable, Iterator, List, Mapping,
-    Optional, Tuple, Union, IO, TypeVar, TYPE_CHECKING
+    IO,
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Generator,
+    Iterable,
+    Iterator,
+    List,
+    Mapping,
+    Optional,
+    Tuple,
+    TypeVar,
+    Union,
 )
+from unittest import mock
 
-from django.urls import URLResolver
+import boto3
+import fakeldap
+import ldap
+import ujson
+from boto3.resources.base import ServiceResource
 from django.conf import settings
-from django.test import override_settings
-from django.http import HttpResponse, HttpResponseRedirect
 from django.db.migrations.state import StateApps
-from boto.s3.connection import S3Connection
-from boto.s3.bucket import Bucket
+from django.http import HttpResponse, HttpResponseRedirect
+from django.test import override_settings
+from django.urls import URLResolver
+from moto import mock_s3
 
 import zerver.lib.upload
+from zerver.lib import cache
 from zerver.lib.actions import do_set_realm_property
-from zerver.lib.upload import S3UploadBackend, LocalUploadBackend
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend
 from zerver.lib.db import Params, ParamsT, Query, TimeTrackingCursor
-from zerver.lib import cache
-from zerver.tornado import event_queue
-from zerver.tornado.handlers import allocate_handler_id
-from zerver.worker import queue_processors
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
-
+from zerver.lib.upload import LocalUploadBackend, S3UploadBackend
 from zerver.models import (
-    get_realm,
-    get_stream,
     Client,
     Message,
     Realm,
     Subscription,
     UserMessage,
     UserProfile,
+    get_realm,
+    get_stream,
 )
-
-from zproject.backends import ExternalAuthResult, ExternalAuthDataDict
+from zerver.tornado import event_queue
+from zerver.tornado.handlers import allocate_handler_id
+from zerver.worker import queue_processors
+from zproject.backends import ExternalAuthDataDict, ExternalAuthResult
 
 if TYPE_CHECKING:
     # Avoid an import cycle; we only need these for type annotations.
-    from zerver.lib.test_classes import ZulipTestCase, MigrationsTestCase
+    from zerver.lib.test_classes import MigrationsTestCase, ZulipTestCase
 
-import collections
-import mock
-import os
-import re
-import sys
-import time
-import ujson
-from moto import mock_s3_deprecated
-
-import fakeldap
-import ldap
 
 class MockLDAP(fakeldap.MockLDAP):
     class LDAPError(ldap.LDAPError):
@@ -137,7 +146,7 @@ def simulated_empty_cache() -> Generator[
     cache.cache_get_many = old_get_many
 
 @contextmanager
-def queries_captured(include_savepoints: Optional[bool]=False) -> Generator[
+def queries_captured(include_savepoints: bool=False) -> Generator[
         List[Dict[str, Union[str, bytes]]], None, None]:
     '''
     Allow a user to capture just the queries executed during
@@ -161,7 +170,7 @@ def queries_captured(include_savepoints: Optional[bool]=False) -> Generator[
             if include_savepoints or not isinstance(sql, str) or 'SAVEPOINT' not in sql:
                 queries.append({
                     'sql': self.mogrify(sql, params).decode('utf-8'),
-                    'time': "%.3f" % (duration,),
+                    'time': f"{duration:.3f}",
                 })
 
     old_execute = TimeTrackingCursor.execute
@@ -437,13 +446,13 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
                     print(call)
 
         if full_suite:
-            print('INFO: URL coverage report is in %s' % (fn,))
+            print(f'INFO: URL coverage report is in {fn}')
             print('INFO: Try running: ./tools/create-test-api-docs')
 
         if full_suite and len(untested_patterns):  # nocoverage -- test suite error handling
             print("\nERROR: Some URLs are untested!  Here's the list of untested URLs:")
             for untested_pattern in sorted(untested_patterns):
-                print("   %s" % (untested_pattern,))
+                print(f"   {untested_pattern}")
             sys.exit(1)
 
 def load_subdomain_token(response: HttpResponse) -> ExternalAuthDataDict:
@@ -456,7 +465,7 @@ def load_subdomain_token(response: HttpResponse) -> ExternalAuthDataDict:
 FuncT = TypeVar('FuncT', bound=Callable[..., None])
 
 def use_s3_backend(method: FuncT) -> FuncT:
-    @mock_s3_deprecated
+    @mock_s3
     @override_settings(LOCAL_UPLOADS_DIR=None)
     def new_method(*args: Any, **kwargs: Any) -> Any:
         zerver.lib.upload.upload_backend = S3UploadBackend()
@@ -466,9 +475,10 @@ def use_s3_backend(method: FuncT) -> FuncT:
             zerver.lib.upload.upload_backend = LocalUploadBackend()
     return new_method
 
-def create_s3_buckets(*bucket_names: Tuple[str]) -> List[Bucket]:
-    conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-    buckets = [conn.create_bucket(name) for name in bucket_names]
+def create_s3_buckets(*bucket_names: Tuple[str]) -> List[ServiceResource]:
+    session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+    s3 = session.resource('s3')
+    buckets = [s3.create_bucket(Bucket=name) for name in bucket_names]
     return buckets
 
 def use_db_models(method: Callable[..., None]) -> Callable[..., None]:  # nocoverage
@@ -554,7 +564,7 @@ def use_db_models(method: Callable[..., None]) -> Callable[..., None]:  # nocove
             UserHotspot=UserHotspot,
             UserMessage=UserMessage,
             UserPresence=UserPresence,
-            UserProfile=UserProfile
+            UserProfile=UserProfile,
         )
         zerver_test_helpers_patch = mock.patch.multiple(
             'zerver.lib.test_helpers',

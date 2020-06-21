@@ -1,13 +1,19 @@
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 if TYPE_CHECKING:
     from django_auth_ldap.config import LDAPSearch
+    from typing_extensions import TypedDict
 
-from .config import PRODUCTION, DEVELOPMENT, get_secret
+from .config import DEVELOPMENT, PRODUCTION, get_secret
+
 if PRODUCTION:
     from .prod_settings import EXTERNAL_HOST, ZULIP_ADMINISTRATOR
 else:
     from .dev_settings import EXTERNAL_HOST, ZULIP_ADMINISTRATOR
+
+import os
+
+DEBUG = DEVELOPMENT
 
 # These settings are intended for the server admin to set.  We document them in
 # prod_settings_template.py, and in the initial /etc/zulip/settings.py on a new
@@ -69,8 +75,19 @@ SAML_REQUIRE_LIMIT_TO_SUBDOMAINS = False
 # Historical name for SOCIAL_AUTH_GITHUB_KEY; still allowed in production.
 GOOGLE_OAUTH2_CLIENT_ID: Optional[str] = None
 
+# Apple:
+SOCIAL_AUTH_APPLE_SERVICES_ID = get_secret('social_auth_apple_services_id', development_only=True)
+SOCIAL_AUTH_APPLE_BUNDLE_ID = get_secret('social_auth_apple_bundle_id', development_only=True)
+SOCIAL_AUTH_APPLE_KEY = get_secret('social_auth_apple_key', development_only=True)
+SOCIAL_AUTH_APPLE_TEAM = get_secret('social_auth_apple_team', development_only=True)
+SOCIAL_AUTH_APPLE_SCOPE = ['name', 'email']
+SOCIAL_AUTH_APPLE_EMAIL_AS_USERNAME = True
+
 # Other auth
 SSO_APPEND_DOMAIN: Optional[str] = None
+
+VIDEO_ZOOM_CLIENT_ID = get_secret('video_zoom_client_id', development_only=True)
+VIDEO_ZOOM_CLIENT_SECRET = get_secret('video_zoom_client_secret')
 
 # Email gateway
 EMAIL_GATEWAY_PATTERN = ''
@@ -86,7 +103,6 @@ ERROR_REPORTING = True
 BROWSER_ERROR_REPORTING = False
 LOGGING_SHOW_MODULE = False
 LOGGING_SHOW_PID = False
-SLOW_QUERY_LOGS_STREAM: Optional[str] = None
 
 # File uploads and avatars
 DEFAULT_AVATAR_URI = '/static/images/default-avatar.png'
@@ -109,7 +125,7 @@ BOT_CONFIG_SIZE_LIMIT = 10000
 # External service configuration
 CAMO_URI = ''
 MEMCACHED_LOCATION = '127.0.0.1:11211'
-MEMCACHED_USERNAME = None if get_secret("memcached_password") is None else "zulip"
+MEMCACHED_USERNAME = None if get_secret("memcached_password") is None else "zulip@localhost"
 RABBITMQ_HOST = '127.0.0.1'
 RABBITMQ_USERNAME = 'zulip'
 REDIS_HOST = '127.0.0.1'
@@ -167,7 +183,14 @@ DEVELOPMENT_LOG_EMAILS = DEVELOPMENT
 #    for dev and test environments; or
 #  * don't make sense to change on a typical production server with
 #    one or a handful of realms, though they might on an installation
-#    like zulipchat.com or to work around a problem on another server.
+#    like Zulip Cloud or to work around a problem on another server.
+
+NOTIFICATION_BOT = 'notification-bot@zulip.com'
+EMAIL_GATEWAY_BOT = 'emailgateway@zulip.com'
+NAGIOS_SEND_BOT = 'nagios-send-bot@zulip.com'
+NAGIOS_RECEIVE_BOT = 'nagios-receive-bot@zulip.com'
+WELCOME_BOT = 'welcome-bot@zulip.com'
+REMINDER_BOT = 'reminder-bot@zulip.com'
 
 # The following bots are optional system bots not enabled by
 # default.  The default ones are defined in INTERNAL_BOTS, in settings.py.
@@ -177,10 +200,10 @@ DEVELOPMENT_LOG_EMAILS = DEVELOPMENT
 ERROR_BOT: Optional[str] = None
 # These are extra bot users for our end-to-end Nagios message
 # sending tests.
-NAGIOS_STAGING_SEND_BOT: Optional[str] = None
-NAGIOS_STAGING_RECEIVE_BOT: Optional[str] = None
+NAGIOS_STAGING_SEND_BOT = 'nagios-staging-send-bot@zulip.com' if PRODUCTION else None
+NAGIOS_STAGING_RECEIVE_BOT = 'nagios-staging-receive-bot@zulip.com' if PRODUCTION else None
 # SYSTEM_BOT_REALM would be a constant always set to 'zulip',
-# except that it isn't that on zulipchat.com.  We will likely do a
+# except that it isn't that on Zulip Cloud.  We will likely do a
 # migration and eliminate this parameter in the future.
 SYSTEM_BOT_REALM = 'zulipinternal'
 
@@ -314,7 +337,14 @@ FIRST_TIME_TOS_TEMPLATE: Optional[str] = None
 STATSD_HOST = ''
 
 # Configuration for JWT auth.
-JWT_AUTH_KEYS: Dict[str, str] = {}
+if TYPE_CHECKING:
+    class JwtAuthKey(TypedDict):
+        key: str
+        # See https://pyjwt.readthedocs.io/en/latest/algorithms.html for a list
+        # of supported algorithms.
+        algorithms: List[str]
+
+JWT_AUTH_KEYS: Dict[str, "JwtAuthKey"] = {}
 
 # https://docs.djangoproject.com/en/2.2/ref/settings/#std:setting-SERVER_EMAIL
 # Django setting for what from address to use in error emails.
@@ -364,8 +394,29 @@ ARCHIVED_DATA_VACUUMING_DELAY_DAYS = 7
 # are available to all realms.
 BILLING_ENABLED = False
 
+FREE_TRIAL_DAYS = get_secret('free_trial_days', None)
+
+# Custom message (supports HTML) to be shown in the navbar of landing pages. Used mainly for
+# making announcements.
+LANDING_PAGE_NAVBAR_MESSAGE: Optional[str] = None
+
 # Automatically catch-up soft deactivated users when running the
 # `soft-deactivate-users` cron. Turn this off if the server has 10Ks of
 # users, and you would like to save some disk space. Soft-deactivated
 # returning users would still be caught-up normally.
 AUTO_CATCH_UP_SOFT_DEACTIVATED_USERS = True
+
+# Enables Google Analytics on selected portico pages.
+GOOGLE_ANALYTICS_ID: Optional[str] = None
+
+# This is overridden by dev_settings.py for droplets.
+IS_DEV_DROPLET = False
+
+# Used by puppet/zulip_ops/files/cron.d/check_send_receive_time.
+NAGIOS_BOT_HOST = EXTERNAL_HOST
+
+# Automatically deactivate users not found by the AUTH_LDAP_USER_SEARCH query.
+LDAP_DEACTIVATE_NON_MATCHING_USERS: Optional[bool] = None
+
+# Use half of the available CPUs for data import purposes.
+DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM = (len(os.sched_getaffinity(0)) // 2) or 1

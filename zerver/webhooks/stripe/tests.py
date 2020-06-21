@@ -1,5 +1,5 @@
-import mock
-from mock import MagicMock, patch
+from unittest import mock
+from unittest.mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -118,6 +118,15 @@ Billing method: send invoice"""
         self.send_and_test_stream_message('invoice_payment_failed', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
+    def test_invoice_created(self) -> None:
+        expected_topic = "cus_HH97asvHvaYQYp"
+        expected_message = """
+[Invoice](https://dashboard.stripe.com/invoices/in_1GpmuuHLwdCOCoR7ghzQDQLW) created (manual)
+Total: 0.00 INR
+Amount due: 0.00 INR
+""".strip()
+        self.send_and_test_stream_message("invoice_created", expected_topic, expected_message)
+
     def test_invoiceitem_created(self) -> None:
         expected_topic = "cus_00000000000000"
         expected_message = "[Invoice item](https://dashboard.stripe.com/invoiceitems/ii_00000000000000) created for 10.00 CAD"
@@ -125,7 +134,7 @@ Billing method: send invoice"""
             'invoiceitem_created',
             expected_topic,
             expected_message,
-            content_type="application/x-www-form-urlencoded"
+            content_type="application/x-www-form-urlencoded",
         )
 
     def test_invoice_paid(self) -> None:
@@ -135,8 +144,18 @@ Billing method: send invoice"""
             'invoice_updated__paid',
             expected_topic,
             expected_message,
-            content_type="application/x-www-form-urlencoded"
+            content_type="application/x-www-form-urlencoded",
         )
+
+    def test_refund_event(self) -> None:
+        expected_topic = "refunds"
+        expected_message = "A [refund](https://dashboard.stripe.com/refunds/re_1Gib6ZHLwdCOCoR7VrzCnXlj) for a [charge](https://dashboard.stripe.com/charges/ch_1Gib61HLwdCOCoR71rnkccye) of 30000000 INR was updated."
+        self.send_and_test_stream_message('refund_event', expected_topic, expected_message)
+
+    def test_pseudo_refund_event(self) -> None:
+        expected_topic = "refunds"
+        expected_message = "A [refund](https://dashboard.stripe.com/refunds/pyr_abcde12345ABCDF) for a [payment](https://dashboard.stripe.com/payments/py_abcde12345ABCDG) of 1234 EUR was updated."
+        self.send_and_test_stream_message('pseudo_refund_event', expected_topic, expected_message)
 
     @patch('zerver.webhooks.stripe.view.check_send_webhook_message')
     def test_account_updated_without_previous_attributes_ignore(

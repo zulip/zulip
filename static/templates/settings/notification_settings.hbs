@@ -9,7 +9,7 @@
                     <tr>
                         <th rowspan="2" width="30%"></th>
                         <th colspan="2" width="28%">{{t "Desktop"}}</th>
-                        <th rowspan="2" width="14%" class="{{#if show_push_notifications_tooltip}}control-label-disabled{{/if}}">
+                        <th rowspan="2" width="14%" class="{{#if show_push_notifications_tooltip.push_notifications}}control-label-disabled{{/if}}">
                             {{t "Mobile"}}
                             {{#if (not page_params.realm_push_notifications_enabled) }}
                             <i class="fa fa-question-circle settings-info-icon" data-toggle="tooltip"
@@ -67,7 +67,7 @@
             </label>
 
             <div class="input-group {{#unless enable_sound_select}}control-label-disabled{{/unless}}">
-                <select name="notification_sound" id="notification_sound" data-setting-widget-type="text"
+                <select name="notification_sound" id="notification_sound" data-setting-widget-type="string"
                   {{#unless enable_sound_select}}
                   disabled
                   {{/unless}}>
@@ -75,15 +75,15 @@
                     <option value="{{ this }}">{{ this }}</option>
                     {{/each}}
                 </select>
-                <a id="play_notification_sound">
-                    {{t "Play sound" }}
-                </a>
+                <span id="play_notification_sound">
+                    <i class="fa fa-play-circle" aria-label="{{t 'Play sound' }}"></i>
+                </span>
             </div>
 
             <div class="input-group">
                 <label for="desktop_icon_count_display" class="dropdown-title">{{ settings_label.desktop_icon_count_display }}</label>
                 <select name="desktop_icon_count_display" id="desktop_icon_count_display" class="prop-element"
-                  data-setting-widget-type="integer">
+                  data-setting-widget-type="number">
                     {{> dropdown_options_widget option_values=desktop_icon_count_display_values}}
                 </select>
             </div>

@@ -6,9 +6,14 @@ exports.initialize = function () {
     exports.widget = search_pill.create_pills(container);
 
     exports.widget.onPillRemove(function () {
-        const base_query = search_pill.get_search_string_for_current_filter(exports.widget);
-        const operators = Filter.parse(base_query);
-        narrow.activate(operators, {trigger: 'search'});
+        if (exports.widget.items().length === 0) {
+            ui_util.change_tab_to('#home');
+            narrow.deactivate();
+        }
+    });
+
+    exports.widget.createPillonPaste(function () {
+        return false;
     });
 };
 

@@ -1,9 +1,8 @@
-from typing import Dict, Iterable, Tuple, Callable, TypeVar, Iterator
-
+import errno
 import os
 import pty
 import sys
-import errno
+from typing import Callable, Dict, Iterable, Iterator, Tuple, TypeVar
 
 JobData = TypeVar('JobData')
 

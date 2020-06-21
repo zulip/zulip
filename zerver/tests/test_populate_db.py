@@ -1,7 +1,8 @@
-from zilencer.management.commands.populate_db import choose_date_sent
-from zerver.lib.test_classes import ZulipTestCase
-
 from django.utils.timezone import timedelta as timezone_timedelta
+
+from zerver.lib.test_classes import ZulipTestCase
+from zilencer.management.commands.populate_db import choose_date_sent
+
 
 class TestChoosePubDate(ZulipTestCase):
     def test_choose_date_sent_large_tot_messages(self) -> None:

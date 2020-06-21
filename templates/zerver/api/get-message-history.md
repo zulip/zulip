@@ -15,7 +15,7 @@
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
 {generate_api_arguments_table|zulip.yaml|/messages/{message_id}/history:get}
 
@@ -23,18 +23,7 @@
 
 #### Return values
 
-* `message_history`: a chronologically sorted array of `snapshot` objects,
-    containing the modified state of the message before and after the edit:
-    * `topic`: the topic for the message.
-    * `content`: the body of the message.
-    * `rendered_content`: the already rendered, HTML version of `content`.
-    * `prev_content`: the body of the message before being edited.
-    * `prev_rendered_content`: the already rendered, HTML version of
-        `prev_content`.
-    * `user_id`: the ID of the user that made the edit.
-    * `content_html_diff`: an HTML diff between this version of the message
-        and the previous one.
-    * `timestamp`: the UNIX timestamp for this editi.
+{generate_return_values_table|zulip.yaml|/messages/{message_id}/history:get}
 
 Please note that the original message's snapshot only contains the fields
 `topic`, `content`, `rendered_content`, `timestamp` and `user_id`. This

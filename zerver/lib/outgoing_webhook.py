@@ -1,29 +1,48 @@
+import abc
+import json
+import logging
 from typing import Any, AnyStr, Dict, Optional
 
 import requests
-import json
-import logging
+from django.utils.translation import ugettext as _
 from requests import Response
 
-from django.utils.translation import ugettext as _
-
-from zerver.models import UserProfile, get_user_profile_by_id, get_client, \
-    GENERIC_INTERFACE, Service, SLACK_INTERFACE, email_to_domain
+from version import ZULIP_VERSION
+from zerver.decorator import JsonableError
 from zerver.lib.actions import check_send_message
 from zerver.lib.message import MessageDict
 from zerver.lib.queue import retry_event
 from zerver.lib.topic import get_topic_from_message_info
 from zerver.lib.url_encoding import near_message_url
-from zerver.decorator import JsonableError
+from zerver.models import (
+    GENERIC_INTERFACE,
+    SLACK_INTERFACE,
+    Service,
+    UserProfile,
+    email_to_domain,
+    get_client,
+    get_user_profile_by_id,
+)
 
-from version import ZULIP_VERSION
 
-class OutgoingWebhookServiceInterface:
+class OutgoingWebhookServiceInterface(metaclass=abc.ABCMeta):
 
     def __init__(self, token: str, user_profile: UserProfile, service_name: str) -> None:
         self.token: str = token
         self.user_profile: UserProfile = user_profile
         self.service_name: str = service_name
+
+    @abc.abstractmethod
+    def build_bot_request(self, event: Dict[str, Any]) -> Optional[Any]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def send_data_to_server(self, base_url: str, request_data: Any) -> Response:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def process_success(self, response_json: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        raise NotImplementedError
 
 class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
@@ -41,7 +60,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
             event['message'],
             apply_markdown=False,
             client_gravatar=False,
-            keep_rendered_content=True
+            keep_rendered_content=True,
         )
 
         request_data = {"data": event['command'],
@@ -162,8 +181,7 @@ def send_response_message(bot_id: str, message_info: Dict[str, Any], response_da
     client = get_client('OutgoingWebhookResponse')
 
     content = response_data.get('content')
-    if not content:
-        raise JsonableError(_("Missing content"))
+    assert content
 
     widget_content = response_data.get('widget_content')
 
@@ -203,7 +221,6 @@ def get_message_url(event: Dict[str, Any]) -> str:
     )
 
 def notify_bot_owner(event: Dict[str, Any],
-                     request_data: Dict[str, Any],
                      status_code: Optional[int]=None,
                      response_content: Optional[AnyStr]=None,
                      failure_message: Optional[str]=None,
@@ -212,18 +229,17 @@ def notify_bot_owner(event: Dict[str, Any],
     bot_id = event['user_profile_id']
     bot_owner = get_user_profile_by_id(bot_id).bot_owner
 
-    notification_message = "[A message](%s) triggered an outgoing webhook." % (message_url,)
+    notification_message = f"[A message]({message_url}) triggered an outgoing webhook."
     if failure_message:
         notification_message += "\n" + failure_message
     if status_code:
-        notification_message += "\nThe webhook got a response with status code *%s*." % (status_code,)
+        notification_message += f"\nThe webhook got a response with status code *{status_code}*."
     if response_content:
         notification_message += "\nThe response contains the following payload:\n" \
-                                "```\n%s\n```" % (str(response_content),)
+                                f"```\n{response_content!r}\n```"
     if exception:
         notification_message += "\nWhen trying to send a request to the webhook service, an exception " \
-                                "of type %s occurred:\n```\n%s\n```" % (
-                                    type(exception).__name__, str(exception))
+                                f"of type {type(exception).__name__} occurred:\n```\n{exception}\n```"
 
     message_info = dict(
         type='private',
@@ -233,7 +249,6 @@ def notify_bot_owner(event: Dict[str, Any],
     send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
 
 def request_retry(event: Dict[str, Any],
-                  request_data: Dict[str, Any],
                   failure_message: Optional[str]=None) -> None:
     def failure_processor(event: Dict[str, Any]) -> None:
         """
@@ -243,7 +258,7 @@ def request_retry(event: Dict[str, Any],
         """
         bot_user = get_user_profile_by_id(event['user_profile_id'])
         fail_with_message(event, "Bot is unavailable")
-        notify_bot_owner(event, request_data, failure_message=failure_message)
+        notify_bot_owner(event, failure_message=failure_message)
         logging.warning(
             "Maximum retries exceeded for trigger:%s event:%s",
             bot_user.email, event['command'],
@@ -267,7 +282,7 @@ def process_success_response(event: Dict[str, Any],
 
     content = success_data.get('content')
 
-    if content is None:
+    if content is None or content.strip() == "":
         return
 
     widget_content = success_data.get('widget_content')
@@ -294,9 +309,9 @@ def do_rest_call(base_url: str,
                             {'message_url': get_message_url(event),
                              'status_code': response.status_code,
                              'response': response.content})
-            failure_message = "Third party responded with %d" % (response.status_code,)
+            failure_message = f"Third party responded with {response.status_code}"
             fail_with_message(event, failure_message)
-            notify_bot_owner(event, request_data, response.status_code, response.content)
+            notify_bot_owner(event, response.status_code, response.content)
 
     except requests.exceptions.Timeout:
         logging.info(
@@ -304,18 +319,19 @@ def do_rest_call(base_url: str,
             event["command"], event['service_name'],
         )
         failure_message = "A timeout occurred."
-        request_retry(event, request_data, failure_message=failure_message)
+        request_retry(event, failure_message=failure_message)
 
     except requests.exceptions.ConnectionError:
         logging.info("Trigger event %s on %s resulted in a connection error. Retrying",
                      event["command"], event['service_name'])
         failure_message = "A connection error occurred. Is my bot server down?"
-        request_retry(event, request_data, failure_message=failure_message)
+        request_retry(event, failure_message=failure_message)
 
     except requests.exceptions.RequestException as e:
-        response_message = ("An exception of type *%s* occurred for message `%s`! "
-                            "See the Zulip server logs for more information." % (
-                                type(e).__name__, event["command"],))
-        logging.exception("Outhook trigger failed:\n %s" % (e,))
+        response_message = (
+            f"An exception of type *{type(e).__name__}* occurred for message `{event['command']}`! "
+            "See the Zulip server logs for more information."
+        )
+        logging.exception("Outhook trigger failed:")
         fail_with_message(event, response_message)
-        notify_bot_owner(event, request_data, exception=e)
+        notify_bot_owner(event, exception=e)

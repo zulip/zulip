@@ -1,4 +1,4 @@
-# Get a raw message
+# Get a message's raw markdown
 
 {generate_api_description(/messages/{message_id}:get)}
 
@@ -15,7 +15,7 @@
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
 {generate_api_arguments_table|zulip.yaml|/messages/{message_id}:get}
 
@@ -23,7 +23,7 @@
 
 #### Return values
 
-* `raw_content`: The raw content of the message.
+{generate_return_values_table|zulip.yaml|/messages/{message_id}:get}
 
 #### Example response
 

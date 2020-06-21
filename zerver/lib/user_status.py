@@ -1,11 +1,10 @@
+from typing import Any, Dict, Optional
+
 from django.db.models import Q
 from django.utils.timezone import now as timezone_now
 
-from zerver.models import (
-    UserStatus,
-)
+from zerver.models import UserStatus
 
-from typing import Any, Dict, Optional
 
 def get_user_info_dict(realm_id: int) -> Dict[int, Dict[str, Any]]:
     rows = UserStatus.objects.filter(
@@ -13,7 +12,7 @@ def get_user_info_dict(realm_id: int) -> Dict[int, Dict[str, Any]]:
         user_profile__is_active=True,
     ).exclude(
         Q(status=UserStatus.NORMAL) &
-        Q(status_text='')
+        Q(status_text=''),
     ).values(
         'user_profile_id',
         'status',

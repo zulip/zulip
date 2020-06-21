@@ -13,7 +13,7 @@ GCI_TOPIC_TEMPLATE = '{student_name}'
 
 
 def build_instance_url(instance_id: str) -> str:
-    return "https://codein.withgoogle.com/dashboard/task-instances/{}/".format(instance_id)
+    return f"https://codein.withgoogle.com/dashboard/task-instances/{instance_id}/"
 
 class UnknownEventType(Exception):
     pass
@@ -108,7 +108,7 @@ def api_gci_webhook(request: HttpRequest, user_profile: UserProfile,
     if event is not None:
         body = get_body_based_on_event(event)(payload)
         subject = GCI_TOPIC_TEMPLATE.format(
-            student_name=payload['task_claimed_by']
+            student_name=payload['task_claimed_by'],
         )
         check_send_webhook_message(request, user_profile, subject, body)
 
@@ -132,7 +132,7 @@ def get_event(payload: Dict[str, Any]) -> Optional[str]:
     if event in EVENTS_FUNCTION_MAPPER:
         return event
 
-    raise UnknownEventType("Event '{}' is unknown and cannot be handled".format(event))  # nocoverage
+    raise UnknownEventType(f"Event '{event}' is unknown and cannot be handled")  # nocoverage
 
 def get_body_based_on_event(event: str) -> Any:
     return EVENTS_FUNCTION_MAPPER[event]

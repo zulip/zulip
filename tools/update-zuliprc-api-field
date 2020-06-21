@@ -65,11 +65,11 @@ for zuliprc_path in zuliprc_paths_list:
                 with open(zuliprc_path, 'w+') as w:
                     zuliprc.write(w)
                 result = 'SUCCESS'
-                reason = 'API field updated for user %s' % (email,)
+                reason = f'API field updated for user {email}'
             except OSError:
                 result = 'FAILURE'
                 reason = 'Writing to file unsuccessful'
         else:
             result = 'SUCCESS'
-            reason = 'API key for user %s is already consistent' % (email,)
-    print('{}: {}: {}'.format(zuliprc_path, result, reason))
+            reason = f'API key for user {email} is already consistent'
+    print(f'{zuliprc_path}: {result}: {reason}')

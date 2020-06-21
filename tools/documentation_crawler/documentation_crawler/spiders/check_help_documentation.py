@@ -1,11 +1,9 @@
 import os
-
 from posixpath import basename
+from typing import Any, List, Set
 from urllib.parse import urlparse
 
 from .common.spiders import BaseDocumentationSpider
-
-from typing import Any, List, Set
 
 
 def get_images_dir(images_path: str) -> str:
@@ -25,7 +23,7 @@ class UnusedImagesLinterSpider(BaseDocumentationSpider):
 
     def _is_external_url(self, url: str) -> bool:
         is_external = url.startswith('http') and self.start_urls[0] not in url
-        if self._has_extension(url) and 'localhost:9981/{}'.format(self.images_path) in url:
+        if self._has_extension(url) and f'localhost:9981/{self.images_path}' in url:
             self.static_images.add(basename(urlparse(url).path))
         return is_external or self._has_extension(url)
 
@@ -77,6 +75,6 @@ class PorticoDocumentationSpider(BaseDocumentationSpider):
                   'http://localhost:9981/for/open-source',
                   'http://localhost:9981/for/companies',
                   'http://localhost:9981/for/working-groups-and-communities',
-                  'http://localhost:9981/for/mystery-hunt',
+                  'http://localhost:9981/for/research',
                   'http://localhost:9981/security']
     deny_domains: List[str] = []

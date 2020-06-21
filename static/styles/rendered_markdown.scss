@@ -141,17 +141,17 @@
         vertical-align: text-bottom;
     }
 
-    /* Highlighting for message edit history */
-    .highlight_text_inserted {
-        color: hsl(122, 72%, 30%);
-        background-color: hsl(120, 64%, 95%);
-    }
-
-    .highlight_text_deleted {
-        color: hsl(0, 100%, 50%);
-        text-decoration: line-through;
-        background-color: hsl(7, 90%, 92%);
-        word-break: break-all;
+    /* Timestamps */
+    time {
+        background: hsl(0, 0%, 93%);
+        border-radius: 3px;
+        padding: 0 0.2em;
+        box-shadow: 0px 0px 0px 1px hsl(0, 0%, 80%);
+        white-space: nowrap;
+        margin-left: 2px;
+        margin-right: 2px;
+        display: inline-block;
+        margin-bottom: 1px;
     }
 
     /* LaTeX styling */
@@ -161,6 +161,89 @@
 
     .tex-error {
         color: hsl(0, 0%, 50%);
+    }
+
+    /* Spoiler styling */
+    .spoiler-block {
+        border: hsl(0, 0%, 50%) 1px solid;
+        padding: 2px 8px 2px 10px;
+        border-radius: 10px;
+        position: relative;
+        top: 1px;
+        display: block;
+        margin: 5px 0 15px 0;
+
+        .spoiler-header {
+            padding: 5px;
+            font-weight: bold;
+        }
+
+        .spoiler-content {
+            overflow: hidden;
+            border-top: hsl(0, 0%, 50%) 0px solid;
+            transition: height 0.4s ease-in-out, border-top 0.4s step-end, padding 0.4s step-end;
+            padding: 0px;
+            height: 0px;
+
+            &.spoiler-content-open {
+                border-top: hsl(0, 0%, 50%) 1px solid;
+                transition: height 0.4s ease-in-out, border-top 0.4s step-start, padding 0.4s step-start;
+                padding: 5px;
+                height: auto;
+            }
+        }
+
+        .spoiler-button {
+            float: right;
+            width: 25px;
+            height: 25px;
+            &:hover .spoiler-arrow {
+                &::before,
+                &::after {
+                    background-color: hsl(0, 0%, 50%);
+                }
+            }
+        }
+
+
+        .spoiler-arrow {
+            float: right;
+            width: 13px;
+            height: 13px;
+            position: relative;
+            bottom: -5px;
+            left: -10px;
+            cursor: pointer;
+            transition: 0.4s ease;
+            margin-top: 2px;
+            text-align: left;
+            transform: rotate(45deg);
+            &::before,
+            &::after {
+                position: absolute;
+                content: '';
+                display: inline-block;
+                width: 12px;
+                height: 3px;
+                background-color: hsl(0, 0%, 83%);
+                transition: 0.4s ease;
+            }
+            &::after {
+                position: absolute;
+                transform: rotate(90deg);
+                top: -5px;
+                left: 5px;
+            }
+            &.spoiler-button-open {
+                transform: rotate(45deg) translate(-5px, -5px);
+                &::before {
+                    transform: translate(10px, 0);
+                }
+                &::after {
+                    transform: rotate(90deg) translate(10px, 0);
+                }
+            }
+        }
     }
 
     /* CSS for message content widgets */

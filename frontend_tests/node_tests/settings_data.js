@@ -36,3 +36,23 @@ run_test('email_for_user_settings', () => {
         .everyone.code;
     assert.equal(email(isaac), isaac.email);
 });
+
+run_test('user_can_change_logo', () => {
+    const can_change_logo = settings_data.user_can_change_logo;
+
+    page_params.is_admin = true;
+    page_params.zulip_plan_is_not_limited = true;
+    assert.equal(can_change_logo(), true);
+
+    page_params.is_admin = false;
+    page_params.zulip_plan_is_not_limited = false;
+    assert.equal(can_change_logo(), false);
+
+    page_params.is_admin = true;
+    page_params.zulip_plan_is_not_limited = false;
+    assert.equal(can_change_logo(), false);
+
+    page_params.is_admin = false;
+    page_params.zulip_plan_is_not_limited = true;
+    assert.equal(can_change_logo(), false);
+});

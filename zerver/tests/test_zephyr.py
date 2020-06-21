@@ -1,12 +1,12 @@
-import ujson
-
-from django.http import HttpResponse
-from mock import patch
 from typing import Any
+from unittest.mock import patch
+
+import ujson
+from django.http import HttpResponse
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.users import get_api_key
-from zerver.models import get_user, get_realm
+from zerver.models import get_realm, get_user
 
 
 class ZephyrTest(ZulipTestCase):

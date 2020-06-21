@@ -1,26 +1,30 @@
+from typing import Any, Dict, Optional
 from urllib.parse import urljoin
 
-from typing import Any, Dict, Optional
-from django.http import HttpRequest
 from django.conf import settings
+from django.http import HttpRequest
 
-from zerver.models import UserProfile, get_realm, Realm
+from version import (
+    LATEST_MAJOR_VERSION,
+    LATEST_RELEASE_ANNOUNCEMENT,
+    LATEST_RELEASE_VERSION,
+    ZULIP_VERSION,
+)
+from zerver.decorator import get_client_name
+from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
+from zerver.lib.realm_icon import get_realm_icon_url
+from zerver.lib.send_email import FromAddress
+from zerver.lib.subdomains import get_subdomain
+from zerver.models import Realm, UserProfile, get_realm
 from zproject.backends import (
+    AUTH_BACKEND_NAME_MAP,
     any_social_backend_enabled,
+    auth_enabled_helper,
     get_external_method_dicts,
     password_auth_enabled,
     require_email_format_usernames,
-    auth_enabled_helper,
-    AUTH_BACKEND_NAME_MAP,
 )
-from zerver.decorator import get_client_name
-from zerver.lib.send_email import FromAddress
-from zerver.lib.subdomains import get_subdomain
-from zerver.lib.realm_icon import get_realm_icon_url
-from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 
-from version import ZULIP_VERSION, LATEST_RELEASE_VERSION, LATEST_MAJOR_VERSION, \
-    LATEST_RELEASE_ANNOUNCEMENT
 
 def common_context(user: UserProfile) -> Dict[str, Any]:
     """Common context used for things like outgoing emails that don't
@@ -82,9 +86,11 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         find_team_link_disabled = False
         allow_search_engine_indexing = True
 
-    apps_page_url = 'https://zulipchat.com/apps/'
+    apps_page_url = 'https://zulip.com/apps/'
     if settings.ZILENCER_ENABLED:
         apps_page_url = '/apps/'
+
+    apps_page_web = settings.ROOT_DOMAIN_URI + '/accounts/go/'
 
     user_is_authenticated = False
     if hasattr(request, 'user') and hasattr(request.user, 'is_authenticated'):
@@ -120,6 +126,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         'realm_icon': realm_icon,
         'root_domain_uri': settings.ROOT_DOMAIN_URI,
         'apps_page_url': apps_page_url,
+        'apps_page_web': apps_page_web,
         'open_realm_creation': settings.OPEN_REALM_CREATION,
         'development_environment': settings.DEVELOPMENT,
         'support_email': FromAddress.SUPPORT,
@@ -134,9 +141,10 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         'settings_comments_path': settings_comments_path,
         'platform': platform,
         'allow_search_engine_indexing': allow_search_engine_indexing,
+        'landing_page_navbar_message': settings.LANDING_PAGE_NAVBAR_MESSAGE,
     }
 
-    context['OPEN_GRAPH_URL'] = '%s%s' % (realm_uri, request.path)
+    context['OPEN_GRAPH_URL'] = f'{realm_uri}{request.path}'
     if realm is not None and realm.icon_source == realm.ICON_UPLOADED:
         context['OPEN_GRAPH_IMAGE'] = urljoin(realm_uri, realm_icon)
 
@@ -169,7 +177,7 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
     no_auth_enabled = True
     for auth_backend_name in AUTH_BACKEND_NAME_MAP:
         name_lower = auth_backend_name.lower()
-        key = "%s_auth_enabled" % (name_lower,)
+        key = f"{name_lower}_auth_enabled"
         is_enabled = auth_enabled_helper([auth_backend_name], realm)
         context[key] = is_enabled
         if is_enabled:
@@ -182,10 +190,10 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
     # by the desktop client. We expand it with IDs of the <button> elements corresponding
     # to the authentication methods.
     context['page_params'] = dict(
-        external_authentication_methods = get_external_method_dicts(realm)
+        external_authentication_methods = get_external_method_dicts(realm),
     )
     for auth_dict in context['page_params']['external_authentication_methods']:
-        auth_dict['button_id_suffix'] = "auth_button_%s" % (auth_dict['name'],)
+        auth_dict['button_id_suffix'] = "auth_button_{}".format(auth_dict['name'])
 
     return context
 

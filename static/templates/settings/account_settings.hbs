@@ -40,7 +40,7 @@
                 {{#if page_params.two_fa_enabled }}
                 <p for="two_factor_auth" class="inline-block title">
                     {{t "Two factor authentication" }}: {{#if page_params.two_fa_enabled_user }}{{t "Enabled" }}{{else}}{{t "Disabled" }}{{/if}}
-                    <a target="_blank" id="two_factor_auth" href="/account/two_factor/" title="{{t 'Setup two factor authentication' }}">[{{t "Setup" }}]</a>
+                    <a target="_blank" rel="noopener noreferrer" id="two_factor_auth" href="/account/two_factor/" title="{{t 'Setup two factor authentication' }}">[{{t "Setup" }}]</a>
                 </p>
                 {{/if}}
 
@@ -101,7 +101,7 @@
                                 <label for="old_password" class="title">{{t "Old password" }}</label>
                                 <input type="password" autocomplete="off" name="old_password" id="old_password" class="w-200 inline-block" value="" />
                                 <div class="info">
-                                    <a href="/accounts/password/reset/" class="sea-green" target="_blank">{{t "Forgotten it?" }}</a>
+                                    <a href="/accounts/password/reset/" class="sea-green" target="_blank" rel="noopener noreferrer">{{t "Forgotten it?" }}</a>
                                 </div>
 
                             </div>
@@ -154,31 +154,14 @@
 
         <div class="inline-block user-avatar-section">
             <h3>{{t "Profile picture" }}</h3>
-
-            <div class="inline-block">
-                <div id="user-settings-avatar">
-                    <div id="user-avatar-background"></div>
-                    <div id="user-avatar-block" style="background-image: url({{ page_params.avatar_url_medium }})" {{#if page_params.is_guest}} class="guest-avatar"{{/if}}></div>
-                    <span id="user_avatar_delete_button" aria-label="{{t 'Delete profile picture'}}" role="button" tabindex="0"
-                      {{#unless user_can_change_avatar}}style="display:none"{{/unless}}>
-                        &times;
-                    </span>
-                    <span id="user_avatar_delete" aria-label="{{t 'Delete profile picture'}}" tabindex="0">
-                        {{t 'Delete profile picture' }}
-                    </span>
-                    <object id="user-avatar-spinner" type="image/svg+xml" data="/static/images/tail-spin.svg"></object>
-                    <span id="user_avatar_upload_button" aria-label="{{t 'Upload new profile picture'}}" role="button" tabindex="0"
-                      {{#if (and (not page_params.is_admin) page_params.realm_avatar_changes_disabled)}}style="display:none"{{/if}}>
-                        {{t 'Upload new profile picture' }}
-                    </span>
-                </div>
-                <div id="user-avatar-source">
-                    <a href="https://en.gravatar.com/" target="_blank">{{t "Avatar from Gravatar" }}</a>
-                </div>
-                <input type="file" name="user_avatar_file_input" class="notvisible" id="user_avatar_file_input" value="{{t 'Upload profile picture' }}" />
-            </div>
-            <div class="avatar-controls">
-                <div id="user_avatar_file_input_error" class="text-error"></div>
+            {{> image_upload_widget
+              widget = "user-avatar"
+              upload_text = (t "Upload new profile picture")
+              delete_text = (t "Delete profile picture")
+              is_editable_by_current_user = user_can_change_avatar
+              image = page_params.avatar_url_medium}}
+            <div id="user-avatar-source">
+                <a href="https://en.gravatar.com/" target="_blank" rel="noopener noreferrer">{{t "Avatar from Gravatar" }}</a>
             </div>
         </div>
         <div class="clear-float"></div>

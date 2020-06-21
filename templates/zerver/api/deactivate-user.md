@@ -1,7 +1,5 @@
 # Deactivate a user
 
-{!api-admin-only.md!}
-
 {generate_api_description(/users/{user_id}:delete)}
 
 ## Usage examples
@@ -17,7 +15,7 @@
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
 {generate_api_arguments_table|zulip.yaml|/users/{user_id}:delete}
 

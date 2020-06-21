@@ -90,7 +90,7 @@ def format_freshdesk_note_message(ticket: TicketDict, event_info: List[str]) -> 
         email=ticket.requester_email,
         note_type=note_type,
         ticket_id=ticket.id,
-        ticket_url=ticket.url
+        ticket_url=ticket.url,
     )
 
     return content
@@ -108,7 +108,7 @@ def format_freshdesk_property_change_message(ticket: TicketDict, event_info: Lis
         ticket_url=ticket.url,
         property_name=event_info[0].capitalize(),
         old=event_info[1],
-        new=event_info[2]
+        new=event_info[2],
     )
 
     return content
@@ -125,7 +125,7 @@ def format_freshdesk_ticket_creation_message(ticket: TicketDict) -> str:
         description=cleaned_description,
         type=ticket.type,
         priority=ticket.priority,
-        status=ticket.status
+        status=ticket.status,
     )
 
     return content
@@ -146,14 +146,11 @@ def api_freshdesk_webhook(request: HttpRequest, user_profile: UserProfile,
         if ticket_data.get(key) is None:
             logging.warning("Freshdesk webhook error. Payload was:")
             logging.warning(request.body)
-            return json_error(_("Missing key %s in JSON") % (key,))
+            return json_error(_("Missing key {} in JSON").format(key))
 
     ticket = TicketDict(ticket_data)
 
-    subject = "#{ticket_id}: {ticket_subject}".format(
-        ticket_id=ticket.id,
-        ticket_subject=ticket.subject
-    )
+    subject = f"#{ticket.id}: {ticket.subject}"
     event_info = parse_freshdesk_event(ticket.triggered_event)
 
     if event_info[1] == "created":

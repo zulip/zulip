@@ -1,13 +1,14 @@
-from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render
 from typing import Callable
 
-from confirmation.models import Confirmation, get_object_from_key, \
-    ConfirmationKeyException
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import render
+
+from confirmation.models import Confirmation, ConfirmationKeyException, get_object_from_key
+from zerver.context_processors import common_context
 from zerver.lib.actions import do_change_notification_settings
 from zerver.lib.send_email import clear_scheduled_emails
-from zerver.models import UserProfile, ScheduledEmail
-from zerver.context_processors import common_context
+from zerver.models import ScheduledEmail, UserProfile
+
 
 def process_unsubscribe(request: HttpRequest, confirmation_key: str, subscription_type: str,
                         unsubscribe_function: Callable[[UserProfile], None]) -> HttpResponse:
@@ -44,7 +45,7 @@ email_unsubscribers = {
     "missed_messages": ("missed messages", do_missedmessage_unsubscribe),
     "welcome": ("welcome", do_welcome_unsubscribe),
     "digest": ("digest", do_digest_unsubscribe),
-    "login": ("login", do_login_unsubscribe)
+    "login": ("login", do_login_unsubscribe),
 }
 
 # Login NOT required. These are for one-click unsubscribes.

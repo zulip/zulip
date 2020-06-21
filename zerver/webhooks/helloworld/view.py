@@ -14,7 +14,7 @@ from zerver.models import UserProfile
 @has_request_variables
 def api_helloworld_webhook(
         request: HttpRequest, user_profile: UserProfile,
-        payload: Dict[str, Iterable[Dict[str, Any]]]=REQ(argument_type='body')
+        payload: Dict[str, Iterable[Dict[str, Any]]]=REQ(argument_type='body'),
 ) -> HttpResponse:
 
     # construct the body of the message

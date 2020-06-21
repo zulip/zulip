@@ -3,31 +3,32 @@
 Fetch contributors data from Github using their API, convert it to structured
 JSON data for the /team page contributors section.
 """
-
 import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from scripts.lib.setup_path import setup_path
+
 setup_path()
 
-from typing import Any, Dict, List, Optional, Union
-from typing_extensions import TypedDict
-
 import argparse
-from time import sleep
+import logging
 from datetime import date
 from random import randrange
-import logging
+from time import sleep
+from typing import Any, Dict, List, Optional, Union
+
+from typing_extensions import TypedDict
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 import django
+
 django.setup()
 
-from django.conf import settings
+import json
 
 import requests
-import json
+from django.conf import settings
 
 duplicate_commits_file = os.path.join(os.path.dirname(__file__), 'duplicate_commits.json')
 
@@ -36,10 +37,9 @@ parser.add_argument('--max-retries', type=int, default=10,
                     help='Number of times to retry fetching data from Github')
 args = parser.parse_args()
 
-ContributorsJSON = TypedDict('ContributorsJSON', {
-    'date': str,
-    'contrib': List[Dict[str, Union[str, int]]],
-})
+class ContributorsJSON(TypedDict):
+    date: str
+    contrib: List[Dict[str, Union[str, int]]]
 
 logger = logging.getLogger('zulip.fetch_contributors_json')
 
@@ -49,11 +49,8 @@ def fetch_contributors(repo_link: str) -> Optional[List[Dict[str, Dict[str, Any]
 
 def write_to_disk(json_data: ContributorsJSON, out_file: str) -> None:
     with open(out_file, 'w') as f:
-        try:
-            f.write("{}\n".format(json.dumps(json_data, indent=2, sort_keys=True)))
-        except OSError as e:
-            logger.warning(e)
-            sys.exit(1)
+        json.dump(json_data, f, indent=2, sort_keys=True)
+        f.write("\n")
 
 def update_contributor_data_file() -> None:
     """

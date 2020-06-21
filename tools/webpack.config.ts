@@ -10,9 +10,8 @@ import TerserPlugin from 'terser-webpack-plugin';
 // The devServer member of webpack.Configuration is managed by the
 // webpack-dev-server package. We are only importing the type here.
 import _webpackDevServer from 'webpack-dev-server';
+import assets from './webpack.assets.json';
 import webpack from 'webpack';
-
-const assets: { [name: string]: string[] } = require('./webpack.assets.json');
 
 export default (env?: string): webpack.Configuration[] => {
     const production: boolean = env === "production";
@@ -247,8 +246,8 @@ export default (env?: string): webpack.Configuration[] => {
 
     if (!production) {
         // Out JS debugging tools
-        for (const name of Object.keys(config.entry)) {
-            assets[name].push('./static/js/debug.js');
+        for (const paths of Object.values(assets)) {
+            paths.push('./static/js/debug.js');
         }
         config.devServer = {
             clientLogLevel: "error",

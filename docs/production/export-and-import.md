@@ -31,7 +31,7 @@ service (or back):
   JSON files–a format shared by our [data
   import](#import-into-a-new-zulip-server) tools for third-party
   services like
-  [Slack](https://zulipchat.com/help/import-from-slack).
+  [Slack](https://zulip.com/help/import-from-slack).
 
   Like the backup tool, logical data exports must be imported on a
   Zulip server running the same version.  However, logical data
@@ -160,7 +160,7 @@ data includes:
 
 * The postgres database.  You can back it up like any postgres
 database. We have some example tooling for doing that incrementally
-into S3 using [wal-e](https://github.com/wal-e/wal-e) in
+into S3 using [wal-g](https://github.com/wal-g/wal-g) in
 `puppet/zulip_ops/manifests/postgres_common.pp`.
 In short, this requires:
   - Zulip 1.4 or newer release.
@@ -204,9 +204,10 @@ To restore from a manual backup, the process is basically the reverse of the abo
 * Unpack to `/etc/zulip` the `settings.py` and `zulip-secrets.conf` files
   from your backups.
 
-* Restore your database from the backup using `wal-e`. If you ran
-  `initialize-database` anyway above, you'll want to run
+* If you ran `initialize-database` anyway above, you'll want to run
   `scripts/setup/postgres-init-db` to drop the initial database first.
+
+* Restore your database from the backup.
 
 * Reconfigure rabbitmq to use the password from `secrets.conf`
   by running, as root, `scripts/setup/configure-rabbitmq`.
@@ -230,11 +231,10 @@ that they are up to date using the Nagios plugin at:
 Zulip has database configuration for using Postgres streaming
 replication. You can see the configuration in these files:
 
-* `puppet/zulip_ops/manifests/postgres_slave.pp`
-* `puppet/zulip_ops/manifests/postgres_master.pp`
+* `puppet/zulip_ops/manifests/postgres_appdb.pp`
 * `puppet/zulip_ops/files/postgresql/*`
 
-We use this configuration for zulipchat.com, and it works well in
+We use this configuration for Zulip Cloud, and it works well in
 production, but it's not fully generic.  Contributions to make it a
 supported and documented option for other installations are
 appreciated.
@@ -301,16 +301,16 @@ archive of all the organization's uploaded files.
     * Ensure that the Zulip server you're importing into is running the same
       version of Zulip as the server you're exporting from.
 
-    * For exports from zulipchat.com, you need to [upgrade to
+    * For exports from Zulip Cloud (zulip.com), you need to [upgrade to
       master][upgrade-zulip-from-git], since we run run master on
-      zulipchat.com:
+      Zulip Cloud:
 
       ```
       /home/zulip/deployments/current/scripts/upgrade-zulip-from-git master
       ```
 
       It is not sufficient to be on the latest stable release, as
-      zulipchat.com runs pre-release versions of Zulip that are often
+      zulip.com runs pre-release versions of Zulip that are often
       several months of development ahead of the latest release.
 
     * Note that if your server has limited free RAM, you'll want to

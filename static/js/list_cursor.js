@@ -48,7 +48,7 @@ const list_cursor = function (opts) {
             force_render: true,
         });
 
-        if (li.length === 0) {
+        if (!li || li.length === 0) {
             return;
         }
 

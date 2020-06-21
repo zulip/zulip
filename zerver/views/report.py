@@ -1,25 +1,23 @@
 # System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
-
-from typing import Any, Dict, Optional
+import logging
+import subprocess
+from typing import Any, Dict, Mapping, Optional
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-from zerver.decorator import human_users_only, \
-    to_non_negative_int
+
+from zerver.decorator import human_users_only
 from zerver.lib.bugdown import privacy_clean_markdown
-from zerver.lib.request import has_request_variables, REQ
-from zerver.lib.response import json_success
 from zerver.lib.queue import queue_json_publish
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_success
 from zerver.lib.storage import static_path
 from zerver.lib.unminify import SourceMap
 from zerver.lib.utils import statsd, statsd_key
-from zerver.lib.validator import check_bool, check_dict
+from zerver.lib.validator import check_bool, check_dict, to_non_negative_int
 from zerver.models import UserProfile
-
-import subprocess
-import logging
 
 js_source_map: Optional[SourceMap] = None
 
@@ -28,7 +26,7 @@ def get_js_source_map() -> Optional[SourceMap]:
     global js_source_map
     if not js_source_map and not (settings.DEVELOPMENT or settings.TEST_SUITE):
         js_source_map = SourceMap([
-            static_path('webpack-bundles')
+            static_path('webpack-bundles'),
         ])
     return js_source_map
 
@@ -48,15 +46,14 @@ def report_send_times(request: HttpRequest, user_profile: UserProfile,
     if displayed > 0:
         displayed_str = str(displayed)
 
-    request._log_data["extra"] = "[%sms/%sms/%sms/echo:%s/diff:%s]" \
-        % (time, received_str, displayed_str, locally_echoed, rendered_content_disparity)
+    request._log_data["extra"] = f"[{time}ms/{received_str}ms/{displayed_str}ms/echo:{locally_echoed}/diff:{rendered_content_disparity}]"
 
     base_key = statsd_key(user_profile.realm.string_id, clean_periods=True)
-    statsd.timing("endtoend.send_time.%s" % (base_key,), time)
+    statsd.timing(f"endtoend.send_time.{base_key}", time)
     if received > 0:
-        statsd.timing("endtoend.receive_time.%s" % (base_key,), received)
+        statsd.timing(f"endtoend.receive_time.{base_key}", received)
     if displayed > 0:
-        statsd.timing("endtoend.displayed_time.%s" % (base_key,), displayed)
+        statsd.timing(f"endtoend.displayed_time.{base_key}", displayed)
     if locally_echoed:
         statsd.incr('locally_echoed')
     if rendered_content_disparity:
@@ -69,11 +66,11 @@ def report_narrow_times(request: HttpRequest, user_profile: UserProfile,
                         initial_core: int=REQ(converter=to_non_negative_int),
                         initial_free: int=REQ(converter=to_non_negative_int),
                         network: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
-    request._log_data["extra"] = "[%sms/%sms/%sms]" % (initial_core, initial_free, network)
+    request._log_data["extra"] = f"[{initial_core}ms/{initial_free}ms/{network}ms]"
     base_key = statsd_key(user_profile.realm.string_id, clean_periods=True)
-    statsd.timing("narrow.initial_core.%s" % (base_key,), initial_core)
-    statsd.timing("narrow.initial_free.%s" % (base_key,), initial_free)
-    statsd.timing("narrow.network.%s" % (base_key,), network)
+    statsd.timing(f"narrow.initial_core.{base_key}", initial_core)
+    statsd.timing(f"narrow.initial_free.{base_key}", initial_free)
+    statsd.timing(f"narrow.network.{base_key}", network)
     return json_success()
 
 @human_users_only
@@ -81,24 +78,23 @@ def report_narrow_times(request: HttpRequest, user_profile: UserProfile,
 def report_unnarrow_times(request: HttpRequest, user_profile: UserProfile,
                           initial_core: int=REQ(converter=to_non_negative_int),
                           initial_free: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
-    request._log_data["extra"] = "[%sms/%sms]" % (initial_core, initial_free)
+    request._log_data["extra"] = f"[{initial_core}ms/{initial_free}ms]"
     base_key = statsd_key(user_profile.realm.string_id, clean_periods=True)
-    statsd.timing("unnarrow.initial_core.%s" % (base_key,), initial_core)
-    statsd.timing("unnarrow.initial_free.%s" % (base_key,), initial_free)
+    statsd.timing(f"unnarrow.initial_core.{base_key}", initial_core)
+    statsd.timing(f"unnarrow.initial_free.{base_key}", initial_free)
     return json_success()
 
 @has_request_variables
 def report_error(request: HttpRequest, user_profile: UserProfile, message: str=REQ(),
                  stacktrace: str=REQ(), ui_message: bool=REQ(validator=check_bool),
                  user_agent: str=REQ(), href: str=REQ(), log: str=REQ(),
-                 more_info: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None)
+                 more_info: Mapping[str, Any]=REQ(validator=check_dict([]), default={}),
                  ) -> HttpResponse:
     """Accepts an error report and stores in a queue for processing.  The
     actual error reports are later handled by do_report_error"""
     if not settings.BROWSER_ERROR_REPORTING:
         return json_success()
-    if more_info is None:
-        more_info = {}
+    more_info = dict(more_info)
 
     js_source_map = get_js_source_map()
     if js_source_map:
@@ -113,9 +109,7 @@ def report_error(request: HttpRequest, user_profile: UserProfile, message: str=R
         version = None
 
     # Get the IP address of the request
-    remote_ip = request.META.get('HTTP_X_REAL_IP')
-    if remote_ip is None:
-        remote_ip = request.META['REMOTE_ADDR']
+    remote_ip = request.META['REMOTE_ADDR']
 
     # For the privacy of our users, we remove any actual text content
     # in draft_content (from drafts rendering exceptions).  See the
@@ -146,7 +140,7 @@ def report_error(request: HttpRequest, user_profile: UserProfile, message: str=R
             stacktrace = stacktrace,
             log = log,
             more_info = more_info,
-        )
+        ),
     ))
 
     return json_success()

@@ -102,6 +102,7 @@ run_test("initialize", () => {
     helpers.is_valid_input = () => {
         return true;
     };
+
     add_card_click_handler(e);
     invoice_click_handler(e);
 
@@ -159,6 +160,8 @@ run_test("autopay_form_fields", () => {
     assert(document.querySelector("#autopay_loading_indicator"));
 
     assert(document.querySelector("input[name=csrfmiddlewaretoken]"));
+
+    assert(document.querySelector("#free-trial-alert-message"));
 });
 
 run_test("invoice_form_fields", () => {
@@ -178,4 +181,6 @@ run_test("invoice_form_fields", () => {
     assert(document.querySelector("#invoice_loading_indicator"));
 
     assert(document.querySelector("input[name=csrfmiddlewaretoken]"));
+
+    assert(document.querySelector("#free-trial-alert-message"));
 });

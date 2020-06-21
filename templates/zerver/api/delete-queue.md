@@ -1,4 +1,4 @@
-# Delete a queue
+# Delete an event queue
 
 {generate_api_description(/events:delete)}
 
@@ -43,7 +43,7 @@ zulip(config).then((client) => {
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
 {generate_api_arguments_table|zulip.yaml|/events:delete}
 

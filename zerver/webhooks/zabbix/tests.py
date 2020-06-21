@@ -28,7 +28,7 @@ class ZabbixHookTests(WebhookTestCase):
 
         expected_message = MISCONFIGURED_PAYLOAD_ERROR_MESSAGE.format(
             bot_name=self.test_user.full_name,
-            support_email=FromAddress.SUPPORT
+            support_email=FromAddress.SUPPORT,
         ).strip()
 
         msg = self.get_last_message()

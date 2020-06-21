@@ -44,11 +44,164 @@ const isaac = {
 
 function initialize() {
     people.init();
-    people.add(me);
+    people.add_active_user(me);
     people.initialize_current_user(me.user_id);
 }
 
 initialize();
+
+/*
+    TEST SETUP NOTES:
+
+    We don't add all these users right away,
+    but they are convenient to have for various
+    tests, and we just add them as needed after
+    calling something like `people.init()`.
+
+    Note that we deliberately make it so that
+    alphabetical order mismatches id order,
+    since that can uncover bugs where we neglect
+    to be rigorous about sort order.
+*/
+
+const realm_admin = {
+    email: 'realm_admin@example.com',
+    full_name: 'Realm Admin',
+    user_id: 32,
+    is_owner: false,
+    is_admin: true,
+    is_guest: false,
+    is_bot: false,
+};
+
+const guest = {
+    email: 'guest@example.com',
+    full_name: 'Guest User',
+    user_id: 33,
+    is_owner: false,
+    is_admin: false,
+    is_guest: true,
+    is_bot: false,
+};
+
+const realm_owner = {
+    email: 'realm_owner@example.com',
+    full_name: 'Realm Owner',
+    user_id: 34,
+    is_owner: true,
+    is_admin: true,
+    is_guest: false,
+    is_bot: false,
+};
+
+const bot_botson = {
+    email: 'botson-bot@example.com',
+    user_id: 35,
+    full_name: 'Bot Botson',
+    is_bot: true,
+    bot_owner_id: isaac.user_id,
+};
+
+const steven = {
+    email: 'steven@example.com',
+    delivery_email: 'steven-delivery@example.com',
+    user_id: 77,
+    full_name: 'Steven',
+};
+
+const alice1 = {
+    email: 'alice1@example.com',
+    user_id: 202,
+    full_name: 'Alice',
+};
+
+const bob = {
+    email: 'bob@example.com',
+    user_id: 203,
+    full_name: 'Bob van Roberts',
+};
+
+const alice2 = {
+    email: 'alice2@example.com',
+    user_id: 204,
+    full_name: 'Alice',
+};
+
+const charles = {
+    email: 'charles@example.com',
+    user_id: 301,
+    full_name: 'Charles Dickens',
+    avatar_url: 'charles.com/foo.png',
+    is_guest: false,
+};
+
+const maria = {
+    email: 'Athens@example.com',
+    user_id: 302,
+    full_name: 'Maria Athens',
+};
+
+const ashton = {
+    email: 'ashton@example.com',
+    user_id: 303,
+    full_name: 'Ashton Smith',
+};
+
+const linus = {
+    email: 'ltorvalds@example.com',
+    user_id: 304,
+    full_name: 'Linus Torvalds',
+};
+
+const emp401 = {
+    email: 'emp401@example.com',
+    user_id: 401,
+    full_name: 'whatever 401',
+};
+
+const emp402 = {
+    email: 'EMP402@example.com',
+    user_id: 402,
+    full_name: 'whatever 402',
+};
+
+const debbie = {
+    email: 'deBBie71@example.com',
+    user_id: 501,
+    full_name: 'Debra Henton',
+};
+
+const stephen1 = {
+    email: 'stephen-the-author@example.com',
+    user_id: 601,
+    full_name: 'Stephen King',
+};
+
+const stephen2 = {
+    email: 'stephen-the-explorer@example.com',
+    user_id: 602,
+    full_name: 'Stephen King',
+};
+
+const noah = {
+    email: 'emnoa@example.com',
+    user_id: 1200,
+    full_name: 'Nöôáàh Ëmerson',
+};
+
+const plain_noah = {
+    email: 'otheremnoa@example.com',
+    user_id: 1201,
+    full_name: 'Nooaah Emerson',
+};
+
+// This is for error checking--never actually
+// tell people.js about this user.
+const unknown_user = {
+    email: 'unknown@example.com',
+    user_id: 999,
+    unknown_local_echo_user: true,
+};
 
 function get_all_persons() {
     return people.filter_all_persons(() => true);
@@ -67,7 +220,7 @@ run_test('basics', () => {
 
     realm_persons = people.get_realm_users();
     assert.equal(realm_persons.length, 1);
-    assert.equal(people.get_active_human_count(), 1);
+    assert.equal(people.get_active_human_ids().length, 1);
 
     const full_name = 'Isaac Newton';
     const email = 'isaac@example.com';
@@ -76,7 +229,7 @@ run_test('basics', () => {
     assert(!people.is_valid_full_name_and_user_id(full_name, 32));
     assert.equal(people.get_user_id_from_name(full_name), undefined);
 
-    people.add(isaac);
+    people.add_active_user(isaac);
 
     assert.equal(
         people.get_actual_name_from_user_id(32),
@@ -92,12 +245,6 @@ run_test('basics', () => {
     let person = people.get_by_email(email);
     assert.equal(person.full_name, full_name);
 
-    person = people.get_active_user_for_email('nobody@example.com');
-    assert(!person);
-
-    person = people.get_active_user_for_email(email);
-    assert.equal(person.email, email);
-
     realm_persons = people.get_realm_users();
     assert.equal(realm_persons.length, 2);
 
@@ -108,20 +255,12 @@ run_test('basics', () => {
 
     // Now deactivate isaac
     people.deactivate(isaac);
-    person = people.get_active_user_for_email(email);
-    assert(!person);
+    assert.equal(people.get_non_active_human_ids().length, 1);
     assert.equal(people.get_active_human_count(), 1);
     assert.equal(people.is_active_user_for_popover(isaac.user_id), false);
     assert.equal(people.is_valid_email_for_compose(isaac.email), false);
 
-    const bot_botson = {
-        email: 'botson-bot@example.com',
-        user_id: 35,
-        full_name: 'Bot Botson',
-        is_bot: true,
-        bot_owner_id: isaac.user_id,
-    };
-    people.add(bot_botson);
+    people.add_active_user(bot_botson);
     assert.equal(people.is_active_user_for_popover(bot_botson.user_id), true);
 
     assert.equal(
@@ -131,7 +270,7 @@ run_test('basics', () => {
 
     // Add our cross-realm bot.  It won't add to our human
     // count, and it has no owner.
-    people._add_user(welcome_bot);
+    people.add_cross_realm_user(welcome_bot);
     assert.equal(people.get_bot_owner_user(welcome_bot), undefined);
     assert.equal(people.get_active_human_count(), 1);
     assert.equal(
@@ -166,7 +305,6 @@ run_test('basics', () => {
 
     // Test undefined people
     assert.equal(people.is_cross_realm_email('unknown@example.com'), undefined);
-    assert.equal(people.get_active_user_for_email('unknown@example.com'), undefined);
 
     // Test is_my_user_id function
     assert.equal(people.is_my_user_id(me.user_id), true);
@@ -174,12 +312,45 @@ run_test('basics', () => {
     assert.equal(people.is_my_user_id(undefined), false);
 
     // Reactivating issac
-    people.add(isaac);
-    const active_humans = people.get_active_humans();
+    people.add_active_user(isaac);
+    const active_humans = people.get_active_human_ids();
     assert.equal(active_humans.length, 2);
     assert.deepEqual(
         active_humans.sort((p) => p.user_id),
-        [me, isaac]);
+        [me.user_id, isaac.user_id]);
+});
+
+run_test('check_active_non_active_users', () => {
+    let active_users = people.get_realm_users();
+    let non_active_users = people.get_non_active_realm_users();
+    assert.equal(active_users.length, 3);
+    assert.equal(non_active_users.length, 0);
+
+    people.add_active_user(maria);
+    people.add_active_user(linus);
+    active_users = people.get_realm_users();
+    assert.equal(active_users.length, 5);
+    // Invalid ID
+    blueslip.expect('error', 'No user found.');
+    people.is_person_active(1000001);
+    assert.equal(people.is_person_active(maria.user_id), true);
+    assert.equal(people.is_person_active(linus.user_id), true);
+
+    people.deactivate(maria);
+    non_active_users = people.get_non_active_realm_users();
+    active_users = people.get_realm_users();
+    assert.equal(non_active_users.length, 1);
+    assert.equal(active_users.length, 4);
+    assert.equal(people.is_person_active(maria.user_id), false);
+
+    people.deactivate(linus);
+    people.add_active_user(maria);
+    non_active_users = people.get_non_active_realm_users();
+    active_users = people.get_realm_users();
+    assert.equal(non_active_users.length, 1);
+    assert.equal(active_users.length, 4);
+    assert.equal(people.is_person_active(maria.user_id), true);
+    assert.equal(people.is_person_active(linus.user_id), false);
 });
 
 run_test('pm_lookup_key', () => {
@@ -209,14 +380,8 @@ run_test('bot_custom_profile_data', () => {
     // If this test fails, then try opening organization settings > bots
     // http://localhost:9991/#organization/bot-list-admin
     // and then try to edit any of the bots.
-    const bot = {
-        email: 'bot@example.com',
-        user_id: 31,
-        full_name: 'Bot',
-        is_bot: true,
-    };
-    people.add(bot);
-    assert.equal(people.get_custom_profile_data(31, 3), null);
+    people.add_active_user(bot_botson);
+    assert.equal(people.get_custom_profile_data(bot_botson.user_id, 3), null);
 });
 
 run_test('user_timezone', () => {
@@ -244,38 +409,18 @@ run_test('user_timezone', () => {
 });
 
 run_test('user_type', () => {
-    const realm_admin = {
-        email: 'realm_admin@example.com',
-        full_name: 'Realm Admin',
-        user_id: 32,
-        is_admin: true,
-        is_guest: false,
-        is_bot: false,
-    };
-    const guest = {
-        email: 'guest@example.com',
-        full_name: 'Guest User',
-        user_id: 33,
-        is_admin: false,
-        is_guest: true,
-        is_bot: false,
-    };
-    const bot = {
-        email: 'bot@example.com',
-        full_name: 'Example Bot',
-        user_id: 34,
-        is_admin: false,
-        is_guest: false,
-        is_bot: true,
-    };
+    people.init();
 
-    people.add(realm_admin);
-    people.add(guest);
-    people.add(bot);
+    people.add_active_user(me);
+    people.add_active_user(realm_admin);
+    people.add_active_user(guest);
+    people.add_active_user(realm_owner);
+    people.add_active_user(bot_botson);
     assert.equal(people.get_user_type(me.user_id), i18n.t('Member'));
     assert.equal(people.get_user_type(realm_admin.user_id), i18n.t('Administrator'));
     assert.equal(people.get_user_type(guest.user_id), i18n.t('Guest'));
-    assert.equal(people.get_user_type(bot.user_id), i18n.t('Bot'));
+    assert.equal(people.get_user_type(realm_owner.user_id), i18n.t('Owner'));
+    assert.equal(people.get_user_type(bot_botson.user_id), i18n.t('Bot'));
 });
 
 run_test('updates', () => {
@@ -292,7 +437,7 @@ run_test('get_by_user_id', () => {
         user_id: 42,
         full_name: 'Mary',
     };
-    people.add(person);
+    people.add_active_user(person);
     person = people.get_by_email('mary@example.com');
     assert.equal(person.full_name, 'Mary');
     person = people.get_by_user_id(42);
@@ -306,8 +451,6 @@ run_test('get_by_user_id', () => {
     // now it takes a full person object.  Note that deactivate()
     // won't actually make the user disappear completely.
     people.deactivate(person);
-    person = people.get_active_user_for_email('mary@example.com');
-    assert.equal(person, undefined);
     person = people.get_by_user_id(42);
     assert.equal(person.user_id, 42);
 });
@@ -326,31 +469,16 @@ run_test('set_custom_profile_field_data', () => {
 initialize();
 
 run_test('get_people_for_stream_create', () => {
-    const alice1 = {
-        email: 'alice1@example.com',
-        user_id: 202,
-        full_name: 'Alice',
-    };
-    const alice2 = {
-        email: 'alice2@example.com',
-        user_id: 203,
-        full_name: 'Alice',
-    };
-    const bob = {
-        email: 'bob@example.com',
-        user_id: 204,
-        full_name: 'Bob van Roberts',
-    };
-    people.add(alice1);
-    people.add(bob);
-    people.add(alice2);
+    people.add_active_user(alice1);
+    people.add_active_user(bob);
+    people.add_active_user(alice2);
     assert.equal(people.get_active_human_count(), 4);
 
     const others = people.get_people_for_stream_create();
     const expected = [
-        { email: 'alice1@example.com', user_id: 202, full_name: 'Alice' },
-        { email: 'alice2@example.com', user_id: 203, full_name: 'Alice' },
-        { email: 'bob@example.com', user_id: 204, full_name: 'Bob van Roberts' },
+        { email: 'alice1@example.com', user_id: alice1.user_id, full_name: 'Alice' },
+        { email: 'alice2@example.com', user_id: alice2.user_id, full_name: 'Alice' },
+        { email: 'bob@example.com', user_id: bob.user_id, full_name: 'Bob van Roberts' },
     ];
     assert.deepEqual(others, expected);
 
@@ -369,43 +497,12 @@ run_test('recipient_counts', () => {
 });
 
 run_test('filtered_users', () => {
-    const charles = {
-        email: 'charles@example.com',
-        user_id: 301,
-        full_name: 'Charles Dickens',
-    };
-    const maria = {
-        email: 'athens@example.com',
-        user_id: 302,
-        full_name: 'Maria Athens',
-    };
-    const ashton = {
-        email: 'ashton@example.com',
-        user_id: 303,
-        full_name: 'Ashton Smith',
-    };
-    const linus = {
-        email: 'ltorvalds@example.com',
-        user_id: 304,
-        full_name: 'Linus Torvalds',
-    };
-    const noah = {
-        email: 'emnoa@example.com',
-        user_id: 305,
-        full_name: 'Nöôáàh Ëmerson',
-    };
-    const plain_noah = {
-        email: 'otheremnoa@example.com',
-        user_id: 306,
-        full_name: 'Nooaah Emerson',
-    };
-
-    people.add(charles);
-    people.add(maria);
-    people.add(ashton);
-    people.add(linus);
-    people.add(noah);
-    people.add(plain_noah);
+    people.add_active_user(charles);
+    people.add_active_user(maria);
+    people.add_active_user(ashton);
+    people.add_active_user(linus);
+    people.add_active_user(noah);
+    people.add_active_user(plain_noah);
 
     const search_term = 'a';
     const users = people.get_people_for_stream_create();
@@ -440,12 +537,7 @@ run_test('filtered_users', () => {
     assert(filtered_people.has(noah.user_id));
 
     // Test filtering with undefined user
-    const foo = {
-        email: 'foo@example.com',
-        user_id: 42,
-        full_name: 'Foo Bar',
-    };
-    users.push(foo);
+    users.push(unknown_user);
 
     filtered_people = people.filter_people_by_search_terms(users, ['ltorv']);
     assert.equal(filtered_people.size, 1);
@@ -455,19 +547,12 @@ run_test('filtered_users', () => {
 people.init();
 
 run_test('multi_user_methods', () => {
-    const emp401 = {
-        email: 'emp401@example.com',
-        user_id: 401,
-        full_name: 'whatever 401',
-    };
-    const emp402 = {
-        email: 'EMP402@example.com',
-        user_id: 402,
-        full_name: 'whatever 402',
-    };
+    people.add_active_user(emp401);
+    people.add_active_user(emp402);
 
-    people.add(emp401);
-    people.add(emp402);
+    // The order of user_ids is relevant here.
+    assert.equal(emp401.user_id, 401);
+    assert.equal(emp402.user_id, 402);
 
     let emails_string = people.user_ids_string_to_emails_string('402,401');
     assert.equal(emails_string, 'emp401@example.com,emp402@example.com');
@@ -490,25 +575,63 @@ run_test('multi_user_methods', () => {
 
 initialize();
 
+run_test('concat_huddle', () => {
+    /*
+        We assume that user_ids passed in
+        to concat_huddle have already been
+        validated, so we don't need actual
+        people for these tests to pass.
+
+        That may change in the future.
+    */
+
+    const user_ids = [303, 301, 302];
+
+    assert.equal(
+        people.concat_huddle(user_ids, 304),
+        '301,302,303,304'
+    );
+
+    // IMPORTANT: we always want to sort
+    // ids numerically to create huddle strings.
+    assert.equal(
+        people.concat_huddle(user_ids, 99),
+        '99,301,302,303'
+    );
+});
+
+initialize();
+
 run_test('message_methods', () => {
-    const charles = {
-        email: 'charles@example.com',
-        user_id: 451,
-        full_name: 'Charles Dickens',
-        avatar_url: 'charles.com/foo.png',
-        is_guest: false,
-    };
-    // Maria is an intentionally incomplete user object without all attributes
-    const maria = {
-        email: 'Athens@example.com',
-        user_id: 452,
-        full_name: 'Maria Athens',
-    };
-    people.add(charles);
-    people.add(maria);
+    people.add_active_user(charles);
+    people.add_active_user(maria);
+
+    // We don't rely on Maria to have all flags set explicitly--
+    // undefined values are just treated as falsy.
+    assert.equal(maria.is_guest, undefined);
 
     assert.equal(people.small_avatar_url_for_person(maria),
                  'https://secure.gravatar.com/avatar/md5-athens@example.com?d=identicon&s=50');
+
+    assert.deepEqual(people.sender_info_with_small_avatar_urls_for_sender_ids([30]), [
+        {
+            avatar_url_small: 'https://secure.gravatar.com/avatar/md5-me@example.com?d=identicon&s=50',
+            email: 'me@example.com',
+            full_name: 'Me the Third',
+            is_admin: false,
+            is_bot: false,
+            is_guest: false,
+            profile_data: {
+                3: {
+                    rendered_value: '<p>Field value</p>',
+                    value: 'Field value',
+                },
+            },
+            timezone: 'US/Pacific',
+            user_id: 30,
+        },
+    ]);
+
     let message = {
         type: 'private',
         display_recipient: [
@@ -518,8 +641,8 @@ run_test('message_methods', () => {
         ],
         sender_id: charles.user_id,
     };
-    assert.equal(people.pm_with_url(message), '#narrow/pm-with/451,452-group');
-    assert.equal(people.pm_perma_link(message), '#narrow/pm-with/30,451,452-group');
+    assert.equal(people.pm_with_url(message), '#narrow/pm-with/301,302-group');
+    assert.equal(people.pm_perma_link(message), '#narrow/pm-with/30,301,302-group');
     assert.equal(people.pm_reply_to(message),
                  'Athens@example.com,charles@example.com');
     assert.equal(people.small_avatar_url(message),
@@ -533,8 +656,8 @@ run_test('message_methods', () => {
         ],
         avatar_url: 'legacy.png',
     };
-    assert.equal(people.pm_with_url(message), '#narrow/pm-with/452-athens');
-    assert.equal(people.pm_perma_link(message), '#narrow/pm-with/30,452-pm');
+    assert.equal(people.pm_with_url(message), '#narrow/pm-with/302-athens');
+    assert.equal(people.pm_perma_link(message), '#narrow/pm-with/30,302-pm');
     assert.equal(people.pm_reply_to(message),
                  'Athens@example.com');
     assert.equal(people.small_avatar_url(message),
@@ -577,13 +700,8 @@ run_test('message_methods', () => {
     assert.equal(people.pm_with_url(message), undefined);
 
     // Test sender_is_bot
-    const bot = {
-        email: 'bot@example.com',
-        user_id: 42,
-        full_name: 'Test Bot',
-        is_bot: true,
-    };
-    people.add(bot);
+    const bot = bot_botson;
+    people.add_active_user(bot);
 
     message = { sender_id: bot.user_id };
     assert.equal(people.sender_is_bot(message), true);
@@ -595,16 +713,9 @@ run_test('message_methods', () => {
     assert.equal(people.sender_is_bot(message), false);
 
     // Test sender_is_guest
-    const polonius = {
-        email: 'polonius@example.com',
-        user_id: 43,
-        full_name: 'Guest User',
-        is_bot: false,
-        is_guest: true,
-    };
-    people.add(polonius);
+    people.add_active_user(guest);
 
-    message = { sender_id: polonius.user_id };
+    message = { sender_id: guest.user_id };
     assert.equal(people.sender_is_guest(message), true);
 
     message = { sender_id: maria.user_id };
@@ -620,18 +731,6 @@ run_test('message_methods', () => {
 initialize();
 
 run_test('extract_people_from_message', () => {
-    const unknown_user = {
-        email: 'unknown@example.com',
-        user_id: 500,
-        unknown_local_echo_user: true,
-    };
-
-    const maria = {
-        email: 'athens@example.com',
-        user_id: 452,
-        full_name: 'Maria Athens',
-    };
-
     let message = {
         type: 'stream',
         sender_full_name: maria.full_name,
@@ -666,15 +765,10 @@ run_test('extract_people_from_message', () => {
 initialize();
 
 run_test('maybe_incr_recipient_count', () => {
-    const maria = {
-        email: 'athens@example.com',
-        user_id: 452,
-        full_name: 'Maria Athens',
-    };
     const maria_recip = {
         id: maria.user_id,
     };
-    people.add(maria);
+    people.add_active_user(maria);
 
     let message = {
         type: 'private',
@@ -717,14 +811,9 @@ run_test('maybe_incr_recipient_count', () => {
 });
 
 run_test('slugs', () => {
-    const person = {
-        email: 'deBBie71@example.com',
-        user_id: 501,
-        full_name: 'Debra Henton',
-    };
-    people.add(person);
+    people.add_active_user(debbie);
 
-    const slug = people.emails_to_slug(person.email);
+    const slug = people.emails_to_slug(debbie.email);
     assert.equal(slug, '501-debbie71');
 
     const email = people.slug_to_emails(slug);
@@ -745,7 +834,7 @@ run_test('get_people_for_search_bar', () => {
             full_name: 'James Jones',
             user_id: 1000 + i,
         };
-        people.add(person);
+        people.add_active_user(person);
     }
 
     const big_results = people.get_people_for_search_bar('James');
@@ -776,11 +865,10 @@ run_test('updates', () => {
         user_id: user_id,
         full_name: 'Foo Barson',
     };
-    people.add(person);
+    people.add_active_user(person);
 
     // Do sanity checks on our data.
     assert.equal(people.get_by_email(old_email).user_id, user_id);
-    assert.equal(people.get_active_user_for_email(old_email).user_id, user_id);
     assert (!people.is_cross_realm_email(old_email));
 
     assert.equal(people.get_by_email(new_email), undefined);
@@ -790,7 +878,6 @@ run_test('updates', () => {
 
     // Now look up using the new email.
     assert.equal(people.get_by_email(new_email).user_id, user_id);
-    assert.equal(people.get_active_user_for_email(new_email).user_id, user_id);
     assert (!people.is_cross_realm_email(new_email));
 
     const all_people = get_all_persons();
@@ -811,18 +898,8 @@ run_test('updates', () => {
 initialize();
 
 run_test('update_email_in_reply_to', () => {
-    const charles = {
-        email: 'charles@example.com',
-        user_id: 601,
-        full_name: 'Charles Dickens',
-    };
-    const maria = {
-        email: 'athens@example.com',
-        user_id: 602,
-        full_name: 'Maria Athens',
-    };
-    people.add(charles);
-    people.add(maria);
+    people.add_active_user(charles);
+    people.add_active_user(maria);
 
     let reply_to = '    charles@example.com,   athens@example.com';
     assert.equal(
@@ -844,24 +921,8 @@ run_test('update_email_in_reply_to', () => {
 initialize();
 
 run_test('track_duplicate_full_names', () => {
-    const stephen1 = {
-        email: 'stephen-the-author@example.com',
-        user_id: 601,
-        full_name: 'Stephen King',
-    };
-    const stephen2 = {
-        email: 'stephen-the-explorer@example.com',
-        user_id: 602,
-        full_name: 'Stephen King',
-    };
-    const maria = {
-        email: 'athens@example.com',
-        user_id: 603,
-        full_name: 'Maria Athens',
-    };
-
-    people.add(maria);
-    people.add(stephen1);
+    people.add_active_user(maria);
+    people.add_active_user(stephen1);
 
     assert(!people.is_duplicate_full_name('Stephen King'));
     assert.equal(
@@ -870,7 +931,7 @@ run_test('track_duplicate_full_names', () => {
     );
 
     // Now duplicate the Stephen King name.
-    people.add(stephen2);
+    people.add_active_user({...stephen2});
 
     // For duplicate names we won't try to guess which
     // user_id the person means; the UI should use
@@ -883,33 +944,28 @@ run_test('track_duplicate_full_names', () => {
     assert(people.is_duplicate_full_name('Stephen King'));
     assert(!people.is_duplicate_full_name('Maria Athens'));
     assert(!people.is_duplicate_full_name('Some Random Name'));
-    people.set_full_name(stephen2, 'Stephen King JP');
+
+    // It is somewhat janky that we have to clone
+    // stephen2 here.  It would be nice if people.set_full_name
+    // just took a user_id as the first parameter.
+    people.set_full_name({...stephen2}, 'Stephen King JP');
     assert(!people.is_duplicate_full_name('Stephen King'));
     assert(!people.is_duplicate_full_name('Stephen King JP'));
 });
 
-run_test('track_duplicate_full_names', () => {
-    const stephen1 = {
-        email: 'stephen-the-author@example.com',
-        user_id: 601,
-        full_name: 'Stephen King',
-    };
-    const stephen2 = {
-        email: 'stephen-the-explorer@example.com',
-        user_id: 602,
-        full_name: 'Stephen King',
-    };
-    const maria = {
-        email: 'athens@example.com',
-        user_id: 603,
-        full_name: 'Maria Athens',
-    };
-    people.add(stephen1);
-    people.add(stephen2);
-    people.add(maria);
+initialize();
+
+run_test('get_mention_syntax', () => {
+    people.add_active_user(stephen1);
+    people.add_active_user(stephen2);
+    people.add_active_user(maria);
+
+    assert(people.is_duplicate_full_name('Stephen King'));
 
     blueslip.expect('warn', 'get_mention_syntax called without user_id.');
     assert.equal(people.get_mention_syntax('Stephen King'), '@**Stephen King**');
+    blueslip.reset();
+
     assert.equal(people.get_mention_syntax('Stephen King', 601), '@**Stephen King|601**');
     assert.equal(people.get_mention_syntax('Stephen King', 602), '@**Stephen King|602**');
     assert.equal(people.get_mention_syntax('Maria Athens', 603), '@**Maria Athens**');
@@ -946,7 +1002,6 @@ run_test('initialize', () => {
     const my_user_id = 42;
     people.initialize(my_user_id, params);
 
-    assert.equal(people.get_active_user_for_email('alice@example.com').full_name, 'Alice');
     assert.equal(people.is_active_user_for_popover(17), true);
     assert(people.is_cross_realm_email('bot@example.com'));
     assert(people.is_valid_email_for_compose('bot@example.com'));
@@ -1034,20 +1089,8 @@ run_test('is_valid_full_name_and_user_id', () => {
 });
 
 run_test('emails_strings_to_user_ids_array', function () {
-    const steven = {
-        email: 'steven@example.com',
-        user_id: 7,
-        full_name: 'Steven',
-    };
-
-    const maria = {
-        email: 'maria@example.com',
-        user_id: 728,
-        full_name: 'Maria',
-    };
-
-    people.add(steven);
-    people.add(maria);
+    people.add_active_user(steven);
+    people.add_active_user(maria);
 
     let user_ids = people.emails_strings_to_user_ids_array(`${steven.email},${maria.email}`);
     assert.deepEqual(user_ids, [steven.user_id, maria.user_id]);
@@ -1058,21 +1101,8 @@ run_test('emails_strings_to_user_ids_array', function () {
 });
 
 run_test('get_visible_email', function () {
-    const steven = {
-        email: 'steven@example.com',
-        delivery_email: 'steven-delivery@example.com',
-        user_id: 7,
-        full_name: 'Steven',
-    };
-
-    const maria = {
-        email: 'maria@example.com',
-        user_id: 728,
-        full_name: 'Maria',
-    };
-
-    people.add(steven);
-    people.add(maria);
+    people.add_active_user(steven);
+    people.add_active_user(maria);
 
     let email = people.get_visible_email(steven);
     assert.equal(email, steven.delivery_email);
@@ -1082,36 +1112,22 @@ run_test('get_visible_email', function () {
 });
 
 run_test('get_active_message_people', function () {
-    const steven = {
-        email: 'steven@example.com',
-        user_id: 1,
-        full_name: 'Steven',
-    };
-
-    const maria = {
-        email: 'maria@example.com',
-        user_id: 2,
-        full_name: 'Maria',
-    };
-
-    const alice = {
-        email: 'alice@example.com',
-        user_id: 3,
-        full_name: 'Alice',
-    };
-
     message_store.user_ids = () => {
-        return [1, 2, 3];
+        return [
+            steven.user_id,
+            maria.user_id,
+            alice1.user_id,
+        ];
     };
 
-    people.add(steven);
-    people.add(maria);
-    people.add(alice);
+    people.add_active_user(steven);
+    people.add_active_user(maria);
+    people.add_active_user(alice1);
 
     let active_message_people = people.get_active_message_people();
-    assert.deepEqual(active_message_people, [steven, maria, alice]);
+    assert.deepEqual(active_message_people, [steven, maria, alice1]);
 
-    people.deactivate(alice);
+    people.deactivate(alice1);
     active_message_people = people.get_active_message_people();
     assert.deepEqual(active_message_people, [steven, maria]);
 });

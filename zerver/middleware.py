@@ -2,8 +2,7 @@ import cProfile
 import logging
 import time
 import traceback
-from typing import Any, AnyStr, Dict, \
-    Iterable, List, MutableMapping, Optional
+from typing import Any, AnyStr, Dict, Iterable, List, MutableMapping, Optional
 
 from django.conf import settings
 from django.core.exceptions import DisallowedHost
@@ -17,19 +16,19 @@ from django.views.csrf import csrf_failure as html_csrf_failure
 
 from zerver.lib.bugdown import get_bugdown_requests, get_bugdown_time
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
-from zerver.lib.debug import maybe_tracemalloc_listen
 from zerver.lib.db import reset_queries
+from zerver.lib.debug import maybe_tracemalloc_listen
 from zerver.lib.exceptions import ErrorCode, JsonableError, RateLimited
 from zerver.lib.html_to_text import get_content_description
-from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import RateLimitResult
 from zerver.lib.response import json_error, json_response_from_error
 from zerver.lib.subdomains import get_subdomain
-from zerver.lib.utils import statsd
 from zerver.lib.types import ViewFuncT
+from zerver.lib.utils import statsd
 from zerver.models import Realm, flush_per_request_caches, get_realm
 
 logger = logging.getLogger('zulip.requests')
+slow_query_logger = logging.getLogger('zulip.slow_queries')
 
 def record_request_stop_data(log_data: MutableMapping[str, Any]) -> None:
     log_data['time_stopped'] = time.time()
@@ -76,8 +75,8 @@ def timedelta_ms(timedelta: float) -> float:
 
 def format_timedelta(timedelta: float) -> str:
     if (timedelta >= 1):
-        return "%.1fs" % (timedelta,)
-    return "%.0fms" % (timedelta_ms(timedelta),)
+        return f"{timedelta:.1f}s"
+    return f"{timedelta_ms(timedelta):.0f}ms"
 
 def is_slow_query(time_delta: float, path: str) -> bool:
     if time_delta < 1.2:
@@ -98,7 +97,7 @@ statsd_blacklisted_requests = [
     'eventslast_event_id', 'webreq.content', 'avatar', 'user_uploads',
     'password.reset', 'static', 'json.bots', 'json.users', 'json.streams',
     'accounts.unsubscribe', 'apple-touch-icon', 'emoji', 'json.bots',
-    'upload_file', 'realm_activity', 'user_activity'
+    'upload_file', 'realm_activity', 'user_activity',
 ]
 
 def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, remote_ip: str,
@@ -114,7 +113,7 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
         if path == '/':
             statsd_path = 'webreq'
         else:
-            statsd_path = "webreq.%s" % (path[1:].replace('/', '.'),)
+            statsd_path = "webreq.{}".format(path[1:].replace('/', '.'))
             # Remove non-ascii chars from path (there should be none, if there are it's
             # because someone manually entered a nonexistent path), as UTF-8 chars make
             # statsd sad when it sends the key name over the socket
@@ -135,7 +134,7 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
         orig_time_delta = time_delta
         time_delta = ((log_data['time_stopped'] - log_data['time_started']) +
                       (time.time() - log_data['time_restarted']))
-        optional_orig_delta = " (lp: %s)" % (format_timedelta(orig_time_delta),)
+        optional_orig_delta = f" (lp: {format_timedelta(orig_time_delta)})"
     remote_cache_output = ""
     if 'remote_cache_time_start' in log_data:
         remote_cache_time_delta = get_remote_cache_time() - log_data['remote_cache_time_start']
@@ -148,16 +147,15 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
                                          log_data['remote_cache_requests_restarted'])
 
         if (remote_cache_time_delta > 0.005):
-            remote_cache_output = " (mem: %s/%s)" % (format_timedelta(remote_cache_time_delta),
-                                                     remote_cache_count_delta)
+            remote_cache_output = f" (mem: {format_timedelta(remote_cache_time_delta)}/{remote_cache_count_delta})"
 
         if not suppress_statsd:
-            statsd.timing("%s.remote_cache.time" % (statsd_path,), timedelta_ms(remote_cache_time_delta))
-            statsd.incr("%s.remote_cache.querycount" % (statsd_path,), remote_cache_count_delta)
+            statsd.timing(f"{statsd_path}.remote_cache.time", timedelta_ms(remote_cache_time_delta))
+            statsd.incr(f"{statsd_path}.remote_cache.querycount", remote_cache_count_delta)
 
     startup_output = ""
     if 'startup_time_delta' in log_data and log_data["startup_time_delta"] > 0.005:
-        startup_output = " (+start: %s)" % (format_timedelta(log_data["startup_time_delta"]),)
+        startup_output = " (+start: {})".format(format_timedelta(log_data["startup_time_delta"]))
 
     bugdown_output = ""
     if 'bugdown_time_start' in log_data:
@@ -171,51 +169,43 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
                                     log_data['bugdown_requests_restarted'])
 
         if (bugdown_time_delta > 0.005):
-            bugdown_output = " (md: %s/%s)" % (format_timedelta(bugdown_time_delta),
-                                               bugdown_count_delta)
+            bugdown_output = f" (md: {format_timedelta(bugdown_time_delta)}/{bugdown_count_delta})"
 
             if not suppress_statsd:
-                statsd.timing("%s.markdown.time" % (statsd_path,), timedelta_ms(bugdown_time_delta))
-                statsd.incr("%s.markdown.count" % (statsd_path,), bugdown_count_delta)
+                statsd.timing(f"{statsd_path}.markdown.time", timedelta_ms(bugdown_time_delta))
+                statsd.incr(f"{statsd_path}.markdown.count", bugdown_count_delta)
 
     # Get the amount of time spent doing database queries
     db_time_output = ""
     queries = connection.connection.queries if connection.connection is not None else []
     if len(queries) > 0:
         query_time = sum(float(query.get('time', 0)) for query in queries)
-        db_time_output = " (db: %s/%sq)" % (format_timedelta(query_time),
-                                            len(queries))
+        db_time_output = f" (db: {format_timedelta(query_time)}/{len(queries)}q)"
 
         if not suppress_statsd:
             # Log ms, db ms, and num queries to statsd
-            statsd.timing("%s.dbtime" % (statsd_path,), timedelta_ms(query_time))
-            statsd.incr("%s.dbq" % (statsd_path,), len(queries))
-            statsd.timing("%s.total" % (statsd_path,), timedelta_ms(time_delta))
+            statsd.timing(f"{statsd_path}.dbtime", timedelta_ms(query_time))
+            statsd.incr(f"{statsd_path}.dbq", len(queries))
+            statsd.timing(f"{statsd_path}.total", timedelta_ms(time_delta))
 
     if 'extra' in log_data:
-        extra_request_data = " %s" % (log_data['extra'],)
+        extra_request_data = " {}".format(log_data['extra'])
     else:
         extra_request_data = ""
-    logger_client = "(%s via %s)" % (requestor_for_logs, client_name)
-    logger_timing = ('%5s%s%s%s%s%s %s' %
-                     (format_timedelta(time_delta), optional_orig_delta,
-                      remote_cache_output, bugdown_output,
-                      db_time_output, startup_output, path))
-    logger_line = ('%-15s %-7s %3d %s%s %s' %
-                   (remote_ip, method, status_code,
-                    logger_timing, extra_request_data, logger_client))
+    logger_client = f"({requestor_for_logs} via {client_name})"
+    logger_timing = f'{format_timedelta(time_delta):>5}{optional_orig_delta}{remote_cache_output}{bugdown_output}{db_time_output}{startup_output} {path}'
+    logger_line = f'{remote_ip:<15} {method:<7} {status_code:3} {logger_timing}{extra_request_data} {logger_client}'
     if (status_code in [200, 304] and method == "GET" and path.startswith("/static")):
         logger.debug(logger_line)
     else:
         logger.info(logger_line)
 
     if (is_slow_query(time_delta, path)):
-        queue_json_publish("slow_queries", dict(
-            query="%s (%s)" % (logger_line, requestor_for_logs)))
+        slow_query_logger.info(logger_line)
 
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"].disable()
-        profile_path = "/tmp/profile.data.%s.%s" % (path.split("/")[-1], int(time_delta * 1000),)
+        profile_path = "/tmp/profile.data.{}.{}".format(path.split("/")[-1], int(time_delta * 1000))
         log_data["prof"].dump_stats(profile_path)
 
     # Log some additional data whenever we return certain 40x errors
@@ -276,10 +266,7 @@ class LogRequests(MiddlewareMixin):
             # intends to block, so we stop here to avoid unnecessary work.
             return response
 
-        # The reverse proxy might have sent us the real external IP
-        remote_ip = request.META.get('HTTP_X_REAL_IP')
-        if remote_ip is None:
-            remote_ip = request.META['REMOTE_ADDR']
+        remote_ip = request.META['REMOTE_ADDR']
 
         # Get the requestor's identifier and client, if available.
         try:
@@ -288,7 +275,7 @@ class LogRequests(MiddlewareMixin):
             if hasattr(request, 'user') and hasattr(request.user, 'format_requestor_for_logs'):
                 requestor_for_logs = request.user.format_requestor_for_logs()
             else:
-                requestor_for_logs = "unauth@%s" % (get_subdomain(request) or 'root',)
+                requestor_for_logs = "unauth@{}".format(get_subdomain(request) or 'root')
         try:
             client = request.client.name
         except Exception:
@@ -375,7 +362,7 @@ class RateLimitMiddleware(MiddlewareMixin):
             resp = json_error(
                 _("API usage exceeded rate limit"),
                 data={'retry-after': secs_to_freedom},
-                status=429
+                status=429,
             )
             resp['Retry-After'] = secs_to_freedom
             return resp

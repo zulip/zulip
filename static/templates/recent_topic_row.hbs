@@ -1,0 +1,37 @@
+<tr id="recent_topic:{{topic_key}}" data-unread-count="{{unread_count}}" data-muted="{{muted}}" data-participated="{{participated}}">
+    <td class="recent_topic_stream">
+        <span id="stream_sidebar_privacy_swatch_{{stream_id}}" class="stream-privacy filter-icon" style="color: {{stream_color}}">
+            {{> stream_privacy }}
+        </span>
+        <a href="{{stream_url}}">{{stream}}</a>
+    </td>
+    <td class="recent_topic_name">
+        <a href="{{topic_url}}">{{topic}}</a>
+        {{#if unread_count}}<span class="recent_topic_unread_count">{{unread_count}}</span>{{/if}}
+    </td>
+    <td class="recent_topic_actions">
+        {{#if topic_muted}}
+        <i class="fa fa-bell-slash on_hover_topic_unmute recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Unmute topic' }}" role="button" tabindex="0" aria-label="{{t 'Mute topic' }}"></i>
+        {{else}}
+        <i class="fa fa-bell-slash on_hover_topic_mute recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Mute topic' }}" role="button" tabindex="0" aria-label="{{t 'Mute topic' }}"></i>
+        {{/if}}
+        <i class="fa fa-check-circle on_hover_topic_read recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}"></i>
+    </td>
+    <td class='recent_topic_users'>
+        <ul class="recent_avatars">
+            {{#if other_senders_count}}
+            <li class="recent_avatars_item">
+                <span class="recent_avatars_others">+{{other_senders_count}}</span>
+            </li>
+            {{/if}}
+            {{#each senders}}
+            <li class="recent_avatars_item" title="{{this.full_name}}">
+                <img src="{{this.avatar_url_small}}" class="recent_avatars_img" />
+            </li>
+            {{/each}}
+        </ul>
+    </td>
+    <td class="recent_topic_timestamp">
+        {{ last_msg_time }}
+    </td>
+</tr>

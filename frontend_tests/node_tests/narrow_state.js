@@ -163,8 +163,8 @@ run_test('set_compose_defaults', () => {
         user_id: 57,
         full_name: 'John Doe',
     };
-    people.add(john);
-    people.add(john);
+    people.add_active_user(john);
+    people.add_active_user(john);
 
     set_filter([['pm-with', 'john@doe.com']]);
     pm_test = narrow_state.set_compose_defaults();
@@ -187,7 +187,7 @@ run_test('update_email', () => {
         full_name: 'Steve',
     };
 
-    people.add(steve);
+    people.add_active_user(steve);
     set_filter([
         ['pm-with', 'steve@foo.com'],
         ['sender', 'steve@foo.com'],
@@ -267,8 +267,8 @@ run_test('pm_string', () => {
         full_name: 'Bob',
     };
 
-    people.add(alice);
-    people.add(bob);
+    people.add_active_user(alice);
+    people.add_active_user(bob);
 
     set_filter([['pm-with', 'bob@foo.com,alice@foo.com']]);
     assert.equal(narrow_state.pm_string(), '444,555');

@@ -1,4 +1,4 @@
-from mock import MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -26,7 +26,7 @@ New company **Kandra Labs** created:
         self.send_and_test_stream_message(
             'company_created',
             expected_topic,
-            expected_message
+            expected_message,
         )
 
     def test_contact_added_email(self) -> None:
@@ -35,7 +35,7 @@ New company **Kandra Labs** created:
         self.send_and_test_stream_message(
             'contact_added_email',
             expected_topic,
-            expected_message
+            expected_message,
         )
 
     def test_contact_created(self) -> None:
@@ -49,7 +49,7 @@ New contact created:
         self.send_and_test_stream_message(
             'contact_created',
             expected_topic,
-            expected_message
+            expected_message,
         )
 
     def test_contact_signed_up(self) -> None:
@@ -62,7 +62,7 @@ Contact signed up:
         self.send_and_test_stream_message(
             'contact_signed_up',
             expected_topic,
-            expected_message
+            expected_message,
         )
 
     def test_contact_tag_created(self) -> None:
@@ -71,7 +71,7 @@ Contact signed up:
         self.send_and_test_stream_message(
             'contact_tag_created',
             expected_topic,
-            expected_message
+            expected_message,
         )
 
     def test_contact_tag_deleted(self) -> None:
@@ -80,7 +80,7 @@ Contact signed up:
         self.send_and_test_stream_message(
             'contact_tag_deleted',
             expected_topic,
-            expected_message
+            expected_message,
         )
 
     def test_conversation_admin_assigned(self) -> None:
@@ -89,7 +89,7 @@ Contact signed up:
         self.send_and_test_stream_message(
             'conversation_admin_assigned',
             expected_topic,
-            expected_message
+            expected_message,
         )
 
     def test_conversation_admin_opened(self) -> None:
@@ -98,7 +98,7 @@ Contact signed up:
         self.send_and_test_stream_message(
             'conversation_admin_opened',
             expected_topic,
-            expected_message
+            expected_message,
         )
 
     def test_conversation_admin_closed(self) -> None:
@@ -107,7 +107,7 @@ Contact signed up:
         self.send_and_test_stream_message(
             'conversation_admin_closed',
             expected_topic,
-            expected_message
+            expected_message,
         )
 
     def test_conversation_admin_snoozed(self) -> None:
@@ -116,7 +116,7 @@ Contact signed up:
         self.send_and_test_stream_message(
             'conversation_admin_snoozed',
             expected_topic,
-            expected_message
+            expected_message,
         )
 
     def test_conversation_admin_unsnoozed(self) -> None:
@@ -125,7 +125,7 @@ Contact signed up:
         self.send_and_test_stream_message(
             'conversation_admin_unsnoozed',
             expected_topic,
-            expected_message
+            expected_message,
         )
 
     def test_conversation_admin_replied(self) -> None:
@@ -140,7 +140,7 @@ Hey Eeshan! How can I help?
         self.send_and_test_stream_message(
             'conversation_admin_replied',
             expected_topic,
-            expected_message
+            expected_message,
         )
 
     def test_conversation_admin_noted(self) -> None:
@@ -155,7 +155,7 @@ Talk to Tim about this user's query.
         self.send_and_test_stream_message(
             'conversation_admin_noted',
             expected_topic,
-            expected_message
+            expected_message,
         )
 
     def test_conversation_admin_single_created(self) -> None:
@@ -170,7 +170,7 @@ Hi Eeshan, What's up
         self.send_and_test_stream_message(
             'conversation_admin_single_created',
             expected_topic,
-            expected_message
+            expected_message,
         )
 
     def test_conversation_user_created(self) -> None:
@@ -185,7 +185,7 @@ Hello everyone!
         self.send_and_test_stream_message(
             'conversation_user_created',
             expected_topic,
-            expected_message
+            expected_message,
         )
 
     def test_conversation_user_replied(self) -> None:
@@ -200,7 +200,7 @@ Well, I need some help getting access to a developer account.
         self.send_and_test_stream_message(
             'conversation_user_replied',
             expected_topic,
-            expected_message
+            expected_message,
         )
 
     def test_event_created(self) -> None:
@@ -209,7 +209,7 @@ Well, I need some help getting access to a developer account.
         self.send_and_test_stream_message(
             'event_created',
             expected_topic,
-            expected_message
+            expected_message,
         )
 
     def test_user_created(self) -> None:
@@ -223,28 +223,28 @@ New user created:
         self.send_and_test_stream_message(
             'user_created',
             expected_topic,
-            expected_message
+            expected_message,
         )
 
     def test_user_deleted(self) -> None:
         self.send_and_test_stream_message(
             'user_deleted',
             'User: jerryguitarist@gmail.com',
-            'User deleted.'
+            'User deleted.',
         )
 
     def test_user_email_updated(self) -> None:
         self.send_and_test_stream_message(
             'user_email_updated',
             'Contact: Azure Bus from St. John\'s',
-            'User\'s email was updated to aaron@zulip.com.'
+            'User\'s email was updated to aaron@zulip.com.',
         )
 
     def test_user_tag_created(self) -> None:
         self.send_and_test_stream_message(
             'user_tag_created',
             'User: eeshangarg',
-            'The tag `developer` was added to the user.'
+            'The tag `developer` was added to the user.',
         )
 
     def test_user_tag_deleted(self) -> None:
@@ -254,14 +254,14 @@ New user created:
         self.send_and_test_stream_message(
             'user_tag_deleted',
             expected_topic,
-            expected_message
+            expected_message,
         )
 
     def test_user_unsubscribed(self) -> None:
         self.send_and_test_stream_message(
             'user_unsubscribed',
             'Contact: Eeshan Garg',
-            'User unsubscribed from emails.'
+            'User unsubscribed from emails.',
         )
 
     def get_body(self, fixture_name: str) -> str:

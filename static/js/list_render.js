@@ -4,25 +4,65 @@ const DEFAULTS = {
     instances: new Map(),
 };
 
-exports.filter = (value, list, opts) => {
+
+// ----------------------------------------------------
+// This function describes (programatically) how to use
+// the list_render widget.
+// ----------------------------------------------------
+
+exports.validate_opts = (opts) => {
+    if (opts.html_selector && typeof opts.html_selector !== 'function') {
+        // We have an html_selector, but it is not a function.
+        // This is a programming error.
+        blueslip.error('html_selector should be a function.');
+        return false;
+    }
+    return true;
+};
+
+exports.get_filtered_items = (value, list, opts) => {
     /*
         This is used by the main object (see `create`),
         but we split it out to make it a bit easier
         to test.
     */
+    const get_item = opts.get_item;
+
     if (!opts.filter) {
+        if (get_item) {
+            return list.map(get_item);
+        }
         return [...list];
     }
 
     if (opts.filter.filterer) {
+        if (get_item) {
+            return opts.filter.filterer(
+                list.map(get_item),
+                value
+            );
+        }
         return opts.filter.filterer(list, value);
     }
 
-    const predicate = opts.filter.predicate;
+    const predicate = (item) => {
+        return opts.filter.predicate(item, value);
+    };
 
-    return list.filter(function (item) {
-        return predicate(item, value);
-    });
+    if (get_item) {
+        const result = [];
+
+        for (const key of list) {
+            const item = get_item(key);
+            if (predicate(item)) {
+                result.push(item);
+            }
+        }
+
+        return result;
+    }
+
+    return list.filter(predicate);
 };
 
 exports.alphabetic_sort = (prop) => {
@@ -86,6 +126,10 @@ exports.create = function ($container, list, opts) {
         return;
     }
 
+    if (!exports.validate_opts(opts)) {
+        return;
+    }
+
     if (opts.name && DEFAULTS.instances.get(opts.name)) {
         // Clear event handlers for prior widget.
         const old_widget = DEFAULTS.instances.get(opts.name);
@@ -110,10 +154,15 @@ exports.create = function ($container, list, opts) {
         return;
     }
 
+    if (opts.get_item && typeof opts.get_item !== 'function') {
+        blueslip.error('get_item should be a function');
+        return;
+    }
+
     const widget = {};
 
     widget.filter_and_sort = function () {
-        meta.filtered_list = exports.filter(
+        meta.filtered_list = exports.get_filtered_items(
             meta.filter_value,
             meta.list,
             opts
@@ -163,6 +212,32 @@ exports.create = function ($container, list, opts) {
 
         $container.append($(html));
         meta.offset += load_count;
+    };
+
+    widget.render_item = (item) => {
+        if (!opts.html_selector) {
+            // We don't have any way to find the existing item.
+            return;
+        }
+        const html_item = meta.scroll_container.find(opts.html_selector(item));
+        if (!html_item) {
+            // We don't have the item in the current scroll container; it'll be
+            // rendered with updated data when it is scrolled to.
+            return;
+        }
+
+        if (opts.get_item) {
+            item = opts.get_item(item);
+        }
+        const html = opts.modifier(item);
+        if (typeof html !== 'string') {
+            blueslip.error('List item is not a string: ' + html);
+            return;
+        }
+
+        // At this point, we have asserted we have all the information to replace
+        // the html now.
+        html_item.replaceWith(html);
     };
 
     widget.clear = function () {

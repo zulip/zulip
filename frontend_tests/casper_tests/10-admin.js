@@ -335,18 +335,18 @@ casper.then(function () {
 // Test uploading realm icon image
 casper.then(function () {
     casper.click("li[data-section='organization-profile']");
-    var selector = 'img#realm-settings-icon[src^="https://secure.gravatar.com/avatar/"]';
+    var selector = '#realm-icon-upload-widget .image-block[src^="https://secure.gravatar.com/avatar/"]';
     casper.waitUntilVisible(selector, function () {
-        casper.test.assertEqual(casper.visible('#realm_icon_delete_button'), false);
+        casper.test.assertEqual(casper.visible('#realm-icon-upload-widget .settings-page-delete-button'), false);
         // Hack: Rather than submitting the form, we just fill the
         // form and then trigger a click event by clicking the button.
         casper.fill('form.admin-realm-form', {
-            realm_icon_file_input: 'static/images/logo/zulip-icon-128x128.png',
+            file_input: 'static/images/logo/zulip-icon-128x128.png',
         }, false);
-        casper.click("#realm_icon_upload_button");
-        casper.waitWhileVisible("#upload_icon_spinner .loading_indicator_spinner", function () {
-            casper.test.assertExists('img#realm-settings-icon[src^="/user_avatars/2/realm/icon.png?version=2"]');
-            casper.test.assertEqual(casper.visible('#realm_icon_delete_button'), true);
+        casper.click("#realm-icon-upload-widget .image_upload_button");
+        casper.waitWhileVisible("#realm-icon-upload-widget .upload-spinner-background", function () {
+            casper.test.assertExists('#realm-icon-upload-widget .image-block[src^="/user_avatars/2/realm/icon.png?version=2"]');
+            casper.test.assertEqual(casper.visible('#realm-icon-upload-widget .settings-page-delete-button'), true);
         });
     });
 });
@@ -354,11 +354,11 @@ casper.then(function () {
 // Test deleting realm icon image
 casper.then(function () {
     casper.click("li[data-section='organization-profile']");
-    casper.click("#realm_icon_delete_button");
-    casper.test.assertEqual(casper.visible('#realm_icon_delete_button'), true);
-    casper.waitWhileVisible('#realm_icon_delete_button', function () {
-        casper.test.assertExists('img#realm-settings-icon[src^="https://secure.gravatar.com/avatar/"]');
-        casper.test.assertEqual(casper.visible('#realm_icon_delete_button'), false);
+    casper.click("#realm-icon-upload-widget .settings-page-delete-button");
+    casper.test.assertEqual(casper.visible('#realm-icon-upload-widget .settings-page-delete-button'), true);
+    casper.waitWhileVisible('#realm-icon-upload-widget .settings-page-delete-button', function () {
+        casper.test.assertExists('#realm-icon-upload-widget .image-block[src^="https://secure.gravatar.com/avatar/"]');
+        casper.test.assertEqual(casper.visible('#realm-icon-upload-widget .settings-page-delete-button'), false);
     });
 });
 

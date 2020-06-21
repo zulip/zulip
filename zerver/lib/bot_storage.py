@@ -1,10 +1,12 @@
+from typing import List, Optional, Tuple
+
 from django.conf import settings
 from django.db.models import Sum
-from django.db.models.query import F
 from django.db.models.functions import Length
+from django.db.models.query import F
+
 from zerver.models import BotStorageData, UserProfile
 
-from typing import Optional, List, Tuple
 
 class StateError(Exception):
     pass
@@ -31,9 +33,9 @@ def set_bot_storage(bot_profile: UserProfile, entries: List[Tuple[str, str]]) ->
     storage_size_difference = 0
     for key, value in entries:
         if not isinstance(key, str):
-            raise StateError("Key type is {}, but should be str.".format(type(key)))
+            raise StateError(f"Key type is {type(key)}, but should be str.")
         if not isinstance(value, str):
-            raise StateError("Value type is {}, but should be str.".format(type(value)))
+            raise StateError(f"Value type is {type(value)}, but should be str.")
         storage_size_difference += (len(key) + len(value)) - get_bot_storage_size(bot_profile, key)
     new_storage_size = get_bot_storage_size(bot_profile) + storage_size_difference
     if new_storage_size > storage_size_limit:

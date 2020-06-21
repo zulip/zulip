@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-import xml.etree.ElementTree as ET
 import subprocess
+from xml.etree import ElementTree as ET
 
 # Generates the favicon images containing unread message counts.
 
 # Open the SVG and find the number text elements using XPath
 tree = ET.parse('orig.svg')
 elems = [tree.getroot().findall(
-    ".//*[@id='%s']/{http://www.w3.org/2000/svg}tspan" % (name,))[0]
+    f".//*[@id='{name}']/{{http://www.w3.org/2000/svg}}tspan")[0]
     for name in ('number_back', 'number_front')]
 
 for i in range(1, 100):
     # Prepare a modified SVG
-    s = '%2d' % (i,)
+    s = f'{i:2}'
     for e in elems:
         e.text = s
     with open('tmp.svg', 'wb') as out:
@@ -20,5 +20,5 @@ for i in range(1, 100):
 
     # Convert to PNG
     subprocess.check_call(['inkscape', '--without-gui', '--export-area-page',
-                           '--export-png=../../../static/images/favicon/favicon-%d.png' % (i,),
+                           f'--export-png=../../../static/images/favicon/favicon-{i}.png',
                            'tmp.svg'])

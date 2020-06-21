@@ -1,6 +1,5 @@
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
+from zerver.lib.test_classes import ZulipTestCase
+
 
 class LegacySubjectTest(ZulipTestCase):
     def test_legacy_subject(self) -> None:

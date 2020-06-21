@@ -20,12 +20,12 @@ def get_message_data(payload: Dict[str, Any]) -> Tuple[str, str, str, str]:
 def get_source_name(payload: Dict[str, Any]) -> str:
     first_name = payload['source']['data']['first_name']
     last_name = payload['source']['data']['last_name']
-    return "%s %s" % (first_name, last_name)
+    return f"{first_name} {last_name}"
 
 def get_target_name(payload: Dict[str, Any]) -> str:
     first_name = payload['target']['data']['first_name']
     last_name = payload['target']['data']['last_name']
-    return "%s %s" % (first_name, last_name)
+    return f"{first_name} {last_name}"
 
 def get_inbound_message_body(payload: Dict[str, Any]) -> str:
     link, outbox, inbox, subject = get_message_data(payload)
@@ -63,33 +63,33 @@ def get_conversation_assigned_body(payload: Dict[str, Any]) -> str:
 
 def get_conversation_unassigned_body(payload: Dict[str, Any]) -> str:
     name = get_source_name(payload)
-    return "Unassigned by **{name}**.".format(name=name)
+    return f"Unassigned by **{name}**."
 
 def get_conversation_archived_body(payload: Dict[str, Any]) -> str:
     name = get_source_name(payload)
-    return "Archived by **{name}**.".format(name=name)
+    return f"Archived by **{name}**."
 
 def get_conversation_reopened_body(payload: Dict[str, Any]) -> str:
     name = get_source_name(payload)
-    return "Reopened by **{name}**.".format(name=name)
+    return f"Reopened by **{name}**."
 
 def get_conversation_deleted_body(payload: Dict[str, Any]) -> str:
     name = get_source_name(payload)
-    return "Deleted by **{name}**.".format(name=name)
+    return f"Deleted by **{name}**."
 
 def get_conversation_restored_body(payload: Dict[str, Any]) -> str:
     name = get_source_name(payload)
-    return "Restored by **{name}**.".format(name=name)
+    return f"Restored by **{name}**."
 
 def get_conversation_tagged_body(payload: Dict[str, Any]) -> str:
     name = get_source_name(payload)
     tag = payload['target']['data']['name']
-    return "**{name}** added tag **{tag}**.".format(name=name, tag=tag)
+    return f"**{name}** added tag **{tag}**."
 
 def get_conversation_untagged_body(payload: Dict[str, Any]) -> str:
     name = get_source_name(payload)
     tag = payload['target']['data']['name']
-    return "**{name}** removed tag **{tag}**.".format(name=name, tag=tag)
+    return f"**{name}** removed tag **{tag}**."
 
 EVENT_FUNCTION_MAPPER = {
     'inbound': get_inbound_message_body,
@@ -104,7 +104,7 @@ EVENT_FUNCTION_MAPPER = {
     'trash': get_conversation_deleted_body,
     'restore': get_conversation_restored_body,
     'tag': get_conversation_tagged_body,
-    'untag': get_conversation_untagged_body
+    'untag': get_conversation_untagged_body,
 }
 
 def get_body_based_on_event(event: str) -> Any:

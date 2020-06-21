@@ -6,8 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import UnexpectedWebhookEventType, \
-    check_send_webhook_message
+from zerver.lib.webhooks.common import UnexpectedWebhookEventType, check_send_webhook_message
 from zerver.models import UserProfile
 
 EPIC_NAME_TEMPLATE = "**{name}**"
@@ -129,7 +128,7 @@ def get_comment_added_body(payload: Dict[str, Any], entity: str) -> str:
         elif action["entity_type"] == entity:
             name_template = get_name_template(entity).format(
                 name=action["name"],
-                app_url=action.get("app_url")
+                app_url=action.get("app_url"),
             )
             kwargs["name_template"] = name_template
 
@@ -145,8 +144,8 @@ def get_update_description_body(payload: Dict[str, Any], entity: str) -> str:
         "old": desc["old"],
         "name_template": get_name_template(entity).format(
             name=action["name"],
-            app_url=action.get("app_url")
-        )
+            app_url=action.get("app_url"),
+        ),
     }
 
     if kwargs["new"] and kwargs["old"]:
@@ -165,7 +164,7 @@ def get_epic_update_state_body(payload: Dict[str, Any]) -> str:
         "entity": "epic",
         "new": state["new"],
         "old": state["old"],
-        "name_template": EPIC_NAME_TEMPLATE.format(name=action["name"])
+        "name_template": EPIC_NAME_TEMPLATE.format(name=action["name"]),
     }
 
     return STATE_CHANGED_TEMPLATE.format(**kwargs)
@@ -189,7 +188,7 @@ def get_story_update_state_body(payload: Dict[str, Any]) -> str:
         "name_template": STORY_NAME_TEMPLATE.format(
             name=action["name"],
             app_url=action.get("app_url"),
-        )
+        ),
     }
 
     return STATE_CHANGED_TEMPLATE.format(**kwargs)
@@ -203,8 +202,8 @@ def get_update_name_body(payload: Dict[str, Any], entity: str) -> str:
         "old": name["old"],
         "name_template": get_name_template(entity).format(
             name=action["name"],
-            app_url=action.get("app_url")
-        )
+            app_url=action.get("app_url"),
+        ),
     }
 
     return NAME_CHANGED_TEMPLATE.format(**kwargs)
@@ -221,7 +220,7 @@ def get_update_archived_body(payload: Dict[str, Any], entity: str) -> str:
         "entity": entity,
         "name_template": get_name_template(entity).format(
             name=primary_action["name"],
-            app_url=primary_action.get("app_url")
+            app_url=primary_action.get("app_url"),
         ),
         "action": action,
     }
@@ -271,7 +270,7 @@ def get_story_update_epic_body(payload: Dict[str, Any]) -> str:
     kwargs = {
         "story_name_template": STORY_NAME_TEMPLATE.format(
             name=action["name"],
-            app_url=action["app_url"]
+            app_url=action["app_url"],
         ),
     }
 
@@ -304,13 +303,13 @@ def get_story_update_estimate_body(payload: Dict[str, Any]) -> str:
     kwargs = {
         "story_name_template": STORY_NAME_TEMPLATE.format(
             name=action["name"],
-            app_url=action["app_url"]
+            app_url=action["app_url"],
         ),
     }
 
     new = action["changes"]["estimate"].get("new")
     if new:
-        kwargs["estimate"] = "{} points".format(new)
+        kwargs["estimate"] = f"{new} points"
     else:
         kwargs["estimate"] = "*Unestimated*"
 
@@ -356,8 +355,8 @@ def get_story_update_attachment_body(payload: Dict[str, Any]) -> Optional[str]:
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(
             name=action["name"],
-            app_url=action["app_url"]
-        )
+            app_url=action["app_url"],
+        ),
     }
     file_ids_added = action["changes"]["file_ids"].get("adds")
 
@@ -381,8 +380,8 @@ def get_story_label_body(payload: Dict[str, Any]) -> Optional[str]:
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(
             name=action["name"],
-            app_url=action["app_url"]
-        )
+            app_url=action["app_url"],
+        ),
     }
     label_ids_added = action["changes"]["label_ids"].get("adds")
 
@@ -411,8 +410,8 @@ def get_story_update_project_body(payload: Dict[str, Any]) -> str:
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(
             name=action["name"],
-            app_url=action["app_url"]
-        )
+            app_url=action["app_url"],
+        ),
     }
 
     new_project_id = action["changes"]["project_id"]["new"]
@@ -430,10 +429,10 @@ def get_story_update_type_body(payload: Dict[str, Any]) -> str:
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(
             name=action["name"],
-            app_url=action["app_url"]
+            app_url=action["app_url"],
         ),
         "new_type": action["changes"]["story_type"]["new"],
-        "old_type": action["changes"]["story_type"]["old"]
+        "old_type": action["changes"]["story_type"]["old"],
     }
 
     return STORY_UPDATE_TYPE_TEMPLATE.format(**kwargs)
@@ -443,8 +442,8 @@ def get_story_update_owner_body(payload: Dict[str, Any]) -> str:
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(
             name=action["name"],
-            app_url=action["app_url"]
-        )
+            app_url=action["app_url"],
+        ),
     }
 
     return STORY_UPDATE_OWNER_TEMPLATE.format(**kwargs)
@@ -517,7 +516,7 @@ IGNORED_EVENTS = {
 @has_request_variables
 def api_clubhouse_webhook(
         request: HttpRequest, user_profile: UserProfile,
-        payload: Optional[Dict[str, Any]]=REQ(argument_type='body')
+        payload: Optional[Dict[str, Any]]=REQ(argument_type='body'),
 ) -> HttpResponse:
 
     # Clubhouse has a tendency to send empty POST requests to

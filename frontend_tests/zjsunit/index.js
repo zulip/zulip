@@ -44,6 +44,7 @@ global.to_$ = () => window;
 
 // Set up stub helpers.
 const stub = require('./stub.js');
+global.make_stub = stub.make_stub;
 global.with_stub = stub.with_stub;
 
 // Set up fake jQuery
@@ -63,9 +64,8 @@ global.stub_templates = handlebars.stub_templates;
 const noop = function () {};
 
 // Set up fake module.hot
-// eslint-disable-next-line no-native-reassign
-module = require('module');
-module.prototype.hot = {
+const Module = require('module');
+Module.prototype.hot = {
     accept: noop,
 };
 

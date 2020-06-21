@@ -1,16 +1,16 @@
+from typing import Iterable, Optional, Tuple
+
 from django.conf import settings
 
 from zerver.lib.bulk_create import bulk_create_users
-from zerver.models import Realm, UserProfile, email_to_username, get_client, \
-    get_system_bot
+from zerver.models import Realm, UserProfile, email_to_username, get_client, get_system_bot
 
-from typing import Iterable, Optional, Tuple
 
 def server_initialized() -> bool:
     return Realm.objects.exists()
 
 def create_internal_realm() -> None:
-    from zerver.lib.actions import do_change_is_admin
+    from zerver.lib.actions import do_change_is_api_super_user
 
     realm = Realm.objects.create(string_id=settings.SYSTEM_BOT_REALM)
 
@@ -33,7 +33,7 @@ def create_internal_realm() -> None:
 
     # Initialize the email gateway bot as an API Super User
     email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT)
-    do_change_is_admin(email_gateway_bot, True, permission="api_super_user")
+    do_change_is_api_super_user(email_gateway_bot, True)
 
 def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]],
                  tos_version: Optional[str]=None,

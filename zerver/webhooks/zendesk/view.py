@@ -23,6 +23,6 @@ def api_zendesk_webhook(request: HttpRequest, user_profile: UserProfile,
     ticket_id and ticket_title to create a subject. And passes with zendesk
     user's configured message to zulip.
     """
-    subject = truncate('#%s: %s' % (ticket_id, ticket_title), 60)
+    subject = truncate(f'#{ticket_id}: {ticket_title}', 60)
     check_send_webhook_message(request, user_profile, subject, message)
     return json_success()

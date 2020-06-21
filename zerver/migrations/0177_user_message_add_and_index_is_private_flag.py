@@ -42,7 +42,7 @@ def reset_is_private_flag(
         i += 1
         if (i % 50 == 0 or i == total):
             percent = round((i / total) * 100, 2)
-            print("Processed %s/%s %s%%" % (i, total, percent))
+            print(f"Processed {i}/{total} {percent}%")
             sys.stdout.flush()
 
 class Migration(migrations.Migration):
@@ -69,7 +69,7 @@ class Migration(migrations.Migration):
                 ON zerver_usermessage (user_profile_id, message_id)
                 WHERE (flags & 2048) != 0;
             ''',
-            reverse_sql='DROP INDEX zerver_usermessage_is_private_message_id;'
+            reverse_sql='DROP INDEX zerver_usermessage_is_private_message_id;',
         ),
         migrations.RunPython(reset_is_private_flag,
                              reverse_code=migrations.RunPython.noop,

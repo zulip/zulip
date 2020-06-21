@@ -1,8 +1,9 @@
-from bs4 import BeautifulSoup
 from unittest import TestCase
 
-from tools.lib.capitalization import check_capitalization, is_capitalized, \
-    get_safe_text
+from bs4 import BeautifulSoup
+
+from tools.lib.capitalization import check_capitalization, get_safe_text, is_capitalized
+
 
 class GetSafeTextTestCase(TestCase):
     def test_get_safe_text(self) -> None:

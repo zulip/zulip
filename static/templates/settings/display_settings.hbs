@@ -21,6 +21,14 @@
             <h3 class="inline-block">{{t "Display settings" }}</h3>
             <div class="alert-notification" id="display-settings-status"></div>
 
+            <div class="input-group">
+                <label for="color_scheme" class="dropdown-title">{{t "Color scheme" }}
+                </label>
+                <select name="color_scheme" id="color_scheme">
+                    {{> dropdown_options_widget option_values=color_scheme_values}}
+                </select>
+            </div>
+
             {{#each display_settings.settings.user_display_settings}}
             {{> settings_checkbox
               setting_name=this
@@ -31,9 +39,7 @@
 
             <div class="input-group">
                 <label for="demote_inactive_streams" class="dropdown-title">{{t "Demote inactive streams" }}
-                    <a href="/help/manage-inactive-streams" target="_blank">
-                        <i class="fa fa-question-circle-o" aria-hidden="true"></i>
-                    </a>
+                    {{> ../help_link_widget link="/help/manage-inactive-streams" }}
                 </label>
                 <select name="demote_inactive_streams" id="demote_inactive_streams">
                     {{> dropdown_options_widget option_values=demote_inactive_streams_values}}
@@ -69,7 +75,7 @@
         </div>
 
         <div id="user-emoji-settings">
-            <h3 class="inline-block light">Emoji settings</h3>
+            <h3 class="inline-block light">{{t "Emoji settings" }}</h3>
             <div class="alert-notification" id="emoji-settings-status"></div>
 
             <div class="input-group">

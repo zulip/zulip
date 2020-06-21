@@ -1,4 +1,4 @@
-# Create User Group
+# Create a user group
 
 {generate_api_description(/user_groups/create:post)}
 
@@ -15,7 +15,7 @@
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
 {generate_api_arguments_table|zulip.yaml|/user_groups/create:post}
 

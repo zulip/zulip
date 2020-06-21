@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
-
 import glob
 import os
-import sys
 import shutil
+import sys
 from typing import List
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if ZULIP_PATH not in sys.path:
     sys.path.append(ZULIP_PATH)
 from scripts.lib.setup_path import setup_path
+
 setup_path()
 
 from zulip_bots.lib import get_bots_directory_path
+
 
 def generate_zulip_bots_static_files() -> None:
     bots_dir = 'static/generated/bots'

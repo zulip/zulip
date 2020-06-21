@@ -151,8 +151,9 @@ casper.then(function () {
     casper.test.assertSelectorHasText('.description', 'Oimeesaw');
     // Based on the selected checkboxes while creating stream,
     // 4 users from Scotland are added.
-    // 1 user, Cordelia, is added. Othello (subscribed to Scotland) is not added twice.
-    casper.test.assertSelectorHasText('.subscriber-count-text', '5');
+    // 1 user, Cordelia, is added. Othello (subscribed to Scotland) is removed.
+    // FIXME: This assertion may pick up the count from a random other stream.
+    casper.test.assertSelectorHasText('.subscriber-count-text', '4');
     casper.fill('form#stream_creation_form', {stream_name: '  '});
     casper.click('form#stream_creation_form button.button.sea-green');
 });

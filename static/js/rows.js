@@ -111,13 +111,13 @@ exports.local_echo_id = function (message_row) {
     return zid;
 };
 
-const valid_table_names = {
-    zhome: true,
-    zfilt: true,
-};
+const valid_table_names = new Set([
+    "zhome",
+    "zfilt",
+]);
 
 exports.get_table = function (table_name) {
-    if (!valid_table_names.hasOwnProperty(table_name)) {
+    if (!valid_table_names.has(table_name)) {
         return $();
     }
 

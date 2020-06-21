@@ -5,14 +5,22 @@ from django.conf import settings
 from zerver.lib.upload import upload_backend
 from zerver.models import Realm
 
-def get_realm_logo_url(realm: Realm, night: bool) -> str:
+
+def get_realm_logo_source(realm: Realm, night: bool) -> str:
+    if realm.plan_type == Realm.LIMITED:
+        return Realm.LOGO_DEFAULT
     if night:
-        logo_source = realm.night_logo_source
-        logo_version = realm.night_logo_version
-    else:
-        logo_source = realm.logo_source
-        logo_version = realm.logo_version
-    if logo_source == 'U':
+        return realm.night_logo_source
+    return realm.logo_source
+
+def get_realm_logo_url(realm: Realm, night: bool) -> str:
+    logo_source = get_realm_logo_source(realm, night)
+
+    if logo_source == Realm.LOGO_UPLOADED:
+        if night:
+            logo_version = realm.night_logo_version
+        else:
+            logo_version = realm.logo_version
         return upload_backend.get_realm_logo_url(realm.id, logo_version, night)
     return settings.DEFAULT_LOGO_URI+'?version=0'
 

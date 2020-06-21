@@ -7,8 +7,7 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_dict
 from zerver.lib.webhooks.common import check_send_webhook_message
-from zerver.lib.webhooks.git import TOPIC_WITH_BRANCH_TEMPLATE, \
-    get_push_commits_event_message
+from zerver.lib.webhooks.git import TOPIC_WITH_BRANCH_TEMPLATE, get_push_commits_event_message
 from zerver.models import UserProfile
 
 
@@ -27,7 +26,7 @@ def api_bitbucket_webhook(request: HttpRequest, user_profile: UserProfile,
             'url': '{}{}commits/{}'.format(
                 payload.get('canon_url'),
                 repository.get('absolute_url'),
-                commit.get('raw_node'))
+                commit.get('raw_node')),
         }
         for commit in payload['commits']
     ]
@@ -36,9 +35,10 @@ def api_bitbucket_webhook(request: HttpRequest, user_profile: UserProfile,
         # Bitbucket doesn't give us enough information to really give
         # a useful message :/
         subject = repository['name']
-        content = ("%s [force pushed](%s)."
-                   % (payload.get('user', 'Someone'),
-                      payload['canon_url'] + repository['absolute_url']))
+        content = "{} [force pushed]({}).".format(
+            payload.get('user', 'Someone'),
+            payload['canon_url'] + repository['absolute_url'],
+        )
     else:
         branch = payload['commits'][-1]['branch']
         if branches is not None and branches.find(branch) == -1:

@@ -131,7 +131,7 @@ exports.insert_local_message = function (message_request, local_id_float) {
     waiting_for_id.set(message.local_id, message);
     waiting_for_ack.set(message.local_id, message);
 
-    message.display_recipient = echo.build_display_recipient(message);
+    message.display_recipient = exports.build_display_recipient(message);
     local_message.insert_message(message);
     return message;
 };
@@ -146,7 +146,7 @@ exports.try_deliver_locally = function (message_request) {
         return;
     }
 
-    if (narrow_state.active() && !narrow_state.filter().can_apply_locally()) {
+    if (narrow_state.active() && !narrow_state.filter().can_apply_locally(true)) {
         return;
     }
 
@@ -154,7 +154,7 @@ exports.try_deliver_locally = function (message_request) {
         return;
     }
 
-    if (!current_msg_list.fetch_status.has_found_newest()) {
+    if (!current_msg_list.data.fetch_status.has_found_newest()) {
         // If the current message list doesn't yet have the latest
         // messages before the one we just sent, local echo would make
         // it appear as though there were no messages between what we
@@ -190,14 +190,21 @@ exports.edit_locally = function (message, request) {
     const raw_content = request.raw_content;
     const message_content_edited = raw_content !== undefined && message.raw_content !== raw_content;
 
-    if (request.new_topic !== undefined) {
+    if (request.new_topic !== undefined || request.new_stream_id !== undefined) {
+        const new_stream_id = request.new_stream_id;
         const new_topic = request.new_topic;
-        stream_topic_history.remove_message({
+        stream_topic_history.remove_messages({
             stream_id: message.stream_id,
             topic_name: message.topic,
+            num_messages: 1,
         });
 
-        message.topic = new_topic;
+        if (new_stream_id !== undefined) {
+            message.stream_id = new_stream_id;
+        }
+        if (new_topic !== undefined) {
+            message.topic = new_topic;
+        }
 
         stream_topic_history.add_message({
             stream_id: message.stream_id,
@@ -266,6 +273,7 @@ exports.reify_message_id = function (local_id, server_id) {
 
     message_store.reify_message_id(opts);
     notifications.reify_message_id(opts);
+    recent_topics.reify_message_id_if_available(opts);
 };
 
 exports.process_from_server = function (messages) {

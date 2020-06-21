@@ -1,16 +1,15 @@
+import logging
 import operator
+import os
+from itertools import zip_longest
+from typing import Any, Dict, List
 
+import ujson
 from django.conf import settings
 from django.utils import translation
-from django.utils.translation import ugettext as _
 from django.utils.lru_cache import lru_cache
+from django.utils.translation import ugettext as _
 
-from itertools import zip_longest
-from typing import Any, List, Dict
-
-import os
-import ujson
-import logging
 
 def with_language(string: str, language: str) -> str:
     """
@@ -31,9 +30,9 @@ def get_language_list() -> List[Dict[str, Any]]:
         return languages['name_map']
 
 def get_language_list_for_templates(default_language: str) -> List[Dict[str, Dict[str, str]]]:
-    language_list = [l for l in get_language_list()
-                     if 'percent_translated' not in l or
-                        l['percent_translated'] >= 5.]
+    language_list = [lang for lang in get_language_list()
+                     if 'percent_translated' not in lang or
+                        lang['percent_translated'] >= 5.]
 
     formatted_list = []
     lang_len = len(language_list)
@@ -60,7 +59,7 @@ def get_language_list_for_templates(default_language: str) -> List[Dict[str, Dic
                 'name': name,
                 'code': lang['code'],
                 'percent': percent,
-                'selected': selected
+                'selected': selected,
             }
 
         formatted_list.append(item)
@@ -92,5 +91,5 @@ def get_language_translation_data(language: str) -> Dict[str, str]:
         with open(path) as reader:
             return ujson.load(reader)
     except FileNotFoundError:
-        print('Translation for {} not found at {}'.format(language, path))
+        print(f'Translation for {language} not found at {path}')
         return {}

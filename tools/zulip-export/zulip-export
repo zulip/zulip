@@ -19,11 +19,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-
-import sys
-import os
 import argparse
 import json
+import os
+import sys
+
 usage = """Export all messages on a given stream to a JSON dump.
 
 zulip-export --user=<your email address> --api-key=<your api key> --stream=<stream name>
@@ -81,8 +81,8 @@ for msg in result['messages']:
         msg.pop(k, None)
     messages.append(msg)
 
-filename = "zulip-%s.json" % (options.stream,)
+filename = f"zulip-{options.stream}.json"
 with open(filename, 'wb') as f:
     f.write(json.dumps(messages, indent=0, sort_keys=False).encode('utf-8'))
-print("%d messages exported to %s" % (len(messages), filename,))
+print(f"{len(messages)} messages exported to {filename}")
 sys.exit(0)

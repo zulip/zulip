@@ -1,4 +1,5 @@
 from typing import Dict, Optional
+
 from zerver.lib.url_preview.parsers.base import BaseParser
 
 

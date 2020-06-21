@@ -1,35 +1,47 @@
-from typing import Optional, Any, Dict
+from typing import Any, Dict, Optional
 
-from django.core.exceptions import ValidationError
-from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.contrib.auth import authenticate, update_session_auth_hash
+from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
+from django.utils.translation import ugettext as _
 
-from zerver.decorator import has_request_variables, \
-    REQ, human_users_only
-from zerver.lib.actions import do_change_password, do_change_notification_settings, \
-    do_change_enter_sends, do_regenerate_api_key, do_change_avatar_fields, \
-    do_set_user_display_setting, do_change_user_delivery_email, \
-    do_start_email_change_process, check_change_full_name, \
-    get_available_notification_sounds, validate_email_is_valid
+from confirmation.models import (
+    Confirmation,
+    ConfirmationKeyException,
+    get_object_from_key,
+    render_confirmation_key_error,
+)
+from zerver.decorator import REQ, has_request_variables, human_users_only
+from zerver.lib.actions import (
+    check_change_full_name,
+    do_change_avatar_fields,
+    do_change_enter_sends,
+    do_change_notification_settings,
+    do_change_password,
+    do_change_user_delivery_email,
+    do_regenerate_api_key,
+    do_set_user_display_setting,
+    do_start_email_change_process,
+    get_available_notification_sounds,
+    validate_email_is_valid,
+)
 from zerver.lib.avatar import avatar_url
-from zerver.lib.email_validation import get_realm_email_validator, \
-    validate_email_not_already_in_realm
-from zerver.lib.send_email import send_email, FromAddress
+from zerver.lib.email_validation import (
+    get_realm_email_validator,
+    validate_email_not_already_in_realm,
+)
 from zerver.lib.i18n import get_available_language_codes
-from zerver.lib.response import json_success, json_error
-from zerver.lib.upload import upload_avatar_image
-from zerver.lib.validator import check_bool, check_string, check_int, check_int_in, \
-    check_string_in
 from zerver.lib.rate_limiter import RateLimited
 from zerver.lib.request import JsonableError
+from zerver.lib.response import json_error, json_success
+from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.timezone import get_all_timezones
-from zerver.models import UserProfile, name_changes_disabled, avatar_changes_disabled
-from confirmation.models import get_object_from_key, render_confirmation_key_error, \
-    ConfirmationKeyException, Confirmation
-from zproject.backends import email_belongs_to_ldap, check_password_strength
+from zerver.lib.upload import upload_avatar_image
+from zerver.lib.validator import check_bool, check_int, check_int_in, check_string, check_string_in
+from zerver.models import UserProfile, avatar_changes_disabled, name_changes_disabled
+from zproject.backends import check_password_strength, email_belongs_to_ldap
 
 AVATAR_CHANGES_DISABLED_ERROR = _("Avatar changes are disabled in this organization.")
 
@@ -83,7 +95,7 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
         except RateLimited as e:
             secs_to_freedom = int(float(str(e)))
             return json_error(
-                _("You're making too many attempts! Try again in %s seconds.") % (secs_to_freedom,)
+                _("You're making too many attempts! Try again in {} seconds.").format(secs_to_freedom),
             )
 
         if not check_password_strength(new_password):
@@ -153,9 +165,10 @@ def update_display_settings_backend(
         starred_message_counts: Optional[bool]=REQ(validator=check_bool, default=None),
         fluid_layout_width: Optional[bool]=REQ(validator=check_bool, default=None),
         high_contrast_mode: Optional[bool]=REQ(validator=check_bool, default=None),
-        night_mode: Optional[bool]=REQ(validator=check_bool, default=None),
+        color_scheme: Optional[int]=REQ(validator=check_int_in(
+            UserProfile.COLOR_SCHEME_CHOICES), default=None),
         translate_emoticons: Optional[bool]=REQ(validator=check_bool, default=None),
-        default_language: Optional[bool]=REQ(validator=check_string, default=None),
+        default_language: Optional[str]=REQ(validator=check_string, default=None),
         left_side_userlist: Optional[bool]=REQ(validator=check_bool, default=None),
         emojiset: Optional[str]=REQ(validator=check_string_in(
             emojiset_choices), default=None),
@@ -209,7 +222,7 @@ def json_change_notify_settings(
 
     if (notification_sound is not None and
             notification_sound not in get_available_notification_sounds()):
-        raise JsonableError(_("Invalid notification sound '%s'") % (notification_sound,))
+        raise JsonableError(_("Invalid notification sound '{}'").format(notification_sound))
 
     req_vars = {k: v for k, v in list(locals().items()) if k in user_profile.notification_setting_types}
 
@@ -229,14 +242,15 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
 
     user_file = list(request.FILES.values())[0]
     if ((settings.MAX_AVATAR_FILE_SIZE * 1024 * 1024) < user_file.size):
-        return json_error(_("Uploaded file is larger than the allowed limit of %s MB") % (
-            settings.MAX_AVATAR_FILE_SIZE))
+        return json_error(_("Uploaded file is larger than the allowed limit of {} MiB").format(
+            settings.MAX_AVATAR_FILE_SIZE,
+        ))
     upload_avatar_image(user_file, user_profile, user_profile)
     do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_USER)
     user_avatar_url = avatar_url(user_profile)
 
     json_result = dict(
-        avatar_url = user_avatar_url
+        avatar_url = user_avatar_url,
     )
     return json_success(json_result)
 
@@ -248,7 +262,7 @@ def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> Ht
     gravatar_url = avatar_url(user_profile)
 
     json_result = dict(
-        avatar_url = gravatar_url
+        avatar_url = gravatar_url,
     )
     return json_success(json_result)
 
@@ -258,7 +272,7 @@ def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> Ht
 def regenerate_api_key(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     new_api_key = do_regenerate_api_key(user_profile, user_profile)
     json_result = dict(
-        api_key = new_api_key
+        api_key = new_api_key,
     )
     return json_success(json_result)
 

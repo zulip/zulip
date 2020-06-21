@@ -144,6 +144,10 @@ exports.make_new_elem = function (selector, opts) {
             classes.set(class_name, true);
             return self;
         },
+        append: function (arg) {
+            html = html + arg;
+            return self;
+        },
         attr: function (name, val) {
             if (val === undefined) {
                 return attrs.get(name);
@@ -165,7 +169,7 @@ exports.make_new_elem = function (selector, opts) {
                 if (data_val === undefined) {
                     return;
                 }
-                return JSON.parse(data_val);
+                return data_val;
             }
             attrs.set('data-' + name, val);
             return self;
@@ -198,6 +202,12 @@ exports.make_new_elem = function (selector, opts) {
             const child = find_results.get(child_selector);
             if (child) {
                 return child;
+            }
+            if (child === false) {
+                // This is deliberately set to simulate missing find results.
+                // Return an empty array, the most common check is
+                // if ($.find().length) { //success }
+                return [];
             }
             if (opts.silent) {
                 return self;
@@ -277,6 +287,10 @@ exports.make_new_elem = function (selector, opts) {
             assert(result, 'You need to call set_parents_result for ' +
                             parents_selector + ' in ' + selector);
             return result;
+        },
+        prepend: function (arg) {
+            html = arg + html;
+            return self;
         },
         prop: function (name, val) {
             if (val === undefined) {
@@ -358,6 +372,9 @@ exports.make_new_elem = function (selector, opts) {
         },
         visible: function () {
             return shown;
+        },
+        slice: function () {
+            return self;
         },
     };
 
@@ -522,10 +539,20 @@ exports.make_zjquery = function (opts) {
         };
     };
 
+    fn.after = function (s) {
+        return s;
+    };
+    fn.before = function (s) {
+        return s;
+    };
+
     zjquery.fn = fn;
 
     zjquery.clear_all_elements = function () {
         elems.clear();
+    };
+    zjquery.escapeSelector = function (s) {
+        return s;
     };
 
     return zjquery;

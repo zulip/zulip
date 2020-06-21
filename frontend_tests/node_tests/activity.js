@@ -2,6 +2,8 @@ set_global('$', global.make_zjquery());
 
 let filter_key_handlers;
 
+const huddle_data = zrequire('huddle_data');
+
 const _page_params = {
     realm_users: [],
     user_id: 999,
@@ -50,6 +52,7 @@ const _stream_popover = {
 };
 
 const _resize = {
+    resize_sidebars: () => {},
     resize_page_components: () => {},
 };
 
@@ -120,17 +123,14 @@ const zoe = {
     full_name: 'Zoe Yang',
 };
 
-people.add(alice);
-people.add(fred);
-people.add(jill);
-people.add(mark);
-people.add(norbert);
-people.add(zoe);
-people.add(me);
+people.add_active_user(alice);
+people.add_active_user(fred);
+people.add_active_user(jill);
+people.add_active_user(mark);
+people.add_active_user(norbert);
+people.add_active_user(zoe);
+people.add_active_user(me);
 people.initialize_current_user(me.user_id);
-
-const real_update_huddles = activity.update_huddles;
-activity.update_huddles = () => {};
 
 const presence_info = new Map();
 presence_info.set(alice.user_id, { status: 'inactive' });
@@ -173,7 +173,8 @@ run_test('sort_users', () => {
     ]);
 });
 
-run_test('process_loaded_messages', () => {
+run_test('huddle_data.process_loaded_messages', () => {
+    // TODO: move this to a module for just testing `huddle_data`
 
     const huddle1 = 'jill@zulip.com,norbert@zulip.com';
     const timestamp1 = 1382479029; // older
@@ -208,83 +209,11 @@ run_test('process_loaded_messages', () => {
         },
     ];
 
-    activity.process_loaded_messages(messages);
+    huddle_data.process_loaded_messages(messages);
 
     const user_ids_string1 = people.emails_strings_to_user_ids_string(huddle1);
     const user_ids_string2 = people.emails_strings_to_user_ids_string(huddle2);
-    assert.deepEqual(activity.get_huddles(), [user_ids_string2, user_ids_string1]);
-});
-
-run_test('full_huddle_name', () => {
-    function full_name(emails_string) {
-        const user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
-        return activity.full_huddle_name(user_ids_string);
-    }
-
-    assert.equal(
-        full_name('alice@zulip.com,jill@zulip.com'),
-        'Alice Smith, Jill Hill');
-
-    assert.equal(
-        full_name('alice@zulip.com,fred@zulip.com,jill@zulip.com'),
-        'Alice Smith, Fred Flintstone, Jill Hill');
-});
-
-run_test('short_huddle_name', () => {
-    function short_name(emails_string) {
-        const user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
-        return activity.short_huddle_name(user_ids_string);
-    }
-
-    assert.equal(
-        short_name('alice@zulip.com'),
-        'Alice Smith');
-
-    assert.equal(
-        short_name('alice@zulip.com,jill@zulip.com'),
-        'Alice Smith, Jill Hill');
-
-    assert.equal(
-        short_name('alice@zulip.com,fred@zulip.com,jill@zulip.com'),
-        'Alice Smith, Fred Flintstone, Jill Hill');
-
-    assert.equal(
-        short_name('alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com'),
-        'Alice Smith, Fred Flintstone, Jill Hill, + 1 other');
-
-    assert.equal(
-        short_name('alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com,norbert@zulip.com'),
-        'Alice Smith, Fred Flintstone, Jill Hill, + 2 others');
-
-});
-
-run_test('huddle_fraction_present', () => {
-    let huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
-    huddle = people.emails_strings_to_user_ids_string(huddle);
-
-    let presence_info = new Map();
-    presence_info.set(alice.user_id, { status: 'active' }); // counts as present
-    presence_info.set(fred.user_id, { status: 'idle' }); // doest not count as present
-    // jill not in list
-    presence_info.set(mark.user_id, { status: 'offline' }); // does not count
-    presence.presence_info = presence_info;
-
-    assert.equal(
-        buddy_data.huddle_fraction_present(huddle),
-        0.5);
-
-    huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
-    huddle = people.emails_strings_to_user_ids_string(huddle);
-    presence_info = new Map();
-    presence_info.set(alice.user_id, { status: 'idle' });
-    presence_info.set(fred.user_id, { status: 'idle' }); // does not count as present
-    // jill not in list
-    presence_info.set(mark.user_id, { status: 'offline' }); // does not count
-    presence.presence_info = presence_info;
-
-    assert.equal(
-        buddy_data.huddle_fraction_present(huddle),
-        undefined);
+    assert.deepEqual(huddle_data.get_huddles(), [user_ids_string2, user_ids_string1]);
 });
 
 presence.presence_info = new Map();
@@ -377,31 +306,6 @@ run_test('PM_update_dom_counts', () => {
 
     activity.update_dom_with_unread_counts({pm_count: counts});
     assert(!li.hasClass('user-with-count'));
-    assert.equal(value.text(), '');
-});
-
-run_test('group_update_dom_counts', () => {
-    const value = $.create('alice-fred-value');
-    const count = $.create('alice-fred-count');
-    const pm_key = alice.user_id.toString() + "," + fred.user_id.toString();
-    const li_selector = "li.group-pms-sidebar-entry[data-user-ids='" + pm_key + "']";
-    const li = $(li_selector);
-    count.set_find_results('.value', value);
-    li.set_find_results('.count', count);
-    count.set_parent(li);
-
-    const counts = new Map();
-    counts.set(pm_key, 5);
-    li.addClass('group-pms-sidebar-entry');
-
-    activity.update_dom_with_unread_counts({pm_count: counts});
-    assert(li.hasClass('group-with-count'));
-    assert.equal(value.text(), "5");
-
-    counts.set(pm_key, 0);
-
-    activity.update_dom_with_unread_counts({pm_count: counts});
-    assert(!li.hasClass('group-with-count'));
     assert.equal(value.text(), '');
 });
 
@@ -645,7 +549,7 @@ run_test('insert_fred_then_alice_then_rename', () => {
         user_id: fred.user_id,
         full_name: "Aaron",
     };
-    people.add(fred_with_new_name);
+    people.add_active_user(fred_with_new_name);
 
     const alice_stub = $.create('alice-first');
     buddy_list_add(alice.user_id, alice_stub);
@@ -658,7 +562,7 @@ run_test('insert_fred_then_alice_then_rename', () => {
     assert(appended_html.indexOf('data-user-id="2"') > 0);
 
     // restore old Fred data
-    people.add(fred);
+    people.add_active_user(fred);
 });
 
 // Reset jquery here.
@@ -678,8 +582,6 @@ run_test('realm_presence_disabled', () => {
 
     activity.redraw_user();
     activity.build_user_sidebar();
-
-    real_update_huddles();
 });
 
 run_test('clear_search', () => {
@@ -732,34 +634,11 @@ run_test('searching', () => {
     assert.equal(activity.searching(), false);
 });
 
-run_test('update_huddles_and_redraw', () => {
-    const value = $.create('alice-fred-value');
-    const count = $.create('alice-fred-count');
-    const pm_key = alice.user_id.toString() + "," + fred.user_id.toString();
-    const li_selector = "li.group-pms-sidebar-entry[data-user-ids='" + pm_key + "']";
-    const li = $(li_selector);
-    count.set_find_results('.value', value);
-    li.set_find_results('.count', count);
-    count.set_parent(li);
-
-    const real_get_huddles = activity.get_huddles;
-    activity.get_huddles = () => ['1,2'];
-    activity.update_huddles = real_update_huddles;
-    activity.redraw();
-    assert.equal($('#group-pm-list').hasClass('show'), false);
-    page_params.realm_presence_disabled = false;
-    activity.redraw();
-    assert.equal($('#group-pm-list').hasClass('show'), true);
-    activity.get_huddles = () => [];
-    activity.redraw();
-    assert.equal($('#group-pm-list').hasClass('show'), false);
-    activity.get_huddles = real_get_huddles;
-    activity.update_huddles = function () {};
-});
-
 reset_setup();
 
 run_test('update_presence_info', () => {
+    page_params.realm_presence_disabled = false;
+
     const server_time = 500;
     const info = {
         website: {

@@ -17,7 +17,7 @@
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
 {generate_api_arguments_table|zulip.yaml|/user_groups:get}
 
@@ -25,12 +25,7 @@
 
 #### Return values
 
-* `user_groups`: A list of dictionaries, where each dictionary contains information
-  about a user group.
-    * `description`: The human-readable description of the user group.
-    * `id`: The user group's integer id.
-    * `members`: The integer User IDs of the user group members.
-    * `name`: User group name.
+{generate_return_values_table|zulip.yaml|/user_groups:get}
 
 #### Example response
 

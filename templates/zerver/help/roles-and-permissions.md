@@ -1,15 +1,29 @@
 # Roles and permissions
 
-There are several roles in a Zulip organization.
+There are several possible roles in a Zulip organization.
+
+* **Organization Owner**: Can manage users, public streams,
+  organization settings, and billing.
 
 * **Organization Administrator**: Can manage users, public streams,
-  organization settings, and billing.
+  organization settings, and billing.  Cannot create or demote
+  organization owners.
 
 * **Member**: Has access to all public streams. This is the default role for
   most users.
 
 * **Guest**: Can only access streams they've been added to. Cannot create
-  new streams.
+  new streams or invite other users.
+
+For details of the access control model, see [Stream
+permissions](/help/stream-permissions).  You can decide what role to
+invite a user as when you [send them an
+invitation](/help/invite-new-users#send-invitations).
+
+Organization owners can do anything an organization administrator can
+do.  For brevity, we may sometimes refer to "organization
+administrators" being able to do something; unless stated explicitly,
+this means "organization owners and administrators" can do that thing.
 
 ## Billing and guests
 
@@ -36,3 +50,4 @@ Cloud. There are two kinds of guest for billing purposes:
 ## Related articles
 
 * [Stream permissions](/help/stream-permissions)
+* [Inviting new users](/help/invite-new-users)

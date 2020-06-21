@@ -1,4 +1,4 @@
-# Upload a custom emoji
+# Upload custom emoji
 
 {generate_api_description(/realm/emoji/{emoji_name}:post)}
 
@@ -17,7 +17,7 @@
 {end_tabs}
 
 
-## Arguments
+## Parameters
 
 As described above, the image file to upload must be provided in the
 request's body.

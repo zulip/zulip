@@ -2,14 +2,15 @@
 
 # check for the venv
 from lib import sanity_check
-sanity_check.check_venv(__file__)
 
-from collections import defaultdict
-from typing import Any, Dict, List, Set
+sanity_check.check_venv(__file__)
 
 import html
 import os
 import pprint
+from collections import defaultdict
+from typing import Any, Dict, List, Set
+
 import ujson
 
 Call = Dict[str, Any]
@@ -65,11 +66,11 @@ def create_single_page(pattern: str, out_dir: str, href: str, calls: List[Call])
             }
             </style>
             ''')
-        f.write('<h3>%s</h3>\n' % (html.escape(pattern),))
+        f.write(f'<h3>{html.escape(pattern)}</h3>\n')
         calls.sort(key=lambda call: call['status_code'])
         for call in calls:
             f.write('<hr>')
-            f.write('\n%s' % (fix_test_name(call['test_name']),))
+            f.write('\n{}'.format(fix_test_name(call['test_name'])))
             f.write('<div class="test">')
             try:
                 f.write(call['url'])
@@ -77,7 +78,7 @@ def create_single_page(pattern: str, out_dir: str, href: str, calls: List[Call])
                 f.write(call['url'].encode('utf8'))
             f.write('<br>\n')
             f.write(call['method'] + '<br>\n')
-            f.write('status code: %s<br>\n' % (call['status_code'],))
+            f.write('status code: {}<br>\n'.format(call['status_code']))
             f.write('<br>')
             f.write('</div>')
 
@@ -136,13 +137,13 @@ def create_user_docs() -> None:
             f.write('<ul>\n')
             for pattern in sorted(groups[name]):
                 href = pattern.replace('/', '-') + '.html'
-                link = '<a href="%s">%s</a>' % (href, html.escape(pattern))
+                link = f'<a href="{href}">{html.escape(pattern)}</a>'
                 f.write('<li>' + link + '</li>\n')
                 create_single_page(pattern, out_dir, href, pattern_dict[pattern])
             f.write('</ul>')
             f.write('\n')
 
-    print('open %s' % (main_page,))
+    print(f'open {main_page}')
 
 
 if __name__ == '__main__':

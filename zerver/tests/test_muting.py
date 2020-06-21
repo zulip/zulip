@@ -1,23 +1,19 @@
-from django.utils.timezone import now as timezone_now
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict
-import mock
+from unittest import mock
 
-from zerver.lib.test_classes import ZulipTestCase
+from django.utils.timezone import now as timezone_now
+
 from zerver.lib.stream_topic import StreamTopicTarget
-
-from zerver.models import (
-    get_stream,
-    UserProfile,
-    MutedTopic
-)
-
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic_mutes import (
     add_topic_mute,
     get_topic_mutes,
     remove_topic_mute,
     topic_is_muted,
 )
+from zerver.models import MutedTopic, UserProfile, get_stream
+
 
 class MutedTopicsTests(ZulipTestCase):
     def test_user_ids_muting_topic(self) -> None:
@@ -70,10 +66,10 @@ class MutedTopicsTests(ZulipTestCase):
             {'stream_id': stream.id, 'topic': 'Verona3', 'op': 'add'},
         ]
 
-        mock_date_muted = datetime.timestamp(datetime(2020, 1, 1))
+        mock_date_muted = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
         for data in payloads:
             with mock.patch('zerver.views.muting.timezone_now',
-                            return_value=datetime(2020, 1, 1)):
+                            return_value=datetime(2020, 1, 1, tzinfo=timezone.utc)):
                 result = self.api_patch(user, url, data)
                 self.assert_json_success(result)
 
@@ -100,7 +96,7 @@ class MutedTopicsTests(ZulipTestCase):
             {'stream': stream.name, 'topic': 'vERONA3', 'op': 'remove'},
             {'stream_id': stream.id, 'topic': 'vEroNA3', 'op': 'remove'},
         ]
-        mock_date_muted = datetime.timestamp(datetime(2020, 1, 1))
+        mock_date_muted = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
 
         for data in payloads:
             add_topic_mute(
@@ -108,7 +104,7 @@ class MutedTopicsTests(ZulipTestCase):
                 stream_id=stream.id,
                 recipient_id=recipient.id,
                 topic_name='Verona3',
-                date_muted=datetime(2020, 1, 1),
+                date_muted=datetime(2020, 1, 1, tzinfo=timezone.utc),
             )
             self.assertIn([stream.name, 'Verona3', mock_date_muted], get_topic_mutes(user))
 

@@ -40,21 +40,17 @@ Also you can use optional keys to configure the script and change default values
 -t                  Disable sending request to the Zulip server. Default value: False.
 
 """
-
+import argparse
+import base64
+import json
 import os
+import posix
 import ssl
 import sys
-
-import argparse
-
-import posix
-import json
-
-from urllib.parse import urljoin, urlencode
-from urllib.request import Request, urlopen
-from urllib.error import HTTPError
 from configparser import RawConfigParser
-
+from urllib.error import HTTPError
+from urllib.parse import urlencode, urljoin
+from urllib.request import Request, urlopen
 
 parser = argparse.ArgumentParser()
 
@@ -94,13 +90,13 @@ def process_response_error(e: HTTPError) -> None:
 
 
 def send_email_mirror(
-    rcpt_to: str, shared_secret: str, host: str, url: str, test: bool, verify_ssl: bool
+    rcpt_to: str, shared_secret: str, host: str, url: str, test: bool, verify_ssl: bool,
 ) -> None:
     if not rcpt_to:
         print("5.1.1 Bad destination mailbox address: No missed message email address.")
         exit(posix.EX_NOUSER)
-    msg_text = sys.stdin.read(MAX_ALLOWED_PAYLOAD + 1)
-    if len(msg_text) > MAX_ALLOWED_PAYLOAD:
+    msg_bytes = sys.stdin.buffer.read(MAX_ALLOWED_PAYLOAD + 1)
+    if len(msg_bytes) > MAX_ALLOWED_PAYLOAD:
         # We're not at EOF, reject large mail.
         print("5.3.4 Message too big for system: Max size is 25MiB")
         exit(posix.EX_DATAERR)
@@ -110,10 +106,6 @@ def send_email_mirror(
     if not shared_secret:
         shared_secret = secrets_file.get('secrets', 'shared_secret')
 
-    request_data = {
-        "recipient": rcpt_to,
-        "msg_text": msg_text
-    }
     if test:
         exit(0)
 
@@ -127,8 +119,11 @@ def send_email_mirror(
         context = ssl.create_default_context()
         context.check_hostname = False
         context.verify_mode = ssl.CERT_NONE
-    data = {"data": json.dumps(request_data),
-            "secret": shared_secret}
+    data = {
+        "rcpt_to": rcpt_to,
+        "msg_base64": base64.b64encode(msg_bytes).decode(),
+        "secret": shared_secret,
+    }
     req = Request(url=urljoin(host, url), data=urlencode(data).encode('utf8'))
     try:
         urlopen(req, context=context)

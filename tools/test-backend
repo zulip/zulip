@@ -2,22 +2,23 @@
 
 # check for the venv
 from lib import sanity_check
+
 sanity_check.check_venv(__file__)
 
-from typing import List, Iterator
-import glob
 import argparse
 import contextlib
-import mock
+import glob
 import os
 import shlex
-import sys
 import subprocess
+import sys
 import tempfile
-import ujson
-import responses
+from typing import Iterator, List
+from unittest import mock
 
 import django
+import responses
+import ujson
 from django.conf import settings
 from django.test.utils import get_runner
 
@@ -95,7 +96,6 @@ not_yet_fully_covered = {path for target in [
     'zerver/lib/queue.py',
     'zerver/lib/sqlalchemy_utils.py',
     'zerver/lib/storage.py',
-    'zerver/lib/stream_recipient.py',
     'zerver/lib/timeout.py',
     'zerver/lib/unminify.py',
     'zerver/lib/utils.py',
@@ -170,7 +170,7 @@ class ZulipInternetBlockedError(Exception):
             "More details and advice are available here:"
             "https://zulip.readthedocs.io/en/latest/testing/testing.html#internet-access-inside-test-suites"
         )
-        msg = "{}\nResponses library error message: {}".format(zulip_msg, original_msg)
+        msg = f"{zulip_msg}\nResponses library error message: {original_msg}"
         super().__init__(msg)
 
 def main() -> None:
@@ -184,11 +184,10 @@ def main() -> None:
     os.environ.pop("http_proxy", "")
     os.environ.pop("https_proxy", "")
 
-    from zerver.lib.test_fixtures import update_test_databases_if_required, \
-        remove_test_run_directories
-
-    from tools.lib.test_script import (
-        assert_provisioning_status_ok,
+    from tools.lib.test_script import assert_provisioning_status_ok
+    from zerver.lib.test_fixtures import (
+        remove_test_run_directories,
+        update_test_databases_if_required,
     )
 
     os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
@@ -217,6 +216,10 @@ def main() -> None:
     parser.add_argument('--verbose-coverage', dest='verbose_coverage',
                         action="store_true",
                         default=False, help='Enable verbose print of coverage report.')
+    parser.add_argument('--no-cov-cleanup', dest='no_cov_cleanup',
+                        action='store_true',
+                        default=False,
+                        help="Do not clean generated coverage files.")
 
     parser.add_argument('--parallel', dest='processes',
                         type=int,
@@ -311,7 +314,7 @@ def main() -> None:
                 classname = suite.rsplit('.', 1)[0]
                 rewrite_arguments(classname)
             elif suite[0].isupper():
-                rewrite_arguments('class %s(' % (suite,))
+                rewrite_arguments(f'class {suite}(')
 
         for i, suite in enumerate(args):
             if suite.startswith('test'):
@@ -355,10 +358,12 @@ def main() -> None:
     assert_provisioning_status_ok(options.force)
 
     if options.coverage:
-        import atexit
         import coverage
-        cov = coverage.Coverage(config_file="tools/coveragerc", concurrency='multiprocessing')
-        atexit.register(lambda: cov.erase())  # Ensure the data file gets cleaned up at the end.
+        cov = coverage.Coverage(data_suffix="", config_file="tools/coveragerc", concurrency='multiprocessing')
+        # Do not clean .coverage file in CircleCi job so that coverage data can be uploaded.
+        if not options.no_cov_cleanup:
+            import atexit
+            atexit.register(lambda: cov.erase())  # Ensure the data file gets cleaned up at the end.
         cov.start()
     if options.profile:
         import cProfile
@@ -398,9 +403,9 @@ def main() -> None:
     # We only check the templates if all the tests ran and passed
     if not failures and full_suite and templates_not_rendered:
         missed_count = len(templates_not_rendered)
-        print("\nError: %s templates have no tests!" % (missed_count,))
+        print(f"\nError: {missed_count} templates have no tests!")
         for template in templates_not_rendered:
-            print('  {}'.format(template))
+            print(f'  {template}')
         print("See zerver/tests/test_templates.py for the exclude list.")
         failures = True
 
@@ -408,7 +413,6 @@ def main() -> None:
         cov.stop()
         cov.save()
         cov.combine()
-        cov.data_suffix = False  # Disable suffix so that filename is .coverage
         cov.save()
         if options.verbose_coverage:
             print("Printing coverage data")
@@ -420,8 +424,8 @@ def main() -> None:
         for path in enforce_fully_covered:
             missing_lines = cov.analysis2(path)[3]
             if len(missing_lines) > 0:
-                print("ERROR: %s no longer has complete backend test coverage" % (path,))
-                print("  Lines missing coverage: %s" % (missing_lines,))
+                print(f"ERROR: {path} no longer has complete backend test coverage")
+                print(f"  Lines missing coverage: {missing_lines}")
                 print()
                 failures = True
         if failures:
@@ -435,7 +439,7 @@ def main() -> None:
             try:
                 missing_lines = cov.analysis2(path)[3]
                 if len(missing_lines) == 0 and path != "zerver/lib/migrate.py":
-                    print("ERROR: %s has complete backend test coverage but is still in not_yet_fully_covered." % (path,))
+                    print(f"ERROR: {path} has complete backend test coverage but is still in not_yet_fully_covered.")
                     ok = False
             except coverage.misc.NoSource:
                 continue
@@ -448,14 +452,15 @@ def main() -> None:
         prof.disable()
         with tempfile.NamedTemporaryFile(prefix='profile.data.', delete=False) as stats_file:
             prof.dump_stats(stats_file.name)
-            print("Profile data saved to {}".format(stats_file.name))
-            print("You can visualize it using e.g. `snakeviz {}`".format(shlex.quote(stats_file.name)))
+            print(f"Profile data saved to {stats_file.name}")
+            print(f"You can visualize it using e.g. `snakeviz {shlex.quote(stats_file.name)}`")
             print("Note: If you are using vagrant for development environment you will need to do:")
             print("1.) `vagrant ssh -- -L 8080:127.0.0.1:8080`")
-            print("2.) `snakeviz -s {}`".format(shlex.quote(stats_file.name)))
+            print(f"2.) `snakeviz -s {shlex.quote(stats_file.name)}`")
 
     if options.report_slow_tests:
         from zerver.lib.test_runner import report_slow_tests
+
         # We do this even with failures, since slowness can be
         # an important clue as to why tests fail.
         report_slow_tests()
@@ -467,7 +472,7 @@ def main() -> None:
 
     removed = remove_test_run_directories()
     if removed:
-        print("Removed %s stale test run directories!" % (removed,))
+        print(f"Removed {removed} stale test run directories!")
 
     # We'll have printed whether tests passed or failed above
     sys.exit(bool(failures))

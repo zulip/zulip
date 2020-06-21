@@ -5,14 +5,17 @@
 # always run from the new version of Zulip, so any bug fixes take
 # effect on the very next upgrade.
 import argparse
-import configparser
 import glob
 import hashlib
-import subprocess
-import os
-import sys
 import logging
+import os
+import subprocess
+import sys
 import time
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import NoReturn
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
@@ -22,14 +25,32 @@ os.environ["LANG"] = "en_US.UTF-8"
 os.environ["LANGUAGE"] = "en_US.UTF-8"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, su_to_zulip, \
-    assert_running_as_root, parse_os_release
+from scripts.lib.zulip_tools import (
+    DEPLOYMENTS_DIR,
+    assert_running_as_root,
+    get_config,
+    get_config_file,
+    parse_os_release,
+    set_config,
+    su_to_zulip,
+)
 
 assert_running_as_root()
 
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s upgrade-zulip-stage-2: %(message)s",
                     level=logging.INFO)
+
+
+def error_desupported_os(vendor: str, os_version: str) -> "NoReturn":
+    # Link to documentation for how to correctly upgrade the OS.
+    logging.critical("Unsupported platform: %s %s", vendor, os_version)
+    logging.info("Sorry! The support for your OS has been discontinued.\n"
+                 "Please upgrade your OS to a supported release first.\n"
+                 "See https://zulip.readthedocs.io/en/latest/production/"
+                 "upgrade-or-modify.html#upgrading-the-operating-system")
+    sys.exit(1)
+
 
 # Do not upgrade on unsupported OS versions.
 UNSUPPORTED_DISTROS = [
@@ -42,13 +63,7 @@ vendor = distro_info['ID']
 os_version = distro_info['VERSION_ID']
 
 if (vendor, os_version) in UNSUPPORTED_DISTROS:
-    # Link to documentation for how to correctly upgrade the OS.
-    logging.critical("Unsupported platform: {} {}".format(vendor, os_version))
-    logging.info("Sorry! The support for your OS has been discontinued.\n"
-                 "Please upgrade your OS to a supported release first.\n"
-                 "See https://zulip.readthedocs.io/en/latest/production/"
-                 "upgrade-or-modify.html#upgrading-the-operating-system")
-    sys.exit(1)
+    error_desupported_os(vendor, os_version)
 
 # make sure we have appropriate file permissions
 os.umask(0o22)
@@ -71,12 +86,44 @@ args = parser.parse_args()
 deploy_path = args.deploy_path
 os.chdir(deploy_path)
 
-config_file = configparser.RawConfigParser()
-config_file.read("/etc/zulip/zulip.conf")
-try:
-    tornado_processes = int(config_file.get('application_server', 'tornado_processes'))
-except (configparser.NoSectionError, configparser.NoOptionError):
-    tornado_processes = 1
+config_file = get_config_file()
+tornado_processes = int(get_config(config_file, 'application_server', 'tornado_processes', '1'))
+
+IS_SERVER_UP = True
+
+def shutdown_server() -> None:
+    global IS_SERVER_UP
+
+    core_server_services = ["zulip-django",
+                            "zulip-tornado" if tornado_processes == 1 else "zulip-tornado:*"]
+    worker_services = ["zulip-workers:*"]
+    # Stop and start thumbor service only if thumbor is installed.
+    if os.path.exists("/etc/supervisor/conf.d/thumbor.conf"):
+        core_server_services.append("zulip-thumbor")
+
+    logging.info("Stopping Zulip...")
+    subprocess.check_call(["supervisorctl", "stop"] + core_server_services + worker_services,
+                          preexec_fn=su_to_zulip)
+    IS_SERVER_UP = False
+
+# postgresql.version is required for database servers, but wasn't
+# previously; fill it in based on what the OS provides.
+if os.path.exists('/etc/init.d/postgresql'):
+    postgres_version = get_config(config_file, 'postgresql', 'version')
+    if not postgres_version:
+        default_postgres_version = {
+            ('debian', '10'): '11',
+            ('ubuntu', '18.04'): '10',
+            ('ubuntu', '20.04'): '12',
+            ('centos', '7'): '11',
+        }
+        if (vendor, os_version) in default_postgres_version:
+            postgres_version = default_postgres_version[(vendor, os_version)]
+        else:
+            error_desupported_os(vendor, os_version)
+        set_config(config_file, 'postgresql', 'version', postgres_version)
+        with open('/etc/zulip/zulip.conf', 'w') as zulipconf:
+            config_file.write(zulipconf)
 
 if glob.glob("/usr/share/postgresql/*/extension/tsearch_extras.control"):
     # Remove legacy tsearch_extras package references
@@ -137,6 +184,18 @@ if args.ignore_static_assets:
     # cannot run `tools/update-prod-static`.
     pass
 elif args.from_git:
+    # Because `upgrade-zulip-from-git` needs to build static assets, it
+    # is at risk of being OOM killed on systems with limited free RAM.
+    mem_bytes = os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES')
+    mem_gib = mem_bytes/(1024.**3)  # e.g. 3.74
+
+    # Ideally, we'd have 2 thresholds here, depending on whether the
+    # system is running queue workers multithreaded or multiprocess.
+    # See puppet/zulip/manifests/app_frontend_base.pp for background.
+    if mem_gib < 3.8:
+        logging.info("Shutting down server to build static assets on a low-RAM system.")
+        shutdown_server()
+
     # Note: The fact that this is before we apply puppet changes means
     # that we don't support adding new puppet dependencies of
     # update-prod-static with the git upgrade process.  But it'll fail
@@ -188,20 +247,11 @@ if not args.skip_migrations:
 if os.path.exists("/etc/supervisor/conf.d/zulip_db.conf"):
     subprocess.check_call(["supervisorctl", "stop", "process-fts-updates"], preexec_fn=su_to_zulip)
 
-core_server_services = ["zulip-django",
-                        "zulip-tornado" if tornado_processes == 1 else "zulip-tornado:*"]
-worker_services = ["zulip-workers:*"]
-# Stop and start thumbor service only if thumbor is installed.
-if os.path.exists("/etc/supervisor/conf.d/thumbor.conf"):
-    core_server_services.append("zulip-thumbor")
-
-if not args.skip_puppet or migrations_needed:
+if (not args.skip_puppet or migrations_needed) and IS_SERVER_UP:
     # By default, we shut down the service to apply migrations and
     # puppet changes, to minimize risk of issues due to inconsistent
     # state.
-    logging.info("Stopping Zulip...")
-    subprocess.check_call(["supervisorctl", "stop"] + core_server_services + worker_services,
-                          preexec_fn=su_to_zulip)
+    shutdown_server()
 
 if not args.skip_puppet:
     logging.info("Applying puppet changes...")

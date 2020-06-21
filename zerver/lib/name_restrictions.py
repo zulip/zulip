@@ -1,5 +1,6 @@
 from disposable_email_domains import blacklist
 
+
 def is_reserved_subdomain(subdomain: str) -> bool:
     if subdomain in ZULIP_RESERVED_SUBDOMAINS:
         return True

@@ -17,6 +17,19 @@ server {
     }
 
     location / {
-        rewrite ^/ https://zulipchat.com permanent;
+        rewrite ^/ https://zulip.com permanent;
+    }
+}
+
+server {
+    listen 443 http2;
+    server_name blog.zulip.org;
+
+    ssl on;
+    ssl_certificate /etc/letsencrypt/live/zulip.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/zulip.org/privkey.pem;
+
+    location / {
+        rewrite ^/(.*)$ https://blog.zulip.com/$1 permanent;
     }
 }

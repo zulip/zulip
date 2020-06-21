@@ -1,10 +1,10 @@
-<div class="input-group dropdown-list-widget" id="{{setting_name}}_widget">
-    <label for="{{setting_name}}" id="{{setting_name}}_label" class="inline-block">
+<div class="input-group dropdown-list-widget" id="{{widget_name}}_widget">
+    <label for="{{widget_name}}" id="{{widget_name}}_label" class="inline-block">
         {{ label }}
-        <span class="{{setting_name}}_setting dropup actual-dropdown-menu prop-element" id="id_{{setting_name}}"
-          name="{{setting_name}}" aria-labelledby="{{setting_name}}_label">
+        <span class="{{widget_name}}_setting dropup actual-dropdown-menu prop-element" id="id_{{widget_name}}"
+          name="{{widget_name}}" aria-labelledby="{{widget_name}}_label">
             <button class="button small rounded dropdown-toggle" data-toggle="dropdown">
-                <span id="{{setting_name}}_name"></span>
+                <span id="{{widget_name}}_name"></span>
                 <i class="fa fa-pencil"></i>
             </button>
             <ul class="dropdown-menu modal-bg" role="menu">
@@ -15,7 +15,7 @@
             </ul>
         </span>
     </label>
-    {{#if is_admin }}
-    <a class="dropdown_list_reset_button">{{reset_button_text}}</a>
-    {{/if}}
+    <button class="button small dropdown_list_reset_button">
+        <a>{{reset_button_text}}</a>
+    </button>
 </div>

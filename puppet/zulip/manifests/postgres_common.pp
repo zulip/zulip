@@ -15,10 +15,7 @@ class zulip::postgres_common {
         # Postgres Nagios check plugin
         'check-postgres',
         # Python modules used in our monitoring/worker threads
-        'python3-tz', # TODO: use a virtualenv instead
-        'python-tz', # TODO: use a virtualenv instead
         'python3-dateutil', # TODO: use a virtualenv instead
-        'python-dateutil', # TODO: use a virtualenv instead
       ]
       $postgres_user_reqs = [
         Package[$postgresql],
@@ -39,12 +36,8 @@ class zulip::postgres_common {
         # https://bucardo.org/check_postgres/
         # 'check-postgres',  # TODO
       ]
-      exec {'pip2_deps':
-        # Python modules used in our monitoring/worker threads
-        command => '/usr/bin/pip2 install pytz python-dateutil'
-      }
       exec {'pip3_deps':
-        command => 'python3 -m pip install pytz python-dateutil'
+        command => 'python3 -m pip install python-dateutil'
       }
       group { 'ssl-cert':
         ensure => present,
@@ -87,12 +80,12 @@ class zulip::postgres_common {
     source  => 'puppet:///modules/zulip/nagios_plugins/zulip_postgres_common',
   }
 
-  file { '/usr/local/bin/env-wal-e':
+  file { '/usr/local/bin/env-wal-g':
     ensure  => file,
     owner   => 'root',
     group   => 'postgres',
     mode    => '0750',
-    source  => 'puppet:///modules/zulip/postgresql/env-wal-e',
+    source  => 'puppet:///modules/zulip/postgresql/env-wal-g',
     require => Package[$postgresql],
   }
 
@@ -102,7 +95,7 @@ class zulip::postgres_common {
     group   => 'postgres',
     mode    => '0754',
     source  => 'puppet:///modules/zulip/postgresql/pg_backup_and_purge',
-    require => File['/usr/local/bin/env-wal-e'],
+    require => File['/usr/local/bin/env-wal-g'],
   }
 
   # Use arcane puppet virtual resources to add postgres user to zulip group

@@ -67,7 +67,7 @@ number of purposes:
      messages.  E.g. determining whether to send the
      plaintext/markdown raw content or the rendered HTML (e.g. the
      `apply_markdown` and `client_gravatar` features in our
-     [events API docs](https://zulipchat.com/api/register-queue)).
+     [events API docs](https://zulip.com/api/register-queue)).
 * Following our standard naming convention, input validation is done
   inside the `check_message` function, which is responsible for
   validating the user can send to the recipient,
@@ -92,7 +92,7 @@ number of purposes:
      step adds a lot of complexity, because the events system cannot
      make queries to the database directly.
    * Trigger any other deferred work caused by the current message,
-     e.g. [outgoing webhooks](https://zulipchat.com/api/outgoing-webhooks)
+     e.g. [outgoing webhooks](https://zulip.com/api/outgoing-webhooks)
      or embedded bots.
    * Every query is designed to be a bulk query; we carefully
      unit-test this system for how many database and memcached queries

@@ -2,30 +2,36 @@ import glob
 import os
 import re
 from datetime import timedelta
-from email.utils import parseaddr
-import mock
-from mock import MagicMock, patch, call
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
+from unittest import mock
+from unittest.mock import MagicMock, call, patch
 
 from django.conf import settings
 from django.core.management import call_command
 from django.test import TestCase, override_settings
-from zerver.lib.actions import do_create_user, do_add_reaction
-from zerver.lib.management import ZulipBaseCommand, CommandError, check_config
-from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import stdout_suppressed
-from zerver.lib.test_runner import slow
-from zerver.models import Recipient, get_user_profile_by_email, get_stream
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.test_helpers import most_recent_message
-from zerver.models import get_realm, UserProfile, Realm, Reaction, Message
 from confirmation.models import RealmCreationKey, generate_realm_creation_url
+from zerver.lib.actions import do_add_reaction, do_create_user
+from zerver.lib.management import CommandError, ZulipBaseCommand, check_config
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import most_recent_message, stdout_suppressed
+from zerver.lib.test_runner import slow
+from zerver.models import (
+    Message,
+    Reaction,
+    Realm,
+    Recipient,
+    UserProfile,
+    get_realm,
+    get_stream,
+    get_user_profile_by_email,
+)
+
 
 class TestCheckConfig(ZulipTestCase):
     def test_check_config(self) -> None:
-        with self.assertRaisesRegex(CommandError, "Error: You must set ZULIP_ADMINISTRATOR in /etc/zulip/settings.py."):
-            check_config()
+        check_config()
         with self.settings(REQUIRED_SETTINGS=[('asdf', 'not asdf')]):
             with self.assertRaisesRegex(CommandError, "Error: You must set asdf in /etc/zulip/settings.py."):
                 check_config()
@@ -62,7 +68,7 @@ class TestZulipBaseCommand(ZulipTestCase):
         self.assertEqual(self.command.get_user(email, self.zulip_realm), user_profile)
         self.assertEqual(self.command.get_user(email, None), user_profile)
 
-        error_message = "The realm '%s' does not contain a user with email" % (mit_realm,)
+        error_message = f"The realm '{mit_realm}' does not contain a user with email"
         with self.assertRaisesRegex(CommandError, error_message):
             self.command.get_user(email, mit_realm)
 
@@ -107,7 +113,7 @@ class TestZulipBaseCommand(ZulipTestCase):
         user_emails = ','.join(u.delivery_email for u in expected_user_profiles)
         user_profiles = self.get_users_sorted(dict(users=user_emails), None)
         self.assertEqual(user_profiles, expected_user_profiles)
-        error_message = "The realm '%s' does not contain a user with email" % (self.zulip_realm,)
+        error_message = f"The realm '{self.zulip_realm}' does not contain a user with email"
         with self.assertRaisesRegex(CommandError, error_message):
             self.command.get_users(dict(users=user_emails), self.zulip_realm)
 
@@ -175,13 +181,12 @@ class TestCommandsCanStart(TestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.commands = filter(
-            lambda filename: filename != '__init__',
-            map(
-                lambda file: os.path.basename(file).replace('.py', ''),
-                glob.iglob('*/management/commands/*.py')
-            )
-        )
+        self.commands = [
+            command
+            for filename in glob.iglob('*/management/commands/*.py')
+            for command in [os.path.basename(filename).replace('.py', '')]
+            if command != '__init__'
+        ]
 
     @slow("Aggregate of runs dozens of individual --help tests")
     def test_management_commands_show_help(self) -> None:
@@ -283,7 +288,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
 
         result = self.client_post(generated_link, {'email': email})
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(re.search('/accounts/new/send_confirm/{}$'.format(email),
+        self.assertTrue(re.search(f'/accounts/new/send_confirm/{email}$',
                                   result["Location"]))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started", result)
@@ -331,10 +336,10 @@ class TestPasswordRestEmail(ZulipTestCase):
     def test_if_command_sends_password_reset_email(self) -> None:
         call_command(self.COMMAND_NAME, users=self.example_email("iago"))
         from django.core.mail import outbox
-        from_email = outbox[0].from_email
-        self.assertIn("Zulip Account Security", from_email)
-        tokenized_no_reply_email = parseaddr(from_email)[1]
-        self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
+        self.assertRegex(
+            outbox[0].from_email,
+            fr"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
+        )
         self.assertIn("reset your password", outbox[0].body)
 
 class TestRealmReactivationEmail(ZulipTestCase):
@@ -342,7 +347,7 @@ class TestRealmReactivationEmail(ZulipTestCase):
 
     def test_if_realm_not_deactivated(self) -> None:
         realm = get_realm('zulip')
-        with self.assertRaisesRegex(CommandError, "The realm %s is already active." % (realm.name,)):
+        with self.assertRaisesRegex(CommandError, f"The realm {realm.name} is already active."):
             call_command(self.COMMAND_NAME, "--realm=zulip")
 
 class TestSendToEmailMirror(ZulipTestCase):
@@ -354,7 +359,7 @@ class TestSendToEmailMirror(ZulipTestCase):
         self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
 
-        call_command(self.COMMAND_NAME, "--fixture={}".format(fixture_path))
+        call_command(self.COMMAND_NAME, f"--fixture={fixture_path}")
         message = most_recent_message(user_profile)
 
         # last message should be equal to the body of the email in 1.txt
@@ -366,7 +371,7 @@ class TestSendToEmailMirror(ZulipTestCase):
         self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
 
-        call_command(self.COMMAND_NAME, "--fixture={}".format(fixture_path))
+        call_command(self.COMMAND_NAME, f"--fixture={fixture_path}")
         message = most_recent_message(user_profile)
 
         # last message should be equal to the body of the email in 1.json
@@ -378,7 +383,7 @@ class TestSendToEmailMirror(ZulipTestCase):
         self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark2")
 
-        call_command(self.COMMAND_NAME, "--fixture={}".format(fixture_path), "--stream=Denmark2")
+        call_command(self.COMMAND_NAME, f"--fixture={fixture_path}", "--stream=Denmark2")
         message = most_recent_message(user_profile)
 
         # last message should be equal to the body of the email in 1.txt
@@ -395,7 +400,7 @@ class TestConvertMattermostData(ZulipTestCase):
         with patch('zerver.management.commands.convert_mattermost_data.do_convert_data') as m:
             mm_fixtures = self.fixture_file_name("", "mattermost_fixtures")
             output_dir = self.make_import_output_dir("mattermost")
-            call_command(self.COMMAND_NAME, mm_fixtures, "--output={}".format(output_dir))
+            call_command(self.COMMAND_NAME, mm_fixtures, f"--output={output_dir}")
 
         m.assert_called_with(
             masking_content=False,
@@ -425,7 +430,7 @@ class TestExport(ZulipTestCase):
         do_add_reaction(self.example_user("hamlet"), message, "outbox", "1f4e4",  Reaction.UNICODE_EMOJI)
 
         with patch("zerver.management.commands.export.export_realm_wrapper") as m:
-            call_command(self.COMMAND_NAME, "-r=zulip", "--consent-message-id={}".format(message.id))
+            call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
             m.assert_called_once_with(realm=realm, public_only=False, consent_message_id=message.id,
                                       delete_after_upload=False, threads=mock.ANY, output_dir=mock.ANY,
                                       upload=False)
@@ -436,10 +441,10 @@ class TestExport(ZulipTestCase):
         message.last_edit_time = timezone_now()
         message.save()
         with self.assertRaisesRegex(CommandError, "Message was edited. Aborting..."):
-            call_command(self.COMMAND_NAME, "-r=zulip", "--consent-message-id={}".format(message.id))
+            call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
 
         message.last_edit_time = None
         message.save()
         do_add_reaction(self.mit_user("sipbtest"), message, "outbox", "1f4e4",  Reaction.UNICODE_EMOJI)
         with self.assertRaisesRegex(CommandError, "Users from a different realm reacted to message. Aborting..."):
-            call_command(self.COMMAND_NAME, "-r=zulip", "--consent-message-id={}".format(message.id))
+            call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")

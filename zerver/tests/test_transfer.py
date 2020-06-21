@@ -1,18 +1,22 @@
-from django.conf import settings
-
-from moto import mock_s3_deprecated
-from mock import Mock, patch
 import logging
+from unittest.mock import Mock, patch
 
-from zerver.lib.upload import upload_message_file, resize_emoji
-from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import create_s3_buckets, get_test_image_file, \
-    avatar_disk_path
-from zerver.lib.transfer import transfer_avatars_to_s3, transfer_emoji_to_s3, \
-    transfer_message_files_to_s3, transfer_uploads_to_s3
-from zerver.models import Attachment, RealmEmoji
+from django.conf import settings
+from moto import mock_s3
+
 from zerver.lib.actions import check_add_realm_emoji
 from zerver.lib.avatar_hash import user_avatar_path
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import avatar_disk_path, create_s3_buckets, get_test_image_file
+from zerver.lib.transfer import (
+    transfer_avatars_to_s3,
+    transfer_emoji_to_s3,
+    transfer_message_files_to_s3,
+    transfer_uploads_to_s3,
+)
+from zerver.lib.upload import resize_emoji, upload_message_file
+from zerver.models import Attachment, RealmEmoji
+
 
 class TransferUploadsToS3Test(ZulipTestCase):
     logger = logging.getLogger()
@@ -28,7 +32,7 @@ class TransferUploadsToS3Test(ZulipTestCase):
         m2.assert_called_with(4)
         m3.assert_called_with(4)
 
-    @mock_s3_deprecated
+    @mock_s3
     def test_transfer_avatars_to_s3(self) -> None:
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
 
@@ -41,16 +45,16 @@ class TransferUploadsToS3Test(ZulipTestCase):
         transfer_avatars_to_s3(1)
 
         path_id = user_avatar_path(user)
-        image_key = bucket.get_key(path_id)
-        original_image_key = bucket.get_key(path_id + ".original")
-        medium_image_key = bucket.get_key(path_id + "-medium.png")
+        image_key = bucket.Object(path_id)
+        original_image_key = bucket.Object(path_id + ".original")
+        medium_image_key = bucket.Object(path_id + "-medium.png")
 
-        self.assertEqual(len(bucket.get_all_keys()), 3)
-        self.assertEqual(image_key.get_contents_as_string(), open(avatar_disk_path(user), "rb").read())
-        self.assertEqual(original_image_key.get_contents_as_string(), open(avatar_disk_path(user, original=True), "rb").read())
-        self.assertEqual(medium_image_key.get_contents_as_string(), open(avatar_disk_path(user, medium=True), "rb").read())
+        self.assertEqual(len(list(bucket.objects.all())), 3)
+        self.assertEqual(image_key.get()['Body'].read(), open(avatar_disk_path(user), "rb").read())
+        self.assertEqual(original_image_key.get()['Body'].read(), open(avatar_disk_path(user, original=True), "rb").read())
+        self.assertEqual(medium_image_key.get()['Body'].read(), open(avatar_disk_path(user, medium=True), "rb").read())
 
-    @mock_s3_deprecated
+    @mock_s3
     def test_transfer_message_files(self) -> None:
         bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
         hamlet = self.example_user('hamlet')
@@ -63,11 +67,11 @@ class TransferUploadsToS3Test(ZulipTestCase):
 
         attachments = Attachment.objects.all()
 
-        self.assertEqual(len(bucket.get_all_keys()), 2)
-        self.assertEqual(bucket.get_key(attachments[0].path_id).get_contents_as_string(), b'zulip1!')
-        self.assertEqual(bucket.get_key(attachments[1].path_id).get_contents_as_string(), b'zulip2!')
+        self.assertEqual(len(list(bucket.objects.all())), 2)
+        self.assertEqual(bucket.Object(attachments[0].path_id).get()['Body'].read(), b'zulip1!')
+        self.assertEqual(bucket.Object(attachments[1].path_id).get()['Body'].read(), b'zulip2!')
 
-    @mock_s3_deprecated
+    @mock_s3
     def test_transfer_emoji_to_s3(self) -> None:
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
         othello = self.example_user('othello')
@@ -87,13 +91,13 @@ class TransferUploadsToS3Test(ZulipTestCase):
 
         transfer_emoji_to_s3(1)
 
-        self.assertEqual(len(bucket.get_all_keys()), 2)
-        original_key = bucket.get_key(emoji_path + ".original")
-        resized_key = bucket.get_key(emoji_path)
+        self.assertEqual(len(list(bucket.objects.all())), 2)
+        original_key = bucket.Object(emoji_path + ".original")
+        resized_key = bucket.Object(emoji_path)
 
         image_file.seek(0)
         image_data = image_file.read()
         resized_image_data = resize_emoji(image_data)
 
-        self.assertEqual(image_data, original_key.get_contents_as_string())
-        self.assertEqual(resized_image_data, resized_key.get_contents_as_string())
+        self.assertEqual(image_data, original_key.get()['Body'].read())
+        self.assertEqual(resized_image_data, resized_key.get()['Body'].read())

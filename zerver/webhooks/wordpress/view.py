@@ -42,7 +42,7 @@ def api_wordpress_webhook(request: HttpRequest, user_profile: UserProfile,
         data = WP_LOGIN_TEMPLATE.format(name=user_login)
 
     else:
-        return json_error(_("Unknown WordPress webhook action: %s") % (hook,))
+        return json_error(_("Unknown WordPress webhook action: {}").format(hook))
 
     topic = 'WordPress Notification'
 

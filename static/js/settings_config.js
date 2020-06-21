@@ -27,6 +27,21 @@ exports.demote_inactive_streams_values = {
     },
 };
 
+exports.color_scheme_values = {
+    automatic: {
+        code: 1,
+        description: i18n.t("Automatic"),
+    },
+    night: {
+        code: 2,
+        description: i18n.t("Night mode"),
+    },
+    day: {
+        code: 3,
+        description: i18n.t("Day mode"),
+    },
+};
+
 exports.twenty_four_hour_time_values = {
     twenty_four_hour_clock: {
         value: true,
@@ -42,7 +57,6 @@ exports.get_all_display_settings = () => ({
     settings: {
         user_display_settings: [
             "dense_mode",
-            "night_mode",
             "high_contrast_mode",
             "left_side_userlist",
             "starred_message_counts",
@@ -156,6 +170,26 @@ const time_limit_dropdown_values = new Map([
 exports.msg_edit_limit_dropdown_values = time_limit_dropdown_values;
 exports.msg_delete_limit_dropdown_values = time_limit_dropdown_values;
 
+exports.retain_message_forever = -1;
+
+exports.user_role_values = {
+    guest: {
+        code: 600,
+        description: i18n.t("Guest"),
+    },
+    member: {
+        code: 400,
+        description: i18n.t("Member"),
+    },
+    admin: {
+        code: 200,
+        description: i18n.t("Administrator"),
+    },
+    owner: {
+        code: 100,
+        description: i18n.t("Owner"),
+    },
+};
 
 // NOTIFICATIONS
 

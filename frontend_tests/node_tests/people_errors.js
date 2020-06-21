@@ -14,7 +14,7 @@ const me = {
 };
 
 people.init();
-people.add(me);
+people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
 run_test('report_late_add', () => {
@@ -52,7 +52,7 @@ run_test('blueslip', () => {
         user_id: undefined,
         full_name: 'Person Person',
     };
-    people.add(person);
+    people.add_active_user(person);
 
     blueslip.expect('error', 'No user_id found for person@example.com');
     const user_id = people.get_user_id('person@example.com');
@@ -86,8 +86,8 @@ run_test('blueslip', () => {
         user_id: 452,
         full_name: 'Maria Athens',
     };
-    people.add(charles);
-    people.add(maria);
+    people.add_active_user(charles);
+    people.add_active_user(maria);
 
     message = {
         type: 'private',

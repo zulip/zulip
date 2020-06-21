@@ -17,8 +17,8 @@ class TransifexHookTests(WebhookTestCase):
 
     def test_transifex_reviewed_message(self) -> None:
         self.REVIEWED = True
-        expected_topic = "{} in {}".format(self.PROJECT, self.LANGUAGE)
-        expected_message = "Resource {} fully reviewed.".format(self.RESOURCE)
+        expected_topic = f"{self.PROJECT} in {self.LANGUAGE}"
+        expected_message = f"Resource {self.RESOURCE} fully reviewed."
         self.url = self.build_webhook_url(
             self.URL_REVIEWED_METHOD_TEMPLATE,
             project=self.PROJECT,
@@ -29,8 +29,8 @@ class TransifexHookTests(WebhookTestCase):
 
     def test_transifex_translated_message(self) -> None:
         self.REVIEWED = False
-        expected_topic = "{} in {}".format(self.PROJECT, self.LANGUAGE)
-        expected_message = "Resource {} fully translated.".format(self.RESOURCE)
+        expected_topic = f"{self.PROJECT} in {self.LANGUAGE}"
+        expected_message = f"Resource {self.RESOURCE} fully translated."
         self.url = self.build_webhook_url(
             self.URL_TRANSLATED_METHOD_TEMPLATE,
             project=self.PROJECT,

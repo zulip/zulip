@@ -22,7 +22,8 @@ EOF
 
 mkdir -p zerver/tests/fixtures
 
-"$(dirname "$0")/../scripts/setup/terminate-psql-sessions" zulip zulip_test zulip_test_base zulip_test_template
+PGHOST=localhost PGUSER=zulip \
+    "$(dirname "$0")/../scripts/setup/terminate-psql-sessions" zulip_test zulip_test_base zulip_test_template
 
 create_zulip_test
 

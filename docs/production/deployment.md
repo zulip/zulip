@@ -60,7 +60,7 @@ though it's also possible to subclass some of the lower-level
 manifests defined in that directory if you want to customize.  A good
 example of doing this is in the
 [zulip_ops puppet configuration][zulipchat-puppet] that we use as part
-of managing chat.zulip.org and zulipchat.com.
+of managing chat.zulip.org and zulip.com.
 
 ### Using Zulip with Amazon RDS as the database
 
@@ -222,10 +222,6 @@ For `nginx` configuration, there's two things you need to setup:
   example:
 
 ```
-map $http_upgrade $connection_upgrade {
-        default upgrade;
-        ''      close;
-}
 server {
         listen                  443 ssl;
         server_name             zulip.example.net;
@@ -237,8 +233,6 @@ server {
         location / {
                 proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
                 proxy_set_header        Host $http_host;
-                proxy_set_header        Upgrade $http_upgrade;
-                proxy_set_header        Connection $connection_upgrade;
                 proxy_http_version      1.1;
                 proxy_buffering         off;
                 proxy_read_timeout      20m;
@@ -256,6 +250,67 @@ your installation.
 [voyager.pp]: https://github.com/zulip/zulip/blob/master/puppet/zulip/manifests/voyager.pp
 [zulipchat-puppet]: https://github.com/zulip/zulip/tree/master/puppet/zulip_ops/manifests
 [nginx-loadbalancer]: https://github.com/zulip/zulip/blob/master/puppet/zulip_ops/files/nginx/sites-available/loadbalancer
+
+### Apache2 configuration
+
+Below is a working example of a full Apache2 configuration. It assumes
+that your Zulip sits at `http://localhost:5080`. You first need to
+make the following changes in two configuration files.
+
+1. Follow the instructions for [Configure Zulip to allow HTTP](#configuring-zulip-to-allow-http).
+
+2. Add the following to `/etc/zulip/settings.py`:
+    ```
+    EXTERNAL_HOST = 'zulip.example.com'
+    ALLOWED_HOSTS = ['zulip.example.com', '127.0.0.1']
+    USE_X_FORWARDED_HOST = True
+    ```
+
+
+3. Restart your Zulip server with `/home/zulip/deployments/current/restart-server`.
+
+4. Create an Apache2 virtual host configuration file, similar to the
+   following.  Place it the appropriate path for your Apache2
+   installation and enable it (E.g. if you use Debian or Ubuntu, then
+   place it in `/etc/apache2/sites-available/zulip.example.com.conf`
+   and then run `a2ensite zulip.example.com && systemctl reload
+   apache2`):
+
+    ```
+    <VirtualHost *:80>
+        ServerName zulip.example.com
+        RewriteEngine On
+        RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+    </VirtualHost>
+
+    <VirtualHost *:443>
+      ServerName zulip.example.com
+
+      RequestHeader set "X-Forwarded-Proto" expr=%{REQUEST_SCHEME}
+      RequestHeader set "X-Forwarded-SSL" expr=%{HTTPS}
+
+      RewriteEngine On
+      RewriteRule /(.*)           http://localhost:5080/$1 [P,L]
+
+      <Location />
+        Require all granted
+        ProxyPass  http://localhost:5080/  timeout=300
+        ProxyPassReverse  http://localhost:5080/
+        ProxyPassReverseCookieDomain  127.0.0.1  zulip.example.com
+      </Location>
+
+      SSLEngine on
+      SSLProxyEngine on
+      SSLCertificateFile /etc/letsencrypt/live/zulip.example.com/fullchain.pem
+      SSLCertificateKeyFile /etc/letsencrypt/live/zulip.example.com/privkey.pem
+      SSLOpenSSLConfCmd DHParameters "/etc/nginx/dhparam.pem"
+      SSLProtocol all -SSLv3 -TLSv1 -TLSv1.1
+      SSLCipherSuite ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384
+      SSLHonorCipherOrder off
+      SSLSessionTickets off
+      Header set Strict-Transport-Security "max-age=31536000"
+    </VirtualHost>
+    ```
 
 ### HAProxy configuration
 

@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
-
-
 import os
-import sys
-import time
 import signal
 import subprocess
+import sys
+import time
 import types
 
 # check for the venv
 from lib import sanity_check
+
 sanity_check.check_venv(__file__)
 
 # TODO: Convert this to use scripts/lib/queue_workers.py
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
-successful_worker_launch = '[process_queue] 17 queue worker threads were launched\n'
+successful_worker_launch = '[process_queue] 16 queue worker threads were launched\n'
 
 def check_worker_launch(run_dev: "subprocess.Popen[str]") -> bool:
     failed = False
@@ -56,7 +55,7 @@ def check_worker_launch(run_dev: "subprocess.Popen[str]") -> bool:
 
 if __name__ == '__main__':
     print('\nStarting Development Server')
-    args = ["{}/run-dev.py".format(TOOLS_DIR)]
+    args = [f"{TOOLS_DIR}/run-dev.py"]
     run_dev = subprocess.Popen(
         args,
         bufsize=1,  # line buffered

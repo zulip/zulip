@@ -1,20 +1,19 @@
+from http.cookies import SimpleCookie
 from typing import Any
+from unittest import mock
 
-import mock
 import ujson
+from django.conf import settings
+from django.core import mail
+from django.http import HttpResponse
 from django.test import TestCase
 from django.utils import translation
-from django.conf import settings
-from django.http import HttpResponse
-from django.core import mail
-from http.cookies import SimpleCookie
 
-from zerver.models import get_realm_stream
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-from zerver.management.commands import makemessages
 from zerver.lib.email_notifications import enqueue_welcome_emails
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.management.commands import makemessages
+from zerver.models import get_realm_stream
+
 
 class EmailTranslationTestCase(ZulipTestCase):
     def test_email_translation(self) -> None:
@@ -66,8 +65,7 @@ class TranslationTestCase(ZulipTestCase):
     def fetch(self, method: str, url: str, expected_status: int, **kwargs: Any) -> HttpResponse:
         response = getattr(self.client, method)(url, **kwargs)
         self.assertEqual(response.status_code, expected_status,
-                         msg="Expected %d, received %d for %s to %s" % (
-                             expected_status, response.status_code, method, url))
+                         msg=f"Expected {expected_status}, received {response.status_code} for {method} to {url}")
         return response
 
     def test_accept_language_header(self) -> None:
@@ -105,7 +103,7 @@ class TranslationTestCase(ZulipTestCase):
                      ]
 
         for lang, word in languages:
-            response = self.fetch('get', '/{}/integrations/'.format(lang), 200)
+            response = self.fetch('get', f'/{lang}/integrations/', 200)
             self.assert_in_response(word, response)
 
 

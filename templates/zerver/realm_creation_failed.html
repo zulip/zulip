@@ -18,12 +18,9 @@
             <div class="inner-content">
                 <p>{{ _('This server does not allow members of the public to create new organizations.') }}</p>
                 <p>
-                    {% trans %}
-                    Zulip is open source, so you
-                    can <a href="https://zulip.readthedocs.io/en/stable/production/install.html">install
-                    your own Zulip server</a> or create a new
-                    organization on
-                    <a href="https://zulipchat.com">Zulip Cloud</a>
+                    {% trans zulip_cloud_link="https://zulip.com",production_install_url="https://zulip.readthedocs.io/en/stable/production/install.html" %}
+                    Zulip is open source, so you can <a href="{{ production_install_url}}">install your own Zulip server</a> or create a new organization on
+                    <a href="{{ zulip_cloud_link }}">Zulip Cloud</a>
                     {% endtrans %}
                 </p>
             </div>

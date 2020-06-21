@@ -27,9 +27,9 @@ First, export your data from Gitter.
 
 {end_tabs}
 
-### Import into zulipchat.com
+### Import into Zulip Cloud
 
-Email support@zulipchat.com with `gitter_data.zip` and your desired
+Email support@zulip.com with `gitter_data.zip` and your desired
 subdomain. Your imported organization will be hosted at
 `<subdomain>.zulipchat.com`.
 
@@ -50,12 +50,16 @@ the most common configuration, run the following commands, replacing
 
 ```
 cd /home/zulip/deployments/current
+supervisorctl stop all  # Stop the Zulip server
 ./manage.py convert_gitter_data gitter_data.json --output converted_gitter_data
 ./manage.py import '' converted_gitter_data
+./scripts/restart-server
 ```
 
-This could take several minutes to run, depending on how much data you're
-importing.
+This could take several minutes to run, depending on how much data
+you're importing.  The server stop/restart is only necessary when
+importing on a server with minimal RAM, where an OOM kill might
+otherwise occur.
 
 **Import options**
 

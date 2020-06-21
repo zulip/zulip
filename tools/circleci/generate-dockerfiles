@@ -14,7 +14,7 @@ if __name__ == "__main__":
         dockerfile_settings = yaml.safe_load(f)
 
     for distro in dockerfile_settings:
-        dockerfile_path = "images/{}/Dockerfile".format(distro)
+        dockerfile_path = f"images/{distro}/Dockerfile"
         os.makedirs(os.path.dirname(dockerfile_path), exist_ok=True)
         with open(dockerfile_path, "w") as f:
             f.write("""\

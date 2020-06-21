@@ -1,36 +1,17 @@
 #!/usr/bin/env bash
 set -e
 
-POSTGRES_USER="postgres"
-if [ "$(uname)" = "OpenBSD" ]; then
-  POSTGRES_USER="_postgresql"
-fi
-
 cd /
 
-username=$1
-
-shift
 tables="$(printf "'%s'," "${@//\'/\'\'}")"
 tables="${tables%,}"
 
-case "$(id -un)" in
-root)
-    psql=(su -s /usr/bin/env - -- "$POSTGRES_USER" psql postgres "$POSTGRES_USER")
-    ;;
-"$POSTGRES_USER")
-    psql=(psql postgres "$POSTGRES_USER")
-    ;;
-*)
-    psql=(psql -h localhost postgres "$username")
-    ;;
-esac
-
-"${psql[@]}" -v ON_ERROR_STOP=1 <<EOF
+psql postgres -v ON_ERROR_STOP=1 <<EOF
 SELECT pg_terminate_backend(s.pid)
     FROM pg_stat_activity s, pg_roles r
     WHERE
         s.datname IN ($tables)
         AND r.rolname = CURRENT_USER
-        AND (s.usename = r.rolname OR r.rolsuper = 't');
+        AND (s.usename = r.rolname OR r.rolsuper = 't')
+        AND s.pid <> pg_backend_pid();
 EOF

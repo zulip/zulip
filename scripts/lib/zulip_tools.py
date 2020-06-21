@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 import argparse
+import configparser
 import datetime
 import functools
 import hashlib
+import json
 import logging
 import os
 import pwd
@@ -13,11 +15,8 @@ import subprocess
 import sys
 import tempfile
 import time
-import json
 import uuid
-import configparser
-
-from typing import Sequence, Set, Any, Dict, List
+from typing import Any, Dict, List, Sequence, Set
 
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
 LOCK_DIR = os.path.join(DEPLOYMENTS_DIR, "lock")
@@ -84,7 +83,7 @@ def parse_cache_script_args(description: str) -> argparse.Namespace:
 
 def get_deploy_root() -> str:
     return os.path.realpath(
-        os.path.normpath(os.path.join(os.path.dirname(__file__), "..", ".."))
+        os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..")),
     )
 
 def get_deployment_version(extract_path: str) -> str:
@@ -116,6 +115,12 @@ def get_zulip_pwent() -> pwd.struct_passwd:
     # directory is unexpectedly owned by root, we fallback to the
     # `zulip` user as that's the correct value in production.
     return pwd.getpwnam("zulip")
+
+def get_postgres_pwent() -> pwd.struct_passwd:
+    try:
+        return pwd.getpwnam("postgres")
+    except KeyError:
+        return get_zulip_pwent()
 
 def su_to_zulip(save_suid: bool = False) -> None:
     """Warning: su_to_zulip assumes that the zulip checkout is owned by
@@ -166,15 +171,15 @@ def get_deployment_lock(error_rerun_script: str) -> None:
             break
         except OSError:
             print(WARNING + "Another deployment in progress; waiting for lock... " +
-                  "(If no deployment is running, rmdir %s)" % (LOCK_DIR,) + ENDC)
+                  "(If no deployment is running, rmdir {})".format(LOCK_DIR) + ENDC)
             sys.stdout.flush()
             time.sleep(3)
 
     if not got_lock:
         print(FAIL + "Deployment already in progress.  Please run\n" +
-              "  %s\n" % (error_rerun_script,) +
+              "  {}\n".format(error_rerun_script) +
               "manually when the previous deployment finishes, or run\n" +
-              "  rmdir %s\n"  % (LOCK_DIR,) +
+              "  rmdir {}\n".format(LOCK_DIR) +
               "if the previous deployment crashed." +
               ENDC)
         sys.exit(1)
@@ -184,15 +189,15 @@ def release_deployment_lock() -> None:
 
 def run(args: Sequence[str], **kwargs: Any) -> None:
     # Output what we're doing in the `set -x` style
-    print("+ %s" % (" ".join(map(shlex.quote, args)),))
+    print("+ {}".format(" ".join(map(shlex.quote, args))))
 
     try:
         subprocess.check_call(args, **kwargs)
     except subprocess.CalledProcessError:
         print()
-        print(WHITEONRED + "Error running a subcommand of %s: %s" %
-              (sys.argv[0], " ".join(map(shlex.quote, args))) +
-              ENDC)
+        print(WHITEONRED + "Error running a subcommand of {}: {}".format(
+            sys.argv[0], " ".join(map(shlex.quote, args)),
+        ) + ENDC)
         print(WHITEONRED + "Actual error output for the subcommand is just above this." +
               ENDC)
         print()
@@ -271,7 +276,7 @@ def get_caches_to_be_purged(caches_dir: str, caches_in_use: Set[str], threshold_
     return caches_to_purge
 
 def purge_unused_caches(
-    caches_dir: str, caches_in_use: Set[str], cache_type: str, args: argparse.Namespace
+    caches_dir: str, caches_in_use: Set[str], cache_type: str, args: argparse.Namespace,
 ) -> None:
     all_caches = {os.path.join(caches_dir, cache) for cache in os.listdir(caches_dir)}
     caches_to_purge = get_caches_to_be_purged(caches_dir, caches_in_use, args.threshold_days)
@@ -326,17 +331,17 @@ def may_be_perform_purging(
     if dry_run:
         print("Performing a dry run...")
     if not no_headings:
-        print("Cleaning unused %ss..." % (dir_type,))
+        print("Cleaning unused {}s...".format(dir_type))
 
     for directory in dirs_to_purge:
         if verbose:
-            print("Cleaning unused %s: %s" % (dir_type, directory))
+            print("Cleaning unused {}: {}".format(dir_type, directory))
         if not dry_run:
             run_as_root(["rm", "-rf", directory])
 
     for directory in dirs_to_keep:
         if verbose:
-            print("Keeping used %s: %s" % (dir_type, directory))
+            print("Keeping used {}: {}".format(dir_type, directory))
 
 @functools.lru_cache(None)
 def parse_os_release() -> Dict[str, str]:
@@ -378,8 +383,8 @@ def os_families() -> Set[str]:
     distro_info = parse_os_release()
     return {distro_info["ID"], *distro_info.get("ID_LIKE", "").split()}
 
-def files_and_string_digest(filenames: List[str],
-                            extra_strings: List[str]) -> str:
+def files_and_string_digest(filenames: Sequence[str],
+                            extra_strings: Sequence[str]) -> str:
     # see is_digest_obsolete for more context
     sha1sum = hashlib.sha1()
     for fn in filenames:
@@ -392,8 +397,8 @@ def files_and_string_digest(filenames: List[str],
     return sha1sum.hexdigest()
 
 def is_digest_obsolete(hash_name: str,
-                       filenames: List[str],
-                       extra_strings: List[str]=[]) -> bool:
+                       filenames: Sequence[str],
+                       extra_strings: Sequence[str] = []) -> bool:
     '''
     In order to determine if we need to run some
     process, we calculate a digest of the important
@@ -426,8 +431,8 @@ def is_digest_obsolete(hash_name: str,
     return new_hash != old_hash
 
 def write_new_digest(hash_name: str,
-                     filenames: List[str],
-                     extra_strings: List[str]=[]) -> None:
+                     filenames: Sequence[str],
+                     extra_strings: Sequence[str] = []) -> None:
     hash_path = os.path.join(get_dev_uuid_var_path(), hash_name)
     new_hash = files_and_string_digest(filenames, extra_strings)
     with open(hash_path, 'w') as f:
@@ -483,6 +488,16 @@ def get_config(
     if config_file.has_option(section, key):
         return config_file.get(section, key)
     return default_value
+
+def set_config(
+    config_file: configparser.RawConfigParser,
+    section: str,
+    key: str,
+    value: str,
+) -> None:
+    if not config_file.has_section(section):
+        config_file.add_section(section)
+    config_file.set(section, key, value)
 
 def get_config_file() -> configparser.RawConfigParser:
     config_file = configparser.RawConfigParser()

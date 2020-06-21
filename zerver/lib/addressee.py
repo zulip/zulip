@@ -1,33 +1,16 @@
 from typing import Iterable, List, Optional, Sequence, Union, cast
 
 from django.utils.translation import ugettext as _
+
 from zerver.lib.exceptions import JsonableError
 from zerver.models import (
     Realm,
-    UserProfile,
-    get_user_including_cross_realm,
-    get_user_by_id_in_realm_including_cross_realm,
     Stream,
+    UserProfile,
+    get_user_by_id_in_realm_including_cross_realm,
+    get_user_including_cross_realm,
 )
 
-def raw_pm_with_emails(email_str: str, my_email: str) -> List[str]:
-    frags = email_str.split(',')
-    emails = [s.strip().lower() for s in frags]
-    emails = [email for email in emails if email]
-
-    if len(emails) > 1:
-        emails = [email for email in emails if email != my_email.lower()]
-
-    return emails
-
-def raw_pm_with_emails_by_ids(user_ids: Iterable[int], my_email: str,
-                              realm: Realm) -> List[str]:
-    user_profiles = get_user_profiles_by_ids(user_ids, realm)
-    emails = [user_profile.email for user_profile in user_profiles]
-    if len(emails) > 1:
-        emails = [email for email in emails if email != my_email.lower()]
-
-    return emails
 
 def get_user_profiles(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
     user_profiles: List[UserProfile] = []
@@ -35,7 +18,7 @@ def get_user_profiles(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
         try:
             user_profile = get_user_including_cross_realm(email, realm)
         except UserProfile.DoesNotExist:
-            raise JsonableError(_("Invalid email '%s'") % (email,))
+            raise JsonableError(_("Invalid email '{}'").format(email))
         user_profiles.append(user_profile)
     return user_profiles
 

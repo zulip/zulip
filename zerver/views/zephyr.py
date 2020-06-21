@@ -1,21 +1,21 @@
-from django.conf import settings
-from django.http import HttpResponse, HttpRequest
-from django.utils.translation import ugettext as _
-from zerver.decorator import authenticated_json_view
-from zerver.lib.ccache import make_ccache
-from zerver.lib.request import has_request_variables, REQ
-from zerver.lib.response import json_success, json_error
-from zerver.lib.users import get_api_key
-from zerver.models import UserProfile
-
 import base64
 import logging
 import re
 import subprocess
-import ujson
-
 from typing import Optional
 
+import ujson
+from django.conf import settings
+from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
+
+from zerver.decorator import authenticated_json_view
+from zerver.lib.ccache import make_ccache
+from zerver.lib.pysa import mark_sanitized
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_error, json_success
+from zerver.lib.users import get_api_key
+from zerver.models import UserProfile
 
 # Hack for mit.edu users whose Kerberos usernames don't match what they zephyr
 # as.  The key is for Kerberos and the value is for zephyr.
@@ -43,6 +43,14 @@ def webathena_kerberos_login(request: HttpRequest, user_profile: UserProfile,
         # This is important for security since DNS is not secure.
         assert(re.match(r'^[a-z0-9_.-]+$', user) is not None)
         ccache = make_ccache(parsed_cred)
+
+        # 'user' has been verified to contain only benign characters that won't
+        # help with shell injection.
+        user = mark_sanitized(user)
+
+        # 'ccache' is only written to disk by the script and used as a kerberos
+        # credential cache file.
+        ccache = mark_sanitized(ccache)
     except Exception:
         return json_error(_("Invalid Kerberos cache"))
 

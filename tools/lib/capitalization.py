@@ -1,5 +1,5 @@
-from typing import List, Tuple, Match
 import re
+from typing import List, Match, Tuple
 
 from bs4 import BeautifulSoup
 
@@ -35,6 +35,7 @@ IGNORED_PHRASES = [
     r"Mac",
     r"macOS",
     r"MiB",
+    r"OAuth",
     r"OTP",
     r"Pivotal",
     r"Play Store",
@@ -166,11 +167,11 @@ COMPILED_IGNORED_PHRASES = [
 ]
 
 SPLIT_BOUNDARY = '?.!'  # Used to split string into sentences.
-SPLIT_BOUNDARY_REGEX = re.compile(r'[{}]'.format(SPLIT_BOUNDARY))
+SPLIT_BOUNDARY_REGEX = re.compile(fr'[{SPLIT_BOUNDARY}]')
 
 # Regexes which check capitalization in sentences.
 DISALLOWED_REGEXES = [re.compile(regex) for regex in [
-    r'^[a-z]',  # Checks if the sentence starts with a lower case character.
+    r'^[a-z](?!\})',  # Checks if the sentence starts with a lower case character.
     r'^[A-Z][a-z]+[\sa-z0-9]+[A-Z]',  # Checks if an upper case character exists
     # after a lower case character when the first character is in upper case.
 ]]

@@ -72,9 +72,7 @@ exports.update_stream_color = function (sub, color, opts) {
         update_historical_message_color(sub.name, color);
     }
     update_stream_sidebar_swatch_color(stream_id, color);
-    if (!page_params.search_pills_enabled) {
-        tab_bar.colorize_tab_bar();
-    }
+    tab_bar.colorize_tab_bar();
 };
 
 function picker_do_change_color(color) {
@@ -95,12 +93,12 @@ exports.sidebar_popover_colorpicker_options = {
 };
 
 exports.sidebar_popover_colorpicker_options_full = {
-    clickoutFiresChange: true,
+    clickoutFiresChange: false,
     showPalette: true,
     showInput: true,
     flat: true,
     cancelText: "",
-    chooseText: "choose",
+    chooseText: i18n.t("Confirm"),
     palette: stream_color_palette,
     change: picker_do_change_color,
 };

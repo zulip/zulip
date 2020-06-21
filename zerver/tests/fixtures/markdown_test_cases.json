@@ -157,12 +157,12 @@
     {
       "name": "reference_links_disabled",
       "input": "Hello [world]\n\n[world]: https://google.com",
-      "expected_output": "<p>Hello [world]</p>\n<p>[world]: <a href=\"https://google.com\" title=\"https://google.com\">https://google.com</a></p>"
+      "expected_output": "<p>Hello [world]</p>\n<p>[world]: <a href=\"https://google.com\">https://google.com</a></p>"
     },
     {
       "name": "reference_links_disabled_2",
       "input": "Hello [world][ref-name]\n\n[ref-name]: https://google.com",
-      "expected_output": "<p>Hello [world][ref-name]</p>\n<p>[ref-name]: <a href=\"https://google.com\" title=\"https://google.com\">https://google.com</a></p>"
+      "expected_output": "<p>Hello [world][ref-name]</p>\n<p>[ref-name]: <a href=\"https://google.com\">https://google.com</a></p>"
     },
     {
       "name": "ulist_standard_1",
@@ -277,7 +277,7 @@
     {
       "name": "strikthrough_link",
       "input": "~~test http://xx.xx link~~",
-      "expected_output": "<p><del>test <a href=\"http://xx.xx\" title=\"http://xx.xx\">http://xx.xx</a> link</del></p>",
+      "expected_output": "<p><del>test <a href=\"http://xx.xx\">http://xx.xx</a> link</del></p>",
       "text_content": "test http://xx.xx link"
     },
     {
@@ -361,88 +361,88 @@
     },
     {
       "name": "linkify_interference",
-      "input": "link: xx, x xxxxx xx xxxx xx\n\n[xxxxx #xx](http://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/):**xxxxxxx**\n\nxxxxxxx xxxxx xxxx xxxxx:\n`xxxxxx`: xxxxxxx\n`xxxxxx`: xxxxx\n`xxxxxx`: xxxxx xxxxx",
-      "expected_output": "<p>link: xx, x xxxxx xx xxxx xx</p>\n<p><a href=\"http://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/\" title=\"http://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/\">xxxxx #xx</a>:<strong>xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxxxxxx<br>\n<code>xxxxxx</code>: xxxxx<br>\n<code>xxxxxx</code>: xxxxx xxxxx</p>",
+      "input": "link: xx, x xxxxx xx xxxx xx\n\n[xxxxx #xx](http://xxxxxxxxx:xxxx/xxx/xxxxxx%78xxxx/xx/):**xxxxxxx**\n\nxxxxxxx xxxxx xxxx xxxxx:\n`xxxxxx`: xxxxxxx\n`xxxxxx`: xxxxx\n`xxxxxx`: xxxxx xxxxx",
+      "expected_output": "<p>link: xx, x xxxxx xx xxxx xx</p>\n<p><a href=\"http://xxxxxxxxx:xxxx/xxx/xxxxxx%78xxxx/xx/\">xxxxx #xx</a>:<strong>xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxxxxxx<br>\n<code>xxxxxx</code>: xxxxx<br>\n<code>xxxxxx</code>: xxxxx xxxxx</p>",
       "text_content": "link: xx, x xxxxx xx xxxx xx\nxxxxx #xx:xxxxxxx\nxxxxxxx xxxxx xxxx xxxxx:\nxxxxxx: xxxxxxx\nxxxxxx: xxxxx\nxxxxxx: xxxxx xxxxx"
     },
     {
       "name": "inline_image",
       "input": "Google logo today: https://www.google.com/images/srpr/logo4w.png\nKinda boring",
-      "expected_output": "<p>Google logo today: <a href=\"https://www.google.com/images/srpr/logo4w.png\" title=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boring</p>\n<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\" title=\"https://www.google.com/images/srpr/logo4w.png\"><img data-src-fullsize=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full\" src=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail\"></a></div>",
+      "expected_output": "<p>Google logo today: <a href=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boring</p>\n<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\"><img data-src-fullsize=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full\" src=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail\"></a></div>",
       "backend_only_rendering": true,
       "text_content": "Google logo today: https:\/\/www.google.com\/images\/srpr\/logo4w.png\nKinda boring\n"
     },
     {
       "name": "blockquote_inline_image",
       "input": ">Google logo today:\n>https://www.google.com/images/srpr/logo4w.png\n>Kinda boring",
-      "expected_output": "<blockquote>\n<p>Google logo today:<br>\n<a href=\"https://www.google.com/images/srpr/logo4w.png\" title=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boring</p>\n</blockquote>",
+      "expected_output": "<blockquote>\n<p>Google logo today:<br>\n<a href=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boring</p>\n</blockquote>",
       "backend_only_rendering": true,
       "text_content": "> Google logo today:\n> https:\/\/www.google.com\/images\/srpr\/logo4w.png\n> Kinda boring\n"
     },
     {
       "name": "two_inline_images",
-      "input": "Google logo today: https://www.google.com/images/srpr/logo4w.png\nKinda boring\nZulip logo: https://zulipchat.com/static/images/landing-page/zulip-octopus.png",
-      "expected_output": "<p>Google logo today: <a href=\"https:\/\/www.google.com\/images\/srpr\/logo4w.png\" title=\"https:\/\/www.google.com\/images\/srpr\/logo4w.png\">https:\/\/www.google.com\/images\/srpr\/logo4w.png<\/a><br>\nKinda boring<br>\nZulip logo: <a href=\"https:\/\/zulipchat.com\/static\/images\/landing-page\/zulip-octopus.png\" title=\"https:\/\/zulipchat.com\/static\/images\/landing-page\/zulip-octopus.png\">https:\/\/zulipchat.com\/static\/images\/landing-page\/zulip-octopus.png<\/a><\/p>\n<div class=\"message_inline_image\"><a href=\"https:\/\/www.google.com\/images\/srpr\/logo4w.png\" title=\"https:\/\/www.google.com\/images\/srpr\/logo4w.png\"><img data-src-fullsize=\"\/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full\" src=\"\/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail\"><\/a><\/div><div class=\"message_inline_image\"><a href=\"https:\/\/zulipchat.com\/static\/images\/landing-page\/zulip-octopus.png\" title=\"https:\/\/zulipchat.com\/static\/images\/landing-page\/zulip-octopus.png\"><img data-src-fullsize=\"\/thumbnail?url=https%3A%2F%2Fzulipchat.com%2Fstatic%2Fimages%2Flanding-page%2Fzulip-octopus.png&amp;size=full\" src=\"\/thumbnail?url=https%3A%2F%2Fzulipchat.com%2Fstatic%2Fimages%2Flanding-page%2Fzulip-octopus.png&amp;size=thumbnail\"><\/a><\/div>",
+      "input": "Google logo today: https://www.google.com/images/srpr/logo4w.png\nKinda boring\nZulip logo: https://zulip.com/static/images/landing-page/zulip-octopus.png",
+      "expected_output": "<p>Google logo today: <a href=\"https:\/\/www.google.com\/images\/srpr\/logo4w.png\">https:\/\/www.google.com\/images\/srpr\/logo4w.png<\/a><br>\nKinda boring<br>\nZulip logo: <a href=\"https:\/\/zulip.com\/static\/images\/landing-page\/zulip-octopus.png\">https:\/\/zulip.com\/static\/images\/landing-page\/zulip-octopus.png<\/a><\/p>\n<div class=\"message_inline_image\"><a href=\"https:\/\/www.google.com\/images\/srpr\/logo4w.png\"><img data-src-fullsize=\"\/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full\" src=\"\/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail\"><\/a><\/div><div class=\"message_inline_image\"><a href=\"https:\/\/zulip.com\/static\/images\/landing-page\/zulip-octopus.png\"><img data-src-fullsize=\"\/thumbnail?url=https%3A%2F%2Fzulip.com%2Fstatic%2Fimages%2Flanding-page%2Fzulip-octopus.png&amp;size=full\" src=\"\/thumbnail?url=https%3A%2F%2Fzulip.com%2Fstatic%2Fimages%2Flanding-page%2Fzulip-octopus.png&amp;size=thumbnail\"><\/a><\/div>",
       "backend_only_rendering": true,
-      "text_content": "Google logo today: https:\/\/www.google.com\/images\/srpr\/logo4w.png\nKinda boring\nZulip logo: https:\/\/zulipchat.com\/static\/images\/landing-page\/zulip-octopus.png\n"
+      "text_content": "Google logo today: https:\/\/www.google.com\/images\/srpr\/logo4w.png\nKinda boring\nZulip logo: https:\/\/zulip.com\/static\/images\/landing-page\/zulip-octopus.png\n"
     },
     {
       "name": "deduplicate_inline_previews",
       "input": "Google logo today: https://www.google.com/images/srpr/logo4w.png\nKinda boringGoogle logo today: https://www.google.com/images/srpr/logo4w.png\nKinda boring",
-      "expected_output": "<p>Google logo today: <a href=\"https://www.google.com/images/srpr/logo4w.png\" title=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boringGoogle logo today: <a href=\"https://www.google.com/images/srpr/logo4w.png\" title=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boring</p>\n<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\" title=\"https://www.google.com/images/srpr/logo4w.png\"><img data-src-fullsize=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full\" src=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail\"></a></div>",
+      "expected_output": "<p>Google logo today: <a href=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boringGoogle logo today: <a href=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boring</p>\n<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\"><img data-src-fullsize=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full\" src=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail\"></a></div>",
       "backend_only_rendering": true,
       "text_content": "Google logo today: https:\/\/www.google.com\/images\/srpr\/logo4w.png\nKinda boringGoogle logo today: https:\/\/www.google.com\/images\/srpr\/logo4w.png\nKinda boring\n"
     },
     {
       "name": "bulleted_list_inlining",
       "input": "* Google?\n* Google. https://www.google.com/images/srpr/logo4w.png\n* Google!",
-      "expected_output": "<ul>\n<li>Google?</li>\n<li>Google. <a href=\"https://www.google.com/images/srpr/logo4w.png\" title=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\" title=\"https://www.google.com/images/srpr/logo4w.png\"><img data-src-fullsize=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full\" src=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail\"></a></div></li>\n<li>Google!</li>\n</ul>",
+      "expected_output": "<ul>\n<li>Google?</li>\n<li>Google. <a href=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\"><img data-src-fullsize=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full\" src=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail\"></a></div></li>\n<li>Google!</li>\n</ul>",
       "backend_only_rendering": true,
       "text_content": "\nGoogle?\nGoogle. https://www.google.com/images/srpr/logo4w.png\nGoogle!\n"
     },
     {
       "name": "only_inline_image",
       "input": "https://www.google.com/images/srpr/logo4w.png",
-      "expected_output": "<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\" title=\"https://www.google.com/images/srpr/logo4w.png\"><img data-src-fullsize=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full\" src=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail\"></a></div>",
+      "expected_output": "<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\"><img data-src-fullsize=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full\" src=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail\"></a></div>",
       "backend_only_rendering": true
     },
     {
       "name": "only_named_inline_image",
       "input": "[Google Link](https://www.google.com/images/srpr/logo4w.png)",
-      "expected_output": "<p><a href=\"https://www.google.com/images/srpr/logo4w.png\" title=\"https://www.google.com/images/srpr/logo4w.png\">Google Link</a></p>\n<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\" title=\"Google Link\"><img data-src-fullsize=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full\" src=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail\"></a></div>",
+      "expected_output": "<p><a href=\"https://www.google.com/images/srpr/logo4w.png\">Google Link</a></p>\n<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\" title=\"Google Link\"><img data-src-fullsize=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full\" src=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail\"></a></div>",
       "backend_only_rendering": true,
       "text_content": "Google Link\n"
     },
     {
       "name": "only_non_image_link",
       "input": "https://github.com",
-      "expected_output": "<p><a href=\"https://github.com\" title=\"https://github.com\">https://github.com</a></p>"
+      "expected_output": "<p><a href=\"https://github.com\">https://github.com</a></p>"
     },
     {
       "name": "link_with_text",
       "input": "[hello](https://github.com)",
-      "expected_output": "<p><a href=\"https://github.com\" title=\"https://github.com\">hello</a></p>"
+      "expected_output": "<p><a href=\"https://github.com\">hello</a></p>"
     },
     {
       "name": "link_without_text",
       "input": "[](https://github.com)",
-      "expected_output": "<p><a href=\"https://github.com\" title=\"https://github.com\">https://github.com</a></p>"
+      "expected_output": "<p><a href=\"https://github.com\">https://github.com</a></p>"
     },
     {
       "name": "link_with_empty_text",
       "input": "[  ](https://github.com)",
-      "expected_output": "<p><a href=\"https://github.com\" title=\"https://github.com\">https://github.com</a></p>"
+      "expected_output": "<p><a href=\"https://github.com\">https://github.com</a></p>"
     },
     {
       "name": "fragment_link",
       "input": "[foo](http://zulip.testserver/#narrow/stream/1-Denmark)",
-      "expected_output": "<p><a href=\"#narrow/stream/1-Denmark\" title=\"#narrow/stream/1-Denmark\">foo</a></p>",
-      "marked_expected_output": "<p><a href=\"http://zulip.testserver/#narrow/stream/1-Denmark\" title=\"http://zulip.testserver/#narrow/stream/1-Denmark\">foo</a></p>"
+      "expected_output": "<p><a href=\"#narrow/stream/1-Denmark\">foo</a></p>",
+      "marked_expected_output": "<p><a href=\"http://zulip.testserver/#narrow/stream/1-Denmark\">foo</a></p>"
     },
     {
       "name": "not_fragment_link",
       "input": "[foo](http://zulip.testserver/https://example.com)",
-      "expected_output": "<p><a href=\"http://zulip.testserver/https://example.com\" title=\"http://zulip.testserver/https://example.com\">foo</a></p>"
+      "expected_output": "<p><a href=\"http://zulip.testserver/https://example.com\">foo</a></p>"
     },
     {
       "name": "nl2br",
@@ -741,6 +741,38 @@
       "text_content": "!gravatar(username@example.com)"
     },
     {
+      "name": "timestamp_bugdown_only",
+      "input": "!time(Jun 5th 2017, 10:30PM)",
+      "expected_output": "<p><time datetime=\"2017-06-05T22:30:00Z\">Jun 5th 2017, 10:30PM</time></p>",
+      "marked_expected_output": "<p><span class=\"timestamp-error\">Invalid time format: Jun 5th 2017, 10:30PM</span></p>"
+    },
+    {
+      "name": "timestamp_bugdown_and_marked",
+      "input": "!time(31 Dec 2017)",
+      "expected_output": "<p><time datetime=\"2017-12-31T00:00:00Z\">31 Dec 2017</time></p>"
+    },
+    {
+      "name": "timestamp_invalid_input",
+      "input": "!time(<alert(1)>)",
+      "expected_output": "<p><span class=\"timestamp-error\">Invalid time format: &lt;alert(1</span>&gt;)</p>"
+    },
+    {
+      "name": "timestamp_timezone",
+      "input": "!time(31 Dec 2017 5:30 am IST)",
+      "expected_output": "<p><time datetime=\"2017-12-31T00:00:00Z\">31 Dec 2017 5:30 am IST</time></p>",
+      "marked_expected_output": "<p><span class=\"timestamp-error\">Invalid time format: 31 Dec 2017 5:30 am IST</span></p>"
+    },
+    {
+      "name": "timestamp_incorrect",
+      "input": "!time(**hello world**)",
+      "expected_output": "<p><span class=\"timestamp-error\">Invalid time format: **hello world**</span></p>"
+    },
+    {
+      "name": "timestamp_unix",
+      "input": "!time(1496701800)",
+      "expected_output": "<p><time datetime=\"2017-06-05T22:30:00Z\">1496701800</time></p>"
+    },
+    {
       "name": "tex_inline",
       "input": "$$1 \\oplus 0 = 1$$",
       "expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mn>1</mn><mo>⊕</mo><mn>0</mn><mo>=</mo><mn>1</mn></mrow><annotation encoding=\"application/x-tex\">1 \\oplus 0 = 1</annotation></semantics></math></span><span aria-hidden=\"true\" class=\"katex-html\"><span class=\"base\"><span class=\"strut\" style=\"height:0.72777em;vertical-align:-0.08333em;\"></span><span class=\"mord\">1</span><span class=\"mspace\" style=\"margin-right:0.2222222222222222em;\"></span><span class=\"mbin\">⊕</span><span class=\"mspace\" style=\"margin-right:0.2222222222222222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.64444em;vertical-align:0em;\"></span><span class=\"mord\">0</span><span class=\"mspace\" style=\"margin-right:0.2777777777777778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2777777777777778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.64444em;vertical-align:0em;\"></span><span class=\"mord\">1</span></span></span></span></p>"
@@ -764,14 +796,14 @@
     {
       "name": "tex_fenced_tex",
       "input": "```tex\n\n\\pi \\textbf{ is not } 3.14\n```",
-      "expected_output": "<p><span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi>π</mi><mrow><mtext> </mtext><mtext mathvariant=\"bold\">is</mtext><mtext> </mtext><mtext mathvariant=\"bold\">not</mtext><mtext> </mtext></mrow><mn>3.14</mn></mrow><annotation encoding=\"application/x-tex\">\n\\pi \\textbf{ is not } 3.14</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.69444em;vertical-align:0em;\"></span><span class=\"mord mathdefault\" style=\"margin-right:0.03588em;\">π</span><span class=\"mord text\"><span class=\"mord textbf\"> is not </span></span><span class=\"mord\">3</span><span class=\"mord\">.</span><span class=\"mord\">1</span><span class=\"mord\">4</span></span></span></span></span></p>",
-      "marked_expected_output": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi>π</mi><mrow><mtext> </mtext><mtext mathvariant=\"bold\">is</mtext><mtext> </mtext><mtext mathvariant=\"bold\">not</mtext><mtext> </mtext></mrow><mn>3.14</mn></mrow><annotation encoding=\"application/x-tex\">\n\\pi \\textbf{ is not } 3.14</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.69444em;vertical-align:0em;\"></span><span class=\"mord mathdefault\" style=\"margin-right:0.03588em;\">π</span><span class=\"mord text\"><span class=\"mord textbf\"> is not </span></span><span class=\"mord\">3</span><span class=\"mord\">.</span><span class=\"mord\">1</span><span class=\"mord\">4</span></span></span></span></span>"
+      "expected_output": "<div class=\"codehilite\"><pre><span></span><code><span class=\"k\">\\pi</span> <span class=\"k\">\\textbf</span><span class=\"nb\">{</span> is not <span class=\"nb\">}</span> 3.14\n</code></pre></div>",
+      "marked_expected_output": "<div class=\"codehilite\"><pre><span></span><code>\\pi \\textbf{ is not } 3.14\n</code></pre></div>"
     },
     {
       "name": "tex_fenced_latex",
-      "input": "```latex\n\n\\frac{1}{\\sqrt{2}}\n\\begin{bmatrix}\n1 & 1 \\\\\n1 & -1\n\\end{bmatrix}\n```",
-      "expected_output": "<p><span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mfrac><mn>1</mn><msqrt><mn>2</mn></msqrt></mfrac><mrow><mo fence=\"true\">[</mo><mtable rowspacing=\"0.15999999999999992em\" columnspacing=\"1em\"><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mn>1</mn></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mn>1</mn></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mn>1</mn></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mrow><mo>−</mo><mn>1</mn></mrow></mstyle></mtd></mtr></mtable><mo fence=\"true\">]</mo></mrow></mrow><annotation encoding=\"application/x-tex\">\n\\frac{1}{\\sqrt{2}}\n\\begin{bmatrix}\n1 &amp; 1 \\\\\n1 &amp; -1\n\\end{bmatrix}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:2.40003em;vertical-align:-0.95003em;\"></span><span class=\"mord\"><span class=\"mopen nulldelimiter\"></span><span class=\"mfrac\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.32144em;\"><span style=\"top:-2.2027799999999997em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord sqrt\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.90722em;\"><span class=\"svg-align\" style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\" style=\"padding-left:0.833em;\"><span class=\"mord\">2</span></span></span><span style=\"top:-2.86722em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"hide-tail\" style=\"min-width:0.853em;height:1.08em;\"><svg width='400em' height='1.08em' viewBox='0 0 400000 1080' preserveAspectRatio='xMinYMin slice'><path d='M95,702\nc-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14\nc0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54\nc44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10\ns173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429\nc69,-144,104.5,-217.7,106.5,-221\nl0 -0\nc5.3,-9.3,12,-14,20,-14\nH400000v40H845.2724\ns-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7\nc-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z\nM834 80h400000v40h-400000z'/></svg></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.13278em;\"><span></span></span></span></span></span></span></span><span style=\"top:-3.23em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"frac-line\" style=\"border-bottom-width:0.04em;\"></span></span><span style=\"top:-3.677em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">1</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.93em;\"><span></span></span></span></span></span><span class=\"mclose nulldelimiter\"></span></span><span class=\"mspace\" style=\"margin-right:0.16666666666666666em;\"></span><span class=\"minner\"><span class=\"mopen delimcenter\" style=\"top:0em;\"><span class=\"delimsizing size3\">[</span></span><span class=\"mord\"><span class=\"mtable\"><span class=\"col-align-c\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.45em;\"><span style=\"top:-3.61em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">1</span></span></span><span style=\"top:-2.4099999999999997em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">1</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.9500000000000004em;\"><span></span></span></span></span></span><span class=\"arraycolsep\" style=\"width:0.5em;\"></span><span class=\"arraycolsep\" style=\"width:0.5em;\"></span><span class=\"col-align-c\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.45em;\"><span style=\"top:-3.61em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">1</span></span></span><span style=\"top:-2.4099999999999997em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">−</span><span class=\"mord\">1</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.9500000000000004em;\"><span></span></span></span></span></span></span></span><span class=\"mclose delimcenter\" style=\"top:0em;\"><span class=\"delimsizing size3\">]</span></span></span></span></span></span></span></p>",
-      "marked_expected_output": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mfrac><mn>1</mn><msqrt><mn>2</mn></msqrt></mfrac><mrow><mo fence=\"true\">[</mo><mtable rowspacing=\"0.15999999999999992em\" columnspacing=\"1em\"><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mn>1</mn></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mn>1</mn></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mn>1</mn></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mrow><mo>−</mo><mn>1</mn></mrow></mstyle></mtd></mtr></mtable><mo fence=\"true\">]</mo></mrow></mrow><annotation encoding=\"application/x-tex\">\n\\frac{1}{\\sqrt{2}}\n\\begin{bmatrix}\n1 &amp; 1 \\\\\n1 &amp; -1\n\\end{bmatrix}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:2.40003em;vertical-align:-0.95003em;\"></span><span class=\"mord\"><span class=\"mopen nulldelimiter\"></span><span class=\"mfrac\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.32144em;\"><span style=\"top:-2.2027799999999997em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord sqrt\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.90722em;\"><span class=\"svg-align\" style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\" style=\"padding-left:0.833em;\"><span class=\"mord\">2</span></span></span><span style=\"top:-2.86722em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"hide-tail\" style=\"min-width:0.853em;height:1.08em;\"><svg width='400em' height='1.08em' viewBox='0 0 400000 1080' preserveAspectRatio='xMinYMin slice'><path d='M95,702\nc-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14\nc0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54\nc44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10\ns173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429\nc69,-144,104.5,-217.7,106.5,-221\nl0 -0\nc5.3,-9.3,12,-14,20,-14\nH400000v40H845.2724\ns-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7\nc-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z\nM834 80h400000v40h-400000z'/></svg></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.13278em;\"><span></span></span></span></span></span></span></span><span style=\"top:-3.23em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"frac-line\" style=\"border-bottom-width:0.04em;\"></span></span><span style=\"top:-3.677em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">1</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.93em;\"><span></span></span></span></span></span><span class=\"mclose nulldelimiter\"></span></span><span class=\"mspace\" style=\"margin-right:0.16666666666666666em;\"></span><span class=\"minner\"><span class=\"mopen delimcenter\" style=\"top:0em;\"><span class=\"delimsizing size3\">[</span></span><span class=\"mord\"><span class=\"mtable\"><span class=\"col-align-c\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.45em;\"><span style=\"top:-3.61em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">1</span></span></span><span style=\"top:-2.4099999999999997em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">1</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.9500000000000004em;\"><span></span></span></span></span></span><span class=\"arraycolsep\" style=\"width:0.5em;\"></span><span class=\"arraycolsep\" style=\"width:0.5em;\"></span><span class=\"col-align-c\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.45em;\"><span style=\"top:-3.61em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">1</span></span></span><span style=\"top:-2.4099999999999997em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">−</span><span class=\"mord\">1</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.9500000000000004em;\"><span></span></span></span></span></span></span></span><span class=\"mclose delimcenter\" style=\"top:0em;\"><span class=\"delimsizing size3\">]</span></span></span></span></span></span></span>"
+      "input": "```latex\n\n\\pi \\textbf{ is not } 3.14\n```",
+      "expected_output": "<div class=\"codehilite\"><pre><span></span><code><span class=\"k\">\\pi</span> <span class=\"k\">\\textbf</span><span class=\"nb\">{</span> is not <span class=\"nb\">}</span> 3.14\n</code></pre></div>",
+      "marked_expected_output": "<div class=\"codehilite\"><pre><span></span><code>\\pi \\textbf{ is not } 3.14\n</code></pre></div>"
     },
     {
       "name": "tex_money",
@@ -821,6 +853,38 @@
       "expected_output": "<ol>\n<li>\n<p>A</p>\n</li>\n<li>\n<p>B</p>\n</li>\n<li>\n<p>C</p>\n</li>\n<li>\n<p>D<br>\nordinary paragraph</p>\n</li>\n<li>\n<p>AA</p>\n</li>\n<li>\n<p>BB</p>\n</li>\n</ol>",
       "marked_expected_output": "<ol>\n<li><p>A</p>\n</li>\n<li><p>B</p>\n</li>\n<li><p>C</p>\n</li>\n<li><p>D<br>\nordinary paragraph</p>\n</li>\n<li><p>AA</p>\n</li>\n<li><p>BB</p>\n</li>\n</ol>",
       "text_content": "1. A\n2. B\n3. C\n4. D\nordinary paragraph\n5. AA\n6. BB"
+    },
+    {
+      "name": "spoilers_fenced_spoiler",
+      "input": "```spoiler header\ncontent\n```\noutside spoiler\n",
+      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>content</p>\n</div></div>\n\n<p>outside spoiler</p>"
+    },
+    {
+      "name": "spoilers_empty_header",
+      "input": "```spoiler\ncontent\n```\noutside spoiler\n",
+      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>content</p>\n</div></div>\n\n<p>outside spoiler</p>"
+    },
+    {
+      "name": "spoilers_script_tags",
+      "input": "```spoiler <script>alert(1)</script>\n<script>alert(1)</script>\n```",
+      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>\n</div></div>",
+      "marked_expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n<p>&lt;script&gt;alert(1)&lt;/script&gt;\n\n</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>&lt;script&gt;alert(1)&lt;/script&gt;\n\n</p>\n</div></div>"
+    },
+    {
+      "name": "spoilers_block_quote",
+      "input": "~~~quote\n```spoiler header\ncontent\n```\noutside spoiler\n~~~\noutside quote",
+      "expected_output": "<blockquote>\n<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>content</p>\n</div></div>\n\n<p>outside spoiler</p>\n</blockquote>\n<p>outside quote</p>"
+    },
+    {
+      "name": "spoilers_with_header_markdown",
+      "input": "```spoiler [Header](https://example.com) :smile:\ncontent\n```",
+      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n<p><a href=\"https://example.com\">Header</a> <span aria-label=\"smile\" class=\"emoji emoji-263a\" role=\"img\" title=\"smile\">:smile:</span></p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>content</p>\n</div></div>"
+    },
+    {
+      "name": "spoiler_with_inline_image",
+      "input": "```spoiler header\nContent http://example.com/image.png\n```",
+      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>Content <a href=\"http://example.com/image.png\">http://example.com/image.png</a></p>\n<div class=\"message_inline_image\"><a href=\"http://example.com/image.png\"><img data-src-fullsize=\"/thumbnail?url=http%3A%2F%2Fexample.com%2Fimage.png&amp;size=full\" src=\"/thumbnail?url=http%3A%2F%2Fexample.com%2Fimage.png&amp;size=thumbnail\"></a></div></div></div>",
+      "marked_expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>Content <a href=\"http://example.com/image.png\">http://example.com/image.png</a></p>\n</div></div>"
     }
   ],
   "linkify_tests": [
@@ -1076,7 +1140,7 @@
     ],
     [
       "http://zulip.testserver/#narrow/stream/1-Denmark",
-      "<p><a href=\"#narrow/stream/1-Denmark\" title=\"#narrow/stream/1-Denmark\">http://zulip.testserver/#narrow/stream/1-Denmark</a></p>",
+      "<p><a href=\"#narrow/stream/1-Denmark\">http://zulip.testserver/#narrow/stream/1-Denmark</a></p>",
       ""
     ],
     [

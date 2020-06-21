@@ -1,15 +1,15 @@
 # Configure authentication methods
 
-{!admin-only.md!}
+{!owner-only.md!}
 
 By default, Zulip allows logging in via email/password as well as
-various social authentication providers like Google, GitHub, and
-GitLab. You can restrict users to logging in via only a subset of
+various social authentication providers like Google, GitHub, GitLab,
+and Apple. You can restrict users to logging in via only a subset of
 these methods.
 
 LDAP and various custom SSO login methods are currently restricted to
 self-hosted Zulips only.  SAML authentication is supported by Zulip
-Cloud but requires contacting support@zulipchat.com to configure it.
+Cloud but requires contacting support@zulip.com to configure it.
 
 **Note:** If you are running your own server,
 [read this](https://zulip.readthedocs.io/en/latest/production/authentication-methods.html)

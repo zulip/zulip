@@ -23,19 +23,42 @@
                 <ul class="nav nav-tabs" id="billing-tabs">
                     <li class="active"><a data-toggle="tab" href="#overview">Overview</a></li>
                     <li><a data-toggle="tab" href="#payment-method">Payment Method</a></li>
+                    <li><a data-toggle="tab" href="#settings">Settings</a></li>
                 </ul>
 
                 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                 <div class="tab-content">
                     <div class="tab-pane active" id="overview">
+                        {% if free_trial %}
+                        <p>Your current plan is <strong>{{ plan_name }} Free Trial</strong>.</p>
+                        {% else %}
                         <p>Your current plan is <strong>{{ plan_name }}</strong>.</p>
-                        <p>You are using <strong>{{ licenses_used }} of {{ licenses }} licenses</strong>.</p>
+                        {% endif %}
+                        <p>
+                            You are using <strong>{{ licenses_used }} of {{ licenses }} licenses</strong>.
+                            {% if automanage_licenses %}
+                            Licenses are automatically managed by Zulip; when you add or deactivate a user, the number of
+                            licenses will be immediately updated to reflect your new usage.
+                            {% else %}
+                            Licenses are manually managed. You will not be able to add new users to your organization once
+                            you are using all of your licenses.
+                            {% endif %}
+                        </p>
                         <p>
                             {% if renewal_amount %}
-                            Your plan will renew on <strong>{{ renewal_date }}</strong> for
-                            <strong>${{ renewal_amount }}</strong>.
+                                {% if free_trial %}
+                                Your plan will be upgraded to <strong>{{ plan_name }}</strong> on <strong>{{ renewal_date }}</strong> for
+                                <strong>${{ renewal_amount }}</strong>.
+                                {% elif downgrade_at_end_of_cycle %}
+                                Your plan will be downgraded to <strong>Zulip Limited</strong> on <strong>{{ renewal_date }}</strong>.
+                                {% elif switch_to_annual_at_end_of_cycle %}
+                                Your plan will be switched from monthly to annual billing on <strong>{{ renewal_date }}</strong>.
+                                {% else %}
+                                Your plan will renew on <strong>{{ renewal_date }}</strong> for
+                                <strong>${{ renewal_amount }}</strong>.
+                                {% endif %}
                             {% else %}
-                            Your plan ends on <strong>{{ renewal_date }}</strong>, and does not renew.
+                                Your plan ends on <strong>{{ renewal_date }}</strong>, and does not renew.
                             {% endif %}
                         </p>
                     </div>
@@ -66,12 +89,64 @@
                             Card updated. The page will now reload.
                         </div>
                     </div>
+                    <div class="tab-pane" id="settings">
+                        <div id="planchange-error" class="alert alert-danger"></div>
+                        <div id="planchange-input-section">
+                            <form id="planchange-form">
+                                <h3>Downgrade</h3>
+                                {% if free_trial %}
+                                    <p>
+                                        End Free Trial and downgrade plan to <strong>Zulip Limited</strong>.
+                                    </p>
+                                    <input name="status" type="hidden" value="{{ CustomerPlan.ENDED }}" />
+                                    <button class="btn-danger" id="change-plan-status">End free trial</button>
+                                {% else %}
+                                    {% if downgrade_at_end_of_cycle %}
+                                    <p>
+                                        You plan is scheduled for downgrade on <strong>{{ renewal_date }}</strong>.
+                                    </p>
+                                    <input name="status" type="hidden" value="{{ CustomerPlan.ACTIVE }}" />
+                                    <button class="btn-info" id="change-plan-status">Cancel downgrade</button>
+                                    {% else %}
+                                    <p>
+                                        Downgrade to <strong>Zulip Limited</strong> at the end of current billing period.
+                                    </p>
+                                    <input name="status" type="hidden" value="{{ CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE }}" />
+                                    <button class="btn-danger" id="change-plan-status">Start downgrade process</button>
+                                    {% endif %}
+                                {% endif %}
+                            </form>
+                        </div>
+                        <div id="planchange-loading">
+                            <div class="zulip-loading-logo">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 40 40" version="1.1">
+                                    <g transform="translate(-297.14285,-466.64792)">
+                                        <circle cx="317.14285" cy="486.64792" r="19.030317" style="stroke-width:1.93936479;"/>
+                                        <path d="m309.24286 477.14791 14.2 0 1.6 3.9-11.2 11.9 9.6 0 1.6 3.2-14.2 0-1.6-3.9 11.2-11.9-9.6 0z"/>
+                                    </g>
+                                </svg>
+                            </div>
+                            <div id="planchange_loading_indicator"></div>
+                        </div>
+                        <div id="planchange-success" class="alert alert-success">
+                            Plan updated. The page will now reload.
+                        </div>
+                    </div>
                     <div class="tab-pane" id="loading">
                     </div>
                 </div>
+                <div id="goto-zulip-organization-link">
+                    {% if onboarding %}
+                    <br>
+                    <h3>
+                        <b><a href="/">Go to your Zulip organization</a></b>
+                    </h3>
+                    {% endif %}
+                </div>
+                <hr>
                 <div class="support-link">
                     <p>
-                        Contact <a href="mailto:support@zulipchat.com">support@zulipchat.com</a>
+                        Contact <a href="mailto:support@zulip.com">support@zulip.com</a>
                         for billing history or to make changes to your subscription.
                     </p>
                 </div>
@@ -91,7 +166,7 @@
                 </div>
                 <div class="support-link">
                     <p>
-                        Contact <a href="mailto:support@zulipchat.com">support@zulipchat.com</a> for billing history.
+                        Contact <a href="mailto:support@zulip.com">support@zulip.com</a> for billing history.
                     </p>
                 </div>
                 {% else %}

@@ -1,9 +1,8 @@
+import json
 import os
 import re
-import time
 import subprocess
-import json
-
+import time
 from collections import defaultdict
 from typing import Any, DefaultDict, Dict, List
 
@@ -22,7 +21,6 @@ normal_queues = [
     'missedmessage_mobile_notifications',
     'outgoing_webhooks',
     'signups',
-    'slow_queries',
     'user_activity',
     'user_activity_interval',
     'user_presence',
@@ -37,30 +35,26 @@ states = {
     0: "OK",
     1: "WARNING",
     2: "CRITICAL",
-    3: "UNKNOWN"
+    3: "UNKNOWN",
 }
 
 MAX_SECONDS_TO_CLEAR_FOR_BURSTS: DefaultDict[str, int] = defaultdict(
     lambda: 120,
     digest_emails=600,
-    slow_queries=600,
 )
 MAX_SECONDS_TO_CLEAR_NORMAL: DefaultDict[str, int] = defaultdict(
     lambda: 30,
     digest_emails=1200,
-    slow_queries=120,
     missedmessage_mobile_notifications=120,
 )
 CRITICAL_SECONDS_TO_CLEAR_FOR_BURSTS: DefaultDict[str, int] = defaultdict(
     lambda: 240,
     digest_emails=1200,
-    slow_queries=1200,
 )
 CRITICAL_SECONDS_TO_CLEAR_NORMAL: DefaultDict[str, int] = defaultdict(
     lambda: 60,
     missedmessage_mobile_notifications=180,
     digest_emails=600,
-    slow_queries=600,
 )
 
 def analyze_queue_stats(queue_name: str, stats: Dict[str, Any],
@@ -82,7 +76,8 @@ def analyze_queue_stats(queue_name: str, stats: Dict[str, Any],
         # 50).
         return dict(status=CRITICAL,
                     name=queue_name,
-                    message='queue appears to be stuck, last update %s' % (stats['update_time'],))
+                    message='queue appears to be stuck, last update {}, queue size {}'.format(
+                        stats['update_time'], queue_count_rabbitmqctl))
 
     current_size = stats['current_queue_size']
     average_consume_time = stats['recent_average_consume_time']
@@ -112,8 +107,7 @@ def analyze_queue_stats(queue_name: str, stats: Dict[str, Any],
 
             return dict(status=status,
                         name=queue_name,
-                        message='clearing the backlog will take too long: %ss, size: %s' % (
-                            expected_time_to_clear_backlog, current_size))
+                        message=f'clearing the backlog will take too long: {expected_time_to_clear_backlog}s, size: {current_size}')
     else:
         # We slept recently, so treat this as a burst.
         if expected_time_to_clear_backlog > MAX_SECONDS_TO_CLEAR_FOR_BURSTS[queue_name]:
@@ -124,8 +118,7 @@ def analyze_queue_stats(queue_name: str, stats: Dict[str, Any],
 
             return dict(status=status,
                         name=queue_name,
-                        message='clearing the burst will take too long: %ss, size: %s' % (
-                            expected_time_to_clear_backlog, current_size))
+                        message=f'clearing the burst will take too long: {expected_time_to_clear_backlog}s, size: {current_size}')
 
     return dict(status=OK,
                 name=queue_name,
@@ -143,10 +136,10 @@ def check_other_queues(queue_counts_dict: Dict[str, int]) -> List[Dict[str, Any]
 
         if count > CRITICAL_COUNT_THRESHOLD_DEFAULT:
             results.append(dict(status=CRITICAL, name=queue,
-                                message='count critical: %s' % (count,)))
+                                message=f'count critical: {count}'))
         elif count > WARN_COUNT_THRESHOLD_DEFAULT:
             results.append(dict(status=WARNING, name=queue,
-                                message='count warning: %s' % (count,)))
+                                message=f'count warning: {count}'))
         else:
             results.append(dict(status=OK, name=queue, message=''))
 
@@ -214,6 +207,6 @@ def check_rabbitmq_queues() -> None:
             queue_error_template.format(result['name'], states[result['status']], result['message'])
             for result in results if result['status'] > 0
         ])
-        print("%s|%s|%s|%s" % (now, status, states[status], error_message))
+        print(f"{now}|{status}|{states[status]}|{error_message}")
     else:
-        print("%s|%s|%s|queues normal" % (now, status, states[status]))
+        print(f"{now}|{status}|{states[status]}|queues normal")

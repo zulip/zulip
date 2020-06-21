@@ -46,10 +46,10 @@ const bot_test = {
     is_admin: false,
     is_bot: true,
 };
-people.add(alice);
-people.add(bob);
-people.add(me);
-people.add(bot_test);
+people.add_active_user(alice);
+people.add_active_user(bob);
+people.add_active_user(me);
+people.add_active_user(bot_test);
 people.initialize_current_user(me.user_id);
 
 run_test('close', () => {

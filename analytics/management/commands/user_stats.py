@@ -32,11 +32,11 @@ class Command(BaseCommand):
         for realm in realms:
             print(realm.string_id)
             user_profiles = UserProfile.objects.filter(realm=realm, is_active=True)
-            print("%d users" % (len(user_profiles),))
-            print("%d streams" % (len(Stream.objects.filter(realm=realm)),))
+            print(f"{len(user_profiles)} users")
+            print(f"{len(Stream.objects.filter(realm=realm))} streams")
 
             for user_profile in user_profiles:
-                print("%35s" % (user_profile.email,), end=' ')
+                print(f"{user_profile.email:>35}", end=' ')
                 for week in range(10):
-                    print("%5d" % (self.messages_sent_by(user_profile, week),), end=' ')
+                    print(f"{self.messages_sent_by(user_profile, week):5}", end=' ')
                 print("")

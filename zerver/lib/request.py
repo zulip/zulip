@@ -1,18 +1,29 @@
 from collections import defaultdict
 from functools import wraps
 from types import FunctionType
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    Sequence,
+    TypeVar,
+    Union,
+    cast,
+    overload,
+)
+
 import ujson
-
+from django.core.exceptions import ValidationError
+from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
+from typing_extensions import Literal
 
-from zerver.lib.exceptions import JsonableError, ErrorCode, \
-    InvalidJSONError
+from zerver.lib.exceptions import ErrorCode, InvalidJSONError, JsonableError
 from zerver.lib.types import Validator, ViewFuncT
 
-from django.http import HttpRequest, HttpResponse
-
-from typing import Any, Callable, Dict, Generic, List, Optional, Type, TypeVar, Union, cast, overload
-from typing_extensions import Literal
 
 class RequestConfusingParmsError(JsonableError):
     code = ErrorCode.REQUEST_CONFUSING_VAR
@@ -64,15 +75,14 @@ class _REQ(Generic[ResultT]):
         self,
         whence: Optional[str] = None,
         *,
-        type: Type[ResultT] = Type[None],
         converter: Optional[Callable[[str], ResultT]] = None,
         default: Union[_NotSpecified, ResultT, None] = NotSpecified,
-        validator: Optional[Validator] = None,
-        str_validator: Optional[Validator] = None,
+        validator: Optional[Validator[ResultT]] = None,
+        str_validator: Optional[Validator[ResultT]] = None,
         argument_type: Optional[str] = None,
         intentionally_undocumented: bool=False,
         documentation_pending: bool=False,
-        aliases: Optional[List[str]] = None,
+        aliases: Sequence[str] = [],
         path_only: bool=False
     ) -> None:
         """whence: the name of the request variable that should be used
@@ -94,10 +104,6 @@ class _REQ(Generic[ResultT]):
 
         argument_type: pass 'body' to extract the parsed JSON
         corresponding to the request body
-
-        type: a hint to typing (using mypy) what the type of this parameter is.
-        Currently only typically necessary if default=None and the type cannot
-        be inferred in another way (eg. via converter).
 
         aliases: alternate names for the POST var
 
@@ -131,18 +137,20 @@ class _REQ(Generic[ResultT]):
 # functions using has_request_variables. In reality, REQ returns an
 # instance of class _REQ to enable the decorator to scan the parameter
 # list for _REQ objects and patch the parameters as the true types.
-
+#
+# See also this documentation to learn how @overload helps here.
+# https://zulip.readthedocs.io/en/latest/testing/mypy.html#using-overload-to-accurately-describe-variations
+#
 # Overload 1: converter
 @overload
 def REQ(
     whence: Optional[str] = ...,
     *,
-    type: Type[ResultT] = ...,
     converter: Callable[[str], ResultT],
     default: ResultT = ...,
     intentionally_undocumented: bool = ...,
     documentation_pending: bool = ...,
-    aliases: Optional[List[str]] = ...,
+    aliases: Sequence[str] = ...,
     path_only: bool = ...
 ) -> ResultT:
     ...
@@ -152,12 +160,11 @@ def REQ(
 def REQ(
     whence: Optional[str] = ...,
     *,
-    type: Type[ResultT] = ...,
     default: ResultT = ...,
-    validator: Validator,
+    validator: Validator[ResultT],
     intentionally_undocumented: bool = ...,
     documentation_pending: bool = ...,
-    aliases: Optional[List[str]] = ...,
+    aliases: Sequence[str] = ...,
     path_only: bool = ...
 ) -> ResultT:
     ...
@@ -167,12 +174,11 @@ def REQ(
 def REQ(
     whence: Optional[str] = ...,
     *,
-    type: Type[str] = ...,
     default: str = ...,
-    str_validator: Optional[Validator] = ...,
+    str_validator: Optional[Validator[str]] = ...,
     intentionally_undocumented: bool = ...,
     documentation_pending: bool = ...,
-    aliases: Optional[List[str]] = ...,
+    aliases: Sequence[str] = ...,
     path_only: bool = ...
 ) -> str:
     ...
@@ -182,12 +188,11 @@ def REQ(
 def REQ(
     whence: Optional[str] = ...,
     *,
-    type: Type[str] = ...,
     default: None,
-    str_validator: Optional[Validator] = ...,
+    str_validator: Optional[Validator[str]] = ...,
     intentionally_undocumented: bool = ...,
     documentation_pending: bool = ...,
-    aliases: Optional[List[str]] = ...,
+    aliases: Sequence[str] = ...,
     path_only: bool = ...
 ) -> Optional[str]:
     ...
@@ -197,13 +202,11 @@ def REQ(
 def REQ(
     whence: Optional[str] = ...,
     *,
-    type: Type[ResultT] = ...,
     default: ResultT = ...,
-    str_validator: Optional[Validator] = ...,
     argument_type: Literal["body"],
     intentionally_undocumented: bool = ...,
     documentation_pending: bool = ...,
-    aliases: Optional[List[str]] = ...,
+    aliases: Sequence[str] = ...,
     path_only: bool = ...
 ) -> ResultT:
     ...
@@ -212,20 +215,18 @@ def REQ(
 def REQ(
     whence: Optional[str] = None,
     *,
-    type: Type[ResultT] = Type[None],
     converter: Optional[Callable[[str], ResultT]] = None,
     default: Union[_REQ._NotSpecified, ResultT] = _REQ.NotSpecified,
-    validator: Optional[Validator] = None,
-    str_validator: Optional[Validator] = None,
+    validator: Optional[Validator[ResultT]] = None,
+    str_validator: Optional[Validator[ResultT]] = None,
     argument_type: Optional[str] = None,
     intentionally_undocumented: bool=False,
     documentation_pending: bool=False,
-    aliases: Optional[List[str]] = None,
+    aliases: Sequence[str] = [],
     path_only: bool = False
 ) -> ResultT:
     return cast(ResultT, _REQ(
         whence,
-        type=type,
         converter=converter,
         default=default,
         validator=validator,
@@ -309,8 +310,7 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
                 raise Exception(_("Invalid argument type"))
 
             post_var_names = [param.post_var_name]
-            if param.aliases:
-                post_var_names += param.aliases
+            post_var_names += param.aliases
 
             default_assigned = False
 
@@ -351,17 +351,19 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
                 try:
                     val = ujson.loads(val)
                 except Exception:
-                    raise JsonableError(_('Argument "%s" is not valid JSON.') % (post_var_name,))
+                    raise JsonableError(_('Argument "{}" is not valid JSON.').format(post_var_name))
 
-                error = param.validator(post_var_name, val)
-                if error:
-                    raise JsonableError(error)
+                try:
+                    val = param.validator(post_var_name, val)
+                except ValidationError as error:
+                    raise JsonableError(error.message)
 
             # str_validators is like validator, but for direct strings (no JSON parsing).
             if param.str_validator is not None and not default_assigned:
-                error = param.str_validator(post_var_name, val)
-                if error:
-                    raise JsonableError(error)
+                try:
+                    val = param.str_validator(post_var_name, val)
+                except ValidationError as error:
+                    raise JsonableError(error.message)
 
             kwargs[func_var_name] = val
 

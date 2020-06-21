@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Tuple, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from django.http import HttpRequest, HttpResponse
 
@@ -7,7 +7,6 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import UnexpectedWebhookEventType, check_send_webhook_message
 from zerver.models import UserProfile
-
 
 DEPRECATED_EXCEPTION_MESSAGE_TEMPLATE = """
 New [issue]({url}) (level: {level}):
@@ -78,7 +77,7 @@ def convert_lines_to_traceback_string(lines: Optional[List[str]]) -> str:
             if (line == ""):
                 traceback += "\n"
             else:
-                traceback += "     {}\n".format(line)
+                traceback += f"     {line}\n"
     return traceback
 
 
@@ -90,11 +89,16 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
     if int(event["version"]) < 7:
         raise UnexpectedWebhookEventType("Sentry", "Raven SDK")
 
+    platform_name = event["platform"]
+    platform = platforms_map.get(platform_name)
+    if platform is None:  # nocoverage
+        raise UnexpectedWebhookEventType("Sentry", f"platform {platform_name}")
+
     context = {
         "title": subject,
         "level": event["level"],
         "web_link": event["web_url"],
-        "datetime": event["datetime"].split(".")[0].replace("T", " ")
+        "datetime": event["datetime"].split(".")[0].replace("T", " "),
     }
 
     if "exception" in event:
@@ -102,7 +106,6 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
         # (in the Python Sentry SDK) or something similar.
 
         filename = event["metadata"]["filename"]
-        platform = platforms_map[event["platform"]]
 
         stacktrace = None
         for value in event["exception"]["values"]:
@@ -131,7 +134,7 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
                     "filename": filename,
                     "pre_context": pre_context,
                     "context_line": context_line,
-                    "post_context": post_context
+                    "post_context": post_context,
                 })
 
                 body = EXCEPTION_EVENT_TEMPLATE_WITH_TRACEBACK.format(**context)
@@ -170,14 +173,14 @@ def handle_issue_payload(action: str, issue: Dict[str, Any], actor: Dict[str, An
             "title": subject,
             "level": issue["level"],
             "datetime": datetime,
-            "assignee": assignee
+            "assignee": assignee,
         }
         body = ISSUE_CREATED_MESSAGE_TEMPLATE.format(**context)
 
     elif action == "resolved":
         context = {
             "title": subject,
-            "actor": actor["name"]
+            "actor": actor["name"],
         }
         body = ISSUE_RESOLVED_MESSAGE_TEMPLATE.format(**context)
 
@@ -185,14 +188,14 @@ def handle_issue_payload(action: str, issue: Dict[str, Any], actor: Dict[str, An
         context = {
             "title": subject,
             "assignee": assignee,
-            "actor": actor["name"]
+            "actor": actor["name"],
         }
         body = ISSUE_ASSIGNED_MESSAGE_TEMPLATE.format(**context)
 
     elif action == "ignored":
         context = {
             "title": subject,
-            "actor": actor["name"]
+            "actor": actor["name"],
         }
         body = ISSUE_IGNORED_MESSAGE_TEMPLATE.format(**context)
 
@@ -207,7 +210,7 @@ def handle_deprecated_payload(payload: Dict[str, Any]) -> Tuple[str, str]:
     body = DEPRECATED_EXCEPTION_MESSAGE_TEMPLATE.format(
         level=payload['level'].upper(),
         url=payload.get('url'),
-        message=payload.get('message')
+        message=payload.get('message'),
     )
     return (subject, body)
 
@@ -225,7 +228,7 @@ def api_sentry_webhook(request: HttpRequest, user_profile: UserProfile,
         elif "issue" in data:
             subject, body = handle_issue_payload(payload["action"], data["issue"], payload["actor"])
         else:
-            raise UnexpectedWebhookEventType("Sentry", str((list(data.keys()))))
+            raise UnexpectedWebhookEventType("Sentry", str(list(data.keys())))
     else:
         subject, body = handle_deprecated_payload(payload)
 

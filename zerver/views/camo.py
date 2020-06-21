@@ -1,13 +1,13 @@
+import binascii
+
 from django.conf import settings
+from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import redirect
 from django.utils.translation import ugettext as _
-from django.http import (
-    HttpRequest, HttpResponse, HttpResponseForbidden, HttpResponseNotFound
-)
+
 from zerver.lib.camo import is_camo_url_valid
 from zerver.lib.thumbnail import generate_thumbnail_url
 
-import binascii
 
 def handle_camo_url(request: HttpRequest, digest: str,
                     received_url: str) -> HttpResponse:

@@ -6,18 +6,21 @@ from django.db import connection, migrations
 from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import Min
+from psycopg2.sql import SQL
 
 BATCH_SIZE = 10000
 
 def sql_copy_id_to_bigint_id(id_range_lower_bound: int, id_range_upper_bound: int) -> None:
-    query = """
+    query = SQL("""
             UPDATE zerver_usermessage
             SET bigint_id = id
-            WHERE id BETWEEN {lower_bound} AND {upper_bound}
-    """
-    query = query.format(lower_bound=id_range_lower_bound, upper_bound=id_range_upper_bound)
+            WHERE id BETWEEN %(lower_bound)s AND %(upper_bound)s
+    """)
     with connection.cursor() as cursor:
-        cursor.execute(query)
+        cursor.execute(query, {
+            "lower_bound": id_range_lower_bound,
+            "upper_bound": id_range_upper_bound,
+        })
 
 def copy_id_to_bigid(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     UserMessage = apps.get_model('zerver', 'UserMessage')
@@ -26,7 +29,7 @@ def copy_id_to_bigid(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> No
         return
 
     #  TODO: is  the below lookup fast enough, considering there's no index on bigint_id?
-    first_uncopied_id = UserMessage.objects.filter(bigint_id__isnull=True
+    first_uncopied_id = UserMessage.objects.filter(bigint_id__isnull=True,
                                                    ).aggregate(Min('id'))['id__min']
     # Note: the below id can fall in a segment
     # where bigint_id = id already, but it's not a big problem
@@ -70,5 +73,5 @@ class Migration(migrations.Migration):
         migrations.RunPython(copy_id_to_bigid, elidable=True),
         migrations.RunSQL("""
         CREATE UNIQUE INDEX CONCURRENTLY zerver_usermessage_bigint_id_idx ON zerver_usermessage (bigint_id);
-        """)
+        """),
     ]

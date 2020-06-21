@@ -60,6 +60,26 @@ body.night-mode {
 
     .streams_popover .sp-container {
         background-color: transparent;
+
+        button {
+            background-color: hsl(208, 35%, 11%);
+            border: 1px solid hsl(210, 36%, 4%);
+            color: hsl(236, 31%, 90%);
+        }
+
+        .sp-picker-container {
+            border-left: solid 1px hsl(210, 36%, 4%);
+        }
+    }
+
+    ul.topics_popover {
+        .admin-separator {
+            &::before,
+            &::after {
+                color: hsl(212, 28%, 18%);
+                opacity: 0.2;
+            }
+        }
     }
 
     /* this one is because in the app we have blue and in night-mode it should be white. */
@@ -231,22 +251,24 @@ on a dark background, and don't change the dark labels dark either. */
     .top-navbar-border {
         border-color: hsla(0, 0%, 0%, 0.6);
     }
-    #tab_bar #tab_list .sub_count::before {
-        background: hsla(0, 0%, 100%, 0.5);
-    }
-    #tab_bar #tab_list .sub_count::after {
-        background: hsla(0, 0%, 100%, 0.5);
+
+    #tab_bar #tab_list .sub_count {
+        &::before,
+        &::after {
+            color: hsla(0, 0%, 100%, 0.5);
+        }
     }
 
     #tab_bar #tab_list span:nth-last-child(2):hover + .search_closed {
         color: hsl(0, 0%, 100%);
     }
 
-    #searchbox_legacy {
-        #tab_bar #tab_list .sub_count,
-        #tab_bar #tab_list .narrow_description {
-            color: hsla(0, 0%, 90%, 1);
-        }
+    #tab_bar #tab_list .stream {
+        color: hsl(236, 33%, 90%);
+    }
+    #tab_bar #tab_list .sub_count,
+    #tab_bar #tab_list .narrow_description {
+        color: hsla(0, 0%, 90%, 1);
     }
 
     .overlay,
@@ -337,13 +359,21 @@ on a dark background, and don't change the dark labels dark either. */
 
     #streamlist-toggle,
     #userlist-toggle {
-        border-color: hsla(199, 33%, 46%, 0.2);
+        color: inherit;
+        border-color: hsla(0, 0%, 0%, 0.6);
     }
 
-    #streamlist-toggle-button,
-    #userlist-toggle-button {
+    #streamlist-toggle-button {
         color: inherit;
         background-color: inherit;
+    }
+
+    #userlist-toggle-button {
+        color: hsl(221, 9%, 54%);
+
+        &:hover {
+            color: inherit;
+        }
     }
 
     li.active-filter,
@@ -354,7 +384,6 @@ on a dark background, and don't change the dark labels dark either. */
     .top_left_row:hover,
     .bottom_left_row:hover,
     #stream_filters li.highlighted_stream,
-    #group-pms li:hover,
     #user_presences li:hover,
     #user_presences li.highlighted_user {
         background-color: hsla(136, 25%, 73%, 0.2);
@@ -375,8 +404,36 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: hsla(0, 0%, 0%, 0.2);
     }
 
+    .recent_topic_unread_count {
+        background-color: hsl(0, 0%, 15%) !important;
+        color: hsl(0, 0%, 100%);
+    }
+
+    .btn-recent-filters {
+        background-color: hsl(211, 29%, 14%);
+        border-color: hsl(0, 0%, 0%);
+        color: hsl(0, 0%, 100%);
+    }
+
+    .btn-recent-selected,
+    .recent_topics_table thead th {
+        background-color: hsl(0, 0%, 0%) !important;
+        &:hover {
+            background-color: hsl(211, 29%, 14%) !important;
+        }
+    }
+
+    .recent_topics_table td a {
+        color: hsl(206, 89%, 74%);
+        text-decoration: none;
+        &:hover {
+            color: hsl(208, 64%, 52%);
+        }
+    }
+
     thead,
     .drafts-container .drafts-header,
+    .recent_topics_container .recent_topics_header,
     .nav > li > a:hover,
     .subscriptions-container .subscriptions-header,
     .grey-box,
@@ -392,6 +449,11 @@ on a dark background, and don't change the dark labels dark either. */
     .modal-bg .modal-header {
         border-color: hsla(0, 0%, 0%, 0.2);
         background-color: hsla(0, 0%, 0%, 0.2);
+    }
+
+    .table-hover tbody tr:hover td,
+    .table-hover tbody tr:hover th {
+        background-color: hsla(0, 0%, 0%, 0.5);
     }
 
     .table-striped tbody tr:nth-child(odd) td {
@@ -453,17 +515,25 @@ on a dark background, and don't change the dark labels dark either. */
             background-color: hsla(355, 37%, 31%, 1);
             box-shadow: 0px 0px 0px 1px hsla(330, 40%, 20%, 1);
         }
+    }
 
-        .highlight_text_inserted {
-            color: hsl(122, 100%, 81%);
-            background-color: hsla(120, 64%, 95%, 0.3);
-        }
+    #message-edit-history {
+        .message_edit_history_content {
+            .highlight_text_inserted {
+                color: hsl(122, 100%, 81%);
+                background-color: hsla(120, 64%, 95%, 0.3);
+            }
 
-        .highlight_text_deleted {
-            text-decoration: line-through;
-            background-color: hsla(7, 54%, 62%, 0.38);
-            color: hsl(0, 90%, 67%);
+            .highlight_text_deleted {
+                color: hsl(0, 90%, 67%);
+                background-color: hsla(7, 54%, 62%, 0.38);
+            }
         }
+    }
+
+    time {
+        background: hsla(0, 0%, 0%, 0.2);
+        box-shadow: 0px 0px 0px 1px hsla(0, 0%, 0%, 0.4);
     }
 
     .tip {
@@ -550,6 +620,24 @@ on a dark background, and don't change the dark labels dark either. */
         box-shadow: 0 5px 10px hsla(0, 0%, 0%, 0.4);
     }
 
+    #user-profile-modal {
+        #default-section {
+            .default-field {
+                .name {
+                    color: hsl(236, 33%, 90%);
+                }
+            }
+        }
+
+        #content {
+            .field-section {
+                .name {
+                    color: hsl(236, 33%, 90%);
+                }
+            }
+        }
+    }
+
     /* Arrows: */
     .hotspot.overlay {
         .hotspot-popover.arrow-right::before {
@@ -592,7 +680,8 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: hsl(212, 28%, 18%);
     }
 
-    .top-messages-logo {
+    .top-messages-logo,
+    .bottom-messages-logo {
         svg path {
             fill: hsl(214, 27%, 18%);
             stroke: hsl(214, 27%, 18%);
@@ -666,7 +755,7 @@ on a dark background, and don't change the dark labels dark either. */
         color: hsl(200, 79%, 66%);
     }
 
-    #loading_more_messages_indicator path {
+    #loading_older_messages_indicator path {
         fill: hsl(0, 0%, 100%);
     }
 
@@ -695,5 +784,11 @@ on a dark background, and don't change the dark labels dark either. */
 @-moz-document url-prefix() {
     body.night-mode #settings_page select {
         background-color: hsla(0, 0%, 0%, 0.2);
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .color-scheme-automatic {
+        @extend body.night-mode;
     }
 }

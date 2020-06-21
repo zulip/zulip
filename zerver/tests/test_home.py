@@ -1,31 +1,37 @@
-import datetime
+import calendar
+import urllib
+from datetime import timedelta
+from typing import Any, Dict
+from unittest.mock import patch
+
 import lxml.html
 import ujson
-
 from django.conf import settings
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
-from mock import MagicMock, patch
-import urllib
-from typing import Any, Dict
-from zerver.lib.actions import (
-    do_create_user, do_change_logo_source
-)
+
+from corporate.models import Customer, CustomerPlan
+from zerver.lib.actions import do_change_logo_source, do_create_user
 from zerver.lib.events import add_realm_logo_fields
-from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import (
-    queries_captured, get_user_messages
-)
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import get_user_messages, queries_captured
 from zerver.lib.test_runner import slow
 from zerver.lib.users import compute_show_invites_and_add_streams
 from zerver.models import (
-    get_realm, get_stream, get_user, UserProfile,
-    flush_per_request_caches, DefaultStream, Realm,
+    DefaultStream,
+    Realm,
+    UserActivity,
+    UserProfile,
+    flush_per_request_caches,
+    get_realm,
+    get_stream,
     get_system_bot,
+    get_user,
 )
-from zerver.views.home import sent_time_in_epoch_seconds, compute_navbar_logo_url
-from corporate.models import Customer, CustomerPlan
+from zerver.views.home import compute_navbar_logo_url, get_furthest_read_time
+from zerver.worker.queue_processors import UserActivityWorker
+
 
 class HomeTest(ZulipTestCase):
     def test_home(self) -> None:
@@ -40,7 +46,6 @@ class HomeTest(ZulipTestCase):
             'Narrow to topic',
             'Next message',
             'Search streams',
-            'Welcome to Zulip',
             # Verify that the app styles get included
             'app-stubentry.js',
             'data-params',
@@ -56,6 +61,7 @@ class HomeTest(ZulipTestCase):
             "bot_types",
             "can_create_streams",
             "can_subscribe_other_users",
+            "color_scheme",
             "cross_realm_bots",
             "custom_profile_field_types",
             "custom_profile_fields",
@@ -87,21 +93,22 @@ class HomeTest(ZulipTestCase):
             "full_name",
             "furthest_read_time",
             "has_mobile_devices",
-            "have_initial_messages",
+            "has_zoom_token",
             "high_contrast_mode",
             "hotspots",
             "initial_servertime",
             "insecure_desktop_app",
             "is_admin",
             "is_guest",
+            "is_owner",
             "jitsi_server_url",
             "language_list",
             "language_list_dbl_col",
             "last_event_id",
             "left_side_userlist",
             "login_page",
-            "max_avatar_file_size",
-            "max_file_upload_size",
+            "max_avatar_file_size_mib",
+            "max_file_upload_size_mib",
             "max_icon_file_size",
             "max_logo_file_size",
             "max_message_id",
@@ -111,11 +118,9 @@ class HomeTest(ZulipTestCase):
             "narrow_stream",
             "needs_tutorial",
             "never_subscribed",
-            "night_mode",
             "notification_sound",
             "password_min_guesses",
             "password_min_length",
-            "plan_includes_wide_organization_logo",
             "pm_content_in_desktop_notifications",
             "pointer",
             "poll_timeout",
@@ -134,6 +139,7 @@ class HomeTest(ZulipTestCase):
             "realm_bot_creation_policy",
             "realm_bot_domain",
             "realm_bots",
+            "realm_community_topic_editing_limit_seconds",
             "realm_create_stream_policy",
             "realm_default_code_block_language",
             "realm_default_external_accounts",
@@ -153,7 +159,6 @@ class HomeTest(ZulipTestCase):
             "realm_embedded_bots",
             "realm_emoji",
             "realm_filters",
-            "realm_google_hangouts_domain",
             "realm_icon_source",
             "realm_icon_url",
             "realm_incoming_webhook_bots",
@@ -191,9 +196,6 @@ class HomeTest(ZulipTestCase):
             "realm_users",
             "realm_video_chat_provider",
             "realm_waiting_period_threshold",
-            "realm_zoom_api_key",
-            "realm_zoom_api_secret",
-            "realm_zoom_user_id",
             "recent_private_conversations",
             "root_domain_uri",
             "save_stacktraces",
@@ -226,6 +228,7 @@ class HomeTest(ZulipTestCase):
             "webpack_public_path",
             "wildcard_mentions_notify",
             "zulip_feature_level",
+            "zulip_plan_is_not_limited",
             "zulip_version",
         ]
 
@@ -250,14 +253,14 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(set(result["Cache-Control"].split(", ")),
                          {"must-revalidate", "no-store", "no-cache"})
 
-        self.assert_length(queries, 43)
+        self.assert_length(queries, 42)
         self.assert_length(cache_mock.call_args_list, 5)
 
         html = result.content.decode('utf-8')
 
         for html_bit in html_bits:
             if html_bit not in html:
-                raise AssertionError('%s not in result' % (html_bit,))
+                raise AssertionError(f'{html_bit} not in result')
 
         page_params = self._get_page_params(result)
 
@@ -277,7 +280,7 @@ class HomeTest(ZulipTestCase):
             'email',
             'full_name',
             'is_active',
-            'owner',
+            'owner_id',
             'services',
             'user_id',
         ]
@@ -316,7 +319,7 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
                 self.assertEqual(result.status_code, 200)
                 self.assert_length(cache_mock.call_args_list, 6)
-            self.assert_length(queries, 41)
+            self.assert_length(queries, 40)
 
     @slow("Creates and subscribes 10 users in a loop.  Should use bulk queries.")
     def test_num_queries_with_streams(self) -> None:
@@ -334,7 +337,7 @@ class HomeTest(ZulipTestCase):
             stream = self.make_stream(stream_name)
             DefaultStream.objects.create(
                 realm_id=realm_id,
-                stream_id=stream.id
+                stream_id=stream.id,
             )
             for user in [main_user, other_user]:
                 self.subscribe(user, stream_name)
@@ -348,7 +351,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries2:
             result = self._get_home_page()
 
-        self.assert_length(queries2, 38)
+        self.assert_length(queries2, 37)
 
         # Do a sanity check that our new streams were in the payload.
         html = result.content.decode('utf-8')
@@ -411,7 +414,7 @@ class HomeTest(ZulipTestCase):
         unsupported_user_agents = [
             "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2)",
             "Mozilla/5.0 (Windows NT 10.0; Trident/7.0; rv:11.0) like Gecko",
-            "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0)"
+            "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0)",
         ]
         for user_agent in unsupported_user_agents:
             result = self.client_get('/',
@@ -459,11 +462,7 @@ class HomeTest(ZulipTestCase):
         user_profile.save()
 
         self.login_user(user_profile)
-        with patch('logging.warning') as mock:
-            result = self._get_home_page()
-        mock.assert_called_once_with(
-            'User %s has invalid pointer %s', user_profile.id, 999999,
-        )
+        result = self._get_home_page()
         self._sanity_check(result)
 
     def test_topic_narrow(self) -> None:
@@ -492,7 +491,7 @@ class HomeTest(ZulipTestCase):
             full_name=bot_name,
             short_name=bot_name,
             bot_type=UserProfile.DEFAULT_BOT,
-            bot_owner=owner
+            bot_owner=owner,
         )
         return user
 
@@ -531,15 +530,15 @@ class HomeTest(ZulipTestCase):
         for i in range(3):
             bots[i] = self.create_bot(
                 owner=hamlet,
-                bot_email='bot-%d@zulip.com' % (i,),
-                bot_name='Bot %d' % (i,),
+                bot_email=f'bot-{i}@zulip.com',
+                bot_name=f'Bot {i}',
             )
 
         for i in range(3):
             defunct_user = self.create_non_active_user(
                 realm=realm,
-                email='defunct-%d@zulip.com' % (i,),
-                name='Defunct User %d' % (i,),
+                email=f'defunct-{i}@zulip.com',
+                name=f'Defunct User {i}',
             )
 
         result = self._get_home_page()
@@ -570,7 +569,7 @@ class HomeTest(ZulipTestCase):
                 if field == 'realm_bots':
                     self.assertNotIn('is_bot', rec)
                     self.assertIn('is_active', rec)
-                    self.assertIn('owner', rec)
+                    self.assertIn('owner_id', rec)
                 else:
                     self.assertIn('is_bot', rec)
                     self.assertNotIn('is_active', rec)
@@ -607,6 +606,7 @@ class HomeTest(ZulipTestCase):
 
         self.assertEqual(sorted(cross_bots, key=by_email), sorted([
             dict(
+                avatar_version=email_gateway_bot.avatar_version,
                 bot_owner_id=None,
                 bot_type=1,
                 email=email_gateway_bot.email,
@@ -615,10 +615,12 @@ class HomeTest(ZulipTestCase):
                 is_active=True,
                 is_bot=True,
                 is_admin=False,
+                is_owner=False,
                 is_cross_realm_bot=True,
-                is_guest=False
+                is_guest=False,
             ),
             dict(
+                avatar_version=email_gateway_bot.avatar_version,
                 bot_owner_id=None,
                 bot_type=1,
                 email=notification_bot.email,
@@ -627,10 +629,12 @@ class HomeTest(ZulipTestCase):
                 is_active=True,
                 is_bot=True,
                 is_admin=False,
+                is_owner=False,
                 is_cross_realm_bot=True,
-                is_guest=False
+                is_guest=False,
             ),
             dict(
+                avatar_version=email_gateway_bot.avatar_version,
                 bot_owner_id=None,
                 bot_type=1,
                 email=welcome_bot.email,
@@ -639,8 +643,9 @@ class HomeTest(ZulipTestCase):
                 is_active=True,
                 is_bot=True,
                 is_admin=False,
+                is_owner=False,
                 is_cross_realm_bot=True,
-                is_guest=False
+                is_guest=False,
             ),
         ], key=by_email))
 
@@ -655,7 +660,6 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(page_params['narrow'], [dict(operator='stream', operand=stream_name)])
         self.assertEqual(page_params['pointer'], -1)
         self.assertEqual(page_params['max_message_id'], -1)
-        self.assertEqual(page_params['have_initial_messages'], False)
 
     def test_invites_by_admins_only(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -757,47 +761,47 @@ class HomeTest(ZulipTestCase):
     def test_compute_navbar_logo_url(self) -> None:
         user_profile = self.example_user("hamlet")
 
-        page_params = {"night_mode": True}
+        page_params = {"color_scheme": user_profile.COLOR_SCHEME_NIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
                          "/static/images/logo/zulip-org-logo.png?version=0")
 
-        page_params = {"night_mode": False}
+        page_params = {"color_scheme": user_profile.COLOR_SCHEME_LIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
                          "/static/images/logo/zulip-org-logo.png?version=0")
 
         do_change_logo_source(user_profile.realm, Realm.LOGO_UPLOADED, night=False)
-        page_params = {"night_mode": True}
+        page_params = {"color_scheme": user_profile.COLOR_SCHEME_NIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/user_avatars/%s/realm/logo.png?version=2" % (user_profile.realm_id,))
+                         f"/user_avatars/{user_profile.realm_id}/realm/logo.png?version=2")
 
-        page_params = {"night_mode": False}
+        page_params = {"color_scheme": user_profile.COLOR_SCHEME_LIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/user_avatars/%s/realm/logo.png?version=2" % (user_profile.realm_id,))
+                         f"/user_avatars/{user_profile.realm_id}/realm/logo.png?version=2")
 
         do_change_logo_source(user_profile.realm, Realm.LOGO_UPLOADED, night=True)
-        page_params = {"night_mode": True}
+        page_params = {"color_scheme": user_profile.COLOR_SCHEME_NIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/user_avatars/%s/realm/night_logo.png?version=2" % (user_profile.realm_id,))
+                         f"/user_avatars/{user_profile.realm_id}/realm/night_logo.png?version=2")
 
-        page_params = {"night_mode": False}
+        page_params = {"color_scheme": user_profile.COLOR_SCHEME_LIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/user_avatars/%s/realm/logo.png?version=2" % (user_profile.realm_id,))
+                         f"/user_avatars/{user_profile.realm_id}/realm/logo.png?version=2")
 
         # This configuration isn't super supported in the UI and is a
         # weird choice, but we have a test for it anyway.
         do_change_logo_source(user_profile.realm, Realm.LOGO_DEFAULT, night=False)
-        page_params = {"night_mode": True}
+        page_params = {"color_scheme": user_profile.COLOR_SCHEME_NIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/user_avatars/%s/realm/night_logo.png?version=2" % (user_profile.realm_id,))
+                         f"/user_avatars/{user_profile.realm_id}/realm/night_logo.png?version=2")
 
-        page_params = {"night_mode": False}
+        page_params = {"color_scheme": user_profile.COLOR_SCHEME_LIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
                          "/static/images/logo/zulip-org-logo.png?version=0")
@@ -807,12 +811,44 @@ class HomeTest(ZulipTestCase):
         result = self.client_get("/api/v1/generate_204")
         self.assertEqual(result.status_code, 204)
 
-    def test_message_sent_time(self) -> None:
-        epoch_seconds = 1490472096
-        date_sent = datetime.datetime.fromtimestamp(epoch_seconds)
-        user_message = MagicMock()
-        user_message.message.date_sent = date_sent
-        self.assertEqual(sent_time_in_epoch_seconds(user_message), epoch_seconds)
+    def test_furthest_read_time(self) -> None:
+        msg_id = self.send_test_message("hello!", sender_name="iago")
+
+        hamlet = self.example_user('hamlet')
+        self.login_user(hamlet)
+        self.client_post("/json/messages/flags",
+                         {"messages": ujson.dumps([msg_id]),
+                          "op": "add",
+                          "flag": "read"})
+
+        # Manually process the UserActivity
+        now = timezone_now()
+        activity_time = calendar.timegm(now.timetuple())
+        user_activity_event = {'user_profile_id': hamlet.id,
+                               'client': 'test-client',
+                               'query': 'update_message_flags',
+                               'time': activity_time}
+
+        yesterday = now - timedelta(days=1)
+        activity_time_2 = calendar.timegm(yesterday.timetuple())
+        user_activity_event_2 = {'user_profile_id': hamlet.id,
+                                 'client': 'test-client-2',
+                                 'query': 'update_message_flags',
+                                 'time': activity_time_2}
+        UserActivityWorker().consume_batch([user_activity_event, user_activity_event_2])
+
+        # verify furthest_read_time is last activity time, irrespective of client
+        furthest_read_time = get_furthest_read_time(hamlet)
+        self.assertGreaterEqual(furthest_read_time, activity_time)
+
+        # Check when user has no activity
+        UserActivity.objects.filter(user_profile=hamlet).delete()
+        furthest_read_time = get_furthest_read_time(hamlet)
+        self.assertIsNone(furthest_read_time)
+
+        # Check no user profile handling
+        furthest_read_time = get_furthest_read_time(None)
+        self.assertIsNotNone(furthest_read_time)
 
     def test_subdomain_homepage(self) -> None:
         self.login('hamlet')
@@ -827,10 +863,10 @@ class HomeTest(ZulipTestCase):
             self._sanity_check(result)
 
     def send_test_message(self, content: str, sender_name: str='iago',
-                          stream_name: str='Denmark', topic_name: str='foo') -> None:
+                          stream_name: str='Denmark', topic_name: str='foo') -> int:
         sender = self.example_user(sender_name)
-        self.send_stream_message(sender, stream_name,
-                                 content=content, topic_name=topic_name)
+        return self.send_stream_message(sender, stream_name,
+                                        content=content, topic_name=topic_name)
 
     def soft_activate_and_get_unread_count(self, stream: str='Denmark', topic: str='foo') -> int:
         stream_narrow = self._get_home_page(stream=stream, topic=topic)

@@ -58,7 +58,7 @@ message body 4
             self.send_and_test_stream_message('incorrect_post', '', '',
                                               content_type="application/x-www-form-urlencoded")
 
-        self.assertIn("Missing expected keys", e.exception.args[0])
+        self.assertIn("events key is missing from payload", e.exception.args[0])
 
     def get_body(self, fixture_name: str) -> str:
         # Papertrail webhook sends a POST request with payload parameter

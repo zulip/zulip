@@ -41,7 +41,7 @@ def get_body_for_http_request(payload: Dict[str, Any]) -> str:
         build_url=payload['build_url'],
         committer=payload['committer'],
         branch=payload['branch'],
-        status=get_status_message(payload)
+        status=get_status_message(payload),
     )
 
 

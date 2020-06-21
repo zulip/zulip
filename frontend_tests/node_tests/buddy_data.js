@@ -25,6 +25,30 @@ const me = {
     email: 'self@example.com',
 };
 
+const alice = {
+    email: 'alice@zulip.com',
+    user_id: 1002,
+    full_name: 'Alice Smith',
+};
+
+const fred = {
+    email: 'fred@zulip.com',
+    user_id: 1003,
+    full_name: "Fred Flintstone",
+};
+
+const jill = {
+    email: 'jill@zulip.com',
+    user_id: 1004,
+    full_name: 'Jill Hill',
+};
+
+const mark = {
+    email: 'mark@zulip.com',
+    user_id: 1005,
+    full_name: 'Marky Mark',
+};
+
 const old_user = {
     user_id: 9999,
     full_name: 'Old User',
@@ -49,23 +73,71 @@ const bot_with_owner = {
 };
 
 function make_people() {
-    for (const i of _.range(1002, 2000)) {
+    // sanity check
+    assert.equal(mark.user_id, 1005);
+
+    for (const i of _.range(mark.user_id + 1, 2000)) {
         const person = {
             user_id: i,
             full_name: `Human ${i}`,
             email: `person${i}@example.com`,
         };
-        people.add(person);
+        people.add_active_user(person);
     }
 
-    people.add(bot);
-    people.add(bot_with_owner);
-    people.add(selma);
-    people.add(me);
-    people.add(old_user);
+    people.add_active_user(bot);
+    people.add_active_user(bot_with_owner);
+    people.add_active_user(alice);
+    people.add_active_user(fred);
+    people.add_active_user(jill);
+    people.add_active_user(mark);
+    people.add_active_user(selma);
+    people.add_active_user(me);
+    people.add_active_user(old_user);
 
     people.initialize_current_user(me.user_id);
 }
+
+make_people();
+
+run_test('huddle_fraction_present', () => {
+    let huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
+    huddle = people.emails_strings_to_user_ids_string(huddle);
+
+    let presence_info = new Map();
+    presence_info.set(alice.user_id, { status: 'active' }); // counts as present
+    presence_info.set(fred.user_id, { status: 'idle' }); // does not count as present
+    // jill not in list
+    presence_info.set(mark.user_id, { status: 'offline' }); // does not count
+    presence.presence_info = presence_info;
+
+    assert.equal(
+        buddy_data.huddle_fraction_present(huddle),
+        0.5);
+
+    presence_info = new Map();
+    for (const user of [alice, fred, jill, mark]) {
+        presence_info.set(user.user_id, { status: 'active' }); // counts as present
+    }
+    presence.presence_info = presence_info;
+
+    assert.equal(
+        buddy_data.huddle_fraction_present(huddle),
+        1);
+
+    huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
+    huddle = people.emails_strings_to_user_ids_string(huddle);
+    presence_info = new Map();
+    presence_info.set(alice.user_id, { status: 'idle' });
+    presence_info.set(fred.user_id, { status: 'idle' }); // does not count as present
+    // jill not in list
+    presence_info.set(mark.user_id, { status: 'offline' }); // does not count
+    presence.presence_info = presence_info;
+
+    assert.equal(
+        buddy_data.huddle_fraction_present(huddle),
+        undefined);
+});
 
 function activate_people() {
     presence.presence_info.clear();
@@ -91,7 +163,6 @@ function activate_people() {
     }
 }
 
-make_people();
 activate_people();
 
 run_test('user_circle', () => {
@@ -199,11 +270,11 @@ run_test('bulk_data_hacks', () => {
     // We match on "h" for the first name, and the result limit
     // is relaxed for searches.  (We exclude "me", though.)
     user_ids = buddy_data.get_filtered_and_sorted_user_ids('h');
-    assert.equal(user_ids.length, 999);
+    assert.equal(user_ids.length, 996);
 
     // We match on "p" for the email.
     user_ids = buddy_data.get_filtered_and_sorted_user_ids('p');
-    assert.equal(user_ids.length, 998);
+    assert.equal(user_ids.length, 994);
 
     // Make our shrink limit higher, and go back to an empty search.
     // We won't get all 1000 users, just the present ones.

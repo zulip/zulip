@@ -13,9 +13,11 @@ to allow you to easily format your messages.
 * [Code blocks](#code)
 * [LaTeX](#latex)
 * [Quotes](#quotes)
+* [Spoilers](#spoilers)
 * [Emoji and emoticons](#emoji-and-emoticons)
 * [Mentions](#mentions)
 * [Status messages](#status-messages)
+* [Mention a time](#mention-a-time)
 * [Tables](#tables)
 * [Paragraphs and lines](#paragraphs-and-lines)
 
@@ -64,8 +66,8 @@ Zulip auto-linkifies URLs and valid stream names. You can also add a
 patterns like `#1234` to your ticketing system.
 
 ```
-Auto-detected URL: zulipchat.com
-Named link: [Zulip homepage](zulipchat.com)
+Auto-detected URL: zulip.com
+Named link: [Zulip homepage](zulip.com)
 Stream: #**stream name**
 Topic: #**stream name>topic name**
 Custom linkifier: #1234 (links to ticket 1234 in your ticketing system)
@@ -150,6 +152,28 @@ quote in two paragraphs
 
 ![](/static/images/help/markdown-quotes.png)
 
+## Spoilers
+
+You can use spoilers to hide content that you do not want to be visible until
+the user interacts with it.
+
+
+~~~
+Normal content in message
+
+```spoiler Spoiler Header
+Spoiler content. These lines won't be visible until the user expands the spoiler.
+```
+~~~
+
+The spoiler will initially display in a collapsed form:
+
+![](/static/images/help/spoiler-collapsed.png)
+
+Clicking the arrow will expand the spoiler content:
+
+![](/static/images/help/spoiler-expanded.png)
+
 ## Emoji and emoticons
 
 To translate emoticons into emoji, you'll need to
@@ -182,6 +206,28 @@ Silent mention: @_**Polonius** (@_ instead of @)
 ```
 
 ![](/static/images/help/markdown-status.png)
+
+## Mention a time
+
+When collaborating with people in another timezone, you often need to
+express a specific time clearly. Rather than typing out your timezone
+and having everyone translate the time in their heads, in Zulip, you
+can mention a time, and it'll be displayed to each user in their own
+timezone (just like the timestamps on Zulip messages).
+
+A date picker will appear once you type `!time`.
+
+```
+Our next meeting is scheduled for !time(2020-05-28T13:30:00+05:30)
+```
+
+A person in San Francisco will see:
+
+> Our next meeting is scheduled for *Thu, May 28 2020, 1:00 AM*.
+
+While someone in India will see:
+
+> Our next meeting is scheduled for *Thu, May 28 2020, 1:30 PM*.
 
 ## Tables
 

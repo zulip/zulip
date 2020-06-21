@@ -1,6 +1,5 @@
 from typing import Dict
-
-from mock import MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.webhooks.git import COMMITS_LIMIT
@@ -72,9 +71,9 @@ class BeanstalkHookTests(WebhookTestCase):
     def test_git_more_than_limit(self) -> None:
         commits_info = "* add some stuff ([e50508d](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/e50508df))\n"
         expected_topic = "work-test / master"
-        expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) 50 commits to branch master.
+        expected_message = f"""Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) 50 commits to branch master.
 
-{}[and {} more commit(s)]""".format((commits_info * COMMITS_LIMIT), 50 - COMMITS_LIMIT)
+{(commits_info * COMMITS_LIMIT)}[and {50 - COMMITS_LIMIT} more commit(s)]"""
         self.api_stream_message(self.test_user, 'git_morethanlimitcommits', expected_topic, expected_message,
                                 content_type=None)
 
@@ -82,9 +81,9 @@ class BeanstalkHookTests(WebhookTestCase):
         self.url = self.build_webhook_url(branches='master,development')
         commits_info = "* add some stuff ([e50508d](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/e50508df))\n"
         expected_topic = "work-test / master"
-        expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) 50 commits to branch master.
+        expected_message = f"""Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) 50 commits to branch master.
 
-{}[and {} more commit(s)]""".format((commits_info * COMMITS_LIMIT), 50 - COMMITS_LIMIT)
+{(commits_info * COMMITS_LIMIT)}[and {50 - COMMITS_LIMIT} more commit(s)]"""
         self.api_stream_message(self.test_user, 'git_morethanlimitcommits', expected_topic, expected_message,
                                 content_type=None)
 

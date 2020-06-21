@@ -32,8 +32,8 @@ needs doing:
   [desktop app](https://github.com/zulip/zulip-desktop).
 * Building out our
   [Python API and bots](https://github.com/zulip/python-zulip-api) framework.
-* [Writing an integration](https://zulipchat.com/api/integrations-overview).
-* Improving our [user](https://zulipchat.com/help/) or
+* [Writing an integration](https://zulip.com/api/integrations-overview).
+* Improving our [user](https://zulip.com/help/) or
   [developer](https://zulip.readthedocs.io/en/latest/) documentation.
 * [Reviewing code](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html)
   and manually testing pull requests.
@@ -214,7 +214,7 @@ if appropriate.
 
 **Reporting security issues**. Please do not report security issues
   publicly, including on public streams on chat.zulip.org. You can
-  email security@zulipchat.com.  We create a CVE for every security
+  email security@zulip.com.  We create a CVE for every security
   issue in our released software.
 
 ## User feedback

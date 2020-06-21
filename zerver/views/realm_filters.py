@@ -4,9 +4,9 @@ from django.utils.translation import ugettext as _
 
 from zerver.decorator import require_realm_admin
 from zerver.lib.actions import do_add_realm_filter, do_remove_realm_filter
-from zerver.lib.request import has_request_variables, REQ
-from zerver.lib.response import json_success, json_error
-from zerver.models import realm_filters_for_realm, UserProfile, RealmFilter
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_error, json_success
+from zerver.models import RealmFilter, UserProfile, realm_filters_for_realm
 
 
 # Custom realm filters
@@ -23,7 +23,7 @@ def create_filter(request: HttpRequest, user_profile: UserProfile, pattern: str=
         filter_id = do_add_realm_filter(
             realm=user_profile.realm,
             pattern=pattern,
-            url_format_string=url_format_string
+            url_format_string=url_format_string,
         )
         return json_success({'id': filter_id})
     except ValidationError as e:

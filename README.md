@@ -34,7 +34,7 @@ You might be interested in:
   [beginner-friendly issues][beginner-friendly].
 
 * **Contributing non-code**.
-  [Report an issue](https://zulip.readthedocs.io/en/latest/overview/contributing.html#reporting-issue),
+  [Report an issue](https://zulip.readthedocs.io/en/latest/overview/contributing.html#reporting-issues),
   [translate](https://zulip.readthedocs.io/en/latest/translating/translating.html) Zulip
   into your language,
   [write](https://zulip.readthedocs.io/en/latest/overview/contributing.html#zulip-outreach)
@@ -51,17 +51,17 @@ You might be interested in:
   the
   [Zulip community server](https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html). We
   also recommend reading Zulip for
-  [open source](https://zulipchat.com/for/open-source/), Zulip for
-  [companies](https://zulipchat.com/for/companies/), or Zulip for
-  [working groups and part time communities](https://zulipchat.com/for/working-groups-and-communities/).
+  [open source](https://zulip.com/for/open-source/), Zulip for
+  [companies](https://zulip.com/for/companies/), or Zulip for
+  [working groups and part time communities](https://zulip.com/for/working-groups-and-communities/).
 
 * **Running a Zulip server**. Use a preconfigured [Digital Ocean droplet](https://marketplace.digitalocean.com/apps/zulip),
   [install Zulip](https://zulip.readthedocs.io/en/stable/production/install.html)
   directly, or use Zulip's
   experimental [Docker image](https://zulip.readthedocs.io/en/latest/production/deployment.html#zulip-in-docker).
-  Commercial support is available; see <https://zulipchat.com/plans> for details.
+  Commercial support is available; see <https://zulip.com/plans> for details.
 
-* **Using Zulip without setting up a server**. <https://zulipchat.com>
+* **Using Zulip without setting up a server**. <https://zulip.com>
   offers free and commercial hosting, including providing our paid
   plan for free to fellow open source projects.
 

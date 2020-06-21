@@ -143,7 +143,12 @@ exports.update_stream_privacy_type_icon = function (sub) {
 
 exports.update_stream_subscription_type_text = function (sub) {
     const stream_settings = stream_edit.settings_for_sub(sub);
-    const html = render_subscription_type(sub);
+    const template_data = {
+        ...sub,
+        stream_post_policy_values: stream_data.stream_post_policy_values,
+        message_retention_text: stream_edit.get_retention_policy_text_for_subscription_type(sub),
+    };
+    const html = render_subscription_type(template_data);
     if (stream_edit.is_sub_settings_active(sub)) {
         stream_settings.find('.subscription-type-text').expectOne().html(html);
     }
@@ -207,7 +212,7 @@ exports.update_add_subscriptions_elements = function (sub) {
 
     // Otherwise, we adjust whether the widgets are disabled based on
     // whether this user is authorized to add subscribers.
-    const input_element = $('.add_subscribers_container').find('input[name="principal"]').expectOne();
+    const input_element = $('.add_subscribers_container').find('.input').expectOne();
     const button_element = $('.add_subscribers_container').find('button[name="add_subscriber"]').expectOne();
     const allow_user_to_add_subs = sub.can_add_subscribers;
 

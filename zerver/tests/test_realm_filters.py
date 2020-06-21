@@ -4,6 +4,7 @@ from zerver.lib.actions import do_add_realm_filter
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import RealmFilter, get_realm
 
+
 class RealmFilterTest(ZulipTestCase):
 
     def test_list(self) -> None:
@@ -107,9 +108,9 @@ class RealmFilterTest(ZulipTestCase):
             "#(?P<id>[123])",
             "https://realm.com/my_realm_filter/%(id)s")
         filters_count = RealmFilter.objects.count()
-        result = self.client_delete("/json/realm/filters/{}".format(filter_id + 1))
+        result = self.client_delete(f"/json/realm/filters/{filter_id + 1}")
         self.assert_json_error(result, 'Filter not found')
 
-        result = self.client_delete("/json/realm/filters/{}".format(filter_id))
+        result = self.client_delete(f"/json/realm/filters/{filter_id}")
         self.assert_json_success(result)
         self.assertEqual(RealmFilter.objects.count(), filters_count - 1)

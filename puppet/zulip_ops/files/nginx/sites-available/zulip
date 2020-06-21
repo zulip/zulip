@@ -12,5 +12,6 @@ server {
 
     server_name zulipchat.com *.zulipchat.com;
 
+    include /etc/zulip/nginx_sharding.conf;
     include /etc/nginx/zulip-include/app;
 }

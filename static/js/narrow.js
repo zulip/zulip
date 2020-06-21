@@ -96,6 +96,41 @@ function update_narrow_title(filter) {
 
 exports.narrow_title = "home";
 exports.activate = function (raw_operators, opts) {
+    /* Main entrypoint for switching to a new view / message list.
+       Note that for historical reasons related to the current
+       client-side caching structure, the "All messages"/home_msg_list
+       view is reached via `narrow.deactivate()`.
+
+       The name is based on "narrowing to a subset of the user's
+       messages.".  Supported parameters:
+
+       raw_operators: Narrowing/search operators; used to construct
+       a Filter object that decides which messages belong in the
+       view.  Required (See the above note on how `home_msg_list` works)
+
+       All other options are encoded via the `opts` dictionary:
+
+       * trigger: Optional parameter used mainly for logging and some
+         custom UI behavior for certain buttons.  Generally aim to
+         have this be unique for each UI widget that can trigger narrowing.
+
+       * change_hash: Whether this narrow should change the URL
+         fragment ("hash") in the URL bar.  Should be true unless the
+         URL is already correct (E.g. because the hashchange logic
+         itself is triggering the change of view).
+
+       * then_select_id: If the caller wants us to do the narrow
+         centered on a specific message ID ("anchor" in the API
+         parlance), specify that here.  Useful e.g. when the user
+         clicks on a specific message; implied by a `near:` operator.
+
+       * then_select_offset: Offset from the top of the page in pixels
+         at which to place the then_select_id message following
+         rendering.  Important to avoid what would otherwise feel like
+         visual glitches after clicking on a specific message's headig
+         or rerendering due to server-side changes.
+    */
+
     const start_time = new Date();
     const was_narrowed_already = narrow_state.active();
     // most users aren't going to send a bunch of a out-of-narrow messages
@@ -113,8 +148,8 @@ exports.activate = function (raw_operators, opts) {
     const operators = filter.operators();
 
     update_narrow_title(filter);
-    notifications.hide_history_limit_message();
-    $(".all-messages-search-caution").hide();
+    message_scroll.hide_top_of_narrow_notices();
+    message_scroll.hide_indicators();
 
     blueslip.debug("Narrowed", {operators: operators.map(e => e.operator),
                                 trigger: opts ? opts.trigger : undefined,
@@ -255,37 +290,14 @@ exports.activate = function (raw_operators, opts) {
                 msg_list.network_time = new Date();
                 maybe_report_narrow_time(msg_list);
             },
-            pre_scroll_cont: function () {
-                // Potentially display the notice that lets users know
-                // that not all messages were searched.  One could
-                // imagine including `filter.is_search()` in these
-                // conditions, but there's a very legitimate use case
-                // for moderation of searching for all messages sent
-                // by a potential spammer user.
-                if (!filter.contains_only_private_messages() &&
-                    !filter.includes_full_stream_history() &&
-                    !filter.is_personal_filter()) {
-                    $(".all-messages-search-caution").show();
-                    // Set the link to point to this search with streams:public added.
-                    // It's a bit hacky to use the href, but
-                    // !filter.includes_full_stream_history() implies streams:public
-                    // wasn't already present.
-                    $(".all-messages-search-caution a.search-shared-history").attr(
-                        "href", window.location.hash.replace("#narrow/", "#narrow/streams/public/")
-                    );
-                }
-            },
         });
     }());
 
     if (select_immediately) {
-        message_scroll.hide_indicators();
         exports.update_selection({
             id_info: id_info,
             select_offset: then_select_offset,
         });
-    } else {
-        message_scroll.show_loading_older();
     }
 
     // Put the narrow operators in the URL fragment.
@@ -308,12 +320,6 @@ exports.activate = function (raw_operators, opts) {
         compose.update_closed_compose_buttons_for_private();
     } else {
         compose.update_closed_compose_buttons_for_stream();
-    }
-
-    // Put the narrow operators in the search bar.
-    // we append a space to make searching more convenient in some cases.
-    if (filter && !filter.is_search()) {
-        $('#search_query').val(Filter.unparse(operators) + " ");
     }
 
     search.update_button_visibility();
@@ -458,7 +464,7 @@ exports.maybe_add_local_messages = function (opts) {
         // Without unread messages or a target ID, we're narrowing to
         // the very latest message or first unread if matching the narrow allows.
 
-        if (!message_list.all.fetch_status.has_found_newest()) {
+        if (!message_list.all.data.fetch_status.has_found_newest()) {
             // If message_list.all is not caught up, then we cannot
             // populate the latest messages for the target narrow
             // correctly from there, so we must go to the server.
@@ -747,11 +753,23 @@ function handle_post_narrow_deactivate_processes() {
     tab_bar.initialize();
     exports.narrow_title = "home";
     notifications.redraw_title();
-    notifications.hide_or_show_history_limit_message(home_msg_list);
-    $(".all-messages-search-caution").hide();
+    message_scroll.hide_top_of_narrow_notices();
+    message_scroll.update_top_of_narrow_notices(home_msg_list);
 }
 
 exports.deactivate = function () {
+    /*
+      Switches current_msg_list from narrowed_msg_list to
+      home_msg_list ("All messages"), ending the current narrow.  This
+      is a very fast operation, because we keep home_msg_list's data
+      cached and updated in the DOM at all times, making it suitable
+      for rapid access via keyboard shortcuts.
+
+      Long-term, we will likely want to make `home_msg_list` not
+      special in any way, and instead just have a generic
+      message_list_data structure caching system that happens to have
+      home_msg_list in it.
+     */
     search.clear_search_form();
     if (narrow_state.filter() === undefined) {
         return;

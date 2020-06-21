@@ -31,14 +31,14 @@ def api_splunk_webhook(request: HttpRequest, user_profile: UserProfile,
 
     # for the default topic, use search name but truncate if too long
     if len(search_name) >= MAX_TOPIC_NAME_LENGTH:
-        topic = "{}...".format(search_name[:(MAX_TOPIC_NAME_LENGTH - 3)])
+        topic = f"{search_name[:(MAX_TOPIC_NAME_LENGTH - 3)]}..."
     else:
         topic = search_name
 
     # construct the message body
     body = MESSAGE_TEMPLATE.format(
         search=search_name, link=results_link,
-        host=host, source=source, raw=raw
+        host=host, source=source, raw=raw,
     )
 
     # send the message

@@ -30,4 +30,33 @@ exports.blur_active_element = function () {
     document.activeElement.blur();
 };
 
+function update_lock_icon_for_stream(stream_name) {
+    const icon = $("#compose-lock-icon");
+    const streamfield = $("#stream_message_recipient_stream");
+    if (stream_data.get_invite_only(stream_name)) {
+        icon.show();
+        streamfield.addClass("lock-padding");
+    } else {
+        icon.hide();
+        streamfield.removeClass("lock-padding");
+    }
+}
+
+// In an attempt to decrease mixing, set stream bar
+// color look like the stream being used.
+// (In particular, if there's a color associated with it,
+//  have that color be reflected here too.)
+exports.decorate_stream_bar = function (stream_name, element, is_compose) {
+    if (stream_name === undefined) {
+        return false;
+    }
+    const color = stream_data.get_color(stream_name);
+    if (is_compose) {
+        update_lock_icon_for_stream(stream_name);
+    }
+    element.css('background-color', color)
+        .removeClass(stream_color.color_classes)
+        .addClass(stream_color.get_color_class(color));
+};
+
 window.ui_util = exports;

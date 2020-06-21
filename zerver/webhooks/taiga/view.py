@@ -93,7 +93,7 @@ templates = {
         ' to {new}.',
         'set_estimated_finish': '[{user}]({user_link}) set estimated finish of sprint {subject}'
         ' to {new}.',
-        'delete': '[{user}]({user_link}) deleted sprint {subject}.'
+        'delete': '[{user}]({user_link}) deleted sprint {subject}.',
     },
     'task': {
         'create': '[{user}]({user_link}) created task {subject}.',
@@ -143,7 +143,7 @@ templates = {
         'unblocked': '[{user}]({user_link}) unblocked issue {subject}.',
     },
     'webhook_test': {
-        'test': '[{user}]({user_link}) triggered a test of the Taiga integration.'
+        'test': '[{user}]({user_link}) triggered a test of the Taiga integration.',
     },
 }
 
@@ -165,8 +165,8 @@ def parse_comment(message: Mapping[str, Any]) -> Dict[str, Any]:
         'values': {
             'user': get_owner_name(message),
             'user_link': get_owner_link(message),
-            'subject': get_subject(message)
-        }
+            'subject': get_subject(message),
+        },
     }
 
 def parse_create_or_delete(message: Mapping[str, Any]) -> Dict[str, Any]:
@@ -180,7 +180,7 @@ def parse_create_or_delete(message: Mapping[str, Any]) -> Dict[str, Any]:
                 'user_link': get_owner_link(message),
                 'epic_subject': get_epic_subject(message),
                 'userstory_subject': get_userstory_subject(message),
-            }
+            },
         }
 
     return {
@@ -190,7 +190,7 @@ def parse_create_or_delete(message: Mapping[str, Any]) -> Dict[str, Any]:
             'user': get_owner_name(message),
             'user_link': get_owner_link(message),
             'subject': get_subject(message),
-        }
+        },
     }
 
 
@@ -200,7 +200,7 @@ def parse_change_event(change_type: str, message: Mapping[str, Any]) -> Optional
     values: Dict[str, Any] = {
         'user': get_owner_name(message),
         'user_link': get_owner_link(message),
-        'subject': get_subject(message)
+        'subject': get_subject(message),
     }
 
     if change_type in ["description_diff", "points"]:
@@ -271,8 +271,8 @@ def parse_webhook_test(message: Mapping[str, Any]) -> Dict[str, Any]:
         "values": {
             "user": get_owner_name(message),
             "user_link": get_owner_link(message),
-            "end_type": "test"
-        }
+            "end_type": "test",
+        },
     }
 
 

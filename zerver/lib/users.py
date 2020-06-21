@@ -1,24 +1,34 @@
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
-
 import re
 import unicodedata
 from collections import defaultdict
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union, cast
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db.models.query import QuerySet
 from django.forms.models import model_to_dict
 from django.utils.translation import ugettext as _
-
-from zerver.lib.cache import generic_bulk_cached_fetch, user_profile_cache_key_id, \
-    user_profile_by_id_cache_key, realm_user_dict_fields
-from zerver.lib.request import JsonableError
-from zerver.lib.avatar import avatar_url, get_avatar_field
-from zerver.lib.exceptions import OrganizationAdministratorRequired
-from zerver.models import UserProfile, Service, Realm, \
-    get_user_profile_by_id_in_realm, CustomProfileFieldValue, \
-    get_realm_user_dicts, CustomProfileField
-
 from zulip_bots.custom_exceptions import ConfigValidationError
+
+from zerver.lib.avatar import avatar_url, get_avatar_field
+from zerver.lib.cache import (
+    generic_bulk_cached_fetch,
+    realm_user_dict_fields,
+    user_profile_by_id_cache_key,
+    user_profile_cache_key_id,
+)
+from zerver.lib.exceptions import OrganizationAdministratorRequired
+from zerver.lib.request import JsonableError
+from zerver.models import (
+    CustomProfileField,
+    CustomProfileFieldValue,
+    Realm,
+    Service,
+    UserProfile,
+    get_realm_user_dicts,
+    get_user_profile_by_id_in_realm,
+)
+
 
 def check_full_name(full_name_raw: str) -> str:
     full_name = full_name_raw.strip()
@@ -69,12 +79,13 @@ def check_valid_bot_config(bot_type: int, service_name: str,
                 config_options = {c[1]: c[2] for c in integration.config_options}
                 break
         if not config_options:
-            raise JsonableError(_("Invalid integration '%s'.") % (service_name,))
+            raise JsonableError(_("Invalid integration '{}'.").format(service_name))
 
         missing_keys = set(config_options.keys()) - set(config_data.keys())
         if missing_keys:
-            raise JsonableError(_("Missing configuration parameters: %s") % (
-                missing_keys,))
+            raise JsonableError(_("Missing configuration parameters: {}").format(
+                missing_keys,
+            ))
 
         for key, validator in config_options.items():
             value = config_data[key]
@@ -127,6 +138,9 @@ def check_valid_interface_type(interface_type: Optional[int]) -> None:
     if interface_type not in Service.ALLOWED_INTERFACE_TYPES:
         raise JsonableError(_('Invalid interface type'))
 
+def is_administrator_role(role: int) -> bool:
+    return role in {UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER}
+
 def bulk_get_users(emails: List[str], realm: Optional[Realm],
                    base_query: 'QuerySet[UserProfile]'=None) -> Dict[str, UserProfile]:
     if base_query is None:
@@ -151,11 +165,10 @@ def bulk_get_users(emails: List[str], realm: Optional[Realm],
         #
         # But chaining __in and __iexact doesn't work with Django's
         # ORM, so we have the following hack to construct the relevant where clause
-        upper_list = ", ".join(["UPPER(%s)"] * len(emails))
-        where_clause = "UPPER(zerver_userprofile.email::text) IN (%s)" % (upper_list,)
+        where_clause = "upper(zerver_userprofile.email::text) IN (SELECT upper(email) FROM unnest(%s) AS email)"
         return query.select_related("realm").extra(
             where=[where_clause],
-            params=emails)
+            params=(emails,))
 
     def user_to_email(user_profile: UserProfile) -> str:
         return user_profile.email.lower()
@@ -169,7 +182,7 @@ def bulk_get_users(emails: List[str], realm: Optional[Realm],
         id_fetcher=user_to_email,
     )
 
-def user_ids_to_users(user_ids: List[int], realm: Realm) -> List[UserProfile]:
+def user_ids_to_users(user_ids: Sequence[int], realm: Realm) -> List[UserProfile]:
     # TODO: Consider adding a flag to control whether deactivated
     # users should be included.
 
@@ -179,18 +192,18 @@ def user_ids_to_users(user_ids: List[int], realm: Realm) -> List[UserProfile]:
     user_profiles_by_id: Dict[int, UserProfile] = generic_bulk_cached_fetch(
         cache_key_function=user_profile_by_id_cache_key,
         query_function=fetch_users_by_id,
-        object_ids=user_ids
+        object_ids=user_ids,
     )
 
     found_user_ids = user_profiles_by_id.keys()
     missed_user_ids = [user_id for user_id in user_ids if user_id not in found_user_ids]
     if missed_user_ids:
-        raise JsonableError(_("Invalid user ID: %s") % (missed_user_ids[0],))
+        raise JsonableError(_("Invalid user ID: {}").format(missed_user_ids[0]))
 
     user_profiles = list(user_profiles_by_id.values())
     for user_profile in user_profiles:
         if user_profile.realm != realm:
-            raise JsonableError(_("Invalid user ID: %s") % (user_profile.id,))
+            raise JsonableError(_("Invalid user ID: {}").format(user_profile.id))
     return user_profiles
 
 def access_bot_by_id(user_profile: UserProfile, user_id: int) -> UserProfile:
@@ -241,25 +254,24 @@ def get_all_api_keys(user_profile: UserProfile) -> List[str]:
     return [user_profile.api_key]
 
 def validate_user_custom_profile_field(realm_id: int, field: CustomProfileField,
-                                       value: Union[int, str, List[int]]) -> Optional[str]:
+                                       value: Union[int, str, List[int]]) -> Union[int, str, List[int]]:
     validators = CustomProfileField.FIELD_VALIDATORS
     field_type = field.field_type
-    var_name = '{}'.format(field.name)
+    var_name = f'{field.name}'
     if field_type in validators:
         validator = validators[field_type]
-        result = validator(var_name, value)
+        return validator(var_name, value)
     elif field_type == CustomProfileField.CHOICE:
         choice_field_validator = CustomProfileField.CHOICE_FIELD_VALIDATORS[field_type]
         field_data = field.field_data
         # Put an assertion so that mypy doesn't complain.
         assert field_data is not None
-        result = choice_field_validator(var_name, field_data, value)
+        return choice_field_validator(var_name, field_data, value)
     elif field_type == CustomProfileField.USER:
         user_field_validator = CustomProfileField.USER_FIELD_VALIDATORS[field_type]
-        result = user_field_validator(realm_id, cast(List[int], value), False)
+        return user_field_validator(realm_id, cast(List[int], value), False)
     else:
         raise AssertionError("Invalid field type")
-    return result
 
 def validate_user_custom_profile_data(realm_id: int,
                                       profile_data: List[Dict[str, Union[int, str, List[int]]]]) -> None:
@@ -271,9 +283,10 @@ def validate_user_custom_profile_data(realm_id: int,
         except CustomProfileField.DoesNotExist:
             raise JsonableError(_('Field id {id} not found.').format(id=field_id))
 
-        result = validate_user_custom_profile_field(realm_id, field, item['value'])
-        if result is not None:
-            raise JsonableError(result)
+        try:
+            validate_user_custom_profile_field(realm_id, field, item['value'])
+        except ValidationError as error:
+            raise JsonableError(error.message)
 
 def compute_show_invites_and_add_streams(user_profile: Optional[UserProfile]) -> Tuple[bool, bool]:
     if user_profile is None:
@@ -291,7 +304,7 @@ def compute_show_invites_and_add_streams(user_profile: Optional[UserProfile]) ->
     return True, True
 
 def format_user_row(realm: Realm, acting_user: UserProfile, row: Dict[str, Any],
-                    client_gravatar: bool,
+                    client_gravatar: bool, user_avatar_url_field_optional: bool,
                     custom_profile_field_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """Formats a user row returned by a database fetch using
     .values(*realm_user_dict_fields) into a dictionary representation
@@ -299,23 +312,16 @@ def format_user_row(realm: Realm, acting_user: UserProfile, row: Dict[str, Any],
     argument is used for permissions checks.
     """
 
-    avatar_url = get_avatar_field(user_id=row['id'],
-                                  realm_id=realm.id,
-                                  email=row['delivery_email'],
-                                  avatar_source=row['avatar_source'],
-                                  avatar_version=row['avatar_version'],
-                                  medium=False,
-                                  client_gravatar=client_gravatar,)
-
-    is_admin = row['role'] == UserProfile.ROLE_REALM_ADMINISTRATOR
+    is_admin = is_administrator_role(row['role'])
+    is_owner = row['role'] == UserProfile.ROLE_REALM_OWNER
     is_guest = row['role'] == UserProfile.ROLE_GUEST
     is_bot = row['is_bot']
-    # This format should align with get_cross_realm_dicts() and notify_created_user
     result = dict(
         email=row['email'],
         user_id=row['id'],
-        avatar_url=avatar_url,
+        avatar_version=row['avatar_version'],
         is_admin=is_admin,
+        is_owner=is_owner,
         is_guest=is_guest,
         is_bot=is_bot,
         full_name=row['full_name'],
@@ -323,6 +329,35 @@ def format_user_row(realm: Realm, acting_user: UserProfile, row: Dict[str, Any],
         is_active = row['is_active'],
         date_joined = row['date_joined'].isoformat(),
     )
+
+    # Zulip clients that support using `GET /avatar/{user_id}` as a
+    # fallback if we didn't send an avatar URL in the user object pass
+    # user_avatar_url_field_optional in client_capabilities.
+    #
+    # This is a major network performance optimization for
+    # organizations with 10,000s of users where we would otherwise
+    # send avatar URLs in the payload (either because most users have
+    # uploaded avatars or because EMAIL_ADDRESS_VISIBILITY_ADMINS
+    # prevents the older client_gravatar optimization from helping).
+    # The performance impact is large largely because the hashes in
+    # avatar URLs structurally cannot compress well.
+    #
+    # The user_avatar_url_field_optional gives the server sole
+    # discretion in deciding for which users we want to send the
+    # avatar URL (Which saves clients an RTT at the cost of some
+    # bandwidth).  At present, the server looks at `long_term_idle` to
+    # decide which users to include avatars for, piggy-backing on a
+    # different optimization for organizations with 10,000s of users.
+    include_avatar_url = not user_avatar_url_field_optional or not row['long_term_idle']
+    if include_avatar_url:
+        result['avatar_url'] = get_avatar_field(user_id=row['id'],
+                                                realm_id=realm.id,
+                                                email=row['delivery_email'],
+                                                avatar_source=row['avatar_source'],
+                                                avatar_version=row['avatar_version'],
+                                                medium=False,
+                                                client_gravatar=client_gravatar)
+
     if (realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS and
             acting_user.is_realm_admin):
         result['delivery_email'] = row['delivery_email']
@@ -381,6 +416,7 @@ def get_cross_realm_dicts() -> List[Dict[str, Any]]:
                                       acting_user=user,
                                       row=user_row,
                                       client_gravatar=False,
+                                      user_avatar_url_field_optional=False,
                                       custom_profile_field_data=None))
 
     return result
@@ -393,16 +429,16 @@ def get_custom_profile_field_values(custom_profile_field_values:
         if profile_field.field.is_renderable():
             profiles_by_user_id[user_id][profile_field.field_id] = {
                 "value": profile_field.value,
-                "rendered_value": profile_field.rendered_value
+                "rendered_value": profile_field.rendered_value,
             }
         else:
             profiles_by_user_id[user_id][profile_field.field_id] = {
-                "value": profile_field.value
+                "value": profile_field.value,
             }
     return profiles_by_user_id
 
-def get_raw_user_data(realm: Realm, acting_user: UserProfile, client_gravatar: bool,
-                      target_user: Optional[UserProfile]=None,
+def get_raw_user_data(realm: Realm, acting_user: UserProfile, *, target_user: Optional[UserProfile]=None,
+                      client_gravatar: bool, user_avatar_url_field_optional: bool,
                       include_custom_profile_fields: bool=True) -> Dict[int, Dict[str, str]]:
     """Fetches data about the target user(s) appropriate for sending to
     acting_user via the standard format for the Zulip API.  If
@@ -432,9 +468,10 @@ def get_raw_user_data(realm: Realm, acting_user: UserProfile, client_gravatar: b
             custom_profile_field_data = profiles_by_user_id.get(row['id'], {})
 
         result[row['id']] = format_user_row(realm,
-                                            acting_user = acting_user,
+                                            acting_user=acting_user,
                                             row=row,
-                                            client_gravatar= client_gravatar,
-                                            custom_profile_field_data = custom_profile_field_data
+                                            client_gravatar=client_gravatar,
+                                            user_avatar_url_field_optional=user_avatar_url_field_optional,
+                                            custom_profile_field_data=custom_profile_field_data,
                                             )
     return result

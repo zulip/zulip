@@ -1,51 +1,35 @@
 set_global('document', 'document-stub');
 set_global('$', global.make_zjquery());
 
+zrequire('emoji');
 zrequire('people');
 zrequire('reactions');
 
-set_global('emoji', {
-    all_realm_emojis: new Map(Object.entries({
+set_global('page_params', {
+    user_id: 5,
+    realm_emoji: {
         991: {
             id: '991',
-            emoji_name: 'realm_emoji',
-            emoji_url: 'TBD',
+            name: 'realm_emoji',
+            source_url: 'TBD',
             deactivated: false,
         },
         992: {
             id: '992',
-            emoji_name: 'inactive_realm_emoji',
-            emoji_url: 'TBD',
+            name: 'inactive_realm_emoji',
+            source_url: 'TBD',
             deactivated: true,
         },
         zulip: {
             id: 'zulip',
-            emoji_name: 'zulip',
-            emoji_url: 'TBD',
+            name: 'zulip',
+            source_url: 'TBD',
             deactivated: false,
-        },
-    })),
-    active_realm_emojis: new Map(Object.entries({
-        realm_emoji: {
-            id: '991',
-            emoji_name: 'realm_emoji',
-            emoji_url: 'TBD',
-        },
-        zulip: {
-            id: 'zulip',
-            emoji_name: 'zulip',
-            emoji_url: 'TBD',
-        },
-    })),
-    deactivated_realm_emojis: {
-        inactive_realm_emoji: {
-            emoji_name: 'inactive_realm_emoji',
-            emoji_url: 'TBD',
         },
     },
 });
 
-set_global('page_params', {user_id: 5});
+emoji.initialize();
 
 set_global('channel', {});
 set_global('emoji_picker', {
@@ -67,9 +51,9 @@ const cali = {
     user_id: 7,
     full_name: 'Cali',
 };
-people.add(alice);
-people.add(bob);
-people.add(cali);
+people.add_active_user(alice);
+people.add_active_user(bob);
+people.add_active_user(cali);
 
 const message = {
     id: 1001,
@@ -754,4 +738,3 @@ run_test('process_reaction_click errors', () => {
     blueslip.expect('error', 'Data integrity problem for reaction bad-local-id (message some-msg-id)');
     reactions.process_reaction_click('some-msg-id', 'bad-local-id');
 });
-

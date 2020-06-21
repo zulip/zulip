@@ -148,8 +148,7 @@ exports.initialize = function () {
     const pointer = parseInt(vars.pointer, 10);
 
     if (pointer) {
-        page_params.orig_initial_pointer = page_params.pointer;
-        page_params.pointer = pointer;
+        page_params.initial_pointer = pointer;
     }
     const offset = parseInt(vars.offset, 10);
     if (offset) {

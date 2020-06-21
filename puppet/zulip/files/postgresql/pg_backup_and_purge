@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
-
-import os
-import sys
 import glob
+import logging
+import os
 import shlex
 import subprocess
-import logging
-import dateutil.parser
-import pytz
+import sys
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List
+
+import dateutil.parser
 
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s")
@@ -25,8 +24,8 @@ def run(args: List[str], dry_run: bool = False) -> str:
                          stderr=subprocess.PIPE)
     stdout, stderr = p.communicate()
     if p.returncode:
-        logger.error("Could not invoke %s\nstdout: %r\nstderror: %r"
-                     % (args[0], stdout, stderr))
+        logger.error("Could not invoke %s\nstdout: %r\nstderror: %r",
+                     args[0], stdout, stderr)
         sys.exit(1)
     return stdout.decode()
 
@@ -34,7 +33,7 @@ recovery_val = run(['psql', '-v', 'ON_ERROR_STOP=1', '-t', '-c', 'SELECT pg_is_i
 # Assertion to check that we're extracting the value correctly.
 assert recovery_val in ['t', 'f']
 if recovery_val == 't':
-    # Only run if we're the master
+    # Only run if we're the primary
     sys.exit(0)
 
 is_rhel_based = os.path.exists("/etc/redhat-release")
@@ -43,18 +42,18 @@ if is_rhel_based:
 else:
     pg_data_paths = glob.glob('/var/lib/postgresql/*/main')
 if len(pg_data_paths) != 1:
-    print("Postgres installation is not unique: %s" % (pg_data_paths,))
+    print(f"Postgres installation is not unique: {pg_data_paths}")
     sys.exit(1)
 pg_data_path = pg_data_paths[0]
-run(['env-wal-e', 'backup-push', pg_data_path])
+run(['env-wal-g', 'backup-push', pg_data_path])
 
-now = datetime.now(tz=pytz.utc)
+now = datetime.now(tz=timezone.utc)
 with open('/var/lib/nagios_state/last_postgres_backup', 'w') as f:
     f.write(now.isoformat())
     f.write("\n")
 
-backups = {}  # type: Dict[datetime, str]
-lines = run(['env-wal-e', 'backup-list']).split("\n")
+backups: Dict[datetime, str] = {}
+lines = run(['env-wal-g', 'backup-list']).split("\n")
 for line in lines[1:]:
     if line:
         backup_name, date_str, _, _ = line.split()
@@ -63,7 +62,7 @@ for line in lines[1:]:
 one_month_ago = now - timedelta(days=30)
 for date in sorted(backups.keys(), reverse=True):
     if date < one_month_ago:
-        run(['env-wal-e', 'delete', '--confirm', 'before', backups[date]])
+        run(['env-wal-g', 'delete', '--confirm', 'before', backups[date]])
         # Because we're going from most recent to least recent, we
         # only have to do one delete operation
         break

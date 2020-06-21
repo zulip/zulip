@@ -46,6 +46,15 @@ function message_in_home(message) {
 
 function message_matches_search_term(message, operator, operand) {
     switch (operator) {
+    case 'has':
+        if (operand === 'image') {
+            return message_util.message_has_image(message);
+        } else if (operand === 'link') {
+            return message_util.message_has_link(message);
+        } else if (operand === 'attachment') {
+            return message_util.message_has_attachment(message);
+        }
+        return false; // has:something_else returns false
     case 'is':
         if (operand === 'private') {
             return message.type === 'private';
@@ -151,16 +160,11 @@ function message_matches_search_term(message, operator, operand) {
 function Filter(operators) {
     if (operators === undefined) {
         this._operators = [];
+        this._sub = undefined;
     } else {
         this._operators = this.fix_operators(operators);
-        // if has_op stream
         if (this.has_operator('stream')) {
-            const stream_name_from_search = this.operands('stream')[0];
-            const sub = stream_data.get_sub_by_name(stream_name_from_search);
-            if (sub) {
-                this._stream_name = sub.name;
-                this._is_stream_private = sub.invite_only;
-            }
+            this._sub = stream_data.get_sub_by_name(this.operands('stream')[0]);
         }
     }
 }
@@ -486,6 +490,10 @@ Filter.prototype = {
 
         // this comes first because it has 3 term_types but is not a "complex filter"
         if (_.isEqual(term_types, ['stream', 'topic', 'search'])) {
+            // if stream does not exist, redirect to All
+            if (!this._sub) {
+                return "#";
+            }
             return  '/#narrow/stream/' + stream_data.name_to_slug(this.operands('stream')[0]) + '/topic/' + this.operands('topic')[0];
         }
 
@@ -497,6 +505,10 @@ Filter.prototype = {
         if (term_types[1] === 'search') {
             switch (term_types[0]) {
             case 'stream':
+                // if stream does not exist, redirect to All
+                if (!this._sub) {
+                    return "#";
+                }
                 return  '/#narrow/stream/' + stream_data.name_to_slug(this.operands('stream')[0]);
             case 'is-private':
                 return  '/#narrow/is/private';
@@ -527,8 +539,14 @@ Filter.prototype = {
         case 'in-all':
             return 'home';
         case 'stream':
-            if (this._is_stream_private) {
+            if (!this._sub) {
+                return 'question-circle-o';
+            }
+            if (this._sub.invite_only) {
                 return 'lock';
+            }
+            if (this._sub.is_web_public) {
+                return 'globe';
             }
             return 'hashtag';
         case 'is-private':
@@ -547,7 +565,10 @@ Filter.prototype = {
         const term_types = this.sorted_term_types();
         if (term_types.length === 3 && _.isEqual(term_types, ['stream', 'topic', 'search']) ||
             term_types.length === 2 && _.isEqual(term_types, ['stream', 'topic'])) {
-            return this._stream_name;
+            if (!this._sub) {
+                return i18n.t('Unknown stream');
+            }
+            return this._sub.name;
         }
         if (term_types.length === 1 || term_types.length === 2 && term_types[1] === 'search') {
             switch (term_types[0]) {
@@ -558,7 +579,10 @@ Filter.prototype = {
             case 'streams-public':
                 return i18n.t('Public stream messages in organization');
             case 'stream':
-                return this._stream_name;
+                if (!this._sub) {
+                    return i18n.t('Unknown stream');
+                }
+                return this._sub.name;
             case 'is-starred':
                 return i18n.t('Starred messages');
             case 'is-mentioned':
@@ -605,7 +629,10 @@ Filter.prototype = {
         return this.has_operand("is", "mentioned") || this.has_operand("is", "starred");
     },
 
-    can_apply_locally: function () {
+    can_apply_locally: function (is_local_echo) {
+        // Since there can be multiple operators, each block should
+        // just return false here.
+
         if (this.is_search()) {
             // The semantics for matching keywords are implemented
             // by database plugins, and we don't have JS code for
@@ -614,10 +641,11 @@ Filter.prototype = {
             return false;
         }
 
-        if (this.has_operator('has')) {
-            // See #6186 to see why we currently punt on 'has:foo'
-            // queries.  This can be fixed, there are just some random
-            // complications that make it non-trivial.
+        if (this.has_operator('has') && is_local_echo) {
+            // The has: operators can be applied locally for messages
+            // rendered by the backend; links, attachments, and images
+            // are not handled properly by the local echo markdown
+            // processor.
             return false;
         }
 

@@ -12,15 +12,14 @@ from zerver.lib.response import json_success
 from zerver.lib.types import ViewFuncT
 from zerver.lib.validator import check_dict
 from zerver.lib.webhooks.common import check_send_webhook_message
-from zerver.lib.webhooks.git import TOPIC_WITH_BRANCH_TEMPLATE, \
-    get_push_commits_event_message
+from zerver.lib.webhooks.git import TOPIC_WITH_BRANCH_TEMPLATE, get_push_commits_event_message
 from zerver.models import UserProfile
 
 
 def build_message_from_gitlog(user_profile: UserProfile, name: str, ref: str,
                               commits: List[Dict[str, str]], before: str, after: str,
                               url: str, pusher: str, forced: Optional[str]=None,
-                              created: Optional[str]=None, deleted: Optional[bool]=False
+                              created: Optional[str]=None, deleted: bool=False,
                               ) -> Tuple[str, str]:
     short_ref = re.sub(r'^refs/heads/', '', ref)
     subject = TOPIC_WITH_BRANCH_TEMPLATE.format(repo=name, branch=short_ref)
@@ -47,11 +46,13 @@ def _transform_commits_list_to_common_format(commits: List[Dict[str, Any]]) -> L
 def beanstalk_decoder(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        auth_type, encoded_value = request.META['HTTP_AUTHORIZATION'].split()  # type: str, str
+        auth_type: str
+        encoded_value: str
+        auth_type, encoded_value = request.META['HTTP_AUTHORIZATION'].split()
         if auth_type.lower() == "basic":
             email, api_key = base64.b64decode(encoded_value).decode('utf-8').split(":")
             email = email.replace('%40', '@')
-            credentials = "%s:%s" % (email, api_key)
+            credentials = f"{email}:{api_key}"
             encoded_credentials: str = base64.b64encode(credentials.encode('utf-8')).decode('utf8')
             request.META['HTTP_AUTHORIZATION'] = "Basic " + encoded_credentials
 
@@ -87,8 +88,8 @@ def api_beanstalk_webhook(request: HttpRequest, user_profile: UserProfile,
         revision = payload.get('revision')
         (short_commit_msg, _, _) = payload['message'].partition("\n")
 
-        subject = "svn r%s" % (revision,)
-        content = "%s pushed [revision %s](%s):\n\n> %s" % (author, revision, url, short_commit_msg)
+        subject = f"svn r{revision}"
+        content = f"{author} pushed [revision {revision}]({url}):\n\n> {short_commit_msg}"
 
     check_send_webhook_message(request, user_profile, subject, content)
     return json_success()

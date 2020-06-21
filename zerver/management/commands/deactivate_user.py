@@ -24,18 +24,16 @@ class Command(ZulipBaseCommand):
         realm = self.get_realm(options)
         user_profile = self.get_user(options['email'], realm)
 
-        print("Deactivating %s (%s) - %s" % (user_profile.full_name,
-                                             user_profile.delivery_email,
-                                             user_profile.realm.string_id))
-        print("%s has the following active sessions:" % (user_profile.delivery_email,))
+        print(f"Deactivating {user_profile.full_name} ({user_profile.delivery_email}) - {user_profile.realm.string_id}")
+        print(f"{user_profile.delivery_email} has the following active sessions:")
         for session in user_sessions(user_profile):
             print(session.expire_date, session.get_decoded())
         print("")
-        print("%s has %s active bots that will also be deactivated." % (
+        print("{} has {} active bots that will also be deactivated.".format(
             user_profile.delivery_email,
             UserProfile.objects.filter(
-                is_bot=True, is_active=True, bot_owner=user_profile
-            ).count()
+                is_bot=True, is_active=True, bot_owner=user_profile,
+            ).count(),
         ))
 
         if not options["for_real"]:

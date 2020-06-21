@@ -14,7 +14,7 @@ from zerver.webhooks.gogs.view import gogs_webhook_main
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_GITEA_EVENT")
 
 def format_pull_request_event(payload: Dict[str, Any],
-                              include_title: Optional[bool]=False) -> str:
+                              include_title: bool=False) -> str:
     assignee = payload['pull_request']['assignee']
     data = {
         'user_name': payload['pull_request']['user']['username'],
@@ -24,7 +24,7 @@ def format_pull_request_event(payload: Dict[str, Any],
         'target_branch': payload['pull_request']['head']['ref'],
         'base_branch': payload['pull_request']['base']['ref'],
         'title': payload['pull_request']['title'] if include_title else None,
-        'assignee': assignee['login'] if assignee else None
+        'assignee': assignee['login'] if assignee else None,
     }
 
     if payload['pull_request']['merged']:

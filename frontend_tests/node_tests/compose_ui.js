@@ -19,8 +19,8 @@ const bob = {
     full_name: 'Bob',
 };
 
-people.add(alice);
-people.add(bob);
+people.add_active_user(alice);
+people.add_active_user(bob);
 
 function make_textbox(s) {
     // Simulate a jQuery textbox for testing purposes.

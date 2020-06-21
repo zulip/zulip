@@ -9,13 +9,12 @@
 # machine:
 #
 # $ python3 add_mentor.py --remove <mentor's username>
-
 import os
+import re
+import socket
 import sys
 from argparse import ArgumentParser
 from typing import List
-import socket
-import re
 
 import requests
 
@@ -32,7 +31,7 @@ append_key = """\
 """
 
 def get_mentor_keys(username: str) -> List[str]:
-    url = 'https://api.github.com/users/{}/keys'.format(username)
+    url = f'https://api.github.com/users/{username}/keys'
 
     r = requests.get(url)
     if r.status_code != 200:
@@ -41,7 +40,7 @@ def get_mentor_keys(username: str) -> List[str]:
 
     keys = r.json()
     if not keys:
-        print('Mentor "{}" has no public key.'.format(username))
+        print(f'Mentor "{username}" has no public key.')
         sys.exit(1)
 
     return [key['key'] for key in keys]
@@ -62,7 +61,7 @@ if __name__ == '__main__':
             f.write(new_content)
             f.truncate()
 
-        print('Successfully removed {}\' SSH key!'.format(args.username))
+        print(f'Successfully removed {args.username}\' SSH key!')
 
     else:
         keys = get_mentor_keys(args.username)
@@ -70,6 +69,6 @@ if __name__ == '__main__':
             for key in keys:
                 f.write(append_key.format(username=args.username, key=key))
 
-        print('Successfully added {}\'s SSH key!'.format(args.username))
+        print(f'Successfully added {args.username}\'s SSH key!')
         print('Can you let your mentor know that they can connect to this machine with:\n')
-        print('    $ ssh zulipdev@{}\n'.format(socket.gethostname()))
+        print(f'    $ ssh zulipdev@{socket.gethostname()}\n')

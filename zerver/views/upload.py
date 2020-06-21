@@ -1,17 +1,24 @@
-from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, \
-    HttpResponseNotFound
+from mimetypes import guess_type
+
+from django.conf import settings
+from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import redirect
 from django.utils.cache import patch_cache_control
 from django.utils.translation import ugettext as _
-
-from zerver.lib.response import json_success, json_error
-from zerver.lib.upload import upload_message_image_from_request, get_local_file_path, \
-    get_signed_upload_url, check_upload_within_quota, INLINE_MIME_TYPES, \
-    generate_unauthed_file_access_url, get_local_file_path_id_from_token
-from zerver.models import UserProfile, validate_attachment_request
-from django.conf import settings
 from django_sendfile import sendfile
-from mimetypes import guess_type
+
+from zerver.lib.response import json_error, json_success
+from zerver.lib.upload import (
+    INLINE_MIME_TYPES,
+    check_upload_within_quota,
+    generate_unauthed_file_access_url,
+    get_local_file_path,
+    get_local_file_path_id_from_token,
+    get_signed_upload_url,
+    upload_message_image_from_request,
+)
+from zerver.models import UserProfile, validate_attachment_request
+
 
 def serve_s3(request: HttpRequest, url_path: str, url_only: bool) -> HttpResponse:
     url = get_signed_upload_url(url_path)
@@ -70,7 +77,7 @@ def serve_file_url_backend(request: HttpRequest, user_profile: UserProfile,
 def serve_file(request: HttpRequest, user_profile: UserProfile,
                realm_id_str: str, filename: str,
                url_only: bool=False) -> HttpResponse:
-    path_id = "%s/%s" % (realm_id_str, filename)
+    path_id = f"{realm_id_str}/{filename}"
     is_authorized = validate_attachment_request(user_profile, path_id)
 
     if is_authorized is None:
@@ -100,8 +107,9 @@ def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     user_file = list(request.FILES.values())[0]
     file_size = user_file.size
     if settings.MAX_FILE_UPLOAD_SIZE * 1024 * 1024 < file_size:
-        return json_error(_("Uploaded file is larger than the allowed limit of %s MB") % (
-            settings.MAX_FILE_UPLOAD_SIZE))
+        return json_error(_("Uploaded file is larger than the allowed limit of {} MiB").format(
+            settings.MAX_FILE_UPLOAD_SIZE,
+        ))
     check_upload_within_quota(user_profile.realm, file_size)
 
     uri = upload_message_image_from_request(request, user_file, user_profile)

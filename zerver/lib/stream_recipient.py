@@ -1,7 +1,10 @@
-from typing import (Dict, List)
+from typing import Dict, List
 
 from django.db import connection
+from psycopg2.sql import SQL
+
 from zerver.models import Recipient
+
 
 class StreamRecipientMap:
     '''
@@ -37,24 +40,23 @@ class StreamRecipientMap:
             return
 
         # see comment at the top of the class
-        id_list = ', '.join(str(recip_id) for recip_id in recipient_ids)
-        query = '''
+        query = SQL('''
             SELECT
                 zerver_recipient.id as recipient_id,
                 zerver_recipient.type_id as stream_id
             FROM
                 zerver_recipient
             WHERE
-                zerver_recipient.type = %d
+                zerver_recipient.type = %(STREAM)s
             AND
-                zerver_recipient.id in (%s)
-            ''' % (Recipient.STREAM, id_list)
+                zerver_recipient.id in %(recipient_ids)s
+        ''')
 
-        self._process_query(query)
-
-    def _process_query(self, query: str) -> None:
         cursor = connection.cursor()
-        cursor.execute(query)
+        cursor.execute(query, {
+            "STREAM": Recipient.STREAM,
+            "recipient_ids": tuple(recipient_ids),
+        })
         rows = cursor.fetchall()
         cursor.close()
         for recip_id, stream_id in rows:

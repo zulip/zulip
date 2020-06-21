@@ -1,7 +1,7 @@
-import mock
+from unittest import mock
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.views.compatibility import find_mobile_os, version_lt, is_outdated_desktop_app
+from zerver.views.compatibility import find_mobile_os, is_outdated_desktop_app, version_lt
 
 
 class VersionTest(ZulipTestCase):
@@ -29,7 +29,7 @@ class VersionTest(ZulipTestCase):
 
     def test_version_lt(self) -> None:
         for ver1, cmp, ver2 in self.data:
-            msg = 'expected {} {} {}'.format(ver1, cmp, ver2)
+            msg = f'expected {ver1} {cmp} {ver2}'
             if cmp == '<':
                 self.assertTrue(version_lt(ver1, ver2), msg=msg)
                 self.assertFalse(version_lt(ver2, ver1), msg=msg)

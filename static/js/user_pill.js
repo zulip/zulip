@@ -117,14 +117,15 @@ exports.create_pills = function (pill_container) {
     return pills;
 };
 
-exports.set_up_typeahead_on_pills = function (input, pills, update_func) {
+exports.set_up_typeahead_on_pills = function (input, pills, update_func, source) {
+    if (!source) {
+        source = () => exports.typeahead_source(pills);
+    }
     input.typeahead({
         items: 5,
         fixed: true,
         dropup: true,
-        source: function () {
-            return exports.typeahead_source(pills);
-        },
+        source: source,
         highlighter: function (item) {
             return typeahead_helper.render_person(item);
         },

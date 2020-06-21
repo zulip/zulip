@@ -1,6 +1,5 @@
 from django.db import migrations, models
 
-
 CORPORATE = 1
 class Migration(migrations.Migration):
 

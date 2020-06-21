@@ -1,22 +1,35 @@
+import logging
 import time
 from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
-import logging
-from typing import Callable, Dict, List, \
-    Optional, Tuple, Type, Union
+from typing import Callable, Dict, Optional, Sequence, Tuple, Type, Union
 
 from django.conf import settings
 from django.db import connection
 from django.db.models import F
+from psycopg2.sql import SQL, Composable, Identifier, Literal
 
-from analytics.models import BaseCount, \
-    FillState, InstallationCount, RealmCount, StreamCount, \
-    UserCount, installation_epoch, last_successful_fill
+from analytics.models import (
+    BaseCount,
+    FillState,
+    InstallationCount,
+    RealmCount,
+    StreamCount,
+    UserCount,
+    installation_epoch,
+    last_successful_fill,
+)
 from zerver.lib.logging_util import log_to_file
-from zerver.lib.timestamp import ceiling_to_day, \
-    ceiling_to_hour, floor_to_hour, verify_UTC
-from zerver.models import Message, Realm, RealmAuditLog, \
-    Stream, UserActivityInterval, UserProfile, models
+from zerver.lib.timestamp import ceiling_to_day, ceiling_to_hour, floor_to_hour, verify_UTC
+from zerver.models import (
+    Message,
+    Realm,
+    RealmAuditLog,
+    Stream,
+    UserActivityInterval,
+    UserProfile,
+    models,
+)
 
 ## Logging setup ##
 
@@ -39,7 +52,7 @@ class CountStat:
         self.data_collector = data_collector
         # might have to do something different for bitfields
         if frequency not in self.FREQUENCIES:
-            raise AssertionError("Unknown frequency: %s" % (frequency,))
+            raise AssertionError(f"Unknown frequency: {frequency}")
         self.frequency = frequency
         if interval is not None:
             self.interval = interval
@@ -49,7 +62,7 @@ class CountStat:
             self.interval = timedelta(days=1)
 
     def __str__(self) -> str:
-        return "<CountStat: %s>" % (self.property,)
+        return f"<CountStat: {self.property}>"
 
 class LoggingCountStat(CountStat):
     def __init__(self, property: str, output_table: Type[BaseCount], frequency: str) -> None:
@@ -57,7 +70,7 @@ class LoggingCountStat(CountStat):
 
 class DependentCountStat(CountStat):
     def __init__(self, property: str, data_collector: 'DataCollector', frequency: str,
-                 interval: Optional[timedelta]=None, dependencies: List[str]=[]) -> None:
+                 interval: Optional[timedelta] = None, dependencies: Sequence[str] = []) -> None:
         CountStat.__init__(self, property, data_collector, frequency, interval=interval)
         self.dependencies = dependencies
 
@@ -85,11 +98,11 @@ def process_count_stat(stat: CountStat, fill_to_time: datetime,
     elif stat.frequency == CountStat.DAY:
         time_increment = timedelta(days=1)
     else:
-        raise AssertionError("Unknown frequency: %s" % (stat.frequency,))
+        raise AssertionError(f"Unknown frequency: {stat.frequency}")
 
     verify_UTC(fill_to_time)
     if floor_to_hour(fill_to_time) != fill_to_time:
-        raise ValueError("fill_to_time must be on an hour boundary: %s" % (fill_to_time,))
+        raise ValueError(f"fill_to_time must be on an hour boundary: {fill_to_time}")
 
     fill_state = FillState.objects.filter(property=stat.property).first()
     if fill_state is None:
@@ -107,7 +120,7 @@ def process_count_stat(stat: CountStat, fill_to_time: datetime,
     elif fill_state.state == FillState.DONE:
         currently_filled = fill_state.end_time
     else:
-        raise AssertionError("Unknown value for FillState.state: %s." % (fill_state.state,))
+        raise AssertionError(f"Unknown value for FillState.state: {fill_state.state}.")
 
     if isinstance(stat, DependentCountStat):
         for dependency in stat.dependencies:
@@ -164,31 +177,35 @@ def do_aggregate_to_summary_table(stat: CountStat, end_time: datetime,
     # Aggregate into RealmCount
     output_table = stat.data_collector.output_table
     if realm is not None:
-        realm_clause = "AND zerver_realm.id = %s" % (realm.id,)
+        realm_clause = SQL("AND zerver_realm.id = {}").format(Literal(realm.id))
     else:
-        realm_clause = ""
+        realm_clause = SQL("")
 
     if output_table in (UserCount, StreamCount):
-        realmcount_query = """
+        realmcount_query = SQL("""
             INSERT INTO analytics_realmcount
                 (realm_id, value, property, subgroup, end_time)
             SELECT
-                zerver_realm.id, COALESCE(sum(%(output_table)s.value), 0), '%(property)s',
-                %(output_table)s.subgroup, %%(end_time)s
+                zerver_realm.id, COALESCE(sum({output_table}.value), 0), %(property)s,
+                {output_table}.subgroup, %(end_time)s
             FROM zerver_realm
-            JOIN %(output_table)s
+            JOIN {output_table}
             ON
-                zerver_realm.id = %(output_table)s.realm_id
+                zerver_realm.id = {output_table}.realm_id
             WHERE
-                %(output_table)s.property = '%(property)s' AND
-                %(output_table)s.end_time = %%(end_time)s
-                %(realm_clause)s
-            GROUP BY zerver_realm.id, %(output_table)s.subgroup
-        """ % {'output_table': output_table._meta.db_table,
-               'property': stat.property,
-               'realm_clause': realm_clause}
+                {output_table}.property = %(property)s AND
+                {output_table}.end_time = %(end_time)s
+                {realm_clause}
+            GROUP BY zerver_realm.id, {output_table}.subgroup
+        """).format(
+            output_table=Identifier(output_table._meta.db_table),
+            realm_clause=realm_clause,
+        )
         start = time.time()
-        cursor.execute(realmcount_query, {'end_time': end_time})
+        cursor.execute(realmcount_query, {
+            'property': stat.property,
+            'end_time': end_time,
+        })
         end = time.time()
         logger.info(
             "%s RealmCount aggregation (%dms/%sr)",
@@ -201,19 +218,22 @@ def do_aggregate_to_summary_table(stat: CountStat, end_time: datetime,
         #
         # TODO: Add support for updating installation data after
         # changing an individual realm's values.
-        installationcount_query = """
+        installationcount_query = SQL("""
             INSERT INTO analytics_installationcount
                 (value, property, subgroup, end_time)
             SELECT
-                sum(value), '%(property)s', analytics_realmcount.subgroup, %%(end_time)s
+                sum(value), %(property)s, analytics_realmcount.subgroup, %(end_time)s
             FROM analytics_realmcount
             WHERE
-                property = '%(property)s' AND
-                end_time = %%(end_time)s
+                property = %(property)s AND
+                end_time = %(end_time)s
             GROUP BY analytics_realmcount.subgroup
-            """ % {'property': stat.property}
+        """)
         start = time.time()
-        cursor.execute(installationcount_query, {'end_time': end_time})
+        cursor.execute(installationcount_query, {
+            'property': stat.property,
+            'end_time': end_time,
+        })
         end = time.time()
         logger.info(
             "%s InstallationCount aggregation (%dms/%sr)",
@@ -228,6 +248,9 @@ def do_aggregate_to_summary_table(stat: CountStat, end_time: datetime,
 def do_increment_logging_stat(zerver_object: Union[Realm, UserProfile, Stream], stat: CountStat,
                               subgroup: Optional[Union[str, int, bool]], event_time: datetime,
                               increment: int=1) -> None:
+    if not increment:
+        return
+
     table = stat.data_collector.output_table
     if table == RealmCount:
         id_args = {'realm': zerver_object}
@@ -264,29 +287,45 @@ def do_drop_single_stat(property: str) -> None:
 
 ## DataCollector-level operations ##
 
-def do_pull_by_sql_query(property: str, start_time: datetime, end_time: datetime, query: str,
-                         group_by: Optional[Tuple[models.Model, str]]) -> int:
+QueryFn = Callable[[Dict[str, Composable]], Composable]
+
+def do_pull_by_sql_query(
+    property: str,
+    start_time: datetime,
+    end_time: datetime,
+    query: QueryFn,
+    group_by: Optional[Tuple[models.Model, str]],
+) -> int:
     if group_by is None:
-        subgroup = 'NULL'
-        group_by_clause = ''
+        subgroup = SQL('NULL')
+        group_by_clause = SQL('')
     else:
-        subgroup = '%s.%s' % (group_by[0]._meta.db_table, group_by[1])
-        group_by_clause = ', ' + subgroup
+        subgroup = Identifier(group_by[0]._meta.db_table, group_by[1])
+        group_by_clause = SQL(', {}').format(subgroup)
 
     # We do string replacement here because cursor.execute will reject a
     # group_by_clause given as a param.
     # We pass in the datetimes as params to cursor.execute so that we don't have to
     # think about how to convert python datetimes to SQL datetimes.
-    query_ = query % {'property': property, 'subgroup': subgroup,
-                      'group_by_clause': group_by_clause}
+    query_ = query({
+        'subgroup': subgroup,
+        'group_by_clause': group_by_clause,
+    })
     cursor = connection.cursor()
-    cursor.execute(query_, {'time_start': start_time, 'time_end': end_time})
+    cursor.execute(query_, {
+        'property': property,
+        'time_start': start_time,
+        'time_end': end_time,
+    })
     rowcount = cursor.rowcount
     cursor.close()
     return rowcount
 
-def sql_data_collector(output_table: Type[BaseCount], query: str,
-                       group_by: Optional[Tuple[models.Model, str]]) -> DataCollector:
+def sql_data_collector(
+    output_table: Type[BaseCount],
+    query: QueryFn,
+    group_by: Optional[Tuple[models.Model, str]],
+) -> DataCollector:
     def pull_function(property: str, start_time: datetime, end_time: datetime,
                       realm: Optional[Realm] = None) -> int:
         # The pull function type needs to accept a Realm argument
@@ -301,9 +340,9 @@ def sql_data_collector(output_table: Type[BaseCount], query: str,
 def do_pull_minutes_active(property: str, start_time: datetime, end_time: datetime,
                            realm: Optional[Realm] = None) -> int:
     user_activity_intervals = UserActivityInterval.objects.filter(
-        end__gt=start_time, start__lt=end_time
+        end__gt=start_time, start__lt=end_time,
     ).select_related(
-        'user_profile'
+        'user_profile',
     ).values_list(
         'user_profile_id', 'user_profile__realm_id', 'start', 'end')
 
@@ -320,39 +359,39 @@ def do_pull_minutes_active(property: str, start_time: datetime, end_time: dateti
     UserCount.objects.bulk_create(rows)
     return len(rows)
 
-def count_message_by_user_query(realm: Optional[Realm]) -> str:
+def count_message_by_user_query(realm: Optional[Realm]) -> QueryFn:
     if realm is None:
-        realm_clause = ""
+        realm_clause = SQL("")
     else:
-        realm_clause = "zerver_userprofile.realm_id = %s AND" % (realm.id,)
-    return """
+        realm_clause = SQL("zerver_userprofile.realm_id = {} AND").format(Literal(realm.id))
+    return lambda kwargs: SQL("""
     INSERT INTO analytics_usercount
         (user_id, realm_id, value, property, subgroup, end_time)
     SELECT
         zerver_userprofile.id, zerver_userprofile.realm_id, count(*),
-        '%(property)s', %(subgroup)s, %%(time_end)s
+        %(property)s, {subgroup}, %(time_end)s
     FROM zerver_userprofile
     JOIN zerver_message
     ON
         zerver_userprofile.id = zerver_message.sender_id
     WHERE
-        zerver_userprofile.date_joined < %%(time_end)s AND
-        zerver_message.date_sent >= %%(time_start)s AND
+        zerver_userprofile.date_joined < %(time_end)s AND
+        zerver_message.date_sent >= %(time_start)s AND
         {realm_clause}
-        zerver_message.date_sent < %%(time_end)s
-    GROUP BY zerver_userprofile.id %(group_by_clause)s
-""".format(realm_clause=realm_clause)
+        zerver_message.date_sent < %(time_end)s
+    GROUP BY zerver_userprofile.id {group_by_clause}
+""").format(**kwargs, realm_clause=realm_clause)
 
 # Note: ignores the group_by / group_by_clause.
-def count_message_type_by_user_query(realm: Optional[Realm]) -> str:
+def count_message_type_by_user_query(realm: Optional[Realm]) -> QueryFn:
     if realm is None:
-        realm_clause = ""
+        realm_clause = SQL("")
     else:
-        realm_clause = "zerver_userprofile.realm_id = %s AND" % (realm.id,)
-    return """
+        realm_clause = SQL("zerver_userprofile.realm_id = {} AND").format(Literal(realm.id))
+    return lambda kwargs: SQL("""
     INSERT INTO analytics_usercount
             (realm_id, user_id, value, property, subgroup, end_time)
-    SELECT realm_id, id, SUM(count) AS value, '%(property)s', message_type, %%(time_end)s
+    SELECT realm_id, id, SUM(count) AS value, %(property)s, message_type, %(time_end)s
     FROM
     (
         SELECT zerver_userprofile.realm_id, zerver_userprofile.id, count(*),
@@ -370,9 +409,9 @@ def count_message_type_by_user_query(realm: Optional[Realm]) -> str:
         JOIN zerver_message
         ON
             zerver_userprofile.id = zerver_message.sender_id AND
-            zerver_message.date_sent >= %%(time_start)s AND
+            zerver_message.date_sent >= %(time_start)s AND
             {realm_clause}
-            zerver_message.date_sent < %%(time_end)s
+            zerver_message.date_sent < %(time_end)s
         JOIN zerver_recipient
         ON
             zerver_message.recipient_id = zerver_recipient.id
@@ -384,22 +423,22 @@ def count_message_type_by_user_query(realm: Optional[Realm]) -> str:
             zerver_recipient.type, zerver_stream.invite_only
     ) AS subquery
     GROUP BY realm_id, id, message_type
-""".format(realm_clause=realm_clause)
+""").format(**kwargs, realm_clause=realm_clause)
 
 # This query joins to the UserProfile table since all current queries that
 # use this also subgroup on UserProfile.is_bot. If in the future there is a
 # stat that counts messages by stream and doesn't need the UserProfile
 # table, consider writing a new query for efficiency.
-def count_message_by_stream_query(realm: Optional[Realm]) -> str:
+def count_message_by_stream_query(realm: Optional[Realm]) -> QueryFn:
     if realm is None:
-        realm_clause = ""
+        realm_clause = SQL("")
     else:
-        realm_clause = "zerver_stream.realm_id = %s AND" % (realm.id,)
-    return """
+        realm_clause = SQL("zerver_stream.realm_id = {} AND").format(Literal(realm.id))
+    return lambda kwargs: SQL("""
     INSERT INTO analytics_streamcount
         (stream_id, realm_id, value, property, subgroup, end_time)
     SELECT
-        zerver_stream.id, zerver_stream.realm_id, count(*), '%(property)s', %(subgroup)s, %%(time_end)s
+        zerver_stream.id, zerver_stream.realm_id, count(*), %(property)s, {subgroup}, %(time_end)s
     FROM zerver_stream
     JOIN zerver_recipient
     ON
@@ -411,53 +450,53 @@ def count_message_by_stream_query(realm: Optional[Realm]) -> str:
     ON
         zerver_message.sender_id = zerver_userprofile.id
     WHERE
-        zerver_stream.date_created < %%(time_end)s AND
+        zerver_stream.date_created < %(time_end)s AND
         zerver_recipient.type = 2 AND
-        zerver_message.date_sent >= %%(time_start)s AND
+        zerver_message.date_sent >= %(time_start)s AND
         {realm_clause}
-        zerver_message.date_sent < %%(time_end)s
-    GROUP BY zerver_stream.id %(group_by_clause)s
-""".format(realm_clause=realm_clause)
+        zerver_message.date_sent < %(time_end)s
+    GROUP BY zerver_stream.id {group_by_clause}
+""").format(**kwargs, realm_clause=realm_clause)
 
 # Hardcodes the query needed by active_users:is_bot:day, since that is
 # currently the only stat that uses this.
-def count_user_by_realm_query(realm: Optional[Realm]) -> str:
+def count_user_by_realm_query(realm: Optional[Realm]) -> QueryFn:
     if realm is None:
-        realm_clause = ""
+        realm_clause = SQL("")
     else:
-        realm_clause = "zerver_userprofile.realm_id = %s AND" % (realm.id,)
-    return """
+        realm_clause = SQL("zerver_userprofile.realm_id = {} AND").format(Literal(realm.id))
+    return lambda kwargs: SQL("""
     INSERT INTO analytics_realmcount
         (realm_id, value, property, subgroup, end_time)
     SELECT
-        zerver_realm.id, count(*),'%(property)s', %(subgroup)s, %%(time_end)s
+        zerver_realm.id, count(*), %(property)s, {subgroup}, %(time_end)s
     FROM zerver_realm
     JOIN zerver_userprofile
     ON
         zerver_realm.id = zerver_userprofile.realm_id
     WHERE
-        zerver_realm.date_created < %%(time_end)s AND
-        zerver_userprofile.date_joined >= %%(time_start)s AND
-        zerver_userprofile.date_joined < %%(time_end)s AND
+        zerver_realm.date_created < %(time_end)s AND
+        zerver_userprofile.date_joined >= %(time_start)s AND
+        zerver_userprofile.date_joined < %(time_end)s AND
         {realm_clause}
         zerver_userprofile.is_active = TRUE
-    GROUP BY zerver_realm.id %(group_by_clause)s
-""".format(realm_clause=realm_clause)
+    GROUP BY zerver_realm.id {group_by_clause}
+""").format(**kwargs, realm_clause=realm_clause)
 
 # Currently hardcodes the query needed for active_users_audit:is_bot:day.
 # Assumes that a user cannot have two RealmAuditLog entries with the same event_time and
 # event_type in [RealmAuditLog.USER_CREATED, USER_DEACTIVATED, etc].
 # In particular, it's important to ensure that migrations don't cause that to happen.
-def check_realmauditlog_by_user_query(realm: Optional[Realm]) -> str:
+def check_realmauditlog_by_user_query(realm: Optional[Realm]) -> QueryFn:
     if realm is None:
-        realm_clause = ""
+        realm_clause = SQL("")
     else:
-        realm_clause = "realm_id = %s AND" % (realm.id,)
-    return """
+        realm_clause = SQL("realm_id = {} AND").format(Literal(realm.id))
+    return lambda kwargs: SQL("""
     INSERT INTO analytics_usercount
         (user_id, realm_id, value, property, subgroup, end_time)
     SELECT
-        ral1.modified_user_id, ral1.realm_id, 1, '%(property)s', %(subgroup)s, %%(time_end)s
+        ral1.modified_user_id, ral1.realm_id, 1, %(property)s, {subgroup}, %(time_end)s
     FROM zerver_realmauditlog ral1
     JOIN (
         SELECT modified_user_id, max(event_time) AS max_event_time
@@ -465,7 +504,7 @@ def check_realmauditlog_by_user_query(realm: Optional[Realm]) -> str:
         WHERE
             event_type in ({user_created}, {user_activated}, {user_deactivated}, {user_reactivated}) AND
             {realm_clause}
-            event_time < %%(time_end)s
+            event_time < %(time_end)s
         GROUP BY modified_user_id
     ) ral2
     ON
@@ -476,43 +515,46 @@ def check_realmauditlog_by_user_query(realm: Optional[Realm]) -> str:
         ral1.modified_user_id = zerver_userprofile.id
     WHERE
         ral1.event_type in ({user_created}, {user_activated}, {user_reactivated})
-""".format(user_created=RealmAuditLog.USER_CREATED,
-           user_activated=RealmAuditLog.USER_ACTIVATED,
-           user_deactivated=RealmAuditLog.USER_DEACTIVATED,
-           user_reactivated=RealmAuditLog.USER_REACTIVATED,
-           realm_clause=realm_clause)
+    """).format(
+        **kwargs,
+        user_created=Literal(RealmAuditLog.USER_CREATED),
+        user_activated=Literal(RealmAuditLog.USER_ACTIVATED),
+        user_deactivated=Literal(RealmAuditLog.USER_DEACTIVATED),
+        user_reactivated=Literal(RealmAuditLog.USER_REACTIVATED),
+        realm_clause=realm_clause,
+    )
 
-def check_useractivityinterval_by_user_query(realm: Optional[Realm]) -> str:
+def check_useractivityinterval_by_user_query(realm: Optional[Realm]) -> QueryFn:
     if realm is None:
-        realm_clause = ""
+        realm_clause = SQL("")
     else:
-        realm_clause = "zerver_userprofile.realm_id = %s AND" % (realm.id,)
-    return """
+        realm_clause = SQL("zerver_userprofile.realm_id = {} AND").format(Literal(realm.id))
+    return lambda kwargs: SQL("""
     INSERT INTO analytics_usercount
         (user_id, realm_id, value, property, subgroup, end_time)
     SELECT
-        zerver_userprofile.id, zerver_userprofile.realm_id, 1, '%(property)s', %(subgroup)s, %%(time_end)s
+        zerver_userprofile.id, zerver_userprofile.realm_id, 1, %(property)s, {subgroup}, %(time_end)s
     FROM zerver_userprofile
     JOIN zerver_useractivityinterval
     ON
         zerver_userprofile.id = zerver_useractivityinterval.user_profile_id
     WHERE
-        zerver_useractivityinterval.end >= %%(time_start)s AND
+        zerver_useractivityinterval.end >= %(time_start)s AND
         {realm_clause}
-        zerver_useractivityinterval.start < %%(time_end)s
-    GROUP BY zerver_userprofile.id %(group_by_clause)s
-""".format(realm_clause=realm_clause)
+        zerver_useractivityinterval.start < %(time_end)s
+    GROUP BY zerver_userprofile.id {group_by_clause}
+""").format(**kwargs, realm_clause=realm_clause)
 
-def count_realm_active_humans_query(realm: Optional[Realm]) -> str:
+def count_realm_active_humans_query(realm: Optional[Realm]) -> QueryFn:
     if realm is None:
-        realm_clause = ""
+        realm_clause = SQL("")
     else:
-        realm_clause = "realm_id = %s AND" % (realm.id,)
-    return """
+        realm_clause = SQL("realm_id = {} AND").format(Literal(realm.id))
+    return lambda kwargs: SQL("""
     INSERT INTO analytics_realmcount
         (realm_id, value, property, subgroup, end_time)
     SELECT
-        usercount1.realm_id, count(*), '%(property)s', NULL, %%(time_end)s
+        usercount1.realm_id, count(*), %(property)s, NULL, %(time_end)s
     FROM (
         SELECT realm_id, user_id
         FROM analytics_usercount
@@ -520,7 +562,7 @@ def count_realm_active_humans_query(realm: Optional[Realm]) -> str:
             property = 'active_users_audit:is_bot:day' AND
             subgroup = 'false' AND
             {realm_clause}
-            end_time = %%(time_end)s
+            end_time = %(time_end)s
     ) usercount1
     JOIN (
         SELECT realm_id, user_id
@@ -528,29 +570,29 @@ def count_realm_active_humans_query(realm: Optional[Realm]) -> str:
         WHERE
             property = '15day_actives::day' AND
             {realm_clause}
-            end_time = %%(time_end)s
+            end_time = %(time_end)s
     ) usercount2
     ON
         usercount1.user_id = usercount2.user_id
     GROUP BY usercount1.realm_id
-""".format(realm_clause=realm_clause)
+""").format(**kwargs, realm_clause=realm_clause)
 
 # Currently unused and untested
-count_stream_by_realm_query = """
+count_stream_by_realm_query = lambda kwargs: SQL("""
     INSERT INTO analytics_realmcount
         (realm_id, value, property, subgroup, end_time)
     SELECT
-        zerver_realm.id, count(*), '%(property)s', %(subgroup)s, %%(time_end)s
+        zerver_realm.id, count(*), %(property)s, {subgroup}, %(time_end)s
     FROM zerver_realm
     JOIN zerver_stream
     ON
         zerver_realm.id = zerver_stream.realm_id AND
     WHERE
-        zerver_realm.date_created < %%(time_end)s AND
-        zerver_stream.date_created >= %%(time_start)s AND
-        zerver_stream.date_created < %%(time_end)s
-    GROUP BY zerver_realm.id %(group_by_clause)s
-"""
+        zerver_realm.date_created < %(time_end)s AND
+        zerver_stream.date_created >= %(time_start)s AND
+        zerver_stream.date_created < %(time_end)s
+    GROUP BY zerver_realm.id {group_by_clause}
+""").format(**kwargs)
 
 def get_count_stats(realm: Optional[Realm]=None) -> Dict[str, CountStat]:
     ## CountStat declarations ##
@@ -606,6 +648,16 @@ def get_count_stats(realm: Optional[Realm]=None) -> Dict[str, CountStat]:
                   sql_data_collector(RealmCount, count_user_by_realm_query(realm), (UserProfile, 'is_bot')),
                   CountStat.DAY, interval=TIMEDELTA_MAX),
 
+        # Messages read stats.  messages_read::hour is the total
+        # number of messages read, whereas
+        # messages_read_interactions::hour tries to count the total
+        # number of UI interactions resulting in messages being marked
+        # as read (imperfect because of batching of some request
+        # types, but less likely to be overwhelmed by a single bulk
+        # operation).
+        LoggingCountStat('messages_read::hour', UserCount, CountStat.HOUR),
+        LoggingCountStat('messages_read_interactions::hour', UserCount, CountStat.HOUR),
+
         # User Activity stats
         # Stats that measure user activity in the UserActivityInterval sense.
 
@@ -633,7 +685,7 @@ def get_count_stats(realm: Optional[Realm]=None) -> Dict[str, CountStat]:
                            sql_data_collector(
                                RealmCount, count_realm_active_humans_query(realm), None),
                            CountStat.DAY,
-                           dependencies=['active_users_audit:is_bot:day', '15day_actives::day'])
+                           dependencies=['active_users_audit:is_bot:day', '15day_actives::day']),
     ]
 
     return OrderedDict([(stat.property, stat) for stat in count_stats_])

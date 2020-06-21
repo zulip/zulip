@@ -1,4 +1,4 @@
-# Update User Group
+# Update a user group
 
 {generate_api_description(/user_groups/{group_id}:patch)}
 
@@ -15,7 +15,7 @@
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
 {generate_api_arguments_table|zulip.yaml|/user_groups/{group_id}:patch}
 

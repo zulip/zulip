@@ -4,11 +4,11 @@
     "total": 213
   },
   "ca": {
-    "not_translated": 134,
+    "not_translated": 99,
     "total": 213
   },
   "cs": {
-    "not_translated": 52,
+    "not_translated": 0,
     "total": 213
   },
   "de": {
@@ -24,7 +24,7 @@
     "total": 213
   },
   "fa": {
-    "not_translated": 47,
+    "not_translated": 28,
     "total": 213
   },
   "fi": {
@@ -32,7 +32,7 @@
     "total": 213
   },
   "fr": {
-    "not_translated": 52,
+    "not_translated": 0,
     "total": 213
   },
   "gl": {
@@ -72,23 +72,23 @@
     "total": 213
   },
   "pl": {
-    "not_translated": 12,
+    "not_translated": 0,
     "total": 213
   },
   "pt": {
-    "not_translated": 52,
+    "not_translated": 35,
     "total": 213
   },
   "ro": {
-    "not_translated": 12,
+    "not_translated": 0,
     "total": 213
   },
   "ru": {
-    "not_translated": 12,
+    "not_translated": 0,
     "total": 213
   },
   "sr": {
-    "not_translated": 194,
+    "not_translated": 192,
     "total": 213
   },
   "ta": {
@@ -96,11 +96,11 @@
     "total": 213
   },
   "tr": {
-    "not_translated": 12,
+    "not_translated": 0,
     "total": 213
   },
   "uk": {
-    "not_translated": 51,
+    "not_translated": 0,
     "total": 213
   },
   "zh_Hans": {
@@ -108,7 +108,7 @@
     "total": 213
   },
   "zh_Hant": {
-    "not_translated": 185,
+    "not_translated": 183,
     "total": 213
   }
 }

@@ -75,10 +75,7 @@ exports.clear_all_everyone_warnings = function () {
 };
 
 function show_sending_indicator(whats_happening) {
-    if (whats_happening === undefined) {
-        whats_happening = 'Sending...';
-    }
-    $("#sending-indicator").html(i18n.t(whats_happening));
+    $("#sending-indicator").text(whats_happening);
     $("#sending-indicator").show();
 }
 
@@ -169,6 +166,17 @@ function update_fade() {
 exports.abort_xhr = function () {
     $("#compose-send-button").prop("disabled", false);
     uppy.cancelAll();
+};
+
+exports.zoom_token_callbacks = new Map();
+exports.zoom_xhrs = new Map();
+
+exports.abort_zoom = function (edit_message_id) {
+    const key = edit_message_id || "";
+    exports.zoom_token_callbacks.delete(key);
+    if (exports.zoom_xhrs.has(key)) {
+        exports.zoom_xhrs.get(key).abort();
+    }
 };
 
 exports.empty_topic_placeholder = function () {
@@ -278,7 +286,6 @@ function clear_compose_box() {
     $("#compose-send-status").hide(0);
     $("#compose-send-button").prop('disabled', false);
     $("#sending-indicator").hide();
-    resize.resize_bottom_whitespace();
 }
 
 exports.clear_compose_box = clear_compose_box;
@@ -354,7 +361,6 @@ exports.send_message = function send_message(request) {
 };
 
 exports.enter_with_preview_open = function () {
-    exports.clear_preview_area();
     if (page_params.enter_sends) {
         // If enter_sends is enabled, we attempt to send the message
         exports.finish();
@@ -365,6 +371,7 @@ exports.enter_with_preview_open = function () {
 };
 
 exports.finish = function () {
+    exports.clear_preview_area();
     exports.clear_invites();
     exports.clear_private_stream_alert();
     notifications.clear_compose_notifications();
@@ -647,9 +654,9 @@ exports.validate = function () {
     $("#compose-send-button").attr('disabled', 'disabled').blur();
     const message_content = compose_state.message_content();
     if (reminder.is_deferred_delivery(message_content)) {
-        show_sending_indicator('Scheduling...');
+        show_sending_indicator(i18n.t('Scheduling...'));
     } else {
-        show_sending_indicator();
+        show_sending_indicator(i18n.t('Sending...'));
     }
 
     if (/^\s*$/.test(message_content)) {
@@ -733,7 +740,7 @@ exports.handle_keyup = function (event, textarea) {
     rtl.set_rtl_class_for_textarea(textarea);
 };
 
-exports.needs_subscribe_warning = function (email) {
+exports.needs_subscribe_warning = function (user_id) {
     // This returns true if all of these conditions are met:
     //  * the user is valid
     //  * the stream in the compose box is valid
@@ -748,7 +755,7 @@ exports.needs_subscribe_warning = function (email) {
     //  We expect the caller to already have verified that we're
     //  sending to a stream and trying to mention the user.
 
-    const user = people.get_active_user_for_email(email);
+    const user = people.get_by_user_id(user_id);
     const stream_name = compose_state.stream_name();
 
     if (!stream_name) {
@@ -767,7 +774,7 @@ exports.needs_subscribe_warning = function (email) {
         return false;
     }
 
-    if (stream_data.is_user_subscribed(stream_name, user.user_id)) {
+    if (stream_data.is_user_subscribed(stream_name, user_id)) {
         // If our user is already subscribed
         return false;
     }
@@ -898,23 +905,23 @@ exports.warn_if_mentioning_unsubscribed_user = function (mentioned) {
         return;
     }
 
-    const email = mentioned.email;
+    const user_id = mentioned.user_id;
 
     if (mentioned.is_broadcast) {
         return; // don't check if @all/@everyone/@stream
     }
 
-    if (exports.needs_subscribe_warning(email)) {
+    if (exports.needs_subscribe_warning(user_id)) {
         const error_area = $("#compose_invite_users");
         const existing_invites_area = $('#compose_invite_users .compose_invite_user');
 
         const existing_invites = Array.from($(existing_invites_area), user_row => {
-            return $(user_row).data('useremail');
+            return parseInt($(user_row).data('user-id'), 10);
         });
 
-        if (!existing_invites.includes(email)) {
+        if (!existing_invites.includes(user_id)) {
             const context = {
-                email: email,
+                user_id: user_id,
                 name: mentioned.full_name,
                 can_subscribe_other_users: page_params.can_subscribe_other_users,
             };
@@ -987,10 +994,7 @@ exports.initialize = function () {
 
         const invite_row = $(event.target).parents('.compose_invite_user');
 
-        const email = $(invite_row).data('useremail');
-        if (email === undefined) {
-            return;
-        }
+        const user_id = parseInt($(invite_row).data('user-id'), 10);
 
         function success() {
             const all_invites = $("#compose_invite_users");
@@ -1024,7 +1028,7 @@ exports.initialize = function () {
             return;
         }
 
-        stream_edit.invite_user_to_stream(email, sub, success, xhr_failure);
+        stream_edit.invite_user_to_stream([user_id], sub, success, xhr_failure);
     });
 
     $("#compose_invite_users").on('click', '.compose_invite_close', function (event) {
@@ -1079,16 +1083,45 @@ exports.initialize = function () {
             return;
         }
 
-        if (page_params.realm_video_chat_provider === available_providers.google_hangouts.id) {
-            video_call_link = "https://hangouts.google.com/hangouts/_/" + page_params.realm_google_hangouts_domain + "/" + video_call_id;
-            insert_video_call_url(video_call_link, target_textarea);
-        } else if (page_params.realm_video_chat_provider === available_providers.zoom.id) {
-            channel.get({
-                url: '/json/calls/create',
-                success: function (response) {
-                    insert_video_call_url(response.zoom_url, target_textarea);
-                },
-            });
+        if (available_providers.zoom
+            && page_params.realm_video_chat_provider === available_providers.zoom.id) {
+            exports.abort_zoom(edit_message_id);
+            const key = edit_message_id || "";
+
+            const make_zoom_call = () => {
+                exports.zoom_xhrs.set(key, channel.post({
+                    url: "/json/calls/zoom/create",
+                    success(res) {
+                        exports.zoom_xhrs.delete(key);
+                        insert_video_call_url(res.url, target_textarea);
+                    },
+                    error(xhr, status) {
+                        exports.zoom_xhrs.delete(key);
+                        if (status === "error" &&
+                            xhr.responseJSON &&
+                            xhr.responseJSON.code === "INVALID_ZOOM_TOKEN") {
+                            page_params.has_zoom_token = false;
+                        }
+                        if (status !== "abort") {
+                            ui_report.generic_embed_error(i18n.t("Failed to create video call."));
+                        }
+                    },
+                }));
+            };
+
+            if (page_params.has_zoom_token) {
+                make_zoom_call();
+            } else {
+                exports.zoom_token_callbacks.set(key, make_zoom_call);
+                window.open(
+                    window.location.protocol +
+                        "//" +
+                        window.location.host +
+                        "/calls/zoom/register",
+                    "_blank",
+                    "width=800,height=500,noopener,noreferrer"
+                );
+            }
         } else {
             video_call_link = page_params.jitsi_server_url + "/" +  video_call_id;
             insert_video_call_url(video_call_link, target_textarea);

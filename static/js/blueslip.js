@@ -191,9 +191,9 @@ BlueslipError.prototype = Object.create(Error.prototype);
 
 exports.exception_msg = function blueslip_exception_msg(ex) {
     let message = ex.message;
-    if (ex.hasOwnProperty('fileName')) {
+    if (ex.fileName !== undefined) {
         message += " at " + ex.fileName;
-        if (ex.hasOwnProperty('lineNumber')) {
+        if (ex.lineNumber !== undefined) {
             message += ":" + ex.lineNumber;
         }
     }

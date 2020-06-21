@@ -1,9 +1,9 @@
-import re
 import os
+import re
 from typing import Any, Dict, List
 
 import markdown
-from markdown_include.include import MarkdownInclude, IncludePreprocessor
+from markdown_include.include import IncludePreprocessor, MarkdownInclude
 
 from zerver.lib.exceptions import InvalidMarkdownIncludeStatement
 
@@ -15,7 +15,7 @@ class MarkdownIncludeCustom(MarkdownInclude):
         md.preprocessors.add(
             'include_wrapper',
             IncludeCustomPreprocessor(md, self.getConfigs()),
-            '_begin'
+            '_begin',
         )
 
 class IncludeCustomPreprocessor(IncludePreprocessor):
@@ -39,13 +39,13 @@ class IncludeCustomPreprocessor(IncludePreprocessor):
                     filename = os.path.expanduser(filename)
                     if not os.path.isabs(filename):
                         filename = os.path.normpath(
-                            os.path.join(self.base_path, filename)
+                            os.path.join(self.base_path, filename),
                         )
                     try:
                         with open(filename, encoding=self.encoding) as r:
                             text = r.readlines()
                     except Exception as e:
-                        print('Warning: could not find file {}. Error: {}'.format(filename, e))
+                        print(f'Warning: could not find file {filename}. Error: {e}')
                         lines[loc] = INC_SYNTAX.sub('', line)
                         raise InvalidMarkdownIncludeStatement(m.group(0).strip())
 

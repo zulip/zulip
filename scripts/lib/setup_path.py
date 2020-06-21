@@ -1,9 +1,9 @@
 """
 Use libraries from a virtualenv (by modifying sys.path) in production.
 """
-
 import os
 import sys
+
 
 def setup_path() -> None:
     if os.path.basename(sys.prefix) != "zulip-py3-venv":

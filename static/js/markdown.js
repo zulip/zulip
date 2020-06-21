@@ -28,15 +28,6 @@ const backend_only_markdown_re = [
     /[^\s]*(?:twitter|youtube).com\/[^\s]*/,
 ];
 
-// Helper function to update a mentioned user's name.
-exports.set_name_in_mention_element = function (element, name) {
-    if ($(element).hasClass('silent')) {
-        $(element).text(name);
-    } else {
-        $(element).text("@" + name);
-    }
-};
-
 exports.translate_emoticons_to_names = (text) => {
     // Translates emoticons in a string to their colon syntax.
     let translated = text;
@@ -297,6 +288,31 @@ function handleAvatar(email) {
            ' title="' + email + '">';
 }
 
+function handleTimestamp(time) {
+    let timeobject;
+    if (isNaN(time)) {
+        // Moment throws a large deprecation warning when it has to fallback
+        // to the Date() constructor. We needn't worry here and can let bugdown
+        // handle any dates that moment misses.
+        moment.suppressDeprecationWarnings = true;
+        timeobject = moment(time); // not a Unix timestamp
+    } else {
+        // JavaScript dates are in milliseconds, Unix timestamps are in seconds
+        timeobject = moment(time * 1000);
+    }
+
+    const escaped_time = _.escape(time);
+    if (timeobject === null || !timeobject.isValid()) {
+        // Unsupported time format: rerender accordingly.
+        return `<span class="timestamp-error">Invalid time format: ${escaped_time}</span>`;
+    }
+
+    // Use html5 <time> tag for valid timestamps.
+    // render time without milliseconds.
+    const escaped_isotime = _.escape(timeobject.toISOString().split('.')[0] + 'Z');
+    return `<time datetime="${escaped_isotime}">${escaped_time}</time>`;
+}
+
 function handleStream(stream_name) {
     const stream = helpers.get_stream_by_name(stream_name);
     if (stream === undefined) {
@@ -440,16 +456,9 @@ exports.initialize = function (realm_filters, helper_config) {
     // class-specific highlighting.
     r.code = code => fenced_code.wrap_code(code) + '\n\n';
 
-    // Our links have title=
-    r.link = function (href, title, text) {
-        title = title || href;
-        if (!text.trim()) {
-            text = href;
-        }
-        const out = '<a href="' + href + '"' + ' title="' +
-                  title + '"' + '>' + text + '</a>';
-        return out;
-    };
+    // Prohibit empty links for some reason.
+    const old_link = r.link;
+    r.link = (href, title, text) => old_link.call(r, href, title, text.trim() ? text : href);
 
     // Put a newline after a <br> in the generated HTML to match bugdown
     r.br = function () {
@@ -512,6 +521,7 @@ exports.initialize = function (realm_filters, helper_config) {
         streamTopicHandler: handleStreamTopic,
         realmFilterHandler: handleRealmFilter,
         texHandler: handleTex,
+        timestampHandler: handleTimestamp,
         renderer: r,
         preprocessors: [
             preprocess_code_blocks,

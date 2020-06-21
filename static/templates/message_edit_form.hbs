@@ -8,12 +8,34 @@
     {{#if is_stream}}
     <div class="control-group no-margin">
         <div class="controls edit-controls">
-            <input type="text" placeholder="{{topic}}" value="{{topic}}" class="message_edit_topic" id="message_edit_topic" />
-            <select class='message_edit_topic_propagate' style='display:none;'>
-                <option selected="selected" value="change_later"> {{t "Change later messages to this topic" }}</option>
-                <option value="change_one"> {{t "Change only this message topic" }}</option>
-                <option value="change_all"> {{t "Change previous and following messages to this topic" }}</option>
-            </select>
+            <div class="message_edit_header">
+                <div class="stream_header_colorblock" {{#unless show_edit_stream}}style="display:none"{{/unless}}></div>
+                <select class="select_edit_stream" id="select_stream_id_{{ message_id }}" {{#unless show_edit_stream}}style="display:none"{{/unless}}>
+                    <option value="{{ stream_id }}" selected='selected'>#{{ stream_name }}</option>
+                    {{#each available_streams}}
+                    <option value="{{ this.stream_id }}">#{{this.name}}</option>
+                    {{/each}}
+                </select>
+                <i class="fa fa-angle-right" aria-hidden="true" {{#unless show_edit_stream}}style="display:none"{{/unless}}></i>
+                <input type="text" placeholder="{{topic}}" value="{{topic}}" class="message_edit_topic" id="message_edit_topic" />
+                <div class="message_edit_breadcrumb_messages"  style='display:none;'>
+                    <label class="checkbox">
+                        <input class="send_notification_to_new_thread" name="send_notification_to_new_thread" type="checkbox" {{#if notify_new_thread}}checked="checked"{{/if}}>
+                        <span></span>
+                    </label>
+                    <label for="send_notification_to_new_thread">{{t "Send notification to new thread" }}</label>
+                    <label class="checkbox">
+                        <input class="send_notification_to_old_thread" name="send_notification_to_old_thread" type="checkbox" {{#if notify_old_thread}}checked="checked"{{/if}}>
+                        <span></span>
+                    </label>
+                    <label for="send_notification_to_old_thread">{{t "Send notification to old thread" }}</label>
+                </div>
+                <select class='message_edit_topic_propagate' style='display:none;'>
+                    <option selected="selected" value="change_later"> {{t "Change later messages to this topic" }}</option>
+                    <option value="change_one"> {{t "Change only this message topic" }}</option>
+                    <option value="change_all"> {{t "Change previous and following messages to this topic" }}</option>
+                </select>
+            </div>
         </div>
     </div>
     {{/if}}

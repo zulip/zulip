@@ -33,7 +33,7 @@ class Command(BaseCommand):
         dest_dir = os.path.realpath(os.path.dirname(options['destination']))
         amount = int(options['amount'])
         latest = int(options['latest_id']) or Message.objects.latest('id').id
-        self.stdout.write('Latest message id: {latest}'.format(latest=latest))
+        self.stdout.write(f'Latest message id: {latest}')
         if not os.path.exists(dest_dir):
             os.makedirs(dest_dir)
 
@@ -56,7 +56,7 @@ class Command(BaseCommand):
                             break
                 result.write(ujson.dumps({
                     'id': message.id,
-                    'content': render_markdown(message, content)
+                    'content': render_markdown(message, content),
                 }))
                 if message.id != latest:
                     result.write(',')

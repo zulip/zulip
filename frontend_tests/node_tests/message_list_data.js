@@ -1,6 +1,7 @@
 zrequire('unread');
 
 zrequire('Filter', 'js/filter');
+zrequire('FetchStatus', 'js/fetch_status');
 zrequire('MessageListData', 'js/message_list_data');
 
 set_global('page_params', {});

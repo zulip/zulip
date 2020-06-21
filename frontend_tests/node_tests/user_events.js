@@ -1,6 +1,7 @@
 set_global('$', global.make_zjquery());
 
 zrequire('people');
+const settings_config = zrequire('settings_config');
 zrequire('user_events');
 
 set_global('activity', {
@@ -59,7 +60,7 @@ const me = {
 
 function initialize() {
     people.init();
-    people.add(me);
+    people.add_active_user(me);
     people.initialize_current_user(me.user_id);
 }
 
@@ -73,19 +74,27 @@ run_test('updates', () => {
         user_id: 32,
         full_name: 'Isaac Newton',
     };
-    people.add(isaac);
+    people.add_active_user(isaac);
 
-    user_events.update_person({user_id: isaac.user_id, is_guest: true});
+    user_events.update_person({user_id: isaac.user_id,
+                               role: settings_config.user_role_values.guest.code});
     person = people.get_by_email(isaac.email);
     assert(person.is_guest);
-    user_events.update_person({user_id: isaac.user_id, is_guest: false});
+    user_events.update_person({user_id: isaac.user_id,
+                               role: settings_config.user_role_values.member.code});
     person = people.get_by_email(isaac.email);
     assert(!person.is_guest);
 
-    user_events.update_person({user_id: isaac.user_id, is_admin: true});
+    user_events.update_person({user_id: isaac.user_id,
+                               role: settings_config.user_role_values.admin.code});
     person = people.get_by_email(isaac.email);
     assert.equal(person.full_name, 'Isaac Newton');
     assert.equal(person.is_admin, true);
+
+    user_events.update_person({user_id: isaac.user_id,
+                               role: settings_config.user_role_values.owner.code});
+    assert.equal(person.is_admin, true);
+    assert.equal(person.is_owner, true);
 
     let user_id;
     let full_name;
@@ -101,7 +110,8 @@ run_test('updates', () => {
     assert.equal(user_id, isaac.user_id);
     assert.equal(full_name, 'Sir Isaac');
 
-    user_events.update_person({user_id: me.user_id, is_admin: false});
+    user_events.update_person({user_id: me.user_id,
+                               role: settings_config.user_role_values.member.code});
     assert(!global.page_params.is_admin);
 
     user_events.update_person({user_id: me.user_id, full_name: 'Me V2'});
@@ -174,7 +184,7 @@ run_test('updates', () => {
         is_bot: true,
         bot_owner_id: isaac.id,
     };
-    people.add(test_bot);
+    people.add_active_user(test_bot);
 
     user_events.update_person({user_id: test_bot.user_id, bot_owner_id: me.user_id});
     person = people.get_by_email(test_bot.email);

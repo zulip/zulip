@@ -28,9 +28,13 @@ Usually, this involves a few steps:
   If you cannot find a SVG graphic of the logo, please find and include a PNG
   image of the logo instead.
 
-* Finally, generate a message sent by the integration and take a
-  screenshot of the message to provide an example message in the
-  documentation.
+* Run `tools/setup/generate_integration_bots_avatars.py` to generate a smaller
+  version of the image added in the previous step. This smaller image will be
+  used as the bot avatar in the documentation screenshot that will be generated
+  in the next step.
+
+* Finally, generate a message sent by the integration and take a screenshot of
+  the message to provide an example message in the documentation.
 
   If your new integration is an incoming webhook integration, you can generate
   the screenshot using `tools/generate-integration-docs-screenshot`:
@@ -97,7 +101,7 @@ Here are a few common macros used to document Zulip's integrations:
   [the docs for Zulip's GitHub integration][GitHub].
 
 * `{!download-python-bindings.md!}` macro - Links to Zulip's
-  [API page](https://zulipchat.com/api/) to download and install Zulip's
+  [API page](https://zulip.com/api/) to download and install Zulip's
   API bindings. This macro is usually used in non-webhook integration docs under
   `templates/zerver/integrations/<integration_name>.md`. For an example
   rendering, see **Step 2** of
@@ -130,11 +134,11 @@ Here are a few common macros used to document Zulip's integrations:
     ```
 
     For an example rendering, see
-    [Zulip's Beanstalk integration](https://zulipchat.com/integrations/doc/beanstalk).
+    [Zulip's Beanstalk integration](https://zulip.com/integrations/doc/beanstalk).
 
-[GitHub]: https://zulipchat.com/integrations/doc/github
-[codebase]: https://zulipchat.com/integrations/doc/codebase
-[beanstalk]: https://zulipchat.com/integrations/doc/beanstalk
+[GitHub]: https://zulip.com/integrations/doc/github
+[codebase]: https://zulip.com/integrations/doc/codebase
+[beanstalk]: https://zulip.com/integrations/doc/beanstalk
 [1]: https://github.com/zulip/zulip/blob/708f3a4bb19c8e823c9ea1e577d360ac4229b199/zerver/lib/integrations.py#L78
 
 ## Writing guidelines
@@ -142,7 +146,7 @@ Here are a few common macros used to document Zulip's integrations:
 For the vast majority of integrations, you should just copy the docs for a
 similar integration and edit it. [Basecamp][basecamp] is a good one to copy.
 
-[basecamp]: https://zulipchat.com/integrations/doc/basecamp
+[basecamp]: https://zulip.com/integrations/doc/basecamp
 
 ### General writing guidelines
 

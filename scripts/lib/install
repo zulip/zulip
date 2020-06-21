@@ -105,7 +105,7 @@ if [ -f /etc/os-release ]; then
 fi
 
 case "$os_id$os_version_id" in
-    ubuntu16.04|ubuntu18.04|debian9|debian10) ;;
+    ubuntu16.04|ubuntu18.04|debian9|debian10|ubuntu20.04) ;;
     *)
         set +x
         cat <<EOF
@@ -203,9 +203,15 @@ fi
 
 case " $os_id $os_id_like " in
     *' debian '*)
+        if [ "$os_id" = ubuntu ] && [ "$os_version_id" = 20.04 ]; then
+            PYTHON2="python2"
+        else
+            PYTHON2="python"
+        fi
+
         if ! apt-get install -y \
             puppet git curl wget jq \
-            python python3 python-six python3-six crudini \
+            "$PYTHON2" python3 python-six python3-six crudini \
             "${ADDITIONAL_PACKAGES[@]}"; then
             set +x
             echo -e '\033[0;31m' >&2
@@ -285,6 +291,18 @@ EOF
 [certbot]
 auto_renew = yes
 EOF
+    fi
+
+    if [ -e "/etc/init.d/postgresql" ]; then
+        case " $os_id $os_id_like " in
+            *' debian '*)
+                cat <<EOF
+
+[postgresql]
+version = 12
+EOF
+                ;;
+        esac
     fi
 ) > /etc/zulip/zulip.conf
 

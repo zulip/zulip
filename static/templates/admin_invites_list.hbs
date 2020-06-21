@@ -2,7 +2,11 @@
 <tr class="invite_row">
     <td>
         {{#if is_multiuse}}
-        <span class="email"><a href="{{link_url}}" target="_blank">{{t 'Invite link'}}</a></span>
+        <span class="email">
+            <a href="{{link_url}}" target="_blank" rel="noopener noreferrer">
+                {{t 'Invite link'}}
+            </a>
+        </span>
         {{else}}
         <span class="email">{{email}}</span>
         {{/if}}
@@ -19,11 +23,11 @@
         <span>{{invited_as_text}}</span>
     </td>
     <td class="actions">
-        <button class="button rounded small revoke btn-danger" data-invite-id="{{id}}" data-is-multiuse="{{is_multiuse}}">
+        <button class="button rounded small revoke btn-danger" {{#if disable_buttons}}disabled="disabled"{{/if}} data-invite-id="{{id}}" data-is-multiuse="{{is_multiuse}}">
             {{t "Revoke" }}
         </button>
         {{#unless is_multiuse}}
-        <button class="button rounded small resend btn-warning" data-invite-id="{{id}}">
+        <button class="button rounded small resend btn-warning" {{#if disable_buttons}}disabled="disabled"{{/if}} data-invite-id="{{id}}">
             {{t "Resend" }}
         </button>
         {{/unless}}

@@ -1,11 +1,19 @@
-exports.mark_all_as_read = function (cont) {
+exports.mark_all_as_read = function () {
     unread.declare_bankruptcy();
     unread_ui.update_unread_counts();
 
     channel.post({
         url: '/json/mark_all_as_read',
         idempotent: true,
-        success: cont});
+        success: () => {
+            // After marking all messages as read, we reload the browser.
+            // This is useful to avoid leaving ourselves deep in the past.
+            reload.initiate({immediate: true,
+                             save_pointer: false,
+                             save_narrow: true,
+                             save_compose: true});
+        },
+    });
 };
 
 function process_newly_read_message(message, options) {
@@ -15,6 +23,7 @@ function process_newly_read_message(message, options) {
         message_list.narrowed.show_message_as_read(message, options);
     }
     notifications.close_notification(message);
+    recent_topics.update_topic_unread_count(message);
 }
 
 exports.process_read_messages_event = function (message_ids) {
@@ -82,7 +91,7 @@ exports.notify_server_message_read = function (message, options) {
 // If we ever materially change the algorithm for this function, we
 // may need to update notifications.received_messages as well.
 exports.process_visible = function () {
-    if (!notifications.window_has_focus()) {
+    if (overlays.is_active() || !notifications.window_has_focus()) {
         return;
     }
 

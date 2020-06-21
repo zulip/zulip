@@ -2,7 +2,7 @@
 // server_events.js simple while breaking some circular
 // dependencies that existed when this code was in people.js.
 // (We should do bot updates here too.)
-
+const settings_config = require('./settings_config');
 exports.update_person = function update(person) {
     const person_obj = people.get_by_user_id(person.user_id);
 
@@ -47,12 +47,20 @@ exports.update_person = function update(person) {
         }
     }
 
-    if (Object.prototype.hasOwnProperty.call(person, 'is_admin')) {
-        person_obj.is_admin = person.is_admin;
+    if (Object.prototype.hasOwnProperty.call(person, 'role')) {
+        person_obj.is_owner = person.role === settings_config.user_role_values.owner.code;
+        person_obj.is_admin = person.role === settings_config.user_role_values.admin.code
+            || person_obj.is_owner;
+        person_obj.is_guest = person.role === settings_config.user_role_values.guest.code;
         settings_users.update_user_data(person.user_id, person);
 
-        if (people.is_my_user_id(person.user_id)) {
-            page_params.is_admin = person.is_admin;
+        if (people.is_my_user_id(person.user_id) && page_params.is_owner !== person_obj.is_owner) {
+            page_params.is_owner = person_obj.is_owner;
+            settings_org.maybe_disable_widgets();
+        }
+
+        if (people.is_my_user_id(person.user_id) && page_params.is_admin !== person_obj.is_admin) {
+            page_params.is_admin = person_obj.is_admin;
             gear_menu.update_org_settings_menu_item();
             settings_linkifiers.maybe_disable_widgets();
             settings_org.maybe_disable_widgets();
@@ -61,20 +69,16 @@ exports.update_person = function update(person) {
         }
     }
 
-    if (Object.prototype.hasOwnProperty.call(person, 'is_guest')) {
-        person_obj.is_guest = person.is_guest;
-        settings_users.update_user_data(person.user_id, person);
-    }
-
     if (Object.prototype.hasOwnProperty.call(person, 'avatar_url')) {
         const url = person.avatar_url;
         person_obj.avatar_url = url;
+        person_obj.avatar_version = person.avatar_version;
 
         if (people.is_my_user_id(person.user_id)) {
             page_params.avatar_source = person.avatar_source;
             page_params.avatar_url = url;
             page_params.avatar_url_medium = person.avatar_url_medium;
-            $("#user-avatar-block").attr("style", "background-image:url(" + person.avatar_url_medium + ")");
+            $("#user-avatar-upload-widget .image-block").attr("src", person.avatar_url_medium);
         }
 
         message_live_update.update_avatar(person_obj.user_id, person.avatar_url);

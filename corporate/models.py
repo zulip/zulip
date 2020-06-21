@@ -7,6 +7,7 @@ from django.db.models import CASCADE
 
 from zerver.models import Realm
 
+
 class Customer(models.Model):
     realm: Realm = models.OneToOneField(Realm, on_delete=CASCADE)
     stripe_customer_id: str = models.CharField(max_length=255, null=True, unique=True)
@@ -14,7 +15,7 @@ class Customer(models.Model):
     default_discount: Optional[Decimal] = models.DecimalField(decimal_places=4, max_digits=7, null=True)
 
     def __str__(self) -> str:
-        return "<Customer %s %s>" % (self.realm, self.stripe_customer_id)
+        return f"<Customer {self.realm} {self.stripe_customer_id}>"
 
 def get_customer_by_realm(realm: Realm) -> Optional[Customer]:
     return Customer.objects.filter(realm=realm).first()
@@ -43,6 +44,7 @@ class CustomerPlan(models.Model):
         'LicenseLedger', null=True, on_delete=CASCADE, related_name='+')
     DONE = 1
     STARTED = 2
+    INITIAL_INVOICE_TO_BE_SENT = 3
     invoicing_status: int = models.SmallIntegerField(default=DONE)
 
     STANDARD = 1
@@ -52,6 +54,8 @@ class CustomerPlan(models.Model):
 
     ACTIVE = 1
     DOWNGRADE_AT_END_OF_CYCLE = 2
+    FREE_TRIAL = 3
+    SWITCH_TO_ANNUAL_AT_END_OF_CYCLE = 4
     # "Live" plans should have a value < LIVE_STATUS_THRESHOLD.
     # There should be at most one live plan per customer.
     LIVE_STATUS_THRESHOLD = 10

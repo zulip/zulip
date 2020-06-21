@@ -1,9 +1,8 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Tuple
 
 import ujson
 from django.http import HttpRequest, HttpResponse
-from django.utils.timezone import utc as timezone_utc
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import api_key_only_webhook_view
@@ -41,7 +40,7 @@ class LibratoWebhookParser:
     def parse_violation(self, violation: Dict[str, Any]) -> Tuple[str, str]:
         metric_name = violation['metric']
         recorded_at = datetime.fromtimestamp((violation['recorded_at']),
-                                             tz=timezone_utc).strftime('%Y-%m-%d %H:%M:%S')
+                                             tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
         return metric_name, recorded_at
 
     def parse_conditions(self) -> List[Dict[str, Any]]:
@@ -61,11 +60,11 @@ class LibratoWebhookHandler(LibratoWebhookParser):
         super().__init__(payload, attachments)
         self.payload_available_types = {
             ALERT_CLEAR: self.handle_alert_clear_message,
-            ALERT_VIOLATION: self.handle_alert_violation_message
+            ALERT_VIOLATION: self.handle_alert_violation_message,
         }
 
         self.attachments_available_types = {
-            SNAPSHOT: self.handle_snapshots
+            SNAPSHOT: self.handle_snapshots,
         }
 
     def find_handle_method(self) -> Callable[[], str]:
@@ -90,7 +89,7 @@ class LibratoWebhookHandler(LibratoWebhookParser):
     def handle_alert_clear_message(self) -> str:
         alert_clear_template = "Alert [alert_name]({alert_url}) has cleared at {trigger_time} UTC!"
         trigger_time = datetime.fromtimestamp((self.payload['trigger_time']),
-                                              tz=timezone_utc).strftime('%Y-%m-%d %H:%M:%S')
+                                              tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
         alert_id, alert_name, alert_url, alert_runbook_url = self.parse_alert()
         content = alert_clear_template.format(alert_name=alert_name,
                                               alert_url=alert_url,
@@ -137,8 +136,8 @@ class LibratoWebhookHandler(LibratoWebhookParser):
             metric_name=metric_name, summary_function=summary_function, condition_type=condition_type,
             threshold=threshold)
         if duration:
-            content += " by {duration}s".format(duration=duration)
-        content += ", recorded at {recorded_at} UTC.".format(recorded_at=recorded_at)
+            content += f" by {duration}s"
+        content += f", recorded at {recorded_at} UTC."
         return content
 
 @api_key_only_webhook_view('Librato')

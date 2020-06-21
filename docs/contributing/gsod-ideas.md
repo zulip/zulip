@@ -6,14 +6,14 @@
 
 ## About us
 
-[Zulip](https://zulipchat.com) is a powerful, open source team chat
+[Zulip](https://zulip.com) is a powerful, open source team chat
 application. Zulip has a web app, a cross-platform mobile app for iOS
 and Android, a cross-platform desktop app, and over 100 native
 integrations, all open source.
 
 Zulip has gained a considerable amount of traction since it was
 [released as open source software][oss-release] in late 2015, with
-code contributions from [over 500 people](https://zulipchat.com/team)
+code contributions from [over 500 people](https://zulip.com/team)
 from all around the world.  Thousands of people use Zulip every single
 day, and your work on Zulip will have impact on the daily experiences
 of a large and rapidly growing number of people.
@@ -210,7 +210,7 @@ are clearly correct and that explain why they are correct.
 **Project name**: REST API Documentation
 
 Fill in the gaps in Zulip's
-[REST API documentation](https://zulipchat.com/api).  Zulip has a
+[REST API documentation](https://zulip.com/api).  Zulip has a
 [nice framework](../documentation/api.md) for
 writing API documentation built by a student last summer based on the
 OpenAPI standard with built-in automated tests, but there are dozens of
@@ -264,9 +264,9 @@ blog posts they've written in the past.
 **Project name**: User documentation for non-web apps
 
 We have a lot of nice
-[user-facing documentation](https://zulipchat.com/help/) for how Zulip
+[user-facing documentation](https://zulip.com/help/) for how Zulip
 works and how to accomplish useful tasks.  An example article is how
-to [star a message](https://zulipchat.com/help/star-a-message).  In
+to [star a message](https://zulip.com/help/star-a-message).  In
 most cases, our documentation explains how to accomplish a task in the
 Zulip webapp, but doesn't cover how to do those tasks in Zulip's
 mobile and beta terminal apps.
@@ -274,7 +274,7 @@ mobile and beta terminal apps.
 We have recently built a nice markdown-based system to make it easy to show
 information for multiple platforms in a single tabbed widget. An example
 article using this widget is
-[logging in](https://zulipchat.com/help/logging-in). This project will
+[logging in](https://zulip.com/help/logging-in). This project will
 likely take advantage of that system to build out documentation for our
 other apps.
 
@@ -288,7 +288,7 @@ they would really appreciate having a few 1-3 minute videos explaining
 the Zulip model and how to use Zulip efficiently to help train the
 rest of their organization on the benefits of Zulip.  We would hope to
 link to these videos prominently in the Zulip tutorial experience
-(both in-app and on zulipchat.com).  The core Zulip team has a pretty
+(both in-app and on the landing pages).  The core Zulip team has a pretty
 good idea of how to explain Zulip, but does not have significant
 experience creating videos, and we would love to work with someone
 skilled at doing screencast tutorials of software to create something

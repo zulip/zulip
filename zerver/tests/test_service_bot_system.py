@@ -1,25 +1,16 @@
-import mock
-from typing import Any, Union, Mapping, Callable
+from typing import Any, Callable, Mapping, Union
+from unittest import mock
 
+import ujson
 from django.conf import settings
 from django.test import override_settings
 
-from zerver.lib.actions import (
-    do_create_user,
-    get_service_bot_events,
-)
-from zerver.lib.bot_lib import StateHandler, EmbeddedBotHandler, \
-    EmbeddedBotEmptyRecipientsList
+from zerver.lib.actions import do_create_user, get_service_bot_events
+from zerver.lib.bot_config import ConfigError, load_bot_config_template, set_bot_config
+from zerver.lib.bot_lib import EmbeddedBotEmptyRecipientsList, EmbeddedBotHandler, StateHandler
 from zerver.lib.bot_storage import StateError
-from zerver.lib.bot_config import set_bot_config, ConfigError, load_bot_config_template
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import (
-    get_realm,
-    UserProfile,
-    Recipient,
-)
-
-import ujson
+from zerver.models import Recipient, UserProfile, get_realm
 
 BOT_TYPE_TO_QUEUE_NAME = {
     UserProfile.OUTGOING_WEBHOOK_BOT: 'outgoing_webhooks',
@@ -258,14 +249,14 @@ class TestServiceBotStateHandler(ZulipTestCase):
         # Store some data.
         initial_dict = {'key 1': 'value 1', 'key 2': 'value 2', 'key 3': 'value 3'}
         params = {
-            'storage': ujson.dumps(initial_dict)
+            'storage': ujson.dumps(initial_dict),
         }
         result = self.client_put('/json/bot_storage', params)
         self.assert_json_success(result)
 
         # Assert the stored data for some keys.
         params = {
-            'keys': ujson.dumps(['key 1', 'key 3'])
+            'keys': ujson.dumps(['key 1', 'key 3']),
         }
         result = self.client_get('/json/bot_storage', params)
         self.assert_json_success(result)
@@ -279,7 +270,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
         # Store some more data; update an entry and store a new entry
         dict_update = {'key 1': 'new value', 'key 4': 'value 4'}
         params = {
-            'storage': ujson.dumps(dict_update)
+            'storage': ujson.dumps(dict_update),
         }
         result = self.client_put('/json/bot_storage', params)
         self.assert_json_success(result)
@@ -293,27 +284,27 @@ class TestServiceBotStateHandler(ZulipTestCase):
 
         # Assert errors on invalid requests.
         params = {
-            'keys': ["This is a list, but should be a serialized string."]  # type: ignore[dict-item] # Ignore 'incompatible type "str": "List[str]"; expected "str": "str"' for testing
+            'keys': ["This is a list, but should be a serialized string."],  # type: ignore[dict-item] # Ignore 'incompatible type "str": "List[str]"; expected "str": "str"' for testing
         }
         result = self.client_get('/json/bot_storage', params)
         self.assert_json_error(result, 'Argument "keys" is not valid JSON.')
 
         params = {
-            'keys': ujson.dumps(["key 1", "nonexistent key"])
+            'keys': ujson.dumps(["key 1", "nonexistent key"]),
         }
         result = self.client_get('/json/bot_storage', params)
         self.assert_json_error(result, "Key does not exist.")
 
         params = {
-            'storage': ujson.dumps({'foo': [1, 2, 3]})
+            'storage': ujson.dumps({'foo': [1, 2, 3]}),
         }
         result = self.client_put('/json/bot_storage', params)
-        self.assert_json_error(result, "Value type is <class 'list'>, but should be str.")
+        self.assert_json_error(result, "storage contains a value that is not a string")
 
         # Remove some entries.
         keys_to_remove = ['key 1', 'key 2']
         params = {
-            'keys': ujson.dumps(keys_to_remove)
+            'keys': ujson.dumps(keys_to_remove),
         }
         result = self.client_delete('/json/bot_storage', params)
         self.assert_json_success(result)
@@ -327,7 +318,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
 
         # Try to remove an existing and a nonexistent key.
         params = {
-            'keys': ujson.dumps(['key 3', 'nonexistent key'])
+            'keys': ujson.dumps(['key 3', 'nonexistent key']),
         }
         result = self.client_delete('/json/bot_storage', params)
         self.assert_json_error(result, "Key does not exist.")

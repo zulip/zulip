@@ -1,24 +1,41 @@
 <div id="move_topic_modal" class="modal modal-bg hide fade new-style" tabindex="-1" role="dialog" aria-labelledby="move_topic_modal_label" aria-hidden="true">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
-        <h3 id="move_topic_modal_label">{{t "Move a topic to stream" }} </h3>
+        <h3 id="move_topic_modal_label">{{t "Move topic" }} </h3>
     </div>
     <div class="modal-body">
-        <p>{{#tr this}}Do you want to move all messages in <strong>__topic_name__</strong> to another stream?{{/tr}}</p>
+        <p>{{#tr this}}Move all messages in <strong>__topic_name__</strong>{{/tr}} to:</p>
         <form id="move_topic_form">
             <div id="topic_stream_edit_form_error" class="alert">
                 <span class="send-status-close">&times;</span>
                 <span class="error-msg"></span>
             </div>
-            <select name="select_stream_id" class="inline_select_topic_edit" id="select_stream_id">
-                <option value="">{{t "Select a stream" }}</option>
-                {{#each available_streams}}
-                <option value="{{ this.stream_id }}">#{{this.name}}</option>
-                {{/each}}
-            </select>
-            <input name="new_topic_name" type="text" class="inline_topic_edit" value="{{topic_name}}">
-            <input name="old_topic_name" type="hidden" class="inline_topic_edit" value="{{topic_name}}">
-            <input name="current_stream_id" type="hidden" value="{{current_stream_id}}">
+            <p>Select a stream below or change topic name.</p>
+            <div class="topic_stream_edit_header">
+                <div class="stream_header_colorblock"></div>
+                <select name="select_stream_id" class="inline_select_topic_edit" id="select_stream_id">
+                    <option value="{{ current_stream_id }}">#{{ current_stream_name }}</option>
+                    {{#each available_streams}}
+                    <option value="{{ this.stream_id }}">#{{this.name}}</option>
+                    {{/each}}
+                </select>
+                <i class="fa fa-angle-right" aria-hidden="true"></i>
+                <input name="new_topic_name" type="text" class="inline_topic_edit" value="{{topic_name}}">
+                <input name="old_topic_name" type="hidden" class="inline_topic_edit" value="{{topic_name}}">
+                <input name="current_stream_id" type="hidden" value="{{current_stream_id}}">
+                <div class="topic_move_breadcrumb_messages new-style">
+                    <label class="checkbox">
+                        <input class="send_notification_to_new_thread" name="send_notification_to_new_thread" type="checkbox" {{#if notify_new_thread}}checked="checked"{{/if}}>
+                        <span></span>
+                    </label>
+                    <label for="send_notification_to_new_thread">{{t "Send notification to new topic" }}</label>
+                    <label class="checkbox">
+                        <input class="send_notification_to_old_thread" name="send_notification_to_old_thread" type="checkbox" {{#if notify_old_thread}}checked="checked"{{/if}}>
+                        <span></span>
+                    </label>
+                    <label for="send_notification_to_old_thread">{{t "Send notification to old topic" }}</label>
+                </div>
+            </div>
         </form>
         <div class="topic_edit_spinner"></div>
     </div>

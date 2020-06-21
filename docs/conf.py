@@ -10,10 +10,8 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
-
 import os
 import sys
-
 from typing import Any, Dict, List, Optional
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -266,7 +264,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     (master_doc, 'zulip-contributor-docs', 'Zulip Documentation',
-     [author], 1)
+     [author], 1),
 ]
 
 # If true, show URL addresses after external links.
@@ -310,6 +308,7 @@ source_suffix = {
 # See https://github.com/zulip/zulip/issues/13263 for details.
 from recommonmark.parser import CommonMarkParser
 
+
 class CustomCommonMarkParser(CommonMarkParser):
     def visit_document(self, node):
         pass
@@ -334,4 +333,4 @@ def setup(app: Any) -> None:
     app.add_transform(AutoStructify)
 
     # overrides for wide tables in RTD theme
-    app.add_stylesheet('theme_overrides.css')  # path relative to _static
+    app.add_css_file('theme_overrides.css')  # path relative to _static

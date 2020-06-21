@@ -10,6 +10,8 @@ const settings_config = zrequire('settings_config');
 page_params.realm_email_address_visibility =
     settings_config.email_address_visibility_values.admins_only.code;
 
+const huddle_data = zrequire('huddle_data');
+
 zrequire('typeahead_helper');
 set_global('Handlebars', global.make_handlebars());
 zrequire('Filter', 'js/filter');
@@ -23,18 +25,50 @@ const search = zrequire('search_suggestion');
 
 search.max_num_of_search_results = 15;
 
+const me = {
+    email: 'myself@zulip.com',
+    full_name: 'Me Myself',
+    user_id: 41,
+};
+
 const bob = {
     email: 'bob@zulip.com',
     full_name: 'Bob Roberts',
     user_id: 42,
 };
 
+const ted =
+{
+    email: 'ted@zulip.com',
+    user_id: 101,
+    full_name: 'Ted Smith',
+};
+
+const alice =
+{
+    email: 'alice@zulip.com',
+    user_id: 102,
+    full_name: 'Alice Ignore',
+};
+
+const jeff =
+{
+    email: 'jeff@zulip.com',
+    user_id: 103,
+    full_name: 'Jeff Zoolipson',
+};
+
 const noop = () => {};
 
 function init() {
     people.init();
-    people.add(bob);
-    people.initialize_current_user(bob.user_id);
+    people.add_active_user(bob);
+    people.add_active_user(me);
+    people.add_active_user(ted);
+    people.add_active_user(alice);
+    people.add_active_user(jeff);
+
+    people.initialize_current_user(me.user_id);
 }
 init();
 
@@ -96,29 +130,14 @@ run_test('private_suggestions', () => {
         return;
     };
 
-    const ted =
-    {
-        email: 'ted@zulip.com',
-        user_id: 101,
-        full_name: 'Ted Smith',
-    };
-
-    const alice =
-    {
-        email: 'alice@zulip.com',
-        user_id: 102,
-        full_name: 'Alice Ignore',
-    };
-
-    people.add(ted);
-    people.add(alice);
-
     let query = 'is:private';
     let suggestions = get_suggestions('', query);
     let expected = [
         "is:private",
         "pm-with:alice@zulip.com",
         "pm-with:bob@zulip.com",
+        "pm-with:jeff@zulip.com",
+        "pm-with:myself@zulip.com",
         "pm-with:ted@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -264,37 +283,6 @@ run_test('group_suggestions', () => {
         return;
     };
 
-    set_global('activity', {
-        get_huddles: function () {
-            return [];
-        },
-    });
-
-    const ted =
-    {
-        email: 'ted@zulip.com',
-        user_id: 101,
-        full_name: 'Ted Smith',
-    };
-
-    const alice =
-    {
-        email: 'alice@zulip.com',
-        user_id: 102,
-        full_name: 'Alice Ignore',
-    };
-
-    const jeff =
-    {
-        email: 'jeff@zulip.com',
-        user_id: 103,
-        full_name: 'Jeff Zoolipson',
-    };
-
-    people.add(ted);
-    people.add(alice);
-    people.add(jeff);
-
     // Entering a comma in a pm-with query should immediately generate
     // suggestions for the next person.
     let query = 'pm-with:bob@zulip.com,';
@@ -326,11 +314,11 @@ run_test('group_suggestions', () => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    // Do not suggest "bob@zulip.com" (the name of the current user)
-    query = 'pm-with:ted@zulip.com,bo';
+    // Do not suggest "myself@zulip.com" (the name of the current user)
+    query = 'pm-with:ted@zulip.com,mys';
     suggestions = get_suggestions('', query);
     expected = [
-        "pm-with:ted@zulip.com,bo",
+        "pm-with:ted@zulip.com,mys",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -396,11 +384,22 @@ run_test('group_suggestions', () => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    set_global('activity', {
-        get_huddles: function () {
-            return ['101,42', '101,103,42'];
-        },
-    });
+    function message(user_ids, timestamp) {
+        return {
+            type: 'private',
+            display_recipient: user_ids.map((id) => {
+                return {
+                    id: id,
+                };
+            }),
+            timestamp: timestamp,
+        };
+    }
+
+    huddle_data.process_loaded_messages([
+        message([bob.user_id, ted.user_id], 99),
+        message([bob.user_id, ted.user_id, jeff.user_id], 98),
+    ]);
 
     // Simulate a past huddle which should now prioritize ted over alice
     query = 'pm-with:bob@zulip.com,';
@@ -423,13 +422,14 @@ run_test('group_suggestions', () => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    // bob,ted,jeff is already an existing huddle, but if we start with just bob,
+    // bob,ted,jeff is already an existing huddle, but if we start with just jeff,
     // then don't prioritize ted over alice because it doesn't complete the full huddle.
     query = 'pm-with:jeff@zulip.com,';
     suggestions = get_suggestions('', query);
     expected = [
         "pm-with:jeff@zulip.com,",
         "pm-with:jeff@zulip.com,alice@zulip.com",
+        "pm-with:jeff@zulip.com,bob@zulip.com",
         "pm-with:jeff@zulip.com,ted@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -465,7 +465,7 @@ run_test('empty_query_suggestions', () => {
         "is:mentioned",
         "is:alerted",
         "is:unread",
-        "sender:bob@zulip.com",
+        "sender:myself@zulip.com",
         "stream:devel",
         "stream:office",
         'has:link',
@@ -483,7 +483,7 @@ run_test('empty_query_suggestions', () => {
     assert.equal(describe('is:mentioned'), '@-mentions');
     assert.equal(describe('is:alerted'), 'Alerted messages');
     assert.equal(describe('is:unread'), 'Unread messages');
-    assert.equal(describe('sender:bob@zulip.com'), 'Sent by me');
+    assert.equal(describe('sender:myself@zulip.com'), 'Sent by me');
     assert.equal(describe('has:link'), 'Messages with one or more link');
     assert.equal(describe('has:image'), 'Messages with one or more image');
     assert.equal(describe('has:attachment'), 'Messages with one or more attachment');
@@ -589,6 +589,9 @@ run_test('check_is_suggestions', () => {
         'is:mentioned',
         'is:alerted',
         'is:unread',
+        'sender:alice@zulip.com',
+        'pm-with:alice@zulip.com',
+        'group-pm-with:alice@zulip.com',
         'has:image',
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -631,7 +634,7 @@ run_test('check_is_suggestions', () => {
         'is:mentioned',
         'is:alerted',
         'is:unread',
-        'sender:bob@zulip.com',
+        'sender:myself@zulip.com',
         'stream:devel',
         'stream:office',
         'has:link',
@@ -648,7 +651,7 @@ run_test('check_is_suggestions', () => {
         'is:mentioned',
         'is:alerted',
         'is:unread',
-        'sender:bob@zulip.com',
+        'sender:myself@zulip.com',
         'has:link',
         'has:image',
         'has:attachment',
@@ -712,15 +715,15 @@ run_test('sent_by_me_suggestions', () => {
 
     let query = '';
     let suggestions = get_suggestions('', query);
-    assert(suggestions.strings.includes('sender:bob@zulip.com'));
-    assert.equal(suggestions.lookup_table.get('sender:bob@zulip.com').description,
+    assert(suggestions.strings.includes('sender:myself@zulip.com'));
+    assert.equal(suggestions.lookup_table.get('sender:myself@zulip.com').description,
                  'Sent by me');
 
     query = 'sender';
     suggestions = get_suggestions('', query);
     let expected = [
         "sender",
-        "sender:bob@zulip.com",
+        "sender:myself@zulip.com",
         "sender:",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -729,7 +732,7 @@ run_test('sent_by_me_suggestions', () => {
     suggestions = get_suggestions('', query);
     expected = [
         "-sender",
-        "-sender:bob@zulip.com",
+        "-sender:myself@zulip.com",
         "-sender:",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -738,7 +741,7 @@ run_test('sent_by_me_suggestions', () => {
     suggestions = get_suggestions('', query);
     expected = [
         "from",
-        "from:bob@zulip.com",
+        "from:myself@zulip.com",
         "from:",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -747,7 +750,7 @@ run_test('sent_by_me_suggestions', () => {
     suggestions = get_suggestions('', query);
     expected = [
         "-from",
-        "-from:bob@zulip.com",
+        "-from:myself@zulip.com",
         "-from:",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -770,7 +773,7 @@ run_test('sent_by_me_suggestions', () => {
     suggestions = get_suggestions('', query);
     expected = [
         "sent",
-        "sender:bob@zulip.com",
+        "sender:myself@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -778,7 +781,7 @@ run_test('sent_by_me_suggestions', () => {
     suggestions = get_suggestions('', query);
     expected = [
         "-sent",
-        "-sender:bob@zulip.com",
+        "-sender:myself@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -787,7 +790,7 @@ run_test('sent_by_me_suggestions', () => {
     suggestions = get_suggestions(base_query, query);
     expected = [
         "sent",
-        "sender:bob@zulip.com",
+        "sender:myself@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -796,7 +799,7 @@ run_test('sent_by_me_suggestions', () => {
     suggestions = get_suggestions(base_query, query);
     expected = [
         "sender:m",
-        "sender:bob@zulip.com",
+        "sender:myself@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -804,8 +807,12 @@ run_test('sent_by_me_suggestions', () => {
     base_query = 'is:starred';
     suggestions = get_suggestions(base_query, query);
     expected = [
-        "sender:",
-        "sender:bob@zulip.com",
+        'sender:',
+        'sender:myself@zulip.com',
+        'sender:alice@zulip.com',
+        'sender:bob@zulip.com',
+        'sender:jeff@zulip.com',
+        'sender:ted@zulip.com',
     ];
     assert.deepEqual(suggestions.strings, expected);
 });
@@ -835,7 +842,10 @@ run_test('topic_suggestions', () => {
     stream_topic_history.reset();
     suggestions = get_suggestions('', 'te');
     expected = [
-        "te",
+        'te',
+        'sender:ted@zulip.com',
+        'pm-with:ted@zulip.com',
+        'group-pm-with:ted@zulip.com',
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -853,9 +863,12 @@ run_test('topic_suggestions', () => {
 
     suggestions = get_suggestions('', 'te');
     expected = [
-        "te",
-        "stream:office topic:team",
-        "stream:office topic:test",
+        'te',
+        'sender:ted@zulip.com',
+        'pm-with:ted@zulip.com',
+        'group-pm-with:ted@zulip.com',
+        'stream:office topic:team',
+        'stream:office topic:test',
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -947,7 +960,7 @@ run_test('stream_completion', () => {
     stream_topic_history.reset();
 
     let query = 'stream:of';
-    let suggestions = get_suggestions('s', query);
+    let suggestions = get_suggestions('', query);
     let expected = [
         "stream:of",
         "stream:office",
@@ -980,7 +993,7 @@ function people_suggestion_setup() {
         user_id: 201,
         full_name: 'Ted Smith',
     };
-    people.add(ted);
+    people.add_active_user(ted);
 
     const bob = {
         email: 'bob@zulip.com',
@@ -988,13 +1001,13 @@ function people_suggestion_setup() {
         full_name: 'Bob Térry',
     };
 
-    people.add(bob);
+    people.add_active_user(bob);
     const alice = {
         email: 'alice@zulip.com',
         user_id: 203,
         full_name: 'Alice Ignore',
     };
-    people.add(alice);
+    people.add_active_user(alice);
 
     stream_topic_history.reset();
 }
@@ -1125,7 +1138,7 @@ run_test('operator_suggestions', () => {
     expected = [
         '-s',
         '-streams:public',
-        '-sender:bob@zulip.com',
+        '-sender:myself@zulip.com',
         '-stream:',
         '-sender:',
     ];
@@ -1136,7 +1149,7 @@ run_test('operator_suggestions', () => {
     suggestions = get_suggestions(base_query, query);
     expected = [
         '-f',
-        '-from:bob@zulip.com',
+        '-from:myself@zulip.com',
         '-from:',
     ];
     assert.deepEqual(suggestions.strings, expected);

@@ -1,8 +1,15 @@
-import mock
+from unittest import mock
 
+from zerver.lib.redis_utils import (
+    MAX_KEY_LENGTH,
+    ZulipRedisKeyOfWrongFormatError,
+    ZulipRedisKeyTooLongError,
+    get_dict_from_redis,
+    get_redis_client,
+    put_dict_in_redis,
+)
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.redis_utils import get_redis_client, get_dict_from_redis, put_dict_in_redis, \
-    ZulipRedisKeyTooLongError, ZulipRedisKeyOfWrongFormatError, MAX_KEY_LENGTH
+
 
 class RedisUtilsTest(ZulipTestCase):
     key_format = "test_redis_utils_{token}"
@@ -16,7 +23,7 @@ class RedisUtilsTest(ZulipTestCase):
     def test_put_and_get_data(self) -> None:
         data = {
             "a": 1,
-            "b": "some value"
+            "b": "some value",
         }
         key = put_dict_in_redis(self.redis_client, self.key_format, data,
                                 expiration_seconds=self.expiration_seconds)
@@ -26,7 +33,7 @@ class RedisUtilsTest(ZulipTestCase):
     def test_put_data_key_length_check(self) -> None:
         data = {
             "a": 1,
-            "b": "some value"
+            "b": "some value",
         }
 
         max_valid_token_length = MAX_KEY_LENGTH - (len(self.key_format) - len('{token}'))

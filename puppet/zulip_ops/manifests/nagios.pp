@@ -25,7 +25,7 @@ class zulip_ops::nagios {
   $hosts_app_prod = split(zulipconf('nagios', 'hosts_app_prod', undef), ',')
   $hosts_app_staging = split(zulipconf('nagios', 'hosts_app_staging', undef), ',')
   $hosts_postgres_primary = split(zulipconf('nagios', 'hosts_postgres_primary', undef), ',')
-  $hosts_postgres_secondary = split(zulipconf('nagios', 'hosts_postgres_secondary', undef), ',')
+  $hosts_postgres_replica = split(zulipconf('nagios', 'hosts_postgres_replica', undef), ',')
   $hosts_redis = split(zulipconf('nagios', 'hosts_redis', undef), ',')
   $hosts_loadbalancer = split(zulipconf('nagios', 'hosts_loadbalancer', undef), ',')
   $hosts_stats = split(zulipconf('nagios', 'hosts_stats', undef), ',')

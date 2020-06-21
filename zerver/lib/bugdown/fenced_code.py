@@ -75,14 +75,15 @@ Dependencies:
 * [Pygments (optional)](http://pygments.org)
 
 """
-
 import re
+from typing import Any, Dict, Iterable, List, Mapping, MutableSequence, Optional
+
 import markdown
 from django.utils.html import escape
 from markdown.extensions.codehilite import CodeHilite, CodeHiliteExtension
+
 from zerver.lib.exceptions import BugdownRenderingException
 from zerver.lib.tex import render_tex
-from typing import Any, Dict, Iterable, List, MutableSequence, Optional
 
 # Global vars
 FENCE_RE = re.compile("""
@@ -101,6 +102,13 @@ FENCE_RE = re.compile("""
         \\}?
     ) # language, like ".py" or "{javascript}"
     [ ]* # spaces
+    (
+        \\{?\\.?
+        (?P<header>
+            [^~`]*
+        )
+        \\}?
+    ) # header for features that use fenced block header syntax (like spoilers)
     $
     """, re.VERBOSE)
 
@@ -127,14 +135,12 @@ CODE_VALIDATORS = {
 }
 
 class FencedCodeExtension(markdown.Extension):
-    def __init__(self, config: Optional[Dict[str, Any]]=None) -> None:
-        if config is None:
-            config = {}
+    def __init__(self, config: Mapping[str, Any] = {}) -> None:
         self.config = {
             'run_content_validators': [
                 config.get('run_content_validators', False),
-                'Boolean specifying whether to run content validation code in CodeHandler'
-            ]
+                'Boolean specifying whether to run content validation code in CodeHandler',
+            ],
         }
 
         for key, value in config.items():
@@ -156,33 +162,38 @@ class BaseHandler:
         raise NotImplementedError()
 
 def generic_handler(processor: Any, output: MutableSequence[str],
-                    fence: str, lang: str,
-                    run_content_validators: Optional[bool]=False,
+                    fence: str, lang: str, header: str,
+                    run_content_validators: bool=False,
                     default_language: Optional[str]=None) -> BaseHandler:
+    lang = lang.lower()
     if lang in ('quote', 'quoted'):
         return QuoteHandler(processor, output, fence, default_language)
-    elif lang in ('math', 'tex', 'latex'):
+    elif lang == 'math':
         return TexHandler(processor, output, fence)
+    elif lang == 'spoiler':
+        return SpoilerHandler(processor, output, fence, header)
     else:
         return CodeHandler(processor, output, fence, lang, run_content_validators)
 
 def check_for_new_fence(processor: Any, output: MutableSequence[str], line: str,
-                        run_content_validators: Optional[bool]=False,
+                        run_content_validators: bool=False,
                         default_language: Optional[str]=None) -> None:
     m = FENCE_RE.match(line)
     if m:
         fence = m.group('fence')
         lang = m.group('lang')
+        header = m.group('header')
         if not lang and default_language:
             lang = default_language
-        handler = generic_handler(processor, output, fence, lang, run_content_validators, default_language)
+        handler = generic_handler(processor, output, fence, lang, header,
+                                  run_content_validators, default_language)
         processor.push(handler)
     else:
         output.append(line)
 
 class OuterHandler(BaseHandler):
     def __init__(self, processor: Any, output: MutableSequence[str],
-                 run_content_validators: Optional[bool]=False,
+                 run_content_validators: bool=False,
                  default_language: Optional[str]=None) -> None:
         self.output = output
         self.processor = processor
@@ -198,7 +209,7 @@ class OuterHandler(BaseHandler):
 
 class CodeHandler(BaseHandler):
     def __init__(self, processor: Any, output: MutableSequence[str],
-                 fence: str, lang: str, run_content_validators: Optional[bool]=False) -> None:
+                 fence: str, lang: str, run_content_validators: bool=False) -> None:
         self.processor = processor
         self.output = output
         self.fence = fence
@@ -252,6 +263,37 @@ class QuoteHandler(BaseHandler):
         self.output.append('')
         self.processor.pop()
 
+
+class SpoilerHandler(BaseHandler):
+    def __init__(self, processor: Any, output: MutableSequence[str],
+                 fence: str, spoiler_header: str) -> None:
+        self.processor = processor
+        self.output = output
+        self.fence = fence
+        self.spoiler_header = spoiler_header
+        self.lines: List[str] = []
+
+    def handle_line(self, line: str) -> None:
+        if line.rstrip() == self.fence:
+            self.done()
+        else:
+            check_for_new_fence(self.processor, self.lines, line)
+
+    def done(self) -> None:
+        if len(self.lines) == 0:
+            # No content, do nothing
+            return
+        else:
+            header = self.spoiler_header
+            text = '\n'.join(self.lines)
+
+        text = self.processor.format_spoiler(header, text)
+        processed_lines = text.split('\n')
+        self.output.append('')
+        self.output.extend(processed_lines)
+        self.output.append('')
+        self.processor.pop()
+
 class TexHandler(BaseHandler):
     def __init__(self, processor: Any, output: MutableSequence[str], fence: str) -> None:
         self.processor = processor
@@ -277,7 +319,7 @@ class TexHandler(BaseHandler):
 
 
 class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
-    def __init__(self, md: markdown.Markdown, run_content_validators: Optional[bool]=False) -> None:
+    def __init__(self, md: markdown.Markdown, run_content_validators: bool=False) -> None:
         markdown.preprocessors.Preprocessor.__init__(self, md)
 
         self.checked_for_codehilite = False
@@ -327,7 +369,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
 
         # Check for code hilite extension
         if not self.checked_for_codehilite:
-            for ext in self.markdown.registeredExtensions:
+            for ext in self.md.registeredExtensions:
                 if isinstance(ext, CodeHiliteExtension):
                     self.codehilite_conf = ext.config
                     break
@@ -360,6 +402,20 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
             quoted_paragraphs.append("\n".join("> " + line for line in lines if line != ''))
         return "\n\n".join(quoted_paragraphs)
 
+    def format_spoiler(self, header: str, text: str) -> str:
+        output = []
+        header_div_open_html = '<div class="spoiler-block"><div class="spoiler-header">'
+        end_header_start_content_html = '</div><div class="spoiler-content"' \
+            ' aria-hidden="true">'
+        footer_html = '</div></div>'
+
+        output.append(self.placeholder(header_div_open_html))
+        output.append(header)
+        output.append(self.placeholder(end_header_start_content_html))
+        output.append(text)
+        output.append(self.placeholder(footer_html))
+        return "\n\n".join(output)
+
     def format_tex(self, text: str) -> str:
         paragraphs = text.split("\n\n")
         tex_paragraphs = []
@@ -373,7 +429,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         return "\n\n".join(tex_paragraphs)
 
     def placeholder(self, code: str) -> str:
-        return self.markdown.htmlStash.store(code)
+        return self.md.htmlStash.store(code)
 
     def _escape(self, txt: str) -> str:
         """ basic html escaping """

@@ -13,7 +13,6 @@ import csv
 import os
 import re
 import textwrap
-
 from typing import Any, Dict, List, Set
 
 EMOJI_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -30,9 +29,9 @@ INACTIVE_ENTRY = (
 
 FILE_TEMPLATE = (
     "from typing import Any, Dict\n\n"
-    "EMOJI_NAME_MAPS = {"
+    "EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {"
     "%(emoji_entries)s\n"
-    "}   # type: Dict[str, Dict[str, Any]]\n"
+    "}\n"
 )
 
 emoji_names: Set[str] = set()
@@ -47,17 +46,17 @@ def load_data(data_file: str) -> List[List[str]]:
 
 def check_uniqueness(emoji_name: str) -> None:
     if emoji_name in emoji_names:
-        raise Exception("Duplicate emoji name: %s" % (emoji_name,))
+        raise Exception(f"Duplicate emoji name: {emoji_name}")
     emoji_names.add(emoji_name)
 
 def check_valid_emoji_name(emoji_name: str) -> None:
     if re.fullmatch("[+-]?[a-z0-9_-]+", emoji_name) is None:
-        raise Exception("Invalid emoji name: %s" % (emoji_name,))
+        raise Exception(f"Invalid emoji name: {emoji_name}")
 
 def check_emoji_names(canonical_name: str, aliases: List[str]) -> None:
     if canonical_name == 'X':
         return
-    names_to_check = [canonical_name, ] + aliases
+    names_to_check = [canonical_name] + aliases
     for name in names_to_check:
         check_valid_emoji_name(name)
         check_uniqueness(name)

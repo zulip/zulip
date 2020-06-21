@@ -1,6 +1,19 @@
 {{! Contents of the "stream actions" popup }}
 <ul class="nav nav-list streams_popover" data-stream-id="{{ stream.stream_id }}" data-name="{{ stream.name }}">
     <li>
+        <p class="topic-name">
+            <span id="stream_sidebar_privacy_swatch_{{stream.stream_id}}" class="stream-privacy filter-icon" style="color: {{stream.color}}">
+                {{> stream_privacy
+                  invite_only=stream.invite_only
+                  is_web_public=stream.is_web_public }}
+            </span>
+            <b>{{stream.name}}</b>
+        </p>
+    </li>
+
+    <hr>
+
+    <li>
         <a class="open_stream_settings">
             <i class="fa fa-cog" aria-hidden="true"></i>
             {{t "Stream settings" }}
@@ -10,26 +23,26 @@
         <a class="pin_to_top">
             <i class="fa fa-thumb-tack stream-pin-icon" aria-hidden="true"></i>
             {{#if stream.pin_to_top}}
-                {{#tr this}}Unpin stream <b>__stream.name__</b> from top{{/tr}}
+            {{t "Unpin stream from top"}}
             {{else}}
-                {{#tr this}}Pin stream <b>__stream.name__</b> to top{{/tr}}
+            {{t "Pin stream to top"}}
             {{/if}}
         </a>
     </li>
     <li>
         <a class="mark_stream_as_read">
             <i class="fa fa-book" aria-hidden="true"></i>
-            {{#tr this}}Mark all messages in <b>__stream.name__</b> as read{{/tr}}
+            {{t "Mark all messages as read"}}
         </a>
     </li>
     <li>
         <a class="toggle_home">
             {{#if stream.is_muted}}
-                <i class="fa fa-bell" aria-hidden="true"></i>
-                {{#tr this}}Unmute the stream <b>__stream.name__</b>{{/tr}}
+            <i class="fa fa-bell" aria-hidden="true"></i>
+            {{t "Unmute stream"}}
             {{else}}
-                <i class="fa fa-bell-slash" aria-hidden="true"></i>
-                {{#tr this}}Mute the stream <b>__stream.name__</b>{{/tr}}
+            <i class="fa fa-bell-slash" aria-hidden="true"></i>
+            {{t "Mute stream"}}
             {{/if}}
         </a>
     </li>
@@ -41,7 +54,10 @@
     </li>
     <li>
         <span class="colorpicker-container"><input stream_id="{{stream.stream_id}}" class="colorpicker" type="text" value="{{stream.color}}" /></span>
-        <a class="custom_color">{{t "Choose custom color" }}</a>
+        <a class="choose_stream_color">
+            <i class="fa fa-eyedropper" aria-hidden="true"></i>
+            {{t "Change color" }}
+        </a>
     </li>
 
 </ul>

@@ -1,15 +1,19 @@
+from typing import Dict, List
+
 from django.conf import settings
 from django.db.models import Count
 from django.utils.translation import ugettext as _
 
-from zerver.lib.actions import \
-    internal_prep_stream_message_by_name, internal_send_private_message, \
-    do_send_messages, \
-    do_add_reaction, create_users
+from zerver.lib.actions import (
+    create_users,
+    do_add_reaction,
+    do_send_messages,
+    internal_prep_stream_message_by_name,
+    internal_send_private_message,
+)
 from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.models import Message, Realm, UserProfile, get_system_bot
 
-from typing import Dict, List
 
 def missing_any_realm_internal_bots() -> bool:
     bot_emails = [bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,)
@@ -32,7 +36,7 @@ def setup_realm_internal_bots(realm: Realm) -> None:
     bots = UserProfile.objects.filter(
         realm=realm,
         email__in=[bot_info[1] for bot_info in internal_bots],
-        bot_owner__isnull=True
+        bot_owner__isnull=True,
     )
     for bot in bots:
         bot.bot_owner = bot
@@ -147,7 +151,7 @@ def send_initial_realm_messages(realm: Realm) -> None:
     ]
 
     messages = [internal_prep_stream_message_by_name(
-        realm, welcome_bot, message['stream'], message['topic'], message['content']
+        realm, welcome_bot, message['stream'], message['topic'], message['content'],
     ) for message in welcome_messages]
     message_ids = do_send_messages(messages)
 

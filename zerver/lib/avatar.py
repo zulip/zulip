@@ -1,11 +1,16 @@
-from django.conf import settings
-
+import urllib
 from typing import Any, Dict, Optional
 
-from zerver.lib.avatar_hash import gravatar_hash, user_avatar_path_from_ids, user_avatar_content_hash
-from zerver.lib.upload import upload_backend, MEDIUM_AVATAR_SIZE
+from django.conf import settings
+
+from zerver.lib.avatar_hash import (
+    gravatar_hash,
+    user_avatar_content_hash,
+    user_avatar_path_from_ids,
+)
+from zerver.lib.upload import MEDIUM_AVATAR_SIZE, upload_backend
 from zerver.models import UserProfile
-import urllib
+
 
 def avatar_url(user_profile: UserProfile, medium: bool=False, client_gravatar: bool=False) -> Optional[str]:
 
@@ -33,7 +38,7 @@ def avatar_url_from_dict(userdict: Dict[str, Any], medium: bool=False) -> str:
         userdict['realm_id'],
         email=userdict['email'],
         medium=medium)
-    url += '&version=%d' % (userdict['avatar_version'],)
+    url += '&version={:d}'.format(userdict['avatar_version'])
     return url
 
 def get_avatar_field(user_id: int,
@@ -82,19 +87,19 @@ def get_avatar_field(user_id: int,
         email=email,
         medium=medium,
     )
-    url += '&version=%d' % (avatar_version,)
+    url += f'&version={avatar_version:d}'
     return url
 
 def get_gravatar_url(email: str, avatar_version: int, medium: bool=False) -> str:
     url = _get_unversioned_gravatar_url(email, medium)
-    url += '&version=%d' % (avatar_version,)
+    url += f'&version={avatar_version:d}'
     return url
 
 def _get_unversioned_gravatar_url(email: str, medium: bool) -> str:
     if settings.ENABLE_GRAVATAR:
-        gravitar_query_suffix = "&s=%s" % (MEDIUM_AVATAR_SIZE,) if medium else ""
+        gravitar_query_suffix = f"&s={MEDIUM_AVATAR_SIZE}" if medium else ""
         hash_key = gravatar_hash(email)
-        return "https://secure.gravatar.com/avatar/%s?d=identicon%s" % (hash_key, gravitar_query_suffix)
+        return f"https://secure.gravatar.com/avatar/{hash_key}?d=identicon{gravitar_query_suffix}"
     return settings.DEFAULT_AVATAR_URI+'?x=x'
 
 def _get_unversioned_avatar_url(user_profile_id: int,

@@ -30,7 +30,11 @@
                     </div>
                 </div>
                 <div class="input-group">
-                    <label for="invite_as">{{ _('User(s) join as') }}</label>
+                    <label for="invite_as">{{ _('User(s) join as') }}
+                        <a href="/help/roles-and-permissions" target="_blank" rel="noopener noreferrer">
+                            <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+                        </a>
+                    </label>
                     <div>
                         <select id="invite_as">
                             <option name="invite_as" value="{{ invite_as.MEMBER }}">{{ _('Members') }}</option>
@@ -38,6 +42,9 @@
                             <option name="invite_as" value="{{ invite_as.REALM_ADMIN }}">{{ _('Organization administrators') }}</option>
                             {% endif %}
                             <option name="invite_as" value="{{ invite_as.GUEST_USER }}">{{ _('Guests') }}</option>
+                            {% if is_owner %}
+                            <option name="invite_as" value="{{ invite_as.REALM_OWNER }}">{{ _('Organization owners') }}</option>
+                            {% endif %}
                         </select>
                     </div>
                 </div>

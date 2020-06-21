@@ -41,7 +41,7 @@ function message_hover(message_row) {
         !message.status_message) {
         message_row.find(".edit_content").html('<i class="fa fa-pencil edit_content_button" aria-hidden="true" title="Edit (e)"></i>');
     } else {
-        message_row.find(".edit_content").html('<i class="fa fa-file-text-o edit_content_button" aria-hidden="true" title="View source (e)" data-message-id="' + id + '"></i>');
+        message_row.find(".edit_content").html('<i class="fa fa-file-code-o edit_content_button" aria-hidden="true" title="View source (e)" data-message-id="' + id + '"></i>');
     }
 }
 
@@ -187,7 +187,7 @@ exports.initialize_kitchen_sink_stuff = function () {
     });
 
     $("#stream_message_recipient_stream").on('blur', function () {
-        compose_actions.decorate_stream_bar(this.value);
+        ui_util.decorate_stream_bar(this.value, $("#stream-message .message_header_stream"), true);
     });
 
     $(window).on('blur', function () {
@@ -292,7 +292,6 @@ exports.initialize_kitchen_sink_stuff = function () {
 
     if (page_params.realm_presence_disabled) {
         $("#user-list").hide();
-        $("#group-pm-list").hide();
     }
 };
 
@@ -439,15 +438,14 @@ exports.initialize_everything = function () {
     subs.initialize();
     stream_list.initialize();
     condense.initialize();
+    spoilers.initialize();
     lightbox.initialize();
     click_handlers.initialize();
     copy_and_paste.initialize();
     overlays.initialize();
     invite.initialize();
     timerender.initialize();
-    if (!page_params.search_pills_enabled) {
-        tab_bar.initialize();
-    }
+    tab_bar.initialize();
     server_events.initialize();
     user_status.initialize(user_status_params);
     compose_pm_pill.initialize();
@@ -469,16 +467,14 @@ exports.initialize_everything = function () {
     tutorial.initialize();
     notifications.initialize();
     gear_menu.initialize();
+    presence.initialize(presence_params);
     settings_panel_menu.initialize();
     settings_sections.initialize();
     settings_toggle.initialize();
     hashchange.initialize();
-    pointer.initialize();
     unread_ui.initialize();
-    presence.initialize(presence_params);
     activity.initialize();
     emoji_picker.initialize();
-    compose_fade.initialize();
     pm_list.initialize();
     topic_list.initialize();
     topic_zoom.initialize();

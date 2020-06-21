@@ -1,20 +1,27 @@
 #!/usr/bin/env python3
+import glob
 import os
 import shutil
-import sys
 import subprocess
+import sys
 import tempfile
-import glob
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', ".."))
-from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, ENDC, make_deploy_path, \
-    get_deployment_version, is_invalid_upgrade, overwrite_symlink
 import version
+from scripts.lib.zulip_tools import (
+    DEPLOYMENTS_DIR,
+    ENDC,
+    FAIL,
+    get_deployment_version,
+    is_invalid_upgrade,
+    make_deploy_path,
+    overwrite_symlink,
+)
 
 if len(sys.argv) != 2:
-    print(FAIL + "Usage: %s <tarball>" % (sys.argv[0],) + ENDC)
+    print(FAIL + f"Usage: {sys.argv[0]} <tarball>" + ENDC)
     sys.exit(1)
 
 tarball_path = sys.argv[1]

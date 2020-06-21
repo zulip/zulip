@@ -10,7 +10,8 @@
                 <div class="input-group">
                     <label for="realm_user_invite_restriction" class="dropdown-title">{{t "Are invitations required for joining the organization?" }}</label>
                     <select name="realm_user_invite_restriction" id="id_realm_user_invite_restriction" class="prop-element">
-                        <option value="no_invite_required">{{t "No" }}</option>
+                        <option value="no_invite_required">{{t "No.  Members and admins can send invitations." }}</option>
+                        <option value="no_invite_required_by_admins_only">{{t "No.  Only admins can send invitations." }}</option>
                         <option value="by_anyone">{{t "Yes. Members and admins can send invitations." }}</option>
                         <option value="by_admins_only">{{t "Yes. Only admins can send invitations." }}</option>
                     </select>
@@ -33,9 +34,7 @@
                 <div class="input-group">
                     <label for="realm_waiting_period_setting" class="dropdown-title">
                         {{t "Waiting period before new members turn into full members" }}
-                        <a href="/help/restrict-permissions-of-new-members" target="_blank">
-                            <i class="fa fa-question-circle-o" aria-hidden="true"></i>
-                        </a>
+                        {{> ../help_link_widget link="/help/restrict-permissions-of-new-members" }}
                     </label>
                     <select name="realm_waiting_period_setting" id="id_realm_waiting_period_setting" class="prop-element">
                         <option value="none">{{t "None" }}</option>
@@ -45,7 +44,7 @@
                 </div>
                 {{!-- This setting is hidden unless `custom_days` --}}
                 <div class="dependent-block">
-                    <label for="aitin" class="inline-block">{{t "Waiting period (days)" }}:</label>
+                    <label for="id_realm_waiting_period_threshold" class="inline-block">{{t "Waiting period (days)" }}:</label>
                     <input type="text" id="id_realm_waiting_period_threshold"
                       name="realm_waiting_period_threshold"
                       class="admin-realm-time-limit-input prop-element"
@@ -80,11 +79,9 @@
             </div>
             <div class="input-group">
                 <label for="realm_email_address_visibility">{{t "Who can access user email addresses" }}
-                    <a href="/help/restrict-visibility-of-email-addresses" target="_blank">
-                        <i class="fa fa-question-circle-o" aria-hidden="true"></i>
-                    </a>
+                    {{> ../help_link_widget link="/help/restrict-visibility-of-email-addresses" }}
                 </label>
-                <select name="realm_email_address_visibility" class="setting-widget prop-element" id="id_realm_email_address_visibility" data-setting-widget-type="integer">
+                <select name="realm_email_address_visibility" class="setting-widget prop-element" id="id_realm_email_address_visibility" data-setting-widget-type="number">
                     {{> dropdown_options_widget option_values=email_address_visibility_values}}
                 </select>
             </div>
@@ -98,13 +95,13 @@
             <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">
                     <label for="realm_create_stream_policy" class="dropdown-title">{{t "Who can create streams" }}</label>
-                    <select name="realm_create_stream_policy" id="id_realm_create_stream_policy" class="prop-element" data-setting-widget-type="integer">
+                    <select name="realm_create_stream_policy" id="id_realm_create_stream_policy" class="prop-element" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=create_stream_policy_values}}
                     </select>
                 </div>
                 <div class="input-group">
                     <label for="realm_invite_to_stream_policy" class="dropdown-title">{{t "Who can add users to streams" }}</label>
-                    <select name="realm_invite_to_stream_policy" id="id_realm_invite_to_stream_policy" class="prop-element" data-setting-widget-type="integer">
+                    <select name="realm_invite_to_stream_policy" id="id_realm_invite_to_stream_policy" class="prop-element" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=invite_to_stream_policy_values}}
                     </select>
                 </div>
@@ -119,14 +116,14 @@
             <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">
                     <label for="realm_bot_creation_policy">{{t "Who can add bots" }}</label>
-                    <select name="realm_bot_creation_policy" class="setting-widget prop-element" id="id_realm_bot_creation_policy" data-setting-widget-type="integer">
+                    <select name="realm_bot_creation_policy" class="setting-widget prop-element" id="id_realm_bot_creation_policy" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=bot_creation_policy_values}}
                     </select>
                 </div>
 
                 <div class="input-group">
                     <label for="realm_user_group_edit_policy" class="dropdown-title">{{t "Who can create and manage user groups" }}</label>
-                    <select name="realm_user_group_edit_policy" id="id_realm_user_group_edit_policy" class="prop-element" data-setting-widget-type="integer">
+                    <select name="realm_user_group_edit_policy" id="id_realm_user_group_edit_policy" class="prop-element" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=user_group_edit_policy_values}}
                     </select>
                 </div>
@@ -141,11 +138,9 @@
 
                 <div class="input-group">
                     <label for="realm_private_message_policy">{{t "Who can use private messages" }} ({{t "beta" }})
-                        <a href="/help/restrict-private-messages" target="_blank">
-                            <i class="fa fa-question-circle-o" aria-hidden="true"></i>
-                        </a>
+                        {{> ../help_link_widget link="/help/restrict-private-messages" }}
                     </label>
-                    <select name="realm_private_message_policy" class="setting-widget prop-element" id="id_realm_private_message_policy" data-setting-widget-type="integer">
+                    <select name="realm_private_message_policy" class="setting-widget prop-element" id="id_realm_private_message_policy" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=private_message_policy_values}}
                     </select>
                 </div>

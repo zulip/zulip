@@ -39,6 +39,7 @@ function get_all_emoji_categories() {
         { name: "Travel & Places", icon: "fa-car" },
         { name: "Objects", icon: "fa-lightbulb-o" },
         { name: "Symbols", icon: "fa-hashtag" },
+        { name: "Flags", icon: "fa-flag" },
         { name: "Custom", icon: "fa-cog" },
     ];
 }
@@ -109,10 +110,9 @@ exports.generate_emoji_picker_data = function (realm_emojis) {
     for (const [category, codepoints] of Object.entries(emoji_codes.emoji_catalog)) {
         const emojis = [];
         for (const codepoint of codepoints) {
-            if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
-                const emoji_dict = emoji.emojis_by_name.get(
-                    emoji_codes.codepoint_to_name[codepoint]
-                );
+            const name = emoji.get_emoji_name(codepoint);
+            if (name !== undefined) {
+                const emoji_dict = emoji.emojis_by_name.get(name);
                 if (emoji_dict !== undefined && emoji_dict.is_realm_emoji !== true) {
                     emojis.push(emoji_dict);
                 }
@@ -123,8 +123,9 @@ exports.generate_emoji_picker_data = function (realm_emojis) {
 
     const popular = [];
     for (const codepoint of typeahead.popular_emojis) {
-        if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
-            const emoji_dict = emoji.emojis_by_name.get(emoji_codes.codepoint_to_name[codepoint]);
+        const name = emoji.get_emoji_name(codepoint);
+        if (name !== undefined) {
+            const emoji_dict = emoji.emojis_by_name.get(name);
             if (emoji_dict !== undefined) {
                 popular.push(emoji_dict);
             }
@@ -298,7 +299,7 @@ function update_emoji_showcase($focused_emoji) {
     $(".emoji-showcase-container").html(rendered_showcase);
 }
 
-function may_be_change_focused_emoji(next_section, next_index, preserve_scroll) {
+function maybe_change_focused_emoji($emoji_map, next_section, next_index, preserve_scroll) {
     const next_emoji = get_rendered_emoji(next_section, next_index);
     if (next_emoji) {
         current_section = next_section;
@@ -306,7 +307,6 @@ function may_be_change_focused_emoji(next_section, next_index, preserve_scroll) 
         if (!preserve_scroll) {
             next_emoji.focus();
         } else {
-            const $emoji_map = $(".emoji-popover-emoji-map");
             const start = ui.get_scroll_element($emoji_map).scrollTop();
             next_emoji.focus();
             if (ui.get_scroll_element($emoji_map).scrollTop() !== start) {
@@ -319,14 +319,16 @@ function may_be_change_focused_emoji(next_section, next_index, preserve_scroll) 
     return false;
 }
 
-function may_be_change_active_section(next_section) {
+function maybe_change_active_section(next_section) {
+    const $emoji_map = $(".emoji-popover-emoji-map");
+
     if (next_section >= 0 && next_section < get_total_sections()) {
         current_section = next_section;
         current_index = 0;
         const offset = section_head_offsets[current_section];
         if (offset) {
-            ui.get_scroll_element($(".emoji-popover-emoji-map")).scrollTop(offset.position_y);
-            may_be_change_focused_emoji(current_section, current_index);
+            ui.get_scroll_element($emoji_map).scrollTop(offset.position_y);
+            maybe_change_focused_emoji($emoji_map, current_section, current_index);
         }
     }
 }
@@ -388,6 +390,9 @@ exports.navigate = function (event_name) {
         return;
     }
 
+    const $popover = $(".emoji-popover").expectOne();
+    const $emoji_map = $popover.find(".emoji-popover-emoji-map").expectOne();
+
     const selected_emoji = get_rendered_emoji(current_section, current_index);
     const is_filter_focused = $('.emoji-popover-filter').is(':focus');
     let next_section = 0;
@@ -400,7 +405,7 @@ exports.navigate = function (event_name) {
            is_cursor_at_end && event_name === "right_arrow") {
             selected_emoji.focus();
             if (current_section === 0 && current_index < 6) {
-                ui.get_scroll_element($(".emoji-popover-emoji-map")).scrollTop(0);
+                ui.get_scroll_element($emoji_map).scrollTop(0);
             }
             update_emoji_showcase(selected_emoji);
             return true;
@@ -422,7 +427,7 @@ exports.navigate = function (event_name) {
             // consistent (cursor goes to the end of the filter
             // string).
             $('.emoji-popover-filter').focus().caret(Infinity);
-            ui.get_scroll_element($(".emoji-popover-emoji-map")).scrollTop(0);
+            ui.get_scroll_element($emoji_map).scrollTop(0);
             ui.get_scroll_element($(".emoji-search-results-container")).scrollTop(0);
             current_section = 0;
             current_index = 0;
@@ -439,11 +444,11 @@ exports.navigate = function (event_name) {
         return true;
     } else if (event_name === 'page_up') {
         next_section = current_section - 1;
-        may_be_change_active_section(next_section);
+        maybe_change_active_section(next_section);
         return true;
     } else if (event_name === 'page_down') {
         next_section = current_section + 1;
-        may_be_change_active_section(next_section);
+        maybe_change_active_section(next_section);
         return true;
     } else if (!is_filter_focused) {
         let next_coord = {};
@@ -461,7 +466,8 @@ exports.navigate = function (event_name) {
             next_coord = get_next_emoji_coordinates(1);
             break;
         }
-        return may_be_change_focused_emoji(next_coord.section, next_coord.index);
+
+        return maybe_change_focused_emoji($emoji_map, next_coord.section, next_coord.index);
     }
     return false;
 };
@@ -584,7 +590,7 @@ exports.render_emoji_popover = function (elt, id) {
     };
     show_emoji_catalog();
 
-    refill_section_head_offsets(popover);
+    elt.ready(() => refill_section_head_offsets(popover));
     register_popover_events(popover);
 };
 
@@ -700,12 +706,16 @@ exports.register_click_handlers = function () {
     $("body").on("click", ".emoji-popover-tab-item", function (e) {
         e.stopPropagation();
         e.preventDefault();
+
+        const $popover = $(e.currentTarget).closest('.emoji-info-popover').expectOne();
+        const $emoji_map = $popover.find(".emoji-popover-emoji-map");
+
         const offset = section_head_offsets.find(function (o) {
             return o.section === $(this).attr("data-tab-name");
         }.bind(this));
 
         if (offset) {
-            ui.get_scroll_element($(".emoji-popover-emoji-map")).scrollTop(offset.position_y);
+            ui.get_scroll_element($emoji_map).scrollTop(offset.position_y);
         }
     });
 
@@ -713,11 +723,17 @@ exports.register_click_handlers = function () {
         reset_emoji_showcase();
     });
 
-    $("body").on("mouseenter", ".emoji-popover-emoji", function () {
-        const emoji_id = $(this).data("emoji-id");
+    $("body").on("mouseenter", ".emoji-popover-emoji", function (e) {
+        const emoji_id = $(e.currentTarget).data("emoji-id");
         const emoji_coordinates = get_emoji_coordinates(emoji_id);
 
-        may_be_change_focused_emoji(emoji_coordinates.section, emoji_coordinates.index, true);
+        const $emoji_map = $(e.currentTarget).closest(".emoji-popover-emoji-map").expectOne();
+        maybe_change_focused_emoji(
+            $emoji_map,
+            emoji_coordinates.section,
+            emoji_coordinates.index,
+            true
+        );
     });
 };
 

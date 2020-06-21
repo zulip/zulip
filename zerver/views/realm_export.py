@@ -1,20 +1,19 @@
 from datetime import timedelta
 
-from analytics.models import RealmCount
-
+import ujson
 from django.conf import settings
+from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
-from django.http import HttpResponse, HttpRequest
 
+from analytics.models import RealmCount
 from zerver.decorator import require_realm_admin
-from zerver.models import RealmAuditLog, UserProfile
+from zerver.lib.actions import do_delete_realm_export, notify_realm_export
+from zerver.lib.export import get_realm_exports_serialized
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.response import json_error, json_success
-from zerver.lib.export import get_realm_exports_serialized
-from zerver.lib.actions import do_delete_realm_export, notify_realm_export
+from zerver.models import RealmAuditLog, UserProfile
 
-import ujson
 
 @require_realm_admin
 def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
@@ -44,8 +43,9 @@ def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
                                                    property='messages_sent:client:day'))
     if (total_messages > MAX_MESSAGE_HISTORY or
             user.realm.currently_used_upload_space_bytes() > MAX_UPLOAD_QUOTA):
-        return json_error(_('Please request a manual export from %s.') % (
-            settings.ZULIP_ADMINISTRATOR,))
+        return json_error(_('Please request a manual export from {email}.').format(
+            email=settings.ZULIP_ADMINISTRATOR,
+        ))
 
     row = RealmAuditLog.objects.create(realm=realm,
                                        event_type=event_type,

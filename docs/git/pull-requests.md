@@ -147,6 +147,6 @@ for another review.
 [github-help-create-pr-fork]: https://help.github.com/en/articles/creating-a-pull-request-from-a-fork
 [images-create-pr]: ../images/zulip-open-pr.png
 [keep-up-to-date]: ../git/using.html#keep-your-fork-up-to-date
-[push-commits]: ../git/using.html#push-your-commits-to-github
+[self-push-commits]: ../git/using.html#push-your-commits-to-github
 [screenshots-gifs]: ../tutorials/screenshot-and-gif-software.md
 [wip-prs]: #work-in-progress-pull-requests

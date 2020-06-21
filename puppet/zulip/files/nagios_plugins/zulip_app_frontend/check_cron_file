@@ -6,6 +6,7 @@ import sys
 import time
 from typing import Tuple
 
+
 def nagios_from_file(results_file: str, max_time_diff: int=60 * 2) -> 'Tuple[int, str]':
     """Returns a nagios-appropriate string and return code obtained by
     parsing the desired file on disk. The file on disk should be of format
@@ -36,7 +37,7 @@ def nagios_from_file(results_file: str, max_time_diff: int=60 * 2) -> 'Tuple[int
             state = pieces[2]
             data = pieces[3]
 
-    return (ret, "%s: %s" % (state, data))
+    return (ret, f"{state}: {data}")
 
 if __name__ == "__main__":
     RESULTS_FILE = sys.argv[1]

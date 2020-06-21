@@ -57,7 +57,7 @@ class Command(compilemessages.Command):
         return po_template.format(locale_path, locale)
 
     def get_json_filename(self, locale_path: str, locale: str) -> str:
-        return "{}/{}/translations.json".format(locale_path, locale)
+        return f"{locale_path}/{locale}/translations.json"
 
     def get_name_from_po_file(self, po_filename: str, locale: str) -> str:
         lang_name_re = re.compile(r'"Language-Team: (.*?) \(')
@@ -67,10 +67,10 @@ class Command(compilemessages.Command):
                 try:
                     return result.group(1)
                 except Exception:
-                    print("Problem in parsing {}".format(po_filename))
+                    print(f"Problem in parsing {po_filename}")
                     raise
             else:
-                raise Exception("Unknown language %s" % (locale,))
+                raise Exception(f"Unknown language {locale}")
 
     def get_locales(self) -> List[str]:
         output = check_output(['git', 'ls-files', 'locale'])
@@ -85,8 +85,8 @@ class Command(compilemessages.Command):
         return locales
 
     def extract_language_options(self) -> None:
-        locale_path = "{}/locale".format(settings.DEPLOY_ROOT)
-        output_path = "{}/language_options.json".format(locale_path)
+        locale_path = f"{settings.DEPLOY_ROOT}/locale"
+        output_path = f"{locale_path}/language_options.json"
 
         data: Dict[str, List[Dict[str, Any]]] = {'languages': []}
 

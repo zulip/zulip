@@ -15,6 +15,7 @@ function MessageListData(opts) {
     }
 
     this.filter = filter;
+    this.fetch_status = FetchStatus();
 }
 
 MessageListData.prototype = {

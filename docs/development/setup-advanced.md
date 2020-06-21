@@ -36,7 +36,7 @@ Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
 and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
 
 ```
-git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git
+git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git
 cd zulip
 git remote add -f upstream https://github.com/zulip/zulip.git
 ```
@@ -92,8 +92,8 @@ Store.
    and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
 
    ```
-   git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git ~/zulip
-   cd ~/zulip
+   git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git ~/zulip
+   cd zulip
    git remote add -f upstream https://github.com/zulip/zulip.git
    ```
 
@@ -170,7 +170,8 @@ Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
 and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
 
 ```
-git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git
+git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git
+cd zulip
 git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 

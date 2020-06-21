@@ -3,6 +3,7 @@
 const fs = require('fs');
 const jsyaml = require('js-yaml');
 const SwaggerParser = require('swagger-parser');
+const ExampleValidator = require('openapi-examples-validator');
 
 (async () => {
     // Iterate through the changed files, passed in the arguments.
@@ -16,6 +17,13 @@ const SwaggerParser = require('swagger-parser');
                 }).openapi !== undefined
             ) {
                 await SwaggerParser.validate(file);
+                const res = await ExampleValidator.validateFile(file);
+                if (!res.valid) {
+                    for (const error of res.errors) {
+                        console.error(error);
+                    }
+                    process.exitCode = 1;
+                }
             }
         } catch (error) {
             if (error instanceof jsyaml.YAMLException) {

@@ -1,17 +1,11 @@
-import ujson
-from typing import Any, Mapping, List
+from typing import Any, List, Mapping
 
-from zerver.lib.test_helpers import (
-    tornado_redirected_to_list,
-    queries_captured,
-)
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-from zerver.models import (
-    Huddle,
-    get_huddle_hash,
-)
+import ujson
+
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import queries_captured, tornado_redirected_to_list
+from zerver.models import Huddle, get_huddle_hash
+
 
 class TypingValidateOperatorTest(ZulipTestCase):
     def test_missing_parameter(self) -> None:
@@ -32,7 +26,7 @@ class TypingValidateOperatorTest(ZulipTestCase):
         sender = self.example_user("hamlet")
         params = dict(
             to=ujson.dumps([sender.id]),
-            op='foo'
+            op='foo',
         )
         result = self.api_post(sender, '/api/v1/typing', params)
         self.assert_json_error(result, 'Invalid \'op\' value (should be start or stop)')
@@ -52,7 +46,7 @@ class TypingValidateUsersTest(ZulipTestCase):
         """
         sender = self.example_user("hamlet")
         result = self.api_post(sender, '/api/v1/typing', {'op': 'start'})
-        self.assert_json_error(result, "Missing parameter: 'to' (recipient)")
+        self.assert_json_error(result, "Missing 'to' argument")
 
     def test_argument_to_is_not_valid_json(self) -> None:
         """
@@ -61,7 +55,7 @@ class TypingValidateUsersTest(ZulipTestCase):
         sender = self.example_user("hamlet")
         invalid = 'bad email'
         result = self.api_post(sender, '/api/v1/typing', {'op': 'start', 'to': invalid})
-        self.assert_json_error(result, "Invalid email 'bad email'")
+        self.assert_json_error(result, 'Argument "to" is not valid JSON.')
 
     def test_bogus_user_id(self) -> None:
         """
@@ -163,8 +157,8 @@ class TypingHappyPathTest(ZulipTestCase):
                 '/api/v1/typing',
                 {
                     'to': ujson.dumps([user.id]),
-                    'op': 'start'
-                }
+                    'op': 'start',
+                },
             )
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
@@ -194,7 +188,7 @@ class TypingHappyPathTest(ZulipTestCase):
 
         params = dict(
             to=ujson.dumps([recipient.id]),
-            op='start'
+            op='start',
         )
 
         events: List[Mapping[str, Any]] = []
@@ -230,7 +224,7 @@ class TypingHappyPathTest(ZulipTestCase):
         with tornado_redirected_to_list(events):
             params = dict(
                 to=ujson.dumps([user.id]),
-                op='stop'
+                op='stop',
             )
             result = self.api_post(user, '/api/v1/typing', params)
 
@@ -264,7 +258,7 @@ class TypingHappyPathTest(ZulipTestCase):
         with tornado_redirected_to_list(events):
             params = dict(
                 to=ujson.dumps([recipient.id]),
-                op='stop'
+                op='stop',
             )
             result = self.api_post(sender, '/api/v1/typing', params)
 
@@ -282,38 +276,3 @@ class TypingHappyPathTest(ZulipTestCase):
         self.assertEqual(event['sender']['email'], sender.email)
         self.assertEqual(event['type'], 'typing')
         self.assertEqual(event['op'], 'stop')
-
-class TypingLegacyMobileSupportTest(ZulipTestCase):
-    def test_legacy_email_interface(self) -> None:
-        '''
-        We are keeping the email interface on life support
-        for a couple months until we get some of our
-        mobile users upgraded.
-        '''
-        sender = self.example_user('hamlet')
-        othello = self.example_user('othello')
-        cordelia = self.example_user('cordelia')
-
-        emails = [othello.email, cordelia.email]
-
-        params = dict(
-            to=ujson.dumps(emails),
-            op='start',
-        )
-
-        events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
-            result = self.api_post(sender, '/api/v1/typing', params)
-
-        self.assert_json_success(result)
-        event = events[0]['event']
-
-        event_recipient_user_ids = {
-            user['user_id']
-            for user in event['recipients']
-        }
-
-        self.assertEqual(
-            event_recipient_user_ids,
-            {sender.id, othello.id, cordelia.id}
-        )

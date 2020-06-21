@@ -9,6 +9,7 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
+
 @api_key_only_webhook_view('AlertManager')
 @has_request_variables
 def api_alertmanager_webhook(request: HttpRequest, user_profile: UserProfile,
@@ -24,11 +25,11 @@ def api_alertmanager_webhook(request: HttpRequest, user_profile: UserProfile,
         name = labels.get(
             name_field, annotations.get(name_field, "(unknown)"))
         desc = labels.get(
-            desc_field, annotations.get(desc_field, "<missing field: {}>".format(desc_field)))
+            desc_field, annotations.get(desc_field, f"<missing field: {desc_field}>"))
 
         url = alert.get("generatorURL").replace("tab=1", "tab=0")
 
-        body = "{description} ([graph]({url}))".format(description=desc, url=url)
+        body = f"{desc} ([graph]({url}))"
         if name not in topics:
             topics[name] = {"firing": [], "resolved": []}
         topics[name][alert["status"]].append(body)
@@ -46,16 +47,10 @@ def api_alertmanager_webhook(request: HttpRequest, user_profile: UserProfile,
                 icon = ":squared_ok:"
 
             if len(messages) == 1:
-                body = "{icon} **{title}** {message}".format(
-                    icon=icon,
-                    title=title,
-                    message=messages[0])
+                body = f"{icon} **{title}** {messages[0]}"
             else:
-                message_list = "\n".join(["* {}".format(m) for m in messages])
-                body = "{icon} **{title}**\n{messages}".format(
-                    icon=icon,
-                    title=title,
-                    messages=message_list)
+                message_list = "\n".join([f"* {m}" for m in messages])
+                body = f"{icon} **{title}**\n{message_list}"
 
             check_send_webhook_message(request, user_profile, topic, body)
 

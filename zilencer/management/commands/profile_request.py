@@ -27,7 +27,7 @@ class MockRequest(HttpRequest):
         self.REQUEST = {
             "anchor": anchor,
             "num_before": 1200,
-            "num_after": 200
+            "num_after": 200,
         }
         self.GET: Dict[Any, Any] = {}
         self.session = MockSession()

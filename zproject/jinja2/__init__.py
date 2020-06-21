@@ -2,7 +2,7 @@ from typing import Any
 
 from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
-from django.template.defaultfilters import slugify, pluralize
+from django.template.defaultfilters import pluralize, slugify
 from django.urls import reverse
 from django.utils import translation
 from django.utils.timesince import timesince
@@ -18,7 +18,7 @@ def environment(**options: Any) -> Environment:
         'default_page_params': {
             'debug_mode': False,
             'webpack_public_path': staticfiles_storage.url(
-                settings.WEBPACK_LOADER['DEFAULT']['BUNDLE_DIR_NAME']
+                settings.WEBPACK_LOADER['DEFAULT']['BUNDLE_DIR_NAME'],
             ),
         },
         'static': staticfiles_storage.url,

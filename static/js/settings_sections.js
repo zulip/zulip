@@ -12,6 +12,8 @@ exports.get_group = function (section) {
         return 'org_misc';
 
     case 'bot-list-admin':
+        return 'org_bots';
+
     case 'user-list-admin':
     case 'deactivated-users-admin':
         return 'org_users';
@@ -33,7 +35,8 @@ exports.initialize = function () {
 
     // org
     load_func_dict.set('org_misc', settings_org.set_up);
-    load_func_dict.set('org_users', settings_users.set_up);
+    load_func_dict.set('org_bots', settings_users.set_up_bots);
+    load_func_dict.set('org_users', settings_users.set_up_humans);
     load_func_dict.set('emoji-settings', settings_emoji.set_up);
     load_func_dict.set('default-streams-list', settings_streams.set_up);
     load_func_dict.set('filter-settings', settings_linkifiers.set_up);
@@ -74,7 +77,7 @@ exports.reset_sections = function () {
     settings_profile_fields.reset();
     settings_streams.reset();
     settings_user_groups.reset();
-    settings_users.reset();
+    // settings_users doesn't need a reset()
 };
 
 window.settings_sections = exports;

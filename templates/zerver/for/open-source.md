@@ -90,14 +90,14 @@ community succeed too!
 Below, we’ve collected a list of [Zulip features](/features) that are
 particularly useful to open source communities.
 
-### Free hosting at zulipchat.com.
+### Free hosting at zulip.com.
 
-The hosting is supported by (and is identical to) zulipchat.com’s
+The hosting is supported by (and is identical to) zulip.com’s
 commercial offerings. This offer extends to any community involved in
-supporting free and open source software: development projects, foundations,
-meetups, hackathons, conference committees, and more. If you’re not sure
-whether your organization qualifies, send us an email at
-support@zulipchat.com.
+supporting free and open source software: development projects,
+foundations, meetups, hackathons, conference committees, and more. If
+you’re not sure whether your organization qualifies, send us an email
+at support@zulip.com.
 
 ### Moderation suite.
 
@@ -196,8 +196,8 @@ first creating an account.
 
 Our high quality [export](/help/export-your-organization) and
 [import](https://zulip.readthedocs.io/en/latest/production/export-and-import.html)
-tools ensure you can always move from
-[zulipchat.com](https://zulipchat.com) hosting to your own servers.
+tools ensure you can always move from [Zulip Cloud](https://zulip.com)
+hosting to your own servers.
 
 ### Free and open source.
 

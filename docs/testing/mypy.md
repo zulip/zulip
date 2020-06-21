@@ -3,12 +3,12 @@
 [mypy](http://mypy-lang.org/) is a compile-time static type checker
 for Python, allowing optional, gradual typing of Python code.  Zulip
 was fully annotated with mypy's Python 2 syntax in 2016, before our
-migration to Python 3 in late 2017.  In 2018, we migrated essentially
-the entire codebase to the nice PEP-484 (Python 3 only) syntax for
-static types:
+migration to Python 3 in late 2017.  In 2018 and 2020, we migrated
+essentially the entire codebase to the nice PEP 484 (Python 3 only)
+and PEP 526 (Python 3.6) syntax for static types:
 
 ```
-user_dict = {} # type: Dict[str, UserProfile]
+user_dict: Dict[str, UserProfile] = {}
 
 def get_user(email: str, realm: Realm) -> UserProfile:
     ... # Actual code of the function here
@@ -147,6 +147,42 @@ because a list can have many elements, which would make the output too large.
 
 Similarly in dicts, one key's type and the corresponding value's type are printed.
 So `{1: 'a', 2: 'b', 3: 'c'}` will be printed as `{int: str, ...}`.
+
+## Using @overload to accurately describe variations
+
+Sometimes, a function's type is most precisely expressed as a few
+possibilites, and which possibility can be determined by looking at
+the arguments.  You can express that idea in a way mypy understands
+using `@overload`.  For example, `check_list` returns a `Validator`
+function that verifies that an object is a list, raising an exception
+if it isn't.
+
+It supports being passed a `sub_validator`, which will verify that
+each element in the list has a given type as well.  One can express
+the idea "If `sub_validator` validates that something is a `ResultT`,
+`check_list(sub_validator)` validators that something is a
+`List[ResultT]` as follows:
+
+~~~ py
+@overload
+def check_list(sub_validator: None, length: Optional[int]=None) -> Validator[List[object]]:
+    ...
+@overload
+def check_list(sub_validator: Validator[ResultT],
+               length: Optional[int]=None) -> Validator[List[ResultT]]:
+    ...
+def check_list(sub_validator: Optional[Validator[ResultT]]=None,
+               length: Optional[int]=None) -> Validator[List[ResultT]]:
+~~~
+
+The first overload expresses the types for the case where no
+`sub_validator` is passed, in which case all we know is that it
+returns a `Validator[List[object]]`; whereas the second defines the
+type logic for the case where we are passed a `sub_validator`.
+
+See the [mypy overloading documentation][mypy-overloads] for more details.
+
+[mypy-overloads]: https://mypy.readthedocs.io/en/stable/more_types.html#function-overloading
 
 ## Troubleshooting advice
 

@@ -1,8 +1,11 @@
+from typing import Any, Dict, List
+
 from django.db import transaction
 from django.utils.translation import ugettext as _
+
 from zerver.lib.exceptions import JsonableError
-from zerver.models import UserProfile, Realm, UserGroupMembership, UserGroup
-from typing import Dict, List, Any
+from zerver.models import Realm, UserGroup, UserGroupMembership, UserProfile
+
 
 def access_user_group_by_id(user_group_id: int, user_profile: UserProfile) -> UserGroup:
     try:

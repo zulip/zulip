@@ -20,11 +20,11 @@ const bob = {
     full_name: 'Bob',
 };
 
-people.add(me);
+people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
-people.add(alice);
-people.add(bob);
+people.add_active_user(alice);
+people.add_active_user(bob);
 
 run_test('set_focused_recipient', () => {
     const sub = {
@@ -55,10 +55,9 @@ run_test('set_focused_recipient', () => {
 
     compose_fade.set_focused_recipient('stream');
 
-    assert.equal(compose_fade.would_receive_message('me@example.com'), true);
-    assert.equal(compose_fade.would_receive_message('alice@example.com'), true);
-    assert.equal(compose_fade.would_receive_message('bob@example.com'), false);
-    assert.equal(compose_fade.would_receive_message('nonrealmuser@example.com'), true);
+    assert.equal(compose_fade.would_receive_message(me.user_id), true);
+    assert.equal(compose_fade.would_receive_message(alice.user_id), true);
+    assert.equal(compose_fade.would_receive_message(bob.user_id), false);
 
     const good_msg = {
         type: 'stream',

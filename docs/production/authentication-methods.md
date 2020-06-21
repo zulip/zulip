@@ -41,9 +41,13 @@ Zulip 2.1 and later supports SAML authentication, used by Okta,
 OneLogin, and many other IdPs (identity providers).  You can configure
 it as follows:
 
-1. These instructions assume you have an installed Zulip server.  You
-   can have created an organization already using EmailAuthBackend, or
-   plan to create the organization using SAML authentication.
+1. These instructions assume you have an installed Zulip server; if
+   you're using Zulip Cloud, see [this article][saml-help-center],
+   which also has IdP-side configuration advice for common IdPs.
+
+   You can have created a Zulip organization already using the default
+   EmailAuthBackend, or plan to create the organization using SAML
+   authentication.
 
 1. Tell your IdP how to find your Zulip server:
 
@@ -134,6 +138,26 @@ create an account (including when creating a new organization).
 found at `https://yourzulipdomain.example.com/saml/metadata.xml`. You
 can use this for verifying your configuration or provide it to your
 IdP.
+
+[saml-help-center]: https://zulip.com/help/saml-authentication
+
+### IdP-initiated SSO
+
+The above configuration is sufficient for Service Provider initialized
+SSO, i.e. you can visit the Zulip webapp and click "Sign in with
+{IdP}" and it'll correctly start the authentication flow.  If you are
+not hosting multiple organizations, with Zulip 2.2+, the above
+configuration is also sufficient for Identity Provider initiated SSO,
+i.e. clicking a "Sign in to Zulip" button on the IdP's website can
+correctly authenticate the user to Zulip.
+
+If you're hosting multiple organizations and thus using the
+`SOCIAL_AUTH_SUBDOMAIN` setting, you'll need to configure a custom
+`RelayState` in your IdP of the form `{"subdomain":
+"yourzuliporganization"}` to let Zulip know which organization to
+authenticate the user to when they visit your SSO URL from the IdP.
+(If the organization is on the root domain, use the empty string:
+`{"subdomain": ""}`.).
 
 ```eval_rst
 .. _ldap:
@@ -245,7 +269,7 @@ Zulip by entering your email address and LDAP password on the Zulip
 login form.
 
 You may also want to configure Zulip's settings for [inviting new
-users](https://zulipchat.com/help/invite-new-users).  If LDAP is the
+users](https://zulip.com/help/invite-new-users).  If LDAP is the
 only enabled authentication method, the main use case for Zulip's
 invitation feature is selecting the initial streams for invited users
 (invited users will still need to use their LDAP password to create an
@@ -283,7 +307,7 @@ When using this feature, you may also want to
 since any such changes would be automatically overwritten on the sync
 run of `manage.py sync_ldap_user_data`.
 
-[restrict-name-changes]: https://zulipchat.com/help/restrict-name-and-email-changes
+[restrict-name-changes]: https://zulip.com/help/restrict-name-and-email-changes
 
 #### Synchronizing avatars
 
@@ -305,7 +329,7 @@ corresponding LDAP attribute is `linkedinProfile` then you just need
 to add `'custom_profile_field__linkedin_profile': 'linkedinProfile'`
 to the `AUTH_LDAP_USER_ATTR_MAP`.
 
-[custom-profile-fields]: https://zulipchat.com/help/add-custom-profile-fields
+[custom-profile-fields]: https://zulip.com/help/add-custom-profile-fields
 
 #### Automatically deactivating users with Active Directory
 
@@ -356,7 +380,7 @@ Other fields you may want to sync from LDAP include:
 * String fields like `default_language` (e.g. `en`) or `timezone`, if
   you have that data in the right format in your LDAP database.
 * [Coming soon][custom-profile-fields-ldap]: Support for syncing
-  [custom profile fields](https://zulipchat.com/help/add-custom-profile-fields)
+  [custom profile fields](https://zulip.com/help/add-custom-profile-fields)
   from your LDAP database.
 
 You can look at the [full list of fields][models-py] in the Zulip user
@@ -522,6 +546,48 @@ to debug.
   This request is sent by nginx to the main Zulip Django app, which
   sees the cookie, treats them as logged in, and proceeds to serve
   them the main app page normally.
+
+## Sign in with Apple
+
+Zulip supports using the web flow for Sign in with Apple on
+self-hosted servers.  To do so, you'll need to do the following:
+
+1. Visit [the Apple Developer site][apple-developer] and [Create a
+Services ID.][apple-create-services-id]. When prompted for a "Return
+URL", enter `https://zulip.example.com/complete/apple/` (using the
+domain for your server).
+
+1. Create a [Sign in with Apple private key][apple-create-private-key].
+
+1. Store the resulting private key at
+   `/etc/zulip/apple/zulip-private-key.key`.  Be sure to set
+   permissions correctly:
+
+   ```
+   chown -R zulip:zulip /etc/zulip/apple/
+   chmod 640 /etc/zulip/apple/zulip-private-key.key
+   ```
+
+1. Configure the "Apple authentication" section of
+  `/etc/zulip/settings.py`.  Use the "Services ID" as
+  `SOCIAL_AUTH_APPLE_SERVICES_ID`, "Bundle ID" as
+  `SOCIAL_AUTH_APPLE_BUNDLE_ID`, "Key ID" as `SOCIAL_AUTH_APPLE_KEY`
+  and "Team ID" as `SOCIAL_AUTH_APPLE_TEAM` in `settings.py` file.
+
+1. In the Apple developer site, configure the domains your Zulip
+server uses when sending outgoing email notifications (this is
+required for your Zulip server to deliver emails to the many Apple
+users who use their privacy-protecting forwarding service). See the
+"Email Relay Service" subsection of [this page][apple-get-started] for
+more information.  See Zulip's [outgoing email
+documentation][outgoing-email] for details on what From addresses
+Zulip uses when sending outgoing emails.
+
+[apple-create-services-id]: https://help.apple.com/developer-account/?lang=en#/dev1c0e25352
+[apple-developer]: https://developer.apple.com/account/resources/
+[apple-create-private-key]: https://help.apple.com/developer-account/?lang=en#/dev77c875b7e
+[apple-get-started]: https://developer.apple.com/sign-in-with-apple/get-started/
+[outgoing-email]: ../production/email.md
 
 ## Adding more authentication backends
 

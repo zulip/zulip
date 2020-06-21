@@ -1,6 +1,12 @@
 const util = require("./util");
 const render_draft_table_body = require('../templates/draft_table_body.hbs');
 
+function set_count(count) {
+    const draft_count = count.toString();
+    $(".compose_drafts_button").text(i18n.t(
+        'Drafts (__draft_count__)', {draft_count: draft_count}));
+}
+
 const draft_model = (function () {
     const exports = {};
 
@@ -24,6 +30,7 @@ const draft_model = (function () {
 
     function save(drafts) {
         ls.set(KEY, drafts);
+        set_count(Object.keys(drafts).length);
     }
 
     exports.addDraft = function (draft) {
@@ -360,7 +367,7 @@ exports.launch = function () {
     // element in order for the CSS transition to take effect.
     $('#draft_overlay').css('opacity');
 
-    exports.open_modal();
+    exports.open_overlay();
     exports.set_initial_element(drafts);
     setup_event_handlers();
 };
@@ -485,7 +492,7 @@ exports.drafts_handle_events = function (e, event_key) {
     }
 };
 
-exports.open_modal = function () {
+exports.open_overlay = function () {
     overlays.open_overlay({
         name: 'drafts',
         overlay: $('#draft_overlay'),
@@ -510,6 +517,8 @@ exports.initialize = function () {
     window.addEventListener("beforeunload", function () {
         exports.update_draft();
     });
+
+    set_count(Object.keys(draft_model.get()).length);
 
     $("#compose-textarea").focusout(exports.update_draft);
 

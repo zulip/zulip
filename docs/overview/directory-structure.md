@@ -21,18 +21,21 @@ paths will be familiar to Django developers.
   [Django models](https://docs.djangoproject.com/en/1.8/topics/db/models/)
   file.  Defines Zulip's database tables.
 
-* `zerver/lib/actions.py` Most code doing writes to user-facing database tables.
+* `zerver/lib/*.py` Most library code.
+
+* `zerver/lib/actions.py` Most code doing writes to user-facing
+  database tables lives here.  In particular, we have a policy that
+  all code calling `send_event` to trigger [pushing data to
+  clients](../subsystems/events-system.md) must live here.
 
 * `zerver/views/*.py` Most [Django views](https://docs.djangoproject.com/en/1.8/topics/http/views/).
 
 * `zerver/webhooks/` Webhook views and tests for [Zulip's incoming webhook integrations](
-  https://zulipchat.com/api/incoming-webhooks-overview).
+  https://zulip.com/api/incoming-webhooks-overview).
 
 * `zerver/tornado/views.py` Tornado views.
 
 * `zerver/worker/queue_processors.py` [Queue workers](../subsystems/queuing.md).
-
-* `zerver/lib/*.py` Most library code.
 
 * `zerver/lib/bugdown/` [Backend Markdown processor](../subsystems/markdown.md).
 
@@ -90,6 +93,10 @@ Django context (i.e. with database access).
   [Management commands](../subsystems/management-commands.md) one might run at a
   production deployment site (e.g. scripts to change a value or
   deactivate a user properly).
+
+* `zilencer/management/commands/` includes some dev-specific
+   commands such as `populate_db`, which are not included in
+   the production distribution.
 
 ---------------------------------------------------------------
 

@@ -1,21 +1,22 @@
-from typing import Any, Dict, Tuple
-from collections import OrderedDict
-from django.views.generic import TemplateView
-from django.conf import settings
-from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
-from django.template import loader
-
 import os
 import random
 import re
+from collections import OrderedDict
+from typing import Any, Dict, Tuple
 
-from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, HubotIntegration, \
-    WebhookIntegration
-from zerver.lib.request import has_request_variables, REQ
+from django.conf import settings
+from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
+from django.template import loader
+from django.views.generic import TemplateView
+
+from zerver.context_processors import zulip_default_context
+from zerver.decorator import add_google_analytics_context
+from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, HubotIntegration, WebhookIntegration
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.subdomains import get_subdomain
 from zerver.models import Realm
 from zerver.templatetags.app_filters import render_markdown_path
-from zerver.context_processors import zulip_default_context
+
 
 def add_api_uri_context(context: Dict[str, Any], request: HttpRequest) -> None:
     context.update(zulip_default_context(request))
@@ -109,11 +110,11 @@ class MarkdownDirectoryView(ApiURLView):
             # Strip the header and then use the first line to get the article title
             article_title = first_line.lstrip("#").strip()
             if context["not_index_page"]:
-                context["OPEN_GRAPH_TITLE"] = "%s (%s)" % (article_title, title_base)
+                context["OPEN_GRAPH_TITLE"] = f"{article_title} ({title_base})"
             else:
                 context["OPEN_GRAPH_TITLE"] = title_base
             self.request.placeholder_open_graph_description = (
-                "REPLACMENT_OPEN_GRAPH_DESCRIPTION_%s" % (int(2**24 * random.random()),))
+                f"REPLACMENT_OPEN_GRAPH_DESCRIPTION_{int(2**24 * random.random())}")
             context["OPEN_GRAPH_DESCRIPTION"] = self.request.placeholder_open_graph_description
 
         context["sidebar_index"] = sidebar_index
@@ -123,6 +124,7 @@ class MarkdownDirectoryView(ApiURLView):
         add_api_uri_context(api_uri_context, self.request)
         api_uri_context["run_content_validators"] = True
         context["api_uri_context"] = api_uri_context
+        add_google_analytics_context(context)
         return context
 
     def get(self, request: HttpRequest, article: str="") -> HttpResponse:
@@ -151,12 +153,12 @@ def add_integrations_open_graph_context(context: Dict[str, Any], request: HttpRe
 
     if path_name in INTEGRATIONS:
         integration = INTEGRATIONS[path_name]
-        context['OPEN_GRAPH_TITLE'] = 'Connect {name} to Zulip'.format(name=integration.display_name)
+        context['OPEN_GRAPH_TITLE'] = f'Connect {integration.display_name} to Zulip'
         context['OPEN_GRAPH_DESCRIPTION'] = description
 
     elif path_name in CATEGORIES:
         category = CATEGORIES[path_name]
-        context['OPEN_GRAPH_TITLE'] = 'Connect your {category} tools to Zulip'.format(category=category)
+        context['OPEN_GRAPH_TITLE'] = f'Connect your {category} tools to Zulip'
         context['OPEN_GRAPH_DESCRIPTION'] = description
 
     elif path_name == 'integrations':
@@ -170,6 +172,7 @@ class IntegrationView(ApiURLView):
         context: Dict[str, Any] = super().get_context_data(**kwargs)
         add_integrations_context(context)
         add_integrations_open_graph_context(context, self.request)
+        add_google_analytics_context(context)
         return context
 
 

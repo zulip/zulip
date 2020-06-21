@@ -50,6 +50,7 @@ const alice = {
     email: 'alice@example.com',
     full_name: 'Alice Smith',
     user_id: 42,
+    avatar_version: 5,
     is_guest: false,
     is_admin: false,
 };
@@ -74,8 +75,8 @@ const e = {
 
 function initialize_people() {
     people.init();
-    people.add(me);
-    people.add(alice);
+    people.add_active_user(me);
+    people.add_active_user(alice);
     people.initialize_current_user(me.user_id);
 }
 
@@ -184,13 +185,16 @@ run_test('sender_hover', () => {
     });
 
     $('.user_popover_email').each = noop;
-
     const image_stubber = make_image_stubber();
-
+    window.location = {
+        href: 'http://chat.zulip.org/',
+    };
+    const base_url = window.location.href;
     handler.call(target, e);
 
     const avatar_img = image_stubber.get(0);
-    assert.equal(avatar_img.src, 'avatar/42/medium');
+    const expected_url = new URL('avatar/42/medium?v=' + alice.avatar_version, base_url);
+    assert.equal(avatar_img.src.toString(), expected_url.toString());
 
     // todo: load image
 });

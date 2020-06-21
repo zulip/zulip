@@ -1,6 +1,4 @@
-# Update User
-
-{!api-admin-only.md!}
+# Update a user
 
 {generate_api_description(/users/{user_id}:patch)}
 
@@ -17,7 +15,7 @@
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
 {generate_api_arguments_table|zulip.yaml|/users/{user_id}:patch}
 

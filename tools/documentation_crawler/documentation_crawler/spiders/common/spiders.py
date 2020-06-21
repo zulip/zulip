@@ -1,15 +1,14 @@
 import json
 import re
-import scrapy
+from typing import Callable, Iterable, List, Optional, Union
 
+import scrapy
 from scrapy.http import Request, Response
 from scrapy.linkextractors import IGNORED_EXTENSIONS
 from scrapy.linkextractors.lxmlhtml import LxmlLinkExtractor
 from scrapy.spidermiddlewares.httperror import HttpError
 from scrapy.utils.url import url_has_any_extension
 from twisted.python.failure import Failure
-
-from typing import Callable, Iterable, List, Optional, Union
 
 EXCLUDED_URLS = [
     # Google calendar returns 404s on HEAD requests unconditionally
@@ -63,7 +62,7 @@ class BaseDocumentationSpider(scrapy.Spider):
         self.log(response)
 
     def _is_external_link(self, url: str) -> bool:
-        if "zulip.readthedocs" in url or "zulipchat.com" in url or "zulip.org" in url:
+        if "zulip.readthedocs" in url or "zulip.com" in url or "zulip.org" in url:
             # We want CI to check any links to Zulip sites.
             return False
         if (len(url) > 4 and url[:4] == "file") or ("localhost" in url):

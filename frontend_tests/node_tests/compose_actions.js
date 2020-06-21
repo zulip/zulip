@@ -63,10 +63,6 @@ set_global('drafts', {
     update_draft: noop,
 });
 
-set_global('resize', {
-    resize_bottom_whitespace: noop,
-});
-
 set_global('narrow_state', {
     set_compose_defaults: noop,
 });
@@ -234,7 +230,7 @@ run_test('respond_to_message', () => {
         email: 'alice@example.com',
         full_name: 'Alice',
     };
-    people.add(person);
+    people.add_active_user(person);
 
     let msg = {
         type: 'private',
@@ -295,13 +291,13 @@ run_test('reply_with_mention', () => {
         email: 'bob1@example.com',
         full_name: 'Bob Roberts',
     };
-    people.add(bob_1);
+    people.add_active_user(bob_1);
     const bob_2 = {
         user_id: 40,
         email: 'bob2@example.com',
         full_name: 'Bob Roberts',
     };
-    people.add(bob_2);
+    people.add_active_user(bob_2);
 
     reply_with_mention(opts);
     assert.equal($('#stream_message_recipient_stream').val(), 'devel');

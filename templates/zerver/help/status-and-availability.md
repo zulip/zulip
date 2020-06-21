@@ -17,7 +17,7 @@ teammates know when you were last active.
 
 1. Hover over your name in the right sidebar.
 
-1. Click the down chevron (<i class="fa fa-chevron-down"></i>) to the right.
+1. Click the ellipsis (<i class="zulip-icon ellipsis-v-solid"></i>) to the right.
 
 1. Click **Set a status message**.
 
@@ -63,7 +63,7 @@ unavailable).
 
 1. Hover over your name in the right sidebar.
 
-1. Click the down chevron (<i class="fa fa-chevron-down"></i>) to the right.
+1. Click the ellipsis (<i class="zulip-icon ellipsis-v-solid"></i>) to the right.
 
 1. Click **Set yourself as unavailable**.
 
@@ -88,6 +88,6 @@ the UI will be frozen as the time you enabled this setting.
 
 {end_tabs}
 
-Note that because this setting works by making your availability to
+Note that because this setting works by making your availability stop
 updating, you'll still appear to other users as active for a few
 minutes after disabling updates to your availability.

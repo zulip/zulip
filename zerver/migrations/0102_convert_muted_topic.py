@@ -3,10 +3,11 @@ import ujson
 from django.db import connection, migrations
 from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
+from psycopg2.sql import SQL
 
 
 def convert_muted_topics(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
-    stream_query = '''
+    stream_query = SQL('''
         SELECT
             zerver_stream.name,
             zerver_stream.realm_id,
@@ -18,7 +19,7 @@ def convert_muted_topics(apps: StateApps, schema_editor: DatabaseSchemaEditor) -
             zerver_recipient.type_id = zerver_stream.id AND
             zerver_recipient.type = 2
         )
-    '''
+    ''')
 
     stream_dict = {}
 
@@ -37,7 +38,7 @@ def convert_muted_topics(apps: StateApps, schema_editor: DatabaseSchemaEditor) -
     user_query = UserProfile.objects.values(
         'id',
         'realm_id',
-        'muted_topics'
+        'muted_topics',
     )
 
     for row in user_query:

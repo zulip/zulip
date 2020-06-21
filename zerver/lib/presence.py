@@ -1,21 +1,14 @@
-from collections import defaultdict
-
 import datetime
 import itertools
 import time
+from collections import defaultdict
+from typing import Any, Dict, List, Set
 
 from django.utils.timezone import now as timezone_now
 
-from typing import Any, Dict, List, Set
-
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.models import (
-    query_for_ids,
-    PushDeviceToken,
-    Realm,
-    UserPresence,
-    UserProfile,
-)
+from zerver.models import PushDeviceToken, Realm, UserPresence, UserProfile, query_for_ids
+
 
 def get_status_dicts_for_rows(all_rows: List[Dict[str, Any]],
                               mobile_user_ids: Set[int],
@@ -28,7 +21,7 @@ def get_status_dicts_for_rows(all_rows: List[Dict[str, Any]],
     # here prevents us from having to assume the caller is playing nice.
     all_rows = sorted(
         all_rows,
-        key = lambda row: (row['user_profile__id'], row['timestamp'])
+        key = lambda row: (row['user_profile__id'], row['timestamp']),
     )
 
     if slim_presence:
@@ -146,22 +139,6 @@ def get_presence_for_user(user_profile_id: int,
 
 
 def get_status_dict_by_realm(realm_id: int, slim_presence: bool = False) -> Dict[str, Dict[str, Any]]:
-    user_profile_ids = UserProfile.objects.filter(
-        realm_id=realm_id,
-        is_active=True,
-        is_bot=False
-    ).order_by('id').values_list('id', flat=True)
-
-    user_profile_ids = list(user_profile_ids)
-    if not user_profile_ids:  # nocoverage
-        # This conditional is necessary because query_for_ids
-        # throws an exception if passed an empty list.
-        #
-        # It's not clear this condition is actually possible,
-        # though, because it shouldn't be possible to end up with
-        # a realm with 0 active users.
-        return {}
-
     two_weeks_ago = timezone_now() - datetime.timedelta(weeks=2)
     query = UserPresence.objects.filter(
         realm_id=realm_id,
@@ -180,16 +157,26 @@ def get_status_dict_by_realm(realm_id: int, slim_presence: bool = False) -> Dict
     presence_rows = list(query)
 
     mobile_query = PushDeviceToken.objects.distinct(
-        'user_id'
+        'user_id',
     ).values_list(
         'user_id',
-        flat=True
+        flat=True,
     )
+
+    user_profile_ids = [presence_row['user_profile__id'] for presence_row in presence_rows]
+    if len(user_profile_ids) == 0:
+        # This conditional is necessary because query_for_ids
+        # throws an exception if passed an empty list.
+        #
+        # It's not clear this condition is actually possible,
+        # though, because it shouldn't be possible to end up with
+        # a realm with 0 active users.
+        return {}
 
     mobile_query = query_for_ids(
         query=mobile_query,
         user_ids=user_profile_ids,
-        field='user_id'
+        field='user_id',
     )
     mobile_user_ids = set(mobile_query)
 

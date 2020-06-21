@@ -1,37 +1,29 @@
 import base64
-import dateutil
 import glob
-import hypchat
 import logging
 import os
 import re
 import shutil
 import subprocess
-import ujson
-
 from typing import Any, Callable, Dict, List, Optional, Set
 
+import dateutil
+import hypchat
+import ujson
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.utils import (
-    process_list_in_batches,
-)
-
-from zerver.models import (
-    RealmEmoji,
-    Recipient,
-    UserProfile,
-)
-
+from zerver.data_import.hipchat_attachment import AttachmentHandler
+from zerver.data_import.hipchat_user import UserHandler
 from zerver.data_import.import_util import (
+    SubscriberHandler,
     build_message,
+    build_personal_subscriptions,
+    build_public_stream_subscriptions,
     build_realm,
     build_realm_emoji,
     build_recipients,
     build_stream,
-    build_personal_subscriptions,
-    build_public_stream_subscriptions,
     build_stream_subscriptions,
     build_user_profile,
     build_zerver_realm,
@@ -39,12 +31,10 @@ from zerver.data_import.import_util import (
     make_subscriber_map,
     make_user_messages,
     write_avatar_png,
-    SubscriberHandler,
 )
-
-from zerver.data_import.hipchat_attachment import AttachmentHandler
-from zerver.data_import.hipchat_user import UserHandler
 from zerver.data_import.sequencer import NEXT_ID, IdMapper
+from zerver.lib.utils import process_list_in_batches
+from zerver.models import RealmEmoji, Recipient, UserProfile
 
 # stubs
 ZerverFieldsT = Dict[str, Any]
@@ -119,12 +109,12 @@ def convert_user_data(user_handler: UserHandler,
             if role == UserProfile.ROLE_GUEST:
                 # Hipchat guest users don't have emails, so
                 # we just fake them.
-                email = 'guest-{id}@example.com'.format(id=id)
+                email = f'guest-{id}@example.com'
                 delivery_email = email
             else:
                 # Hipchat sometimes doesn't export an email for deactivated users.
                 assert not is_active
-                email = delivery_email = "deactivated-{id}@example.com".format(id=id)
+                email = delivery_email = f"deactivated-{id}@example.com"
 
         # unmapped fields:
         #    title - Developer, Project Manager, etc.
@@ -534,7 +524,7 @@ def get_hipchat_sender_id(realm_id: int,
             return None
         mirror_user = user_handler.get_mirror_user(
             realm_id=realm_id,
-            name=message_dict['sender']['name']
+            name=message_dict['sender']['name'],
         )
         sender_id = mirror_user['id']
         return sender_id
@@ -544,7 +534,7 @@ def get_hipchat_sender_id(realm_id: int,
             return None
         mirror_user = user_handler.get_mirror_user(
             realm_id=realm_id,
-            name=message_dict['sender']['id']
+            name=message_dict['sender']['id'],
         )
         sender_id = mirror_user['id']
         return sender_id
@@ -755,7 +745,7 @@ def process_raw_message_batch(realm_id: int,
     )
 
     dump_file_id = NEXT_ID('dump_file_id')
-    message_file = "/messages-%06d.json" % (dump_file_id,)
+    message_file = f"/messages-{dump_file_id:06}.json"
     create_converted_data_files(message_json, output_dir, message_file)
 
 def do_convert_data(input_tar_file: str,

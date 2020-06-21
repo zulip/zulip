@@ -20,8 +20,6 @@ By default, notifications are sent to the `commits` stream. To
 send notifications to a different stream, append
 `?stream=stream_name` to the URL.
 
-![](/static/images/integrations/bitbucket/001.png)
-
 {!congrats.md!}
 
 ![](/static/images/integrations/bitbucket/002.png)

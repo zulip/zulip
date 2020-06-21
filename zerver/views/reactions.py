@@ -1,8 +1,9 @@
+from typing import Optional
+
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.decorator import \
-    has_request_variables, REQ
+from zerver.decorator import REQ, has_request_variables
 from zerver.lib.actions import do_add_reaction, do_remove_reaction
 from zerver.lib.emoji import check_emoji_request, emoji_name_to_emoji_code
 from zerver.lib.message import access_message
@@ -10,7 +11,6 @@ from zerver.lib.request import JsonableError
 from zerver.lib.response import json_success
 from zerver.models import Message, Reaction, UserMessage, UserProfile
 
-from typing import Optional
 
 def create_historical_message(user_profile: UserProfile, message: Message) -> None:
     # Users can see and react to messages sent to streams they

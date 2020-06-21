@@ -1,8 +1,17 @@
 <ul class="nav nav-list topics_popover">
     <li>
+        <p class="topic-name">
+            <i class="fa fa-chevron-right" aria-hidden="true" style="color: {{color}}"></i>
+            <b>{{topic_name}}</b>
+        </p>
+    </li>
+
+    <hr>
+
+    <li>
         <a class="narrow_to_topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-bullhorn" aria-hidden="true"></i>
-            {{#tr this}}Narrow to topic <b>__topic_name__</b>{{/tr}}
+            {{t "Narrow to topic"}}
         </a>
     </li>
 
@@ -11,7 +20,7 @@
     <li>
         <a href="#" class="sidebar-popover-mute-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-bell-slash" aria-hidden="true"></i>
-            {{#tr this}}Mute the topic <b>__topic_name__</b>{{/tr}}
+            {{t "Mute topic"}}
         </a>
     </li>
     {{/if}}
@@ -20,22 +29,25 @@
     <li>
         <a href="#" class="sidebar-popover-unmute-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-bell" aria-hidden="true"></i>
-            {{#tr this}}Unmute the topic <b>__topic_name__</b>{{/tr}}
+            {{t "Unmute topic"}}
         </a>
     </li>
     {{/if}}
     <li>
         <a class="sidebar-popover-mark-topic-read" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-book" aria-hidden="true"></i>
-            {{#tr this}}Mark all messages in <b>__topic_name__</b> as read{{/tr}}
+            {{t "Mark all messages as read"}}
         </a>
     </li>
 
     {{#if is_admin}}
+
+    <div class="admin-separator">{{#tr this}}ADMIN ACTIONS{{/tr}}</div>
+
     <li>
         <a class="sidebar-popover-delete-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-trash" aria-hidden="true"></i>
-            {{#tr this}}Delete all messages in <b>__topic_name__</b>{{/tr}}
+            {{t "Delete all messages in topic"}}
         </a>
     </li>
     {{/if}}
@@ -44,7 +56,7 @@
     <li>
         <a class="sidebar-popover-move-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-arrows" aria-hidden="true"></i>
-            {{#tr this}}Move <b>__topic_name__</b> to another stream.{{/tr}}
+            {{t "Move topic"}}
         </a>
     </li>
     {{/if}}

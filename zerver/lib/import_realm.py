@@ -1,43 +1,71 @@
 import datetime
 import logging
 import os
-import ujson
 import shutil
+from typing import Any, Dict, Iterable, List, Optional, Tuple, cast
 
-from boto.s3.connection import S3Connection
-from boto.s3.key import Key
+import boto3
+import ujson
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.db import connection
 from django.db.models import Max
-from django.utils.timezone import utc as timezone_utc, now as timezone_now
-from typing import Any, Dict, List, Optional, Set, Tuple, \
-    Iterable, cast
+from django.utils.timezone import now as timezone_now
+from psycopg2.extras import execute_values
+from psycopg2.sql import SQL, Identifier
 
 from analytics.models import RealmCount, StreamCount, UserCount
-from zerver.lib.actions import UserMessageLite, bulk_insert_ums, \
-    do_change_plan_type, do_change_avatar_fields
+from zerver.lib.actions import (
+    UserMessageLite,
+    bulk_insert_ums,
+    do_change_avatar_fields,
+    do_change_plan_type,
+)
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
-from zerver.lib.bulk_create import bulk_create_users, bulk_set_users_or_streams_recipient_fields
-from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.export import DATE_FIELDS, \
-    Record, TableData, TableName, Field, Path
-from zerver.lib.message import do_render_markdown
 from zerver.lib.bugdown import version as bugdown_version
-from zerver.lib.streams import render_stream_description
-from zerver.lib.upload import random_name, sanitize_name, \
-    guess_type, BadImageError
-from zerver.lib.utils import generate_api_key, process_list_in_batches
+from zerver.lib.bulk_create import bulk_create_users, bulk_set_users_or_streams_recipient_fields
+from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, TableName
+from zerver.lib.message import do_render_markdown
 from zerver.lib.parallel import run_parallel
-from zerver.lib.server_initialization import server_initialized, create_internal_realm
-from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
-    UserMessage, Subscription, Message, RealmEmoji, \
-    RealmDomain, Recipient, get_user_profile_by_id, \
-    UserPresence, UserActivity, UserActivityInterval, Reaction, \
-    CustomProfileField, CustomProfileFieldValue, RealmAuditLog, \
-    Attachment, get_system_bot, email_to_username, get_huddle_hash, \
-    UserHotspot, MutedTopic, Service, UserGroup, UserGroupMembership, \
-    BotStorageData, BotConfigData, DefaultStream, RealmFilter
+from zerver.lib.server_initialization import create_internal_realm, server_initialized
+from zerver.lib.streams import render_stream_description
+from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.upload import BadImageError, guess_type, random_name, sanitize_name
+from zerver.lib.utils import generate_api_key, process_list_in_batches
+from zerver.models import (
+    Attachment,
+    BotConfigData,
+    BotStorageData,
+    Client,
+    CustomProfileField,
+    CustomProfileFieldValue,
+    DefaultStream,
+    Huddle,
+    Message,
+    MutedTopic,
+    Reaction,
+    Realm,
+    RealmAuditLog,
+    RealmDomain,
+    RealmEmoji,
+    RealmFilter,
+    Recipient,
+    Service,
+    Stream,
+    Subscription,
+    UserActivity,
+    UserActivityInterval,
+    UserGroup,
+    UserGroupMembership,
+    UserHotspot,
+    UserMessage,
+    UserPresence,
+    UserProfile,
+    email_to_username,
+    get_huddle_hash,
+    get_system_bot,
+    get_user_profile_by_id,
+)
 
 realm_tables = [("zerver_defaultstream", DefaultStream, "defaultstream"),
                 ("zerver_realmemoji", RealmEmoji, "realmemoji"),
@@ -99,18 +127,18 @@ path_maps: Dict[str, Dict[str, str]] = {
 
 def update_id_map(table: TableName, old_id: int, new_id: int) -> None:
     if table not in ID_MAP:
-        raise Exception('''
-            Table %s is not initialized in ID_MAP, which could
+        raise Exception(f'''
+            Table {table} is not initialized in ID_MAP, which could
             mean that we have not thought through circular
             dependencies.
-            ''' % (table,))
+            ''')
     ID_MAP[table][old_id] = new_id
 
 def fix_datetime_fields(data: TableData, table: TableName) -> None:
     for item in data[table]:
         for field_name in DATE_FIELDS[table]:
             if item[field_name] is not None:
-                item[field_name] = datetime.datetime.fromtimestamp(item[field_name], tz=timezone_utc)
+                item[field_name] = datetime.datetime.fromtimestamp(item[field_name], tz=datetime.timezone.utc)
 
 def fix_upload_links(data: TableData, message_table: TableName) -> None:
     """
@@ -225,7 +253,6 @@ class FakeMessage:
     We just need a stub object for do_render_markdown
     to write stuff to.
     '''
-    pass
 
 def fix_message_rendered_content(realm: Realm,
                                  sender_map: Dict[int, Record],
@@ -296,14 +323,12 @@ def fix_message_rendered_content(realm: Realm,
             # platforms, since they generally don't have an "alert
             # words" type feature, and notifications aren't important anyway.
             realm_alert_words_automaton = None
-            message_user_ids: Set[int] = set()
 
             rendered_content = do_render_markdown(
                 message=cast(Message, message_object),
                 content=content,
                 realm=realm,
                 realm_alert_words_automaton=realm_alert_words_automaton,
-                message_user_ids=message_user_ids,
                 sent_by_bot=sent_by_bot,
                 translate_emoticons=translate_emoticons,
             )
@@ -335,7 +360,7 @@ def idseq(model_class: Any) -> str:
         return 'zerver_botuserstatedata_id_seq'
     elif model_class == BotConfigData:
         return 'zerver_botuserconfigdata_id_seq'
-    return '{}_id_seq'.format(model_class._meta.db_table)
+    return f'{model_class._meta.db_table}_id_seq'
 
 def allocate_ids(model_class: Any, count: int) -> List[int]:
     """
@@ -416,7 +441,6 @@ def re_map_foreign_keys_internal(data_table: List[Record],
                 # subscription object
                 # check function 'get_huddles_from_subscription'
                 ID_MAP['recipient_to_huddle_map'][item['id']] = lookup_table[old_id]
-                pass
             else:
                 continue
         old_id = item[field_name]
@@ -616,8 +640,8 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
             bucket_name = settings.S3_AVATAR_BUCKET
         else:
             bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        bucket = conn.get_bucket(bucket_name, validate=True)
+        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+        bucket = session.resource('s3').Bucket(bucket_name)
 
     count = 0
     for record in records:
@@ -654,13 +678,13 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
             relative_path = "/".join([
                 str(record['realm_id']),
                 random_name(18),
-                sanitize_name(os.path.basename(record['path']))
+                sanitize_name(os.path.basename(record['path'])),
             ])
             path_maps['attachment_path'][record['s3_path']] = relative_path
 
         if s3_uploads:
-            key = Key(bucket)
-            key.key = relative_path
+            key = bucket.Object(relative_path)
+            metadata = {}
             if processing_emojis and "user_profile_id" not in record:
                 # Exported custom emoji from tools like Slack don't have
                 # the data for what user uploaded them in `user_profile_id`.
@@ -676,11 +700,11 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
                     logging.info("Uploaded by ID mapped user: %s!", user_profile_id)
                     user_profile_id = ID_MAP["user_profile"][user_profile_id]
                 user_profile = get_user_profile_by_id(user_profile_id)
-                key.set_metadata("user_profile_id", str(user_profile.id))
+                metadata["user_profile_id"] = str(user_profile.id)
 
             if 'last_modified' in record:
-                key.set_metadata("orig_last_modified", str(record['last_modified']))
-            key.set_metadata("realm_id", str(record['realm_id']))
+                metadata["orig_last_modified"] = str(record['last_modified'])
+            metadata["realm_id"] = str(record['realm_id'])
 
             # Zulip exports will always have a content-type, but third-party exports might not.
             content_type = record.get("content_type")
@@ -692,9 +716,11 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
                     # set; that is OK, because those are never served
                     # directly anyway.
                     content_type = 'application/octet-stream'
-            headers: Dict[str, Any] = {'Content-Type': content_type}
 
-            key.set_contents_from_filename(os.path.join(import_dir, record['path']), headers=headers)
+            key.upload_file(os.path.join(import_dir, record['path']),
+                            ExtraArgs={
+                                'ContentType': content_type,
+                                'Metadata': metadata})
         else:
             if processing_avatars or processing_emojis or processing_realm_icons:
                 file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", relative_path)
@@ -706,6 +732,7 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
 
     if processing_avatars:
         from zerver.lib.upload import upload_backend
+
         # Ensure that we have medium-size avatar images for every
         # avatar.  TODO: This implementation is hacky, both in that it
         # does get_user_profile_by_id for each user, and in that it
@@ -1037,7 +1064,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
         #
         # Longer-term, the plan is to eliminate pointer as a concept.
         first_unread_message = UserMessage.objects.filter(user_profile=user_profile).extra(
-            where=[UserMessage.where_unread()]
+            where=[UserMessage.where_unread()],
         ).order_by("message_id").first()
         if first_unread_message is not None:
             user_profile.pointer = first_unread_message.message_id
@@ -1142,7 +1169,7 @@ def get_incoming_message_ids(import_dir: Path,
 
     dump_file_id = 1
     while True:
-        message_filename = os.path.join(import_dir, "messages-%06d.json" % (dump_file_id,))
+        message_filename = os.path.join(import_dir, f"messages-{dump_file_id:06}.json")
         if not os.path.exists(message_filename):
             break
 
@@ -1185,7 +1212,7 @@ def import_message_data(realm: Realm,
                         import_dir: Path) -> None:
     dump_file_id = 1
     while True:
-        message_filename = os.path.join(import_dir, "messages-%06d.json" % (dump_file_id,))
+        message_filename = os.path.join(import_dir, f"messages-{dump_file_id:06}.json")
         if not os.path.exists(message_filename):
             break
 
@@ -1290,12 +1317,15 @@ def import_attachments(data: TableData) -> None:
     # TODO: Do this the kosher Django way.  We may find a
     # better way to do this in Django 1.9 particularly.
     with connection.cursor() as cursor:
-        sql_template = '''
-            insert into %s (%s, %s) values(%%s, %%s);''' % (m2m_table_name,
-                                                            parent_id,
-                                                            child_id)
+        sql_template = SQL('''
+            INSERT INTO {m2m_table_name} ({parent_id}, {child_id}) VALUES %s
+        ''').format(
+            m2m_table_name=Identifier(m2m_table_name),
+            parent_id=Identifier(parent_id),
+            child_id=Identifier(child_id),
+        )
         tups = [(row[parent_id], row[child_id]) for row in m2m_rows]
-        cursor.executemany(sql_template, tups)
+        execute_values(cursor.cursor, sql_template, tups)
 
     logging.info('Successfully imported M2M table %s', m2m_table_name)
 

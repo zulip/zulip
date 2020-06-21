@@ -8,7 +8,7 @@ chat tools.
 
 Most people use Zulip on the Web. There are also mobile apps for
 Android/iOS, and desktop apps for Mac/Linux/Windows, which can be
-downloaded [here](https://zulipchat.com/apps/).
+downloaded [here](https://zulip.com/apps/).
 
 One Zulip account, associated with a particular company, project, or team,
 is known as an **organization**.

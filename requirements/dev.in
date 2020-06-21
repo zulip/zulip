@@ -24,7 +24,7 @@ https://github.com/zulip/fakeldap/archive/ff32deaad34b91d5ba5735f314362c0456c926
 responses
 
 # For sorting imports
-isort
+https://github.com/timothycrosley/isort/archive/4cb7c66de817661728dec21aea4182dc489cb2e7.zip#egg=isort==5.0.0+git
 
 # For doing highly usable Python profiling (temporary fork of
 # line_profiler: https://github.com/rkern/line_profiler/issues/127)
@@ -52,10 +52,10 @@ snakeviz
 python-digitalocean
 
 # Needed for updating the locked pip dependencies
-pip-tools
+pip-tools<5.1.2  # https://github.com/jazzband/pip-tools/issues/1155
 
 # zulip's linting framework - zulint
-https://github.com/zulip/zulint/archive/aaed679f1ad38b230090eadd3870b7682500f60c.zip#egg=zulint==0.0.1
+https://github.com/zulip/zulint/archive/ec36c29cd0be07e30241fa0a5172dc594fcc7bb1.zip#egg=zulint==0.0.1
 
 -r mypy.in
 

@@ -1,40 +1,44 @@
+import re
+from collections import defaultdict
+from datetime import timedelta
+from email.headerregistry import Address
 from typing import Any, Dict, Iterable, List, Optional, Tuple
-from zerver.lib.types import DisplayRecipientT
 
-from confirmation.models import one_click_unsubscribe_link
+import html2text
+import lxml.html
+import pytz
+from bs4 import BeautifulSoup
 from django.conf import settings
+from django.contrib.auth import get_backends
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import override as override_language
 from django.utils.translation import ugettext as _
-from django.contrib.auth import get_backends
+from lxml.cssselect import CSSSelector
 
+from confirmation.models import one_click_unsubscribe_link
 from zerver.decorator import statsd_increment
 from zerver.lib.message import bulk_access_messages
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.send_email import send_future_email, FromAddress
-from zerver.lib.url_encoding import personal_narrow_url, huddle_narrow_url, \
-    stream_narrow_url, topic_narrow_url
+from zerver.lib.send_email import FromAddress, send_future_email
+from zerver.lib.types import DisplayRecipientT
+from zerver.lib.url_encoding import (
+    huddle_narrow_url,
+    personal_narrow_url,
+    stream_narrow_url,
+    topic_narrow_url,
+)
 from zerver.models import (
+    Message,
     Recipient,
-    UserMessage,
     Stream,
-    get_display_recipient,
+    UserMessage,
     UserProfile,
+    get_context_for_message,
+    get_display_recipient,
     get_user_profile_by_id,
     receives_offline_email_notifications,
-    get_context_for_message,
-    Message,
 )
 
-from datetime import timedelta
-from email.utils import formataddr
-import html2text
-from lxml.cssselect import CSSSelector
-import lxml.html
-import re
-from collections import defaultdict
-import pytz
-from bs4 import BeautifulSoup
 
 def relative_to_full_url(base_url: str, content: str) -> str:
     # Convert relative URLs to absolute URLs.
@@ -93,16 +97,9 @@ def fix_emojis(content: str, base_url: str, emojiset: str) -> str:
         emoji_code = match.group('emoji_code')
         emoji_name = emoji_span_elem.get('title')
         alt_code = emoji_span_elem.text
-        image_url = base_url + '/static/generated/emoji/images-%(emojiset)s-64/%(emoji_code)s.png' % {
-            'emojiset': emojiset,
-            'emoji_code': emoji_code
-        }
+        image_url = base_url + f'/static/generated/emoji/images-{emojiset}-64/{emoji_code}.png'
         img_elem = lxml.html.fromstring(
-            '<img alt="%(alt_code)s" src="%(image_url)s" title="%(title)s">' % {
-                'alt_code': alt_code,
-                'image_url': image_url,
-                'title': emoji_name,
-            })
+            f'<img alt="{alt_code}" src="{image_url}" title="{emoji_name}">')
         img_elem.set('style', 'height: 20px;')
         img_elem.tail = emoji_span_elem.tail
         return img_elem
@@ -141,9 +138,9 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
         return re.sub(r"\[(\S*)\]\((\S*)\)", r"\2", content)
 
     def append_sender_to_message(message_plain: str, message_html: str, sender: str) -> Tuple[str, str]:
-        message_plain = "{}: {}".format(sender, message_plain)
+        message_plain = f"{sender}: {message_plain}"
         message_soup = BeautifulSoup(message_html, "html.parser")
-        sender_name_soup = BeautifulSoup("<b>{}</b>: ".format(sender), "html.parser")
+        sender_name_soup = BeautifulSoup(f"<b>{sender}</b>: ", "html.parser")
         first_tag = message_soup.find()
         if first_tag.name == "p":
             first_tag.insert(0, sender_name_soup)
@@ -179,8 +176,8 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
     def message_header(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
         if message.recipient.type == Recipient.PERSONAL:
             narrow_link = get_narrow_url(user_profile, message)
-            header = "You and %s" % (message.sender.full_name,)
-            header_html = "<a style='color: #ffffff;' href='%s'>%s</a>" % (narrow_link, header)
+            header = f"You and {message.sender.full_name}"
+            header_html = f"<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
         elif message.recipient.type == Recipient.HUDDLE:
             display_recipient = get_display_recipient(message.recipient)
             assert not isinstance(display_recipient, str)
@@ -188,15 +185,14 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
                                          display_recipient=display_recipient)
             other_recipients = [r['full_name'] for r in display_recipient
                                 if r['id'] != user_profile.id]
-            header = "You and %s" % (", ".join(other_recipients),)
-            header_html = "<a style='color: #ffffff;' href='%s'>%s</a>" % (narrow_link, header)
+            header = "You and {}".format(", ".join(other_recipients))
+            header_html = f"<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
         else:
             stream = Stream.objects.only('id', 'name').get(id=message.recipient.type_id)
             narrow_link = get_narrow_url(user_profile, message, stream=stream)
-            header = "%s > %s" % (stream.name, message.topic_name())
+            header = f"{stream.name} > {message.topic_name()}"
             stream_link = stream_narrow_url(user_profile.realm, stream)
-            header_html = "<a href='%s'>%s</a> > <a href='%s'>%s</a>" % (
-                stream_link, stream.name, narrow_link, message.topic_name())
+            header_html = f"<a href='{stream_link}'>{stream.name}</a> > <a href='{narrow_link}'>{message.topic_name()}</a>"
         return {"plain": header,
                 "html": header_html,
                 "stream_message": message.recipient.type_name() == "stream"}
@@ -305,6 +301,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
                       for a group of messages that share a recipient (and topic)
     """
     from zerver.context_processors import common_context
+
     # Disabled missedmessage emails internally
     if not user_profile.enable_offline_email_notifications:
         return
@@ -312,8 +309,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     recipients = {(msg['message'].recipient_id, msg['message'].topic_name()) for msg in missed_messages}
     if len(recipients) != 1:
         raise ValueError(
-            'All missed_messages must have the same recipient and topic %r' %
-            (recipients,)
+            f'All missed_messages must have the same recipient and topic {recipients!r}',
         )
 
     # This link is no longer a part of the email, but keeping the code in case
@@ -350,7 +346,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     from zerver.lib.email_mirror import create_missed_message_address
     reply_to_address = create_missed_message_address(user_profile, missed_messages[0]['message'])
     if reply_to_address == FromAddress.NOREPLY:
-        reply_to_name = None
+        reply_to_name = ""
     else:
         reply_to_name = "Zulip"
 
@@ -371,11 +367,10 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
             huddle_display_name = " and ".join(other_recipients)
             context.update({'huddle_display_name': huddle_display_name})
         elif len(other_recipients) == 3:
-            huddle_display_name = "%s, %s, and %s" % (
-                other_recipients[0], other_recipients[1], other_recipients[2])
+            huddle_display_name = f"{other_recipients[0]}, {other_recipients[1]}, and {other_recipients[2]}"
             context.update({'huddle_display_name': huddle_display_name})
         else:
-            huddle_display_name = "%s, and %s others" % (
+            huddle_display_name = "{}, and {} others".format(
                 ', '.join(other_recipients[:2]), len(other_recipients) - 2)
             context.update({'huddle_display_name': huddle_display_name})
     elif (missed_messages[0]['message'].recipient.type == Recipient.PERSONAL):
@@ -388,7 +383,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
                             m['trigger'] == 'wildcard_mentioned'})
         message = missed_messages[0]['message']
         stream = Stream.objects.only('id', 'name').get(id=message.recipient.type_id)
-        stream_header = "%s > %s" % (stream.name, message.topic_name())
+        stream_header = f"{stream.name} > {message.topic_name()}"
         context.update({
             'stream_header': stream_header,
         })
@@ -439,7 +434,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         'to_user_ids': [user_profile.id],
         'from_name': from_name,
         'from_address': from_address,
-        'reply_to_email': formataddr((reply_to_name, reply_to_address)),
+        'reply_to_email': str(Address(display_name=reply_to_name, addr_spec=reply_to_address)),
         'context': context}
     queue_json_publish("email_senders", email_dict)
 
@@ -504,7 +499,7 @@ def handle_missedmessage_emails(user_profile_id: int,
         for m in messages_by_bucket[bucket_tup]:
             unique_messages[m.id] = dict(
                 message=m,
-                trigger=message_ids.get(m.id)
+                trigger=message_ids.get(m.id),
             )
         do_send_missedmessage_events_reply_in_zulip(
             user_profile,
@@ -564,10 +559,10 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> Non
         context['getting_started_link'] = (user.realm.uri +
                                            '/help/getting-your-organization-started-with-zulip')
     else:
-        context['getting_started_link'] = "https://zulipchat.com"
+        context['getting_started_link'] = "https://zulip.com"
 
     # Imported here to avoid import cycles.
-    from zproject.backends import email_belongs_to_ldap, ZulipLDAPAuthBackend
+    from zproject.backends import ZulipLDAPAuthBackend, email_belongs_to_ldap
 
     if email_belongs_to_ldap(user.realm, user.delivery_email):
         context["ldap"] = True

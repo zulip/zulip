@@ -42,11 +42,7 @@ function elem_to_user_id(elem) {
     };
 
     // add back all shallow properties of $.fn.popover to the new proxied version.
-    for (const x in popover) {
-        if (popover.hasOwnProperty(x)) {
-            $.fn.popover[x] = popover[x];
-        }
-    }
+    Object.assign($.fn.popover, popover);
 }($.fn.popover));
 
 function copy_email_handler(e) {
@@ -94,8 +90,10 @@ function init_email_clipboard() {
 }
 
 function load_medium_avatar(user, elt) {
-    const user_avatar_url = "avatar/" + user.user_id + "/medium";
+    const avatar_path = "avatar/" + user.user_id + "/medium?v=" + user.avatar_version;
+    const user_avatar_url = new URL(avatar_path, window.location.href);
     const sender_avatar_medium = new Image();
+
     sender_avatar_medium.src = user_avatar_url;
     $(sender_avatar_medium).on("load", function () {
         elt.css("background-image", "url(" + $(this).attr("src") + ")");
@@ -1022,7 +1020,7 @@ exports.register_click_handlers = function () {
         const message_history_cancel_btn = $('#message-history-cancel');
 
         exports.hide_actions_popover();
-        message_edit.show_history(message);
+        message_edit_history.show_history(message);
         message_history_cancel_btn.focus();
         e.stopPropagation();
         e.preventDefault();

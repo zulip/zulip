@@ -1,3 +1,5 @@
+const settings_config = require("./settings_config");
+
 exports.dispatch_normal_event = function dispatch_normal_event(event) {
     const noop = function () {};
     switch (event.type) {
@@ -22,21 +24,34 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         break;
 
     case 'delete_message': {
-        const msg_id = event.message_id;
+        const msg_ids = event.message_ids;
         // message is passed to unread.get_unread_messages,
         // which returns all the unread messages out of a given list.
         // So double marking something as read would not occur
-        unread_ops.process_read_messages_event([msg_id]);
+        unread_ops.process_read_messages_event(msg_ids);
+
         if (event.message_type === 'stream') {
-            stream_topic_history.remove_message({
+            stream_topic_history.remove_messages({
                 stream_id: event.stream_id,
                 topic_name: event.topic,
+                num_messages: msg_ids.length,
             });
             stream_list.update_streams_sidebar();
         }
-        ui.remove_message(msg_id);
+
+        ui.remove_messages(msg_ids);
         break;
     }
+
+    case 'has_zoom_token':
+        page_params.has_zoom_token = event.value;
+        if (event.value) {
+            for (const callback of compose.zoom_token_callbacks.values()) {
+                callback();
+            }
+            compose.zoom_token_callbacks.clear();
+        }
+        break;
 
     case 'hotspots':
         hotspots.load_new(event.hotspots);
@@ -102,7 +117,6 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             email_address_visibility: noop,
             email_changes_disabled: settings_account.update_email_change_display,
             disallow_disposable_email_addresses: noop,
-            google_hangouts_domain: noop,
             inline_image_preview: noop,
             inline_url_embed_preview: noop,
             invite_by_admins_only: noop,
@@ -121,9 +135,6 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             emails_restricted_to_domains: noop,
             video_chat_provider: compose.update_video_chat_button_display,
             waiting_period_threshold: noop,
-            zoom_user_id: noop,
-            zoom_api_key: noop,
-            zoom_api_secret: noop,
         };
         if (event.op === 'update' && Object.prototype.hasOwnProperty.call(realm_settings, event.property)) {
             page_params['realm_' + event.property] = event.value;
@@ -137,15 +148,6 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 // TODO: Add waiting_period_threshold logic here.
                 page_params.can_invite_to_stream = page_params.is_admin ||
                     page_params.realm_invite_to_stream_policy === 1;
-            } else if (event.property === 'notifications_stream_id') {
-                settings_org.notifications_stream_widget.render(
-                    page_params.realm_notifications_stream_id);
-            } else if (event.property === 'signup_notifications_stream_id') {
-                settings_org.signup_notifications_stream_widget.render(
-                    page_params.realm_signup_notifications_stream_id);
-            } else if (event.property === 'default_code_block_language') {
-                settings_org.default_code_language_widget.render(
-                    page_params.realm_default_code_block_language);
             }
 
             if (event.property === 'name' && window.electron_bridge !== undefined) {
@@ -196,21 +198,16 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
     case 'realm_bot':
         if (event.op === 'add') {
             bot_data.add(event.bot);
-            settings_users.update_user_data(event.bot.user_id, event.bot);
         } else if (event.op === 'remove') {
             bot_data.deactivate(event.bot.user_id);
             event.bot.is_active = false;
-            settings_users.update_user_data(event.bot.user_id, event.bot);
         } else if (event.op === 'delete') {
-            bot_data.del(event.bot.user_id);
-            settings_users.update_user_data(event.bot.user_id, event.bot);
+            blueslip.info("ignoring bot deletion for live UI update");
+            break;
         } else if (event.op === 'update') {
-            if (Object.prototype.hasOwnProperty.call(event.bot, 'owner_id')) {
-                event.bot.owner = people.get_by_user_id(event.bot.owner_id).email;
-            }
             bot_data.update(event.bot.user_id, event.bot);
-            settings_users.update_user_data(event.bot.user_id, event.bot);
         }
+        settings_users.update_bot_data(event.bot.user_id);
         break;
 
     case 'realm_emoji':
@@ -255,7 +252,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
 
     case 'realm_user':
         if (event.op === 'add') {
-            people.add(event.person);
+            people.add_active_user(event.person);
         } else if (event.op === 'remove') {
             people.deactivate(event.person);
             stream_events.remove_deactivated_user_from_all_streams(event.person.user_id);
@@ -298,13 +295,11 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 stream_data.remove_default_stream(stream.stream_id);
                 if (page_params.realm_notifications_stream_id === stream.stream_id) {
                     page_params.realm_notifications_stream_id = -1;
-                    settings_org.render_notifications_stream_ui(
-                        page_params.realm_notifications_stream_id, 'notifications');
+                    settings_org.sync_realm_settings('notifications_stream_id');
                 }
                 if (page_params.realm_signup_notifications_stream_id === stream.stream_id) {
                     page_params.realm_signup_notifications_stream_id = -1;
-                    settings_org.render_notifications_stream_ui(
-                        page_params.realm_signup_notifications_stream_id, 'signup_notifications');
+                    settings_org.sync_realm_settings('signup_notifications_stream_id');
                 }
             }
         }
@@ -337,21 +332,41 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 }
             }
         } else if (event.op === 'peer_add') {
-            for (const sub of event.subscriptions) {
-                if (stream_data.add_subscriber(sub, event.user_id)) {
-                    $(document).trigger('peer_subscribe.zulip', {stream_name: sub});
-                } else {
+            function add_peer(stream_id, user_id) {
+                const sub = stream_data.get_sub_by_id(stream_id);
+
+                if (!sub) {
+                    blueslip.warn('Cannot find stream for peer_add: ' + stream_id);
+                    return;
+                }
+
+                if (!stream_data.add_subscriber(sub.name, user_id)) {
                     blueslip.warn('Cannot process peer_add event');
+                    return;
                 }
+
+                stream_edit.rerender(sub.name);
+                compose_fade.update_faded_users();
             }
+            add_peer(event.stream_id, event.user_id);
         } else if (event.op === 'peer_remove') {
-            for (const sub of event.subscriptions) {
-                if (stream_data.remove_subscriber(sub, event.user_id)) {
-                    $(document).trigger('peer_unsubscribe.zulip', {stream_name: sub});
-                } else {
-                    blueslip.warn('Cannot process peer_remove event.');
+            function remove_peer(stream_id, user_id) {
+                const sub = stream_data.get_sub_by_id(stream_id);
+
+                if (!sub) {
+                    blueslip.warn('Cannot find stream for peer_remove: ' + stream_id);
+                    return;
                 }
+
+                if (!stream_data.remove_subscriber(sub.name, user_id)) {
+                    blueslip.warn('Cannot process peer_remove event.');
+                    return;
+                }
+
+                stream_edit.rerender(sub.name);
+                compose_fade.update_faded_users();
             }
+            remove_peer(event.stream_id, event.user_id);
         } else if (event.op === 'remove') {
             for (const rec of event.subscriptions) {
                 const sub = stream_data.get_sub_by_id(rec.stream_id);
@@ -382,13 +397,13 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
 
     case 'update_display_settings': {
         const user_display_settings = [
+            'color_scheme',
             'default_language',
             'demote_inactive_streams',
             'dense_mode',
             'emojiset',
             'fluid_layout_width',
             'high_contrast_mode',
-            'night_mode',
             'left_side_userlist',
             'timezone',
             'twenty_four_hour_time',
@@ -420,14 +435,17 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             $("body").toggleClass("less_dense_mode");
             $("body").toggleClass("more_dense_mode");
         }
-        if (event.setting_name === 'night_mode') {
+        if (event.setting_name === 'color_scheme') {
             $("body").fadeOut(300);
             setTimeout(function () {
-                if (event.setting === true) {
+                if (event.setting === settings_config.color_scheme_values.night.code) {
                     night_mode.enable();
                     realm_logo.rerender();
-                } else {
+                } else if (event.setting === settings_config.color_scheme_values.day.code) {
                     night_mode.disable();
+                    realm_logo.rerender();
+                } else {
+                    night_mode.default_preference_checker();
                     realm_logo.rerender();
                 }
                 $("body").fadeIn(300);

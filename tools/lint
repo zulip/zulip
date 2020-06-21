@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
+import argparse
 import os
 import sys
-import argparse
 
 # check for the venv
 from lib import sanity_check
+
 sanity_check.check_venv(__file__)
 
-from linter_lib.custom_check import python_rules, non_py_rules
-from zulint.command import add_default_linter_arguments, LinterConfig
 import random
+
+from zulint.command import LinterConfig, add_default_linter_arguments
+
+from linter_lib.custom_check import non_py_rules, python_rules
+
 
 def run() -> None:
     parser = argparse.ArgumentParser()
@@ -26,13 +30,10 @@ def run() -> None:
     root_dir = os.path.dirname(tools_dir)
     sys.path.insert(0, root_dir)
 
+    from tools.lib.test_script import assert_provisioning_status_ok
     from tools.linter_lib.exclude import EXCLUDED_FILES, PUPPET_CHECK_RULES_TO_EXCLUDE
-    from tools.linter_lib.pyflakes import check_pyflakes
     from tools.linter_lib.pep8 import check_pep8
-
-    from tools.lib.test_script import (
-        assert_provisioning_status_ok,
-    )
+    from tools.linter_lib.pyflakes import check_pyflakes
 
     os.chdir(root_dir)
 
@@ -88,8 +89,20 @@ def run() -> None:
     linter_config.external_linter('gitlint', ['tools/commit-message-lint'],
                                   description="Checks commit messages for common formatting errors."
                                   "(config: .gitlint)")
+    linter_config.external_linter('isort', ['tools/run-isort'], ['py'],
+                                  description="Sorts Python import statements",
+                                  fix_arg='--fix')
 
-    semgrep_command = ["semgrep", "--config=./tools/semgrep.yml", "--error"]
+    semgrep_command = ["semgrep", "--config=./tools/semgrep.yml", "--error",
+                       # This option is dangerous in the context of running
+                       # semgrep-as-a-service on untrusted user code, since it
+                       # causes Python code in the rules configuration to be
+                       # executed.  From our standpoint, it is required for
+                       # `pattern-where-python` rules, and there's no real
+                       # security impact, since if you can put arbitrary code
+                       # into zulip.git, you can run arbitrary code in a Zulip
+                       # development environment anyway.
+                       "--dangerously-allow-arbitrary-code-execution-from-rules"]
     linter_config.external_linter('semgrep-py', [*semgrep_command, "--lang=python"], ['py'],
                                   fix_arg='--autofix',
                                   description="Syntactic Grep (semgrep) Code Search Tool "

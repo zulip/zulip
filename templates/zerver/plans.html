@@ -85,13 +85,21 @@
                                     <a href='/upgrade' class="button black-current-value" type="button">
                                         Current plan
                                     </a>
-                                    {% elif realm_plan_type == 2 %}
-                                    <a href="/upgrade" class="button green">
+                                    {% elif realm_plan_type == 0 %}
+                                    <a href="/new" class="button green">
+                                        {% if free_trial_days %}
+                                        Start {{ free_trial_days }} day free trial
+                                        {% else %}
                                         Buy Standard
+                                        {% endif %}
                                     </a>
                                     {% else %}
                                     <a href="/upgrade" class="button green">
+                                        {% if free_trial_days %}
+                                        Start {{ free_trial_days }} day free trial
+                                        {% else %}
                                         Buy Standard
+                                        {% endif %}
                                     </a>
                                     {% endif %}
                                 </div>
@@ -150,7 +158,7 @@
                                     <div class="pricing-details">
                                         Pricing varies with support required
                                     </div>
-                                    <a href="mailto:sales@zulipchat.com" target="_blank" class="no-action button green">
+                                    <a href="mailto:sales@zulip.com" target="_blank" rel="noopener noreferrer" class="no-action button green">
                                         Contact sales
                                     </a>
                                 </div>

@@ -1,29 +1,38 @@
-from typing import Union, List, Dict
-import ujson
+from typing import Dict, List, Union
 
+import ujson
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.decorator import require_realm_admin, human_users_only
-from zerver.lib.request import has_request_variables, REQ
-from zerver.lib.actions import (try_add_realm_custom_profile_field,
-                                do_remove_realm_custom_profile_field,
-                                try_update_realm_custom_profile_field,
-                                do_update_user_custom_profile_data_if_changed,
-                                try_reorder_realm_custom_profile_fields,
-                                try_add_realm_default_custom_profile_field,
-                                check_remove_custom_profile_field_value)
-from zerver.lib.response import json_success, json_error
-from zerver.lib.types import ProfileFieldData
-from zerver.lib.validator import (check_dict, check_list, check_int,
-                                  validate_choice_field_data, check_capped_string)
-
-from zerver.models import (UserProfile,
-                           CustomProfileField, custom_profile_fields_for_realm)
+from zerver.decorator import human_users_only, require_realm_admin
+from zerver.lib.actions import (
+    check_remove_custom_profile_field_value,
+    do_remove_realm_custom_profile_field,
+    do_update_user_custom_profile_data_if_changed,
+    try_add_realm_custom_profile_field,
+    try_add_realm_default_custom_profile_field,
+    try_reorder_realm_custom_profile_fields,
+    try_update_realm_custom_profile_field,
+)
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.users import validate_user_custom_profile_data
 from zerver.lib.external_accounts import validate_external_account_field_data
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_error, json_success
+from zerver.lib.types import ProfileFieldData
+from zerver.lib.users import validate_user_custom_profile_data
+from zerver.lib.validator import (
+    check_capped_string,
+    check_dict,
+    check_int,
+    check_list,
+    check_string,
+    check_union,
+    validate_choice_field_data,
+)
+from zerver.models import CustomProfileField, UserProfile, custom_profile_fields_for_realm
+
 
 def list_realm_custom_profile_fields(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     fields = custom_profile_fields_for_realm(user_profile.realm_id)
@@ -36,27 +45,24 @@ def validate_field_name_and_hint(name: str, hint: str) -> None:
     if not name.strip():
         raise JsonableError(_("Label cannot be blank."))
 
-    error = hint_validator('hint', hint)
-    if error:
-        raise JsonableError(error)
-
-    error = name_validator('name', name)
-    if error:
-        raise JsonableError(error)
+    try:
+        hint_validator('hint', hint)
+        name_validator('name', name)
+    except ValidationError as error:
+        raise JsonableError(error.message)
 
 def validate_custom_field_data(field_type: int,
                                field_data: ProfileFieldData) -> None:
-    error = None
-    if field_type == CustomProfileField.CHOICE:
-        # Choice type field must have at least have one choice
-        if len(field_data) < 1:
-            raise JsonableError(_("Field must have at least one choice."))
-        error = validate_choice_field_data(field_data)
-    elif field_type == CustomProfileField.EXTERNAL_ACCOUNT:
-        error = validate_external_account_field_data(field_data)
-
-    if error:
-        raise JsonableError(error)
+    try:
+        if field_type == CustomProfileField.CHOICE:
+            # Choice type field must have at least have one choice
+            if len(field_data) < 1:
+                raise JsonableError(_("Field must have at least one choice."))
+            validate_choice_field_data(field_data)
+        elif field_type == CustomProfileField.EXTERNAL_ACCOUNT:
+            validate_external_account_field_data(field_data)
+    except ValidationError as error:
+        raise JsonableError(error.message)
 
 def is_default_external_field(field_type: int, field_data: ProfileFieldData) -> bool:
     if field_type != CustomProfileField.EXTERNAL_ACCOUNT:
@@ -170,10 +176,17 @@ def remove_user_custom_profile_data(request: HttpRequest, user_profile: UserProf
 @human_users_only
 @has_request_variables
 def update_user_custom_profile_data(
-        request: HttpRequest,
-        user_profile: UserProfile,
-        data: List[Dict[str, Union[int, str, List[int]]]]=REQ(validator=check_list(
-            check_dict([('id', check_int)])))) -> HttpResponse:
+    request: HttpRequest,
+    user_profile: UserProfile,
+    data: List[Dict[str, Union[int, str, List[int]]]] = REQ(
+        validator=check_list(
+            check_dict(
+                [('id', check_int)],
+                value_validator=check_union([check_int, check_string, check_list(check_int)]),
+            ),
+        )
+    ),
+) -> HttpResponse:
 
     validate_user_custom_profile_data(user_profile.realm.id, data)
     do_update_user_custom_profile_data_if_changed(user_profile, data)

@@ -920,6 +920,13 @@ function get_header_text() {
     case 'silent_mention':
         tip_text = i18n.t('User will not be notified');
         break;
+    case 'syntax':
+        if (page_params.realm_default_code_block_language !== null) {
+            tip_text = i18n.t("Default is __language__. Use 'text' to disable highlighting.",
+                              {language: page_params.realm_default_code_block_language});
+            break;
+        }
+        return false;
     default:
         return false;
     }

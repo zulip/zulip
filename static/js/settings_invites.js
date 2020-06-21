@@ -19,6 +19,7 @@ exports.invited_as_values = new Map([
     [1, i18n.t("Member")],
     [2, i18n.t("Organization administrator")],
     [3, i18n.t("Guest")],
+    [4, i18n.t("Organization owner")],
 ]);
 
 function add_invited_as_text(invites) {
@@ -51,6 +52,7 @@ function populate_invites(invites_data) {
         modifier: function (item) {
             item.invited_absolute_time = timerender.absolute_time(item.invited * 1000);
             item.is_admin = page_params.is_admin;
+            item.disable_buttons = item.invited_as === 4 && !page_params.is_owner;
             return render_admin_invites_list({ invite: item });
         },
         filter: {

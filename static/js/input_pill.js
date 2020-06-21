@@ -47,7 +47,7 @@ exports.create = function (opts) {
     const funcs = {
         // return the value of the contenteditable input form.
         value: function (input_elem) {
-            return input_elem.innerText.trim();
+            return input_elem.innerText;
         },
 
         // clear the value of the input form.
@@ -225,6 +225,13 @@ exports.create = function (opts) {
         items: function () {
             return store.pills.map(pill => pill.item);
         },
+
+        createPillonPaste: function () {
+            if (typeof store.createPillonPaste === "function") {
+                return store.createPillonPaste();
+            }
+            return true;
+        },
     };
 
     (function events() {
@@ -239,7 +246,7 @@ exports.create = function (opts) {
 
                 // if there is input, grab the input, make a pill from it,
                 // and append the pill, then clear the input.
-                const value = funcs.value(e.target);
+                const value = funcs.value(e.target).trim();
                 if (value.length > 0) {
                     // append the pill and by proxy create the pill object.
                     const ret = funcs.appendPill(value);
@@ -276,19 +283,17 @@ exports.create = function (opts) {
                 }
             }
 
-            // users should not be able to type a comma if the last field doesn't
-            // validate.
+            // Typing of the comma is prevented if the last field doesn't validate,
+            // as well as when the new pill is created.
             if (char === KEY.COMMA) {
                 // if the pill is successful, it will create the pill and clear
                 // the input.
                 if (funcs.appendPill(store.$input.text().trim()) !== false) {
                     funcs.clear(store.$input[0]);
-                // otherwise it will prevent the typing of the comma because they
-                // cannot add another pill until this input is valid.
-                } else {
-                    e.preventDefault();
-                    return;
                 }
+                e.preventDefault();
+
+                return;
             }
         });
 
@@ -331,7 +336,9 @@ exports.create = function (opts) {
             // insert text manually
             document.execCommand("insertText", false, text);
 
-            funcs.insertManyPills(store.$input.text().trim());
+            if (funcs.createPillonPaste()) {
+                funcs.insertManyPills(store.$input.text().trim());
+            }
         });
 
         // when the "×" is clicked on a pill, it should delete that pill and then
@@ -365,6 +372,7 @@ exports.create = function (opts) {
         appendValue: funcs.appendPill.bind(funcs),
         appendValidatedData: funcs.appendValidatedData.bind(funcs),
 
+        getByID: funcs.getByID,
         items: funcs.items,
 
         onPillCreate: function (callback) {
@@ -373,6 +381,10 @@ exports.create = function (opts) {
 
         onPillRemove: function (callback) {
             store.removePillFunction = callback;
+        },
+
+        createPillonPaste: function (callback) {
+            store.createPillonPaste = callback;
         },
 
         clear: funcs.removeAllPills.bind(funcs),

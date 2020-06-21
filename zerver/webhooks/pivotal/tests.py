@@ -144,4 +144,4 @@ Try again next time
         self.send_and_test_stream_message('type_changed', expected_topic, expected_message, content_type="application/xml")
 
     def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data('pivotal', "v5_{}".format(fixture_name), file_type='json')
+        return self.webhook_fixture_data('pivotal', f"v5_{fixture_name}", file_type='json')

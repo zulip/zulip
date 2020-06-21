@@ -3,8 +3,7 @@ from typing import Any, Dict, List
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import REQ, api_key_only_webhook_view, \
-    has_request_variables
+from zerver.decorator import REQ, api_key_only_webhook_view, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
@@ -52,7 +51,7 @@ def get_body(payload: Dict[str, Any]) -> str:
                 hoststatus = 'Success'
             hosts_data.append({
                 'hostname': host,
-                'status': hoststatus
+                'status': hoststatus,
             })
 
         if (payload['status'] == "successful"):
@@ -66,7 +65,7 @@ def get_body(payload: Dict[str, Any]) -> str:
             id=payload['id'],
             url=payload['url'],
             status=status,
-            hosts_final_data=get_hosts_content(hosts_data)
+            hosts_final_data=get_hosts_content(hosts_data),
         )
 
     else:
@@ -81,7 +80,7 @@ def get_body(payload: Dict[str, Any]) -> str:
             "friendly_name": friendly_name,
             "id": payload['id'],
             "url": payload['url'],
-            "status": status
+            "status": status,
         }
 
         return ANSIBLETOWER_DEFAULT_MESSAGE_TEMPLATE.format(**data)
@@ -92,6 +91,6 @@ def get_hosts_content(hosts_data: List[Dict[str, Any]]) -> str:
     for host in hosts_data:
         hosts_content += ANSIBLETOWER_JOB_HOST_ROW_TEMPLATE.format(
             hostname=host.get('hostname'),
-            status=host.get('status')
+            status=host.get('status'),
         )
     return hosts_content

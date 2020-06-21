@@ -7,6 +7,7 @@ zrequire('stream_data');
 zrequire('stream_topic_history');
 zrequire('unread');
 
+set_global('$', global.make_zjquery());
 set_global('alert_words', {});
 set_global('condense', {});
 set_global('current_msg_list', {});
@@ -26,7 +27,7 @@ const alice = {
     full_name: 'Alice Patel',
 };
 
-people.add(alice);
+people.add_active_user(alice);
 
 const denmark = {
     subscribed: false,

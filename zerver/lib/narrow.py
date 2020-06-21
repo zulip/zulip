@@ -1,13 +1,11 @@
 import os
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence
 
-from zerver.lib.request import JsonableError
-from zerver.lib.topic import (
-    get_topic_from_message_info,
-)
 from django.conf import settings
 from django.utils.translation import ugettext as _
 
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence
+from zerver.lib.request import JsonableError
+from zerver.lib.topic import get_topic_from_message_info
 
 stop_words_list: Optional[List[str]] = None
 def read_stop_words() -> List[str]:
@@ -23,7 +21,7 @@ def check_supported_events_narrow_filter(narrow: Iterable[Sequence[str]]) -> Non
     for element in narrow:
         operator = element[0]
         if operator not in ["stream", "topic", "sender", "is"]:
-            raise JsonableError(_("Operator %s not supported.") % (operator,))
+            raise JsonableError(_("Operator {} not supported.").format(operator))
 
 def is_web_public_compatible(narrow: Iterable[Dict[str, str]]) -> bool:
     for element in narrow:

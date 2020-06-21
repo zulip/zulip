@@ -1,36 +1,37 @@
 from typing import Any
 
+from django.conf.urls import include
+from django.urls import path
 from django.views.generic import TemplateView
-from django.conf.urls import include, url
 
 import corporate.views
 from zerver.lib.rest import rest_dispatch
 
 i18n_urlpatterns: Any = [
     # Zephyr/MIT
-    url(r'^zephyr/$', TemplateView.as_view(template_name='corporate/zephyr.html')),
-    url(r'^zephyr-mirror/$', TemplateView.as_view(template_name='corporate/zephyr-mirror.html')),
+    path('zephyr/', TemplateView.as_view(template_name='corporate/zephyr.html')),
+    path('zephyr-mirror/', TemplateView.as_view(template_name='corporate/zephyr-mirror.html')),
 
-    url(r'^jobs/$', TemplateView.as_view(template_name='corporate/jobs.html')),
+    path('jobs/', TemplateView.as_view(template_name='corporate/jobs.html')),
 
     # Billing
-    url(r'^billing/$', corporate.views.billing_home, name='corporate.views.billing_home'),
-    url(r'^upgrade/$', corporate.views.initial_upgrade, name='corporate.views.initial_upgrade'),
+    path('billing/', corporate.views.billing_home, name='corporate.views.billing_home'),
+    path('upgrade/', corporate.views.initial_upgrade, name='corporate.views.initial_upgrade'),
 ]
 
 v1_api_and_json_patterns = [
-    url(r'^billing/upgrade$', rest_dispatch,
-        {'POST': 'corporate.views.upgrade'}),
-    url(r'^billing/plan/change$', rest_dispatch,
-        {'POST': 'corporate.views.change_plan_status'}),
-    url(r'^billing/sources/change', rest_dispatch,
-        {'POST': 'corporate.views.replace_payment_source'}),
+    path('billing/upgrade', rest_dispatch,
+         {'POST': 'corporate.views.upgrade'}),
+    path('billing/plan/change', rest_dispatch,
+         {'POST': 'corporate.views.change_plan_status'}),
+    path('billing/sources/change', rest_dispatch,
+         {'POST': 'corporate.views.replace_payment_source'}),
 ]
 
 # Make a copy of i18n_urlpatterns so that they appear without prefix for English
 urlpatterns = list(i18n_urlpatterns)
 
 urlpatterns += [
-    url(r'^api/v1/', include(v1_api_and_json_patterns)),
-    url(r'^json/', include(v1_api_and_json_patterns)),
+    path('api/v1/', include(v1_api_and_json_patterns)),
+    path('json/', include(v1_api_and_json_patterns)),
 ]

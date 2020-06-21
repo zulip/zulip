@@ -1,17 +1,5 @@
 const autosize = require('autosize');
 
-function update_lock_icon_for_stream(stream_name) {
-    const icon = $("#compose-lock-icon");
-    const streamfield = $("#stream_message_recipient_stream");
-    if (stream_data.get_invite_only(stream_name)) {
-        icon.show();
-        streamfield.addClass("lock-padding");
-    } else {
-        icon.hide();
-        streamfield.removeClass("lock-padding");
-    }
-}
-
 exports.blur_textarea = function () {
     $('.message_comp').find('input, textarea, button').blur();
 };
@@ -124,23 +112,9 @@ exports.complete_starting_tasks = function (msg_type, opts) {
     exports.maybe_scroll_up_selected_message();
     ui_util.change_tab_to("#home");
     compose_fade.start_compose(msg_type);
-    exports.decorate_stream_bar(opts.stream);
+    ui_util.decorate_stream_bar(opts.stream, $("#stream-message .message_header_stream"), true);
     $(document).trigger($.Event('compose_started.zulip', opts));
-    resize.resize_bottom_whitespace();
     exports.update_placeholder_text(opts);
-};
-
-// In an attempt to decrease mixing, make the composebox's
-// stream bar look like what you're replying to.
-// (In particular, if there's a color associated with it,
-//  have that color be reflected here too.)
-exports.decorate_stream_bar = function (stream_name) {
-    const color = stream_data.get_color(stream_name);
-    update_lock_icon_for_stream(stream_name);
-    $("#stream-message .message_header_stream")
-        .css('background-color', color)
-        .removeClass(stream_color.color_classes)
-        .addClass(stream_color.get_color_class(color));
 };
 
 exports.maybe_scroll_up_selected_message = function () {
@@ -269,10 +243,10 @@ exports.cancel = function () {
     }
     hide_box();
     $("#compose_close").hide();
-    resize.resize_bottom_whitespace();
     clear_box();
     notifications.clear_compose_notifications();
     compose.abort_xhr();
+    compose.abort_zoom(undefined);
     compose_state.set_message_type(false);
     compose_pm_pill.clear();
     $(document).trigger($.Event('compose_canceled.zulip'));

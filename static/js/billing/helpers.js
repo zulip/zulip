@@ -1,4 +1,4 @@
-exports.create_ajax_request = function (url, form_name, stripe_token = null) {
+exports.create_ajax_request = function (url, form_name, stripe_token = null, numeric_inputs = []) {
     const form = $("#" + form_name + "-form");
     const form_loading_indicator = "#" + form_name + "_loading_indicator";
     const form_input_section = "#" + form_name + "-input-section";
@@ -6,13 +6,16 @@ exports.create_ajax_request = function (url, form_name, stripe_token = null) {
     const form_error = "#" + form_name + "-error";
     const form_loading = "#" + form_name + "-loading";
 
-    const numeric_inputs = ["licenses"];
+    const zulip_limited_section =  "#zulip-limited-section";
+    const free_trial_alert_message =  "#free-trial-alert-message";
 
     loading.make_indicator($(form_loading_indicator),
                            {text: 'Processing ...', abs_positioned: true});
     $(form_input_section).hide();
     $(form_error).hide();
     $(form_loading).show();
+    $(zulip_limited_section).hide();
+    $(free_trial_alert_message).hide();
 
     const data = {};
     if (stripe_token) {
@@ -47,6 +50,8 @@ exports.create_ajax_request = function (url, form_name, stripe_token = null) {
             $(form_loading).hide();
             $(form_error).show().text(JSON.parse(xhr.responseText).msg);
             $(form_input_section).show();
+            $(zulip_limited_section).show();
+            $(free_trial_alert_message).show();
         },
     });
 };

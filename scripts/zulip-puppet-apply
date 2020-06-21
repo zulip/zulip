@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-
-import os
-import sys
-import subprocess
 import configparser
+import os
 import re
-from lib.zulip_tools import parse_os_release, assert_running_as_root
+import subprocess
+import sys
+
+from lib.zulip_tools import assert_running_as_root, parse_os_release
 
 assert_running_as_root()
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,8 +20,8 @@ if len(extra_args) and extra_args[0] in ('-f', '--force'):
 config = configparser.RawConfigParser()
 config.read("/etc/zulip/zulip.conf")
 
+distro_info = parse_os_release()
 if not os.path.exists("/etc/puppet/hiera.yaml"):
-    distro_info = parse_os_release()
     if (distro_info['ID'], distro_info['VERSION_ID']) in [('debian', '9'), ('ubuntu', '16.04')]:
         # Suppress warnings in old puppet about hiera.yaml not existing.
         open("/etc/puppet/hiera.yaml", "a").close()
@@ -31,7 +31,7 @@ Exec { path => "/usr/sbin:/usr/bin:/sbin:/bin" }
 """
 
 for pclass in re.split(r'\s*,\s*', config.get('machine', 'puppet_classes')):
-    puppet_config += "include %s\n" % (pclass,)
+    puppet_config += f"include {pclass}\n"
 
 # We use the puppet configuration from the same Zulip checkout as this script
 scripts_path = os.path.join(BASE_DIR, "scripts")
@@ -42,6 +42,10 @@ puppet_cmd += extra_args
 # Set the scripts path to be a factor so it can be used by puppet code
 puppet_env = os.environ.copy()
 puppet_env["FACTER_zulip_scripts_path"] = scripts_path
+
+# This is to suppress puppet warnings with ruby 2.7.
+if (distro_info['ID'], distro_info['VERSION_ID']) in [('ubuntu', '20.04')]:
+    puppet_env["RUBYOPT"] = "-W0"
 
 if not force:
     subprocess.check_call(puppet_cmd + ['--noop', '--show_diff'], env=puppet_env)

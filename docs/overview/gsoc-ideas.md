@@ -6,14 +6,14 @@
 
 ## About us
 
-[Zulip](https://zulipchat.com) is a powerful, open source team chat
+[Zulip](https://zulip.com) is a powerful, open source team chat
 application. Zulip has a web app, a cross-platform mobile app for iOS
 and Android, a cross-platform desktop app, and over 100 native
 integrations, all open source.
 
 Zulip has gained a considerable amount of traction since it was
 [released as open source software][oss-release] in late 2015, with
-code contributions from [over 500 people](https://zulipchat.com/team)
+code contributions from [over 500 people](https://zulip.com/team)
 from all around the world.  Thousands of people use Zulip every single
 day, and your work on Zulip will have impact on the daily experiences
 of a large and rapidly growing number of people.
@@ -264,7 +264,7 @@ CSS](https://github.com/zulip/zulip/).
   Expert: Eeshan Garg.
 
 - Fill in the gaps in Zulip's [REST API
-  documentation](https://zulipchat.com/api), which is an important
+  documentation](https://zulip.com/api), which is an important
   resource for any organization integrating with Zulip.  Zulip has a
   [nice framework](../documentation/api.md) for writing API
   documentation built by past GSoC students based on the OpenAPI
@@ -288,13 +288,13 @@ CSS](https://github.com/zulip/zulip/).
 - Make Zulip integrations easier for nontechnical users to setup.
   This includes adding a backend permissions system for managing bot
   permissions (and implementing the enforcement logic), adding an
-  Oauth system for presenting those controls to users, as well as
+  OAuth system for presenting those controls to users, as well as
   making the /integrations page UI have buttons to create a bot,
   rather than sending users to the administration page.  **Skills
   recommended**: Strong Python/Django; JavaScript, CSS, and design
-  sense helpful.  Understanding of implementing Oauth providers,
+  sense helpful.  Understanding of implementing OAuth providers,
   e.g. having built a prototype with
-  [the Django Oauth toolkit](https://django-oauth-toolkit.readthedocs.io/en/latest/)
+  [the Django OAuth toolkit](https://django-oauth-toolkit.readthedocs.io/en/latest/)
   would be great to demonstrate as part of an application.  The
   [Zulip integration writing guide](../documentation/integrations.md)
   and

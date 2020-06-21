@@ -31,14 +31,14 @@ def get_message(payload: Dict[str, Any]) -> str:
         body = "Build [#{id}]({url}) for **{name}** started.".format(
             id=payload["buildid"],
             name=payload["buildername"],
-            url=payload["url"]
+            url=payload["url"],
         )
     elif payload["event"] == "finished":
         body = "Build [#{id}]({url}) (result: {status}) for **{name}** finished.".format(
             id=payload["buildid"],
             name=payload["buildername"],
             url=payload["url"],
-            status=status
+            status=status,
         )
 
     return body

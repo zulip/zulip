@@ -1,9 +1,9 @@
-from typing import Text, List
+import re
+from typing import List, Text
 
 from gitlint.git import GitCommit
-from gitlint.rules import LineRule, RuleViolation, CommitMessageTitle
 from gitlint.options import StrOption
-import re
+from gitlint.rules import CommitMessageTitle, LineRule, RuleViolation
 
 # Word list from https://github.com/m1foley/fit-commit
 # Copyright (c) 2015 Mike Foley
@@ -69,7 +69,7 @@ WORD_SET = {
     'testing', 'tested',  # 'tests' excluded to reduce false negative
     'truncates', 'truncating', 'truncated',
     'updates', 'updating', 'updated',
-    'uses', 'using', 'used'
+    'uses', 'using', 'used',
 }
 
 imperative_forms = sorted([
@@ -98,7 +98,7 @@ def head_binary_search(key: Text, words: List[str]) -> str:
     while True:
         if lower > upper:
             # Should not happen
-            raise Exception("Cannot find imperative mood of {}".format(key))
+            raise Exception(f"Cannot find imperative mood of {key}")
 
         mid = (lower + upper) // 2
         imperative_form = words[mid]
@@ -135,7 +135,7 @@ class ImperativeMood(LineRule):
             violation = RuleViolation(self.id, self.error_msg.format(
                 word=first_word,
                 imperative=imperative,
-                title=commit.message.title
+                title=commit.message.title,
             ))
 
             violations.append(violation)
@@ -156,7 +156,7 @@ class TitleMatchRegexAllowException(LineRule):
         regex = self.options['regex'].value
         pattern = re.compile(regex, re.UNICODE)
         if not pattern.search(title) and not title.startswith("Revert \""):
-            violation_msg = "Title does not match regex ({})".format(regex)
+            violation_msg = f"Title does not match regex ({regex})"
             return [RuleViolation(self.id, violation_msg, title)]
 
         return []

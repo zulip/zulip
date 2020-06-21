@@ -31,7 +31,7 @@ cause problems if run in other situations.  If you're not sure, it's
 worth reading the documentation (or the code, usually available at
 `zerver/management/commands/`; they're generally very simple programs).
 
-### Accessing an organization's realm ID
+### Accessing an organization's `string_id`
 
 Since Zulip supports hosting multiple organizations on a single
 server, many management commands require you specify which
@@ -119,7 +119,7 @@ There are dozens of useful management commands under
 * `./manage.py change_user_email`: Change a user's email address.
 * `./manage.py knight`: Can toggle whether a user is an administrator
   (easier done [via the
-  UI](https://zulipchat.com/help/change-a-users-role)) or create an
+  UI](https://zulip.com/help/change-a-users-role)) or create an
   API super user bot (with `--permission=api_super_user`), which are
   needed for some content mirroring integrations.
 * `./manage.py export_single_user` does a limited version of the [main

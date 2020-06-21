@@ -76,9 +76,9 @@ download the file.
 
 [cli-export]: https://confluence.atlassian.com/hipchatdc3/export-data-from-hipchat-data-center-913476832.html
 
-### Import into zulipchat.com
+### Import into Zulip Cloud
 
-Email support@zulipchat.com with your exported archive and your desired Zulip
+Email support@zulip.com with your exported archive and your desired Zulip
 subdomain. Your imported organization will be hosted at
 `<subdomain>.zulipchat.com`.
 
@@ -107,13 +107,17 @@ password you set during the HipChat export.
 
 ```
 cd /home/zulip/deployments/current
+supervisorctl stop all  # Stop the Zulip server
 openssl aes-256-cbc -d -in <exported_file> -out hipchat.tar.gz -md md5 -pass pass:<password>
 ./manage.py convert_hipchat_data hipchat.tar.gz --output converted_hipchat_data
 ./manage.py import '' converted_hipchat_data
+./scripts/restart-server
 ```
 
-This could take several minutes to run, depending on how much data you're
-importing.
+This could take several minutes to run, depending on how much data
+you're importing.  The server stop/restart is only necessary when
+importing on a server with minimal RAM, where an OOM kill might
+otherwise occur.
 
 **Import options**
 

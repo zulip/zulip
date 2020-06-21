@@ -9,7 +9,7 @@ const return_true = () => true;
 const return_false = () => false;
 
 set_global('$', global.make_zjquery());
-set_global('narrow_state', {});
+set_global('narrow_state', {filter: return_false});
 set_global('search_suggestion', {});
 set_global('ui_util', {
     change_tab_to: noop,
@@ -26,7 +26,9 @@ run_test('update_button_visibility', () => {
     search_query.is = return_false;
     search_query.val('');
     narrow_state.active = return_false;
-    search_button.prop('disabled', false);
+    search_button.prop('disabled', true);
+    search.update_button_visibility();
+    assert(search_button.prop('disabled'));
 
     search_query.is = return_true;
     search_query.val('');
@@ -86,7 +88,7 @@ run_test('initialize', () => {
             };
 
             /* Test source */
-            search_suggestion.get_suggestions_legacy = () => search_suggestions;
+            search_suggestion.get_suggestions = () => search_suggestions;
             const expected_source_value = search_suggestions.strings;
             const source = opts.source('ver');
             assert.equal(source, expected_source_value);
@@ -249,6 +251,7 @@ run_test('initiate_search', () => {
     // this implicitly expects the code to used the chained
     // function calls, which is something to keep in mind if
     // this test ever fails unexpectedly.
+    narrow_state.filter = () => ({is_search: return_true});
     let typeahead_forced_open = false;
     let is_searchbox_text_selected = false;
     $('#search_query').select = noop;
@@ -265,4 +268,10 @@ run_test('initiate_search', () => {
     search.initiate_search();
     assert(typeahead_forced_open);
     assert(is_searchbox_text_selected);
+    assert.equal($('#search_query').val(), "ver");
+
+    // test that we append space for user convenience
+    narrow_state.filter = () => ({is_search: return_false});
+    search.initiate_search();
+    assert.equal($('#search_query').val(), "ver ");
 });

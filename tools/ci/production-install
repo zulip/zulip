@@ -11,6 +11,11 @@ ZULIP_PATH=/home/circleci/zulip
 APT_OPTIONS=(-o 'Dpkg::Options::=--force-confdef' -o 'Dpkg::Options::=--force-confold')
 apt-get update
 
+if [ -f /etc/os-release ]; then
+    os_info="$(. /etc/os-release; printf '%s\n' "$VERSION_CODENAME")"
+    { read -r os_version_codename || true; } <<< "$os_info"
+fi
+
 if ! apt-get dist-upgrade -y "${APT_OPTIONS[@]}"; then
     echo "\`apt-get dist-upgrade\`: Failure occurred while trying to perform distribution upgrade, Retrying..."
     apt-get dist-upgrade -y "${APT_OPTIONS[@]}"
@@ -54,8 +59,8 @@ grep -vi '\(Vary\|Content-Language\|expires\|issued by\|modified\|saved\|[.][.][
 
 # Simplify the diff by getting replacing 4-5 digit length numbers with <Length>.
 sed -i 's|Length: [0-9]\+\( [(][0-9]\+[.][0-9]K[)]\)\?|Length: <Length>|' /tmp/http-headers-processed
-sed -i 's|Length: [0-9]\+\( [(][0-9]\+[.][0-9]K[)]\)\?|Length: <Length>|' /tmp/success-http-headers.txt
-if ! diff -ur /tmp/http-headers-processed /tmp/success-http-headers.txt; then
+sed -i 's|Length: [0-9]\+\( [(][0-9]\+[.][0-9]K[)]\)\?|Length: <Length>|' /tmp/success-http-headers-"$os_version_codename".txt
+if ! diff -ur /tmp/http-headers-processed /tmp/success-http-headers-"$os_version_codename".txt; then
     set +x
     echo
     echo "FAILURE: The HTTP Headers returned from loading the homepage on the server do not match the contents of tools/ci/success-http-headers.txt.  Typically, this means that the server threw a 500 when trying to load the homepage."
@@ -95,12 +100,10 @@ for consumer in $consumer_list; do
         set +x
         echo
         echo "FAILURE: Missing Nagios consumer for $consumer; displaying full consumer output:"
+        set -x
         rabbitmqctl list_consumers
         supervisorctl status
-        echo "EVENTS LOGS"
-        echo
-        cat /var/log/zulip/events*.log
-        echo
+        tail -n +1 /var/log/zulip/events*.log
         exit 1
     fi
 done

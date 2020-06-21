@@ -28,6 +28,7 @@
  *   choice.
  *
  *   Our custom changes include all mentions of this.automated.
+ *   And also includes the blocks containing the is contenteditable condition.
  *
  * 2. Custom selection triggers:
  *
@@ -55,6 +56,19 @@
  *  You can set an on_escape hook to take extra actions when the user hits
  *  the `Esc` key.  We use this in our navbar code to close the navbar when
  *  a user hits escape while in the typeahead.
+ *
+ * 5. Help on empty strings:
+ *
+ *   This adds support for displaying the typeahead for an empty string.
+ *   It is helpful when we want to render the typeahead, based on already
+ *   entered data (in the form of contenteditable elements) every time the
+ *   input block gains focus but is empty.
+ *
+ *   We also have logic so that there is an exception to this rule when this
+ *   option is set as true. We prevent the lookup of the typeahead and hide it
+ *   so that the `Backspace` key is free to interact with the other elements.
+ *
+ *   Our custom changes include all mentions of `helpOnEmptyStrings` and `hideOnEmpty`.
  * ============================================================ */
 
 !function($){
@@ -81,6 +95,7 @@
     this.fixed = this.options.fixed || false;
     this.automated = this.options.automated || this.automated;
     this.trigger_selection = this.options.trigger_selection || this.trigger_selection;
+    this.on_move = this.options.on_move;
     this.on_escape = this.options.on_escape;
     this.header = this.options.header || this.header;
 
@@ -99,15 +114,25 @@
 
   , select: function (e) {
       var val = this.$menu.find('.active').data('typeahead-value')
-      this.$element
-        .val(this.updater(val, e))
-        .change()
+      if (this.$element.is("[contenteditable]")) {
+        this.$element.html(this.updater(val, e)).change();
+        // Empty textContent after the change event handler
+        // converts the input text to html elements.
+        this.$element.html('');
+      } else {
+        this.$element.val(this.updater(val, e)).change();
+      }
+
       return this.hide()
     }
 
   , set_value: function () {
       var val = this.$menu.find('.active').data('typeahead-value')
-      this.$element.val(val)
+      this.$element.is("[contenteditable]") ? this.$element.html(val) : this.$element.val(val);
+
+      if (this.on_move) {
+        this.on_move();
+      }
     }
 
   , updater: function (item) {
@@ -173,12 +198,12 @@
       return this
     }
 
-  , lookup: function (event) {
+  , lookup: function (hideOnEmpty) {
       var items
 
       this.query = this.$element.is("[contenteditable]") ? this.$element.text() :  this.$element.val();
 
-      if (!this.options.helpOnEmptyStrings) {
+      if (!this.options.helpOnEmptyStrings || hideOnEmpty) {
         if (!this.query || this.query.length < this.options.minLength) {
           return this.shown ? this.hide() : this
         }
@@ -366,7 +391,11 @@
             if (!this.shown) return;
             this.select(e);
           }
-          this.lookup()
+          var hideOnEmpty = false
+          if (e.keyCode === 8 && this.options.helpOnEmptyStrings) { // backspace
+            hideOnEmpty = true
+          }
+          this.lookup(hideOnEmpty)
       }
 
       if ((this.options.stopAdvance || (e.keyCode != 9 && e.keyCode != 13))

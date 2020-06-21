@@ -9,8 +9,7 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import UnexpectedWebhookEventType, \
-    check_send_webhook_message
+from zerver.lib.webhooks.common import UnexpectedWebhookEventType, check_send_webhook_message
 from zerver.models import Realm, UserProfile, get_user_by_delivery_email
 
 IGNORED_EVENTS = [
@@ -81,11 +80,11 @@ def convert_jira_markup(content: str, realm: Realm) -> str:
             # Try to look up username
             user_profile = guess_zulip_user_from_jira(username, realm)
             if user_profile:
-                replacement = "**{}**".format(user_profile.full_name)
+                replacement = f"**{user_profile.full_name}**"
             else:
-                replacement = "**{}**".format(username)
+                replacement = f"**{username}**"
 
-            content = content.replace("[~{}]".format(username,), replacement)
+            content = content.replace(f"[~{username}]", replacement)
 
     return content
 
@@ -105,13 +104,13 @@ def get_issue_string(payload: Dict[str, Any], issue_id: Optional[str]=None, with
         issue_id = get_issue_id(payload)
 
     if with_title:
-        text = "{}: {}".format(issue_id, get_issue_title(payload))
+        text = f"{issue_id}: {get_issue_title(payload)}"
     else:
         text = issue_id
 
     base_url = re.match(r"(.*)\/rest\/api/.*", get_in(payload, ['issue', 'self']))
     if base_url and len(base_url.groups()):
-        return "[{}]({}/browse/{})".format(text, base_url.group(1), issue_id)
+        return f"[{text}]({base_url.group(1)}/browse/{issue_id})"
     else:
         return text
 
@@ -121,7 +120,7 @@ def get_assignee_mention(assignee_email: str, realm: Realm) -> str:
             assignee_name = get_user_by_delivery_email(assignee_email, realm).full_name
         except UserProfile.DoesNotExist:
             assignee_name = assignee_email
-        return "**{}**".format(assignee_name)
+        return f"**{assignee_name}**"
     return ''
 
 def get_issue_author(payload: Dict[str, Any]) -> str:
@@ -152,7 +151,7 @@ def get_issue_title(payload: Dict[str, Any]) -> str:
     return get_in(payload, ['issue', 'fields', 'summary'])
 
 def get_issue_subject(payload: Dict[str, Any]) -> str:
-    return "{}: {}".format(get_issue_id(payload), get_issue_title(payload))
+    return f"{get_issue_id(payload)}: {get_issue_title(payload)}"
 
 def get_sub_event_for_update_issue(payload: Dict[str, Any]) -> str:
     sub_event = payload.get('issue_event_type_name', '')
@@ -170,11 +169,11 @@ def get_event_type(payload: Dict[str, Any]) -> Optional[str]:
     return event
 
 def add_change_info(content: str, field: str, from_field: str, to_field: str) -> str:
-    content += "* Changed {}".format(field)
+    content += f"* Changed {field}"
     if from_field:
-        content += " from **{}**".format(from_field)
+        content += f" from **{from_field}**"
     if to_field:
-        content += " to {}\n".format(to_field)
+        content += f" to {to_field}\n"
     return content
 
 def handle_updated_issue_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
@@ -188,7 +187,7 @@ def handle_updated_issue_event(payload: Dict[str, Any], user_profile: UserProfil
     assignee_mention = get_assignee_mention(assignee_email, user_profile.realm)
 
     if assignee_mention != '':
-        assignee_blurb = " (assigned to {})".format(assignee_mention)
+        assignee_blurb = f" (assigned to {assignee_mention})"
     else:
         assignee_blurb = ''
 
@@ -206,15 +205,15 @@ def handle_updated_issue_event(payload: Dict[str, Any], user_profile: UserProfil
         else:
             author = get_issue_author(payload)
 
-        content = "{} {} {}{}".format(author, verb, issue, assignee_blurb)
+        content = f"{author} {verb} {issue}{assignee_blurb}"
         comment = get_in(payload, ['comment', 'body'])
         if comment:
             comment = convert_jira_markup(comment, user_profile.realm)
-            content = "{}:\n\n``` quote\n{}\n```".format(content, comment)
+            content = f"{content}:\n\n``` quote\n{comment}\n```"
         else:
-            content = "{}.".format(content)
+            content = f"{content}."
     else:
-        content = "{} updated {}{}:\n\n".format(get_issue_author(payload), issue, assignee_blurb)
+        content = f"{get_issue_author(payload)} updated {issue}{assignee_blurb}:\n\n"
         changelog = get_in(payload, ['changelog'])
 
         if changelog != '':
@@ -253,7 +252,7 @@ def handle_created_issue_event(payload: Dict[str, Any], user_profile: UserProfil
         author=get_issue_author(payload),
         issue_string=get_issue_string(payload, with_title=True),
         priority=get_in(payload, ['issue', 'fields', 'priority', 'name']),
-        assignee=get_in(payload, ['issue', 'fields', 'assignee', 'displayName'], 'no one')
+        assignee=get_in(payload, ['issue', 'fields', 'assignee', 'displayName'], 'no one'),
     )
 
 def handle_deleted_issue_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
@@ -263,7 +262,7 @@ def handle_deleted_issue_event(payload: Dict[str, Any], user_profile: UserProfil
     return template.format(
         author=get_issue_author(payload),
         issue_string=get_issue_string(payload, with_title=True),
-        punctuation=punctuation
+        punctuation=punctuation,
     )
 
 def normalize_comment(comment: str) -> str:
@@ -279,7 +278,7 @@ def handle_comment_created_event(payload: Dict[str, Any], user_profile: UserProf
 *\n``` quote\n{comment}\n```\n".format(
         author = payload["comment"]["author"]["displayName"],
         title = title,
-        comment = normalize_comment(payload["comment"]["body"])
+        comment = normalize_comment(payload["comment"]["body"]),
     )
 
 def handle_comment_updated_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
@@ -288,7 +287,7 @@ def handle_comment_updated_event(payload: Dict[str, Any], user_profile: UserProf
 *\n``` quote\n{comment}\n```\n".format(
         author = payload["comment"]["author"]["displayName"],
         title = title,
-        comment = normalize_comment(payload["comment"]["body"])
+        comment = normalize_comment(payload["comment"]["body"]),
     )
 
 def handle_comment_deleted_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
@@ -297,7 +296,7 @@ def handle_comment_deleted_event(payload: Dict[str, Any], user_profile: UserProf
 *\n``` quote\n~~{comment}~~\n```\n".format(
         author = payload["comment"]["author"]["displayName"],
         title = title,
-        comment = normalize_comment(payload["comment"]["body"])
+        comment = normalize_comment(payload["comment"]["body"]),
     )
 
 JIRA_CONTENT_FUNCTION_MAPPER = {

@@ -33,7 +33,10 @@ def move_missed_message_addresses_to_database(apps: StateApps, schema_editor: Da
             redis_client.delete(key)
             continue
 
-        user_profile_id, recipient_id, subject_b = result  # type: (bytes, bytes, bytes)
+        user_profile_id: bytes
+        recipient_id: bytes
+        subject_id: bytes
+        user_profile_id, recipient_id, subject_b = result
         topic_name = subject_b.decode('utf-8')
 
         # The data model for missed-message emails has changed in two

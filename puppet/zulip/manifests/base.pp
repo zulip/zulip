@@ -15,6 +15,7 @@ class zulip::base {
         '15.10' => 'wily',
         '16.04' => 'xenial',
         '18.04' => 'bionic',
+        '20.04' => 'focal',
       }
       $base_packages = [
         # Accurate time is essential
@@ -55,19 +56,7 @@ class zulip::base {
   }
   package { $base_packages: ensure => 'installed' }
 
-  $postgres_version = zulipconf('postgresql', 'version', $release_name ? {
-    'wheezy'  => '9.1',
-    'jessie'  => '9.4',
-    'stretch' => '9.6',
-    'buster'  => '11',
-    'precise' => '9.1',
-    'trusty'  => '9.3',
-    'vivid'   => '9.4',
-    'wily'    => '9.4',
-    'xenial'  => '9.5',
-    'bionic'  => '10',
-    'CentOS7' => '10',
-  })
+  $postgres_version = zulipconf('postgresql', 'version', undef)
 
   $normal_queues = [
     'deferred_work',
@@ -82,24 +71,12 @@ class zulip::base {
     'missedmessage_mobile_notifications',
     'outgoing_webhooks',
     'signups',
-    'slow_queries',
     'user_activity',
     'user_activity_interval',
     'user_presence',
   ]
 
-  # $::memorysize_mb is a string in Facter < 3.0 and a double in Facter ≥ 3.0.
-  # Either way, convert it to an integer in one of two ways, both of which are
-  # stupid, depending on the Puppet version.  (╯°□°）╯︵ ┻━┻
-  case $::puppetversion {
-    /^3\./: {
-      $total_memory_mb = 0 + inline_template('<%= @memorysize_mb.to_i %>')
-    }
-    default: {
-      $total_memory_mb_array = scanf("${::memorysize_mb} ", '%i')
-      $total_memory_mb = $total_memory_mb_array[0]
-    }
-  }
+  $total_memory_mb = Integer($::memorysize_mb);
 
   group { 'zulip':
     ensure     => present,

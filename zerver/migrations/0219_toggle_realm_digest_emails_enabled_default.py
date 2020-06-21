@@ -24,5 +24,5 @@ class Migration(migrations.Migration):
         ),
         migrations.RunPython(disable_realm_digest_emails_enabled,
                              reverse_code=migrations.RunPython.noop,
-                             elidable=True)
+                             elidable=True),
     ]

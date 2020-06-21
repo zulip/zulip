@@ -1,20 +1,34 @@
 import datetime
-import mock
 import time
 from typing import List
+from unittest import mock
 
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.actions import do_create_user
-from zerver.lib.digest import gather_new_streams, handle_digest_email, enqueue_emails, \
-    exclude_subscription_modified_streams
+from zerver.lib.digest import (
+    enqueue_emails,
+    exclude_subscription_modified_streams,
+    gather_new_streams,
+    handle_digest_email,
+)
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
-from zerver.models import get_client, get_realm, flush_per_request_caches, \
-    Realm, Message, UserActivity, UserProfile, RealmAuditLog, get_stream
+from zerver.models import (
+    Message,
+    Realm,
+    RealmAuditLog,
+    UserActivity,
+    UserProfile,
+    flush_per_request_caches,
+    get_client,
+    get_realm,
+    get_stream,
+)
+
 
 class TestDigestEmailMessages(ZulipTestCase):
 
@@ -257,12 +271,12 @@ class TestDigestEmailMessages(ZulipTestCase):
     @mock.patch('zerver.lib.digest.timezone_now')
     @override_settings(SEND_DIGEST_EMAILS=True)
     def test_new_stream_link(self, mock_django_timezone: mock.MagicMock) -> None:
-        cutoff = datetime.datetime(year=2017, month=11, day=1)
-        mock_django_timezone.return_value = datetime.datetime(year=2017, month=11, day=5)
+        cutoff = datetime.datetime(year=2017, month=11, day=1, tzinfo=datetime.timezone.utc)
+        mock_django_timezone.return_value = datetime.datetime(year=2017, month=11, day=5, tzinfo=datetime.timezone.utc)
         cordelia = self.example_user('cordelia')
         stream_id = create_stream_if_needed(cordelia.realm, 'New stream')[0].id
         new_stream = gather_new_streams(cordelia, cutoff)[1]
-        expected_html = "<a href='http://zulip.testserver/#narrow/stream/{stream_id}-New-stream'>New stream</a>".format(stream_id=stream_id)
+        expected_html = f"<a href='http://zulip.testserver/#narrow/stream/{stream_id}-New-stream'>New stream</a>"
         self.assertIn(expected_html, new_stream['html'])
 
     def simulate_stream_conversation(self, stream: str, senders: List[str]) -> List[int]:
@@ -271,7 +285,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         message_ids = []  # List[int]
         for sender_name in senders:
             sender = self.example_user(sender_name)
-            content = 'some content for {} from {}'.format(stream, sender_name)
+            content = f'some content for {stream} from {sender_name}'
             message_id = self.send_stream_message(sender, stream, content)
             message_ids.append(message_id)
         Message.objects.filter(id__in=message_ids).update(sending_client=sending_client)

@@ -1,22 +1,26 @@
 #!/usr/bin/env python3
-import os
-import sys
 import argparse
 import glob
+import os
 import shutil
-
+import sys
 from typing import List
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 sys.path.append(ZULIP_PATH)
-from scripts.lib.zulip_tools import run, OKBLUE, ENDC, \
-    get_dev_uuid_var_path, is_digest_obsolete, write_new_digest
-
-from version import PROVISION_VERSION
 from pygments import __version__ as pygments_version
 
+from scripts.lib.zulip_tools import (
+    ENDC,
+    OKBLUE,
+    get_dev_uuid_var_path,
+    is_digest_obsolete,
+    run,
+    write_new_digest,
+)
 from tools.setup.generate_zulip_bots_static_files import generate_zulip_bots_static_files
+from version import PROVISION_VERSION
 
 VENV_PATH = "/srv/zulip-py3-venv"
 UUID_VAR_PATH = get_dev_uuid_var_path()
@@ -128,7 +132,7 @@ def need_to_run_build_pygments_data() -> bool:
     return is_digest_obsolete(
         "build_pygments_data_hash",
         build_pygments_data_paths(),
-        [pygments_version]
+        [pygments_version],
     )
 
 def need_to_run_compilemessages() -> bool:
@@ -155,7 +159,7 @@ def need_to_run_configure_rabbitmq(settings_list: List[str]) -> bool:
     obsolete = is_digest_obsolete(
         'last_configure_rabbitmq_hash',
         configure_rabbitmq_paths(),
-        settings_list
+        settings_list,
     )
 
     if obsolete:
@@ -177,7 +181,7 @@ def clean_unused_caches() -> None:
         verbose=False,
         no_headings=True,
     )
-    from scripts.lib import clean_venv_cache, clean_node_cache, clean_emoji_cache
+    from scripts.lib import clean_emoji_cache, clean_node_cache, clean_venv_cache
     clean_venv_cache.main(args)
     clean_node_cache.main(args)
     clean_emoji_cache.main(args)
@@ -204,7 +208,7 @@ def main(options: argparse.Namespace) -> int:
         write_new_digest(
             'build_pygments_data_hash',
             build_pygments_data_paths(),
-            [pygments_version]
+            [pygments_version],
         )
     else:
         print("No need to run `tools/setup/build_pygments_data`.")
@@ -218,23 +222,22 @@ def main(options: argparse.Namespace) -> int:
     else:
         print("No need to run `scripts/setup/inline_email_css.py`.")
 
-    if not options.is_production_test_suite:
-        # The following block is skipped for the production test
-        # suite, because that suite doesn't make use of these elements
-        # of the development environment (it just uses the development
-        # environment to build a release tarball).
+    if not options.is_build_release_tarball_only:
+        # The following block is skipped when we just need the development
+        # environment to build a release tarball.
 
         # Need to set up Django before using template_status
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
         import django
         django.setup()
 
+        from django.conf import settings
+
         from zerver.lib.test_fixtures import (
             DEV_DATABASE,
             TEST_DATABASE,
             destroy_leaked_test_databases,
         )
-        from django.conf import settings
 
         if options.is_force or need_to_run_configure_rabbitmq(
                 [settings.RABBITMQ_PASSWORD]):
@@ -242,7 +245,7 @@ def main(options: argparse.Namespace) -> int:
             write_new_digest(
                 'last_configure_rabbitmq_hash',
                 configure_rabbitmq_paths(),
-                [settings.RABBITMQ_PASSWORD]
+                [settings.RABBITMQ_PASSWORD],
             )
         else:
             print("No need to run `scripts/setup/configure-rabbitmq.")
@@ -250,8 +253,17 @@ def main(options: argparse.Namespace) -> int:
         dev_template_db_status = DEV_DATABASE.template_status()
         if options.is_force or dev_template_db_status == 'needs_rebuild':
             run(["tools/setup/postgres-init-dev-db"])
-            run(["tools/rebuild-dev-database"])
-            DEV_DATABASE.write_new_db_digest()
+            if options.skip_dev_db_build:
+                # We don't need to build the manual development
+                # database on CircleCI for running tests, so we can
+                # just leave it as a template db and save a minute.
+                #
+                # Important: We don't write a digest as that would
+                # incorrectly claim that we ran migrations.
+                pass
+            else:
+                run(["tools/rebuild-dev-database"])
+                DEV_DATABASE.write_new_db_digest()
         elif dev_template_db_status == 'run_migrations':
             DEV_DATABASE.run_db_migrations()
         elif dev_template_db_status == 'current':
@@ -278,7 +290,7 @@ def main(options: argparse.Namespace) -> int:
 
         destroyed = destroy_leaked_test_databases()
         if destroyed:
-            print("Dropped %s stale test databases!" % (destroyed,))
+            print(f"Dropped {destroyed} stale test databases!")
 
     clean_unused_caches()
 
@@ -306,7 +318,7 @@ def main(options: argparse.Namespace) -> int:
             pass
 
     version_file = os.path.join(UUID_VAR_PATH, 'provision_version')
-    print('writing to %s\n' % (version_file,))
+    print(f'writing to {version_file}\n')
     open(version_file, 'w').write(PROVISION_VERSION + '\n')
 
     print()
@@ -319,10 +331,15 @@ if __name__ == "__main__":
                         default=False,
                         help="Ignore all provisioning optimizations.")
 
-    parser.add_argument('--production-test-suite', action='store_true',
-                        dest='is_production_test_suite',
+    parser.add_argument('--build-release-tarball-only', action='store_true',
+                        dest='is_build_release_tarball_only',
                         default=False,
                         help="Provision for test suite with production settings.")
+
+    parser.add_argument('--skip-dev-db-build', action='store_true',
+                        dest='skip_dev_db_build',
+                        default=False,
+                        help="Don't run migrations on dev database.")
 
     options = parser.parse_args()
     sys.exit(main(options))

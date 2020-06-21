@@ -177,7 +177,7 @@
             <div class="platform-icons">
                 <div class="group">
                     <h2>Web</h2>
-                    <a href="{{ apps_page_url }}">
+                    <a href="{{ apps_page_web }}">
                         <i class="fa fa-desktop platform-icon" aria-hidden="true"></i>
                     </a>
                 </div>
@@ -528,17 +528,17 @@
     <div class="padded-content call-to-action-bottom">
         <h1>Experience Zulip today!</h1>
         {% if root_domain_landing_page %}
-        <a href="{{ url('plans') }}" class="download-button button">
+        <a href="{{ url('plans') }}" class="download-button button green">
             {{ _('See plans and pricing') }}
         </a>
         {% endif %}
         {% if register_link_disabled %}
         {% elif only_sso %}
-        <a href="{{ url('login-sso') }}" class="button">
+        <a href="{{ url('login-sso') }}" class="button green">
             {{ _('Log in now') }}
         </a>
         {% else %}
-        <a href="{{ url('register') }}" class="button">
+        <a href="{{ url('register') }}" class="button green">
             {{ _('Sign up now') }}
         </a>
         {% endif %}

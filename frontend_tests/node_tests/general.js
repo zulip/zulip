@@ -23,7 +23,7 @@ const isaac = {
 };
 
 assert(!people.is_known_user_id(isaac.user_id));
-people.add(isaac);
+people.add_active_user(isaac);
 assert(people.is_known_user_id(isaac.user_id));
 
 // The `people`object is a very fundamental object in the
@@ -37,7 +37,7 @@ const me = {
     user_id: 31,
     full_name: 'Me Myself',
 };
-people.add(me);
+people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
 // Let's look at stream_data next, and we will start by putting
@@ -99,6 +99,8 @@ alert_words.process_message = noop;
 zrequire('recent_senders');
 zrequire('unread');
 zrequire('stream_topic_history');
+zrequire('recent_topics');
+zrequire('overlays');
 
 // And finally require the module that we will test directly:
 zrequire('message_store');
@@ -415,7 +417,7 @@ run_test('insert_message', () => {
 
     assert.equal(message_store.get(new_message.id), undefined);
 
-    helper.redirect('activity', 'process_loaded_messages');
+    helper.redirect('huddle_data', 'process_loaded_messages');
     helper.redirect('message_util', 'add_new_messages');
     helper.redirect('notifications', 'received_messages');
     helper.redirect('resize', 'resize_page_components');
@@ -432,9 +434,9 @@ run_test('insert_message', () => {
     // the code invokes various objects when a new message
     // comes in:
     assert.deepEqual(helper.events, [
+        'huddle_data.process_loaded_messages',
         'message_util.add_new_messages',
         'message_util.add_new_messages',
-        'activity.process_loaded_messages',
         'unread_ui.update_unread_counts',
         'resize.resize_page_components',
         'unread_ops.process_visible',

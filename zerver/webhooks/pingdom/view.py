@@ -6,8 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import UnexpectedWebhookEventType, \
-    check_send_webhook_message
+from zerver.lib.webhooks.common import UnexpectedWebhookEventType, check_send_webhook_message
 from zerver.models import UserProfile
 
 PINGDOM_TOPIC_TEMPLATE = '{name} status.'
@@ -65,14 +64,14 @@ def get_body_for_http_request(payload: Dict[str, Any]) -> str:
         'service_url': payload['check_params']['hostname'],
         'previous_state': previous_state,
         'current_state': current_state,
-        'type': get_check_type(payload)
+        'type': get_check_type(payload),
     }
     body = MESSAGE_TEMPLATE.format(**data)
     if current_state == 'DOWN' and previous_state == 'UP':
         description = DESC_TEMPLATE.format(description=payload['long_description'])
         body += description
     else:
-        body = '{}.'.format(body[:-1])
+        body = f'{body[:-1]}.'
 
     return body
 

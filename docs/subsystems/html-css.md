@@ -149,7 +149,7 @@ relevant background as well.
 Zulip's frontend is primarily JavaScript in the `static/js` directory;
 we are working on migrating these to Typescript modules.  Stylesheets
 are written in the Sass extension of CSS (with the scss syntax), they
-are converted from plain CSS and we have yet to take full advantage of
+are converted from plain CSS, and we have yet to take full advantage of
 the features Sass offers.  We use Webpack to transpile and build JS
 and CSS bundles that the browser can understand, one for each entry
 points specified in `tools/webpack.assets.json`; source maps are

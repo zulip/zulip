@@ -1,0 +1,33 @@
+<div id="admin-bot-form" class="modal modal-bg hide fade" tabindex="-1" role="dialog" aria-labelledby="admin-bot-form-label" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
+        <h3 id="admin-bot-form-label">{{t "Change bot info and owner" }}</h3>
+    </div>
+    <div class="modal-body">
+        <div id="user-name-form" data-user-id="{{user_id}}">
+            <form class="form-horizontal name-setting">
+                <input type="hidden" name="is_full_name" value="true" />
+                <div class="input-group edit_bot_owner_container">
+                    <label for="bot_owner_select">{{t "Owner" }}</label>
+                    {{> settings/dropdown_list_widget
+                      widget_name="edit_bot_owner"
+                      list_placeholder=(t 'Filter users')
+                      reset_button_text=(t '[Remove owner]')
+                      label="" }}
+                </div>
+                <div class="input-group name_change_container">
+                    <label for="full_name">{{t "Full name" }}</label>
+                    <input type="text" autocomplete="off" name="full_name" value="{{ full_name }}" />
+                </div>
+                <div class="input-group email_change_container">
+                    <label for="email">{{t "Email" }}</label>
+                    <input type="text" autocomplete="off" name="email" value="{{ email }}" readonly/>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="button rounded sea-green submit_bot_change">{{t 'Save changes' }}</button>
+        <button type="button" class="button rounded" data-dismiss="modal">{{t "Cancel" }}</button>
+    </div>
+</div>

@@ -19,7 +19,7 @@ class zulip_ops::base {
     # Needed for zulip-ec2-configure-network-interfaces
     'python3-six',
     'python-six',
-    'python3-boto',
+    'python3-boto3',
     'python-boto', # needed for postgres_common too
     'python3-netifaces',
     'python-netifaces',
@@ -31,11 +31,11 @@ class zulip_ops::base {
     # Useful tools in a production environment
     'screen',
     'strace',
-    'host',
+    'bind9-host',
     'git',
     'nagios-plugins-contrib',
   ]
-  package { $org_base_packages: ensure => 'installed' }
+  zulip::safepackage { $org_base_packages: ensure => 'installed' }
 
   # Add system users here
   $users = []

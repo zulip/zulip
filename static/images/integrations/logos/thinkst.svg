@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   height="38.599998"
+   width="38.400002"
+   xml:space="preserve"
+   viewBox="0 0 38.400002 38.599998"
+   y="0px"
+   x="0px"
+   id="Camada_1"
+   version="1.1"><metadata
+   id="metadata3867"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><defs
+   id="defs3865" />
+<style
+   id="style3810"
+   type="text/css">
+	.st0{clip-path:url(#SVGID_2_);fill:#36D27E;}
+	.st1{clip-path:url(#SVGID_4_);fill:#FF2D2F;}
+	.st2{clip-path:url(#SVGID_6_);}
+	.st3{clip-path:url(#SVGID_8_);fill:#525252;}
+</style>
+<g
+   transform="translate(-16.9,-120.7)"
+   id="g3860">
+	<g
+   id="g3822">
+		<g
+   id="g3820">
+			<defs
+   id="defs3813">
+				<path
+   d="m 16.9,152.2 v -30.6 c 0,-0.5 0.4,-0.8 0.8,-0.8 h 30.5 c -0.9,0.9 -1.5,2.2 -1.5,3.5 0,2.8 2.3,5.1 5.1,5.1 1.4,0 2.6,-0.6 3.5,-1.4 v 30.5 c 0,0.5 -0.4,0.8 -0.8,0.8 H 34.7 v 0 c 8,-4.9 9.6,-12.1 8.5,-15 -1.4,-3.9 1.4,-9.9 1.4,-9.9 0,0 4.6,-1.7 4.6,-2.3 0,-0.3 -4.5,-0.2 -4.5,-0.2 -10.8,-7.7 -15,4 -16,8.2 -2.5,0.3 -9.2,9.9 -9.2,9.9 -0.8,0.3 -1.7,1 -2.6,2.2 z"
+   id="SVGID_1_" />
+			</defs>
+			<clipPath
+   id="SVGID_2_">
+				<use
+   height="100%"
+   width="100%"
+   y="0"
+   x="0"
+   id="use3815"
+   style="overflow:visible"
+   xlink:href="#SVGID_1_" />
+			</clipPath>
+			<rect
+   style="fill:#36d27e"
+   id="rect3818"
+   clip-path="url(#SVGID_2_)"
+   height="41.5"
+   width="41.299999"
+   class="st0"
+   y="119.3"
+   x="15.5" />
+		</g>
+	</g>
+	<g
+   id="g3834">
+		<g
+   id="g3832">
+			<defs
+   id="defs3825">
+				<path
+   d="m 51.8,127.7 c 1.9,0 3.5,-1.6 3.5,-3.5 0,-1.9 -1.6,-3.5 -3.5,-3.5 -1.9,0 -3.5,1.6 -3.5,3.5 0.1,2 1.6,3.5 3.5,3.5 z"
+   id="SVGID_3_" />
+			</defs>
+			<clipPath
+   id="SVGID_4_">
+				<use
+   height="100%"
+   width="100%"
+   y="0"
+   x="0"
+   id="use3827"
+   style="overflow:visible"
+   xlink:href="#SVGID_3_" />
+			</clipPath>
+			<rect
+   style="fill:#ff2d2f"
+   id="rect3830"
+   clip-path="url(#SVGID_4_)"
+   height="9.8000002"
+   width="9.8000002"
+   class="st1"
+   y="119.3"
+   x="46.900002" />
+		</g>
+	</g>
+	
+	<g
+   id="g3858">
+		
+	</g>
+</g>
+</svg>

@@ -1,15 +1,14 @@
 # Library code for use in management commands
-
 import time
-
 from argparse import ArgumentParser, RawTextHelpFormatter
+from typing import Any, Dict, List, Optional
 
 from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.management.base import BaseCommand, CommandError
-from typing import Any, Dict, Optional, List
 
-from zerver.models import Realm, UserProfile, Client, get_client
+from zerver.models import Client, Realm, UserProfile, get_client
+
 
 def is_integer_string(val: str) -> bool:
     try:
@@ -28,7 +27,7 @@ def check_config() -> None:
         except AttributeError:
             pass
 
-        raise CommandError("Error: You must set %s in /etc/zulip/settings.py." % (setting_name,))
+        raise CommandError(f"Error: You must set {setting_name} in /etc/zulip/settings.py.")
 
 def sleep_forever() -> None:
     while True:  # nocoverage
@@ -84,8 +83,7 @@ You can use the command list_realms to find ID of the realms in this server."""
                 return Realm.objects.get(id=val)
             return Realm.objects.get(string_id=val)
         except Realm.DoesNotExist:
-            raise CommandError("There is no realm with id '%s'. Aborting." %
-                               (options["realm_id"],))
+            raise CommandError("There is no realm with id '{}'. Aborting.".format(options["realm_id"]))
 
     def get_users(self, options: Dict[str, Any], realm: Optional[Realm],
                   is_bot: Optional[bool]=None,
@@ -127,7 +125,7 @@ You can use the command list_realms to find ID of the realms in this server."""
                 return UserProfile.objects.select_related().get(
                     delivery_email__iexact=email.strip(), realm=realm)
             except UserProfile.DoesNotExist:
-                raise CommandError("The realm '%s' does not contain a user with email '%s'" % (realm, email))
+                raise CommandError(f"The realm '{realm}' does not contain a user with email '{email}'")
 
         # Realm is None in the remaining code path.  Here, we
         # optimistically try to see if there is exactly one user with
@@ -139,7 +137,7 @@ You can use the command list_realms to find ID of the realms in this server."""
                                "(in different realms); please pass `--realm` "
                                "to specify which one to modify.")
         except UserProfile.DoesNotExist:
-            raise CommandError("This Zulip server does not contain a user with email '%s'" % (email,))
+            raise CommandError(f"This Zulip server does not contain a user with email '{email}'")
 
     def get_client(self) -> Client:
         """Returns a Zulip Client object to be used for things done in management commands"""

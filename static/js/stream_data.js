@@ -427,6 +427,10 @@ exports.update_stream_privacy = function (sub, values) {
     sub.history_public_to_subscribers = values.history_public_to_subscribers;
 };
 
+exports.update_message_retention_setting  = function (sub, message_retention_days) {
+    sub.message_retention_days = message_retention_days;
+};
+
 exports.receives_notifications = function (stream_name, notification_name) {
     const sub = exports.get_sub(stream_name);
     if (sub === undefined) {
@@ -461,6 +465,7 @@ exports.update_calculated_fields = function (sub) {
                                  !sub.invite_only;
     sub.preview_url = hash_util.by_stream_uri(sub.stream_id);
     sub.can_add_subscribers = !page_params.is_guest && (!sub.invite_only || sub.subscribed);
+    sub.is_old_stream = sub.stream_weekly_traffic !== null;
     if (sub.rendered_description !== undefined) {
         sub.rendered_description = sub.rendered_description.replace('<p>', '').replace('</p>', '');
     }
@@ -555,7 +560,7 @@ exports.all_topics_in_cache = function (sub) {
 
     // If the cache doesn't have the latest messages, we can't be sure
     // we have all topics.
-    if (!message_list.all.fetch_status.has_found_newest()) {
+    if (!message_list.all.data.fetch_status.has_found_newest()) {
         return false;
     }
 
@@ -717,6 +722,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
         audible_notifications: page_params.enable_stream_audible_notifications,
         push_notifications: page_params.enable_stream_push_notifications,
         email_notifications: page_params.enable_stream_email_notifications,
+        wildcard_mentions_notify: page_params.wildcard_mentions_notify,
         description: '',
         rendered_description: '',
         first_message_id: attrs.first_message_id,
@@ -838,17 +844,17 @@ exports.sort_for_stream_settings = function (stream_ids, order) {
         return out;
     }
 
-    const orders = {
-        "by-stream-name": by_stream_name,
-        "by-subscriber-count": by_subscriber_count,
-        "by-weekly-traffic": by_weekly_traffic,
-    };
+    const orders = new Map([
+        ["by-stream-name", by_stream_name],
+        ["by-subscriber-count", by_subscriber_count],
+        ["by-weekly-traffic", by_weekly_traffic],
+    ]);
 
-    if (typeof order === "undefined" || !orders.hasOwnProperty(order)) {
+    if (order === undefined || !orders.has(order)) {
         order = "by-stream-name";
     }
 
-    stream_ids.sort(orders[order]);
+    stream_ids.sort(orders.get(order));
 };
 
 exports.get_streams_for_admin = function () {

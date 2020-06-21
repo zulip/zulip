@@ -50,18 +50,17 @@ incorrectly.
 # code that didn't work.
 
 
-import os
-import sys
 import functools
 import importlib
+import os
+import subprocess
+import sys
 import traceback
 import types
-import subprocess
 import weakref
 
-from tornado import ioloop
+from tornado import ioloop, process
 from tornado.log import gen_log
-from tornado import process
 
 try:
     import signal
@@ -189,7 +188,7 @@ def _check_file(modify_times, module, path):
     try:
         importlib.reload(module)
     except Exception:
-        gen_log.error("Error importing %s, not reloading" % (path,))
+        gen_log.error(f"Error importing {path}, not reloading")
         traceback.print_exc()
         return False
     return True

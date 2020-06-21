@@ -1,11 +1,14 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/thumbnailing.html
+from typing import Optional
+
+from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 from django.shortcuts import redirect
 from django.utils.translation import ugettext as _
-from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
-from typing import Optional
-from zerver.models import UserProfile, validate_attachment_request
-from zerver.lib.request import has_request_variables, REQ
+
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.thumbnail import generate_thumbnail_url
+from zerver.models import UserProfile, validate_attachment_request
+
 
 def validate_thumbnail_request(user_profile: UserProfile, path: str) -> Optional[bool]:
     # path here does not have a leading / as it is parsed from request hitting the

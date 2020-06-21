@@ -29,7 +29,7 @@ def api_dialogflow_webhook(request: HttpRequest, user_profile: UserProfile,
             body = result
     else:
         error_status = payload["status"]["errorDetails"]
-        body = "{} - {}".format(status, error_status)
+        body = f"{status} - {error_status}"
 
     profile = get_user_profile_by_email(email)
     check_send_private_message(user_profile, request.client, profile, body)

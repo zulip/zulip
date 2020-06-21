@@ -17,6 +17,6 @@ fi
 
 deploy_hook="${ZULIP_CERTBOT_DEPLOY_HOOK:-service nginx reload}"
 
-/usr/local/sbin/certbot-auto renew --quiet \
+certbot renew --quiet \
   --webroot --webroot-path=/var/lib/zulip/certbot-webroot/ \
   --deploy-hook "$deploy_hook"

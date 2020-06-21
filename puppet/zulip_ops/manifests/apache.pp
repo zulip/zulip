@@ -18,7 +18,7 @@ class zulip_ops::apache {
     mode    => '0600',
   }
 
-  file { '/etc/apache2/users/wiki':
+  file { '/etc/apache2/users/monitoring':
     ensure  => file,
     require => File['/etc/apache2/users/'],
     owner   => 'www-data',

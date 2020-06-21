@@ -207,6 +207,14 @@ run_test('paste to input', () => {
         items.blue,
         items.yellow,
     ]);
+
+    let entered = false;
+    widget.createPillonPaste(function () {
+        entered = true;
+    });
+
+    paste_handler(e);
+    assert(entered);
 });
 
 run_test('arrows on pills', () => {
@@ -324,6 +332,7 @@ run_test('comma', () => {
 
     key_handler({
         keyCode: COMMA,
+        preventDefault: noop,
     });
 
     assert.deepEqual(widget.items(), [

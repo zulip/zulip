@@ -24,7 +24,6 @@ exports.MessageList = function (opts) {
     const collapse_messages = opts.collapse_messages;
     const table_name = opts.table_name;
     this.view = new MessageListView(this, table_name, collapse_messages);
-    this.fetch_status = FetchStatus();
     this.table_name = table_name;
     this.narrowed = this.table_name === "zfilt";
     this.num_appends = 0;
@@ -304,6 +303,9 @@ exports.MessageList.prototype = {
     },
 
     show_edit_message: function MessageList_show_edit_message(row, edit_obj) {
+        if (row.find(".message_edit_form form").length !== 0) {
+            return;
+        }
         row.find(".message_edit_form").append(edit_obj.form);
         row.find(".message_content, .status-message, .message_controls").hide();
         row.find(".message_edit").css("display", "block");

@@ -3,20 +3,21 @@ from typing import Callable, Dict, Optional, Set, Tuple
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _
-from zerver.lib.name_restrictions import is_disposable_domain
 
+from zerver.lib.name_restrictions import is_disposable_domain
 # TODO: Move DisposableEmailError, etc. into here.
 from zerver.models import (
-    email_to_username,
-    email_to_domain,
-    get_users_by_delivery_email,
-    is_cross_realm_bot_email,
     DisposableEmailError,
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
     Realm,
     RealmDomain,
+    email_to_domain,
+    email_to_username,
+    get_users_by_delivery_email,
+    is_cross_realm_bot_email,
 )
+
 
 def validate_disposable(email: str) -> None:
     if is_disposable_domain(email_to_domain(email)):
@@ -112,7 +113,7 @@ def validate_email_is_valid(
     return None
 
 def email_reserved_for_system_bots_error(email: str) -> str:
-    return '%s is reserved for system bots' % (email,)
+    return f'{email} is reserved for system bots'
 
 def get_existing_user_errors(
     target_realm: Realm,
@@ -173,7 +174,7 @@ def get_existing_user_errors(
 
         if existing_user_profile.is_active:
             if verbose:
-                msg = _('%s already has an account') % (email,)
+                msg = _('{email} already has an account').format(email=email)
             else:
                 msg = _("Already has an account.")
         else:

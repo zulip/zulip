@@ -4,8 +4,7 @@ from typing import Any
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
 
-from zerver.models import Message, Realm, Recipient, Stream, Subscription, \
-    get_realm
+from zerver.models import Message, Realm, Recipient, Stream, Subscription, get_realm
 
 
 class Command(BaseCommand):
@@ -37,21 +36,21 @@ class Command(BaseCommand):
                     public_count += 1
             print("------------")
             print(realm.string_id, end=' ')
-            print("%10s %d public streams and" % ("(", public_count), end=' ')
-            print("%d private streams )" % (private_count,))
+            print("{:>10} {} public streams and".format("(", public_count), end=' ')
+            print(f"{private_count} private streams )")
             print("------------")
-            print("%25s %15s %10s %12s" % ("stream", "subscribers", "messages", "type"))
+            print("{:>25} {:>15} {:>10} {:>12}".format("stream", "subscribers", "messages", "type"))
 
             for stream in streams:
                 if stream.invite_only:
                     stream_type = 'private'
                 else:
                     stream_type = 'public'
-                print("%25s" % (stream.name,), end=' ')
+                print(f"{stream.name:>25}", end=' ')
                 recipient = Recipient.objects.filter(type=Recipient.STREAM, type_id=stream.id)
-                print("%10d" % (len(Subscription.objects.filter(recipient=recipient,
-                                                                active=True)),), end=' ')
+                print("{:10}".format(len(Subscription.objects.filter(recipient=recipient,
+                                                                     active=True))), end=' ')
                 num_messages = len(Message.objects.filter(recipient=recipient))
-                print("%12d" % (num_messages,), end=' ')
-                print("%15s" % (stream_type,))
+                print(f"{num_messages:12}", end=' ')
+                print(f"{stream_type:>15}")
             print("")

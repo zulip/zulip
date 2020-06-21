@@ -2,10 +2,10 @@ import logging
 import os
 import shutil
 import subprocess
-from scripts.lib.zulip_tools import run, run_as_root, ENDC, WARNING, os_families
-from scripts.lib.hash_reqs import expand_reqs
+from typing import List, Optional, Set, Tuple
 
-from typing import List, Optional, Tuple, Set
+from scripts.lib.hash_reqs import expand_reqs
+from scripts.lib.zulip_tools import ENDC, WARNING, os_families, run, run_as_root
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 VENV_CACHE_PATH = "/srv/zulip-venv-cache"
@@ -98,9 +98,9 @@ YUM_THUMBOR_VENV_DEPENDENCIES = [
 
 def get_venv_dependencies(vendor: str, os_version: str) -> List[str]:
     if vendor == 'ubuntu' and os_version == '20.04':
-        return VENV_DEPENDENCIES + [PYTHON_DEV_DEPENDENCY.format("2"), ]
+        return VENV_DEPENDENCIES + [PYTHON_DEV_DEPENDENCY.format("2")]
     elif "debian" in os_families():
-        return VENV_DEPENDENCIES + [PYTHON_DEV_DEPENDENCY.format(""), ]
+        return VENV_DEPENDENCIES + [PYTHON_DEV_DEPENDENCY.format("")]
     elif "rhel" in os_families():
         return REDHAT_VENV_DEPENDENCIES
     elif "fedora" in os_families():
@@ -124,7 +124,7 @@ def get_package_names(requirements_file: str) -> List[str]:
         if package.startswith("git+https://") and '#egg=' in package:
             split_package = package.split("#egg=")
             if len(split_package) != 2:
-                raise Exception("Unexpected duplicate #egg in package %s" % (package,))
+                raise Exception("Unexpected duplicate #egg in package {}".format(package))
             # Extract the package name from Git requirements entries
             package = split_package[1]
 
@@ -238,7 +238,7 @@ def get_logfile_name(venv_path: str) -> str:
     return "{}/setup-venv.log".format(venv_path)
 
 def create_log_entry(
-    target_log: str, parent: str, copied_packages: Set[str], new_packages: Set[str]
+    target_log: str, parent: str, copied_packages: Set[str], new_packages: Set[str],
 ) -> None:
 
     venv_path = os.path.dirname(target_log)
@@ -270,7 +270,7 @@ def do_patch_activate_script(venv_path: str) -> None:
         lines = f.readlines()
     for i, line in enumerate(lines):
         if line.startswith('VIRTUAL_ENV='):
-            lines[i] = 'VIRTUAL_ENV="%s"\n' % (venv_path,)
+            lines[i] = 'VIRTUAL_ENV="{}"\n'.format(venv_path)
 
     with open(script_path, 'w') as f:
         f.write("".join(lines))
@@ -296,7 +296,7 @@ def setup_virtualenv(
         with open(success_stamp, 'w') as f:
             f.close()
 
-    print("Using cached Python venv from %s" % (cached_venv_path,))
+    print("Using cached Python venv from {}".format(cached_venv_path))
     if target_venv_path is not None:
         run_as_root(["ln", "-nsf", cached_venv_path, target_venv_path])
         if patch_activate_script:

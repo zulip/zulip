@@ -1,44 +1,87 @@
+# Core implementation of message retention policies and low-level
+# helpers for deleting messages.
+#
+# Because bugs in code that deletes message content can cause
+# irreversible harm in installations without backups, this is a
+# particularly sensitive system that requires careful design,
+# thoughtful database transaction boundaries, and a well-written test
+# suite to make bugs unlikely and mitigate their impact.
+#
+# The core design principle of this system is we never delete a live
+# Message/Reaction/etc. object.  Instead, we use move_rows, which moves
+# objects to a "deleted objects" table like ArchiveMessage, recording
+# the change using a structure linked to an ArchiveTransaction object
+# that can be used to undo that deletion transaction in a clean
+# fashion.
+#
+# We move all of the data associated with a given block of messages in
+# a single database transaction in order to avoid broken intermediate
+# states where, for example, a message's reactions were deleted but
+# not the messages themselves.
+#
+# And then a separate process deletes ArchiveTransaction objects
+# ARCHIVED_DATA_VACUUMING_DELAY_DAYS after they were created.
+#
+# Because of the nice properties of this deletion system, we use the
+# same system for routine deletions via the Zulip UI (deleting a
+# message or group of messages) as we use for message retention policy
+# deletions.
+import logging
 from datetime import timedelta
+from typing import Any, Dict, List, Optional, Tuple
 
 from django.conf import settings
 from django.db import connection, transaction
 from django.db.models import Model
 from django.utils.timezone import now as timezone_now
-from psycopg2.sql import Composable, Identifier, Literal, SQL
+from psycopg2.sql import SQL, Composable, Identifier, Literal
 
 from zerver.lib.logging_util import log_to_file
-from zerver.models import (Message, UserMessage, ArchivedUserMessage, Realm,
-                           Attachment, ArchivedAttachment, Reaction, ArchivedReaction,
-                           SubMessage, ArchivedSubMessage, Recipient, Stream, ArchiveTransaction,
-                           get_user_including_cross_realm)
-
-from typing import Any, Dict, List, Optional, Tuple
-
-import logging
+from zerver.models import (
+    ArchivedAttachment,
+    ArchivedReaction,
+    ArchivedSubMessage,
+    ArchivedUserMessage,
+    ArchiveTransaction,
+    Attachment,
+    Message,
+    Reaction,
+    Realm,
+    Recipient,
+    Stream,
+    SubMessage,
+    UserMessage,
+    get_user_including_cross_realm,
+)
 
 logger = logging.getLogger('zulip.retention')
 log_to_file(logger, settings.RETENTION_LOG_PATH)
 
 MESSAGE_BATCH_SIZE = 1000
+TRANSACTION_DELETION_BATCH_SIZE = 100
 
+# This data structure declares the details of all database tables that
+# hang off the Message table (with a foreign key to Message being part
+# of its primary lookup key).  This structure allows us to share the
+# code for managing these related tables.
 models_with_message_key: List[Dict[str, Any]] = [
     {
         'class': Reaction,
         'archive_class': ArchivedReaction,
         'table_name': 'zerver_reaction',
-        'archive_table_name': 'zerver_archivedreaction'
+        'archive_table_name': 'zerver_archivedreaction',
     },
     {
         'class': SubMessage,
         'archive_class': ArchivedSubMessage,
         'table_name': 'zerver_submessage',
-        'archive_table_name': 'zerver_archivedsubmessage'
+        'archive_table_name': 'zerver_archivedsubmessage',
     },
     {
         'class': UserMessage,
         'archive_class': ArchivedUserMessage,
         'table_name': 'zerver_usermessage',
-        'archive_table_name': 'zerver_archivedusermessage'
+        'archive_table_name': 'zerver_archivedusermessage',
     },
 ]
 
@@ -51,6 +94,7 @@ def move_rows(
     returning_id: bool=False,
     **kwargs: Composable,
 ) -> List[int]:
+    """Core helper for bulk moving rows between a table and its archive table"""
     if src_db_table is None:
         # Use base_model's db_table unless otherwise specified.
         src_db_table = base_model._meta.db_table
@@ -67,7 +111,7 @@ def move_rows(
     sql_args.update(kwargs)
     with connection.cursor() as cursor:
         cursor.execute(
-            raw_query.format(**sql_args)
+            raw_query.format(**sql_args),
         )
         if returning_id:
             return [id for (id,) in cursor.fetchall()]  # return list of row ids
@@ -152,7 +196,7 @@ def move_expired_messages_to_archive_by_recipient(recipient: Recipient,
     )
 
 def move_expired_personal_and_huddle_messages_to_archive(realm: Realm,
-                                                         chunk_size: int=MESSAGE_BATCH_SIZE
+                                                         chunk_size: int=MESSAGE_BATCH_SIZE,
                                                          ) -> int:
     # This function will archive appropriate messages and their related objects.
     cross_realm_bot_ids = [
@@ -191,9 +235,11 @@ def move_expired_personal_and_huddle_messages_to_archive(realm: Realm,
         chunk_size=chunk_size,
     )
 
-    # Archive cross-realm personal messages to users in the realm:
-    # Note: Cross-realm huddle message aren't handled yet, they remain an issue
-    # that should be addressed.
+    # Archive cross-realm personal messages to users in the realm.  We
+    # don't archive cross-realm huddle messages via retention policy,
+    # as we don't support them as a feature in Zulip, and the query to
+    # find and delete them would be a lot of complexity and potential
+    # performance work for a case that doesn't actually happen.
     query = SQL("""
     INSERT INTO zerver_archivedmessage ({dst_fields}, archive_transaction_id)
         SELECT {src_fields}, {archive_transaction_id}
@@ -241,6 +287,10 @@ def move_models_with_message_key_to_archive(msg_ids: List[int]) -> None:
             message_ids=Literal(tuple(msg_ids)),
         )
 
+# Attachments can't use the common models_with_message_key system,
+# because they can be referenced by more than one Message, and we only
+# want to delete the Attachment if we're deleting the last message
+# referencing them.
 def move_attachments_to_archive(msg_ids: List[int]) -> None:
     assert len(msg_ids) > 0
 
@@ -321,7 +371,7 @@ def archive_stream_messages(realm: Realm, streams: List[Stream], chunk_size: int
     message_count = 0
     for recipient in recipients:
         message_count += archive_messages_by_recipient(
-            recipient, retention_policy_dict[recipient.type_id], realm, chunk_size
+            recipient, retention_policy_dict[recipient.type_id], realm, chunk_size,
         )
 
     logger.info("Done. Archived %s messages.", message_count)
@@ -380,7 +430,8 @@ def get_realms_and_streams_for_archiving() -> List[Tuple[Realm, List[Stream]]]:
     return [(realm_id_to_realm[realm_id], realm_id_to_streams_list[realm_id])
             for realm_id in realm_id_to_realm]
 
-def move_messages_to_archive(message_ids: List[int], chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
+def move_messages_to_archive(message_ids: List[int], realm: Optional[Realm]=None,
+                             chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
     query = SQL("""
     INSERT INTO zerver_archivedmessage ({dst_fields}, archive_transaction_id)
         SELECT {src_fields}, {archive_transaction_id}
@@ -394,6 +445,7 @@ def move_messages_to_archive(message_ids: List[int], chunk_size: int=MESSAGE_BAT
         query,
         type=ArchiveTransaction.MANUAL,
         message_ids=Literal(tuple(message_ids)),
+        realm=realm,
         chunk_size=chunk_size,
     )
 
@@ -516,15 +568,20 @@ def restore_all_data_from_archive(restore_manual_transactions: bool=True) -> Non
 
     if restore_manual_transactions:
         restore_data_from_archive_by_transactions(
-            ArchiveTransaction.objects.exclude(restored=True).filter(type=ArchiveTransaction.MANUAL)
+            ArchiveTransaction.objects.exclude(restored=True).filter(type=ArchiveTransaction.MANUAL),
         )
 
 def clean_archived_data() -> None:
     logger.info("Cleaning old archive data.")
     check_date = timezone_now() - timedelta(days=settings.ARCHIVED_DATA_VACUUMING_DELAY_DAYS)
-    #  Appropriate archived objects will get deleted through the on_delete=CASCADE property:
-    transactions = ArchiveTransaction.objects.filter(timestamp__lt=check_date)
-    count = transactions.count()
-    transactions.delete()
+    # Associated archived objects will get deleted through the on_delete=CASCADE property:
+    count = 0
+    transaction_ids = list(ArchiveTransaction.objects.filter(
+        timestamp__lt=check_date).values_list("id", flat=True))
+    while len(transaction_ids) > 0:
+        transaction_block = transaction_ids[0:TRANSACTION_DELETION_BATCH_SIZE]
+        transaction_ids = transaction_ids[TRANSACTION_DELETION_BATCH_SIZE:]
+        ArchiveTransaction.objects.filter(id__in=transaction_block).delete()
+        count += len(transaction_block)
 
     logger.info("Deleted %s old ArchiveTransactions.", count)

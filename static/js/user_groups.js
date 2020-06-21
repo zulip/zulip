@@ -91,7 +91,7 @@ exports.initialize = function (params) {
 };
 
 exports.is_user_group = function (item) {
-    return item.hasOwnProperty('members');
+    return item.members !== undefined;
 };
 
 window.user_groups = exports;

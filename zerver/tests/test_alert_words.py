@@ -1,27 +1,11 @@
-from zerver.lib.alert_words import (
-    alert_words_in_realm,
-    user_alert_words,
-)
-
-from zerver.lib.actions import (
-    do_add_alert_words,
-    do_remove_alert_words,
-)
-
-from zerver.lib.test_helpers import (
-    most_recent_message,
-    most_recent_usermessage,
-)
-
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-
-from zerver.models import (
-    UserProfile,
-)
-
 import ujson
+
+from zerver.lib.actions import do_add_alert_words, do_remove_alert_words
+from zerver.lib.alert_words import alert_words_in_realm, user_alert_words
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import most_recent_message, most_recent_usermessage
+from zerver.models import UserProfile
+
 
 class AlertWordTests(ZulipTestCase):
     interesting_alert_word_list = ['alert', 'multi-word word', '☃']
@@ -31,7 +15,7 @@ class AlertWordTests(ZulipTestCase):
         self.login(user_name)
 
         params = {
-            'alert_words': ujson.dumps(['milk', 'cookies'])
+            'alert_words': ujson.dumps(['milk', 'cookies']),
         }
         result = self.client_post('/json/users/me/alert_words', params)
         self.assert_json_success(result)
@@ -66,14 +50,14 @@ class AlertWordTests(ZulipTestCase):
         self.assert_length(realm_alert_words[user.id], 3)
 
         # Test the case-insensitivity of adding words
-        do_add_alert_words(user, set(["ALert", "ALERT"]))
+        do_add_alert_words(user, {"ALert", "ALERT"})
         words = user_alert_words(user)
         self.assertEqual(set(words), set(self.interesting_alert_word_list))
         realm_alert_words = alert_words_in_realm(user.realm)
         self.assert_length(realm_alert_words[user.id], 3)
 
         # Test the case-insensitivity of removing words
-        do_remove_alert_words(user, set(["ALert"]))
+        do_remove_alert_words(user, {"ALert"})
         words = user_alert_words(user)
         self.assertEqual(set(words), set(self.interesting_alert_word_list) - {'alert'})
         realm_alert_words = alert_words_in_realm(user.realm)

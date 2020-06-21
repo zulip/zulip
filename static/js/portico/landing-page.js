@@ -1,3 +1,4 @@
+import * as google_analytics from './google-analytics.js';
 import { detect_user_os } from './tabbed-instructions.js';
 import render_tabs from './team.js';
 
@@ -126,6 +127,7 @@ const apps_events = function () {
         version = get_version_from_path();
         update_page();
         $("body").animate({ scrollTop: 0 }, 200);
+        google_analytics.config({page_path: window.location.pathname});
     });
 
     $(".apps a .icon").click(function (e) {
@@ -137,6 +139,7 @@ const apps_events = function () {
         update_path();
         update_page();
         $("body").animate({ scrollTop: 0 }, 200);
+        google_analytics.config({page_path: window.location.pathname});
 
         return false;
     });
@@ -148,8 +151,8 @@ const apps_events = function () {
 };
 
 const events = function () {
-    // get the location url like `zulipchat.com/features/`, cut off the trailing
-    // `/` and then split by `/` to get ["zulipchat.com", "features"], then
+    // get the location url like `zulip.com/features/`, cut off the trailing
+    // `/` and then split by `/` to get ["zulip.com", "features"], then
     // pop the last element to get the current section (eg. `features`).
     const location = window.location.pathname.replace(/\/#*$/, "").split(/\//).pop();
 

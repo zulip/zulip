@@ -3,10 +3,9 @@
 To run a Zulip server, you will need:
 * A dedicated machine or VM
 * A supported OS:
+  * Ubuntu 20.04 Focal
   * Ubuntu 18.04 Bionic
-  * Ubuntu 16.04 Xenial (deprecated)
   * Debian 10 Buster
-  * Debian 9 Stretch  (deprecated)
 * At least 2GB RAM, and 10GB disk space
   * If you expect 100+ users: 4GB RAM, and 2 CPUs
 * A hostname in DNS
@@ -29,13 +28,11 @@ can't support you, but
 
 #### Operating System
 
-Ubuntu 18.04 Bionic, Debian 10 Buster, Ubuntu 16.04 Xenial (deprecated),
-and Debian 9 Stretch (deprecated) are supported for running Zulip in
-production.  64-bit is recommended.  We also recommend installing on
-the newest option you're comfortable with, to save your organization
-the work of upgrading (Ubuntu Trusty [reached end of life in April
-2019][trusty-eol]; Zulip 2.0 was the last major release to support
-it).
+Ubuntu 20.04 Focal, 18.04 Bionic, and Debian 10 Buster are supported
+for running Zulip in production.  64-bit is recommended.  We recommend
+installing on the newest supported OS release you're comfortable with,
+to save a bit of future work [upgrading the operating
+system][upgrade-os].
 
 If you're using Ubuntu, the
 [Ubuntu universe repository][ubuntu-repositories] must be
@@ -46,6 +43,7 @@ sudo add-apt-repository universe
 sudo apt update
 ```
 
+[upgrade-os]: ../production/upgrade-or-modify.html#upgrading-the-operating-system
 [ubuntu-repositories]:
 https://help.ubuntu.com/community/Repositories/Ubuntu
 [enable-universe]: https://help.ubuntu.com/community/Repositories/CommandLine#Adding_the_Universe_and_Multiverse_Repositories
@@ -81,7 +79,7 @@ on hardware requirements for larger organizations.
 * Outgoing HTTP(S) access (ports 80 and 443) to the public Internet so
   that Zulip can properly manage image previews and embeds.  Outgoing
   Internet access is not required if you [disable those
-  features](https://zulipchat.com/help/allow-image-link-previews).
+  features](https://zulip.com/help/allow-image-link-previews).
 * Outgoing SMTP access (usually port 587) to your [SMTP
   server](../production/email.md) so that Zulip can send emails.
 * A domain name (e.g. `zulip.example.com`) that your users will use to

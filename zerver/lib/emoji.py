@@ -1,17 +1,26 @@
 import os
 import re
-import ujson
-
-from django.utils.translation import ugettext as _
 from typing import Optional, Tuple
 
+import ujson
+from django.utils.translation import ugettext as _
+
+from zerver.lib.exceptions import OrganizationAdministratorRequired
 from zerver.lib.request import JsonableError
 from zerver.lib.storage import static_path
 from zerver.lib.upload import upload_backend
-from zerver.lib.exceptions import OrganizationAdministratorRequired
 from zerver.models import Reaction, Realm, RealmEmoji, UserProfile
 
-with open(static_path("generated/emoji/emoji_codes.json")) as fp:
+emoji_codes_path = static_path("generated/emoji/emoji_codes.json")
+if not os.path.exists(emoji_codes_path):  # nocoverage
+    # During the collectstatic step of build-release-tarball,
+    # prod-static/serve/generated/emoji won't exist yet.
+    emoji_codes_path = os.path.join(
+        os.path.dirname(__file__),
+        "../../static/generated/emoji/emoji_codes.json",
+    )
+
+with open(emoji_codes_path) as fp:
     emoji_codes = ujson.load(fp)
 
 name_to_codepoint = emoji_codes["name_to_codepoint"]
@@ -21,9 +30,9 @@ EMOTICON_CONVERSIONS = emoji_codes["emoticon_conversions"]
 possible_emoticons = EMOTICON_CONVERSIONS.keys()
 possible_emoticon_regexes = (re.escape(emoticon) for emoticon in possible_emoticons)
 terminal_symbols = ',.;?!()\\[\\] "\'\\n\\t'  # from composebox_typeahead.js
-emoticon_regex = ('(?<![^{}])(?P<emoticon>('.format(terminal_symbols)
+emoticon_regex = (f'(?<![^{terminal_symbols}])(?P<emoticon>('
                   + ')|('.join(possible_emoticon_regexes)
-                  + '))(?![^{}])'.format(terminal_symbols))
+                  + f'))(?![^{terminal_symbols}])')
 
 # Translates emoticons to their colon syntax, e.g. `:smiley:`.
 def translate_emoticons(text: str) -> str:
@@ -43,7 +52,7 @@ def emoji_name_to_emoji_code(realm: Realm, emoji_name: str) -> Tuple[str, str]:
         return emoji_name, Reaction.ZULIP_EXTRA_EMOJI
     if emoji_name in name_to_codepoint:
         return name_to_codepoint[emoji_name], Reaction.UNICODE_EMOJI
-    raise JsonableError(_("Emoji '%s' does not exist") % (emoji_name,))
+    raise JsonableError(_("Emoji '{}' does not exist").format(emoji_name))
 
 def check_emoji_request(realm: Realm, emoji_name: str, emoji_code: str,
                         emoji_type: str) -> None:

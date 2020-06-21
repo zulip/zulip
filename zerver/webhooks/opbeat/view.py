@@ -14,29 +14,29 @@ subject_types: Dict[str, List[List[str]]] = {
         ['name'],  # Title
         ['html_url'],  # Automatically put into title
         ['language'],  # Other properties.
-        ['framework']
+        ['framework'],
     ],
     'base': [
         ['title'],
         ['html_url'],
         ['#summary'],
-        ['subject']
+        ['subject'],
     ],
     'comment': [
         [''],
-        ['subject']
+        ['subject'],
     ],
     'errorgroup': [
         ['E#{}', 'number'],
         ['html_url'],
-        ['last_occurrence:error']
+        ['last_occurrence:error'],
     ],
     'error': [
         [''],
         ['">**Most recent Occurrence**'],
         ['in {}', 'extra/pathname'],
-        ['!message']
-    ]
+        ['!message'],
+    ],
 }
 
 
@@ -52,7 +52,7 @@ def get_value(_obj: Dict[str, Any], key: str) -> str:
 def format_object(
     obj: Dict[str, Any],
     subject_type: str,
-    message: str
+    message: str,
 ) -> str:
     if subject_type not in subject_types.keys():
         return message
@@ -68,26 +68,26 @@ def format_object(
             url: str = obj['html_url']
             if 'opbeat.com' not in url:
                 url = 'https://opbeat.com/' + url.lstrip('/')
-            message += '\n**[{}]({})**'.format(title_str, url)
+            message += f'\n**[{title_str}]({url})**'
         else:
-            message += '\n**{}**'.format(title_str)
+            message += f'\n**{title_str}**'
     for key_list in keys:
         if len(key_list) > 1:
             value = key_list[0].format(get_value(obj, key_list[1]))
-            message += '\n>{}'.format(value)
+            message += f'\n>{value}'
         else:
             key = key_list[0]
             key_raw = key.lstrip('!').lstrip('#').lstrip('"')
             if key_raw != 'html_url' and key_raw != 'subject' and ':' not in key_raw:
                 value = get_value(obj, key_raw)
                 if key.startswith('!'):
-                    message += '\n>{}'.format(value)
+                    message += f'\n>{value}'
                 elif key.startswith('#'):
-                    message += '\n{}'.format(value)
+                    message += f'\n{value}'
                 elif key.startswith('"'):
-                    message += '\n{}'.format(key_raw)
+                    message += f'\n{key_raw}'
                 else:
-                    message += '\n>{}: {}'.format(key, value)
+                    message += f'\n>{key}: {value}'
             if key == 'subject':
                 message = format_object(
                     obj['subject'], obj['subject_type'], message + '\n')

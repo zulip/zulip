@@ -33,7 +33,7 @@
                     <i class="icon fa fa-book" aria-hidden="true"></i>
                     <div class="text">{{ _('Alert words') }}</div>
                 </li>
-                {% if max_file_upload_size > 0 %}
+                {% if max_file_upload_size_mib > 0 %}
                 <li tabindex="0" data-section="uploaded-files">
                     <i class="icon fa fa-paperclip" aria-hidden="true"></i>
                     <div class="text">{{ _('Uploaded files') }}</div>
@@ -87,8 +87,8 @@
                 <li class="collapse-org-settings {% if not is_admin %}hide-org-settings{% endif %}" tabindex="0" data-section="auth-methods">
                     <i class="icon fa fa-key" aria-hidden="true"></i>
                     <div class="text">{{ _('Authentication methods') }}</div>
-                    {% if not is_admin %}
-                    <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
+                    {% if not is_owner %}
+                    <i class="locked fa fa-lock" title="{{ _('Only organization owners can edit these settings.') }}"></i>
                     {% endif %}
                 </li>
                 {% if not is_guest %}

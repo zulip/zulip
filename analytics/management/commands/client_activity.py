@@ -54,7 +54,7 @@ Usage examples:
         counts.sort()
 
         for count in counts:
-            print("%25s %15d" % (count[1], count[0]))
+            print(f"{count[1]:>25} {count[0]:15}")
         print("Total:", total)
 
     def handle(self, *args: Any, **options: Optional[str]) -> None:

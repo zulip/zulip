@@ -1,13 +1,12 @@
 from typing import Any, Callable, Dict, Iterable, List, Tuple
+from unittest import mock
 
+import ujson
 from django.test import override_settings
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
+
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.utils import statsd
 
-import mock
-import ujson
 
 def fix_params(raw_params: Dict[str, Any]) -> Dict[str, str]:
     # A few of our few legacy endpoints need their
@@ -112,7 +111,7 @@ class TestReport(ZulipTestCase):
         publish_mock = mock.patch('zerver.views.report.queue_json_publish')
         subprocess_mock = mock.patch(
             'zerver.views.report.subprocess.check_output',
-            side_effect=KeyError('foo')
+            side_effect=KeyError('foo'),
         )
         with publish_mock as m, subprocess_mock:
             result = self.client_post("/json/report/error", params)

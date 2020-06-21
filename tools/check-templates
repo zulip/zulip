@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
-from lib.template_parser import validate
-from lib.html_branches import build_id_dict
-from lib.pretty_print import validate_indent_html
 import argparse
-import sys
 import logging
+import sys
 
 # check for the venv
 from lib import sanity_check
+from lib.html_branches import build_id_dict
+from lib.pretty_print import validate_indent_html
+from lib.template_parser import validate
+
 sanity_check.check_venv(__file__)
 
-from zulint import lister
 from typing import Dict, Iterable, List
+
+from zulint import lister
 
 EXCLUDED_FILES = [
     ## Test data Files for testing modules in tests
@@ -42,10 +44,7 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
     # there are also cases where Casper deliberately uses invalid HTML,
     # so we exclude them from our linter.
     logging.basicConfig(format='%(levelname)s:%(message)s')
-    templates = filter(
-        lambda fn: ('casperjs' not in fn),
-        templates)
-    templates = sorted(list(templates))
+    templates = sorted(fn for fn in templates if 'casperjs' not in fn)
     # Use of underscore templates <%= %>.
     if 'templates/zerver/team.html' in templates:
         templates.remove('templates/zerver/team.html')
@@ -68,6 +67,8 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
             'send_confirm',
             'register',
             'footer',
+            'charged_amount',
+            'change-plan-status',
             # Temporary while we have searchbox forked
             'search_exit',
             'search_query',
@@ -97,12 +98,8 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
         return bad_ids_dict
 
     bad_ids_list: List[str] = []
-    archive_templates = list(filter(
-        lambda fn: ('templates/zerver/archive' in fn),
-        templates))
-    templates = list(filter(
-        lambda fn: ('templates/zerver/archive' not in fn),
-        templates))
+    archive_templates = [fn for fn in templates if 'templates/zerver/archive' in fn]
+    templates = [fn for fn in templates if 'templates/zerver/archive' not in fn]
 
     bad_ids_list += list(check_for_duplicate_ids(archive_templates).keys())
     bad_ids_list += list(check_for_duplicate_ids(templates).keys())

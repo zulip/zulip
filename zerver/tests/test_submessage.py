@@ -1,17 +1,10 @@
-import mock
-
-from zerver.lib.test_classes import ZulipTestCase
-
-from zerver.lib.message import (
-    MessageDict,
-)
-
-from zerver.models import (
-    Message,
-    SubMessage,
-)
-
 from typing import Any, Dict, List
+from unittest import mock
+
+from zerver.lib.message import MessageDict
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.models import Message, SubMessage
+
 
 class TestBasics(ZulipTestCase):
     def test_get_raw_db_rows(self) -> None:
@@ -119,7 +112,7 @@ class TestBasics(ZulipTestCase):
         payload = dict(
             message_id=message_id,
             msg_type='whatever',
-            content='{"name": "alice", "salary": 20}'
+            content='{"name": "alice", "salary": 20}',
         )
         with mock.patch('zerver.lib.actions.send_event') as m:
             result = self.client_post('/json/submessage', payload)

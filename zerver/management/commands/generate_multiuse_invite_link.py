@@ -40,4 +40,4 @@ class Command(ZulipBaseCommand):
         referred_by = self.get_user(options['referred_by'], realm)
         invite_as = PreregistrationUser.INVITE_AS['MEMBER']
         invite_link = do_create_multiuse_invite_link(referred_by, invite_as, streams)
-        print("You can use %s to invite as many number of people to the organization." % (invite_link,))
+        print(f"You can use {invite_link} to invite as many number of people to the organization.")

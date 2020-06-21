@@ -1,20 +1,25 @@
 from datetime import timedelta
 from typing import Any, Dict, List, Mapping, Optional, Type
+from unittest import mock
 
-import mock
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
 
-from analytics.lib.counts import COUNT_STATS, CountStat, \
-    do_drop_all_analytics_tables
+from analytics.lib.counts import COUNT_STATS, CountStat, do_drop_all_analytics_tables
 from analytics.lib.fixtures import generate_time_series_data
 from analytics.lib.time_utils import time_range
-from analytics.models import BaseCount, FillState, InstallationCount, \
-    RealmCount, StreamCount, UserCount
-from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_change_is_admin
+from analytics.models import (
+    BaseCount,
+    FillState,
+    InstallationCount,
+    RealmCount,
+    StreamCount,
+    UserCount,
+)
+from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_change_user_role
 from zerver.lib.create_user import create_user
 from zerver.lib.timestamp import floor_to_day
-from zerver.models import Client, Realm, Recipient, Stream, Subscription
+from zerver.models import Client, Realm, Recipient, Stream, Subscription, UserProfile
 
 
 class Command(BaseCommand):
@@ -58,8 +63,8 @@ class Command(BaseCommand):
         with mock.patch("zerver.lib.create_user.timezone_now", return_value=installation_time):
             shylock = create_user('shylock@analytics.ds', 'Shylock', realm,
                                   full_name='Shylock', short_name='shylock',
-                                  is_realm_admin=True)
-        do_change_is_admin(shylock, True)
+                                  role=UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(shylock, UserProfile.ROLE_REALM_ADMINISTRATOR)
         stream = Stream.objects.create(
             name='all', realm=realm, date_created=installation_time)
         recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
@@ -215,5 +220,17 @@ class Command(BaseCommand):
             'true': self.generate_fixture_data(stat, 5, 3, 2, .4, 2),
         }
         insert_fixture_data(stat, stream_data, StreamCount)
+        FillState.objects.create(property=stat.property, end_time=last_end_time,
+                                 state=FillState.DONE)
+
+        stat = COUNT_STATS['messages_read::hour']
+        user_data = {
+            None: self.generate_fixture_data(stat, 7, 3, 2, .6, 8, holiday_rate=.1),
+        }
+        insert_fixture_data(stat, user_data, UserCount)
+        realm_data = {
+            None: self.generate_fixture_data(stat, 50, 35, 6, .6, 4)
+        }
+        insert_fixture_data(stat, realm_data, RealmCount)
         FillState.objects.create(property=stat.property, end_time=last_end_time,
                                  state=FillState.DONE)

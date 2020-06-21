@@ -23,14 +23,15 @@ except ImportError:
     pass
 
 import argparse
+import configparser
+import logging
+import os
+import select
+import sys
+import time
+
 import psycopg2
 import psycopg2.extensions
-import select
-import time
-import logging
-import configparser
-import sys
-import os
 
 BATCH_SIZE = 1000
 
@@ -48,8 +49,10 @@ else:
     logger.setLevel(logging.DEBUG)
 
 def update_fts_columns(cursor: psycopg2.extensions.cursor) -> int:
-    cursor.execute("SELECT id, message_id FROM fts_update_log LIMIT %s;" % (
-        BATCH_SIZE,))
+    cursor.execute(
+        "SELECT id, message_id FROM fts_update_log LIMIT %s;",
+        [BATCH_SIZE],
+    )
     ids = []
     for (id, message_id) in cursor.fetchall():
         if USING_PGROONGA:
@@ -140,7 +143,7 @@ while True:
             # Catch up on any historical columns
             while True:
                 rows_updated = update_fts_columns(cursor)
-                notice = "Processed %s rows catching up" % (rows_updated,)
+                notice = f"Processed {rows_updated} rows catching up"
                 if rows_updated > 0:
                     logger.info(notice)
                 else:
@@ -160,7 +163,7 @@ while True:
         retries -= 1
         if retries <= 0:
             raise
-        logger.info(e)
+        logger.info(e.pgerror, exc_info=True)
         logger.info("Sleeping and reconnecting")
         time.sleep(5)
         if conn is not None:

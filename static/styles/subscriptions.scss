@@ -312,15 +312,24 @@ form#add_new_subscription {
 .subscriber_list_add {
     width: 100%;
     margin: 10px auto;
-    text-align: right;
 }
 
-.subscriber_list_add .search {
-    float: left;
+.subscriber-search {
+    margin: 10px 0 0 0;
 }
 
 .subscriber_list_add .form-inline {
     margin-bottom: 0px;
+}
+
+.add_subscribers_container {
+    display: inline-flex;
+    width: 100%;
+    align-items: center;
+
+    .add_subscriber_btn_wrapper {
+        padding-left: 5px;
+    }
 }
 
 .remove-subscriber-form {
@@ -419,15 +428,15 @@ form#add_new_subscription {
             transition: all 0.3s ease;
             transform: translate(-13px, 0px);
         }
-    }
 
-    .exit {
-        font-weight: 600;
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        color: hsl(0, 0%, 67%);
-        cursor: pointer;
+        .exit {
+            font-weight: 600;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: hsl(0, 0%, 67%);
+            cursor: pointer;
+        }
     }
 
     .exit-sign {
@@ -461,7 +470,7 @@ form#add_new_subscription {
     }
 
     .right {
-        width: calc(50% - -1px);
+        width: calc(50% + 1px);
 
         .nothing-selected {
             display: block;
@@ -995,9 +1004,13 @@ form#add_new_subscription {
         }
     }
 
+    #personal_settings_label_container {
+        margin-bottom: 5px;
+    }
+
     .alert-notification:not(:empty) {
-        margin-top: -5px;
-        margin-left: unset;
+        vertical-align: unset;
+        margin-top: 10px;
     }
 
     .loading_indicator_text {
@@ -1048,6 +1061,20 @@ ul.grey-box {
                 margin-right: 5px;
             }
         }
+
+        input[type=text] {
+            width: 5ch;
+            text-align: right;
+        }
+
+        label.dropdown-title {
+            display: block;
+        }
+
+        select {
+            width: auto;
+            margin-bottom: 0px;
+        }
     }
 }
 
@@ -1068,6 +1095,10 @@ ul.grey-box {
 }
 
 @media (max-width: 1033px) {
+    .subscriptions-container .left .search-container {
+        flex-wrap: wrap;
+        justify-content: space-evenly;
+    }
 
     .search-container {
         text-align: center;

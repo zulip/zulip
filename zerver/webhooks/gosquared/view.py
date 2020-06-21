@@ -5,8 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import UnexpectedWebhookEventType, \
-    check_send_webhook_message
+from zerver.lib.webhooks.common import UnexpectedWebhookEventType, check_send_webhook_message
 from zerver.models import UserProfile
 
 TRAFFIC_SPIKE_TEMPLATE = '[{website_name}]({website_url}) has {user_num} visitors online.'
@@ -38,7 +37,7 @@ def api_gosquared_webhook(request: HttpRequest, user_profile: UserProfile,
         body = TRAFFIC_SPIKE_TEMPLATE.format(website_name=domain_name,
                                              website_url=acc_url,
                                              user_num=user_num)
-        topic = 'GoSquared - {website_name}'.format(website_name=domain_name)
+        topic = f'GoSquared - {domain_name}'
         check_send_webhook_message(request, user_profile, topic, body)
 
     # Live chat message event
@@ -47,11 +46,11 @@ def api_gosquared_webhook(request: HttpRequest, user_profile: UserProfile,
         # Only support non-private messages
         if not payload['message']['private']:
             session_title = payload['message']['session']['title']
-            topic = 'Live Chat Session - {}'.format(session_title)
+            topic = f'Live Chat Session - {session_title}'
             body = CHAT_MESSAGE_TEMPLATE.format(
                 status=payload['person']['status'],
                 name=payload['person']['_anon']['name'],
-                content=payload['message']['content']
+                content=payload['message']['content'],
             )
             check_send_webhook_message(request, user_profile, topic, body)
     else:

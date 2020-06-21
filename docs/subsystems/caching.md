@@ -104,13 +104,13 @@ that if an item is in the cache, the body of `get_user` (above) is
 never called.  This means some things that might seem like clever code
 reuse are actually a really bad idea.  For example:
 
-* Adding a `get_active_user` function that uses the same cache key
-  function as `get_user`, with a different query that filters our
-  deactivated users.  If one calls `get_active_user` to access a
-  deactivated user, the right thing will happen, but if you call
+* Don't add a `get_active_user` function that uses the same cache key
+  function as `get_user` (but with a different query that filters our
+  deactivated users).  If one called `get_active_user` to access a
+  deactivated user, the right thing would happen, but if you called
   `get_user` to access that user first, then the `get_active_user`
-  function will happily return the user from the cache, without ever
-  doing your more limited query.
+  function would happily return the user from the cache, without ever
+  doing your more restrictive query.
 
 So remember: Use separate cache key functions for different data sets,
 even if they feature the same objects.
@@ -123,7 +123,7 @@ mutable state, one needs to do something to ensure that the Python
 processes don't end up fetching stale data from the cache after a
 write to the database.
 
-We handle this using Django's fancy
+We handle this using Django's longstanding
 [post_save signals][post-save-signals] feature.  Django signals let
 you configure some code to run every time Django does something (for
 `post_save`, right after any write to the database using Django's
@@ -234,7 +234,7 @@ multiple servers.  We do have a few, however:
   of every request; this simplifies correctly implementing our goal of
   not repeatedly fetching the "display recipient" (e.g. stream name)
   for each message in the `GET /messages` codebase.
-* Caches of various data, like the SourceMap object, that are
+* Caches of various data, like the `SourceMap` object, that are
   expensive to construct, not needed for most requests, and don't
   change once a Zulip server has been deployed in production.
 

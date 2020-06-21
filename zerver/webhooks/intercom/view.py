@@ -7,8 +7,7 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import UnexpectedWebhookEventType, \
-    check_send_webhook_message
+from zerver.lib.webhooks.common import UnexpectedWebhookEventType, check_send_webhook_message
 from zerver.models import UserProfile
 
 COMPANY_CREATED = """
@@ -85,7 +84,7 @@ def strip_tags(html: str) -> str:
 def get_topic_for_contacts(user: Dict[str, Any]) -> str:
     topic = "{type}: {name}".format(
         type=user['type'].capitalize(),
-        name=user.get('name') or user.get('pseudonym') or user.get('email')
+        name=user.get('name') or user.get('pseudonym') or user.get('email'),
     )
 
     return topic
@@ -106,8 +105,8 @@ def get_contact_created_message(payload: Dict[str, Any]) -> Tuple[str, str]:
         name=contact.get('name') or contact.get('pseudonym'),
         email=contact['email'],
         location_info="{city_name}, {region_name}, {country_name}".format(
-            **contact['location_data']
-        )
+            **contact['location_data'],
+        ),
     )
     topic = get_topic_for_contacts(contact)
     return (topic, body)
@@ -117,8 +116,8 @@ def get_contact_signed_up_message(payload: Dict[str, Any]) -> Tuple[str, str]:
     body = CONTACT_SIGNED_UP.format(
         email=contact['email'],
         location_info="{city_name}, {region_name}, {country_name}".format(
-            **contact['location_data']
-        )
+            **contact['location_data'],
+        ),
     )
     topic = get_topic_for_contacts(contact)
     return (topic, body)
@@ -143,20 +142,20 @@ def get_conversation_admin_assigned_message(payload: Dict[str, Any]) -> Tuple[st
 
 def get_conversation_admin_message(
         payload: Dict[str, Any],
-        action: str
+        action: str,
 ) -> Tuple[str, str]:
     assignee = payload['data']['item']['assignee']
     user = payload['data']['item']['user']
     body = CONVERSATION_ADMIN_TEMPLATE.format(
         admin_name=assignee.get('name'),
-        action=action
+        action=action,
     )
     topic = get_topic_for_contacts(user)
     return (topic, body)
 
 def get_conversation_admin_reply_message(
         payload: Dict[str, Any],
-        action: str
+        action: str,
 ) -> Tuple[str, str]:
     assignee = payload['data']['item']['assignee']
     user = payload['data']['item']['user']
@@ -165,7 +164,7 @@ def get_conversation_admin_reply_message(
     body = CONVERSATION_ADMIN_REPLY_TEMPLATE.format(
         admin_name=assignee.get('name'),
         action=action,
-        content=content
+        content=content,
     )
     topic = get_topic_for_contacts(user)
     return (topic, body)
@@ -178,7 +177,7 @@ def get_conversation_admin_single_created_message(
     content = strip_tags(conversation_body)
     body = CONVERSATION_ADMIN_INITIATED_CONVERSATION.format(
         admin_name=assignee.get('name'),
-        content=content
+        content=content,
     )
     topic = get_topic_for_contacts(user)
     return (topic, body)
@@ -189,7 +188,7 @@ def get_conversation_user_created_message(payload: Dict[str, Any]) -> Tuple[str,
     content = strip_tags(conversation_body)
     body = CONVERSATION_ADMIN_INITIATED_CONVERSATION.format(
         admin_name=user.get('name'),
-        content=content
+        content=content,
     )
     topic = get_topic_for_contacts(user)
     return (topic, body)
@@ -201,7 +200,7 @@ def get_conversation_user_replied_message(payload: Dict[str, Any]) -> Tuple[str,
     body = CONVERSATION_ADMIN_REPLY_TEMPLATE.format(
         admin_name=user.get('name'),
         action='replied to',
-        content=content
+        content=content,
     )
     topic = get_topic_for_contacts(user)
     return (topic, body)
@@ -230,14 +229,14 @@ def get_user_email_updated_message(payload: Dict[str, Any]) -> Tuple[str, str]:
 
 def get_user_tagged_message(
         payload: Dict[str, Any],
-        action: str
+        action: str,
 ) -> Tuple[str, str]:
     user = payload['data']['item']['user']
     tag = payload['data']['item']['tag']
     topic = get_topic_for_contacts(user)
     body = 'The tag `{tag_name}` was {action} the user.'.format(
         tag_name=tag['name'],
-        action=action
+        action=action,
     )
     return (topic, body)
 

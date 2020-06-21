@@ -1,16 +1,14 @@
 {{#unless (eq render_only false)}}
 <div class="input-group {{#if is_nested}}disableable{{/if}}">
     <label class="checkbox">
-        <input type="checkbox" class="inline-block setting-widget prop-element" name="{{setting_name}}" data-setting-widget-type="bool"
+        <input type="checkbox" class="inline-block setting-widget prop-element" name="{{setting_name}}" data-setting-widget-type="boolean"
           id="{{prefix}}{{setting_name}}" {{#if is_checked}}checked="checked"{{/if}} />
         <span></span>
     </label>
     <label for="{{prefix}}{{setting_name}}" class="inline-block" id="{{prefix}}{{setting_name}}_label">
         {{{label}}}
         {{#if help_link}}
-        <a href="{{help_link}}" target="_blank">
-            <i class="fa fa-question-circle-o" aria-hidden="true"></i>
-        </a>
+        {{> ../help_link_widget link=help_link }}
         {{/if}}
     </label>
 </div>

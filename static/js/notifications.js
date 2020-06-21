@@ -171,29 +171,6 @@ exports.redraw_title = function () {
     }
 };
 
-exports.show_history_limit_message = function () {
-    $(".top-messages-logo").hide();
-    $(".history-limited-box").show();
-    narrow.hide_empty_narrow_message();
-};
-
-exports.hide_history_limit_message = function () {
-    $(".top-messages-logo").show();
-    $(".history-limited-box").hide();
-};
-
-exports.hide_or_show_history_limit_message = function (msg_list) {
-    if (msg_list !== current_msg_list) {
-        return;
-    }
-
-    if (msg_list.fetch_status.history_limited()) {
-        exports.show_history_limit_message();
-    } else {
-        exports.hide_history_limit_message();
-    }
-};
-
 function flash_pms() {
     // When you have unread PMs, toggle the favicon between the unread count and
     // a special icon indicating that you have unread PMs.
@@ -410,16 +387,23 @@ function process_notification(notification) {
             msg_count: msg_count,
             message_id: message.id,
         });
-        notification_object.addEventListener("click", () => {
-            notification_object.close();
-            if (message.type !== "test-notification") {
-                narrow.by_topic(message.id, {trigger: 'notification'});
-            }
-            window.focus();
-        });
-        notification_object.addEventListener("close", () => {
-            notice_memory.delete(key);
-        });
+
+        if (_.isFunction(notification_object.addEventListener)) {
+            // Sadly, some third-party Electron apps like Franz/Ferdi
+            // misimplement the Notification API not inheriting from
+            // EventTarget.  This results in addEventListener being
+            // unavailable for them.
+            notification_object.addEventListener("click", () => {
+                notification_object.close();
+                if (message.type !== "test-notification") {
+                    narrow.by_topic(message.id, {trigger: 'notification'});
+                }
+                window.focus();
+            });
+            notification_object.addEventListener("close", () => {
+                notice_memory.delete(key);
+            });
+        }
     } else {
         in_browser_notify(message, title, content, raw_operators, opts);
     }
@@ -589,7 +573,7 @@ exports.received_messages = function (messages) {
 };
 
 exports.send_test_notification = function (content) {
-    notifications.received_messages([{
+    exports.received_messages([{
         id: Math.random(),
         type: "test-notification",
         sender_email: "notification-bot@zulip.com",

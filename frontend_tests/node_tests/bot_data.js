@@ -2,6 +2,27 @@ const _settings_bots = {
     render_bots: () => {},
 };
 
+set_global('settings_bots', _settings_bots);
+
+zrequire('bot_data');
+zrequire('people');
+
+const me = {
+    email: 'me@zulip.com',
+    full_name: 'Me Myself',
+    user_id: 2,
+};
+
+const fred = {
+    email: 'fred@zulip.com',
+    full_name: 'Fred Frederickson',
+    user_id: 3,
+};
+
+people.add_active_user(me);
+people.add_active_user(fred);
+people.initialize_current_user(me.user_id);
+
 const bot_data_params = {
     realm_bots: [{email: 'bot0@zulip.com', user_id: 42, full_name: 'Bot 0',
                   services: []},
@@ -9,19 +30,6 @@ const bot_data_params = {
                   services: [{base_url: "http://foo.com", interface: 1}]}],
 };
 
-set_global('page_params', {is_admin: false});
-set_global('settings_bots', _settings_bots);
-
-zrequire('people');
-zrequire('bot_data');
-
-people.add({
-    email: 'owner@zulip.com',
-    full_name: 'The Human Boss',
-    user_id: 42,
-});
-
-people.initialize_current_user(42);
 
 bot_data.initialize(bot_data_params);
 // Our startup logic should have added Bot 0 from page_params.
@@ -72,6 +80,14 @@ run_test('test_basics', () => {
         assert.equal('New Bot 1', bot.full_name);
         assert.equal(2, services[0].interface);
         assert.equal('http://baz.com', services[0].base_url);
+
+        const change_owner_event = {
+            owner_id: fred.user_id,
+        };
+        bot_data.update(43, change_owner_event);
+
+        bot = bot_data.get(43);
+        assert.equal(bot.owner_id, fred.user_id);
     }());
 
     (function test_embedded_bot_update() {
@@ -96,6 +112,12 @@ run_test('test_basics', () => {
         assert.equal(bot.is_active, false);
     }());
 
+    (function test_all_user_ids() {
+        const all_ids = bot_data.all_user_ids();
+        all_ids.sort();
+        assert.deepEqual(all_ids, [143, 314, 42, 43]);
+    }());
+
     (function test_delete() {
         let bot;
 
@@ -110,18 +132,12 @@ run_test('test_basics', () => {
     }());
 
     (function test_get_editable() {
-        let editable_bots;
 
-        bot_data.add({...test_bot, user_id: 44, owner: 'owner@zulip.com', is_active: true});
-        bot_data.add({...test_bot, user_id: 45, email: 'bot2@zulip.com', owner: 'owner@zulip.com', is_active: true});
-        bot_data.add({...test_bot, user_id: 46, email: 'bot3@zulip.com', owner: 'not_owner@zulip.com', is_active: true});
+        bot_data.add({...test_bot, user_id: 44, owner_id: me.user_id, is_active: true});
+        bot_data.add({...test_bot, user_id: 45, email: 'bot2@zulip.com', owner_id: me.user_id, is_active: true});
+        bot_data.add({...test_bot, user_id: 46, email: 'bot3@zulip.com', owner_id: fred.user_id, is_active: true});
 
-        editable_bots = bot_data.get_editable().map(bot => bot.email);
-        assert.deepEqual(['bot1@zulip.com', 'bot2@zulip.com'], editable_bots);
-
-        page_params.is_admin = true;
-
-        editable_bots = bot_data.get_editable().map(bot => bot.email);
+        const editable_bots = bot_data.get_editable().map(bot => bot.email);
         assert.deepEqual(['bot1@zulip.com', 'bot2@zulip.com'], editable_bots);
     }());
 
@@ -131,13 +147,5 @@ run_test('test_basics', () => {
         assert.equal(bots.length, 2);
         assert.equal(bots[0].email, 'bot1@zulip.com');
         assert.equal(bots[1].email, 'bot2@zulip.com');
-    }());
-
-    (function test_get_bot_owner_email() {
-        let bot_owner_email = bot_data.get_bot_owner_email(test_embedded_bot.user_id);
-        assert.equal('cordelia@zulip.com', bot_owner_email);
-        bot_data.add(test_bot);
-        bot_owner_email = bot_data.get_bot_owner_email(test_bot.user_id);
-        assert.equal(undefined, bot_owner_email);
     }());
 });

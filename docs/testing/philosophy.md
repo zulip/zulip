@@ -18,24 +18,24 @@ This is possible because we have spent years systematically investing
 in testing, tooling, code structure, documentation, and development
 practices to help ensure that our contributors write code that needs
 relatively few changes before it can be merged.  The testing element
-of this is to have reliable, extensive, easily extended test suits
+of this is to have reliable, extensive, easily extended test suites
 that cover most classes of bugs.  Our testing systems have been
 designed to minimize the time spent manually testing or otherwise
 investigating whether changes are correct.
 
 For example, our [infrastructure for testing
-authentication](../development/authentication.md) using e.g. a mock
-LDAP database in both automated tests and the development environment
-make it relatively easy to refactor and improve this important part of
+authentication](../development/authentication.md) allows using a mock
+LDAP database in both automated tests and the development environment,
+making it much easier now to refactor and improve this important part of
 the product than it was when you needed to setup an LDAP server and
 populate it with some test data in order to test LDAP authentication.
 
 While not every part of Zulip has a great test suite, many components
 do, and for those components, the tests mean that new contributors can
-often make substantive changes to that component and have their
-changes that are more or less correct by the time they share their
+often make substantive changes and have them be
+more or less correct by the time they share the
 changes for code review.  More importantly, it means that maintainers
-save most the time that would otherwise be spent verifying that the
+save most of the time that would otherwise be spent verifying that the
 changes are simply correct, and instead focus on making sure that the
 codebase remains readable, well-structured, and well-tested.
 
@@ -153,15 +153,15 @@ So, to summarize our approach to integration vs. unit testing:
 * While we aim to achieve test coverage of every significant code path
   in the Zulip server, which is commonly associated with unit testing,
   most of our tests are integration tests in the sense of sending a
-  complete HTTP API query to the Zulip server and checking both the
-  HTTP response and internal state of the server following the request
-  are correct.
+  complete HTTP API query to the Zulip server and checking that the
+  HTTP response and the internal state of the server following the request
+  are both correct.
 * Following the end-to-end principle in system design, where possible
-  we write tests that execute a complete flow (e.g. registration a new
+  we write tests that execute a complete flow (e.g. registering a new
   Zulip account) rather than testing the implementations of individual
   functions.
 * We invest in the performance of Zulip in part to give users a great
-  experience, but just as much for making our test suite fast enough
+  experience, but just as much to make our test suite fast enough
   that we can write our tests this way.
 
 ## Avoid duplicating code with security impact

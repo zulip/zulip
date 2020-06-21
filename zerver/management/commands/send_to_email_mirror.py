@@ -1,8 +1,9 @@
+import base64
 import email
+import email.policy
 import os
-from email.message import Message
-from email.mime.text import MIMEText
-from typing import Dict, Optional
+from email.message import EmailMessage
+from typing import Optional
 
 import ujson
 from django.conf import settings
@@ -17,7 +18,7 @@ from zerver.models import Realm, get_realm, get_stream
 # to the email mirror. Simple emails can be passed in a JSON file,
 # Look at zerver/tests/fixtures/email/1.json for an example of how
 # it should look. You can also pass a file which has the raw email,
-# for example by writing an email.message.Message type object
+# for example by writing an email.message.EmailMessage type object
 # to a file using as_string() or as_bytes() methods, or copy-pasting
 # the content of "Show original" on an email in Gmail.
 # See zerver/tests/fixtures/email/1.txt for a very simple example,
@@ -66,40 +67,41 @@ Example:
 
         full_fixture_path = os.path.join(settings.DEPLOY_ROOT, options['fixture'])
 
-        # parse the input email into Message type and prepare to process_message() it
+        # parse the input email into EmailMessage type and prepare to process_message() it
         message = self._parse_email_fixture(full_fixture_path)
         self._prepare_message(message, realm, stream)
 
-        data: Dict[str, str] = {}
-        data['recipient'] = str(message['To'])  # Need str() here to avoid mypy throwing an error
-        data['msg_text'] = message.as_string()
-        mirror_email_message(data)
+        mirror_email_message(
+            message['To'].addresses[0].addr_spec,
+            base64.b64encode(message.as_bytes()).decode(),
+        )
 
     def _does_fixture_path_exist(self, fixture_path: str) -> bool:
         return os.path.exists(fixture_path)
 
-    def _parse_email_json_fixture(self, fixture_path: str) -> Message:
+    def _parse_email_json_fixture(self, fixture_path: str) -> EmailMessage:
         with open(fixture_path) as fp:
             json_content = ujson.load(fp)[0]
 
-        message = MIMEText(json_content['body'])
+        message = EmailMessage()
         message['From'] = json_content['from']
         message['Subject'] = json_content['subject']
+        message.set_content(json_content['body'])
         return message
 
-    def _parse_email_fixture(self, fixture_path: str) -> Message:
+    def _parse_email_fixture(self, fixture_path: str) -> EmailMessage:
         if not self._does_fixture_path_exist(fixture_path):
-            raise CommandError('Fixture {} does not exist'.format(fixture_path))
+            raise CommandError(f'Fixture {fixture_path} does not exist')
 
         if fixture_path.endswith('.json'):
-            message = self._parse_email_json_fixture(fixture_path)
+            return self._parse_email_json_fixture(fixture_path)
         else:
             with open(fixture_path, "rb") as fp:
-                message = email.message_from_binary_file(fp)
+                message = email.message_from_binary_file(fp, policy=email.policy.default)
+                assert isinstance(message, EmailMessage)  # https://github.com/python/typeshed/issues/2417
+                return message
 
-        return message
-
-    def _prepare_message(self, message: Message, realm: Realm, stream_name: str) -> None:
+    def _prepare_message(self, message: EmailMessage, realm: Realm, stream_name: str) -> None:
         stream = get_stream(stream_name, realm)
 
         # The block below ensures that the imported email message doesn't have any recipient-like

@@ -25,43 +25,48 @@ By default, Zulip integrates with
 source video conferencing solution. Organization administrators can also
 change the organization's video chat provider.
 
-Note that both the Google Hangouts and Zoom integrations require paid
-accounts with their respective providers.
-
 ### Change your organization's video chat provider
 
 {start_tabs}
 
-{tab|google-hangouts}
+{tab|jitsi-meet}
 
-{settings_tab|organization-settings}
+Zulip's default video chat provider is [Jitsi
+Meet](https://meet.jit.si/).
 
-1. Under **Other settings** set **Video chat provider** to **Google Hangouts**.
-
-1. Enter the domain for your [G Suite team](https://gsuite.google.com/).
-
-1. Click **Save changes**.
+You can also use Zulip with Jitsi Meet on-premise; to configure this,
+just set `JITSI_SERVER_URL` in `/etc/zulip/settings.py`.
 
 {tab|zoom}
+
+Zulip supports Zoom as the video chat provider using an OAuth
+integration.  You can set it up as follows:
 
 {settings_tab|organization-settings}
 
 1. Under **Other settings** set **Video chat provider** to **Zoom**.
 
-1. Enter your Zoom email address, API key, and API secret.
-
 1. Click **Save changes**.
 
-!!! warn ""
-    **Note**: Zoom support is experimental. In particular, Zulip currently
-    supports having only one active Zoom meeting at a time.
+Any user who creates a video call link using the instructions above
+will be prompted to link a Zoom account with their Zulip account.
 
-{tab|jitsi-on-premise}
+If you would like to unlink Zoom from your Zulip account:
 
-If you're running both Zulip and Jitsi Meet on-premise, just set
-`JITSI_SERVER_URL` in `/etc/zulip/settings.py`.
+1. Log in to the [Zoom App Marketplace](https://marketplace.zoom.us/).
 
-You can also disable the video call button for your community by
+1. Click **Manage** → **Installed Apps**.
+
+1. Click the **Uninstall** button next to the Zulip app.
+
+If you are self-hosting, you will need to [create a Zoom
+application][zoom-configuration] to use this integration.
+
+{tab|disable}
+
+You can also disable the video call button for your organization by
 setting the provider to "None".
 
 {end_tabs}
+
+[zoom-configuration]: https://zulip.readthedocs.io/en/latest/production/zoom-configuration.html

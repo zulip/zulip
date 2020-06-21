@@ -5,7 +5,7 @@ import os
 import pwd
 import subprocess
 import sys
-from typing import Dict, Any
+from typing import Any, Dict
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
@@ -13,12 +13,12 @@ ROOT_DIR = os.path.dirname(TOOLS_DIR)
 
 # check for the venv
 from tools.lib import sanity_check
+
 sanity_check.check_venv(__file__)
 
 # Import this after we do the sanity_check so it doesn't crash.
 import ujson
-
-from zulint.printer import CYAN, GREEN, BOLDRED, ENDC
+from zulint.printer import BOLDRED, CYAN, ENDC, GREEN
 
 INDEX_JS = 'frontend_tests/zjsunit/index.js'
 NODE_COVERAGE_PATH = 'var/node-coverage/coverage-final.json'
@@ -63,7 +63,6 @@ EXEMPT_FILES = {
     'static/js/hotkey.js',
     'static/js/hotspots.js',
     'static/js/info_overlay.js',
-    'static/js/integration_bot_widget.js',
     'static/js/invite.js',
     'static/js/lightbox_canvas.js',
     'static/js/lightbox.js',
@@ -72,6 +71,7 @@ EXEMPT_FILES = {
     'static/js/local_message.js',
     'static/js/localstorage.js',
     'static/js/message_edit.js',
+    'static/js/message_edit_history.js',
     'static/js/message_events.js',
     'static/js/message_fetch.js',
     'static/js/message_flags.js',
@@ -92,22 +92,23 @@ EXEMPT_FILES = {
     'static/js/page_params.js',
     'static/js/panels.js',
     'static/js/pm_list_dom.js',
-    'static/js/pointer.js',
     'static/js/poll_widget.js',
     'static/js/popovers.js',
     'static/js/ready.js',
     'static/js/realm_icon.js',
     'static/js/realm_logo.js',
+    'static/js/recent_topics.js',
     'static/js/reload.js',
     'static/js/reload_state.js',
     'static/js/reminder.js',
+    'static/js/rendered_markdown.js',
     'static/js/resize.js',
     'static/js/rows.js',
     'static/js/scroll_bar.js',
     'static/js/search_pill_widget.js',
     'static/js/sent_messages.js',
     'static/js/server_events.js',
-    'static/js/settings_list_widget.js',
+    'static/js/dropdown_list_widget.js',
     'static/js/settings_account.js',
     'static/js/settings_bots.js',
     'static/js/settings_config.js',
@@ -127,6 +128,7 @@ EXEMPT_FILES = {
     'static/js/settings_ui.js',
     'static/js/settings_users.js',
     'static/js/setup.js',
+    'static/js/spoilers.js',
     'static/js/starred_messages.js',
     'static/js/stream_color.js',
     'static/js/stream_create.js',
@@ -240,7 +242,7 @@ def run_tests_via_node_js() -> int:
     try:
         ret = subprocess.check_call(command)
     except OSError:
-        print('Bad command: %s' % (command,))
+        print(f'Bad command: {command}')
         raise
     except subprocess.CalledProcessError:
         print('\n** Tests failed, PLEASE FIX! **\n')
@@ -255,8 +257,8 @@ def check_line_coverage(fn: str, line_coverage: Dict[Any, Any], line_mapping: Di
             missing_lines.append(str(actual_line["start"]["line"]))
     if missing_lines:
         if log:
-            print_error("%s no longer has complete node test coverage" % (fn,))
-            print("  Lines missing coverage: %s" % (", ".join(sorted(missing_lines, key=int)),))
+            print_error(f"{fn} no longer has complete node test coverage")
+            print("  Lines missing coverage: {}".format(", ".join(sorted(missing_lines, key=int))))
             print()
         return False
     return True
@@ -277,7 +279,7 @@ def enforce_proper_coverage(coverage_json: Any) -> bool:
         glob.glob('static/js/*.ts') +
         glob.glob('static/shared/js/*.js') +
         glob.glob('static/shared/js/*.ts') +
-        glob.glob('static/js/billing/*.js')
+        glob.glob('static/js/billing/*.js'),
     )
     enforce_fully_covered = all_js_files - EXEMPT_FILES
 
@@ -286,7 +288,7 @@ def enforce_proper_coverage(coverage_json: Any) -> bool:
         path = ROOT_DIR + "/" + relative_path
         if not (path in coverage_json):
             coverage_lost = True
-            print_error("%s has no node test coverage" % (relative_path,))
+            print_error(f"{relative_path} has no node test coverage")
             continue
         line_coverage = coverage_json[path]['s']
         line_mapping = coverage_json[path]['statementMap']
@@ -308,7 +310,7 @@ def enforce_proper_coverage(coverage_json: Any) -> bool:
             line_mapping = coverage_json[path]['statementMap']
             if check_line_coverage(relative_path, line_coverage, line_mapping, log=False):
                 coverage_not_enforced = True
-                print_error("{} unexpectedly has 100% line coverage.".format(relative_path))
+                print_error(f"{relative_path} unexpectedly has 100% line coverage.")
 
     if coverage_not_enforced:
         print()
@@ -330,7 +332,7 @@ if options.coverage and ret == 0:
 print()
 if ret == 0:
     if options.coverage:
-        reports_location = 'http://{}/node-coverage/index.html'.format(get_dev_host())
+        reports_location = f'http://{get_dev_host()}/node-coverage/index.html'
         print('View coverage reports at ' + CYAN + reports_location + ENDC)
 
     print(GREEN + "Test(s) passed. SUCCESS!" + ENDC)

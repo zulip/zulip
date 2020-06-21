@@ -97,7 +97,7 @@ exports.upload_files = function (uppy, config, files) {
     if (files.length === 0) {
         return;
     }
-    if (page_params.max_file_upload_size === 0) {
+    if (page_params.max_file_upload_size_mib === 0) {
         exports.show_error_message(config, i18n.t('File and image uploads have been disabled for this organization.'));
         return;
     }
@@ -138,7 +138,7 @@ exports.setup_upload = function (config) {
         debug: false,
         autoProceed: true,
         restrictions: {
-            maxFileSize: page_params.max_file_upload_size * 1024 * 1024,
+            maxFileSize: page_params.max_file_upload_size_mib * 1024 * 1024,
         },
         locale: {
             strings: {
@@ -213,7 +213,7 @@ exports.setup_upload = function (config) {
         if (!compose_state.composing()) {
             compose_actions.start('stream');
         }
-        const absolute_uri = upload.make_upload_absolute(uri);
+        const absolute_uri = exports.make_upload_absolute(uri);
         const filename_uri = "[" + filename + "](" + absolute_uri + ")";
         compose_ui.replace_syntax(exports.get_translated_status(file), filename_uri, exports.get_item("textarea", config));
         compose_ui.autosize_textarea();

@@ -48,16 +48,16 @@ def api_solano_webhook(request: HttpRequest, user_profile: UserProfile,
     # commit itself.
     commit_url = repository.split('@')[1]
     if 'github' in repository:
-        commit_url += '/commit/{}'.format(commit_id)
+        commit_url += f'/commit/{commit_id}'
     elif 'bitbucket' in repository:
-        commit_url += '/commits/{}'.format(commit_id)
+        commit_url += f'/commits/{commit_id}'
     elif 'gitlab' in repository:
-        commit_url += '/pipelines/{}'.format(commit_id)
+        commit_url += f'/pipelines/{commit_id}'
 
     body = MESSAGE_TEMPLATE.format(
         author=author, build_log_url=build_log,
         commit_id=commit_id[:7], commit_url=commit_url,
-        status=status, emoji=emoji
+        status=status, emoji=emoji,
     )
 
     check_send_webhook_message(request, user_profile, topic, body)

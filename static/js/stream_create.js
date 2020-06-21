@@ -165,14 +165,16 @@ function create_stream() {
     data.invite_only = JSON.stringify(invite_only);
     data.history_public_to_subscribers = JSON.stringify(history_public_to_subscribers);
 
-    let stream_post_policy = parseInt($('#stream_creation_form input[name=stream-post-policy]:checked').val(), 10);
+    const stream_post_policy = parseInt($('#stream_creation_form input[name=stream-post-policy]:checked').val(), 10);
 
-    // Because the stream_post_policy field is hidden when non-administrators create streams,
-    // we need to set the default value here.
-    if (isNaN(stream_post_policy)) {
-        stream_post_policy = stream_data.stream_post_policy_values.everyone.code;
-    }
     data.stream_post_policy = JSON.stringify(stream_post_policy);
+
+    let message_retention_selection = $('#stream_creation_form select[name=stream_message_retention_setting]').val();
+    if (message_retention_selection === "retain_for_period") {
+        message_retention_selection = parseInt($('#stream_creation_form input[name=stream-message-retention-days]').val(), 10);
+    }
+
+    data.message_retention_days = JSON.stringify(message_retention_selection);
 
     const announce = stream_data.realm_has_notifications_stream() &&
         $('#announce-new-stream input').prop('checked');
@@ -181,9 +183,7 @@ function create_stream() {
     // TODO: We can eliminate the user_ids -> principals conversion
     //       once we upgrade the backend to accept user_ids.
     const user_ids = get_principals();
-    const persons = user_ids.map(user_id => people.get_by_user_id(user_id)).filter(Boolean);
-    const principals = persons.map(person => person.email);
-    data.principals = JSON.stringify(principals);
+    data.principals = JSON.stringify(user_ids);
 
     loading.make_indicator($('#stream_creating_indicator'), {text: i18n.t('Creating stream...')});
 
@@ -273,6 +273,8 @@ exports.show_new_stream_modal = function () {
     // Make the options default to the same each time:
     // public, "announce stream" on.
     $('#make-invite-only input:radio[value=public]').prop('checked', true);
+    $("#stream_creation_form .stream-message-retention-days-input").hide();
+    $("#stream_creation_form select[name=stream_message_retention_setting]").val("realm_default");
 
     if (stream_data.realm_has_notifications_stream()) {
         $('#announce-new-stream').show();

@@ -1,31 +1,39 @@
+import datetime
+import time
+from collections import namedtuple
+from operator import itemgetter
+from typing import Any, Dict, List, Set, Tuple, Union
+from unittest import mock
+
+import ujson
+from django.conf import settings
 from django.db import IntegrityError
 from django.db.models import Q
-from django.conf import settings
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib import bugdown
+from analytics.lib.counts import COUNT_STATS
+from analytics.models import RealmCount
 from zerver.decorator import JsonableError
-from zerver.lib.test_runner import slow
-from zerver.lib.addressee import Addressee
-
+from zerver.lib import bugdown
 from zerver.lib.actions import (
     check_message,
     check_send_stream_message,
     create_mirror_user_if_needed,
     do_add_alert_words,
-    do_change_is_admin,
+    do_change_is_api_super_user,
     do_change_stream_invite_only,
     do_change_stream_post_policy,
     do_claim_attachments,
     do_create_user,
     do_deactivate_user,
     do_send_messages,
-    do_update_message,
     do_set_realm_property,
+    do_update_message,
     extract_private_recipients,
     extract_stream_indicator,
+    gather_subscriptions_helper,
     get_active_presence_idle_user_ids,
     get_client,
     get_last_message_id,
@@ -39,31 +47,29 @@ from zerver.lib.actions import (
     internal_send_stream_message_by_name,
     send_rate_limited_pm_notification_to_bot_owner,
 )
-
-from zerver.lib.cache import (
-    cache_delete,
-    get_stream_cache_key,
-    to_dict_cache_key_id,
-)
-
-
-from zerver.lib.create_user import (
-    create_user_profile,
-)
-
+from zerver.lib.addressee import Addressee
+from zerver.lib.cache import cache_delete, get_stream_cache_key, to_dict_cache_key_id
+from zerver.lib.create_user import create_user_profile
 from zerver.lib.message import (
     MessageDict,
     bulk_access_messages,
     get_first_visible_message_id,
     get_raw_unread_data,
     get_recent_private_conversations,
+    has_message_access,
     maybe_update_first_visible_message_id,
     messages_for_ids,
     render_markdown,
     sew_messages_and_reactions,
     update_first_visible_message_id,
 )
-
+from zerver.lib.soft_deactivation import (
+    add_missing_messages,
+    do_soft_activate_users,
+    do_soft_deactivate_users,
+    reactivate_user_if_soft_deactivated,
+)
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     get_subscription,
     get_user_messages,
@@ -74,61 +80,48 @@ from zerver.lib.test_helpers import (
     queries_captured,
     reset_emails_in_zulip_realm,
 )
-
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-
-from zerver.lib.topic import (
-    LEGACY_PREV_TOPIC,
-    DB_TOPIC_NAME,
-    TOPIC_LINKS,
-    TOPIC_NAME,
-)
-
-from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
-from zerver.lib.soft_deactivation import (
-    add_missing_messages,
-    do_soft_activate_users,
-    do_soft_deactivate_users,
-    reactivate_user_if_soft_deactivated,
-)
-
-from zerver.models import (
-    MAX_MESSAGE_LENGTH, MAX_TOPIC_NAME_LENGTH,
-    Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment,
-    RealmAuditLog, RealmDomain, get_realm, UserPresence, Subscription,
-    get_stream, get_system_bot, get_user, Reaction,
-    flush_per_request_caches, ScheduledMessage, get_huddle_recipient,
-    bulk_get_huddle_user_ids, get_huddle_user_ids,
-    get_display_recipient, RealmFilter
-)
-
-
+from zerver.lib.test_runner import slow
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.lib.timezone import get_timezone
+from zerver.lib.topic import DB_TOPIC_NAME, LEGACY_PREV_TOPIC, TOPIC_LINKS, TOPIC_NAME
+from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
 from zerver.lib.upload import create_attachment
 from zerver.lib.url_encoding import near_message_url
+from zerver.models import (
+    MAX_MESSAGE_LENGTH,
+    MAX_TOPIC_NAME_LENGTH,
+    Attachment,
+    Message,
+    Reaction,
+    Realm,
+    RealmAuditLog,
+    RealmDomain,
+    RealmFilter,
+    Recipient,
+    ScheduledMessage,
+    Stream,
+    Subscription,
+    UserMessage,
+    UserPresence,
+    UserProfile,
+    bulk_get_huddle_user_ids,
+    flush_per_request_caches,
+    get_display_recipient,
+    get_huddle_recipient,
+    get_huddle_user_ids,
+    get_realm,
+    get_stream,
+    get_system_bot,
+    get_user,
+)
+from zerver.views.messages import InvalidMirrorInput, create_mirrored_message_users
 
-from zerver.views.messages import create_mirrored_message_users, InvalidMirrorInput
-
-from analytics.lib.counts import COUNT_STATS
-from analytics.models import RealmCount
-
-import datetime
-import mock
-from operator import itemgetter
-import time
-import ujson
-from typing import Any, Dict, List, Set, Union, Tuple
-
-from collections import namedtuple
 
 class MiscMessageTest(ZulipTestCase):
     def test_get_last_message_id(self) -> None:
         self.assertEqual(
             get_last_message_id(),
-            Message.objects.latest('id').id
+            Message.objects.latest('id').id,
         )
 
         Message.objects.all().delete()
@@ -150,7 +143,7 @@ class TopicHistoryTest(ZulipTestCase):
         # that the new topic is not accessible
         self.login_user(user_profile)
         self.subscribe(user_profile, stream_name)
-        endpoint = '/json/users/me/%d/topics' % (stream.id,)
+        endpoint = f'/json/users/me/{stream.id}/topics'
         result = self.client_get(endpoint, dict(), subdomain="zephyr")
         self.assert_json_success(result)
         history = result.json()['topics']
@@ -204,7 +197,7 @@ class TopicHistoryTest(ZulipTestCase):
         topic1_msg_id = create_test_message('topic1')
         topic0_msg_id = create_test_message('topic0')
 
-        endpoint = '/json/users/me/%d/topics' % (stream.id,)
+        endpoint = f'/json/users/me/{stream.id}/topics'
         result = self.client_get(endpoint, dict())
         self.assert_json_success(result)
         history = result.json()['topics']
@@ -276,18 +269,18 @@ class TopicHistoryTest(ZulipTestCase):
         # out of realm
         bad_stream = self.make_stream(
             'mit_stream',
-            realm=get_realm('zephyr')
+            realm=get_realm('zephyr'),
         )
-        endpoint = '/json/users/me/%s/topics' % (bad_stream.id,)
+        endpoint = f'/json/users/me/{bad_stream.id}/topics'
         result = self.client_get(endpoint, dict())
         self.assert_json_error(result, 'Invalid stream id')
 
         # private stream to which I am not subscribed
         private_stream = self.make_stream(
             'private_stream',
-            invite_only=True
+            invite_only=True,
         )
-        endpoint = '/json/users/me/%s/topics' % (private_stream.id,)
+        endpoint = f'/json/users/me/{private_stream.id}/topics'
         result = self.client_get(endpoint, dict())
         self.assert_json_error(result, 'Invalid stream id')
 
@@ -310,7 +303,7 @@ class TopicDeleteTest(ZulipTestCase):
         self.login_user(user_profile)
         endpoint = '/json/streams/' + str(stream.id) + '/delete_topic'
         result = self.client_post(endpoint, {
-            "topic_name": topic_name
+            "topic_name": topic_name,
         })
         self.assert_json_error(result, "Must be an organization administrator")
         self.assertEqual(self.get_last_message().id, last_msg_id)
@@ -329,7 +322,7 @@ class TopicDeleteTest(ZulipTestCase):
         # delete new_last_msg_id, i.e. the one sent since they joined.
         self.assertEqual(self.get_last_message().id, new_last_msg_id)
         result = self.client_post(endpoint, {
-            "topic_name": topic_name
+            "topic_name": topic_name,
         })
         self.assert_json_success(result)
         self.assertEqual(self.get_last_message().id, last_msg_id)
@@ -337,7 +330,7 @@ class TopicDeleteTest(ZulipTestCase):
         # Try to delete all messages in the topic again. There are no messages accessible
         # to the administrator, so this should do nothing.
         result = self.client_post(endpoint, {
-            "topic_name": topic_name
+            "topic_name": topic_name,
         })
         self.assert_json_success(result)
         self.assertEqual(self.get_last_message().id, last_msg_id)
@@ -347,14 +340,14 @@ class TopicDeleteTest(ZulipTestCase):
                                      history_public_to_subscribers=True)
         # Delete the topic should now remove all messages
         result = self.client_post(endpoint, {
-            "topic_name": topic_name
+            "topic_name": topic_name,
         })
         self.assert_json_success(result)
         self.assertEqual(self.get_last_message().id, initial_last_msg_id)
 
         # Delete again, to test the edge case of deleting an empty topic.
         result = self.client_post(endpoint, {
-            "topic_name": topic_name
+            "topic_name": topic_name,
         })
         self.assert_json_success(result)
         self.assertEqual(self.get_last_message().id, initial_last_msg_id)
@@ -500,7 +493,7 @@ class TestAddressee(ZulipTestCase):
         result = Addressee.legacy_build(
             sender=self.example_user('hamlet'), message_type_name='private',
             message_to=user_ids, topic_name='random_topic',
-            realm=realm
+            realm=realm,
         )
         user_profiles = result.user_profiles()
         result_user_ids = [user_profiles[0].id, user_profiles[1].id]
@@ -517,7 +510,7 @@ class TestAddressee(ZulipTestCase):
         result = Addressee.legacy_build(
             sender=sender, message_type_name='stream',
             message_to=[stream.id], topic_name='random_topic',
-            realm=realm
+            realm=realm,
         )
 
         stream_id = result.stream_id()
@@ -546,8 +539,11 @@ class InternalPrepTest(ZulipTestCase):
                 content=bad_content,
             )
 
-        arg = m.call_args_list[0][0][0]
-        self.assertIn('Message must not be empty', arg)
+        m.assert_called_once_with(
+            "Error queueing internal message by %s: %s",
+            "cordelia@zulip.com",
+            "Message must not be empty",
+        )
 
         with mock.patch('logging.exception') as m:
             internal_send_huddle_message(
@@ -557,8 +553,11 @@ class InternalPrepTest(ZulipTestCase):
                 content=bad_content,
             )
 
-        arg = m.call_args_list[0][0][0]
-        self.assertIn('Message must not be empty', arg)
+        m.assert_called_once_with(
+            "Error queueing internal message by %s: %s",
+            "cordelia@zulip.com",
+            "Message must not be empty",
+        )
 
         with mock.patch('logging.exception') as m:
             internal_send_stream_message(
@@ -566,11 +565,14 @@ class InternalPrepTest(ZulipTestCase):
                 sender=cordelia,
                 topic='whatever',
                 content=bad_content,
-                stream=stream
+                stream=stream,
             )
 
-        arg = m.call_args_list[0][0][0]
-        self.assertIn('Message must not be empty', arg)
+        m.assert_called_once_with(
+            "Error queueing internal message by %s: %s",
+            "cordelia@zulip.com",
+            "Message must not be empty",
+        )
 
         with mock.patch('logging.exception') as m:
             internal_send_stream_message_by_name(
@@ -578,11 +580,14 @@ class InternalPrepTest(ZulipTestCase):
                 sender=cordelia,
                 stream_name=stream.name,
                 topic='whatever',
-                content=bad_content
+                content=bad_content,
             )
 
-        arg = m.call_args_list[0][0][0]
-        self.assertIn('Message must not be empty', arg)
+        m.assert_called_once_with(
+            "Error queueing internal message by %s: %s",
+            "cordelia@zulip.com",
+            "Message must not be empty",
+        )
 
     def test_error_handling(self) -> None:
         realm = get_realm('zulip')
@@ -614,9 +619,11 @@ class InternalPrepTest(ZulipTestCase):
                 sender=sender,
                 recipient_user=recipient_user,
                 content=content)
-        arg = logging_mock.call_args_list[0][0][0]
-        prefix = "Error queueing internal message by cordelia@zulip.com: You can't send private messages outside of your organization."
-        self.assertTrue(arg.startswith(prefix))
+        logging_mock.assert_called_once_with(
+            "Error queueing internal message by %s: %s",
+            "cordelia@zulip.com",
+            "You can't send private messages outside of your organization.",
+        )
 
     def test_ensure_stream_gets_called(self) -> None:
         realm = get_realm('zulip')
@@ -795,7 +802,7 @@ class PersonalMessagesTest(ZulipTestCase):
             user_message = most_recent_usermessage(user_profile)
             self.assertEqual(
                 str(user_message),
-                '<UserMessage: recip / {} ([])>'.format(user_profile.email)
+                f'<UserMessage: recip / {user_profile.email} ([])>',
             )
 
     @slow("checks several profiles")
@@ -864,7 +871,7 @@ class PersonalMessagesTest(ZulipTestCase):
         self.login('hamlet')
         self.assert_personal(
             sender=self.example_user("hamlet"),
-            receiver=self.example_user("othello")
+            receiver=self.example_user("othello"),
         )
 
     def test_private_message_policy(self) -> None:
@@ -891,7 +898,7 @@ class PersonalMessagesTest(ZulipTestCase):
         self.assert_personal(
             sender=self.example_user("hamlet"),
             receiver=self.example_user("othello"),
-            content="hümbüǵ"
+            content="hümbüǵ",
         )
 
 class StreamMessagesTest(ZulipTestCase):
@@ -962,7 +969,7 @@ class StreamMessagesTest(ZulipTestCase):
             # Make every other user be idle.
             long_term_idle = i % 2 > 0
 
-            email = 'foo%d@example.com' % (i,)
+            email = f'foo{i}@example.com'
             user = UserProfile.objects.create(
                 realm=realm,
                 email=email,
@@ -971,7 +978,7 @@ class StreamMessagesTest(ZulipTestCase):
             )
             Subscription.objects.create(
                 user_profile=user,
-                recipient=recipient
+                recipient=recipient,
             )
 
         def send_test_message() -> None:
@@ -1030,7 +1037,7 @@ class StreamMessagesTest(ZulipTestCase):
                 body=content,
             )
 
-        self.assert_length(queries, 15)
+        self.assert_length(queries, 14)
 
     def test_stream_message_dict(self) -> None:
         user_profile = self.example_user('iago')
@@ -1084,7 +1091,7 @@ class StreamMessagesTest(ZulipTestCase):
             self.send_stream_message(
                 user,
                 stream_name,
-                content=content
+                content=content,
             )
         self.assertEqual(m.call_count, 1)
         users = m.call_args[0][2]
@@ -1100,7 +1107,7 @@ class StreamMessagesTest(ZulipTestCase):
         self.subscribe(hamlet, stream_name)
 
         UserMessage.objects.filter(
-            user_profile=cordelia
+            user_profile=cordelia,
         ).delete()
 
         def mention_cordelia() -> Set[int]:
@@ -1109,13 +1116,13 @@ class StreamMessagesTest(ZulipTestCase):
             user_ids = self._send_stream_message(
                 user=hamlet,
                 stream_name=stream_name,
-                content=content
+                content=content,
             )
             return user_ids
 
         def num_cordelia_messages() -> int:
             return UserMessage.objects.filter(
-                user_profile=cordelia
+                user_profile=cordelia,
             ).count()
 
         user_ids = mention_cordelia()
@@ -1154,7 +1161,7 @@ class StreamMessagesTest(ZulipTestCase):
         user_ids = self._send_stream_message(
             user=hamlet,
             stream_name=stream_name,
-            content=content
+            content=content,
         )
 
         self.assertIn(normal_bot.id, user_ids)
@@ -1166,7 +1173,7 @@ class StreamMessagesTest(ZulipTestCase):
         user = self.mit_user('starnine')
         self.subscribe(user, 'Verona')
 
-        do_change_is_admin(user, True, 'api_super_user')
+        do_change_is_api_super_user(user, True)
         result = self.api_post(user, "/api/v1/messages", {"type": "stream",
                                                           "to": "Verona",
                                                           "sender": self.mit_email("sipbtest"),
@@ -1177,7 +1184,7 @@ class StreamMessagesTest(ZulipTestCase):
                                subdomain="zephyr")
         self.assert_json_success(result)
 
-        do_change_is_admin(user, False, 'api_super_user')
+        do_change_is_api_super_user(user, False)
         result = self.api_post(user, "/api/v1/messages", {"type": "stream",
                                                           "to": "Verona",
                                                           "sender": self.mit_email("sipbtest"),
@@ -1312,7 +1319,7 @@ class MessageDictTest(ZulipTestCase):
                 apply_markdown: bool,
                 client_gravatar: bool) -> Dict[str, Any]:
             msg = reload_message(msg_id)
-            unhydrated_dict = MessageDict.to_dict_uncached_helper(msg)
+            unhydrated_dict = MessageDict.to_dict_uncached_helper([msg])[0]
             # The next step mutates the dict in place
             # for performance reasons.
             MessageDict.post_process_dicts(
@@ -1330,7 +1337,7 @@ class MessageDictTest(ZulipTestCase):
                 hamlet,
                 "Scotland",
                 topic_name="editing",
-                content="before edit"
+                content="before edit",
             )
             return msg_id
 
@@ -1374,13 +1381,13 @@ class MessageDictTest(ZulipTestCase):
                 message = Message(
                     sender=sender,
                     recipient=recipient,
-                    content='whatever %d' % (i,),
+                    content=f'whatever {i}',
                     rendered_content='DOES NOT MATTER',
                     rendered_content_version=bugdown.version,
                     date_sent=timezone_now(),
                     sending_client=sending_client,
                     last_edit_time=timezone_now(),
-                    edit_history='[]'
+                    edit_history='[]',
                 )
                 message.set_topic_name('whatever')
                 message.save()
@@ -1408,7 +1415,7 @@ class MessageDictTest(ZulipTestCase):
         # extract messages.  Note that we increased this from 1ms to
         # 1.5ms to handle tests running in parallel being a bit
         # slower.
-        error_msg = "Number of ids: {}. Time delay: {}".format(num_ids, delay)
+        error_msg = f"Number of ids: {num_ids}. Time delay: {delay}"
         self.assertTrue(delay < 0.0015 * num_ids, error_msg)
         self.assert_length(queries, 7)
         self.assertEqual(len(rows), num_ids)
@@ -1425,7 +1432,7 @@ class MessageDictTest(ZulipTestCase):
             date_sent=timezone_now(),
             sending_client=sending_client,
             last_edit_time=timezone_now(),
-            edit_history='[]'
+            edit_history='[]',
         )
         message.set_topic_name('whatever')
         message.save()
@@ -1455,7 +1462,7 @@ class MessageDictTest(ZulipTestCase):
             date_sent=timezone_now(),
             sending_client=sending_client,
             last_edit_time=timezone_now(),
-            edit_history='[]'
+            edit_history='[]',
         )
         message.set_topic_name('whatever')
         message.save()
@@ -1473,8 +1480,8 @@ class MessageDictTest(ZulipTestCase):
         # senders in both the 'zulip' and 'lear' realms as well as
         # the notification bot.
         zulip_realm = get_realm('zulip')
-        url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
-        url = 'https://trac.zulip.net/ticket/123'
+        url_format_string = r"https://trac.example.com/ticket/%(id)s"
+        url = 'https://trac.example.com/ticket/123'
         topic_name = 'test #123'
 
         realm_filter = RealmFilter(realm=zulip_realm,
@@ -1483,7 +1490,7 @@ class MessageDictTest(ZulipTestCase):
         self.assertEqual(
             realm_filter.__str__(),
             '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
-            ' https://trac.zulip.net/ticket/%(id)s>')
+            ' https://trac.example.com/ticket/%(id)s>')
 
         def get_message(sender: UserProfile) -> Message:
             msg_id = self.send_stream_message(sender, 'Denmark', 'hello world', topic_name,
@@ -1491,7 +1498,7 @@ class MessageDictTest(ZulipTestCase):
             return Message.objects.get(id=msg_id)
 
         def assert_topic_links(links: List[str], msg: Message) -> None:
-            dct = MessageDict.to_dict_uncached_helper(msg)
+            dct = MessageDict.to_dict_uncached_helper([msg])[0]
             self.assertEqual(dct[TOPIC_LINKS], links)
 
         # Send messages before and after saving the realm filter from each user.
@@ -1515,7 +1522,7 @@ class MessageDictTest(ZulipTestCase):
             date_sent=timezone_now(),
             sending_client=sending_client,
             last_edit_time=timezone_now(),
-            edit_history='[]'
+            edit_history='[]',
         )
         message.set_topic_name('whatever')
         message.save()
@@ -1567,11 +1574,11 @@ class SewMessageAndReactionTest(ZulipTestCase):
                 message = Message(
                     sender=sender,
                     recipient=recipient,
-                    content='whatever %d' % (i,),
+                    content=f'whatever {i}',
                     date_sent=timezone_now(),
                     sending_client=sending_client,
                     last_edit_time=timezone_now(),
-                    edit_history='[]'
+                    edit_history='[]',
                 )
                 message.set_topic_name('whatever')
                 message.save()
@@ -1641,8 +1648,8 @@ class MessagePOSTTest(ZulipTestCase):
                 "to": ujson.dumps([99999]),
                 "client": "test suite",
                 "content": "Stream message by ID.",
-                "topic": "Test topic for stream ID message"
-            }
+                "topic": "Test topic for stream ID message",
+            },
         )
         self.assert_json_error(result, "Stream with ID '99999' does not exist")
 
@@ -1881,8 +1888,8 @@ class MessagePOSTTest(ZulipTestCase):
                 "type": "private",
                 "content": "Test message",
                 "client": "test suite",
-                "to": ujson.dumps([self.example_user("othello").id])
-            }
+                "to": ujson.dumps([self.example_user("othello").id]),
+            },
         )
         self.assert_json_success(result)
 
@@ -1902,8 +1909,8 @@ class MessagePOSTTest(ZulipTestCase):
                 "content": "Test message",
                 "client": "test suite",
                 "to": ujson.dumps([self.example_user("othello").id,
-                                   self.example_user("cordelia").id])
-            }
+                                   self.example_user("cordelia").id]),
+            },
         )
         self.assert_json_success(result)
 
@@ -1912,7 +1919,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.assertEqual(msg.recipient_id, get_huddle_recipient(
             {self.example_user("hamlet").id,
              self.example_user("othello").id,
-             self.example_user("cordelia").id}).id
+             self.example_user("cordelia").id}).id,
         )
 
     def test_personal_message_copying_self(self) -> None:
@@ -1958,14 +1965,14 @@ class MessagePOSTTest(ZulipTestCase):
             "content": "Test message",
             "client": "test suite",
             "to": ujson.dumps([othello.id])})
-        self.assert_json_error(result, "'{}' is no longer using Zulip.".format(othello.email))
+        self.assert_json_error(result, f"'{othello.email}' is no longer using Zulip.")
 
         result = self.client_post("/json/messages", {
             "type": "private",
             "content": "Test message",
             "client": "test suite",
             "to": ujson.dumps([othello.id, cordelia.id])})
-        self.assert_json_error(result, "'{}' is no longer using Zulip.".format(othello.email))
+        self.assert_json_error(result, f"'{othello.email}' is no longer using Zulip.")
 
     def test_invalid_type(self) -> None:
         """
@@ -2649,22 +2656,57 @@ class EditMessageTest(ZulipTestCase):
 
         self.assertEqual(
             fetch_message_dict[TOPIC_NAME],
-            msg.topic_name()
+            msg.topic_name(),
         )
         self.assertEqual(
             fetch_message_dict['content'],
-            msg.content
+            msg.content,
         )
         self.assertEqual(
             fetch_message_dict['sender_id'],
-            msg.sender_id
+            msg.sender_id,
         )
 
         if msg.edit_history:
             self.assertEqual(
                 fetch_message_dict['edit_history'],
-                ujson.loads(msg.edit_history)
+                ujson.loads(msg.edit_history),
             )
+
+    def test_query_count_on_to_dict_uncached(self) -> None:
+        # `to_dict_uncached` method is used by the mechanisms
+        # tested in this class. Hence, its performance is tested here.
+        # Generate 2 messages
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        stream_name = "public_stream"
+        self.subscribe(user, stream_name)
+        message_ids = []
+        message_ids.append(self.send_stream_message(user,
+                                                    stream_name, "Message one"))
+        user_2 = self.example_user("cordelia")
+        self.subscribe(user_2, stream_name)
+        message_ids.append(self.send_stream_message(user_2,
+                                                    stream_name, "Message two"))
+        self.subscribe(self.notification_bot(), stream_name)
+        message_ids.append(self.send_stream_message(self.notification_bot(),
+                                                    stream_name, "Message three"))
+        messages = [Message.objects.select_related().get(id=message_id)
+                    for message_id in message_ids]
+
+        # Check number of queries performed
+        with queries_captured() as queries:
+            MessageDict.to_dict_uncached(messages)
+        # 1 query for realm_id per message = 3
+        # 1 query each for reactions & submessage for all messages = 2
+        self.assertEqual(len(queries), 5)
+
+        realm_id = 2  # Fetched from stream object
+        # Check number of queries performed with realm_id
+        with queries_captured() as queries:
+            MessageDict.to_dict_uncached(messages, realm_id)
+        # 1 query each for reactions & submessage for all messages = 2
+        self.assertEqual(len(queries), 2)
 
     def test_save_message(self) -> None:
         """This is also tested by a client test, but here we can verify
@@ -2674,14 +2716,14 @@ class EditMessageTest(ZulipTestCase):
                                           topic_name="editing", content="before edit")
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
-            'content': 'after edit'
+            'content': 'after edit',
         })
         self.assert_json_success(result)
         self.check_message(msg_id, topic_name="editing", content="after edit")
 
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
-            'topic': 'edited'
+            'topic': 'edited',
         })
         self.assert_json_success(result)
         self.check_topic(msg_id, topic_name="edited")
@@ -2762,7 +2804,7 @@ class EditMessageTest(ZulipTestCase):
                                           topic_name="editing", content="before edit")
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
-            'topic': ' '
+            'topic': ' ',
         })
         self.assert_json_error(result, "Topic can't be empty")
 
@@ -2772,7 +2814,7 @@ class EditMessageTest(ZulipTestCase):
                                           topic_name="editing", content="before edit")
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
-            'content': ' '
+            'content': ' ',
         })
         self.assert_json_success(result)
         content = Message.objects.filter(id=msg_id).values_list('content', flat = True)[0]
@@ -2791,7 +2833,7 @@ class EditMessageTest(ZulipTestCase):
 
         new_content_1 = 'content after edit'
         result_1 = self.client_patch("/json/messages/" + str(msg_id_1), {
-            'message_id': msg_id_1, 'content': new_content_1
+            'message_id': msg_id_1, 'content': new_content_1,
         })
         self.assert_json_success(result_1)
 
@@ -2820,7 +2862,7 @@ class EditMessageTest(ZulipTestCase):
             content="content before edit")
         new_content_1 = 'content after edit'
         result_1 = self.client_patch("/json/messages/" + str(msg_id_1), {
-            'message_id': msg_id_1, 'content': new_content_1
+            'message_id': msg_id_1, 'content': new_content_1,
         })
         self.assert_json_success(result_1)
 
@@ -2856,7 +2898,7 @@ class EditMessageTest(ZulipTestCase):
                          'content after edit, line 2\n'
                          'content before edit, line 3')
         result_2 = self.client_patch("/json/messages/" + str(msg_id_2), {
-            'message_id': msg_id_2, 'content': new_content_2
+            'message_id': msg_id_2, 'content': new_content_2,
         })
         self.assert_json_success(result_2)
 
@@ -2891,7 +2933,7 @@ class EditMessageTest(ZulipTestCase):
             content="Here is a link to [zulip](www.zulip.org).")
         new_content_1 = 'Here is a link to [zulip](www.zulipchat.com).'
         result_1 = self.client_patch("/json/messages/" + str(msg_id_1), {
-            'message_id': msg_id_1, 'content': new_content_1
+            'message_id': msg_id_1, 'content': new_content_1,
         })
         self.assert_json_success(result_1)
 
@@ -2904,13 +2946,13 @@ class EditMessageTest(ZulipTestCase):
         # Check content of message after edit.
         self.assertEqual(message_history_1[0]['rendered_content'],
                          '<p>Here is a link to '
-                         '<a href="http://www.zulip.org" title="http://www.zulip.org">zulip</a>.</p>')
+                         '<a href="http://www.zulip.org">zulip</a>.</p>')
         self.assertEqual(message_history_1[1]['rendered_content'],
                          '<p>Here is a link to '
-                         '<a href="http://www.zulipchat.com" title="http://www.zulipchat.com">zulip</a>.</p>')
+                         '<a href="http://www.zulipchat.com">zulip</a>.</p>')
         self.assertEqual(message_history_1[1]['content_html_diff'],
-                         ('<p>Here is a link to <a href="http://www.zulipchat.com" '
-                          'title="http://www.zulipchat.com">zulip '
+                         ('<p>Here is a link to <a href="http://www.zulipchat.com"'
+                          '>zulip '
                           '<span class="highlight_text_inserted"> Link: http://www.zulipchat.com .'
                           '</span> <span class="highlight_text_deleted"> Link: http://www.zulip.org .'
                           '</span> </a></p>'))
@@ -2924,7 +2966,7 @@ class EditMessageTest(ZulipTestCase):
             topic_name='editing',
             content='This message has not been edited.')
 
-        result = self.client_get('/json/messages/{}/history'.format(msg_id))
+        result = self.client_get(f'/json/messages/{msg_id}/history')
 
         self.assert_json_success(result)
 
@@ -3228,6 +3270,8 @@ class EditMessageTest(ZulipTestCase):
                 new_stream=None,
                 topic_name=topic_name,
                 propagate_mode="change_later",
+                send_notification_to_old_thread=False,
+                send_notification_to_new_thread=False,
                 content=None,
                 rendered_content=None,
                 prior_mention_user_ids=set(),
@@ -3243,13 +3287,13 @@ class EditMessageTest(ZulipTestCase):
             if um.user_profile_id == user_id:
                 return {
                     "id": user_id,
-                    "flags": um.flags_list()
+                    "flags": um.flags_list(),
                 }
 
             else:
                 return {
                     "id": user_id,
-                    "flags": ["read"]
+                    "flags": ["read"],
                 }
 
         users_to_be_notified = list(map(notify, [hamlet.id, cordelia.id]))
@@ -3293,7 +3337,7 @@ class EditMessageTest(ZulipTestCase):
         def notify(user_id: int) -> Dict[str, Any]:
             return {
                 "id": user_id,
-                "flags": ["wildcard_mentioned"]
+                "flags": ["wildcard_mentioned"],
             }
 
         users_to_be_notified = sorted(map(notify, [cordelia.id, hamlet.id]), key=itemgetter("id"))
@@ -3331,7 +3375,7 @@ class EditMessageTest(ZulipTestCase):
         result = self.client_patch("/json/messages/" + str(id1), {
             'message_id': id1,
             'topic': 'edited',
-            'propagate_mode': 'change_later'
+            'propagate_mode': 'change_later',
         })
         self.assert_json_success(result)
 
@@ -3359,7 +3403,7 @@ class EditMessageTest(ZulipTestCase):
         result = self.client_patch("/json/messages/" + str(id2), {
             'message_id': id2,
             'topic': 'edited',
-            'propagate_mode': 'change_all'
+            'propagate_mode': 'change_all',
         })
         self.assert_json_success(result)
 
@@ -3369,6 +3413,29 @@ class EditMessageTest(ZulipTestCase):
         self.check_topic(id4, topic_name="topic2")
         self.check_topic(id5, topic_name="edited")
         self.check_topic(id6, topic_name="topic3")
+
+    def test_propagate_all_topics_with_different_uppercase_letters(self) -> None:
+        self.login('hamlet')
+        id1 = self.send_stream_message(self.example_user("hamlet"), "Scotland",
+                                       topic_name="topic1")
+        id2 = self.send_stream_message(self.example_user("hamlet"), "Scotland",
+                                       topic_name="Topic1")
+        id3 = self.send_stream_message(self.example_user("iago"), "Rome",
+                                       topic_name="topiC1")
+        id4 = self.send_stream_message(self.example_user("iago"), "Scotland",
+                                       topic_name="toPic1")
+
+        result = self.client_patch("/json/messages/" + str(id2), {
+            'message_id': id2,
+            'topic': 'edited',
+            'propagate_mode': 'change_all',
+        })
+        self.assert_json_success(result)
+
+        self.check_topic(id1, topic_name="edited")
+        self.check_topic(id2, topic_name="edited")
+        self.check_topic(id3, topic_name="topiC1")
+        self.check_topic(id4, topic_name="edited")
 
     def test_propagate_invalid(self) -> None:
         self.login('hamlet')
@@ -3413,18 +3480,18 @@ class EditMessageTest(ZulipTestCase):
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
             'stream_id': new_stream.id,
-            'propagate_mode': 'change_all'
+            'propagate_mode': 'change_all',
         })
 
         self.assert_json_success(result)
 
         messages = get_topic_messages(user_profile, old_stream, "test")
         self.assertEqual(len(messages), 1)
-        self.assertEqual(messages[0].content, "This topic was moved by @_**Iago|%s** to #**new stream>test**" % (user_profile.id,))
+        self.assertEqual(messages[0].content, f"This topic was moved by @_**Iago|{user_profile.id}** to #**new stream>test**")
 
         messages = get_topic_messages(user_profile, new_stream, "test")
         self.assertEqual(len(messages), 4)
-        self.assertEqual(messages[3].content, "This topic was moved here from #**test move stream>test** by @_**Iago|%s**" % (user_profile.id,))
+        self.assertEqual(messages[3].content, f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**")
 
     def test_move_message_to_stream_change_later(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
@@ -3433,19 +3500,19 @@ class EditMessageTest(ZulipTestCase):
         result = self.client_patch("/json/messages/" + str(msg_id_later), {
             'message_id': msg_id_later,
             'stream_id': new_stream.id,
-            'propagate_mode': 'change_later'
+            'propagate_mode': 'change_later',
         })
         self.assert_json_success(result)
 
         messages = get_topic_messages(user_profile, old_stream, "test")
         self.assertEqual(len(messages), 2)
         self.assertEqual(messages[0].id, msg_id)
-        self.assertEqual(messages[1].content, "This topic was moved by @_**Iago|%s** to #**new stream>test**" % (user_profile.id,))
+        self.assertEqual(messages[1].content, f"This topic was moved by @_**Iago|{user_profile.id}** to #**new stream>test**")
 
         messages = get_topic_messages(user_profile, new_stream, "test")
         self.assertEqual(len(messages), 3)
         self.assertEqual(messages[0].id, msg_id_later)
-        self.assertEqual(messages[2].content, "This topic was moved here from #**test move stream>test** by @_**Iago|%d**" % (user_profile.id,))
+        self.assertEqual(messages[2].content, f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**")
 
     def test_move_message_to_stream_no_allowed(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
@@ -3454,7 +3521,7 @@ class EditMessageTest(ZulipTestCase):
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
             'stream_id': new_stream.id,
-            'propagate_mode': 'change_all'
+            'propagate_mode': 'change_all',
         })
         self.assert_json_error(result, "You don't have permission to move this message")
 
@@ -3472,7 +3539,7 @@ class EditMessageTest(ZulipTestCase):
             'message_id': msg_id,
             'stream_id': new_stream.id,
             'propagate_mode': 'change_all',
-            'content': 'Not allowed'
+            'content': 'Not allowed',
         })
         self.assert_json_error(result, "Cannot change message content while changing stream")
 
@@ -3486,21 +3553,108 @@ class EditMessageTest(ZulipTestCase):
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test")
 
+        with queries_captured() as queries:
+            result = self.client_patch("/json/messages/" + str(msg_id), {
+                'message_id': msg_id,
+                'stream_id': new_stream.id,
+                'propagate_mode': 'change_all',
+                'topic': 'new topic',
+            })
+        self.assertEqual(len(queries), 52)
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(messages[0].content, f"This topic was moved by @_**Iago|{user_profile.id}** to #**new stream>new topic**")
+
+        messages = get_topic_messages(user_profile, new_stream, "new topic")
+        self.assertEqual(len(messages), 4)
+        self.assertEqual(messages[3].content, f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**")
+        self.assert_json_success(result)
+
+    def test_inaccessible_msg_after_stream_change(self) -> None:
+        """Simulates the case where message is moved to a stream where user is not a subscribed"""
+        (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test")
+
+        guest_user = self.example_user('polonius')
+        self.subscribe(guest_user, old_stream.name)
+        msg_id_to_test_acesss = self.send_stream_message(user_profile, old_stream.name,
+                                                         topic_name='test', content="fourth")
+
+        self.assertEqual(has_message_access(guest_user, Message.objects.get(id=msg_id_to_test_acesss), None), True)
+
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
             'stream_id': new_stream.id,
             'propagate_mode': 'change_all',
             'topic': 'new topic'
         })
+        self.assert_json_success(result)
+
+        self.assertEqual(has_message_access(guest_user, Message.objects.get(id=msg_id_to_test_acesss), None), False)
+        self.assertEqual(has_message_access(self.example_user('iago'), Message.objects.get(id=msg_id_to_test_acesss), None), True)
+
+    def test_no_notify_move_message_to_stream(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test")
+
+        result = self.client_patch("/json/messages/" + str(msg_id), {
+            'message_id': msg_id,
+            'stream_id': new_stream.id,
+            'propagate_mode': 'change_all',
+            'send_notification_to_old_thread': 'false',
+            'send_notification_to_new_thread': 'false',
+        })
+
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assertEqual(len(messages), 0)
+
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assertEqual(len(messages), 3)
+
+    def test_notify_new_thread_move_message_to_stream(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test")
+
+        result = self.client_patch("/json/messages/" + str(msg_id), {
+            'message_id': msg_id,
+            'stream_id': new_stream.id,
+            'propagate_mode': 'change_all',
+            'send_notification_to_old_thread': 'false',
+            'send_notification_to_new_thread': 'true',
+        })
+
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assertEqual(len(messages), 0)
+
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assertEqual(len(messages), 4)
+        self.assertEqual(messages[3].content, f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**")
+
+    def test_notify_old_thread_move_message_to_stream(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test")
+
+        result = self.client_patch("/json/messages/" + str(msg_id), {
+            'message_id': msg_id,
+            'stream_id': new_stream.id,
+            'propagate_mode': 'change_all',
+            'send_notification_to_old_thread': 'true',
+            'send_notification_to_new_thread': 'false',
+        })
+
+        self.assert_json_success(result)
 
         messages = get_topic_messages(user_profile, old_stream, "test")
         self.assertEqual(len(messages), 1)
-        self.assertEqual(messages[0].content, "This topic was moved by @_**Iago|%s** to #**new stream>new topic**" % (user_profile.id,))
+        self.assertEqual(messages[0].content, f"This topic was moved by @_**Iago|{user_profile.id}** to #**new stream>test**")
 
-        messages = get_topic_messages(user_profile, new_stream, "new topic")
-        self.assertEqual(len(messages), 4)
-        self.assertEqual(messages[3].content, "This topic was moved here from #**test move stream>test** by @_**Iago|%s**" % (user_profile.id,))
-        self.assert_json_success(result)
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assertEqual(len(messages), 3)
 
     def test_move_message_to_stream_to_private_stream(self) -> None:
         user_profile = self.example_user("iago")
@@ -3762,7 +3916,7 @@ class MessageAccessTests(ZulipTestCase):
             self.send_personal_message(
                 self.example_user("hamlet"),
                 self.example_user("cordelia"),
-                "test_received"
+                "test_received",
             ),
         ]
 
@@ -3883,7 +4037,7 @@ class MessageAccessTests(ZulipTestCase):
                                  content=content)
 
         sent_message = UserMessage.objects.filter(
-            user_profile=self.example_user('hamlet')
+            user_profile=self.example_user('hamlet'),
         ).order_by("id").reverse()[0]
         self.assertEqual(sent_message.message.content, content)
         self.assertFalse(sent_message.flags.starred)
@@ -3897,7 +4051,7 @@ class MessageAccessTests(ZulipTestCase):
         self.login_user(normal_user)
 
         message_id = [
-            self.send_stream_message(normal_user, stream_name, "test 1")
+            self.send_stream_message(normal_user, stream_name, "test 1"),
         ]
 
         guest_user = self.example_user('polonius')
@@ -3913,7 +4067,7 @@ class MessageAccessTests(ZulipTestCase):
         # And messages sent after they join
         self.login_user(normal_user)
         message_id = [
-            self.send_stream_message(normal_user, stream_name, "test 2")
+            self.send_stream_message(normal_user, stream_name, "test 2"),
         ]
         self.login_user(guest_user)
         result = self.change_star(message_id)
@@ -3928,7 +4082,7 @@ class MessageAccessTests(ZulipTestCase):
         self.login_user(normal_user)
 
         message_id = [
-            self.send_stream_message(normal_user, stream_name, "test 1")
+            self.send_stream_message(normal_user, stream_name, "test 1"),
         ]
 
         guest_user = self.example_user('polonius')
@@ -3952,7 +4106,7 @@ class MessageAccessTests(ZulipTestCase):
         do_change_stream_invite_only(stream, True, history_public_to_subscribers=False)
         self.login_user(normal_user)
         message_id = [
-            self.send_stream_message(normal_user, stream_name, "test 2")
+            self.send_stream_message(normal_user, stream_name, "test 2"),
         ]
         self.login_user(guest_user)
         result = self.change_star(message_id)
@@ -4042,9 +4196,9 @@ class MessageHasKeywordsTest(ZulipTestCase):
         sample_size = 10
         realm_id = user_profile.realm_id
         dummy_files = [
-            ('zulip.txt', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt' % (realm_id,), sample_size),
-            ('temp_file.py', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py' % (realm_id,), sample_size),
-            ('abc.py', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py' % (realm_id,), sample_size)
+            ('zulip.txt', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt', sample_size),
+            ('temp_file.py', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py', sample_size),
+            ('abc.py', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py', sample_size),
         ]
 
         for file_name, path_id, size in dummy_files:
@@ -4056,7 +4210,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
     def test_claim_attachment(self) -> None:
         user_profile = self.example_user('hamlet')
         dummy_path_ids = self.setup_dummy_attachments(user_profile)
-        dummy_urls = ["http://zulip.testserver/user_uploads/{}".format(x) for x in dummy_path_ids]
+        dummy_urls = [f"http://zulip.testserver/user_uploads/{x}" for x in dummy_path_ids]
 
         # Send message referring the attachment
         self.subscribe(user_profile, "Denmark")
@@ -4076,17 +4230,17 @@ class MessageHasKeywordsTest(ZulipTestCase):
 
         # This message tries to claim the third attachment but fails because
         # Bugdown would not set has_attachments = True here.
-        body = "Link in code: `{}`".format(dummy_urls[2])
+        body = f"Link in code: `{dummy_urls[2]}`"
         self.send_stream_message(user_profile, "Denmark", body, "test")
         assert_attachment_claimed(dummy_path_ids[2], False)
 
         # Another scenario where we wouldn't parse the link.
-        body = "Link to not parse: .{}.`".format(dummy_urls[2])
+        body = f"Link to not parse: .{dummy_urls[2]}.`"
         self.send_stream_message(user_profile, "Denmark", body, "test")
         assert_attachment_claimed(dummy_path_ids[2], False)
 
         # Finally, claim attachment 3.
-        body = "Link: {}".format(dummy_urls[2])
+        body = f"Link: {dummy_urls[2]}"
         self.send_stream_message(user_profile, "Denmark", body, "test")
         assert_attachment_claimed(dummy_path_ids[2], True)
         assert_attachment_claimed(dummy_path_ids[1], False)
@@ -4114,7 +4268,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
         realm_id = hamlet.realm.id
         rendered_content = render_markdown(msg, content)
         mention_data = bugdown.MentionData(realm_id, content)
-        do_update_message(hamlet, msg, None, None, "change_one", content,
+        do_update_message(hamlet, msg, None, None, "change_one", False, False, content,
                           rendered_content, set(), set(), mention_data=mention_data)
 
     def test_finds_link_after_edit(self) -> None:
@@ -4153,7 +4307,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
     def test_has_attachment(self) -> None:
         hamlet = self.example_user('hamlet')
         dummy_path_ids = self.setup_dummy_attachments(hamlet)
-        dummy_urls = ["http://zulip.testserver/user_uploads/{}".format(x) for x in dummy_path_ids]
+        dummy_urls = [f"http://zulip.testserver/user_uploads/{x}" for x in dummy_path_ids]
         self.subscribe(hamlet, "Denmark")
 
         body = ("Files ...[zulip.txt]({}) {} {}").format(dummy_urls[0], dummy_urls[1], dummy_urls[2])
@@ -4165,24 +4319,24 @@ class MessageHasKeywordsTest(ZulipTestCase):
         self.assertFalse(msg.has_attachment)
         self.update_message(msg, body)
         self.assertTrue(msg.has_attachment)
-        self.update_message(msg, 'Link in code: `{}`'.format(dummy_urls[1]))
+        self.update_message(msg, f'Link in code: `{dummy_urls[1]}`')
         self.assertFalse(msg.has_attachment)
         # Test blockquotes
-        self.update_message(msg, '> {}'.format(dummy_urls[1]))
+        self.update_message(msg, f'> {dummy_urls[1]}')
         self.assertTrue(msg.has_attachment)
 
         # Additional test to check has_attachment is being set is due to the correct attachment.
-        self.update_message(msg, 'Outside: {}. In code: `{}`.'.format(dummy_urls[0], dummy_urls[1]))
+        self.update_message(msg, f'Outside: {dummy_urls[0]}. In code: `{dummy_urls[1]}`.')
         self.assertTrue(msg.has_attachment)
         self.assertTrue(msg.attachment_set.filter(path_id=dummy_path_ids[0]))
         self.assertEqual(msg.attachment_set.count(), 1)
 
-        self.update_message(msg, 'Outside: {}. In code: `{}`.'.format(dummy_urls[1], dummy_urls[0]))
+        self.update_message(msg, f'Outside: {dummy_urls[1]}. In code: `{dummy_urls[0]}`.')
         self.assertTrue(msg.has_attachment)
         self.assertTrue(msg.attachment_set.filter(path_id=dummy_path_ids[1]))
         self.assertEqual(msg.attachment_set.count(), 1)
 
-        self.update_message(msg, 'Both in code: `{} {}`.'.format(dummy_urls[1], dummy_urls[0]))
+        self.update_message(msg, f'Both in code: `{dummy_urls[1]} {dummy_urls[0]}`.')
         self.assertFalse(msg.has_attachment)
         self.assertEqual(msg.attachment_set.count(), 0)
 
@@ -4197,26 +4351,24 @@ class MessageHasKeywordsTest(ZulipTestCase):
 
         with mock.patch("zerver.lib.actions.do_claim_attachments",
                         wraps=do_claim_attachments) as m:
-            self.update_message(msg, '[link](http://{}/user_uploads/{})'.format(
-                hamlet.realm.host, dummy_path_ids[0]))
+            self.update_message(msg, f'[link](http://{hamlet.realm.host}/user_uploads/{dummy_path_ids[0]})')
             self.assertTrue(m.called)
             m.reset_mock()
 
-            self.update_message(msg, '[link](/user_uploads/{})'.format(dummy_path_ids[1]))
+            self.update_message(msg, f'[link](/user_uploads/{dummy_path_ids[1]})')
             self.assertTrue(m.called)
             m.reset_mock()
 
-            self.update_message(msg, '[new text link](/user_uploads/{})'.format(dummy_path_ids[1]))
+            self.update_message(msg, f'[new text link](/user_uploads/{dummy_path_ids[1]})')
             self.assertFalse(m.called)
             m.reset_mock()
 
             # It's not clear this is correct behavior
-            self.update_message(msg, '[link](user_uploads/{})'.format(dummy_path_ids[2]))
+            self.update_message(msg, f'[link](user_uploads/{dummy_path_ids[2]})')
             self.assertFalse(m.called)
             m.reset_mock()
 
-            self.update_message(msg, '[link](https://github.com/user_uploads/{})'.format(
-                dummy_path_ids[0]))
+            self.update_message(msg, f'[link](https://github.com/user_uploads/{dummy_path_ids[0]})')
             self.assertFalse(m.called)
             m.reset_mock()
 
@@ -4316,7 +4468,7 @@ class CheckMessageTest(ZulipTestCase):
             full_name='',
             short_name='',
             bot_type=UserProfile.DEFAULT_BOT,
-            bot_owner=parent
+            bot_owner=parent,
         )
         bot.last_reminder = None
 
@@ -4384,10 +4536,10 @@ class DeleteMessageTest(ZulipTestCase):
         self.login('iago')
         hamlet = self.example_user('hamlet')
         msg_id = self.send_stream_message(hamlet, "Scotland")
-        result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id + 1),
+        result = self.client_delete(f'/json/messages/{msg_id + 1}',
                                     {'message_id': msg_id})
         self.assert_json_error(result, "Invalid message(s)")
-        result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
+        result = self.client_delete(f'/json/messages/{msg_id}')
         self.assert_json_success(result)
 
     def test_delete_message_by_user(self) -> None:
@@ -4396,23 +4548,23 @@ class DeleteMessageTest(ZulipTestCase):
             self.login('iago')
             result = self.client_patch("/json/realm", {
                 'allow_message_deleting': ujson.dumps(allow_message_deleting),
-                'message_content_delete_limit_seconds': message_content_delete_limit_seconds
+                'message_content_delete_limit_seconds': message_content_delete_limit_seconds,
             })
             self.assert_json_success(result)
 
         def test_delete_message_by_admin(msg_id: int) -> HttpResponse:
             self.login('iago')
-            result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
+            result = self.client_delete(f'/json/messages/{msg_id}')
             return result
 
         def test_delete_message_by_owner(msg_id: int) -> HttpResponse:
             self.login('hamlet')
-            result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
+            result = self.client_delete(f'/json/messages/{msg_id}')
             return result
 
         def test_delete_message_by_other_user(msg_id: int) -> HttpResponse:
             self.login('cordelia')
-            result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
+            result = self.client_delete(f'/json/messages/{msg_id}')
             return result
 
         # Test if message deleting is not allowed(default).
@@ -4500,7 +4652,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
 
         def last_realm_audit_log_entry(event_type: int) -> RealmAuditLog:
             return RealmAuditLog.objects.filter(
-                event_type=event_type
+                event_type=event_type,
             ).order_by('-event_time')[0]
 
         long_term_idle_user = self.example_user('hamlet')
@@ -4734,7 +4886,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         recipient_list  = [
             self.example_user("hamlet"),
             self.example_user("iago"),
-            self.example_user('cordelia')
+            self.example_user('cordelia'),
         ]
         for user_profile in recipient_list:
             self.subscribe(user_profile, "Denmark")
@@ -4904,7 +5056,7 @@ class MessageHydrationTest(ZulipTestCase):
                 full_name='Aaron Smith',
                 short_name='Aaron',
                 id=999,
-                is_mirror_dummy=False
+                is_mirror_dummy=False,
             ),
         ]
 
@@ -4928,7 +5080,7 @@ class MessageHydrationTest(ZulipTestCase):
                     full_name='Aaron Smith',
                     short_name='Aaron',
                     id=999,
-                    is_mirror_dummy=False
+                    is_mirror_dummy=False,
                 ),
                 dict(
                     email=cordelia.email,
@@ -5051,7 +5203,7 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
         othello = self.example_user('othello')
         message_ids = [
             self.send_personal_message(hamlet, cordelia, 'test'),
-            self.send_personal_message(cordelia, othello, 'test')
+            self.send_personal_message(cordelia, othello, 'test'),
         ]
 
         messages = messages_for_ids(
@@ -5070,7 +5222,7 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
         cordelia = self.example_user('cordelia')
         message_ids = [
             self.send_stream_message(cordelia, "Verona", content='test'),
-            self.send_stream_message(cordelia, "Denmark", content='test')
+            self.send_stream_message(cordelia, "Denmark", content='test'),
         ]
 
         messages = messages_for_ids(
@@ -5092,7 +5244,7 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
         iago = self.example_user('iago')
         message_ids = [
             self.send_huddle_message(hamlet, [cordelia, othello], 'test'),
-            self.send_huddle_message(cordelia, [hamlet, othello, iago], 'test')
+            self.send_huddle_message(cordelia, [hamlet, othello, iago], 'test'),
         ]
 
         messages = messages_for_ids(
@@ -5118,7 +5270,7 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
             self.send_personal_message(hamlet, cordelia, 'test'),
             self.send_stream_message(cordelia, "Denmark", content='test'),
             self.send_huddle_message(cordelia, [hamlet, othello, iago], 'test'),
-            self.send_personal_message(cordelia, othello, 'test')
+            self.send_personal_message(cordelia, othello, 'test'),
         ]
 
         messages = messages_for_ids(
@@ -5203,7 +5355,7 @@ class TestBulkGetHuddleUserIds(ZulipTestCase):
         iago = self.example_user('iago')
         message_ids = [
             self.send_huddle_message(hamlet, [cordelia, othello], 'test'),
-            self.send_huddle_message(cordelia, [hamlet, othello, iago], 'test')
+            self.send_huddle_message(cordelia, [hamlet, othello, iago], 'test'),
         ]
 
         messages = Message.objects.filter(id__in=message_ids).order_by("id")
@@ -5218,3 +5370,16 @@ class TestBulkGetHuddleUserIds(ZulipTestCase):
 
     def test_bulk_get_huddle_user_ids_empty_list(self) -> None:
         self.assertEqual(bulk_get_huddle_user_ids([]), {})
+
+class NoRecipientIDsTest(ZulipTestCase):
+    def test_no_recipient_ids(self) -> None:
+        user_profile = self.example_user('cordelia')
+
+        Subscription.objects.filter(user_profile=user_profile, recipient__type=Recipient.STREAM).delete()
+        subs = gather_subscriptions_helper(user_profile)
+
+        # Checks that gather_subscriptions_helper will not return anything
+        # since there will not be any recipients, without crashing.
+        #
+        # This covers a rare corner case.
+        self.assertEqual(len(subs[0]), 0)

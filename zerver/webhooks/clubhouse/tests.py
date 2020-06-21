@@ -1,6 +1,5 @@
 import json
-
-from mock import MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -14,7 +13,7 @@ class ClubhouseWebhookTest(WebhookTestCase):
         expected_message = "New story [Add cool feature!](https://app.clubhouse.io/zulip/story/11) of type **feature** was created."
         self.send_and_test_stream_message(
             'story_create', "Add cool feature!",
-            expected_message
+            expected_message,
         )
 
     def test_story_delete(self) -> None:
@@ -26,7 +25,7 @@ class ClubhouseWebhookTest(WebhookTestCase):
         expected_message = "New story [An epic story!](https://app.clubhouse.io/zulip/story/23) was created and added to the epic **New Cool Epic!**."
         self.send_and_test_stream_message(
             'epic_create_story', "An epic story!",
-            expected_message
+            expected_message,
         )
 
     def test_epic_delete(self) -> None:

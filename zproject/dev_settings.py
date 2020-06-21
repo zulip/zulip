@@ -1,9 +1,8 @@
-# For the Dev VM environment, we use the same settings as the
-# sample prod_settings.py file, with a few exceptions.
-from .prod_settings_template import *
 import os
 import pwd
-from typing import Set
+from typing import Optional, Set, Tuple
+
+ZULIP_ADMINISTRATOR = "desdemona+admin@zulip.com"
 
 # We want LOCAL_UPLOADS_DIR to be an absolute path so that code can
 # chdir without having problems accessing it.  Unfortunately, this
@@ -30,7 +29,7 @@ if external_host_env is None:
         # Serve the main dev realm at the literal name "localhost",
         # so it works out of the box even when not on the Internet.
         REALM_HOSTS = {
-            'zulip': 'localhost:9991'
+            'zulip': 'localhost:9991',
         }
 else:
     EXTERNAL_HOST = external_host_env
@@ -50,13 +49,13 @@ AUTHENTICATION_BACKENDS = (
     'zproject.backends.SAMLAuthBackend',
     # 'zproject.backends.AzureADAuthBackend',
     'zproject.backends.GitLabAuthBackend',
-)
+    'zproject.backends.AppleAuthBackend',
+)  # type: Tuple[str, ...]
 
 EXTERNAL_URI_SCHEME = "http://"
 EMAIL_GATEWAY_PATTERN = "%s@" + EXTERNAL_HOST.split(':')[0]
 NOTIFICATION_BOT = "notification-bot@zulip.com"
 ERROR_BOT = "error-bot@zulip.com"
-# SLOW_QUERY_LOGS_STREAM = "errors"
 EMAIL_GATEWAY_BOT = "emailgateway@zulip.com"
 PHYSICAL_ADDRESS = "Zulip Headquarters, 123 Octo Stream, South Pacific Ocean"
 EXTRA_INSTALLED_APPS = ["zilencer", "analytics", "corporate"]
@@ -114,6 +113,7 @@ FAKE_LDAP_MODE = None  # type: Optional[str]
 if FAKE_LDAP_MODE:
     import ldap
     from django_auth_ldap.config import LDAPSearch
+
     # To understand these parameters, read the docs in
     # prod_settings_template.py and on ReadTheDocs.
     LDAP_APPEND_DOMAIN = None
@@ -156,6 +156,7 @@ THUMBNAIL_IMAGES = True
 SEARCH_PILLS_ENABLED = bool(os.getenv('SEARCH_PILLS_ENABLED', False))
 
 BILLING_ENABLED = True
+LANDING_PAGE_NAVBAR_MESSAGE = None
 
 # Test Custom TOS template rendering
 TERMS_OF_SERVICE = 'corporate/terms.md'

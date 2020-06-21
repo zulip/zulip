@@ -1,3 +1,23 @@
+/*
+This is the header, aka the navbar.
+*/
+$header_height: 40px;
+
+/*
+We have a 10px gutter below the header,
+which often needs to be respected by both
+the elements above it and below it on
+the y-axis, due to absolute positioning.
+*/
+$header_padding_bottom: 10px;
+
+/*
+Our sidebars (and anything that top-align
+with them such as floating recipient bars)
+go beneath the header.
+*/
+$sidebar_top: calc($header_height + $header_padding_bottom);
+
 body,
 html {
     width: 100%;
@@ -37,6 +57,11 @@ blockquote p {
 
 a {
     cursor: pointer;
+
+    &.message_label_clickable:hover {
+        cursor: pointer;
+        color: hsl(200, 100%, 40%);
+    }
 }
 
 .no-select {
@@ -111,20 +136,27 @@ p.n-margin {
     }
 }
 
-.top-messages-logo {
+.bottom-messages-logo {
+    display: none;
+}
+
+.top-messages-logo,
+.bottom-messages-logo {
     width: 24px;
     height: 24px;
     margin: 0 auto 12px;
-}
 
-.top-messages-logo svg circle {
-    fill: hsl(0, 0%, 27%);
-    stroke: hsl(0, 0%, 27%);
-}
+    svg {
+        circle {
+            fill: hsl(0, 0%, 27%);
+            stroke: hsl(0, 0%, 27%);
+        }
 
-.top-messages-logo svg path {
-    fill: hsl(0, 0%, 100%);
-    stroke: hsl(0, 0%, 100%);
+        path {
+            fill: hsl(0, 0%, 100%);
+            stroke: hsl(0, 0%, 100%);
+        }
+    }
 }
 
 #feedback_container {
@@ -146,15 +178,22 @@ p.n-margin {
 
     transition-property: top, bottom;
     transition-duration: 0.5s;
-}
 
-#feedback_container.show {
-    top: 50px;
-}
+    &.show {
+        top: 50px;
+    }
 
-#feedback_container h3 {
-    font-size: 16pt;
-    margin-top: 2px;
+    h3 {
+        font-size: 16pt;
+        margin-top: 2px;
+    }
+
+    .exit-me {
+        font-size: 30pt;
+        font-weight: 200;
+        margin: 5px 0px 0px 10px;
+        cursor: pointer;
+    }
 }
 
 @keyframes pulse {
@@ -175,31 +214,24 @@ p.n-margin {
     animation-name: fadeInMessage;
     animation-duration: 1s;
     animation-iteration-count: 1;
-}
 
-.fade-in-message .message_edit_notice {
-    animation-name: fadeInEditNotice;
-    animation-duration: 1s;
-    animation-iteration-count: 1;
+    .message_edit_notice {
+        animation-name: fadeInEditNotice;
+        animation-duration: 1s;
+        animation-iteration-count: 1;
+    }
 }
 
 .message_edit_notice_hover:hover {
     opacity: 1.0;
 }
 
-#feedback_container .exit-me {
-    font-size: 30pt;
-    font-weight: 200;
-    margin: 5px 0px 0px 10px;
-    cursor: pointer;
-}
-
 .header {
     position: fixed;
     z-index: 102; /* Needs to be higher than .alert-bar-container */
     width: 100%;
-    height: 40px;
-    padding-bottom: 10px;
+    height: $header_height;
+    padding-bottom: $header_padding_bottom;
     background-color: inherit;
 }
 
@@ -209,44 +241,44 @@ p.n-margin {
 
 #panels {
     font-size: 1rem;
-}
 
-#panels .alert {
-    margin: 0;
-    padding-top: 12px;
-    padding-bottom: 12px;
+    .alert {
+        margin: 0;
+        padding-top: 12px;
+        padding-bottom: 12px;
 
-    border: none;
-    border-radius: 0;
+        border: none;
+        border-radius: 0;
 
-    text-align: center;
-    text-shadow: none;
-    color: hsl(0, 0%, 100%);
-}
+        text-align: center;
+        text-shadow: none;
+        color: hsl(0, 0%, 100%);
 
-#panels .alert.alert-info {
-    background-color: hsl(170, 46%, 54%);
-}
+        &.alert-info {
+            background-color: hsl(170, 46%, 54%);
 
-#panels .alert.alert-info.red {
-    background-color: hsl(0, 46%, 54%);
-}
+            &.red {
+                background-color: hsl(0, 46%, 54%);
+            }
+        }
 
-#panels .alert .close {
-    line-height: 24px;
-}
+        .close {
+            line-height: 24px;
+        }
 
-#panels .alert .alert-link {
-    color: hsl(169, 100%, 88%);
-    font-weight: 600;
-}
+        .alert-link {
+            color: hsl(169, 100%, 88%);
+            font-weight: 600;
+        }
 
-#panels .alert.red .alert-link {
-    color: hsl(0, 100%, 88%);
-}
+        &.red .alert-link {
+            color: hsl(0, 100%, 88%);
+        }
 
-#panels .alert .buttons .alert-link {
-    margin: 0px 5px;
+        .buttons .alert-link {
+            margin: 0px 5px;
+        }
+    }
 }
 
 .app {
@@ -278,11 +310,6 @@ p.n-margin {
     background-color: hsl(0, 0%, 100%);
 }
 
-.app-main {
-    height: 100%;
-    min-height: 100%;
-}
-
 .fixed-app {
     width: 100%;
     position: fixed;
@@ -308,25 +335,30 @@ p.n-margin {
     top: 0px;
 }
 
-.app-main .column-left .left-sidebar,
-.app-main .column-right .right-sidebar {
-    position: fixed;
-    margin-top: 50px;
-    z-index: 100;
-}
-
-.app-main .column-left .left-sidebar {
-    width: 242px;
-    padding-left: 0px;
-}
-
-.app-main .column-right .right-sidebar {
-    padding-left: 10px;
-    width: 240px;
-}
-
-.app-main .column-middle {
+.app-main {
+    height: 100%;
     min-height: 100%;
+
+    .column-left .left-sidebar,
+    .column-right .right-sidebar {
+        position: fixed;
+        margin-top: $sidebar_top;
+        z-index: 100;
+    }
+
+    .column-left .left-sidebar {
+        width: 242px;
+        padding-left: 0px;
+    }
+
+    .column-right .right-sidebar {
+        padding-left: 10px;
+        width: 240px;
+    }
+
+    .column-middle {
+        min-height: 100%;
+    }
 }
 
 .column-middle {
@@ -348,22 +380,24 @@ label {
 }
 
 /* List of text-like input types taken from Bootstrap */
-input[type="text"],
-input[type="password"],
-input[type="datetime"],
-input[type="datetime-local"],
-input[type="date"],
-input[type="month"],
-input[type="time"],
-input[type="week"],
-input[type="number"],
-input[type="email"],
-input[type="url"],
-input[type="search"],
-input[type="tel"],
-input[type="color"] {
-    font-size: inherit;
-    height: 1.4em;
+input {
+    &[type="text"],
+    &[type="password"],
+    &[type="datetime"],
+    &[type="datetime-local"],
+    &[type="date"],
+    &[type="month"],
+    &[type="time"],
+    &[type="week"],
+    &[type="number"],
+    &[type="email"],
+    &[type="url"],
+    &[type="search"],
+    &[type="tel"],
+    &[type="color"] {
+        font-size: inherit;
+        height: 1.4em;
+    }
 }
 
 li,
@@ -409,29 +443,6 @@ li,
     font-size: 115%;
 }
 
-.header-main .logo {
-    display: inline-block;
-    font-size: 120%;
-    font-weight: 900;
-    text-shadow: none;
-    color: hsl(0, 0%, 100%);
-    font-variant: small-caps;
-    letter-spacing: 2px;
-    line-height: 18px;
-    text-decoration: none;
-    position: relative;
-}
-
-.header-main .logoimage {
-    height: 40px;
-    width: auto;
-}
-
-#user-settings-avatar {
-    width: 100px;
-    height: 100px;
-}
-
 /* Classes for hiding and showing controls */
 
 .notdisplayed {
@@ -474,21 +485,23 @@ strong {
     display: inline;
 }
 
-.tooltip.in {
-    font-size: 12px;
-    line-height: 1.3;
+.tooltip {
+    &.in {
+        font-size: 12px;
+        line-height: 1.3;
 
-    opacity: 1;
-}
+        opacity: 1;
 
-.tooltip.in.left {
-    margin-left: -12px;
-    margin-top: 3px;
-}
+        &.left {
+            margin-left: -12px;
+            margin-top: 3px;
+        }
+    }
 
-.tooltip .tooltip-inner {
-    background-color: hsla(0, 0%, 7%, 0.8);
-    padding: 3px 5px;
+    .tooltip-inner {
+        background-color: hsla(0, 0%, 7%, 0.8);
+        padding: 3px 5px;
+    }
 }
 
 .buddy_list_tooltip_content {
@@ -503,10 +516,10 @@ strong {
     margin-left: 6px;
     opacity: 0.5;
     cursor: pointer;
-}
 
-#message_edit_tooltip:hover {
-    opacity: 1.0;
+    &:hover {
+        opacity: 1.0;
+    }
 }
 
 .message-edit-tooltip-inner {
@@ -533,6 +546,10 @@ li.actual-dropdown-menu i {
     margin-right: 3px;
 }
 
+.settings-dropdown-cog {
+    padding-right: 14px;
+}
+
 .message_area_padder {
     /* The height of the header and the tabbar plus a small gap */
     margin-top: 57px;
@@ -557,18 +574,56 @@ td.pointer {
     transition: all 3s ease-in-out;
 }
 
-.include-sender .message_edit_notice {
-    display: inline-block;
-    vertical-align: top;
-    line-height: 14px;
-    margin-left: 0px;
-    position: static;
-    padding: 0px;
-    width: auto;
+.include-sender {
+    .message_edit_notice {
+        display: inline-block;
+        vertical-align: top;
+        line-height: 14px;
+        margin-left: 0px;
+        position: static;
+        padding: 0px;
+        width: auto;
+    }
+
+    .message_time {
+        top: -4px;
+    }
+
+    .alert-msg {
+        top: -3px;
+    }
+
+    .message_controls {
+        top: -3px;
+    }
+
+    .message_top_line {
+        margin-top: 6px;
+    }
+
+    .message_content:not(:empty) {
+        margin-top: -18px;
+    }
+
+    .message_edit {
+        margin-top: -14px;
+    }
 }
 
-.sender-status .message_edit_notice {
+.sender-status {
+    display: inline-block;
+    margin: 8px 0px 8px -3px;
+    /* this normalizes the margin of the emoji reactions with normal messages. */
+    padding-bottom: 5px;
+    vertical-align: middle;
     line-height: 18px;
+    font-size: 14px;
+    position: relative;
+    max-width: calc(100% - 50px);
+
+    .message_edit_notice {
+        line-height: 18px;
+    }
 }
 
 .message_edit_notice {
@@ -583,15 +638,10 @@ td.pointer {
     user-select: none;
 }
 
-.include-sender .message_time {
-    top: -4px;
-}
-
 .message_time {
     display: block;
     font-size: 12px;
     opacity: 0.4;
-    vertical-align: middle;
     padding: 1px;
     font-weight: 400;
     position: absolute;
@@ -599,10 +649,6 @@ td.pointer {
     line-height: 20px;
     text-align: right;
     transition: background-color 1.5s ease-in, color 1.5s ease-in;
-}
-
-#message-edit-history .message_time {
-    position: static;
 }
 
 /* The way this overrides the menus with a background-color and a high
@@ -621,14 +667,6 @@ td.pointer {
     display: none;
 }
 
-.private-message .alert-msg {
-    background-color: hsl(192, 20%, 95%);
-}
-
-.include-sender .alert-msg {
-    top: -3px;
-}
-
 .status-time {
     top: 8px !important;
 }
@@ -640,9 +678,14 @@ td.pointer {
     right: -56px;
     z-index: 1;
 
+    // This is a bit tricky; we need to reserve space for the message
+    // controls even when the message isn't hovered, so that hover
+    // doesn't disturb the layout.  Usually that would be just
+    // visibility: hidden, but that cannot be animated, so we set
+    // opacity as well, which can be animated.
     > div {
         opacity: 0;
-        pointer-events: none;
+        visibility: hidden;
         transition: all 0.2s ease;
         padding: 0px 1px;
     }
@@ -695,24 +738,32 @@ td.pointer {
     }
 }
 
-.messagebox:hover .message_controls {
-    .empty-star {
-        opacity: 0.4;
+.messagebox {
+    position: relative;
+    word-wrap: break-word;
+    cursor: pointer;
+    vertical-align: top;
+    border: none;
+
+    &:hover .message_controls {
+        .empty-star {
+            opacity: 0.4;
+        }
+
+        .empty-star:hover {
+            cursor: pointer;
+            opacity: 1;
+        }
+
+        > div {
+            opacity: 1;
+            visibility: visible;
+        }
     }
 
-    .empty-star:hover {
-        cursor: pointer;
-        opacity: 1;
+    .message_top_line {
+        position: relative;
     }
-
-    > div {
-        opacity: 1;
-        pointer-events: all;
-    }
-}
-
-.include-sender .message_controls {
-    top: -3px;
 }
 
 .message_header {
@@ -728,13 +779,34 @@ td.pointer {
     z-index: 0;
 }
 
-.message_list .recipient_row {
-    border-bottom: 1px solid hsl(0, 0%, 88%);
-    margin-bottom: 10px;
+.message_list {
+    .recipient_row {
+        border-bottom: 1px solid hsl(0, 0%, 88%);
+        margin-bottom: 10px;
+    }
 }
 
-.floating_recipient .recipient_row {
-    border-top: 1px solid hsl(0, 0%, 88%);
+.floating_recipient {
+    .recipient_row {
+        border-top: 1px solid hsl(0, 0%, 88%);
+    }
+
+    .recipient_row_date.hide-date {
+        display: block;
+    }
+
+    /*
+       We can't collapse the floating recipient bar yet, so this is
+       just a temporary hack.
+    */
+    .messages-collapse {
+        display: none;
+    }
+
+    .message_header_private_message {
+        border-bottom: 0px;
+        border-left: 0px;
+    }
 }
 
 .stream_label {
@@ -751,52 +823,48 @@ td.pointer {
     border-width: 0px;
     position: relative;
     text-decoration: none;
-}
 
-.stream_label .invite-stream-icon {
-    font-size: 12px;
-    line-height: 17px;
-}
+    .invite-stream-icon {
+        font-size: 12px;
+        line-height: 17px;
+    }
 
-.message_list .stream_label {
-    margin-left: 0px;
-}
+    &:hover {
+        color: inherit !important;
+        text-decoration: none;
+    }
 
-.stream_label:hover {
-    color: inherit !important;
-    text-decoration: none;
-}
+    &::after {
+        left: 100%;
+        top: 50%;
+        content: " ";
+        height: 0px;
+        width: 0px;
+        position: absolute;
+        pointer-events: none;
+        margin-top: -11px;
+        border-style: solid;
+        border-width: 11px 0 11px 5px;
+        border-color: inherit;
+        z-index: 2;
+        transform: scale(.9999);
+    }
 
-.stream_label::after {
-    left: 100%;
-    top: 50%;
-    content: " ";
-    height: 0px;
-    width: 0px;
-    position: absolute;
-    pointer-events: none;
-    margin-top: -11px;
-    border-style: solid;
-    border-width: 11px 0 11px 5px;
-    border-color: inherit;
-    z-index: 2;
-    transform: scale(.9999);
-}
-
-.stream_label::before {
-    left: 100%;
-    top: 50%;
-    content: " ";
-    height: 0px;
-    width: 0px;
-    position: absolute;
-    pointer-events: none;
-    margin-top: -14px;
-    border-style: solid;
-    border-width: 14px 0 14px 6px;
-    border-color: hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) transparent;
-    z-index: 1;
-    transform: scale(.9999);
+    &::before {
+        left: 100%;
+        top: 50%;
+        content: " ";
+        height: 0px;
+        width: 0px;
+        position: absolute;
+        pointer-events: none;
+        margin-top: -14px;
+        border-style: solid;
+        border-width: 14px 0 14px 6px;
+        border-color: hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) transparent;
+        z-index: 1;
+        transform: scale(.9999);
+    }
 }
 
 .stream_topic {
@@ -818,14 +886,10 @@ td.pointer {
     padding: 3px 11px 2px 10px;
     height: 17px;
     line-height: 17px;
-}
 
-.recipient_row_date.hide-date {
-    display: none;
-}
-
-.floating_recipient .recipient_row_date.hide-date {
-    display: block;
+    &.hide-date {
+        display: none;
+    }
 }
 
 .recipient_bar_icon {
@@ -833,32 +897,38 @@ td.pointer {
     padding-right: 2px;
 }
 
-.summary_row .message_header {
-    padding: 5px 0px 4px 5px;
+.summary_row {
+    .message_header {
+        padding: 5px 0px 4px 5px;
+    }
+
+    .message_header {
+        border-radius: 0;
+    }
+
+    &.last_message {
+        .message_header {
+            border-bottom-right-radius: 3px;
+            box-shadow:
+                inset 0px 2px 1px -2px hsl(0, 0%, 20%),
+                inset -2px 0px 1px -2px hsl(0, 0%, 20%),
+                inset 0px -2px 1px -2px hsl(0, 0%, 20%);
+        }
+
+        .summary_colorblock {
+            border-bottom-left-radius: 3px;
+        }
+    }
 }
 
-.summary_row .message_header {
-    border-radius: 0;
-}
+.bookend_tr + .summary_row {
+    .message_header {
+        border-top-right-radius: 3px;
+    }
 
-.bookend_tr + .summary_row .message_header {
-    border-top-right-radius: 3px;
-}
-
-.bookend_tr + .summary_row .summary_colorblock {
-    border-top-left-radius: 3px;
-}
-
-.summary_row.last_message .message_header {
-    border-bottom-right-radius: 3px;
-    box-shadow:
-        inset 0px 2px 1px -2px hsl(0, 0%, 20%),
-        inset -2px 0px 1px -2px hsl(0, 0%, 20%),
-        inset 0px -2px 1px -2px hsl(0, 0%, 20%);
-}
-
-.summary_row.last_message .summary_colorblock {
-    border-bottom-left-radius: 3px;
+    .summary_colorblock {
+        border-top-left-radius: 3px;
+    }
 }
 
 .copy-paste-text {
@@ -876,14 +946,6 @@ td.pointer {
 .messages-expand,
 .messages-collapse {
     cursor: pointer;
-}
-
-/*
-   We can't collapse the floating recipient bar yet, so this is
-   just a temporary hack.
-*/
-.floating_recipient .messages-collapse {
-    display: none;
 }
 
 @keyframes rotate {
@@ -916,52 +978,48 @@ td.pointer {
     }
 }
 
-.floating_recipient .message_header_private_message {
-    border-bottom: 0px;
-    border-left: 0px;
+.message_header_private_message {
+    .message_label_clickable {
+        background-color: hsl(0, 0%, 27%);
+        display: inline-block;
+        padding: 3px 6px 2px 6px;
+        font-weight: normal;
+        font-size: 14px;
+        height: 17px;
+        line-height: 17px;
+        border-left-color: hsl(0, 0%, 27%);
+    }
+
+    /* Base color backgrounds for messageboxes,
+       private messages, mentions, and unread messages */
+
+    .message-header-contents {
+        background-color: hsla(192, 19%, 75%, 0.2);
+        box-shadow: inset 1px 1px 0px hsl(0, 0%, 88%);
+    }
 }
 
-.message_header_private_message .message_label_clickable {
-    background-color: hsl(0, 0%, 27%);
-    display: inline-block;
-    padding: 3px 6px 2px 6px;
-    font-weight: normal;
-    font-size: 14px;
-    height: 17px;
-    line-height: 17px;
-    border-left-color: hsl(0, 0%, 27%);
-}
+.private-message {
+    .alert-msg {
+        background-color: hsl(192, 20%, 95%);
+    }
 
-/* Base color backgrounds for messageboxes,
-   private messages, mentions, and unread messages */
-
-.messagebox {
-    position: relative;
-}
-
-.message_header_private_message .message-header-contents {
-    background-color: hsla(192, 19%, 75%, 0.2);
-    box-shadow: inset 1px 1px 0px hsl(0, 0%, 88%);
-}
-
-.private-message .messagebox,
-.private-message .date_row {
-    background-color: hsla(192, 19%, 75%, 0.2);
-    box-shadow:
-        inset 2px 0px 0px 0px hsl(0, 0%, 27%),
-        -1px 0px 0px 0px hsl(0, 0%, 27%);
+    .messagebox,
+    .date_row {
+        background-color: hsla(192, 19%, 75%, 0.2);
+        box-shadow:
+            inset 2px 0px 0px 0px hsl(0, 0%, 27%),
+            -1px 0px 0px 0px hsl(0, 0%, 27%);
+    }
 }
 
 .message-header-contents {
     border-right: 1px solid hsl(0, 0%, 88%);
+    background-color: hsl(0, 0%, 88%);
 }
 
 .mention .messagebox {
     background-color: hsl(8, 94%, 94%);
-}
-
-.messagebox .message_top_line {
-    position: relative;
 }
 
 .recipient_row .message_row:first-child .unread_marker {
@@ -977,6 +1035,14 @@ td.pointer {
     z-index: 1;
     bottom: 1px;
     transition: all 0.3s ease-out;
+
+    &.slow_fade {
+        transition: all 2s ease-out;
+    }
+
+    &.fast_fade {
+        transition: all 0.3s ease-out;
+    }
 }
 
 .unread-marker-fill {
@@ -985,8 +1051,14 @@ td.pointer {
     height: 100%;
 }
 
-.last_message .unread_marker {
-    bottom: 0;
+.last_message {
+    .unread_marker {
+        bottom: 0;
+    }
+
+    .messagebox-content {
+        padding-bottom: 1px;
+    }
 }
 
 .unread .unread_marker {
@@ -994,31 +1066,29 @@ td.pointer {
     opacity: 1;
 }
 
-.unread_marker.slow_fade {
-    transition: all 2s ease-out;
-}
+.selected_message {
+    .messagebox {
+        z-index: 1;
+    }
 
-.unread_marker.fast_fade {
-    transition: all 0.3s ease-out;
-}
-
-.selected_message .messagebox {
-    z-index: 1;
-}
-
-.selected_message .messagebox-content {
-    box-shadow:
-        inset 0px 0px 0px 2px hsl(215, 47%, 50%),
-        -1px -1px 0px 0px hsl(215, 47%, 50%),
-        1px 1px 0px 0px hsl(215, 47%, 50%),
-        -1px 1px 0px 0px hsl(215, 47%, 50%),
-        1px -1px 0px 0px hsl(215, 47%, 50%);
+    .messagebox-content {
+        box-shadow:
+            inset 0px 0px 0px 2px hsl(215, 47%, 50%),
+            -1px -1px 0px 0px hsl(215, 47%, 50%),
+            1px 1px 0px 0px hsl(215, 47%, 50%),
+            -1px 1px 0px 0px hsl(215, 47%, 50%),
+            1px -1px 0px 0px hsl(215, 47%, 50%);
+    }
 }
 
 .message_sender {
     height: 0px;
     vertical-align: top;
     position: relative;
+
+    i.zulip-icon.bot {
+        font-size: 12px;
+    }
 }
 
 .sender_name {
@@ -1030,37 +1100,16 @@ td.pointer {
     margin-left: -3px;
 }
 
-.sender-status {
-    display: inline-block;
-    margin: 8px 0px 8px -3px;
-    /* this normalizes the margin of the emoji reactions with normal messages. */
-    padding-bottom: 5px;
-    vertical-align: middle;
-    line-height: 18px;
-    font-size: 14px;
-    position: relative;
-    max-width: calc(100% - 50px);
-}
-
 .sender_name-in-status {
     margin-right: 3px;
     font-weight: 700;
 }
 
-.sender_name_hovered .sender_name,
-.sender_name_hovered .sender_name-in-status {
-    color: hsl(200, 100%, 40%);
-}
-
-.message_sender i.zulip-icon.bot,
-.popover_info i.zulip-icon.bot {
-    color: hsl(180, 5%, 74%);
-    vertical-align: top;
-    padding: 0 2px;
-}
-
-.message_sender i.zulip-icon.bot {
-    font-size: 12px;
+.sender_name_hovered {
+    .sender_name,
+    .sender_name-in-status {
+        color: hsl(200, 100%, 40%);
+    }
 }
 
 .popover_info i.zulip-icon.bot {
@@ -1071,12 +1120,9 @@ td.pointer {
     color: hsl(200, 100%, 40%);
 }
 
-a.message_label_clickable:hover {
-    cursor: pointer;
-    color: hsl(200, 100%, 40%);
-}
-
-.on_hover_topic_edit {
+.on_hover_topic_edit,
+.on_hover_topic_mute,
+.on_hover_topic_read {
     opacity: 0.2;
 }
 
@@ -1084,19 +1130,15 @@ a.message_label_clickable:hover {
     opacity: .7;
 }
 
-.on_hover_topic_edit:hover,
-.always_visible_topic_edit:hover {
-    cursor: pointer;
-    opacity: 1.0;
-}
-
-.on_hover_topic_mute {
-    opacity: 0.2;
-}
-
-.on_hover_topic_mute:hover {
-    cursor: pointer;
-    opacity: 1.0;
+.on_hover_topic_edit,
+.always_visible_topic_edit,
+.on_hover_topic_mute,
+.on_hover_topic_unmute,
+.on_hover_topic_read {
+    &:hover {
+        cursor: pointer;
+        opacity: 1.0;
+    }
 }
 
 .edit_content {
@@ -1104,15 +1146,16 @@ a.message_label_clickable:hover {
     display: inline-block;
     position: relative;
     color: hsl(0, 0%, 73%);
-}
 
-.edit_content:hover {
-    cursor: pointer;
-    color: hsl(200, 100%, 40%);
+    &:hover {
+        cursor: pointer;
+        color: hsl(200, 100%, 40%);
+    }
 }
 
 .has_actions_popover .info {
     opacity: 1;
+    visibility: visible;
 }
 
 /* Brighten text because of the dark background */
@@ -1131,10 +1174,6 @@ a.dark_background:hover,
     position: relative;
 }
 
-.include-sender .message_top_line {
-    margin-top: 6px;
-}
-
 .small {
     font-size: 80%;
 }
@@ -1143,10 +1182,16 @@ a.dark_background:hover,
     font-size: 60%;
 }
 
-.actions_hovered .message_time,
-.actions_hovered .info {
-    color: hsl(200, 100%, 40%);
-    cursor: pointer;
+.actions_hovered {
+    .message_time,
+    .info {
+        color: hsl(200, 100%, 40%);
+        cursor: pointer;
+    }
+
+    .actions_link {
+        text-decoration: underline;
+    }
 }
 
 .info {
@@ -1154,10 +1199,6 @@ a.dark_background:hover,
     position: relative;
     font-size: 15px;
     color: hsl(0, 0%, 73%);
-}
-
-.actions_hovered .actions_link {
-    text-decoration: underline;
 }
 
 div.message_table {
@@ -1171,18 +1212,19 @@ div.message_table {
     position: relative;
     border-left: 1px solid hsla(0, 0%, 0%, 0.10);
     border-right: 1px solid hsla(0, 0%, 0%, 0.10);
-}
 
-.message_row.selected_message {
-    z-index: 2;
+    &.selected_message {
+        z-index: 2;
+    }
+
+    .date_row {
+        /* We only want padding for the date rows between recipient blocks */
+        padding-bottom: 0px;
+    }
 }
 
 div.focused_table {
     display: block;
-}
-
-.include-sender .message_content:not(:empty) {
-    margin-top: -18px;
 }
 
 .message_content {
@@ -1193,14 +1235,26 @@ div.focused_table {
     display: block;
     position: relative;
     overflow: hidden;
+
+    &:empty {
+        display: none;
+    }
+
+    &.condensed {
+        max-height: 8.5em;
+        min-height: 0em;
+        overflow: hidden;
+    }
+
+    &.collapsed {
+        max-height: 0em;
+        min-height: 0em;
+        overflow: hidden;
+    }
 }
 
 .rtl {
     direction: rtl;
-}
-
-.message_content:empty {
-    display: none;
 }
 
 .message_edit_content {
@@ -1244,27 +1298,46 @@ div.focused_table {
     }
 }
 
-#inline_topic_edit,
-#message_edit_topic {
+#inline_topic_edit {
     margin-bottom: 5px;
+
+    &.header-v {
+        height: 18px;
+        display: inline-block;
+        padding: 0px 3px;
+        vertical-align: baseline;
+
+        line-height: 0px;
+        font-size: 14px;
+
+        box-shadow: none;
+    }
 }
 
-#inline_topic_edit.header-v {
-    height: 18px;
-    display: inline-block;
-    padding: 0px 3px;
-    vertical-align: baseline;
+#message_edit_topic {
+    margin: 0 5px 5px 0;
+}
 
-    line-height: 0px;
-    font-size: 14px;
+.message_edit_header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
 
-    box-shadow: none;
+.select_edit_stream {
+    margin-bottom: 5px !important;
+    border-left: 0px;
+    padding-left: 0px;
+    border-radius: 3px;
+    margin-left: -10px;
+    text-indent: 10px;
 }
 
 #inline_topic_edit:focus,
 #message_edit_topic:focus {
     outline: none;
 }
+
 
 .message_edit_topic_propagate {
     display: inline-block;
@@ -1273,27 +1346,29 @@ div.focused_table {
     max-width: 100%;
 }
 
-#message-edit-history .message_author {
-    position: relative;
+.topic_move_breadcrumb_messages,
+.message_edit_breadcrumb_messages {
+    display: inline-block;
+    margin: 0 5px 5px 0 !important;
+    align-self: center;
+
+    label.checkbox {
+        margin-right: 0 !important;
+
+        input {
+            margin: 0;
+            vertical-align: baseline;
+        }
+    }
+
+    label {
+        display: inline-block;
+        margin-right: 10px;
+    }
 }
 
-#message-edit-history .author_details {
-    display: block;
-    font-size: 12px;
-    padding: 1px;
-    text-align: right;
-}
-
-.message_content.condensed {
-    max-height: 8.5em;
-    min-height: 0em;
-    overflow: hidden;
-}
-
-.message_content.collapsed {
-    max-height: 0em;
-    min-height: 0em;
-    overflow: hidden;
+.topic_move_breadcrumb_messages {
+    margin-top: 10px !important;
 }
 
 .message_length_controller {
@@ -1306,30 +1381,14 @@ div.focused_table {
     margin-right: 35px;
     /* to make message-uncollapse easier */
     margin-top: 10px;
-}
 
-.message_length_controller:hover {
-    text-decoration: underline;
-}
-
-/* CSS for the message box */
-.messagebox {
-    word-wrap: break-word;
-    cursor: pointer;
-    vertical-align: top;
-    border: none;
+    &:hover {
+        text-decoration: underline;
+    }
 }
 
 .messagebox-content {
     padding: 4px 115px 1px 10px;
-}
-
-#message-edit-history .messagebox-content {
-    padding: 0px 10px;
-}
-
-.last_message .messagebox-content {
-    padding-bottom: 1px;
 }
 
 .bookend {
@@ -1359,14 +1418,14 @@ div.focused_table {
 .home-error-bar {
     margin-top: 5px;
     display: none;
+
+    .alert {
+        margin-bottom: auto;
+    }
 }
 
 .streamname {
     font-weight: bold;
-}
-
-.home-error-bar .alert {
-    margin-bottom: auto;
 }
 
 .brand.skinny-user-gravatar {
@@ -1398,14 +1457,14 @@ div.focused_table {
     text-overflow: ellipsis;
     float: left;
     letter-spacing: normal;
-    height: 40px;
+    height: $header_height;
     #tab_list {
         display: flex;
         align-content: flex-start;
         flex-wrap: nowrap;
         margin: 0px 0px 0px 0px;
-        height: 40px;
-        line-height: 40px;
+        height: $header_height;
+        line-height: $header_height;
         font-size: 16px;
         border: none;
         white-space: nowrap;
@@ -1414,7 +1473,9 @@ div.focused_table {
         .hidden {
             display: none;
         }
-        span {
+        .sub_count,
+        .stream,
+        & > span {
             white-space: nowrap;
             list-style-type: none;
             display: inline-block;
@@ -1428,27 +1489,6 @@ div.focused_table {
 
             @media (max-width: 500px) {
                 padding: 7px 3.5px; // based on having ~41.66% decrease
-            }
-            &:not(.search_closed):not(.sub_count):not(.narrow_description) {
-                flex-shrink: 1;
-                overflow: hidden;
-            }
-            &:not(.stream) {
-                text-overflow: ellipsis;
-            }
-            &:nth-last-child(2) {
-                flex-grow: 1;
-            }
-
-            // We extend the clickable area for the search_closed icon over the
-            // 2nd last navbar element for better design (user convenience) this
-            // selector makes it so mousing over that element also gives the user
-            // a visual cue about the results of clicking the element
-            &:nth-last-child(2) {
-                cursor: pointer;
-                &:hover + .search_closed {
-                    color: hsl(0, 0%, 0%);
-                }
             }
             i {
                 margin-right: 3px;
@@ -1470,11 +1510,10 @@ div.focused_table {
         .stream {
             text-overflow: clip;
             overflow: hidden;
-            a {
-                color: inherit;
-                text-decoration: none;
-                padding-right: 2px;
-            }
+            color: inherit;
+            text-decoration: none;
+            // The first ~3px of padding here overlaps with the left padding from sub_count for some reason.
+            padding-right: calc(3px + 10px);
         }
 
         .sub_count,
@@ -1487,34 +1526,38 @@ div.focused_table {
         }
 
         .sub_count {
-            margin-left: 10px;
-            margin-right: 10px;
+            padding-left: 10px;
+            margin-left: 1px;
+            padding-right: 10px;
+            margin-right: 1px;
             .fa.fa-user-o {
                 margin-left: 0px;
             }
-            &::before {
-                content: "";
+
+            &::before,
+            &::after {
+                content: "|";
                 position: absolute;
-                left: -5px;
                 top: 25%;
-                width: 1px;
                 height: 50%;
-                background: hsl(0, 0%, 88%);
+                color: hsl(0, 0%, 88%);
+                font-size: 20px;
                 @media (max-width: 500px) {
                     top: 10%;
                 }
             }
-            &::after {
-                content: "";
-                position: absolute;
-                right: -5px;
-                top: 25%;
-                width: 1px;
-                height: 50%;
-                background: hsl(0, 0%, 88%);
+
+            &::before {
+                left: -3px;
                 @media (max-width: 500px) {
-                    top: 10%;
+                    // this ensures the before "|" doesn't overlap
+                    // with the stream name text on small narrows
+                    left: 0px;
                 }
+            }
+
+            &::after {
+                right: -3px;
             }
         }
 
@@ -1529,16 +1572,12 @@ div.focused_table {
             overflow: hidden;
             white-space: nowrap;
             margin: 0;
-            .emoji {
-                margin: 0;
-                padding: 0;
-            }
             padding: 12px 0px;
-            padding-left: 2px;
+            padding-left: 10px;
 
             @media (max-width: 500px) {
                 padding: 7px 0;
-                padding-left: 2px;
+                padding-left: 10px;
             }
 
             & > a {
@@ -1557,115 +1596,37 @@ div.focused_table {
                 padding: 5px 15px 0px 0px;
             }
         }
-    }
-}
 
-#searchbox {
-    display: flex;
-    width: 100%;
-    height: 40px;
-
-    .navbar-search {
-        margin-top: 0px;
-        width: calc(100% - 66px);
-        float: none;
-        overflow: hidden;
-        height: 100%;
-    }
-
-    .input-append {
-        height: 100%;
-        align-items: center;
-        display: flex;
-        flex-wrap: nowrap;
-        position: relative;
-        width: calc(100% - 28px);
-    }
-
-    #search_query {
-        width: 100%;
-        font-size: 16px;
-        height: 40px;
-        padding: 0px;
-        padding-left: 5px;
-        padding-right: 20px;
-        border: none;
-        border-radius: 0px;
-        font-family: 'Source Sans Pro';
-        font-weight: 300;
-        line-height: 40px;
-    }
-
-    .search_button,
-    .search_button[disabled]:hover {
-        position: relative;
-        background: none;
-        height: 40px;
-        padding: 4px;
-        color: hsl(0, 0%, 80%);
-        font-size: 18px;
-        box-shadow: none;
-        text-shadow: none;
-        z-index: 5;
-        float: right;
-    }
-
-    .search_button:hover {
-        color: hsl(0, 0%, 0%);
-    }
-
-    .search_button[disabled] {
-        visibility: hidden;
-    }
-
-    .search_icon {
-        display: table;
-        height: 100%;
-        color: hsl(0, 0%, 80%);
-        text-decoration: none;
-        padding: 0 10px;
-        font-size: 20px;
-        z-index: 5;
-        float: left;
-
-        i {
-            display: table-cell;
-            vertical-align: middle;
+        > :not(.search_closed):not(.sub_count):not(.narrow_description) {
+            flex-shrink: 1;
+            overflow: hidden;
         }
-    }
 
-    .search_icon:hover {
-        color: hsl(0, 0%, 0%);
-        text-decoration: none;
-    }
-
-    #search_arrows {
-        font-size: 90%;
-        letter-spacing: normal;
-        border: none;
-        background-color: inherit;
-    }
-
-    @media (min-width: 500px) {
-        .pill {
-            padding: 2px 0px 2px 0px !important;
-            font-size: 14px;
+        > :not(.stream) {
+            text-overflow: ellipsis;
         }
-    }
-    @media (max-width: 500px) {
-        #search_arrows .pill {
-            line-height: 20px;
 
-            .exit {
-                top: 0;
+        > :nth-last-child(2) {
+            flex-grow: 1;
+        }
+
+        // We extend the clickable area for the search_closed icon over the
+        // 2nd last navbar element for better design (user convenience) this
+        // selector makes it so mousing over that element also gives the user
+        // a visual cue about the results of clicking the element
+        > :nth-last-child(2) {
+            cursor: pointer;
+            &:hover + .search_closed {
+                color: hsl(0, 0%, 0%);
             }
         }
     }
 }
 
+#searchbox,
 #searchbox_legacy {
     width: 100%;
-    height: 40px;
+    height: $header_height;
 
     .navbar-search:not(.expanded) {
         display: none;
@@ -1679,7 +1640,7 @@ div.focused_table {
         position: absolute;
         .search_button {
             display: inline;
-            margin-right: 16px;
+            margin-right: 15px;
         }
     }
 
@@ -1704,25 +1665,25 @@ div.focused_table {
     #search_query {
         width: 100%;
         font-size: 16px;
-        height: 40px;
+        height: $header_height;
         padding: 0px;
-        padding-left: 35px;
-        padding-right: 40px;
+        padding-left: 5px;
+        padding-right: 20px;
         border: none;
         border-radius: 0px;
         font-family: 'Source Sans Pro';
         font-weight: 300;
-        line-height: 27px;
+        line-height: $header_height;
     }
 
-    #search_query:focus {
+    #search_arrows:focus {
         box-shadow: inset 0px 0px 0px 2px hsl(204, 20%, 74%);
     }
 
     .search_button,
     .search_button[disabled]:hover {
         position: absolute;
-        right: 2px;
+        right: 35px;
         top: 6px;
         background: none;
         border-radius: 0px;
@@ -1745,26 +1706,75 @@ div.focused_table {
         visibility: hidden;
     }
 
-    #search_arrows {
-        /* Bootstrap wants font-size: 0 to eliminate space between
-       the buttons.  We need to inherit the font size, so we
-       remove the button gap by adjusting "letter" spacing. */
-        font-size: 90%;
-        letter-spacing: -.3em;
+    .search_icon {
+        position: absolute;
+        height: 100%;
+        color: hsl(0, 0%, 80%);
+        text-decoration: none;
+        padding: 0 10px;
+        font-size: 20px;
+        z-index: 5;
+        left: 0px;
     }
 
-    #search_arrows input {
-        /* Chrome and Firefox do this already via default browser stylesheet;
-       but Opera needs this to avoid smushed letters in the search box. */
+    .search_icon:hover {
+        color: hsl(0, 0%, 0%);
+        text-decoration: none;
+    }
+
+    #search_arrows {
+        padding-left: 35px;
+        font-size: 90%;
         letter-spacing: normal;
+    }
+
+    .pill-container {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        border: none;
+        padding: 0px;
+    }
+
+    @media (min-width: 500px) {
+        .pill {
+            padding: 2px 0px 2px 0px !important;
+            font-size: 14px;
+        }
+    }
+    @media (max-width: 500px) {
+        #search_arrows .pill {
+            line-height: 20px;
+
+            .exit {
+                top: 0;
+            }
+        }
+    }
+}
+
+#searchbox_legacy {
+    #search_arrows {
+        padding-left: 0px;
+    }
+    #search_query {
+        padding-left: 35px;
+    }
+    .search_button {
+        right: 0px;
+    }
+    .navbar-search.expanded {
+        .search_button {
+            margin-right: 14px;
+        }
     }
 }
 
 #tab_bar_underpadding {
     position: absolute;
     width: 100%;
-    top: 40px;
-    height: 10px;
+    top: $header_height;
+    height: $header_padding_bottom;
     z-index: 99;
 }
 
@@ -1774,10 +1784,41 @@ div.focused_table {
     margin-top: 7px;
     display: inline-block;
     float: right;
-}
 
-#navbar-buttons ul.nav {
-    margin: 0px;
+    ul.nav {
+        margin: 0px;
+
+        .dropdown-toggle,
+        li.active .dropdown-toggle {
+            font-size: 20px;
+            color: inherit;
+            opacity: 0.5;
+            text-shadow: none;
+            padding-left: 0px !important;
+            background-color: inherit;
+            box-shadow: inherit;
+            display: block;
+            position: absolute;
+            right: 0px;
+            top: 3px;
+        }
+
+        .dropdown-toggle,
+        li.active .dropdown-toggle:hover {
+            opacity: 1;
+        }
+
+        li.dropdown.open .dropdown-toggle {
+            background: none;
+            opacity: 1;
+            text-shadow: none;
+        }
+
+        li.dropdown li.divider {
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+    }
 }
 
 #streamlist-toggle {
@@ -1828,6 +1869,20 @@ div.focused_table {
     top: 30px;
     min-width: 180px;
     box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
+
+    &::after {
+        position: absolute;
+        width: 0px;
+        height: 0px;
+        top: -7px;
+        right: 14px;
+        display: inline-block;
+        border-right: 7px solid transparent;
+        border-bottom: 7px solid hsl(0, 0%, 67%);
+        border-left: 7px solid transparent;
+        content: '';
+        z-index: 10;
+    }
 }
 
 .nav .dropdown-menu a,
@@ -1835,21 +1890,23 @@ div.focused_table {
     color: inherit;
 }
 
-.typeahead.dropdown-menu .active {
-    color: hsl(0, 0%, 100%);
-}
+.typeahead.dropdown-menu {
+    .active {
+        color: hsl(0, 0%, 100%);
 
-.typeahead.dropdown-menu .unsubscribed_icon {
-    display: none;
-}
+        .unsubscribed_icon {
+            display: block;
+            float: right;
+            margin-top: 5px;
+            margin-right: -12px;
+            font-size: 0.8em;
+            color: hsl(96, 7%, 73%);
+        }
+    }
 
-.typeahead.dropdown-menu .active .unsubscribed_icon {
-    display: block;
-    float: right;
-    margin-top: 5px;
-    margin-right: -12px;
-    font-size: 0.8em;
-    color: hsl(96, 7%, 73%);
+    .unsubscribed_icon {
+        display: none;
+    }
 }
 
 .typeahead-image {
@@ -1868,80 +1925,42 @@ div.focused_table {
     text-align: center;
 }
 
-.nav .dropdown-menu::after {
-    position: absolute;
-    width: 0px;
-    height: 0px;
-    top: -7px;
-    right: 10px;
-    display: inline-block;
-    border-right: 7px solid transparent;
-    border-bottom: 7px solid hsl(0, 0%, 67%);
-    border-left: 7px solid transparent;
-    content: '';
-    z-index: 10;
-}
+nav {
+    .column-left {
+        text-align: center;
 
-#navbar-buttons ul.nav {
-    .dropdown-toggle,
-    li.active .dropdown-toggle {
-        font-size: 20px;
-        color: inherit;
-        opacity: 0.5;
-        text-shadow: none;
-        padding-left: 0px !important;
-        background-color: inherit;
-        box-shadow: inherit;
-        display: block;
-        position: absolute;
-        right: 0px;
-        top: 3px;
+        .nav-logo {
+            display: inline-block;
+            vertical-align: top;
+            margin-top: 8px;
+            height: 25px;
+            max-width: 200px;
+        }
+
+        .company-name {
+            display: inline-block;
+            vertical-align: top;
+            text-transform: uppercase;
+            margin-top: 12px;
+            margin-left: 8px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: hsl(170, 48%, 54%);
+            letter-spacing: 0.1em;
+            cursor: pointer;
+        }
     }
 
-    .dropdown-toggle,
-    li.active .dropdown-toggle:hover {
-        opacity: 1;
+    a {
+        &.no-style:hover {
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .no-style {
+            text-decoration: none;
+        }
     }
-
-    li.dropdown.open .dropdown-toggle {
-        background: none;
-        opacity: 1;
-        text-shadow: none;
-    }
-}
-
-nav .column-left {
-    text-align: center;
-}
-
-nav a.no-style:hover {
-    text-decoration: none;
-    cursor: pointer;
-}
-
-nav .column-left .nav-logo {
-    display: inline-block;
-    vertical-align: top;
-    margin-top: 8px;
-    height: 25px;
-    max-width: 200px;
-}
-
-nav .column-left .company-name {
-    display: inline-block;
-    vertical-align: top;
-    text-transform: uppercase;
-    margin-top: 12px;
-    margin-left: 8px;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: hsl(170, 48%, 54%);
-    letter-spacing: 0.1em;
-    cursor: pointer;
-}
-
-nav a .no-style {
-    text-decoration: none;
 }
 
 .modal-bg {
@@ -1955,96 +1974,12 @@ div.floating_recipient {
 }
 
 #floating_recipient_bar {
-    top: 50px;
-}
-
-.message-header-contents {
-    background-color: hsl(0, 0%, 88%);
+    top: $sidebar_top;
 }
 
 #bottom_whitespace {
     display: block;
     height: 300px;
-}
-
-.loading_indicator_spinner {
-    /* If you change these, make sure to adjust the constants in
-       loading.make_indicator as well */
-    height: 38px;
-    width: 38px;
-    float: left;
-}
-
-.loading_indicator_text {
-    /* If you change these, make sure to adjust the constants in
-       loading.make_indicator as well */
-    margin-left: 5px;
-    font-size: 1.2em;
-    font-weight: 300;
-    line-height: 38px;
-}
-
-.settings-section #admin_page_users_loading_indicator,
-.settings-section #attachments_loading_indicator,
-.settings-section #admin_page_deactivated_users_loading_indicator,
-.settings-section #admin_page_bots_loading_indicator {
-    margin: 0 auto;
-}
-
-.settings-section .loading_indicator_text {
-    font-size: 12px;
-    font-weight: 400;
-    vertical-align: middle;
-    line-height: 20px;
-    display: inline-block;
-    float: none;
-    margin-top: 9px;
-}
-
-.settings-section .loading_indicator_spinner {
-    width: 30%;
-    height: 30px;
-    margin-top: 7px;
-    vertical-align: middle;
-    display: inline-block;
-}
-
-.settings-section .realm-icon-section .loading_indicator_text,
-.settings-section .realm-logo-section .loading_indicator_text {
-    font-size: 14px;
-    font-weight: 400;
-    vertical-align: middle;
-    line-height: 20px;
-    display: inline-block;
-    float: none;
-    margin-top: 0px;
-    margin-left: -12px;
-}
-
-.settings-section .realm-logo-section .loading_indicator_spinner,
-.settings-section .realm-icon-section .loading_indicator_spinner {
-    width: 10%;
-    height: 16px;
-    margin-top: 2px;
-    vertical-align: middle;
-    display: inline-block;
-}
-
-.settings-section #default_language {
-    text-decoration: none;
-}
-
-.settings-section #default_language_modal table {
-    width: 90%;
-    margin-top: 20px;
-}
-
-.settings-section #default_language_modal td {
-    padding-left: 80px;
-}
-
-.settings-section .inline {
-    display: inline !important;
 }
 
 .operator_value {
@@ -2056,16 +1991,19 @@ div.floating_recipient {
     font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
 }
 
-#loading_more_messages_indicator {
+#loading_older_messages_indicator,
+#loading_newer_messages_indicator {
     margin: 10px;
 }
 
-#loading_more_messages_indicator_box_container {
+#loading_older_messages_indicator_box_container,
+#loading_newer_messages_indicator_box_container {
     position: absolute;
     left: 50%;
 }
 
-#loading_more_messages_indicator_box {
+#loading_older_messages_indicator_box,
+#loading_newer_messages_indicator_box {
     position: relative;
     left: -50%;
     top: -43px;
@@ -2097,29 +2035,29 @@ div.floating_recipient {
 
 #user-checkboxes {
     margin-top: 10px;
-}
 
-#user-checkboxes .checkbox {
-    display: block;
-}
+    .checkbox {
+        display: block;
 
-#user-checkboxes .checkbox input[type=checkbox] {
-    margin: 5px 0px;
-    float: none;
+        input[type=checkbox] {
+            margin: 5px 0px;
+            float: none;
+        }
+    }
 }
 
 #stream-checkboxes {
     margin-top: 10px;
     display: none;
-}
 
-#stream-checkboxes .checkbox {
-    display: block;
-}
+    .checkbox {
+        display: block;
+    }
 
-#stream-checkboxes .checkbox input[type=checkbox] {
-    margin: 5px 0px;
-    float: none;
+    input[type=checkbox] {
+        margin: 5px 0px;
+        float: none;
+    }
 }
 
 #copy-from-stream-expand-collapse {
@@ -2190,30 +2128,14 @@ div.topic_edit_spinner .loading_indicator_spinner {
     /* Bootstrap uses tabindex=-1 on modals for focus and ESC handling,
        so avoid the outline it causes */
     outline: 0;
+
+    form {
+        margin-bottom: 0px;
+    }
 }
 
 .modal-body {
     max-height: 60vh;
-}
-
-.modal form {
-    margin-bottom: 0px;
-}
-
-#invite-user .modal-header {
-    padding: 7px 15px;
-    border-color: hsl(0, 0%, 87%);
-}
-
-#invite-user .modal-header .exit {
-    font-size: 1.5rem;
-    font-weight: 600;
-    background-color: transparent;
-    border: none;
-    position: absolute;
-    top: 6px;
-    right: 5px;
-    color: hsl(0, 0%, 67%);
 }
 
 #invitee_emails {
@@ -2223,21 +2145,43 @@ div.topic_edit_spinner .loading_indicator_spinner {
     max-width: 96%;
 }
 
-#invite-user .overlay-content {
-    position: relative;
-    width: 500px;
-    border-radius: 4px;
-}
+#invite-user {
+    .modal-header {
+        padding: 7px 15px;
+        border-color: hsl(0, 0%, 87%);
 
-#invite-user .modal-body {
-    margin-bottom: 58px;
-    position: relative;
-}
+        .exit {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background-color: transparent;
+            border: none;
+            position: absolute;
+            top: 6px;
+            right: 5px;
+            color: hsl(0, 0%, 67%);
+        }
+    }
 
-#invite-user .modal-footer {
-    position: absolute;
-    bottom: 0px;
-    width: calc(100% - 30px);
+    .overlay-content {
+        position: relative;
+        width: 500px;
+        border-radius: 4px;
+    }
+
+    .modal-body {
+        margin-bottom: 58px;
+        position: relative;
+    }
+
+    .modal-footer {
+        position: absolute;
+        bottom: 0px;
+        width: calc(100% - 30px);
+    }
+
+    .invite-stream-controls {
+        margin-top: 5px;
+    }
 }
 
 #invite_status {
@@ -2275,16 +2219,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 #generate_multiuse_invite_button {
     position: relative;
     top: 1px;
-}
-
-#invite-user .invite-stream-controls {
-    margin-top: 5px;
-}
-
-.settings-dropdown-caret {
-    margin-left: 8px;
-    margin-right: 8px;
-    font-size: 14px;
 }
 
 #notifications-area {
@@ -2349,27 +2283,22 @@ div.topic_edit_spinner .loading_indicator_spinner {
     padding-bottom: 10px;
 }
 
-.message_row .date_row {
-    /* We only want padding for the date rows between recipient blocks */
-    padding-bottom: 0px;
-}
-
 .date_row {
     padding-left: 2px;
-}
 
-.date_row .date-direction {
-    display: inline-block;
-    padding-right: 5px;
-}
+    .date-direction {
+        display: inline-block;
+        padding-right: 5px;
+    }
 
-.date_row .date-line {
-    display: inline-block;
-    vertical-align: middle;
-    width: 33%;
-    border-top: 1px solid hsl(0, 0%, 88%);
-    border-bottom: 1px solid hsl(0, 0%, 100%);
-    margin: 0px 5px 0px 5px;
+    .date-line {
+        display: inline-block;
+        vertical-align: middle;
+        width: 33%;
+        border-top: 1px solid hsl(0, 0%, 88%);
+        border-bottom: 1px solid hsl(0, 0%, 100%);
+        margin: 0px 5px 0px 5px;
+    }
 }
 
 .sub-unsub-message span,
@@ -2413,10 +2342,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     margin-right: -50%;
 }
 
-.include-sender .message_edit {
-    margin-top: -14px;
-}
-
 .message_edit {
     display: none;
     margin-top: 5px;
@@ -2428,25 +2353,25 @@ div.topic_edit_spinner .loading_indicator_spinner {
 #message_edit_form {
     margin-bottom: 10px;
     cursor: default;
-}
 
-#message_edit_form .edit-controls {
-    margin-left: 0px;
-    margin-top: 0px;
-}
+    .edit-controls {
+        margin-left: 0px;
+        margin-top: 0px;
+    }
 
-#message_edit_form textarea {
-    width: 100%;
-    min-width: 206px;
-    box-sizing: border-box;
-}
+    textarea {
+        width: 100%;
+        min-width: 206px;
+        box-sizing: border-box;
+    }
 
-#message_edit_form .control-group.no-margin {
-    margin-bottom: 0px;
-}
+    .control-group.no-margin {
+        margin-bottom: 0px;
+    }
 
-#message_edit_form .action-buttons {
-    margin: 10px 0px;
+    .action-buttons {
+        margin: 10px 0px;
+    }
 }
 
 #topic_edit_form {
@@ -2500,6 +2425,11 @@ div.topic_edit_spinner .loading_indicator_spinner {
     overflow: hidden;
     transition: all 0.4s ease;
 
+    &:hover .email_tooltip {
+        visibility: visible;
+        opacity: 1;
+    }
+
     .tooltip_holder {
         display: none;
         position: absolute;
@@ -2508,6 +2438,10 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
     i {
         cursor: pointer;
+
+        &.hide_copy_icon {
+            display: none;
+        }
     }
 }
 
@@ -2549,15 +2483,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 }
 
-.user_popover_email:hover .email_tooltip {
-    visibility: visible;
-    opacity: 1;
-}
-
-.user_popover_email i.hide_copy_icon {
-    display: none;
-}
-
 .hotkey-hint {
     opacity: 0.75;
 }
@@ -2580,24 +2505,32 @@ select.inline_select_topic_edit {
 
     .column-right {
         display: none;
-    }
 
-    .column-right.expanded {
-        display: block;
-        position: absolute;
-        float: none;
-        right: 15px;
-        top: 0px;
-    }
+        &.expanded {
+            display: block;
+            position: absolute;
+            float: none;
+            right: 15px;
+            top: 0px;
 
-    .column-right.expanded .right-sidebar {
-        background-color: hsla(0, 0%, 100%, 1.0);
-        box-shadow: 0px -2px 3px 0px hsla(0, 0%, 0%, 0.1);
-        border-left: 1px solid hsl(0, 0%, 87%);
-        margin-top: 40px;
-        padding: 10px 15px 0px 15px;
-        height: 100%;
-        right: 0px;
+            .right-sidebar {
+                background-color: hsla(0, 0%, 100%, 1.0);
+                box-shadow: 0px -2px 3px 0px hsla(0, 0%, 0%, 0.1);
+                border-left: 1px solid hsl(0, 0%, 87%);
+
+                // We use both margin and padding to
+                // hide little artifacts from showing up in
+                // the gutter below the navbar.
+                margin-top: $header_height;
+                padding-top: $header_padding_bottom;
+
+                padding-bottom: 0px;
+                padding-left: 15px;
+                padding-right: 15px;
+                height: 100%;
+                right: 0px;
+            }
+        }
     }
 
     .header-main .column-right {
@@ -2613,10 +2546,18 @@ select.inline_select_topic_edit {
     .nav .dropdown-menu {
         min-width: 180px;
         box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
+
+        &::after {
+            right: 10px;
+        }
     }
 
     .nav .dropdown-menu::after {
-        right: 10px;
+        right: 21px;
+    }
+
+    .settings-dropdown-cog {
+        padding-right: 21px;
     }
 
     .column-middle {
@@ -2624,7 +2565,8 @@ select.inline_select_topic_edit {
     }
 
     .top-navbar-container,
-    #searchbox_legacy .navbar-search.expanded {
+    #searchbox_legacy .navbar-search.expanded,
+    #searchbox .navbar-search.expanded {
         width: calc(100% - 91px);
     }
 
@@ -2637,7 +2579,8 @@ select.inline_select_topic_edit {
             right: 72px;
         }
         .top-navbar-border,
-        #searchbox_legacy .navbar-search.expanded {
+        #searchbox_legacy .navbar-search.expanded,
+        #searchbox .navbar-search.expanded {
             width: calc(100% - 50px);
         }
     }
@@ -2650,25 +2593,30 @@ select.inline_select_topic_edit {
 
     .column-left {
         display: none;
-    }
 
-    .column-left.expanded {
-        display: block;
-        position: absolute;
-        float: none;
-        left: 0px;
-        top: 0px;
-    }
+        &.expanded {
+            display: block;
+            position: absolute;
+            float: none;
+            left: 0px;
+            top: 0px;
 
-    .column-left.expanded .left-sidebar {
-        background-color: hsla(0, 0%, 100%, 1.0);
-        box-shadow: 0px 2px 3px 0px hsla(0, 0%, 0%, 0.1);
-        border-right: 1px solid hsl(0, 0%, 87%);
-        margin-top: 40px;
-        padding-top: 10px;
-        height: 100%;
-        padding-left: 10px;
-        width: 250px;
+            .left-sidebar {
+                background-color: hsla(0, 0%, 100%, 1.0);
+                box-shadow: 0px 2px 3px 0px hsla(0, 0%, 0%, 0.1);
+                border-right: 1px solid hsl(0, 0%, 87%);
+
+                // We use both margin and padding to
+                // hide little artifacts from showing up in
+                // the gutter below the navbar.
+                margin-top: $header_height;
+                padding-top: $header_padding_bottom;
+
+                height: 100%;
+                padding-left: 10px;
+                width: 250px;
+            }
+        }
     }
 
     body,
@@ -2708,15 +2656,13 @@ select.inline_select_topic_edit {
 
     .top-navbar-border {
         margin-left: 40px;
-    }
-
-    .top-navbar-border {
         width: calc(100% - 116px);
     }
     // todo: Figure out why this has to be different
     // from above at this width and resolve it
     // #searchbox_legacy .navbar-search.expanded,
-    #searchbox_legacy .navbar-search.expanded {
+    #searchbox_legacy .navbar-search.expanded,
+    #searchbox .navbar-search.expanded {
         width: calc(100% - 131px);
     }
 
@@ -2731,7 +2677,8 @@ select.inline_select_topic_edit {
         .top-navbar-border {
             width: calc(100% - 75px);
         }
-        #searchbox_legacy .navbar-search.expanded {
+        #searchbox_legacy .navbar-search.expanded,
+        #searchbox .navbar-search.expanded {
             width: calc(100% - 90px);
         }
     }
@@ -2743,16 +2690,18 @@ select.inline_select_topic_edit {
         margin-top: 31px;
     }
 
-    .column-left.expanded .left-sidebar {
-        padding: 0px;
-    }
+    .column-left.expanded {
+        .left-sidebar {
+            padding: 0px;
 
-    .column-left.expanded .left-sidebar #streams_header {
-        padding-right: 10px;
-    }
+            #streams_header {
+                padding-right: 10px;
+            }
+        }
 
-    .column-left.expanded .narrows_panel {
-        margin-top: 10px;
+        .narrows_panel {
+            margin-top: 10px;
+        }
     }
 
     .search_closed .fa-search {
@@ -2815,7 +2764,7 @@ select.inline_select_topic_edit {
 
     .message_controls {
         width: 56px;
-        right: -10px;
+        right: 40px;
         top: 0px;
     }
 
@@ -2829,10 +2778,6 @@ select.inline_select_topic_edit {
     .message_time {
         left: auto;
         right: -5px;
-    }
-
-    .message_controls {
-        right: 40px;
     }
 
     .sender_name {

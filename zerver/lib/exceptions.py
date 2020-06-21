@@ -1,9 +1,7 @@
 from enum import Enum
-from typing import Any, Dict, List, Type, TypeVar, Optional
-from typing_extensions import NoReturn
+from typing import Any, Dict, List, NoReturn, Optional, Type, TypeVar
 
 from django.utils.translation import ugettext as _
-
 
 T = TypeVar("T", bound="AbstractEnum")
 
@@ -46,6 +44,7 @@ class ErrorCode(AbstractEnum):
     INVALID_MARKDOWN_INCLUDE_STATEMENT = ()
     REQUEST_CONFUSING_VAR = ()
     INVALID_API_KEY = ()
+    INVALID_ZOOM_TOKEN = ()
 
 class JsonableError(Exception):
     '''A standardized error format we can turn into a nice JSON HTTP response.
@@ -68,7 +67,7 @@ class JsonableError(Exception):
              data_fields = ['widget_name']
 
              def __init__(self, widget_name: str) -> None:
-                 self.widget_name = widget_name  # type: str
+                 self.widget_name: str = widget_name
 
              @staticmethod
              def msg_format() -> str:
@@ -157,11 +156,11 @@ class StreamWithIDDoesNotExistError(JsonableError):
 
 class CannotDeactivateLastUserError(JsonableError):
     code = ErrorCode.CANNOT_DEACTIVATE_LAST_USER
-    data_fields = ['is_last_admin', 'entity']
+    data_fields = ['is_last_owner', 'entity']
 
-    def __init__(self, is_last_admin: bool) -> None:
-        self.is_last_admin = is_last_admin
-        self.entity = _("organization administrator") if is_last_admin else _("user")
+    def __init__(self, is_last_owner: bool) -> None:
+        self.is_last_owner = is_last_owner
+        self.entity = _("organization owner") if is_last_owner else _("user")
 
     @staticmethod
     def msg_format() -> str:
@@ -200,6 +199,18 @@ class OrganizationAdministratorRequired(JsonableError):
     @staticmethod
     def msg_format() -> str:
         return OrganizationAdministratorRequired.ADMIN_REQUIRED_MESSAGE
+
+class OrganizationOwnerRequired(JsonableError):
+    code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
+
+    OWNER_REQUIRED_MESSAGE = _("Must be an organization owner")
+
+    def __init__(self) -> None:
+        super().__init__(self.OWNER_REQUIRED_MESSAGE)
+
+    @staticmethod
+    def msg_format() -> str:
+        return OrganizationOwnerRequired.OWNER_REQUIRED_MESSAGE
 
 class BugdownRenderingException(Exception):
     pass

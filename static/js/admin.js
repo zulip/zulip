@@ -60,6 +60,8 @@ exports.build_page = function () {
         realm_signup_notifications_stream_id: page_params.realm_signup_notifications_stream_id,
         is_admin: page_params.is_admin,
         is_guest: page_params.is_guest,
+        is_owner: page_params.is_owner,
+        user_can_change_logo: settings_data.user_can_change_logo(),
         realm_icon_source: page_params.realm_icon_source,
         realm_icon_url: page_params.realm_icon_url,
         realm_logo_source: page_params.realm_logo_source,
@@ -75,7 +77,7 @@ exports.build_page = function () {
         realm_digest_weekday: page_params.realm_digest_weekday,
         show_email: settings_data.show_email(),
         development: page_params.development_environment,
-        plan_includes_wide_organization_logo: page_params.plan_includes_wide_organization_logo,
+        zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,
         upgrade_text_for_wide_organization_logo:
             page_params.upgrade_text_for_wide_organization_logo,
         realm_default_external_accounts: page_params.realm_default_external_accounts,

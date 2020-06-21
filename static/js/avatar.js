@@ -42,17 +42,17 @@ exports.build_bot_edit_widget = function (target) {
 
 exports.build_user_avatar_widget = function (upload_function) {
     const get_file_input = function () {
-        return $('#user_avatar_file_input').expectOne();
+        return $('#user-avatar-upload-widget .image_file_input').expectOne();
     };
 
     if (page_params.avatar_source === 'G') {
-        $("#user_avatar_delete_button").hide();
+        $("#user-avatar-upload-widget .settings-page-delete-button").hide();
         $("#user-avatar-source").show();
     } else {
         $("#user-avatar-source").hide();
     }
 
-    $("#user_avatar_delete_button").on('click keydown', function (e) {
+    $("#user-avatar-upload-widget .settings-page-delete-button").on('click keydown', function (e) {
         e.preventDefault();
         e.stopPropagation();
         channel.del({
@@ -71,10 +71,10 @@ exports.build_user_avatar_widget = function (upload_function) {
     if (settings_account.user_can_change_avatar()) {
         return upload_widget.build_direct_upload_widget(
             get_file_input,
-            $("#user_avatar_file_input_error").expectOne(),
-            $("#user-settings-avatar").expectOne(),
+            $("#user-avatar-upload-widget .image_file_input_error").expectOne(),
+            $("#user-avatar-upload-widget .image_upload_button").expectOne(),
             upload_function,
-            page_params.max_avatar_file_size
+            page_params.max_avatar_file_size_mib
         );
     }
 };

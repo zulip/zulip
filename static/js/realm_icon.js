@@ -1,17 +1,17 @@
 exports.build_realm_icon_widget = function (upload_function) {
     const get_file_input = function () {
-        return $('#realm_icon_file_input').expectOne();
+        return $('#realm-icon-upload-widget .image_file_input').expectOne();
     };
 
     if (!page_params.is_admin) {
         return;
     }
     if (page_params.realm_icon_source === 'G') {
-        $("#realm_icon_delete_button").hide();
+        $("#realm-icon-upload-widget .settings-page-delete-button").hide();
     } else {
-        $("#realm_icon_delete_button").show();
+        $("#realm-icon-upload-widget .settings-page-delete-button").show();
     }
-    $("#realm_icon_delete_button").on('click', function (e) {
+    $("#realm-icon-upload-widget .settings-page-delete-button").on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
         channel.del({
@@ -21,22 +21,22 @@ exports.build_realm_icon_widget = function (upload_function) {
 
     return upload_widget.build_direct_upload_widget(
         get_file_input,
-        $("#realm_icon_file_input_error").expectOne(),
-        $("#realm_icon_upload_button").expectOne(),
+        $("#realm-icon-upload-widget .image_file_input_error").expectOne(),
+        $("#realm-icon-upload-widget .image_upload_button").expectOne(),
         upload_function,
         page_params.max_icon_file_size
     );
 };
 
 exports.rerender = function () {
-    $("#realm-settings-icon").attr("src", page_params.realm_icon_url);
+    $("#realm-icon-upload-widget .image-block").attr("src", page_params.realm_icon_url);
     if (page_params.realm_icon_source === 'U') {
-        $("#realm_icon_delete_button").show();
+        $("#realm-icon-upload-widget .settings-page-delete-button").show();
     } else {
-        $("#realm_icon_delete_button").hide();
+        $("#realm-icon-upload-widget .settings-page-delete-button").hide();
         // Need to clear input because of a small edge case
         // where you try to upload the same image you just deleted.
-        const file_input = $("#realm_icon_file_input");
+        const file_input = $("#realm-icon-upload-widget .image_file_input");
         file_input.val('');
     }
 };

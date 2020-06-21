@@ -5,8 +5,11 @@
 # Django itself
 Django==2.2.*
 
-# needed for Deque (in Python < 3.5.4) and TypedDict
+# needed for Literal, TypedDict
 typing-extensions
+
+# Backport of @dataclass
+dataclasses;python_version<"3.7"
 
 # Needed for rendering backend templates
 Jinja2
@@ -30,7 +33,7 @@ SQLAlchemy
 argon2-cffi
 
 # Needed for S3 file uploads
-boto
+boto3
 
 # Needed for integrations
 defusedxml
@@ -67,9 +70,6 @@ PyJWT
 
 # Needed for including other markdown files for user docs
 markdown-include
-
-# Needed for mock objects in decorators
-mock
 
 # Needed to access rabbitmq
 pika
@@ -184,3 +184,7 @@ django-cookies-samesite
 
 # For server-side enforcement of password strength
 zxcvbn
+
+# Needed for sending HTTP requests
+requests[security]
+requests-oauthlib

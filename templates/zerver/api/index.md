@@ -16,7 +16,7 @@ guide should help you find the API you need:
 * If you're building an interactive bot that reacts to activity inside
   Zulip, you'll want to look at Zulip's
   [Python framework for interactive bots](/api/running-bots) or
-  [Zulip's real-time events API](/api/get-events-from-queue).
+  [Zulip's real-time events API](/api/get-events).
 
 And if you still need to build your own integration with Zulip, check out
 the full [REST API](/api/rest), generally starting with

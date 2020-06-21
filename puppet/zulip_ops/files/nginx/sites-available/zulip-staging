@@ -15,5 +15,6 @@ server {
 
     server_name staging.zulip.com;
 
+    include /etc/zulip/nginx_sharding.conf;
     include /etc/nginx/zulip-include/app;
 }

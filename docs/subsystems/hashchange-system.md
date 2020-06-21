@@ -12,8 +12,9 @@ Some examples are:
   (subscription etc.)
 * `/#streams/11/announce`: Streams overlay with stream ID 11 (called
   "announce") selected.
-* `/#narrow/stream/android/subject/fun`: Message feed showing stream
-  "android" and topic "fun".
+* `/#narrow/stream/42-android/topic/fun`: Message feed showing stream
+  "android" and topic "fun".  (The `42` represents the id of the
+   stream.
 
 The main module in the frontend that manages this all is
 `static/js/hashchange.js` (plus `hash_util.js` for all the parsing

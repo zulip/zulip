@@ -8,7 +8,7 @@ class DialogflowHookTests(WebhookTestCase):
         self.url = self.build_webhook_url(
             email="AARON@zulip.com",
             username="aaron",
-            user_ip="127.0.0.1"
+            user_ip="127.0.0.1",
         )
         expected_message = "Today the weather in Delhi: Sunny, And the tempreture is 65F"
         self.send_and_test_private_message('default',
@@ -19,7 +19,7 @@ class DialogflowHookTests(WebhookTestCase):
         self.url = self.build_webhook_url(
             email="AARON@zulip.com",
             username="aaron",
-            user_ip="127.0.0.1"
+            user_ip="127.0.0.1",
         )
         expected_message = "The weather sure looks great !"
         self.send_and_test_private_message('weather_app',
@@ -30,7 +30,7 @@ class DialogflowHookTests(WebhookTestCase):
         self.url = self.build_webhook_url(
             email="AARON@zulip.com",
             username="aaron",
-            user_ip="127.0.0.1"
+            user_ip="127.0.0.1",
         )
         expected_message = "Weather in New Delhi is nice!"
         self.send_and_test_private_message('alternate_result',
@@ -41,7 +41,7 @@ class DialogflowHookTests(WebhookTestCase):
         self.url = self.build_webhook_url(
             email="AARON@zulip.com",
             username="aaron",
-            user_ip="127.0.0.1"
+            user_ip="127.0.0.1",
         )
         expected_message = "403 - Access Denied"
         self.send_and_test_private_message('error_status',
@@ -52,7 +52,7 @@ class DialogflowHookTests(WebhookTestCase):
         self.url = self.build_webhook_url(
             email="AARON@zulip.com",
             username="aaron",
-            user_ip="127.0.0.1"
+            user_ip="127.0.0.1",
         )
         expected_message = "DialogFlow couldn't process your query."
         self.send_and_test_private_message('exception',

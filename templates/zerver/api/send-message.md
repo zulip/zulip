@@ -12,41 +12,8 @@
 {tab|js}
 
 More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
-```js
-const zulip = require('zulip-js');
 
-// Pass the path to your zuliprc file here.
-const config = {
-    zuliprc: 'zuliprc',
-};
-
-// Send a stream message
-zulip(config).then((client) => {
-    // Send a message
-    const params = {
-        to: 'Denmark',
-        type: 'stream',
-        subject: 'Castle',
-        content: 'I come not, friends, to steal away your hearts.'
-    }
-
-    client.messages.send(params).then(console.log);
-});
-
-// Send a private message
-zulip(config).then((client) => {
-    // Send a private message
-    const user_id = 9;
-    const params = {
-        to: [user_id],
-        type: 'private',
-        content: 'With mirth and laughter let old wrinkles come.',
-    }
-
-    client.messages.send(params).then(console.log);
-});
-
-```
+{generate_code_example(javascript)|/messages:post|example}
 
 {tab|curl}
 
@@ -95,12 +62,12 @@ zulip-send --stream Denmark --subject Castle \
     --user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
 ```
 
-You can omit the `user` and `api-key` arguments if you have a `~/.zuliprc`
+You can omit the `user` and `api-key` parameters if you have a `~/.zuliprc`
 file.
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
 {generate_api_arguments_table|zulip.yaml|/messages:post}
 
@@ -108,7 +75,7 @@ file.
 
 #### Return values
 
-* `id`: The ID of the newly created message
+{generate_return_values_table|zulip.yaml|/messages:post}
 
 #### Example response
 A typical successful JSON response may look like:

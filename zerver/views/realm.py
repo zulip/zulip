@@ -1,31 +1,40 @@
 from typing import Any, Dict, Optional
+
+from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.utils.translation import ugettext as _
-from django.core.exceptions import ValidationError
 from django.views.decorators.http import require_safe
 
-from zerver.decorator import require_realm_admin, to_non_negative_int, to_not_negative_int_or_none
+from confirmation.models import Confirmation, ConfirmationKeyException, get_object_from_key
+from zerver.decorator import require_realm_admin, require_realm_owner
+from zerver.forms import check_subdomain_available as check_subdomain
 from zerver.lib.actions import (
-    do_set_realm_message_editing,
-    do_set_realm_message_deleting,
-    do_set_realm_authentication_methods,
-    do_set_realm_notifications_stream,
-    do_set_realm_signup_notifications_stream,
-    do_set_realm_property,
     do_deactivate_realm,
     do_reactivate_realm,
+    do_set_realm_authentication_methods,
+    do_set_realm_message_deleting,
+    do_set_realm_message_editing,
+    do_set_realm_notifications_stream,
+    do_set_realm_property,
+    do_set_realm_signup_notifications_stream,
 )
+from zerver.lib.exceptions import OrganizationOwnerRequired
 from zerver.lib.i18n import get_available_language_codes
-from zerver.lib.request import has_request_variables, REQ, JsonableError
-from zerver.lib.response import json_success, json_error
-from zerver.lib.validator import check_string, check_dict, check_bool, check_int, check_int_in
+from zerver.lib.request import REQ, JsonableError, has_request_variables
+from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_id
-from zerver.lib.domains import validate_domain
-from zerver.lib.video_calls import request_zoom_video_call_url
+from zerver.lib.validator import (
+    check_bool,
+    check_dict,
+    check_int,
+    check_int_in,
+    check_string,
+    to_non_negative_int,
+    to_positive_or_allowed_int,
+)
 from zerver.models import Realm, UserProfile
-from zerver.forms import check_subdomain_available as check_subdomain
-from confirmation.models import get_object_from_key, Confirmation, ConfirmationKeyException
+
 
 @require_realm_admin
 @has_request_variables
@@ -52,10 +61,11 @@ def update_realm(
         allow_edit_history: Optional[bool]=REQ(validator=check_bool, default=None),
         default_language: Optional[str]=REQ(validator=check_string, default=None),
         waiting_period_threshold: Optional[int]=REQ(converter=to_non_negative_int, default=None),
-        authentication_methods: Optional[Dict[Any, Any]]=REQ(validator=check_dict([]), default=None),
+        authentication_methods: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None),
         notifications_stream_id: Optional[int]=REQ(validator=check_int, default=None),
         signup_notifications_stream_id: Optional[int]=REQ(validator=check_int, default=None),
-        message_retention_days: Optional[int]=REQ(converter=to_not_negative_int_or_none, default=None),
+        message_retention_days: Optional[int] = REQ(converter=to_positive_or_allowed_int(
+            Realm.RETAIN_MESSAGE_FOREVER), default=None),
         send_welcome_emails: Optional[bool]=REQ(validator=check_bool, default=None),
         digest_emails_enabled: Optional[bool]=REQ(validator=check_bool, default=None),
         message_content_allowed_in_email_notifications: Optional[bool]=REQ(
@@ -74,10 +84,6 @@ def update_realm(
             Realm.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None),
         default_twenty_four_hour_time: Optional[bool]=REQ(validator=check_bool, default=None),
         video_chat_provider: Optional[int]=REQ(validator=check_int, default=None),
-        google_hangouts_domain: Optional[str]=REQ(validator=check_string, default=None),
-        zoom_user_id: Optional[str]=REQ(validator=check_string, default=None),
-        zoom_api_key: Optional[str]=REQ(validator=check_string, default=None),
-        zoom_api_secret: Optional[str]=REQ(validator=check_string, default=None),
         default_code_block_language: Optional[str]=REQ(validator=check_string, default=None),
         digest_weekday: Optional[int]=REQ(validator=check_int_in(Realm.DIGEST_WEEKDAY_VALUES), default=None),
 ) -> HttpResponse:
@@ -86,44 +92,24 @@ def update_realm(
     # Additional validation/error checking beyond types go here, so
     # the entire request can succeed or fail atomically.
     if default_language is not None and default_language not in get_available_language_codes():
-        raise JsonableError(_("Invalid language '%s'") % (default_language,))
+        raise JsonableError(_("Invalid language '{}'").format(default_language))
     if description is not None and len(description) > 1000:
         return json_error(_("Organization description is too long."))
     if name is not None and len(name) > Realm.MAX_REALM_NAME_LENGTH:
         return json_error(_("Organization name is too long."))
-    if authentication_methods is not None and True not in list(authentication_methods.values()):
-        return json_error(_("At least one authentication method must be enabled."))
+    if authentication_methods is not None:
+        if not user_profile.is_realm_owner:
+            raise OrganizationOwnerRequired()
+        if True not in list(authentication_methods.values()):
+            return json_error(_("At least one authentication method must be enabled."))
     if (video_chat_provider is not None and
             video_chat_provider not in {p['id'] for p in Realm.VIDEO_CHAT_PROVIDERS.values()}):
         return json_error(_("Invalid video_chat_provider {}").format(video_chat_provider))
-    if video_chat_provider == Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['id']:
-        try:
-            validate_domain(google_hangouts_domain)
-        except ValidationError as e:
-            return json_error(_('Invalid domain: {}').format(e.messages[0]))
-    if video_chat_provider == Realm.VIDEO_CHAT_PROVIDERS['zoom']['id']:
-        if not zoom_api_secret:
-            # Use the saved Zoom API secret if a new value isn't being sent
-            zoom_api_secret = user_profile.realm.zoom_api_secret
-        if not zoom_user_id:
-            return json_error(_('User ID cannot be empty'))
-        if not zoom_api_key:
-            return json_error(_('API key cannot be empty'))
-        if not zoom_api_secret:
-            return json_error(_('API secret cannot be empty'))
-        # If any of the Zoom settings have changed, validate the Zoom credentials.
-        #
-        # Technically, we could call some other API endpoint that
-        # doesn't create a video call link, but this is a nicer
-        # end-to-end test, since it verifies that the Zoom API user's
-        # scopes includes the ability to create video calls, which is
-        # the only capabiility we use.
-        if ((zoom_user_id != realm.zoom_user_id or
-             zoom_api_key != realm.zoom_api_key or
-             zoom_api_secret != realm.zoom_api_secret) and
-                not request_zoom_video_call_url(zoom_user_id, zoom_api_key, zoom_api_secret)):
-            return json_error(_('Invalid credentials for the %(third_party_service)s API.') % dict(
-                third_party_service="Zoom"))
+
+    if message_retention_days is not None:
+        if not user_profile.is_realm_owner:
+            raise OrganizationOwnerRequired()
+        realm.ensure_not_on_limited_plan()
 
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.
@@ -206,7 +192,7 @@ def update_realm(
 
     return json_success(data)
 
-@require_realm_admin
+@require_realm_owner
 @has_request_variables
 def deactivate_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
     realm = user.realm

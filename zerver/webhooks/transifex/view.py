@@ -7,8 +7,7 @@ from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_int
-from zerver.lib.webhooks.common import UnexpectedWebhookEventType, \
-    check_send_webhook_message
+from zerver.lib.webhooks.common import UnexpectedWebhookEventType, check_send_webhook_message
 from zerver.models import UserProfile
 
 
@@ -23,11 +22,11 @@ def api_transifex_webhook(
     translated: Optional[int] = REQ(validator=check_int, default=None),
     reviewed: Optional[int] = REQ(validator=check_int, default=None),
 ) -> HttpResponse:
-    subject = "{} in {}".format(project, language)
+    subject = f"{project} in {language}"
     if translated:
-        body = "Resource {} fully translated.".format(resource)
+        body = f"Resource {resource} fully translated."
     elif reviewed:
-        body = "Resource {} fully reviewed.".format(resource)
+        body = f"Resource {resource} fully reviewed."
     else:
         raise UnexpectedWebhookEventType('Transifex', 'Unknown Event Type')
     check_send_webhook_message(request, user_profile, subject, body)

@@ -125,19 +125,19 @@ exports.build_direct_upload_widget = function (
     max_file_upload_size = max_file_upload_size || default_max_file_size;
     function accept() {
         input_error.hide();
-        if (upload_button.hasClass("night-settings")) {
-            upload_function(get_file_input(), true);
-        } else if (upload_button.hasClass("day-settings")) {
-            upload_function(get_file_input(), false);
+        const realm_logo_section = upload_button.closest(".avatar-icon-logo-settings");
+        if (realm_logo_section.attr('id') === "realm-night-logo-upload-widget") {
+            upload_function(get_file_input(), true, false);
+        } else if (realm_logo_section.attr('id') === "realm-day-logo-upload-widget") {
+            upload_function(get_file_input(), false, false);
         } else {
-            upload_function(get_file_input());
+            upload_function(get_file_input(), null, true);
         }
     }
 
     function clear() {
         const control = get_file_input();
-        const new_control = control.clone(true);
-        control.replaceWith(new_control);
+        control.val('');
     }
 
     upload_button.on('drop', function (e) {

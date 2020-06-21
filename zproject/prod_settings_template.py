@@ -121,6 +121,7 @@ AUTHENTICATION_BACKENDS = (
     # 'zproject.backends.GitHubAuthBackend',  # GitHub auth, setup below
     # 'zproject.backends.GitLabAuthBackend',  # GitLab auth, setup below
     # 'zproject.backends.AzureADAuthBackend',  # Microsoft Azure Active Directory auth, setup below
+    # 'zproject.backends.AppleAuthBackend',  # Apple auth, setup below
     # 'zproject.backends.SAMLAuthBackend', # SAML, setup below
     # 'zproject.backends.ZulipLDAPAuthBackend',  # LDAP, setup below
     # 'zproject.backends.ZulipRemoteUserBackend',  # Local SSO, setup docs on readthedocs
@@ -222,8 +223,8 @@ SOCIAL_AUTH_SAML_ORG_INFO = {
     "en-US": {
         "displayname": "Example, Inc. Zulip",
         "name": "zulip",
-        "url": "%s%s" % ('https://', EXTERNAL_HOST),
-    }
+        "url": "{}{}".format('https://', EXTERNAL_HOST),
+    },
 }
 SOCIAL_AUTH_SAML_ENABLED_IDPS = {
     # The fields are explained in detail here:
@@ -258,7 +259,7 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS = {
         # If you want this IdP to only be enabled for authentication
         # to certain subdomains, uncomment and edit the setting below.
         # "limit_to_subdomains": ["subdomain1", "subdomain2"],
-    }
+    },
 }
 
 SOCIAL_AUTH_SAML_SECURITY_CONFIG = {
@@ -278,6 +279,18 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
     "givenName": "Support team",
     "emailAddress": ZULIP_ADMINISTRATOR,
 }
+
+########
+# Apple authentication ("Sign in with Apple").
+#
+# Configure the below settings by following the instructions here:
+#
+#     https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#sign-in-with-apple
+#
+#SOCIAL_AUTH_APPLE_SERVICES_ID = "<your Services ID>"
+#SOCIAL_AUTH_APPLE_BUNDLE_ID = "<your Bundle ID>"
+#SOCIAL_AUTH_APPLE_TEAM = "<your Team ID>"
+#SOCIAL_AUTH_APPLE_KEY = "<your Key ID>"
 
 ########
 # Azure Active Directory OAuth.
@@ -468,6 +481,16 @@ EMAIL_GATEWAY_IMAP_PORT = 993
 EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 
 
+########
+# Zoom integration.
+#
+# Zulip supports using Zoom as a video calling provider. To learn more about
+# configuring Zoom, see:
+# https://zulip.readthedocs.io/en/latest/production/zoom-configuration.html
+#
+#VIDEO_ZOOM_CLIENT_ID = <your Zoom Client ID>
+
+
 ################
 # LDAP integration.
 #
@@ -592,8 +615,8 @@ CAMO_URI = '/external_content/'
 # Format HOST:PORT
 # MEMCACHED_LOCATION = 127.0.0.1:11211
 # To authenticate to memcached, set memcached_password in zulip-secrets.conf,
-# and optionally change the default username 'zulip' here.
-# MEMCACHED_USERNAME = 'zulip'
+# and optionally change the default username 'zulip@localhost' here.
+# MEMCACHED_USERNAME = 'zulip@localhost'
 
 # Redis configuration
 #

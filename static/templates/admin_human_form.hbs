@@ -1,0 +1,34 @@
+<div id="admin-human-form" class="modal modal-bg hide fade" tabindex="-1" role="dialog" aria-labelledby="admin-human-form-label" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
+        <h3 id="admin-human-form-label">{{t "Change user info and roles" }}</h3>
+    </div>
+    <div class="modal-body">
+        <div id="user-name-form" data-user-id="{{user_id}}">
+            <form class="form-horizontal name-setting">
+                <input type="hidden" name="is_full_name" value="true" />
+                <div class="input-group name_change_container">
+                    <label for="full_name">{{t "Full name" }}</label>
+                    <input type="text" autocomplete="off" name="full_name" value="{{ full_name }}" />
+                </div>
+                <div class="input-group email_change_container">
+                    <label for="email">{{t "Email" }}</label>
+                    <input type="text" autocomplete="off" name="email" value="{{ email }}" readonly/>
+                </div>
+                <div class="input-group">
+                    <label class="input-label" for="user-role-select">{{t 'User role' }}
+                        {{> help_link_widget link="/help/roles-and-permissions" }}
+                    </label>
+                    <select name="user-role-select" id="user-role-select" data-setting-widget-type="number" {{#if disable_role_dropdown}}disabled{{/if}}>
+                        {{> settings/dropdown_options_widget option_values=user_role_values}}
+                    </select>
+                </div>
+                <div class="custom-profile-field-form"></div>
+            </form>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="button rounded sea-green submit_human_change">{{t 'Save changes' }}</button>
+        <button type="button" class="button rounded" data-dismiss="modal">{{t "Cancel" }}</button>
+    </div>
+</div>

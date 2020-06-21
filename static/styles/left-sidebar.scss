@@ -9,12 +9,7 @@ $left_col_size: 19px;
 $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
 
 #left-sidebar {
-    #group-pm-list {
-        display: none;
-    }
-
-    #user-list,
-    #group-pm-list {
+    #user-list {
         padding-left: 10px;
     }
 }
@@ -50,6 +45,7 @@ $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
 #stream_filters,
 #global_filters {
     font-size: 14px;
+    margin-right: 12px;
 }
 
 li.show-more-topics {
@@ -59,7 +55,8 @@ li.show-more-topics {
 }
 
 #streams_inline_cog,
-#streams_filter_icon {
+#streams_filter_icon,
+#recent_topics_icon {
     float: right;
     opacity: 0.50;
     font-size: 13px;
@@ -82,9 +79,8 @@ li.show-more-topics {
 
 #stream_filters {
     overflow: visible;
-    /* The -1px here prevents the scrollbar from going above the top of the container */
-    margin-top: -1px;
     margin-bottom: 10px;
+    margin-right: 12px;
     padding: 0;
     font-weight: normal;
 
@@ -370,10 +366,11 @@ li.top_left_starred_messages {
         padding-right: 0.25em;
         display: inline-block;
         width: 13px;
+        vertical-align: middle;
     }
 
     /*
-        If you hover directly over the chevron itself,
+        If you hover directly over the ellipsis itself,
         show it in black.
     */
 
@@ -383,29 +380,35 @@ li.top_left_starred_messages {
 }
 
 /*
-    The All Messages and Stream chevrons are
+    The All Messages and Stream ellipsis-v(vertical 3 dots) are
     pretty similar.
 */
 .all-messages-sidebar-menu-icon,
 .starred-messages-sidebar-menu-icon,
 .stream-sidebar-menu-icon {
-    top: 3px;
-    font-size: 0.8em;
+    top: 1px;
+    right: 0px;
+    font-size: 1.0em;
+    text-align: center;
+    padding: 0px 6px 0px 6px;
 }
 
 /*
-    For topic chevrons we use a slightly smaller
+    For topic ellipsis-v(vertical 3 dots) we use a slightly smaller
     font to show they're "lower" in the hierarchy,
     which also affects it positioning.
 */
 .topic-sidebar-menu-icon {
-    top: 1px;
-    font-size: 0.7em;
+    top: 0px;
+    right: 0px;
+    font-size: 0.9em;
+    text-align: center;
+    padding: 1px 6px 0px 6px;
 }
 
 /*
     When you hover over list items, we hover
-    the relevant chevrons in light gray.
+    the relevant ellipsis-v(vertical 3 dots) in light gray.
 */
 li.top_left_all_messages:hover .all-messages-sidebar-menu-icon,
 li.top_left_starred_messages:hover .starred-messages-sidebar-menu-icon,

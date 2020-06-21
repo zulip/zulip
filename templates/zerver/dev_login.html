@@ -15,13 +15,23 @@ page can be easily identified in it's respective JavaScript file -->
         {% endif %}
         <p class="devlogin_subheader">(Or visit the <a href="/login/">normal login page</a>.)</p>
         <form name="direct_login_form" id="direct_login_form" method="post" class="login-form">
+            <input type="hidden" name="next" value="{{ next }}" />
             <div class="control-group">
                 <div class="controls">
                     <div class="group">
+                        <h2>{{_('Owners') }}</h2>
+                        {% if direct_owners %}
+                            {% for direct_owner in direct_owners %}
+                            <p><input type="submit" formaction="{{ direct_owner.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}"
+                                      name="direct_email" class="btn-direct btn-admin" value="{{ direct_owner.delivery_email }}" /></p>
+                            {% endfor %}
+                        {% else %}
+                            <p>No owners found in this realm</p>
+                        {% endif %}
                         <h2>{{ _('Administrators') }}</h2>
                         {% if direct_admins %}
                             {% for direct_admin in direct_admins %}
-                            <p><input type="submit" formaction="{{ direct_admin.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}?next={{ next }}"
+                            <p><input type="submit" formaction="{{ direct_admin.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}"
                                       name="direct_email" class="btn-direct btn-admin" value="{{ direct_admin.delivery_email }}" /></p>
                             {% endfor %}
                         {% else %}
@@ -30,7 +40,7 @@ page can be easily identified in it's respective JavaScript file -->
                         <h2>{{ _('Guest users') }}</h2>
                         {% if guest_users %}
                             {% for guest_user in guest_users %}
-                            <p><input type="submit" formaction="{{ guest_user.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}?next={{ next }}"
+                            <p><input type="submit" formaction="{{ guest_user.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}"
                                       name="direct_email" class="btn-direct btn-admin" value="{{ guest_user.delivery_email }}" /></p>
                             {% endfor %}
                         {% else %}
@@ -42,7 +52,7 @@ page can be easily identified in it's respective JavaScript file -->
                         <h2>{{ _('Normal users') }}</h2>
                         {% if direct_users %}
                             {% for direct_user in direct_users %}
-                            <p><input type="submit" formaction="{{ direct_user.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}?next={{ next }}"
+                            <p><input type="submit" formaction="{{ direct_user.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}"
                                       name="direct_email" class="btn-direct btn-admin" value="{{ direct_user.delivery_email }}" /></p>
                             {% endfor %}
                         {% else %}

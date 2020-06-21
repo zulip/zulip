@@ -1,31 +1,34 @@
 import datetime
-from email.utils import parseaddr
-import re
 
 from django.core import mail
 from django.utils.timezone import now
 
-from confirmation.models import Confirmation, generate_key, confirmation_url
-from zerver.lib.actions import do_start_email_change_process, do_set_realm_property
-from zerver.lib.test_classes import (
-    ZulipTestCase,
+from confirmation.models import Confirmation, confirmation_url, generate_key
+from zerver.lib.actions import do_set_realm_property, do_start_email_change_process
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.models import (
+    EmailChangeStatus,
+    Realm,
+    UserProfile,
+    get_realm,
+    get_user,
+    get_user_by_delivery_email,
+    get_user_profile_by_id,
 )
-from zerver.models import get_user_by_delivery_email, EmailChangeStatus, get_realm, \
-    Realm, UserProfile, get_user, get_user_profile_by_id
 
 
 class EmailChangeTestCase(ZulipTestCase):
     def test_confirm_email_change_with_non_existent_key(self) -> None:
         self.login('hamlet')
         key = generate_key()
-        url = confirmation_url(key, 'testserver', Confirmation.EMAIL_CHANGE)
+        url = confirmation_url(key, None, Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
         self.assert_in_success_response(["Whoops. We couldn't find your confirmation link in the system."], response)
 
     def test_confirm_email_change_with_invalid_key(self) -> None:
         self.login('hamlet')
         key = 'invalid_key'
-        url = confirmation_url(key, 'testserver', Confirmation.EMAIL_CHANGE)
+        url = confirmation_url(key, None, Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
         self.assert_in_success_response(["Whoops. The confirmation link is malformed."], response)
 
@@ -44,7 +47,7 @@ class EmailChangeTestCase(ZulipTestCase):
                                     date_sent=date_sent,
                                     confirmation_key=key,
                                     type=Confirmation.EMAIL_CHANGE)
-        url = confirmation_url(key, user_profile.realm.host, Confirmation.EMAIL_CHANGE)
+        url = confirmation_url(key, user_profile.realm, Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
         self.assert_in_success_response(["The confirmation link has expired or been deactivated."], response)
 
@@ -69,7 +72,7 @@ class EmailChangeTestCase(ZulipTestCase):
                                     date_sent=now(),
                                     confirmation_key=key,
                                     type=Confirmation.EMAIL_CHANGE)
-        url = confirmation_url(key, user_profile.realm.host, Confirmation.EMAIL_CHANGE)
+        url = confirmation_url(key, user_profile.realm, Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
 
         self.assertEqual(response.status_code, 200)
@@ -96,14 +99,14 @@ class EmailChangeTestCase(ZulipTestCase):
         email_message = mail.outbox[0]
         self.assertEqual(
             email_message.subject,
-            'Verify your new email address'
+            'Verify your new email address',
         )
         body = email_message.body
-        from_email = email_message.from_email
         self.assertIn('We received a request to change the email', body)
-        self.assertIn('Zulip Account Security', from_email)
-        tokenized_no_reply_email = parseaddr(email_message.from_email)[1]
-        self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
+        self.assertRegex(
+            email_message.from_email,
+            fr"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
+        )
 
         activation_url = [s for s in body.split('\n') if s][2]
         response = self.client_get(activation_url)
@@ -157,7 +160,7 @@ class EmailChangeTestCase(ZulipTestCase):
         email_message = mail.outbox[0]
         self.assertEqual(
             email_message.subject,
-            'Verify your new email address'
+            'Verify your new email address',
         )
         body = email_message.body
         self.assertIn('We received a request to change the email', body)
@@ -203,7 +206,7 @@ class EmailChangeTestCase(ZulipTestCase):
                                     date_sent=now(),
                                     confirmation_key=key,
                                     type=Confirmation.EMAIL_CHANGE)
-        url = confirmation_url(key, user_profile.realm.host, Confirmation.EMAIL_CHANGE)
+        url = confirmation_url(key, user_profile.realm, Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
 
         self.assertEqual(response.status_code, 200)
@@ -211,7 +214,7 @@ class EmailChangeTestCase(ZulipTestCase):
                                         response)
         user_profile = get_user_profile_by_id(user_profile.id)
         self.assertEqual(user_profile.delivery_email, new_email)
-        self.assertEqual(user_profile.email, "user{}@zulip.testserver".format(user_profile.id))
+        self.assertEqual(user_profile.email, f"user{user_profile.id}@zulip.testserver")
         obj.refresh_from_db()
         self.assertEqual(obj.status, 1)
         with self.assertRaises(UserProfile.DoesNotExist):

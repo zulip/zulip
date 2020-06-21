@@ -1,6 +1,7 @@
 <div class="subscription_settings" data-stream-id="{{sub.stream_id}}">
     <div class="inner-box">
         <div class="alert stream_change_property_info"></div>
+
         {{#with sub}}
         <div class="stream-header">
             {{> subscription_privacy
@@ -13,7 +14,6 @@
                 <span class="checkmark" data-finish-editing=".stream-name-editable">✓</span>
                 {{/if}}
             </div>
-            <div id="stream_change_property_status{{stream_id}}" class="alert-notification"></div>
             <div class="button-group">
                 {{#if is_admin}}
                 <button class="button small rounded btn-danger deactivate" type="button" name="delete_button" title="{{t 'Delete stream'}}"> <i class="fa fa-trash-o" aria-hidden="true"></i></button>
@@ -35,12 +35,20 @@
         <div class="subscription-type">
             <div class="subscription-type-text">
                 {{> subscription_type
-                  stream_post_policy_values=../stream_post_policy_values}}
+                  stream_post_policy_values=../stream_post_policy_values
+                  message_retention_text=../message_retention_text}}
             </div>
             <a class="change-stream-privacy" {{#unless can_change_stream_permissions}}style="display: none;"{{/unless}}>[{{t "Change" }}]</a>
         </div>
         {{/with}}
+
         <div class="regular_subscription_settings collapse {{#sub.subscribed}}in{{/sub.subscribed}}">
+            <div id="personal_settings_label_container">
+                <label class="sub_settings_title inline-block">
+                    {{t "Personal settings" }}
+                </label>
+                <div id="stream_change_property_status{{sub.stream_id}}" class="alert-notification"></div>
+            </div>
             <div class="subscription-config">
                 <ul class="grey-box">
                     {{#each settings}}
@@ -64,16 +72,14 @@
                     </li>
                 </ul>
             </div>
-            <div class="stream-email-box" {{#unless sub.email_address}}style="display: none;"{{/unless}}>
-                <label class="sub_settings_title">
-                    {{t "Email address" }}
-                    <a href="/help/message-a-stream-by-email" target="_blank">
-                        <i class="fa fa-question-circle-o" aria-hidden="true"></i>
-                    </a>
-                </label>
-                <div class="stream-email">
-                    <span class="email-address">{{sub.email_address}}</span>
-                </div>
+        </div>
+        <div class="stream-email-box" {{#unless sub.email_address}}style="display: none;"{{/unless}}>
+            <label class="sub_settings_title">
+                {{t "Email address" }}
+                {{> help_link_widget link="/help/message-a-stream-by-email" }}
+            </label>
+            <div class="stream-email">
+                <span class="email-address">{{sub.email_address}}</span>
             </div>
         </div>
         {{#with sub}}

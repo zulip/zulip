@@ -4,6 +4,7 @@ import os
 import sys
 import urllib
 from urllib.parse import urljoin
+
 from django.conf import settings
 from django.utils.http import is_safe_url
 from libthumbor import CryptoURL
@@ -11,10 +12,9 @@ from libthumbor import CryptoURL
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(ZULIP_PATH)
 
-from zthumbor.loaders.helpers import (
-    THUMBOR_S3_TYPE, THUMBOR_LOCAL_FILE_TYPE, THUMBOR_EXTERNAL_TYPE
-)
 from zerver.lib.camo import get_camo_url
+from zthumbor.loaders.helpers import THUMBOR_EXTERNAL_TYPE, THUMBOR_LOCAL_FILE_TYPE, THUMBOR_S3_TYPE
+
 
 def is_thumbor_enabled() -> bool:
     return settings.THUMBOR_URL != ''
@@ -46,7 +46,7 @@ def generate_thumbnail_url(path: str,
 
     source_type = get_source_type(path)
     safe_url = base64.urlsafe_b64encode(path.encode()).decode('utf-8')
-    image_url = '%s/source_type/%s' % (safe_url, source_type)
+    image_url = f'{safe_url}/source_type/{source_type}'
     width, height = map(int, size.split('x'))
     crypto = CryptoURL(key=settings.THUMBOR_KEY)
 
@@ -63,7 +63,7 @@ def generate_thumbnail_url(path: str,
         height=height,
         smart=smart_crop_enabled,
         filters=apply_filters,
-        image_url=image_url
+        image_url=image_url,
     )
 
     if settings.THUMBOR_URL == 'http://127.0.0.1:9995':

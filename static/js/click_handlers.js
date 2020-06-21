@@ -4,6 +4,13 @@ const util = require("./util");
 const render_buddy_list_tooltip = require('../templates/buddy_list_tooltip.hbs');
 const render_buddy_list_tooltip_content = require('../templates/buddy_list_tooltip_content.hbs');
 
+function convert_enter_to_click(e) {
+    const key = e.which;
+    if (key === 13) {  // enter
+        $(e.currentTarget).click();
+    }
+}
+
 exports.initialize = function () {
 
     // MESSAGE CLICKING
@@ -11,7 +18,7 @@ exports.initialize = function () {
     function is_clickable_message_element(target) {
         return target.is("a") || target.is("img.message_inline_image") || target.is("img.twitter-avatar") ||
             target.is("div.message_length_controller") || target.is("textarea") || target.is("input") ||
-            target.is("i.edit_content_button") ||
+            target.is("i.edit_content_button") || target.is(".spoiler-arrow") ||
             target.is(".highlight") && target.parent().is("a");
     }
 
@@ -164,7 +171,7 @@ exports.initialize = function () {
         const message_history_cancel_btn = $('#message-history-cancel');
 
         if (page_params.realm_allow_edit_history) {
-            message_edit.show_history(message);
+            message_edit_history.show_history(message);
             message_history_cancel_btn.focus();
         }
         e.stopPropagation();
@@ -346,6 +353,46 @@ exports.initialize = function () {
         muting_ui.mute(stream_id, topic);
     });
 
+    $('body').on('keydown', '.on_hover_topic_mute', convert_enter_to_click);
+
+    $('body').on('click', '.on_hover_topic_unmute', function (e) {
+        e.stopPropagation();
+        const stream_id = parseInt($(e.currentTarget).attr('data-stream-id'), 10);
+        const topic = $(e.currentTarget).attr('data-topic-name');
+        muting_ui.unmute(stream_id, topic);
+    });
+
+    $('body').on('keydown', '.on_hover_topic_unmute', convert_enter_to_click);
+
+    // RECENT TOPICS
+
+    $('body').on('click', '.on_hover_topic_read', function (e) {
+        e.stopPropagation();
+        const stream_id = parseInt($(e.currentTarget).attr('data-stream-id'), 10);
+        const topic = $(e.currentTarget).attr('data-topic-name');
+        unread_ops.mark_topic_as_read(stream_id, topic);
+    });
+
+    $('body').on('keydown', '.on_hover_topic_read', convert_enter_to_click);
+
+    $('body').on('click', '.btn-recent-filters', function (e) {
+        e.stopPropagation();
+        recent_topics.set_filter(e.currentTarget.dataset.filter);
+        recent_topics.update_filters_view();
+    });
+
+    // Search for all table rows (this combines stream & topic names)
+    $('body').on('keyup', '#recent_topics_search', _.debounce(function () {
+        recent_topics.update_filters_view();
+    // Wait for user to go idle before initiating search.
+    }, 300));
+
+    $('body').on('click', '#recent_topics_search_clear', function (e) {
+        e.stopPropagation();
+        $('#recent_topics_search').val("");
+        recent_topics.update_filters_view();
+    });
+
     // RECIPIENT BARS
 
     function get_row_id_for_narrowing(narrow_link_elem) {
@@ -413,16 +460,6 @@ exports.initialize = function () {
         $(".tooltip").remove();
     });
 
-    $('#group-pms').expectOne().on('click', '.selectable_sidebar_block', function (e) {
-        const user_ids_string = $(e.target).parents('li').attr('data-user-ids');
-        const emails = people.user_ids_string_to_emails_string(user_ids_string);
-        narrow.by('pm-with', emails, {trigger: 'sidebar'});
-        e.preventDefault();
-        e.stopPropagation();
-        popovers.hide_all();
-        $(".tooltip").remove();
-    });
-
     function do_render_buddy_list_tooltip(elem, title_data) {
         elem.tooltip({
             template: render_buddy_list_tooltip(),
@@ -454,7 +491,7 @@ exports.initialize = function () {
     });
 
     // PM LIST TOOLTIPS
-    $("body").on('mouseenter', '#pm_user_status, #group_pms_right_sidebar', function (e) {
+    $("body").on('mouseenter', '#pm_user_status', function (e) {
         $(".tooltip").remove();
         e.stopPropagation();
         const elem = $(e.currentTarget);
@@ -466,7 +503,7 @@ exports.initialize = function () {
         do_render_buddy_list_tooltip(elem, title_data);
     });
 
-    $("body").on('mouseleave', '#pm_user_status, #group_pms_right_sidebar', function (e) {
+    $("body").on('mouseleave', '#pm_user_status', function (e) {
         e.stopPropagation();
         $(e.currentTarget).tooltip('destroy');
     });
@@ -496,7 +533,7 @@ exports.initialize = function () {
     // MISC
 
     (function () {
-        const sel = ["#group-pm-list", "#stream_filters", "#global_filters", "#user_presences"].join(", ");
+        const sel = ["#stream_filters", "#global_filters", "#user_presences"].join(", ");
 
         $(sel).on("click", "a", function () {
             this.blur();
@@ -610,6 +647,11 @@ exports.initialize = function () {
 
     $("#compose_close").click(function () {
         compose_actions.cancel();
+    });
+
+    $("#recent_topics_icon").click(function (e) {
+        e.stopPropagation();
+        hashchange.go_to_location('recent_topics');
     });
 
     $("#streams_inline_cog").click(function (e) {

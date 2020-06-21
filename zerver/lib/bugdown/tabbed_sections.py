@@ -1,9 +1,9 @@
 import re
+from typing import Any, Dict, List, Optional
 
+import markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
-from typing import Any, Dict, Optional, List
-import markdown
 
 START_TABBED_SECTION_REGEX = re.compile(r'^\{start_tabs\}$')
 END_TABBED_SECTION_REGEX = re.compile(r'^\{end_tabs\}$')
@@ -65,9 +65,9 @@ TAB_DISPLAY_NAMES = {
     'allow-anyone-to-join': 'Allow anyone to join',
     'restrict-by-email-domain': 'Restrict by email domain',
 
-    'google-hangouts': 'Google Hangouts',
     'zoom': 'Zoom (experimental)',
-    'jitsi-on-premise': 'Jitsi on-premise',
+    'jitsi-meet': 'Jitsi Meet',
+    'disable': 'Disabled',
 
     'chrome': 'Chrome',
     'firefox': 'Firefox',
@@ -124,7 +124,7 @@ class TabbedSectionsPreprocessor(Preprocessor):
                 # Wrapping the content in two newlines is necessary here.
                 # If we don't do this, the inner Markdown does not get
                 # rendered properly.
-                content='\n{}\n'.format(content))
+                content=f'\n{content}\n')
             tab_content_blocks.append(tab_content_block)
         return '\n'.join(tab_content_blocks)
 

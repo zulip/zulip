@@ -1,10 +1,10 @@
-import os
 import hashlib
 import json
+import os
 import shutil
+from typing import List, Optional
 
-from typing import Optional, List
-from scripts.lib.zulip_tools import subprocess_text_output, run
+from scripts.lib.zulip_tools import run, subprocess_text_output
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ZULIP_SRV_PATH = "/srv"
@@ -23,7 +23,7 @@ def get_yarn_args(production: bool) -> List[str]:
     return yarn_args
 
 def generate_sha1sum_node_modules(
-    setup_dir: Optional[str] = None, production: bool = DEFAULT_PRODUCTION
+    setup_dir: Optional[str] = None, production: bool = DEFAULT_PRODUCTION,
 ) -> str:
     if setup_dir is None:
         setup_dir = os.path.realpath(os.getcwd())
@@ -59,7 +59,7 @@ def setup_node_modules(
                         yarn_args,
                         success_stamp)
 
-    print("Using cached node modules from %s" % (cached_node_modules,))
+    print("Using cached node modules from {}".format(cached_node_modules))
     if os.path.islink('node_modules'):
         os.remove('node_modules')
     elif os.path.isdir('node_modules'):
@@ -69,7 +69,7 @@ def setup_node_modules(
 def do_yarn_install(
     target_path: str,
     yarn_args: List[str],
-    success_stamp: str
+    success_stamp: str,
 ) -> None:
     os.makedirs(target_path, exist_ok=True)
     shutil.copy('package.json', target_path)

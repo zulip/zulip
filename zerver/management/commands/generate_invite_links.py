@@ -4,9 +4,9 @@ from typing import Any
 from django.core.management.base import CommandError
 
 from confirmation.models import Confirmation, create_confirmation_link
+from zerver.lib.email_validation import email_allowed_for_realm
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import DomainNotAllowedForRealmError, PreregistrationUser
-from zerver.lib.email_validation import email_allowed_for_realm
 
 
 class Command(ZulipBaseCommand):
@@ -54,5 +54,5 @@ class Command(ZulipBaseCommand):
 
             prereg_user = PreregistrationUser(email=email, realm=realm)
             prereg_user.save()
-            print(email + ": " + create_confirmation_link(prereg_user, realm.host,
+            print(email + ": " + create_confirmation_link(prereg_user,
                                                           Confirmation.INVITATION))

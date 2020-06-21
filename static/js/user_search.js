@@ -47,6 +47,7 @@ const user_search = function (opts) {
 
     self.hide_widget = function () {
         $widget.addClass('notdisplayed');
+        resize.resize_sidebars();
     };
 
     self.show_widget = function () {
@@ -54,6 +55,7 @@ const user_search = function (opts) {
         // when the user wants to search.
         popovers.hide_all_except_sidebars();
         $widget.removeClass('notdisplayed');
+        resize.resize_sidebars();
     };
 
     self.widget_shown = function () {

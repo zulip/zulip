@@ -3,15 +3,6 @@
 class zulip::postgres_appdb_tuned {
   include zulip::postgres_appdb_base
 
-  $postgres_conf = $::osfamily ? {
-    'debian' => "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf",
-    'redhat' => "/var/lib/pgsql/${zulip::base::postgres_version}/data/postgresql.conf",
-  }
-  $postgres_restart = $::osfamily ? {
-    'debian' => "pg_ctlcluster ${zulip::base::postgres_version} main restart",
-    'redhat' => "systemctl restart postgresql-${zulip::base::postgres_version}",
-  }
-
   $work_mem = $zulip::base::total_memory_mb / 512
   $shared_buffers = $zulip::base::total_memory_mb / 8
   $effective_cache_size = $zulip::base::total_memory_mb * 10 / 32
@@ -26,10 +17,14 @@ class zulip::postgres_appdb_tuned {
   $ssl_key_file = zulipconf('postgresql', 'ssl_key_file', undef)
   $ssl_ca_file = zulipconf('postgresql', 'ssl_ca_file', undef)
 
-  # Only used in CentOS for now
-  $pg_datadir = "/var/lib/pgsql/${zulip::base::postgres_version}/data"
+  file { $zulip::postgres_appdb_base::postgres_confdirs:
+    ensure => directory,
+    owner  => 'postgres',
+    group  => 'postgres',
+  }
 
-  file { $postgres_conf:
+  $postgres_conf_file = "${zulip::postgres_appdb_base::postgres_confdir}/postgresql.conf"
+  file { $postgres_conf_file:
     ensure  => file,
     require => Package[$zulip::postgres_appdb_base::postgresql],
     owner   => 'postgres',
@@ -38,9 +33,9 @@ class zulip::postgres_appdb_tuned {
     content => template("zulip/postgresql/${zulip::base::postgres_version}/postgresql.conf.template.erb"),
   }
 
-  exec { $postgres_restart:
+  exec { $zulip::postgres_appdb_base::postgres_restart:
     require     => Package[$zulip::postgres_appdb_base::postgresql],
     refreshonly => true,
-    subscribe   => [ File[$postgres_conf] ]
+    subscribe   => [ File[$postgres_conf_file] ]
   }
 }

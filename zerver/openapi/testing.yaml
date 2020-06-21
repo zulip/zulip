@@ -1,0 +1,136 @@
+test1:
+  responses:
+    '200':
+       content:
+         application/json:
+           schema:
+             properties:
+               top_array:
+                 type: array
+                 items:
+                   oneOf:
+                   - type: object
+                     properties:
+                       obj:
+                         oneOf:
+                         - type: array
+                           items:
+                             type: string
+                         - type: object
+                           properties:
+                             str3:
+                               type: string
+                   - type: array
+                     items:
+                       type: object
+                       properties:
+                           str1:
+                             type: string
+                           str2:
+                             type: string
+           example:
+             {
+                 "top_array": [
+                     {
+                         "obj": {
+                             "str3": "test"
+                         }
+                     },
+                     [
+                         {
+                             "str1": "success",
+                             "str2": "success"
+                         }
+                     ]
+                 ]
+             }
+test2:
+  responses:
+    '200':
+       content:
+         application/json:
+           schema:
+             properties:
+               top_array:
+                 type: array
+                 items:
+                   oneOf:
+                   - type: object
+                     properties:
+                       obj:
+                         oneOf:
+                         - type: array
+                           items:
+                             type: string
+                         - type: object
+                           properties:
+                             str3:
+                               type: string
+                   - type: array
+                     items:
+                       type: object
+                       properties:
+                           str1:
+                             type: string
+                           str2:
+                             type: string
+           example:
+             {
+                 "top_array": [
+                     {
+                         "obj": {
+                             "str3": "test",
+                             "str4": "extraneous"
+                         }
+                     },
+                     [
+                         {
+                             "str1": "success",
+                             "str2": "success"
+                         }
+                     ]
+                 ]
+             }
+test3:
+  responses:
+    '200':
+       content:
+         application/json:
+           schema:
+             properties:
+               top_array:
+                 type: array
+                 items:
+                   oneOf:
+                   - type: object
+                     properties:
+                       obj:
+                         oneOf:
+                         - type: array
+                           items:
+                             type: string
+                         - type: object
+                   - type: array
+                     items:
+                       type: object
+                       properties:
+                           str1:
+                             type: string
+                           str2:
+                             type: string
+           example:
+             {
+                 "top_array": [
+                     {
+                         "obj": {
+                             "str3": "test"
+                         }
+                     },
+                     [
+                         {
+                             "str1": "success",
+                             "str2": "success"
+                         }
+                     ]
+                 ]
+             }

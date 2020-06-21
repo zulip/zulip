@@ -1,20 +1,14 @@
 import ujson
-
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.decorator import (
-    has_request_variables,
-    REQ,
-)
+from zerver.decorator import REQ, has_request_variables
 from zerver.lib.actions import do_add_submessage
 from zerver.lib.message import access_message
+from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_int
-from zerver.lib.response import (
-    json_error,
-    json_success
-)
 from zerver.models import UserProfile
+
 
 @has_request_variables
 def process_submessage(request: HttpRequest,

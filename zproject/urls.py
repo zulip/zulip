@@ -1,49 +1,51 @@
-from django.conf import settings
-from django.conf.urls import url, include
-from django.conf.urls.i18n import i18n_patterns
-from django.views.generic import TemplateView, RedirectView
-from django.utils.module_loading import import_string
 import os
+
+from django.conf import settings
+from django.conf.urls import include, url
+from django.conf.urls.i18n import i18n_patterns
+from django.contrib.auth.views import (
+    LoginView,
+    PasswordResetCompleteView,
+    PasswordResetConfirmView,
+    PasswordResetDoneView,
+)
+from django.utils.module_loading import import_string
+from django.views.generic import RedirectView, TemplateView
+
 import zerver.forms
-from zproject import dev_urls
-from zproject.legacy_urls import legacy_urls
-from zerver.views.documentation import IntegrationView, MarkdownDirectoryView
-from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
-
-
-from django.contrib.auth.views import (LoginView, PasswordResetDoneView,
-                                       PasswordResetConfirmView, PasswordResetCompleteView)
-
 import zerver.tornado.views
 import zerver.views
-import zerver.views.auth
 import zerver.views.archive
+import zerver.views.auth
 import zerver.views.camo
 import zerver.views.compatibility
-import zerver.views.home
-import zerver.views.email_mirror
-import zerver.views.registration
-import zerver.views.portico
-import zerver.views.zephyr
-import zerver.views.users
-import zerver.views.unsubscribe
+import zerver.views.digest
 import zerver.views.documentation
+import zerver.views.email_mirror
+import zerver.views.home
+import zerver.views.messages
+import zerver.views.muting
+import zerver.views.portico
+import zerver.views.realm
+import zerver.views.realm_export
+import zerver.views.registration
+import zerver.views.streams
+import zerver.views.unsubscribe
+import zerver.views.upload
 import zerver.views.user_groups
 import zerver.views.user_settings
-import zerver.views.muting
-import zerver.views.streams
-import zerver.views.realm
-import zerver.views.digest
-import zerver.views.messages
-from zerver.context_processors import latest_info_context
-import zerver.views.realm_export
-import zerver.views.upload
-
+import zerver.views.users
+import zerver.views.video_calls
+import zerver.views.zephyr
+from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.lib.rest import rest_dispatch
+from zerver.views.documentation import IntegrationView, MarkdownDirectoryView
+from zproject import dev_urls
+from zproject.legacy_urls import legacy_urls
 
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
-    from two_factor.urls import urlpatterns as tf_urls
     from two_factor.gateways.twilio.urls import urlpatterns as tf_twilio_urls
+    from two_factor.urls import urlpatterns as tf_urls
 
 # NB: There are several other pieces of code which route requests by URL:
 #
@@ -149,6 +151,8 @@ v1_api_and_json_patterns = [
         {'GET': 'zerver.views.users.get_members_backend',
          'PATCH': 'zerver.views.users.update_user_backend',
          'DELETE': 'zerver.views.users.deactivate_user_backend'}),
+    url(r'^users/(?P<user_id>[0-9]+)/subscriptions/(?P<stream_id>[0-9]+)$', rest_dispatch,
+        {'GET': 'zerver.views.users.get_subscription_backend'}),
     url(r'^bots$', rest_dispatch,
         {'GET': 'zerver.views.users.get_bots_backend',
          'POST': 'zerver.views.users.add_bot_backend'}),
@@ -396,8 +400,8 @@ v1_api_and_json_patterns = [
         {'POST': ('zerver.views.report.report_unnarrow_times', {'intentionally_undocumented'})}),
 
     # Used to generate a Zoom video call URL
-    url(r'^calls/create$', rest_dispatch,
-        {'GET': 'zerver.views.video_calls.get_zoom_url'}),
+    url(r'^calls/zoom/create$', rest_dispatch,
+        {'POST': 'zerver.views.video_calls.make_zoom_video_call'}),
 
     # export/realm -> zerver.views.realm_export
     url(r'^export/realm$', rest_dispatch,
@@ -427,6 +431,7 @@ i18n_urls = [
     url(r'^accounts/login/(google)/$', zerver.views.auth.start_social_login,
         name='login-social'),
 
+    url(r'^accounts/login/start/sso/$', zerver.views.auth.start_remote_user_sso, name='start-login-sso'),
     url(r'^accounts/login/sso/$', zerver.views.auth.remote_user_sso, name='login-sso'),
     url(r'^accounts/login/jwt/$', zerver.views.auth.remote_user_jwt, name='login-jwt'),
     url(r'^accounts/login/social/([\w,-]+)$', zerver.views.auth.start_social_login,
@@ -541,6 +546,11 @@ i18n_urls = [
         zerver.views.registration.accounts_home_from_multiuse_invite,
         name='zerver.views.registration.accounts_home_from_multiuse_invite'),
 
+    # Used to generate a Zoom video call URL
+    url(r'^calls/zoom/register$', zerver.views.video_calls.register_zoom_user),
+    url(r'^calls/zoom/complete$', zerver.views.video_calls.complete_zoom_user),
+    url(r'^calls/zoom/deauthorize$', zerver.views.video_calls.deauthorize_zoom_user),
+
     # API and integrations documentation
     url(r'^integrations/doc-html/(?P<integration_name>[^/]*)$',
         zerver.views.documentation.integration_doc,
@@ -548,30 +558,31 @@ i18n_urls = [
     url(r'^integrations/(.*)$', IntegrationView.as_view()),
 
     # Landing page, features pages, signup form, etc.
-    url(r'^hello/$', TemplateView.as_view(template_name='zerver/hello.html',
-                                          get_context_data=latest_info_context),
-        name='landing-page'),
+    url(r'^hello/$', zerver.views.portico.hello_view, name='landing-page'),
     url(r'^new-user/$', RedirectView.as_view(url='/hello', permanent=True)),
-    url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
+    url(r'^features/$', zerver.views.portico.landing_view, {'template_name': 'zerver/features.html'}),
     url(r'^plans/$', zerver.views.portico.plans_view, name='plans'),
     url(r'^apps/(.*)$', zerver.views.portico.apps_view, name='zerver.views.home.apps_view'),
     url(r'^team/$', zerver.views.portico.team_view),
-    url(r'^history/$', TemplateView.as_view(template_name='zerver/history.html')),
-    url(r'^why-zulip/$', TemplateView.as_view(template_name='zerver/why-zulip.html')),
-    url(r'^for/open-source/$', TemplateView.as_view(template_name='zerver/for-open-source.html')),
-    url(r'^for/companies/$', TemplateView.as_view(template_name='zerver/for-companies.html')),
-    url(r'^for/working-groups-and-communities/$',
-        TemplateView.as_view(template_name='zerver/for-working-groups-and-communities.html')),
-    url(r'^for/mystery-hunt/$', TemplateView.as_view(template_name='zerver/for-mystery-hunt.html')),
-    url(r'^security/$', TemplateView.as_view(template_name='zerver/security.html')),
-    url(r'^atlassian/$', TemplateView.as_view(template_name='zerver/atlassian.html')),
+    url(r'^history/$', zerver.views.portico.landing_view, {'template_name': 'zerver/history.html'}),
+    url(r'^why-zulip/$', zerver.views.portico.landing_view, {'template_name': 'zerver/why-zulip.html'}),
+    url(r'^for/open-source/$', zerver.views.portico.landing_view,
+        {'template_name': 'zerver/for-open-source.html'}),
+    url(r'^for/research/$', zerver.views.portico.landing_view,
+        {'template_name': 'zerver/for-research.html'}),
+    url(r'^for/companies/$', zerver.views.portico.landing_view,
+        {'template_name': 'zerver/for-companies.html'}),
+    url(r'^for/working-groups-and-communities/$', zerver.views.portico.landing_view,
+        {'template_name': 'zerver/for-working-groups-and-communities.html'}),
+    url(r'^security/$', zerver.views.portico.landing_view, {'template_name': 'zerver/security.html'}),
+    url(r'^atlassian/$', zerver.views.portico.landing_view, {'template_name': 'zerver/atlassian.html'}),
 
     # Terms of Service and privacy pages.
     url(r'^terms/$', zerver.views.portico.terms_view, name='terms'),
     url(r'^privacy/$', zerver.views.portico.privacy_view, name='privacy'),
     url(r'^config-error/(?P<error_category_name>[\w,-]+)$', zerver.views.auth.config_error_view,
         name='config_error'),
-    url(r'^config-error/remoteuser/(?P<error_category_name>[\w,-]+)$', zerver.views.auth.config_error_view)
+    url(r'^config-error/remoteuser/(?P<error_category_name>[\w,-]+)$', zerver.views.auth.config_error_view),
 
 ]
 
@@ -618,16 +629,20 @@ urls += [
 
 # This url serves as a way to receive CSP violation reports from the users.
 # We use this endpoint to just log these reports.
-urls += url(r'^report/csp_violations$', zerver.views.report.report_csp_violations,
-            name='zerver.views.report.report_csp_violations'),
+urls += [
+    url(r'^report/csp_violations$', zerver.views.report.report_csp_violations,
+        name='zerver.views.report.report_csp_violations'),
+]
 
 # This url serves as a way to provide backward compatibility to messages
 # rendered at the time Zulip used camo for doing http -> https conversion for
 # such links with images previews. Now thumbor can be used for serving such
 # images.
-urls += url(r'^external_content/(?P<digest>[\S]+)/(?P<received_url>[\S]+)$',
-            zerver.views.camo.handle_camo_url,
-            name='zerver.views.camo.handle_camo_url'),
+urls += [
+    url(r'^external_content/(?P<digest>[\S]+)/(?P<received_url>[\S]+)$',
+        zerver.views.camo.handle_camo_url,
+        name='zerver.views.camo.handle_camo_url'),
+]
 
 # Incoming webhook URLs
 # We don't create urls for particular git integrations here
@@ -645,7 +660,7 @@ urls += [
 # Mobile-specific authentication URLs
 urls += [
     # Used as a global check by all mobile clients, which currently send
-    # requests to https://zulipchat.com/compatibility almost immediately after
+    # requests to https://zulip.com/compatibility almost immediately after
     # starting up.
     url(r'^compatibility$', zerver.views.compatibility.check_global_compatibility),
 ]
@@ -689,8 +704,8 @@ urls += [
 for app_name in settings.EXTRA_INSTALLED_APPS:
     app_dir = os.path.join(settings.DEPLOY_ROOT, app_name)
     if os.path.exists(os.path.join(app_dir, 'urls.py')):
-        urls += [url(r'^', include('%s.urls' % (app_name,)))]
-        i18n_urls += import_string("{}.urls.i18n_urlpatterns".format(app_name))
+        urls += [url(r'^', include(f'{app_name}.urls'))]
+        i18n_urls += import_string(f"{app_name}.urls.i18n_urlpatterns")
 
 # Tornado views
 urls += [

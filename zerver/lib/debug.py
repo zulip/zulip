@@ -8,10 +8,10 @@ import threading
 import traceback
 import tracemalloc
 from types import FrameType
+from typing import Optional
 
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
-from typing import Optional
 
 logger = logging.getLogger('zulip.debug')
 
@@ -52,7 +52,7 @@ def tracemalloc_dump() -> None:
     gc.collect()
     tracemalloc.take_snapshot().dump(path)
 
-    with open('/proc/{}/stat'.format(os.getpid()), 'rb') as f:
+    with open(f'/proc/{os.getpid()}/stat', 'rb') as f:
         procstat = f.read().split()
     rss_pages = int(procstat[23])
     logger.info("tracemalloc dump: tracing %s MiB (%s MiB peak), using %s MiB; rss %s MiB; dumped %s",
@@ -79,7 +79,7 @@ def tracemalloc_listen() -> None:
     listener_pid = os.getpid()
 
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-    path = "/tmp/tracemalloc.{}".format(os.getpid())
+    path = f"/tmp/tracemalloc.{os.getpid()}"
     sock.bind(path)
     thread = threading.Thread(target=lambda: tracemalloc_listen_sock(sock),
                               daemon=True)

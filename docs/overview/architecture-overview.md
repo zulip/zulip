@@ -7,7 +7,7 @@ Key Codebases
 The main Zulip codebase is at <https://github.com/zulip/zulip>.  It
 contains the Zulip backend (written in Python 3.x and Django), the
 webapp (written in JavaScript and TypeScript) and our library of
-incoming webhook [integrations](https://zulipchat.com/integrations)
+incoming webhook [integrations](https://zulip.com/integrations)
 with other services and applications (see [the directory structure
 guide](../overview/directory-structure.md)).
 
@@ -15,8 +15,9 @@ guide](../overview/directory-structure.md)).
 mobile Zulip client supporting both iOS and Android, written in
 JavaScript with React Native, and [Zulip
 Desktop](https://github.com/zulip/zulip-desktop) is the official Zulip
-desktop client for macOS, Linux, and Windows.  We also have an alpha
-[Zulip Terminal](https://github.com/zulip/zulip-terminal) project.
+desktop client for macOS, Linux, and Windows.
+[Zulip Terminal](https://github.com/zulip/zulip-terminal) is our
+official terminal-based client.
 
 We also maintain several separate repositories for integrations and
 other glue code: [Python API
@@ -43,22 +44,22 @@ Zulip is a real-time team chat application meant to provide a great
 experience for a wide range of organizations, from companies to
 volunteer projects to groups of friends, ranging in size from a small
 team to 10,000s of users.  It has [hundreds of
-features](https://zulipchat.com/features) both larger and small, and
+features](https://zulip.com/features) both larger and small, and
 supports dedicated apps for iOS, Android, Linux, Windows, and macOS,
 all modern web browsers, several cross-protocol chat clients, and
-numerous dedicated [Zulip API](https://zulipchat.com/api) clients
+numerous dedicated [Zulip API](https://zulip.com/api) clients
 (e.g. bots).
 
 A server can host multiple Zulip *realms* (organizations), each on its
-own (sub)domain.  While most deployments host only one organization, some
-such as zulipchat.com host thousands.  Each organization is a private
+own (sub)domain.  While most installations host only one organization, some
+such as zulip.com host thousands.  Each organization is a private
 chamber with its own users, streams, customizations, and so on. This
 means that one person might be a user of multiple Zulip realms. The
 administrators of an organization have a great deal of control over
 who can register an account, what permissions new users have, etc. For
 more on security considerations and options, see [the security model
 section](../production/security-model.md) and the [Zulip Help
-Center](https://zulipchat.com/help).
+Center](https://zulip.com/help).
 
 Components
 ----------
@@ -151,6 +152,9 @@ from outside.
   user-uploaded content like avatars, custom emoji, and uploaded
   files.  However, one can configure Zulip to store these in a cloud
   storage service like Amazon S3 instead.
+
+Note that we do not use `nginx` in the development environment, opting
+for a simple Tornado-based proxy instead.
 
 ### Supervisor
 
@@ -278,10 +282,23 @@ in Zulip development conversations.  In general, our goal is to
 minimize the set of terminology listed here by giving elements
 self-explanatory names.
 
+* **bankruptcy**: When a user has been off Zulip for several days and
+    has hundreds of unread messages, they are prompted for whether
+    they want to mark all their unread messages as read.  This is
+    called "declaring bankruptcy" (in reference to the concept in
+    finance).
+
 * **chevron**: A small downward-facing arrow next to a message's
     timestamp, offering contextual options, e.g., "Reply", "Mute [this
     topic]", or "Link to this conversation". To avoid visual clutter,
     the chevron only appears in the web UI upon hover.
+
+* **ellipsis**: A small vertical three dot icon(technically called
+    as ellipsis-v), present in sidebars as a menu icon.
+    It offers contextual options for Global Filters(All messages
+    and Starred messages), Stream Filters and Topics in left
+    sidebar and User in right sidebar. To avoid visual clutter
+    ellipsis only appears in the web UI upon hover.
 
 * **huddle**: What the codebase calls a "group private message".
 
@@ -311,9 +328,3 @@ self-explanatory names.
     whether a message has been starred, or by whom.
 
 * **subject**: What the codebase calls a "topic" in many places.
-
-* **bankruptcy**: When a user has been off Zulip for several days and
-    has hundreds of unread messages, they are prompted for whether
-    they want to mark all their unread messages as read.  This is
-    called "declaring bankruptcy" (in reference to the concept in
-    finance).

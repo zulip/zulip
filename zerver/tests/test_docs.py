@@ -1,12 +1,12 @@
 import os
-import ujson
-import mock
+from typing import Any, Dict, Sequence
+from unittest import mock
 from urllib.parse import urlsplit
 
+import ujson
 from django.conf import settings
-from django.test import TestCase, override_settings
 from django.http import HttpResponse
-from typing import Any, Dict, List
+from django.test import TestCase, override_settings
 
 from zerver.lib.integrations import INTEGRATIONS
 from zerver.lib.test_classes import ZulipTestCase
@@ -14,9 +14,8 @@ from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.test_runner import slow
 from zerver.lib.utils import split_by
 from zerver.models import Realm, get_realm
-from zerver.views.documentation import (
-    add_api_uri_context,
-)
+from zerver.views.documentation import add_api_uri_context
+
 
 class DocPageTest(ZulipTestCase):
     def get_doc(self, url: str, subdomain: str) -> HttpResponse:
@@ -35,8 +34,8 @@ class DocPageTest(ZulipTestCase):
             print("ERROR: {}".format(content.get('msg')))
             print()
 
-    def _test(self, url: str, expected_content: str, extra_strings: List[str]=[],
-              landing_missing_strings: List[str]=[], landing_page: bool=True,
+    def _test(self, url: str, expected_content: str, extra_strings: Sequence[str]=[],
+              landing_missing_strings: Sequence[str]=[], landing_page: bool=True,
               doc_html_str: bool=False) -> None:
 
         # Test the URL on the "zephyr" subdomain
@@ -103,7 +102,7 @@ class DocPageTest(ZulipTestCase):
         files = list(filter(_filter_func, files))
 
         for f in files:
-            endpoint = '/api/{}'.format(os.path.splitext(f)[0])
+            endpoint = f'/api/{os.path.splitext(f)[0]}'
             self._test(endpoint, '', doc_html_str=True)
 
     @slow("Tests dozens of endpoints, including generating lots of emails")
@@ -113,18 +112,18 @@ class DocPageTest(ZulipTestCase):
         self._test('/api/installation-instructions', 'No download required!')
         self._test('/api/send-message', 'steal away your hearts')
         self._test('/api/render-message', '**foo**')
-        self._test('/api/get-all-streams', 'include_public')
+        self._test('/api/get-streams', 'include_public')
         self._test('/api/get-stream-id', 'The name of the stream to access.')
-        self._test('/api/get-subscribed-streams', 'Get all streams that the user is subscribed to.')
-        self._test('/api/get-all-users', 'client_gravatar')
+        self._test('/api/get-subscriptions', 'Get all streams that the user is subscribed to.')
+        self._test('/api/get-users', 'client_gravatar')
         self._test('/api/register-queue', 'apply_markdown')
-        self._test('/api/get-events-from-queue', 'dont_block')
+        self._test('/api/get-events', 'dont_block')
         self._test('/api/delete-queue', 'Delete a previously registered queue')
         self._test('/api/update-message', 'propagate_mode')
-        self._test('/api/get-profile', 'takes no arguments')
-        self._test('/api/add-subscriptions', 'authorization_errors_fatal')
+        self._test('/api/get-own-user', 'takes no parameters')
+        self._test('/api/subscribe', 'authorization_errors_fatal')
         self._test('/api/create-user', 'zuliprc-admin')
-        self._test('/api/remove-subscriptions', 'not_removed')
+        self._test('/api/unsubscribe', 'not_removed')
         self._test('/team/', 'industry veterans')
         self._test('/history/', 'Cambridge, Massachusetts')
         # Test the i18n version of one of these pages.
@@ -134,9 +133,9 @@ class DocPageTest(ZulipTestCase):
         self._test('/hello/', 'Chat for distributed teams', landing_missing_strings=["Login"])
         self._test('/why-zulip/', 'Why Zulip?')
         self._test('/for/open-source/', 'for open source projects')
+        self._test('/for/research/', 'for researchers')
         self._test('/for/companies/', 'in a company')
         self._test('/for/working-groups-and-communities/', 'standards bodies')
-        self._test('/for/mystery-hunt/', 'four SIPB alums')
         self._test('/security/', 'TLS encryption')
         self._test('/atlassian/', 'HipChat')
         self._test('/devlogin/', 'Normal users', landing_page=False)
@@ -176,11 +175,11 @@ class DocPageTest(ZulipTestCase):
                        'And hundreds more through',
                        'Hubot',
                        'Zapier',
-                       'IFTTT'
+                       'IFTTT',
                    ])
 
         for integration in INTEGRATIONS.keys():
-            url = '/integrations/doc-html/{}'.format(integration)
+            url = f'/integrations/doc-html/{integration}'
             self._test(url, '', doc_html_str=True)
 
     def test_integration_pages_open_graph_metadata(self) -> None:
@@ -208,13 +207,13 @@ class DocPageTest(ZulipTestCase):
         # We don't need to test all the pages for 404
         for integration in list(INTEGRATIONS.keys())[5]:
             with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-                url = '/en/integrations/doc-html/{}'.format(integration)
+                url = f'/en/integrations/doc-html/{integration}'
                 result = self.client_get(url, subdomain="", follow=True)
                 self.assertEqual(result.status_code, 404)
                 result = self.client_get(url, subdomain="zephyr", follow=True)
                 self.assertEqual(result.status_code, 404)
 
-            url = '/en/integrations/doc-html/{}'.format(integration)
+            url = f'/en/integrations/doc-html/{integration}'
             result = self.client_get(url, subdomain="", follow=True)
             self.assertEqual(result.status_code, 404)
             result = self.client_get(url, subdomain="zephyr", follow=True)
@@ -344,7 +343,7 @@ class AboutPageTest(ZulipTestCase):
         with self.settings(ZILENCER_ENABLED=False):
             result = self.client_get('/team/')
             self.assertEqual(result.status_code, 301)
-            self.assertEqual(result["Location"], "https://zulipchat.com/team/")
+            self.assertEqual(result["Location"], "https://zulip.com/team/")
 
     def test_split_by(self) -> None:
         """Utility function primarily used in authors page"""
@@ -401,14 +400,14 @@ class PlansPageTest(ZulipTestCase):
         with self.settings(PRODUCTION=True):
             result = self.client_get("/plans/", subdomain="zulip")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result["Location"], "https://zulipchat.com/plans")
+            self.assertEqual(result["Location"], "https://zulip.com/plans")
 
             self.login('iago')
 
             # SELF_HOSTED should hide the local plans page, even if logged in
             result = self.client_get("/plans/", subdomain="zulip")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result["Location"], "https://zulipchat.com/plans")
+            self.assertEqual(result["Location"], "https://zulip.com/plans")
 
         # But in the development environment, it renders a page
         result = self.client_get("/plans/", subdomain="zulip")
@@ -442,7 +441,7 @@ class AppsPageTest(ZulipTestCase):
         with self.settings(ZILENCER_ENABLED=False):
             result = self.client_get('/apps/')
         self.assertEqual(result.status_code, 301)
-        self.assertTrue(result['Location'] == 'https://zulipchat.com/apps/')
+        self.assertTrue(result['Location'] == 'https://zulip.com/apps/')
 
         with self.settings(ZILENCER_ENABLED=True):
             result = self.client_get('/apps/')

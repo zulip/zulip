@@ -49,8 +49,9 @@ class Command(BaseCommand):
                 raise CommandError('Please supply a MailChimp List ID to --list-id, or add a '
                                    'ZULIP_FRIENDS_LIST_ID to your server settings file.')
 
-        endpoint = "https://%s.api.mailchimp.com/3.0/lists/%s/members" % \
-                   (api_key.split('-')[1], options['list_id'])
+        endpoint = "https://{}.api.mailchimp.com/3.0/lists/{}/members".format(
+            api_key.split('-')[1], options['list_id'],
+        )
 
         for user in UserProfile.objects.filter(is_bot=False, is_active=True) \
                                        .values('email', 'full_name', 'realm_id'):
@@ -66,6 +67,6 @@ class Command(BaseCommand):
             }
             r = requests.post(endpoint, auth=('apikey', api_key), json=data, timeout=10)
             if r.status_code == 400 and ujson.loads(r.text)['title'] == 'Member Exists':
-                print("%s is already a part of the list." % (data['email_address'],))
+                print("{} is already a part of the list.".format(data['email_address']))
             elif r.status_code >= 400:
                 print(r.text)

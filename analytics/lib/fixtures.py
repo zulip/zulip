@@ -4,6 +4,7 @@ from typing import List
 
 from analytics.lib.counts import CountStat
 
+
 def generate_time_series_data(days: int=100, business_hours_base: float=10,
                               non_business_hours_base: float=10, growth: float=1,
                               autocorrelation: float=0, spikiness: float=1,
@@ -43,10 +44,10 @@ def generate_time_series_data(days: int=100, business_hours_base: float=10,
                       [24*non_business_hours_base] * 2
         holidays = [random() < holiday_rate for i in range(days)]
     else:
-        raise AssertionError("Unknown frequency: %s" % (frequency,))
+        raise AssertionError(f"Unknown frequency: {frequency}")
     if length < 2:
         raise AssertionError("Must be generating at least 2 data points. "
-                             "Currently generating %s" % (length,))
+                             f"Currently generating {length}")
     growth_base = growth ** (1. / (length-1))
     values_no_noise = [seasonality[i % len(seasonality)] * (growth_base**i) for i in range(length)]
 

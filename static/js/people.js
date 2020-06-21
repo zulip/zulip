@@ -8,6 +8,7 @@ let people_dict;
 let people_by_name_dict;
 let people_by_user_id_dict;
 let active_user_dict;
+let non_active_user_dict;
 let cross_realm_dict;
 let pm_recipient_count_dict;
 let duplicate_full_name_data;
@@ -28,6 +29,7 @@ exports.init = function () {
     // in our realm, but it excludes non-active users and
     // cross-realm bots.
     active_user_dict = new Map();
+    non_active_user_dict = new Map();
     cross_realm_dict = new Map(); // keyed by user_id
     pm_recipient_count_dict = new Map();
 
@@ -241,7 +243,9 @@ exports.get_user_time = function (user_id) {
 exports.get_user_type = function (user_id) {
     const user_profile = exports.get_by_user_id(user_id);
 
-    if (user_profile.is_admin) {
+    if (user_profile.is_owner) {
+        return i18n.t("Owner");
+    } else if (user_profile.is_admin) {
         return i18n.t("Administrator");
     } else if (user_profile.is_guest) {
         return i18n.t("Guest");
@@ -351,6 +355,18 @@ function sorted_other_user_ids(user_ids) {
 
     return user_ids;
 }
+
+exports.concat_huddle = function (user_ids, user_id) {
+    /*
+        We assume user_ids and user_id have already
+        been validated by the caller.
+
+        The only logic we're encapsulating here is
+        how to encode huddles.
+    */
+    const sorted_ids = sort_numerically([...user_ids, user_id]);
+    return sorted_ids.join(',');
+};
 
 exports.pm_lookup_key = function (user_ids_string) {
     /*
@@ -591,6 +607,16 @@ exports.small_avatar_url_for_person = function (person) {
     return gravatar_url_for_email(person.email);
 };
 
+exports.sender_info_with_small_avatar_urls_for_sender_ids = function (sender_ids) {
+    const senders_info = [];
+    for (const id of sender_ids) {
+        const sender = {...exports.get_by_user_id(id)};
+        sender.avatar_url_small = exports.small_avatar_url_for_person(sender);
+        senders_info.push(sender);
+    }
+    return senders_info;
+};
+
 exports.small_avatar_url = function (message) {
     // Try to call this function in all places where we need 25px
     // avatar images, so that the browser can help
@@ -656,14 +682,6 @@ exports.is_valid_bulk_emails_for_compose = function (emails) {
     });
 };
 
-exports.get_active_user_for_email = function (email) {
-    const person = exports.get_by_email(email);
-    if (!person) {
-        return;
-    }
-    return active_user_dict.get(person.user_id);
-};
-
 exports.is_active_user_for_popover = function (user_id) {
     // For popover menus, we include cross-realm bots as active
     // users.
@@ -709,16 +727,28 @@ exports.get_realm_users = function () {
     return Array.from(active_user_dict.values());
 };
 
-exports.get_active_humans = function () {
-    const humans = [];
+exports.get_active_human_ids = function () {
+    const human_ids = [];
 
     for (const user of active_user_dict.values()) {
         if (!user.is_bot) {
-            humans.push(user);
+            human_ids.push(user.user_id);
         }
     }
 
-    return humans;
+    return human_ids;
+};
+
+exports.get_non_active_human_ids = function () {
+    const human_ids = [];
+
+    for (const user of non_active_user_dict.values()) {
+        if (!user.is_bot) {
+            human_ids.push(user.user_id);
+        }
+    }
+
+    return human_ids;
 };
 
 exports.get_active_human_count = function () {
@@ -734,6 +764,10 @@ exports.get_active_human_count = function () {
 exports.get_active_user_ids = function () {
     // This includes active users and active bots.
     return Array.from(active_user_dict.keys());
+};
+
+exports.get_non_active_realm_users = function () {
+    return Array.from(non_active_user_dict.values());
 };
 
 exports.is_cross_realm_email = function (email) {
@@ -1031,9 +1065,25 @@ exports._add_user = function add(person) {
     people_by_name_dict.set(person.full_name, person);
 };
 
-exports.add = function (person) {
+exports.add_active_user = function (person) {
     active_user_dict.set(person.user_id, person);
     exports._add_user(person);
+    non_active_user_dict.delete(person.user_id);
+};
+
+exports.is_person_active = (user_id) => {
+    if (!people_by_user_id_dict.has(user_id)) {
+        blueslip.error("No user found.", user_id);
+    }
+
+    return active_user_dict.has(user_id);
+};
+
+exports.add_cross_realm_user = function (person) {
+    if (!people_dict.has(person.email)) {
+        exports._add_user(person);
+    }
+    cross_realm_dict.set(person.user_id, person);
 };
 
 exports.deactivate = function (person) {
@@ -1041,6 +1091,7 @@ exports.deactivate = function (person) {
     // structures, because deactivated users can be part
     // of somebody's PM list.
     active_user_dict.delete(person.user_id);
+    non_active_user_dict.set(person.user_id, person);
 };
 
 exports.report_late_add = function (user_id, email) {
@@ -1222,18 +1273,16 @@ exports.is_my_user_id = function (user_id) {
 
 exports.initialize = function (my_user_id, params) {
     for (const person of params.realm_users) {
-        exports.add(person);
+        exports.add_active_user(person);
     }
 
     for (const person of params.realm_non_active_users) {
+        non_active_user_dict.set(person.user_id, person);
         exports._add_user(person);
     }
 
     for (const person of params.cross_realm_bots) {
-        if (!people_dict.has(person.email)) {
-            exports._add_user(person);
-        }
-        cross_realm_dict.set(person.user_id, person);
+        exports.add_cross_realm_user(person);
     }
 
     exports.initialize_current_user(my_user_id);

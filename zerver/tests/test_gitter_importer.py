@@ -1,24 +1,15 @@
-from zerver.lib.import_realm import (
-    do_import_realm,
-)
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-from zerver.models import (
-    get_realm,
-    UserProfile,
-    Message,
-)
-from zerver.data_import.gitter import (
-    do_convert_data,
-    get_usermentions,
-)
-
-import ujson
 import logging
 import os
-import mock
 from typing import Any
+from unittest import mock
+
+import ujson
+
+from zerver.data_import.gitter import do_convert_data, get_usermentions
+from zerver.lib.import_realm import do_import_realm
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.models import Message, UserProfile, get_realm
+
 
 class GitterImporter(ZulipTestCase):
     logger = logging.getLogger()

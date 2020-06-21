@@ -1,16 +1,14 @@
 from django.template.loader import get_template
 
 from zerver.lib.exceptions import InvalidMarkdownIncludeStatement
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
+from zerver.lib.test_classes import ZulipTestCase
 
 
 class TemplateTestCase(ZulipTestCase):
     def test_markdown_in_template(self) -> None:
         template = get_template("tests/test_markdown.html")
         context = {
-            'markdown_test_file': "zerver/tests/markdown/test_markdown.md"
+            'markdown_test_file': "zerver/tests/markdown/test_markdown.md",
         }
         content = template.render(context)
 
@@ -21,7 +19,7 @@ class TemplateTestCase(ZulipTestCase):
     def test_markdown_tabbed_sections_extension(self) -> None:
         template = get_template("tests/test_markdown.html")
         context = {
-            'markdown_test_file': "zerver/tests/markdown/test_tabbed_sections.md"
+            'markdown_test_file': "zerver/tests/markdown/test_tabbed_sections.md",
         }
         content = template.render(context)
         content_sans_whitespace = content.replace(" ", "").replace('\n', '')
@@ -94,7 +92,7 @@ footer
     def test_markdown_nested_code_blocks(self) -> None:
         template = get_template("tests/test_markdown.html")
         context = {
-            'markdown_test_file': "zerver/tests/markdown/test_nested_code_blocks.md"
+            'markdown_test_file': "zerver/tests/markdown/test_nested_code_blocks.md",
         }
         content = template.render(context)
 
@@ -109,7 +107,7 @@ footer
     def test_custom_markdown_include_extension(self) -> None:
         template = get_template("tests/test_markdown.html")
         context = {
-            'markdown_test_file': "zerver/tests/markdown/test_custom_include_extension.md"
+            'markdown_test_file': "zerver/tests/markdown/test_custom_include_extension.md",
         }
 
         with self.assertRaisesRegex(InvalidMarkdownIncludeStatement, "Invalid markdown include statement"):
@@ -118,7 +116,7 @@ footer
     def test_custom_markdown_include_extension_empty_macro(self) -> None:
         template = get_template("tests/test_markdown.html")
         context = {
-            'markdown_test_file': "zerver/tests/markdown/test_custom_include_extension_empty.md"
+            'markdown_test_file': "zerver/tests/markdown/test_custom_include_extension_empty.md",
         }
         content = template.render(context)
         content_sans_whitespace = content.replace(" ", "").replace('\n', '')

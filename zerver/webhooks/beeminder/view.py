@@ -40,7 +40,7 @@ def api_beeminder_webhook(request: HttpRequest, user_profile: UserProfile,
         time=time_remain,
         limsum=limsum,
         pledge=pledge,
-        expression=expression
+        expression=expression,
     )
     check_send_webhook_message(request, user_profile, topic, body)
     return json_success()

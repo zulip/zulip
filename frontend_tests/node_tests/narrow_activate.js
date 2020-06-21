@@ -7,6 +7,7 @@ set_global('resize', {
 });
 zrequire('stream_data');
 zrequire('Filter', 'js/filter');
+zrequire('FetchStatus', 'js/fetch_status');
 zrequire('MessageListData', 'js/message_list_data');
 zrequire('unread');
 zrequire('narrow');
@@ -74,6 +75,7 @@ function test_helper() {
     stub('hashchange', 'save_narrow');
     stub('message_scroll', 'hide_indicators');
     stub('message_scroll', 'show_loading_older');
+    stub('message_scroll', 'hide_top_of_narrow_notices');
     stub('notifications', 'clear_compose_notifications');
     stub('notifications', 'redraw_title');
     stub('search', 'update_button_visibility');
@@ -85,7 +87,6 @@ function test_helper() {
     stub('unread_ops', 'process_visible');
     stub('compose', 'update_closed_compose_buttons_for_stream');
     stub('compose', 'update_closed_compose_buttons_for_private');
-    stub('notifications', 'hide_history_limit_message');
 
     return {
         clear: () => {
@@ -163,8 +164,10 @@ run_test('basics', () => {
             assert.equal(msg_id, selected_id);
             return selected_message;
         },
-        fetch_status: {
-            has_found_newest: () => true,
+        data: {
+            fetch_status: {
+                has_found_newest: () => true,
+            },
         },
         empty: () => false,
         first: () => {
@@ -176,15 +179,12 @@ run_test('basics', () => {
     };
 
     let cont;
-    let pre_scroll_cont;
 
     message_fetch.load_messages_for_narrow = (opts) => {
         cont = opts.cont;
-        pre_scroll_cont = opts.pre_scroll_cont;
 
         assert.deepEqual(opts, {
             cont: opts.cont,
-            pre_scroll_cont: opts.pre_scroll_cont,
             anchor: 1000,
         });
     };
@@ -200,9 +200,9 @@ run_test('basics', () => {
     helper.assert_events([
         'notifications.clear_compose_notifications',
         'notifications.redraw_title',
-        'notifications.hide_history_limit_message',
-        'ui_util.change_tab_to',
+        'message_scroll.hide_top_of_narrow_notices',
         'message_scroll.hide_indicators',
+        'ui_util.change_tab_to',
         'unread_ops.process_visible',
         'hashchange.save_narrow',
         'compose.update_closed_compose_buttons_for_stream',
@@ -230,7 +230,6 @@ run_test('basics', () => {
     };
 
     helper.clear();
-    pre_scroll_cont();
     cont();
     helper.assert_events([
         'report narrow times',

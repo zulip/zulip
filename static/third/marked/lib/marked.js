@@ -485,6 +485,7 @@ var inline = {
   avatar: noop,
   tex: noop,
   gravatar: noop,
+  timestamp: noop,
   realm_filters: [],
   text: /^[\s\S]+?(?=[\\<!\[_*`$]| {2,}\n|$)/
 };
@@ -552,6 +553,7 @@ inline.zulip = merge({}, inline.breaks, {
   avatar: /^!avatar\(([^)]+)\)/,
   gravatar: /^!gravatar\(([^)]+)\)/,
   tex: /^(\$\$([^\n_$](\\\$|[^\n$])*)\$\$(?!\$))\B/,
+  timestamp: /^!time\(([^)]+)\)/,
   realm_filters: [],
   text: replace(inline.breaks.text)
     ('|', '|(\ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f]|' +
@@ -826,6 +828,13 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
+    // timestamp
+    if (cap = this.rules.timestamp.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.timestamp(cap[1]);
+      continue;
+    }
+
     // tex
     if (cap = this.rules.tex.exec(src)) {
       src = src.substring(cap[0].length);
@@ -898,6 +907,12 @@ InlineLexer.prototype.userGravatar = function (email) {
   if (typeof this.options.avatarHandler !== 'function')
     return '!gravatar(' + email + ')';
   return this.options.avatarHandler(email);
+};
+
+InlineLexer.prototype.timestamp = function (time) {
+  if (typeof this.options.timestampHandler !== 'function')
+    return '!time(' + time + ')';
+  return this.options.timestampHandler(time);
 };
 
 InlineLexer.prototype.realm_filter = function (filter, matches, orig) {
@@ -1524,6 +1539,7 @@ marked.defaults = {
   unicodeemoji: false,
   avatar: false,
   gravatar: false,
+  timestamp: true,
   tables: true,
   breaks: false,
   pedantic: false,

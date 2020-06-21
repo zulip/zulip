@@ -22,9 +22,6 @@ const _document = {
 const _drafts = {
     delete_draft_after_send: noop,
 };
-const _resize = {
-    resize_bottom_whitespace: noop,
-};
 
 const _sent_messages = {
     start_tracking_message: noop,
@@ -42,7 +39,6 @@ set_global('drafts', _drafts);
 set_global('navigator', _navigator);
 set_global('notifications', _notifications);
 set_global('reminder', _reminder);
-set_global('resize', _resize);
 set_global('sent_messages', _sent_messages);
 
 set_global('local_message', {});
@@ -52,6 +48,7 @@ set_global('stream_edit', {});
 set_global('markdown', {});
 set_global('loading', {});
 set_global('page_params', {});
+set_global('resize', {});
 set_global('subs', {});
 set_global('ui_util', {});
 
@@ -75,6 +72,7 @@ zrequire('compose_pm_pill');
 zrequire('echo');
 zrequire('compose');
 zrequire('upload');
+zrequire('server_events_dispatch');
 
 people.small_avatar_url_for_person = function () {
     return 'http://example.com/example.png';
@@ -122,12 +120,12 @@ const bob = {
     full_name: 'Bob',
 };
 
-people.add(new_user);
-people.add(me);
+people.add_active_user(new_user);
+people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
-people.add(alice);
-people.add(bob);
+people.add_active_user(alice);
+people.add_active_user(bob);
 
 run_test('validate_stream_message_address_info', () => {
     const sub = {
@@ -225,7 +223,7 @@ run_test('validate', () => {
 
     reminder.is_deferred_delivery = () => true;
     compose.validate();
-    assert.equal($('#sending-indicator').html(), 'translated: Scheduling...');
+    assert.equal($('#sending-indicator').text(), 'translated: Scheduling...');
     reminder.is_deferred_delivery = noop;
 
     add_content_to_compose_box();
@@ -264,7 +262,7 @@ run_test('validate', () => {
 
     assert.equal($('#compose-error-msg').html(), i18n.t('Please specify at least one valid recipient', {}));
 
-    people.add(bob);
+    people.add_active_user(bob);
     compose_state.private_message_recipient('bob@example.com');
     assert(compose.validate());
 
@@ -922,7 +920,7 @@ run_test('initialize', () => {
     global.document = 'document-stub';
     global.csrf_token = 'fake-csrf-token';
 
-    page_params.max_file_upload_size = 512;
+    page_params.max_file_upload_size_mib = 512;
 
     let setup_upload_called = false;
     let uppy_cancel_all_called = false;
@@ -944,10 +942,6 @@ run_test('initialize', () => {
         jitsi_meet: {
             id: 1,
             name: "Jitsi Meet",
-        },
-        google_hangouts: {
-            id: 2,
-            name: "Google Hangouts",
         },
         zoom: {
             id: 3,
@@ -1067,7 +1061,7 @@ run_test('trigger_submit_compose_form', () => {
 });
 
 run_test('needs_subscribe_warning', () => {
-    people.get_active_user_for_email = function () {
+    people.get_by_user_id = function () {
         return;
     };
 
@@ -1084,17 +1078,15 @@ run_test('needs_subscribe_warning', () => {
     stream_data.add_sub(sub);
     assert.equal(compose.needs_subscribe_warning(), false);
 
-    people.get_active_user_for_email = function () {
+    people.get_by_user_id = function () {
         return {
-            user_id: 99,
             is_bot: true,
         };
     };
     assert.equal(compose.needs_subscribe_warning(), false);
 
-    people.get_active_user_for_email = function () {
+    people.get_by_user_id = function () {
         return {
-            user_id: 99,
             is_bot: false,
         };
     };
@@ -1138,9 +1130,9 @@ run_test('warn_if_mentioning_unsubscribed_user', () => {
     const checks = [
         (function () {
             let called;
-            compose.needs_subscribe_warning = function (email) {
+            compose.needs_subscribe_warning = function (user_id) {
                 called = true;
-                assert.equal(email, 'foo@bar.com');
+                assert.equal(user_id, 34);
                 return true;
             };
             return function () { assert(called); };
@@ -1151,7 +1143,7 @@ run_test('warn_if_mentioning_unsubscribed_user', () => {
             global.stub_templates(function (template_name, context) {
                 called = true;
                 assert.equal(template_name, 'compose_invite_users');
-                assert.equal(context.email, 'foo@bar.com');
+                assert.equal(context.user_id, 34);
                 assert.equal(context.name, 'Foo Barson');
                 return 'fake-compose-invite-user-template';
             });
@@ -1170,6 +1162,7 @@ run_test('warn_if_mentioning_unsubscribed_user', () => {
 
     mentioned = {
         email: 'foo@bar.com',
+        user_id: 34,
         full_name: 'Foo Barson',
     };
 
@@ -1183,9 +1176,9 @@ run_test('warn_if_mentioning_unsubscribed_user', () => {
 
     let looked_for_existing;
     warning_row.data = function (field) {
-        assert.equal(field, 'useremail');
+        assert.equal(field, 'user-id');
         looked_for_existing = true;
-        return 'foo@bar.com';
+        return '34';
     };
 
     const previous_users = $('#compose_invite_users .compose_invite_user');
@@ -1263,10 +1256,16 @@ run_test('on_events', () => {
             name: 'test',
             subscribed: true,
         };
+        const mentioned = {
+            full_name: 'Foo Barson',
+            email: 'foo@bar.com',
+            user_id: 34,
+        };
+        people.add_active_user(mentioned);
         let invite_user_to_stream_called = false;
-        stream_edit.invite_user_to_stream = function (email, sub, success) {
+        stream_edit.invite_user_to_stream = function (user_ids, sub, success) {
             invite_user_to_stream_called = true;
-            assert.equal(email, 'foo@bar.com');
+            assert.deepEqual(user_ids, [mentioned.user_id]);
             assert.equal(sub, subscription);
             success();  // This will check success callback path.
         };
@@ -1277,18 +1276,12 @@ run_test('on_events', () => {
             '.compose_invite_user'
         );
 
-        // .data in zjquery is a noop by default, so handler should just return
-        handler(helper.event);
-
-        assert(!invite_user_to_stream_called);
-        assert(!helper.container_was_removed());
-
         // !sub will result false here and we check the failure code path.
         blueslip.expect('warn', 'Stream no longer exists: no-stream');
         $('#stream_message_recipient_stream').val('no-stream');
         helper.container.data = function (field) {
-            assert.equal(field, 'useremail');
-            return 'foo@bar.com';
+            assert.equal(field, 'user-id');
+            return '34';
         };
         $("#compose-textarea").select(noop);
         helper.target.prop('disabled', false);
@@ -1451,23 +1444,19 @@ run_test('on_events', () => {
         assert(!called);
 
         page_params.realm_video_chat_provider =
-            page_params.realm_available_video_chat_providers.google_hangouts.id;
-        page_params.realm_google_hangouts_domain = 'zulip';
-
-        handler(ev);
-
-        video_link_regex = /\[Click to join video call\]\(https:\/\/hangouts.google.com\/hangouts\/\_\/zulip\/\d{15}\)/;
-        assert(video_link_regex.test(syntax_to_insert));
-
-        page_params.realm_video_chat_provider =
             page_params.realm_available_video_chat_providers.zoom.id;
-        page_params.realm_zoom_user_id = 'example@example.com';
-        page_params.realm_zoom_api_key = 'abc';
-        page_params.realm_zoom_api_secret = 'abc';
 
-        channel.get = function (options) {
-            assert(options.url === '/json/calls/create');
-            options.success({ zoom_url: 'example.zoom.com' });
+        window.open = function (url) {
+            assert(url.endsWith('/calls/zoom/register'));
+            server_events_dispatch.dispatch_normal_event({
+                type: "has_zoom_token",
+                value: true,
+            });
+        };
+
+        channel.post = function (payload) {
+            assert.equal(payload.url, '/json/calls/zoom/create');
+            payload.success({ url: 'example.zoom.com' });
         };
 
         handler(ev);
@@ -1731,13 +1720,6 @@ run_test('test_video_chat_button_toggle', () => {
     reset_jquery();
     stub_out_video_calls();
     page_params.jitsi_server_url = 'https://meet.jit.si';
-    compose.initialize();
-    assert.equal($("#below-compose-content .video_link").visible(), true);
-
-    reset_jquery();
-    stub_out_video_calls();
-    page_params.realm_video_chat_provider =
-        page_params.realm_available_video_chat_providers.google_hangouts.id;
     compose.initialize();
     assert.equal($("#below-compose-content .video_link").visible(), true);
 });

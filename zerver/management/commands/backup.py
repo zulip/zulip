@@ -23,7 +23,7 @@ class Command(ZulipBaseCommand):
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
-            "--output", default=None, nargs="?", help="Filename of output tarball"
+            "--output", default=None, nargs="?", help="Filename of output tarball",
         )
         parser.add_argument("--skip-db", action='store_true', help="Skip database backup")
         parser.add_argument("--skip-uploads", action='store_true', help="Skip uploads backup")
@@ -31,7 +31,7 @@ class Command(ZulipBaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         timestamp = timezone_now().strftime(TIMESTAMP_FORMAT)
         with tempfile.TemporaryDirectory(
-            prefix="zulip-backup-%s-" % (timestamp,)
+            prefix=f"zulip-backup-{timestamp}-",
         ) as tmp:
             os.mkdir(os.path.join(tmp, "zulip-backup"))
             members = []
@@ -57,10 +57,10 @@ class Command(ZulipBaseCommand):
 
             if settings.DEVELOPMENT:
                 members.append(
-                    os.path.join(settings.DEPLOY_ROOT, "zproject", "dev-secrets.conf")
+                    os.path.join(settings.DEPLOY_ROOT, "zproject", "dev-secrets.conf"),
                 )
                 paths.append(
-                    ("zproject", os.path.join(settings.DEPLOY_ROOT, "zproject"))
+                    ("zproject", os.path.join(settings.DEPLOY_ROOT, "zproject")),
                 )
             else:
                 members.append("/etc/zulip")
@@ -86,22 +86,22 @@ class Command(ZulipBaseCommand):
                 members.append("zulip-backup/database")
 
             if not options['skip_uploads'] and settings.LOCAL_UPLOADS_DIR is not None and os.path.exists(
-                os.path.join(settings.DEPLOY_ROOT, settings.LOCAL_UPLOADS_DIR)
+                os.path.join(settings.DEPLOY_ROOT, settings.LOCAL_UPLOADS_DIR),
             ):
                 members.append(
-                    os.path.join(settings.DEPLOY_ROOT, settings.LOCAL_UPLOADS_DIR)
+                    os.path.join(settings.DEPLOY_ROOT, settings.LOCAL_UPLOADS_DIR),
                 )
                 paths.append(
                     (
                         "uploads",
                         os.path.join(settings.DEPLOY_ROOT, settings.LOCAL_UPLOADS_DIR),
-                    )
+                    ),
                 )
 
             assert not any("|" in name or "|" in path for name, path in paths)
             transform_args = [
                 r"--transform=s|^{}(/.*)?$|zulip-backup/{}\1|x".format(
-                    re.escape(path), name.replace("\\", r"\\")
+                    re.escape(path), name.replace("\\", r"\\"),
                 )
                 for name, path in paths
             ]
@@ -109,7 +109,7 @@ class Command(ZulipBaseCommand):
             try:
                 if options["output"] is None:
                     tarball_path = tempfile.NamedTemporaryFile(
-                        prefix="zulip-backup-%s-" % (timestamp,),
+                        prefix=f"zulip-backup-{timestamp}-",
                         suffix=".tar.gz",
                         delete=False,
                     ).name
@@ -120,9 +120,9 @@ class Command(ZulipBaseCommand):
                     ["tar", "-C", tmp, "-cPzf", tarball_path]
                     + transform_args
                     + ["--"]
-                    + members
+                    + members,
                 )
-                print("Backup tarball written to %s" % (tarball_path,))
+                print(f"Backup tarball written to {tarball_path}")
             except BaseException:
                 if options["output"] is None:
                     os.unlink(tarball_path)

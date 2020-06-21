@@ -16,6 +16,8 @@ set_global('location', {
     origin: 'http://zulip.zulipdev.com',
 });
 
+set_global('moment', require('moment-timezone'));
+
 set_global('page_params', {
     realm_users: [],
     realm_emoji: {
@@ -28,7 +30,7 @@ set_global('page_params', {
     realm_filters: [
         [
             "#(?P<id>[0-9]{2,8})",
-            "https://trac.zulip.net/ticket/%(id)s",
+            "https://trac.example.com/ticket/%(id)s",
         ],
         [
             "ZBUG_(?P<id>[0-9]{2,8})",
@@ -57,39 +59,39 @@ const cordelia = {
     user_id: 101,
     email: 'cordelia@zulip.com',
 };
-people.add(cordelia);
+people.add_active_user(cordelia);
 
-people.add({
+people.add_active_user({
     full_name: 'Leo',
     user_id: 102,
     email: 'leo@zulip.com',
 });
 
-people.add({
+people.add_active_user({
     full_name: 'Bobby <h1>Tables</h1>',
     user_id: 103,
     email: 'bobby@zulip.com',
 });
 
-people.add({
+people.add_active_user({
     full_name: 'Mark Twin',
     user_id: 104,
     email: 'twin1@zulip.com',
 });
 
-people.add({
+people.add_active_user({
     full_name: 'Mark Twin',
     user_id: 105,
     email: 'twin2@zulip.com',
 });
 
-people.add({
+people.add_active_user({
     full_name: 'Brother of Bobby|123',
     user_id: 106,
     email: 'bobby2@zulip.com',
 });
 
-people.add({
+people.add_active_user({
     full_name: "& & &amp;",
     user_id: 107,
     email: "ampampamp@zulip.com",
@@ -343,7 +345,7 @@ run_test('marked', () => {
         // `contains_backend_only_syntax()`. Those which return True
         // are tested separately.
         {input: 'This is a realm filter #1234 with text after it',
-         expected: '<p>This is a realm filter <a href="https://trac.zulip.net/ticket/1234" title="https://trac.zulip.net/ticket/1234">#1234</a> with text after it</p>'},
+         expected: '<p>This is a realm filter <a href="https://trac.example.com/ticket/1234" title="https://trac.example.com/ticket/1234">#1234</a> with text after it</p>'},
         {input: '#1234is not a realm filter.',
          expected: '<p>#1234is not a realm filter.</p>'},
         {input: 'A pattern written as #1234is not a realm filter.',
@@ -442,13 +444,13 @@ run_test('topic_links', () => {
     message = {type: 'stream', topic: "One #123 link here"};
     markdown.add_topic_links(message);
     assert.equal(message.topic_links.length, 1);
-    assert.equal(message.topic_links[0], "https://trac.zulip.net/ticket/123");
+    assert.equal(message.topic_links[0], "https://trac.example.com/ticket/123");
 
     message = {type: 'stream', topic: "Two #123 #456 link here"};
     markdown.add_topic_links(message);
     assert.equal(message.topic_links.length, 2);
-    assert.equal(message.topic_links[0], "https://trac.zulip.net/ticket/123");
-    assert.equal(message.topic_links[1], "https://trac.zulip.net/ticket/456");
+    assert.equal(message.topic_links[0], "https://trac.example.com/ticket/123");
+    assert.equal(message.topic_links[1], "https://trac.example.com/ticket/456");
 
     message = {type: 'stream', topic: "New ZBUG_123 link here"};
     markdown.add_topic_links(message);
@@ -459,7 +461,7 @@ run_test('topic_links', () => {
     markdown.add_topic_links(message);
     assert.equal(message.topic_links.length, 2);
     assert(message.topic_links.includes("https://trac2.zulip.net/ticket/123"));
-    assert(message.topic_links.includes("https://trac.zulip.net/ticket/456"));
+    assert(message.topic_links.includes("https://trac.example.com/ticket/456"));
 
     message = {type: 'stream', topic: "One ZGROUP_123:45 link here"};
     markdown.add_topic_links(message);
@@ -476,7 +478,7 @@ run_test('topic_links', () => {
     assert.equal(message.topic_links.length, 3);
     assert(message.topic_links.includes("https://google.com"));
     assert(message.topic_links.includes("https://github.com"));
-    assert(message.topic_links.includes("https://trac.zulip.net/ticket/456"));
+    assert(message.topic_links.includes("https://trac.example.com/ticket/456"));
 
     message = {type: "not-stream"};
     markdown.add_topic_links(message);
@@ -590,15 +592,6 @@ run_test('katex_throws_unexpected_exceptions', () => {
     blueslip.expect('error', 'Error: some-exception');
     const message = { raw_content: '$$a$$' };
     markdown.apply_markdown(message);
-});
-
-run_test('misc_helpers', () => {
-    const elem = $('.user-mention');
-    markdown.set_name_in_mention_element(elem, 'Aaron');
-    assert.equal(elem.text(), '@Aaron');
-    elem.addClass('silent');
-    markdown.set_name_in_mention_element(elem, 'Aaron, but silent');
-    assert.equal(elem.text(), 'Aaron, but silent');
 });
 
 run_test('translate_emoticons_to_names', () => {

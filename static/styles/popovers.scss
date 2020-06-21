@@ -55,8 +55,14 @@
 }
 
 .streams_popover {
+    .topic-name {
+        text-align: center;
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+
     .colorpicker-container {
-        display: inline-block;
+        display: none;
         margin-right: 10px;
 
         .sp-container {
@@ -73,6 +79,23 @@
                 box-sizing: initial;
 
                 width: calc(100% - 13px);
+            }
+
+            button {
+                background-color: hsl(0, 0%, 100%);
+                background-image: none;
+                border: 1px solid hsl(0, 0%, 80%);
+                border-radius: 4px;
+                color: hsl(0, 0%, 25%);
+                font-size: 12px;
+                padding: 6px;
+                text-transform: capitalize;
+                text-align: center;
+                text-shadow: none;
+            }
+
+            .sp-picker-container {
+                border-left: solid 1px hsl(0, 0%, 88%);
             }
         }
     }
@@ -92,6 +115,41 @@ ul {
         width: 14px;
         text-align: center;
         margin-right: 3px;
+    }
+
+    &.topics_popover {
+        .topic-name {
+            text-align: center;
+            margin-top: 5px;
+            margin-bottom: 5px;
+
+            .fa-chevron-right {
+                font-size: 12px;
+            }
+        }
+
+        .admin-separator {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            font-size: 10px;
+
+            &::before,
+            &::after {
+                content: '';
+                flex: 1;
+                border-top: 1px solid hsl(0, 0%, 93%);
+                border-bottom: 1px solid hsl(0, 0%, 100%);
+            }
+
+            &::before {
+                margin-right: 8px;
+            }
+
+            &::after {
+                margin-left: 8px;
+            }
+        }
     }
 
     &.remind_me_popover .remind_icon {
@@ -228,9 +286,10 @@ ul {
             margin-bottom: 5px;
 
             .name {
-                color: hsl(0, 0%, 55%);
+                color: hsl(0, 0%, 20%);
                 display: inline-block;
                 min-width: 120px;
+                font-weight: 600;
             }
         }
 
@@ -242,6 +301,8 @@ ul {
             font-size: 26px;
             font-weight: 700;
             margin-bottom: 5px;
+            max-width: 300px;
+            line-height: 30px;
 
             #edit-button {
                 font-size: 18px;
@@ -262,7 +323,8 @@ ul {
             margin-top: 8px;
 
             .name {
-                color: hsl(0, 0%, 55%);
+                color: hsl(0, 0%, 20%);
+                font-weight: 600;
             }
 
             .value {
@@ -361,4 +423,22 @@ ul {
 #topic_stream_edit_form_error {
     background-color: hsla(0, 70%, 87%, 0.7);
     color: hsl(0, 100%, 50%);
+}
+
+.topic_stream_edit_header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+
+    #select_stream_id {
+        margin-bottom: 5px !important;
+        border-left: 0px;
+        padding-left: 0px;
+        border-radius: 3px;
+        margin: 0 5px 0 -10px;
+        text-indent: 10px;
+    }
+    .inline_topic_edit {
+        margin-left: 5px !important;
+    }
 }

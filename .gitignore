@@ -76,6 +76,9 @@ zulip.kdev4
 .cache/
 .eslintcache
 
+# Core dump files
+core
+
 ## Miscellaneous
 # (Ideally this section is empty.)
 zthumbor/thumbor_local_settings.py

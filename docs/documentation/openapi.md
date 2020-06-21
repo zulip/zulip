@@ -1,27 +1,31 @@
 # OpenAPI configuration
 
-The [OpenAPI](https://swagger.io/specification/) (formerly known as
-Swagger) specification is a standardized way to describe how an API
-functions. This description then can then be used by any tool that
-supports the standard.
+[OpenAPI][openapi-spec] is a popular format for describing an API.  An
+OpenAPI file can be used by various tools to generate documentation
+for the API or even basic client-side bindings for dozens of
+programming languages.
 
-Zulip uses the Swagger spec to generate an API reference from the
-`zulip.yaml` file. This page is a basic introduction to the format of
-this file and how to add content to it.
+Zulip's API is described in `zerver/openapi/zulip.yaml`.  Our aim is
+for that file to fully describe every endpoint in the Zulip API, and
+for the Zulip test suite to fail should the API every change without a
+corresponding adjustment to the documentation.  In particular,
+essentially all content in Zulip's [REST API
+documentation](../documentation/api.md) is generated from our OpenAPI
+file.
 
-In a Swagger file, every configuration section is an object. Objects
-may contain other objects, or reference objects defined
+In an OpenAPI Swagger file, every configuration section is an object.
+Objects may contain other objects, or reference objects defined
 elsewhere. Larger API specifications may be split into multiple
-files. There are more types of objects than mentioned here, you can
-find the complete details at
-[Swagger/OpenAPI specification page](https://swagger.io/specification/).
+files. See the [OpenAPI specification][openapi-spec].
+
+[openapi-spec]: https://swagger.io/docs/specification/about/
 
 This library isn't in production use yet, but it is our current plan
 for how Zulip's API documentation will work.
 
 ## Working with the `zulip.yaml` file
 
-A Swagger specification file has three general parts: information and
+An OpenAPI specification file has three general parts: information and
 configuration, endpoint definitions, and object schemas referenced by
 other objects (as an alternative to defining everything inline.)
 References can either specify an individual object, using `$ref:`, or
@@ -44,7 +48,7 @@ info:
   title: Zulip REST API
   description: Powerful open source group chat.
   contact:
-    url: https://zulipchat.com
+    url: https://zulip.com
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
@@ -173,13 +177,11 @@ correct.
 
 * A single `|` (pipe) character begins a multi-line description on the
   next line.  Single spaced lines (one newline at the end of each) are
-  joined. Use an extra blank line for a paragraph break.
+  joined. Use an extra blank line for a paragraph break.  We prefer
+  to use this format for all descriptions because it doesn't require
+  extra effort to expand.
 
 ### Examples:
-
-```
-Description: This is a single line description.
-```
 
 ```
 Description: |

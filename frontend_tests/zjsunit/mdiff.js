@@ -18,15 +18,15 @@ function apply_color(input_string, changes) {
     let processed_string = input_string.slice(0, 2);
     input_string = input_string.slice(2);
 
-    const formatter = {
-        delete: (string) => { return "\u001b[31m" + string + "\u001b[0m"; },
-        insert: (string) => { return "\u001b[32m" + string + "\u001b[0m"; },
-        replace: (string) => { return "\u001b[33m" + string + "\u001b[0m"; },
-    };
+    const formatter = new Map([
+        ["delete", (string) => { return "\u001b[31m" + string + "\u001b[0m"; }],
+        ["insert", (string) => { return "\u001b[32m" + string + "\u001b[0m"; }],
+        ["replace", (string) => { return "\u001b[33m" + string + "\u001b[0m"; }],
+    ]);
     changes.forEach((change) => {
-        if (formatter.hasOwnProperty(change.tag)) {
+        if (formatter.has(change.tag)) {
             processed_string += input_string.slice(previous_index, change.beginning_index);
-            processed_string += formatter[change.tag](
+            processed_string += formatter.get(change.tag)(
                 input_string.slice(change.beginning_index, change.ending_index)
             );
             previous_index = change.ending_index;
@@ -55,15 +55,15 @@ function parse_questionmark_line(questionmark_line) {
     let index = 0;
 
     const changes_list = [];
-    const aliases = {
-        "^": "replace",
-        "+": "insert",
-        "-": "delete",
-    };
+    const aliases = new Map([
+        ["^", "replace"],
+        ["+", "insert"],
+        ["-", "delete"],
+    ]);
     const add_change = () => {
         if (current_sequence) {
             changes_list.push({
-                tag: aliases[current_sequence],
+                tag: aliases.get(current_sequence),
                 beginning_index,
                 ending_index: index,
             });
@@ -74,7 +74,7 @@ function parse_questionmark_line(questionmark_line) {
     questionmark_line = questionmark_line.slice(2).trimRight("\n");
 
     for (const character of questionmark_line) {
-        if (aliases.hasOwnProperty(character)) {
+        if (aliases.has(character)) {
             if (current_sequence !== character) {
                 add_change();
                 current_sequence = character;

@@ -1,32 +1,15 @@
 from typing import Any, List, Mapping
+from unittest import mock
 
+import ujson
 from django.db import connection
 
-from zerver.models import (
-    get_realm,
-    get_stream,
-    get_user,
-    Subscription,
-    UserMessage,
-    UserProfile,
-)
-
-from zerver.lib.fix_unreads import (
-    fix,
-    fix_pre_pointer,
-    fix_unsubscribed,
-)
-from zerver.lib.test_helpers import (
-    get_subscription,
-    tornado_redirected_to_list,
-)
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
+from zerver.lib.fix_unreads import fix, fix_unsubscribed
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import get_subscription, tornado_redirected_to_list
 from zerver.lib.topic_mutes import add_topic_mute
+from zerver.models import Subscription, UserMessage, UserProfile, get_realm, get_stream, get_user
 
-import mock
-import ujson
 
 class PointerTest(ZulipTestCase):
 
@@ -263,7 +246,7 @@ class UnreadCountTests(ZulipTestCase):
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.client_post("/json/mark_stream_as_read", {
-                "stream_id": stream.id
+                "stream_id": stream.id,
             })
 
         self.assert_json_success(result)
@@ -296,7 +279,7 @@ class UnreadCountTests(ZulipTestCase):
         self.login('hamlet')
         invalid_stream_id = "12345678"
         result = self.client_post("/json/mark_stream_as_read", {
-            "stream_id": invalid_stream_id
+            "stream_id": invalid_stream_id,
         })
         self.assert_json_error(result, 'Invalid stream id')
 
@@ -383,7 +366,7 @@ class FixUnreadTests(ZulipTestCase):
             recipient = stream.recipient
             subscription = Subscription.objects.get(
                 user_profile=user,
-                recipient=recipient
+                recipient=recipient,
             )
             subscription.is_muted = True
             subscription.save()
@@ -420,44 +403,24 @@ class FixUnreadTests(ZulipTestCase):
         um_muted_topic_id = send_message('Verona', 'muted_topic')
         um_muted_stream_id = send_message('Denmark', 'whatever')
 
-        user.pointer = self.get_last_message().id
-        user.save()
-
-        um_post_pointer_id = send_message('Verona', 'muted_topic')
-
         self.subscribe(user, 'temporary')
         um_unsubscribed_id = send_message('temporary', 'whatever')
         force_unsubscribe('temporary')
 
-        # verify data setup
+        # Verify the setup
         assert_unread(um_normal_id)
         assert_unread(um_muted_topic_id)
         assert_unread(um_muted_stream_id)
-        assert_unread(um_post_pointer_id)
-        assert_unread(um_unsubscribed_id)
-
-        with connection.cursor() as cursor:
-            fix_pre_pointer(cursor, user)
-
-        # The only message that should have been fixed is the "normal"
-        # unumuted message before the pointer.
-        assert_read(um_normal_id)
-
-        # We don't "fix" any messages that are either muted or after the
-        # pointer, because they can be legitimately unread.
-        assert_unread(um_muted_topic_id)
-        assert_unread(um_muted_stream_id)
-        assert_unread(um_post_pointer_id)
         assert_unread(um_unsubscribed_id)
 
         # fix unsubscribed
         with connection.cursor() as cursor:
             fix_unsubscribed(cursor, user)
 
-        # Most messages don't change.
+        # Muted messages don't change.
         assert_unread(um_muted_topic_id)
         assert_unread(um_muted_stream_id)
-        assert_unread(um_post_pointer_id)
+        assert_unread(um_normal_id)
 
         # The unsubscribed entry should change.
         assert_read(um_unsubscribed_id)
@@ -465,18 +428,18 @@ class FixUnreadTests(ZulipTestCase):
         # test idempotency
         fix(user)
 
-        assert_read(um_normal_id)
+        assert_unread(um_normal_id)
         assert_unread(um_muted_topic_id)
         assert_unread(um_muted_stream_id)
-        assert_unread(um_post_pointer_id)
         assert_read(um_unsubscribed_id)
 
 class PushNotificationMarkReadFlowsTest(ZulipTestCase):
     def get_mobile_push_notification_ids(self, user_profile: UserProfile) -> List[int]:
         return list(UserMessage.objects.filter(
             user_profile=user_profile,
-            flags=UserMessage.flags.active_mobile_push_notification).order_by(
-                "message_id").values_list("message_id", flat=True))
+        ).extra(
+            where=[UserMessage.where_active_push_notification()],
+        ).order_by("message_id").values_list("message_id", flat=True))
 
     @mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value=True)
     def test_track_active_mobile_push_notifications(self, mock_push_notifications: mock.MagicMock) -> None:

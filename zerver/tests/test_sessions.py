@@ -1,25 +1,22 @@
 from datetime import timedelta
-from django.utils.timezone import now as timezone_now
 from typing import Any, Callable
+from unittest import mock
+
+from django.utils.timezone import now as timezone_now
 
 from zerver.lib.sessions import (
-    user_sessions,
+    delete_all_deactivated_user_sessions,
+    delete_all_user_sessions,
+    delete_realm_user_sessions,
     delete_session,
     delete_user_sessions,
-    delete_realm_user_sessions,
-    delete_all_user_sessions,
-    delete_all_deactivated_user_sessions,
     get_expirable_session_var,
     set_expirable_session_var,
+    user_sessions,
 )
-
-from zerver.models import (
-    get_realm, Realm, UserProfile
-)
-
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.models import Realm, UserProfile, get_realm
 
-import mock
 
 class TestSessions(ZulipTestCase):
 

@@ -1,46 +1,48 @@
-from django import forms
-from django.conf import settings
-from django.contrib.auth import authenticate
-from django.contrib.auth.forms import SetPasswordForm, AuthenticationForm, \
-    PasswordResetForm
-from django.core.exceptions import ValidationError
-from django.urls import reverse
-from django.core.validators import validate_email
-from django.utils.translation import ugettext as _
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.http import HttpRequest
-from jinja2 import Markup as mark_safe
-
-from zerver.lib.actions import do_change_password, email_not_system_bot
-from zerver.lib.email_validation import email_allowed_for_realm, \
-    validate_email_not_already_in_realm
-from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
-from zerver.lib.rate_limiter import RateLimited, RateLimitedObject
-from zerver.lib.request import JsonableError
-from zerver.lib.send_email import send_email, FromAddress
-from zerver.lib.subdomains import get_subdomain, is_root_domain_available
-from zerver.lib.users import check_full_name
-from zerver.models import Realm, get_user_by_delivery_email, UserProfile, get_realm, \
-    email_to_domain, \
-    DisposableEmailError, DomainNotAllowedForRealmError, \
-    EmailContainsPlusError
-from zproject.backends import email_auth_enabled, email_belongs_to_ldap, check_password_strength
-
 import logging
 import re
-import DNS
+from typing import Any, Dict, List, Optional, Tuple
 
-from typing import Any, List, Optional, Dict, Tuple
+import DNS
+from django import forms
+from django.conf import settings
+from django.contrib.auth import authenticate, password_validation
+from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, SetPasswordForm
+from django.contrib.auth.tokens import PasswordResetTokenGenerator, default_token_generator
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
+from django.http import HttpRequest
+from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.utils.translation import ugettext as _
+from jinja2 import Markup as mark_safe
 from two_factor.forms import AuthenticationTokenForm as TwoFactorAuthenticationTokenForm
 from two_factor.utils import totp_digits
+
+from zerver.lib.actions import do_change_password, email_not_system_bot
+from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
+from zerver.lib.name_restrictions import is_disposable_domain, is_reserved_subdomain
+from zerver.lib.rate_limiter import RateLimited, RateLimitedObject
+from zerver.lib.request import JsonableError
+from zerver.lib.send_email import FromAddress, send_email
+from zerver.lib.subdomains import get_subdomain, is_root_domain_available
+from zerver.lib.users import check_full_name
+from zerver.models import (
+    DisposableEmailError,
+    DomainNotAllowedForRealmError,
+    EmailContainsPlusError,
+    Realm,
+    UserProfile,
+    email_to_domain,
+    get_realm,
+    get_user_by_delivery_email,
+)
+from zproject.backends import check_password_strength, email_auth_enabled, email_belongs_to_ldap
 
 MIT_VALIDATION_ERROR = 'That user does not exist at MIT or is a ' + \
                        '<a href="https://ist.mit.edu/email-lists">mailing list</a>. ' + \
                        'If you want to sign up an alias for Zulip, ' + \
-                       '<a href="mailto:support@zulipchat.com">contact us</a>.'
+                       '<a href="mailto:support@zulip.com">contact us</a>.'
 WRONG_SUBDOMAIN_ERROR = "Your Zulip account is not a member of the " + \
                         "organization associated with this subdomain.  " + \
                         "Please contact your organization administrator with any questions."
@@ -57,7 +59,7 @@ def email_is_not_mit_mailing_list(email: str) -> None:
         username = email.rsplit("@", 1)[0]
         # Check whether the user exists and can get mail.
         try:
-            DNS.dnslookup("%s.pobox.ns.athena.mit.edu" % (username,), DNS.Type.TXT)
+            DNS.dnslookup(f"{username}.pobox.ns.athena.mit.edu", DNS.Type.TXT)
         except DNS.Base.ServerError as e:
             if e.rcode == DNS.Status.NXDOMAIN:
                 raise ValidationError(mark_safe(MIT_VALIDATION_ERROR))
@@ -194,6 +196,20 @@ class RealmCreationForm(forms.Form):
                                          email_is_not_disposable])
 
 class LoggingSetPasswordForm(SetPasswordForm):
+    new_password1 = forms.CharField(
+        label=_("New password"),
+        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
+        strip=False,
+        help_text=password_validation.password_validators_help_text_html(),
+        max_length=RegistrationForm.MAX_PASSWORD_LENGTH,
+    )
+    new_password2 = forms.CharField(
+        label=_("New password confirmation"),
+        strip=False,
+        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
+        max_length=RegistrationForm.MAX_PASSWORD_LENGTH,
+    )
+
     def clean_new_password1(self) -> str:
         new_password = self.cleaned_data['new_password1']
         if not check_password_strength(new_password):
@@ -214,7 +230,7 @@ def generate_password_reset_url(user_profile: UserProfile,
     uid = urlsafe_base64_encode(force_bytes(user_profile.id))
     endpoint = reverse('django.contrib.auth.views.password_reset_confirm',
                        kwargs=dict(uidb64=uid, token=token))
-    return "{}{}".format(user_profile.realm.uri, endpoint)
+    return f"{user_profile.realm.uri}{endpoint}"
 
 class ZulipPasswordResetForm(PasswordResetForm):
     def save(self,
@@ -226,7 +242,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
              from_email: Optional[str]=None,
              request: HttpRequest=None,
              html_email_template_name: Optional[str]=None,
-             extra_email_context: Optional[Dict[str, Any]]=None
+             extra_email_context: Optional[Dict[str, Any]]=None,
              ) -> None:
         """
         If the email address has an account in the target realm,
@@ -305,7 +321,7 @@ class RateLimitedPasswordResetByEmail(RateLimitedObject):
         super().__init__()
 
     def key(self) -> str:
-        return "{}:{}".format(type(self).__name__, self.email)
+        return f"{type(self).__name__}:{self.email}"
 
     def rules(self) -> List[Tuple[int, int]]:
         return settings.RATE_LIMITING_RULES['password_reset_form_by_email']

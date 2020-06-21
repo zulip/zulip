@@ -19,6 +19,9 @@ set_global('$', (arg) => {
     }
 
     return {
+        replace: (regex, string) => {
+            arg = arg.replace(regex, string);
+        },
         html: () => arg,
     };
 });
@@ -577,6 +580,12 @@ run_test('errors', () => {
     list_render.create(container, list);
     blueslip.reset();
 
+    blueslip.expect('error', 'get_item should be a function');
+    list_render.create(container, list, {
+        get_item: 'not a function',
+    });
+    blueslip.reset();
+
     blueslip.expect('error', 'Filter predicate is not a function.');
     list_render.create(container, list, {
         filter: {
@@ -666,4 +675,162 @@ run_test('replace_list_data w/filter update', () => {
         container.appended_data.html(),
         '(6)(8)'
     );
+});
+
+run_test('opts.get_item', () => {
+    const items = {};
+
+    items[1] = 'one';
+    items[2] = 'two';
+    items[3] = 'three';
+    items[4] = 'four';
+
+    const list = [1, 2, 3, 4];
+
+    const boring_opts = {
+        get_item: (n) => items[n],
+    };
+
+    assert.deepEqual(
+        list_render.get_filtered_items(
+            'whatever', list, boring_opts
+        ),
+        ['one', 'two', 'three', 'four']
+    );
+
+    const predicate = (item, value) => {
+        return item.startsWith(value);
+    };
+
+    const predicate_opts = {
+        get_item: (n) => items[n],
+        filter: {
+            predicate: predicate,
+        },
+    };
+
+    assert.deepEqual(
+        list_render.get_filtered_items(
+            't', list, predicate_opts
+        ),
+        ['two', 'three']
+    );
+
+    const filterer_opts = {
+        get_item: (n) => items[n],
+        filter: {
+            filterer: (items, value) => {
+                return items.filter((item) => {
+                    return predicate(item, value);
+                });
+            },
+        },
+    };
+
+    assert.deepEqual(
+        list_render.get_filtered_items(
+            't', list, filterer_opts
+        ),
+        ['two', 'three']
+    );
+});
+
+run_test('render item', () => {
+    const container = make_container();
+    const scroll_container =  make_scroll_container(container);
+    const INITIAL_RENDER_COUNT = 80; // Keep this in sync with the actual code.
+    container.html = () => {};
+    let called = false;
+    scroll_container.find = (query) => {
+        const expected_queries = [`tr[data-item='${INITIAL_RENDER_COUNT}']`,
+                                  `tr[data-item='${INITIAL_RENDER_COUNT - 1}']`];
+        const item = INITIAL_RENDER_COUNT - 1;
+        const new_html = `<tr data-item=${item}>updated: ${item}</tr>\n`;
+        const regex = new RegExp(`\\<tr data-item=${item}\\>.*?\<\\/tr\\>`);
+        assert(expected_queries.includes(query));
+        if (query.includes(`data-item='${INITIAL_RENDER_COUNT}'`)) {
+            return; // This item is not rendered, so we find nothing
+        }
+        return {
+            // Return a JQuery stub for the original HTML.
+            // We want this to be called when we replace
+            // the existing HTML with newly rendered HTML.
+            replaceWith: (html) => {
+                assert.equal(new_html, html);
+                called = true;
+                container.appended_data.replace(regex, new_html);
+            },
+        };
+    };
+
+    const list = [...Array(100).keys()];
+
+    let text = 'initial';
+    const get_item = (item) => ({text: `${text}: ${item}`, value: item});
+
+    const widget = list_render.create(container, list, {
+        name: 'replace-list',
+        modifier: (item) => `<tr data-item=${item.value}>${item.text}</tr>\n`,
+        get_item: get_item,
+        html_selector: (item) => `tr[data-item='${item}']`,
+    });
+    const item = INITIAL_RENDER_COUNT - 1;
+
+    assert(container.appended_data.html().includes('<tr data-item=2>initial: 2</tr>'));
+    assert(container.appended_data.html().includes('<tr data-item=3>initial: 3</tr>'));
+    text = 'updated';
+    called = false;
+    widget.render_item(INITIAL_RENDER_COUNT - 1);
+    assert(called);
+    assert(container.appended_data.html().includes('<tr data-item=2>initial: 2</tr>'));
+    assert(container.appended_data.html().includes(`<tr data-item=${item}>updated: ${item}</tr>`));
+
+    // Item 80 should not be in the rendered list. (0 indexed)
+    assert(!container.appended_data.html().includes(`<tr data-item=${INITIAL_RENDER_COUNT}>initial: ${INITIAL_RENDER_COUNT}</tr>`));
+    called = false;
+    widget.render_item(INITIAL_RENDER_COUNT);
+    assert(!called);
+    widget.render_item(INITIAL_RENDER_COUNT - 1);
+    assert(called);
+
+    // Tests below this are for the corner cases, where we abort the rerender.
+
+    blueslip.expect('error', 'html_selector should be a function.');
+    list_render.create(container, list, {
+        name: 'replace-list',
+        modifier: (item) => `<tr data-item=${item.value}>${item.text}</tr>\n`,
+        get_item: get_item,
+        html_selector: 'hello world',
+    });
+    blueslip.reset();
+
+    let get_item_called;
+    const widget_2 = list_render.create(container, list, {
+        name: 'replace-list',
+        modifier: (item) => `<tr data-item=${item.value}>${item.text}</tr>\n`,
+        get_item: (item) => {
+            get_item_called = true;
+            return item;
+        },
+    });
+    get_item_called = false;
+    widget_2.render_item(item);
+    // Test that we didn't try to render the item.
+    assert(!get_item_called);
+
+    let rendering_item = false;
+    const widget_3 = list_render.create(container, list, {
+        name: 'replace-list',
+        modifier: (item) => {
+            return rendering_item ? undefined : `${item}\n`;
+        },
+        get_item: get_item,
+        html_selector: (item) => `tr[data-item='${item}']`,
+    });
+    // Once we have initially rendered the widget, change the
+    // behavior of the modifier function.
+    rendering_item = true;
+    blueslip.expect('error', 'List item is not a string: undefined');
+    widget_3.render_item(item);
+    blueslip.reset();
 });

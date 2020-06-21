@@ -1,24 +1,110 @@
 let actively_scrolling = false;
 
-let loading_more_messages_indicator_showing = false;
+// Tracks whether the next scroll that will complete is initiated by
+// code, not the user, and thus should avoid moving the selected
+// message.
+let update_selection_on_next_scroll = true;
+exports.suppress_selection_update_on_next_scroll = function () {
+    update_selection_on_next_scroll = false;
+};
+
+let loading_older_messages_indicator_showing = false;
+let loading_newer_messages_indicator_showing = false;
 exports.show_loading_older = function () {
-    if (!loading_more_messages_indicator_showing) {
-        loading.make_indicator($('#loading_more_messages_indicator'),
+    if (!loading_older_messages_indicator_showing) {
+        loading.make_indicator($('#loading_older_messages_indicator'),
                                {abs_positioned: true});
-        loading_more_messages_indicator_showing = true;
+        loading_older_messages_indicator_showing = true;
         floating_recipient_bar.hide();
     }
 };
 
 exports.hide_loading_older = function () {
-    if (loading_more_messages_indicator_showing) {
-        loading.destroy_indicator($("#loading_more_messages_indicator"));
-        loading_more_messages_indicator_showing = false;
+    if (loading_older_messages_indicator_showing) {
+        loading.destroy_indicator($("#loading_older_messages_indicator"));
+        loading_older_messages_indicator_showing = false;
+    }
+};
+
+exports.show_loading_newer = function () {
+    if (!loading_newer_messages_indicator_showing) {
+        $(".bottom-messages-logo").show();
+        loading.make_indicator($('#loading_newer_messages_indicator'),
+                               {abs_positioned: true});
+        loading_newer_messages_indicator_showing = true;
+        floating_recipient_bar.hide();
+    }
+};
+
+exports.hide_loading_newer = function () {
+    if (loading_newer_messages_indicator_showing) {
+        $(".bottom-messages-logo").hide();
+        loading.destroy_indicator($("#loading_newer_messages_indicator"));
+        loading_newer_messages_indicator_showing = false;
     }
 };
 
 exports.hide_indicators = function () {
     exports.hide_loading_older();
+    exports.hide_loading_newer();
+};
+
+exports.show_history_limit_notice = function () {
+    $(".top-messages-logo").hide();
+    $(".history-limited-box").show();
+    narrow.hide_empty_narrow_message();
+};
+
+exports.hide_history_limit_notice = function () {
+    $(".top-messages-logo").show();
+    $(".history-limited-box").hide();
+};
+
+exports.hide_end_of_results_notice = function () {
+    $(".all-messages-search-caution").hide();
+};
+
+exports.show_end_of_results_notice = function () {
+    $(".all-messages-search-caution").show();
+    // Set the link to point to this search with streams:public added.
+    // It's a bit hacky to use the href, but
+    // !filter.includes_full_stream_history() implies streams:public
+    // wasn't already present.
+    const update_hash = hash_util.search_public_streams_notice_url();
+    $(".all-messages-search-caution a.search-shared-history").attr("href", update_hash);
+};
+
+exports.update_top_of_narrow_notices = function (msg_list) {
+    // Assumes that the current state is all notices hidden (i.e. this
+    // will not hide a notice that should not be there)
+    if (msg_list !== current_msg_list) {
+        return;
+    }
+
+    if (msg_list.data.fetch_status.has_found_oldest() &&
+        current_msg_list !== home_msg_list) {
+        const filter = narrow_state.filter();
+        // Potentially display the notice that lets users know
+        // that not all messages were searched.  One could
+        // imagine including `filter.is_search()` in these
+        // conditions, but there's a very legitimate use case
+        // for moderation of searching for all messages sent
+        // by a potential spammer user.
+        if (!filter.contains_only_private_messages() &&
+            !filter.includes_full_stream_history() &&
+            !filter.is_personal_filter()) {
+            exports.show_end_of_results_notice();
+        }
+    }
+
+    if (msg_list.data.fetch_status.history_limited()) {
+        exports.show_history_limit_notice();
+    }
+};
+
+exports.hide_top_of_narrow_notices = function () {
+    exports.hide_end_of_results_notice();
+    exports.hide_history_limit_notice();
 };
 
 exports.actively_scrolling = function () {
@@ -32,10 +118,10 @@ exports.scroll_finished = function () {
         return;
     }
 
-    if (!pointer.suppress_scroll_pointer_update) {
+    if (update_selection_on_next_scroll) {
         message_viewport.keep_pointer_in_view();
     } else {
-        pointer.set_suppress_scroll_pointer_update(false);
+        update_selection_on_next_scroll = true;
     }
 
     floating_recipient_bar.update();
@@ -43,8 +129,6 @@ exports.scroll_finished = function () {
     if (message_viewport.at_top()) {
         message_fetch.maybe_load_older_messages({
             msg_list: current_msg_list,
-            show_loading: exports.show_loading_older,
-            hide_loading: exports.hide_loading_older,
         });
     }
 
@@ -73,6 +157,26 @@ exports.initialize = function () {
         unread_ops.process_visible();
         scroll_finish();
     }, 50));
+
+    // Scroll handler that marks messages as read when you scroll past them.
+    $(document).on('message_selected.zulip', function (event) {
+        if (event.id === -1) {
+            return;
+        }
+
+        if (event.mark_read && event.previously_selected !== -1) {
+            // Mark messages between old pointer and new pointer as read
+            let messages;
+            if (event.id < event.previously_selected) {
+                messages = event.msg_list.message_range(event.id, event.previously_selected);
+            } else {
+                messages = event.msg_list.message_range(event.previously_selected, event.id);
+            }
+            if (event.msg_list.can_mark_messages_read()) {
+                unread_ops.notify_server_messages_read(messages, {from: 'pointer'});
+            }
+        }
+    });
 };
 
 

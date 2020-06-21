@@ -135,7 +135,7 @@ run_test('reply_message_private', () => {
         email: 'fred@example.com',
         full_name: 'Fred Frost',
     };
-    people.add(fred);
+    people.add_active_user(fred);
 
     people.is_my_user_id = () => false;
 

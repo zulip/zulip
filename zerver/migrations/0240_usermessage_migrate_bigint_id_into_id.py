@@ -39,6 +39,6 @@ class Migration(migrations.Migration):
                     name='id',
                     field=models.BigAutoField(primary_key=True, serialize=False),
                 ),
-            ]
+            ],
         ),
     ]

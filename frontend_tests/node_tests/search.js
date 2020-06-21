@@ -4,7 +4,6 @@ set_global('page_params', {
 zrequire('search');
 zrequire('search_pill');
 zrequire('Filter', 'js/filter');
-zrequire('search_pill_widget');
 zrequire('tab_bar');
 
 const noop = () => {};
@@ -12,14 +11,21 @@ const return_true = () => true;
 const return_false = () => false;
 
 set_global('$', global.make_zjquery());
-set_global('narrow_state', {});
+set_global('narrow_state', {filter: return_false});
 set_global('search_suggestion', {});
 set_global('ui_util', {
     change_tab_to: noop,
+    place_caret_at_end: noop,
 });
 set_global('narrow', {});
+set_global('search_pill_widget', {
+    widget: {
+        getByID: return_true,
+    },
+});
 
 search_pill.append_search_string = noop;
+search_pill.get_search_string_for_current_filter = noop;
 
 global.patch_builtin('setTimeout', func => func());
 
@@ -38,6 +44,13 @@ run_test('clear_search_form', () => {
 run_test('update_button_visibility', () => {
     const search_query = $('#search_query');
     const search_button = $('.search_button');
+
+    search_query.is = return_false;
+    search_query.val('');
+    narrow_state.active = return_false;
+    search_button.prop('disabled', true);
+    search.update_button_visibility();
+    assert(search_button.prop('disabled'));
 
     search_query.is = return_true;
     search_query.val('');
@@ -61,11 +74,10 @@ run_test('update_button_visibility', () => {
     assert(!search_button.prop('disabled'));
 });
 
-run_test('initizalize', () => {
+run_test('initialize', () => {
     const search_query_box = $('#search_query');
     const searchbox_form = $('#searchbox_form');
     const search_button = $('.search_button');
-    const searchbox = $('#searchbox');
 
     searchbox_form.on = (event, func) => {
         assert.equal(event, 'compositionend');
@@ -86,6 +98,7 @@ run_test('initizalize', () => {
         assert.equal(opts.naturalSearch, true);
         assert.equal(opts.helpOnEmptyStrings, true);
         assert.equal(opts.matcher(), true);
+        assert.equal(opts.on_move(), true);
 
         {
             const search_suggestions = {
@@ -134,12 +147,16 @@ run_test('initizalize', () => {
                 is_blurred = false;
                 is_append_search_string_called = false;
                 search_query_box.val(search_box_val);
+                Filter.parse = (search_string) => {
+                    assert.equal(search_string, search_box_val);
+                    return operators;
+                };
                 narrow.activate = (raw_operators, options) => {
                     assert.deepEqual(raw_operators, operators);
                     assert.deepEqual(options, {trigger: 'search'});
                 };
                 search_pill.get_search_string_for_current_filter = () => {
-                    return '';
+                    return search_box_val;
                 };
             };
 
@@ -149,8 +166,9 @@ run_test('initizalize', () => {
                 operand: 'ver',
             }];
             _setup('ver');
-            opts.updater('ver');
-            assert(is_blurred);
+
+            assert.equal(opts.updater('ver'), 'ver');
+            assert(!is_blurred);
             assert(is_append_search_string_called);
 
             operators = [{
@@ -159,13 +177,16 @@ run_test('initizalize', () => {
                 operand: 'Verona',
             }];
             _setup('stream:Verona');
-            opts.updater('stream:Verona');
-            assert(is_blurred);
+
+            assert.equal(opts.updater('stream:Verona'), 'stream:Verona');
+            assert(!is_blurred);
             assert(is_append_search_string_called);
 
             search.is_using_input_method = true;
             _setup('stream:Verona');
-            opts.updater('stream:Verona');
+            search_query_box.is = return_true;
+
+            assert.equal(opts.updater('stream:Verona'), 'stream:Verona');
             assert(!is_blurred);
             assert(is_append_search_string_called);
         }
@@ -201,16 +222,24 @@ run_test('initizalize', () => {
             is_blurred = false;
             search_button.prop('disabled', false);
             search_query_box.val(search_box_val);
+            Filter.parse = (search_string) => {
+                assert.equal(search_string, search_box_val);
+                return operators;
+            };
             narrow.activate = (raw_operators, options) => {
                 assert.deepEqual(raw_operators, operators);
                 assert.deepEqual(options, {trigger: 'search'});
             };
             search_pill.get_search_string_for_current_filter = () => {
-                return '';
+                return search_box_val;
             };
         };
 
-        operators = [];
+        operators = [{
+            negated: false,
+            operator: 'search',
+            operand: '',
+        }];
         _setup('');
 
         ev.which = 15;
@@ -232,11 +261,6 @@ run_test('initizalize', () => {
         func(ev);
         assert(is_blurred);
 
-        operators = [{
-            negated: false,
-            operator: 'search',
-            operand: 'ver',
-        }];
         _setup('ver');
         search.is_using_input_method = true;
         func(ev);
@@ -252,6 +276,13 @@ run_test('initizalize', () => {
         assert(!search_button.prop('disabled'));
     };
 
+    const search_pill_stub = $.create('.pill');
+    search_pill_stub.closest = () => {
+        return { data: noop };
+    };
+    const stub_event = {
+        relatedTarget: search_pill_stub,
+    };
     search_query_box.on = (event, callback) => {
         if (event === 'focus') {
             search_button.prop('disabled', true);
@@ -260,20 +291,8 @@ run_test('initizalize', () => {
         } else if (event === 'blur') {
             search_query_box.val("test string");
             narrow_state.search_string = () => 'ver';
-            callback();
+            callback(stub_event);
             assert.equal(search_query_box.val(), 'test string');
-        }
-    };
-
-    searchbox.on = (event, callback) => {
-        if (event === 'focusin') {
-            searchbox.css({"box-shadow": "unset"});
-            callback();
-            assert.deepEqual(searchbox.css(), {"box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)"});
-        } else if (event === 'focusout') {
-            searchbox.css({"box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)"});
-            callback();
-            assert.deepEqual(searchbox.css(), {"box-shadow": "unset"});
         }
     };
 
@@ -281,10 +300,30 @@ run_test('initizalize', () => {
 });
 
 run_test('initiate_search', () => {
+    // open typeahead and select text when navbar is open
+    // this implicitly expects the code to used the chained
+    // function calls, which is something to keep in mind if
+    // this test ever fails unexpectedly.
+    let typeahead_forced_open = false;
+    let is_searchbox_text_selected = false;
     let is_searchbox_focused = false;
     $('#search_query').focus = () => {
         is_searchbox_focused = true;
     };
+    $('#search_query').select = noop;
+    $('#search_query').typeahead = (lookup) => {
+        if (lookup === "lookup") {
+            typeahead_forced_open = true;
+            return {
+                select: () => {
+                    is_searchbox_text_selected = true;
+                },
+            };
+        }
+    };
+
     search.initiate_search();
+    assert(typeahead_forced_open);
+    assert(is_searchbox_text_selected);
     assert(is_searchbox_focused);
 });

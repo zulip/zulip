@@ -1,6 +1,5 @@
 import os
 import pathlib
-
 from typing import List
 
 from .common.spiders import BaseDocumentationSpider
@@ -12,7 +11,7 @@ def get_start_url() -> List[str]:
     start_file = os.path.join(dir_path, os.path.join(*[os.pardir] * 4),
                               "docs/_build/html/index.html")
     return [
-        pathlib.Path(os.path.abspath(start_file)).as_uri()
+        pathlib.Path(os.path.abspath(start_file)).as_uri(),
     ]
 
 

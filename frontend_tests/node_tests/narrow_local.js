@@ -1,5 +1,6 @@
 
 zrequire('Filter', 'js/filter');
+zrequire('FetchStatus', 'js/fetch_status');
 zrequire('MessageListData', 'js/message_list_data');
 zrequire('narrow_state');
 zrequire('narrow');
@@ -37,8 +38,10 @@ function test_with(fixture) {
     };
 
     message_list.all = {
-        fetch_status: {
-            has_found_newest: () => fixture.has_found_newest,
+        data: {
+            fetch_status: {
+                has_found_newest: () => fixture.has_found_newest,
+            },
         },
         empty: () => fixture.empty,
         all_messages: () => {

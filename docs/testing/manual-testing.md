@@ -266,7 +266,7 @@ then the message will disappear from the view.
 
 Here are the things to test:
 
-- Stream sidebar menus
+- Stream sidebar menus (click ellipsis when hovering over stream filters)
     - Stream settings (just make sure it goes there)
     - Narrow (and then have Hamlet send a message)
     - Pin/unpin (do both)
@@ -276,7 +276,7 @@ Here are the things to test:
     - Unsubscribe (and then go to Stream settings in the gear menu to resubscribe)
     - Choose custom color (play around with this)
 
-- Topic sidebar menus
+- Topic sidebar menus (click ellipsis when hovering over topics)
     - Narrow (and then have Hamlet send a message)
     - Mute/unmute (try both)
     - Mark as read (scroll back and then have Hamlet send you a message)
@@ -298,7 +298,7 @@ Here are the things to test:
     - Mute/unmute (try both, watch left sidebar)
     - Link to this conversation
 
-- Buddy list chevron menus
+- Buddy list menus (click ellipsis when hovering over users)
     - Narrow to PMs with
     - Narrow to message sent by
     - Compose a message to

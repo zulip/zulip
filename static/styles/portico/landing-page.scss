@@ -23,6 +23,14 @@ h3 {
     line-height: 1.2;
 }
 
+h1 {
+    font-size: 2em;
+}
+
+h2 {
+    font-size: 1.8em;
+}
+
 p {
     margin: 10px 0px;
     font-weight: normal;
@@ -33,43 +41,37 @@ ul {
     font-weight: normal;
 }
 
-a,
-a:hover,
-a:visited {
-    color: hsl(170, 47%, 33%);
-}
-
-a.arrow::after {
-    content: " ";
-    display: inline-block;
-    position: relative;
-
-    height: 17px;
-    width: 17px;
-
-    top: 3px;
-
-    background-image: url(/static/images/landing-page/arrow.png);
-    background-size: 100%;
-
-    margin-left: 5px;
-}
-
-h1 {
-    font-size: 2em;
-}
-
-h2 {
-    font-size: 1.8em;
-}
-
 a {
     position: relative;
     cursor: pointer;
-}
+    color: hsl(170, 47%, 33%);
 
-a:hover {
-    text-decoration: none;
+    &:hover,
+    &:visited {
+        color: hsl(170, 47%, 33%);
+    }
+
+    &:hover {
+        text-decoration: none;
+    }
+
+    &.arrow {
+        &::after {
+            content: " ";
+            display: inline-block;
+            position: relative;
+            height: 17px;
+            width: 17px;
+            top: 3px;
+            background-image: url(/static/images/landing-page/arrow.png);
+            background-size: 100%;
+            margin-left: 5px;
+        }
+    }
+
+    &.silver {
+        text-decoration: underline;
+    }
 }
 
 span a:hover,
@@ -87,16 +89,18 @@ ol a:hover {
     align-items: center;
 }
 
-.float.left {
-    float: left;
-}
+.float {
+    &.left {
+        float: left;
+    }
 
-.float.right {
-    float: right;
-}
+    &.right {
+        float: right;
+    }
 
-.float.clear {
-    clear: both;
+    &.clear {
+        clear: both;
+    }
 }
 
 .small {
@@ -116,10 +120,6 @@ ol a:hover {
 }
 
 .bold {
-    font-weight: 600;
-}
-
-.silver.bold {
     font-weight: 600;
 }
 
@@ -184,6 +184,19 @@ button {
     }
 }
 
+.silver {
+    color: hsl(0, 0%, 100%) !important;
+    opacity: 0.8;
+
+    &:hover {
+        opacity: 1;
+    }
+
+    &.bold {
+        font-weight: 600;
+    }
+}
+
 /* -- navbar styling -- */
 
 nav {
@@ -194,162 +207,143 @@ nav {
     padding: 40px;
 
     z-index: 4;
-}
 
-nav .brand.logo {
-    text-decoration: none;
-}
+    .brand.logo {
+        text-decoration: none;
+    }
 
-nav.white {
-    background-color: hsl(0, 0%, 100%);
-}
+    &.white {
+        background-color: hsl(0, 0%, 100%);
 
-a.silver {
-    text-decoration: underline;
-}
+        li {
+            a,
+            a:hover,
+            a:visited {
+                color: hsl(0, 0%, 27%);
+            }
+        }
 
-.silver {
-    color: hsl(0, 0%, 100%) !important;
-    opacity: 0.8;
-}
+        ul {
+            li {
+                &.active {
+                    &::after {
+                        color: hsl(0, 0%, 27%);
+                    }
+                }
+            }
+        }
 
-.silver:hover {
-    opacity: 1;
-}
+        .brand.logo {
+            span {
+                color: hsl(0, 0%, 27%);
+            }
 
-nav.white li a,
-nav.white li a:hover,
-nav.white li a:visited {
-    color: hsl(0, 0%, 27%);
-}
+            circle {
+                fill: hsl(0, 0%, 27%) !important;
+            }
 
-nav.white ul li.active::after {
-    color: hsl(0, 0%, 27%);
-}
+            path {
+                fill: hsl(0, 0%, 100%) !important;
+                stroke: hsl(0, 0%, 100%) !important;
+            }
+        }
 
-nav.white .brand.logo span {
-    color: hsl(0, 0%, 27%);
-}
+        .hamburger {
+            fill: hsl(0, 0%, 27%);
+        }
+    }
 
-nav.white .brand-logo circle {
-    fill: hsl(0, 0%, 27%) !important;
-}
+    .hamburger {
+        display: none;
+        fill: hsl(0, 0%, 100%);
+        cursor: pointer;
+        margin-top: 3px;
+    }
 
-nav.white .brand-logo path {
-    fill: hsl(0, 0%, 100%) !important;
-    stroke: hsl(0, 0%, 100%) !important;
-}
+    .content {
+        margin: 0 5px 0 10px;
+        position: relative;
+        z-index: 2;
+    }
 
-nav .hamburger {
-    display: none;
-    fill: hsl(0, 0%, 100%);
-    cursor: pointer;
-    margin-top: 3px;
-}
+    .logo {
+        top: 7px;
 
-nav.white .hamburger {
-    fill: hsl(0, 0%, 27%);
-}
+        span {
+            position: relative;
+            left: 5px;
+            top: 1px;
+            color: hsl(0, 0%, 100%);
+            font-weight: 600;
+            vertical-align: top;
+            text-transform: uppercase;
+            font-size: 1.2rem;
+            letter-spacing: 0.1em;
+        }
+    }
 
-nav .content {
-    margin: 0 5px 0 10px;
-    position: relative;
-    z-index: 2;
-}
+    .brand-logo {
+        width: 25px;
+    }
 
-nav .logo {
-    top: 7px;
-}
+    ul {
+        float: right;
+        list-style-type: none;
+        font-weight: 400;
+        margin: 0;
+        padding: 0;
 
-nav .logo span {
-    position: relative;
-    left: 5px;
-    top: 1px;
-    color: hsl(0, 0%, 100%);
-    font-weight: 600;
-    vertical-align: top;
-    text-transform: uppercase;
-    font-size: 1.2rem;
-    letter-spacing: 0.1em;
-}
+        outline: 1000px solid;
+        outline-color: transparent;
 
-nav.white .brand.logo span {
-    color: hsl(0, 0%, 27%);
-}
+        cursor: pointer;
+        transition: outline-color 0.2s ease;
 
-nav .brand-logo {
-    width: 25px;
-}
+        .exit {
+            display: none;
+            user-select: none;
+        }
 
-nav ul {
-    float: right;
-    list-style-type: none;
-    font-weight: 400;
-    margin: 0;
-    padding: 0;
+        li {
+            position: relative;
+            display: inline-block;
+            margin: 10px;
 
-    outline: 1000px solid;
-    outline-color: transparent;
+            color: hsl(0, 0%, 100%);
 
-    cursor: pointer;
-    transition: outline-color 0.2s ease;
-}
+            opacity: 0.7;
+            transition: all 0.2s ease;
 
-nav ul .exit {
-    display: none;
-    user-select: none;
-}
+            &.active,
+            &:hover {
+                opacity: 1;
+            }
 
-nav ul li {
-    position: relative;
-    display: inline-block;
-    margin: 10px;
+            &.active {
+                &::after {
+                    content: "v";
+                    position: absolute;
+                    bottom: -15px;
+                    left: calc(50% - 4px);
+                    font-weight: 100;
+                    transform: scaleX(2) scaleY(0.5);
+                }
+            }
+        }
+    }
 
-    color: hsl(0, 0%, 100%);
-
-    opacity: 0.7;
-    transition: all 0.2s ease;
-}
-
-nav li a,
-nav li a:hover,
-nav li a:visited {
-    text-decoration: none;
-    color: hsl(0, 0%, 100%);
-
-    font-size: 1.05em;
-}
-
-nav ul li.active,
-nav ul li:hover {
-    opacity: 1;
-}
-
-nav ul li.active::after {
-    content: "v";
-
-    position: absolute;
-    bottom: -15px;
-    left: calc(50% - 4px);
-
-    font-weight: 100;
-
-    transform: scaleX(2) scaleY(0.5);
+    li {
+        a,
+        a:hover,
+        a:visited {
+            text-decoration: none;
+            color: hsl(0, 0%, 100%);
+            font-size: 1.05em;
+        }
+    }
 }
 
 /* -- main panel styling -- */
-.portico-landing {
-    position: relative;
-
-    padding-top: 120px;
-
-    z-index: 1;
-}
-
-.portico-landing.show {
-    opacity: 1;
-}
-
 .main {
     width: calc(100% - 200px - 20px);
     margin: 0 auto;
@@ -368,280 +362,305 @@ nav ul li.active::after {
 }
 
 /* -- features page css -- */
+.portico-landing {
+    position: relative;
+
+    padding-top: 120px;
+
+    z-index: 1;
+}
+
+.portico-landing {
+    &.show {
+        opacity: 1;
+    }
+}
+
 .portico-landing.features-app {
     position: relative;
     overflow-x: hidden;
     padding-top: 0px;
 
     z-index: 2;
-}
 
-.portico-landing.features-app section {
-    max-width: 1440px;
-    display: flex;
-    flex: 1 1 auto;
-    flex-flow: row wrap;
-    justify-content: space-around;
-    margin: 40px auto;
-    padding: 0px 30px;
-    color: hsl(219, 21%, 21%);
-}
+    section {
+        max-width: 1440px;
+        display: flex;
+        flex: 1 1 auto;
+        flex-flow: row wrap;
+        justify-content: space-around;
+        margin: 40px auto;
+        padding: 0px 30px;
+        color: hsl(219, 21%, 21%);
 
-.portico-landing.features-app section.hero {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+        &.hero {
+            display: flex;
+            align-items: center;
+            justify-content: center;
 
-    height: 400px;
-    padding: 100px 100px 50px 100px;
+            height: 400px;
+            padding: 100px 100px 50px 100px;
 
-    margin: 0;
+            margin: 0;
 
-    max-width: none;
+            max-width: none;
 
-    color: hsl(0, 0%, 100%);
+            color: hsl(0, 0%, 100%);
 
-    background-color: hsla(0, 0%, 0%, 0.1);
-}
+            background-color: hsla(0, 0%, 0%, 0.1);
 
-.portico-landing.features-app section.hero .copy {
-    max-width: 800px;
-    margin: 0 auto;
+            .copy {
+                max-width: 800px;
+                margin: 0 auto;
 
-    text-align: center;
-}
+                text-align: center;
+            }
 
-.portico-landing.features-app section.hero h1 {
-    margin: 0;
-    font-size: 3.7em;
-}
+            h1 {
+                margin: 0;
+                font-size: 3.7em;
+            }
 
-.portico-landing.features-app section.hero h2 {
-    font-size: 1.8em;
-    margin: 30px auto 0 auto;
+            h2 {
+                font-size: 1.8em;
+                margin: 30px auto 0 auto;
 
-    max-width: 600px;
-    line-height: 1.3;
-}
+                max-width: 600px;
+                line-height: 1.3;
+            }
 
-.portico-landing.features-app section.hero .image {
-    height: 400px;
-    width: 40%;
-    background-color: hsla(0, 0%, 0%, 0.05);
-}
+            .image {
+                height: 400px;
+                width: 40%;
+                background-color: hsla(0, 0%, 0%, 0.05);
+            }
+        }
 
-.portico-landing.features-app section.keyboard-shortcuts {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    max-width: none;
-    padding: 50px;
-    /* this should only be a thing if the section above is not white */
-    margin-top: 0px;
-    background-color: hsl(219, 21%, 21%);
-    color: hsl(219, 76%, 93%);
-}
+        &.keyboard-shortcuts {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            max-width: none;
+            padding: 50px;
+            /* this should only be a thing if the section above is not white */
+            margin-top: 0px;
+            background-color: hsl(219, 21%, 21%);
+            color: hsl(219, 76%, 93%);
 
-.portico-landing.features-app section.keyboard-shortcuts img.overflow-wave {
-    width: 685px;
-    right: 0px;
-    top: -168px;
-    position: absolute;
-}
+            img {
+                &.overflow-wave {
+                    width: 685px;
+                    right: 0px;
+                    top: -168px;
+                    position: absolute;
+                }
 
-.portico-landing.features-app section.keyboard-shortcuts h3 {
-    font-size: 3em;
-}
+                &.image {
+                    width: 600px;
+                    margin-left: 100px;
+                }
+            }
 
-.portico-landing.features-app section.keyboard-shortcuts .feature-block {
-    width: 50%;
-}
+            h3 {
+                font-size: 3em;
+            }
 
-.portico-landing.features-app section.keyboard-shortcuts p {
-    font-size: 1.2em;
-}
+            .feature-block {
+                width: 50%;
+            }
 
-.portico-landing.features-app section.keyboard-shortcuts a.cta {
-    font-size: 1em;
-    color: hsl(170, 52%, 70%);
-}
+            p {
+                font-size: 1.2em;
+            }
 
-.portico-landing.features-app section.keyboard-shortcuts img.image {
-    width: 600px;
-    margin-left: 100px;
-}
+            a.cta {
+                font-size: 1em;
+                color: hsl(170, 52%, 70%);
+            }
+        }
 
-.portico-landing.features-app section.messages {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+        &.messages {
+            display: flex;
+            justify-content: center;
+            align-items: center;
 
-    margin: 50px auto;
-    padding: 0px 50px;
-}
+            margin: 50px auto;
+            padding: 0px 50px;
 
-.portico-landing.features-app section.messages .image {
-    width: calc(100% - 500px - 100px);
-    margin: 50px 0px 50px 50px;
-    max-width: 500px;
-}
+            .image {
+                width: calc(100% - 500px - 100px);
+                margin: 50px 0px 50px 50px;
+                max-width: 500px;
+            }
 
-.portico-landing.features-app section.messages .features {
-    max-width: 500px;
-}
+            .features {
+                max-width: 500px;
 
-.portico-landing.features-app section.messages .features h2 {
-    margin: 0;
-}
+                h2 {
+                    margin: 0;
+                }
 
-.portico-landing.features-app section.messages .features .feature-block {
-    display: block;
-    margin: 30px 0px;
-}
+                .feature-block {
+                    display: block;
+                    margin: 30px 0px;
+                }
+            }
+        }
 
-.portico-landing.features-app section.notifications {
-    position: relative;
+        &.notifications {
+            position: relative;
 
-    padding: 50px 100px;
-    max-width: calc(1000px);
+            padding: 50px 100px;
+            max-width: calc(1000px);
 
-    background-color: hsl(0, 0%, 100%);
-    border-radius: 10px;
+            background-color: hsl(0, 0%, 100%);
+            border-radius: 10px;
 
-    box-shadow: 10px 20px 80px hsla(0, 0%, 0%, 0.15);
-}
+            box-shadow: 10px 20px 80px hsla(0, 0%, 0%, 0.15);
+            margin: 100px auto 150px auto;
+            text-align: center;
 
-.portico-landing.features-app section.notifications .envelope {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    max-height: 40vw;
-}
+            .envelope {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                max-height: 40vw;
+            }
 
-.portico-landing.features-app section.notifications h2 {
-    position: relative;
+            h2 {
+                position: relative;
 
-    margin-bottom: 120px;
-    top: -0px;
-}
+                margin-bottom: 120px;
+                top: -0px;
+            }
 
-.portico-landing.features-app section.notifications .feature-list {
-    position: relative;
+            .feature-list {
+                position: relative;
 
-    display: inline-block;
-    vertical-align: top;
-    text-align: left;
+                display: inline-block;
+                vertical-align: top;
+                text-align: left;
 
-    margin: 35px 0px 0px 20px;
+                margin: 35px 0px 0px 20px;
 
-    z-index: 1;
-}
+                z-index: 1;
 
-.portico-landing.features-app section.notifications {
-    margin: 100px auto 150px auto;
-    text-align: center;
-}
+                h3 {
+                    position: relative;
 
-.portico-landing.features-app section.notifications .feature-list h3 {
-    position: relative;
+                    margin: 15px 0px 15px 50px;
 
-    margin: 15px 0px 15px 50px;
+                    font-size: 1.2em;
+                    font-weight: 400;
 
-    font-size: 1.2em;
-    font-weight: 400;
+                    color: hsl(0, 0%, 53%);
 
-    color: hsl(0, 0%, 53%);
-}
+                    &::before {
+                        content: " ";
+                        display: block;
+                        position: absolute;
 
-.portico-landing.features-app section.notifications .feature-list h3::before {
-    content: " ";
-    display: block;
-    position: absolute;
+                        left: -35px;
+                        top: 0px;
+                        width: 20px;
+                        height: 20px;
 
-    left: -35px;
-    top: 0px;
-    width: 20px;
-    height: 20px;
+                        border-radius: 4px;
 
-    border-radius: 4px;
+                        background-image: url(/static/images/checkbox-green.svg);
+                        background-size: 100% auto;
+                        background-position: center;
+                        background-repeat: no-repeat;
+                    }
+                }
+            }
 
-    background-image: url(/static/images/checkbox-green.svg);
-    background-size: 100% auto;
-    background-position: center;
-    background-repeat: no-repeat;
-}
+            .image-block {
+                width: 400px;
+                height: 280px;
 
-.portico-landing.features-app section.notifications .image-block {
-    width: 400px;
-    height: 280px;
+                background: linear-gradient(135deg, hsla(0, 0%, 0%, 0.05), hsla(0, 0%, 0%, 0.2));
+                border-radius: 4px;
 
-    background: linear-gradient(135deg, hsla(0, 0%, 0%, 0.05), hsla(0, 0%, 0%, 0.2));
-    border-radius: 4px;
+                background-image: url(/static/images/landing-page/notifications.jpg);
+                background-size: contain;
+                background-position: center;
+                background-repeat: no-repeat;
 
-    background-image: url(/static/images/landing-page/notifications.jpg);
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
+                display: inline-block;
+            }
+        }
 
-    display: inline-block;
-}
+        .feature-block {
+            display: inline-block;
+            vertical-align: top;
+        }
 
-.portico-landing.features-app .cta::after {
-    content: "\2192";
+        .headliner {
+            .feature-block {
+                margin: 0px 10px;
+                width: calc(100% - 250px - 20px);
+            }
+        }
 
-    margin-left: 5px;
-    transform: scaleX(2);
+        h2 {
+            font-size: 2.5em;
+            text-align: center;
+            margin: 0px 10px;
+            line-height: 1.6;
+            flex: 1 0 100%;
+        }
 
-    transition: all 0.3s ease;
-}
+        > .feature-block {
+            padding: 10px 20px;
+            flex: 1 1 320px;
+            color: inherit;
+        }
 
-.portico-landing.features-app .cta:hover::after {
-    margin-left: 10px;
-}
+        a {
+            &.feature-block {
+                &:hover {
+                    box-shadow: 0px 3px 10px hsl(0, 0%, 75%);
+                }
 
-.portico-landing.features-app section .feature-block {
-    display: inline-block;
-    vertical-align: top;
-}
+                &:active {
+                    box-shadow: 0px 3px 10px hsl(0, 0%, 50%);
+                }
+            }
+        }
+    }
 
-.portico-landing.features-app section .headliner .feature-block {
-    margin: 0px 10px;
-    width: calc(100% - 250px - 20px);
-}
+    .cta {
+        &::after {
+            content: "\2192";
 
-.portico-landing.features-app section h2 {
-    font-size: 2.5em;
-    text-align: center;
-    margin: 0px 10px;
-    line-height: 1.6;
-    flex: 1 0 100%;
-}
+            margin-left: 5px;
+            transform: scaleX(2);
 
-.portico-landing.features-app section > .feature-block {
-    padding: 10px 20px;
-    flex: 1 1 320px;
-    color: inherit;
-}
+            transition: all 0.3s ease;
+        }
 
-.portico-landing.features-app section a.feature-block:hover {
-    box-shadow: 0px 3px 10px hsl(0, 0%, 75%);
-}
+        &:hover {
+            &::after {
+                margin-left: 10px;
+            }
+        }
+    }
 
-.portico-landing.features-app section a.feature-block:active {
-    box-shadow: 0px 3px 10px hsl(0, 0%, 50%);
-}
+    .feature-block {
+        h3 {
+            font-size: 1.2em;
+            font-weight: 600;
+        }
 
-.portico-landing.features-app .feature-block h3 {
-    font-size: 1.2em;
-    font-weight: 600;
-}
+        p {
+            margin: 0;
 
-.portico-landing.features-app .feature-block p {
-    margin: 0;
-
-    opacity: 0.8;
+            opacity: 0.8;
+        }
+    }
 }
 
 /* -- hello page -- */
@@ -657,6 +676,126 @@ nav ul li.active::after {
     color: hsl(0, 0%, 100%);
 
     overflow: hidden;
+
+    .waves {
+        position: absolute;
+
+        width: 150vw;
+        height: 150vw;
+
+        top: 650px;
+        left: -25vw;
+
+        z-index: 0;
+        opacity: 0.3;
+
+        .wave {
+            position: absolute;
+
+            width: 100%;
+            height: 100%;
+
+            background-color: hsl(0, 0%, 100%);
+            border-radius: 35%;
+
+            opacity: 0.3;
+
+            animation-name: waves;
+            animation-duration: 15s;
+            animation-iteration-count: infinite;
+            animation-timing-function: linear;
+
+            &.dark-blue {
+                background-color: hsl(219, 39%, 13%);
+            }
+
+            &.light-blue {
+                background-color: hsla(0, 67%, 57%, 0.9);
+                animation-duration: 18s;
+            }
+
+            &.light-green {
+                background-color: hsla(187, 98%, 75%, 0.75);
+                animation-name: wavesBackward;
+                animation-duration: 21s;
+            }
+        }
+    }
+
+    .content {
+        position: relative;
+        z-index: 1;
+
+        text-align: center;
+
+        p {
+            font-weight: 400;
+            opacity: 0.85;
+        }
+    }
+
+    header {
+        width: 850px;
+        display: inline-block;
+        text-align: left;
+
+        h1 {
+            font-size: 3em;
+            font-weight: 400;
+
+            text-shadow: 0px 0px 20px hsla(0, 0%, 100%, 0.2);
+        }
+
+        p {
+            margin: 30px 0px;
+
+            font-size: 1.5em;
+            font-weight: 300;
+            line-height: 1.4;
+            text-shadow: 0px 0px 5px hsla(164, 74%, 15%, 0.3), 0px 0px 20px hsla(0, 0%, 100%, 0.2);
+        }
+
+        a {
+            display: block;
+            margin: 20px auto 0px auto;
+            text-align: center;
+        }
+
+        button {
+            margin-top: 0px;
+            padding: 12px 20px;
+
+            background-color: hsl(0, 0%, 100%);
+            border: 2px solid hsl(0, 0%, 100%);
+
+            font-size: 1.2em;
+            font-weight: 500;
+            color: hsl(148, 23%, 51%);
+
+            box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.2);
+
+            transition: all 0.2s ease;
+
+            &:hover {
+                box-shadow: 0px 3px 10px hsla(0, 0%, 100%, 0.2);
+            }
+
+            &:active {
+                box-shadow: 0px 3px 20px hsla(0, 0%, 100%, 0.5);
+            }
+        }
+
+        .download-button {
+            margin-top: 10px;
+        }
+
+        #see_all_apps {
+            display: inline-block;
+            margin-top: 10px;
+
+            font-weight: normal;
+        }
+    }
 }
 
 .portico-landing.hello .gradients .gradient {
@@ -664,73 +803,26 @@ nav ul li.active::after {
     left: 0;
     width: 100%;
     height: 1100px;
-}
 
-.portico-landing.hello .gradients .gradient.dark-blue {
-    background: linear-gradient(10deg, hsla(196, 58%, 14%, 0) 50%, hsla(196, 58%, 14%, 0.7));
-}
+    &.dark-blue {
+        background: linear-gradient(10deg, hsla(196, 58%, 14%, 0) 50%, hsla(196, 58%, 14%, 0.7));
+    }
 
-.portico-landing.hello .gradients .gradient.green {
-    background: linear-gradient(-25deg, hsla(156, 47%, 47%, 0) 40%, hsl(156, 47%, 47%));
-}
+    &.green {
+        background: linear-gradient(-25deg, hsla(156, 47%, 47%, 0) 40%, hsl(156, 47%, 47%));
+    }
 
-.portico-landing.hello .gradients .gradient.blue {
-    background: linear-gradient(25deg, hsla(196, 38%, 51%, 0) 40%, hsl(196, 38%, 51%));
-}
+    &.blue {
+        background: linear-gradient(25deg, hsla(196, 38%, 51%, 0) 40%, hsl(196, 38%, 51%));
+    }
 
-.portico-landing.hello .gradients .gradient.sunburst {
-    background: linear-gradient(5deg, hsla(49, 71%, 68%, 0) 20%, hsl(49, 71%, 68%));
-}
+    &.sunburst {
+        background: linear-gradient(5deg, hsla(49, 71%, 68%, 0) 20%, hsl(49, 71%, 68%));
+    }
 
-.portico-landing.hello .gradients .gradient.white-fade {
-    background: linear-gradient(0deg, hsl(0, 0%, 98%) 0%, hsla(0, 0%, 98%, 0) 40%);
-}
-
-.portico-landing.hello .hero .waves {
-    position: absolute;
-
-    width: 150vw;
-    height: 150vw;
-
-    top: 650px;
-    left: -25vw;
-
-    z-index: 0;
-    opacity: 0.3;
-}
-
-.portico-landing.hello .hero .waves .wave {
-    position: absolute;
-
-    width: 100%;
-    height: 100%;
-
-    background-color: hsl(0, 0%, 100%);
-    border-radius: 35%;
-
-    opacity: 0.3;
-
-    animation-name: waves;
-    animation-duration: 15s;
-    animation-iteration-count: infinite;
-    animation-timing-function: linear;
-}
-
-.portico-landing.hello .hero .waves .wave.dark-blue {
-    background-color: hsl(219, 39%, 13%);
-}
-
-.portico-landing.hello .hero .waves .wave.light-blue {
-    background-color: hsla(0, 67%, 57%, 0.9);
-
-    animation-duration: 18s;
-}
-
-.portico-landing.hello .hero .waves .wave.light-green {
-    background-color: hsla(187, 98%, 75%, 0.75);
-
-    animation-name: wavesBackward;
-    animation-duration: 21s;
+    &.white-fade {
+        background: linear-gradient(0deg, hsl(0, 0%, 98%) 0%, hsla(0, 0%, 98%, 0) 40%);
+    }
 }
 
 @keyframes waves {
@@ -759,81 +851,6 @@ nav ul li.active::after {
     100% {
         transform: rotate(-360deg);
     }
-}
-
-.portico-landing.hello .hero .content {
-    position: relative;
-    z-index: 1;
-
-    text-align: center;
-}
-
-.portico-landing.hello .hero .content p {
-    font-weight: 400;
-    opacity: 0.85;
-}
-
-.portico-landing.hello .hero header {
-    width: 850px;
-    display: inline-block;
-    text-align: left;
-}
-
-.portico-landing.hello .hero header h1 {
-    font-size: 3em;
-    font-weight: 400;
-
-    text-shadow: 0px 0px 20px hsla(0, 0%, 100%, 0.2);
-}
-
-.portico-landing.hello .hero header p {
-    margin: 30px 0px;
-
-    font-size: 1.5em;
-    font-weight: 300;
-    line-height: 1.4;
-    text-shadow: 0px 0px 5px hsla(164, 74%, 15%, 0.3), 0px 0px 20px hsla(0, 0%, 100%, 0.2);
-}
-
-.portico-landing.hello .hero header a {
-    display: block;
-    margin: 20px auto 0px auto;
-    text-align: center;
-}
-
-.portico-landing.hello .hero header button {
-    margin-top: 0px;
-    padding: 12px 20px;
-
-    background-color: hsl(0, 0%, 100%);
-    border: 2px solid hsl(0, 0%, 100%);
-
-    font-size: 1.2em;
-    font-weight: 500;
-    color: hsl(148, 23%, 51%);
-
-    box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.2);
-
-    transition: all 0.2s ease;
-}
-
-.portico-landing.hello .hero header button:hover {
-    box-shadow: 0px 3px 10px hsla(0, 0%, 100%, 0.2);
-}
-
-.portico-landing.hello .hero header button:active {
-    box-shadow: 0px 3px 20px hsla(0, 0%, 100%, 0.5);
-}
-
-.portico-landing.hello .hero header .download-button {
-    margin-top: 10px;
-}
-
-.portico-landing.hello .hero header #see_all_apps {
-    display: inline-block;
-    margin-top: 10px;
-
-    font-weight: normal;
 }
 
 .portico-landing.hello .col-3-5,
@@ -1958,20 +1975,9 @@ nav ul li.active::after {
 .portico-landing.hello .call-to-action-bottom .button {
     display: table;
     margin: 20px auto 0 auto;
-    padding: 11px 25px 11px 25px;
-
-    font-size: 1.2rem;
-    color: hsl(220, 15%, 66%);
-
-    border: 1px solid hsl(220, 15%, 66%);
-    background-color: transparent;
-
-    transition: all 0.2s ease;
-}
-
-.portico-landing.hello .call-to-action-bottom .button:hover {
-    color: hsl(219, 23%, 33%);
-    border: 1px solid hsl(220, 15%, 20%);
+    padding: 10px 20px;
+    font-size: 1em;
+    font-weight: 600;
 }
 
 .portico-landing.hello .call-to-action-bottom h1 {
@@ -2949,68 +2955,72 @@ nav ul li.active::after {
         height: 1400px;
     }
 
-    nav.white {
-        padding-bottom: 40px;
-    }
-
     .portico-landing {
         padding-top: 170px;
     }
 
-    nav .logo {
-        float: none;
-        display: block;
-        margin: 0 auto;
-        text-align: center;
+    nav {
+        &.white {
+            padding-bottom: 40px;
+        }
+
+        .logo {
+            float: none;
+            display: block;
+            margin: 0 auto;
+            text-align: center;
+
+            span {
+                color: hsl(0, 0%, 100%);
+            }
+        }
+
+        ul {
+            display: block;
+            margin: 20px auto 0 auto;
+            float: none;
+            text-align: center;
+        }
+
+        svg.brand-logo circle {
+            fill: hsl(0, 0%, 100%) !important;
+            stroke: hsl(0, 0%, 100%) !important;
+        }
+
+        svg.brand-logo path {
+            fill: hsl(182, 34%, 47%) !important;
+            stroke: hsl(182, 34%, 47%) !important;
+        }
     }
 
-    nav ul {
-        display: block;
-        margin: 20px auto 0 auto;
-        float: none;
-        text-align: center;
-    }
+    .portico-landing.features-app {
+        section {
+            .headliner {
+                .image {
+                    width: 200px;
+                    height: 200px;
+                }
 
-    nav .logo span {
-        color: hsl(170, 48%, 54%);
-    }
+                .feature-box {
+                    width: calc(100% - 200px - 20px);
+                }
+            }
 
-    nav .logo span {
-        color: hsl(0, 0%, 100%);
-    }
+            &.messages {
+                display: block;
+                text-align: center;
 
-    nav svg.brand-logo circle {
-        fill: hsl(0, 0%, 100%) !important;
-        stroke: hsl(0, 0%, 100%) !important;
-    }
+                > * {
+                    display: inline-block;
+                    text-align: left;
+                }
 
-    nav svg.brand-logo path {
-        fill: hsl(182, 34%, 47%) !important;
-        stroke: hsl(182, 34%, 47%) !important;
-    }
-
-    .portico-landing.features-app section .headliner .image {
-        width: 200px;
-        height: 200px;
-    }
-
-    .portico-landing.features-app section .headliner .feature-box {
-        width: calc(100% - 200px - 20px);
-    }
-
-    .portico-landing.features-app section.messages {
-        display: block;
-        text-align: center;
-    }
-
-    .portico-landing.features-app section.messages > * {
-        display: inline-block;
-        text-align: left;
-    }
-
-    .portico-landing.features-app section.messages .image {
-        width: 100%;
-        margin: 0;
+                .image {
+                    width: 100%;
+                    margin: 0;
+                }
+            }
+        }
     }
 
     .portico-landing.plans .compare .padded-content {
@@ -3110,8 +3120,10 @@ nav ul li.active::after {
         left: 0;
     }
 
-    .portico-landing.hello .hero header {
-        width: calc(100% - 50px);
+    .portico-landing.hello .hero {
+        header {
+            width: calc(100% - 50px);
+        }
     }
 }
 
@@ -3120,12 +3132,16 @@ nav ul li.active::after {
         display: none;
     }
 
-    .portico-landing.features-app section.notifications {
-        padding: 50px 10px;
-    }
+    .portico-landing.features-app {
+        section {
+            &.notifications {
+                padding: 50px 10px;
 
-    .portico-landing.features-app section.notifications .image-block {
-        display: none;
+                .image-block {
+                    display: none;
+                }
+            }
+        }
     }
 
     .portico-landing .testimonials .quote-container {
@@ -3139,16 +3155,20 @@ nav ul li.active::after {
 }
 
 @media (max-width: 830px) {
-    .portico-landing.features-app section .headliner {
-        display: inline-flex;
+    .portico-landing.features-app {
+        section {
+            .headliner {
+                display: inline-flex;
 
-        width: auto;
-        height: 250px;
+                width: auto;
+                height: 250px;
 
-        margin: 50px;
+                margin: 50px;
 
-        justify-content: center;
-        align-items: center;
+                justify-content: center;
+                align-items: center;
+            }
+        }
     }
 
     .portico-landing.hello .apps .left-side .platform-icons .group {
@@ -3198,14 +3218,11 @@ nav ul li.active::after {
         padding-left: 50px;
         padding-right: 50px;
         width: calc(100% - 100px);
-    }
 
-    .portico-landing.features-app section.hero {
-        padding: 50px;
-    }
-
-    .portico-landing.features-app section.hero h1 {
-        font-size: 3em;
+        .hamburger {
+            position: relative;
+            z-index: 10;
+        }
     }
 
     .portico-landing.hello .open-source .flex {
@@ -3270,8 +3287,10 @@ nav ul li.active::after {
         width: 100% !important;
     }
 
-    .portico-landing.hello .hero header {
-        width: 600px;
+    .portico-landing.hello .hero {
+        header {
+            width: 600px;
+        }
     }
 
     .portico-landing.hello .apps .left-side .content {
@@ -3288,13 +3307,18 @@ nav ul li.active::after {
         width: 100%;
     }
 
-    nav .hamburger {
-        position: relative;
-        z-index: 10;
-    }
+    .portico-landing.features-app {
+        section {
+            padding: 0px 20px;
 
-    .portico-landing.features-app section {
-        padding: 0px 20px;
+            &.hero {
+                padding: 50px;
+
+                h1 {
+                    font-size: 3em;
+                }
+            }
+        }
     }
 
     .billing-upgrade-page {
@@ -3371,35 +3395,98 @@ nav ul li.active::after {
         margin: 0 auto;
     }
 
-    .portico-landing.hello .hero header {
-        width: auto;
+    .portico-landing.hello .hero {
+        padding-bottom: 100px;
+
+        .waves {
+            height: 450px;
+        }
+
+        header {
+            width: auto;
+        }
     }
 
     .portico-landing.hello .screen.hero-screen {
         display: none;
     }
 
-    .portico-landing.hello .hero {
-        padding-bottom: 100px;
-    }
+    nav {
+        ul {
+            margin-top: 0px;
+            text-align: left;
+        }
 
-    .portico-landing.hello .hero .waves {
-        height: 450px;
-    }
+        .content {
+            display: inline-block;
+            z-index: 11;
+        }
 
-    nav ul {
-        margin-top: 0px;
-        text-align: left;
-    }
+        .hamburger {
+            display: inline-block;
+            float: right;
+        }
 
-    nav .content {
-        display: inline-block;
-        z-index: 11;
-    }
+        .content {
+            > ul.show {
+                outline-color: hsla(203, 43%, 22%, 0.7);
+            }
+        }
 
-    nav .hamburger {
-        display: inline-block;
-        float: right;
+        ul {
+            position: fixed;
+            float: none;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 300px;
+            padding-left: 30px;
+
+            background-color: hsl(0, 0%, 100%);
+            transform: translate(-350px, 0px);
+
+            box-shadow: 0px 0px 80px hsla(0, 0%, 0%, 0.12);
+
+            transition: all 0.5s ease;
+
+            &.show {
+                transform: translate(0px, 0px);
+            }
+
+            .exit {
+                display: block;
+                position: absolute;
+                top: 10px;
+                right: 25px;
+
+                font-weight: 100;
+                font-size: 3em;
+                color: initial;
+            }
+
+            li {
+                display: block;
+                font-size: 1.5em;
+                font-weight: 300;
+                line-height: 1.5;
+
+                &:first-of-type {
+                    margin-top: 20px;
+                }
+
+                &.active {
+                    &::after {
+                        content: ">";
+                        transform: scale(1, 1);
+                        bottom: auto;
+                        left: -25px;
+                        font-weight: 400;
+                    }
+
+                    font-weight: 400;
+                }
+            }
+        }
     }
 
     .portico-header .content > ul::before {
@@ -3429,71 +3516,10 @@ nav ul li.active::after {
         font-size: 0.8em;
     }
 
-    nav ul {
-        position: fixed;
-        float: none;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        width: 300px;
-        padding-left: 30px;
-
-        background-color: hsl(0, 0%, 100%);
-        transform: translate(-350px, 0px);
-
-
-        box-shadow: 0px 0px 80px hsla(0, 0%, 0%, 0.12);
-
-        transition: all 0.5s ease;
-    }
-
-    nav ul.show {
-        transform: translate(0px, 0px);
-    }
-
-    nav .content > ul.show {
-        outline-color: hsla(203, 43%, 22%, 0.7);
-    }
-
-    nav ul .exit {
-        display: block;
-        position: absolute;
-        top: 10px;
-        right: 25px;
-
-        font-weight: 100;
-        font-size: 3em;
-        color: initial;
-    }
-
-    nav ul li:first-of-type {
-        margin-top: 20px;
-    }
-
-    nav ul li {
-        display: block;
-
-        font-size: 1.5em;
-        font-weight: 300;
-        line-height: 1.5;
-    }
-
     nav ul li,
     nav ul li a,
     .portico-header .dropdown-pill .realm-name {
         color: hsl(0, 0%, 27%) !important;
-    }
-
-    nav ul li.active::after {
-        content: ">";
-        transform: scale(1, 1);
-        bottom: auto;
-        left: -25px;
-        font-weight: 400;
-    }
-
-    nav ul li.active {
-        font-weight: 400;
     }
 
     .portico-landing.apps .main ul.sidebar {
@@ -3549,26 +3575,40 @@ nav ul li.active::after {
         margin: 10px 16px 0 16px;
     }
 
-    .portico-landing.features-app section.keyboard-shortcuts img.overflow-wave {
-        top: -100px;
+    .portico-landing.features-app {
+        section {
+            &.keyboard-shortcuts {
+                img {
+                    &.overflow-wave {
+                        top: -100px;
+                    }
+                }
+            }
+        }
     }
 }
 
 @media (max-width: 550px) {
-    .portico-landing.features-app section.hero {
-        padding: 50px 20px 20px;
-    }
+    .portico-landing.features-app {
+        section {
+            &.hero {
+                padding: 50px 20px 20px;
+            }
 
-    .portico-landing.features-app section.messages {
-        padding: 0px 20px;
-    }
+            &.messages {
+                padding: 0px 20px;
 
-    .portico-landing.features-app section.messages h2 {
-        font-size: 2em;
-    }
+                h2 {
+                    font-size: 2em;
+                }
 
-    .portico-landing.features-app section.messages .features .feature-block {
-        margin: 20px 0px;
+                .features {
+                    .feature-block {
+                        margin: 20px 0px;
+                    }
+                }
+            }
+        }
     }
 
     .portico-landing .tour {
@@ -3721,21 +3761,45 @@ nav ul li.active::after {
         width: 323px;
     }
 
-    .portico-landing.features-app section.keyboard-shortcuts img.overflow-wave {
-        top: -92px;
+    .portico-landing.features-app {
+        section {
+            &.keyboard-shortcuts {
+                img {
+                    &.overflow-wave {
+                        top: -92px;
+                    }
+                }
+            }
+        }
     }
 }
 
 @media (max-width: 360px) {
-    .portico-landing.features-app section.keyboard-shortcuts img.overflow-wave {
-        top: -88px;
+    .portico-landing.features-app {
+        section {
+            .keyboard-shortcuts {
+                img {
+                    &.overflow-wave {
+                        top: -88px;
+                    }
+                }
+            }
+        }
     }
 }
 
 /* For iPhone 5/SE device */
 @media (max-width: 320px) {
-    .portico-landing.features-app section.keyboard-shortcuts img.overflow-wave {
-        top: -78px;
+    .portico-landing.features-app {
+        section {
+            .keyboard-shortcuts {
+                img {
+                    &.overflow-wave {
+                        top: -78px;
+                    }
+                }
+            }
+        }
     }
 }
 

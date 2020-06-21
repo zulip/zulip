@@ -239,17 +239,17 @@ const harry = {
     email: 'harry@zulip.com',
 };
 
-people.add(alice);
-people.add(hamlet);
-people.add(othello);
-people.add(cordelia);
-people.add(lear);
-people.add(twin1);
-people.add(twin2);
-people.add(gael);
-people.add(hal);
-people.add(harry);
-people.add(deactivated_user);
+people.add_active_user(alice);
+people.add_active_user(hamlet);
+people.add_active_user(othello);
+people.add_active_user(cordelia);
+people.add_active_user(lear);
+people.add_active_user(twin1);
+people.add_active_user(twin2);
+people.add_active_user(gael);
+people.add_active_user(hal);
+people.add_active_user(harry);
+people.add_active_user(deactivated_user);
 people.deactivate(deactivated_user);
 
 const hamletcharacters = {

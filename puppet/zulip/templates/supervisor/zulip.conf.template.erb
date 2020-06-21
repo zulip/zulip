@@ -8,7 +8,7 @@
 ; variables can be expanded using this syntax: "%(ENV_HOME)s".
 
 [program:zulip-django]
-command=/home/zulip/deployments/current/zulip-current-venv/bin/uwsgi --ini /etc/zulip/uwsgi.ini
+command=nice -n5 /home/zulip/deployments/current/zulip-current-venv/bin/uwsgi --ini /etc/zulip/uwsgi.ini
 priority=100                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
 autorestart=true               ; whether/when to restart (default: unexpected)
@@ -58,7 +58,7 @@ directory=/home/zulip/deployments/current/
 <% if @queues_multiprocess %>
 <% @queues.each do |queue| -%>
 [program:zulip_events_<%= queue %>]
-command=/home/zulip/deployments/current/manage.py process_queue --queue_name=<%= queue %>
+command=nice -n10 /home/zulip/deployments/current/manage.py process_queue --queue_name=<%= queue %>
 priority=300                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
 autorestart=true               ; whether/when to restart (default: unexpected)
@@ -73,7 +73,7 @@ directory=/home/zulip/deployments/current/
 <% end -%>
 <% else %>
 [program:zulip_events]
-command=/home/zulip/deployments/current/manage.py process_queue --multi_threaded <%= @queues.join(' ') %>
+command=nice -n10 /home/zulip/deployments/current/manage.py process_queue --multi_threaded <%= @queues.join(' ') %>
 priority=300                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
 autorestart=true               ; whether/when to restart (default: unexpected)
@@ -90,7 +90,7 @@ killasgroup=true              ; Without this, we leak processes every restart
 <% end %>
 
 [program:zulip_deliver_enqueued_emails]
-command=/home/zulip/deployments/current/manage.py deliver_email
+command=nice -n15 /home/zulip/deployments/current/manage.py deliver_email
 priority=350                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
 autorestart=true               ; whether/when to restart (default: unexpected)
@@ -104,7 +104,7 @@ stdout_logfile_backups=3     ; # of stdout logfile backups (default 10)
 directory=/home/zulip/deployments/current/
 
 [program:zulip_deliver_scheduled_messages]
-command=/home/zulip/deployments/current/manage.py deliver_scheduled_messages
+command=nice -n15 /home/zulip/deployments/current/manage.py deliver_scheduled_messages
 priority=350                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
 autorestart=true               ; whether/when to restart (default: unexpected)

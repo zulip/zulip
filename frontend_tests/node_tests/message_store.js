@@ -55,11 +55,11 @@ const denise  = {
     full_name: 'Denise ',
 };
 
-people.add(me);
-people.add(alice);
-people.add(bob);
-people.add(cindy);
-people.add(denise);
+people.add_active_user(me);
+people.add_active_user(alice);
+people.add_active_user(bob);
+people.add_active_user(cindy);
+people.add_active_user(denise);
 
 people.initialize_current_user(me.user_id);
 

@@ -147,8 +147,8 @@ class="fa fa-cog"></i>) icon`
 `down chevron (<i class="fa fa-chevron-down"></i>) icon`
 * eye (<i class="fa fa-eye"></i>) icon — `eye (<i
 class="fa fa-eye"></i>) icon`
-* file (<i class="fa fa-file-text-o"></i>) icon — `file (<i
-class="fa fa-file-text-o"></i>) icon`
+* file (<i class="fa fa-file-code-o"></i>) icon — `file (<i
+class="fa fa-file-code-o"></i>) icon`
 * filled star (<i class="fa fa-star"></i>) icon —
 `filled star (<i class="fa fa-star"></i>) icon`
 * formatting (<i class="fa fa-font"></i>) icon —
@@ -234,7 +234,7 @@ should be formatted as a continuation of a numbered step.
 
 Our markdown processor supports easily creating a tab switcher widget
 design to easily show the instructions for different
-[platforms](https://zulipchat.com/help/logging-out) in user docs,
+[platforms](https://zulip.com/help/logging-out) in user docs,
 languages in API docs, etc.  To create a tab switcher, write:
 
     {start_tabs}
@@ -254,5 +254,5 @@ the tabs' labels are declared in
 
 This widget can also be used just to create a nice box around a set of
 instructions
-([example](https://zulipchat.com/help/deactivate-your-account)) by
+([example](https://zulip.com/help/deactivate-your-account)) by
 only declaring a single tab.

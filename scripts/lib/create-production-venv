@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
-
-import os
 import argparse
+import os
 import sys
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if ZULIP_PATH not in sys.path:
     sys.path.append(ZULIP_PATH)
 
-from scripts.lib.zulip_tools import os_families, overwrite_symlink, run, parse_os_release
-from scripts.lib.setup_venv import (
-    setup_virtualenv, get_venv_dependencies
-)
+from scripts.lib.setup_venv import get_venv_dependencies, setup_virtualenv
+from scripts.lib.zulip_tools import os_families, overwrite_symlink, parse_os_release, run
 
 parser = argparse.ArgumentParser(description="Create a production virtualenv with caching")
 parser.add_argument("deploy_path")

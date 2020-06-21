@@ -1,8 +1,6 @@
 <div id="admin-deactivated-users-list" class="settings-section" data-name="deactivated-users-admin">
     <h3 class="inline-block">{{t "Deactivated users" }}
-        <a href="/help/deactivate-or-reactivate-a-user" target="_blank">
-            <i class="fa fa-question-circle-o" aria-hidden="true"></i>
-        </a>
+        {{> ../help_link_widget link="/help/deactivate-or-reactivate-a-user" }}
     </h3>
     <input type="text" class="search" placeholder="{{t 'Filter deactivated users' }}" aria-label="{{t 'Filter deactivated users' }}"/>
     <div class="alert-notification" id="deactivated-user-field-status"></div>
@@ -13,7 +11,7 @@
             <thead>
                 <th class="active" data-sort="alphabetic" data-sort-prop="full_name">{{t "Name" }}</th>
                 {{#if show_email}}
-                <th data-sort="alphabetic" data-sort-prop="email">{{t "Email" }}</th>
+                <th data-sort="email">{{t "Email" }}</th>
                 {{/if}}
                 <th class="user_role" data-sort="role">{{t "Role" }}</th>
                 {{#if is_admin}}

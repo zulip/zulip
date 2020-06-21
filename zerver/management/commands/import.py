@@ -5,8 +5,7 @@ from typing import Any
 
 from django.conf import settings
 from django.core.management import call_command
-from django.core.management.base import BaseCommand, CommandError, \
-    CommandParser
+from django.core.management.base import BaseCommand, CommandError, CommandParser
 
 from zerver.forms import check_subdomain_available
 from zerver.lib.import_realm import do_import_realm, do_import_system_bots
@@ -40,7 +39,7 @@ import a database dump from one or more JSON files."""
         parser.add_argument('--processes',
                             dest='processes',
                             action="store",
-                            default=6,
+                            default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
                             help='Number of processes to use for uploading Avatars to S3 in parallel')
         parser.formatter_class = argparse.RawTextHelpFormatter
 
@@ -68,14 +67,14 @@ import a database dump from one or more JSON files."""
         for path in options['export_paths']:
             path = os.path.realpath(os.path.expanduser(path))
             if not os.path.exists(path):
-                raise CommandError("Directory not found: '%s'" % (path,))
+                raise CommandError(f"Directory not found: '{path}'")
             if not os.path.isdir(path):
                 raise CommandError("Export file should be folder; if it's a "
                                    "tarball, please unpack it first.")
             paths.append(path)
 
         for path in paths:
-            print("Processing dump: %s ..." % (path,))
+            print(f"Processing dump: {path} ...")
             realm = do_import_realm(path, subdomain, num_processes)
             print("Checking the system bots.")
             do_import_system_bots(realm)

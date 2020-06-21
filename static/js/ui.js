@@ -67,7 +67,7 @@ exports.show_error_for_unsupported_platform = function () {
         const error = "Hello! You're using the unsupported old Zulip desktop app," +
             " which is no longer developed. We recommend switching to the new, " +
             "modern desktop app, which you can download at " +
-            "<a href='https://zulipchat.com/apps'>zulipchat.com/apps</a>.";
+            "<a href='https://zulip.com/apps'>zulip.com/apps</a>.";
 
         ui_report.generic_embed_error(error);
     }
@@ -114,15 +114,19 @@ exports.show_message_failed = function (message_id, failed_msg) {
     });
 };
 
-exports.remove_message = function (message_id) {
+exports.remove_messages = function (message_ids) {
+    const msg_ids_to_rerender = [];
     for (const list of [message_list.all, home_msg_list, message_list.narrowed]) {
         if (list === undefined) {
             continue;
         }
-        const row = list.get_row(message_id);
-        if (row !== undefined) {
-            list.remove_and_rerender([{id: message_id}]);
+        for (const message_id of message_ids) {
+            const row = list.get_row(message_id);
+            if (row !== undefined) {
+                msg_ids_to_rerender.push({id: message_id});
+            }
         }
+        list.remove_and_rerender(msg_ids_to_rerender);
     }
 };
 

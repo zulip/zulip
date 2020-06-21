@@ -1,17 +1,16 @@
 # System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
-
-from django.utils.timezone import now as timezone_now
-from django.utils.timezone import utc as timezone_utc
-
 import hashlib
 import logging
 import threading
 import traceback
+from datetime import datetime, timedelta, timezone
+from logging import Logger
 from typing import Optional, Tuple
-from datetime import datetime, timedelta
+
 from django.conf import settings
 from django.core.cache import cache
-from logging import Logger
+from django.utils.timezone import now as timezone_now
+
 
 class _RateLimitFilter:
     """This class is designed to rate-limit Django error reporting
@@ -28,7 +27,7 @@ class _RateLimitFilter:
     Adapted from https://djangosnippets.org/snippets/2242/.
 
     """
-    last_error = datetime.min.replace(tzinfo=timezone_utc)
+    last_error = datetime.min.replace(tzinfo=timezone.utc)
     # This thread-local variable is used to detect recursive
     # exceptions during exception handling (primarily intended for
     # when accessing the shared cache throws an exception).
@@ -71,7 +70,7 @@ class _RateLimitFilter:
         try:
             # Track duplicate errors
             duplicate = False
-            rate = getattr(settings, '%s_LIMIT' % (self.__class__.__name__.upper(),),
+            rate = getattr(settings, f'{self.__class__.__name__.upper()}_LIMIT',
                            600)  # seconds
 
             if rate > 0:
@@ -171,7 +170,7 @@ def find_log_origin(record: logging.LogRecord) -> str:
         # responsible for the request in the logs.
         from zerver.tornado.ioloop_logging import logging_data
         shard = logging_data.get('port', 'unknown')
-        logger_name = "{}:{}".format(logger_name, shard)
+        logger_name = f"{logger_name}:{shard}"
 
     return logger_name
 

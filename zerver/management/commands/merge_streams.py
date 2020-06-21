@@ -1,8 +1,11 @@
 from argparse import ArgumentParser
 from typing import Any, List
 
-from zerver.lib.actions import bulk_add_subscriptions, \
-    bulk_remove_subscriptions, do_deactivate_stream
+from zerver.lib.actions import (
+    bulk_add_subscriptions,
+    bulk_remove_subscriptions,
+    do_deactivate_stream,
+)
 from zerver.lib.cache import cache_delete_many, to_dict_cache_key_id
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Message, Subscription, get_stream
@@ -46,7 +49,7 @@ class Command(ZulipBaseCommand):
         message_ids_to_clear = list(Message.objects.filter(
             recipient=recipient_to_destroy).values_list("id", flat=True))
         count = Message.objects.filter(recipient=recipient_to_destroy).update(recipient=recipient_to_keep)
-        print("Moved %s messages" % (count,))
+        print(f"Moved {count} messages")
         bulk_delete_cache_keys(message_ids_to_clear)
 
         # Move the Subscription objects.  This algorithm doesn't
@@ -62,11 +65,11 @@ class Command(ZulipBaseCommand):
         ]
 
         if len(subs_to_deactivate) > 0:
-            print("Deactivating %s subscriptions" % (len(subs_to_deactivate),))
+            print(f"Deactivating {len(subs_to_deactivate)} subscriptions")
             bulk_remove_subscriptions([sub.user_profile for sub in subs_to_deactivate],
                                       [stream_to_destroy],
                                       self.get_client())
         do_deactivate_stream(stream_to_destroy)
         if len(users_to_activate) > 0:
-            print("Adding %s subscriptions" % (len(users_to_activate),))
+            print(f"Adding {len(users_to_activate)} subscriptions")
             bulk_add_subscriptions([stream_to_keep], users_to_activate)

@@ -1,20 +1,18 @@
-import mock
 import time
-import ujson
+from typing import Any, Dict
+from unittest import mock
 
+import ujson
 from django.http import HttpResponse
 from django.test import override_settings
-from typing import Any, Dict
 
 from zerver.lib.initial_password import initial_password
+from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
 from zerver.lib.users import get_all_api_keys
-from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
-from zerver.models import (
-    UserProfile,
-    get_user_profile_by_api_key
-)
+from zerver.models import UserProfile, get_user_profile_by_api_key
+
 
 class ChangeSettingsTest(ZulipTestCase):
 
@@ -88,8 +86,8 @@ class ChangeSettingsTest(ZulipTestCase):
             self.client.login(
                 username=user.delivery_email,
                 password='foobar1',
-                realm=user.realm
-            )
+                realm=user.realm,
+            ),
         )
         self.assert_logged_in_user_id(user.id)
 
@@ -314,7 +312,7 @@ class ChangeSettingsTest(ZulipTestCase):
         """
         self.login('hamlet')
         result = self.client_patch("/json/settings",
-                                   dict(old_password='ignored',))
+                                   dict(old_password='ignored'))
         self.assert_json_error(result, "Please fill out all fields.")
 
     def do_test_change_user_display_setting(self, setting_name: str) -> None:
@@ -324,13 +322,14 @@ class ChangeSettingsTest(ZulipTestCase):
             emojiset = 'google',
             timezone = 'US/Mountain',
             demote_inactive_streams = 2,
+            color_scheme = 2,
         )
 
         self.login('hamlet')
         test_value = test_changes.get(setting_name)
         # Error if a setting in UserProfile.property_types does not have test values
         if test_value is None:
-            raise AssertionError('No test created for %s' % (setting_name,))
+            raise AssertionError(f'No test created for {setting_name}')
 
         if isinstance(test_value, int):
             invalid_value: Any = 100
@@ -350,7 +349,7 @@ class ChangeSettingsTest(ZulipTestCase):
         result = self.client_patch("/json/settings/display", data)
         # the json error for multiple word setting names (ex: default_language)
         # displays as 'Invalid language'. Using setting_name.split('_') to format.
-        self.assert_json_error(result, "Invalid %s" % (setting_name,))
+        self.assert_json_error(result, f"Invalid {setting_name}")
 
         user_profile = self.example_user('hamlet')
         self.assertNotEqual(getattr(user_profile, setting_name), invalid_value)

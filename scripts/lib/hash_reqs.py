@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-import os
-import sys
 import argparse
 import hashlib
+import os
+import sys
 from typing import Iterable, List, MutableSet
+
 
 def expand_reqs_helper(fpath: str, visited: MutableSet[str]) -> List[str]:
     if fpath in visited:

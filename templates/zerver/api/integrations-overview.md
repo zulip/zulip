@@ -28,6 +28,11 @@ Zulip.
   product. If it does, follow [these instructions](/integrations/doc/ifttt)
   to set it up.
 
+* Use a third-party webhook integration designed to work with
+  [Slack's webhook API](https://api.slack.com/messaging/webhooks)
+  pointed at Zulip's
+  [Slack-compatible webhook API](/integrations/slack/slack_incoming).
+
 * Check if [Hubot](https://github.com/hubot-scripts) has an integration with
   the product. If it does, follow
   [these instructions](/integrations/doc/hubot) to set it up.
@@ -57,7 +62,7 @@ integration and don't have an engineer on staff,
 
 * To react to activity inside Zulip, look at Zulip's
   [Python framework for interactive bots](/api/running-bots) or
-  [Zulip's real-time events API](/api/get-events-from-queue).
+  [Zulip's real-time events API](/api/get-events).
 
 * If what you want isn't covered by the above, check out the full
   [REST API](/api/rest). The web, mobile, desktop, and terminal apps are

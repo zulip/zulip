@@ -1,11 +1,11 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/hotspots.html
 # for documentation on this subsystem.
+from typing import Dict, List
+
 from django.conf import settings
 from django.utils.translation import ugettext as _
 
-from zerver.models import UserProfile, UserHotspot
-
-from typing import List, Dict
+from zerver.models import UserHotspot, UserProfile
 
 ALL_HOTSPOTS: Dict[str, Dict[str, str]] = {
     'intro_reply': {

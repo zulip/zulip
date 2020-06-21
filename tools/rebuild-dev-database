@@ -2,7 +2,8 @@
 set -e
 set -x
 
-"$(dirname "$0")/../scripts/setup/terminate-psql-sessions" zulip zulip zulip_base
+PGHOST=localhost PGUSER=zulip \
+    "$(dirname "$0")/../scripts/setup/terminate-psql-sessions" zulip zulip_base
 
 psql -v ON_ERROR_STOP=1 -e -h localhost postgres zulip <<EOF
 DROP DATABASE IF EXISTS zulip;

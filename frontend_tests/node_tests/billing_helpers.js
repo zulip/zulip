@@ -25,6 +25,8 @@ run_test('create_ajax_request', () => {
     const form_success = "#autopay-success";
     const form_error = "#autopay-error";
     const form_loading = "#autopay-loading";
+    const zulip_limited_section = "#zulip-limited-section";
+    const free_trial_alert_message = "#free-trial-alert-message";
 
     const state = {
         form_input_section_show: 0,
@@ -34,6 +36,10 @@ run_test('create_ajax_request', () => {
         form_loading_show: 0,
         form_loading_hide: 0,
         form_success_show: 0,
+        zulip_limited_section_show: 0,
+        zulip_limited_section_hide: 0,
+        free_trial_alert_message_hide: 0,
+        free_trial_alert_message_show: 0,
         location_reload: 0,
         pushState: 0,
         make_indicator: 0,
@@ -79,6 +85,23 @@ run_test('create_ajax_request', () => {
         state.form_loading_hide += 1;
     };
 
+    $(zulip_limited_section).show = () => {
+        state.zulip_limited_section_show += 1;
+    };
+
+    $(zulip_limited_section).hide = () => {
+        state.zulip_limited_section_hide += 1;
+    };
+
+    $(free_trial_alert_message).show = () => {
+        state.free_trial_alert_message_show += 1;
+    };
+
+    $(free_trial_alert_message).hide = () => {
+        state.free_trial_alert_message_hide += 1;
+    };
+
+
     $("#autopay-form").serializeArray = () => {
         return jquery("#autopay-form").serializeArray();
     };
@@ -87,6 +110,10 @@ run_test('create_ajax_request', () => {
         assert.equal(state.form_input_section_hide, 1);
         assert.equal(state.form_error_hide, 1);
         assert.equal(state.form_loading_show, 1);
+        assert.equal(state.zulip_limited_section_hide, 1);
+        assert.equal(state.zulip_limited_section_show, 0);
+        assert.equal(state.free_trial_alert_message_hide, 1);
+        assert.equal(state.free_trial_alert_message_show, 0);
         assert.equal(state.make_indicator, 1);
 
         assert.equal(url, "/json/billing/upgrade");
@@ -119,15 +146,22 @@ run_test('create_ajax_request', () => {
         assert.equal(state.form_success_show, 1);
         assert.equal(state.form_error_hide, 2);
         assert.equal(state.form_loading_hide, 1);
+        assert.equal(state.zulip_limited_section_hide, 1);
+        assert.equal(state.zulip_limited_section_show, 0);
+        assert.equal(state.free_trial_alert_message_hide, 1);
+        assert.equal(state.free_trial_alert_message_show, 0);
 
         error({responseText: '{"msg": "response_message"}'});
 
         assert.equal(state.form_loading_hide, 2);
         assert.equal(state.form_error_show, 1);
         assert.equal(state.form_input_section_show, 1);
+        assert.equal(state.zulip_limited_section_hide, 1);
+        assert.equal(state.free_trial_alert_message_hide, 1);
+        assert.equal(state.free_trial_alert_message_show, 1);
     };
 
-    helpers.create_ajax_request("/json/billing/upgrade", "autopay", {id: "stripe_token_id"});
+    helpers.create_ajax_request("/json/billing/upgrade", "autopay", {id: "stripe_token_id"}, ["licenses"]);
 
 });
 

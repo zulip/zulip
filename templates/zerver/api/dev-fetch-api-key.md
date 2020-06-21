@@ -11,7 +11,7 @@
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
 {generate_api_arguments_table|zulip.yaml|/dev_fetch_api_key:post}
 
@@ -19,9 +19,7 @@
 
 #### Return values
 
-* `api_key`: The API key that can be used to authenticate as the requested
-    user.
-* `email`: The email address of the user who owns the API key.
+{generate_return_values_table|zulip.yaml|/dev_fetch_api_key:post}
 
 #### Example response
 

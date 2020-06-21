@@ -58,6 +58,11 @@ exports.status_from_raw = function (raw) {
     const active_timestamp = raw.active_timestamp;
     const idle_timestamp = raw.idle_timestamp;
 
+    let last_active;
+    if (active_timestamp !== undefined || idle_timestamp !== undefined) {
+        last_active = Math.max(active_timestamp || 0, idle_timestamp || 0);
+    }
+
     /*
         If the server sends us `active_timestamp`, this
         means at least one client was active at this time
@@ -70,20 +75,20 @@ exports.status_from_raw = function (raw) {
     if (age(active_timestamp) < OFFLINE_THRESHOLD_SECS) {
         return {
             status: 'active',
-            last_active: active_timestamp,
+            last_active: last_active,
         };
     }
 
     if (age(idle_timestamp) < OFFLINE_THRESHOLD_SECS) {
         return {
             status: 'idle',
-            last_active: active_timestamp,
+            last_active: last_active,
         };
     }
 
     return {
         status: 'offline',
-        last_active: active_timestamp,
+        last_active: last_active,
     };
 };
 
@@ -243,8 +248,7 @@ exports.last_active_date = function (user_id) {
 };
 
 exports.initialize = function (params) {
-    presence.set_info(params.presences,
-                      params.initial_servertime);
+    exports.set_info(params.presences, params.initial_servertime);
 };
 
 window.presence = exports;

@@ -50,9 +50,9 @@
                         <div class="input" contenteditable="false" style="display: none;"></div>
                     </div>
                     {{else if this.is_link}}
-                    <a href={{this.value}} target="_blank" class="value">{{this.value}}</a>
+                    <a href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="value">{{this.value}}</a>
                     {{else if this.is_external_account}}
-                    <a href={{this.link}} target="_blank" class="value">{{this.value}}</a>
+                    <a href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value">{{this.value}}</a>
                 {{else}}
                     {{#if this.rendered_value}}
                     <div class="value rendered_markdown">{{rendered_markdown this.rendered_value}}</div>
