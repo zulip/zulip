@@ -37,6 +37,7 @@ const ExamplesHandler = function () {
 
         await generate_validation_data(client, examples.send_message);
         await generate_validation_data(client, examples.create_user);
+        await generate_validation_data(client, examples.get_custom_emoji);
 
         console.log(JSON.stringify(response_data));
         return;
@@ -97,6 +98,12 @@ add_example('create_user', '/users:post', 200, async (client) => {
     };
 
     return await client.users.create(params);
+    // {code_example|end}
+});
+
+add_example('get_custom_emoji', '/realm/emoji:get', 200, async (client) => {
+    // {code_example|start}
+    return await client.emojis.retrieve();
     // {code_example|end}
 });
 
