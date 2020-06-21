@@ -12,27 +12,8 @@
 {tab|js}
 
 More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
-```js
-const zulip = require('zulip-js');
 
-// Pass the path to your zuliprc file here.
-const config = {
-    zuliprc: 'zuliprc',
-};
-
-const user_id1 = 9;
-const user_id2 = 10;
-
-const typingParams = {
-    op: 'start',
-    to: [user_id1, user_id2],
-};
-
-zulip(config).then((client) => {
-    // The user has started to type in the group PM with Iago and Polonius
-    return client.typing.send(typingParams);
-}).then(console.log);
-```
+{generate_code_example(javascript)|/typing:post|example}
 
 {tab|curl}
 

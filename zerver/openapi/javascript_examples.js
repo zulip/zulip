@@ -47,6 +47,7 @@ const ExamplesHandler = function () {
         await generate_validation_data(client, examples.get_users);
         await generate_validation_data(client, examples.register_queue);
         await generate_validation_data(client, examples.render_message);
+        await generate_validation_data(client, examples.set_typing_status);
 
         console.log(JSON.stringify(response_data));
         return;
@@ -209,6 +210,21 @@ add_example('render_message', '/messages/render:post', 200, async (client) => {
     };
 
     return await client.messages.render(params);
+    // {code_example|end}
+});
+
+add_example('set_typing_status', '/typing:post', 200, async (client) => {
+    // {code_example|start}
+    const user_id1 = 9;
+    const user_id2 = 10;
+
+    const typingParams = {
+        op: 'start',
+        to: [user_id1, user_id2],
+    };
+
+    // The user has started to type in the group PM with Iago and Polonius
+    return await client.typing.send(typingParams);
     // {code_example|end}
 });
 
