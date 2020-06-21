@@ -85,7 +85,7 @@ def register_zoom_user(request: HttpRequest) -> HttpResponse:
 @has_request_variables
 def complete_zoom_user(
     request: HttpRequest,
-    state: Dict[str, str] = REQ(validator=check_dict([("realm", check_string)])),
+    state: Dict[str, str] = REQ(validator=check_dict([("realm", check_string)], value_validator=check_string)),
 ) -> HttpResponse:
     if get_subdomain(request) != state["realm"]:
         return redirect(urljoin(get_realm(state["realm"]).uri, request.get_full_path()))
@@ -97,7 +97,7 @@ def complete_zoom_user(
 def complete_zoom_user_in_realm(
     request: HttpRequest,
     code: str = REQ(),
-    state: Dict[str, str] = REQ(validator=check_dict([("sid", check_string)])),
+    state: Dict[str, str] = REQ(validator=check_dict([("sid", check_string)], value_validator=check_string)),
 ) -> HttpResponse:
     if not constant_time_compare(state["sid"], get_zoom_sid(request)):
         raise JsonableError(_("Invalid Zoom session identifier"))
