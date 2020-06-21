@@ -46,6 +46,7 @@ const ExamplesHandler = function () {
         await generate_validation_data(client, examples.get_subscriptions);
         await generate_validation_data(client, examples.get_users);
         await generate_validation_data(client, examples.register_queue);
+        await generate_validation_data(client, examples.render_message);
 
         console.log(JSON.stringify(response_data));
         return;
@@ -197,6 +198,17 @@ add_example('register_queue', '/register:post', 200, async (client) => {
     };
 
     return await client.queues.register(params);
+    // {code_example|end}
+});
+
+add_example('render_message', '/messages/render:post', 200, async (client) => {
+    // {code_example|start}
+    // Render a message
+    const params = {
+        content: '**foo**',
+    };
+
+    return await client.messages.render(params);
     // {code_example|end}
 });
 
