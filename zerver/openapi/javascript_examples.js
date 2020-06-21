@@ -50,6 +50,7 @@ const ExamplesHandler = function () {
         await generate_validation_data(client, examples.set_typing_status);
         await generate_validation_data(client, examples.add_subscriptions);
         await generate_validation_data(client, examples.remove_subscriptions);
+        await generate_validation_data(client, examples.update_message_flags);
 
         console.log(JSON.stringify(response_data));
         return;
@@ -275,6 +276,28 @@ add_example('remove_subscriptions', '/users/me/subscriptions:delete', 200, async
         principals: JSON.stringify([user_id]),
     };
     const result_2 = await client.users.me.subscriptions.remove(zoeParams);
+    // {code_example|end}
+    return [result_1, result_2];
+});
+
+add_example('update_message_flags', '/messages/flags:post', 200, async (client) => {
+    const message_ids = [4, 8, 15];
+    // {code_example|start}
+    // Add the "read" flag to the messages with IDs in "message_ids"
+    const addflag = {
+        messages: message_ids,
+        flag: 'read',
+    };
+    const result_1 = await client.messages.flags.add(addflag);
+    // {code_example|end}
+
+    // {code_example|start}
+    // Remove the "starred" flag from the messages with IDs in "message_ids"
+    const removeflag = {
+        messages: message_ids,
+        flag: 'starred',
+    };
+    const result_2 = await client.messages.flags.remove(removeflag);
     // {code_example|end}
     return [result_1, result_2];
 });
