@@ -4,11 +4,11 @@
     "total": 213
   },
   "ca": {
-    "not_translated": 105,
+    "not_translated": 99,
     "total": 213
   },
   "cs": {
-    "not_translated": 52,
+    "not_translated": 0,
     "total": 213
   },
   "de": {
@@ -88,7 +88,7 @@
     "total": 213
   },
   "sr": {
-    "not_translated": 194,
+    "not_translated": 192,
     "total": 213
   },
   "ta": {
@@ -108,7 +108,7 @@
     "total": 213
   },
   "zh_Hant": {
-    "not_translated": 185,
+    "not_translated": 183,
     "total": 213
   }
 }
