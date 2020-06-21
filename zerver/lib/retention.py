@@ -1,3 +1,31 @@
+# Core implementation of message retention policies and low-level
+# helpers for deleting messages.
+#
+# Because bugs in code that deletes message content can cause
+# irreversible harm in installations without backups, this is a
+# particularly sensitive system that requires careful design,
+# thoughtful database transaction boundaries, and a well-written test
+# suite to make bugs unlikely and mitigate their impact.
+#
+# The core design principle of this system is we never delete a live
+# Message/Reaction/etc. object.  Instead, we use move_rows, which moves
+# objects to a "deleted objects" table like ArchiveMessage, recording
+# the change using a structure linked to an ArchiveTransaction object
+# that can be used to undo that deletion transaction in a clean
+# fashion.
+#
+# We move all of the data associated with a given block of messages in
+# a single database transaction in order to avoid broken intermediate
+# states where, for example, a message's reactions were deleted but
+# not the messages themselves.
+#
+# And then a separate process deletes ArchiveTransaction objects
+# ARCHIVED_DATA_VACUUMING_DELAY_DAYS after they were created.
+#
+# Because of the nice properties of this deletion system, we use the
+# same system for routine deletions via the Zulip UI (deleting a
+# message or group of messages) as we use for message retention policy
+# deletions.
 import logging
 from datetime import timedelta
 from typing import Any, Dict, List, Optional, Tuple
@@ -32,6 +60,10 @@ log_to_file(logger, settings.RETENTION_LOG_PATH)
 MESSAGE_BATCH_SIZE = 1000
 TRANSACTION_DELETION_BATCH_SIZE = 100
 
+# This data structure declares the details of all database tables that
+# hang off the Message table (with a foreign key to Message being part
+# of its primary lookup key).  This structure allows us to share the
+# code for managing these related tables.
 models_with_message_key: List[Dict[str, Any]] = [
     {
         'class': Reaction,
@@ -62,6 +94,7 @@ def move_rows(
     returning_id: bool=False,
     **kwargs: Composable,
 ) -> List[int]:
+    """Core helper for bulk moving rows between a table and its archive table"""
     if src_db_table is None:
         # Use base_model's db_table unless otherwise specified.
         src_db_table = base_model._meta.db_table
@@ -254,6 +287,10 @@ def move_models_with_message_key_to_archive(msg_ids: List[int]) -> None:
             message_ids=Literal(tuple(msg_ids)),
         )
 
+# Attachments can't use the common models_with_message_key system,
+# because they can be referenced by more than one Message, and we only
+# want to delete the Attachment if we're deleting the last message
+# referencing them.
 def move_attachments_to_archive(msg_ids: List[int]) -> None:
     assert len(msg_ids) > 0
 
