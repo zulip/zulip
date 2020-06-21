@@ -409,6 +409,10 @@ on a dark background, and don't change the dark labels dark either. */
         color: hsl(0, 0%, 100%);
     }
 
+    .recent_avatars_others {
+        color: hsl(0, 0%, 100%) !important;
+    }
+
     .btn-recent-filters {
         background-color: hsl(211, 29%, 14%);
         border-color: hsl(0, 0%, 0%);

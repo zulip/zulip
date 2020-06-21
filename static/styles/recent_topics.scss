@@ -59,6 +59,11 @@
         display: flex;
         flex-direction: column;
 
+        td {
+            vertical-align: middle;
+            padding: 3px 8px 3px 8px;
+        }
+
         a {
             color: hsl(205, 47%, 42%);
             text-decoration: none;
@@ -138,7 +143,10 @@
             display: inline-flex; /* Causes LI items to display in row. */
             list-style-type: none;
             margin: auto; /* Centers vertically / horizontally in flex container. */
-            height: 15px !important;
+            height: 24px;
+            padding: 4px;
+            border-radius: 6px;
+            overflow: hidden;
 
             /*
                 By using the row-reverse layout, the visual ordering will be opposite of
@@ -151,26 +159,26 @@
         }
 
         .recent_avatars_item {
-            height: 18px;
-            margin: 0px 0px 0px 0px;
-            padding: 0px 0px 0px 0px;
+            height: 24px;
+            margin: 0;
+            padding: 0 1.5px 0 1.5px;
             position: relative;
-            min-width: 18px;
+            min-width: 24px;
         }
 
         .recent_avatars_img,
         .recent_avatars_others {
-            border: 1px solid hsl(221.1, 23.5%, 15.9%);
-            border-left: 0 !important;
+            border: 0;
             border-radius: 6px;
             color: hsl(0, 0%, 100%);
             display: block;
-            height: 18px;
+            height: 24px;
             text-align: center;
         }
 
         .recent_avatars_others {
-            background-color: hsl(205.2, 76.5%, 50%);
+            color: hsl(0, 0%, 0%);
+            line-height: 24px;
         }
 
         thead th {
