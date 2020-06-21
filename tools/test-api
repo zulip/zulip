@@ -43,6 +43,18 @@ with test_server_running(force=options.force, external_host='zulipdev.com:9981')
 
     reset_emails_in_zulip_realm()
 
+    # Prepare the organization owner client
+    email = 'desdemona@zulip.com'  # Desdemona is an organization owner
+    realm = get_realm('zulip')
+    user = get_user(email, realm)
+    api_key = get_api_key(user)
+    site = 'http://zulip.zulipdev.com:9981'
+    owner_client = Client(
+        email=email,
+        api_key=api_key,
+        site=site,
+    )
+
     # Prepare the admin client
     email = 'iago@zulip.com'  # Iago is an admin
     realm = get_realm('zulip')
@@ -77,8 +89,8 @@ with test_server_running(force=options.force, external_host='zulipdev.com:9981')
         site=site,
     )
 
-    test_the_api(client, nonadmin_client)
-    test_generated_curl_examples_for_success(client)
+    test_the_api(owner_client, client, nonadmin_client)
+    test_generated_curl_examples_for_success(client, owner_client)
     test_js_bindings(client)
 
     # Test error payloads

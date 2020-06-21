@@ -15,8 +15,7 @@ from zerver.openapi.curl_param_value_generators import (
 )
 
 
-def test_generated_curl_examples_for_success(client: Client) -> None:
-    authentication_line = f"{client.email}:{client.api_key}"
+def test_generated_curl_examples_for_success(client: Client, owner_client: Client) -> None:
     # A limited markdown engine that just processes the code example syntax.
     realm = get_realm("zulip")
     md_engine = markdown.Markdown(extensions=[markdown_extension.makeExtension(
@@ -28,7 +27,14 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
     # very explicit.
     for file_name in sorted(glob.glob("templates/zerver/api/*.md")):
         documentation_lines = open(file_name).readlines()
+        if documentation_lines[0].startswith("{use_owner_client}"):
+            authentication_line = f"{owner_client.email}:{owner_client.api_key}"
+        else:
+            authentication_line = f"{client.email}:{client.api_key}"
+
         for line in documentation_lines:
+            if line.startswith("{use_owner_client}"):
+                continue
             # A typical example from the markdown source looks like this:
             #     {generate_code_example(curl, ...}
             if not line.startswith("{generate_code_example(curl"):

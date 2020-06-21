@@ -1215,7 +1215,7 @@ def test_queues(client: Client) -> None:
     queue_id = register_queue(client)
     deregister_queue(client, queue_id)
 
-def test_server_organizations(client: Client) -> None:
+def test_server_organizations(client: Client, owner_client: Client) -> None:
 
     get_realm_filters(client)
     add_realm_filter(client)
@@ -1228,14 +1228,14 @@ def test_errors(client: Client) -> None:
     test_missing_request_argument(client)
     test_invalid_stream_error(client)
 
-def test_the_api(client: Client, nonadmin_client: Client) -> None:
+def test_the_api(owner_client: Client, client: Client, nonadmin_client: Client) -> None:
 
     get_user_agent(client)
     test_users(client)
     test_streams(client, nonadmin_client)
     test_messages(client, nonadmin_client)
     test_queues(client)
-    test_server_organizations(client)
+    test_server_organizations(client, owner_client)
     test_errors(client)
 
     sys.stdout.flush()
