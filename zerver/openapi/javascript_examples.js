@@ -53,6 +53,7 @@ const ExamplesHandler = function () {
         await generate_validation_data(client, examples.update_message_flags);
         await generate_validation_data(client, examples.update_message);
         await generate_validation_data(client, examples.get_events);
+        await generate_validation_data(client, examples.get_streams);
 
         console.log(JSON.stringify(response_data));
         return;
@@ -348,6 +349,13 @@ add_example('get_events', '/events:get', 200, async (client) => {
     };
 
     return await client.events.retrieve(eventParams);
+    // {code_example|end}
+});
+
+add_example('get_streams', '/streams:get', 200, async (client) => {
+    // {code_example|start}
+    // Get all streams that the user has access to
+    return await client.streams.retrieve();
     // {code_example|end}
 });
 
