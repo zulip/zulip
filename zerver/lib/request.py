@@ -16,6 +16,7 @@ from typing import (
 )
 
 import ujson
+from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 from typing_extensions import Literal
@@ -76,8 +77,8 @@ class _REQ(Generic[ResultT]):
         *,
         converter: Optional[Callable[[str], ResultT]] = None,
         default: Union[_NotSpecified, ResultT, None] = NotSpecified,
-        validator: Optional[Validator] = None,
-        str_validator: Optional[Validator] = None,
+        validator: Optional[Validator[ResultT]] = None,
+        str_validator: Optional[Validator[ResultT]] = None,
         argument_type: Optional[str] = None,
         intentionally_undocumented: bool=False,
         documentation_pending: bool=False,
@@ -157,7 +158,7 @@ def REQ(
     whence: Optional[str] = ...,
     *,
     default: ResultT = ...,
-    validator: Validator,
+    validator: Validator[ResultT],
     intentionally_undocumented: bool = ...,
     documentation_pending: bool = ...,
     aliases: Sequence[str] = ...,
@@ -171,7 +172,7 @@ def REQ(
     whence: Optional[str] = ...,
     *,
     default: str = ...,
-    str_validator: Optional[Validator] = ...,
+    str_validator: Optional[Validator[str]] = ...,
     intentionally_undocumented: bool = ...,
     documentation_pending: bool = ...,
     aliases: Sequence[str] = ...,
@@ -185,7 +186,7 @@ def REQ(
     whence: Optional[str] = ...,
     *,
     default: None,
-    str_validator: Optional[Validator] = ...,
+    str_validator: Optional[Validator[str]] = ...,
     intentionally_undocumented: bool = ...,
     documentation_pending: bool = ...,
     aliases: Sequence[str] = ...,
@@ -199,7 +200,6 @@ def REQ(
     whence: Optional[str] = ...,
     *,
     default: ResultT = ...,
-    str_validator: Optional[Validator] = ...,
     argument_type: Literal["body"],
     intentionally_undocumented: bool = ...,
     documentation_pending: bool = ...,
@@ -214,8 +214,8 @@ def REQ(
     *,
     converter: Optional[Callable[[str], ResultT]] = None,
     default: Union[_REQ._NotSpecified, ResultT] = _REQ.NotSpecified,
-    validator: Optional[Validator] = None,
-    str_validator: Optional[Validator] = None,
+    validator: Optional[Validator[ResultT]] = None,
+    str_validator: Optional[Validator[ResultT]] = None,
     argument_type: Optional[str] = None,
     intentionally_undocumented: bool=False,
     documentation_pending: bool=False,
@@ -350,15 +350,17 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
                 except Exception:
                     raise JsonableError(_('Argument "{}" is not valid JSON.').format(post_var_name))
 
-                error = param.validator(post_var_name, val)
-                if error:
-                    raise JsonableError(error)
+                try:
+                    val = param.validator(post_var_name, val)
+                except ValidationError as error:
+                    raise JsonableError(error.message)
 
             # str_validators is like validator, but for direct strings (no JSON parsing).
             if param.str_validator is not None and not default_assigned:
-                error = param.str_validator(post_var_name, val)
-                if error:
-                    raise JsonableError(error)
+                try:
+                    val = param.str_validator(post_var_name, val)
+                except ValidationError as error:
+                    raise JsonableError(error.message)
 
             kwargs[func_var_name] = val
 

@@ -1,8 +1,7 @@
 """
     This module stores data for "External Account" custom profile field.
 """
-from typing import Optional
-
+from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _
 
 from zerver.lib.types import ProfileFieldData
@@ -35,21 +34,19 @@ DEFAULT_EXTERNAL_ACCOUNTS = {
     },
 }
 
-def validate_external_account_field_data(field_data: ProfileFieldData) -> Optional[str]:
+def validate_external_account_field_data(field_data: ProfileFieldData) -> ProfileFieldData:
     field_validator = check_dict_only(
         [('subtype', check_required_string)],
         [('url_pattern', check_external_account_url_pattern)],
     )
-    error = field_validator('field_data', field_data)
-    if error:
-        return error
+    field_validator('field_data', field_data)
 
     field_subtype = field_data.get('subtype')
     if field_subtype not in DEFAULT_EXTERNAL_ACCOUNTS.keys():
         if field_subtype == "custom":
             if 'url_pattern' not in field_data.keys():
-                return _("Custom external account must define url pattern")
+                raise ValidationError(_("Custom external account must define url pattern"))
         else:
-            return _("Invalid external account type")
+            raise ValidationError(_("Invalid external account type"))
 
-    return None
+    return field_data

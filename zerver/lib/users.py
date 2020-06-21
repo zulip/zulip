@@ -4,6 +4,7 @@ from collections import defaultdict
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union, cast
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db.models.query import QuerySet
 from django.forms.models import model_to_dict
 from django.utils.translation import ugettext as _
@@ -253,25 +254,24 @@ def get_all_api_keys(user_profile: UserProfile) -> List[str]:
     return [user_profile.api_key]
 
 def validate_user_custom_profile_field(realm_id: int, field: CustomProfileField,
-                                       value: Union[int, str, List[int]]) -> Optional[str]:
+                                       value: Union[int, str, List[int]]) -> Union[int, str, List[int]]:
     validators = CustomProfileField.FIELD_VALIDATORS
     field_type = field.field_type
     var_name = f'{field.name}'
     if field_type in validators:
         validator = validators[field_type]
-        result = validator(var_name, value)
+        return validator(var_name, value)
     elif field_type == CustomProfileField.CHOICE:
         choice_field_validator = CustomProfileField.CHOICE_FIELD_VALIDATORS[field_type]
         field_data = field.field_data
         # Put an assertion so that mypy doesn't complain.
         assert field_data is not None
-        result = choice_field_validator(var_name, field_data, value)
+        return choice_field_validator(var_name, field_data, value)
     elif field_type == CustomProfileField.USER:
         user_field_validator = CustomProfileField.USER_FIELD_VALIDATORS[field_type]
-        result = user_field_validator(realm_id, cast(List[int], value), False)
+        return user_field_validator(realm_id, cast(List[int], value), False)
     else:
         raise AssertionError("Invalid field type")
-    return result
 
 def validate_user_custom_profile_data(realm_id: int,
                                       profile_data: List[Dict[str, Union[int, str, List[int]]]]) -> None:
@@ -283,9 +283,10 @@ def validate_user_custom_profile_data(realm_id: int,
         except CustomProfileField.DoesNotExist:
             raise JsonableError(_('Field id {id} not found.').format(id=field_id))
 
-        result = validate_user_custom_profile_field(realm_id, field, item['value'])
-        if result is not None:
-            raise JsonableError(result)
+        try:
+            validate_user_custom_profile_field(realm_id, field, item['value'])
+        except ValidationError as error:
+            raise JsonableError(error.message)
 
 def compute_show_invites_and_add_streams(user_profile: Optional[UserProfile]) -> Tuple[bool, bool]:
     if user_profile is None:

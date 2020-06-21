@@ -2738,10 +2738,8 @@ class UserHotspot(models.Model):
         unique_together = ("user", "hotspot")
 
 def check_valid_user_ids(realm_id: int, user_ids: List[int],
-                         allow_deactivated: bool=False) -> Optional[str]:
-    error = check_list(check_int)("User IDs", user_ids)
-    if error:
-        return error
+                         allow_deactivated: bool=False) -> List[int]:
+    check_list(check_int)("User IDs", user_ids)
     realm = Realm.objects.get(id=realm_id)
     for user_id in user_ids:
         # TODO: Structurally, we should be doing a bulk fetch query to
@@ -2751,16 +2749,16 @@ def check_valid_user_ids(realm_id: int, user_ids: List[int],
         try:
             user_profile = get_user_profile_by_id_in_realm(user_id, realm)
         except UserProfile.DoesNotExist:
-            return _('Invalid user ID: %d') % (user_id)
+            raise ValidationError(_('Invalid user ID: %d') % (user_id))
 
         if not allow_deactivated:
             if not user_profile.is_active:
-                return _('User with ID %d is deactivated') % (user_id)
+                raise ValidationError(_('User with ID %d is deactivated') % (user_id))
 
         if (user_profile.is_bot):
-            return _('User with ID %d is a bot') % (user_id)
+            raise ValidationError(_('User with ID %d is a bot') % (user_id))
 
-    return None
+    return user_ids
 
 class CustomProfileField(models.Model):
     """Defines a form field for the per-realm custom profile fields feature.
@@ -2812,7 +2810,7 @@ class CustomProfileField(models.Model):
 
     ALL_FIELD_TYPES = [*FIELD_TYPE_DATA, *CHOICE_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA]
 
-    FIELD_VALIDATORS: Dict[int, Validator] = {item[0]: item[2] for item in FIELD_TYPE_DATA}
+    FIELD_VALIDATORS: Dict[int, Validator[Union[int, str, List[int]]]] = {item[0]: item[2] for item in FIELD_TYPE_DATA}
     FIELD_CONVERTERS: Dict[int, Callable[[Any], Any]] = {item[0]: item[3] for item in ALL_FIELD_TYPES}
     FIELD_TYPE_CHOICES: List[Tuple[int, str]] = [(item[0], item[1]) for item in ALL_FIELD_TYPES]
     FIELD_TYPE_CHOICES_DICT: Dict[str, Dict[str, Union[str, int]]] = {

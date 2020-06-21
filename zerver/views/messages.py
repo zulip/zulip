@@ -608,9 +608,10 @@ def narrow_parameter(json: str) -> OptionalNarrowListT:
                 ('operand', operand_validator),
             ])
 
-            error = validator('elem', elem)
-            if error:
-                raise JsonableError(error)
+            try:
+                validator('elem', elem)
+            except ValidationError as error:
+                raise JsonableError(error.message)
 
             # whitelist the fields we care about for now
             return dict(

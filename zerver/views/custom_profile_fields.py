@@ -1,6 +1,7 @@
 from typing import Dict, List, Union
 
 import ujson
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -44,27 +45,24 @@ def validate_field_name_and_hint(name: str, hint: str) -> None:
     if not name.strip():
         raise JsonableError(_("Label cannot be blank."))
 
-    error = hint_validator('hint', hint)
-    if error:
-        raise JsonableError(error)
-
-    error = name_validator('name', name)
-    if error:
-        raise JsonableError(error)
+    try:
+        hint_validator('hint', hint)
+        name_validator('name', name)
+    except ValidationError as error:
+        raise JsonableError(error.message)
 
 def validate_custom_field_data(field_type: int,
                                field_data: ProfileFieldData) -> None:
-    error = None
-    if field_type == CustomProfileField.CHOICE:
-        # Choice type field must have at least have one choice
-        if len(field_data) < 1:
-            raise JsonableError(_("Field must have at least one choice."))
-        error = validate_choice_field_data(field_data)
-    elif field_type == CustomProfileField.EXTERNAL_ACCOUNT:
-        error = validate_external_account_field_data(field_data)
-
-    if error:
-        raise JsonableError(error)
+    try:
+        if field_type == CustomProfileField.CHOICE:
+            # Choice type field must have at least have one choice
+            if len(field_data) < 1:
+                raise JsonableError(_("Field must have at least one choice."))
+            validate_choice_field_data(field_data)
+        elif field_type == CustomProfileField.EXTERNAL_ACCOUNT:
+            validate_external_account_field_data(field_data)
+    except ValidationError as error:
+        raise JsonableError(error.message)
 
 def is_default_external_field(field_type: int, field_data: ProfileFieldData) -> bool:
     if field_type != CustomProfileField.EXTERNAL_ACCOUNT:

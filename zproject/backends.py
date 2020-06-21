@@ -628,9 +628,10 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 raise ZulipLDAPException(f'Custom profile field with name {var_name} not found.')
             if existing_values.get(var_name) == value:
                 continue
-            result = validate_user_custom_profile_field(user_profile.realm.id, field, value)
-            if result is not None:
-                raise ZulipLDAPException(f'Invalid data for {var_name} field: {result}')
+            try:
+                validate_user_custom_profile_field(user_profile.realm.id, field, value)
+            except ValidationError as error:
+                raise ZulipLDAPException(f'Invalid data for {var_name} field: {error.message}')
             profile_data.append({
                 'id': field.id,
                 'value': value,

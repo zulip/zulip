@@ -7,9 +7,10 @@ ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 
 # See zerver/lib/validator.py for more details of Validators,
 # including many examples
-Validator = Callable[[str, object], Optional[str]]
-ExtendedValidator = Callable[[str, str, object], Optional[str]]
-RealmUserValidator = Callable[[int, List[int], bool], Optional[str]]
+ResultT = TypeVar("ResultT")
+Validator = Callable[[str, object], ResultT]
+ExtendedValidator = Callable[[str, str, object], str]
+RealmUserValidator = Callable[[int, List[int], bool], List[int]]
 
 class ProfileDataElementBase(TypedDict):
     id: int
@@ -25,7 +26,7 @@ class ProfileDataElement(ProfileDataElementBase):
 
 ProfileData = List[ProfileDataElement]
 
-FieldElement = Tuple[int, str, Validator, Callable[[Any], Any], str]
+FieldElement = Tuple[int, str, Validator[Union[int, str, List[int]]], Callable[[Any], Any], str]
 ExtendedFieldElement = Tuple[int, str, ExtendedValidator, Callable[[Any], Any], str]
 UserFieldElement = Tuple[int, str, RealmUserValidator, Callable[[Any], Any], str]
 
