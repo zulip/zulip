@@ -140,6 +140,20 @@ IGNORED_PHRASES = [
     r"group private messages with __recipient__",
     r"private messages with __recipient__",
     r"private messages with yourself",
+    # From search suggestions
+    # Intentionally lower case to facilitate proper translations
+    r"alerted messages",
+    r"all messages",
+    r"all public streams in organization",
+    r"exclude __description__",
+    r"exclude sent by me",
+    r"messages with one or more attachment",
+    r"messages with one or more image",
+    r"messages with one or more link",
+    r"private messages",
+    r"sent by me",
+    r"starred messages",
+    r"unread message",
 
     # TO CLEAN UP
     # Just want to avoid churning login.html right now

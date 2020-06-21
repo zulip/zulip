@@ -385,8 +385,9 @@ function get_special_filter_suggestions(last, operators, suggestions) {
     // suggesting negated operators.
     if (last.negated || is_search_operand_negated) {
         suggestions = suggestions.map((suggestion) => ({
-            search_string: "-" + suggestion.search_string,
-            description: "exclude " + suggestion.description,
+            search_string: '-' + suggestion.search_string,
+            description: i18n.t('exclude __description__',
+                                {description: suggestion.description}),
             invalid: suggestion.invalid,
         }));
     }
@@ -413,8 +414,8 @@ function get_special_filter_suggestions(last, operators, suggestions) {
     });
 
     // Only show home if there's an empty bar
-    if (operators.length === 0 && last_string === "") {
-        suggestions.unshift({search_string: "", description: "All messages"});
+    if (operators.length === 0 && last_string === '') {
+        suggestions.unshift({search_string: '', description: i18n.t('all messages')});
     }
     return suggestions;
 }
@@ -422,8 +423,8 @@ function get_special_filter_suggestions(last, operators, suggestions) {
 function get_streams_filter_suggestions(last, operators) {
     const suggestions = [
         {
-            search_string: "streams:public",
-            description: "All public streams in organization",
+            search_string: 'streams:public',
+            description: i18n.t('all public streams in organization'),
             invalid: [
                 {operator: "is", operand: "private"},
                 {operator: "stream"},
@@ -439,8 +440,8 @@ function get_streams_filter_suggestions(last, operators) {
 function get_is_filter_suggestions(last, operators) {
     const suggestions = [
         {
-            search_string: "is:private",
-            description: "private messages",
+            search_string: 'is:private',
+            description: i18n.t('private messages'),
             invalid: [
                 {operator: "is", operand: "private"},
                 {operator: "stream"},
@@ -449,24 +450,32 @@ function get_is_filter_suggestions(last, operators) {
             ],
         },
         {
-            search_string: "is:starred",
-            description: "starred messages",
-            invalid: [{operator: "is", operand: "starred"}],
+            search_string: 'is:starred',
+            description: i18n.t('starred messages'),
+            invalid: [
+                {operator: 'is', operand: 'starred'},
+            ],
         },
         {
-            search_string: "is:mentioned",
-            description: "@-mentions",
-            invalid: [{operator: "is", operand: "mentioned"}],
+            search_string: 'is:mentioned',
+            description: i18n.t('@-mentions'),
+            invalid: [
+                {operator: 'is', operand: 'mentioned'},
+            ],
         },
         {
-            search_string: "is:alerted",
-            description: "alerted messages",
-            invalid: [{operator: "is", operand: "alerted"}],
+            search_string: 'is:alerted',
+            description: i18n.t('alerted messages'),
+            invalid: [
+                {operator: 'is', operand: 'alerted'},
+            ],
         },
         {
-            search_string: "is:unread",
-            description: "unread messages",
-            invalid: [{operator: "is", operand: "unread"}],
+            search_string: 'is:unread',
+            description: i18n.t('unread messages'),
+            invalid: [
+                {operator: 'is', operand: 'unread'},
+            ],
         },
     ];
     return get_special_filter_suggestions(last, operators, suggestions);
@@ -475,19 +484,27 @@ function get_is_filter_suggestions(last, operators) {
 function get_has_filter_suggestions(last, operators) {
     const suggestions = [
         {
-            search_string: "has:link",
-            description: "messages with one or more link",
-            invalid: [{operator: "has", operand: "link"}],
+            search_string: 'has:link',
+            description: i18n.t('messages with one or more link'),
+            // Probably a better way to handle negation is to just have a
+            // translated version here for it.
+            invalid: [
+                {operator: 'has', operand: 'link'},
+            ],
         },
         {
-            search_string: "has:image",
-            description: "messages with one or more image",
-            invalid: [{operator: "has", operand: "image"}],
+            search_string: 'has:image',
+            description: i18n.t('messages with one or more image'),
+            invalid: [
+                {operator: 'has', operand: 'image'},
+            ],
         },
         {
-            search_string: "has:attachment",
-            description: "messages with one or more attachment",
-            invalid: [{operator: "has", operand: "attachment"}],
+            search_string: 'has:attachment',
+            description: i18n.t('messages with one or more attachment'),
+            invalid: [
+                {operator: 'has', operand: 'attachment'},
+            ],
         },
     ];
     return get_special_filter_suggestions(last, operators, suggestions);
@@ -495,16 +512,21 @@ function get_has_filter_suggestions(last, operators) {
 
 function get_sent_by_me_suggestions(last, operators) {
     const last_string = Filter.unparse([last]).toLowerCase();
-    const negated = last.negated || (last.operator === "search" && last.operand[0] === "-");
-    const negated_symbol = negated ? "-" : "";
-    const verb = negated ? "exclude " : "";
+    const negated = last.negated || last.operator === 'search' && last.operand[0] === '-';
+    const negated_symbol = negated ? '-' : '';
 
-    const sender_query = negated_symbol + "sender:" + people.my_current_email();
-    const from_query = negated_symbol + "from:" + people.my_current_email();
-    const sender_me_query = negated_symbol + "sender:me";
-    const from_me_query = negated_symbol + "from:me";
-    const sent_string = negated_symbol + "sent";
-    const description = verb + "sent by me";
+    const sender_query = negated_symbol + 'sender:' + people.my_current_email();
+    const from_query = negated_symbol + 'from:' + people.my_current_email();
+    const sender_me_query = negated_symbol + 'sender:me';
+    const from_me_query = negated_symbol + 'from:me';
+    const sent_string = negated_symbol + 'sent';
+
+    let description;
+    if (negated) {
+        description = i18n.t('exclude sent by me');
+    } else {
+        description = i18n.t('sent by me');
+    }
 
     const invalid = [{operator: "sender"}, {operator: "from"}];
 
@@ -716,7 +738,7 @@ exports.get_suggestions = function (base_query, query) {
 
 exports.finalize_search_result = function (result) {
     for (const sug of result) {
-        const first = sug.description.charAt(0).toUpperCase();
+        const first = sug.description.charAt(0).toLocaleUpperCase();
         sug.description = first + sug.description.slice(1);
     }
 
