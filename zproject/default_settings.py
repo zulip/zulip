@@ -11,6 +11,8 @@ if PRODUCTION:
 else:
     from .dev_settings import EXTERNAL_HOST, ZULIP_ADMINISTRATOR
 
+import os
+
 DEBUG = DEVELOPMENT
 
 # These settings are intended for the server admin to set.  We document them in
@@ -415,3 +417,6 @@ NAGIOS_BOT_HOST = EXTERNAL_HOST
 
 # Automatically deactivate users not found by the AUTH_LDAP_USER_SEARCH query.
 LDAP_DEACTIVATE_NON_MATCHING_USERS: Optional[bool] = None
+
+# Use half of the available CPUs for data import purposes.
+DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM = (len(os.sched_getaffinity(0)) // 2) or 1

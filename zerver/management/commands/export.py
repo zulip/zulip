@@ -3,6 +3,7 @@ import tempfile
 from argparse import ArgumentParser
 from typing import Any
 
+from django.conf import settings
 from django.core.management.base import CommandError
 
 from zerver.lib.export import export_realm_wrapper
@@ -87,7 +88,7 @@ class Command(ZulipBaseCommand):
         parser.add_argument('--threads',
                             dest='threads',
                             action="store",
-                            default=6,
+                            default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
                             help='Threads to use in exporting UserMessage objects in parallel')
         parser.add_argument('--public-only',
                             action="store_true",

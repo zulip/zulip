@@ -39,7 +39,7 @@ import a database dump from one or more JSON files."""
         parser.add_argument('--processes',
                             dest='processes',
                             action="store",
-                            default=6,
+                            default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
                             help='Number of processes to use for uploading Avatars to S3 in parallel')
         parser.formatter_class = argparse.RawTextHelpFormatter
 
