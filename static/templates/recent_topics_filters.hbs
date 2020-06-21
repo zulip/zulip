@@ -1,4 +1,12 @@
 <button data-filter="all" type="button" class="btn btn-default btn-recent-filters">{{t 'All' }}</button>
+<button data-filter="include_muted" type="button" class="btn btn-default btn-recent-filters">
+    {{#if filter_muted }}
+    <i class="fa fa-check-square-o"></i>
+    {{else}}
+    <i class="fa fa-square-o"></i>
+    {{/if}}
+    {{t 'Include muted' }}
+</button>
 <button data-filter="unread" type="button" class="btn btn-default btn-recent-filters">
     {{#if filter_unread}}
     <i class="fa fa-check-square-o"></i>
@@ -14,12 +22,4 @@
     <i class="fa fa-square-o"></i>
     {{/if}}
     {{t 'Participated' }}
-</button>
-<button data-filter="include_muted" type="button" class="btn btn-default btn-recent-filters">
-    {{#if filter_muted }}
-    <i class="fa fa-check-square-o"></i>
-    {{else}}
-    <i class="fa fa-square-o"></i>
-    {{/if}}
-    {{t 'Include muted' }}
 </button>
