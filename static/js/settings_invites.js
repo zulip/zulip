@@ -1,4 +1,5 @@
 const util = require("./util");
+const settings_config = require("./settings_config");
 const render_admin_invites_list = require("../templates/admin_invites_list.hbs");
 const render_settings_revoke_invite_modal = require("../templates/settings/revoke_invite_modal.hbs");
 
@@ -16,10 +17,10 @@ function failed_listing_invites(xhr) {
 }
 
 exports.invited_as_values = new Map([
-    [1, i18n.t("Member")],
-    [2, i18n.t("Organization administrator")],
-    [3, i18n.t("Guest")],
-    [4, i18n.t("Organization owner")],
+    [100, i18n.t("Organization owner")],
+    [200, i18n.t("Organization administrator")],
+    [400, i18n.t("Member")],
+    [600, i18n.t("Guest")],
 ]);
 
 function add_invited_as_text(invites) {
@@ -52,7 +53,8 @@ function populate_invites(invites_data) {
         modifier: function (item) {
             item.invited_absolute_time = timerender.absolute_time(item.invited * 1000);
             item.is_admin = page_params.is_admin;
-            item.disable_buttons = item.invited_as === 4 && !page_params.is_owner;
+            item.disable_buttons = item.invited_as === settings_config.user_role_values.owner.code
+                && !page_params.is_owner;
             return render_admin_invites_list({ invite: item });
         },
         filter: {
