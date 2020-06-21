@@ -2071,7 +2071,9 @@ class EventsRegisterTest(ZulipTestCase):
 
         def get_bot_created_checker(bot_type: str) -> Validator[object]:
             if bot_type == "GENERIC_BOT":
-                check_services = check_list(sub_validator=None, length=0)
+                # Generic bots don't really understand the concept of
+                # "services", so we just enforce that we get an empty list.
+                check_services: Validator[List[object]] = equals([])
             elif bot_type == "OUTGOING_WEBHOOK_BOT":
                 check_services = check_list(check_dict_only([
                     ('base_url', check_url),
@@ -2255,7 +2257,6 @@ class EventsRegisterTest(ZulipTestCase):
         change_bot_owner_checker_bot('events[0]', events[0])
         change_bot_owner_checker_user('events[1]', events[1])
 
-        check_services = check_list(sub_validator=None, length=0)
         change_bot_owner_checker_bot = self.check_events_dict([
             ('type', equals('realm_bot')),
             ('op', equals('add')),
@@ -2271,7 +2272,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('default_all_public_streams', check_bool),
                 ('avatar_url', check_string),
                 ('owner_id', check_int),
-                ('services', check_services),
+                ('services', equals([])),
             ])),
         ])
         previous_owner = self.example_user('aaron')
