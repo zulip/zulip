@@ -760,7 +760,7 @@ class InviteUserBase(ZulipTestCase):
         self.assertRegex(outbox[0].from_email, fr" <{self.TOKENIZED_NOREPLY_REGEX}>\Z")
 
     def invite(self, invitee_emails: str, stream_names: Sequence[str], body: str='',
-               invite_as: int=1) -> HttpResponse:
+               invite_as: int=PreregistrationUser.INVITE_AS['MEMBER']) -> HttpResponse:
         """
         Invites the specified users to Zulip with the specified streams.
 
@@ -989,7 +989,7 @@ class InviteUserTest(InviteUserBase):
         """
         self.login('iago')
         invitee = self.nonreg_email('alice')
-        response = self.invite(invitee, ["Denmark"], invite_as=100)
+        response = self.invite(invitee, ["Denmark"], invite_as=10)
         self.assert_json_error(response, "Must be invited as an valid type of user")
 
     def test_successful_invite_user_as_guest_from_normal_account(self) -> None:

@@ -1370,10 +1370,10 @@ class PreregistrationUser(models.Model):
     # settings_invites.invited_as_values in
     # static/js/settings_invites.js
     INVITE_AS = dict(
-        MEMBER = 1,
-        REALM_ADMIN = 2,
-        GUEST_USER = 3,
-        REALM_OWNER = 4,
+        REALM_OWNER = 100,
+        REALM_ADMIN = 200,
+        MEMBER = 400,
+        GUEST_USER = 600,
     )
     invited_as: int = models.PositiveSmallIntegerField(default=INVITE_AS['MEMBER'])
 

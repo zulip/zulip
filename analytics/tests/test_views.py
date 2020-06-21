@@ -14,7 +14,7 @@ from zerver.lib.actions import do_create_multiuse_invite_link, do_send_realm_rea
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_emails_in_zulip_realm
 from zerver.lib.timestamp import ceiling_to_day, ceiling_to_hour, datetime_to_timestamp
-from zerver.models import Client, MultiuseInvite, get_realm
+from zerver.models import Client, MultiuseInvite, PreregistrationUser, get_realm
 
 
 class TestStatsEndpoint(ZulipTestCase):
@@ -521,7 +521,8 @@ class TestSupportEndpoint(ZulipTestCase):
         stream_ids = [self.get_stream_id("Denmark")]
         invitee_emails = [self.nonreg_email("test1")]
         self.client_post("/json/invites", {"invitee_emails": invitee_emails,
-                                           "stream_ids": ujson.dumps(stream_ids), "invite_as": 1})
+                                           "stream_ids": ujson.dumps(stream_ids),
+                                           "invite_as": PreregistrationUser.INVITE_AS['MEMBER']})
         result = self.client_get("/activity/support", {"q": self.nonreg_email("test1")})
         check_preregistration_user_query_result(result, self.nonreg_email("test1"), invite=True)
         check_zulip_realm_query_result(result)
