@@ -679,25 +679,26 @@ exports.is_user_subscribed = function (stream_name, user_id) {
 exports.create_streams = function (streams) {
     for (const stream of streams) {
         // We handle subscriber stuff in other events.
+
         const attrs = {
             subscribers: [],
             subscribed: false,
             ...stream,
         };
-        exports.create_sub_from_server_data(stream.name, attrs);
+        exports.create_sub_from_server_data(attrs);
     }
 };
 
-exports.create_sub_from_server_data = function (stream_name, attrs) {
-    let sub = exports.get_sub(stream_name);
-    if (sub !== undefined) {
-        // We've already created this subscription, no need to continue.
-        return sub;
-    }
-
+exports.create_sub_from_server_data = function (attrs) {
     if (!attrs.stream_id) {
         // fail fast (blueslip.fatal will throw an error on our behalf)
         blueslip.fatal("We cannot create a sub without a stream_id");
+    }
+
+    let sub = exports.get_sub_by_id(attrs.stream_id);
+    if (sub !== undefined) {
+        // We've already created this subscription, no need to continue.
+        return sub;
     }
 
     // Our internal data structure for subscriptions is mostly plain dictionaries,
@@ -712,7 +713,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
     delete attrs.subscribers;
 
     sub = {
-        name: stream_name,
+        name: attrs.name,
         render_subscribers: !page_params.realm_is_zephyr_mirror_realm || attrs.invite_only === true,
         subscribed: true,
         newly_subscribed: false,
@@ -916,11 +917,10 @@ exports.initialize = function (params) {
 
     function populate_subscriptions(subs, subscribed, previously_subscribed) {
         subs.forEach(function (sub) {
-            const stream_name = sub.name;
             sub.subscribed = subscribed;
             sub.previously_subscribed = previously_subscribed;
 
-            exports.create_sub_from_server_data(stream_name, sub);
+            exports.create_sub_from_server_data(sub);
         });
     }
 
