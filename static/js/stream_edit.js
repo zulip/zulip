@@ -144,7 +144,7 @@ function get_sub_for_target(target) {
     return sub;
 }
 
-function add_user_to_stream(target) {
+function add_user_to_stream(e) {
     e.preventDefault();
     const settings_row = $(e.target).closest('.subscription_settings');
     const sub = get_sub_for_target(settings_row);
