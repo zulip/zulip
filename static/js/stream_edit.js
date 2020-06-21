@@ -144,7 +144,7 @@ function get_sub_for_target(target) {
     return sub;
 }
 
-function add_user_to_stream(e) {
+function submit_add_subscriber_form(e) {
     e.preventDefault();
     const settings_row = $(e.target).closest('.subscription_settings');
     const sub = get_sub_for_target(settings_row);
@@ -667,11 +667,13 @@ exports.initialize = function () {
                                  exports.stream_setting_clicked);
 
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
-        add_user_to_stream(e);
+        submit_add_subscriber_form(e);
     });
 
     $("#subscriptions_table").on("keyup", ".subscriber_list_add form", function (e) {
-        add_user_to_stream(e);
+        if (e.which ==13) {
+            submit_add_subscriber_form(e);
+        }
     });
 
     $("#subscriptions_table").on("submit", ".subscriber_list_remove form", function (e) {
