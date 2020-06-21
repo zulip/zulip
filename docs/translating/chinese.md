@@ -28,26 +28,6 @@ Message可直译为“消息”、“信息”等，两者皆可，这里统一�
 内微博、微信的使用习惯保持一致。“Starred Message”类似于QQ邮箱中的“星标
 邮件”功能，这里也借鉴翻译为“星标消息”。
 
-* Realm - **社区**
-
-In Chinese "Realm" is literally translated as "域(domain)", "王国
-(Kingdom)" and is clearly inappropriate for Zulip. "Realm" in Zulip
-documents is also interpreted as "Organization". And "Realm" has some
-relation with "domain", e.g. Settings can be done in setting page to
-restrict user login coming from different "domain". Here "Realm" is
-translated as "社区(Community)" temporarily. Another choice is "社群
-(Communities)", which is borrowed from Google+. Recently "团队(Team)"
-is being taken into account for translation, because it seems more
-appropriate and many sentences can be translated much better and
-easier than "社区".
-
-Realm直译为“领域”、“王国”，取直译显然不合适。Zulip中关于“Realm”的解释
-为“组织”或者“机构”（Organization）；另外，“Realm”还与“域”（domain）有
-所联系；例如，“设置页”中可以对“Realm”设置限制，仅允许有相同邮件域名的
-用户登录。因此这里选择译为“社区”，可能更接近本义。可选的翻译还有“社群”
-（Google+的习惯）。最近发现，“Realm”译为“团队”似乎更合适。尝试在
-Transifex中将“社区”替换为“团队”后，发现不少地方比以前通顺了许多。
-
 * Stream - **频道**
 
 There were several other optional translations, e.g. "群组(Group)", "

@@ -147,18 +147,6 @@ German word) here, since it comes closer to the original meaning of "starred".
 *"Markierte Nachricht" (GMail, Transifex),
 "Nachricht mit Stern" (WhatsApp)*
 
-* Realm - **Realm** (Developer documentation)
-
-**The term "realm" is discouraged in the user documentation and should not be
-used there anymore.** However, because of its relevance for the developer
-documentation, we still have it included in this list.
-
-* Realm - **Organization** (User documentation)
-
-While the literal translation for "realm" is "Königreich", it is referring to
-different domains/organizations on a Zulip server. Since the German term
-"Bereich" is a little vague, "Organization" is preferable here.
-
 *"Bereich" (Transifex), "Community" (Google+)*
 
 * Stream - **Stream**
