@@ -5,6 +5,7 @@ from unittest import mock
 
 import ujson
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.test import override_settings
 
 from zerver.lib.actions import (
@@ -876,36 +877,36 @@ class UserProfileTest(ZulipTestCase):
 
         # Invalid user ID
         invalid_uid: Any = 1000
-        self.assertEqual(check_valid_user_ids(realm.id, invalid_uid),
-                         "User IDs is not a list")
-        self.assertEqual(check_valid_user_ids(realm.id, [invalid_uid]),
-                         f"Invalid user ID: {invalid_uid}")
+        with self.assertRaisesRegex(ValidationError, r"User IDs is not a list"):
+            check_valid_user_ids(realm.id, invalid_uid)
+        with self.assertRaisesRegex(ValidationError, rf"Invalid user ID: {invalid_uid}"):
+            check_valid_user_ids(realm.id, [invalid_uid])
 
         invalid_uid = "abc"
-        self.assertEqual(check_valid_user_ids(realm.id, [invalid_uid]),
-                         "User IDs[0] is not an integer")
+        with self.assertRaisesRegex(ValidationError, r"User IDs\[0\] is not an integer"):
+            check_valid_user_ids(realm.id, [invalid_uid])
+
         invalid_uid = str(othello.id)
-        self.assertEqual(check_valid_user_ids(realm.id, [invalid_uid]),
-                         "User IDs[0] is not an integer")
+        with self.assertRaisesRegex(ValidationError, r"User IDs\[0\] is not an integer"):
+            check_valid_user_ids(realm.id, [invalid_uid])
 
         # User is in different realm
-        self.assertEqual(check_valid_user_ids(get_realm("zephyr").id, [hamlet.id]),
-                         f"Invalid user ID: {hamlet.id}")
+        with self.assertRaisesRegex(ValidationError, rf"Invalid user ID: {hamlet.id}"):
+            check_valid_user_ids(get_realm("zephyr").id, [hamlet.id])
 
         # User is not active
         hamlet.is_active = False
         hamlet.save()
-        self.assertEqual(check_valid_user_ids(realm.id, [hamlet.id]),
-                         f"User with ID {hamlet.id} is deactivated")
-        self.assertEqual(check_valid_user_ids(realm.id, [hamlet.id], allow_deactivated=True),
-                         None)
+        with self.assertRaisesRegex(ValidationError, rf"User with ID {hamlet.id} is deactivated"):
+            check_valid_user_ids(realm.id, [hamlet.id])
+        check_valid_user_ids(realm.id, [hamlet.id], allow_deactivated=True)
 
         # User is a bot
-        self.assertEqual(check_valid_user_ids(realm.id, [bot.id]),
-                         f"User with ID {bot.id} is a bot")
+        with self.assertRaisesRegex(ValidationError, rf"User with ID {bot.id} is a bot"):
+            check_valid_user_ids(realm.id, [bot.id])
 
         # Successfully get non-bot, active user belong to your realm
-        self.assertEqual(check_valid_user_ids(realm.id, [othello.id]), None)
+        check_valid_user_ids(realm.id, [othello.id])
 
     def test_cache_invalidation(self) -> None:
         hamlet = self.example_user('hamlet')

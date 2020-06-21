@@ -3187,12 +3187,8 @@ class ExternalMethodDictsTests(ZulipTestCase):
                              {'saml:test_idp', 'saml:test_idp2'})
 
 class FetchAuthBackends(ZulipTestCase):
-    def assert_on_error(self, error: Optional[str]) -> None:
-        if error:
-            raise AssertionError(error)
-
     def test_get_server_settings(self) -> None:
-        def check_result(result: HttpResponse, extra_fields: Sequence[Tuple[str, Validator]] = []) -> None:
+        def check_result(result: HttpResponse, extra_fields: Sequence[Tuple[str, Validator[object]]] = []) -> None:
             authentication_methods_list = [
                 ('password', check_bool),
             ]
@@ -3215,7 +3211,7 @@ class FetchAuthBackends(ZulipTestCase):
                 ('result', check_string),
                 *extra_fields,
             ])
-            self.assert_on_error(checker("data", result.json()))
+            checker("data", result.json())
 
         result = self.client_get("/api/v1/server_settings", subdomain="", HTTP_USER_AGENT="")
         check_result(result)

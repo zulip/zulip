@@ -15,6 +15,7 @@ from typing import (
 
 import ujson
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -710,9 +711,10 @@ def update_subscription_properties_backend(
         if sub is None:
             return json_error(_("Not subscribed to stream id {}").format(stream_id))
 
-        property_conversion = property_converters[property](property, value)
-        if property_conversion:
-            return json_error(property_conversion)
+        try:
+            value = property_converters[property](property, value)
+        except ValidationError as error:
+            return json_error(error.message)
 
         do_change_subscription_property(user_profile, sub, stream,
                                         property, value)

@@ -2,11 +2,12 @@ import base64
 import os
 import re
 from collections import defaultdict
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Tuple
 from unittest import mock
 
 import ujson
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.test import TestCase
 
@@ -723,71 +724,85 @@ class RateLimitTestCase(TestCase):
 class ValidatorTestCase(TestCase):
     def test_check_string(self) -> None:
         x: Any = "hello"
-        self.assertEqual(check_string('x', x), None)
+        check_string('x', x)
 
         x = 4
-        self.assertEqual(check_string('x', x), 'x is not a string')
+        with self.assertRaisesRegex(ValidationError, r'x is not a string'):
+            check_string('x', x)
 
     def test_check_string_fixed_length(self) -> None:
         x: Any = "hello"
-        self.assertEqual(check_string_fixed_length(5)('x', x), None)
+        check_string_fixed_length(5)('x', x)
 
         x = 4
-        self.assertEqual(check_string_fixed_length(5)('x', x), 'x is not a string')
+        with self.assertRaisesRegex(ValidationError, r'x is not a string'):
+            check_string_fixed_length(5)('x', x)
 
         x = "helloz"
-        self.assertEqual(check_string_fixed_length(5)('x', x), 'x has incorrect length 6; should be 5')
+        with self.assertRaisesRegex(ValidationError, r'x has incorrect length 6; should be 5'):
+            check_string_fixed_length(5)('x', x)
 
         x = "hi"
-        self.assertEqual(check_string_fixed_length(5)('x', x), 'x has incorrect length 2; should be 5')
+        with self.assertRaisesRegex(ValidationError, r'x has incorrect length 2; should be 5'):
+            check_string_fixed_length(5)('x', x)
 
     def test_check_capped_string(self) -> None:
         x: Any = "hello"
-        self.assertEqual(check_capped_string(5)('x', x), None)
+        check_capped_string(5)('x', x)
 
         x = 4
-        self.assertEqual(check_capped_string(5)('x', x), 'x is not a string')
+        with self.assertRaisesRegex(ValidationError, r'x is not a string'):
+            check_capped_string(5)('x', x)
 
         x = "helloz"
-        self.assertEqual(check_capped_string(5)('x', x), 'x is too long (limit: 5 characters)')
+        with self.assertRaisesRegex(ValidationError, r'x is too long \(limit: 5 characters\)'):
+            check_capped_string(5)('x', x)
 
         x = "hi"
-        self.assertEqual(check_capped_string(5)('x', x), None)
+        check_capped_string(5)('x', x)
 
     def test_check_string_in(self) -> None:
-        self.assertEqual(check_string_in(['valid', 'othervalid'])('Test', "valid"), None)
-        self.assertEqual(check_string_in(['valid', 'othervalid'])('Test', 15), 'Test is not a string')
-        self.assertEqual(check_string_in(['valid', 'othervalid'])('Test', "othervalid"), None)
-        self.assertEqual(check_string_in(['valid', 'othervalid'])('Test', "invalid"), 'Invalid Test')
+        check_string_in(['valid', 'othervalid'])('Test', "valid")
+        with self.assertRaisesRegex(ValidationError, r'Test is not a string'):
+            check_string_in(['valid', 'othervalid'])('Test', 15)
+        check_string_in(['valid', 'othervalid'])('Test', "othervalid")
+        with self.assertRaisesRegex(ValidationError, r'Invalid Test'):
+            check_string_in(['valid', 'othervalid'])('Test', "invalid")
 
     def test_check_int_in(self) -> None:
-        self.assertEqual(check_int_in([1])("Test", 1), None)
-        self.assertEqual(check_int_in([1])("Test", 2), "Invalid Test")
-        self.assertEqual(check_int_in([1])("Test", "t"), "Test is not an integer")
+        check_int_in([1])("Test", 1)
+        with self.assertRaisesRegex(ValidationError, r"Invalid Test"):
+            check_int_in([1])("Test", 2)
+        with self.assertRaisesRegex(ValidationError, r"Test is not an integer"):
+            check_int_in([1])("Test", "t")
 
     def test_check_short_string(self) -> None:
         x: Any = "hello"
-        self.assertEqual(check_short_string('x', x), None)
+        check_short_string('x', x)
 
         x = 'x' * 201
-        self.assertEqual(check_short_string('x', x), "x is too long (limit: 50 characters)")
+        with self.assertRaisesRegex(ValidationError, r"x is too long \(limit: 50 characters\)"):
+            check_short_string('x', x)
 
         x = 4
-        self.assertEqual(check_short_string('x', x), 'x is not a string')
+        with self.assertRaisesRegex(ValidationError, r'x is not a string'):
+            check_short_string('x', x)
 
     def test_check_bool(self) -> None:
         x: Any = True
-        self.assertEqual(check_bool('x', x), None)
+        check_bool('x', x)
 
         x = 4
-        self.assertEqual(check_bool('x', x), 'x is not a boolean')
+        with self.assertRaisesRegex(ValidationError, r'x is not a boolean'):
+            check_bool('x', x)
 
     def test_check_int(self) -> None:
         x: Any = 5
-        self.assertEqual(check_int('x', x), None)
+        check_int('x', x)
 
         x = [{}]
-        self.assertEqual(check_int('x', x), 'x is not an integer')
+        with self.assertRaisesRegex(ValidationError, r'x is not an integer'):
+            check_int('x', x)
 
     def test_to_non_negative_int(self) -> None:
         self.assertEqual(to_non_negative_int('5'), 5)
@@ -808,13 +823,15 @@ class ValidatorTestCase(TestCase):
 
     def test_check_float(self) -> None:
         x: Any = 5.5
-        self.assertEqual(check_float('x', x), None)
+        check_float('x', x)
 
         x = 5
-        self.assertEqual(check_float('x', x), 'x is not a float')
+        with self.assertRaisesRegex(ValidationError, r'x is not a float'):
+            check_float('x', x)
 
         x = [{}]
-        self.assertEqual(check_float('x', x), 'x is not a float')
+        with self.assertRaisesRegex(ValidationError, r'x is not a float'):
+            check_float('x', x)
 
     def test_check_color(self) -> None:
         x = ['#000099', '#80ffaa', '#80FFAA', '#abcd12', '#ffff00', '#ff0', '#f00']  # valid
@@ -822,35 +839,34 @@ class ValidatorTestCase(TestCase):
         z = 5  # invalid
 
         for hex_color in x:
-            error = check_color('color', hex_color)
-            self.assertEqual(error, None)
+            check_color('color', hex_color)
 
         for hex_color in y:
-            error = check_color('color', hex_color)
-            self.assertEqual(error, 'color is not a valid hex color code')
+            with self.assertRaisesRegex(ValidationError, r'color is not a valid hex color code'):
+                check_color('color', hex_color)
 
-        error = check_color('color', z)
-        self.assertEqual(error, 'color is not a string')
+        with self.assertRaisesRegex(ValidationError, r'color is not a string'):
+            check_color('color', z)
 
     def test_check_list(self) -> None:
         x: Any = 999
-        error = check_list(check_string)('x', x)
-        self.assertEqual(error, 'x is not a list')
+        with self.assertRaisesRegex(ValidationError, r'x is not a list'):
+            check_list(check_string)('x', x)
 
         x = ["hello", 5]
-        error = check_list(check_string)('x', x)
-        self.assertEqual(error, 'x[1] is not a string')
+        with self.assertRaisesRegex(ValidationError, r'x\[1\] is not a string'):
+            check_list(check_string)('x', x)
 
         x = [["yo"], ["hello", "goodbye", 5]]
-        error = check_list(check_list(check_string))('x', x)
-        self.assertEqual(error, 'x[1][2] is not a string')
+        with self.assertRaisesRegex(ValidationError, r'x\[1\]\[2\] is not a string'):
+            check_list(check_list(check_string))('x', x)
 
         x = ["hello", "goodbye", "hello again"]
-        error = check_list(check_string, length=2)('x', x)
-        self.assertEqual(error, 'x should have exactly 2 items')
+        with self.assertRaisesRegex(ValidationError, r'x should have exactly 2 items'):
+            check_list(check_string, length=2)('x', x)
 
     def test_check_dict(self) -> None:
-        keys: List[Tuple[str, Validator]] = [
+        keys: List[Tuple[str, Validator[object]]] = [
             ('names', check_list(check_string)),
             ('city', check_string),
         ]
@@ -859,58 +875,55 @@ class ValidatorTestCase(TestCase):
             'names': ['alice', 'bob'],
             'city': 'Boston',
         }
-        error = check_dict(keys)('x', x)
-        self.assertEqual(error, None)
+        check_dict(keys)('x', x)
 
         x = 999
-        error = check_dict(keys)('x', x)
-        self.assertEqual(error, 'x is not a dict')
+        with self.assertRaisesRegex(ValidationError, r'x is not a dict'):
+            check_dict(keys)('x', x)
 
         x = {}
-        error = check_dict(keys)('x', x)
-        self.assertEqual(error, 'names key is missing from x')
+        with self.assertRaisesRegex(ValidationError, r'names key is missing from x'):
+            check_dict(keys)('x', x)
 
         x = {
             'names': ['alice', 'bob', {}],
         }
-        error = check_dict(keys)('x', x)
-        self.assertEqual(error, 'x["names"][2] is not a string')
+        with self.assertRaisesRegex(ValidationError, r'x\["names"\]\[2\] is not a string'):
+            check_dict(keys)('x', x)
 
         x = {
             'names': ['alice', 'bob'],
             'city': 5,
         }
-        error = check_dict(keys)('x', x)
-        self.assertEqual(error, 'x["city"] is not a string')
+        with self.assertRaisesRegex(ValidationError, r'x\["city"\] is not a string'):
+            check_dict(keys)('x', x)
 
         x = {
             'names': ['alice', 'bob'],
             'city': 'Boston',
         }
-        error = check_dict(value_validator=check_string)('x', x)
-        self.assertEqual(error, 'x contains a value that is not a string')
+        with self.assertRaisesRegex(ValidationError, r'x contains a value that is not a string'):
+            check_dict(value_validator=check_string)('x', x)
 
         x = {
             'city': 'Boston',
         }
-        error = check_dict(value_validator=check_string)('x', x)
-        self.assertEqual(error, None)
+        check_dict(value_validator=check_string)('x', x)
 
         # test dict_only
         x = {
             'names': ['alice', 'bob'],
             'city': 'Boston',
         }
-        error = check_dict_only(keys)('x', x)
-        self.assertEqual(error, None)
+        check_dict_only(keys)('x', x)
 
         x = {
             'names': ['alice', 'bob'],
             'city': 'Boston',
             'state': 'Massachusetts',
         }
-        error = check_dict_only(keys)('x', x)
-        self.assertEqual(error, 'Unexpected arguments: state')
+        with self.assertRaisesRegex(ValidationError, r'Unexpected arguments: state'):
+            check_dict_only(keys)('x', x)
 
         # Test optional keys
         optional_keys = [
@@ -924,100 +937,107 @@ class ValidatorTestCase(TestCase):
             'food': ['Lobster Spaghetti'],
         }
 
-        error = check_dict(keys)('x', x)
-        self.assertEqual(error, None)  # since _allow_only_listed_keys is False
+        check_dict(keys)('x', x)  # since _allow_only_listed_keys is False
 
-        error = check_dict_only(keys)('x', x)
-        self.assertEqual(error, 'Unexpected arguments: food')
+        with self.assertRaisesRegex(ValidationError, r'Unexpected arguments: food'):
+            check_dict_only(keys)('x', x)
 
-        error = check_dict_only(keys, optional_keys)('x', x)
-        self.assertEqual(error, None)
+        check_dict_only(keys, optional_keys)('x', x)
 
         x = {
             'names': ['alice', 'bob'],
             'city': 'Boston',
             'food': 'Lobster Spaghetti',
         }
-        error = check_dict_only(keys, optional_keys)('x', x)
-        self.assertEqual(error, 'x["food"] is not a list')
+        with self.assertRaisesRegex(ValidationError, r'x\["food"\] is not a list'):
+            check_dict_only(keys, optional_keys)('x', x)
 
     def test_encapsulation(self) -> None:
         # There might be situations where we want deep
         # validation, but the error message should be customized.
         # This is an example.
-        def check_person(val: Any) -> Optional[str]:
-            error = check_dict([
-                ('name', check_string),
-                ('age', check_int),
-            ])('_', val)
-            if error:
-                return 'This is not a valid person'
-            return None
+        def check_person(val: object) -> Dict[str, object]:
+            try:
+                return check_dict([
+                    ('name', check_string),
+                    ('age', check_int),
+                ])('_', val)
+            except ValidationError:
+                raise ValidationError('This is not a valid person')
 
         person = {'name': 'King Lear', 'age': 42}
-        self.assertEqual(check_person(person), None)
+        check_person(person)
 
         nonperson = 'misconfigured data'
-        self.assertEqual(check_person(nonperson), 'This is not a valid person')
+        with self.assertRaisesRegex(ValidationError, r'This is not a valid person'):
+            check_person(nonperson)
 
     def test_check_union(self) -> None:
         x: Any = 5
-        self.assertEqual(check_union([check_string, check_int])('x', x), None)
+        check_union([check_string, check_int])('x', x)
 
         x = 'x'
-        self.assertEqual(check_union([check_string, check_int])('x', x), None)
+        check_union([check_string, check_int])('x', x)
 
         x = [{}]
-        self.assertEqual(check_union([check_string, check_int])('x', x), 'x is not an allowed_type')
+        with self.assertRaisesRegex(ValidationError, r'x is not an allowed_type'):
+            check_union([check_string, check_int])('x', x)
 
     def test_equals(self) -> None:
         x: Any = 5
-        self.assertEqual(equals(5)('x', x), None)
-        self.assertEqual(equals(6)('x', x), 'x != 6 (5 is wrong)')
+        equals(5)('x', x)
+        with self.assertRaisesRegex(ValidationError, r'x != 6 \(5 is wrong\)'):
+            equals(6)('x', x)
 
     def test_check_none_or(self) -> None:
         x: Any = 5
-        self.assertEqual(check_none_or(check_int)('x', x), None)
+        check_none_or(check_int)('x', x)
         x = None
-        self.assertEqual(check_none_or(check_int)('x', x), None)
+        check_none_or(check_int)('x', x)
         x = 'x'
-        self.assertEqual(check_none_or(check_int)('x', x), 'x is not an integer')
+        with self.assertRaisesRegex(ValidationError, r'x is not an integer'):
+            check_none_or(check_int)('x', x)
 
     def test_check_url(self) -> None:
         url: Any = "http://127.0.0.1:5002/"
-        self.assertEqual(check_url('url', url), None)
+        check_url('url', url)
 
         url = "http://zulip-bots.example.com/"
-        self.assertEqual(check_url('url', url), None)
+        check_url('url', url)
 
         url = "http://127.0.0"
-        self.assertEqual(check_url('url', url), 'url is not a URL')
+        with self.assertRaisesRegex(ValidationError, r'url is not a URL'):
+            check_url('url', url)
 
         url = 99.3
-        self.assertEqual(check_url('url', url), 'url is not a string')
+        with self.assertRaisesRegex(ValidationError, r'url is not a string'):
+            check_url('url', url)
 
     def test_check_string_or_int_list(self) -> None:
         x: Any = "string"
-        self.assertEqual(check_string_or_int_list('x', x), None)
+        check_string_or_int_list('x', x)
 
         x = [1, 2, 4]
-        self.assertEqual(check_string_or_int_list('x', x), None)
+        check_string_or_int_list('x', x)
 
         x = None
-        self.assertEqual(check_string_or_int_list('x', x), 'x is not a string or an integer list')
+        with self.assertRaisesRegex(ValidationError, r'x is not a string or an integer list'):
+            check_string_or_int_list('x', x)
 
         x = [1, 2, '3']
-        self.assertEqual(check_string_or_int_list('x', x), 'x[2] is not an integer')
+        with self.assertRaisesRegex(ValidationError, r'x\[2\] is not an integer'):
+            check_string_or_int_list('x', x)
 
     def test_check_string_or_int(self) -> None:
         x: Any = "string"
-        self.assertEqual(check_string_or_int('x', x), None)
+        check_string_or_int('x', x)
 
         x = 1
-        self.assertEqual(check_string_or_int('x', x), None)
+        check_string_or_int('x', x)
 
         x = None
-        self.assertEqual(check_string_or_int('x', x), 'x is not a string or integer')
+        with self.assertRaisesRegex(ValidationError, r'x is not a string or integer'):
+            check_string_or_int('x', x)
 
 
 class DeactivatedRealmTest(ZulipTestCase):

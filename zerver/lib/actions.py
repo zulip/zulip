@@ -2350,10 +2350,11 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
         except Exception:
             raise JsonableError(_('Widgets: API programmer sent invalid JSON content'))
 
-        error_msg = check_widget_content(widget_content)
-        if error_msg:
+        try:
+            check_widget_content(widget_content)
+        except ValidationError as error:
             raise JsonableError(_('Widgets: {error_msg}').format(
-                error_msg=error_msg,
+                error_msg=error.message,
             ))
 
     return {'message': message, 'stream': stream, 'local_id': local_id,
