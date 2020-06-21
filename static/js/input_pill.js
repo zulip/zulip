@@ -266,7 +266,8 @@ exports.create = function (opts) {
 
             // if the user backspaces and there is input, just do normal char
             // deletion, otherwise delete the last pill in the sequence.
-            if (char === KEY.BACKSPACE && funcs.value(e.target).length === 0) {
+            if (char === KEY.BACKSPACE && (
+                funcs.value(e.target).length === 0 || window.getSelection().anchorOffset === 0)) {
                 e.preventDefault();
                 funcs.removeLastPill();
 
