@@ -16,11 +16,13 @@ from zerver.models import UserProfile
 
 
 @has_request_variables
-def update_storage(request: HttpRequest, user_profile: UserProfile,
-                   storage: Dict[str, str]=REQ(validator=check_dict([]))) -> HttpResponse:
+def update_storage(
+    request: HttpRequest, user_profile: UserProfile,
+    storage: Dict[str, str]=REQ(validator=check_dict([], value_validator=check_string)),
+) -> HttpResponse:
     try:
         set_bot_storage(user_profile, list(storage.items()))
-    except StateError as e:
+    except StateError as e:  # nocoverage
         return json_error(str(e))
     return json_success()
 
