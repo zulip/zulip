@@ -13,7 +13,7 @@ sanity_check.check_venv(__file__)
 import django
 import requests
 
-MAX_SERVER_WAIT = 90
+MAX_SERVER_WAIT = 180
 
 TOOLS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if TOOLS_DIR not in sys.path:
