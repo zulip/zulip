@@ -296,7 +296,7 @@ it?  There's several major benefits to this system:
   of manual management.
 * Every Zulip server can host correct API documentation for its
   version, with the key variables (like the Zulip server URL) already
-  pre-sustituted for the user.
+  pre-substituted for the user.
 * We're able to share implementation language and visual styling with
   our Help Center, which is especially useful for the extensive
   non-REST API documentation pages (e.g. our bot framework).
