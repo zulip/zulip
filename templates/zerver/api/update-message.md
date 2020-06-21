@@ -12,24 +12,8 @@
 {tab|js}
 
 More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
-```js
-const zulip = require('zulip-js');
 
-// Pass the path to your zuliprc file here.
-const config = {
-    zuliprc: 'zuliprc',
-};
-
-zulip(config).then((client) => {
-    // Update a message
-    const params = {
-        message_id: 131,
-        content: 'New Content',
-    }
-
-    client.messages.update(params).then(console.log);
-});
-```
+{generate_code_example(javascript)|/messages/{message_id}:patch|example}
 
 {tab|curl}
 

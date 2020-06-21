@@ -51,6 +51,7 @@ const ExamplesHandler = function () {
         await generate_validation_data(client, examples.add_subscriptions);
         await generate_validation_data(client, examples.remove_subscriptions);
         await generate_validation_data(client, examples.update_message_flags);
+        await generate_validation_data(client, examples.update_message);
 
         console.log(JSON.stringify(response_data));
         return;
@@ -300,6 +301,27 @@ add_example('update_message_flags', '/messages/flags:post', 200, async (client) 
     const result_2 = await client.messages.flags.remove(removeflag);
     // {code_example|end}
     return [result_1, result_2];
+});
+
+add_example('update_message', '/messages/{message_id}:patch', 200, async (client) => {
+    const request = {
+        to: 'Denmark',
+        type: 'stream',
+        topic: 'Castle',
+        content: 'I come not, friends, to steal away your hearts.',
+    };
+    const result = await client.messages.send(request);
+    const message_id = result.id;
+
+    // {code_example|start}
+    // Update a message with the given "message_id"
+    const params = {
+        message_id: message_id,
+        content: 'New Content',
+    };
+
+    return await client.messages.update(params);
+    // {code_example|end}
 });
 
 main();
