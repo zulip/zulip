@@ -45,7 +45,6 @@ def get_zoom_session(user: UserProfile) -> OAuth2Session:
     return OAuth2Session(
         settings.VIDEO_ZOOM_CLIENT_ID,
         redirect_uri=urljoin(settings.ROOT_DOMAIN_URI, "/calls/zoom/complete"),
-        scope=["meeting:write:admin"],
         auto_refresh_url="https://zoom.us/oauth/token",
         auto_refresh_kwargs={
             "client_id": settings.VIDEO_ZOOM_CLIENT_ID,
