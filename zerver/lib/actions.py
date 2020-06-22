@@ -5680,9 +5680,7 @@ def do_update_user_custom_profile_data_if_changed(user_profile: UserProfile,
                 "rendered_value": field_value.rendered_value,
                 "type": field_value.field.field_type})
 
-def check_remove_custom_profile_field_value(user_profile: UserProfile,
-                                            field_id: Union[int, str, List[int]],
-                                            ) -> None:
+def check_remove_custom_profile_field_value(user_profile: UserProfile, field_id: int) -> None:
     try:
         field = CustomProfileField.objects.get(realm=user_profile.realm, id=field_id)
         field_value = CustomProfileFieldValue.objects.get(field=field, user_profile=user_profile)
