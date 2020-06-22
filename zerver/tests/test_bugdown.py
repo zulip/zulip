@@ -1,7 +1,7 @@
 import copy
 import os
 import re
-from typing import Any, Dict, List, Optional, Set, Tuple, cast
+from typing import Any, Dict, List, Optional, Set, Tuple
 from unittest import mock
 
 import ujson
@@ -45,9 +45,6 @@ from zerver.models import (
     realm_in_local_realm_filters_cache,
 )
 
-
-class FakeMessage:
-    pass
 
 class FencedBlockPreprocessorTest(TestCase):
     def test_simple_quoting(self) -> None:
@@ -171,13 +168,9 @@ class FencedBlockPreprocessorTest(TestCase):
         self.assertEqual(lines, expected)
 
 def bugdown_convert(content: str) -> str:
-    message = cast(Message, FakeMessage())
-    message.content = content
-    message.id = 999
     return bugdown.convert(
         content=content,
         message_realm=get_realm('zulip'),
-        message=message,
     )
 
 class BugdownMiscTest(ZulipTestCase):

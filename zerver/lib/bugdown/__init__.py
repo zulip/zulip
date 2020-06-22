@@ -2323,8 +2323,7 @@ def do_convert(content: str,
         message, message_realm, no_previews)
 
     # Pre-fetch data from the DB that is used in the bugdown thread
-    if message is not None:
-        assert message_realm is not None  # ensured above if message is not None
+    if message_realm is not None:
 
         # Here we fetch the data structures needed to render
         # mentions/avatars/stream mentions from the database, but only

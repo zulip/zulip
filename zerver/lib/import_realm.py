@@ -2,7 +2,7 @@ import datetime
 import logging
 import os
 import shutil
-from typing import Any, Dict, Iterable, List, Optional, Tuple, cast
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import boto3
 import ujson
@@ -15,6 +15,7 @@ from psycopg2.extras import execute_values
 from psycopg2.sql import SQL, Identifier
 
 from analytics.models import RealmCount, StreamCount, UserCount
+from zerver.lib import bugdown
 from zerver.lib.actions import (
     UserMessageLite,
     bulk_insert_ums,
@@ -25,7 +26,6 @@ from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.bugdown import version as bugdown_version
 from zerver.lib.bulk_create import bulk_create_users, bulk_set_users_or_streams_recipient_fields
 from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, TableName
-from zerver.lib.message import do_render_markdown
 from zerver.lib.parallel import run_parallel
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import render_stream_description
@@ -248,12 +248,6 @@ def fix_customprofilefield(data: TableData) -> None:
                 old_id_list=old_user_id_list)
             item['value'] = ujson.dumps(new_id_list)
 
-class FakeMessage:
-    '''
-    We just need a stub object for do_render_markdown
-    to write stuff to.
-    '''
-
 def fix_message_rendered_content(realm: Realm,
                                  sender_map: Dict[int, Record],
                                  messages: List[Record]) -> None:
@@ -309,8 +303,6 @@ def fix_message_rendered_content(realm: Realm,
                 message['rendered_content'] = str(soup)
             continue
 
-        message_object = FakeMessage()
-
         try:
             content = message['content']
 
@@ -324,15 +316,13 @@ def fix_message_rendered_content(realm: Realm,
             # words" type feature, and notifications aren't important anyway.
             realm_alert_words_automaton = None
 
-            rendered_content = do_render_markdown(
-                message=cast(Message, message_object),
+            rendered_content = bugdown.convert(
                 content=content,
-                realm=realm,
                 realm_alert_words_automaton=realm_alert_words_automaton,
+                message_realm=realm,
                 sent_by_bot=sent_by_bot,
                 translate_emoticons=translate_emoticons,
             )
-            assert(rendered_content is not None)
 
             message['rendered_content'] = rendered_content
             message['rendered_content_version'] = bugdown_version
