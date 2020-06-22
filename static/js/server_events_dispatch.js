@@ -345,7 +345,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                     return;
                 }
 
-                subs.rerender_subscriptions_settings(sub);
+                subs.update_subscribers_ui(sub);
                 compose_fade.update_faded_users();
             }
             add_peer(event.stream_id, event.user_id);
@@ -363,7 +363,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                     return;
                 }
 
-                subs.rerender_subscriptions_settings(sub);
+                subs.update_subscribers_ui(sub);
                 compose_fade.update_faded_users();
             }
             remove_peer(event.stream_id, event.user_id);

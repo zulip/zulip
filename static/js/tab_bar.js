@@ -166,8 +166,6 @@ exports.render_title_area = function () {
 // have been updated is the same as the stream which is currently
 // narrowed (filter._sub) and rerenders if necessary
 exports.maybe_rerender_title_area_for_stream = function (modified_sub) {
-    // TODO: Implement rerendering for subscriber count changes.
-    // We simply need to call this function in the appropriate places.
     const filter = narrow_state.filter();
     if (filter && filter._sub && filter._sub.stream_id === modified_sub.stream_id) {
         tab_bar.render_title_area();
