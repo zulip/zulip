@@ -20,7 +20,6 @@ from typing import (
     Set,
     Tuple,
     Union,
-    cast,
 )
 
 import django.db.utils
@@ -2524,11 +2523,13 @@ def validate_user_access_to_subscribers(user_profile: Optional[UserProfile],
          "invite_only": stream.invite_only},
         # We use a lambda here so that we only compute whether the
         # user is subscribed if we have to
-        lambda: subscribed_to_stream(cast(UserProfile, user_profile), stream.id))
+        lambda user_profile: subscribed_to_stream(user_profile, stream.id))
 
-def validate_user_access_to_subscribers_helper(user_profile: Optional[UserProfile],
-                                               stream_dict: Mapping[str, Any],
-                                               check_user_subscribed: Callable[[], bool]) -> None:
+def validate_user_access_to_subscribers_helper(
+    user_profile: Optional[UserProfile],
+    stream_dict: Mapping[str, Any],
+    check_user_subscribed: Callable[[UserProfile], bool],
+) -> None:
     """Helper for validate_user_access_to_subscribers that doesn't require
     a full stream object.  This function is a bit hard to read,
     because it is carefully optimized for performance in the two code
@@ -2556,7 +2557,7 @@ def validate_user_access_to_subscribers_helper(user_profile: Optional[UserProfil
 
     # Guest users can access subscribed public stream's subscribers
     if user_profile.is_guest:
-        if check_user_subscribed():
+        if check_user_subscribed(user_profile):
             return
         # We could put an AssertionError here; in that we don't have
         # any code paths that would allow a guest user to access other
@@ -2569,7 +2570,7 @@ def validate_user_access_to_subscribers_helper(user_profile: Optional[UserProfil
     if user_profile.is_realm_admin:
         return
 
-    if (stream_dict["invite_only"] and not check_user_subscribed()):
+    if (stream_dict["invite_only"] and not check_user_subscribed(user_profile)):
         raise JsonableError(_("Unable to retrieve subscribers for private stream"))
 
 def bulk_get_subscriber_user_ids(stream_dicts: Iterable[Mapping[str, Any]],
@@ -2582,8 +2583,11 @@ def bulk_get_subscriber_user_ids(stream_dicts: Iterable[Mapping[str, Any]],
         stream_recipient.populate_with(stream_id=stream_dict["id"],
                                        recipient_id=stream_dict["recipient_id"])
         try:
-            validate_user_access_to_subscribers_helper(user_profile, stream_dict,
-                                                       lambda: sub_dict[stream_dict["id"]])
+            validate_user_access_to_subscribers_helper(
+                user_profile,
+                stream_dict,
+                lambda user_profile: sub_dict[stream_dict["id"]],
+            )
         except JsonableError:
             continue
         target_stream_dicts.append(stream_dict)

@@ -3417,11 +3417,11 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # This should result in missing user
         with self.assertRaises(ValidationError):
-            validate_user_access_to_subscribers_helper(None, stream_dict, lambda: True)
+            validate_user_access_to_subscribers_helper(None, stream_dict, lambda user_profile: True)
 
         # This should result in user not in realm
         with self.assertRaises(ValidationError):
-            validate_user_access_to_subscribers_helper(user_profile, stream_dict, lambda: True)
+            validate_user_access_to_subscribers_helper(user_profile, stream_dict, lambda user_profile: True)
 
     def test_subscriptions_query_count(self) -> None:
         """
