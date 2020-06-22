@@ -205,6 +205,13 @@ exports.rerender_subscriptions_settings = function (sub) {
     stream_ui_updates.update_subscribers_list(sub);
 };
 
+exports.update_subscribers_ui = function (sub) {
+    // We rely on rerender_subscriptions_settings to complete the
+    // stream_data subscribers count update
+    exports.rerender_subscriptions_settings(sub);
+    tab_bar.maybe_rerender_title_area_for_stream(sub);
+};
+
 exports.add_sub_to_table = function (sub) {
     if (exports.is_sub_already_present(sub)) {
         // If a stream is already listed/added in subscription modal,

@@ -11,6 +11,8 @@ zrequire('stream_data');
 zrequire('stream_events');
 zrequire('Filter', 'js/filter');
 zrequire('narrow_state');
+zrequire('tab_bar');
+
 const with_overrides = global.with_overrides;
 
 const george = {
@@ -222,11 +224,13 @@ run_test('marked_subscribed', () => {
         let list_updated = false;
 
         const stream_list_stub = global.make_stub();
+        const tab_bar_stub = global.make_stub();
         const message_util_stub = global.make_stub();
 
         override('stream_color.update_stream_color', noop);
         override('stream_list.add_sidebar_row', stream_list_stub.f);
         override('message_util.do_unread_count_updates', message_util_stub.f);
+        override('tab_bar.render_title_area', tab_bar_stub.f);
         override('current_msg_list.update_trailing_bookend', () => {
             list_updated = true;
         });
@@ -238,6 +242,7 @@ run_test('marked_subscribed', () => {
 
         args = stream_list_stub.get_args('sub');
         assert.equal(args.sub.stream_id, 1);
+        assert.equal(tab_bar_stub.num_calls, 1);
 
         assert.equal(list_updated, true);
 
@@ -347,6 +352,8 @@ run_test('mark_unsubscribed', () => {
     // Test update bookend and remove done event
     narrow_state.set_current_filter(frontend_filter);
     with_overrides((override) => {
+        const tab_bar_stub = global.make_stub();
+        override('tab_bar.render_title_area', tab_bar_stub.f);
         override('stream_data.unsubscribe_myself', noop);
         override('subs.update_settings_for_unsubscribed', noop);
 
@@ -362,6 +369,8 @@ run_test('mark_unsubscribed', () => {
         });
 
         stream_events.mark_unsubscribed(frontend);
+
+        assert.equal(tab_bar_stub.num_calls, 1);
         assert.equal(updated, true);
         assert.equal(event_triggered, true);
     });
@@ -380,7 +389,8 @@ const dev_help = {
 stream_data.add_sub(dev_help);
 
 run_test('remove_deactivated_user_from_all_streams', () => {
-    subs.rerender_subscriptions_settings = () => {};
+    const subs_stub = global.make_stub();
+    subs.update_subscribers_ui = subs_stub.f;
 
     dev_help.can_access_subscribers = true;
 
@@ -390,5 +400,6 @@ run_test('remove_deactivated_user_from_all_streams', () => {
 
     stream_events.remove_deactivated_user_from_all_streams(george.user_id);
 
-    assert(!dev_help.subscribers.has(george.user_id));
+    // verify that we issue a call to update subscriber count/list UI
+    assert.equal(subs_stub.num_calls, 1);
 });

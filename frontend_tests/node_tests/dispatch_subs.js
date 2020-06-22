@@ -50,7 +50,7 @@ test('peer add/remove', (override) => {
     });
 
     const subs_stub = global.make_stub();
-    override('subs.rerender_subscriptions_settings', subs_stub.f);
+    override('subs.update_subscribers_ui', subs_stub.f);
 
     const compose_fade_stub = global.make_stub();
     override('compose_fade.update_faded_users', compose_fade_stub.f);

@@ -99,6 +99,9 @@ exports.mark_subscribed = function (sub, subscribers, color) {
         subs.update_settings_for_subscribed(sub);
     }
 
+    // update navbar if necessary
+    tab_bar.maybe_rerender_title_area_for_stream(sub);
+
     if (narrow_state.is_for_stream_id(sub.stream_id)) {
         current_msg_list.update_trailing_bookend();
     }
@@ -120,6 +123,8 @@ exports.mark_unsubscribed = function (sub) {
         if (overlays.streams_open()) {
             subs.update_settings_for_unsubscribed(sub);
         }
+        // update navbar if necessary
+        tab_bar.maybe_rerender_title_area_for_stream(sub);
     } else {
         // Already unsubscribed
         return;
@@ -138,7 +143,7 @@ exports.remove_deactivated_user_from_all_streams = function (user_id) {
     for (const sub of all_subs) {
         if (stream_data.is_user_subscribed(sub.name, user_id)) {
             stream_data.remove_subscriber(sub.stream_id, user_id);
-            subs.rerender_subscriptions_settings(sub);
+            subs.update_subscribers_ui(sub);
         }
     }
 };
