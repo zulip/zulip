@@ -4629,9 +4629,9 @@ class DeleteMessageTest(ZulipTestCase):
 
         # Test handling of 500 error caused by multiple delete requests due to latency.
         # see issue #11219.
-        with mock.patch("zerver.views.messages.do_delete_messages") as m, \
-                mock.patch("zerver.views.messages.validate_can_delete_message", return_value=None), \
-                mock.patch("zerver.views.messages.access_message", return_value=(None, None)):
+        with mock.patch("zerver.views.message_edit.do_delete_messages") as m, \
+                mock.patch("zerver.views.message_edit.validate_can_delete_message", return_value=None), \
+                mock.patch("zerver.views.message_edit.access_message", return_value=(None, None)):
             m.side_effect = IntegrityError()
             result = test_delete_message_by_owner(msg_id=msg_id)
             self.assert_json_error(result, "Message already deleted")

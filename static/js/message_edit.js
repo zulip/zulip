@@ -254,7 +254,7 @@ function edit_message(row, raw_content) {
     // been able to click it at the time the mouse entered the message_row. Also
     // a buffer in case their computer is slow, or stalled for a second, etc
     // If you change this number also change edit_limit_buffer in
-    // zerver.views.messages.update_message_backend
+    // zerver.views.message_edit.update_message_backend
     const seconds_left_buffer = 5;
     const editability = get_editability(message, seconds_left_buffer);
     const is_editable = editability === exports.editability_types.TOPIC_ONLY ||
@@ -366,7 +366,7 @@ function edit_message(row, raw_content) {
         page_params.realm_message_content_edit_limit_seconds > 0) {
         // Give them at least 10 seconds.
         // If you change this number also change edit_limit_buffer in
-        // zerver.views.messages.update_message_backend
+        // zerver.views.message_edit.update_message_backend
         const min_seconds_to_edit = 10;
         const now = new XDate();
         let seconds_left = page_params.realm_message_content_edit_limit_seconds +

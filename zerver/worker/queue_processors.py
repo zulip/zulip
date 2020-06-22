@@ -602,7 +602,7 @@ class FetchLinksEmbedData(QueueProcessingWorker):
 
         message = Message.objects.get(id=event['message_id'])
         # If the message changed, we will run this task after updating the message
-        # in zerver.views.messages.update_message_backend
+        # in zerver.views.message_edit.update_message_backend
         if message.content != event['message_content']:
             return
         if message.content is not None:
