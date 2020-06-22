@@ -1,5 +1,5 @@
 import urllib.parse
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Dict, Optional
 
 import ujson
 from django.conf import settings
@@ -114,8 +114,7 @@ class EventsTestCase(TornadoWebTestCase):
         self.io_loop.call_later(0.1, process_events)
         response = self.wait()
         data = ujson.loads(response.body)
-        events = data['events']
-        events = cast(List[Dict[str, Any]], events)
-        self.assertEqual(len(events), 1)
-        self.assertEqual(events[0]['data'], 'test data')
+        self.assertEqual(data['events'], [
+            {'type': 'test', 'data': 'test data', 'id': 0},
+        ])
         self.assertEqual(data['result'], 'success')

@@ -5,7 +5,7 @@ import shutil
 import tempfile
 import urllib
 from contextlib import contextmanager
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Set, Tuple, Union, cast
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Set, Tuple, Union
 from unittest import mock
 
 import ujson
@@ -41,6 +41,7 @@ from zerver.lib.streams import (
 )
 from zerver.lib.test_helpers import find_key_by_email, instrument_url
 from zerver.lib.users import get_api_key
+from zerver.lib.validator import check_string
 from zerver.lib.webhooks.common import get_fixture_http_headers, standardize_headers
 from zerver.models import (
     Client,
@@ -543,7 +544,10 @@ class ZulipTestCase(TestCase):
         subs = get_stream_subscriptions_for_user(user_profile).filter(
             active=True,
         )
-        return [cast(str, get_display_recipient(sub.recipient)) for sub in subs]
+        return [
+            check_string("recipient", get_display_recipient(sub.recipient))
+            for sub in subs
+        ]
 
     def send_personal_message(self, from_user: UserProfile, to_user: UserProfile, content: str="test content",
                               sending_client_name: str="test suite") -> int:
