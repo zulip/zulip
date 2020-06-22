@@ -625,20 +625,19 @@ class FetchLinksEmbedData(QueueProcessingWorker):
 
 @assign_queue('outgoing_webhooks')
 class OutgoingWebhookWorker(QueueProcessingWorker):
-    def consume(self, event: Mapping[str, Any]) -> None:
+    def consume(self, event: Dict[str, Any]) -> None:
         message = event['message']
-        dup_event = cast(Dict[str, Any], event)
-        dup_event['command'] = message['content']
+        event['command'] = message['content']
 
         services = get_bot_services(event['user_profile_id'])
         for service in services:
-            dup_event['service_name'] = str(service.name)
+            event['service_name'] = str(service.name)
             service_handler = get_outgoing_webhook_service_handler(service)
-            request_data = service_handler.build_bot_request(dup_event)
+            request_data = service_handler.build_bot_request(event)
             if request_data:
                 do_rest_call(service.base_url,
                              request_data,
-                             dup_event,
+                             event,
                              service_handler)
 
 @assign_queue('embedded_bots')
@@ -651,7 +650,7 @@ class EmbeddedBotWorker(QueueProcessingWorker):
         user_profile_id = event['user_profile_id']
         user_profile = get_user_profile_by_id(user_profile_id)
 
-        message = cast(Dict[str, Any], event['message'])
+        message: Dict[str, Any] = event['message']
 
         # TODO: Do we actually want to allow multiple Services per bot user?
         services = get_bot_services(user_profile_id)
