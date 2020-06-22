@@ -114,7 +114,7 @@ from zerver.models import (
     get_system_bot,
     get_user,
 )
-from zerver.views.messages import InvalidMirrorInput, create_mirrored_message_users
+from zerver.views.message_send import InvalidMirrorInput, create_mirrored_message_users
 
 
 class MiscMessageTest(ZulipTestCase):
@@ -2233,7 +2233,7 @@ class MessagePOSTTest(ZulipTestCase):
                                subdomain="zephyr")
         self.assert_json_error(result, "User not authorized for this query")
 
-    @mock.patch("zerver.views.messages.create_mirrored_message_users")
+    @mock.patch("zerver.views.message_send.create_mirrored_message_users")
     def test_send_message_create_mirrored_message_user_returns_invalid_input(
             self, create_mirrored_message_users_mock: Any) -> None:
         create_mirrored_message_users_mock.side_effect = InvalidMirrorInput()
@@ -2246,7 +2246,7 @@ class MessagePOSTTest(ZulipTestCase):
                                subdomain="zephyr")
         self.assert_json_error(result, "Invalid mirrored message")
 
-    @mock.patch("zerver.views.messages.create_mirrored_message_users")
+    @mock.patch("zerver.views.message_send.create_mirrored_message_users")
     def test_send_message_when_client_is_zephyr_mirror_but_string_id_is_not_zephyr(
             self, create_mirrored_message_users_mock: Any) -> None:
         create_mirrored_message_users_mock.return_value = mock.Mock()
@@ -2262,7 +2262,7 @@ class MessagePOSTTest(ZulipTestCase):
                                subdomain="notzephyr")
         self.assert_json_error(result, "Zephyr mirroring is not allowed in this organization")
 
-    @mock.patch("zerver.views.messages.create_mirrored_message_users")
+    @mock.patch("zerver.views.message_send.create_mirrored_message_users")
     def test_send_message_when_client_is_zephyr_mirror_but_recipient_is_user_id(
             self, create_mirrored_message_users_mock: Any) -> None:
         create_mirrored_message_users_mock.return_value = mock.Mock()
