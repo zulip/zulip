@@ -24,6 +24,7 @@ import zerver.views.documentation
 import zerver.views.email_mirror
 import zerver.views.home
 import zerver.views.message_edit
+import zerver.views.message_flags
 import zerver.views.messages
 import zerver.views.muting
 import zerver.views.portico
@@ -181,11 +182,11 @@ v1_api_and_json_patterns = [
 
     # mark messages as read (in bulk)
     url(r'^mark_all_as_read$', rest_dispatch,
-        {'POST': 'zerver.views.messages.mark_all_as_read'}),
+        {'POST': 'zerver.views.message_flags.mark_all_as_read'}),
     url(r'^mark_stream_as_read$', rest_dispatch,
-        {'POST': 'zerver.views.messages.mark_stream_as_read'}),
+        {'POST': 'zerver.views.message_flags.mark_stream_as_read'}),
     url(r'^mark_topic_as_read$', rest_dispatch,
-        {'POST': 'zerver.views.messages.mark_topic_as_read'}),
+        {'POST': 'zerver.views.message_flags.mark_topic_as_read'}),
 
     url(r'^zcommand$', rest_dispatch,
         {'POST': 'zerver.views.messages.zcommand_backend'}),
@@ -203,7 +204,7 @@ v1_api_and_json_patterns = [
     url(r'^messages/render$', rest_dispatch,
         {'POST': 'zerver.views.messages.render_message_backend'}),
     url(r'^messages/flags$', rest_dispatch,
-        {'POST': 'zerver.views.messages.update_message_flags'}),
+        {'POST': 'zerver.views.message_flags.update_message_flags'}),
     url(r'^messages/(?P<message_id>\d+)/history$', rest_dispatch,
         {'GET': 'zerver.views.message_edit.get_message_edit_history'}),
     url(r'^messages/matches_narrow$', rest_dispatch,
