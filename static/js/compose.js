@@ -740,10 +740,9 @@ exports.handle_keyup = function (event, textarea) {
     rtl.set_rtl_class_for_textarea(textarea);
 };
 
-exports.needs_subscribe_warning = function (user_id) {
+exports.needs_subscribe_warning = function (user_id, stream_name) {
     // This returns true if all of these conditions are met:
     //  * the user is valid
-    //  * the stream in the compose box is valid
     //  * the user is not already subscribed to the stream
     //  * the user has no back-door way to see stream messages
     //    (i.e. bots on public/private streams)
@@ -753,18 +752,11 @@ exports.needs_subscribe_warning = function (user_id) {
     //  need it?".
     //
     //  We expect the caller to already have verified that we're
-    //  sending to a stream and trying to mention the user.
+    //  sending to a valid stream and trying to mention the user.
 
     const user = people.get_by_user_id(user_id);
-    const stream_name = compose_state.stream_name();
 
-    if (!stream_name) {
-        return false;
-    }
-
-    const sub = stream_data.get_sub(stream_name);
-
-    if (!sub || !user) {
+    if (!user) {
         return false;
     }
 
@@ -912,7 +904,19 @@ exports.warn_if_mentioning_unsubscribed_user = function (mentioned) {
         return; // don't check if @all/@everyone/@stream
     }
 
-    if (exports.needs_subscribe_warning(user_id)) {
+    const stream_name = compose_state.stream_name();
+
+    if (!stream_name) {
+        return;
+    }
+
+    const sub = stream_data.get_sub(stream_name);
+
+    if (!sub) {
+        return;
+    }
+
+    if (exports.needs_subscribe_warning(user_id, sub.name)) {
         const error_area = $("#compose_invite_users");
         const existing_invites_area = $('#compose_invite_users .compose_invite_user');
 
@@ -921,9 +925,11 @@ exports.warn_if_mentioning_unsubscribed_user = function (mentioned) {
         if (!existing_invites.includes(user_id)) {
             const context = {
                 user_id: user_id,
+                stream_id: sub.stream_id,
                 name: mentioned.full_name,
                 can_subscribe_other_users: page_params.can_subscribe_other_users,
             };
+
             const new_row = render_compose_invite_users(context);
             error_area.append(new_row);
         }
@@ -994,6 +1000,7 @@ exports.initialize = function () {
         const invite_row = $(event.target).parents('.compose_invite_user');
 
         const user_id = parseInt($(invite_row).data('user-id'), 10);
+        const stream_id = parseInt($(invite_row).data('stream-id'), 10);
 
         function success() {
             const all_invites = $("#compose_invite_users");
@@ -1015,17 +1022,7 @@ exports.initialize = function () {
             failure(error.msg);
         }
 
-        const stream_name = compose_state.stream_name();
-        const sub = stream_data.get_sub(stream_name);
-        if (!sub) {
-            // This should only happen if a stream rename occurs
-            // before the user clicks.  We could prevent this by
-            // putting a stream id in the link.
-            const error_msg = 'Stream no longer exists: ' + stream_name;
-            blueslip.warn(error_msg);
-            failure(error_msg);
-            return;
-        }
+        const sub = stream_data.get_sub_by_id(stream_id);
 
         stream_edit.invite_user_to_stream([user_id], sub, success, xhr_failure);
     });

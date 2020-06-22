@@ -1071,17 +1071,6 @@ run_test('needs_subscribe_warning', () => {
 
     assert.equal(compose.needs_subscribe_warning(), false);
 
-    compose_state.stream_name('random');
-    assert.equal(compose.needs_subscribe_warning(), false);
-
-    const sub = {
-        stream_id: 111,
-        name: 'random',
-        subscribed: true,
-    };
-    stream_data.add_sub(sub);
-    assert.equal(compose.needs_subscribe_warning(), false);
-
     people.get_by_user_id = function () {
         return {
             is_bot: true,
@@ -1125,11 +1114,26 @@ run_test('warn_if_mentioning_unsubscribed_user', () => {
     test_noop_case(false, true, false);
     test_noop_case(false, false, true);
 
-    // Test mentioning a user that should gets a warning.
-
     $("#compose_invite_users").hide();
     compose_state.set_message_type('stream');
     page_params.realm_is_zephyr_mirror_realm = false;
+
+    // Test with empty stream name in compose box. It should return noop.
+    assert.equal(compose_state.stream_name(), "");
+    compose.warn_if_mentioning_unsubscribed_user(mentioned);
+    assert.equal($('#compose_invite_users').visible(), false);
+
+    compose_state.stream_name('random');
+    const sub = {
+        stream_id: 111,
+        name: 'random',
+    };
+
+    // Test with invalid stream in compose box. It should return noop.
+    compose.warn_if_mentioning_unsubscribed_user(mentioned);
+    assert.equal($('#compose_invite_users').visible(), false);
+
+    // Test mentioning a user that should gets a warning.
 
     const checks = [
         (function () {
@@ -1148,6 +1152,7 @@ run_test('warn_if_mentioning_unsubscribed_user', () => {
                 called = true;
                 assert.equal(template_name, 'compose_invite_users');
                 assert.equal(context.user_id, 34);
+                assert.equal(context.stream_id, 111);
                 assert.equal(context.name, 'Foo Barson');
                 return 'fake-compose-invite-user-template';
             });
@@ -1170,6 +1175,7 @@ run_test('warn_if_mentioning_unsubscribed_user', () => {
         full_name: 'Foo Barson',
     };
 
+    stream_data.add_sub(sub);
     compose.warn_if_mentioning_unsubscribed_user(mentioned);
     assert.equal($('#compose_invite_users').visible(), true);
 
@@ -1180,9 +1186,13 @@ run_test('warn_if_mentioning_unsubscribed_user', () => {
 
     let looked_for_existing;
     warning_row.data = function (field) {
-        assert.equal(field, 'user-id');
-        looked_for_existing = true;
-        return '34';
+        if (field === 'user-id') {
+            looked_for_existing = true;
+            return '34';
+        }
+        if (field === 'stream-id') {
+            return '111';
+        }
     };
 
     const previous_users = $('#compose_invite_users .compose_invite_user');
@@ -1280,22 +1290,16 @@ run_test('on_events', () => {
             '.compose_invite_user',
         );
 
-        // !sub will result false here and we check the failure code path.
-        blueslip.expect('warn', 'Stream no longer exists: no-stream');
-        $('#stream_message_recipient_stream').val('no-stream');
         helper.container.data = function (field) {
-            assert.equal(field, 'user-id');
-            return '34';
+            if (field === 'user-id') {
+                return '34';
+            }
+            if (field === 'stream-id') {
+                return '102';
+            }
         };
         $("#compose-textarea").select(noop);
         helper.target.prop('disabled', false);
-
-        handler(helper.event);
-        assert(helper.target.attr('disabled'));
-        assert(!invite_user_to_stream_called);
-        assert(!helper.container_was_removed());
-        assert(!$("#compose_invite_users").visible());
-        assert.equal($('#compose-error-msg').html(), "Stream no longer exists: no-stream");
 
         // !sub will result in true here and we check the success code path.
         stream_data.add_sub(subscription);
