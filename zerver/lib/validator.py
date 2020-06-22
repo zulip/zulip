@@ -29,23 +29,9 @@ for any particular type of object.
 '''
 import re
 from datetime import datetime
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    List,
-    Optional,
-    Set,
-    Tuple,
-    TypeVar,
-    Union,
-    cast,
-    overload,
-)
+from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, Union, cast, overload
 
 import ujson
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.utils.translation import ugettext as _
@@ -53,30 +39,12 @@ from django.utils.translation import ugettext as _
 from zerver.lib.request import JsonableError, ResultT
 from zerver.lib.types import ProfileFieldData, Validator
 
-FuncT = TypeVar("FuncT", bound=Callable[..., object])
-TypeStructure = TypeVar("TypeStructure")
 
-USING_TYPE_STRUCTURE = settings.LOG_API_EVENT_TYPES
-
-# The type_structure system is designed to support using the validators in
-# test_events.py to create documentation for our event formats.
-#
-# Ultimately, it should be possible to do this with mypy rather than a
-# parallel system.
-def set_type_structure(type_structure: TypeStructure) -> Callable[[FuncT], FuncT]:
-    def _set_type_structure(func: FuncT) -> FuncT:
-        if USING_TYPE_STRUCTURE:
-            func.type_structure = type_structure  # type: ignore[attr-defined] # monkey-patching
-        return func
-    return _set_type_structure
-
-@set_type_structure("str")
 def check_string(var_name: str, val: object) -> str:
     if not isinstance(val, str):
         raise ValidationError(_('{var_name} is not a string').format(var_name=var_name))
     return val
 
-@set_type_structure("str")
 def check_required_string(var_name: str, val: object) -> str:
     s = check_string(var_name, val)
     if not s.strip():
@@ -84,7 +52,6 @@ def check_required_string(var_name: str, val: object) -> str:
     return s
 
 def check_string_in(possible_values: Union[Set[str], List[str]]) -> Validator[str]:
-    @set_type_structure("str")
     def validator(var_name: str, val: object) -> str:
         s = check_string(var_name, val)
         if s not in possible_values:
@@ -93,12 +60,10 @@ def check_string_in(possible_values: Union[Set[str], List[str]]) -> Validator[st
 
     return validator
 
-@set_type_structure("str")
 def check_short_string(var_name: str, val: object) -> str:
     return check_capped_string(50)(var_name, val)
 
 def check_capped_string(max_length: int) -> Validator[str]:
-    @set_type_structure("str")
     def validator(var_name: str, val: object) -> str:
         s = check_string(var_name, val)
         if len(s) > max_length:
@@ -110,7 +75,6 @@ def check_capped_string(max_length: int) -> Validator[str]:
     return validator
 
 def check_string_fixed_length(length: int) -> Validator[str]:
-    @set_type_structure("str")
     def validator(var_name: str, val: object) -> str:
         s = check_string(var_name, val)
         if len(s) != length:
@@ -121,11 +85,9 @@ def check_string_fixed_length(length: int) -> Validator[str]:
 
     return validator
 
-@set_type_structure("str")
 def check_long_string(var_name: str, val: object) -> str:
     return check_capped_string(500)(var_name, val)
 
-@set_type_structure("date")
 def check_date(var_name: str, val: object) -> str:
     if not isinstance(val, str):
         raise ValidationError(_('{var_name} is not a string').format(var_name=var_name))
@@ -135,14 +97,12 @@ def check_date(var_name: str, val: object) -> str:
         raise ValidationError(_('{var_name} is not a date').format(var_name=var_name))
     return val
 
-@set_type_structure("int")
 def check_int(var_name: str, val: object) -> int:
     if not isinstance(val, int):
         raise ValidationError(_('{var_name} is not an integer').format(var_name=var_name))
     return val
 
 def check_int_in(possible_values: List[int]) -> Validator[int]:
-    @set_type_structure("int")
     def validator(var_name: str, val: object) -> int:
         n = check_int(var_name, val)
         if n not in possible_values:
@@ -151,19 +111,16 @@ def check_int_in(possible_values: List[int]) -> Validator[int]:
 
     return validator
 
-@set_type_structure("float")
 def check_float(var_name: str, val: object) -> float:
     if not isinstance(val, float):
         raise ValidationError(_('{var_name} is not a float').format(var_name=var_name))
     return val
 
-@set_type_structure("bool")
 def check_bool(var_name: str, val: object) -> bool:
     if not isinstance(val, bool):
         raise ValidationError(_('{var_name} is not a boolean').format(var_name=var_name))
     return val
 
-@set_type_structure("str")
 def check_color(var_name: str, val: object) -> str:
     s = check_string(var_name, val)
     valid_color_pattern = re.compile(r'^#([a-fA-F0-9]{3,6})$')
@@ -173,12 +130,6 @@ def check_color(var_name: str, val: object) -> str:
     return s
 
 def check_none_or(sub_validator: Validator[ResultT]) -> Validator[Optional[ResultT]]:
-    if USING_TYPE_STRUCTURE:
-        type_structure = 'none_or_' + sub_validator.type_structure  # type: ignore[attr-defined] # monkey-patching
-    else:
-        type_structure = None
-
-    @set_type_structure(type_structure)
     def f(var_name: str, val: object) -> Optional[ResultT]:
         if val is None:
             return val
@@ -194,15 +145,6 @@ def check_list(sub_validator: None, length: Optional[int]=None) -> Validator[Lis
 def check_list(sub_validator: Validator[ResultT], length: Optional[int]=None) -> Validator[List[ResultT]]:
     ...
 def check_list(sub_validator: Optional[Validator[ResultT]]=None, length: Optional[int]=None) -> Validator[List[ResultT]]:
-    if USING_TYPE_STRUCTURE:
-        if sub_validator:
-            type_structure = [sub_validator.type_structure]  # type: ignore[attr-defined] # monkey-patching
-        else:
-            type_structure = 'list'  # type: ignore[assignment] # monkey-patching
-    else:
-        type_structure = None  # type: ignore[assignment] # monkey-patching
-
-    @set_type_structure(type_structure)
     def f(var_name: str, val: object) -> List[ResultT]:
         if not isinstance(val, list):
             raise ValidationError(_('{var_name} is not a list').format(var_name=var_name))
@@ -240,9 +182,6 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator[ResultT]]]=[],
                *,
                value_validator: Optional[Validator[ResultT]]=None,
                _allow_only_listed_keys: bool=False) -> Validator[Dict[str, ResultT]]:
-    type_structure: Dict[str, Any] = {}
-
-    @set_type_structure(type_structure)
     def f(var_name: str, val: object) -> Dict[str, ResultT]:
         if not isinstance(val, dict):
             raise ValidationError(_('{var_name} is not a dict').format(var_name=var_name))
@@ -257,23 +196,17 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator[ResultT]]]=[],
                 ))
             vname = f'{var_name}["{k}"]'
             sub_validator(vname, val[k])
-            if USING_TYPE_STRUCTURE:
-                type_structure[k] = sub_validator.type_structure  # type: ignore[attr-defined] # monkey-patching
 
         for k, sub_validator in optional_keys:
             if k in val:
                 vname = f'{var_name}["{k}"]'
                 sub_validator(vname, val[k])
-            if USING_TYPE_STRUCTURE:
-                type_structure[k] = sub_validator.type_structure  # type: ignore[attr-defined] # monkey-patching
 
         if value_validator:
             for key in val:
                 vname = f'{var_name} contains a value that'
                 valid_value = value_validator(vname, val[key])
                 assert val[key] is valid_value  # To justify the unchecked cast below
-            if USING_TYPE_STRUCTURE:
-                type_structure['any'] = value_validator.type_structure  # type: ignore[attr-defined] # monkey-patching
 
         if _allow_only_listed_keys:
             required_keys_set = {x[0] for x in required_keys}
@@ -302,12 +235,6 @@ def check_union(allowed_type_funcs: Iterable[Validator[ResultT]]) -> Validator[R
     types for this variable.
     """
 
-    if USING_TYPE_STRUCTURE:
-        type_structure = f'any("{[x.type_structure for x in allowed_type_funcs]}")'  # type: ignore[attr-defined] # monkey-patching
-    else:
-        type_structure = None  # type: ignore[assignment] # monkey-patching
-
-    @set_type_structure(type_structure)
     def enumerated_type_check(var_name: str, val: object) -> ResultT:
         for func in allowed_type_funcs:
             try:
@@ -318,7 +245,6 @@ def check_union(allowed_type_funcs: Iterable[Validator[ResultT]]) -> Validator[R
     return enumerated_type_check
 
 def equals(expected_val: ResultT) -> Validator[ResultT]:
-    @set_type_structure(f'equals("{str(expected_val)}")')
     def f(var_name: str, val: object) -> ResultT:
         if val != expected_val:
             raise ValidationError(_('{variable} != {expected_value} ({value} is wrong)').format(
@@ -327,14 +253,12 @@ def equals(expected_val: ResultT) -> Validator[ResultT]:
         return cast(ResultT, val)
     return f
 
-@set_type_structure('str')
 def validate_login_email(email: str) -> None:
     try:
         validate_email(email)
     except ValidationError as err:
         raise JsonableError(str(err.message))
 
-@set_type_structure('str')
 def check_url(var_name: str, val: object) -> str:
     # First, ensure val is a string
     s = check_string(var_name, val)
@@ -346,7 +270,6 @@ def check_url(var_name: str, val: object) -> str:
     except ValidationError:
         raise ValidationError(_('{var_name} is not a URL').format(var_name=var_name))
 
-@set_type_structure('str')
 def check_external_account_url_pattern(var_name: str, val: object) -> str:
     s = check_string(var_name, val)
 
@@ -433,7 +356,6 @@ def check_widget_content(widget_content: object) -> Dict[str, Any]:
 
 
 # Converter functions for use with has_request_variables
-@set_type_structure('int')
 def to_non_negative_int(s: str, max_int_size: int=2**32-1) -> int:
     x = int(s)
     if x < 0:
@@ -443,7 +365,6 @@ def to_non_negative_int(s: str, max_int_size: int=2**32-1) -> int:
     return x
 
 def to_positive_or_allowed_int(allowed_integer: int) -> Callable[[str], int]:
-    @set_type_structure('int')
     def convertor(s: str) -> int:
         x = int(s)
         if x == allowed_integer:
@@ -453,7 +374,6 @@ def to_positive_or_allowed_int(allowed_integer: int) -> Callable[[str], int]:
         return to_non_negative_int(s)
     return convertor
 
-@set_type_structure('any(List[int], str)]')
 def check_string_or_int_list(var_name: str, val: object) -> Union[str, List[int]]:
     if isinstance(val, str):
         return val
@@ -463,7 +383,6 @@ def check_string_or_int_list(var_name: str, val: object) -> Union[str, List[int]
 
     return check_list(check_int)(var_name, val)
 
-@set_type_structure('any(int, str)')
 def check_string_or_int(var_name: str, val: object) -> Union[str, int]:
     if isinstance(val, str) or isinstance(val, int):
         return val

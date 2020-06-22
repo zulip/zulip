@@ -17,9 +17,6 @@ exclude_lines =
     if TYPE_CHECKING:
     # Don't require coverage for abstract methods; they're never called.
     @abstractmethod
-    # Don't require coverage for the USING_TYPE_STRUCTURE code paths
-    # These are only run in a special testing mode, so will fail normal coverage.
-    if USING_TYPE_STRUCTURE
     # PEP 484 overloading syntax
     ^\s*\.\.\.
 
