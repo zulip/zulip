@@ -1,8 +1,33 @@
+exports.get_display_value = function (term, search_string) {
+    const operator = term[0].operator;
+    const operand = term[0].operand;
+    let person = '';
+
+    switch (operator) {
+    case 'stream':
+        return '# ' + operand;
+    case 'topic':
+        return '> ' + operand;
+    case 'search':
+        return 'search: ' + operand;
+    case 'sender':
+    case 'from':
+    case 'pm-with':
+    case 'group-pm-with':
+        person = people.get_by_email(operand).full_name;
+        return operator + ": " + person;
+    default:
+        return search_string;
+    }
+};
+
 exports.create_item_from_search_string = function (search_string) {
     const operator = Filter.parse(search_string);
     const description = Filter.describe(operator);
+
     return {
-        display_value: search_string,
+        display_value: exports.get_display_value(operator, search_string),
+        stored_value: search_string,
         description: description,
     };
 };
@@ -33,7 +58,7 @@ exports.append_search_string = function (search_string, pill_widget) {
 
 exports.get_search_string_for_current_filter = function (pill_widget) {
     const items = pill_widget.items();
-    const search_strings = items.map(item => item.display_value);
+    const search_strings = items.map(item => item.stored_value);
     return search_strings.join(' ');
 };
 
