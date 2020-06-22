@@ -2,7 +2,7 @@ import logging
 import os
 import urllib
 from functools import wraps
-from typing import Any, Dict, List, Mapping, Optional, cast
+from typing import Any, Dict, List, Mapping, Optional
 
 import jwt
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -224,7 +224,7 @@ def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> Ht
     # We have verified the user controls an email address, but
     # there's no associated Zulip user account.  Consider sending
     # the request to registration.
-    kwargs = cast(Dict[str, Any], result.copy_data_dict())
+    kwargs: Dict[str, Any] = dict(result.data_dict)
     # maybe_send_to_registration doesn't take these arguments, so delete them.
     kwargs.pop('subdomain', None)
     kwargs.pop('redirect_to', None)

@@ -985,7 +985,7 @@ class ExternalAuthResult:
                                                                 "with login_token is disallowed.")
             self.instantiate_with_token(login_token, delete_stored_data)
         else:
-            self.data_dict = cast(ExternalAuthDataDict, {**data_dict})
+            self.data_dict = data_dict.copy()
             self.user_profile = user_profile
 
         if self.user_profile is not None:
@@ -1005,11 +1005,8 @@ class ExternalAuthResult:
             if not self.user_profile.is_mirror_dummy:
                 self.data_dict['is_signup'] = False
 
-    def copy_data_dict(self) -> ExternalAuthDataDict:
-        return self.data_dict.copy()
-
     def store_data(self) -> str:
-        key = put_dict_in_redis(redis_client, self.LOGIN_KEY_FORMAT, cast(Dict[str, Any], self.data_dict),
+        key = put_dict_in_redis(redis_client, self.LOGIN_KEY_FORMAT, self.data_dict,
                                 expiration_seconds=self.LOGIN_KEY_EXPIRATION_SECONDS,
                                 token_length=self.LOGIN_TOKEN_LENGTH)
         token = key.split(self.LOGIN_KEY_PREFIX, 1)[1]  # remove the prefix
