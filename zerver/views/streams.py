@@ -65,6 +65,7 @@ from zerver.lib.streams import (
     list_to_streams,
 )
 from zerver.lib.topic import get_topic_history_for_stream, messages_for_topic
+from zerver.lib.types import Validator
 from zerver.lib.validator import (
     check_bool,
     check_capped_string,
@@ -335,12 +336,15 @@ def compose_views(
             json_dict.update(ujson.loads(response.content))
     return json_success(json_dict)
 
+check_principals: Validator[Union[List[str], List[int]]] = check_union(
+    [check_list(check_string), check_list(check_int)],
+)
+
 @has_request_variables
 def remove_subscriptions_backend(
         request: HttpRequest, user_profile: UserProfile,
         streams_raw: Iterable[str]=REQ("subscriptions", validator=check_list(check_string)),
-        principals: Optional[Union[List[str], List[int]]]=REQ(validator=check_union([
-            check_list(check_string), check_list(check_int)]), default=None),
+        principals: Optional[Union[List[str], List[int]]]=REQ(validator=check_principals, default=None),
 ) -> HttpResponse:
 
     removing_someone_else = check_if_removing_someone_else(user_profile, principals)
@@ -391,6 +395,9 @@ def you_were_just_subscribed_message(acting_user: UserProfile,
         message += f"* #**{stream_name}**\n"
     return message
 
+RETENTION_DEFAULT: Union[str, int] = "realm_default"
+EMPTY_PRINCIPALS: Union[Sequence[str], Sequence[int]] = []
+
 @require_non_guest_user
 @has_request_variables
 def add_subscriptions_backend(
@@ -407,10 +414,11 @@ def add_subscriptions_backend(
             Stream.STREAM_POST_POLICY_TYPES), default=Stream.STREAM_POST_POLICY_EVERYONE),
         history_public_to_subscribers: Optional[bool]=REQ(validator=check_bool, default=None),
         message_retention_days: Union[str, int]=REQ(validator=check_string_or_int,
-                                                    default="realm_default"),
+                                                    default=RETENTION_DEFAULT),
         announce: bool=REQ(validator=check_bool, default=False),
-        principals: Union[Sequence[str], Sequence[int]]=REQ(validator=check_union([
-            check_list(check_string), check_list(check_int)]), default=[]),
+        principals: Union[Sequence[str], Sequence[int]]=REQ(
+            validator=check_principals, default=EMPTY_PRINCIPALS,
+        ),
         authorization_errors_fatal: bool=REQ(validator=check_bool, default=True),
 ) -> HttpResponse:
     stream_dicts = []

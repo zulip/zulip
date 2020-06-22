@@ -1605,7 +1605,7 @@ class EventsRegisterTest(ZulipTestCase):
         vals = test_values.get(name)
         property_type = Realm.property_types[name]
         if property_type is bool:
-            validator = check_bool
+            validator: Validator[object] = check_bool
             vals = bool_tests
         elif property_type is str:
             validator = check_string
@@ -1857,7 +1857,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         property_type = UserProfile.property_types[setting_name]
         if property_type is bool:
-            validator = check_bool
+            validator: Validator[object] = check_bool
         elif property_type is str:
             validator = check_string
         elif property_type is int:

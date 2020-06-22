@@ -41,6 +41,7 @@ from zerver.lib.streams import (
 )
 from zerver.lib.topic import DB_TOPIC_NAME, MATCH_TOPIC, topic_column_sa, topic_match_sa
 from zerver.lib.topic_mutes import exclude_topic_mutes
+from zerver.lib.types import Validator
 from zerver.lib.utils import statsd
 from zerver.lib.validator import (
     check_bool,
@@ -545,7 +546,7 @@ def narrow_parameter(json: str) -> OptionalNarrowListT:
 
             operator = elem.get('operator', '')
             if operator in operators_supporting_id:
-                operand_validator = check_string_or_int
+                operand_validator: Validator[object] = check_string_or_int
             elif operator in operators_supporting_ids:
                 operand_validator = check_string_or_int_list
             elif operator in operators_non_empty_operand:

@@ -34,6 +34,7 @@ from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, subscribed_to_stream
+from zerver.lib.types import Validator
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.url_encoding import add_query_arg_to_redirect_url
 from zerver.lib.users import (
@@ -122,6 +123,15 @@ def reactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
     do_reactivate_user(target, acting_user=user_profile)
     return json_success()
 
+check_profile_data: Validator[List[Dict[str, Optional[Union[int, str, List[int]]]]]] = check_list(
+    check_dict(
+        [('id', check_int)],
+        value_validator=check_none_or(check_union([
+            check_int, check_string, check_list(check_int),
+        ])),
+    ),
+)
+
 @has_request_variables
 def update_user_backend(
     request: HttpRequest, user_profile: UserProfile, user_id: int,
@@ -130,15 +140,7 @@ def update_user_backend(
         UserProfile.ROLE_TYPES,
     )),
     profile_data: Optional[List[Dict[str, Optional[Union[int, str, List[int]]]]]] = REQ(
-        default=None,
-        validator=check_list(
-            check_dict(
-                [('id', check_int)],
-                value_validator=check_none_or(check_union([
-                    check_int, check_string, check_list(check_int),
-                ])),
-            ),
-        ),
+        default=None, validator=check_profile_data,
     ),
 ) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, allow_deactivated=True, allow_bots=True)
