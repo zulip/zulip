@@ -471,6 +471,7 @@ run_test('empty_query_suggestions', () => {
         'has:link',
         'has:image',
         'has:attachment',
+        'has:reaction',
     ];
 
     assert.deepEqual(suggestions.strings, expected);
@@ -506,6 +507,7 @@ run_test('has_suggestions', () => {
         'has:link',
         'has:image',
         'has:attachment',
+        'has:reaction',
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -516,6 +518,7 @@ run_test('has_suggestions', () => {
     assert.equal(describe('has:link'), 'Messages with one or more link');
     assert.equal(describe('has:image'), 'Messages with one or more image');
     assert.equal(describe('has:attachment'), 'Messages with one or more attachment');
+    assert.equal(describe('has:reaction'), 'Messages with one or more reaction');
 
     query = '-h';
     suggestions = get_suggestions('', query);
@@ -524,11 +527,13 @@ run_test('has_suggestions', () => {
         '-has:link',
         '-has:image',
         '-has:attachment',
+        '-has:reaction',
     ];
     assert.deepEqual(suggestions.strings, expected);
     assert.equal(describe('-has:link'), 'Exclude messages with one or more link');
     assert.equal(describe('-has:image'), 'Exclude messages with one or more image');
     assert.equal(describe('-has:attachment'), 'Exclude messages with one or more attachment');
+    assert.equal(describe('-has:reaction'), 'Exclude messages with one or more reaction');
 
     // operand suggestions follow.
 
@@ -538,6 +543,7 @@ run_test('has_suggestions', () => {
         'has:link',
         'has:image',
         'has:attachment',
+        'has:reaction',
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -568,6 +574,13 @@ run_test('has_suggestions', () => {
     suggestions = get_suggestions(base_query, query);
     expected = [
         'has:link',
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'has:re';
+    suggestions = get_suggestions('', query);
+    expected = [
+        'has:reaction',
     ];
     assert.deepEqual(suggestions.strings, expected);
 });
@@ -640,6 +653,7 @@ run_test('check_is_suggestions', () => {
         'has:link',
         'has:image',
         'has:attachment',
+        'has:reaction',
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -655,6 +669,7 @@ run_test('check_is_suggestions', () => {
         'has:link',
         'has:image',
         'has:attachment',
+        'has:reaction',
     ];
     assert.deepEqual(suggestions.strings, expected);
 
