@@ -8,17 +8,6 @@ rules:
     languages: [python]
     severity: ERROR
 
-  - id: useless-if-body
-    patterns:
-      - pattern: |
-          if $X:
-              $S
-          else:
-              $S
-    message: "Useless if statment; both blocks have the same body"
-    languages: [python]
-    severity: ERROR
-
   - id: dont-use-stream-objects-filter
     pattern: Stream.objects.filter(...)
     message: "Please use access_stream_by_*() to fetch Stream objects"
