@@ -158,10 +158,20 @@ exports.initialize = function () {
 };
 
 exports.render_title_area = function () {
+    const filter = narrow_state.filter();
+    build_tab_bar(filter);
+};
+
+// This function checks if "modified_sub" which is the stream whose values
+// have been updated is the same as the stream which is currently
+// narrowed (filter._sub) and rerenders if necessary
+exports.maybe_rerender_title_area_for_stream = function (modified_sub) {
     // TODO: Implement rerendering for subscriber count changes.
     // We simply need to call this function in the appropriate places.
     const filter = narrow_state.filter();
-    build_tab_bar(filter);
+    if (filter && filter._sub && filter._sub.stream_id === modified_sub.stream_id) {
+        tab_bar.render_title_area();
+    }
 };
 
 exports.open_search_bar_and_close_narrow_description = function () {
