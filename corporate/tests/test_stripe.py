@@ -336,8 +336,9 @@ class StripeTestCase(ZulipTestCase):
 
     # Upgrade without talking to Stripe
     def local_upgrade(self, *args: Any) -> None:
-        class StripeMock:
+        class StripeMock(Mock):
             def __init__(self, depth: int=1):
+                super().__init__(spec=stripe.Card)
                 self.id = 'id'
                 self.created = '1000'
                 self.last4 = '4242'
@@ -1231,7 +1232,8 @@ class StripeTest(StripeTestCase):
         self.assertEqual(ujson.loads(response.content)['error_description'], 'card error')
         self.assert_json_error_contains(response, 'Your card was declined')
         for stripe_source in stripe_get_customer(stripe_customer_id).sources:
-            self.assertEqual(cast(stripe.Card, stripe_source).last4, '4242')
+            assert isinstance(stripe_source, stripe.Card)
+            self.assertEqual(stripe_source.last4, '4242')
         self.assertFalse(RealmAuditLog.objects.filter(event_type=RealmAuditLog.STRIPE_CARD_CHANGED).exists())
 
         # Replace with a card that's valid, but charging the card fails
@@ -1243,7 +1245,8 @@ class StripeTest(StripeTestCase):
         self.assertEqual(ujson.loads(response.content)['error_description'], 'card error')
         self.assert_json_error_contains(response, 'Your card was declined')
         for stripe_source in stripe_get_customer(stripe_customer_id).sources:
-            self.assertEqual(cast(stripe.Card, stripe_source).last4, '0341')
+            assert isinstance(stripe_source, stripe.Card)
+            self.assertEqual(stripe_source.last4, '0341')
         self.assertEqual(len(list(stripe.Invoice.list(customer=stripe_customer_id, status='open'))), 1)
         self.assertEqual(1, RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.STRIPE_CARD_CHANGED).count())
@@ -1255,7 +1258,8 @@ class StripeTest(StripeTestCase):
         self.assert_json_success(response)
         number_of_sources = 0
         for stripe_source in stripe_get_customer(stripe_customer_id).sources:
-            self.assertEqual(cast(stripe.Card, stripe_source).last4, '4444')
+            assert isinstance(stripe_source, stripe.Card)
+            self.assertEqual(stripe_source.last4, '4444')
             number_of_sources += 1
         # Verify that we replaced the previous card, rather than adding a new one
         self.assertEqual(number_of_sources, 1)

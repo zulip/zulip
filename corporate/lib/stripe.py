@@ -4,7 +4,7 @@ import os
 from datetime import datetime, timedelta
 from decimal import Decimal
 from functools import wraps
-from typing import Any, Callable, Dict, Optional, Tuple, TypeVar, cast
+from typing import Any, Callable, Dict, Optional, Tuple, TypeVar
 
 import stripe
 import ujson
@@ -384,7 +384,8 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
                 statement_descriptor='Zulip Standard')
             # Not setting a period start and end, but maybe we should? Unclear what will make things
             # most similar to the renewal case from an accounting perspective.
-            description = f"Payment (Card ending in {cast(stripe.Card, stripe_charge.source).last4})"
+            assert isinstance(stripe_charge.source, stripe.Card)
+            description = f"Payment (Card ending in {stripe_charge.source.last4})"
             stripe.InvoiceItem.create(
                 amount=price_per_license * licenses * -1,
                 currency='usd',
