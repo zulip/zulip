@@ -1,5 +1,5 @@
 import re
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Mapping, Optional
 
 import redis
 import ujson
@@ -25,7 +25,7 @@ def get_redis_client() -> redis.StrictRedis:
                              password=settings.REDIS_PASSWORD, db=0)
 
 def put_dict_in_redis(redis_client: redis.StrictRedis, key_format: str,
-                      data_to_store: Dict[str, Any],
+                      data_to_store: Mapping[str, Any],
                       expiration_seconds: int,
                       token_length: int=64,
                       token: Optional[str]=None) -> str:
