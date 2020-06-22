@@ -164,19 +164,22 @@ class PointerTest(ZulipTestCase):
         self.assertEqual(messages_response['messages'][0]['id'], new_message_id)
         self.assertEqual(messages_response['anchor'], new_message_id)
 
-        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=new_message_id):
+        with mock.patch('zerver.views.message_fetch.get_first_visible_message_id',
+                        return_value=new_message_id):
             messages_response = self.get_messages_response(
                 anchor="first_unread", num_before=0, num_after=1)
         self.assertEqual(messages_response['messages'][0]['id'], new_message_id)
         self.assertEqual(messages_response['anchor'], new_message_id)
 
-        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=new_message_id + 1):
+        with mock.patch('zerver.views.message_fetch.get_first_visible_message_id',
+                        return_value=new_message_id + 1):
             messages_reponse = self.get_messages_response(
                 anchor="first_unread", num_before=0, num_after=1)
         self.assert_length(messages_reponse['messages'], 0)
         self.assertIn('anchor', messages_reponse)
 
-        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=new_message_id - 1):
+        with mock.patch('zerver.views.message_fetch.get_first_visible_message_id',
+                        return_value=new_message_id - 1):
             messages = self.get_messages(
                 anchor="first_unread", num_before=0, num_after=1)
         self.assert_length(messages, 1)
