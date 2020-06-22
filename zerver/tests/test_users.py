@@ -876,7 +876,7 @@ class UserProfileTest(ZulipTestCase):
         bot = self.example_user("default_bot")
 
         # Invalid user ID
-        invalid_uid: Any = 1000
+        invalid_uid: object = 1000
         with self.assertRaisesRegex(ValidationError, r"User IDs is not a list"):
             check_valid_user_ids(realm.id, invalid_uid)
         with self.assertRaisesRegex(ValidationError, rf"Invalid user ID: {invalid_uid}"):

@@ -2754,9 +2754,9 @@ class UserHotspot(models.Model):
     class Meta:
         unique_together = ("user", "hotspot")
 
-def check_valid_user_ids(realm_id: int, user_ids: List[int],
+def check_valid_user_ids(realm_id: int, val: object,
                          allow_deactivated: bool=False) -> List[int]:
-    check_list(check_int)("User IDs", user_ids)
+    user_ids = check_list(check_int)("User IDs", val)
     realm = Realm.objects.get(id=realm_id)
     for user_id in user_ids:
         # TODO: Structurally, we should be doing a bulk fetch query to

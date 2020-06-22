@@ -10,7 +10,7 @@ ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 ResultT = TypeVar("ResultT")
 Validator = Callable[[str, object], ResultT]
 ExtendedValidator = Callable[[str, str, object], str]
-RealmUserValidator = Callable[[int, List[int], bool], List[int]]
+RealmUserValidator = Callable[[int, object, bool], List[int]]
 
 class ProfileDataElementBase(TypedDict):
     id: int

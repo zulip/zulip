@@ -1,7 +1,7 @@
 import re
 import unicodedata
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union, cast
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -269,7 +269,7 @@ def validate_user_custom_profile_field(realm_id: int, field: CustomProfileField,
         return choice_field_validator(var_name, field_data, value)
     elif field_type == CustomProfileField.USER:
         user_field_validator = CustomProfileField.USER_FIELD_VALIDATORS[field_type]
-        return user_field_validator(realm_id, cast(List[int], value), False)
+        return user_field_validator(realm_id, value, False)
     else:
         raise AssertionError("Invalid field type")
 
