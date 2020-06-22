@@ -18,6 +18,9 @@ or have [modified Zulip-managed configuration
 files](#preserving-local-changes-to-configuration-files).  To upgrade
 to a new Zulip release:
 
+1. Read the [upgrade notes](../overview/changelog.html#upgrade-notes)
+   for all releases newer than what is currently installed.
+
 1. Download the appropriate release tarball from
     <https://www.zulip.org/dist/releases/> You can download the latest
     release with:

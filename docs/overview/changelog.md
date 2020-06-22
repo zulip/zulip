@@ -7,7 +7,7 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
-**Highlights:**
+#### Highlights
 
 - Added support for Ubuntu 20.04 Focal.  This release drops support
   for Ubuntu 16.04 Xenial and Debian 9 Stretch.
@@ -38,7 +38,7 @@ in bursts.
   changelog](https://zulip.com/api/changelog).
 - Our primary official domain is now zulip.com, not zulipchat.com.
 
-**Upgrade notes:**
+#### Upgrade notes for 2.2.0
 
 - Logged in users will be logged out during this one-time upgrade to
   transition them to more secure session cookies.
@@ -55,7 +55,7 @@ in bursts.
   In the future, certain administrative settings will only be editable
   by Organization Owners.
 
-**Full feature changelog:**
+#### Full feature changelog
 
 - Added new options in "Manage streams" to sort by stream activity or
   number of subscribers.
@@ -181,6 +181,8 @@ in bursts.
 - Fixed a race condition fetching users' personal API keys.
 - Fixed a few bugs with Slack data import.
 
+#### Upgrade notes for 2.1.5
+
 Administrators of servers originally installed with Zulip 1.9 or older
 should audit for unexpected [organization
 administrators][audit-org-admin] following this upgrade, as it is
@@ -267,7 +269,7 @@ details.
 
 ### 2.1.0 -- 2019-12-12
 
-**Highlights:**
+#### Highlights
 
 - Added support for Debian buster.  Removed support for EOL Ubuntu Trusty.
 - Added support for SAML authentication.
@@ -305,7 +307,7 @@ details.
   wildcard mentions (@all and @everyone).  Previously, they only
   triggered desktop notifications; now, that's configurable.
 
-**Upgrade notes:**
+#### Upgrade notes for 2.1.0
 
 - The defaults for Zulip's now beta inline URL preview setting have changed.
 Previously, the server-level `INLINE_URL_EMBED_PREVIEW` setting was
@@ -365,7 +367,7 @@ lose the setting and need to re-enable it.
   using `upgrade-zulip-from-git`, following the instructions to avoid
   downtime, and then upgrade to the new release.
 
-**Full feature changelog:**
+#### Full feature changelog
 - Added sortable columns to all tables in settings pages.
 - Added webapp support for self-service public data exports.
 - Added 'e' keyboard shortcut for editing currently selected message.
@@ -570,7 +572,7 @@ lose the setting and need to re-enable it.
 
 ### 2.0.0 -- 2019-03-01
 
-**Highlights:**
+#### Highlights
 - Added automation for synchronizing user avatars, custom profile
   fields, disabled status, and more from LDAP/active directory.
 - Added support for explicitly setting oneself as "away" and "user
@@ -589,8 +591,9 @@ lose the setting and need to re-enable it.
   support Ubuntu Trusty, but Zulip 2.1.0 will remove support for
   installing on Trusty.
 
-**Upgrade notes:**
-- This release adds support for [submitting basic usage statistics] to
+#### Upgrade notes for 2.0.0
+
+- This release adds support for submitting basic usage statistics to
 help the Zulip core team. This feature can be enabled only if a server
 is using the [Mobile Push Notification Service][mpns-statistics-docs],
 and is enabled by default in that case. To disable it, set
@@ -598,7 +601,7 @@ and is enabled by default in that case. To disable it, set
 
 [mpns-statistics-docs]: ../production/mobile-push-notifications.html#submitting-statistics
 
-**Full feature changelog:**
+#### Full feature changelog
 - Added support for CentOS 7 in the development environment
   provisioning process.  This is an important step towards production
   CentOS/RHEL 7 support.
@@ -696,7 +699,7 @@ Zulip installations; it has minimal changes for existing servers.
 
 ### 1.9.0 -- 2018-11-07
 
-**Highlights:**
+#### Highlights
 
 - Support for Ubuntu bionic and Debian stretch (our first non-Ubuntu
   platform!).  We expect to deprecate support for installing a new
@@ -732,7 +735,7 @@ Zulip installations; it has minimal changes for existing servers.
   Dutch, Korean, Polish, Japanese, and Indonesian cover the majority
   of the total strings in the project.
 
-**Upgrade notes:**
+#### Upgrade notes for 1.9.0
 
 * Zulip 1.9 contains a significant database migration that can take
   several minutes to run.  The upgrade process automatically minimizes
@@ -743,7 +746,7 @@ Zulip installations; it has minimal changes for existing servers.
   and as well as the usual trick of
   doing an apt upgrade first.
 
-**Full feature changelog:**
+#### Full feature changelog
 - Added an organization setting for message deletion time limits.
 - Added an organization setting to control who can edit topics.
 - Added ctrl+K keyboard shortcut for getting to search (same as /, but
@@ -836,7 +839,7 @@ Zulip installations; it has minimal changes for existing servers.
 
 ### 1.8.0 -- 2018-04-17
 
-**Highlights:**
+#### Highlights
 - Dramatically simplified the server installation process; it's now possible
   to install Zulip without first setting up outgoing email.
 - Added experimental support for importing an organization's history
@@ -1025,6 +1028,9 @@ Zulip installations; it has minimal changes for existing servers.
 - Dramatically improved organization of developer docs.
 - Backend test coverage is now 95%.
 
+#### Upgrade notes for 1.8.0
+
+This major release has no special upgrade notes.
 
 ### 1.7.2 -- 2018-04-12
 
@@ -1066,9 +1072,10 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 
 ### 1.7.0 -- 2017-10-25
 
-**Highlights:**
+#### Highlights
 
-Web
+**Web**
+
 - We’ve completely redesigned our onboarding process to explain Zulip,
   and especially topics, to new users.
 - We’ve built a beautiful new emoji picker with categories, a
@@ -1084,7 +1091,8 @@ Web
   cleaner, including the settings pages and the user documentation at
   /help, /integrations, and /apps.
 
-Mobile and Desktop support
+**Mobile and Desktop support**
+
 - Zulip Server 1.7 adds several new APIs that are critical for mobile
   app performance and that let the app track unread messages. If
   you’re using the mobile apps at all (iOS or Android), you will
@@ -1097,7 +1105,8 @@ Mobile and Desktop support
 - The new Electron desktop app is out of beta and replaces our legacy
   desktop apps.
 
-Backend and scaling
+**Backend and scaling**
+
 - Zulip now runs exclusively on Python 3.  This is the culmination of
   an 18-month migration effort.  We are very excited about this!
 - We’ve added an automatic "soft deactivation" process, which
@@ -1110,7 +1119,7 @@ Backend and scaling
   users and about 3500 total users, on one VM with just 8GB of RAM and
   a CPU consistently over 90% idle.
 
-**Upgrade notes:**
+#### Upgrade notes for 1.7.0
 
 * Zulip 1.7 contains some significant database migrations that can
   take several minutes to run.  The upgrade process automatically
@@ -1137,7 +1146,7 @@ Backend and scaling
   [it has been replaced](https://github.com/zulip/zulip/commit/a116303604e362796afa54b5d923ea5312b2ea23) by
   the more intuitive `PASSWORD_MIN_GUESSES`.
 
-**Full feature changelog:**
+#### Full feature changelog
 
 - Simplified the process for installing a new Zulip server, as well as
   fixing the most common roadbumps and confusing error messages.
@@ -1247,7 +1256,7 @@ Backend and scaling
 
 ### 1.6.0 -- 2017-06-06
 
-**Highlights:**
+#### Highlights
 
 - A complete visual redesign of the logged-out pages, including login,
 registration, integrations, etc.
@@ -1281,7 +1290,7 @@ Zulip apps.
 [electron-app]: https://github.com/zulip/zulip-desktop/releases
 [ios-app]: https://itunes.apple.com/us/app/zulip/id1203036395
 
-**Full feature changelog:**
+#### Full feature changelog
 
 * Added Basecamp, Gogs, Greenhouse, Home Assistant, Slack, Splunk, and
   WordPress webhook integrations.
@@ -1381,7 +1390,7 @@ Zulip apps.
 
 ### 1.5.0 -- 2017-02-06
 
-**Highlights:**
+#### Highlights
 
 - Completely redesigned the Manage streams interface.
 - Added support for emoji reactions to messages.
@@ -1395,7 +1404,7 @@ Zulip apps.
   setting, `INLINE_URL_EMBED_PREVIEW`, is disabled by default in this
   release).
 
-**Full feature changelog:**
+#### Full feature changelog
 
 - Added an emoji picker/browser to the compose box.
 - Added markdown preview support to the compose box.
@@ -1488,6 +1497,7 @@ Zulip apps.
 - Documented preliminary design for interactive bot system.
 
 ### 1.4.3 - 2017-01-29
+
 - CVE-2017-0881: Users could subscribe to invite-only streams.
 
 ### 1.4.2 - 2016-09-27
@@ -1727,3 +1737,16 @@ Zulip apps.
 - Fixed desktop notifications in modern Firefox.
 - Fixed several installation issues for both production and development environments.
 - Improved documentation for outgoing SMTP and the email mirror integration.
+
+## Upgrade notes
+
+This section links to the upgrade notes from past releases, so you can
+easily read them all when upgrading across multiple releases.
+
+* [Upgrade notes for 2.2.0](#upgrade-notes-for-2-2-0)
+* [Upgrade notes for 2.1.5](#upgrade-notes-for-2-1-5)
+* [Upgrade notes for 2.1.0](#upgrade-notes-for-2-1-0)
+* [Upgrade notes for 2.0.0](#upgrade-notes-for-2-0-0)
+* [Upgrade notes for 1.9.0](#upgrade-notes-for-1-9-0)
+* [Upgrade notes for 1.8.0](#upgrade-notes-for-1-8-0)
+* [Upgrade notes for 1.7.0](#upgrade-notes-for-1-7-0)
