@@ -161,6 +161,13 @@ function handle_operators_supporting_id_based_api(data) {
 }
 
 exports.load_messages = function (opts) {
+    if (typeof opts.anchor === "number") {
+        // Messages that have been locally echoed messages have
+        // floating point temporary IDs, which is intended to be a.
+        // completely client-side detail.  We need to round these to
+        // the nearest integer before sending a request to the server.
+        opts.anchor = opts.anchor.toFixed();
+    }
     let data = {anchor: opts.anchor,
                 num_before: opts.num_before,
                 num_after: opts.num_after};
@@ -306,7 +313,7 @@ exports.maybe_load_older_messages = function (opts) {
 
 exports.do_backfill = function (opts) {
     const msg_list = opts.msg_list;
-    const anchor = exports.get_backfill_anchor(msg_list).toFixed();
+    const anchor = exports.get_backfill_anchor(msg_list);
 
     exports.load_messages({
         anchor: anchor,
@@ -333,7 +340,7 @@ exports.maybe_load_newer_messages = function (opts) {
         return;
     }
 
-    const anchor = exports.get_frontfill_anchor(msg_list).toFixed();
+    const anchor = exports.get_frontfill_anchor(msg_list);
 
     function load_more(data, args) {
         if (args.fetch_again && args.msg_list === current_msg_list) {
@@ -387,7 +394,7 @@ exports.initialize = function () {
         const latest_id = messages[messages.length - 1].id;
 
         exports.load_messages({
-            anchor: latest_id.toFixed(),
+            anchor: latest_id,
             num_before: 0,
             num_after: consts.catch_up_batch_size,
             msg_list: home_msg_list,
