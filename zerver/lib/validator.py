@@ -53,7 +53,7 @@ from django.utils.translation import ugettext as _
 from zerver.lib.request import JsonableError, ResultT
 from zerver.lib.types import ProfileFieldData, Validator
 
-FuncT = Callable[..., Any]
+FuncT = TypeVar("FuncT", bound=Callable[..., object])
 TypeStructure = TypeVar("TypeStructure")
 
 USING_TYPE_STRUCTURE = settings.LOG_API_EVENT_TYPES
@@ -63,7 +63,7 @@ USING_TYPE_STRUCTURE = settings.LOG_API_EVENT_TYPES
 #
 # Ultimately, it should be possible to do this with mypy rather than a
 # parallel system.
-def set_type_structure(type_structure: TypeStructure) -> Callable[[FuncT], Any]:
+def set_type_structure(type_structure: TypeStructure) -> Callable[[FuncT], FuncT]:
     def _set_type_structure(func: FuncT) -> FuncT:
         if USING_TYPE_STRUCTURE:
             func.type_structure = type_structure  # type: ignore[attr-defined] # monkey-patching
@@ -111,7 +111,7 @@ def check_capped_string(max_length: int) -> Validator[str]:
 
 def check_string_fixed_length(length: int) -> Validator[str]:
     @set_type_structure("str")
-    def validator(var_name: str, val: object) -> Optional[str]:
+    def validator(var_name: str, val: object) -> str:
         s = check_string(var_name, val)
         if len(s) != length:
             raise ValidationError(_("{var_name} has incorrect length {length}; should be {target_length}").format(
@@ -172,7 +172,7 @@ def check_color(var_name: str, val: object) -> str:
         raise ValidationError(_('{var_name} is not a valid hex color code').format(var_name=var_name))
     return s
 
-def check_none_or(sub_validator: Validator[ResultT]) -> Validator[ResultT]:
+def check_none_or(sub_validator: Validator[ResultT]) -> Validator[Optional[ResultT]]:
     if USING_TYPE_STRUCTURE:
         type_structure = 'none_or_' + sub_validator.type_structure  # type: ignore[attr-defined] # monkey-patching
     else:
