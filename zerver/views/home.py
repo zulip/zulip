@@ -28,7 +28,7 @@ from zerver.lib.users import compute_show_invites_and_add_streams
 from zerver.lib.utils import generate_random_token, statsd
 from zerver.models import Message, PreregistrationUser, Realm, Stream, UserProfile
 from zerver.views.compatibility import is_outdated_desktop_app, is_unsupported_browser
-from zerver.views.messages import get_latest_update_message_flag_activity
+from zerver.views.message_flags import get_latest_update_message_flag_activity
 from zerver.views.portico import hello_view
 
 
