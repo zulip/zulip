@@ -25,6 +25,7 @@ import zerver.views.email_mirror
 import zerver.views.home
 import zerver.views.message_edit
 import zerver.views.message_flags
+import zerver.views.message_send
 import zerver.views.messages
 import zerver.views.muting
 import zerver.views.portico
@@ -189,20 +190,20 @@ v1_api_and_json_patterns = [
         {'POST': 'zerver.views.message_flags.mark_topic_as_read'}),
 
     url(r'^zcommand$', rest_dispatch,
-        {'POST': 'zerver.views.messages.zcommand_backend'}),
+        {'POST': 'zerver.views.message_send.zcommand_backend'}),
 
     # messages -> zerver.views.message*
     # GET returns messages, possibly filtered, POST sends a message
     url(r'^messages$', rest_dispatch,
         {'GET': 'zerver.views.messages.get_messages_backend',
-         'POST': ('zerver.views.messages.send_message_backend',
+         'POST': ('zerver.views.message_send.send_message_backend',
                   {'allow_incoming_webhooks'})}),
     url(r'^messages/(?P<message_id>[0-9]+)$', rest_dispatch,
         {'GET': 'zerver.views.message_edit.json_fetch_raw_message',
          'PATCH': 'zerver.views.message_edit.update_message_backend',
          'DELETE': 'zerver.views.message_edit.delete_message_backend'}),
     url(r'^messages/render$', rest_dispatch,
-        {'POST': 'zerver.views.messages.render_message_backend'}),
+        {'POST': 'zerver.views.message_send.render_message_backend'}),
     url(r'^messages/flags$', rest_dispatch,
         {'POST': 'zerver.views.message_flags.update_message_flags'}),
     url(r'^messages/(?P<message_id>\d+)/history$', rest_dispatch,
