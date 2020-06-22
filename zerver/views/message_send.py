@@ -196,10 +196,10 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
             # Also, mypy can't detect that a single-item
             # list populated from a Union[int, str] is actually
             # a Union[Sequence[int], Sequence[str]].
-            message_to = cast(
-                Union[Sequence[int], Sequence[str]],
-                [stream_indicator],
-            )
+            if isinstance(stream_indicator, int):
+                message_to = [stream_indicator]
+            else:
+                message_to = [stream_indicator]
         else:
             message_to = extract_private_recipients(req_to)
 
