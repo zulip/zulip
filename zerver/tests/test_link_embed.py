@@ -283,7 +283,7 @@ class PreviewTestCase(ZulipTestCase):
         url = 'http://test.org/'
         mocked_response = mock.Mock(side_effect=self.create_mock_response(url))
 
-        with mock.patch('zerver.views.messages.queue_json_publish') as patched:
+        with mock.patch('zerver.views.message_edit.queue_json_publish') as patched:
             result = self.client_patch("/json/messages/" + str(msg_id), {
                 'message_id': msg_id, 'content': url,
             })
@@ -378,7 +378,7 @@ class PreviewTestCase(ZulipTestCase):
                     self.assertIn(f'<a href="{edited_url}" title="The Rock">The Rock</a>',
                                   msg.rendered_content)
 
-        with mock.patch('zerver.views.messages.queue_json_publish', wraps=wrapped_queue_json_publish) as patched:
+        with mock.patch('zerver.views.message_edit.queue_json_publish', wraps=wrapped_queue_json_publish) as patched:
             result = self.client_patch("/json/messages/" + str(msg_id), {
                 'message_id': msg_id, 'content': edited_url,
             })
