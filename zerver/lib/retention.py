@@ -580,6 +580,20 @@ def restore_all_data_from_archive(restore_manual_transactions: bool=True) -> Non
             ArchiveTransaction.objects.exclude(restored=True).filter(type=ArchiveTransaction.MANUAL),
         )
 
+def restore_retention_policy_deletions_for_stream(stream: Stream) -> None:
+    """
+    Utility function for calling in the Django shell if a stream's policy was
+    set to something too aggressive and the administrator wants to restore
+    the messages deleted as a result.
+    """
+    relevant_transactions = ArchiveTransaction.objects \
+        .filter(archivedmessage__recipient=stream.recipient, type=ArchiveTransaction.RETENTION_POLICY_BASED) \
+        .distinct('id')
+
+    restore_data_from_archive_by_transactions(
+        list(relevant_transactions)
+    )
+
 def clean_archived_data() -> None:
     logger.info("Cleaning old archive data.")
     check_date = timezone_now() - timedelta(days=settings.ARCHIVED_DATA_VACUUMING_DELAY_DAYS)

@@ -12,6 +12,7 @@ from zerver.lib.retention import (
     get_realms_and_streams_for_archiving,
     move_messages_to_archive,
     restore_all_data_from_archive,
+    restore_retention_policy_deletions_for_stream,
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
@@ -884,6 +885,45 @@ class TestGetRealmAndStreamsForArchiving(ZulipTestCase):
 
         self.assert_length(result, len(simple_algorithm_result))
         self.assertEqual(result, simple_algorithm_result)
+
+class TestRestoreStreamMessages(ArchiveMessagesTestingBase):
+    def test_restore_retention_policy_deletions_for_stream(self) -> None:
+        cordelia = self.example_user('cordelia')
+        hamlet = self.example_user('hamlet')
+
+        realm = get_realm("zulip")
+        stream_name = "Denmark"
+        stream = get_stream(stream_name, realm)
+
+        message_ids_to_archive_manually = [
+            self.send_stream_message(cordelia, stream_name, str(i)) for i in range(0, 2)
+        ]
+        usermessage_ids_to_archive_manually = self._get_usermessage_ids(message_ids_to_archive_manually)
+        message_ids_to_archive_by_policy = [
+            self.send_stream_message(hamlet, stream_name, str(i)) for i in range(0, 2)
+        ]
+        usermessage_ids_to_archive_by_policy = self._get_usermessage_ids(message_ids_to_archive_by_policy)
+
+        expected_archived_message_ids = message_ids_to_archive_manually + message_ids_to_archive_by_policy
+        expected_archived_usermessage_ids = usermessage_ids_to_archive_manually + \
+            usermessage_ids_to_archive_by_policy
+
+        self._set_stream_message_retention_value(stream, 5)
+        self._change_messages_date_sent(message_ids_to_archive_by_policy, timezone_now() - timedelta(days=6))
+
+        move_messages_to_archive(message_ids_to_archive_manually)
+        archive_messages()
+
+        self._verify_archive_data(expected_archived_message_ids, expected_archived_usermessage_ids)
+
+        restore_retention_policy_deletions_for_stream(stream)
+
+        # Verify that we restore the stream messages that were archived due to retention policy,
+        # but not the ones manually deleted.
+        self.assert_length(Message.objects.filter(id__in=message_ids_to_archive_by_policy),
+                           len(message_ids_to_archive_by_policy))
+        self.assertFalse(Message.objects.filter(id__in=message_ids_to_archive_manually))
+
 
 class TestDoDeleteMessages(ZulipTestCase):
     def test_do_delete_messages_multiple(self) -> None:
