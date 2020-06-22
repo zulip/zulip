@@ -9,7 +9,7 @@ from django.http import HttpRequest, HttpResponse
 from zerver.lib.management import ZulipBaseCommand
 from zerver.middleware import LogRequests
 from zerver.models import UserMessage, UserProfile
-from zerver.views.messages import get_messages_backend
+from zerver.views.message_fetch import get_messages_backend
 
 request_logger = LogRequests()
 

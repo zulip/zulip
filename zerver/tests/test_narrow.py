@@ -30,7 +30,7 @@ from zerver.models import (
     get_realm,
     get_stream,
 )
-from zerver.views.messages import (
+from zerver.views.message_fetch import (
     LARGER_THAN_MAX_MESSAGE_ID,
     BadNarrowOperator,
     NarrowBuilder,
@@ -66,7 +66,7 @@ def mute_stream(realm: Realm, user_profile: str, stream_name: str) -> None:
 
 def first_visible_id_as(message_id: int) -> Any:
     return mock.patch(
-        'zerver.views.messages.get_first_visible_message_id',
+        'zerver.views.message_fetch.get_first_visible_message_id',
         return_value=message_id,
     )
 

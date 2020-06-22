@@ -24,9 +24,9 @@ import zerver.views.documentation
 import zerver.views.email_mirror
 import zerver.views.home
 import zerver.views.message_edit
+import zerver.views.message_fetch
 import zerver.views.message_flags
 import zerver.views.message_send
-import zerver.views.messages
 import zerver.views.muting
 import zerver.views.portico
 import zerver.views.realm
@@ -195,7 +195,7 @@ v1_api_and_json_patterns = [
     # messages -> zerver.views.message*
     # GET returns messages, possibly filtered, POST sends a message
     url(r'^messages$', rest_dispatch,
-        {'GET': 'zerver.views.messages.get_messages_backend',
+        {'GET': 'zerver.views.message_fetch.get_messages_backend',
          'POST': ('zerver.views.message_send.send_message_backend',
                   {'allow_incoming_webhooks'})}),
     url(r'^messages/(?P<message_id>[0-9]+)$', rest_dispatch,
@@ -209,7 +209,7 @@ v1_api_and_json_patterns = [
     url(r'^messages/(?P<message_id>\d+)/history$', rest_dispatch,
         {'GET': 'zerver.views.message_edit.get_message_edit_history'}),
     url(r'^messages/matches_narrow$', rest_dispatch,
-        {'GET': 'zerver.views.messages.messages_in_narrow_backend'}),
+        {'GET': 'zerver.views.message_fetch.messages_in_narrow_backend'}),
 
     url(r'^users/me/subscriptions/properties$', rest_dispatch,
         {'POST': 'zerver.views.streams.update_subscription_properties_backend'}),
