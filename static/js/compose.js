@@ -1123,7 +1123,9 @@ exports.initialize = function () {
                 );
             }
         } else if (
-            page_params.realm_video_chat_provider === available_providers.big_blue_button.id) {
+            available_providers.big_blue_button
+            && page_params.realm_video_chat_provider === available_providers.big_blue_button.id
+        ) {
 
             channel.get({
                 url: '/json/calls/bigbluebutton/create',
