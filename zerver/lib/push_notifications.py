@@ -698,11 +698,10 @@ def get_remove_payload_apns(user_profile: UserProfile, message_ids: List[int]) -
     return apns_data
 
 def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]) -> None:
-    """This should be called when a message that had previously had a
-    mobile push executed is read.  This triggers a mobile push notifica
-    mobile app when the message is read on the server, to remove the
+    """This should be called when a message that previously had a
+    mobile push notification executed is read.  This triggers a push to the
+    mobile app, when the message is read on the server, to remove the
     message from the notification.
-
     """
     user_profile = get_user_profile_by_id(user_profile_id)
     message_ids = bulk_access_messages_expect_usermessage(user_profile_id, message_ids)
