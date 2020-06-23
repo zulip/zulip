@@ -2,7 +2,7 @@ import json
 import os
 import sys
 from functools import wraps
-from typing import Any, Callable, Dict, Iterable, List, Optional, Set
+from typing import Any, Callable, Dict, Iterable, List, Optional, Set, TypeVar, cast
 
 from zulip import Client
 
@@ -12,27 +12,29 @@ from zerver.openapi.openapi import validate_against_openapi_schema
 
 ZULIP_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-TEST_FUNCTIONS: Dict[str, Callable[..., None]] = dict()
+TEST_FUNCTIONS: Dict[str, Callable[..., object]] = dict()
 REGISTERED_TEST_FUNCTIONS: Set[str] = set()
 CALLED_TEST_FUNCTIONS: Set[str] = set()
 
-def openapi_test_function(endpoint: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+FuncT = TypeVar("FuncT", bound=Callable[..., object])
+
+def openapi_test_function(endpoint: str) -> Callable[[FuncT], FuncT]:
     """This decorator is used to register an openapi test function with
     its endpoint. Example usage:
 
     @openapi_test_function("/messages/render:post")
     def ...
     """
-    def wrapper(test_func: Callable[..., Any]) -> Callable[..., Any]:
+    def wrapper(test_func: FuncT) -> FuncT:
         @wraps(test_func)
-        def _record_calls_wrapper(*args: Any, **kwargs: Any) -> Any:
+        def _record_calls_wrapper(*args: object, **kwargs: object) -> object:
             CALLED_TEST_FUNCTIONS.add(test_func.__name__)
             return test_func(*args, **kwargs)
 
         REGISTERED_TEST_FUNCTIONS.add(test_func.__name__)
         TEST_FUNCTIONS[endpoint] = _record_calls_wrapper
 
-        return _record_calls_wrapper
+        return cast(FuncT, _record_calls_wrapper)  # https://github.com/python/mypy/issues/1927
     return wrapper
 
 def ensure_users(ids_list: List[int], user_names: List[str]) -> None:

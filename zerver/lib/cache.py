@@ -20,6 +20,7 @@ from typing import (
     Sequence,
     Tuple,
     TypeVar,
+    cast,
 )
 
 from django.conf import settings
@@ -39,7 +40,7 @@ if TYPE_CHECKING:
 
 MEMCACHED_MAX_KEY_LENGTH = 250
 
-ReturnT = TypeVar('ReturnT')  # Useful for matching return types via Callable[..., ReturnT]
+FuncT = TypeVar('FuncT', bound=Callable[..., object])
 
 logger = logging.getLogger()
 
@@ -127,15 +128,15 @@ def get_cache_backend(cache_name: Optional[str]) -> BaseCache:
 def get_cache_with_key(
         keyfunc: Callable[..., str],
         cache_name: Optional[str]=None,
-) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]:
+) -> Callable[[FuncT], FuncT]:
     """
     The main goal of this function getting value from the cache like in the "cache_with_key".
     A cache value can contain any data including the "None", so
     here used exception for case if value isn't found in the cache.
     """
-    def decorator(func: Callable[..., ReturnT]) -> (Callable[..., ReturnT]):
+    def decorator(func: FuncT) -> FuncT:
         @wraps(func)
-        def func_with_caching(*args: Any, **kwargs: Any) -> Callable[..., ReturnT]:
+        def func_with_caching(*args: object, **kwargs: object) -> object:
             key = keyfunc(*args, **kwargs)
             try:
                 val = cache_get(key, cache_name=cache_name)
@@ -148,14 +149,14 @@ def get_cache_with_key(
                 return val[0]
             raise NotFoundInCache()
 
-        return func_with_caching
+        return cast(FuncT, func_with_caching)  # https://github.com/python/mypy/issues/1927
 
     return decorator
 
 def cache_with_key(
         keyfunc: Callable[..., str], cache_name: Optional[str]=None,
         timeout: Optional[int]=None, with_statsd_key: Optional[str]=None,
-) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]:
+) -> Callable[[FuncT], FuncT]:
     """Decorator which applies Django caching to a function.
 
        Decorator argument is a function which computes a cache key
@@ -163,9 +164,9 @@ def cache_with_key(
        for avoiding collisions with other uses of this decorator or
        other uses of caching."""
 
-    def decorator(func: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
+    def decorator(func: FuncT) -> FuncT:
         @wraps(func)
-        def func_with_caching(*args: Any, **kwargs: Any) -> ReturnT:
+        def func_with_caching(*args: object, **kwargs: object) -> object:
             key = keyfunc(*args, **kwargs)
 
             try:
@@ -198,7 +199,7 @@ def cache_with_key(
 
             return val
 
-        return func_with_caching
+        return cast(FuncT, func_with_caching)  # https://github.com/python/mypy/issues/1927
 
     return decorator
 

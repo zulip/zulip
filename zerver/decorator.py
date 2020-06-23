@@ -4,7 +4,7 @@ import logging
 import urllib
 from functools import wraps
 from io import BytesIO
-from typing import Any, Callable, Dict, Optional, Tuple, TypeVar, Union
+from typing import Any, Callable, Dict, Optional, Tuple, TypeVar, Union, cast
 
 import django_otp
 import ujson
@@ -61,8 +61,6 @@ else:  # nocoverage # Hack here basically to make impossible code paths compile
     get_remote_server_by_uuid = Mock()
     RemoteZulipServer = Mock()  # type: ignore[misc] # https://github.com/JukkaL/mypy/issues/1188
 
-ReturnT = TypeVar('ReturnT')
-
 webhook_logger = logging.getLogger("zulip.zerver.webhooks")
 log_to_file(webhook_logger, settings.API_KEY_ONLY_WEBHOOK_LOG_PATH)
 
@@ -70,17 +68,19 @@ webhook_unexpected_events_logger = logging.getLogger("zulip.zerver.lib.webhooks.
 log_to_file(webhook_unexpected_events_logger,
             settings.WEBHOOK_UNEXPECTED_EVENTS_LOG_PATH)
 
-def cachify(method: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
-    dct: Dict[Tuple[Any, ...], ReturnT] = {}
+FuncT = TypeVar('FuncT', bound=Callable[..., object])
 
-    def cache_wrapper(*args: Any) -> ReturnT:
+def cachify(method: FuncT) -> FuncT:
+    dct: Dict[Tuple[object, ...], object] = {}
+
+    def cache_wrapper(*args: object) -> object:
         tup = tuple(args)
         if tup in dct:
             return dct[tup]
         result = method(*args)
         dct[tup] = result
         return result
-    return cache_wrapper
+    return cast(FuncT, cache_wrapper)  # https://github.com/python/mypy/issues/1927
 
 def update_user_activity(request: HttpRequest, user_profile: UserProfile,
                          query: Optional[str]) -> None:
@@ -732,19 +732,18 @@ def internal_notify_view(is_tornado_view: bool) -> Callable[[ViewFuncT], ViewFun
 def to_utc_datetime(timestamp: str) -> datetime.datetime:
     return timestamp_to_datetime(float(timestamp))
 
-def statsd_increment(counter: str, val: int=1,
-                     ) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]:
+def statsd_increment(counter: str, val: int=1) -> Callable[[FuncT], FuncT]:
     """Increments a statsd counter on completion of the
     decorated function.
 
     Pass the name of the counter to this decorator-returning function."""
-    def wrapper(func: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
+    def wrapper(func: FuncT) -> FuncT:
         @wraps(func)
-        def wrapped_func(*args: Any, **kwargs: Any) -> ReturnT:
+        def wrapped_func(*args: object, **kwargs: object) -> object:
             ret = func(*args, **kwargs)
             statsd.incr(counter, val)
             return ret
-        return wrapped_func
+        return cast(FuncT, wrapped_func)  # https://github.com/python/mypy/issues/1927
     return wrapper
 
 def rate_limit_user(request: HttpRequest, user: UserProfile, domain: str) -> None:
