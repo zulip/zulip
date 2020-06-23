@@ -16,16 +16,9 @@ function failed_listing_invites(xhr) {
     ui_report.error(i18n.t("Error listing invites"), xhr, $("#invites-field-status"));
 }
 
-exports.invited_as_values = new Map([
-    [100, i18n.t("Organization owner")],
-    [200, i18n.t("Organization administrator")],
-    [400, i18n.t("Member")],
-    [600, i18n.t("Guest")],
-]);
-
 function add_invited_as_text(invites) {
     for (const data of invites) {
-        data.invited_as_text = exports.invited_as_values.get(data.invited_as);
+        data.invited_as_text = settings_config.user_role_map.get(data.invited_as);
     }
 }
 
