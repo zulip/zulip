@@ -127,6 +127,10 @@ h3 .fa-question-circle-o {
     }
 }
 
+.realm-logo-block {
+    display: inline-block;
+}
+
 #change_email_modal {
     width: 460px;
 }
@@ -1199,7 +1203,7 @@ input[type=checkbox] {
     width: 220px;
     height: 55px;
     text-align: center;
-    margin-bottom: 10px;
+    margin: 0px 80px 0px 20px;
 
     .settings-page-upload-text,
     .settings-page-delete-text {
@@ -1214,8 +1218,8 @@ input[type=checkbox] {
     .image_upload_spinner {
         width: 45px;
         height: 55px;
-        top: 30%;
-        right: 30%;
+        top: 5%;
+        right: 40%;
     }
 }
 
