@@ -2,7 +2,19 @@ import logging
 import os
 import random
 import shutil
-from typing import AbstractSet, Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, TypeVar
+from typing import (
+    AbstractSet,
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    TypeVar,
+)
 
 import requests
 import ujson
@@ -576,7 +588,7 @@ def write_avatar_png(avatar_folder: str,
 
 ListJobData = TypeVar('ListJobData')
 def run_parallel_wrapper(f: Callable[[ListJobData], None], full_items: List[ListJobData],
-                         threads: int=6) -> Iterable[Tuple[int, List[ListJobData]]]:
+                         threads: int=6) -> Iterator[Tuple[int, List[ListJobData]]]:
     logging.info("Distributing %s items across %s threads", len(full_items), threads)
 
     def wrapping_function(items: List[ListJobData]) -> int:

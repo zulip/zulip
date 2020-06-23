@@ -34,7 +34,7 @@ import json
 import os
 import re
 from argparse import ArgumentParser
-from typing import Any, Dict, Iterable, List, Mapping
+from typing import Any, Dict, Iterable, Iterator, List, Mapping
 
 from django.core.management.commands import makemessages
 from django.template.base import BLOCK_TAG_END, BLOCK_TAG_START
@@ -205,7 +205,7 @@ class Command(makemessages.Command):
     def get_base_path(self) -> str:
         return self.frontend_output
 
-    def get_output_paths(self) -> Iterable[str]:
+    def get_output_paths(self) -> Iterator[str]:
         base_path = self.get_base_path()
         locales = self.get_locales()
         for path in [os.path.join(base_path, locale) for locale in locales]:
