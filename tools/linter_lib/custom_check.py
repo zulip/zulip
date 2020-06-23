@@ -720,7 +720,7 @@ help_markdown_rules = RuleList(
          'description': "Likely missing space after end of sentence",
          'include_only': {'templates/zerver/help/'},
          },
-        {'pattern': r'\b[rR]ealm[s]?\b',
+        {'pattern': r'(^|[^\w\/-])[rR]ealm[s]?\b',
          'include_only': {'templates/zerver/help/'},
          'good_lines': ['Organization', 'deactivate_realm', 'realm_filter'],
          'bad_lines': ['Users are in a realm', 'Realm is the best model'],
