@@ -1941,6 +1941,13 @@ paths:
                       description: |
                         The user's ID.
                       example: 1
+                    delivery_email:
+                      type: string
+                      description: |
+                        The user's real email address.  This field is present only if
+                        [email address visibility](/help/restrict-visibility-of-email-addresses) is
+                        limited and you are an administrator with access to real email addresses
+                        under the configured policy.
                     profile_data:
                       $ref: '#/components/schemas/profile_data'
                 - example:
@@ -4712,6 +4719,13 @@ components:
           type: string
           description: |
             The time the user account was created.
+        delivery_email:
+          type: string
+          description: |
+            The user's real email address.  This field is present only if
+            [email address visibility](/help/restrict-visibility-of-email-addresses) is
+            limited and you are an administrator with access to real email addresses
+            under the configured policy.
         profile_data:
           $ref: '#/components/schemas/profile_data'
     profile_data:
