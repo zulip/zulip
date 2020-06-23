@@ -115,6 +115,14 @@ export LANGUAGE="en_US.UTF-8"
 if [ -f /etc/os-release ]; then
     os_info="$(. /etc/os-release; printf '%s\n' "$ID" "$ID_LIKE" "$VERSION_ID" "$VERSION_CODENAME")"
     { read -r os_id; read -r os_id_like; read -r os_version_id; read -r os_version_codename || true; } <<< "$os_info"
+    case " $os_id $os_id_like " in
+        *' debian '*)
+            package_system="apt"
+            ;;
+        *' rhel '*)
+            package_system="yum"
+            ;;
+    esac
 fi
 
 case "$os_id$os_version_id" in
@@ -169,15 +177,12 @@ if [ "$mem_kb" -lt 1860000 ]; then
 fi
 
 # Do package update, e.g. do `apt-get update` on Debian
-case " $os_id $os_id_like " in
-    *' debian '*)
-        # setup-apt-repo does an `apt-get update`
-        "$ZULIP_PATH"/scripts/lib/setup-apt-repo
-        ;;
-    *' rhel '*)
-        "$ZULIP_PATH"/scripts/lib/setup-yum-repo
-        ;;
-esac
+if [ "$package_system" = apt ]; then
+    # setup-apt-repo does an `apt-get update`
+    "$ZULIP_PATH"/scripts/lib/setup-apt-repo
+elif [ "$package_system" = yum ]; then
+    "$ZULIP_PATH"/scripts/lib/setup-yum-repo
+fi
 
 # Check early for missing SSL certificates
 if [ "$PUPPET_CLASSES" = "zulip::voyager" ] && [ -z "$USE_CERTBOT""$SELF_SIGNED_CERT" ] && { ! [ -e "/etc/ssl/private/zulip.key" ] || ! [ -e "/etc/ssl/certs/zulip.combined-chain.crt" ]; }; then
@@ -206,49 +211,46 @@ fi
 # don't run dist-upgrade in one click apps to make the
 # installation process more seamless.
 if [ -z "$NO_DIST_UPGRADE" ]; then
-    case " $os_id $os_id_like " in
-        *' debian '*)
-            apt-get -y dist-upgrade "${APT_OPTIONS[@]}"
-            ;;
+    if [ "$package_system" = apt ]; then
+        apt-get -y dist-upgrade "${APT_OPTIONS[@]}"
+    elif [ "$package_system" = yum ]; then
         # On CentOS, there is no need to do `yum -y upgrade` because `yum -y
         # update` already does the same thing.
-    esac
+        :
+    fi
 fi
 
-case " $os_id $os_id_like " in
-    *' debian '*)
-        if [ "$os_id" = ubuntu ] && [ "$os_version_id" = 20.04 ]; then
-            PYTHON2="python2"
-        else
-            PYTHON2="python"
-        fi
+if [ "$package_system" = apt ]; then
+    if [ "$os_id" = ubuntu ] && [ "$os_version_id" = 20.04 ]; then
+        PYTHON2="python2"
+    else
+        PYTHON2="python"
+    fi
 
-        if ! apt-get install -y \
-            puppet git curl wget jq \
-            "$PYTHON2" python3 python-six python3-six crudini \
-            "${ADDITIONAL_PACKAGES[@]}"; then
-            set +x
-            echo -e '\033[0;31m' >&2
-            echo "Installing packages failed; is network working and (on Ubuntu) the universe repository enabled?" >&2
-            echo >&2
-            echo -e '\033[0m' >&2
-            exit 1
-        fi
-        ;;
-    *' rhel '*)
-        if ! yum install -y \
-            puppet git curl wget jq \
-            python python3 python-six python3-six crudini \
-            "${ADDITIONAL_PACKAGES[@]}"; then
-            set +x
-            echo -e '\033[0;31m' >&2
-            echo "Installing packages failed; is network working?" >&2
-            echo >&2
-            echo -e '\033[0m' >&2
-            exit 1
-        fi
-        ;;
-esac
+    if ! apt-get install -y \
+         puppet git curl wget jq \
+         "$PYTHON2" python3 python-six python3-six crudini \
+         "${ADDITIONAL_PACKAGES[@]}"; then
+        set +x
+        echo -e '\033[0;31m' >&2
+        echo "Installing packages failed; is network working and (on Ubuntu) the universe repository enabled?" >&2
+        echo >&2
+        echo -e '\033[0m' >&2
+        exit 1
+    fi
+elif [ "$package_system" = yum ]; then
+    if ! yum install -y \
+         puppet git curl wget jq \
+         python python3 python-six python3-six crudini \
+         "${ADDITIONAL_PACKAGES[@]}"; then
+        set +x
+        echo -e '\033[0;31m' >&2
+        echo "Installing packages failed; is network working?" >&2
+        echo >&2
+        echo -e '\033[0m' >&2
+        exit 1
+    fi
+fi
 
 if [ -n "$USE_CERTBOT" ]; then
     "$ZULIP_PATH"/scripts/setup/setup-certbot \
@@ -309,15 +311,13 @@ EOF
         fi
 
         if [ -e "/etc/init.d/postgresql" ]; then
-            case " $os_id $os_id_like " in
-                *' debian '*)
-                    cat <<EOF
+            if [ "$package_system" = apt ]; then
+                cat <<EOF
 
 [postgresql]
 version = 12
 EOF
-                    ;;
-            esac
+            fi
         fi
     ) > /etc/zulip/zulip.conf
 fi
@@ -340,14 +340,12 @@ esac
 
 "$ZULIP_PATH"/scripts/zulip-puppet-apply -f
 
-case " $os_id $os_id_like " in
-    *' debian '*)
-        SUPERVISOR_CONF_DIR="/etc/supervisor/conf.d"
-        ;;
-    *' rhel '*)
-        SUPERVISOR_CONF_DIR="/etc/supervisord.d/conf.d"
-        ;;
-esac
+if [ "$package_system" = apt ]; then
+    SUPERVISOR_CONF_DIR="/etc/supervisor/conf.d"
+elif [ "$package_system" = yum ]; then
+    SUPERVISOR_CONF_DIR="/etc/supervisord.d/conf.d"
+fi
+
 # Detect which features were selected for the below
 set +e
 [ -e "/etc/init.d/nginx" ]; has_nginx=$?
@@ -369,14 +367,12 @@ if [ -n "$POSTGRES_MISSING_DICTIONARIES" ]; then
 fi
 
 # These server restarting bits should be moveable into puppet-land, ideally
-case " $os_id $os_id_like " in
-    *' debian '*)
-        apt-get -y upgrade
-        ;;
-    *' rhel '*)
-        # No action is required because `yum update` already does upgrade.
-        ;;
-esac
+if [ "$package_system" = apt ]; then
+    apt-get -y upgrade
+elif [ "$package_system" = yum ]; then
+    # No action is required because `yum update` already does upgrade.
+    :
+fi
 
 if [ "$has_nginx" = 0 ]; then
     # Check nginx was configured properly now that we've installed it.
