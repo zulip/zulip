@@ -159,7 +159,7 @@ aliases:
       branches:
         only: master
       command: |
-        if [[ "$CIRCLE_REPOSITORY_URL" == "git@github.com:zulip/zulip.git" ]]; then
+        if [[ "$CIRCLE_REPOSITORY_URL" == "git@github.com:zulip/zulip.git" && "$ZULIP_BOT_KEY" != "" ]]; then
           curl  -H "Content-Type: application/json" \
           -X POST -i 'https://chat.zulip.org/api/v1/external/circleci?api_key='"$ZULIP_BOT_KEY"'&stream=automated%20testing&topic=master%20failing' \
           -d '{"payload": { "branch": "'"$CIRCLE_BRANCH"'", "reponame": "'"$CIRCLE_PROJECT_REPONAME"'", "status": "failed", "build_url": "'"$CIRCLE_BUILD_URL"'", "username": "'"$CIRCLE_USERNAME"'"}}'
