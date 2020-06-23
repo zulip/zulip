@@ -64,11 +64,6 @@ class CommonUtils {
         });
     }
 
-    async set_pm_recipient(page, recipient) {
-        await page.type("#private_message_recipient", recipient);
-        await page.keyboard.press("Enter");
-    }
-
     /**
      * This function takes a params object whose fields
      * are referenced by name attribute of an input field and
@@ -258,7 +253,7 @@ class CommonUtils {
             await page.keyboard.press("KeyX");
             const recipients = params.recipient.split(", ");
             for (let i = 0; i < recipients.length; i += 1) {
-                await this.set_pm_recipient(page, recipients[i]);
+                await this.pm_recipient.set(page, recipients[i]);
             }
             delete params.recipient;
         } else {
