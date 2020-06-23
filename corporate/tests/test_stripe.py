@@ -1860,24 +1860,27 @@ class BillingHelpersTest(ZulipTestCase):
         month_later = datetime(2020, 1, 31, 1, 2, 3, tzinfo=timezone.utc)
         year_later = datetime(2020, 12, 31, 1, 2, 3, tzinfo=timezone.utc)
         test_cases = [
-            # TODO test with Decimal(85), not 85
-            # TODO fix the mypy error by specifying the exact type
             # test all possibilities, since there aren't that many
-            [(True,  CustomerPlan.ANNUAL,  None), (anchor, month_later, year_later, 8000)],  # lint:ignore
-            [(True,  CustomerPlan.ANNUAL,  85),   (anchor, month_later, year_later, 1200)],  # lint:ignore
-            [(True,  CustomerPlan.MONTHLY, None), (anchor, month_later, month_later, 800)],  # lint:ignore
-            [(True,  CustomerPlan.MONTHLY, 85),   (anchor, month_later, month_later, 120)],  # lint:ignore
-            [(False, CustomerPlan.ANNUAL,  None), (anchor, year_later,  year_later, 8000)],  # lint:ignore
-            [(False, CustomerPlan.ANNUAL,  85),   (anchor, year_later,  year_later, 1200)],  # lint:ignore
-            [(False, CustomerPlan.MONTHLY, None), (anchor, month_later, month_later, 800)],  # lint:ignore
-            [(False, CustomerPlan.MONTHLY, 85),   (anchor, month_later, month_later, 120)],  # lint:ignore
+            ((True,  CustomerPlan.ANNUAL,  None),  (anchor, month_later, year_later, 8000)),
+            ((True,  CustomerPlan.ANNUAL,  85),    (anchor, month_later, year_later, 1200)),
+            ((True,  CustomerPlan.MONTHLY, None),  (anchor, month_later, month_later, 800)),
+            ((True,  CustomerPlan.MONTHLY, 85),    (anchor, month_later, month_later, 120)),
+            ((False, CustomerPlan.ANNUAL,  None),  (anchor, year_later,  year_later, 8000)),
+            ((False, CustomerPlan.ANNUAL,  85),    (anchor, year_later,  year_later, 1200)),
+            ((False, CustomerPlan.MONTHLY, None),  (anchor, month_later, month_later, 800)),
+            ((False, CustomerPlan.MONTHLY, 85),    (anchor, month_later, month_later, 120)),
             # test exact math of Decimals; 800 * (1 - 87.25) = 101.9999999..
-            [(False, CustomerPlan.MONTHLY, 87.25), (anchor, month_later, month_later, 102)],
+            ((False, CustomerPlan.MONTHLY, 87.25), (anchor, month_later, month_later, 102)),
             # test dropping of fractional cents; without the int it's 102.8
-            [(False, CustomerPlan.MONTHLY, 87.15), (anchor, month_later, month_later, 102)]]
+            ((False, CustomerPlan.MONTHLY, 87.15), (anchor, month_later, month_later, 102)),
+        ]
         with patch('corporate.lib.stripe.timezone_now', return_value=anchor):
-            for input_, output in test_cases:
-                output_ = compute_plan_parameters(*input_)  # type: ignore[arg-type] # TODO
+            for (automanage_licenses, discount, free_trial), output in test_cases:
+                output_ = compute_plan_parameters(
+                    automanage_licenses,
+                    discount,
+                    None if free_trial is None else Decimal(free_trial),
+                )
                 self.assertEqual(output_, output)
 
     def test_update_or_create_stripe_customer_logic(self) -> None:
