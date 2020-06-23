@@ -618,7 +618,11 @@ exports.get_local_notify_mix_reason = function (message) {
     // offscreen because it is outside narrow
     // we can only look for these on non-search (can_apply_locally) messages
     // see also: exports.notify_messages_outside_current_search
-    return i18n.t("Sent! Your message is outside your current narrow.");
+    const current_filter = narrow_state.filter();
+    if (current_filter && current_filter.can_apply_locally() &&
+        !current_filter.predicate()(message)) {
+        return i18n.t("Sent! Your message is outside your current narrow.");
+    }
 };
 
 exports.notify_local_mixes = function (messages, need_user_to_scroll) {
