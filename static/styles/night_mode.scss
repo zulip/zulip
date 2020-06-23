@@ -785,7 +785,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 }
 
-@-moz-document url-prefix() {
+@supports (-moz-appearance: none) {
     body.night-mode #settings_page select {
         background-color: hsla(0, 0%, 0%, 0.2);
     }
