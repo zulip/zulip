@@ -31,11 +31,9 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         self.assertEqual(last_message.content, "beep boop")
         self.assertEqual(last_message.sender_id, self.bot_profile.id)
         display_recipient = get_display_recipient(last_message.recipient)
-        # The next two lines error on mypy because the display_recipient is of type Union[str, List[Dict[str, Any]]].
-        # In this case, we know that display_recipient will be of type List[Dict[str, Any]].
-        # Otherwise this test will error, which is wanted behavior anyway.
-        self.assert_length(display_recipient, 1)  # type: ignore[arg-type]
-        self.assertEqual(display_recipient[0]['email'], self.user_profile.email)   # type: ignore[index]
+        assert isinstance(display_recipient, list)
+        self.assert_length(display_recipient, 1)
+        self.assertEqual(display_recipient[0]['email'], self.user_profile.email)
 
     def test_stream_message_to_embedded_bot(self) -> None:
         assert self.bot_profile is not None
