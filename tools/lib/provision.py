@@ -88,14 +88,10 @@ else:
 distro_info = parse_os_release()
 vendor = distro_info['ID']
 os_version = distro_info['VERSION_ID']
-if vendor == "debian" and os_version == "10":  # buster
-    POSTGRES_VERSION = "11"
-elif vendor == "ubuntu" and os_version in ["18.04", "18.10"]:  # bionic, cosmic
-    POSTGRES_VERSION = "10"
-elif vendor == "ubuntu" and os_version in ["19.04", "19.10"]:  # disco, eoan
-    POSTGRES_VERSION = "11"
-elif vendor == "ubuntu" and os_version == "20.04":  # focal
-    POSTGRES_VERSION = "12"
+if vendor == "debian" and os_version == "10":
+    POSTGRES_VERSION = "12"  # From postgres apt repo
+elif vendor == "ubuntu" and os_version in ["18.04", "18.10", "19.04", "19.10", "20.04"]:
+    POSTGRES_VERSION = "12"  # From postgres apt repo
 elif vendor == "fedora" and os_version == "29":
     POSTGRES_VERSION = "10"
 elif vendor == "rhel" and os_version.startswith("7."):
@@ -166,9 +162,9 @@ COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
 ] + YUM_THUMBOR_VENV_DEPENDENCIES
 
 BUILD_PGROONGA_FROM_SOURCE = False
-if vendor == 'debian' and os_version in [] or vendor == 'ubuntu' and os_version in []:
-    # For platforms without a pgroonga release, we need to build it
-    # from source.
+if vendor == 'debian' and os_version in ["10"] or vendor == 'ubuntu' and os_version in ["18.04", "18.10", "19.04", "19.10"]:
+    # For platforms without a pgroonga release, or lacking one for
+    # postgres 12, we need to build it from source.
     BUILD_PGROONGA_FROM_SOURCE = True
     SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
         pkg.format(POSTGRES_VERSION) for pkg in [
