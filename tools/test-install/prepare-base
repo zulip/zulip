@@ -10,7 +10,7 @@ RELEASE="$1"
 ARCH=amd64  # TODO: maybe i686 too
 
 case "$RELEASE" in
-    bionic) extra_packages=(virtualenv postgresql-10)
+    bionic) extra_packages=(virtualenv)
         ;;
     *)
         echo "error: unsupported target release: $RELEASE" >&2
