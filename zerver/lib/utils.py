@@ -7,7 +7,7 @@ import re
 import string
 from itertools import zip_longest
 from time import sleep
-from typing import Any, Callable, Iterable, List, Optional, Sequence, Set, Tuple, TypeVar
+from typing import Any, Callable, Iterator, List, Optional, Sequence, Set, Tuple, TypeVar
 
 from django.conf import settings
 
@@ -122,7 +122,7 @@ def has_api_key_format(key: str) -> bool:
 def query_chunker(queries: List[Any],
                   id_collector: Optional[Set[int]]=None,
                   chunk_size: int=1000,
-                  db_chunk_size: Optional[int]=None) -> Iterable[Any]:
+                  db_chunk_size: Optional[int]=None) -> Iterator[Any]:
     '''
     This merges one or more Django ascending-id queries into
     a generator that returns chunks of chunk_size row objects
@@ -149,7 +149,7 @@ def query_chunker(queries: List[Any],
     else:
         id_collector = set()
 
-    def chunkify(q: Any, i: int) -> Iterable[Tuple[int, int, Any]]:
+    def chunkify(q: Any, i: int) -> Iterator[Tuple[int, int, Any]]:
         q = q.order_by('id')
         min_id = -1
         while True:

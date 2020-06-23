@@ -181,7 +181,7 @@ class QueryUtilTest(ZulipTestCase):
             id_collector=all_msg_ids,
             chunk_size=10,  # use a different size each time
         )
-        first_chunk = next(chunker)  # type: ignore[call-overload]
+        first_chunk = next(chunker)
         self.assertEqual(len(first_chunk), 10)
         self.assertEqual(len(all_msg_ids), 10)
         expected_msg = Message.objects.all()[0:10][5]
