@@ -1793,10 +1793,11 @@ input[type=checkbox] {
 }
 
 .modal {
-    box-shadow: 0px 0px 75px hsla(0, 0%, 0%, 0.5);
-    outline: 10000px solid hsla(0, 0%, 0%, 0.3);
+    box-shadow:
+        0px 0px 100px 10000px hsla(0, 0%, 0%, 0.3),
+        0px 0px 50px 10px hsla(0, 0%, 0%, 0.5);
     border: none;
-    border-radius: 0px;
+    border-radius: 5x;
 
     &.fade {
         /* Ensure the modal is entirely off-screen while we fade the background */
