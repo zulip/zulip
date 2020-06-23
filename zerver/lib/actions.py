@@ -4036,7 +4036,7 @@ def do_update_pointer(user_profile: UserProfile, client: Client,
                                    message__id__gt=prev_pointer,
                                    message__id__lte=pointer).extra(where=[UserMessage.where_unread()]) \
             .update(flags=F('flags').bitor(UserMessage.flags.read))
-        do_clear_mobile_push_notifications_for_ids(user_profile, app_message_ids)
+        do_clear_mobile_push_notifications_for_ids([user_profile.id], app_message_ids)
         event_time = timezone_now()
 
         count = len(app_message_ids)
@@ -4089,7 +4089,7 @@ def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
     ).extra(
         where=[UserMessage.where_active_push_notification()],
     ).values_list("message_id", flat=True)[0:10000]
-    do_clear_mobile_push_notifications_for_ids(user_profile, all_push_message_ids)
+    do_clear_mobile_push_notifications_for_ids([user_profile.id], all_push_message_ids)
 
     msgs = UserMessage.objects.filter(
         user_profile=user_profile,
@@ -4158,7 +4158,7 @@ def do_mark_stream_messages_as_read(user_profile: UserProfile,
     event_time = timezone_now()
 
     send_event(user_profile.realm, event, [user_profile.id])
-    do_clear_mobile_push_notifications_for_ids(user_profile, message_ids)
+    do_clear_mobile_push_notifications_for_ids([user_profile.id], message_ids)
 
     do_increment_logging_stat(user_profile, COUNT_STATS['messages_read::hour'],
                               None, event_time, increment=count)
@@ -4166,31 +4166,41 @@ def do_mark_stream_messages_as_read(user_profile: UserProfile,
                               None, event_time, increment=min(1, count))
     return count
 
-def do_clear_mobile_push_notifications_for_ids(user_profile: UserProfile,
+def do_clear_mobile_push_notifications_for_ids(user_profile_ids: List[int],
                                                message_ids: List[int]) -> None:
-    filtered_message_ids = list(UserMessage.objects.filter(
+    # This functions supports clearing notifications for several users
+    # only for the message-edit use case where we'll have a single message_id.
+    assert len(user_profile_ids) == 1 or len(message_ids) == 1
+
+    messages_by_user = defaultdict(list)
+    notifications_to_update = list(UserMessage.objects.filter(
         message_id__in=message_ids,
-        user_profile=user_profile,
+        user_profile_id__in=user_profile_ids,
     ).extra(
         where=[UserMessage.where_active_push_notification()],
-    ).values_list('message_id', flat=True))
+    ).values_list('user_profile_id', 'message_id'))
+    for (user_id, message_id) in notifications_to_update:
+        messages_by_user[user_id].append(message_id)
 
     num_detached = settings.MAX_UNBATCHED_REMOVE_NOTIFICATIONS - 1
-    for message_id in filtered_message_ids[:num_detached]:
-        # Older clients (all clients older than 2019-02-13) will only
-        # see the first message ID in a given notification-message.
-        # To help them out, send a few of these separately.
-        queue_json_publish("missedmessage_mobile_notifications", {
-            "type": "remove",
-            "user_profile_id": user_profile.id,
-            "message_ids": [message_id],
-        })
-    if filtered_message_ids[num_detached:]:
-        queue_json_publish("missedmessage_mobile_notifications", {
-            "type": "remove",
-            "user_profile_id": user_profile.id,
-            "message_ids": filtered_message_ids[num_detached:],
-        })
+    for user_profile_id in user_profile_ids:
+        filtered_message_ids = messages_by_user[user_profile_id]
+        for message_id in filtered_message_ids[:num_detached]:
+            # Older clients (all clients older than 2019-02-13) will only
+            # see the first message ID in a given notification-message.
+            # To help them out, send a few of these separately.
+            queue_json_publish("missedmessage_mobile_notifications", {
+                "type": "remove",
+                "user_profile_id": user_profile_id,
+                "message_ids": [message_id],
+            })
+
+        if filtered_message_ids[num_detached:]:
+            queue_json_publish("missedmessage_mobile_notifications", {
+                "type": "remove",
+                "user_profile_id": user_profile_id,
+                "message_ids": filtered_message_ids[num_detached:],
+            })
 
 def do_update_message_flags(user_profile: UserProfile,
                             client: Client,
@@ -4247,7 +4257,7 @@ def do_update_message_flags(user_profile: UserProfile,
 
     if flag == "read" and operation == "add":
         event_time = timezone_now()
-        do_clear_mobile_push_notifications_for_ids(user_profile, messages)
+        do_clear_mobile_push_notifications_for_ids([user_profile.id], messages)
 
         do_increment_logging_stat(user_profile, COUNT_STATS['messages_read::hour'],
                                   None, event_time, increment=count)
