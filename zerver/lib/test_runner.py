@@ -363,7 +363,8 @@ class ParallelTestSuite(django_runner.ParallelTestSuite):
         # the whole idea here is to monkey-patch that so we can use
         # most of django_runner.ParallelTestSuite with our own suite
         # definitions.
-        self.subsuites = SubSuiteList(self.subsuites)  # type: ignore[has-type] # Type of self.subsuites changes.
+        assert not isinstance(self.subsuites, SubSuiteList)
+        self.subsuites: Union[SubSuiteList, List[TestSuite]] = SubSuiteList(self.subsuites)
 
 def check_import_error(test_name: str) -> None:
     try:
@@ -552,6 +553,7 @@ def get_test_names(suite: Union[TestSuite, ParallelTestSuite]) -> List[str]:
         # first element is the type of TestSuite and the second element is a
         # list of test names in that test suite. See serialize_suite() for the
         # implementation details.
+        assert isinstance(suite.subsuites, SubSuiteList)
         return [name for subsuite in suite.subsuites for name in subsuite[1]]
     else:
         return [full_test_name(t) for t in get_tests_from_suite(suite)]
