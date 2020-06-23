@@ -7,7 +7,7 @@ import pytz
 def get_all_timezones() -> List[str]:
     return sorted(pytz.all_timezones)
 
-def get_timezone(tz: str) -> datetime.tzinfo:
+def get_timezone(tz: str) -> pytz.BaseTzInfo:
     return pytz.timezone(tz)
 
 # This method carefully trims a list of common timezones in the pytz

@@ -2567,8 +2567,7 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(message.content, 'Test message 6')
         local_tz = get_timezone(tz_guess)
-        # Since mypy is not able to recognize localize and normalize as attributes of tzinfo we use ignore.
-        utz_defer_until = local_tz.normalize(local_tz.localize(defer_until))  # type: ignore[attr-defined] # Reason in comment on previous line.
+        utz_defer_until = local_tz.normalize(local_tz.localize(defer_until))
         self.assertEqual(message.scheduled_timestamp,
                          convert_to_UTC(utz_defer_until))
         self.assertEqual(message.delivery_type, ScheduledMessage.SEND_LATER)
@@ -2584,8 +2583,7 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(message.content, 'Test message 7')
         local_tz = get_timezone(user.timezone)
-        # Since mypy is not able to recognize localize and normalize as attributes of tzinfo we use ignore.
-        utz_defer_until = local_tz.normalize(local_tz.localize(defer_until))  # type: ignore[attr-defined] # Reason in comment on previous line.
+        utz_defer_until = local_tz.normalize(local_tz.localize(defer_until))
         self.assertEqual(message.scheduled_timestamp,
                          convert_to_UTC(utz_defer_until))
         self.assertEqual(message.delivery_type, ScheduledMessage.SEND_LATER)

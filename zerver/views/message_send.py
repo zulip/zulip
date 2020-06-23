@@ -144,8 +144,7 @@ def handle_deferred_message(sender: UserProfile, client: Client,
     deliver_at_usertz = deliver_at
     if deliver_at_usertz.tzinfo is None:
         user_tz = get_timezone(local_tz)
-        # Since mypy is not able to recognize localize and normalize as attributes of tzinfo we use ignore.
-        deliver_at_usertz = user_tz.normalize(user_tz.localize(deliver_at))  # type: ignore[attr-defined] # Reason in comment on previous line.
+        deliver_at_usertz = user_tz.normalize(user_tz.localize(deliver_at))
     deliver_at = convert_to_UTC(deliver_at_usertz)
 
     if deliver_at <= timezone_now():
