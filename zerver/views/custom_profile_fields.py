@@ -98,8 +98,8 @@ def create_realm_custom_profile_field(request: HttpRequest,
     validate_custom_profile_field(name, hint, field_type, field_data)
     try:
         if is_default_external_field(field_type, field_data):
-            field_subtype: str = ''
-            field_subtype = field_data['subtype']  # type: ignore[assignment] # key for "Union[Dict[str, str], str]" can be str
+            field_subtype = field_data['subtype']
+            assert isinstance(field_subtype, str)
             field = try_add_realm_default_custom_profile_field(
                 realm=user_profile.realm,
                 field_subtype=field_subtype,
