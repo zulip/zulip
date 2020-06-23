@@ -271,8 +271,8 @@ exports.initiate = function (options) {
     let idle_control;
     const random_variance = util.random_int(0, 1000 * 60 * 5);
     const unconditional_timeout = 1000 * 60 * 30 + random_variance;
-    const composing_timeout     = 1000 * 60 * 7  + random_variance;
-    const home_timeout          = 1000 * 60 * 1  + random_variance;
+    const composing_idle_timeout = 1000 * 60 * 7  + random_variance;
+    const basic_idle_timeout = 1000 * 60 * 1  + random_variance;
     let compose_started_handler;
 
     function reload_from_idle() {
@@ -293,7 +293,7 @@ exports.initiate = function (options) {
         // If the user sends their message or otherwise closes
         // compose, we return them to the not-composing timeouts.
         idle_control.cancel();
-        idle_control = $(document).idle({idle: home_timeout,
+        idle_control = $(document).idle({idle: basic_idle_timeout,
                                          onIdle: reload_from_idle});
         $(document).off('compose_canceled.zulip compose_finished.zulip',
                         compose_done_handler);
@@ -303,7 +303,7 @@ exports.initiate = function (options) {
         // If the user stops being idle and starts composing a
         // message, switch to the compose-open timeouts.
         idle_control.cancel();
-        idle_control = $(document).idle({idle: composing_timeout,
+        idle_control = $(document).idle({idle: composing_idle_timeout,
                                          onIdle: reload_from_idle});
         $(document).off('compose_started.zulip', compose_started_handler);
         $(document).on('compose_canceled.zulip compose_finished.zulip',
@@ -311,12 +311,12 @@ exports.initiate = function (options) {
     };
 
     if (compose_state.composing()) {
-        idle_control = $(document).idle({idle: composing_timeout,
+        idle_control = $(document).idle({idle: composing_idle_timeout,
                                          onIdle: reload_from_idle});
         $(document).on('compose_canceled.zulip compose_finished.zulip',
                        compose_done_handler);
     } else {
-        idle_control = $(document).idle({idle: home_timeout,
+        idle_control = $(document).idle({idle: basic_idle_timeout,
                                          onIdle: reload_from_idle});
         $(document).on('compose_started.zulip', compose_started_handler);
     }
