@@ -1364,7 +1364,7 @@ def social_auth_finish(backend: Any,
     # then call login_or_register_remote_user.
     return redirect_and_log_into_subdomain(result)
 
-class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod):
+class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
     # Whether we expect that the full_name value obtained by the
     # social backend is definitely how the user should be referred to
     # in Zulip, which in turn determines whether we should always show
@@ -1388,7 +1388,7 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod):
         """
         try:
             # Call the auth_complete method of social_core.backends.oauth.BaseOAuth2
-            return super().auth_complete(*args, **kwargs)  # type: ignore[misc] # monkey-patching
+            return super().auth_complete(*args, **kwargs)
         except (AuthFailed, HTTPError) as e:
             # When a user's social authentication fails (e.g. because
             # they did something funny with reloading in the middle of
