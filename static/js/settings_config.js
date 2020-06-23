@@ -191,6 +191,9 @@ exports.user_role_values = {
     },
 };
 
+const user_role_array = Object.values(exports.user_role_values);
+exports.user_role_map = new Map(user_role_array.map(role => [role.code, role.description]));
+
 // NOTIFICATIONS
 
 exports.general_notifications_table_labels = {
