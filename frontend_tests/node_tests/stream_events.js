@@ -9,6 +9,8 @@ set_global('settings_notifications', _settings_notifications);
 zrequire('people');
 zrequire('stream_data');
 zrequire('stream_events');
+zrequire('Filter', 'js/filter');
+zrequire('narrow_state');
 const with_overrides = global.with_overrides;
 
 const george = {
@@ -28,6 +30,13 @@ const frontend = {
 };
 
 stream_data.add_sub(frontend);
+
+
+const frontend_filter_terms = [
+    { operator: 'stream', operand: 'frontend' },
+];
+
+const frontend_filter = new Filter(frontend_filter_terms);
 
 run_test('update_property', () => {
     // Invoke error for non-existent stream/property
@@ -204,10 +213,10 @@ run_test('marked_subscribed', () => {
     stream_data.update_calculated_fields = noop;
 
     set_global('subs', { update_settings_for_subscribed: noop });
-    set_global('narrow_state', { is_for_stream_id: noop });
     set_global('overlays', { streams_open: return_true });
 
     // Test basic dispatching and updating stream color
+    narrow_state.set_current_filter(frontend_filter);
     with_overrides((override) => {
         let args;
         let list_updated = false;
@@ -218,7 +227,6 @@ run_test('marked_subscribed', () => {
         override('stream_color.update_stream_color', noop);
         override('stream_list.add_sidebar_row', stream_list_stub.f);
         override('message_util.do_unread_count_updates', message_util_stub.f);
-        override('narrow_state.is_for_stream_id', () => true);
         override('current_msg_list.update_trailing_bookend', () => {
             list_updated = true;
         });
@@ -235,6 +243,7 @@ run_test('marked_subscribed', () => {
 
         assert.equal(frontend.color, 'blue');
     });
+    narrow_state.reset_current_filter();
 
     // Test assigning generated color
     with_overrides((override) => {
@@ -245,8 +254,8 @@ run_test('marked_subscribed', () => {
             warnings += 1;
         });
 
+        // narrow state is undefined
         global.with_stub((stub) => {
-            override('narrow_state.is_for_stream_id', noop);
             override('message_util.do_unread_count_updates', noop);
             override('stream_list.add_sidebar_row', noop);
             override('stream_color.update_stream_color', noop);
@@ -259,9 +268,8 @@ run_test('marked_subscribed', () => {
         });
     });
 
-    narrow_state.is_for_stream_id = () => false;
-
     // Test assigning subscriber emails
+    // narrow state is undefined
     with_overrides((override) => {
         override('stream_color.update_stream_color', noop);
         override('message_util.do_unread_count_updates', noop);
@@ -337,10 +345,10 @@ run_test('mark_unsubscribed', () => {
     });
 
     // Test update bookend and remove done event
+    narrow_state.set_current_filter(frontend_filter);
     with_overrides((override) => {
         override('stream_data.unsubscribe_myself', noop);
         override('subs.update_settings_for_unsubscribed', noop);
-        override('narrow_state.is_for_stream_id', () => true);
 
         let updated = false;
         override('current_msg_list.update_trailing_bookend', () => {
@@ -357,6 +365,7 @@ run_test('mark_unsubscribed', () => {
         assert.equal(updated, true);
         assert.equal(event_triggered, true);
     });
+    narrow_state.reset_current_filter();
 });
 
 stream_data.clear_subscriptions();
