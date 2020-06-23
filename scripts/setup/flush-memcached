@@ -13,10 +13,11 @@ import pylibmc
 
 from zproject import settings
 
+assert isinstance(settings.CACHES["default"], dict)  # for mypy
 pylibmc.Client(
     [settings.MEMCACHED_LOCATION],
     binary=True,
     username=settings.MEMCACHED_USERNAME,
     password=settings.MEMCACHED_PASSWORD,
-    behaviors=settings.CACHES["default"]["OPTIONS"],  # type: ignore[index] # settings not typed properly
+    behaviors=settings.CACHES["default"]["OPTIONS"],
 ).flush_all()
