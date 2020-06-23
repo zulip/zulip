@@ -179,8 +179,7 @@ def catch_stripe_errors(func: CallableT) -> CallableT:
             if isinstance(e, stripe.error.CardError):
                 # TODO: Look into i18n for this
                 raise StripeCardError('card error', err.get('message'))
-            if isinstance(e, stripe.error.RateLimitError) or \
-               isinstance(e, stripe.error.APIConnectionError):  # nocoverage TODO
+            if isinstance(e, (stripe.error.RateLimitError, stripe.error.APIConnectionError)):  # nocoverage TODO
                 raise StripeConnectionError(
                     'stripe connection error',
                     _("Something went wrong. Please wait a few seconds and try again."))

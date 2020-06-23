@@ -43,7 +43,7 @@ def get_sequence_type_str(x: Sequence[Any]) -> str:
         else:
             return f'{container_type}([{elem_type}, ...])'
 
-expansion_blacklist = [str, bytes]
+expansion_blacklist = (str, bytes)
 
 def get_type_str(x: Any) -> str:
     if x is None:
@@ -58,7 +58,7 @@ def get_type_str(x: Any) -> str:
             return '(' + ', '.join(types) + ')'
     elif isinstance(x, Mapping):
         return get_mapping_type_str(x)
-    elif isinstance(x, Sequence) and not any(isinstance(x, t) for t in expansion_blacklist):
+    elif isinstance(x, Sequence) and not isinstance(x, expansion_blacklist):
         return get_sequence_type_str(x)
     else:
         return type(x).__name__

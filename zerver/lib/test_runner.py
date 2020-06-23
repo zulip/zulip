@@ -102,7 +102,7 @@ def enforce_timely_test_completion(test_method: Callable[..., ReturnT], test_nam
     else:
         max_delay = 0.4  # seconds
 
-    assert isinstance(result, TextTestResult) or isinstance(result, RemoteTestResult)
+    assert isinstance(result, (TextTestResult, RemoteTestResult))
 
     if delay > max_delay:
         msg = f'** Test is TOO slow: {test_name} ({delay:.3f} s)\n'

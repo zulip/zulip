@@ -397,7 +397,7 @@ def check_string_or_int_list(var_name: str, val: object) -> Union[str, List[int]
     return check_list(check_int)(var_name, val)
 
 def check_string_or_int(var_name: str, val: object) -> Union[str, int]:
-    if isinstance(val, str) or isinstance(val, int):
+    if isinstance(val, (str, int)):
         return val
 
     raise ValidationError(_('{var_name} is not a string or integer').format(var_name=var_name))
