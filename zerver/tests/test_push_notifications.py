@@ -561,9 +561,14 @@ class AnalyticsBouncerTest(BouncerTestCase):
             realm=user.realm, modified_user=user, event_type=RealmAuditLog.REALM_LOGO_CHANGED,
             event_time=self.TIME_ZERO, extra_data='data')
 
+        # send_analytics_to_remote_server calls send_to_push_bouncer twice.
+        # We need to distinguish the first and second calls.
+        first_call = True
+
         def check_for_unwanted_data(*args: Any) -> Any:
-            if check_for_unwanted_data.first_call:  # type: ignore[attr-defined]
-                check_for_unwanted_data.first_call = False  # type: ignore[attr-defined]
+            nonlocal first_call
+            if first_call:
+                first_call = False
             else:
                 # Test that we're respecting SYNCED_BILLING_EVENTS
                 self.assertIn(f'"event_type":{RealmAuditLog.USER_REACTIVATED}', str(args))
@@ -573,9 +578,6 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 self.assertNotIn('modified_user', str(args))
             return send_to_push_bouncer(*args)
 
-        # send_analytics_to_remote_server calls send_to_push_bouncer twice.
-        # We need to distinguish the first and second calls.
-        check_for_unwanted_data.first_call = True  # type: ignore[attr-defined]
         with mock.patch('zerver.lib.remote_server.send_to_push_bouncer',
                         side_effect=check_for_unwanted_data):
             send_analytics_to_remote_server()
