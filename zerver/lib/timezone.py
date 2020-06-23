@@ -19,7 +19,6 @@ def _calculate_timezones() -> Dict[str, Union[int, Any]]:
     normal = datetime.datetime(2009, 9, 1)  # Any random date is fine here.
     for str in pytz.all_timezones:
         tz = pytz.timezone(str)
-        offset = tz.utcoffset(normal).seconds  # type: ignore[union-attr] # mypy detects utcoffset returns None.
         timedelta = tz.utcoffset(normal)
         if not timedelta:
             continue
