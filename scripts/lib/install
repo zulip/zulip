@@ -28,6 +28,8 @@ Options:
       install process; used when this command is run once in a highly-controlled
       environment to produce an image which is used elsewhere.  Uncommon.
 
+  --postgres-version=12
+      Sets the version of Postgres that will be installed.
   --postgres-missing-dictionaries
       Set postgresql.missing_dictionaries, which alters the initial database.  Use with
       cloud managed databases like RDS.  Conflicts with --no-overwrite-settings.
@@ -45,7 +47,7 @@ EOF
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgres-missing-dictionaries,no-init-db,no-overwrite-settings,no-dist-upgrade -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgres-version:,postgres-missing-dictionaries,no-init-db,no-overwrite-settings,no-dist-upgrade -n "$0" -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
@@ -58,6 +60,7 @@ while true; do
         --cacert) export CUSTOM_CA_CERTIFICATES="$2"; shift; shift;;
         --self-signed-cert) SELF_SIGNED_CERT=1; shift;;
 
+        --postgres-version) POSTGRES_VERSION="$2"; shift; shift;;
         --postgres-missing-dictionaries) POSTGRES_MISSING_DICTIONARIES=1; shift;;
         --no-init-db) NO_INIT_DB=1; shift;;
 
@@ -85,6 +88,7 @@ DEPLOYMENT_TYPE="${DEPLOYMENT_TYPE:-voyager}"
 # Docker.  Use e.g. zulip::app_frontend for a Zulip frontend server.
 PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::voyager}"
 VIRTUALENV_NEEDED="${VIRTUALENV_NEEDED:-yes}"
+POSTGRES_VERSION="${POSTGRES_VERSION:-12}"
 
 if [ -n "$SELF_SIGNED_CERT" ] && [ -n "$USE_CERTBOT" ]; then
     set +x
@@ -335,7 +339,7 @@ EOF
                     cat <<EOF
 
 [postgresql]
-version = 12
+version = $POSTGRES_VERSION
 EOF
                 fi
                 ;;
