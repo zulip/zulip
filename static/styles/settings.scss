@@ -1713,11 +1713,18 @@ input[type=checkbox] {
         width: auto;
     }
 
+    .custom_user_field_value {
+        box-sizing: border-box;
+        height: inherit;
+        width: 100% !important;
+    }
+
     .custom_user_field {
         padding-bottom: 20px;
 
         textarea {
-            width: 320px;
+            width: 100%;
+            min-width: 320px;
             height: 80px;
         }
 
@@ -1989,7 +1996,6 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 .custom_user_field .pill-container {
     padding: 2px 6px;
     min-height: 24px;
-    max-width: 206px;
     background-color: hsl(0, 0%, 100%);
 
     &:focus-within {
