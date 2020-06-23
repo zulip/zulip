@@ -64,7 +64,6 @@ from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.subdomains import is_root_domain_available
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
-    HostRequestMock,
     avatar_disk_path,
     find_key_by_email,
     get_test_image_file,
@@ -3107,8 +3106,6 @@ class UserSignUpTest(InviteUserBase):
         do_set_realm_property(realm, 'invite_required', False)
         do_set_realm_property(realm, 'emails_restricted_to_domains', True)
 
-        request = HostRequestMock(host = realm.host)
-        request.session = {}  # type: ignore[attr-defined]
         email = 'user@acme.com'
         form = HomepageForm({'email': email}, realm=realm)
         self.assertIn(f"Your email address, {email}, is not in one of the domains",
@@ -3120,8 +3117,6 @@ class UserSignUpTest(InviteUserBase):
         realm.disallow_disposable_email_addresses = True
         realm.save()
 
-        request = HostRequestMock(host = realm.host)
-        request.session = {}  # type: ignore[attr-defined]
         email = 'abc@mailnator.com'
         form = HomepageForm({'email': email}, realm=realm)
         self.assertIn("Please use your real email address", form.errors['email'][0])
@@ -3131,8 +3126,6 @@ class UserSignUpTest(InviteUserBase):
         realm.emails_restricted_to_domains = True
         realm.save()
 
-        request = HostRequestMock(host = realm.host)
-        request.session = {}  # type: ignore[attr-defined]
         email = 'iago+label@zulip.com'
         form = HomepageForm({'email': email}, realm=realm)
         self.assertIn("Email addresses containing + are not allowed in this organization.", form.errors['email'][0])
@@ -3141,16 +3134,12 @@ class UserSignUpTest(InviteUserBase):
         realm = get_realm('zulip')
         realm.invite_required = True
         realm.save()
-        request = HostRequestMock(host = realm.host)
-        request.session = {}  # type: ignore[attr-defined]
         email = 'user@zulip.com'
         form = HomepageForm({'email': email}, realm=realm)
         self.assertIn(f"Please request an invite for {email} from",
                       form.errors['email'][0])
 
     def test_failed_signup_due_to_nonexistent_realm(self) -> None:
-        request = HostRequestMock(host = 'acme.' + settings.EXTERNAL_HOST)
-        request.session = {}  # type: ignore[attr-defined]
         email = 'user@acme.com'
         form = HomepageForm({'email': email}, realm=None)
         self.assertIn("organization you are trying to join using {} does "
