@@ -13,6 +13,7 @@ def set_color_scheme_to_night_mode(apps: StateApps, schema_editor: DatabaseSchem
     UserProfile.objects.filter(night_mode=True).update(color_scheme=COLOR_SCHEME_NIGHT)
 
 class Migration(migrations.Migration):
+    atomic = False
 
     dependencies = [
         ('zerver', '0289_tighten_attachment_size'),
