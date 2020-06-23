@@ -19,7 +19,7 @@ if __name__ == "__main__":
         with open(dockerfile_path, "w") as f:
             f.write("""\
 # THIS IS A GENERATED FILE. DO NOT EDIT.
-# See template: tools/circleci/Dockerfile.template
+# See template: tools/ci/Dockerfile.template
 
 """)
             f.write(docker_template.format_map(dockerfile_settings[distro]))

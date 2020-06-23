@@ -168,7 +168,7 @@ aliases:
 jobs:
   "bionic-backend-frontend":
     docker:
-      # This is built from tools/circleci/images/bionic/Dockerfile .
+      # This is built from tools/ci/images/bionic/Dockerfile .
       # Bionic ships with Python 3.6.
       - image: arpit551/circleci:bionic-python-test
 
@@ -218,7 +218,7 @@ jobs:
 
   "focal-backend":
       docker:
-        # This is built from tools/circleci/images/focal/Dockerfile.
+        # This is built from tools/ci/images/focal/Dockerfile.
         # Focal ships with Python 3.8.2.
         - image: arpit551/circleci:focal-python-test
 
@@ -256,7 +256,7 @@ jobs:
 
   "bionic-production-build":
     docker:
-        # This is built from tools/circleci/images/bionic/Dockerfile .
+        # This is built from tools/ci/images/bionic/Dockerfile .
         # Bionic ships with Python 3.6.
         - image: arpit551/circleci:bionic-python-test
 
@@ -296,7 +296,7 @@ jobs:
 
   "bionic-production-install":
     docker:
-        # This is built from tools/circleci/images/bionic/Dockerfile .
+        # This is built from tools/ci/images/bionic/Dockerfile .
         # Bionic ships with Python 3.6.
         - image: arpit551/circleci:bionic-python-test
 
@@ -318,7 +318,7 @@ jobs:
 
   "focal-production-install":
     docker:
-        # This is built from tools/circleci/images/focal/Dockerfile.
+        # This is built from tools/ci/images/focal/Dockerfile.
         # Focal ships with Python 3.8.2.
         - image: arpit551/circleci:focal-python-test
 

@@ -20,12 +20,12 @@
 # (but much simpler, with a couple of packages from the distro), and
 # then borrows from the CircleCI Dockerfile.
 
-# To rebuild from this file for a given release, say trusty:
-#   0. $ tools/circleci/generate-dockerfiles
-#   1. pick a new image name, like `gregprice/circleci:trusty-python-3.test`
-#   2. $ sudo docker build tools/circleci/images/$RELEASE/ --tag $NAME
+# To rebuild from this file for a given release, say bionic:
+#   0. $ tools/ci/generate-dockerfiles
+#   1. pick a new image name, like `gregprice/actions:bionic`
+#   2. $ sudo docker build tools/ci/images/$RELEASE/ --tag $NAME
 #   3. $ sudo docker push $NAME
-#   4. update .circleci/config.yml to refer to the new name
+#   4. update .github/workflows/zulip-ci.yml to refer to the new name
 
 FROM {base_image}
 
