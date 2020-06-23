@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Any, Callable, Dict
+from typing import Any, Dict, cast
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
@@ -8,33 +8,32 @@ from django.utils.module_loading import import_string
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 from zerver.decorator import (
-    ReturnT,
     authenticated_json_view,
     authenticated_rest_api_view,
     authenticated_uploads_api_view,
     process_as_post,
 )
 from zerver.lib.response import json_method_not_allowed, json_unauthorized
+from zerver.lib.types import ViewFuncT
 
 METHODS = ('GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH')
 FLAGS = ('override_api_url_scheme')
 
-def default_never_cache_responses(
-        view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+def default_never_cache_responses(view_func: ViewFuncT) -> ViewFuncT:
     """Patched version of the standard Django never_cache_responses
     decorator that adds headers to a response so that it will never be
     cached, unless the view code has already set a Cache-Control
     header.
     """
     @wraps(view_func)
-    def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> ReturnT:
+    def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
         response = view_func(request, *args, **kwargs)
         if response.has_header("Cache-Control"):
             return response
 
         add_never_cache_headers(response)
         return response
-    return _wrapped_view_func
+    return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
 
 @default_never_cache_responses
 @csrf_exempt
