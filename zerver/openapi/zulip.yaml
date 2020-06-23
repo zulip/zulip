@@ -401,6 +401,17 @@ paths:
                               uploaded file.
                             items:
                               type: object
+                              properties:
+                                name:
+                                  type: number
+                                  description: |
+                                    Time when the message was sent as a UNIX timestamp
+                                    multiplied by 1000 (matching the format of getTime() in JavaScript).
+                                id:
+                                  type: integer
+                                  description: |
+                                    The unique message ID.  Messages should always be
+                                    displayed sorted by ID.
                     upload_space_used:
                       type: integer
                       description: |
@@ -420,11 +431,11 @@ paths:
                                 "messages": [
                                     {
                                         "id": 102,
-                                        "name": 1588145424000
+                                        "name": 1588145424000.0
                                     },
                                     {
                                         "id": 103,
-                                        "name": 1588145448000
+                                        "name": 1588145448000.0
                                     }
                                 ]
                             }
@@ -591,172 +602,7 @@ paths:
                         an array of `message` objects, each containing the following
                         fields:
                       items:
-                        type: object
-                        properties:
-                          avatar_url:
-                            type: string
-                            nullable: true
-                            description: |
-                              The URL of the user's avatar.  Can be null only if client_gravatar was passed,
-                              which means that the user has not uploaded an avatar in Zulip, and the
-                              client should compute the gravatar URL by hashing the
-                              user's email address itself for this user.
-                          client:
-                            type: string
-                            description: |
-                              A Zulip "client" string, describing what Zulip client
-                              sent the message.
-                          content:
-                            type: string
-                            description: |
-                              The content/body of the message.
-                          content_type:
-                            type: string
-                            description: |
-                              The HTTP `content_type` for the message content.  This
-                              will be `text/html` or `text/x-markdown`, depending on
-                              whether `apply_markdown` was set.
-                          display_recepient:
-                            oneOf:
-                            - type: string
-                            - type: array
-                              items:
-                                type: object
-                            description: |
-                              Data on the recipient of the message;
-                              either the name of a stream or a dictionary containing basic data on
-                              the users who received the message.
-                          flags:
-                            type: array
-                            description: |
-                              The user's [message flags][message-flags] for the message.
-                            items:
-                              type: string
-                          id:
-                            type: integer
-                            description: |
-                              The unique message ID.  Messages should always be
-                              displayed sorted by ID.
-                          is_me_message:
-                            type: boolean
-                            description: |
-                              Whether the message is a [/me status message][status-messages]
-                          reactions:
-                            type: array
-                            description: |
-                              Data on any reactions to the message.
-                            items:
-                              type: object
-                              properties:
-                                emoji_code:
-                                  type: string
-                                  description: |
-                                    A unique identifier, defining the specific emoji codepoint requested,
-                                    within the namespace of the `reaction_type`.
-
-                                    For example, for `unicode_emoji`, this will be an encoding of the
-                                    unicode codepoint.
-                                emoji_name:
-                                  type: string
-                                  description: |
-                                    Name of the emoji.
-                                reaction_type:
-                                  type: string
-                                  description: |
-                                    One of the following values:
-
-                                    * `unicode_emoji`: Unicode emoji (`emoji_code` will be its unicode
-                                      codepoint).
-                                    * `realm_emoji`: [Custom emoji](/help/add-custom-emoji).
-                                      (`emoji_code` will be its ID).
-                                    * `zulip_extra_emoji`: Special emoji included with Zulip.  Exists to
-                                      namespace the `zulip` emoji.
-                                user_id:
-                                  type: integer
-                                  description: |
-                                    The ID of the user who added the reaction.
-
-                                    **Changes**: New in Zulip 2.2 (feature level 2). The `user`
-                                    object is deprecated and will be removed in the future.
-                                user:
-                                  type: object
-                                  description: |
-                                    Dictionary with data on the user who added the reaction, including
-                                    the user ID as the `id` field.  **Note**: In the [events
-                                    API](/api/get-events), this `user` dictionary
-                                    confusing had the user ID in a field called `user_id`
-                                    instead.  We recommend ignoring fields other than the user
-                                    ID.  **Deprecated** and to be removed in a future release
-                                    once core clients have migrated to use the `user_id` field.
-                          recipient_id:
-                            type: integer
-                            description: |
-                              A unique ID for the set of users receiving the
-                              message (either a stream or group of users).  Useful primarily
-                              for hashing.
-                          sender_email:
-                            type: string
-                            description: |
-                              The Zulip display email address of the message's sender.
-                          sender_full_name:
-                            type: string
-                            description: |
-                              The full name of the message's sender.
-                          sender_id:
-                            type: integer
-                            description: |
-                              The user ID of the message's sender.
-                          sender_realm_str:
-                            type: string
-                            description: |
-                              A string identifier for the realm the sender is in.  Unique only within
-                              the context of a given Zulip server.
-
-                              E.g. on `example.zulip.com`, this will be `example`.
-                          sender_short_name:
-                            type: string
-                            description: |
-                              Reserved for future use.
-                          stream_id:
-                            type: integer
-                            description: |
-                              Only present for stream messages; the ID of the stream.
-                          subject:
-                            type: string
-                            description: |
-                             The `topic` of the message (only present for stream
-                             messages).  The field name is a legacy holdover from when topics were
-                             called "subjects" and will eventually change.
-                          topic_links:
-                            type: array
-                            items:
-                              type: string
-                            description: |
-                              Data on any links to be included in the `topic`
-                              line (these are generated by [custom linkification
-                              filters][linkification-filters] that match content in the
-                              message's topic.)
-
-                              **Changes**: New in Zulip 2.2 (feature level 1).
-                              Previously, this field was called `subject_links`;
-                              clients are recommended to rename `subject_links`
-                              to `topic_links` if present for compatibility with
-                              older Zulip servers.
-                          submessages:
-                            type: array
-                            items:
-                              type: string
-                            description: |
-                              Data used for certain experimental Zulip integrations.
-                          timestamp:
-                            type: integer
-                            description: |
-                              The UNIX timestamp for when the message was sent,
-                              in UTC seconds.
-                          type:
-                            type: string
-                            description: |
-                              The type of the message: `stream` or `private`.
+                       $ref: '#/components/schemas/Messages'
                 - example:
                     {
                         "anchor": 21,
@@ -889,6 +735,11 @@ paths:
                       type: integer
                       description: |
                         The unique ID assigned to the sent message.
+                    deliver_at:
+                      type: string
+                      description: |
+                        The datetime of when the message was sent.
+                      example: "2020-06-24 11:19:54.337533+00:00"
                 - example:
                     {
                         "msg": "",
@@ -3952,6 +3803,10 @@ paths:
 
                               **Changes**: Deprecated in Zulip 2.2 (feature level 1), use
                               `stream_post_policy` instead.
+                          is_default:
+                            type: boolean
+                            description: |
+                              Whether the given stream is the default stream or not.
                 - example:
                     {
                         "msg": "",
@@ -4434,66 +4289,59 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                - $ref: '#/components/schemas/JsonSuccess'
-                - properties:
-                    data:
-                      type: string
-                      description: |
-                        It contains the content of the message (in Markdown).
-                    trigger:
-                      type: string
-                      description: |
-                        It contains the trigger method.
-                    token:
-                      type: string
-                      description: |
-                        A string of alphanumeric characters that can be use to authenticate the
-                        webhook request (each bot user uses a fixed token).
-                    message:
-                      type: object
-                      description: |
-                        A dict containing details on the message which triggered the outgoing
-                        webhook
-                    bot_email:
-                      type: string
-                      description: |
-                        Email of the bot user
-                - example:
-                    {
-                        "data": "@**Outgoing Webhook Test** Zulip is the world\u2019s most productive group chat!",
-                        "trigger": "mention",
-                        "token": "xvOzfurIutdRRVLzpXrIIHXJvNfaJLJ0",
-                        "message": {
-                            "subject": "Verona2",
-                            "sender_email": "iago@zulip.com",
-                            "timestamp": 1527876931,
-                            "client": "website",
-                            "submessages": [
-
-                            ],
-                            "recipient_id": 20,
-                            "topic_links": [
-
-                            ],
-                            "sender_full_name": "Iago",
-                            "avatar_url": "https://secure.gravatar.com/avatar/1f4f1575bf002ae562fea8fc4b861b09?d=identicon&version=1",
-                            "rendered_content": "<p><span class=\"user-mention\" data-user-id=\"25\">@Outgoing Webhook Test</span> Zulip is the world\u2019s most productive group chat!</p>",
-                            "sender_id": 5,
-                            "stream_id": 5,
-                            "content": "@**Outgoing Webhook Test** Zulip is the world\u2019s most productive group chat!",
-                            "display_recipient": "Verona",
-                            "type": "stream",
-                            "id": 112,
-                            "is_me_message": false,
-                            "reactions": [
-
-                            ],
-                            "sender_realm_str": "zulip",
-                            "sender_short_name": "iago"
-                        },
-                        "bot_email": "outgoing-bot@localhost"
-                    }
+                properties:
+                  data:
+                    type: string
+                    description: |
+                      It contains the content of the message (in Markdown).
+                  trigger:
+                    type: string
+                    description: |
+                      It contains the trigger method.
+                  token:
+                    type: string
+                    description: |
+                      A string of alphanumeric characters that can be use to authenticate the
+                      webhook request (each bot user uses a fixed token).
+                  message:
+                    allOf:
+                    - description: |
+                        A dict containing details on the message which triggered the
+                        outgoing webhook
+                    - $ref: '#/components/schemas/Messages'
+                  bot_email:
+                    type: string
+                    description: |
+                      Email of the bot user
+                example:
+                  {
+                      "data": "@**Outgoing Webhook Test** Zulip is the world\u2019s most productive group chat!",
+                      "trigger": "mention",
+                      "token": "xvOzfurIutdRRVLzpXrIIHXJvNfaJLJ0",
+                      "message": {
+                          "subject": "Verona2",
+                          "sender_email": "iago@zulip.com",
+                          "timestamp": 1527876931,
+                          "client": "website",
+                          "submessages": [],
+                          "recipient_id": 20,
+                          "topic_links": [],
+                          "sender_full_name": "Iago",
+                          "avatar_url": "https://secure.gravatar.com/avatar/1f4f1575bf002ae562fea8fc4b861b09?d=identicon&version=1",
+                          "rendered_content": "<p><span class=\"user-mention\" data-user-id=\"25\">@Outgoing Webhook Test</span> Zulip is the world\u2019s most productive group chat!</p>",
+                          "sender_id": 5,
+                          "stream_id": 5,
+                          "content": "@**Outgoing Webhook Test** Zulip is the world\u2019s most productive group chat!",
+                          "display_recipient": "Verona",
+                          "type": "stream",
+                          "id": 112,
+                          "is_me_message": false,
+                          "reactions": [],
+                          "sender_realm_str": "zulip",
+                          "sender_short_name": "iago"
+                      },
+                      "bot_email": "outgoing-bot@localhost"
+                  }
 
   /calls/bigbluebutton/create:
     get:
@@ -4508,13 +4356,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/JsonSuccess'
-                example:
-                  {
-                    "msg": "",
-                    "result": "success",
-                    "url": "/calls/bbb/join?meeting_id=%22zulip-something%22&password=%22something%22&checksum=%22somechecksum%22"
-                  }
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    url:
+                      description: |
+                        The url for the Big Blue Button video call.
+                      type: string
+                      example: "/calls/bbb/join?meeting_id=%22zulip-something%22&password=%22something%22&checksum=%22somechecksum%22"
+                - example:
+                    {
+                        "msg": "",
+                        "result": "success",
+                        "url": "/calls/bbb/join?meeting_id=%22zulip-something%22&password=%22something%22&checksum=%22somechecksum%22"
+                    }
 
 components:
   #######################
@@ -4530,6 +4385,236 @@ components:
         `/fetch_api_key` or `/dev_fetch_api_key` endpoints.
 
   schemas:
+    Messages:
+      type: object
+      properties:
+        avatar_url:
+          type: string
+          nullable: true
+          description: |
+            The URL of the user's avatar.  Can be null only if client_gravatar was passed,
+            which means that the user has not uploaded an avatar in Zulip, and the
+            client should compute the gravatar URL by hashing the
+            user's email address itself for this user.
+        client:
+          type: string
+          description: |
+            A Zulip "client" string, describing what Zulip client
+            sent the message.
+        content:
+          type: string
+          description: |
+            The content/body of the message.
+        rendered_content:
+          type: string
+          description: |
+            The content/body of the message rendered in HTML.
+        content_type:
+          type: string
+          description: |
+            The HTTP `content_type` for the message content.  This
+            will be `text/html` or `text/x-markdown`, depending on
+            whether `apply_markdown` was set.
+        display_recipient:
+          oneOf:
+          - type: string
+          - type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  description: |
+                    ID of the user.
+                email:
+                  type: string
+                  description: |
+                    Email of the user.
+                full_name:
+                  type: string
+                  description: |
+                    Full name of the user.
+                short_name:
+                  type: string
+                  description: |
+                    Short name of the user.
+                is_mirror_dummy:
+                  type: boolean
+                  description: |
+                    Whether the user is a mirror dummy.
+          description: |
+            Data on the recipient of the message;
+            either the name of a stream or a dictionary containing basic data on
+            the users who received the message.
+        flags:
+          type: array
+          description: |
+            The user's [message flags][message-flags] for the message.
+          items:
+            type: string
+        id:
+          type: integer
+          description: |
+            The unique message ID.  Messages should always be
+            displayed sorted by ID.
+        is_me_message:
+          type: boolean
+          description: |
+            Whether the message is a [/me status message][status-messages]
+        reactions:
+          type: array
+          description: |
+            Data on any reactions to the message.
+          items:
+            type: object
+            properties:
+              emoji_code:
+                type: string
+                description: |
+                  A unique identifier, defining the specific emoji codepoint requested,
+                  within the namespace of the `reaction_type`.
+
+                  For example, for `unicode_emoji`, this will be an encoding of the
+                  unicode codepoint.
+              emoji_name:
+                type: string
+                description: |
+                  Name of the emoji.
+              reaction_type:
+                type: string
+                description: |
+                  One of the following values:
+
+                  * `unicode_emoji`: Unicode emoji (`emoji_code` will be its unicode
+                    codepoint).
+                  * `realm_emoji`: [Custom emoji](/help/add-custom-emoji).
+                    (`emoji_code` will be its ID).
+                  * `zulip_extra_emoji`: Special emoji included with Zulip.  Exists to
+                    namespace the `zulip` emoji.
+              user_id:
+                type: integer
+                description: |
+                  The ID of the user who added the reaction.
+
+                  **Changes**: New in Zulip 2.2 (feature level 2). The `user`
+                  object is deprecated and will be removed in the future.
+              user:
+                type: object
+                description: |
+                  Dictionary with data on the user who added the reaction, including
+                  the user ID as the `id` field.  **Note**: In the [events
+                  API](/api/get-events), this `user` dictionary
+                  confusing had the user ID in a field called `user_id`
+                  instead.  We recommend ignoring fields other than the user
+                  ID.  **Deprecated** and to be removed in a future release
+                  once core clients have migrated to use the `user_id` field.
+                properties:
+                  id:
+                    type: integer
+                    description: |
+                      ID of the user.
+                  email:
+                    type: string
+                    description: |
+                      Email of the user.
+                  full_name:
+                    type: string
+                    description: |
+                      Full name of the user.
+                  short_name:
+                    type: string
+                    description: |
+                      Short name of the user.
+                  is_mirror_dummy:
+                    type: boolean
+                    description: |
+                      Whether the user is a mirror dummy.
+        recipient_id:
+          type: integer
+          description: |
+            A unique ID for the set of users receiving the
+            message (either a stream or group of users).  Useful primarily
+            for hashing.
+        sender_email:
+          type: string
+          description: |
+            The Zulip display email address of the message's sender.
+        sender_full_name:
+          type: string
+          description: |
+            The full name of the message's sender.
+        sender_id:
+          type: integer
+          description: |
+            The user ID of the message's sender.
+        sender_realm_str:
+          type: string
+          description: |
+            A string identifier for the realm the sender is in.  Unique only within
+            the context of a given Zulip server.
+
+            E.g. on `example.zulip.com`, this will be `example`.
+        sender_short_name:
+          type: string
+          description: |
+            Reserved for future use.
+        stream_id:
+          type: integer
+          description: |
+            Only present for stream messages; the ID of the stream.
+        subject:
+          type: string
+          description: |
+           The `topic` of the message (only present for stream
+           messages).  The field name is a legacy holdover from when topics were
+           called "subjects" and will eventually change.
+        topic_links:
+          type: array
+          items:
+            type: string
+          description: |
+            Data on any links to be included in the `topic`
+            line (these are generated by [custom linkification
+            filters][linkification-filters] that match content in the
+            message's topic.)
+
+            **Changes**: New in Zulip 2.2 (feature level 1).
+            Previously, this field was called `subject_links`;
+            clients are recommended to rename `subject_links`
+            to `topic_links` if present for compatibility with
+            older Zulip servers.
+        submessages:
+          type: array
+          items:
+            type: string
+          description: |
+            Data used for certain experimental Zulip integrations.
+        timestamp:
+          type: integer
+          description: |
+            The UNIX timestamp for when the message was sent,
+            in UTC seconds.
+        last_edit_timestamp:
+          type: integer
+          description: |
+            The UNIX timestamp for when the message was last edited,
+            in UTC seconds.
+        type:
+          type: string
+          description: |
+            The type of the message: `stream` or `private`.
+        match_content:
+          type: string
+          description: |
+            HTML content of a queried message that matches the narrow.  If the
+            narrow is a search narrow, `<span class="highlight">` elements
+            will be included, wrapping the matches for the search keywords.
+        match_subject:
+          type: string
+          description: |
+            HTML-escaped topic of a queried message that matches the narrow.  If the
+            narrow is a search narrow, `<span class="highlight">` elements
+            will be included wrapping the matches for the search keywords.
     User:
       type: object
       description: |
@@ -4685,7 +4770,6 @@ components:
       - $ref: '#/components/schemas/JsonSuccess'
       - required:
         - api_key
-        - email
       - properties:
           api_key:
             type: string

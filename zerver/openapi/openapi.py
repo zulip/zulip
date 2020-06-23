@@ -12,12 +12,6 @@ OPENAPI_SPEC_PATH = os.path.abspath(os.path.join(
 # The validator will ignore these keys when they appear in the "content"
 # passed.
 EXCLUDE_PROPERTIES = {
-    '/attachments': {
-        'get': {
-            # messages is a small opaque object; should be easy to document
-            '200': ['messages'],
-        }
-    },
     '/events': {
         'get': {
             # Array with opaque object
@@ -38,17 +32,6 @@ EXCLUDE_PROPERTIES = {
                     'realm_name_in_notifications', 'presence_enabled'],
         },
     },
-    '/streams': {
-        'get': {
-            # Some responses contain undocumented keys
-            '200': ['is_default'],
-        }
-    },
-    '/zulip-outgoing-webhook': {
-        'post': {
-            '200': ['result', 'msg', 'message'],
-        },
-    },
     '/users': {
         'get': {
             '200': ['delivery_email'],
@@ -65,33 +48,6 @@ EXCLUDE_PROPERTIES = {
             # Some responses contain undocumented keys
             '200': ['delivery_email'],
         },
-        'delete': {
-            # Some responses contain undocumented keys
-            '200': ['delivery_email'],
-        }
-    },
-    '/fetch_api_key': {
-        'post': {
-            # Required key not present in response
-            '200': ['email'],
-        }
-    },
-    '/messages': {
-        'get': {
-            # Some responses contain undocumented keys and
-            # 'user' is opaque
-            '200': ['last_edit_timestamp', 'display_recipient',
-                    'match_content', 'match_subject', 'user'],
-        },
-        'post': {
-            # Extraneous
-            '200': ['deliver_at'],
-        }
-    },
-    '/calls/bigbluebutton/create': {
-        'get': {
-            '200': ['url']
-        }
     },
 }
 
