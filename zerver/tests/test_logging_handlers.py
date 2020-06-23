@@ -13,7 +13,7 @@ from django.utils.log import AdminEmailHandler
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.types import ViewFuncT
-from zerver.logging_handlers import AdminNotifyHandler
+from zerver.logging_handlers import AdminNotifyHandler, HasRequest
 
 captured_request: Optional[HttpRequest] = None
 captured_exc_info: Tuple[Optional[Type[BaseException]], Optional[BaseException], Optional[TracebackType]] = None
@@ -78,9 +78,16 @@ class AdminNotifyHandlerTest(ZulipTestCase):
             self.assert_json_error(result, "Internal server error", status_code=500)
             rate_limit_patch.assert_called_once()
 
-        record = self.logger.makeRecord('name', logging.ERROR, 'function', 15,
-                                        'message', {}, captured_exc_info)
-        record.request = captured_request  # type: ignore[attr-defined] # this field is dynamically added
+        record = self.logger.makeRecord(
+            'name',
+            logging.ERROR,
+            'function',
+            15,
+            'message',
+            {},
+            captured_exc_info,
+            extra={"request": captured_request},
+        )
         return record
 
     def run_handler(self, record: logging.LogRecord) -> Dict[str, Any]:
@@ -109,6 +116,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         mock_function.return_value = None
         """A normal request is handled properly"""
         record = self.simulate_error()
+        assert isinstance(record, HasRequest)
 
         report = self.run_handler(record)
         self.assertIn("user_email", report)
@@ -125,7 +133,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertEqual(report["stack_trace"], "See /var/log/zulip/errors.log")
 
         # Check anonymous user is handled correctly
-        record.request.user = AnonymousUser()  # type: ignore[attr-defined] # this field is dynamically added
+        record.request.user = AnonymousUser()
         report = self.run_handler(record)
         self.assertIn("host", report)
         self.assertIn("user_email", report)
@@ -135,10 +143,10 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         # Now simulate a DisallowedHost exception
         def get_host_error() -> None:
             raise Exception("Get Host Failure!")
-        orig_get_host = record.request.get_host  # type: ignore[attr-defined] # this field is dynamically added
-        record.request.get_host = get_host_error  # type: ignore[attr-defined] # this field is dynamically added
+        orig_get_host = record.request.get_host
+        record.request.get_host = get_host_error
         report = self.run_handler(record)
-        record.request.get_host = orig_get_host  # type: ignore[attr-defined] # this field is dynamically added
+        record.request.get_host = orig_get_host
         self.assertIn("host", report)
         self.assertIn("user_email", report)
         self.assertIn("message", report)
@@ -147,9 +155,9 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         # Test an exception_filter exception
         with patch("zerver.logging_handlers.get_exception_reporter_filter",
                    return_value=15):
-            record.request.method = "POST"  # type: ignore[attr-defined] # this field is dynamically added
+            record.request.method = "POST"
             report = self.run_handler(record)
-            record.request.method = "GET"  # type: ignore[attr-defined] # this field is dynamically added
+            record.request.method = "GET"
         self.assertIn("host", report)
         self.assertIn("user_email", report)
         self.assertIn("message", report)
@@ -173,7 +181,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertEqual(report["stack_trace"], 'No stack trace available')
 
         # Test arbitrary exceptions from request.user
-        record.request.user = None  # type: ignore[attr-defined] # this field is dynamically added
+        record.request.user = None
         with patch("zerver.logging_handlers.traceback.print_exc"):
             report = self.run_handler(record)
         self.assertIn("host", report)

@@ -10,6 +10,7 @@ from urllib.parse import SplitResult
 from django.conf import settings
 from django.http import HttpRequest
 from django.views.debug import get_exception_reporter_filter
+from typing_extensions import Protocol, runtime_checkable
 
 from version import ZULIP_VERSION
 from zerver.lib.logging_util import find_log_caller_module
@@ -67,6 +68,10 @@ def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
         # exception if the host is invalid
         report['host'] = platform.node()
 
+@runtime_checkable
+class HasRequest(Protocol):
+    request: HttpRequest
+
 class AdminNotifyHandler(logging.Handler):
     """An logging handler that sends the log/exception to the queue to be
        turned into an email and/or a Zulip message for the server admins.
@@ -123,8 +128,8 @@ class AdminNotifyHandler(logging.Handler):
             report['log_module'] = find_log_caller_module(record)
             report['log_lineno'] = record.lineno
 
-            if hasattr(record, "request"):
-                add_request_metadata(report, record.request)  # type: ignore[attr-defined]  # record.request is added dynamically
+            if isinstance(record, HasRequest):
+                add_request_metadata(report, record.request)
 
         except Exception:
             report['message'] = "Exception in preparing exception report!"
