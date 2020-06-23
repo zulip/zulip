@@ -10,8 +10,10 @@ RELEASE="$1"
 ARCH=amd64  # TODO: maybe i686 too
 
 case "$RELEASE" in
-    bionic) extra_packages=(virtualenv)
-        ;;
+    bionic) extra_packages=(python-pip)
+            ;;
+    focal) extra_packages=(python3-pip)
+           ;;
     *)
         echo "error: unsupported target release: $RELEASE" >&2
         exit 1
@@ -50,8 +52,9 @@ run apt-get install -y --no-install-recommends \
   memcached rabbitmq-server redis-server \
   hunspell-en-us supervisor libssl-dev puppet \
   gettext libffi-dev libfreetype6-dev zlib1g-dev libjpeg-dev \
-  libldap2-dev libmemcached-dev python-dev python-pip \
+  libldap2-dev libmemcached-dev \
   python-six libxml2-dev libxslt1-dev libpq-dev \
+  virtualenv \
   "${extra_packages[@]}"
 
 run ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime
