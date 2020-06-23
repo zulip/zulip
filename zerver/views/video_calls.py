@@ -208,7 +208,7 @@ def join_bigbluebutton(request: HttpRequest, meeting_id: str = REQ(validator=che
         if payload.find("returncode").text != "SUCCESS":
             return json_error(_("Big Blue Button server returned an unexpected error."))
 
-        join_params = urlencode({  # type: ignore[type-var] # MyPy has an AnyStr / Union[bytes, str] mismatch here.
+        join_params = urlencode({  # type: ignore[type-var] # https://github.com/python/typeshed/issues/4234
             "meetingID": meeting_id,
             "password": password,
             "fullName": request.user.full_name
