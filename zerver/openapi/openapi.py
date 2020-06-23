@@ -32,23 +32,6 @@ EXCLUDE_PROPERTIES = {
                     'realm_name_in_notifications', 'presence_enabled'],
         },
     },
-    '/users': {
-        'get': {
-            '200': ['delivery_email'],
-        }
-    },
-    '/users/me': {
-        'get': {
-            # Some responses contain undocumented keys
-            '200': ['delivery_email'],
-        },
-    },
-    '/users/{user_id}': {
-        'get': {
-            # Some responses contain undocumented keys
-            '200': ['delivery_email'],
-        },
-    },
 }
 
 # A list of endpoint-methods such that the endpoint

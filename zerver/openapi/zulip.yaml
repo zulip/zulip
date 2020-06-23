@@ -1937,6 +1937,10 @@ paths:
                       description: |
                         The user's ID.
                       example: 1
+                    delivery_email:
+                      type: string
+                      description: |
+                        The email where message notifications are delivered.
                     profile_data:
                       $ref: '#/components/schemas/profile_data'
                 - example:
@@ -4702,6 +4706,10 @@ components:
           type: string
           description: |
             The time the user account was created.
+        delivery_email:
+          type: string
+          description: |
+            The email where message notifications are delivered.
         profile_data:
           $ref: '#/components/schemas/profile_data'
     profile_data:
