@@ -77,7 +77,7 @@ class WebhooksCommonTestCase(ZulipTestCase):
 
         last_message_id = self.get_last_message().id
         with self.assertRaisesRegex(JsonableError, "Malformed JSON"):
-            my_webhook_no_notify(request)  # type: ignore[call-arg] # mypy doesn't seem to apply the decorator
+            my_webhook_no_notify(request)
 
         # First verify that without the setting, it doesn't send a PM to bot owner.
         msg = self.get_last_message()
@@ -86,7 +86,7 @@ class WebhooksCommonTestCase(ZulipTestCase):
 
         # Then verify that with the setting, it does send such a message.
         with self.assertRaisesRegex(JsonableError, "Malformed JSON"):
-            my_webhook_notify(request)  # type: ignore[call-arg] # mypy doesn't seem to apply the decorator
+            my_webhook_notify(request)
         msg = self.get_last_message()
         self.assertNotEqual(msg.id, last_message_id)
         self.assertEqual(msg.sender.email, self.notification_bot().email)

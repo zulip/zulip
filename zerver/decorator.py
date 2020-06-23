@@ -328,11 +328,10 @@ def full_webhook_client_name(raw_client_name: Optional[str]=None) -> Optional[st
 def api_key_only_webhook_view(
         webhook_client_name: str,
         notify_bot_owner_on_invalid_json: bool=True,
-) -> Callable[[ViewFuncT], ViewFuncT]:
+) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
     # TODO The typing here could be improved by using the Extended Callable types:
     # https://mypy.readthedocs.io/en/latest/kinds_of_types.html#extended-callable-types
-
-    def _wrapped_view_func(view_func: ViewFuncT) -> ViewFuncT:
+    def _wrapped_view_func(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
         @csrf_exempt
         @has_request_variables
         @wraps(view_func)
@@ -533,8 +532,10 @@ def require_user_group_edit_permission(view_func: ViewFuncT) -> ViewFuncT:
 # This API endpoint is used only for the mobile apps.  It is part of a
 # workaround for the fact that React Native doesn't support setting
 # HTTP basic authentication headers.
-def authenticated_uploads_api_view(skip_rate_limiting: bool=False) -> Callable[[ViewFuncT], ViewFuncT]:
-    def _wrapped_view_func(view_func: ViewFuncT) -> ViewFuncT:
+def authenticated_uploads_api_view(
+    skip_rate_limiting: bool = False,
+) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
+    def _wrapped_view_func(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
         @csrf_exempt
         @has_request_variables
         @wraps(view_func)
@@ -555,10 +556,13 @@ def authenticated_uploads_api_view(skip_rate_limiting: bool=False) -> Callable[[
 #
 # If webhook_client_name is specific, the request is a webhook view
 # with that string as the basis for the client string.
-def authenticated_rest_api_view(*, webhook_client_name: Optional[str]=None,
-                                is_webhook: bool=False,
-                                skip_rate_limiting: bool=False) -> Callable[[ViewFuncT], ViewFuncT]:
-    def _wrapped_view_func(view_func: ViewFuncT) -> ViewFuncT:
+def authenticated_rest_api_view(
+    *,
+    webhook_client_name: Optional[str] = None,
+    is_webhook: bool = False,
+    skip_rate_limiting: bool = False,
+) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
+    def _wrapped_view_func(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
         @csrf_exempt
         @wraps(view_func)
         def _wrapped_func_arguments(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
@@ -671,24 +675,29 @@ def authenticate_log_and_execute_json(request: HttpRequest,
 # Checks if the request is a POST request and that the user is logged
 # in.  If not, return an error (the @login_required behavior of
 # redirecting to a login page doesn't make sense for json views)
-def authenticated_json_post_view(view_func: ViewFuncT) -> ViewFuncT:
+def authenticated_json_post_view(
+    view_func: Callable[..., HttpResponse],
+) -> Callable[..., HttpResponse]:
     @require_post
     @has_request_variables
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest,
                            *args: Any, **kwargs: Any) -> HttpResponse:
         return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
-    return _wrapped_view_func  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func
 
-def authenticated_json_view(view_func: ViewFuncT, skip_rate_limiting: bool=False,
-                            allow_unauthenticated: bool=False) -> ViewFuncT:
+def authenticated_json_view(
+    view_func: Callable[..., HttpResponse],
+    skip_rate_limiting: bool = False,
+    allow_unauthenticated: bool = False,
+) -> Callable[..., HttpResponse]:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest,
                            *args: Any, **kwargs: Any) -> HttpResponse:
         kwargs["skip_rate_limiting"] = skip_rate_limiting
         kwargs["allow_unauthenticated"] = allow_unauthenticated
         return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
-    return _wrapped_view_func  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func
 
 def is_local_addr(addr: str) -> bool:
     return addr in ('127.0.0.1', '::1')
