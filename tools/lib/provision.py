@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
 VAR_DIR_PATH = os.path.join(ZULIP_PATH, 'var')
 
-is_circleci = 'CIRCLECI' in os.environ
+CONTINUOUS_INTEGRATION = 'GITHUB_ACTIONS' in os.environ or 'CIRCLECI' in os.environ
 
 if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
     print(FAIL + "Error: No Zulip git repository present!" + ENDC)
@@ -398,7 +398,7 @@ def main(options: argparse.Namespace) -> "NoReturn":
 
     run_as_root(["cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
 
-    if is_circleci and not options.is_build_release_tarball_only:
+    if CONTINUOUS_INTEGRATION and not options.is_build_release_tarball_only:
         run_as_root(["service", "redis-server", "restart"])
         run_as_root(["service", "memcached", "restart"])
         run_as_root(["service", "rabbitmq-server", "restart"])
