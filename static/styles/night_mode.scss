@@ -485,6 +485,10 @@ on a dark background, and don't change the dark labels dark either. */
         border-color: hsla(0, 0%, 0%, 0.2);
     }
 
+    #settings_page .sidebar li:hover {
+        background-color: hsla(0, 0%, 5%, 0.20);
+    }
+
     .draft-row .draft-info-box,
     .message_header_private_message .message-header-contents {
         box-shadow: none;
