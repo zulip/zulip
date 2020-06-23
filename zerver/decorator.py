@@ -461,21 +461,19 @@ def zulip_login_required(
         redirect_field_name: str=REDIRECT_FIELD_NAME,
         login_url: str=settings.HOME_NOT_LOGGED_IN,
 ) -> Union[Callable[[ViewFuncT], ViewFuncT], ViewFuncT]:
-    actual_decorator = user_passes_test(
+    actual_decorator = lambda function: user_passes_test(
         logged_in_and_active,
         login_url=login_url,
         redirect_field_name=redirect_field_name,
-    )
-
-    otp_required_decorator = zulip_otp_required(
-        redirect_field_name=redirect_field_name,
-        login_url=login_url,
+    )(
+        zulip_otp_required(
+            redirect_field_name=redirect_field_name, login_url=login_url,
+        )(add_logging_data(function))
     )
 
     if function:
-        # Add necessary logging data via add_logging_data
-        return actual_decorator(zulip_otp_required(add_logging_data(function)))
-    return actual_decorator(otp_required_decorator)  # nocoverage # We don't use this without a function
+        return actual_decorator(function)
+    return actual_decorator  # nocoverage # We don't use this without a function
 
 def require_server_admin(view_func: ViewFuncT) -> ViewFuncT:
     @zulip_login_required
@@ -808,10 +806,10 @@ def return_success_on_head_request(view_func: ViewFuncT) -> ViewFuncT:
         return view_func(request, *args, **kwargs)
     return _wrapped_view_func  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
 
-def zulip_otp_required(view: Any=None,
-                       redirect_field_name: str='next',
-                       login_url: str=settings.HOME_NOT_LOGGED_IN,
-                       ) -> Callable[..., HttpResponse]:
+def zulip_otp_required(
+    redirect_field_name: str='next',
+    login_url: str=settings.HOME_NOT_LOGGED_IN,
+) -> Callable[[ViewFuncT], ViewFuncT]:
     """
     The reason we need to create this function is that the stock
     otp_required decorator doesn't play well with tests. We cannot
@@ -840,7 +838,7 @@ def zulip_otp_required(view: Any=None,
                                         login_url=login_url,
                                         redirect_field_name=redirect_field_name)
 
-    return decorator if (view is None) else decorator(view)
+    return decorator
 
 def add_google_analytics_context(context: Dict[str, Any]) -> None:
     if settings.GOOGLE_ANALYTICS_ID is not None:  # nocoverage
