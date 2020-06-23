@@ -329,15 +329,17 @@ auto_renew = yes
 EOF
         fi
 
-        if [ -e "/etc/init.d/postgresql" ]; then
-            if [ "$package_system" = apt ]; then
-                cat <<EOF
+        case ",$PUPPET_CLASSES," in
+            *,zulip::voyager,* | *,zulip::postgres_appdb_tuned,*)
+                if [ "$package_system" = apt ]; then
+                    cat <<EOF
 
 [postgresql]
 version = 12
 EOF
-            fi
-        fi
+                fi
+                ;;
+        esac
     ) > /etc/zulip/zulip.conf
 fi
 
