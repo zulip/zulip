@@ -70,6 +70,7 @@ from zerver.lib.utils import generate_random_token
 from zerver.lib.validator import (
     Validator,
     check_bool,
+    check_dict,
     check_dict_only,
     check_int,
     check_list,
@@ -3285,7 +3286,7 @@ class FetchAuthBackends(ZulipTestCase):
             self.assert_json_success(result)
             checker = check_dict_only([
                 ('authentication_methods', check_dict_only(authentication_methods_list)),
-                ('external_authentication_methods', check_list(None, length=len(external_auth_methods))),
+                ('external_authentication_methods', check_list(check_dict(), length=len(external_auth_methods))),
                 ('email_auth_enabled', check_bool),
                 ('is_incompatible', check_bool),
                 ('require_email_format_usernames', check_bool),
