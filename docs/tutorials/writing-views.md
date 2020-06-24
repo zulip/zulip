@@ -324,9 +324,8 @@ preferable from a security perspective, and it is generally a good idea
 to make your feature available to other clients, especially the mobile
 clients.
 
-These endpoints make use of some older authentication decorators,
-`authenticated_json_api_view`, `authenticated_json_post_view`, and
-`authenticated_json_view`, so you may see them in the code.
+These endpoints make use the older authentication decorator
+`authenticated_json_view`, so you may see it in the code.
 
 ## Incoming webhook integrations
 

@@ -22,8 +22,9 @@ from django.utils.translation import override as override_language
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import (
-    authenticated_json_post_view,
+    authenticated_json_view,
     require_non_guest_user,
+    require_post,
     require_realm_admin,
 )
 from zerver.lib.actions import (
@@ -643,7 +644,8 @@ def delete_in_topic(request: HttpRequest, user_profile: UserProfile,
 
     return json_success()
 
-@authenticated_json_post_view
+@require_post
+@authenticated_json_view
 @has_request_variables
 def json_stream_exists(request: HttpRequest, user_profile: UserProfile, stream_name: str=REQ("stream"),
                        autosubscribe: bool=REQ(validator=check_bool, default=False)) -> HttpResponse:

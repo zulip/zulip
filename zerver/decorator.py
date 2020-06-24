@@ -672,20 +672,9 @@ def authenticate_log_and_execute_json(request: HttpRequest,
                    query=view_func.__name__)
     return limited_view_func(request, user_profile, *args, **kwargs)
 
-# Checks if the request is a POST request and that the user is logged
-# in.  If not, return an error (the @login_required behavior of
-# redirecting to a login page doesn't make sense for json views)
-def authenticated_json_post_view(
-    view_func: Callable[..., HttpResponse],
-) -> Callable[..., HttpResponse]:
-    @require_post
-    @has_request_variables
-    @wraps(view_func)
-    def _wrapped_view_func(request: HttpRequest,
-                           *args: Any, **kwargs: Any) -> HttpResponse:
-        return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
-    return _wrapped_view_func
-
+# Checks if the user is logged in.  If not, return an error (the
+# @login_required behavior of redirecting to a login page doesn't make
+# sense for json views)
 def authenticated_json_view(
     view_func: Callable[..., HttpResponse],
     skip_rate_limiting: bool = False,
