@@ -351,7 +351,10 @@ def check_widget_content(widget_content: object) -> Dict[str, Any]:
                 ]),
             )
 
+            # We re-check "type" here just to avoid it looking
+            # like we have extraneous keys.
             checker = check_dict([
+                ('type', equals('choices')),
                 ('heading', check_string),
                 ('choices', check_choices),
             ])
