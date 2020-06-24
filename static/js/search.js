@@ -194,7 +194,9 @@ exports.initialize = function () {
         }
         setTimeout(function () {
             exports.update_button_visibility();
-            tab_bar.close_search_bar_and_open_narrow_description();
+            if (page_params.search_pills_enabled) {
+                tab_bar.close_search_bar_and_open_narrow_description();
+            }
             searchbox.css({"box-shadow": "unset"});
         }, 300);
     });

@@ -293,6 +293,9 @@ run_test('initialize', () => {
             narrow_state.search_string = () => 'ver';
             callback(stub_event);
             assert.equal(search_query_box.val(), 'test string');
+            search_pill_widget.widget.getByID = return_false;
+            callback(stub_event);
+            assert.equal(search_query_box.val(), 'test string');
         }
     };
 
