@@ -137,14 +137,7 @@ def check_none_or(sub_validator: Validator[ResultT]) -> Validator[Optional[Resul
             return sub_validator(var_name, val)
     return f
 
-# https://zulip.readthedocs.io/en/latest/testing/mypy.html#using-overload-to-accurately-describe-variations
-@overload
-def check_list(sub_validator: None, length: Optional[int]=None) -> Validator[List[object]]:
-    ...
-@overload
 def check_list(sub_validator: Validator[ResultT], length: Optional[int]=None) -> Validator[List[ResultT]]:
-    ...
-def check_list(sub_validator: Optional[Validator[ResultT]]=None, length: Optional[int]=None) -> Validator[List[ResultT]]:
     def f(var_name: str, val: object) -> List[ResultT]:
         if not isinstance(val, list):
             raise ValidationError(_('{var_name} is not a list').format(var_name=var_name))
@@ -154,11 +147,10 @@ def check_list(sub_validator: Optional[Validator[ResultT]]=None, length: Optiona
                 container=var_name, length=length,
             ))
 
-        if sub_validator:
-            for i, item in enumerate(val):
-                vname = f'{var_name}[{i}]'
-                valid_item = sub_validator(vname, item)
-                assert item is valid_item  # To justify the unchecked cast below
+        for i, item in enumerate(val):
+            vname = f'{var_name}[{i}]'
+            valid_item = sub_validator(vname, item)
+            assert item is valid_item  # To justify the unchecked cast below
 
         return cast(List[ResultT], val)
     return f
