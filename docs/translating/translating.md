@@ -48,7 +48,8 @@ Some useful tips for your translating journey:
   you go along and will help any future translators a lot.
 
 - Don't translate variables or code (usually preceded by a `%`, or inside
-  HTML tags `<...>`); just keep them verbatim.
+  HTML tags `<...>` or enclosed like `__variable__` or
+  `{{ variable }}`); just keep them verbatim.
 
 - When in doubt, ask for context in
   [#translation](https://chat.zulip.org/#narrow/stream/58-translation) in
