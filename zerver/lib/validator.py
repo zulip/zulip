@@ -163,6 +163,24 @@ def check_list(sub_validator: Optional[Validator[ResultT]]=None, length: Optiona
         return cast(List[ResultT], val)
     return f
 
+def check_tuple(sub_validators: List[Validator[ResultT]]) -> Validator[Tuple[Any, ...]]:
+    def f(var_name: str, val: object) -> Tuple[Any, ...]:
+        if not isinstance(val, tuple):
+            raise ValidationError(_('{var_name} is not a tuple').format(var_name=var_name))
+
+        desired_len = len(sub_validators)
+        if desired_len != len(val):
+            raise ValidationError(_('{var_name} should have exactly {desired_len} items').format(
+                var_name=var_name, desired_len=desired_len,
+            ))
+
+        for i, sub_validator in enumerate(sub_validators):
+            vname = f'{var_name}[{i}]'
+            sub_validator(vname, val[i])
+
+        return val
+    return f
+
 # https://zulip.readthedocs.io/en/latest/testing/mypy.html#using-overload-to-accurately-describe-variations
 @overload
 def check_dict(required_keys: Iterable[Tuple[str, Validator[object]]]=[],
