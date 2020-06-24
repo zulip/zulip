@@ -47,11 +47,7 @@ http {
     ssl_session_cache shared:SSL:50m;
     ssl_session_tickets off;
     ssl_dhparam /etc/nginx/dhparam.pem;
-<% if scope["zulip::base::release_name"] == "stretch" or scope["zulip::base::release_name"] == "xenial" -%>
-    ssl_protocols TLSv1.2;
-<% else -%>
     ssl_protocols TLSv1.2 TLSv1.3;
-<% end -%>
     ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
     ssl_prefer_server_ciphers off;
     ssl_stapling on;

@@ -34,11 +34,6 @@ logfile /var/log/memcached.log
 # it's listening on a firewalled interface.
 -l 127.0.0.1
 
-<% if scope["zulip::base::release_name"] == "xenial" -%>
-# Use "modern" features.
--o slab_reassign,slab_automove,lru_crawler,lru_maintainer,maxconns_fast,hash_algorithm=murmur3
-<% end -%>
-
 # Limit the number of simultaneous incoming connections. The daemon default is 1024
 # -c 1024
 

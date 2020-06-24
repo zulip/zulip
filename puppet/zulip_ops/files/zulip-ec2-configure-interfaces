@@ -97,10 +97,6 @@ for device in macs.values():
     else:
         to_configure = list(device['local-ipv4s'])
     device_number = int(device['device-number'])
-    if subprocess.check_output(["lsb_release", '-sc']).strip() == "xenial":
-        # HACK: It appears on Xenial device_number in the data set is 0 but in reality it is 3
-        device_number += 3
-
     address = address_of(device_number)
 
     if address is None:
