@@ -364,7 +364,7 @@ def archive_stream_messages(realm: Realm, streams: List[Stream], chunk_size: int
         if stream.message_retention_days:
             retention_policy_dict[stream.id] = stream.message_retention_days
         else:
-            assert realm.message_retention_days is not None
+            assert realm.message_retention_days != -1
             retention_policy_dict[stream.id] = realm.message_retention_days
 
     recipients = [stream.recipient for stream in streams]
@@ -381,7 +381,7 @@ def archive_messages(chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
 
     for realm, streams in get_realms_and_streams_for_archiving():
         archive_stream_messages(realm, streams, chunk_size)
-        if realm.message_retention_days:
+        if realm.message_retention_days != -1:
             archive_personal_and_huddle_messages(realm, chunk_size)
 
         # Messages have been archived for the realm, now we can clean up attachments:
@@ -401,7 +401,7 @@ def get_realms_and_streams_for_archiving() -> List[Tuple[Realm, List[Stream]]]:
     realm_id_to_streams_list: Dict[int, List[Stream]] = {}
 
     # All realms with a retention policy set qualify for archiving:
-    for realm in Realm.objects.filter(message_retention_days__isnull=False):
+    for realm in Realm.objects.exclude(message_retention_days=-1):
         realm_id_to_realm[realm.id] = realm
         realm_id_to_streams_list[realm.id] = []
 
@@ -409,11 +409,11 @@ def get_realms_and_streams_for_archiving() -> List[Tuple[Realm, List[Stream]]]:
     # First category are streams in retention-enabled realms,
     # that don't have retention explicitly disabled (through the value -1).
     query_one = Stream.objects.exclude(message_retention_days=-1) \
-        .filter(realm__message_retention_days__isnull=False) \
+        .exclude(realm__message_retention_days=-1) \
         .select_related('realm', 'recipient')
     # Second category are streams that are in realms without a realm-wide retention policy,
     # but have their own stream-specific policy enabled.
-    query_two = Stream.objects.filter(realm__message_retention_days__isnull=True) \
+    query_two = Stream.objects.filter(realm__message_retention_days=-1) \
         .exclude(message_retention_days__isnull=True) \
         .exclude(message_retention_days=-1) \
         .select_related('realm', 'recipient')
