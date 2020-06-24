@@ -10,6 +10,12 @@ below features are supported.
 
 ## Changes in Zulip 2.2
 
+**Feature level 22**
+
+* 'GET /attachments': Rename `name` to `date_sent` for clearer meaning
+   and change the data types of the new `date_sent` and `create_time`
+   to integer (previously the implementation could send floats).
+
 **Feature level 21**
 
 * `PATCH /settings/display`: Replaced the `night_mode` boolean with

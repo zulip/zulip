@@ -2114,10 +2114,10 @@ class Attachment(AbstractAttachment):
             'size': self.size,
             # convert to JavaScript-style UNIX timestamp so we can take
             # advantage of client timezones.
-            'create_time': time.mktime(self.create_time.timetuple()) * 1000,
+            'create_time': int(time.mktime(self.create_time.timetuple()) * 1000),
             'messages': [{
                 'id': m.id,
-                'name': time.mktime(m.date_sent.timetuple()) * 1000,
+                'date_sent': int(time.mktime(m.date_sent.timetuple()) * 1000),
             } for m in self.messages.all()],
         }
 
