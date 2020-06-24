@@ -2,7 +2,7 @@ import logging
 import os
 import urllib
 from functools import wraps
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional, cast
 
 import jwt
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -479,13 +479,13 @@ def oauth_redirect_to_root(
 
 def handle_desktop_flow(func: ViewFuncT) -> ViewFuncT:
     @wraps(func)
-    def wrapper(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+    def wrapper(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
         user_agent = parse_user_agent(request.META.get("HTTP_USER_AGENT", "Missing User-Agent"))
         if user_agent["name"] == "ZulipElectron":
             return render(request, "zerver/desktop_login.html")
 
         return func(request, *args, **kwargs)
-    return wrapper  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
+    return cast(ViewFuncT, wrapper)  # https://github.com/python/mypy/issues/1927
 
 @handle_desktop_flow
 def start_remote_user_sso(request: HttpRequest) -> HttpResponse:

@@ -1,6 +1,6 @@
 import functools
 import sys
-from typing import IO, Any, Callable, Mapping, Sequence, TypeVar
+from typing import IO, Any, Callable, Mapping, Sequence, TypeVar, cast
 
 
 def get_mapping_type_str(x: Mapping[Any, Any]) -> str:
@@ -63,12 +63,12 @@ def get_type_str(x: Any) -> str:
     else:
         return type(x).__name__
 
-FuncT = TypeVar('FuncT', bound=Callable[..., Any])
+FuncT = TypeVar('FuncT', bound=Callable[..., object])
 
 def print_types_to(file_obj: IO[str]) -> Callable[[FuncT], FuncT]:
     def decorator(func: FuncT) -> FuncT:
         @functools.wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
+        def wrapper(*args: object, **kwargs: object) -> object:
             arg_types = [get_type_str(arg) for arg in args]
             kwarg_types = [key + "=" + get_type_str(value) for key, value in kwargs.items()]
             ret_val = func(*args, **kwargs)
@@ -77,7 +77,7 @@ def print_types_to(file_obj: IO[str]) -> Callable[[FuncT], FuncT]:
                                            get_type_str(ret_val))
             print(output, file=file_obj)
             return ret_val
-        return wrapper  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
+        return cast(FuncT, wrapper)  # https://github.com/python/mypy/issues/1927
     return decorator
 
 def print_types(func: FuncT) -> FuncT:

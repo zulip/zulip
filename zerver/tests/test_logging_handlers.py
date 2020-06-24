@@ -2,7 +2,7 @@ import logging
 import sys
 from functools import wraps
 from types import TracebackType
-from typing import Any, Callable, Dict, Iterator, NoReturn, Optional, Tuple, Type
+from typing import Callable, Dict, Iterator, NoReturn, Optional, Tuple, Type, cast
 from unittest.mock import MagicMock, patch
 
 from django.conf import settings
@@ -20,7 +20,7 @@ captured_exc_info: Tuple[Optional[Type[BaseException]], Optional[BaseException],
 def capture_and_throw(domain: Optional[str]=None) -> Callable[[ViewFuncT], ViewFuncT]:
     def wrapper(view_func: ViewFuncT) -> ViewFuncT:
         @wraps(view_func)
-        def wrapped_view(request: HttpRequest, *args: Any, **kwargs: Any) -> NoReturn:
+        def wrapped_view(request: HttpRequest, *args: object, **kwargs: object) -> NoReturn:
             global captured_request
             captured_request = request
             try:
@@ -29,7 +29,7 @@ def capture_and_throw(domain: Optional[str]=None) -> Callable[[ViewFuncT], ViewF
                 global captured_exc_info
                 captured_exc_info = sys.exc_info()
                 raise e
-        return wrapped_view  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
+        return cast(ViewFuncT, wrapped_view)  # https://github.com/python/mypy/issues/1927
     return wrapper
 
 class AdminNotifyHandlerTest(ZulipTestCase):
@@ -90,7 +90,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         )
         return record
 
-    def run_handler(self, record: logging.LogRecord) -> Dict[str, Any]:
+    def run_handler(self, record: logging.LogRecord) -> Dict[str, object]:
         with patch('zerver.lib.error_notify.notify_server_error') as patched_notify:
             self.handler.emit(record)
             patched_notify.assert_called_once()

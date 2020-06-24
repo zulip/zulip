@@ -2,7 +2,7 @@
 import base64
 import re
 from functools import wraps
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, cast
 
 from django.http import HttpRequest, HttpResponse
 
@@ -45,7 +45,7 @@ def _transform_commits_list_to_common_format(commits: List[Dict[str, Any]]) -> L
 # We manually fix the username here before passing it along to @authenticated_rest_api_view
 def beanstalk_decoder(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
-    def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+    def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
         auth_type: str
         encoded_value: str
         auth_type, encoded_value = request.META['HTTP_AUTHORIZATION'].split()
@@ -58,7 +58,7 @@ def beanstalk_decoder(view_func: ViewFuncT) -> ViewFuncT:
 
         return view_func(request, *args, **kwargs)
 
-    return _wrapped_view_func  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
+    return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
 
 @beanstalk_decoder
 @authenticated_rest_api_view(webhook_client_name="Beanstalk")

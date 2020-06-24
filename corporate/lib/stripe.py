@@ -4,7 +4,7 @@ import os
 from datetime import datetime, timedelta
 from decimal import Decimal
 from functools import wraps
-from typing import Any, Callable, Dict, Optional, Tuple, TypeVar
+from typing import Callable, Dict, Optional, Tuple, TypeVar, cast
 
 import stripe
 import ujson
@@ -39,7 +39,7 @@ billing_logger = logging.getLogger('corporate.stripe')
 log_to_file(billing_logger, BILLING_LOG_PATH)
 log_to_file(logging.getLogger('stripe'), BILLING_LOG_PATH)
 
-CallableT = TypeVar('CallableT', bound=Callable[..., Any])
+CallableT = TypeVar('CallableT', bound=Callable[..., object])
 
 MIN_INVOICED_LICENSES = 30
 MAX_INVOICED_LICENSES = 1000
@@ -160,7 +160,7 @@ class StripeConnectionError(BillingError):
 
 def catch_stripe_errors(func: CallableT) -> CallableT:
     @wraps(func)
-    def wrapped(*args: Any, **kwargs: Any) -> Any:
+    def wrapped(*args: object, **kwargs: object) -> object:
         if settings.DEVELOPMENT and not settings.TEST_SUITE:  # nocoverage
             if STRIPE_PUBLISHABLE_KEY is None:
                 raise BillingError('missing stripe config', "Missing Stripe config. "
@@ -184,7 +184,7 @@ def catch_stripe_errors(func: CallableT) -> CallableT:
                     'stripe connection error',
                     _("Something went wrong. Please wait a few seconds and try again."))
             raise BillingError('other stripe error', BillingError.CONTACT_SUPPORT)
-    return wrapped  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
+    return cast(CallableT, wrapped)
 
 @catch_stripe_errors
 def stripe_get_customer(stripe_customer_id: str) -> stripe.Customer:

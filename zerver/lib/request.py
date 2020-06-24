@@ -283,7 +283,7 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
                 arguments_map[view_func_full_name].append(value.post_var_name)
 
     @wraps(view_func)
-    def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+    def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
         for param in post_params:
             func_var_name = param.func_var_name
             if param.path_only:
@@ -369,4 +369,4 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
 
         return view_func(request, *args, **kwargs)
 
-    return cast(ViewFuncT, _wrapped_view_func)
+    return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927

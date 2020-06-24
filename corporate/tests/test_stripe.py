@@ -224,7 +224,7 @@ def mock_stripe(tested_timestamp_fields: Sequence[str]=[],
             decorated_function = patch(mocked_function_name, side_effect=side_effect)(decorated_function)
 
         @wraps(decorated_function)
-        def wrapped(*args: Any, **kwargs: Any) -> Any:
+        def wrapped(*args: object, **kwargs: object) -> object:
             if generate_fixture:  # nocoverage
                 delete_fixture_data(decorated_function)
                 val = decorated_function(*args, **kwargs)
