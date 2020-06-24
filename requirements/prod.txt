@@ -671,10 +671,8 @@ social-auth-app-django==4.0.0 \
     --hash=sha256:567ad0e028311541d7dfed51d3bf2c60440a6fd236d5d4d06c5a618b3d6c57c5 \
     --hash=sha256:df5212370bd250108987c4748419a1a1d0cec750878856c2644c36aaa0fd3e58 \
     # via -r requirements/common.in
-social-auth-core[azuread,saml]==3.3.3 \
-    --hash=sha256:21c0639c56befd33ec162c2210d583bb1de8e1136d53b21bafb96afaf2f86c91 \
-    --hash=sha256:2f6ce1af8ec2b2cc37b86d647f7d4e4292f091ee556941db34b1e0e2dee77fc0 \
-    --hash=sha256:4a3cdf69c449b235cdabd54a1be7ba3722611297e69fded52e3584b1a990af25 \
+https://github.com/python-social-auth/social-core/archive/3.4.0.zip/#egg=social-auth-core[azuread,saml]==3.4.0 \
+    --hash=sha256:75c6819cdbd8755253ea9d87624c732596356966939ea60822296669e1974b42 \
     # via -r requirements/common.in, social-auth-app-django
 soupsieve==2.0.1 \
     --hash=sha256:1634eea42ab371d3d346309b93df7870a88610f0725d47528be902a0d95ecc55 \
