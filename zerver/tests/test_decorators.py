@@ -68,6 +68,7 @@ from zerver.lib.validator import (
     check_string_in,
     check_string_or_int,
     check_string_or_int_list,
+    check_tuple,
     check_union,
     check_url,
     equals,
@@ -847,6 +848,21 @@ class ValidatorTestCase(TestCase):
 
         with self.assertRaisesRegex(ValidationError, r'color is not a string'):
             check_color('color', z)
+
+    def test_check_tuple(self) -> None:
+        x: Any = 999
+        with self.assertRaisesRegex(ValidationError, r'x is not a tuple'):
+            check_tuple([check_string])('x', x)
+
+        x = (5, 2)
+        with self.assertRaisesRegex(ValidationError, r'x\[0\] is not a string'):
+            check_tuple([check_string, check_string])('x', x)
+
+        x = (1, 2, 3)
+        with self.assertRaisesRegex(ValidationError, r'x should have exactly 2 items'):
+            check_tuple([check_int, check_int])('x', x)
+
+        check_tuple([check_string, check_int])('x', ('string', 42))
 
     def test_check_list(self) -> None:
         x: Any = 999

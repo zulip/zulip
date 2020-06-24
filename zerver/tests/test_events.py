@@ -139,6 +139,7 @@ from zerver.lib.validator import (
     check_list,
     check_none_or,
     check_string,
+    check_tuple,
     check_url,
     equals,
 )
@@ -1493,7 +1494,11 @@ class EventsRegisterTest(ZulipTestCase):
     def test_muted_topics_events(self) -> None:
         muted_topics_checker = self.check_events_dict([
             ('type', equals('muted_topics')),
-            ('muted_topics', check_list(check_list(sub_validator=None, length=3))),
+            ('muted_topics', check_list(check_tuple([
+                check_string,  # stream name
+                check_string,  # topic name
+                check_int,  # timestamp
+            ]))),
         ])
         stream = get_stream('Denmark', self.user_profile.realm)
         recipient = stream.recipient
