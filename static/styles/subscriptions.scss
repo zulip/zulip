@@ -1111,6 +1111,11 @@ ul.grey-box {
     }
 }
 
+// Note that this block has settings_page CSS as well, and thus needs
+// to match the media queries in settings.scss.
+//
+// Longer-term we should extract this logic two-column-overlay class
+// to read more naturally.
 @media (max-width: 750px) {
     .subscriptions-container {
         position: relative;

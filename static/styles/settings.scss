@@ -2057,7 +2057,9 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     }
 }
 
-@media (max-width: 700px) {
+// This value needs to match with the same in subscriptions.scss, as
+// we have some shared styles declared there
+@media (max-width: 750px) {
     #settings_overlay_container {
         // this variable allows JavaScript to detect this media query
         --single-column: yes;
