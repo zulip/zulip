@@ -50,8 +50,8 @@ to `i18n_urls` in `zproject/urls.py`
 ```diff
      i18n_urls = [
      ...
-+    url(r'^quote-of-the-day/$', TemplateView.as_view(template_name='zerver/qotd.html')),
-+    url(r'^postcards/$', 'zerver.views.postcards'),
++    path('quote-of-the-day', TemplateView.as_view(template_name='zerver/qotd.html')),
++    path('postcards', 'zerver.views.postcards'),
 ]
 ```
 
