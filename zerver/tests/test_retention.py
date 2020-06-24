@@ -98,7 +98,7 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
         # control over what's expired and what isn't.
         Message.objects.all().update(date_sent=timezone_now())
 
-    def _set_realm_message_retention_value(self, realm: Realm, retention_period: Optional[int]) -> None:
+    def _set_realm_message_retention_value(self, realm: Realm, retention_period: int) -> None:
         realm.message_retention_days = retention_period
         realm.save()
 
@@ -208,7 +208,7 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
 
     def test_expired_messages_in_one_realm(self) -> None:
         """Test with a retention policy set for only the MIT realm"""
-        self._set_realm_message_retention_value(self.zulip_realm, None)
+        self._set_realm_message_retention_value(self.zulip_realm, -1)
 
         # Make some expired messages in MIT:
         expired_mit_msg_ids = self._make_mit_messages(
@@ -254,13 +254,13 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         self._verify_archive_data([], [])
 
         # Don't archive if stream and realm have no retention policy:
-        self._set_realm_message_retention_value(self.zulip_realm, None)
+        self._set_realm_message_retention_value(self.zulip_realm, -1)
         self._set_stream_message_retention_value(verona, None)
         archive_messages()
         self._verify_archive_data([], [])
 
         # Archive if stream has a retention policy set:
-        self._set_realm_message_retention_value(self.zulip_realm, None)
+        self._set_realm_message_retention_value(self.zulip_realm, -1)
         self._set_stream_message_retention_value(verona, 1)
         archive_messages()
         self._verify_archive_data([msg_id], usermsg_ids)
@@ -821,7 +821,7 @@ class TestGetRealmAndStreamsForArchiving(ZulipTestCase):
 
         result = []
         for realm in Realm.objects.all():
-            if realm.message_retention_days is not None:
+            if realm.message_retention_days != -1:
                 streams = Stream.objects.filter(realm=realm).exclude(message_retention_days=-1)
                 result.append((realm, list(streams)))
             else:
@@ -845,7 +845,7 @@ class TestGetRealmAndStreamsForArchiving(ZulipTestCase):
         denmark.save()
 
         zephyr_realm = get_realm("zephyr")
-        zephyr_realm.message_retention_days = None
+        zephyr_realm.message_retention_days = -1
         zephyr_realm.save()
         self.make_stream("normal stream", realm=zephyr_realm)
 
@@ -857,7 +857,7 @@ class TestGetRealmAndStreamsForArchiving(ZulipTestCase):
         archiving_enabled_zephyr_stream.message_retention_days = 1
         archiving_enabled_zephyr_stream.save()
 
-        Realm.objects.create(string_id="no_archiving", invite_required=False, message_retention_days=None)
+        Realm.objects.create(string_id="no_archiving", invite_required=False, message_retention_days=-1)
         empty_realm_with_archiving = Realm.objects.create(string_id="with_archiving", invite_required=False,
                                                           message_retention_days=1)
 

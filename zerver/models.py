@@ -309,7 +309,7 @@ class Realm(models.Model):
 
     RETAIN_MESSAGE_FOREVER = -1
     # For old messages being automatically deleted
-    message_retention_days: Optional[int] = models.IntegerField(null=True)
+    message_retention_days: int = models.IntegerField(null=False, default=-1)
 
     # When non-null, all but the latest this many messages in the organization
     # are inaccessible to users (but not deleted).
