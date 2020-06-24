@@ -4794,6 +4794,7 @@ components:
       - $ref: '#/components/schemas/JsonSuccess'
       - required:
         - api_key
+        - email
       - properties:
           api_key:
             type: string
