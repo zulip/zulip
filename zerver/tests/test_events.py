@@ -175,6 +175,21 @@ from zerver.tornado.event_queue import (
 from zerver.tornado.views import get_events
 from zerver.views.events_register import _default_all_public_streams, _default_narrow
 
+# These are in nearly all events related to streams.  (Some
+# other events have a superset of this.)
+basic_stream_fields = [
+    ('description', check_string),
+    ('first_message_id', check_none_or(check_int)),
+    ('history_public_to_subscribers', check_bool),
+    ('invite_only', check_bool),
+    ('is_announcement_only', check_bool),
+    ('is_web_public', check_bool),
+    ('message_retention_days', equals(None)),
+    ('name', check_string),
+    ('rendered_description', check_string),
+    ('stream_id', check_int),
+    ('stream_post_policy', check_int),
+]
 
 class LogEventsTest(ZulipTestCase):
     def test_with_missing_event_log_dir_setting(self) -> None:
@@ -1407,18 +1422,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('name', check_string),
                 ('id', check_int),
                 ('description', check_string),
-                ('streams', check_list(check_dict_only([
-                    ('description', check_string),
-                    ('rendered_description', check_string),
-                    ('invite_only', check_bool),
-                    ('is_web_public', check_bool),
-                    ('is_announcement_only', check_bool),
-                    ('stream_post_policy', check_int_in(Stream.STREAM_POST_POLICY_TYPES)),
-                    ('message_retention_days', check_none_or(check_int)),
-                    ('name', check_string),
-                    ('stream_id', check_int),
-                    ('first_message_id', check_none_or(check_int)),
-                    ('history_public_to_subscribers', check_bool)]))),
+                ('streams', check_list(check_dict_only(basic_stream_fields))),
             ]))),
         ])
 
@@ -1469,12 +1473,7 @@ class EventsRegisterTest(ZulipTestCase):
     def test_default_streams_events(self) -> None:
         default_streams_checker = self.check_events_dict([
             ('type', equals('default_streams')),
-            ('default_streams', check_list(check_dict([
-                ('description', check_string),
-                ('invite_only', check_bool),
-                ('name', check_string),
-                ('stream_id', check_int),
-            ]))),
+            ('default_streams', check_list(check_dict_only(basic_stream_fields))),
         ])
 
         stream = get_stream("Scotland", self.user_profile.realm)
@@ -2444,7 +2443,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker = self.check_events_dict([
             ('type', equals('stream')),
             ('op', equals('delete')),
-            ('streams', check_list(check_dict([]))),
+            ('streams', check_list(check_dict_only(basic_stream_fields))),
         ])
         schema_checker('events[0]', events[0])
 
@@ -2468,45 +2467,29 @@ class EventsRegisterTest(ZulipTestCase):
         self.do_test_subscribe_events(include_subscribers=False)
 
     def do_test_subscribe_events(self, include_subscribers: bool) -> None:
-        subscription_fields = [
-            ('color', check_string),
-            ('description', check_string),
-            ('rendered_description', check_string),
-            ('email_address', check_string),
-            ('invite_only', check_bool),
-            ('is_web_public', check_bool),
-            ('is_announcement_only', check_bool),
-            ('stream_post_policy', check_int_in(Stream.STREAM_POST_POLICY_TYPES)),
-            ('message_retention_days', check_none_or(check_int)),
-            ('is_muted', check_bool),
-            ('in_home_view', check_bool),
-            ('name', check_string),
+        all_stream_fields = basic_stream_fields + [
             ('audible_notifications', check_none_or(check_bool)),
-            ('email_notifications', check_none_or(check_bool)),
+            ('color', check_string),
             ('desktop_notifications', check_none_or(check_bool)),
-            ('push_notifications', check_none_or(check_bool)),
-            ('stream_id', check_int),
-            ('first_message_id', check_none_or(check_int)),
-            ('history_public_to_subscribers', check_bool),
+            ('email_address', check_string),
+            ('email_notifications', check_none_or(check_bool)),
+            ('in_home_view', check_bool),
+            ('is_muted', check_bool),
             ('pin_to_top', check_bool),
+            ('push_notifications', check_none_or(check_bool)),
             ('stream_weekly_traffic', check_none_or(check_int)),
             ('wildcard_mentions_notify', check_none_or(check_bool)),
         ]
+
         if include_subscribers:
-            subscription_fields.append(('subscribers', check_list(check_int)))
+            all_stream_fields.append(('subscribers', check_list(check_int)))
         subscription_schema_checker = check_list(
-            check_dict_only(subscription_fields),
+            check_dict_only(all_stream_fields),
         )
         stream_create_schema_checker = self.check_events_dict([
             ('type', equals('stream')),
             ('op', equals('create')),
-            ('streams', check_list(check_dict([
-                ('name', check_string),
-                ('stream_id', check_int),
-                ('invite_only', check_bool),
-                ('description', check_string),
-                ('rendered_description', check_string),
-            ]))),
+            ('streams', check_list(check_dict_only(basic_stream_fields))),
         ])
         add_schema_checker = self.check_events_dict([
             ('type', equals('subscription')),
