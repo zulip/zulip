@@ -596,12 +596,20 @@ domain for your server).
    chmod 640 /etc/zulip/apple/zulip-private-key.key
    ```
 
-1. Configure the "Apple authentication" section of
-  `/etc/zulip/settings.py`.  Use the "Team ID" as
-  `SOCIAL_AUTH_APPLE_TEAM`, "Services ID" as
-  `SOCIAL_AUTH_APPLE_SERVICES_ID`, "Bundle ID" as
-  `SOCIAL_AUTH_APPLE_BUNDLE_ID`, and "Key ID" as
-  `SOCIAL_AUTH_APPLE_KEY`.
+1. Configure Apple authentication in `/etc/zulip/settings.py`:
+   * `SOCIAL_AUTH_APPLE_TEAM`: Your Team ID from Apple, which is a
+     string like "A1B2C3D4E5".
+   * `SOCIAL_AUTH_APPLE_SERVICES_ID`: The Services ID you created in
+     step 1, which might look like "com.example.services".
+   * `SOCIAL_AUTH_APPLE_BUNDLE_ID`: The Bundle ID, or App ID, of your
+     app that you used in step 1 to configure your Services ID.
+     This might look like "com.example.app".
+   * `SOCIAL_AUTH_APPLE_KEY`: Despite the name this is not a key, but
+     rather the Key ID of the key you created in step 2.  This looks
+     like "F6G7H8I9J0".
+   * `AUTHENTICATION_BACKENDS`: Uncomment (or add) a line like
+     `'zproject.backends.AppleAuthBackend',` to enable Apple auth
+     using the created configuration.
 
 1. In the Apple developer site, configure the domains your Zulip
    server uses when sending outgoing email notifications.  (This is
