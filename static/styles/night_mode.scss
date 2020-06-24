@@ -417,6 +417,11 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: hsl(211, 29%, 14%);
         border-color: hsl(0, 0%, 0%);
         color: hsl(0, 0%, 100%);
+
+        &:focus {
+            background-color: hsla(0, 0%, 0%, 0.5) !important;
+            outline: 0;
+        }
     }
 
     .btn-recent-selected,

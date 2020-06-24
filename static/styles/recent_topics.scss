@@ -66,6 +66,15 @@
 
         .recent_topics_focusable {
             display: inline-block;
+
+            & > * {
+                outline: 0px;
+            }
+
+            &:focus-within {
+                /* Use the same color as the message feed pointer */
+                box-shadow: 0 3px 0 hsl(215, 47%, 50%);
+            }
         }
 
         a {
@@ -122,6 +131,11 @@
         .btn-recent-filters {
             border-radius: 40px;
             margin: 0 5px 10px 0;
+
+            &:focus {
+                background-color: hsl(0, 0%, 80%);
+                outline: 0;
+            }
         }
 
         .btn-recent-selected {
