@@ -137,7 +137,6 @@ def check_none_or(sub_validator: Validator[ResultT]) -> Validator[Optional[Resul
             return sub_validator(var_name, val)
     return f
 
-# https://zulip.readthedocs.io/en/latest/testing/mypy.html#using-overload-to-accurately-describe-variations
 @overload
 def check_list(sub_validator: None, length: Optional[int]=None) -> Validator[List[object]]:
     ...
@@ -181,7 +180,6 @@ def check_tuple(sub_validators: List[Validator[ResultT]]) -> Validator[Tuple[Any
         return val
     return f
 
-# https://zulip.readthedocs.io/en/latest/testing/mypy.html#using-overload-to-accurately-describe-variations
 @overload
 def check_dict(required_keys: Iterable[Tuple[str, Validator[object]]]=[],
                optional_keys: Iterable[Tuple[str, Validator[object]]]=[],
