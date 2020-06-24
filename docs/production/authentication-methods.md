@@ -597,10 +597,11 @@ domain for your server).
    ```
 
 1. Configure the "Apple authentication" section of
-  `/etc/zulip/settings.py`.  Use the "Services ID" as
+  `/etc/zulip/settings.py`.  Use the "Team ID" as
+  `SOCIAL_AUTH_APPLE_TEAM`, "Services ID" as
   `SOCIAL_AUTH_APPLE_SERVICES_ID`, "Bundle ID" as
-  `SOCIAL_AUTH_APPLE_BUNDLE_ID`, "Key ID" as `SOCIAL_AUTH_APPLE_KEY`
-  and "Team ID" as `SOCIAL_AUTH_APPLE_TEAM` in `settings.py` file.
+  `SOCIAL_AUTH_APPLE_BUNDLE_ID`, and "Key ID" as
+  `SOCIAL_AUTH_APPLE_KEY`.
 
 1. In the Apple developer site, configure the domains your Zulip
    server uses when sending outgoing email notifications.  (This is

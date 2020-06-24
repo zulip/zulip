@@ -292,9 +292,9 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 #
 #     https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#sign-in-with-apple
 #
+#SOCIAL_AUTH_APPLE_TEAM = "<your Team ID>"
 #SOCIAL_AUTH_APPLE_SERVICES_ID = "<your Services ID>"
 #SOCIAL_AUTH_APPLE_BUNDLE_ID = "<your Bundle ID>"
-#SOCIAL_AUTH_APPLE_TEAM = "<your Team ID>"
 #SOCIAL_AUTH_APPLE_KEY = "<your Key ID>"
 
 ########
