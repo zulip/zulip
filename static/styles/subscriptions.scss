@@ -664,7 +664,7 @@ form#add_new_subscription {
     }
 
     .checked svg {
-        fill: hsl(170, 48%, 54%);
+        fill: var(--success);
     }
 
     .icon {

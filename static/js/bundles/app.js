@@ -199,6 +199,8 @@ import "spectrum-colorpicker/spectrum.css";
 import "katex/dist/katex.css";
 import "flatpickr/dist/flatpickr.css";
 import "flatpickr/dist/plugins/confirmDate/confirmDate.css";
+import "../../styles/themes/default.scss";
+import "../../styles/themes/night_mode.scss";
 import "../../styles/components.scss";
 import "../../styles/app_components.scss";
 import "../../styles/rendered_markdown.scss";
@@ -221,7 +223,6 @@ import "../../styles/popovers.scss";
 import "../../styles/recent_topics.scss";
 import "../../styles/typing_notifications.scss";
 import "../../styles/hotspots.scss";
-import "../../styles/night_mode.scss";
 import "../../styles/user_status.scss";
 import "../../styles/widgets.scss";
 

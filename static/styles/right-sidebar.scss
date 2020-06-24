@@ -60,7 +60,7 @@
 
         &:hover,
         &.highlighted_user {
-            background-color: hsla(120, 12.3%, 71.4%, 0.38);
+            background-color: var(--sidebar-item-hover);
         }
     }
 

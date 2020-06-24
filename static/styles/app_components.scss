@@ -152,8 +152,8 @@
         }
 
         &.btn-danger {
-            color: hsl(357, 64%, 72%);
-            border-color: hsl(4, 56%, 82%);
+            color: var(--danger);
+            border-color: var(--danger);
 
             &:hover,
             &:focus {

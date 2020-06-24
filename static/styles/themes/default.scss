@@ -1,0 +1,10 @@
+// Variables added here should be named after their purpose, and not after
+// how they look visually (since that depends on the color theme).
+
+body {
+    --success: hsl(170, 48%, 54%);
+    --danger: hsl(357, 52%, 57%);
+    --link: hsl(200, 100%, 40%);
+    --sidebar-item-hover: hsla(120, 12.3%, 71.4%, 0.38);
+    --active-filter: hsl(202, 56%, 91%);
+}
