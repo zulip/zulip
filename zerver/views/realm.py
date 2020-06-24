@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
@@ -65,7 +65,8 @@ def update_realm(
         authentication_methods: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None),
         notifications_stream_id: Optional[int]=REQ(validator=check_int, default=None),
         signup_notifications_stream_id: Optional[int]=REQ(validator=check_int, default=None),
-        message_retention_days: Optional[int] = REQ(validator=check_string_or_int, default=None),
+        message_retention_days_raw: Optional[Union[int, str]] = REQ(
+            "message_retention_days", validator=check_string_or_int, default=None),
         send_welcome_emails: Optional[bool]=REQ(validator=check_bool, default=None),
         digest_emails_enabled: Optional[bool]=REQ(validator=check_bool, default=None),
         message_content_allowed_in_email_notifications: Optional[bool]=REQ(
@@ -106,12 +107,13 @@ def update_realm(
             video_chat_provider not in {p['id'] for p in Realm.VIDEO_CHAT_PROVIDERS.values()}):
         return json_error(_("Invalid video_chat_provider {}").format(video_chat_provider))
 
-    if message_retention_days is not None:
+    message_retention_days: Optional[int] = None
+    if message_retention_days_raw is not None:
         if not user_profile.is_realm_owner:
             raise OrganizationOwnerRequired()
         realm.ensure_not_on_limited_plan()
         message_retention_days = parse_message_retention_days(
-            message_retention_days, Realm.MESSAGE_RETENTION_SPECIAL_VALUES_MAP)
+            message_retention_days_raw, Realm.MESSAGE_RETENTION_SPECIAL_VALUES_MAP)
 
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.

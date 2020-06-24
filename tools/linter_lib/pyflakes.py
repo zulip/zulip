@@ -15,6 +15,7 @@ def check_pyflakes(files: List[str], options: argparse.Namespace) -> bool:
         ("scripts/lib/pythonrc.py",
          " import *' used; unable to detect undefined names"),
 
+        ("zerver/views/realm.py", "local variable 'message_retention_days' is assigned to but never used"),
         ("settings.py", "settings import *' used; unable to detect undefined names"),
         ("settings.py", "'from .prod_settings_template import *' used; unable to detect undefined names"),
         ("settings.py", "settings.*' imported but unused"),
