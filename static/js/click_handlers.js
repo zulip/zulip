@@ -367,6 +367,11 @@ exports.initialize = function () {
 
     // RECENT TOPICS
 
+    $('body').on('click', '#recent_topics_search', function (e) {
+        e.stopPropagation();
+        recent_topics.change_focused_element(e, 'click');
+    });
+
     $('body').on('click', '.on_hover_topic_read', function (e) {
         e.stopPropagation();
         const stream_id = parseInt($(e.currentTarget).attr('data-stream-id'), 10);

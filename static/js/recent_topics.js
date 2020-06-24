@@ -476,6 +476,15 @@ exports.change_focused_element = function (e, input_key) {
         case 'down_arrow':
             set_table_focus(row_focus, col_focus);
             return true;
+        case 'click':
+            // Note: current_focus_elem can be different here, so we just
+            // set current_focus_elem to the input box, we don't want .focus() on
+            // it since it is already focused.
+            // We only do this for search beacuse we don't want the focus to
+            // go away from the input box when `revive_current_focus` is called
+            // on rerender when user is typing.
+            current_focus_elem = $("#recent_topics_search");
+            return true;
         }
     } else if ($elem.hasClass('btn-recent-filters')) {
         switch (input_key) {
