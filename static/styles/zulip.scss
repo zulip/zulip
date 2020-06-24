@@ -732,9 +732,11 @@ td.pointer {
     }
 
     &:not(.empty-star) {
-        opacity: 1 !important;
-        pointer-events: all !important;
         color: hsl(106, 77%, 29%);
+
+        // Opacity/visibility as though the message is hovered.
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 }
 
