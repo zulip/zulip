@@ -50,6 +50,7 @@ from confirmation.models import (
 )
 from zerver.decorator import statsd_increment
 from zerver.lib import bugdown
+from zerver.lib import retention as retention
 from zerver.lib.addressee import Addressee
 from zerver.lib.alert_words import (
     add_user_alert_words,
@@ -4706,6 +4707,7 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
         # TODO: We should plan to remove `sender_id` here.
         event['recipient_id'] = sample_message.recipient_id
         event['sender_id'] = sample_message.sender_id
+        archiving_chunk_size = retention.MESSAGE_BATCH_SIZE
 
     if message_type == "stream":
         stream_id = sample_message.recipient.type_id
@@ -4716,8 +4718,9 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
         subscribers = subscribers.exclude(user_profile__long_term_idle=True)
         subscribers_ids = [user.user_profile_id for user in subscribers]
         users_to_notify = list(map(subscriber_info, subscribers_ids))
+        archiving_chunk_size = retention.STREAM_MESSAGE_BATCH_SIZE
 
-    move_messages_to_archive(message_ids, realm=realm)
+    move_messages_to_archive(message_ids, realm=realm, chunk_size=archiving_chunk_size)
 
     event['message_type'] = message_type
     send_event(realm, event, users_to_notify)
@@ -4725,7 +4728,7 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
 def do_delete_messages_by_sender(user: UserProfile) -> None:
     message_ids = list(Message.objects.filter(sender=user).values_list('id', flat=True).order_by('id'))
     if message_ids:
-        move_messages_to_archive(message_ids)
+        move_messages_to_archive(message_ids, chunk_size=retention.STREAM_MESSAGE_BATCH_SIZE)
 
 def get_streams_traffic(stream_ids: Set[int]) -> Dict[int, int]:
     stat = COUNT_STATS['messages_in_stream:is_bot:day']

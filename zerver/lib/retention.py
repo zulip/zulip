@@ -59,6 +59,7 @@ logger = logging.getLogger('zulip.retention')
 log_to_file(logger, settings.RETENTION_LOG_PATH)
 
 MESSAGE_BATCH_SIZE = 1000
+STREAM_MESSAGE_BATCH_SIZE = 100
 TRANSACTION_DELETION_BATCH_SIZE = 100
 
 # This data structure declares the details of all database tables that
@@ -357,7 +358,7 @@ def archive_personal_and_huddle_messages(realm: Realm, chunk_size: int=MESSAGE_B
     message_count = move_expired_personal_and_huddle_messages_to_archive(realm, chunk_size)
     logger.info("Done. Archived %s messages", message_count)
 
-def archive_stream_messages(realm: Realm, streams: List[Stream], chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
+def archive_stream_messages(realm: Realm, streams: List[Stream], chunk_size: int=STREAM_MESSAGE_BATCH_SIZE) -> None:
     if not streams:
         return
 
@@ -384,7 +385,7 @@ def archive_messages(chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
     logger.info("Starting the archiving process with chunk_size %s", chunk_size)
 
     for realm, streams in get_realms_and_streams_for_archiving():
-        archive_stream_messages(realm, streams, chunk_size)
+        archive_stream_messages(realm, streams, chunk_size=STREAM_MESSAGE_BATCH_SIZE)
         if realm.message_retention_days:
             archive_personal_and_huddle_messages(realm, chunk_size)
 
