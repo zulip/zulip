@@ -33,6 +33,7 @@ const me = {
     is_admin: false,
     is_guest: false,
     is_bot: false,
+    // no avatar, so client should construct a /avatar/{user_id} URL.
 };
 
 const isaac = {
@@ -139,6 +140,8 @@ const maria = {
     email: 'Athens@example.com',
     user_id: 302,
     full_name: 'Maria Athens',
+    // With client_gravatar enabled, requests that client compute gravatar
+    avatar_url: null,
 };
 
 const ashton = {
@@ -605,6 +608,7 @@ initialize();
 run_test('message_methods', () => {
     people.add_active_user(charles);
     people.add_active_user(maria);
+    people.add_active_user(ashton);
 
     // We don't rely on Maria to have all flags set explicitly--
     // undefined values are just treated as falsy.
@@ -615,7 +619,7 @@ run_test('message_methods', () => {
 
     assert.deepEqual(people.sender_info_with_small_avatar_urls_for_sender_ids([30]), [
         {
-            avatar_url_small: 'https://secure.gravatar.com/avatar/md5-me@example.com?d=identicon&s=50',
+            avatar_url_small: '/avatar/30&s=50',
             email: 'me@example.com',
             full_name: 'Me the Third',
             is_admin: false,
@@ -679,6 +683,13 @@ run_test('message_methods', () => {
     };
     assert.equal(people.small_avatar_url(message),
                  'https://secure.gravatar.com/avatar/md5-foo@example.com?d=identicon&s=50'
+    );
+
+    message = {
+        sender_id: ashton.user_id,
+    };
+    assert.equal(people.small_avatar_url(message),
+                 `/avatar/${ashton.user_id}&s=50`
     );
 
     message = {

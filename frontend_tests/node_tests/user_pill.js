@@ -28,7 +28,7 @@ const isaac_item = {
     email: 'isaac@example.com',
     display_value: 'Isaac Newton',
     user_id: isaac.user_id,
-    img_src: 'https://secure.gravatar.com/avatar/md5-isaac@example.com?d=identicon&s=50',
+    img_src: `/avatar/${isaac.user_id}&s=50`,
 };
 
 run_test('setup', () => {

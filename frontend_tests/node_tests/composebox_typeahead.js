@@ -646,17 +646,17 @@ run_test('initialize', () => {
         // corresponding parts in bold.
         options.query = 'oth';
         actual_value = options.highlighter(othello);
-        expected_value = '        <img class="typeahead-image" src="https://secure.gravatar.com/avatar/md5-othello@zulip.com?d&#x3D;identicon&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>';
+        expected_value = `        <img class="typeahead-image" src="/avatar/${othello.user_id}&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>`;
         assert.equal(actual_value, expected_value);
 
         options.query = 'Lear';
         actual_value = options.highlighter(cordelia);
-        expected_value = '        <img class="typeahead-image" src="https://secure.gravatar.com/avatar/md5-cordelia@zulip.com?d&#x3D;identicon&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>';
+        expected_value = `        <img class="typeahead-image" src="/avatar/${cordelia.user_id}&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>`;
         assert.equal(actual_value, expected_value);
 
         options.query = 'othello@zulip.com, co';
         actual_value = options.highlighter(cordelia);
-        expected_value = '        <img class="typeahead-image" src="https://secure.gravatar.com/avatar/md5-cordelia@zulip.com?d&#x3D;identicon&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>';
+        expected_value = `        <img class="typeahead-image" src="/avatar/${cordelia.user_id}&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>`;
         assert.equal(actual_value, expected_value);
 
         function matcher(query, person) {
@@ -831,7 +831,7 @@ run_test('initialize', () => {
         // content_highlighter.
         fake_this = { completing: 'mention', token: 'othello' };
         actual_value = options.highlighter.call(fake_this, othello);
-        expected_value = '        <img class="typeahead-image" src="https://secure.gravatar.com/avatar/md5-othello@zulip.com?d&#x3D;identicon&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>';
+        expected_value = `        <img class="typeahead-image" src="/avatar/${othello.user_id}&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>`;
         assert.equal(actual_value, expected_value);
 
         fake_this = { completing: 'mention', token: 'hamletcharacters' };
