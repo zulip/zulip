@@ -5235,6 +5235,10 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
                             invited_as=invitee.invited_as,
                             is_multiuse=False))
 
+    if not user_profile.is_realm_admin:
+        # We do not return multiuse invites to non-admin users.
+        return invites
+
     lowest_datetime = timezone_now() - datetime.timedelta(days=settings.INVITATION_LINK_VALIDITY_DAYS)
     multiuse_confirmation_objs = Confirmation.objects.filter(realm=user_profile.realm,
                                                              type=Confirmation.MULTIUSE_INVITE,

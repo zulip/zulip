@@ -1621,7 +1621,9 @@ class InvitationsTestCase(InviteUserBase):
         prereg_user_other_realm = PreregistrationUser(
             email="TestOne@zulip.com", referred_by=self.mit_user("sipbtest"))
         prereg_user_other_realm.save()
-        self.assertEqual(len(do_get_user_invites(user_profile)), 4)
+        multiuse_invite = MultiuseInvite.objects.create(referred_by=user_profile, realm=user_profile.realm)
+        create_confirmation_link(multiuse_invite, Confirmation.MULTIUSE_INVITE)
+        self.assertEqual(len(do_get_user_invites(user_profile)), 5)
         self.assertEqual(len(do_get_user_invites(hamlet)), 1)
         self.assertEqual(len(do_get_user_invites(othello)), 1)
 
