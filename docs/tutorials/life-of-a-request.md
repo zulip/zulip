@@ -140,7 +140,7 @@ yields a response with this HTTP header:
 
 We can see this reflected in [zproject/urls.py](https://github.com/zulip/zulip/blob/master/zproject/urls.py):
 
-    url(r'^users$', 'zerver.lib.rest.rest_dispatch',
+    path('users', 'zerver.lib.rest.rest_dispatch',
         {'GET': 'zerver.views.users.get_members_backend',
          'PUT': 'zerver.views.users.create_user_backend'}),
 

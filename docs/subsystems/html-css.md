@@ -102,7 +102,7 @@ The next line in the code being the context definition.
 using `TemplateView`, for example:
 
 ```
-url(r'^config-error/google$', TemplateView.as_view(
+path('config-error/google', TemplateView.as_view(
     template_name='zerver/config_error.html',),
     {'google_error': True},),
 ```
