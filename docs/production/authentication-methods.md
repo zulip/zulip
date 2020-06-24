@@ -611,14 +611,12 @@ domain for your server).
      `'zproject.backends.AppleAuthBackend',` to enable Apple auth
      using the created configuration.
 
-1. In the Apple developer site, configure the domains your Zulip
-   server uses when sending outgoing email notifications.  (This is
-   required for your Zulip server to deliver emails to the many Apple
-   users who use their privacy-protecting forwarding service.)  See the
-   "Email Relay Service" subsection of [this page][apple-get-started]
-   for more information.  See Zulip's [outgoing email
-   documentation][outgoing-email] for details on what From addresses
-   Zulip uses when sending outgoing emails.
+1. Register with Apple the email addresses or domains your Zulip
+   server sends email to users from.  For instructions and background,
+   see the "Email Relay Service" subsection of
+   [this page][apple-get-started].  For details on what email
+   addresses Zulip sends from, see our
+   [outgoing email documentation][outgoing-email].
 
 [apple-create-services-id]: https://help.apple.com/developer-account/?lang=en#/dev1c0e25352
 [apple-developer]: https://developer.apple.com/account/resources/
