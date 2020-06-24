@@ -132,7 +132,7 @@ function do_hashchange_normal(from_reload) {
 function do_hashchange_overlay(old_hash) {
     const base = hash_util.get_hash_category(window.location.hash);
     const old_base = hash_util.get_hash_category(old_hash);
-    let section = hash_util.get_hash_section(window.location.hash);
+    const section = hash_util.get_hash_section(window.location.hash);
 
     const coming_from_overlay = is_overlay_hash(old_hash || '#');
 
@@ -153,9 +153,8 @@ function do_hashchange_overlay(old_hash) {
                     // We may be on a really old browser or somebody
                     // hand-typed a hash.
                     blueslip.warn('missing section for settings');
-                    section = 'your-account';
                 }
-                settings_panel_menu.normal_settings.activate_section(section);
+                settings_panel_menu.normal_settings.activate_section_or_default(section);
                 return;
             }
 
@@ -164,9 +163,8 @@ function do_hashchange_overlay(old_hash) {
                     // We may be on a really old browser or somebody
                     // hand-typed a hash.
                     blueslip.warn('missing section for organization');
-                    section = 'organization-profile';
                 }
-                settings_panel_menu.org_settings.activate_section(section);
+                settings_panel_menu.org_settings.activate_section_or_default(section);
                 return;
             }
 
@@ -201,23 +199,11 @@ function do_hashchange_overlay(old_hash) {
     }
 
     if (base === 'settings') {
-        if (!section) {
-            section = settings_panel_menu.normal_settings.current_tab();
-            const settings_hash = '#settings/' + section;
-            exports.replace_hash(settings_hash);
-        }
-
         settings.launch(section);
         return;
     }
 
     if (base === 'organization') {
-        if (!section) {
-            section = settings_panel_menu.org_settings.current_tab();
-            const org_hash = '#organization/' + section;
-            exports.replace_hash(org_hash);
-        }
-
         admin.launch(section);
         return;
     }
