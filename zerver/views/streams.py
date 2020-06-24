@@ -288,12 +288,25 @@ def list_subscriptions_backend(
 
 FuncKwargPair = Tuple[Callable[..., HttpResponse], Dict[str, Union[int, Iterable[Any]]]]
 
+add_subscriptions_schema = check_list(
+    check_dict_only(
+        required_keys=[
+            ('name', check_string)
+        ],
+        optional_keys=[
+            ('color', check_color),
+            ('description', check_capped_string(Stream.MAX_DESCRIPTION_LENGTH)),
+        ],
+    ),
+)
+
+remove_subscriptions_schema = check_list(check_string)
+
 @has_request_variables
 def update_subscriptions_backend(
         request: HttpRequest, user_profile: UserProfile,
-        delete: Iterable[str]=REQ(validator=check_list(check_string), default=[]),
-        add: Iterable[Mapping[str, Any]]=REQ(
-            validator=check_list(check_dict([('name', check_string)])), default=[]),
+        delete: Iterable[str]=REQ(validator=remove_subscriptions_schema, default=[]),
+        add: Iterable[Mapping[str, Any]]=REQ(validator=add_subscriptions_schema, default=[]),
 ) -> HttpResponse:
     if not add and not delete:
         return json_error(_('Nothing to do. Specify at least one of "add" or "delete".'))
@@ -335,7 +348,7 @@ check_principals: Validator[Union[List[str], List[int]]] = check_union(
 @has_request_variables
 def remove_subscriptions_backend(
         request: HttpRequest, user_profile: UserProfile,
-        streams_raw: Iterable[str]=REQ("subscriptions", validator=check_list(check_string)),
+        streams_raw: Iterable[str]=REQ("subscriptions", validator=remove_subscriptions_schema),
         principals: Optional[Union[List[str], List[int]]]=REQ(validator=check_principals, default=None),
 ) -> HttpResponse:
 
@@ -394,13 +407,7 @@ EMPTY_PRINCIPALS: Union[Sequence[str], Sequence[int]] = []
 @has_request_variables
 def add_subscriptions_backend(
         request: HttpRequest, user_profile: UserProfile,
-        streams_raw: Iterable[Dict[str, str]]=REQ(
-            "subscriptions", validator=check_list(check_dict_only(
-                [('name', check_string)], optional_keys=[
-                    ('color', check_color),
-                    ('description', check_capped_string(Stream.MAX_DESCRIPTION_LENGTH)),
-                ]),
-            )),
+        streams_raw: Iterable[Dict[str, str]]=REQ("subscriptions", validator=add_subscriptions_schema),
         invite_only: bool=REQ(validator=check_bool, default=False),
         stream_post_policy: int=REQ(validator=check_int_in(
             Stream.STREAM_POST_POLICY_TYPES), default=Stream.STREAM_POST_POLICY_EVERYONE),
