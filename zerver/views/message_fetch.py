@@ -554,10 +554,15 @@ def narrow_parameter(json: str) -> OptionalNarrowListT:
             else:
                 operand_validator = check_string
 
-            validator = check_dict([
-                ('operator', check_string),
-                ('operand', operand_validator),
-            ])
+            validator = check_dict(
+                required_keys=[
+                    ('operator', check_string),
+                    ('operand', operand_validator),
+                ],
+                optional_keys=[
+                    ('negated', check_bool),
+                ],
+            )
 
             try:
                 validator('elem', elem)
