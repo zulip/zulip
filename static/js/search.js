@@ -107,7 +107,7 @@ exports.initialize = function () {
             return items;
         },
         stopAdvance: page_params.search_pills_enabled,
-        advanceKeyCodes: [8],
+        advanceKeyCodes: [8, 37],
 
         on_move: function () {
             if (page_params.search_pills_enabled) {

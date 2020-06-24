@@ -149,6 +149,7 @@ exports.set_up_typeahead_on_pills = function (input, pills, update_func, source)
             update_func();
         },
         stopAdvance: true,
+        advanceKeyCodes: [8, 37],
     });
 };
 

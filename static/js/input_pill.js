@@ -13,6 +13,7 @@ exports.create = function (opts) {
         BACKSPACE: 8,
         LEFT_ARROW: 37,
         RIGHT_ARROW: 39,
+        DELETE: 46,
         COMMA: 188,
     };
 
@@ -309,7 +310,7 @@ exports.create = function (opts) {
                 $pill.prev().focus();
             } else if (char === KEY.RIGHT_ARROW) {
                 $pill.next().focus();
-            } else if (char === KEY.BACKSPACE) {
+            } else if (char === KEY.BACKSPACE || char === KEY.DELETE) {
                 const $next = $pill.next();
                 const id = $pill.data("id");
                 funcs.removePill(id);

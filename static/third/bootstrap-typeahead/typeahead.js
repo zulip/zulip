@@ -69,6 +69,14 @@
  *   so that the `Backspace` key is free to interact with the other elements.
  *
  *   Our custom changes include all mentions of `helpOnEmptyStrings` and `hideOnEmpty`.
+ * 
+ * 6. Advance Key Codes:
+ * 
+ *   This adds support to allow specific key code's events to propagate.
+ *   It is usually used to help us interact with the pills which are
+ *   present before the input text area where typeahead is used.
+ * 
+ *   Our custom changes includes all mentions of `advanceKeyCodes`.
  * ============================================================ */
 
 !function($){
@@ -351,13 +359,13 @@
       }
 
       if ((this.options.stopAdvance || (e.keyCode != 9 && e.keyCode != 13))
-          && $.inArray(e.keyCode, this.options.advanceKeyCodes)) {
+          && !this.options.advanceKeyCodes.includes(e.keyCode)) {
           e.stopPropagation()
       }
     }
 
   , keydown: function (e) {
-      this.suppressKeyPressRepeat = !~$.inArray(e.keyCode, [40,38,9,13,27])
+      this.suppressKeyPressRepeat = ![40,38,9,13,27].includes(e.keyCode)
       this.move(e)
     }
 
@@ -399,7 +407,7 @@
       }
 
       if ((this.options.stopAdvance || (e.keyCode != 9 && e.keyCode != 13))
-          && $.inArray(e.keyCode, this.options.advanceKeyCodes)) {
+          && !this.options.advanceKeyCodes.includes(e.keyCode)) {
           e.stopPropagation()
       }
 
