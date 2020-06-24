@@ -2027,12 +2027,18 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker('events[0]', events[0])
 
     def test_realm_filter_events(self) -> None:
+        regex = "#(?P<id>[123])"
+        url = "https://realm.com/my_realm_filter/%(id)s"
+
         schema_checker = self.check_events_dict([
             ('type', equals('realm_filters')),
-            ('realm_filters', check_list(None)),  # TODO: validate tuples in the list
+            ('realm_filters', check_list(check_tuple([
+                check_string,
+                check_string,
+                check_int,
+            ]))),
         ])
-        events = self.do_test(lambda: do_add_realm_filter(self.user_profile.realm, "#(?P<id>[123])",
-                                                          "https://realm.com/my_realm_filter/%(id)s"))
+        events = self.do_test(lambda: do_add_realm_filter(self.user_profile.realm, regex, url))
         schema_checker('events[0]', events[0])
 
         events = self.do_test(lambda: do_remove_realm_filter(self.user_profile.realm, "#(?P<id>[123])"))
