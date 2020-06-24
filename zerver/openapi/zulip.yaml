@@ -493,7 +493,7 @@ paths:
           The special values of `'newest'` and `'oldest'` are also supported
           for anchoring the query at the most recent or oldest messages.
 
-          **Changes**: String values are new in Zulip 2.2 (feature level 1).  The
+          **Changes**: String values are new in Zulip 3.0 (feature level 1).  The
             `first_unread` functionality was supported in Zulip 2.1.x
             and older by not sending anchor and using use_first_unread_anchor.
 
@@ -552,7 +552,7 @@ paths:
           Whether to use the (computed by the server) first unread message
           matching the narrow as the `anchor`.  Mutually exclusive with `anchor`.
 
-          **Changes**: Deprecated in Zulip 2.2, replaced by
+          **Changes**: Deprecated in Zulip 3.0, replaced by
           `anchor="first_unread"` instead.
         schema:
           type: boolean
@@ -838,7 +838,7 @@ paths:
           Whether to send breadcrumb message to the old thread to
           notify users where the messages were moved to.
 
-          **Changes**: New in Zulip 2.2 (feature level 9).
+          **Changes**: New in Zulip 3.0 (feature level 9).
         schema:
           type: boolean
           default: true
@@ -849,7 +849,7 @@ paths:
           Whether to send a notification message to the new thread to
           notify users where the messages came from.
 
-          **Changes**: New in Zulip 2.2 (feature level 9).
+          **Changes**: New in Zulip 3.0 (feature level 9).
         schema:
           type: boolean
           default: true
@@ -1532,7 +1532,7 @@ paths:
 
         You can also fetch details on [all users in the organization](/api/get-users).
 
-        *This endpoint is new in Zulip Server 2.2.*
+        *This endpoint is new in Zulip Server 3.0 (feature level 1).*
       parameters:
       - $ref: '#/components/parameters/UserId'
       - $ref: '#/components/parameters/ClientGravatar'
@@ -1637,7 +1637,7 @@ paths:
 
           The owner role cannot be removed from the only organization owner.
 
-          **Changes**: New in Zulip 2.2 (feature level 8), replacing the previous
+          **Changes**: New in Zulip 3.0 (feature level 8), replacing the previous
           pair of `is_admin` and `is_guest` boolean parameters.
         schema:
           type: integer
@@ -1865,7 +1865,7 @@ paths:
                         for the user's avatar.  Clients generally shouldn't need to use this;
                         most avatar URLs sent by Zulip will already end with `?v={avatar_version}`.
 
-                        **Changes**: New in Zulip 2.2 (feature level 10). Previous
+                        **Changes**: New in Zulip 3.0 (feature level 10). Previous
                         versions do not return this field.
                       example: 1
                     email:
@@ -1889,14 +1889,14 @@ paths:
                         A boolean indicating if the requesting user is
                         an organization owner.
 
-                        **Changes**: New in Zulip 2.2 (feature level 8).
+                        **Changes**: New in Zulip 3.0 (feature level 8).
                       example: false
                     is_guest:
                       type: boolean
                       description: |
                         A boolean indicating if the requesting user is a guest.
 
-                        **Changes**: New in Zulip 2.2 (feature level 10). Previous
+                        **Changes**: New in Zulip 3.0 (feature level 10). Previous
                         versions do not return this field.
                       example: false
                     is_bot:
@@ -1909,7 +1909,7 @@ paths:
                       description: |
                         A boolean specifying whether the user account has been deactivated.
 
-                        **Changes**: New in Zulip 2.2 (feature level 10). Previous
+                        **Changes**: New in Zulip 3.0 (feature level 10). Previous
                         versions do not return this field.
                       example: true
                     timezone:
@@ -1917,7 +1917,7 @@ paths:
                       description: |
                         The time zone of the user.
 
-                        **Changes**: New in Zulip 2.2 (feature level 10). Previous
+                        **Changes**: New in Zulip 3.0 (feature level 10). Previous
                         versions do not return this field.
                       example: ""
                     date_joined:
@@ -1925,7 +1925,7 @@ paths:
                       description: |
                         The time the user account was created.
 
-                        **Changes**: New in Zulip 2.2 (feature level 10). Previous
+                        **Changes**: New in Zulip 3.0 (feature level 10). Previous
                         versions do not return this field.
                       example: "2019-10-20T07:50:53.728864+00:00"
                     max_message_id:
@@ -2252,7 +2252,7 @@ paths:
                             description: |
                               Whether only organization administrators can post to the stream.
 
-                              **Changes**: Deprecated in Zulip 2.2 (feature level 1), use
+                              **Changes**: Deprecated in Zulip 3.0 (feature level 1), use
                               `stream_post_policy` instead.
                           is_web_public:
                             type: boolean
@@ -2272,7 +2272,7 @@ paths:
                               * 2 => Only administrators can post.
                               * 3 => Only new members can post.
 
-                              **Changes**: New in Zulip 2.2, replacing the previous
+                              **Changes**: New in Zulip 3.0, replacing the previous
                               `is_announcement_only` boolean.
                           message_retention_days:
                             type: integer
@@ -2286,7 +2286,7 @@ paths:
                                 level setting.
                               * `-1` encodes retaining messages in this stream forever.
 
-                              **Changes**: New in Zulip 2.2 (feature level 17).
+                              **Changes**: New in Zulip 3.0 (feature level 17).
                           history_public_to_subscribers:
                             type: boolean
                             description: |
@@ -2662,7 +2662,7 @@ paths:
 
         `GET {{ api_url }}/v1/users/{user_id}/subscriptions/{stream_id}`
 
-        **Changes**: New in Zulip 2.2 (feature level 11).
+        **Changes**: New in Zulip 3.0 (feature level 11).
       parameters:
       - $ref: '#/components/parameters/UserId'
         example: 7
@@ -2839,7 +2839,7 @@ paths:
                               The user ID of the user who uploaded the custom emoji.
                               Will be null if the uploader is unknown.
 
-                              **Changes**: New in Zulip 2.2 (feature level 7).  Previously
+                              **Changes**: New in Zulip 3.0 (feature level 7).  Previously
                               was accessible via and `author` object with an `id` field.
                 - example:
                     {
@@ -3107,7 +3107,7 @@ paths:
           Setting this to `true` will make presence dictionaries be keyed by
           user_id instead of email.
 
-          **Changes**: New in Zulip 2.2 (Unstable with no feature level yet).
+          **Changes**: New in Zulip 3.0 (Unstable with no feature level yet).
         schema:
           type: boolean
           default: false
@@ -3143,7 +3143,7 @@ paths:
              updated to process the new bulk format (with a
              `message_ids`, rather than a singleton `message_id`).
              Otherwise, the server will send `delete_message` events
-             in a loop.  New in Zulip 2.2 (feature level 13).  This
+             in a loop.  New in Zulip 3.0 (feature level 13).  This
              capability is for backwards-compatibility; it will be
              required in a future server release.
 
@@ -3154,7 +3154,7 @@ paths:
              `avatar_url` field in the `realm_user` at its sole discretion
              to optimize network performance.  This is an important optimization
              in organizations with 10,000s of users.
-             New in Zulip 2.2 (feature level 18).
+             New in Zulip 3.0 (feature level 18).
         schema:
           type: object
         example:
@@ -3351,7 +3351,7 @@ paths:
                         feature or API change.  See the [changelog](/api/changelog) for
                         details on what each feature level means.
 
-                        **Changes**.  New in Zulip 2.2.  We recommend using an implied value
+                        **Changes**.  New in Zulip 3.0.  We recommend using an implied value
                         of 0 for Zulip servers that do not send this field.
                     push_notifications_enabled:
                       type: boolean
@@ -3773,7 +3773,7 @@ paths:
                               * 2 => Only administrators can post.
                               * 3 => Only new members can post.
 
-                              **Changes**: New in Zulip 2.2, replacing the previous
+                              **Changes**: New in Zulip 3.0, replacing the previous
                               `is_announcement_only` boolean.
                           message_retention_days:
                             type: integer
@@ -3787,7 +3787,7 @@ paths:
                                 level setting.
                               * `-1` encodes retaining messages in this stream forever.
 
-                              **Changes**: New in Zulip 2.2 (feature level 17).
+                              **Changes**: New in Zulip 3.0 (feature level 17).
                           history_public_to_subscribers:
                             type: boolean
                             description: |
@@ -3812,7 +3812,7 @@ paths:
                             description: |
                               Whether the given stream is announcement only or not.
 
-                              **Changes**: Deprecated in Zulip 2.2 (feature level 1), use
+                              **Changes**: Deprecated in Zulip 3.0 (feature level 1), use
                               `stream_post_policy` instead.
                           is_default:
                             type: boolean
@@ -3964,7 +3964,7 @@ paths:
         description: |
           Whether the stream is limited to announcements.
 
-          **Changes**: Deprecated in Zulip 2.2 (feature level 1), use
+          **Changes**: Deprecated in Zulip 3.0 (feature level 1), use
             `stream_post_policy` instead.
         schema:
           type: boolean
@@ -4032,7 +4032,7 @@ paths:
 
           **Changes**: Before Zulip 2.0, this parameter accepted only a JSON-encoded
           list of email addresses.  Support for the email address-based format was
-          removed in Zulip 2.2 (feature level 11).
+          removed in Zulip 3.0 (feature level 11).
         schema:
           type: array
           items:
@@ -4511,7 +4511,7 @@ components:
                 description: |
                   The ID of the user who added the reaction.
 
-                  **Changes**: New in Zulip 2.2 (feature level 2). The `user`
+                  **Changes**: New in Zulip 3.0 (feature level 2). The `user`
                   object is deprecated and will be removed in the future.
               user:
                 type: object
@@ -4593,7 +4593,7 @@ components:
             filters][linkification-filters] that match content in the
             message's topic.)
 
-            **Changes**: New in Zulip 2.2 (feature level 1).
+            **Changes**: New in Zulip 3.0 (feature level 1).
             Previously, this field was called `subject_links`;
             clients are recommended to rename `subject_links`
             to `topic_links` if present for compatibility with
@@ -4675,7 +4675,7 @@ components:
             A boolean specifying whether the user is an organization owner.
             If true, is_admin will also be true.
 
-            **Changes**: New in Zulip 2.2 (feature level 8).
+            **Changes**: New in Zulip 3.0 (feature level 8).
         bot_type:
           type: integer
           nullable: true
@@ -4700,7 +4700,7 @@ components:
 
             Will be null for legacy bots that do not have an owner.
 
-            **Changes**: New in Zulip 2.2 (feature level
+            **Changes**: New in Zulip 3.0 (feature level
             1).  In previous versions, there was a `bot_owner` field
             containing the email address of the bot's owner.
         is_active:
@@ -5097,7 +5097,7 @@ components:
         * 2 => Only administrators can post.
         * 3 => Only new members can post.
 
-        **Changes**: New in Zulip 2.2, replacing the previous
+        **Changes**: New in Zulip 3.0, replacing the previous
         `is_announcement_only` boolean.
       schema:
         type: integer
@@ -5170,7 +5170,7 @@ components:
         from the streams specified in the `subscriptions` parameter. If
         not provided, then the requesting user/bot is subscribed.
 
-        **Changes**: The integer format is new in Zulip 2.2 (Feature level 9).
+        **Changes**: The integer format is new in Zulip 3.0 (Feature level 9).
       schema:
         type: array
         items:
@@ -5192,7 +5192,7 @@ components:
         * `zulip_extra_emoji`: Special emoji included with Zulip.  Exists to
            namespace the `zulip` emoji.
 
-        **Changes**: In Zulip 2.2 (feature level 2), this become
+        **Changes**: In Zulip 3.0 (feature level 2), this become
         optional for [custom emoji](/help/add-custom-emoji);
         previously, this endpoint assumed `unicode_emoji` if this
         parameter was not specified.
@@ -5234,7 +5234,7 @@ components:
         * "realm_default" => Return to the organization-level setting.
         * "forever" => Retain messages forever.
 
-        **Changes**: New in Zulip 2.2 (feature level 17).
+        **Changes**: New in Zulip 3.0 (feature level 17).
       schema:
         oneOf:
           - type: string

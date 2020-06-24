@@ -86,7 +86,7 @@ containing the changes planned for the next minor release
 were a published release.
 
 The `master` branch contains changes planned for the next major
-release (E.g. 2.2.0); see our documentation on [running
+release (E.g. 3.0); see our documentation on [running
 master](#upgrading-to-master) before upgrading to it.
 
 By default, this uses the main upstream Zulip server repository, but
@@ -199,7 +199,7 @@ instructions for other supported platforms.
 
 ### Upgrading from Ubuntu 18.04 Bionic to 20.04 Focal
 
-1. Upgrade your server to the latest Zulip release (at least 2.2.0,
+1. Upgrade your server to the latest Zulip release (at least 3.0,
    which adds support for Ubuntu Focal).
 
 2. As the Zulip user, stop the Zulip server and run the following

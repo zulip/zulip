@@ -8,7 +8,7 @@ server versions is to check the `zulip_feature_level` parameter in the
 `/register` and `/server_settings` responses to determine which of the
 below features are supported.
 
-## Changes in Zulip 2.2
+## Changes in Zulip 3.0
 
 **Feature level 21**
 

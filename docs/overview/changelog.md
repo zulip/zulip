@@ -2,7 +2,7 @@
 
 All notable changes to the Zulip server are documented in this file.
 
-### 2.2.0 -- Unreleased
+### 3.0 -- Unreleased
 
 This section lists notable unreleased changes; it is generally updated
 in bursts.
@@ -38,7 +38,7 @@ in bursts.
   changelog](https://zulip.com/api/changelog).
 - Our primary official domain is now zulip.com, not zulipchat.com.
 
-#### Upgrade notes for 2.2.0
+#### Upgrade notes for 3.0
 
 - Logged in users will be logged out during this one-time upgrade to
   transition them to more secure session cookies.
@@ -1744,7 +1744,7 @@ Zulip apps.
 This section links to the upgrade notes from past releases, so you can
 easily read them all when upgrading across multiple releases.
 
-* [Upgrade notes for 2.2.0](#upgrade-notes-for-2-2-0)
+* [Upgrade notes for 3.0](#upgrade-notes-for-3-0)
 * [Upgrade notes for 2.1.5](#upgrade-notes-for-2-1-5)
 * [Upgrade notes for 2.1.0](#upgrade-notes-for-2-1-0)
 * [Upgrade notes for 2.0.0](#upgrade-notes-for-2-0-0)

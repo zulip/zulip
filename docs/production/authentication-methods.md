@@ -146,7 +146,7 @@ IdP.
 The above configuration is sufficient for Service Provider initialized
 SSO, i.e. you can visit the Zulip webapp and click "Sign in with
 {IdP}" and it'll correctly start the authentication flow.  If you are
-not hosting multiple organizations, with Zulip 2.2+, the above
+not hosting multiple organizations, with Zulip 3.0+, the above
 configuration is also sufficient for Identity Provider initiated SSO,
 i.e. clicking a "Sign in to Zulip" button on the IdP's website can
 correctly authenticate the user to Zulip.
