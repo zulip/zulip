@@ -946,7 +946,7 @@ def json_fetch_api_key(request: HttpRequest, user_profile: UserProfile,
             return json_error(_("Your username or password is incorrect."))
 
     api_key = get_api_key(user_profile)
-    return json_success({"api_key": api_key})
+    return json_success({"api_key": api_key, "email": user_profile.delivery_email})
 
 @csrf_exempt
 def api_fetch_google_client_id(request: HttpRequest) -> HttpResponse:
