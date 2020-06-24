@@ -170,7 +170,7 @@ jobs:
     docker:
       # This is built from tools/circleci/images/bionic/Dockerfile .
       # Bionic ships with Python 3.6.
-      - image: amanagr/circleci:bionic-python-2.test
+      - image: arpit551/circleci:bionic-python-test
 
     working_directory: ~/zulip
 
@@ -220,7 +220,7 @@ jobs:
       docker:
         # This is built from tools/circleci/images/focal/Dockerfile.
         # Focal ships with Python 3.8.2.
-        - image: arpit551/circleci:focal-test
+        - image: arpit551/circleci:focal-python-test
 
       working_directory: ~/zulip
 
@@ -243,7 +243,7 @@ jobs:
 
   "xenial-legacy":
     docker:
-      - image: gregprice/circleci:xenial-python-4.test
+      - image: arpit551/circleci:xenial-python-test
 
     working_directory: ~/zulip
 
@@ -258,7 +258,7 @@ jobs:
     docker:
         # This is built from tools/circleci/images/bionic/Dockerfile .
         # Bionic ships with Python 3.6.
-        - image: amanagr/circleci:bionic-python-2.test
+        - image: arpit551/circleci:bionic-python-test
 
     working_directory: ~/zulip
 
@@ -298,7 +298,7 @@ jobs:
     docker:
         # This is built from tools/circleci/images/bionic/Dockerfile .
         # Bionic ships with Python 3.6.
-        - image: amanagr/circleci:bionic-python-2.test
+        - image: arpit551/circleci:bionic-python-test
 
     working_directory: ~/zulip
 
@@ -320,7 +320,7 @@ jobs:
     docker:
         # This is built from tools/circleci/images/focal/Dockerfile.
         # Focal ships with Python 3.8.2.
-        - image: arpit551/circleci:focal-test
+        - image: arpit551/circleci:focal-python-test
 
     working_directory: ~/zulip
 
