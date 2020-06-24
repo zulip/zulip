@@ -116,12 +116,12 @@ class WidgetContentTestCase(ZulipTestCase):
             choices=[],
         )
 
-        widget_content = ujson.dumps(
-            dict(
-                widget_type='zform',
-                extra_data=zform_data,
-            ),
+        widget_content = dict(
+            widget_type='zform',
+            extra_data=zform_data,
         )
+
+        check_widget_content(widget_content)
 
         payload = dict(
             type="stream",
@@ -129,7 +129,7 @@ class WidgetContentTestCase(ZulipTestCase):
             client='test suite',
             topic='whatever',
             content=content,
-            widget_content=widget_content,
+            widget_content=ujson.dumps(widget_content),
         )
         result = self.api_post(sender, "/api/v1/messages", payload)
         self.assert_json_success(result)
