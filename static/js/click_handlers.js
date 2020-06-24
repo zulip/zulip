@@ -1,4 +1,5 @@
 const util = require("./util");
+const settings_panel_menu = require('./settings_panel_menu');
 // You won't find every click handler here, but it's a good place to start!
 
 const render_buddy_list_tooltip = require('../templates/buddy_list_tooltip.hbs');
@@ -903,8 +904,7 @@ exports.initialize = function () {
     });
 
     $(".settings-header.mobile .fa-chevron-left").on("click", function () {
-        $("#settings_page").find(".right").removeClass("show");
-        $(this).parent().removeClass("slide-left");
+        settings_panel_menu.mobile_deactivate_section();
     });
 };
 
