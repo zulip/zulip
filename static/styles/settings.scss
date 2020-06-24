@@ -1600,10 +1600,6 @@ input[type=checkbox] {
                 border-bottom: none;
             }
 
-            &.no-border {
-                border-color: transparent;
-            }
-
             &.active {
                 background-color: hsl(0, 0%, 93%);
                 border-bottom: 1px solid transparent;
@@ -2062,9 +2058,19 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 }
 
 @media (max-width: 700px) {
+    #settings_overlay_container {
+        // this variable allows JavaScript to detect this media query
+        --single-column: yes;
+    }
+
     #settings_page {
         .settings-header.mobile {
             display: block;
+
+            &:not(.slide-left) .section {
+                // When viewing the settings list we hide the active section.
+                display: none;
+            }
         }
 
         .content-wrapper {
@@ -2086,6 +2092,12 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
             position: relative;
             width: 250px;
             height: 100%;
+
+            li.active {
+                // Don't highlight the active section in the settings list.
+                background: inherit;
+                border-bottom: 1px solid hsl(0, 0%, 93%);
+            }
         }
     }
 }

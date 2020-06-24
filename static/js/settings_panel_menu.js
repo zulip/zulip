@@ -8,7 +8,9 @@ exports.make_menu = function (opts) {
     self.show = function () {
         main_elem.show();
         const section = self.current_tab();
-        self.activate_section(section);
+        if ($('#settings_overlay_container').css('--single-column') === undefined) {
+            self.activate_section(section);
+        }
         curr_li.focus();
     };
 
@@ -60,9 +62,8 @@ exports.make_menu = function (opts) {
     self.activate_section = function (section) {
         curr_li = self.li_for_section(section);
 
-        main_elem.children("li").removeClass("active no-border");
+        main_elem.children("li").removeClass("active");
         curr_li.addClass("active");
-        curr_li.prev().addClass("no-border");
 
         const settings_section_hash = '#' + hash_prefix + section;
         hashchange.update_browser_history(settings_section_hash);
