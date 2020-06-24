@@ -3,19 +3,27 @@
         <span id="stream_sidebar_privacy_swatch_{{stream_id}}" class="stream-privacy filter-icon" style="color: {{stream_color}}">
             {{> stream_privacy }}
         </span>
-        <a href="{{stream_url}}">{{stream}}</a>
+        <div class="recent_topics_focusable">
+            <a href="{{stream_url}}">{{stream}}</a>
+        </div>
     </td>
     <td class="recent_topic_name">
-        <a href="{{topic_url}}">{{topic}}</a>
+        <div class="recent_topics_focusable">
+            <a href="{{topic_url}}">{{topic}}</a>
+        </div>
         {{#if unread_count}}<span class="recent_topic_unread_count">{{unread_count}}</span>{{/if}}
     </td>
     <td class="recent_topic_actions">
-        {{#if topic_muted}}
-        <i class="fa fa-bell-slash on_hover_topic_unmute recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Unmute topic' }}" role="button" tabindex="0" aria-label="{{t 'Mute topic' }}"></i>
-        {{else}}
-        <i class="fa fa-bell-slash on_hover_topic_mute recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Mute topic' }}" role="button" tabindex="0" aria-label="{{t 'Mute topic' }}"></i>
-        {{/if}}
-        <i class="fa fa-check-circle on_hover_topic_read recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}"></i>
+        <div class="recent_topics_focusable">
+            {{#if topic_muted}}
+            <i class="fa fa-bell-slash on_hover_topic_unmute recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Unmute topic' }}" role="button" tabindex="0" aria-label="{{t 'Mute topic' }}"></i>
+            {{else}}
+            <i class="fa fa-bell-slash on_hover_topic_mute recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Mute topic' }}" role="button" tabindex="0" aria-label="{{t 'Mute topic' }}"></i>
+            {{/if}}
+        </div>
+        <div class="recent_topics_focusable">
+            <i class="fa fa-check-circle on_hover_topic_read recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}"></i>
+        </div>
     </td>
     <td class='recent_topic_users'>
         <ul class="recent_avatars">

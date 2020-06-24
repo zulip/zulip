@@ -46,12 +46,7 @@ function set_table_focus(row, col) {
         return true;
     }
 
-    // The first two "columns" are the stream/topic links.
-    if (col === 0 || col === 1) {
-        topic_rows.eq(row).children().eq(col).find('a').focus();
-    } else {
-        topic_rows.eq(row).children().eq(2).children().eq(col - 2).focus();
-    }
+    topic_rows.eq(row).find('.recent_topics_focusable').eq(col).children().focus();
     current_focus_elem = 'table';
     return true;
 }
