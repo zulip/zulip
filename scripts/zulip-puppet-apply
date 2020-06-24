@@ -21,11 +21,6 @@ config = configparser.RawConfigParser()
 config.read("/etc/zulip/zulip.conf")
 
 distro_info = parse_os_release()
-if not os.path.exists("/etc/puppet/hiera.yaml"):
-    if (distro_info['ID'], distro_info['VERSION_ID']) in [('debian', '9'), ('ubuntu', '16.04')]:
-        # Suppress warnings in old puppet about hiera.yaml not existing.
-        open("/etc/puppet/hiera.yaml", "a").close()
-
 puppet_config = """
 Exec { path => "/usr/sbin:/usr/bin:/sbin:/bin" }
 """
