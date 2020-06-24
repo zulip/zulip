@@ -25,6 +25,7 @@ from django.test.client import RequestFactory
 from django.urls import reverse
 from django.utils.timezone import now as timezone_now
 from django_auth_ldap.backend import LDAPSearch, _LDAPUser
+from jwt.exceptions import PyJWTError
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.response import OneLogin_Saml2_Response
 from social_core.exceptions import AuthFailed, AuthStateForbidden
@@ -2156,7 +2157,7 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
     def test_id_token_verification_failure(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
         with self.assertLogs(self.logger_string, level='INFO') as m:
-            with mock.patch("jwt.decode", side_effect=jwt.exceptions.PyJWTError):
+            with mock.patch("jwt.decode", side_effect=PyJWTError):
                 result = self.social_auth_test(account_data_dict,
                                                expect_choose_email_screen=True,
                                                subdomain='zulip', is_signup=True)

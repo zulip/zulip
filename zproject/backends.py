@@ -18,7 +18,6 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union, cast
 
-import jwt
 import magic
 import ujson
 from decorator import decorator
@@ -33,8 +32,6 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import ugettext as _
 from django_auth_ldap.backend import LDAPBackend, LDAPReverseEmailSearch, _LDAPUser, ldap_error
-from jwt.algorithms import RSAAlgorithm
-from jwt.exceptions import PyJWTError
 from lxml.etree import XMLSyntaxError
 from onelogin.saml2.errors import OneLogin_Saml2_Error
 from onelogin.saml2.response import OneLogin_Saml2_Response
@@ -1202,10 +1199,10 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
     if full_name:
         return_data["full_name"] = full_name
     else:
-        # In SAML authentication, the IdP may support only sending
-        # the first and last name as separate attributes - in that case
+        # Some authentications methods like Apple and SAML send
+        # first name and last name as seperate attributes. In that case
         # we construct the full name from them.
-        return_data["full_name"] = f"{first_name} {last_name}".strip()  # strip removes the unnecessary ' '
+        return_data["full_name"] = f"{first_name or ''} {last_name or ''}".strip()  # strip removes the unnecessary ' '
 
     return user_profile
 
@@ -1619,37 +1616,6 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
             if param in self.standard_relay_params:
                 self.strategy.session_set(param, value)
         return request_state
-
-    def decode_id_token(self, id_token: str) -> Dict[str, Any]:
-        '''Decode and validate JWT token from Apple and return payload including user data.
-
-        We override this method from upstream python-social-auth, for two reasons:
-        * To improve error handling (correctly raising AuthFailed; see comment below).
-        * To facilitate this to support the native flow, where
-          the Apple-generated id_token is signed for "Bundle ID"
-          audience instead of "Services ID".
-
-        It is likely that small upstream tweaks could make it possible
-        to make this function a thin wrapper around the upstream
-        method; we may want to submit a PR to achieve that.
-        '''
-        if self.is_native_flow():
-            audience = self.setting("BUNDLE_ID")
-        else:
-            audience = self.setting("SERVICES_ID")
-
-        try:
-            kid = jwt.get_unverified_header(id_token).get('kid')
-            public_key = RSAAlgorithm.from_jwk(self.get_apple_jwk(kid))
-            decoded = jwt.decode(id_token, key=public_key,
-                                 audience=audience, algorithm="RS256")
-        except PyJWTError:
-            # Changed from upstream python-social-auth to raise
-            # AuthFailed, which is more appropriate than upstream's
-            # AuthCanceled, for this case.
-            raise AuthFailed(self, "Token validation failed")
-
-        return decoded
 
     def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
         if not self.is_native_flow():
