@@ -604,7 +604,12 @@ exports.small_avatar_url_for_person = function (person) {
     if (person.avatar_url) {
         return exports.format_small_avatar_url(person.avatar_url);
     }
-    return gravatar_url_for_email(person.email);
+
+    if (person.avatar_url === null) {
+        return gravatar_url_for_email(person.email);
+    }
+
+    return exports.format_small_avatar_url('/avatar/' + person.user_id);
 };
 
 exports.sender_info_with_small_avatar_urls_for_sender_ids = function (sender_ids) {
@@ -645,6 +650,13 @@ exports.small_avatar_url = function (message) {
     // positives on line coverage (we don't do branch checking).
     if (message.avatar_url) {
         return exports.format_small_avatar_url(message.avatar_url);
+    }
+
+    if (person && person.avatar_url === undefined) {
+        // If we don't have an avatar_url at all, we use `GET /avatar/{user_id}`
+        // endpoint to obtain avatar url. Latest servers don't send this field
+        // for long term idle users.
+        return exports.format_small_avatar_url('/avatar/' + person.user_id);
     }
 
     // For computing the user's email, we first trust the person
