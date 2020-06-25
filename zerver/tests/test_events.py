@@ -131,7 +131,6 @@ from zerver.lib.users import get_api_key
 from zerver.lib.validator import (
     Validator,
     check_bool,
-    check_dict,
     check_dict_only,
     check_float,
     check_int,
@@ -1651,7 +1650,13 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('update_dict')),
             ('property', equals('default')),
             ('data', check_dict_only([
-                ('authentication_methods', check_dict([])),
+                ('authentication_methods', check_dict_only([
+                    ('Google', check_bool),
+                    ('Dev', check_bool),
+                    ('LDAP', check_bool),
+                    ('GitHub', check_bool),
+                    ('Email', check_bool),
+                ])),
             ])),
         ])
 
