@@ -1,3 +1,4 @@
+import ast
 import datetime
 import re
 import time
@@ -2811,7 +2812,7 @@ class CustomProfileField(models.Model):
         (CHOICE, str(_('List of options')), validate_choice_field, str, "CHOICE"),
     ]
     USER_FIELD_TYPE_DATA: List[UserFieldElement] = [
-        (USER, str(_('Person picker')), check_valid_user_ids, eval, "USER"),
+        (USER, str(_('Person picker')), check_valid_user_ids, ast.literal_eval, "USER"),
     ]
 
     CHOICE_FIELD_VALIDATORS: Dict[int, ExtendedValidator] = {
