@@ -62,7 +62,7 @@ def add_subscriptions(client: Client) -> None:
                                     '200_0')
 
     # {code_example|start}
-    # To subscribe another user to a stream, you may pass in
+    # To subscribe other users to a stream, you may pass
     # the `principals` argument, like so:
     user_id = 25
     result = client.add_subscriptions(

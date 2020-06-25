@@ -2369,8 +2369,8 @@ paths:
         `POST {{ api_url }}/v1/users/me/subscriptions`
 
         If any of the specified streams do not exist, they are automatically
-        created, and configured using the `invite_only` setting specified in
-        the parameters (see below).
+        created.  The initial [stream settings](/api/update-stream) will be determined
+        by the optional parameters like `invite_only` detailed below.
       parameters:
       - name: subscriptions
         in: query
@@ -2380,25 +2380,12 @@ paths:
           exist a new stream is created. The description of the stream created can
           be specified by setting the dictionary key `description` with an
           appropriate value.
-
-
-          **Note**: This parameter is called `streams` and not `subscriptions`
-          in our Python API."
         schema:
           type: array
           items:
             type: object
         example: [{"name": "Verona", "description": "Italian City"}]
         required: true
-      - name: invite_only
-        in: query
-        description: |
-          A boolean specifying whether the streams specified in `subscriptions`
-          are invite-only or not.
-        schema:
-          type: boolean
-          default: false
-        example: true
       - $ref: '#/components/parameters/Principals'
       - name: authorization_errors_fatal
         in: query
@@ -2406,25 +2393,40 @@ paths:
           A boolean specifying whether authorization errors (such as when the
           requesting user is not authorized to access a private stream) should be
           considered fatal or not. When `True`, an authorization error is reported
-          as such. When set to `False`, the returned JSON payload indicates that
-          there was an authorization error, but the response is still considered a
-          successful one.
+          as such. When set to `False`, the response will be a 200 and any streams
+          where the request encountered an authorization error will be listed
+          in the `unauthorized` key.
         schema:
           type: boolean
           default: true
         example: false
-      - $ref: '#/components/parameters/HistoryPublicToSubscribers'
-      - $ref: '#/components/parameters/StreamPostPolicy'
-      - $ref: '#/components/parameters/MessageRetentionDays'
       - name: announce
         in: query
         description: |
-          If `announce` is `True` and one of the streams specified in
-          `subscriptions` has to be created (i.e. doesn't exist to begin with), an
-          announcement will be made notifying that a new stream was created.
+          If one of the streams specified did not exist previously and is thus craeted
+          by this call, this determines whether [notification bot](/help/configure-notification-bot)
+          will send an announcement about the new stream's creation.
         schema:
           type: boolean
+          default: false
         example: true
+      - name: invite_only
+        in: query
+        description: |
+          As described above, this endpoint will create a new stream if passed
+          a stream name that doesn't already exist.  This parameters and the ones
+          that follow are used to request an initial configuration of a created
+          stream; they are ignored for streams that already exist.
+
+          This parameter determines whether any newly created streams will be
+          private streams.
+        schema:
+          type: boolean
+          default: false
+        example: true
+      - $ref: '#/components/parameters/HistoryPublicToSubscribers'
+      - $ref: '#/components/parameters/StreamPostPolicy'
+      - $ref: '#/components/parameters/MessageRetentionDays'
       responses:
         '200':
           description: Success.
@@ -4899,7 +4901,7 @@ components:
               type: string
             description: |
               A list of names of streams that the requesting user/bot was not
-              authorized to subscribe to.
+              authorized to subscribe to.  Only present if `authorization_errors_fatal=false`.
     InvalidApiKeyError:
       allOf:
       - $ref: '#/components/schemas/JsonError'
@@ -5116,7 +5118,6 @@ components:
         option in documentation.
       schema:
         type: boolean
-        default: None
       example: false
       required: false
 
@@ -5177,7 +5178,6 @@ components:
           oneOf:
             - type: string
             - type: integer
-        default: []
       example: ['ZOE@zulip.com']
     ReactionType:
       name: reaction_type
