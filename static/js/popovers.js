@@ -247,7 +247,7 @@ exports._test_calculate_info_popover_placement = calculate_info_popover_placemen
 // element is the target element to pop off of
 // user is the user whose profile to show
 // message is the message containing it, which should be selected
-function show_user_info_popover(element, user, message) {
+function show_user_info_popover_for_message(element, user, message) {
     const last_popover_elem = current_message_info_popover_elem;
     exports.hide_all();
     if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
@@ -701,7 +701,7 @@ exports.show_sender_info = function () {
 
     const message = current_msg_list.get(rows.id($message));
     const user = people.get_by_user_id(message.sender_id);
-    show_user_info_popover($sender[0], user, message);
+    show_user_info_popover_for_message($sender[0], user, message);
     if (current_message_info_popover_elem) {
         focus_user_info_popover_item();
     }
@@ -733,8 +733,7 @@ exports.register_click_handlers = function () {
             e.stopPropagation();
             const message = current_msg_list.get(rows.id(row));
             const user = people.get_by_user_id(message.sender_id);
-
-            show_user_info_popover(this, user, message);
+            show_user_info_popover_for_message(this, user, message);
         },
     );
 
@@ -756,7 +755,7 @@ exports.register_click_handlers = function () {
         } else {
             user = people.get_by_email(email);
         }
-        show_user_info_popover(this, user, message);
+        show_user_info_popover_for_message(this, user, message);
     });
 
     $("#main_div").on("click", ".user-group-mention", function (e) {
