@@ -1916,7 +1916,6 @@ class Bugdown(markdown.Markdown):
         # ---------------------------------------------------
         # strong_em -       for these three patterns,
         # strong2 -         we have our own versions where
-        # emphasis2 -       we disable _ for bold and emphasis
 
         # Declare regexes for clean single line calls to .register().
         NOT_STRONG_RE = markdown.inlinepatterns.NOT_STRONG_RE
@@ -1925,9 +1924,10 @@ class Bugdown(markdown.Markdown):
         # Custom bold syntax: **foo** but not __foo__
         # str inside ** must start and end with a word character
         # it need for things like "const char *x = (char *)y"
-        EMPHASIS_RE = r'(\*)(?!\s+)([^\*^\n]+)(?<!\s)\*'
+        EMPHASIS_RE = r'(\*|\_)(?!\s+)([^\*^\n]+)(?<!\s)\2'
+        STRONG_RE = r'(\*\*|\_\_)(?!\s+)([^\*^\n]+)(?<!\s)\2'
         ENTITY_RE = markdown.inlinepatterns.ENTITY_RE
-        STRONG_EM_RE = r'(\*\*\*)(?!\s+)([^\*^\n]+)(?<!\s)\*\*\*'
+        STRONG_EM_RE = r'(\*\*\*|\_\*\*|\_\_\*|\_\_\_|\*\_\_|\*\*\_)(?!\s+)([^\*^\n]+)(?<!\s)\2'
         # Inline code block without whitespace stripping
         BACKTICK_RE = r'(?:(?<!\\)((?:\\{2})+)(?=`+)|(?<!\\)(`+)(.+?)(?<!`)\3(?!`))'
 
@@ -1951,7 +1951,7 @@ class Bugdown(markdown.Markdown):
         # Reserve priority 45-54 for Realm Filters
         reg = self.register_realm_filters(reg)
         reg.register(markdown.inlinepatterns.HtmlInlineProcessor(ENTITY_RE, self), 'entity', 40)
-        reg.register(markdown.inlinepatterns.SimpleTagPattern(r'(\*\*)([^\n]+?)\2', 'strong'), 'strong', 35)
+        reg.register(markdown.inlinepatterns.SimpleTagPattern(STRONG_RE, 'strong'), 'strong', 35)
         reg.register(markdown.inlinepatterns.SimpleTagPattern(EMPHASIS_RE, 'em'), 'emphasis', 30)
         reg.register(markdown.inlinepatterns.SimpleTagPattern(DEL_RE, 'del'), 'del', 25)
         reg.register(markdown.inlinepatterns.SimpleTextInlineProcessor(NOT_STRONG_RE), 'not_strong', 20)

@@ -281,15 +281,64 @@
       "text_content": "test http://xx.xx link"
     },
     {
-      "name": "underscore_disabled",
+      "name": "emphasis_text_underscore",
       "input": "_foo_",
-      "expected_output": "<p>_foo_</p>"
+      "expected_output": "<p><em>foo</em></p>",
+      "text_content": "foo"
     },
     {
-      "name": "emphasis_text",
+      "name": "emphasis_text_asterisk",
       "input": "*foo*",
       "expected_output": "<p><em>foo</em></p>",
       "text_content": "foo"
+    },
+    {
+      "name": "emphasis_text_mismatch_1",
+      "input": "*foo_",
+      "expected_output": "<p>*foo_</p>",
+      "text_content": "*foo_"
+    },
+    {
+      "name": "emphasis_text_mismatch_2",
+      "input": "_bar*",
+      "expected_output": "<p>_bar*</p>",
+      "text_content": "_bar*"
+    },
+    {
+      "name": "emphasis_not_in_url",
+      "input": "www.test.com/foo_bar_baz",
+      "expected_output": "<p><a href=\"http://www.test.com/foo_bar_baz\" target=\"_blank\" title=\"http://www.test.com/foo_bar_baz\">www.test.com/foo_bar_baz</a></p>",
+      "text_content": "www.test.com/foo_bar_baz"
+    },
+    {
+      "name": "emphasis_text_asterisk_with_enclosed_asterisk",
+      "input": "*asterisk *with some internal asterisk* foo*",
+      "expected_output": "<p><em>asterisk <em>with some internal asterisk</em> foo</em></p>",
+      "text_content": "asterisk with some internal asterisk foo"
+    },
+    {
+      "name": "emphasis_text_asterisk_with_enclosed_underscore",
+      "input": "*asterisk _with some internal underscore_ foo*",
+      "expected_output": "<p><em>asterisk <em>with some internal underscore</em> foo</em></p>",
+      "text_content": "asterisk with some internal underscore foo"
+    },
+    {
+      "name": "emphasis_text_underscore_with_enclosed_asterisk",
+      "input": "_underscore *with some internal asterisk* foo_",
+      "expected_output": "<p><em>underscore <em>with some internal asterisk</em> foo</em></p>",
+      "text_content": "underscore with some internal asterisk foo"
+    },
+    {
+      "name": "emphasis_text_underscore_with_enclosed_underscore",
+      "input": "_underscore _with some internal underscore_ foo_",
+      "expected_output": "<p><em>underscore <em>with some internal underscore</em> foo</em></p>",
+      "text_content": "underscore with some internal underscore foo"
+    },
+    {
+      "name": "emphasis_text_asterisk_sequential",
+      "input": "it's just *asterisk* with some internal non emphasized text *then emphasis again*",
+      "expected_output": "<p>it's just <em>asterisk</em> with some internal non emphasized text <em>then emphasis again</em></p>",
+      "text_content": "it's just asterisk with some internal non emphasized text then emphasis again"
     },
     {
       "name": "emphasis_code",
@@ -308,32 +357,147 @@
       "expected_output": "<p><em>&lt;h1&gt;Hello World&lt;/h1&gt;</em></p>"
     },
     {
-      "name": "underscore_strong_disabled",
-      "input": "__foo__",
-      "expected_output": "<p>__foo__</p>"
-    },
-    {
-      "name": "star_strong",
+      "name": "strong_text_asterisk",
       "input": "**foo**",
       "expected_output": "<p><strong>foo</strong></p>",
       "text_content": "foo"
     },
     {
-      "name": "star_emoji",
+      "name": "strong_text_underscore",
+      "input": "__foo__",
+      "expected_output": "<p><strong>foo</strong></p>",
+      "text_content": "foo"
+    },
+    {
+      "name": "strong_text_mismatch_1",
+      "input": "**bar__",
+      "expected_output": "<p>**bar__</p>",
+      "text_content": "**bar__"
+    },
+    {
+      "name": "strong_text_mismatch_2",
+      "input": "__bar**",
+      "expected_output": "<p>__bar**</p>",
+      "text_content": "__bar**"
+    },
+    {
+      "name": "strong_text_as_braced_emphasis_1",
+      "input": "_*baz_*",
+      "expected_output": "<p><em>*baz</em>*</p>",
+      "text_content": "*baz*"
+    },
+    {
+      "name": "strong_text_as_braced_emphasis_2",
+      "input": "*_baz*_",
+      "expected_output": "<p><em>_baz</em>_</p>",
+      "text_content": "_baz_"
+    },
+    {
+      "name": "strong_not_in_url",
+      "input": "www.test.com/foo__bar__baz",
+      "expected_output": "<p><a href=\"http://www.test.com/foo__bar__baz\" target=\"_blank\" title=\"http://www.test.com/foo__bar__baz\">www.test.com/foo__bar__baz</a></p>",
+      "text_content": "www.test.com/foo__bar__baz"
+    },
+    {
+      "name": "strong_text_asterisk_with_enclosed_asterisk",
+      "input": "**double-asterisk **with some internal double-asterisk** foo**",
+      "expected_output": "<p><em>asterisk **with some internal double-asterisk** foo</em></p>",
+      "text_content": "asterisk **with some internal double-asterisk** foo"
+    },
+    {
+      "name": "strong_text_asterisk_with_enclosed_underscore",
+      "input": "**double-asterisk __with some internal double-underscore__ foo**",
+      "expected_output": "<p><em>double-asterisk __with some internal double-underscore__ foo</em></p>",
+      "text_content": "double-asterisk __with some internal double-underscore__ foo"
+    },
+    {
+      "name": "strong_text_underscore_with_enclosed_asterisk",
+      "input": "__double-underscore **with some internal double-asterisk** foo__",
+      "expected_output": "<p><em>double-underscore **with some internal double-asterisk** foo</em></p>",
+      "text_content": "double-underscore **with some internal double-asterisk** foo"
+    },
+    {
+      "name": "strong_text_underscore_with_enclosed_underscore",
+      "input": "__double-underscore __with some internal double-underscore__ foo__",
+      "expected_output": "<p><em>double-underscore __with some internal double-underscore__ foo</em></p>",
+      "text_content": "double-underscore __with some internal double-underscore__ foo"
+    },
+    {
+      "name": "strong_text_asterisk_sequential",
+      "input": "it's just **double-asterisk** with some internal non strong text **then strong again**",
+      "expected_output": "<p>it's just <em>double-asterisk</em> with some internal non strong text <em>then strong again</em></p>",
+      "text_content": "it's just double-asterisk with some internal non strong text then strong again"
+    },
+    {
+      "name": "strong_emoji_asterisk",
       "input": "**:smile:**",
       "expected_output": "<p><strong><span aria-label=\"smile\" class=\"emoji emoji-263a\" role=\"img\" title=\"smile\">:smile:</span></strong></p>",
       "text_content": "\u263A"
     },
     {
-      "name": "star_strong_em",
+      "name": "strong_html",
+      "input": "**<h1>Hello World</h1>**",
+      "expected_output": "<p><strong>&lt;h1&gt;Hello World&lt;/h1&gt;</strong></p>"
+    },
+    {
+      "name": "em_underscore_braced_with_strong_asterisk",
+      "input": "_**foo_**",
+      "expected_output": "<p><em>**foo</em>**</p>",
+      "text_content": "**foo**"
+    },
+    {
+      "name": "strong_underscore_braced_with_em_asterisk",
+      "input": "__*foo__*",
+      "expected_output": "<p><strong>*foo</strong>*</p>",
+      "text_content": "*foo*"
+    },
+    {
+      "name": "em_asterisk_braced_with_strong_underscore",
+      "input": "*__foo*__",
+      "expected_output": "<p><em>__foo</em>__</p>",
+      "text_content": "__foo__"
+    },
+    {
+      "name": "strong_asterisk_braced_with_em_underscore",
+      "input": "**_foo**_",
+      "expected_output": "<p><strong>_foo</strong>_</p>",
+      "text_content": "_foo_"
+    },
+    {
+      "name": "strong_asterisk_em_asterisk",
       "input": "***foo***",
       "expected_output": "<p><strong><em>foo</em></strong></p>",
       "text_content": "foo"
     },
     {
-      "name": "strong_with_html",
-      "input": "**<h1>Hello World</h1>**",
-      "expected_output": "<p><strong>&lt;h1&gt;Hello World&lt;/h1&gt;</strong></p>"
+      "name": "strong_asterisk_em_underscore",
+      "input": "**_foo_**",
+      "expected_output": "<p><strong><em>foo</em></strong></p>",
+      "text_content": "foo"
+    },
+    {
+      "name": "strong_underscore_em_asterisk",
+      "input": "__*foo*__",
+      "expected_output": "<p><strong><em>foo</em></strong></p>",
+      "text_content": "foo"
+    },
+    {
+      "name": "strong_underscore_em_underscore",
+      "input": "___foo___",
+      "expected_output": "<p><strong><em>foo</em></strong></p>",
+      "text_content": "foo"
+    },
+    {
+      "name": "em_asterisk_strong_underscore",
+      "input": "*__foo__*",
+      "expected_output": "<p><em><strong>foo</strong></em></p>",
+      "text_content": "foo"
+    },
+    {
+      "name": "em_underscore_strong_asterisk",
+      "input": "_**foo**_",
+      "expected_output": "<p><em><strong>foo</strong></em></p>",
+      "text_content": "foo"
     },
     {
       "name": "numbered_list",
