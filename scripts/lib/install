@@ -81,8 +81,6 @@ fi
 read -r -a APT_OPTIONS <<< "${APT_OPTIONS:-}"
 # Install additional packages.
 read -r -a ADDITIONAL_PACKAGES <<< "${ADDITIONAL_PACKAGES:-}"
-# Deployment type is almost always voyager.
-DEPLOYMENT_TYPE="${DEPLOYMENT_TYPE:-voyager}"
 # Comma-separated list of puppet manifests to install.  default is
 # zulip::voyager for an all-in-one system or zulip::dockervoyager for
 # Docker.  Use e.g. zulip::app_frontend for a Zulip frontend server.
@@ -343,7 +341,7 @@ else
     cat <<EOF > /etc/zulip/zulip.conf
 [machine]
 puppet_classes = $PUPPET_CLASSES
-deploy_type = $DEPLOYMENT_TYPE
+deploy_type = production
 
 [postgresql]
 version = $POSTGRES_VERSION
