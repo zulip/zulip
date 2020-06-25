@@ -407,7 +407,7 @@ def apply_event(state: Dict[str, Any],
         if event['op'] == "add":
             person = copy.deepcopy(person)
             if client_gravatar:
-                if 'gravatar.com' in person['avatar_url']:
+                if person['avatar_url'].startswith("https://secure.gravatar.com"):
                     person['avatar_url'] = None
             person['is_active'] = True
             if not person['is_bot']:
@@ -467,7 +467,7 @@ def apply_event(state: Dict[str, Any],
 
             if client_gravatar and 'avatar_url' in person:
                 # Respect the client_gravatar setting in the `users` data.
-                if 'gravatar.com' in person['avatar_url']:
+                if person['avatar_url'].startswith("https://secure.gravatar.com"):
                     person['avatar_url'] = None
                     person['avatar_url_medium'] = None
 

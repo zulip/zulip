@@ -982,11 +982,11 @@ class BugdownTest(ZulipTestCase):
             converted = bugdown.convert(content, message_realm=realm, message=msg)
             converted_topic = bugdown.topic_links(realm.id, content)
             if convert:
-                self.assertTrue('trac.example.com' in converted)
+                self.assertTrue('https://trac.example.com' in converted)
                 self.assertEqual(len(converted_topic), 1)
-                self.assertTrue('trac.example.com' in converted_topic[0])
+                self.assertTrue('https://trac.example.com' in converted_topic[0])
             else:
-                self.assertTrue('trac.example.com' not in converted)
+                self.assertTrue('https://trac.example.com' not in converted)
                 self.assertEqual(len(converted_topic), 0)
         assert_conversion('Hello #123 World')
         assert_conversion('Hello #123World', False)

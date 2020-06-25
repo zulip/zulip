@@ -467,7 +467,7 @@ class GetEventsTest(ZulipTestCase):
         message = get_message(apply_markdown=False, client_gravatar=False)
         self.assertEqual(message["display_recipient"], "Denmark")
         self.assertEqual(message["content"], "**hello**")
-        self.assertIn('gravatar.com', message["avatar_url"])
+        self.assertTrue(message["avatar_url"].startswith("https://secure.gravatar.com"))
 
         message = get_message(apply_markdown=True, client_gravatar=False)
         self.assertEqual(message["display_recipient"], "Denmark")

@@ -2339,7 +2339,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
             all_emails_verified = True
             for email_data_dict in self.email_data:
                 email = email_data_dict["email"]
-                if email.endswith("noreply.github.com"):
+                if email.endswith("@users.noreply.github.com"):
                     self.assert_not_in_success_response([email], result)
                 elif email_data_dict.get('verified'):
                     self.assert_in_success_response([email], result)

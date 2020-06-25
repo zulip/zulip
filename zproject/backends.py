@@ -1461,7 +1461,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
         email_objs = self.get_all_associated_email_objects(*args, **kwargs)
         return [
             email for email in email_objs
-            if not email["email"].endswith("noreply.github.com")
+            if not email["email"].endswith("@users.noreply.github.com")
         ]
 
     def user_data(self, access_token: str, *args: Any, **kwargs: Any) -> Dict[str, str]:
