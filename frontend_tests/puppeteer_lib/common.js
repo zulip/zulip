@@ -157,6 +157,10 @@ class CommonUtils {
                       re-rendered based on server info?
             */
             const last_msg = current_msg_list.last();
+            if (last_msg === undefined) {
+                return false;
+            }
+
             if (last_msg.raw_content !== content) {
                 return false;
             }
