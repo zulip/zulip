@@ -1831,7 +1831,7 @@ def get_sub_registry(r: markdown.util.Registry, keys: List[str]) -> markdown.uti
 DEFAULT_BUGDOWN_KEY = -1
 ZEPHYR_MIRROR_BUGDOWN_KEY = -2
 
-class Bugdown(markdown.Markdown):
+class Markdown(markdown.Markdown):
     def __init__(self, *args: Any, **kwargs: Union[bool, int, List[Any]]) -> None:
         # define default configs
         self.config = {
@@ -2020,7 +2020,7 @@ def make_md_engine(realm_filters_key: int, email_gateway: bool) -> None:
 def build_engine(realm_filters: List[Tuple[str, str, int]],
                  realm_filters_key: int,
                  email_gateway: bool) -> markdown.Markdown:
-    engine = Bugdown(
+    engine = Markdown(
         realm_filters=realm_filters,
         realm=realm_filters_key,
         code_block_processor_disabled=email_gateway,
