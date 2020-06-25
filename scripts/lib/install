@@ -416,7 +416,7 @@ elif [ "$package_system" = yum ]; then
     :
 fi
 
-if has_class "zulip::nginx" && [ ! "$DEPLOYMENT_TYPE" = "dockervoyager" ]; then
+if has_class "zulip::nginx" && ! has_class "zulip::dockervoyager"; then
     # Check nginx was configured properly now that we've installed it.
     # Most common failure mode is certs not having been installed.
     if ! nginx -t; then
