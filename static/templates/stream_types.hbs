@@ -31,17 +31,19 @@
         </label>
     </li>
     {{/each}}
-    {{#if is_admin}}
+    {{#if (or is_owner is_stream_edit)}}
     <h4>{{t "Message retention for stream" }}</h4>
 
     {{> settings/upgrade_tip_widget}}
 
     <li>
         <div class="input-group inline-block">
-            <label for="stream_message_retention_setting" class="dropdown-title">{{t "Message retention period" }}</label>
+            <label for="stream_message_retention_setting" class="dropdown-title">{{t "Message retention period" }}
+                <i class="fa fa-info-circle settings-info-icon realm_allow_message_deleting_tooltip" data-toggle="tooltip" aria-hidden="true" title="{{t 'Only owners can change stream message retention policy.' }}"></i>
+            </label>
             <select name="stream_message_retention_setting"
               class="stream_message_retention_setting" class="prop-element"
-              {{#unless zulip_plan_is_not_limited}}disabled{{/unless}}>
+              {{#if disable_message_retention_setting}}disabled{{/if}}>
                 <option value="realm_default">{{t 'Use organization level settings '}}{{realm_message_retention_setting}} </option>
                 <option value="forever">{{t 'Retain forever' }}</option>
                 <option value="retain_for_period">{{t 'Retain for N days after posting' }}</option>
@@ -55,7 +57,7 @@
                   name="stream-message-retention-days"
                   class="stream-message-retention-days"
                   value="{{ stream_message_retention_days }}"
-                  {{#unless zulip_plan_is_not_limited}}disabled{{/unless}}/>
+                  {{#if disable_message_retention_setting}}disabled{{/if}}/>
             </div>
         </div>
     </li>

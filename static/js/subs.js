@@ -588,7 +588,7 @@ exports.setup_page = function (callback) {
             hide_all_streams: !should_list_all_streams(),
             max_name_length: page_params.stream_name_max_length,
             max_description_length: page_params.stream_description_max_length,
-            is_admin: page_params.is_admin,
+            is_owner: page_params.is_owner,
             stream_post_policy_values: stream_data.stream_post_policy_values,
             stream_post_policy: stream_data.stream_post_policy_values.everyone.code,
             zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,
