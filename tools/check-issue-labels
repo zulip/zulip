@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 import argparse
+import configparser
 import os
 import re
 import sys
 from typing import Any, Dict, Optional
 
 import requests
-
-import ConfigParser
 
 # Scans zulip repositary for issues that don't have any `area` labels.
 # GitHub API token is required as GitHub limits unauthenticated
@@ -21,8 +20,8 @@ import ConfigParser
 # usage: python check-issue-labels
 # Pass --force as an argument to run without a token.
 
-def get_config() -> ConfigParser:
-    config = ConfigParser()
+def get_config() -> configparser.ConfigParser:
+    config = configparser.ConfigParser()
     config.read(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'conf.ini'))
     return config
 
@@ -52,7 +51,7 @@ def check_issue_labels() -> None:
         config = get_config()
         try:
             token = config.get('github', 'api_token')
-        except KeyError:
+        except configparser.Error:
             print("Error fetching GitHub api token. Copy conf.ini-template to conf.ini and populate with "
                   "your api token. If you want to continue without using a token use --force.")
             sys.exit(1)
