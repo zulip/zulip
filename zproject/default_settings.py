@@ -241,6 +241,12 @@ SYSTEM_ONLY_REALMS = {"zulip"}
 # The values will also be added to ALLOWED_HOSTS.
 REALM_HOSTS: Dict[str, str] = {}
 
+# Map used to rewrite the URIs for certain realms during mobile
+# authentication.  This, combined with adding the relevant hosts to
+# ALLOWED_HOSTS, can be used for environments where security policies
+# mean that a different hostname must be used for mobile access.
+REALM_MOBILE_REMAP_URIS: Dict[str, str] = {}
+
 # Whether the server is using the Pgroonga full-text search
 # backend.  Plan is to turn this on for everyone after further
 # testing.

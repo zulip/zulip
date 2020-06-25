@@ -321,10 +321,18 @@ def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str
 
 def create_response_for_otp_flow(key: str, otp: str, user_profile: UserProfile,
                                  encrypted_key_field_name: str) -> HttpResponse:
+    realm_uri = user_profile.realm.uri
+
+    # Check if the mobile URI is overridden in settings, if so, replace it
+    # This block should only apply to the mobile flow, so we if add others, this
+    # needs to be conditional.
+    if realm_uri in settings.REALM_MOBILE_REMAP_URIS:
+        realm_uri = settings.REALM_MOBILE_REMAP_URIS[realm_uri]
+
     params = {
         encrypted_key_field_name: otp_encrypt_api_key(key, otp),
         'email': user_profile.delivery_email,
-        'realm': user_profile.realm.uri,
+        'realm': realm_uri,
     }
     # We can't use HttpResponseRedirect, since it only allows HTTP(S) URLs
     response = HttpResponse(status=302)

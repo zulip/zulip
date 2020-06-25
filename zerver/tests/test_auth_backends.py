@@ -2797,6 +2797,27 @@ class GoogleAuthBackendTest(SocialAuthBase):
             "warning",
         )])
 
+    def test_social_auth_mobile_realm_uri(self) -> None:
+        mobile_flow_otp = '1234abcd' * 8
+        account_data_dict = self.get_account_data_dict(email=self.email, name='Full Name')
+
+        with self.settings(REALM_MOBILE_REMAP_URIS={'http://zulip.testserver': 'http://zulip-mobile.testserver'}):
+            result = self.social_auth_test(account_data_dict, subdomain='zulip',
+                                           expect_choose_email_screen=True,
+                                           alternative_start_url="/accounts/login/google/",
+                                           mobile_flow_otp=mobile_flow_otp)
+
+        self.assertEqual(result.status_code, 302)
+        redirect_url = result['Location']
+        parsed_url = urllib.parse.urlparse(redirect_url)
+        query_params = urllib.parse.parse_qs(parsed_url.query)
+        self.assertEqual(parsed_url.scheme, 'zulip')
+        self.assertEqual(query_params["realm"], ['http://zulip-mobile.testserver'])
+        self.assertEqual(query_params["email"], [self.example_email("hamlet")])
+        encrypted_api_key = query_params["otp_encrypted_api_key"][0]
+        hamlet_api_keys = get_all_api_keys(self.example_user('hamlet'))
+        self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
+
     def test_social_auth_mobile_success_legacy_url(self) -> None:
         mobile_flow_otp = '1234abcd' * 8
         account_data_dict = self.get_account_data_dict(email=self.email, name='Full Name')
