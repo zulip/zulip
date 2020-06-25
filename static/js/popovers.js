@@ -23,6 +23,7 @@ let current_actions_popover_elem;
 let current_flatpickr_instance;
 let current_message_info_popover_elem;
 let current_mobile_message_buttons_popover_elem;
+let current_user_info_popover_elem;
 let userlist_placement = "right";
 
 let list_of_popovers = [];
@@ -353,6 +354,25 @@ exports.show_user_profile = function (user) {
     );
 };
 
+exports.show_user_info_popover = function (element, user) {
+    const last_popover_elem = current_user_info_popover_elem;
+    exports.hide_all();
+    if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
+        return;
+    }
+    const elt = $(element);
+    render_user_info_popover(
+        user,
+        elt,
+        false,
+        false,
+        "compose_private_message",
+        "user-info-popover",
+        "right",
+    );
+    current_user_info_popover_elem = elt;
+};
+
 function get_user_info_popover_for_message_items() {
     if (!current_message_info_popover_elem) {
         blueslip.error("Trying to get menu items when action popover is closed.");
@@ -651,6 +671,17 @@ exports.hide_message_info_popover = function () {
     }
 };
 
+exports.user_info_popped = function () {
+    return current_user_info_popover_elem !== undefined;
+};
+
+exports.hide_user_info_popover = function () {
+    if (exports.user_info_popped()) {
+        current_user_info_popover_elem.popover("destroy");
+        current_user_info_popover_elem = undefined;
+    }
+};
+
 exports.hide_userlist_sidebar = function () {
     $(".app-main .column-right").removeClass("expanded");
 };
@@ -794,7 +825,10 @@ exports.register_click_handlers = function () {
     $("body").on("click", ".info_popover_actions .narrow_to_private_messages", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
-        exports.hide_message_info_popover();
+        exports.hide_all();
+        if (overlays.settings_open()) {
+            overlays.close_overlay("settings");
+        }
         narrow.by("pm-with", email, {trigger: "user sidebar popover"});
         e.stopPropagation();
         e.preventDefault();
@@ -803,7 +837,10 @@ exports.register_click_handlers = function () {
     $("body").on("click", ".info_popover_actions .narrow_to_messages_sent", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
-        exports.hide_message_info_popover();
+        exports.hide_all();
+        if (overlays.settings_open()) {
+            overlays.close_overlay("settings");
+        }
         narrow.by("sender", email, {trigger: "user sidebar popover"});
         e.stopPropagation();
         e.preventDefault();
@@ -859,7 +896,7 @@ exports.register_click_handlers = function () {
     $("body").on("click", ".bot-owner-name", (e) => {
         const user_id = parseInt($(e.target).attr("data-user-id"), 10);
         const user = people.get_by_user_id(user_id);
-        exports.show_user_profile(user);
+        exports.show_user_info_popover(e.target, user);
     });
 
     $("body").on("click", "#user-profile-modal #name #edit-button", () => {
@@ -1021,6 +1058,9 @@ exports.register_click_handlers = function () {
             private_message_recipient: email,
         });
         exports.hide_all();
+        if (overlays.settings_open()) {
+            overlays.close_overlay("settings");
+        }
         e.stopPropagation();
         e.preventDefault();
     });
@@ -1154,6 +1194,7 @@ exports.any_active = function () {
         stream_popover.stream_popped() ||
         stream_popover.topic_popped() ||
         exports.message_info_popped() ||
+        exports.user_info_popped() ||
         emoji_picker.reactions_popped() ||
         $("[class^='column-'].expanded").length
     );
@@ -1174,6 +1215,7 @@ exports.hide_all_except_sidebars = function () {
     exports.hide_user_sidebar_popover();
     exports.hide_mobile_message_buttons_popover();
     exports.hide_user_profile();
+    exports.hide_user_info_popover();
 
     // look through all the popovers that have been added and removed.
     list_of_popovers.forEach(($o) => {

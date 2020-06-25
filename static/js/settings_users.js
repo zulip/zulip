@@ -587,7 +587,7 @@ function handle_bot_owner_profile(tbody) {
     tbody.on("click", ".user_row .view_user_profile", (e) => {
         const owner_id = parseInt($(e.target).attr("data-user-id"), 10);
         const owner = people.get_by_user_id(owner_id);
-        popovers.show_user_profile(owner);
+        popovers.show_user_info_popover(e.target, owner);
         e.stopPropagation();
         e.preventDefault();
     });

@@ -179,7 +179,8 @@ ul {
     }
 }
 
-.message-info-popover {
+.message-info-popover,
+.user-info-popover {
     width: 240px;
     padding: 0;
 
@@ -353,7 +354,8 @@ ul {
 }
 
 @media (max-width: 768px) {
-    .message-info-popover {
+    .message-info-popover,
+    .user-info-popover {
         display: flex !important;
         justify-content: center;
         align-items: center;
