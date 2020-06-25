@@ -1130,7 +1130,7 @@ def process_notification(notice: Mapping[str, Any]) -> None:
             # compatibility with events in that format still in the
             # queue at the time of upgrade.
             #
-            # TODO: Remove this block in release >= 2.3.
+            # TODO: Remove this block in release >= 4.0.
             user_ids: List[int] = [user['id'] for user in
                                    cast(List[Mapping[str, int]], users)]
         else:
