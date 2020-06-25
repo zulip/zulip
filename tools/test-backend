@@ -196,12 +196,12 @@ def main() -> None:
 
     usage = """test-backend [options]
     test-backend # Runs all backend tests
-    test-backend zerver.tests.test_bugdown # run all tests in a test module
-    test-backend zerver/tests/test_bugdown.py # run all tests in a test module
-    test-backend test_bugdown # run all tests in a test module
-    test-backend zerver.tests.test_bugdown.BugdownTest # run all tests in a test class
+    test-backend zerver.tests.test_markdown # run all tests in a test module
+    test-backend zerver/tests/test_markdown.py # run all tests in a test module
+    test-backend test_markdown # run all tests in a test module
+    test-backend zerver.tests.test_markdown.BugdownTest # run all tests in a test class
     test-backend BugdownTest # run all tests in a test class
-    test-backend zerver.tests.test_bugdown.BugdownTest.test_inline_youtube # run a single test
+    test-backend zerver.tests.test_markdown.BugdownTest.test_inline_youtube # run a single test
     test-backend BugdownTest.test_inline_youtube # run a single test"""
 
     parser = argparse.ArgumentParser(description=usage,
