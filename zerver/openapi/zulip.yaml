@@ -722,8 +722,33 @@ paths:
                 type: integer
             example: [9, 10]
         required: true
-      - $ref: '#/components/parameters/Topic'
       - $ref: '#/components/parameters/Content'
+      - $ref: '#/components/parameters/Topic'
+      - name: queue_id
+        in: query
+        schema:
+          type: string
+        description: |
+          For clients supporting
+          [local echo](https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#local-echo),
+          the [event queue](/api/register-queue)
+          ID for the client.  If passed, `local_id` is required.  If the message is
+          successfully sent, the server will include `local_id` in the `message` event
+          that the client with this `queue_id` will receive notifying it of the new message
+          via [`GET /events`](/api/get-events).  This lets the client know unambiguously
+          that it should replace the locally echoed message, rather than adding this new
+          message (which would be correct if the user had sent the new message from another
+          device).
+        example: "1593114627:0"
+      - name: local_id
+        in: query
+        schema:
+          type: string
+        description: |
+          For clients supporting local echo, a unique string-format identifier
+          chosen freely by the client; the server will pass it back to the client without
+          inspecting it as described in the `queue_id` description.
+        example: "100.01"
       responses:
         '200':
           description: Success.
