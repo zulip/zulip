@@ -1134,7 +1134,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('update')),
             ('person', check_dict_only([
                 ('user_id', check_int),
-                ('custom_profile_field', check_dict([
+                ('custom_profile_field', check_dict_only([
                     ('id', check_int),
                     ('value', check_none_or(check_string)),
                 ])),
@@ -1146,7 +1146,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('update')),
             ('person', check_dict_only([
                 ('user_id', check_int),
-                ('custom_profile_field', check_dict([
+                ('custom_profile_field', check_dict_only([
                     ('id', check_int),
                     ('value', check_none_or(check_string)),
                     ('rendered_value', check_none_or(check_string)),
