@@ -1555,6 +1555,8 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
     full_name_validated = True
     REDIS_EXPIRATION_SECONDS = 60*10
 
+    SCOPE_SEPARATOR = "%20"  # https://github.com/python-social-auth/social-core/issues/470
+
     def is_native_flow(self) -> bool:
         return self.strategy.request_data().get('native_flow', False)
 
