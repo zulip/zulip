@@ -6986,6 +6986,11 @@ jquery-caret-plugin@^1.5.2:
   resolved "https://registry.yarnpkg.com/jquery-caret-plugin/-/jquery-caret-plugin-1.5.3.tgz#0c5513236883959bbef8da48ecc2307e8eb47516"
   integrity sha1-DFUTI2iDlZu++NpI7MIwfo60dRY=
 
+jquery-migrate@^3.3.0:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/jquery-migrate/-/jquery-migrate-3.3.0.tgz#a8414c2be293460abe970a7a6beeb9c49fd7e5ad"
+  integrity sha512-9YhxHLmZZW3neoTw+MAbHV7geQYbnj4dnLuLphjbhDv/QKfxXNQ/pFoUjEsHNZnLH+k8pe+RFFBbORtwC2wzvA==
+
 jquery-validation@^1.19.0:
   version "1.19.2"
   resolved "https://registry.yarnpkg.com/jquery-validation/-/jquery-validation-1.19.2.tgz#c602831b0d8c5881400af424e872757ce241eff9"

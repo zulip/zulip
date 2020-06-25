@@ -11,6 +11,9 @@
     The file may still be accessible under other circumstances, so do
     not put sensitive information here. */
 
+import "jquery/dist/jquery.js";
+import "jquery-migrate";
+
 /*
       debug.print_elapsed_time("foo", foo)
 
