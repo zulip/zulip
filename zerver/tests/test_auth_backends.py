@@ -464,7 +464,10 @@ class AuthBackendTest(ZulipTestCase):
             },
         }
 
-        def patched_authenticate(**kwargs: Any) -> Any:
+        def patched_authenticate(
+            request: Optional[HttpResponse] = None,
+            **kwargs: Any,
+        ) -> Any:
             # This is how we pass the subdomain to the authentication
             # backend in production code, so we need to do this setup
             # here.
@@ -481,7 +484,7 @@ class AuthBackendTest(ZulipTestCase):
                 return {'email': user.delivery_email}
             backend.strategy.request_data = return_email
 
-            result = orig_authenticate(backend, **kwargs)
+            result = orig_authenticate(backend, request, **kwargs)
             return result
 
         def patched_get_verified_emails(*args: Any, **kwargs: Any) -> Any:
@@ -502,7 +505,6 @@ class AuthBackendTest(ZulipTestCase):
 
                 orig_authenticate = backend_class.authenticate
                 backend.authenticate = patched_authenticate
-                orig_get_verified_emails = backend_class.get_verified_emails
                 if backend_name == "google":
                     backend.get_verified_emails = patched_get_verified_emails
 
@@ -520,8 +522,6 @@ class AuthBackendTest(ZulipTestCase):
                     self.verify_backend(backend,
                                         good_kwargs=good_kwargs,
                                         bad_kwargs=bad_kwargs)
-                backend.authenticate = orig_authenticate
-                backend.get_verified_emails = orig_get_verified_emails
 
 class RateLimitAuthenticationTests(ZulipTestCase):
     @override_settings(RATE_LIMITING_AUTHENTICATE=True)
