@@ -10,7 +10,7 @@ properly configured. Please check the following:
   `SOCIAL_AUTH_APPLE_BUNDLE_ID`, `SOCIAL_AUTH_APPLE_TEAM`,
   `SOCIAL_AUTH_APPLE_KEY` and `SOCIAL_AUTH_APPLE_TEAM` in `{{
   settings_path }}` and stored the private key provided by Apple at
-  `/etc/zulip/apple/zulip-private-key.key` on the Zulip server, with
+  `/etc/zulip/apple-auth-key.p8` on the Zulip server, with
   proper permissions set.
 
 * Navigate back to the login page and attempt the "Sign in with Apple"

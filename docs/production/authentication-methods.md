@@ -588,12 +588,12 @@ domain for your server).
 1. Create a [Sign in with Apple private key][apple-create-private-key].
 
 1. Store the resulting private key at
-   `/etc/zulip/apple/zulip-private-key.key`.  Be sure to set
+   `/etc/zulip/apple-auth-key.p8`.  Be sure to set
    permissions correctly:
 
    ```
-   chown -R zulip:zulip /etc/zulip/apple/
-   chmod 640 /etc/zulip/apple/zulip-private-key.key
+   chown zulip:zulip /etc/zulip/apple-auth-key.p8
+   chmod 640 /etc/zulip/apple-auth-key.p8
    ```
 
 1. Configure Apple authentication in `/etc/zulip/settings.py`:
