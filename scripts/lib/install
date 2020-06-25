@@ -353,6 +353,10 @@ EOF
         crudini --set /etc/zulip/zulip.conf certbot auto_renew yes
     fi
 
+    if [ -n "$POSTGRES_MISSING_DICTIONARIES" ]; then
+        crudini --set /etc/zulip/zulip.conf postgresql missing_dictionaries true
+    fi
+
     "$ZULIP_PATH"/scripts/zulip-puppet-apply --force --noop \
                  --write-catalog-summary \
                  --classfile=/var/lib/puppet/classes.txt \
@@ -424,10 +428,6 @@ if [ "$DEPLOYMENT_TYPE" = "dockervoyager" ]; then
     has_appserver=0
     has_rabbit=1
     has_postgres=1
-fi
-
-if [ -n "$POSTGRES_MISSING_DICTIONARIES" ]; then
-    crudini --set /etc/zulip/zulip.conf postgresql missing_dictionaries true
 fi
 
 # These server restarting bits should be moveable into puppet-land, ideally
