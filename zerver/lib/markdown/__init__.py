@@ -1540,7 +1540,7 @@ class Fence:
     fence_str: str
     is_code: bool
 
-class BugdownListPreprocessor(markdown.preprocessors.Preprocessor):
+class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
     """ Allows list blocks that come directly after another block
         to be rendered as a list.
 
@@ -1867,7 +1867,7 @@ class Bugdown(markdown.Markdown):
         # html_block - insecure
         # reference - references don't make sense in a chat context.
         preprocessors = markdown.util.Registry()
-        preprocessors.register(BugdownListPreprocessor(self), 'hanging_lists', 35)
+        preprocessors.register(MarkdownListPreprocessor(self), 'hanging_lists', 35)
         preprocessors.register(markdown.preprocessors.NormalizeWhitespace(self), 'normalize_whitespace', 30)
         preprocessors.register(fenced_code.FencedBlockPreprocessor(self), 'fenced_code_block', 25)
         preprocessors.register(AlertWordNotificationProcessor(self), 'custom_text_notifications', 20)
