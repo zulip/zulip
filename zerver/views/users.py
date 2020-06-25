@@ -56,6 +56,7 @@ from zerver.lib.utils import generate_api_key
 from zerver.lib.validator import (
     check_bool,
     check_dict,
+    check_dict_only,
     check_int,
     check_int_in,
     check_list,
@@ -124,12 +125,12 @@ def reactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
     return json_success()
 
 check_profile_data: Validator[List[Dict[str, Optional[Union[int, str, List[int]]]]]] = check_list(
-    check_dict(
-        [('id', check_int)],
-        value_validator=check_none_or(check_union([
-            check_int, check_string, check_list(check_int),
-        ])),
-    ),
+    check_dict_only([
+        ('id', check_int),
+        ('value', check_none_or(
+            check_union([check_int, check_string, check_list(check_int)]),
+        )),
+    ]),
 )
 
 @has_request_variables
