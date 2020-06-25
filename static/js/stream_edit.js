@@ -58,13 +58,14 @@ exports.get_retention_policy_text_for_subscription_type = function (sub) {
     let message_retention_days = sub.message_retention_days;
     // If both this stream and the organization-level policy are to retain forever,
     // there's no need to comment on retention policies when describing the stream.
-    if (page_params.realm_message_retention_days === -1 &&
-            (sub.message_retention_days === null || sub.message_retention_days === -1)) {
+    if (page_params.realm_message_retention_days === settings_config.retain_message_forever
+        && (sub.message_retention_days === null ||
+            sub.message_retention_days === settings_config.retain_message_forever)) {
         return;
     }
 
     // Forever for this stream, overriding the organization default
-    if (sub.message_retention_days === -1) {
+    if (sub.message_retention_days === settings_config.retain_message_forever) {
         return i18n.t("Messages in this stream will be retained forever.");
     }
 
@@ -79,7 +80,7 @@ exports.get_retention_policy_text_for_subscription_type = function (sub) {
 
 exports.get_display_text_for_realm_message_retention_setting = function () {
     const realm_message_retention_days = page_params.realm_message_retention_days;
-    if (realm_message_retention_days === -1) {
+    if (realm_message_retention_days === settings_config.retain_message_forever) {
         return i18n.t("(forever)");
     }
     return i18n.t("(__message_retention_days__ days)", {message_retention_days: realm_message_retention_days});
@@ -97,7 +98,7 @@ function set_stream_message_retention_setting_dropdown(stream) {
     let value = "retain_for_period";
     if (stream.message_retention_days === null) {
         value = "realm_default";
-    } else if (stream.message_retention_days === -1) {
+    } else if (stream.message_retention_days === settings_config.retain_message_forever) {
         value = "forever";
     }
 
