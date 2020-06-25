@@ -465,7 +465,6 @@ function change_stream_privacy(e) {
 
     const privacy_setting = $('#stream_privacy_modal input[name=privacy]:checked').val();
     const stream_post_policy = parseInt($('#stream_privacy_modal input[name=stream-post-policy]:checked').val(), 10);
-    let message_retention_days = $('#stream_privacy_modal select[name=stream_message_retention_setting]').val();
 
     let invite_only;
     let history_public_to_subscribers;
@@ -481,10 +480,6 @@ function change_stream_privacy(e) {
         history_public_to_subscribers = true;
     }
 
-    if (message_retention_days === 'retain_for_period') {
-        message_retention_days = parseInt($('#stream_privacy_modal input[name=stream-message-retention-days]').val(), 10);
-    }
-
     $(".stream_change_property_info").hide();
     const data = {
         stream_name: sub.name,
@@ -492,8 +487,15 @@ function change_stream_privacy(e) {
         is_private: JSON.stringify(invite_only),
         stream_post_policy: JSON.stringify(stream_post_policy),
         history_public_to_subscribers: JSON.stringify(history_public_to_subscribers),
-        message_retention_days: JSON.stringify(message_retention_days),
     };
+
+    if (page_params.is_owner) {
+        let message_retention_days = $('#stream_privacy_modal select[name=stream_message_retention_setting]').val();
+        if (message_retention_days === 'retain_for_period') {
+            message_retention_days = parseInt($('#stream_privacy_modal input[name=stream-message-retention-days]').val(), 10);
+        }
+        data.message_retention_days = JSON.stringify(message_retention_days);
+    }
 
     channel.patch({
         url: "/json/streams/" + stream_id,
@@ -613,13 +615,16 @@ exports.initialize = function () {
             is_private: stream.invite_only && !stream.history_public_to_subscribers,
             is_private_with_public_history: stream.invite_only &&
                 stream.history_public_to_subscribers,
-            is_admin: page_params.is_admin,
+            is_owner: page_params.is_owner,
             zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,
+            disable_message_retention_setting: !page_params.zulip_plan_is_not_limited ||
+                !page_params.is_owner,
             stream_message_retention_days: stream.message_retention_days,
             realm_message_retention_setting:
                 exports.get_display_text_for_realm_message_retention_setting(),
             upgrade_text_for_wide_organization_logo:
                 page_params.upgrade_text_for_wide_organization_logo,
+            is_stream_edit: true,
         };
         const change_privacy_modal = render_subscription_stream_privacy_modal(template_data);
         $("#stream_privacy_modal").remove();
