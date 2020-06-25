@@ -408,28 +408,6 @@ fi
 
 "$ZULIP_PATH"/scripts/zulip-puppet-apply -f
 
-if [ "$package_system" = apt ]; then
-    SUPERVISOR_CONF_DIR="/etc/supervisor/conf.d"
-elif [ "$package_system" = yum ]; then
-    SUPERVISOR_CONF_DIR="/etc/supervisord.d/conf.d"
-fi
-
-# Detect which features were selected for the below
-set +e
-[ -e "/etc/init.d/nginx" ]; has_nginx=$?
-[ -e "$SUPERVISOR_CONF_DIR/zulip.conf" ]; has_appserver=$?
-[ -e "/etc/cron.d/rabbitmq-numconsumers" ]; has_rabbit=$?
-[ -e "/etc/init.d/postgresql" ]; has_postgres=$?
-set -e
-
-# Docker service setup is done in the docker config, not here
-if [ "$DEPLOYMENT_TYPE" = "dockervoyager" ]; then
-    has_nginx=1
-    has_appserver=0
-    has_rabbit=1
-    has_postgres=1
-fi
-
 # These server restarting bits should be moveable into puppet-land, ideally
 if [ "$package_system" = apt ]; then
     apt-get -y upgrade
@@ -438,12 +416,13 @@ elif [ "$package_system" = yum ]; then
     :
 fi
 
-if [ "$has_nginx" = 0 ]; then
+if has_class "zulip::nginx" && [ ! "$DEPLOYMENT_TYPE" = "dockervoyager" ]; then
     # Check nginx was configured properly now that we've installed it.
     # Most common failure mode is certs not having been installed.
-    nginx -t || (
-        set +x
-        cat <<EOF
+    if ! nginx -t; then
+        (
+            set +x
+            cat <<EOF
 
 Verifying the Zulip nginx configuration failed!
 
@@ -453,12 +432,13 @@ This is almost always a problem with your SSL certificates.  See:
 Once fixed, just rerun scripts/setup/install; it'll pick up from here!
 
 EOF
-        exit 1
-    )
+            exit 1
+        )
+    fi
     service nginx restart
 fi
 
-if [ "$has_rabbit" = 0 ]; then
+if has_class "zulip::rabbit"; then
     if ! rabbitmqctl status >/dev/null; then
         set +x
         cat <<EOF
@@ -474,11 +454,11 @@ EOF
     "$ZULIP_PATH"/scripts/setup/configure-rabbitmq
 fi
 
-if [ "$has_postgres" = 0 ] && [ -z "$NO_INIT_DB" ]; then
+if has_class "zulip::postgres_common" && [ -z "$NO_INIT_DB" ]; then
     "$ZULIP_PATH"/scripts/setup/postgres-init-db
 fi
 
-if [ "$has_appserver" = 0 ]; then
+if has_class "zulip::app_frontend_base"; then
     deploy_path=$("$ZULIP_PATH"/scripts/lib/zulip_tools.py make_deploy_path)
     mv "$ZULIP_PATH" "$deploy_path"
     ln -nsf /home/zulip/deployments/next "$ZULIP_PATH"
