@@ -1,10 +1,10 @@
-from zerver.lib.bugdown import convert as bugdown_convert
 from zerver.lib.cache import (
     cache_with_key,
     realm_rendered_description_cache_key,
     realm_text_description_cache_key,
 )
 from zerver.lib.html_to_text import html_to_text
+from zerver.lib.markdown import convert as bugdown_convert
 from zerver.models import Realm
 
 

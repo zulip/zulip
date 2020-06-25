@@ -170,7 +170,7 @@ We have a separate Markdown extension to document the parameters that
 an API endpoint supports.  You'll see this in files like
 `templates/zerver/api/render-message.md` via the following Markdown
 directive (implemented in
-`zerver/lib/bugdown/api_arguments_table_generator.py`):
+`zerver/lib/markdown/api_arguments_table_generator.py`):
 
 ```
 {generate_api_arguments_table|zulip.yaml|/messages/render:post}

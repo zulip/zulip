@@ -13,7 +13,7 @@ from psycopg2.sql import SQL
 from typing_extensions import TypedDict
 
 from analytics.lib.counts import COUNT_STATS, RealmCount
-from zerver.lib import bugdown as bugdown
+from zerver.lib import markdown as bugdown
 from zerver.lib.avatar import get_avatar_field
 from zerver.lib.cache import (
     cache_with_key,

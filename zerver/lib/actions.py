@@ -49,7 +49,7 @@ from confirmation.models import (
     generate_key,
 )
 from zerver.decorator import statsd_increment
-from zerver.lib import bugdown
+from zerver.lib import markdown as bugdown
 from zerver.lib import retention as retention
 from zerver.lib.addressee import Addressee
 from zerver.lib.alert_words import (
@@ -59,7 +59,6 @@ from zerver.lib.alert_words import (
 )
 from zerver.lib.avatar import avatar_url, avatar_url_from_dict
 from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, set_bot_config
-from zerver.lib.bugdown import version as bugdown_version
 from zerver.lib.bulk_create import bulk_create_users
 from zerver.lib.cache import (
     bot_dict_fields,
@@ -97,6 +96,7 @@ from zerver.lib.export import get_realm_exports_serialized
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.i18n import get_language_name
+from zerver.lib.markdown import version as bugdown_version
 from zerver.lib.message import (
     MessageDict,
     access_message,

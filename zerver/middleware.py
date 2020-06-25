@@ -14,12 +14,12 @@ from django.utils.deprecation import MiddlewareMixin
 from django.utils.translation import ugettext as _
 from django.views.csrf import csrf_failure as html_csrf_failure
 
-from zerver.lib.bugdown import get_bugdown_requests, get_bugdown_time
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
 from zerver.lib.db import reset_queries
 from zerver.lib.debug import maybe_tracemalloc_listen
 from zerver.lib.exceptions import ErrorCode, JsonableError, RateLimited
 from zerver.lib.html_to_text import get_content_description
+from zerver.lib.markdown import get_bugdown_requests, get_bugdown_time
 from zerver.lib.rate_limiter import RateLimitResult
 from zerver.lib.response import json_error, json_response_from_error
 from zerver.lib.subdomains import get_subdomain

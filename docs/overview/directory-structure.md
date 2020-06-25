@@ -37,7 +37,7 @@ paths will be familiar to Django developers.
 
 * `zerver/worker/queue_processors.py` [Queue workers](../subsystems/queuing.md).
 
-* `zerver/lib/bugdown/` [Backend Markdown processor](../subsystems/markdown.md).
+* `zerver/lib/markdown/` [Backend Markdown processor](../subsystems/markdown.md).
 
 * `zproject/backends.py` [Authentication backends](https://docs.djangoproject.com/en/1.8/topics/auth/customizing/).
 

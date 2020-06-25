@@ -41,8 +41,6 @@ from markdown.extensions import codehilite, nl2br, sane_lists, tables
 from typing_extensions import TypedDict
 
 from zerver.lib import mention as mention
-from zerver.lib.bugdown import fenced_code
-from zerver.lib.bugdown.fenced_code import FENCE_RE
 from zerver.lib.cache import NotFoundInCache, cache_with_key
 from zerver.lib.camo import get_camo_url
 from zerver.lib.emoji import (
@@ -52,6 +50,8 @@ from zerver.lib.emoji import (
     translate_emoticons,
 )
 from zerver.lib.exceptions import BugdownRenderingException
+from zerver.lib.markdown import fenced_code
+from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.mention import extract_user_group, possible_mentions, possible_user_group_mentions
 from zerver.lib.tex import render_tex
 from zerver.lib.thumbnail import user_uploads_or_external
