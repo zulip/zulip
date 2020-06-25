@@ -86,9 +86,9 @@ from zerver.lib.email_validation import (
 )
 from zerver.lib.emoji import emoji_name_to_emoji_code, get_emoji_file_name
 from zerver.lib.exceptions import (
-    BugdownRenderingException,
     ErrorCode,
     JsonableError,
+    MarkdownRenderingException,
     StreamDoesNotExistError,
     StreamWithIDDoesNotExistError,
 )
@@ -1055,7 +1055,7 @@ def render_incoming_message(message: Message,
             mention_data=mention_data,
             email_gateway=email_gateway,
         )
-    except BugdownRenderingException:
+    except MarkdownRenderingException:
         raise JsonableError(_('Unable to render message'))
     return rendered_content
 

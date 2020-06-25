@@ -212,7 +212,7 @@ class OrganizationOwnerRequired(JsonableError):
     def msg_format() -> str:
         return OrganizationOwnerRequired.OWNER_REQUIRED_MESSAGE
 
-class BugdownRenderingException(Exception):
+class MarkdownRenderingException(Exception):
     pass
 
 class InvalidAPIKeyError(JsonableError):
