@@ -5006,6 +5006,9 @@ components:
         (`type="stream"`), ignored otherwise.
 
         Maximum length of 60 characters.
+
+        **Changes**: New in Zulip 2.0.  Previous Zulip releases encoded
+        this as `subject`, which is currently a deprecated alias.
       schema:
         type: string
       example: Castle

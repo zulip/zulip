@@ -258,6 +258,11 @@ below features are supported.
 
 * [`POST /messages`](/api/send-message): Added support for using user
   IDs and stream IDs for specifying the recipients of a message.
+* [`POST /messages`](/api/send-message), [`POST
+  /messages/{message_id}`](/api/update-message): Added support for
+  encoding topics using the `topic` parameter name.  The previous
+  `subject` parameter name was deprecated but is still supported for
+  backwards-compatibility.
 * [`POST /set-typing-status`](/api/set-typing-status): Added support for specifying the
   recipients with user IDs, deprecating the original API of specifying
   them using email addresses.
