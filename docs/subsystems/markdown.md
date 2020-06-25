@@ -33,7 +33,7 @@ message is sent).  As a result, we try to make sure that
 ## Testing
 
 The Python-Markdown implementation is tested by
-`zerver/tests/test_bugdown.py`, and the marked.js implementation and
+`zerver/tests/test_markdown.py`, and the marked.js implementation and
 `markdown.contains_backend_only_syntax` are tested by
 `frontend_tests/node_tests/markdown.js`.
 
@@ -79,7 +79,7 @@ testcases in `markdown_test_cases.json` that you want to ignore. This
 is a workaround due to lack of comments support in JSON. Revert your
 "ignore" changes before committing. After this, you can run the frontend
 tests with `tools/test-js-with-node markdown` and backend tests with
-`tools/test-backend zerver.tests.test_bugdown.BugdownTest.test_bugdown_fixtures`.
+`tools/test-backend zerver.tests.test_markdown.BugdownTest.test_bugdown_fixtures`.
 
 ## Changing Zulip's markdown processor
 

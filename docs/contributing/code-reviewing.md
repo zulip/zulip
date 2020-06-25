@@ -104,7 +104,7 @@ this?". Good choices include
   user input, and potential bugs that are likely for the type of
   change being made.  Tests that exclude whole classes of potential
   bugs are preferred when possible (e.g., the common test suite
-  `test_bugdown.py` between the Zulip server's [frontend and backend
+  `test_markdown.py` between the Zulip server's [frontend and backend
   Markdown processors](../subsystems/markdown.md), or the `GetEventsTest` test for
   buggy race condition handling).
 
