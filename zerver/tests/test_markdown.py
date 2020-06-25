@@ -253,7 +253,7 @@ class BugdownMiscTest(ZulipTestCase):
                 render_tex("random text")
                 mock_logger.assert_called_with("Cannot find KaTeX for latex rendering!")
 
-class BugdownListPreprocessorTest(ZulipTestCase):
+class MarkdownListPreprocessorTest(ZulipTestCase):
     # We test that the preprocessor inserts blank lines at correct places.
     # We use <> to indicate that we need to insert a blank line here.
     def split_message(self, msg: str) -> Tuple[List[str], List[str]]:
@@ -262,22 +262,22 @@ class BugdownListPreprocessorTest(ZulipTestCase):
         return original, expected
 
     def test_basic_list(self) -> None:
-        preprocessor = bugdown.BugdownListPreprocessor()
+        preprocessor = bugdown.MarkdownListPreprocessor()
         original, expected = self.split_message('List without a gap\n<>* One\n* Two')
         self.assertEqual(preprocessor.run(original), expected)
 
     def test_list_after_quotes(self) -> None:
-        preprocessor = bugdown.BugdownListPreprocessor()
+        preprocessor = bugdown.MarkdownListPreprocessor()
         original, expected = self.split_message('```quote\nSomething\n```\n\nList without a gap\n<>* One\n* Two')
         self.assertEqual(preprocessor.run(original), expected)
 
     def test_list_in_code(self) -> None:
-        preprocessor = bugdown.BugdownListPreprocessor()
+        preprocessor = bugdown.MarkdownListPreprocessor()
         original, expected = self.split_message('```\nList without a gap\n* One\n* Two\n```')
         self.assertEqual(preprocessor.run(original), expected)
 
     def test_complex_nesting_with_different_fences(self) -> None:
-        preprocessor = bugdown.BugdownListPreprocessor()
+        preprocessor = bugdown.MarkdownListPreprocessor()
         msg = """```quote
 In quote. We should convert a list here:<>
 * one
@@ -309,7 +309,7 @@ Outside. Should convert:<>
         self.assertEqual(preprocessor.run(original), expected)
 
     def test_complex_nesting_with_same_fence(self) -> None:
-        preprocessor = bugdown.BugdownListPreprocessor()
+        preprocessor = bugdown.MarkdownListPreprocessor()
         msg = """```quote
 In quote. We should convert a list here:<>
 * one
