@@ -300,9 +300,9 @@ def home_real(request: HttpRequest) -> HttpResponse:
     show_billing = False
     show_plans = False
     if settings.CORPORATE_ENABLED and user_profile is not None:
-        from corporate.models import Customer, CustomerPlan
+        from corporate.models import CustomerPlan, get_customer_by_realm
         if user_profile.has_billing_access:
-            customer = Customer.objects.filter(realm=user_profile.realm).first()
+            customer = get_customer_by_realm(user_profile.realm)
             if customer is not None:
                 if customer.sponsorship_pending:
                     show_billing = True
