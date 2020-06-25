@@ -1025,7 +1025,7 @@ SOCIAL_AUTH_APPLE_CLIENT = SOCIAL_AUTH_APPLE_SERVICES_ID
 SOCIAL_AUTH_APPLE_AUDIENCE = [id for id in [SOCIAL_AUTH_APPLE_CLIENT, SOCIAL_AUTH_APPLE_BUNDLE_ID] if id is not None]
 
 if PRODUCTION:
-    SOCIAL_AUTH_APPLE_SECRET = get_from_file_if_exists("/etc/zulip/apple/zulip-private-key.key")
+    SOCIAL_AUTH_APPLE_SECRET = get_from_file_if_exists("/etc/zulip/apple-auth-key.p8")
 else:
     SOCIAL_AUTH_APPLE_SECRET = get_from_file_if_exists("zproject/dev_apple.key")
 
