@@ -747,7 +747,7 @@ paths:
         description: |
           For clients supporting local echo, a unique string-format identifier
           chosen freely by the client; the server will pass it back to the client without
-          inspecting it as described in the `queue_id` description.
+          inspecting it, as described in the `queue_id` description.
         example: "100.01"
       responses:
         '200':
