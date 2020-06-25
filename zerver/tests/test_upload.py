@@ -18,7 +18,6 @@ from django_sendfile.sendfile import _get_sendfile
 from PIL import Image
 
 import zerver.lib.upload
-from scripts.lib.zulip_tools import get_dev_uuid_var_path
 from zerver.lib.actions import (
     do_change_icon_source,
     do_change_logo_source,
@@ -779,14 +778,9 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
                 fp_path = os.path.split(fp_path_id)[0]
                 response = self.client_get(uri)
                 _get_sendfile.clear()
-                test_upload_dir = os.path.split(settings.LOCAL_UPLOADS_DIR)[1]
                 test_run, worker = os.path.split(os.path.dirname(settings.LOCAL_UPLOADS_DIR))
                 self.assertEqual(response['X-Accel-Redirect'],
-                                 '/serve_uploads/../../' +
-                                 os.path.basename(get_dev_uuid_var_path()) +
-                                 '/test-backend/' + os.path.basename(test_run) +
-                                 '/' + worker + '/' + test_upload_dir +
-                                 '/files/' + fp_path + '/' + name_str_for_test)
+                                 '/serve_uploads/' + fp_path + '/' + name_str_for_test)
                 if content_disposition != '':
                     self.assertIn('attachment;', response['Content-disposition'])
                     self.assertIn(content_disposition, response['Content-disposition'])
