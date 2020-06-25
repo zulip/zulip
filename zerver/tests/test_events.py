@@ -2402,10 +2402,10 @@ class EventsRegisterTest(ZulipTestCase):
             ('stream_id', check_int),
         ])
         schema_checker('events[1]', events[1])
-        schema_checker = check_dict([
+        schema_checker = check_dict_only([
             ('flags', check_list(check_string)),
             ('type', equals('message')),
-            ('message', check_dict([
+            ('message', check_dict_only([
                 ('timestamp', check_int),
                 ('content', equals(notification)),
                 ('content_type', equals('text/html')),
