@@ -1,6 +1,5 @@
 import datetime
 import re
-import sre_constants
 import time
 from collections import defaultdict
 from datetime import timedelta
@@ -718,7 +717,7 @@ def filter_pattern_validator(value: str) -> None:
 
     try:
         re.compile(value)
-    except sre_constants.error:
+    except re.error:
         # Regex is invalid
         raise ValidationError(error_msg)
 
