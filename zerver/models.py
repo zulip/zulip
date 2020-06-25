@@ -42,6 +42,7 @@ from bitfield import BitField
 from bitfield.types import BitHandler
 from collections import defaultdict
 from datetime import timedelta
+import ast
 import re
 import sre_constants
 import time
@@ -2737,7 +2738,7 @@ class CustomProfileField(models.Model):
         (CHOICE, str(_('List of options')), validate_choice_field, str, "CHOICE"),
     ]  # type: List[ExtendedFieldElement]
     USER_FIELD_TYPE_DATA = [
-        (USER, str(_('Person picker')), check_valid_user_ids, eval, "USER"),
+        (USER, str(_('Person picker')), check_valid_user_ids, ast.literal_eval, "USER"),
     ]  # type: List[UserFieldElement]
 
     CHOICE_FIELD_VALIDATORS = {
