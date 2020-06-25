@@ -16,7 +16,7 @@ from django.utils.timezone import now as timezone_now
 from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
 from zerver.decorator import JsonableError
-from zerver.lib import bugdown
+from zerver.lib import markdown as bugdown
 from zerver.lib.actions import (
     check_message,
     check_send_stream_message,

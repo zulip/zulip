@@ -691,7 +691,7 @@ class PreviewTestCase(ZulipTestCase):
         mocked_response = mock.Mock(side_effect=self.create_mock_response(url))
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
             with mock.patch('requests.get', mocked_response):
-                with mock.patch('zerver.lib.bugdown.link_preview.link_embed_data_from_cache',
+                with mock.patch('zerver.lib.markdown.link_preview.link_embed_data_from_cache',
                                 lambda *args, **kwargs: mocked_data):
                     FetchLinksEmbedData().consume(event)
 

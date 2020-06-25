@@ -823,8 +823,8 @@ class ZulipTestCase(TestCase):
         '''
         with \
                 self.settings(ERROR_BOT=None), \
-                mock.patch('zerver.lib.bugdown.timeout', side_effect=KeyError('foo')), \
-                mock.patch('zerver.lib.bugdown.bugdown_logger'):
+                mock.patch('zerver.lib.markdown.timeout', side_effect=KeyError('foo')), \
+                mock.patch('zerver.lib.markdown.bugdown_logger'):
             yield
 
     def create_default_device(self, user_profile: UserProfile,

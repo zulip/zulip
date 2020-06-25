@@ -98,13 +98,13 @@ from zerver.lib.actions import (
     remove_members_from_user_group,
     try_update_realm_custom_profile_field,
 )
-from zerver.lib.bugdown import MentionData
 from zerver.lib.events import (
     apply_events,
     fetch_initial_state_data,
     get_raw_user_data,
     post_process_state,
 )
+from zerver.lib.markdown import MentionData
 from zerver.lib.message import (
     MessageDict,
     UnreadMessagesResult,

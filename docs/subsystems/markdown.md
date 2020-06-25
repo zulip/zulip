@@ -5,7 +5,7 @@ after Zulip's original name of "humbug". End users are using Bugdown
 within the client, not original Markdown.
 
 Zulip has two implementations of Bugdown.  The backend implementation
-at `zerver/lib/bugdown/` is based on
+at `zerver/lib/markdown/` is based on
 [Python-Markdown](https://pypi.python.org/pypi/Markdown) and is used to
 authoritatively render messages to HTML (and implements
 slow/expensive/complex features like querying the Twitter API to
@@ -94,7 +94,7 @@ First, you will likely find these third-party resources helpful:
 When changing Zulip's markdown syntax, you need to update several
 places:
 
-* The backend markdown processor (`zerver/lib/bugdown/__init__.py`).
+* The backend markdown processor (`zerver/lib/markdown/__init__.py`).
 * The frontend markdown processor (`static/js/markdown.js` and sometimes
   `static/third/marked/lib/marked.js`), or `markdown.contains_backend_only_syntax` if
   your changes won't be supported in the frontend processor.

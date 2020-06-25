@@ -4,7 +4,7 @@ from xml.etree.ElementTree import Element, SubElement
 import markdown
 from markdown.extensions import Extension
 
-from zerver.lib.bugdown import ResultWithFamily, walk_tree_with_family
+from zerver.lib.markdown import ResultWithFamily, walk_tree_with_family
 
 
 class NestedCodeBlocksRenderer(Extension):

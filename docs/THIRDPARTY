@@ -117,7 +117,7 @@ Copyright: 2017 Fonticons, Inc.
 License: CC-BY-4.0
 Comment: This icon is picked from Version 5.13.0 of Fontawesome
 
-Files: zerver/lib/bugdown/fenced_code.py
+Files: zerver/lib/markdown/fenced_code.py
 Copyright: 2006-2008 Waylan Limberg
 License: BSD-3-Clause
 Comment: https://pypi.python.org/pypi/Markdown

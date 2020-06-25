@@ -8,7 +8,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import REQ, has_request_variables
-from zerver.lib import bugdown
+from zerver.lib import markdown as bugdown
 from zerver.lib.actions import (
     do_delete_messages,
     do_update_message,

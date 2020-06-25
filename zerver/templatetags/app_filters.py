@@ -9,15 +9,15 @@ from django.template import Library, engines
 from django.utils.safestring import mark_safe
 from jinja2.exceptions import TemplateNotFound
 
-import zerver.lib.bugdown.api_arguments_table_generator
-import zerver.lib.bugdown.api_return_values_table_generator
-import zerver.lib.bugdown.fenced_code
-import zerver.lib.bugdown.help_emoticon_translations_table
-import zerver.lib.bugdown.help_relative_links
-import zerver.lib.bugdown.help_settings_links
-import zerver.lib.bugdown.include
-import zerver.lib.bugdown.nested_code_blocks
-import zerver.lib.bugdown.tabbed_sections
+import zerver.lib.markdown.api_arguments_table_generator
+import zerver.lib.markdown.api_return_values_table_generator
+import zerver.lib.markdown.fenced_code
+import zerver.lib.markdown.help_emoticon_translations_table
+import zerver.lib.markdown.help_relative_links
+import zerver.lib.markdown.help_settings_links
+import zerver.lib.markdown.include
+import zerver.lib.markdown.nested_code_blocks
+import zerver.lib.markdown.tabbed_sections
 import zerver.openapi.markdown_extension
 from zerver.lib.cache import dict_to_items_tuple, ignore_unhashable_lru_cache, items_tuple_to_dict
 
@@ -85,9 +85,9 @@ def render_markdown_path(markdown_file_path: str,
     data."""
 
     # We set this global hackishly
-    from zerver.lib.bugdown.help_settings_links import set_relative_settings_links
+    from zerver.lib.markdown.help_settings_links import set_relative_settings_links
     set_relative_settings_links(bool(context.get('html_settings_links')))
-    from zerver.lib.bugdown.help_relative_links import set_relative_help_links
+    from zerver.lib.markdown.help_relative_links import set_relative_help_links
     set_relative_help_links(bool(context.get('html_settings_links')))
 
     global md_extensions
@@ -101,21 +101,21 @@ def render_markdown_path(markdown_file_path: str,
                 linenums=False,
                 guess_lang=False,
             ),
-            zerver.lib.bugdown.fenced_code.makeExtension(
+            zerver.lib.markdown.fenced_code.makeExtension(
                 run_content_validators=context.get('run_content_validators', False),
             ),
-            zerver.lib.bugdown.api_arguments_table_generator.makeExtension(
+            zerver.lib.markdown.api_arguments_table_generator.makeExtension(
                 base_path='templates/zerver/api/'),
-            zerver.lib.bugdown.api_return_values_table_generator.makeExtension(
+            zerver.lib.markdown.api_return_values_table_generator.makeExtension(
                 base_path='templates/zerver/api/'),
-            zerver.lib.bugdown.nested_code_blocks.makeExtension(),
-            zerver.lib.bugdown.tabbed_sections.makeExtension(),
-            zerver.lib.bugdown.help_settings_links.makeExtension(),
-            zerver.lib.bugdown.help_relative_links.makeExtension(),
-            zerver.lib.bugdown.help_emoticon_translations_table.makeExtension(),
+            zerver.lib.markdown.nested_code_blocks.makeExtension(),
+            zerver.lib.markdown.tabbed_sections.makeExtension(),
+            zerver.lib.markdown.help_settings_links.makeExtension(),
+            zerver.lib.markdown.help_relative_links.makeExtension(),
+            zerver.lib.markdown.help_emoticon_translations_table.makeExtension(),
         ]
     if md_macro_extension is None:
-        md_macro_extension = zerver.lib.bugdown.include.makeExtension(
+        md_macro_extension = zerver.lib.markdown.include.makeExtension(
             base_path='templates/zerver/help/include/')
     extensions = md_extensions
     if 'api_url' in context:

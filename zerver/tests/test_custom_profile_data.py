@@ -9,8 +9,8 @@ from zerver.lib.actions import (
     try_add_realm_custom_profile_field,
     try_reorder_realm_custom_profile_fields,
 )
-from zerver.lib.bugdown import convert as bugdown_convert
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
+from zerver.lib.markdown import convert as bugdown_convert
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
 from zerver.models import (
