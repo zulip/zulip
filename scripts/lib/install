@@ -325,57 +325,65 @@ fi
 
 # Generate /etc/zulip/zulip.conf .
 mkdir -p /etc/zulip
-if [ -z "$NO_OVERWRITE_SETTINGS" ] || ! [ -e "/etc/zulip/zulip.conf" ]; then
-    (
-        cat <<EOF
+has_class() {
+    grep -qx "$1" /var/lib/puppet/classes.txt
+}
+
+# puppet apply --noop fails unless the user that it _would_ chown
+# files to exists; https://tickets.puppetlabs.com/browse/PUP-3907
+useradd -m zulip
+if [ -n "$NO_OVERWRITE_SETTINGS" ] && [ -e "/etc/zulip/zulip.conf" ]; then
+    "$ZULIP_PATH"/scripts/zulip-puppet-apply --force --noop \
+                 --write-catalog-summary \
+                 --classfile=/var/lib/puppet/classes.txt \
+                 >/dev/null
+else
+    # Write out more than we need, and remove sections that are not
+    # applicable to the classes that are actually necessary.
+    cat <<EOF > /etc/zulip/zulip.conf
 [machine]
 puppet_classes = $PUPPET_CLASSES
 deploy_type = $DEPLOYMENT_TYPE
-EOF
-
-        # Note: there are four dpkg-query outputs to consider:
-        #
-        # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
-        # root@host# apt install rabbitmq-server
-        # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
-        # install ok installed
-        # root@host# apt remove rabbitmq-server
-        # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
-        # deinstall ok config-files
-        # root@host# apt purge rabbitmq-server
-        # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
-        # unknown ok not-installed
-        #
-        # (There are more possibilities in the case of dpkg errors.)  Here
-        # we are checking for either empty or not-installed.
-        if ! dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null | grep -vq ' not-installed$'; then
-            cat <<EOF
-
-[rabbitmq]
-nodename = zulip@localhost
-EOF
-        fi
-
-        if [ -n "$USE_CERTBOT" ]; then
-            cat <<EOF
-
-[certbot]
-auto_renew = yes
-EOF
-        fi
-
-        case ",$PUPPET_CLASSES," in
-            *,zulip::voyager,* | *,zulip::postgres_appdb_tuned,*)
-                if [ "$package_system" = apt ]; then
-                    cat <<EOF
 
 [postgresql]
 version = $POSTGRES_VERSION
 EOF
-                fi
-                ;;
-        esac
-    ) > /etc/zulip/zulip.conf
+
+    if [ -n "$USE_CERTBOT" ]; then
+        crudini --set /etc/zulip/zulip.conf certbot auto_renew yes
+    fi
+
+    "$ZULIP_PATH"/scripts/zulip-puppet-apply --force --noop \
+                 --write-catalog-summary \
+                 --classfile=/var/lib/puppet/classes.txt \
+                 >/dev/null
+
+    if ! has_class "zulip::postgres_common" || [ "$package_system" != apt ]; then
+        crudini --del /etc/zulip/zulip.conf postgresql
+    fi
+
+    # Note: there are four dpkg-query outputs to consider:
+    #
+    # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
+    # root@host# apt install rabbitmq-server
+    # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
+    # install ok installed
+    # root@host# apt remove rabbitmq-server
+    # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
+    # deinstall ok config-files
+    # root@host# apt purge rabbitmq-server
+    # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
+    # unknown ok not-installed
+    #
+    # (There are more possibilities in the case of dpkg errors.)  Here
+    # we are checking for either empty or not-installed.
+    if ! dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null | grep -vq ' not-installed$'; then
+        cat <<EOF >>/etc/zulip/zulip.conf
+
+[rabbitmq]
+nodename = zulip@localhost
+EOF
+    fi
 fi
 
 case ",$PUPPET_CLASSES," in
