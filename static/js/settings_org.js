@@ -126,8 +126,7 @@ function get_property_value(property_name) {
     }
 
     if (property_name === 'realm_message_retention_setting') {
-        if (page_params.realm_message_retention_days === null ||
-            page_params.realm_message_retention_days === settings_config.retain_message_forever) {
+        if (page_params.realm_message_retention_days === settings_config.retain_message_forever) {
             return "retain_forever";
         }
         return "retain_for_period";
