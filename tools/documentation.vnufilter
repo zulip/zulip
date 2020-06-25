@@ -1,8 +1,7 @@
 # Real errors that should be fixed.
 
-Bad value “” for attribute “id” on element “div”: Bad id: An ID must not be the empty string\.
-Duplicate ID “[^”]*”\.
-The first occurrence of ID “[^”]*” was here\.
+# https://github.com/readthedocs/sphinx_rtd_theme/pull/961
+Attribute “alt” not allowed on element “a” at this point\.
 
 # Warnings that are probably less important.
 

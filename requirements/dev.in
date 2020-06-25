@@ -24,7 +24,7 @@ fakeldap
 responses
 
 # For sorting imports
-https://github.com/timothycrosley/isort/archive/4cb7c66de817661728dec21aea4182dc489cb2e7.zip#egg=isort==5.0.0+git
+https://github.com/timothycrosley/isort/archive/a4dea5fa72907ffefb21e40ef194f274c86f847a.zip#egg=isort==5.0.0+git
 
 # For doing highly usable Python profiling (temporary fork of
 # line_profiler: https://github.com/rkern/line_profiler/issues/127)
@@ -52,19 +52,18 @@ snakeviz
 python-digitalocean
 
 # Needed for updating the locked pip dependencies
-pip-tools<5.1.2  # https://github.com/jazzband/pip-tools/issues/1155
+pip-tools
 
 # zulip's linting framework - zulint
-https://github.com/zulip/zulint/archive/ec36c29cd0be07e30241fa0a5172dc594fcc7bb1.zip#egg=zulint==0.0.1
+https://github.com/zulip/zulint/archive/e5010a7bbfa8614fd01b25542ffb2f94c0766759.zip#egg=zulint==0.0.1
 
 -r mypy.in
 
-# These modules are built in later versions of python and will generate difference in locked files
-# if executed with python version > 3.6 so despite being dependent packages they have to be added separately.
-# built-in python > 3.7 needed by jsonschema
-importlib-metadata
-# built-in python > 3.6 needed by cfn-lint
-importlib-resources
+# These modules are built into later versions of Python and will
+# generate different locked files if executed with Python ≥ 3.7, so
+# despite being dependent packages, they have to be added separately.
+importlib-metadata;python_version<"3.8"  # for jsonpickle, jsonschema
+importlib-resources;python_version<"3.7"  # for cfn-lint
 
 # Needed for using integration logo svg files as bot avatars
 cairosvg
