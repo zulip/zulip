@@ -398,7 +398,7 @@ class UserActivityWorker(LoopQueueProcessingWorker):
                 # This is for compatibility with older events still stuck in the queue,
                 # that used the client name in event["client"] instead of having
                 # event["client_id"] directly.
-                # TODO: This can be deleted for release >= 2.3.
+                # TODO: This can be deleted for release >= 4.0.
                 if event["client"] not in self.client_id_map:
                     client = get_client(event["client"])
                     self.client_id_map[event["client"]] = client.id
