@@ -24,7 +24,7 @@ from zerver.lib.types import ProfileFieldData
 from zerver.lib.users import validate_user_custom_profile_data
 from zerver.lib.validator import (
     check_capped_string,
-    check_dict,
+    check_dict_only,
     check_int,
     check_list,
     check_string,
@@ -180,10 +180,10 @@ def update_user_custom_profile_data(
     user_profile: UserProfile,
     data: List[Dict[str, Union[int, str, List[int]]]] = REQ(
         validator=check_list(
-            check_dict(
-                [('id', check_int)],
-                value_validator=check_union([check_int, check_string, check_list(check_int)]),
-            ),
+            check_dict_only([
+                ('id', check_int),
+                ('value', check_union([check_int, check_string, check_list(check_int)])),
+            ]),
         )
     ),
 ) -> HttpResponse:
