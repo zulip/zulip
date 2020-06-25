@@ -6,11 +6,10 @@ import logging
 from typing import Any, Callable
 
 from six.moves import urllib
-from tornado.concurrent import return_future
-
 from tc_aws.loaders import s3_loader
 from thumbor.context import Context
 from thumbor.loaders import LoaderResult, file_loader, https_loader
+from tornado.concurrent import return_future
 
 from .helpers import (
     THUMBOR_EXTERNAL_TYPE,
