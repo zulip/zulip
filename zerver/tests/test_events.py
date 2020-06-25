@@ -2079,6 +2079,10 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker('events[0]', events[0])
 
     def test_create_bot(self) -> None:
+        # We use a strict check here, because this test
+        # isn't specifically focused on seeing how
+        # flexible we can make the types be for config_data.
+        ad_hoc_config_data_schema = equals(dict(foo='bar'))
 
         def get_bot_created_checker(bot_type: str) -> Validator[object]:
             if bot_type == "GENERIC_BOT":
@@ -2094,7 +2098,7 @@ class EventsRegisterTest(ZulipTestCase):
             elif bot_type == "EMBEDDED_BOT":
                 check_services = check_list(check_dict_only([
                     ('service_name', check_string),
-                    ('config_data', check_dict(value_validator=check_string)),
+                    ('config_data', ad_hoc_config_data_schema),
                 ]), length=1)
             return self.check_events_dict([
                 ('type', equals('realm_bot')),
