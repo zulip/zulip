@@ -14,7 +14,7 @@ import ujson
 from django.conf import settings
 from django.test import TestCase
 from django.utils.timezone import now as timezone_now
-from django_sendfile.sendfile import _get_sendfile
+from django_sendfile.utils import _get_sendfile
 from PIL import Image
 
 import zerver.lib.upload
@@ -768,7 +768,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         def check_xsend_links(name: str, name_str_for_test: str,
                               content_disposition: str='') -> None:
             with self.settings(SENDFILE_BACKEND='django_sendfile.backends.nginx'):
-                _get_sendfile.clear()  # To clearout cached version of backend from djangosendfile
+                _get_sendfile.cache_clear()  # To clearout cached version of backend from djangosendfile
                 self.login('hamlet')
                 fp = StringIO("zulip!")
                 fp.name = name
@@ -777,7 +777,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
                 fp_path_id = re.sub('/user_uploads/', '', uri)
                 fp_path = os.path.split(fp_path_id)[0]
                 response = self.client_get(uri)
-                _get_sendfile.clear()
+                _get_sendfile.cache_clear()
                 test_run, worker = os.path.split(os.path.dirname(settings.LOCAL_UPLOADS_DIR))
                 self.assertEqual(response['X-Accel-Redirect'],
                                  '/serve_uploads/' + fp_path + '/' + name_str_for_test)

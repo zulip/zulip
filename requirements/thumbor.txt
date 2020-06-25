@@ -15,9 +15,9 @@ backports-abc==0.5 \
     --hash=sha256:033be54514a03e255df75c5aee8f9e672f663f93abb723444caec8fe43437bde \
     --hash=sha256:52089f97fe7a9aa0d3277b220c1d730a85aefd64e1b2664696fe35317c5470a7 \
     # via tornado
-botocore==1.16.24 \
-    --hash=sha256:17bc71415186efb86a25dd674f78064cdd85139485967d5a0741c7b83d62cf5b \
-    --hash=sha256:e44b11b1c47c06b0f6524b0ff1fa1cae5ddea4eb06f359e4a9730e8e881b397a \
+botocore==1.17.10 \
+    --hash=sha256:b22db58da273b77529edef71425f9c281bc627b1b889f81960750507238abbb8 \
+    --hash=sha256:cb0d7511a68439bf6f16683489130e06c5bbf9f5a9d647e0cbf63d79f3d3bdaa \
     # via tornado-botocore
 derpconf==0.8.3 \
     --hash=sha256:1bb152d8a1cf5c2a6d629bf29acd4af0c00811339642fc0a56172b0a83b31a15 \
@@ -101,8 +101,8 @@ python-dateutil==2.8.1 \
     --hash=sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c \
     --hash=sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a \
     # via botocore, tc-aws
-python-ldap==3.2.0 \
-    --hash=sha256:7d1c4b15375a533564aad3d3deade789221e450052b21ebb9720fb822eccdb8e \
+python-ldap==3.3.0 \
+    --hash=sha256:de04939485b53ee5d9a6855562d415b73060c52e681644386de4d5bd18e3f540 \
     # via django-auth-ldap
 pytz==2020.1 \
     --hash=sha256:a494d53b6d39c3c6e44c3bec237336e14305e4f29bbf800b599253057fbb79ed \
