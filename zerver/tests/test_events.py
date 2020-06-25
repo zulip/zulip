@@ -2009,10 +2009,32 @@ class EventsRegisterTest(ZulipTestCase):
         self.assertEqual(state_data['zulip_plan_is_not_limited'], False)
 
     def test_realm_emoji_events(self) -> None:
+        check_realm_emoji_fields = check_dict_only([
+            ('id', check_string),
+            ('name', check_string),
+            ('source_url', check_string),
+            ('deactivated', check_bool),
+            ('author_id', check_int),
+        ])
+
+        def realm_emoji_checker(var_name: str, val: object) -> None:
+            '''
+            The way we send realm emojis is kinda clumsy--we
+            send a dict mapping the emoji id to a sub_dict with
+            the fields (including the id).  Ideally we can streamline
+            this and just send a list of dicts.  The clients can make
+            a Map as needed.
+            '''
+            assert isinstance(val, dict)
+            for k, v in val.items():
+                assert isinstance(k, str)
+                assert v['id'] == k
+                check_realm_emoji_fields(f'{var_name}[{k}]', v)
+
         schema_checker = self.check_events_dict([
             ('type', equals('realm_emoji')),
             ('op', equals('update')),
-            ('realm_emoji', check_dict([])),
+            ('realm_emoji', realm_emoji_checker),
         ])
         author = self.example_user('iago')
         with get_test_image_file('img.png') as img_file:
