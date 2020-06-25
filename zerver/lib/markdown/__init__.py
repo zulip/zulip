@@ -49,7 +49,7 @@ from zerver.lib.emoji import (
     name_to_codepoint,
     translate_emoticons,
 )
-from zerver.lib.exceptions import BugdownRenderingException
+from zerver.lib.exceptions import MarkdownRenderingException
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.mention import extract_user_group, possible_mentions, possible_user_group_mentions
@@ -2362,7 +2362,7 @@ def do_convert(content: str,
         # rest of the codebase from any bugs where we end up rendering
         # something huge.
         if len(rendered_content) > MAX_MESSAGE_LENGTH * 10:
-            raise BugdownRenderingException(
+            raise MarkdownRenderingException(
                 f'Rendered content exceeds {MAX_MESSAGE_LENGTH * 10} characters (message {logging_message_id})'
             )
         return rendered_content
@@ -2377,7 +2377,7 @@ def do_convert(content: str,
             logging_message_id,
         )
 
-        raise BugdownRenderingException()
+        raise MarkdownRenderingException()
     finally:
         # These next three lines are slightly paranoid, since
         # we always set these right before actually using the

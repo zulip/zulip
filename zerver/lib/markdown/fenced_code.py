@@ -82,7 +82,7 @@ import markdown
 from django.utils.html import escape
 from markdown.extensions.codehilite import CodeHilite, CodeHiliteExtension
 
-from zerver.lib.exceptions import BugdownRenderingException
+from zerver.lib.exceptions import MarkdownRenderingException
 from zerver.lib.tex import render_tex
 
 # Global vars
@@ -127,7 +127,7 @@ Missing required -X argument in curl command:
         regex = r'curl [-](sS)?X "?(GET|DELETE|PATCH|POST)"?'
         if line.startswith('curl'):
             if re.search(regex, line) is None:
-                raise BugdownRenderingException(error_msg.format(command=line.strip()))
+                raise MarkdownRenderingException(error_msg.format(command=line.strip()))
 
 
 CODE_VALIDATORS = {
