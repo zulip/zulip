@@ -321,8 +321,9 @@ ecdsa==0.15 \
     --hash=sha256:867ec9cf6df0b03addc8ef66b56359643cb5d0c1dc329df76ba7ecfe256c8061 \
     --hash=sha256:8f12ac317f8a1318efa75757ef0a651abe12e51fc1af8838fb91079445227277 \
     # via python-jose, sshpubkeys
-https://github.com/zulip/fakeldap/archive/ff32deaad34b91d5ba5735f314362c0456c92607.zip#egg=fakeldap==0.6.1zulip \
-    --hash=sha256:fa793865813b3a09a8110deccf95af72557f558cb5c7eeaebd953c1fb8f82521 \
+fakeldap==0.6.2 \
+    --hash=sha256:b8def9b4b0cbb4944297060d3da38f57665bb454e650bee1543bfda81954dc22 \
+    --hash=sha256:cb7f44f1ef1b7dbabadc329e641e9853da2f414d28fa4fa70fdeed9a3e85e6cf \
     # via -r requirements/dev.in
 future==0.18.2 \
     --hash=sha256:b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d \
