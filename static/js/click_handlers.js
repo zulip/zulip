@@ -12,7 +12,7 @@ exports.initialize = function () {
         return target.is("a") || target.is("img.message_inline_image") || target.is("img.twitter-avatar") ||
             target.is("div.message_length_controller") || target.is("textarea") || target.is("input") ||
             target.is("i.edit_content_button") ||
-            // For spoilers, allow clicking either the header or elements within it (such as the dropdown arrow)
+            // For spoilers, allow clicking either the header or elements within it
             target.is(".spoiler-header") || target.parents(".spoiler-header").length > 0 ||
             target.is(".highlight") && target.parent().is("a");
     }
