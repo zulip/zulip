@@ -228,66 +228,76 @@ class EventsEndpointTest(ZulipTestCase):
         return_event_queue = '15:11'
         return_user_events: List[Dict[str, Any]] = []
 
+        # We choose realm_emoji somewhat randomly--we want
+        # a "boring" event type for the purpose of this test.
+        event_type = 'realm_emoji'
+        test_event = dict(
+            id=6,
+            type=event_type,
+            realm_emoji=[]
+        )
+
         # Test that call is made to deal with a returning soft deactivated user.
         with mock.patch('zerver.lib.events.reactivate_user_if_soft_deactivated') as fa:
             with stub_event_queue_user_events(return_event_queue, return_user_events):
-                result = self.api_post(user, '/json/register', dict(event_types=ujson.dumps(['pointer'])))
+                result = self.api_post(user, '/json/register', dict(event_types=ujson.dumps([event_type])))
                 self.assertEqual(fa.call_count, 1)
 
         with stub_event_queue_user_events(return_event_queue, return_user_events):
-            result = self.api_post(user, '/json/register', dict(event_types=ujson.dumps(['pointer'])))
+            result = self.api_post(user, '/json/register', dict(event_types=ujson.dumps([event_type])))
+
         self.assert_json_success(result)
         result_dict = result.json()
         self.assertEqual(result_dict['last_event_id'], -1)
         self.assertEqual(result_dict['queue_id'], '15:11')
 
+        # Now start simulating returning actual data
         return_event_queue = '15:12'
-        return_user_events = [
-            {
-                'id': 6,
-                'type': 'pointer',
-                'pointer': 15,
-            },
-        ]
+        return_user_events = [test_event]
+
         with stub_event_queue_user_events(return_event_queue, return_user_events):
-            result = self.api_post(user, '/json/register', dict(event_types=ujson.dumps(['pointer'])))
+            result = self.api_post(user, '/json/register', dict(event_types=ujson.dumps([event_type])))
 
         self.assert_json_success(result)
         result_dict = result.json()
         self.assertEqual(result_dict['last_event_id'], 6)
-        self.assertEqual(result_dict['pointer'], 15)
         self.assertEqual(result_dict['queue_id'], '15:12')
+
+        # sanity check the data relevant to our event
+        self.assertEqual(result_dict['realm_emoji'], [])
 
         # Now test with `fetch_event_types` not matching the event
         return_event_queue = '15:13'
         with stub_event_queue_user_events(return_event_queue, return_user_events):
             result = self.api_post(user, '/json/register',
-                                   dict(event_types=ujson.dumps(['pointer']),
+                                   dict(event_types=ujson.dumps([event_type]),
                                         fetch_event_types=ujson.dumps(['message'])))
         self.assert_json_success(result)
         result_dict = result.json()
         self.assertEqual(result_dict['last_event_id'], 6)
         # Check that the message event types data is in there
         self.assertIn('max_message_id', result_dict)
-        # Check that the pointer event types data is not in there
-        self.assertNotIn('pointer', result_dict)
+
+        # Check that our original event type is not there.
+        self.assertNotIn(event_type, result_dict)
         self.assertEqual(result_dict['queue_id'], '15:13')
 
         # Now test with `fetch_event_types` matching the event
         with stub_event_queue_user_events(return_event_queue, return_user_events):
             result = self.api_post(user, '/json/register',
-                                   dict(fetch_event_types=ujson.dumps(['pointer']),
+                                   dict(fetch_event_types=ujson.dumps([event_type]),
                                         event_types=ujson.dumps(['message'])))
         self.assert_json_success(result)
         result_dict = result.json()
         self.assertEqual(result_dict['last_event_id'], 6)
         # Check that we didn't fetch the messages data
         self.assertNotIn('max_message_id', result_dict)
-        # Check that the pointer data is in there, and is correctly
+
+        # Check that the realm_emoji data is in there, and is correctly
         # updated (presering our atomicity guaranteed), though of
         # course any future pointer events won't be distributed
-        self.assertIn('pointer', result_dict)
-        self.assertEqual(result_dict['pointer'], 15)
+        self.assertIn('realm_emoji', result_dict)
+        self.assertEqual(result_dict['realm_emoji'], [])
         self.assertEqual(result_dict['queue_id'], '15:13')
 
     def test_tornado_endpoint(self) -> None:
