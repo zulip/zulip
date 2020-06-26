@@ -28,8 +28,13 @@ if ! ./tools/build-release-tarball test; then
     exit 1
 fi
 
+# This list matches up against the persist_to_workspace step in
+# .circleci/config.yml
 mv /tmp/tmp.*/zulip-server-test.tar.gz /tmp/
-cp -a tools/ci/success-http-headers-bionic.txt /tmp/success-http-headers-bionic.txt
-cp -a tools/ci/success-http-headers-focal.txt /tmp/success-http-headers-focal.txt
-cp -a tools/ci/production-install /tmp/production-install
-cp -a tools/ci/production-extract-tarball /tmp/production-extract-tarball
+cp -a \
+   tools/ci/success-http-headers-bionic.txt \
+   tools/ci/success-http-headers-focal.txt \
+   tools/ci/production-install \
+   tools/ci/production-extract-tarball \
+   \
+   /tmp/
