@@ -679,17 +679,24 @@ class EventQueueTest(ZulipTestCase):
         self.verify_to_dict_end_to_end(client)
 
     def test_collapse_event(self) -> None:
+        '''
+        This mostly focues on the internals of
+        how we store "virtual_events" that we
+        can collapse if subsequent events are
+        of the same form.  See the code in
+        EventQueue.push for more context.
+        '''
         client = self.get_client_descriptor()
         queue = client.event_queue
-        queue.push({"type": "pointer",
-                    "pointer": 1,
+        queue.push({"type": "restart",
+                    "server_generation": 1,
                     "timestamp": "1"})
-        # Verify the pointer event is stored as a virtual event
+        # Verify the server_generation event is stored as a virtual event
         self.assertEqual(queue.virtual_events,
-                         {'pointer':
+                         {'restart':
                           {'id': 0,
-                           'type': 'pointer',
-                           'pointer': 1,
+                           'type': 'restart',
+                           'server_generation': 1,
                            "timestamp": "1"}})
         # And we can reconstruct newest_pruned_id etc.
         self.verify_to_dict_end_to_end(client)
@@ -701,10 +708,10 @@ class EventQueueTest(ZulipTestCase):
                            'type': 'unknown',
                            "timestamp": "1"}])
         self.assertEqual(queue.virtual_events,
-                         {'pointer':
+                         {'restart':
                           {'id': 0,
-                           'type': 'pointer',
-                           'pointer': 1,
+                           'type': 'restart',
+                           'server_generation': 1,
                            "timestamp": "1"}})
         # And we can still reconstruct newest_pruned_id etc. correctly
         self.verify_to_dict_end_to_end(client)
@@ -712,8 +719,8 @@ class EventQueueTest(ZulipTestCase):
         # Verify virtual events are converted to real events by .contents()
         self.assertEqual(queue.contents(),
                          [{'id': 0,
-                           'type': 'pointer',
-                           "pointer": 1,
+                           'type': 'restart',
+                           "server_generation": 1,
                            "timestamp": "1"},
                           {'id': 1,
                            'type': 'unknown',
