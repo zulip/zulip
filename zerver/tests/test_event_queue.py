@@ -526,16 +526,21 @@ class EventQueueTest(ZulipTestCase):
     def test_one_event(self) -> None:
         client = self.get_client_descriptor()
         queue = client.event_queue
-        queue.push({"type": "pointer",
-                    "pointer": 1,
-                    "timestamp": "1"})
+        in_dict = dict(
+            type="arbitrary",
+            x="foo",
+            y=42,
+            z=False,
+            timestamp="1",
+        )
+        out_dict = dict(
+            id=0,
+            **in_dict,
+        )
+        queue.push(in_dict)
         self.assertFalse(queue.empty())
         self.verify_to_dict_end_to_end(client)
-        self.assertEqual(queue.contents(),
-                         [{'id': 0,
-                           'type': 'pointer',
-                           "pointer": 1,
-                           "timestamp": "1"}])
+        self.assertEqual(queue.contents(), [out_dict])
         self.verify_to_dict_end_to_end(client)
 
     def test_event_collapsing(self) -> None:
