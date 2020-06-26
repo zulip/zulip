@@ -1828,8 +1828,8 @@ def get_sub_registry(r: markdown.util.Registry, keys: List[str]) -> markdown.uti
 
 # These are used as keys ("realm_filters_keys") to md_engines and the respective
 # realm filter caches
-DEFAULT_BUGDOWN_KEY = -1
-ZEPHYR_MIRROR_BUGDOWN_KEY = -2
+DEFAULT_MARKDOWN_KEY = -1
+ZEPHYR_MIRROR_MARKDOWN_KEY = -2
 
 class Markdown(markdown.Markdown):
     def __init__(self, *args: Any, **kwargs: Union[bool, int, List[Any]]) -> None:
@@ -1988,7 +1988,7 @@ class Markdown(markdown.Markdown):
             return default
 
     def handle_zephyr_mirror(self) -> None:
-        if self.getConfig("realm") == ZEPHYR_MIRROR_BUGDOWN_KEY:
+        if self.getConfig("realm") == ZEPHYR_MIRROR_MARKDOWN_KEY:
             # Disable almost all inline patterns for zephyr mirror
             # users' traffic that is mirrored.  Note that
             # inline_interesting_links is a treeprocessor and thus is
@@ -2069,13 +2069,13 @@ def maybe_update_markdown_engines(realm_filters_key: Optional[int], email_gatewa
     global realm_filter_data
     if realm_filters_key is None:
         all_filters = all_realm_filters()
-        all_filters[DEFAULT_BUGDOWN_KEY] = []
+        all_filters[DEFAULT_MARKDOWN_KEY] = []
         for realm_filters_key, filters in all_filters.items():
             realm_filter_data[realm_filters_key] = filters
             make_md_engine(realm_filters_key, email_gateway)
         # Hack to ensure that getConfig("realm") is right for mirrored Zephyrs
-        realm_filter_data[ZEPHYR_MIRROR_BUGDOWN_KEY] = []
-        make_md_engine(ZEPHYR_MIRROR_BUGDOWN_KEY, False)
+        realm_filter_data[ZEPHYR_MIRROR_MARKDOWN_KEY] = []
+        make_md_engine(ZEPHYR_MIRROR_MARKDOWN_KEY, False)
     else:
         realm_filters = realm_filters_for_realm(realm_filters_key)
         if realm_filters_key not in realm_filter_data or    \
@@ -2278,7 +2278,7 @@ def do_convert(content: str,
         if message_realm is None:
             message_realm = message.get_realm()
     if message_realm is None:
-        realm_filters_key = DEFAULT_BUGDOWN_KEY
+        realm_filters_key = DEFAULT_MARKDOWN_KEY
     else:
         realm_filters_key = message_realm.id
 
@@ -2292,7 +2292,7 @@ def do_convert(content: str,
             if message.sending_client.name == "zephyr_mirror":
                 # Use slightly customized Markdown processor for content
                 # delivered via zephyr_mirror
-                realm_filters_key = ZEPHYR_MIRROR_BUGDOWN_KEY
+                realm_filters_key = ZEPHYR_MIRROR_MARKDOWN_KEY
 
     maybe_update_markdown_engines(realm_filters_key, email_gateway)
     md_engine_key = (realm_filters_key, email_gateway)
@@ -2300,10 +2300,10 @@ def do_convert(content: str,
     if md_engine_key in md_engines:
         _md_engine = md_engines[md_engine_key]
     else:
-        if DEFAULT_BUGDOWN_KEY not in md_engines:
+        if DEFAULT_MARKDOWN_KEY not in md_engines:
             maybe_update_markdown_engines(realm_filters_key=None, email_gateway=False)
 
-        _md_engine = md_engines[(DEFAULT_BUGDOWN_KEY, email_gateway)]
+        _md_engine = md_engines[(DEFAULT_MARKDOWN_KEY, email_gateway)]
     # Reset the parser; otherwise it will get slower over time.
     _md_engine.reset()
 
