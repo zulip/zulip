@@ -1063,6 +1063,20 @@ def upload_custom_emoji(client: Client) -> None:
                                     '/realm/emoji/{emoji_name}',
                                     'post', '200')
 
+@openapi_test_function("/realm/emoji/{emoji_name}:delete")
+def delete_custom_emoji(client: Client) -> None:
+    # {code_example|start}
+    # Delete a custom emoji with name 'my_custom_emoji'.
+    emoji_name = 'my_custom_emoji'
+    result = client.call_endpoint(
+        f'realm/emoji/{emoji_name}',
+        method='DELETE',
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result,
+                                    '/realm/emoji/{emoji_name}',
+                                    'delete', '200')
+
 @openapi_test_function("/users/me/alert_words:get")
 def get_alert_words(client: Client) -> None:
     result = client.get_alert_words()
@@ -1284,6 +1298,7 @@ def test_server_organizations(client: Client) -> None:
     get_realm_profile_fields(client)
     reorder_realm_profile_fields(client)
     create_realm_profile_field(client)
+    delete_custom_emoji(client)
 
 def test_errors(client: Client) -> None:
     test_missing_request_argument(client)

@@ -4964,7 +4964,26 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
+    delete:
+      operationId: delete_custom_emoji
+      tags: ["server_and_organizations"]
+      description: |
+        This endpoint is used to delete a custom emoji in the user's
+        organization.
 
+        `DELETE {{ api_url }}/v1/realm/emoji/{emoji_name}`
+      parameters:
+        - name: emoji_name
+          required: true
+          in: path
+          description: |
+            The name of the custom emoji.
+          schema:
+            type: string
+          example: "green_tick"
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
   /realm/emoji:
     get:
       operationId: get_custom_emoji
