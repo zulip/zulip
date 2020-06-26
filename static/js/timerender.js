@@ -278,6 +278,18 @@ exports.absolute_time = (function () {
     };
 }());
 
+exports.get_full_datetime = function (time) {
+    // Convert to number of hours ahead/behind UTC.
+    // The sign of getTimezoneOffset() is reversed wrt
+    // the conventional meaning of UTC+n / UTC-n
+    const tz_offset = -time.getTimezoneOffset() / 60;
+    return {
+        date: time.toLocaleDateString(),
+        time: time.toLocaleTimeString() +
+        ' (UTC' + (tz_offset < 0 ? '' : '+') + tz_offset + ')',
+    };
+};
+
 // XDate.toLocaleDateString and XDate.toLocaleTimeString are
 // expensive, so we delay running the following code until we need
 // the full date and time strings.
@@ -287,14 +299,10 @@ exports.set_full_datetime = function timerender_set_full_datetime(message, time_
     }
 
     const time = new XDate(message.timestamp * 1000);
-    // Convert to number of hours ahead/behind UTC.
-    // The sign of getTimezoneOffset() is reversed wrt
-    // the conventional meaning of UTC+n / UTC-n
-    const tz_offset = -time.getTimezoneOffset() / 60;
+    const full_datetime = exports.get_full_datetime(time);
 
-    message.full_date_str = time.toLocaleDateString();
-    message.full_time_str = time.toLocaleTimeString() +
-        ' (UTC' + (tz_offset < 0 ? '' : '+') + tz_offset + ')';
+    message.full_date_str = full_datetime.date;
+    message.full_time_str = full_datetime.time;
 
     time_elem.attr('title', message.full_date_str + ' ' + message.full_time_str);
 };
