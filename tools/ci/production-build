@@ -35,6 +35,7 @@ cp -a \
    tools/ci/success-http-headers-bionic.txt \
    tools/ci/success-http-headers-focal.txt \
    tools/ci/production-install \
+   tools/ci/production-verify \
    tools/ci/production-extract-tarball \
    \
    /tmp/

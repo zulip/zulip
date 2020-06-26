@@ -138,6 +138,12 @@ aliases:
           sudo service rabbitmq-server restart
           sudo mispipe "/tmp/production-install 2>&1" ts
 
+  - &verify_production
+    run:
+      name: verify install
+      command: |
+          sudo mispipe "/tmp/production-verify 2>&1" ts
+
   - &check_xenial_provision_error
     run:
       name: check tools/provision error message on xenial
@@ -290,6 +296,7 @@ jobs:
             - success-http-headers-bionic.txt
             - success-http-headers-focal.txt
             - production-install
+            - production-verify
             - production
             - production-extract-tarball
       - *notify_failure_status
@@ -313,6 +320,7 @@ jobs:
       - *production_extract_tarball
       - *restore_cache_package_json
       - *install_production
+      - *verify_production
       - *save_cache_package_json
       - *notify_failure_status
 
@@ -342,6 +350,7 @@ jobs:
       - *production_extract_tarball
       - *restore_cache_package_json
       - *install_production
+      - *verify_production
       - *save_cache_package_json
       - *notify_failure_status
 
