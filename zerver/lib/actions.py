@@ -2208,23 +2208,25 @@ def send_pm_if_empty_stream(stream: Optional[Stream],
         "stream_id": stream_id,
         "stream_name": stream_name,
     }
-    if stream is None:
-        if stream_id is not None:
-            content = _("Your bot `{bot_identity}` tried to send a message to stream ID "
-                        "{stream_id}, but there is no stream with that ID.").format(**arg_dict)
-        else:
-            assert(stream_name is not None)
-            content = _("Your bot `{bot_identity}` tried to send a message to stream "
-                        "#**{stream_name}**, but that stream does not exist. "
-                        "Click [here](#streams/new) to create it.").format(**arg_dict)
-    else:
-        if num_subscribers_for_stream_id(stream.id) > 0:
-            return
-        content = _("Your bot `{bot_identity}` tried to send a message to "
-                    "stream #**{stream_name}**. The stream exists but "
-                    "does not have any subscribers.").format(**arg_dict)
+    if sender.bot_owner is not None:
+        with override_language(sender.bot_owner.default_language):
+            if stream is None:
+                if stream_id is not None:
+                    content = _("Your bot `{bot_identity}` tried to send a message to stream ID "
+                                "{stream_id}, but there is no stream with that ID.").format(**arg_dict)
+                else:
+                    assert(stream_name is not None)
+                    content = _("Your bot `{bot_identity}` tried to send a message to stream "
+                                "#**{stream_name}**, but that stream does not exist. "
+                                "Click [here](#streams/new) to create it.").format(**arg_dict)
+            else:
+                if num_subscribers_for_stream_id(stream.id) > 0:
+                    return
+                content = _("Your bot `{bot_identity}` tried to send a message to "
+                            "stream #**{stream_name}**. The stream exists but "
+                            "does not have any subscribers.").format(**arg_dict)
 
-    send_rate_limited_pm_notification_to_bot_owner(sender, realm, content)
+        send_rate_limited_pm_notification_to_bot_owner(sender, realm, content)
 
 def validate_stream_name_with_pm_notification(stream_name: str, realm: Realm,
                                               sender: UserProfile) -> Stream:
