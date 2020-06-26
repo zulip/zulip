@@ -42,6 +42,12 @@ EMOTICON_CONVERSIONS = {
     '<3': ':heart:',
     ':|': ':expressionless:',
     ':/': ':confused:',
+    ';)': ':wink:',
+    ':D': ':grinning:',
+    ':o': ':open_mouth:',
+    ':O': ':open_mouth:',
+    ':p': ':stuck_out_tongue:',
+    ':P': ':stuck_out_tongue:',
 }
 
 def emoji_names_for_picker(emoji_name_maps: Dict[str, Dict[str, Any]]) -> List[str]:
