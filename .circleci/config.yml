@@ -144,6 +144,12 @@ aliases:
       command: |
           sudo mispipe "/tmp/production-verify 2>&1" ts
 
+  - &upgrade_postgresql
+    run:
+      name: upgrade postgresql
+      command: |
+          sudo mispipe "/tmp/production-upgrade-pg 2>&1" ts
+
   - &check_xenial_provision_error
     run:
       name: check tools/provision error message on xenial
@@ -297,6 +303,7 @@ jobs:
             - success-http-headers-focal.txt
             - production-install
             - production-verify
+            - production-upgrade-pg
             - production
             - production-extract-tarball
       - *notify_failure_status
@@ -320,6 +327,8 @@ jobs:
       - *production_extract_tarball
       - *restore_cache_package_json
       - *install_production
+      - *verify_production
+      - *upgrade_postgresql
       - *verify_production
       - *save_cache_package_json
       - *notify_failure_status
