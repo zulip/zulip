@@ -601,7 +601,7 @@ domain for your server).
      string like "A1B2C3D4E5".
    * `SOCIAL_AUTH_APPLE_SERVICES_ID`: The Services ID you created in
      step 1, which might look like "com.example.services".
-   * `SOCIAL_AUTH_APPLE_BUNDLE_ID`: The Bundle ID, or App ID, of your
+   * `SOCIAL_AUTH_APPLE_APP_ID`: The App ID, or Bundle ID, of your
      app that you used in step 1 to configure your Services ID.
      This might look like "com.example.app".
    * `SOCIAL_AUTH_APPLE_KEY`: Despite the name this is not a key, but

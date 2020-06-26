@@ -47,7 +47,7 @@ from .configured_settings import (
     REMOTE_POSTGRES_SSLMODE,
     SENDFILE_BACKEND,
     SENTRY_DSN,
-    SOCIAL_AUTH_APPLE_BUNDLE_ID,
+    SOCIAL_AUTH_APPLE_APP_ID,
     SOCIAL_AUTH_APPLE_SERVICES_ID,
     SOCIAL_AUTH_GITHUB_KEY,
     SOCIAL_AUTH_GITHUB_ORG_NAME,
@@ -1029,7 +1029,7 @@ SOCIAL_AUTH_LOGIN_ERROR_URL = '/login/'
 # SERVICES_ID to make things more readable in the configuration
 # and our own custom backend code.
 SOCIAL_AUTH_APPLE_CLIENT = SOCIAL_AUTH_APPLE_SERVICES_ID
-SOCIAL_AUTH_APPLE_AUDIENCE = [id for id in [SOCIAL_AUTH_APPLE_CLIENT, SOCIAL_AUTH_APPLE_BUNDLE_ID] if id is not None]
+SOCIAL_AUTH_APPLE_AUDIENCE = [id for id in [SOCIAL_AUTH_APPLE_CLIENT, SOCIAL_AUTH_APPLE_APP_ID] if id is not None]
 
 if PRODUCTION:
     SOCIAL_AUTH_APPLE_SECRET = get_from_file_if_exists("/etc/zulip/apple-auth-key.p8")
