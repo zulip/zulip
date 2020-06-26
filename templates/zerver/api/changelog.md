@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 3.0
 
+**Feature level 22**
+
+* `GET /invites`: Replace the `ref` field, used for sending referrer email,
+  in the invites object with `referrer_id` for sending user_id of referrer.
+
 **Feature level 21**
 
 * `PATCH /settings/display`: Replaced the `night_mode` boolean with
