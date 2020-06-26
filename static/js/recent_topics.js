@@ -157,6 +157,7 @@ function format_topic(topic_data) {
     const topic = last_msg.topic;
     const time = new XDate(last_msg.timestamp * 1000);
     const last_msg_time = timerender.last_seen_status_from_date(time);
+    const full_datetime = timerender.get_full_datetime(time);
 
     // We hide the row according to filters or if it's muted.
     // We only supply the data to the topic rows and let jquery
@@ -191,6 +192,7 @@ function format_topic(topic_data) {
         muted: muted,
         topic_muted: topic_muted,
         participated: topic_data.participated,
+        full_last_msg_date_time: full_datetime.date + ' ' + full_datetime.time,
     };
 }
 

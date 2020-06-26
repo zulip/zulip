@@ -42,6 +42,12 @@ set_global('timerender', {
     last_seen_status_from_date: () => {
         return "Just now";
     },
+    get_full_datetime: () => {
+        return {
+            date: "date",
+            time: "time",
+        };
+    },
 });
 set_global('unread', {
     unread_topic_counter: {
@@ -270,6 +276,7 @@ function generate_topic_data(topic_info_array) {
             invite_only: false,
             is_web_public: true,
             last_msg_time: 'Just now',
+            full_last_msg_date_time: "date time",
             senders: [
                 1,
                 2,
