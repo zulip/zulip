@@ -4,6 +4,7 @@ from unittest import mock
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import get_client
+from zerver.lib.push_notifications import get_apns_badge_count
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Subscription, UserPresence
 from zerver.tornado.event_queue import maybe_enqueue_notifications
@@ -493,3 +494,40 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         # Because Cordelia is FULLY present, we don't need to send any offline
         # push notifications or missed message emails.
         self.assertEqual(len(info['queue_messages']), 0)
+
+    def test_clear_notification_when_mention_removed(self) -> None:
+        mentioned_user = self.example_user('iago')
+        self.assertEqual(get_apns_badge_count(mentioned_user), 0)
+
+        with mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value=True):
+            message_id = self._login_and_send_original_stream_message(
+                content="@**Iago**",
+            )
+
+        self.assertEqual(get_apns_badge_count(mentioned_user), 1)
+
+        self._get_queued_data_for_message_update(
+            message_id=message_id,
+            content="Removed mention"
+        )
+
+        self.assertEqual(get_apns_badge_count(mentioned_user), 0)
+
+    def test_clear_notification_when_group_mention_removed(self) -> None:
+        group_mentioned_user = self.example_user('cordelia')
+        self.assertEqual(get_apns_badge_count(group_mentioned_user), 0)
+
+        with mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value=True):
+            message_id = self._login_and_send_original_stream_message(
+                content="Hello @*hamletcharacters*",
+            )
+
+        self.assertEqual(get_apns_badge_count(group_mentioned_user), 1)
+
+        self._get_queued_data_for_message_update(
+            message_id=message_id,
+            content="Removed group mention",
+            expect_short_circuit=True,
+        )
+
+        self.assertEqual(get_apns_badge_count(group_mentioned_user), 0)

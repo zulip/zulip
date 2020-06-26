@@ -4166,6 +4166,21 @@ def do_mark_stream_messages_as_read(user_profile: UserProfile,
                               None, event_time, increment=min(1, count))
     return count
 
+def do_update_mobile_push_notification(message: Message, prior_mention_user_ids: Set[int]) -> None:
+    # This is an initial implementation of this method.
+    # It was written primarily to fix https://github.com/zulip/zulip/pull/15428.
+    # Future implementations should include updating the messsage in the
+    # notification of the user after the message was edited.
+    # We don't need to care about wildcard mentions here since,
+    # we don't send notifications for users who muted the stream and
+    # were wildcard mentioned.
+    if not message.is_stream_message():
+        return
+
+    # remove notification for users who were no longer mentioned.
+    remove_notify_users = prior_mention_user_ids - message.mentions_user_ids
+    do_clear_mobile_push_notifications_for_ids(list(remove_notify_users), [message.id])
+
 def do_clear_mobile_push_notifications_for_ids(user_profile_ids: List[int],
                                                message_ids: List[int]) -> None:
     # This functions supports clearing notifications for several users
@@ -4529,6 +4544,8 @@ def do_update_message(user_profile: UserProfile, message: Message,
             event['wildcard_mention_user_ids'] = list(info['wildcard_mention_user_ids'])
         else:
             event['wildcard_mention_user_ids'] = []
+
+        do_update_mobile_push_notification(message, prior_mention_user_ids)
 
     if topic_name is not None or new_stream is not None:
         orig_topic_name = message.topic_name()
