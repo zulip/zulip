@@ -248,8 +248,9 @@ working correctly.
 
 ### Upgrading from Ubuntu 16.04 Xenial to 18.04 Bionic
 
-1. Upgrade your server to the latest Zulip `2.1.x` release, since
-   newer releases don't support Ubuntu 16.04 Xenial.
+1. Upgrade your server to the latest Zulip `2.1.x` release.  You can
+   only upgrade to Zulip 3.0 and newer after completing this process,
+   since newer releases don't support Ubuntu 16.04 Xenial.
 
 2. Same as for Bionic to Focal.
 
@@ -278,8 +279,9 @@ working correctly.
 
 ### Upgrading from Ubuntu 14.04 Trusty to 16.04 Xenial
 
-1. Upgrade your server to the latest Zulip `2.0.x` release, since newer
-   releases don't support Ubuntu 14.04 Trusty.
+1. Upgrade your server to the latest Zulip `2.0.x` release.  You can
+   only upgrade to Zulip `2.1.x` and newer after completing this
+   process, since newer releases don't support Ubuntu 14.04 Trusty.
 
 2. Same as for Bionic to Focal.
 
@@ -304,8 +306,9 @@ match the new OS version:
 
 ### Upgrading from Debian Stretch to Debian Buster
 
-1. Upgrade your server to the latest Zulip `2.1.x` release, since newer
-   releases don't support Debian Stretch.
+1. Upgrade your server to the latest Zulip `2.1.x` release.  You can
+   only upgrade to Zulip 3.0 and newer after completing this process,
+   since newer releases don't support Ubuntu Debian Stretch.
 
 2. Same as for Xenial to Bionic, above.
 
