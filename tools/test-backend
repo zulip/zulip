@@ -70,7 +70,7 @@ not_yet_fully_covered = {path for target in [
     'zerver/lib/send_email.py',
     'zerver/lib/url_preview/preview.py',
     'zerver/worker/queue_processors.py',
-    # Bugdown sub-libs should have full coverage too; a lot are really close
+    # Markdown sub-libs should have full coverage too; a lot are really close
     'zerver/lib/markdown/api_arguments_table_generator.py',
     'zerver/lib/markdown/fenced_code.py',
     'zerver/lib/markdown/help_relative_links.py',
@@ -199,10 +199,10 @@ def main() -> None:
     test-backend zerver.tests.test_markdown # run all tests in a test module
     test-backend zerver/tests/test_markdown.py # run all tests in a test module
     test-backend test_markdown # run all tests in a test module
-    test-backend zerver.tests.test_markdown.BugdownTest # run all tests in a test class
-    test-backend BugdownTest # run all tests in a test class
-    test-backend zerver.tests.test_markdown.BugdownTest.test_inline_youtube # run a single test
-    test-backend BugdownTest.test_inline_youtube # run a single test"""
+    test-backend zerver.tests.test_markdown.MarkdownTest # run all tests in a test class
+    test-backend MarkdownTest # run all tests in a test class
+    test-backend zerver.tests.test_markdown.MarkdownTest.test_inline_youtube # run a single test
+    test-backend MarkdownTest.test_inline_youtube # run a single test"""
 
     parser = argparse.ArgumentParser(description=usage,
                                      formatter_class=argparse.RawTextHelpFormatter)

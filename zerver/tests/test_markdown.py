@@ -174,7 +174,7 @@ def markdown_convert(content: str) -> str:
         message_realm=get_realm('zulip'),
     )
 
-class BugdownMiscTest(ZulipTestCase):
+class MarkdownMiscTest(ZulipTestCase):
     def test_diffs_work_as_expected(self) -> None:
         str1 = "<p>The quick brown fox jumps over the lazy dog.  Animal stories are fun, yeah</p>"
         str2 = "<p>The fast fox jumps over the lazy dogs and cats.  Animal stories are fun</p>"
@@ -339,7 +339,7 @@ Outside. Should convert:<>
         original, expected = self.split_message(msg)
         self.assertEqual(preprocessor.run(original), expected)
 
-class BugdownTest(ZulipTestCase):
+class MarkdownTest(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         markdown.clear_state_for_testing()
@@ -352,7 +352,7 @@ class BugdownTest(ZulipTestCase):
         else:
             super().assertEqual(first, second)
 
-    def load_bugdown_tests(self) -> Tuple[Dict[str, Any], List[List[str]]]:
+    def load_markdown_tests(self) -> Tuple[Dict[str, Any], List[List[str]]]:
         test_fixtures = {}
         with open(os.path.join(os.path.dirname(__file__), 'fixtures/markdown_test_cases.json')) as f:
             data = ujson.load(f)
@@ -361,17 +361,17 @@ class BugdownTest(ZulipTestCase):
 
         return test_fixtures, data['linkify_tests']
 
-    def test_bugdown_no_ignores(self) -> None:
+    def test_markdown_no_ignores(self) -> None:
         # We do not want any ignored tests to be committed and merged.
-        format_tests, linkify_tests = self.load_bugdown_tests()
+        format_tests, linkify_tests = self.load_markdown_tests()
         for name, test in format_tests.items():
             message = f'Test "{name}" shouldn\'t be ignored.'
             is_ignored = test.get('ignore', False)
             self.assertFalse(is_ignored, message)
 
     @slow("Aggregate of runs dozens of individual markdown tests")
-    def test_bugdown_fixtures(self) -> None:
-        format_tests, linkify_tests = self.load_bugdown_tests()
+    def test_markdown_fixtures(self) -> None:
+        format_tests, linkify_tests = self.load_markdown_tests()
         valid_keys = {"name", "input", "expected_output",
                       "backend_only_rendering",
                       "marked_expected_output", "text_content",
@@ -405,7 +405,7 @@ class BugdownTest(ZulipTestCase):
                 href = 'http://' + url
             return payload % (f"<a href=\"{href}\">{url}</a>",)
 
-        print("Running Bugdown Linkify tests")
+        print("Running Markdown Linkify tests")
         with mock.patch('zerver.lib.url_preview.preview.link_embed_data_from_cache', return_value=None):
             for inline_url, reference, url in linkify_tests:
                 try:
@@ -869,7 +869,7 @@ class BugdownTest(ZulipTestCase):
 
         realm = get_realm('zulip')
 
-        # Needs to mock an actual message because that's how bugdown obtains the realm
+        # Needs to mock an actual message because that's how markdown obtains the realm
         msg = Message(sender=self.example_user('hamlet'))
         converted = markdown.convert(":green_tick:", message_realm=realm, message=msg)
         realm_emoji = RealmEmoji.objects.filter(realm=realm,
@@ -993,7 +993,7 @@ class BugdownTest(ZulipTestCase):
         assert_conversion('Hello #123World', False)
         assert_conversion('Hello#123 World', False)
         assert_conversion('Hello#123World', False)
-        # Ideally, these should be converted, but bugdown doesn't
+        # Ideally, these should be converted, but markdown doesn't
         # handle word boundary detection in languages that don't use
         # whitespace for that correctly yet.
         assert_conversion('チケットは#123です', False)
@@ -2060,7 +2060,7 @@ class BugdownTest(ZulipTestCase):
         converted = markdown_convert(dedent(msg))
         self.assertEqual(converted, dedent(expected_output))
 
-class BugdownApiTests(ZulipTestCase):
+class MarkdownApiTests(ZulipTestCase):
     def test_render_message_api(self) -> None:
         content = 'That is a **bold** statement'
         result = self.api_post(
@@ -2086,8 +2086,8 @@ class BugdownApiTests(ZulipTestCase):
         self.assertEqual(result.json()['rendered'],
                          f'<p>This mentions <a class="stream" data-stream-id="{stream_id}" href="/#narrow/stream/{stream_id}-Denmark">#Denmark</a> and <span class="user-mention" data-user-id="{user_id}">@King Hamlet</span>.</p>')
 
-class BugdownErrorTests(ZulipTestCase):
-    def test_bugdown_error_handling(self) -> None:
+class MarkdownErrorTests(ZulipTestCase):
+    def test_markdown_error_handling(self) -> None:
         with self.simulated_markdown_failure():
             with self.assertRaises(MarkdownRenderingException):
                 markdown_convert('')
@@ -2156,7 +2156,7 @@ class BugdownErrorTests(ZulipTestCase):
         result = processor.run(markdown_input)
         self.assertEqual(result, expected)
 
-class BugdownAvatarTestCase(ZulipTestCase):
+class MarkdownAvatarTestCase(ZulipTestCase):
     def test_possible_avatar_emails(self) -> None:
         content = '''
             hello !avatar(foo@example.com) my email is ignore@ignore.com
