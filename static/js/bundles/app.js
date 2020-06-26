@@ -213,6 +213,7 @@ import "../../styles/rendered_markdown.scss";
 import "../../styles/zulip.scss";
 import "../../styles/alerts.scss";
 import "../../styles/settings.scss";
+import "../../styles/image_upload_widget.scss";
 import "../../styles/subscriptions.scss";
 import "../../styles/drafts.scss";
 import "../../styles/input_pill.scss";
