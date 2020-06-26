@@ -3692,10 +3692,11 @@ def do_create_realm(string_id: str, name: str,
                "string_id": string_id,
                "emails_restricted_to_domains": emails_restricted_to_domains})
 
-    # Send a notification to the admin realm
-    signup_message = "Signups enabled"
     sender = get_system_bot(settings.NOTIFICATION_BOT)
     admin_realm = sender.realm
+    # Send a notification to the admin realm
+    with override_language(admin_realm.default_language):
+        signup_message = _("Signups enabled")
 
     try:
         signups_stream = get_signups_stream(admin_realm)
