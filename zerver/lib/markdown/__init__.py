@@ -2386,26 +2386,26 @@ def do_convert(content: str,
         _md_engine.zulip_realm = None
         _md_engine.zulip_db_data = None
 
-bugdown_time_start = 0.0
-bugdown_total_time = 0.0
-bugdown_total_requests = 0
+markdown_time_start = 0.0
+markdown_total_time = 0.0
+markdown_total_requests = 0
 
-def get_bugdown_time() -> float:
-    return bugdown_total_time
+def get_markdown_time() -> float:
+    return markdown_total_time
 
-def get_bugdown_requests() -> int:
-    return bugdown_total_requests
+def get_markdown_requests() -> int:
+    return markdown_total_requests
 
-def bugdown_stats_start() -> None:
-    global bugdown_time_start
-    bugdown_time_start = time.time()
+def markdown_stats_start() -> None:
+    global markdown_time_start
+    markdown_time_start = time.time()
 
-def bugdown_stats_finish() -> None:
-    global bugdown_total_time
-    global bugdown_total_requests
-    global bugdown_time_start
-    bugdown_total_requests += 1
-    bugdown_total_time += (time.time() - bugdown_time_start)
+def markdown_stats_finish() -> None:
+    global markdown_total_time
+    global markdown_total_requests
+    global markdown_time_start
+    markdown_total_requests += 1
+    markdown_total_time += (time.time() - markdown_time_start)
 
 def convert(content: str,
             realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
@@ -2416,10 +2416,10 @@ def convert(content: str,
             mention_data: Optional[MentionData]=None,
             email_gateway: bool=False,
             no_previews: bool=False) -> str:
-    bugdown_stats_start()
+    markdown_stats_start()
     ret = do_convert(content, realm_alert_words_automaton,
                      message, message_realm, sent_by_bot,
                      translate_emoticons, mention_data, email_gateway,
                      no_previews=no_previews)
-    bugdown_stats_finish()
+    markdown_stats_finish()
     return ret
