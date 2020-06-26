@@ -141,6 +141,8 @@ exports.open_modal = function (selector) {
 };
 
 exports.close_overlay = function (name) {
+    popovers.hide_all();
+
     if (name !== open_overlay_name) {
         blueslip.error("Trying to close " + name + " when " + open_overlay_name + " is open.");
         return;
