@@ -18,6 +18,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
+from django.utils.translation import override as override_language
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import (
@@ -371,17 +372,20 @@ def remove_subscriptions_backend(
     return json_success(result)
 
 def you_were_just_subscribed_message(acting_user: UserProfile,
+                                     recipient_user: UserProfile,
                                      stream_names: Set[str]) -> str:
     subscriptions = sorted(list(stream_names))
     if len(subscriptions) == 1:
-        return _("@**{full_name}** subscribed you to the stream #**{stream_name}**.").format(
-            full_name=acting_user.full_name,
-            stream_name=subscriptions[0],
-        )
+        with override_language(recipient_user.default_language):
+            return _("@**{full_name}** subscribed you to the stream #**{stream_name}**.").format(
+                full_name=acting_user.full_name,
+                stream_name=subscriptions[0],
+            )
 
-    message = _("@**{full_name}** subscribed you to the following streams:").format(
-        full_name=acting_user.full_name,
-    )
+    with override_language(recipient_user.default_language):
+        message = _("@**{full_name}** subscribed you to the following streams:").format(
+            full_name=acting_user.full_name,
+        )
     message += "\n\n"
     for stream_name in subscriptions:
         message += f"* #**{stream_name}**\n"
@@ -502,33 +506,38 @@ def add_subscriptions_backend(
             if not notify_stream_names:
                 continue
 
+            sender = get_system_bot(settings.NOTIFICATION_BOT)
+            recipient_user = email_to_user_profile[email]
+
             msg = you_were_just_subscribed_message(
                 acting_user=user_profile,
+                recipient_user=recipient_user,
                 stream_names=notify_stream_names,
             )
 
-            sender = get_system_bot(settings.NOTIFICATION_BOT)
             notifications.append(
                 internal_prep_private_message(
                     realm=user_profile.realm,
                     sender=sender,
-                    recipient_user=email_to_user_profile[email],
+                    recipient_user=recipient_user,
                     content=msg))
 
     if announce and len(created_streams) > 0:
         notifications_stream = user_profile.realm.get_notifications_stream()
         if notifications_stream is not None:
-            if len(created_streams) > 1:
-                content = _("@_**%(user_name)s|%(user_id)d** created the following streams: %(stream_str)s.")
-            else:
-                content = _("@_**%(user_name)s|%(user_id)d** created a new stream %(stream_str)s.")
+            with override_language(notifications_stream.realm.default_language):
+                if len(created_streams) > 1:
+                    content = _("@_**%(user_name)s|%(user_id)d** created the following streams: %(stream_str)s.")
+                else:
+                    content = _("@_**%(user_name)s|%(user_id)d** created a new stream %(stream_str)s.")
+                topic = _('new streams')
+
             content = content % {
                 'user_name': user_profile.full_name,
                 'user_id': user_profile.id,
                 'stream_str': ", ".join(f'#**{s.name}**' for s in created_streams)}
 
             sender = get_system_bot(settings.NOTIFICATION_BOT)
-            topic = _('new streams')
 
             notifications.append(
                 internal_prep_stream_message(
@@ -543,18 +552,19 @@ def add_subscriptions_backend(
     if not user_profile.realm.is_zephyr_mirror_realm and len(created_streams) > 0:
         sender = get_system_bot(settings.NOTIFICATION_BOT)
         for stream in created_streams:
-            notifications.append(
-                internal_prep_stream_message(
-                    realm=user_profile.realm,
-                    sender=sender,
-                    stream=stream,
-                    topic=Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
-                    content=_('Stream created by @_**{user_name}|{user_id}**.').format(
-                        user_name=user_profile.full_name,
-                        user_id=user_profile.id,
+            with override_language(stream.realm.default_language):
+                notifications.append(
+                    internal_prep_stream_message(
+                        realm=user_profile.realm,
+                        sender=sender,
+                        stream=stream,
+                        topic=Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
+                        content=_('Stream created by @_**{user_name}|{user_id}**.').format(
+                            user_name=user_profile.full_name,
+                            user_id=user_profile.id,
+                        ),
                     ),
-                ),
-            )
+                )
 
     if len(notifications) > 0:
         do_send_messages(notifications, mark_as_read=[user_profile.id])

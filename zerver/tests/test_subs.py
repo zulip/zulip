@@ -3471,7 +3471,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     principals=ujson.dumps([user1.id, user2.id]),
                 ),
             )
-        self.assert_length(queries, 50)
+        self.assert_length(queries, 51)
 
 class GetStreamsTest(ZulipTestCase):
     def test_streams_api_for_bot_owners(self) -> None:
