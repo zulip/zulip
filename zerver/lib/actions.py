@@ -4325,21 +4325,23 @@ def notify_topic_moved_streams(user_profile: UserProfile,
     old_topic_link = f"#**{old_stream.name}>{old_topic}**"
     new_topic_link = f"#**{new_stream.name}>{new_topic}**"
     if send_notification_to_new_thread:
-        internal_send_stream_message(
-            new_stream.realm, sender, new_stream, new_topic,
-            _("This topic was moved here from {old_location} by {user}").format(
-                old_location=old_topic_link, user=user_mention,
-            ),
-        )
+        with override_language(new_stream.realm.default_language):
+            internal_send_stream_message(
+                new_stream.realm, sender, new_stream, new_topic,
+                _("This topic was moved here from {old_location} by {user}").format(
+                    old_location=old_topic_link, user=user_mention,
+                ),
+            )
 
     if send_notification_to_old_thread:
-        # Send a notification to the old stream that the topic was moved.
-        internal_send_stream_message(
-            old_stream.realm, sender, old_stream, old_topic,
-            _("This topic was moved by {user} to {new_location}").format(
-                user=user_mention, new_location=new_topic_link,
-            ),
-        )
+        with override_language(old_stream.realm.default_language):
+            # Send a notification to the old stream that the topic was moved.
+            internal_send_stream_message(
+                old_stream.realm, sender, old_stream, old_topic,
+                _("This topic was moved by {user} to {new_location}").format(
+                    user=user_mention, new_location=new_topic_link,
+                ),
+            )
 
 def get_user_info_for_message_updates(message_id: int) -> MessageUpdateUserInfoResult:
 
