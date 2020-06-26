@@ -62,6 +62,9 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
             if return_value in IGNORE:
                 continue
             description = return_values[return_value]['description']
+            # Test to make sure deprecated keys are marked appropriately.
+            if 'Deprecated' in description:
+                assert(return_values[return_value]['deprecated'])
             ans.append(self.render_desc(description, spacing, return_value))
             if 'properties' in return_values[return_value]:
                 ans += self.render_table(return_values[return_value]['properties'], spacing + 4)

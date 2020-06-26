@@ -92,7 +92,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
         table = []
         argument_template = """
 <div class="api-argument">
-    <p class="api-argument-name"><strong>{argument}</strong> {required}</p>
+    <p class="api-argument-name"><strong>{argument}</strong> {required} {deprecated}</p>
     <div class="api-example">
         <span class="api-argument-example-label">Example</span>: <code>{example}</code>
     </div>
@@ -101,7 +101,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
 </div>"""
 
         md_engine = markdown.Markdown(extensions=[])
-
+        arguments = sorted(arguments, key=lambda argument: 'deprecated' in argument)
         for argument in arguments:
             description = argument['description']
             oneof = ['`' + str(item) + '`'
@@ -132,10 +132,19 @@ class APIArgumentsTablePreprocessor(Preprocessor):
             else:
                 required_block = '<span class="api-argument-optional">optional</span>'
 
+            # Test to make sure deprecated parameters are marked so.
+            if 'Deprecated' in description:
+                assert(argument['deprecated'])
+            if argument.get('deprecated', False):
+                deprecated_block = '<span class="api-argument-required">Deprecated</span>'
+            else:
+                deprecated_block = ''
+
             table.append(argument_template.format(
                 argument=argument.get('argument') or argument.get('name'),
                 example=escape_html(example),
                 required=required_block,
+                deprecated=deprecated_block,
                 description=md_engine.convert(description),
             ))
 
