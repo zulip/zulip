@@ -1730,6 +1730,13 @@ input.new-organization-button {
         font-size: 12px;
         color: hsl(0, 0%, 47%);
     }
+
+    .api-argument-deprecated {
+        text-transform: uppercase;
+        font-weight: 600;
+        font-size: 12px;
+        color: hsl(0, 50%, 60%);
+    }
 }
 
 .desktop-redirect-box {

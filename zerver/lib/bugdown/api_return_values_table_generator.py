@@ -5,7 +5,7 @@ import markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
-from zerver.openapi.openapi import get_openapi_return_values
+from zerver.openapi.openapi import get_openapi_return_values, likely_deprecated_parameter
 
 REGEXP = re.compile(r'\{generate_return_values_table\|\s*(.+?)\s*\|\s*(.+)\s*\}')
 
@@ -62,6 +62,9 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
             if return_value in IGNORE:
                 continue
             description = return_values[return_value]['description']
+            # Test to make sure deprecated keys are marked appropriately.
+            if likely_deprecated_parameter(description):
+                assert(return_values[return_value]['deprecated'])
             ans.append(self.render_desc(description, spacing, return_value))
             if 'properties' in return_values[return_value]:
                 ans += self.render_table(return_values[return_value]['properties'], spacing + 4)

@@ -340,3 +340,9 @@ def to_python_type(py_type: str) -> type:
     }
 
     return TYPES[py_type]
+
+def likely_deprecated_parameter(parameter_description: str) -> bool:
+    if '**Changes**: Deprecated' in parameter_description:
+        return True
+
+    return "**Deprecated**" in parameter_description

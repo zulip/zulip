@@ -8,7 +8,7 @@ from django.utils.html import escape as escape_html
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
-from zerver.openapi.openapi import get_openapi_parameters
+from zerver.openapi.openapi import get_openapi_parameters, likely_deprecated_parameter
 
 REGEXP = re.compile(r'\{generate_api_arguments_table\|\s*(.+?)\s*\|\s*(.+)\s*\}')
 
@@ -92,7 +92,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
         table = []
         argument_template = """
 <div class="api-argument">
-    <p class="api-argument-name"><strong>{argument}</strong> {required}</p>
+    <p class="api-argument-name"><strong>{argument}</strong> {required} {deprecated}</p>
     <div class="api-example">
         <span class="api-argument-example-label">Example</span>: <code>{example}</code>
     </div>
@@ -101,7 +101,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
 </div>"""
 
         md_engine = markdown.Markdown(extensions=[])
-
+        arguments = sorted(arguments, key=lambda argument: 'deprecated' in argument)
         for argument in arguments:
             description = argument['description']
             oneof = ['`' + str(item) + '`'
@@ -132,10 +132,19 @@ class APIArgumentsTablePreprocessor(Preprocessor):
             else:
                 required_block = '<span class="api-argument-optional">optional</span>'
 
+            # Test to make sure deprecated parameters are marked so.
+            if likely_deprecated_parameter(description):
+                assert(argument['deprecated'])
+            if argument.get('deprecated', False):
+                deprecated_block = '<span class="api-argument-deprecated">Deprecated</span>'
+            else:
+                deprecated_block = ''
+
             table.append(argument_template.format(
                 argument=argument.get('argument') or argument.get('name'),
                 example=escape_html(example),
                 required=required_block,
+                deprecated=deprecated_block,
                 description=md_engine.convert(description),
             ))
 

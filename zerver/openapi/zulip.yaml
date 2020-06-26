@@ -550,6 +550,7 @@ paths:
         example: false
       - name: use_first_unread_anchor
         in: query
+        deprecated: true
         description: |
           Legacy way to specify `anchor="first_unread"` in Zulip 2.1.x and older.
 
@@ -1959,6 +1960,7 @@ paths:
                       example: "2019-10-20T07:50:53.728864+00:00"
                     max_message_id:
                       type: integer
+                      deprecated: true
                       description: |
                         The integer ID of the last message received by your account.
 
@@ -2272,12 +2274,14 @@ paths:
                               opposite value, `in_home_view=!is_muted`).
                           in_home_view:
                             type: boolean
+                            deprecated: true
                             description: |
                               Legacy property for if the given stream is muted, with inverted meeting.
 
                               **Deprecated**; clients should use is_muted where available.
                           is_announcement_only:
                             type: boolean
+                            deprecated: true
                             description: |
                               Whether only organization administrators can post to the stream.
 
@@ -3275,6 +3279,7 @@ paths:
                 - properties:
                     authentication_methods:
                       type: object
+                      deprecated: true
                       description: |
                         Each key-value pair in the object indicates whether the authentication
                         method is enabled on this server.
@@ -3840,6 +3845,7 @@ paths:
                               Null is used for streams with no message history.
                           is_announcement_only:
                             type: boolean
+                            deprecated: true
                             description: |
                               Whether the given stream is announcement only or not.
 
@@ -3992,6 +3998,7 @@ paths:
         required: false
       - name: is_announcement_only
         in: query
+        deprecated: true
         description: |
           Whether the stream is limited to announcements.
 
@@ -4546,6 +4553,7 @@ components:
                   object is deprecated and will be removed in the future.
               user:
                 type: object
+                deprecated: true
                 description: |
                   Dictionary with data on the user who added the reaction, including
                   the user ID as the `id` field.  **Note**: In the [events
