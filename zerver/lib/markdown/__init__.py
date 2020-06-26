@@ -96,7 +96,7 @@ class FullNameInfo(TypedDict):
 
 DbData = Dict[str, Any]
 
-# Format version of the bugdown rendering; stored along with rendered
+# Format version of the markdown rendering; stored along with rendered
 # messages so that we can efficiently determine what needs to be re-rendered
 version = 1
 
@@ -1073,7 +1073,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         unique_previewable_urls = {found_url.result[0] for found_url in found_urls
                                    if not found_url.family.in_blockquote}
 
-        # Set has_link and similar flags whenever a message is processed by bugdown
+        # Set has_link and similar flags whenever a message is processed by markdown
         if self.md.zulip_message:
             self.md.zulip_message.has_link = len(found_urls) > 0
             self.md.zulip_message.has_image = False  # This is updated in self.add_a
@@ -2103,7 +2103,7 @@ def privacy_clean_markdown(content: str) -> str:
     return repr(_privacy_re.sub('x', content))
 
 def log_bugdown_error(msg: str) -> None:
-    """We use this unusual logging approach to log the bugdown error, in
+    """We use this unusual logging approach to log the markdown error, in
     order to prevent AdminNotifyHandler from sending the sanitized
     original markdown formatting into another Zulip message, which
     could cause an infinite exception loop."""
@@ -2273,7 +2273,7 @@ def do_convert(content: str,
     # This logic is a bit convoluted, but the overall goal is to support a range of use cases:
     # * Nothing is passed in other than content -> just run default options (e.g. for docs)
     # * message is passed, but no realm is -> look up realm from message
-    # * message_realm is passed -> use that realm for bugdown purposes
+    # * message_realm is passed -> use that realm for markdown purposes
     if message is not None:
         if message_realm is None:
             message_realm = message.get_realm()
@@ -2316,7 +2316,7 @@ def do_convert(content: str,
     _md_engine.url_embed_preview_enabled = url_embed_preview_enabled(
         message, message_realm, no_previews)
 
-    # Pre-fetch data from the DB that is used in the bugdown thread
+    # Pre-fetch data from the DB that is used in the markdown thread
     if message_realm is not None:
 
         # Here we fetch the data structures needed to render
