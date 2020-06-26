@@ -1,6 +1,8 @@
 <div class="message_controls{{#status_message}} sender-status-controls{{/status_message}} no-select">
     {{#if msg/sent_by_me}}
-    <div class="edit_content"></div>
+        {{#unless msg/locally_echoed}}
+        <div class="edit_content"></div>
+        {{/unless}}
     {{/if}}
 
     {{#unless msg/sent_by_me}}
