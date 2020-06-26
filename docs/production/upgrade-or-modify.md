@@ -304,6 +304,10 @@ match the new OS version:
 
 5. Same as for Bionic to Focal.
 
+That last command will finish by restarting your Zulip server; you
+should now be able to navigate to its URL and confirm everything is
+working correctly.
+
 ### Upgrading from Debian Stretch to Debian Buster
 
 1. Upgrade your server to the latest Zulip `2.1.x` release, since
@@ -338,6 +342,10 @@ match the new OS version:
     ```
 
 5. Same as for Xenial to Bionic.
+
+That last command will finish by restarting your Zulip server; you
+should now be able to navigate to its URL and confirm everything is
+working correctly.
 
 ## Modifying Zulip
 
