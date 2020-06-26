@@ -708,3 +708,34 @@ run_test('test_topic_edit', () => {
     assert.equal(all_topics.get(get_topic_key(stream2, topic1)), undefined);
     verify_topic_data(all_topics, stream3, topic9, messages[0].id, true);
 });
+
+run_test('test_search', () => {
+    const rt = zrequire('recent_topics');
+    assert.equal(rt.topic_in_search_results('t', 'Recent Topic'), true);
+    assert.equal(rt.topic_in_search_results('T', 'Recent Topic'), true);
+    assert.equal(rt.topic_in_search_results('to', 'Recent Topic'), true);
+    assert.equal(rt.topic_in_search_results('top', 'Recent Topic'), true);
+    assert.equal(rt.topic_in_search_results('ToP', 'Recent Topic'), true);
+    assert.equal(rt.topic_in_search_results('Topi', 'Recent Topic'), true);
+    assert.equal(rt.topic_in_search_results('tOpi', 'Recent Topic'), true);
+    assert.equal(rt.topic_in_search_results('toPic', 'Recent Topic'), true);
+    assert.equal(rt.topic_in_search_results('Topic', 'Recent Topic'), true);
+    assert.equal(rt.topic_in_search_results('topic', 'Recent Topic'), true);
+    assert.equal(rt.topic_in_search_results('recent', 'Recent Topic'), true);
+    assert.equal(rt.topic_in_search_results('RECENT', 'Recent Topic'), true);
+
+    // Matches only comple words or from the start of words.
+    assert.equal(rt.topic_in_search_results('o', 'Recent Topic'), false);
+
+    assert.equal(rt.topic_in_search_results('?', 'Recent Topic'), false);
+
+    // Test special character match
+    assert.equal(rt.topic_in_search_results('.*+?^${}()[]\\', 'Recent Topic'), false);
+    assert.equal(rt.topic_in_search_results('?', 'not-at-start?'), false);
+
+    assert.equal(rt.topic_in_search_results('?', '?'), true);
+    assert.equal(rt.topic_in_search_results('?', '\\?'), false);
+
+    assert.equal(rt.topic_in_search_results('\\', '\\'), true);
+    assert.equal(rt.topic_in_search_results('\\', '\\\\'), true);
+});

@@ -215,20 +215,24 @@ exports.process_topic_edit = function (old_stream_id, old_topic, new_topic, new_
     exports.process_messages(new_topic_msgs);
 };
 
-function topic_in_search_results(keyword, stream, topic) {
+exports.topic_in_search_results = function (keyword, stream, topic) {
     if (keyword === "") {
         return true;
     }
+    // Escape speacial characters from input.
+    // https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
+    keyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     // split the search text around whitespace(s).
     // eg: "Denamark recent" -> ["Denamrk", "recent"]
     const search_keywords = $.trim(keyword).split(/\s+/);
     // turn the search keywords into word boundary groups
-    // eg: ["Denamrk", "recent"] -> "^(?=.*\bDenmark\b)(?=.*\brecent\b).*$"
-    const val = '^(?=.*\\b' + search_keywords.join('\\b)(?=.*\\b') + ').*$';
+    // eg: ["Denamrk", "recent"] -> "^(?=.*(?:^|\s)Denmark(?:^|\s))(?=.*(?:^|\s)Recent).*$"
+    // https://stackoverflow.com/questions/10590098/javascript-regexp-word-boundaries-unicode-characters
+    const val = '^(?=.*(?:^|\\s)' + search_keywords.join('(?:^|\\s))(?=.*(?:^|\\s)') + ').*$';
     const reg = RegExp(val, 'i'); // i for ignorecase
     const text = (stream + " " + topic).replace(/\s+/g, ' ');
     return reg.test(text);
-}
+};
 
 function filters_should_hide_topic(topic_data) {
     const msg = message_store.get(topic_data.last_msg_id);
@@ -253,7 +257,7 @@ function filters_should_hide_topic(topic_data) {
     }
 
     const search_keyword = $("#recent_topics_search").val();
-    if (!topic_in_search_results(search_keyword, msg.stream, msg.topic)) {
+    if (!recent_topics.topic_in_search_results(search_keyword, msg.stream, msg.topic)) {
         return true;
     }
 
