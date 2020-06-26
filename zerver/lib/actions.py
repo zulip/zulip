@@ -33,6 +33,7 @@ from django.db.models import Count, Exists, F, Max, OuterRef, Q, Sum
 from django.db.models.query import QuerySet
 from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import override as override_language
 from django.utils.translation import ugettext as _
 from psycopg2.extras import execute_values
 from psycopg2.sql import SQL
@@ -341,26 +342,36 @@ def notify_new_user(user_profile: UserProfile) -> None:
     # Send notification to realm signup notifications stream if it exists
     # Don't send notification for the first user in a realm
     if signup_notifications_stream is not None and user_count > 1:
-        internal_send_stream_message(
-            user_profile.realm,
-            sender,
-            signup_notifications_stream,
-            "signups",
-            f"@_**{user_profile.full_name}|{user_profile.id}** just signed up for Zulip. (total: {user_count})",
-        )
+        with override_language(user_profile.realm.default_language):
+            message = _("{user} just signed up for Zulip. (total: {user_count})").format(
+                user=f"@_**{user_profile.full_name}|{user_profile.id}**",
+                user_count=user_count
+            )
+            internal_send_stream_message(
+                user_profile.realm,
+                sender,
+                signup_notifications_stream,
+                _("signups"),
+                message
+            )
 
     # We also send a notification to the Zulip administrative realm
     admin_realm = sender.realm
     try:
         # Check whether the stream exists
         signups_stream = get_signups_stream(admin_realm)
-        internal_send_stream_message(
-            admin_realm,
-            sender,
-            signups_stream,
-            user_profile.realm.display_subdomain,
-            f"{user_profile.full_name} <`{user_profile.email}`> just signed up for Zulip! (total: **{user_count}**)",
-        )
+        with override_language(admin_realm.default_language):
+            message = _("{user} just signed up for Zulip! (total: **{user_count}**)").format(
+                user=f"{user_profile.full_name} <`{user_profile.email}`>",
+                user_count=user_count
+            )
+            internal_send_stream_message(
+                admin_realm,
+                sender,
+                signups_stream,
+                user_profile.realm.display_subdomain,
+                message
+            )
 
     except Stream.DoesNotExist:
         # If the signups stream hasn't been created in the admin
