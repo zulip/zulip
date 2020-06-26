@@ -212,15 +212,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
         )
         needs_tutorial = user_profile.tutorial_status == UserProfile.TUTORIAL_WAITING
 
-        if user_profile.pointer == -1:
-            # Put the new user's pointer at the bottom
-            #
-            # This improves performance, because we limit backfilling of messages
-            # before the pointer.  It's also likely that someone joining an
-            # organization is interested in recent messages more than the very
-            # first messages on the system.
-            register_ret['pointer'] = register_ret['max_message_id']
-
     else:  # nocoverage
         first_in_realm = False
         prompt_for_invites = False
@@ -291,7 +282,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
             page_params["narrow_topic"] = narrow_topic
         page_params["narrow"] = [dict(operator=term[0], operand=term[1]) for term in narrow]
         page_params["max_message_id"] = initial_pointer
-        page_params["pointer"] = initial_pointer
         page_params["enable_desktop_notifications"] = False
 
     statsd.incr('views.home')

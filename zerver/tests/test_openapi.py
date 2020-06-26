@@ -283,8 +283,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/settings/display',
         # Much more valuable would be an org admin bulk-upload feature.
         '/users/me/profile_data',
-        # To be deprecated and deleted.
-        '/users/me/pointer',
 
         #### Should be documented as part of interactive bots documentation
         '/bot_storage',

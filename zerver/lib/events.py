@@ -131,9 +131,6 @@ def fetch_initial_state_data(user_profile: UserProfile,
     if want('muted_topics'):
         state['muted_topics'] = get_topic_mutes(user_profile)
 
-    if want('pointer'):
-        state['pointer'] = user_profile.pointer
-
     if want('presence'):
         state['presences'] = get_presences_for_realm(realm, slim_presence)
 
@@ -398,8 +395,6 @@ def apply_event(state: Dict[str, Any],
         state['hotspots'] = event['hotspots']
     elif event['type'] == "custom_profile_fields":
         state['custom_profile_fields'] = event['fields']
-    elif event['type'] == "pointer":
-        state['pointer'] = max(state['pointer'], event['pointer'])
     elif event['type'] == "realm_user":
         person = event['person']
         person_user_id = person['user_id']

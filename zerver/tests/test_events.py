@@ -86,7 +86,6 @@ from zerver.lib.actions import (
     do_update_message,
     do_update_message_flags,
     do_update_outgoing_webhook_service,
-    do_update_pointer,
     do_update_user_custom_profile_data_if_changed,
     do_update_user_group_description,
     do_update_user_group_name,
@@ -293,9 +292,7 @@ class EventsEndpointTest(ZulipTestCase):
         # Check that we didn't fetch the messages data
         self.assertNotIn('max_message_id', result_dict)
 
-        # Check that the realm_emoji data is in there, and is correctly
-        # updated (presering our atomicity guaranteed), though of
-        # course any future pointer events won't be distributed
+        # Check that the realm_emoji data is in there.
         self.assertIn('realm_emoji', result_dict)
         self.assertEqual(result_dict['realm_emoji'], [])
         self.assertEqual(result_dict['queue_id'], '15:13')
@@ -1251,14 +1248,6 @@ class EventsRegisterTest(ZulipTestCase):
         events = self.do_test(lambda: do_update_user_presence(
             self.user_profile, get_client("ZulipAndroid/1.0"), timezone_now(), UserPresence.IDLE))
         schema_checker_android('events[0]', events[0])
-
-    def test_pointer_events(self) -> None:
-        schema_checker = self.check_events_dict([
-            ('type', equals('pointer')),
-            ('pointer', check_int),
-        ])
-        events = self.do_test(lambda: do_update_pointer(self.user_profile, get_client("website"), 1500))
-        schema_checker('events[0]', events[0])
 
     def test_register_events(self) -> None:
         realm_user_add_checker = self.check_events_dict([
@@ -3801,7 +3790,6 @@ class FetchQueriesTest(ZulipTestCase):
             hotspots=0,
             message=1,
             muted_topics=1,
-            pointer=0,
             presence=1,
             realm=0,
             realm_bot=1,

@@ -303,7 +303,7 @@ class EventQueue:
         event['id'] = self.next_event_id
         self.next_event_id += 1
         full_event_type = compute_full_event_type(event)
-        if (full_event_type in ["pointer", "restart"] or
+        if (full_event_type == "restart" or
                 full_event_type.startswith("flags/")):
             if full_event_type not in self.virtual_events:
                 self.virtual_events[full_event_type] = copy.deepcopy(event)
@@ -313,9 +313,8 @@ class EventQueue:
             virtual_event["id"] = event["id"]
             if "timestamp" in event:
                 virtual_event["timestamp"] = event["timestamp"]
-            if full_event_type == "pointer":
-                virtual_event["pointer"] = event["pointer"]
-            elif full_event_type == "restart":
+
+            if full_event_type == "restart":
                 virtual_event["server_generation"] = event["server_generation"]
             elif full_event_type.startswith("flags/"):
                 virtual_event["messages"] += event["messages"]

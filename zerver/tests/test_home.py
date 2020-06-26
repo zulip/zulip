@@ -122,7 +122,6 @@ class HomeTest(ZulipTestCase):
             "password_min_guesses",
             "password_min_length",
             "pm_content_in_desktop_notifications",
-            "pointer",
             "poll_timeout",
             "presence_enabled",
             "presences",
@@ -456,15 +455,6 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(mock.call_args_list[0][0][0], "Invalid narrow requested, ignoring")
         self._sanity_check(result)
 
-    def test_bad_pointer(self) -> None:
-        user_profile = self.example_user('hamlet')
-        user_profile.pointer = 999999
-        user_profile.save()
-
-        self.login_user(user_profile)
-        result = self._get_home_page()
-        self._sanity_check(result)
-
     def test_topic_narrow(self) -> None:
         self.login('hamlet')
         result = self._get_home_page(stream='Denmark', topic='lunch')
@@ -658,7 +648,6 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(result)
         self.assertEqual(page_params['narrow_stream'], stream_name)
         self.assertEqual(page_params['narrow'], [dict(operator='stream', operand=stream_name)])
-        self.assertEqual(page_params['pointer'], -1)
         self.assertEqual(page_params['max_message_id'], -1)
 
     def test_invites_by_admins_only(self) -> None:
