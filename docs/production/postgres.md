@@ -1,6 +1,18 @@
 Postgres database details
 =========================
 
+Starting with Zulip 3.0, Zulip supports using Postgres 10, 11, or 12,
+defaulting to Postgres 12 for new installations.
+
+Previous versions of Zulip used whatever version of Postgres was
+included with the base operating system (E.g. Postgres 12 on Ubuntu
+Focal, 10 on Ubuntu Bionic, and 9.6 on Ubuntu Xenial).  We recommend
+that installations currently using older Postgres releases [upgrade to
+Postgres 12][upgrade-postgres], as may drop support for older postgres
+in a future release.
+
+[upgrade-postgres]: ../production/upgrade-or-modify.html#upgrading-postgresql
+
 #### Remote Postgres database
 
 This is a bit annoying to setup, but you can configure Zulip to use a
