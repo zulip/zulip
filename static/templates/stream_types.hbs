@@ -32,7 +32,9 @@
     </li>
     {{/each}}
     {{#if (or is_owner is_stream_edit)}}
-    <h4>{{t "Message retention for stream" }}</h4>
+    <h4>{{t "Message retention for stream" }}
+        {{> help_link_widget link="/help/message-retention-policy" }}
+    </h4>
 
     {{> settings/upgrade_tip_widget}}
 

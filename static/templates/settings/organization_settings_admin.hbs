@@ -142,7 +142,9 @@
 
         <div id="org-message-retention" class="org-subsection-parent">
             <div class="subsection-header">
-                <h3>{{t "Message retention" }}</h3>
+                <h3>{{t "Message retention" }}
+                    {{> ../help_link_widget link="/help/message-retention-policy" }}
+                </h3>
                 {{> settings_save_discard_widget section_name="message-retention" }}
             </div>
 
