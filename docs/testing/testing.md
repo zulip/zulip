@@ -33,8 +33,8 @@ typically involve running subsets of the tests with commands like these:
 
 ```
 ./tools/lint zerver/lib/actions.py # Lint the file you just changed
-./tools/test-backend zerver.tests.test_markdown.BugdownTest.test_inline_youtube
-./tools/test-backend BugdownTest # Run `test-backend --help` for more options
+./tools/test-backend zerver.tests.test_markdown.MarkdownTest.test_inline_youtube
+./tools/test-backend MarkdownTest # Run `test-backend --help` for more options
 ./tools/test-js-with-casper 09-navigation.js
 ./tools/test-js-with-node utils.js
 ```
