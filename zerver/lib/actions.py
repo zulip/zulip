@@ -461,12 +461,13 @@ def process_new_human_user(user_profile: UserProfile,
     # mit_beta_users don't have a referred_by field
     if not mit_beta_user and prereg_user is not None and prereg_user.referred_by is not None:
         # This is a cross-realm private message.
-        internal_send_private_message(
-            user_profile.realm,
-            get_system_bot(settings.NOTIFICATION_BOT),
-            prereg_user.referred_by,
-            f"{user_profile.full_name} <`{user_profile.email}`> accepted your invitation to join Zulip!",
-        )
+        with override_language(prereg_user.referred_by.default_language):
+            internal_send_private_message(
+                user_profile.realm,
+                get_system_bot(settings.NOTIFICATION_BOT),
+                prereg_user.referred_by,
+                _("{user} accepted your invitation to join Zulip!").format(user=f"{user_profile.full_name} <`{user_profile.email}`>")
+            )
     # Mark any other PreregistrationUsers that are STATUS_ACTIVE as
     # inactive so we can keep track of the PreregistrationUser we
     # actually used for analytics
