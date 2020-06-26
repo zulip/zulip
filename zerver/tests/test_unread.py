@@ -8,77 +8,19 @@ from zerver.lib.fix_unreads import fix, fix_unsubscribed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription, tornado_redirected_to_list
 from zerver.lib.topic_mutes import add_topic_mute
-from zerver.models import Subscription, UserMessage, UserProfile, get_realm, get_stream, get_user
+from zerver.models import Subscription, UserMessage, UserProfile, get_realm, get_stream
 
 
-class PointerTest(ZulipTestCase):
+class FirstUnreadAnchorTests(ZulipTestCase):
+    '''
+    HISTORICAL NOTE:
 
-    def test_update_pointer(self) -> None:
-        """
-        Posting a pointer to /update (in the form {"pointer": pointer}) changes
-        the pointer we store for your UserProfile.
-        """
+    The two tests in this class were originally written when
+    we had the concept of a "pointer", and they may be a bit
+    redundant in what they now check.
+    '''
+    def test_use_first_unread_anchor(self) -> None:
         self.login('hamlet')
-        self.assertEqual(self.example_user('hamlet').pointer, -1)
-        msg_id = self.send_stream_message(self.example_user("othello"), "Verona")
-        result = self.client_post("/json/users/me/pointer", {"pointer": msg_id})
-        self.assert_json_success(result)
-        self.assertEqual(self.example_user('hamlet').pointer, msg_id)
-
-    def test_api_update_pointer(self) -> None:
-        """
-        Same as above, but for the API view
-        """
-        user = self.example_user('hamlet')
-        email = user.email
-        self.assertEqual(user.pointer, -1)
-        msg_id = self.send_stream_message(self.example_user("othello"), "Verona")
-        result = self.api_post(user, "/api/v1/users/me/pointer", {"pointer": msg_id})
-        self.assert_json_success(result)
-        self.assertEqual(get_user(email, user.realm).pointer, msg_id)
-
-    def test_missing_pointer(self) -> None:
-        """
-        Posting json to /json/users/me/pointer which does not contain a pointer key/value pair
-        returns a 400 and error message.
-        """
-        self.login('hamlet')
-        self.assertEqual(self.example_user('hamlet').pointer, -1)
-        result = self.client_post("/json/users/me/pointer", {"foo": 1})
-        self.assert_json_error(result, "Missing 'pointer' argument")
-        self.assertEqual(self.example_user('hamlet').pointer, -1)
-
-    def test_invalid_pointer(self) -> None:
-        """
-        Posting json to /json/users/me/pointer with an invalid pointer returns a 400 and error
-        message.
-        """
-        self.login('hamlet')
-        self.assertEqual(self.example_user('hamlet').pointer, -1)
-        result = self.client_post("/json/users/me/pointer", {"pointer": "foo"})
-        self.assert_json_error(result, "Bad value for 'pointer': foo")
-        self.assertEqual(self.example_user('hamlet').pointer, -1)
-
-    def test_pointer_out_of_range(self) -> None:
-        """
-        Posting json to /json/users/me/pointer with an out of range (< 0) pointer returns a 400
-        and error message.
-        """
-        self.login('hamlet')
-        self.assertEqual(self.example_user('hamlet').pointer, -1)
-        result = self.client_post("/json/users/me/pointer", {"pointer": -2})
-        self.assert_json_error(result, "Bad value for 'pointer': -2")
-        self.assertEqual(self.example_user('hamlet').pointer, -1)
-
-    def test_use_first_unread_anchor_interaction_with_pointer(self) -> None:
-        """
-        Getting old messages (a get request to /json/messages) should never
-        return an unread message older than the current pointer, when there's
-        no narrow set.
-        """
-        self.login('hamlet')
-        # Ensure the pointer is not set (-1)
-        self.assertEqual(self.example_user('hamlet').pointer, -1)
 
         # Mark all existing messages as read
         result = self.client_post("/json/mark_all_as_read")
@@ -107,7 +49,6 @@ class PointerTest(ZulipTestCase):
         messages = self.get_messages(
             anchor=0, num_before=0, num_after=2, use_first_unread_anchor=False)
         old_message_id = messages[0]['id']
-        next_old_message_id = messages[1]['id']
 
         # Verify the message is marked as read
         user_message = UserMessage.objects.get(
@@ -135,23 +76,8 @@ class PointerTest(ZulipTestCase):
         self.assertEqual(messages_response['messages'][0]['id'], old_message_id)
         self.assertEqual(messages_response['anchor'], old_message_id)
 
-        # Let's update the pointer to be *after* this old unread message (but
-        # still on or before the new unread message we just sent)
-        result = self.client_post("/json/users/me/pointer",
-                                  {"pointer": next_old_message_id})
-        self.assert_json_success(result)
-        self.assertEqual(self.example_user('hamlet').pointer,
-                         next_old_message_id)
-
-        # Verify that moving the pointer didn't mark our message as read.
-        user_message = UserMessage.objects.get(
-            message_id=old_message_id,
-            user_profile=self.example_user('hamlet'))
-        self.assertFalse(user_message.flags.read)
-
     def test_visible_messages_use_first_unread_anchor(self) -> None:
         self.login('hamlet')
-        self.assertEqual(self.example_user('hamlet').pointer, -1)
 
         result = self.client_post("/json/mark_all_as_read")
         self.assert_json_success(result)
@@ -183,6 +109,7 @@ class PointerTest(ZulipTestCase):
             messages = self.get_messages(
                 anchor="first_unread", num_before=0, num_after=1)
         self.assert_length(messages, 1)
+
 
 class UnreadCountTests(ZulipTestCase):
     def setUp(self) -> None:

@@ -4031,42 +4031,6 @@ def update_user_presence(user_profile: UserProfile, client: Client, log_time: da
     if new_user_input:
         update_user_activity_interval(user_profile, log_time)
 
-def do_update_pointer(user_profile: UserProfile, client: Client,
-                      pointer: int, update_flags: bool=False) -> None:
-    prev_pointer = user_profile.pointer
-    user_profile.pointer = pointer
-    user_profile.save(update_fields=["pointer"])
-
-    if update_flags:  # nocoverage
-        # This block of code is compatibility code for the
-        # legacy/original Zulip Android app natively.  It's a shim
-        # that will mark as read any messages up until the pointer
-        # move; we expect to remove this feature entirely before long,
-        # when we drop support for the old Android app entirely.
-        app_message_ids = UserMessage.objects.filter(
-            user_profile=user_profile,
-            message__id__gt=prev_pointer,
-            message__id__lte=pointer).extra(where=[
-                UserMessage.where_unread(),
-                UserMessage.where_active_push_notification(),
-            ]).values_list("message_id", flat=True)
-
-        UserMessage.objects.filter(user_profile=user_profile,
-                                   message__id__gt=prev_pointer,
-                                   message__id__lte=pointer).extra(where=[UserMessage.where_unread()]) \
-            .update(flags=F('flags').bitor(UserMessage.flags.read))
-        do_clear_mobile_push_notifications_for_ids([user_profile.id], app_message_ids)
-        event_time = timezone_now()
-
-        count = len(app_message_ids)
-        do_increment_logging_stat(user_profile, COUNT_STATS['messages_read::hour'],
-                                  None, event_time, increment=count)
-        do_increment_logging_stat(user_profile, COUNT_STATS['messages_read_interactions::hour'],
-                                  None, event_time, increment=min(1, count))
-
-    event = dict(type='pointer', pointer=pointer)
-    send_event(user_profile.realm, event, [user_profile.id])
-
 def do_update_user_status(user_profile: UserProfile,
                           away: Optional[bool],
                           status_text: Optional[str],

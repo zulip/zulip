@@ -1531,25 +1531,6 @@ class BulkUsersTest(ZulipTestCase):
 
 class GetProfileTest(ZulipTestCase):
 
-    def common_update_pointer(self, user: UserProfile, pointer: int) -> None:
-        self.login_user(user)
-        result = self.client_post("/json/users/me/pointer", {"pointer": pointer})
-        self.assert_json_success(result)
-
-    def common_get_pointer(self, user_id: str) -> Dict[str, Any]:
-        user_profile = self.example_user(user_id)
-        result = self.api_get(user_profile, "/json/users/me/pointer")
-        self.assert_json_success(result)
-        json = result.json()
-        return json
-
-    def test_get_pointer(self) -> None:
-        user = self.example_user("hamlet")
-        self.login_user(user)
-        result = self.client_get("/json/users/me/pointer")
-        self.assert_json_success(result)
-        self.assertIn("pointer", result.json())
-
     def test_cache_behavior(self) -> None:
         """Tests whether fetching a user object the normal way, with
         `get_user`, makes 1 cache query and 1 database query.
@@ -1616,33 +1597,6 @@ class GetProfileTest(ZulipTestCase):
         result = ujson.loads(self.client_get(f'/json/users/{bot.id}').content)
         self.assertEqual(result['user']['email'], bot.email)
         self.assertTrue(result['user']['is_bot'])
-
-    def test_api_get_empty_profile(self) -> None:
-        """
-        Ensure GET /users/me returns a max message id and returns successfully
-        """
-        json = self.common_get_pointer("othello")
-        self.assertEqual(json['pointer'], -1)
-
-    def test_profile_with_pointer(self) -> None:
-        """
-        Ensure GET /users/me returns a proper pointer id after the pointer is updated
-        """
-
-        id1 = self.send_stream_message(self.example_user("othello"), "Verona")
-        id2 = self.send_stream_message(self.example_user("othello"), "Verona")
-
-        hamlet = self.example_user('hamlet')
-        self.common_update_pointer(hamlet, id2)
-        json = self.common_get_pointer("hamlet")
-        self.assertEqual(json["pointer"], id2)
-
-        self.common_update_pointer(hamlet, id1)
-        json = self.common_get_pointer("hamlet")
-        self.assertEqual(json["pointer"], id2)  # pointer does not move backwards
-
-        result = self.client_post("/json/users/me/pointer", {"pointer": 99999999})
-        self.assert_json_error(result, "Invalid message ID")
 
     def test_get_all_profiles_avatar_urls(self) -> None:
         hamlet = self.example_user('hamlet')

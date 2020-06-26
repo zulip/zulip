@@ -20,7 +20,7 @@ EXCLUDE_PROPERTIES = {
     },
     '/register': {
         'post': {
-            '200': ['max_message_id', 'realm_emoji', 'pointer'],
+            '200': ['max_message_id', 'realm_emoji'],
         },
     },
     '/settings/notifications': {

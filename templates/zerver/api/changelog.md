@@ -10,6 +10,12 @@ below features are supported.
 
 ## Changes in Zulip 3.0
 
+**Feature level 23**
+
+* `GET/PUT/POST /users/me/pointer`: Eliminated.  We eliminated
+  the whole concept of the "global" user pointer leading up to
+  this commit.
+
 **Feature level 22**
 
 * `GET /attachments`: The date when a message using the attachment was

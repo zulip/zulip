@@ -64,7 +64,6 @@ class PublicURLTest(ZulipTestCase):
                            "/json/subscriptions/exists",
                            "/api/v1/users/me/subscriptions/properties",
                            "/json/fetch_api_key",
-                           "/json/users/me/pointer",
                            "/json/users/me/subscriptions",
                            "/api/v1/users/me/subscriptions",
                            "/json/export/realm",
@@ -76,16 +75,13 @@ class PublicURLTest(ZulipTestCase):
         patch_urls = {
             401: ["/json/settings"],
         }
-        put_urls = {401: ["/json/users/me/pointer"],
-                    }
+
         for status_code, url_set in get_urls.items():
             self.fetch("client_get", url_set, status_code)
         for status_code, url_set in post_urls.items():
             self.fetch("client_post", url_set, status_code)
         for status_code, url_set in patch_urls.items():
             self.fetch("client_patch", url_set, status_code)
-        for status_code, url_set in put_urls.items():
-            self.fetch("client_put", url_set, status_code)
 
     def test_get_gcid_when_not_configured(self) -> None:
         with self.settings(GOOGLE_CLIENT_ID=None):
