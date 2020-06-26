@@ -3605,19 +3605,20 @@ def do_rename_stream(stream: Stream,
         )
         send_event(stream.realm, event, can_access_stream_user_ids(stream))
     sender = get_system_bot(settings.NOTIFICATION_BOT)
-    internal_send_stream_message(
-        stream.realm,
-        sender,
-        stream,
-        Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
-        _('@_**{user_name}|{user_id}** renamed stream **{old_stream_name}** to '
-          '**{new_stream_name}**.').format(
-            user_name=user_profile.full_name,
-            user_id=user_profile.id,
-            old_stream_name=old_name,
-            new_stream_name=new_name,
-        ),
-    )
+    with override_language(stream.realm.default_language):
+        internal_send_stream_message(
+            stream.realm,
+            sender,
+            stream,
+            Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
+            _('@_**{user_name}|{user_id}** renamed stream **{old_stream_name}** to '
+              '**{new_stream_name}**.').format(
+                user_name=user_profile.full_name,
+                user_id=user_profile.id,
+                old_stream_name=old_name,
+                new_stream_name=new_name,
+            ),
+        )
     # Even though the token doesn't change, the web client needs to update the
     # email forwarding address to display the correctly-escaped new name.
     return {"email_address": new_email}
