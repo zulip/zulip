@@ -226,26 +226,15 @@ instructions for other supported platforms.
     currently installed version.  But it's not important; the next
     step will re-install Zulip's configuration in any case.
 
-4. As root, upgrade the database installation and OS configuration to
-   match the new OS version:
+4. As root, upgrade the database to the latest version of PostgreSQL:
 
     ```
-    touch /usr/share/postgresql/12/pgroonga_setup.sql.applied
-    /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
-    pg_dropcluster 12 main --stop
-    systemctl stop postgresql
-    pg_upgradecluster 10 main
-    pg_dropcluster 10 main
-    apt remove postgresql-10
-    systemctl start postgresql
-    systemctl restart memcached
+    /home/zulip/deployments/current/scripts/setup/upgrade-postgres
     ```
 
-5. At this point, you are now running the version of postgres that
-   comes with the new Ubuntu version.  Finally, we need to reinstall
-   the current version of Zulip, which among other things will
-   recompile Zulip's Python module dependencies for your new version
-   of Python:
+5. Finally, we need to reinstall the current version of Zulip, which
+   among other things will recompile Zulip's Python module
+   dependencies for your new version of Python:
 
     ```
     rm -rf /srv/zulip-venv-cache/*
