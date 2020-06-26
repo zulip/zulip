@@ -19,7 +19,12 @@ from zerver.models import (
 
 
 def copy_user_settings(source_profile: UserProfile, target_profile: UserProfile) -> None:
-    """Warning: Does not save, to avoid extra database queries"""
+    # Important note: Code run from here to configure the user's
+    # settings should not call send_event, as that would cause clients
+    # to throw an exception (we haven't sent the realm_user/add event
+    # yet, so that event will include the updated details of target_profile).
+    #
+    # Note that this function will do at least one save() on target_profile.
     for settings_name in UserProfile.property_types:
         value = getattr(source_profile, settings_name)
         setattr(target_profile, settings_name, value)
@@ -34,7 +39,8 @@ def copy_user_settings(source_profile: UserProfile, target_profile: UserProfile)
 
     if source_profile.avatar_source == UserProfile.AVATAR_FROM_USER:
         from zerver.lib.actions import do_change_avatar_fields
-        do_change_avatar_fields(target_profile, UserProfile.AVATAR_FROM_USER)
+        do_change_avatar_fields(target_profile, UserProfile.AVATAR_FROM_USER,
+                                skip_notify=True)
         copy_avatar(source_profile, target_profile)
 
     copy_hotpots(source_profile, target_profile)

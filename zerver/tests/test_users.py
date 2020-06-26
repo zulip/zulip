@@ -27,12 +27,14 @@ from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     get_subscription,
+    get_test_image_file,
     queries_captured,
     reset_emails_in_zulip_realm,
     simulated_empty_cache,
     tornado_redirected_to_list,
 )
 from zerver.lib.topic_mutes import add_topic_mute
+from zerver.lib.upload import upload_avatar_image
 from zerver.lib.users import access_user_by_id, get_accounts_for_email, user_ids_to_users
 from zerver.models import (
     CustomProfileField,
@@ -1029,7 +1031,12 @@ class UserProfileTest(ZulipTestCase):
         cordelia.enable_offline_email_notifications = False
         cordelia.enable_stream_push_notifications = True
         cordelia.enter_sends = False
+        cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
         cordelia.save()
+
+        # Upload cordelia's avatar
+        with get_test_image_file('img.png') as image_file:
+            upload_avatar_image(image_file, cordelia, cordelia)
 
         UserHotspot.objects.filter(user=cordelia).delete()
         UserHotspot.objects.filter(user=iago).delete()
@@ -1037,7 +1044,15 @@ class UserProfileTest(ZulipTestCase):
         for hotspot in hotspots_completed:
             UserHotspot.objects.create(user=cordelia, hotspot=hotspot)
 
-        copy_user_settings(cordelia, iago)
+        events: List[Mapping[str, Any]] = []
+        with tornado_redirected_to_list(events):
+            copy_user_settings(cordelia, iago)
+
+        # Check that we didn't send an realm_user update events to
+        # users; this work is happening before the user account is
+        # created, so any changes will be reflected in the "add" event
+        # introducing the user to clients.
+        self.assertEqual(len(events), 0)
 
         # We verify that cordelia and iago match, but hamlet has the defaults.
         self.assertEqual(iago.full_name, "Cordelia Lear")

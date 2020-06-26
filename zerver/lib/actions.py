@@ -3312,7 +3312,8 @@ def notify_avatar_url_change(user_profile: UserProfile) -> None:
                     person=payload),
                active_user_ids(user_profile.realm_id))
 
-def do_change_avatar_fields(user_profile: UserProfile, avatar_source: str) -> None:
+def do_change_avatar_fields(user_profile: UserProfile, avatar_source: str,
+                            skip_notify: bool=False) -> None:
     user_profile.avatar_source = avatar_source
     user_profile.avatar_version += 1
     user_profile.save(update_fields=["avatar_source", "avatar_version"])
@@ -3322,7 +3323,8 @@ def do_change_avatar_fields(user_profile: UserProfile, avatar_source: str) -> No
                                  extra_data={'avatar_source': avatar_source},
                                  event_time=event_time)
 
-    notify_avatar_url_change(user_profile)
+    if not skip_notify:
+        notify_avatar_url_change(user_profile)
 
 def do_delete_avatar_image(user: UserProfile) -> None:
     do_change_avatar_fields(user, UserProfile.AVATAR_FROM_GRAVATAR)
