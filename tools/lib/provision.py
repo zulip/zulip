@@ -399,10 +399,10 @@ def main(options: argparse.Namespace) -> "NoReturn":
     run_as_root(["cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
 
     if CONTINUOUS_INTEGRATION and not options.is_build_release_tarball_only:
-        run_as_root(["service", "redis-server", "restart"])
-        run_as_root(["service", "memcached", "restart"])
-        run_as_root(["service", "rabbitmq-server", "restart"])
-        run_as_root(["service", "postgresql", "restart"])
+        run_as_root(["service", "redis-server", "start"])
+        run_as_root(["service", "memcached", "start"])
+        run_as_root(["service", "rabbitmq-server", "start"])
+        run_as_root(["service", "postgresql", "start"])
     elif "fedora" in os_families():
         # These platforms don't enable and start services on
         # installing their package, so we do that here.
