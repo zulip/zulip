@@ -314,7 +314,7 @@ working correctly.
    only upgrade to Zulip 3.0 and newer after completing this process,
    since newer releases don't support Ubuntu Debian Stretch.
 
-2. Same as for Xenial to Bionic, above.
+2. Same as for Bionic to Focal.
 
 3. Follow [Debian's instructions to upgrade the OS][debian-upgrade-os].
 
@@ -341,7 +341,7 @@ working correctly.
     service memcached restart
     ```
 
-5. Same as for Xenial to Bionic.
+5. Same as for Bionic to Focal.
 
 That last command will finish by restarting your Zulip server; you
 should now be able to navigate to its URL and confirm everything is
