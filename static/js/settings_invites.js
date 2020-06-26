@@ -48,12 +48,14 @@ function populate_invites(invites_data) {
             item.is_admin = page_params.is_admin;
             item.disable_buttons = item.invited_as === settings_config.user_role_values.owner.code
                 && !page_params.is_owner;
+            item.referrer_email = people.get_by_user_id(item.invited_by_user_id).email;
             return render_admin_invites_list({ invite: item });
         },
         filter: {
             element: invites_table.closest(".settings-section").find(".search"),
             predicate: function (item, value) {
-                const referrer_email_matched = item.ref.toLowerCase().includes(value);
+                const referrer_email = people.get_by_user_id(item.invited_by_user_id).email;
+                const referrer_email_matched = referrer_email.toLowerCase().includes(value);
                 if (item.is_multiuse) {
                     return referrer_email_matched;
                 }

@@ -1664,12 +1664,13 @@ class InvitationsTestCase(InviteUserBase):
 
         result = self.client_get("/json/invites")
         self.assertEqual(result.status_code, 200)
-        self.assert_in_success_response(
-            ["TestOne@zulip.com", hamlet.email],
-            result)
-        self.assert_not_in_success_response(
-            ["TestTwo@zulip.com", "TestThree@zulip.com", "othello@zulip.com", othello.email],
-            result)
+        invites = ujson.loads(result.content)["invites"]
+        self.assertEqual(len(invites), 2)
+
+        self.assertFalse(invites[0]["is_multiuse"])
+        self.assertEqual(invites[0]["email"], "TestOne@zulip.com")
+        self.assertTrue(invites[1]["is_multiuse"])
+        self.assertEqual(invites[1]["invited_by_user_id"], hamlet.id)
 
     def test_successful_delete_invitation(self) -> None:
         """

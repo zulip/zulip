@@ -5282,7 +5282,7 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
 
     for invitee in prereg_users:
         invites.append(dict(email=invitee.email,
-                            ref=invitee.referred_by.email,
+                            invited_by_user_id=invitee.referred_by.id,
                             invited=datetime_to_timestamp(invitee.invited_at),
                             id=invitee.id,
                             invited_as=invitee.invited_as,
@@ -5298,7 +5298,7 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
                                                              date_sent__gte=lowest_datetime)
     for confirmation_obj in multiuse_confirmation_objs:
         invite = confirmation_obj.content_object
-        invites.append(dict(ref=invite.referred_by.email,
+        invites.append(dict(invited_by_user_id=invite.referred_by.id,
                             invited=datetime_to_timestamp(confirmation_obj.date_sent),
                             id=invite.id,
                             link_url=confirmation_url(confirmation_obj.confirmation_key,

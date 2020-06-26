@@ -12,9 +12,15 @@ below features are supported.
 
 **Feature level 22**
 
-* 'GET /attachments': Rename `name` to `date_sent` for clearer meaning
-   and change the data types of the new `date_sent` and `create_time`
-   to integer (previously the implementation could send floats).
+* `GET /attachments`: The date when a message using the attachment was
+  sent is now correctly encoded as `date_sent`, replacing the
+  confusingly named `name` field.  The `date_sent` and `create_time`
+  fields of attachment objects are now encoded as integers;
+  (previously the implementation could send floats incorrectly
+  suggesting that microsecond precision is relevant).
+* `GET /invites`: Now encodes the user ID of the person who created
+   the invitation as `invited_by_user_id`, replacing the previous
+   `ref` field (which had that user's Zulip display email address).
 
 **Feature level 21**
 
