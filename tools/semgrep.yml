@@ -120,3 +120,9 @@ rules:
       - pattern: django.utils.translation.ugettext(...) % ...
     severity: ERROR
     message: "Prefer f-strings or .format for string formatting"
+
+  - id: eval
+    languages: [python]
+    pattern: eval
+    severity: ERROR
+    message: "Do not use eval under any circumstances; consider json.loads instead"
