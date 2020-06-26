@@ -3,14 +3,15 @@
 
 .new-style {
     label.checkbox {
-        padding: 0px;
-        display: inline-block;
+        margin-right: 0px;
         position: relative;
+        float: right;
         vertical-align: top;
 
         input[type=checkbox] {
-            position: absolute;
-            clip: rect(0, 0, 0, 0);
+            height: 0;
+            width: 0;
+            visibility: hidden;
 
             ~ span {
                 display: inline-block;
@@ -19,32 +20,45 @@
                 top: -2px;
 
                 padding: 2px;
-                margin: 0px 5px 0px 0px;
-                height: 10px;
-                width: 10px;
+                margin: 0px 10px 0px 0px;
+                height: 15px;
+                width: 30px;
 
                 font-weight: 300;
                 line-height: 0.8;
                 font-size: 1.3rem;
                 text-align: center;
-                border: 1px solid hsla(0, 0%, 0%, 0.6);
 
-                border-radius: 4px;
-                filter: brightness(0.80);
+                background-color: hsl(0, 0%, 67%);
+                border-radius: 9px;
 
                 cursor: pointer;
             }
 
-            &:checked ~ span {
-                background-image: url(/static/images/checkbox.svg);
-                background-size: 85%;
-                background-position: 50% 50%;
-                background-repeat: no-repeat;
+            ~ span::after {
+                content: '';
+                position: absolute;
+                top: 2px;
+                left: 2px;
+                width: 15px;
+                height: 15px;
+                background: hsl(0, 0%, 100%);
+                border-radius: 90px;
+                transition: 0.3s;
+                box-shadow: 0px 0px 3px hsla(0, 0%, 0%, 0.33);
             }
 
-            &:focus ~ span {
-                outline: 1px dotted;
-                outline: -webkit-focus-ring-color auto 5px;
+            &:checked ~ span {
+                background-color: hsl(150, 31%, 53%);
+            }
+
+            &:checked ~ span::after {
+                left: calc(100% - 2px);
+                transform: translateX(-100%);
+            }
+
+            &:active ~ span::after {
+                width: 18px;
             }
 
             &:disabled ~ span {
@@ -57,6 +71,20 @@
     a.no-style {
         color: inherit;
     }
+
+    hr {
+        margin: 10px 0 12px 0;
+        border-top: 1px solid hsla(0, 0%, 0%, 0.15);
+        border-bottom: transparent;
+    }
+}
+
+#notification-table span {
+    margin-right: 30px;
+}
+
+#other_notifications {
+    width: 100%;
 }
 
 a.no-underline,
