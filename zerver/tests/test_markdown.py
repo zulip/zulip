@@ -9,8 +9,7 @@ import ujson
 from django.conf import settings
 from django.test import TestCase, override_settings
 
-from zerver.lib import markdown as bugdown
-from zerver.lib import mdiff
+from zerver.lib import markdown, mdiff
 from zerver.lib.actions import (
     do_add_alert_words,
     do_remove_realm_emoji,
@@ -50,7 +49,7 @@ from zerver.models import (
 
 class FencedBlockPreprocessorTest(TestCase):
     def test_simple_quoting(self) -> None:
-        processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
+        processor = markdown.fenced_code.FencedBlockPreprocessor(None)
         markdown_input = [
             '~~~ quote',
             'hi',
@@ -70,7 +69,7 @@ class FencedBlockPreprocessorTest(TestCase):
         self.assertEqual(lines, expected)
 
     def test_serial_quoting(self) -> None:
-        processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
+        processor = markdown.fenced_code.FencedBlockPreprocessor(None)
         markdown_input = [
             '~~~ quote',
             'hi',
@@ -96,7 +95,7 @@ class FencedBlockPreprocessorTest(TestCase):
         self.assertEqual(lines, expected)
 
     def test_serial_code(self) -> None:
-        processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
+        processor = markdown.fenced_code.FencedBlockPreprocessor(None)
 
         # Simulate code formatting.
         processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore[assignment] # mypy doesn't allow monkey-patching functions
@@ -142,7 +141,7 @@ class FencedBlockPreprocessorTest(TestCase):
         self.assertEqual(lines, expected)
 
     def test_nested_code(self) -> None:
-        processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
+        processor = markdown.fenced_code.FencedBlockPreprocessor(None)
 
         # Simulate code formatting.
         processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore[assignment] # mypy doesn't allow monkey-patching functions
@@ -170,7 +169,7 @@ class FencedBlockPreprocessorTest(TestCase):
         self.assertEqual(lines, expected)
 
 def bugdown_convert(content: str) -> str:
-    return bugdown.convert(
+    return markdown.convert(
         content=content,
         message_realm=get_realm('zulip'),
     )
@@ -206,7 +205,7 @@ class BugdownMiscTest(ZulipTestCase):
 
         fred4 = make_user('fred4@example.com', 'Fred Flintstone')
 
-        lst = bugdown.get_possible_mentions_info(realm.id, {'Fred Flintstone', 'cordelia LEAR', 'Not A User'})
+        lst = markdown.get_possible_mentions_info(realm.id, {'Fred Flintstone', 'cordelia LEAR', 'Not A User'})
         set_of_names = set(map(lambda x: x['full_name'].lower(), lst))
         self.assertEqual(set_of_names, {'fred flintstone', 'cordelia lear'})
 
@@ -230,7 +229,7 @@ class BugdownMiscTest(ZulipTestCase):
         hamlet = self.example_user('hamlet')
         cordelia = self.example_user('cordelia')
         content = '@**King Hamlet** @**Cordelia lear**'
-        mention_data = bugdown.MentionData(realm.id, content)
+        mention_data = markdown.MentionData(realm.id, content)
         self.assertEqual(mention_data.get_user_ids(), {hamlet.id, cordelia.id})
         self.assertEqual(mention_data.get_user_by_id(hamlet.id), dict(
             email=hamlet.email,
@@ -244,7 +243,7 @@ class BugdownMiscTest(ZulipTestCase):
 
         self.assertFalse(mention_data.message_has_wildcards())
         content = '@**King Hamlet** @**Cordelia lear** @**all**'
-        mention_data = bugdown.MentionData(realm.id, content)
+        mention_data = markdown.MentionData(realm.id, content)
         self.assertTrue(mention_data.message_has_wildcards())
 
     def test_invalid_katex_path(self) -> None:
@@ -262,22 +261,22 @@ class MarkdownListPreprocessorTest(ZulipTestCase):
         return original, expected
 
     def test_basic_list(self) -> None:
-        preprocessor = bugdown.MarkdownListPreprocessor()
+        preprocessor = markdown.MarkdownListPreprocessor()
         original, expected = self.split_message('List without a gap\n<>* One\n* Two')
         self.assertEqual(preprocessor.run(original), expected)
 
     def test_list_after_quotes(self) -> None:
-        preprocessor = bugdown.MarkdownListPreprocessor()
+        preprocessor = markdown.MarkdownListPreprocessor()
         original, expected = self.split_message('```quote\nSomething\n```\n\nList without a gap\n<>* One\n* Two')
         self.assertEqual(preprocessor.run(original), expected)
 
     def test_list_in_code(self) -> None:
-        preprocessor = bugdown.MarkdownListPreprocessor()
+        preprocessor = markdown.MarkdownListPreprocessor()
         original, expected = self.split_message('```\nList without a gap\n* One\n* Two\n```')
         self.assertEqual(preprocessor.run(original), expected)
 
     def test_complex_nesting_with_different_fences(self) -> None:
-        preprocessor = bugdown.MarkdownListPreprocessor()
+        preprocessor = markdown.MarkdownListPreprocessor()
         msg = """```quote
 In quote. We should convert a list here:<>
 * one
@@ -309,7 +308,7 @@ Outside. Should convert:<>
         self.assertEqual(preprocessor.run(original), expected)
 
     def test_complex_nesting_with_same_fence(self) -> None:
-        preprocessor = bugdown.MarkdownListPreprocessor()
+        preprocessor = markdown.MarkdownListPreprocessor()
         msg = """```quote
 In quote. We should convert a list here:<>
 * one
@@ -343,7 +342,7 @@ Outside. Should convert:<>
 class BugdownTest(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
-        bugdown.clear_state_for_testing()
+        markdown.clear_state_for_testing()
 
     def assertEqual(self, first: Any, second: Any, msg: str = "") -> None:
         if isinstance(first, str) and isinstance(second, str):
@@ -421,11 +420,11 @@ class BugdownTest(ZulipTestCase):
         converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p>Check out this file <a href="file:///Volumes/myserver/Users/Shared/pi.py">file:///Volumes/myserver/Users/Shared/pi.py</a></p>')
 
-        bugdown.clear_state_for_testing()
+        markdown.clear_state_for_testing()
         with self.settings(ENABLE_FILE_LINKS=False):
             realm = Realm.objects.create(string_id='file_links_test')
-            bugdown.maybe_update_markdown_engines(realm.id, False)
-            converted = bugdown.convert(msg, message_realm=realm)
+            markdown.maybe_update_markdown_engines(realm.id, False)
+            converted = markdown.convert(msg, message_realm=realm)
             self.assertEqual(converted, '<p>Check out this file file:///Volumes/myserver/Users/Shared/pi.py</p>')
 
     def test_inline_bitcoin(self) -> None:
@@ -600,7 +599,7 @@ class BugdownTest(ZulipTestCase):
 
     @override_settings(INLINE_IMAGE_PREVIEW=False)
     def test_image_preview_enabled(self) -> None:
-        ret = bugdown.image_preview_enabled()
+        ret = markdown.image_preview_enabled()
         self.assertEqual(ret, False)
 
         settings.INLINE_IMAGE_PREVIEW = True
@@ -609,23 +608,23 @@ class BugdownTest(ZulipTestCase):
         message = Message(sender=sender_user_profile, sending_client=get_client("test"))
         realm = message.get_realm()
 
-        ret = bugdown.image_preview_enabled()
+        ret = markdown.image_preview_enabled()
         self.assertEqual(ret, True)
 
-        ret = bugdown.image_preview_enabled(no_previews=True)
+        ret = markdown.image_preview_enabled(no_previews=True)
         self.assertEqual(ret, False)
 
-        ret = bugdown.image_preview_enabled(message, realm)
+        ret = markdown.image_preview_enabled(message, realm)
         self.assertEqual(ret, True)
 
-        ret = bugdown.image_preview_enabled(message)
+        ret = markdown.image_preview_enabled(message)
         self.assertEqual(ret, True)
 
-        ret = bugdown.image_preview_enabled(message, realm,
-                                            no_previews=True)
+        ret = markdown.image_preview_enabled(message, realm,
+                                             no_previews=True)
         self.assertEqual(ret, False)
 
-        ret = bugdown.image_preview_enabled(message, no_previews=True)
+        ret = markdown.image_preview_enabled(message, no_previews=True)
         self.assertEqual(ret, False)
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=False)
@@ -636,23 +635,23 @@ class BugdownTest(ZulipTestCase):
         realm.inline_url_embed_preview = True  # off by default
         realm.save(update_fields=['inline_url_embed_preview'])
 
-        ret = bugdown.url_embed_preview_enabled()
+        ret = markdown.url_embed_preview_enabled()
         self.assertEqual(ret, False)
 
         settings.INLINE_URL_EMBED_PREVIEW = True
 
-        ret = bugdown.url_embed_preview_enabled()
+        ret = markdown.url_embed_preview_enabled()
         self.assertEqual(ret, True)
 
-        ret = bugdown.image_preview_enabled(no_previews=True)
+        ret = markdown.image_preview_enabled(no_previews=True)
         self.assertEqual(ret, False)
 
-        ret = bugdown.url_embed_preview_enabled(message, realm)
+        ret = markdown.url_embed_preview_enabled(message, realm)
         self.assertEqual(ret, True)
-        ret = bugdown.url_embed_preview_enabled(message)
+        ret = markdown.url_embed_preview_enabled(message)
         self.assertEqual(ret, True)
 
-        ret = bugdown.url_embed_preview_enabled(message, no_previews=True)
+        ret = markdown.url_embed_preview_enabled(message, no_previews=True)
         self.assertEqual(ret, False)
 
     def test_inline_dropbox(self) -> None:
@@ -707,13 +706,13 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(converted, '<p>Test: <a href="https://developer.github.com/assets/images/hero-circuit-bg.png">https://developer.github.com/assets/images/hero-circuit-bg.png</a></p>\n<div class="message_inline_image"><a href="https://developer.github.com/assets/images/hero-circuit-bg.png"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fdeveloper.github.com%2Fassets%2Fimages%2Fhero-circuit-bg.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fdeveloper.github.com%2Fassets%2Fimages%2Fhero-circuit-bg.png&amp;size=thumbnail"></a></div>')
 
     def test_twitter_id_extraction(self) -> None:
-        self.assertEqual(bugdown.get_tweet_id('http://twitter.com/#!/VizzQuotes/status/409030735191097344'), '409030735191097344')
-        self.assertEqual(bugdown.get_tweet_id('http://twitter.com/VizzQuotes/status/409030735191097344'), '409030735191097344')
-        self.assertEqual(bugdown.get_tweet_id('http://twitter.com/VizzQuotes/statuses/409030735191097344'), '409030735191097344')
-        self.assertEqual(bugdown.get_tweet_id('https://twitter.com/wdaher/status/1017581858'), '1017581858')
-        self.assertEqual(bugdown.get_tweet_id('https://twitter.com/wdaher/status/1017581858/'), '1017581858')
-        self.assertEqual(bugdown.get_tweet_id('https://twitter.com/windyoona/status/410766290349879296/photo/1'), '410766290349879296')
-        self.assertEqual(bugdown.get_tweet_id('https://twitter.com/windyoona/status/410766290349879296/'), '410766290349879296')
+        self.assertEqual(markdown.get_tweet_id('http://twitter.com/#!/VizzQuotes/status/409030735191097344'), '409030735191097344')
+        self.assertEqual(markdown.get_tweet_id('http://twitter.com/VizzQuotes/status/409030735191097344'), '409030735191097344')
+        self.assertEqual(markdown.get_tweet_id('http://twitter.com/VizzQuotes/statuses/409030735191097344'), '409030735191097344')
+        self.assertEqual(markdown.get_tweet_id('https://twitter.com/wdaher/status/1017581858'), '1017581858')
+        self.assertEqual(markdown.get_tweet_id('https://twitter.com/wdaher/status/1017581858/'), '1017581858')
+        self.assertEqual(markdown.get_tweet_id('https://twitter.com/windyoona/status/410766290349879296/photo/1'), '410766290349879296')
+        self.assertEqual(markdown.get_tweet_id('https://twitter.com/windyoona/status/410766290349879296/'), '410766290349879296')
 
     def test_inline_interesting_links(self) -> None:
         def make_link(url: str) -> str:
@@ -851,17 +850,17 @@ class BugdownTest(ZulipTestCase):
 
     def test_fetch_tweet_data_settings_validation(self) -> None:
         with self.settings(TEST_SUITE=False, TWITTER_CONSUMER_KEY=None):
-            self.assertIs(None, bugdown.fetch_tweet_data('287977969287315459'))
+            self.assertIs(None, markdown.fetch_tweet_data('287977969287315459'))
 
     def test_content_has_emoji(self) -> None:
-        self.assertFalse(bugdown.content_has_emoji_syntax('boring'))
-        self.assertFalse(bugdown.content_has_emoji_syntax('hello: world'))
-        self.assertFalse(bugdown.content_has_emoji_syntax(':foobar'))
-        self.assertFalse(bugdown.content_has_emoji_syntax('::: hello :::'))
+        self.assertFalse(markdown.content_has_emoji_syntax('boring'))
+        self.assertFalse(markdown.content_has_emoji_syntax('hello: world'))
+        self.assertFalse(markdown.content_has_emoji_syntax(':foobar'))
+        self.assertFalse(markdown.content_has_emoji_syntax('::: hello :::'))
 
-        self.assertTrue(bugdown.content_has_emoji_syntax('foo :whatever:'))
-        self.assertTrue(bugdown.content_has_emoji_syntax('\n:whatever:'))
-        self.assertTrue(bugdown.content_has_emoji_syntax(':smile: ::::::'))
+        self.assertTrue(markdown.content_has_emoji_syntax('foo :whatever:'))
+        self.assertTrue(markdown.content_has_emoji_syntax('\n:whatever:'))
+        self.assertTrue(markdown.content_has_emoji_syntax(':smile: ::::::'))
 
     def test_realm_emoji(self) -> None:
         def emoji_img(name: str, file_name: str, realm_id: int) -> str:
@@ -872,7 +871,7 @@ class BugdownTest(ZulipTestCase):
 
         # Needs to mock an actual message because that's how bugdown obtains the realm
         msg = Message(sender=self.example_user('hamlet'))
-        converted = bugdown.convert(":green_tick:", message_realm=realm, message=msg)
+        converted = markdown.convert(":green_tick:", message_realm=realm, message=msg)
         realm_emoji = RealmEmoji.objects.filter(realm=realm,
                                                 name='green_tick',
                                                 deactivated=False).get()
@@ -880,7 +879,7 @@ class BugdownTest(ZulipTestCase):
 
         # Deactivate realm emoji.
         do_remove_realm_emoji(realm, 'green_tick')
-        converted = bugdown.convert(":green_tick:", message_realm=realm, message=msg)
+        converted = markdown.convert(":green_tick:", message_realm=realm, message=msg)
         self.assertEqual(converted, '<p>:green_tick:</p>')
 
     def test_deactivated_realm_emoji(self) -> None:
@@ -889,7 +888,7 @@ class BugdownTest(ZulipTestCase):
         do_remove_realm_emoji(realm, 'green_tick')
 
         msg = Message(sender=self.example_user('hamlet'))
-        converted = bugdown.convert(":green_tick:", message_realm=realm, message=msg)
+        converted = markdown.convert(":green_tick:", message_realm=realm, message=msg)
         self.assertEqual(converted, '<p>:green_tick:</p>')
 
     def test_unicode_emoji(self) -> None:
@@ -924,23 +923,23 @@ class BugdownTest(ZulipTestCase):
         msg = Message(sender=self.example_user('othello'))
 
         msg.set_topic_name("https://google.com/hello-world")
-        converted_topic = bugdown.topic_links(realm.id, msg.topic_name())
+        converted_topic = markdown.topic_links(realm.id, msg.topic_name())
         self.assertEqual(converted_topic, ['https://google.com/hello-world'])
 
         msg.set_topic_name("http://google.com/hello-world")
-        converted_topic = bugdown.topic_links(realm.id, msg.topic_name())
+        converted_topic = markdown.topic_links(realm.id, msg.topic_name())
         self.assertEqual(converted_topic, ['http://google.com/hello-world'])
 
         msg.set_topic_name("Without scheme google.com/hello-world")
-        converted_topic = bugdown.topic_links(realm.id, msg.topic_name())
+        converted_topic = markdown.topic_links(realm.id, msg.topic_name())
         self.assertEqual(converted_topic, ['https://google.com/hello-world'])
 
         msg.set_topic_name("Without scheme random.words/hello-world")
-        converted_topic = bugdown.topic_links(realm.id, msg.topic_name())
+        converted_topic = markdown.topic_links(realm.id, msg.topic_name())
         self.assertEqual(converted_topic, [])
 
         msg.set_topic_name("Try out http://ftp.debian.org, https://google.com/ and https://google.in/.")
-        converted_topic = bugdown.topic_links(realm.id, msg.topic_name())
+        converted_topic = markdown.topic_links(realm.id, msg.topic_name())
         self.assertEqual(converted_topic, ['http://ftp.debian.org', 'https://google.com/', 'https://google.in/'])
 
     def test_realm_patterns(self) -> None:
@@ -961,14 +960,14 @@ class BugdownTest(ZulipTestCase):
         flush_per_request_caches()
 
         content = "We should fix #224 and #115, but not issue#124 or #1124z or [trac #15](https://trac.example.com/ticket/16) today."
-        converted = bugdown.convert(content, message_realm=realm, message=msg)
-        converted_topic = bugdown.topic_links(realm.id, msg.topic_name())
+        converted = markdown.convert(content, message_realm=realm, message=msg)
+        converted_topic = markdown.topic_links(realm.id, msg.topic_name())
 
         self.assertEqual(converted, '<p>We should fix <a href="https://trac.example.com/ticket/224">#224</a> and <a href="https://trac.example.com/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.example.com/ticket/16">trac #15</a> today.</p>')
         self.assertEqual(converted_topic, ['https://trac.example.com/ticket/444'])
 
         msg.set_topic_name("#444 https://google.com")
-        converted_topic = bugdown.topic_links(realm.id, msg.topic_name())
+        converted_topic = markdown.topic_links(realm.id, msg.topic_name())
         self.assertEqual(converted_topic, ['https://trac.example.com/ticket/444', 'https://google.com'])
 
         RealmFilter(realm=realm, pattern=r'#(?P<id>[a-zA-Z]+-[0-9]+)',
@@ -976,13 +975,13 @@ class BugdownTest(ZulipTestCase):
         msg = Message(sender=self.example_user('hamlet'))
 
         content = '#ZUL-123 was fixed and code was deployed to production, also #zul-321 was deployed to staging'
-        converted = bugdown.convert(content, message_realm=realm, message=msg)
+        converted = markdown.convert(content, message_realm=realm, message=msg)
 
         self.assertEqual(converted, '<p><a href="https://trac.example.com/ticket/ZUL-123">#ZUL-123</a> was fixed and code was deployed to production, also <a href="https://trac.example.com/ticket/zul-321">#zul-321</a> was deployed to staging</p>')
 
         def assert_conversion(content: str, convert: bool=True) -> None:
-            converted = bugdown.convert(content, message_realm=realm, message=msg)
-            converted_topic = bugdown.topic_links(realm.id, content)
+            converted = markdown.convert(content, message_realm=realm, message=msg)
+            converted_topic = markdown.topic_links(realm.id, content)
             if convert:
                 self.assertTrue('https://trac.example.com' in converted)
                 self.assertEqual(len(converted_topic), 1)
@@ -1011,7 +1010,7 @@ class BugdownTest(ZulipTestCase):
         # test nested realm patterns should avoid double matching
         RealmFilter(realm=realm, pattern=r'hello#(?P<id>[0-9]+)',
                     url_format_string=r'https://trac.example.com/hello/%(id)s').save()
-        converted_topic = bugdown.topic_links(realm.id, 'hello#123 #234')
+        converted_topic = markdown.topic_links(realm.id, 'hello#123 #234')
         self.assertEqual(converted_topic, ['https://trac.example.com/ticket/234', 'https://trac.example.com/hello/123'])
 
     def test_maybe_update_markdown_engines(self) -> None:
@@ -1022,9 +1021,9 @@ class BugdownTest(ZulipTestCase):
                                    url_format_string=url_format_string)
         realm_filter.save()
 
-        bugdown.realm_filter_data = {}
-        bugdown.maybe_update_markdown_engines(None, False)
-        all_filters = bugdown.realm_filter_data
+        markdown.realm_filter_data = {}
+        markdown.maybe_update_markdown_engines(None, False)
+        all_filters = markdown.realm_filter_data
         zulip_filters = all_filters[realm.id]
         self.assertEqual(len(zulip_filters), 1)
         self.assertEqual(zulip_filters[0],
@@ -1073,7 +1072,7 @@ class BugdownTest(ZulipTestCase):
                     url_format_string=r"https://trac.example.com/ticket/%(id)s").save()
         boring_msg = Message(sender=self.example_user('othello'))
         boring_msg.set_topic_name("no match here")
-        converted_boring_topic = bugdown.topic_links(realm.id, boring_msg.topic_name())
+        converted_boring_topic = markdown.topic_links(realm.id, boring_msg.topic_name())
         self.assertEqual(converted_boring_topic, [])
 
     def test_is_status_message(self) -> None:
@@ -1847,7 +1846,7 @@ class BugdownTest(ZulipTestCase):
             #**garçon** #**천국** @**Ignore Person**
         '''
         self.assertEqual(
-            bugdown.possible_linked_stream_names(content),
+            markdown.possible_linked_stream_names(content),
             {'test here', 'Denmark', 'garçon', '천국'},
         )
 
@@ -1924,19 +1923,19 @@ class BugdownTest(ZulipTestCase):
         client = get_client("zephyr_mirror")
         message = Message(sending_client=client,
                           sender=self.mit_user("sipbtest"))
-        converted = bugdown.convert(msg, message_realm=realm, message=message)
+        converted = markdown.convert(msg, message_realm=realm, message=message)
         self.assertEqual(
             converted,
             "<p>**test**</p>",
         )
         msg = "* test"
-        converted = bugdown.convert(msg, message_realm=realm, message=message)
+        converted = markdown.convert(msg, message_realm=realm, message=message)
         self.assertEqual(
             converted,
             "<p>* test</p>",
         )
         msg = "https://lists.debian.org/debian-ctte/2014/02/msg00173.html"
-        converted = bugdown.convert(msg, message_realm=realm, message=message)
+        converted = markdown.convert(msg, message_realm=realm, message=message)
         self.assertEqual(
             converted,
             '<p><a href="https://lists.debian.org/debian-ctte/2014/02/msg00173.html">https://lists.debian.org/debian-ctte/2014/02/msg00173.html</a></p>',
@@ -1944,7 +1943,7 @@ class BugdownTest(ZulipTestCase):
 
     def test_url_to_a(self) -> None:
         url = 'javascript://example.com/invalidURL'
-        converted = bugdown.url_to_a(db_data=None, url=url, text=url)
+        converted = markdown.url_to_a(db_data=None, url=url, text=url)
         self.assertEqual(
             converted,
             'javascript://example.com/invalidURL',
@@ -1960,8 +1959,8 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(converted, expected_output)
 
         realm = Realm.objects.create(string_id='code_block_processor_test')
-        bugdown.maybe_update_markdown_engines(realm.id, True)
-        converted = bugdown.convert(msg, message_realm=realm, email_gateway=True)
+        markdown.maybe_update_markdown_engines(realm.id, True)
+        converted = markdown.convert(msg, message_realm=realm, email_gateway=True)
         expected_output = '<p>Hello,</p>\n' +     \
                           '<p>I am writing this message to test something. I am writing this message to test something.</p>'
         self.assertEqual(converted, expected_output)
@@ -1973,7 +1972,7 @@ class BugdownTest(ZulipTestCase):
         msg = "http://example.com/#settings/"
 
         self.assertEqual(
-            bugdown.convert(msg, message_realm=realm, message=message),
+            markdown.convert(msg, message_realm=realm, message=message),
             '<p><a href="http://example.com/#settings/">http://example.com/#settings/</a></p>',
         )
 
@@ -1984,7 +1983,7 @@ class BugdownTest(ZulipTestCase):
         msg = "http://zulip.testserver/#narrow/stream/999-hello"
 
         self.assertEqual(
-            bugdown.convert(msg, message_realm=realm, message=message),
+            markdown.convert(msg, message_realm=realm, message=message),
             '<p><a href="#narrow/stream/999-hello">http://zulip.testserver/#narrow/stream/999-hello</a></p>',
         )
 
@@ -1995,7 +1994,7 @@ class BugdownTest(ZulipTestCase):
         msg = "http://zulip.testserver/#streams/all"
 
         self.assertEqual(
-            bugdown.convert(msg, message_realm=realm, message=message),
+            markdown.convert(msg, message_realm=realm, message=message),
             '<p><a href="#streams/all">http://zulip.testserver/#streams/all</a></p>',
         )
 
@@ -2006,7 +2005,7 @@ class BugdownTest(ZulipTestCase):
         msg = "[hello](http://zulip.testserver/#narrow/stream/999-hello)"
 
         self.assertEqual(
-            bugdown.convert(msg, message_realm=realm, message=message),
+            markdown.convert(msg, message_realm=realm, message=message),
             '<p><a href="#narrow/stream/999-hello">hello</a></p>',
         )
 
@@ -2113,7 +2112,7 @@ class BugdownErrorTests(ZulipTestCase):
                 bugdown_convert(msg)
 
     def test_curl_code_block_validation(self) -> None:
-        processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
+        processor = markdown.fenced_code.FencedBlockPreprocessor(None)
         processor.run_content_validators = True
 
         # Simulate code formatting.
@@ -2132,7 +2131,7 @@ class BugdownErrorTests(ZulipTestCase):
             processor.run(markdown_input)
 
     def test_curl_code_block_without_validation(self) -> None:
-        processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
+        processor = markdown.fenced_code.FencedBlockPreprocessor(None)
 
         # Simulate code formatting.
         processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore[assignment] # mypy doesn't allow monkey-patching functions
@@ -2166,7 +2165,7 @@ class BugdownAvatarTestCase(ZulipTestCase):
             smushing!avatar(hamlet@example.org) is allowed
         '''
         self.assertEqual(
-            bugdown.possible_avatar_emails(content),
+            markdown.possible_avatar_emails(content),
             {'foo@example.com', 'bar@yo.tv', 'hamlet@example.org'},
         )
 
@@ -2176,7 +2175,7 @@ class BugdownAvatarTestCase(ZulipTestCase):
 
         user_profile = self.example_user('hamlet')
         msg = f'!avatar({user_profile.email})'
-        converted = bugdown.convert(msg, message=message)
+        converted = markdown.convert(msg, message=message)
         values = {'email': user_profile.email, 'id': user_profile.id}
         self.assertEqual(
             converted,
@@ -2188,7 +2187,7 @@ class BugdownAvatarTestCase(ZulipTestCase):
 
         email = 'fakeuser@example.com'
         msg = f'!avatar({email})'
-        converted = bugdown.convert(msg, message=message)
+        converted = markdown.convert(msg, message=message)
         self.assertEqual(
             converted,
             '<p><img alt="{0}" class="message_body_gravatar" src="/avatar/{0}?s=30" title="{0}"></p>'.format(email))
