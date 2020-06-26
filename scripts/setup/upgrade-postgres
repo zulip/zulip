@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -e
+
+if [ "$EUID" -ne 0 ]; then
+    echo "Error: This script must be run as root" >&2
+    exit 1
+fi
+
+UPGRADE_TO=${1:-12}
+UPGRADE_FROM=$(crudini --get /etc/zulip/zulip.conf postgresql version)
+ZULIP_PATH="$(dirname "$0")/../.."
+
+if [ "$UPGRADE_TO" = "$UPGRADE_FROM" ]; then
+    echo "Already running PostgreSQL $UPGRADE_TO!"
+    exit 1
+fi
+
+set -x
+
+"$ZULIP_PATH"/scripts/lib/setup-apt-repo
+apt-get install -y "postgresql-$UPGRADE_TO"
+if pg_lsclusters -h | grep -qE "^$UPGRADE_TO\s+main\b"; then
+    pg_dropcluster "$UPGRADE_TO" main --stop
+fi
+
+# Work around `systemctl stop postgresql` being asynchronous, since
+# the pg_upsgrdecluster command fails if it is still running
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=759725
+systemctl stop postgresql "postgresql@*"
+pg_upgradecluster "$UPGRADE_FROM" main
+
+crudini --set /etc/zulip/zulip.conf postgresql version "$UPGRADE_TO"
+touch "/usr/share/postgresql/$UPGRADE_TO/pgroonga_setup.sql.applied"
+"$ZULIP_PATH"/scripts/zulip-puppet-apply -f
+
+systemctl restart memcached
+
+pg_dropcluster "$UPGRADE_FROM" main
+apt remove -y "postgresql-$UPGRADE_FROM"
