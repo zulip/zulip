@@ -46,11 +46,6 @@ class zulip::postgres_appdb_base {
     }
   }
 
-  # We bundle a bunch of other sysctl parameters into 40-postgresql.conf
-  file { '/etc/sysctl.d/30-postgresql-shm.conf':
-    ensure => absent,
-  }
-
   file { "${tsearch_datadir}/en_us.dict":
     ensure  => 'link',
     require => Package[$postgresql],
