@@ -56,11 +56,19 @@
                 </a>
                 <span class="arrow starred-messages-sidebar-menu-icon"><i class="zulip-icon ellipsis-v-solid" aria-hidden="true"></i></span>
             </li>
+            <li class="top_left_recent_topics top_left_row">
+                <a href="#recent_topics">
+                    <span class="filter-icon">
+                        <i class="fa fa-clock-o" aria-hidden="true"></i>
+                    </span>
+                    {#- squash whitespace -#}
+                    <span>{{ _('Recent topics') }}</span>
+                </a>
+            </li>
         </ul>
         <div id="streams_list" class="zoom-out">
             <div id="streams_header" class="zoom-in-hide"><h4 class="sidebar-title" data-toggle="tooltip" title="{{ _('Filter streams') }}">{{ _('STREAMS') }}</h4>
                 <i id="streams_inline_cog" class='fa fa-cog' aria-hidden="true" data-toggle="tooltip" title="{{ _('Subscribe, add, or configure streams') }}"></i>
-                <i id="recent_topics_icon" class='fa fa-clock-o' aria-hidden="true" data-toggle="tooltip" title="{{ _('Recent topics') }} (t)"></i>
                 <i id="streams_filter_icon" class='fa fa-search' aria-hidden="true" data-toggle="tooltip" title="{{ _('Filter streams') }} (q)"></i>
                 <div class="input-append notdisplayed stream_search_section">
                     <input class="stream-list-filter" type="text" autocomplete="off" placeholder="{{ _('Search streams') }}" />

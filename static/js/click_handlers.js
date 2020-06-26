@@ -650,11 +650,6 @@ exports.initialize = function () {
         compose_actions.cancel();
     });
 
-    $("#recent_topics_icon").click(function (e) {
-        e.stopPropagation();
-        hashchange.go_to_location('recent_topics');
-    });
-
     $("#streams_inline_cog").click(function (e) {
         e.stopPropagation();
         hashchange.go_to_location('streams/subscribed');
