@@ -243,7 +243,7 @@ REALM_HOSTS: Dict[str, str] = {}
 
 # Alternate uris to serve particular realms on mobile, in addition
 # to their usual uris. Keys are realm uris
-REALM_MOBILE_URIS = {} # type: Dict[str, str]
+REALM_MOBILE_URIS: Dict[str, str] = {}
 
 # Whether the server is using the Pgroonga full-text search
 # backend.  Plan is to turn this on for everyone after further
