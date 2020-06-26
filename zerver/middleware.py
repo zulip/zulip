@@ -19,7 +19,7 @@ from zerver.lib.db import reset_queries
 from zerver.lib.debug import maybe_tracemalloc_listen
 from zerver.lib.exceptions import ErrorCode, JsonableError, RateLimited
 from zerver.lib.html_to_text import get_content_description
-from zerver.lib.markdown import get_bugdown_requests, get_bugdown_time
+from zerver.lib.markdown import get_markdown_requests, get_markdown_time
 from zerver.lib.rate_limiter import RateLimitResult
 from zerver.lib.response import json_error, json_response_from_error
 from zerver.lib.subdomains import get_subdomain
@@ -34,8 +34,8 @@ def record_request_stop_data(log_data: MutableMapping[str, Any]) -> None:
     log_data['time_stopped'] = time.time()
     log_data['remote_cache_time_stopped'] = get_remote_cache_time()
     log_data['remote_cache_requests_stopped'] = get_remote_cache_requests()
-    log_data['bugdown_time_stopped'] = get_bugdown_time()
-    log_data['bugdown_requests_stopped'] = get_bugdown_requests()
+    log_data['markdown_time_stopped'] = get_markdown_time()
+    log_data['markdown_requests_stopped'] = get_markdown_requests()
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"].disable()
 
@@ -48,8 +48,8 @@ def record_request_restart_data(log_data: MutableMapping[str, Any]) -> None:
     log_data['time_restarted'] = time.time()
     log_data['remote_cache_time_restarted'] = get_remote_cache_time()
     log_data['remote_cache_requests_restarted'] = get_remote_cache_requests()
-    log_data['bugdown_time_restarted'] = get_bugdown_time()
-    log_data['bugdown_requests_restarted'] = get_bugdown_requests()
+    log_data['markdown_time_restarted'] = get_markdown_time()
+    log_data['markdown_requests_restarted'] = get_markdown_requests()
 
 def async_request_timer_restart(request: HttpRequest) -> None:
     if "time_restarted" in request._log_data:
@@ -67,8 +67,8 @@ def record_request_start_data(log_data: MutableMapping[str, Any]) -> None:
     log_data['time_started'] = time.time()
     log_data['remote_cache_time_start'] = get_remote_cache_time()
     log_data['remote_cache_requests_start'] = get_remote_cache_requests()
-    log_data['bugdown_time_start'] = get_bugdown_time()
-    log_data['bugdown_requests_start'] = get_bugdown_requests()
+    log_data['markdown_time_start'] = get_markdown_time()
+    log_data['markdown_requests_start'] = get_markdown_requests()
 
 def timedelta_ms(timedelta: float) -> float:
     return timedelta * 1000
@@ -157,23 +157,23 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
     if 'startup_time_delta' in log_data and log_data["startup_time_delta"] > 0.005:
         startup_output = " (+start: {})".format(format_timedelta(log_data["startup_time_delta"]))
 
-    bugdown_output = ""
-    if 'bugdown_time_start' in log_data:
-        bugdown_time_delta = get_bugdown_time() - log_data['bugdown_time_start']
-        bugdown_count_delta = get_bugdown_requests() - log_data['bugdown_requests_start']
-        if 'bugdown_requests_stopped' in log_data:
+    markdown_output = ""
+    if 'markdown_time_start' in log_data:
+        markdown_time_delta = get_markdown_time() - log_data['markdown_time_start']
+        markdown_count_delta = get_markdown_requests() - log_data['markdown_requests_start']
+        if 'markdown_requests_stopped' in log_data:
             # (now - restarted) + (stopped - start) = (now - start) + (stopped - restarted)
-            bugdown_time_delta += (log_data['bugdown_time_stopped'] -
-                                   log_data['bugdown_time_restarted'])
-            bugdown_count_delta += (log_data['bugdown_requests_stopped'] -
-                                    log_data['bugdown_requests_restarted'])
+            markdown_time_delta += (log_data['markdown_time_stopped'] -
+                                    log_data['markdown_time_restarted'])
+            markdown_count_delta += (log_data['markdown_requests_stopped'] -
+                                     log_data['markdown_requests_restarted'])
 
-        if (bugdown_time_delta > 0.005):
-            bugdown_output = f" (md: {format_timedelta(bugdown_time_delta)}/{bugdown_count_delta})"
+        if (markdown_time_delta > 0.005):
+            markdown_output = f" (md: {format_timedelta(markdown_time_delta)}/{markdown_count_delta})"
 
             if not suppress_statsd:
-                statsd.timing(f"{statsd_path}.markdown.time", timedelta_ms(bugdown_time_delta))
-                statsd.incr(f"{statsd_path}.markdown.count", bugdown_count_delta)
+                statsd.timing(f"{statsd_path}.markdown.time", timedelta_ms(markdown_time_delta))
+                statsd.incr(f"{statsd_path}.markdown.count", markdown_count_delta)
 
     # Get the amount of time spent doing database queries
     db_time_output = ""
@@ -193,7 +193,7 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
     else:
         extra_request_data = ""
     logger_client = f"({requestor_for_logs} via {client_name})"
-    logger_timing = f'{format_timedelta(time_delta):>5}{optional_orig_delta}{remote_cache_output}{bugdown_output}{db_time_output}{startup_output} {path}'
+    logger_timing = f'{format_timedelta(time_delta):>5}{optional_orig_delta}{remote_cache_output}{markdown_output}{db_time_output}{startup_output} {path}'
     logger_line = f'{remote_ip:<15} {method:<7} {status_code:3} {logger_timing}{extra_request_data} {logger_client}'
     if (status_code in [200, 304] and method == "GET" and path.startswith("/static")):
         logger.debug(logger_line)

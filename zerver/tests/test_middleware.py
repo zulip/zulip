@@ -14,8 +14,8 @@ class SlowQueryTest(ZulipTestCase):
     SLOW_QUERY_TIME = 10
     log_data = {'extra': '[transport=websocket]',
                 'time_started': 0,
-                'bugdown_requests_start': 0,
-                'bugdown_time_start': 0,
+                'markdown_requests_start': 0,
+                'markdown_time_start': 0,
                 'remote_cache_time_start': 0,
                 'remote_cache_requests_start': 0}
 
