@@ -556,6 +556,7 @@ class RateLimitAuthenticationTests(ZulipTestCase):
 
         def attempt_authentication(username: str, password: str) -> Optional[UserProfile]:
             request = HttpRequest()
+            request.session = mock.MagicMock()
             return attempt_authentication_func(request, username, password)
 
         add_ratelimit_rule(10, 2, domain='authenticate_by_username')
