@@ -51,7 +51,7 @@ from zerver.models import (
 class FencedBlockPreprocessorTest(TestCase):
     def test_simple_quoting(self) -> None:
         processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
-        markdown = [
+        markdown_input = [
             '~~~ quote',
             'hi',
             'bye',
@@ -66,12 +66,12 @@ class FencedBlockPreprocessorTest(TestCase):
             '',
             '',
         ]
-        lines = processor.run(markdown)
+        lines = processor.run(markdown_input)
         self.assertEqual(lines, expected)
 
     def test_serial_quoting(self) -> None:
         processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
-        markdown = [
+        markdown_input = [
             '~~~ quote',
             'hi',
             '~~~',
@@ -92,7 +92,7 @@ class FencedBlockPreprocessorTest(TestCase):
             '',
             '',
         ]
-        lines = processor.run(markdown)
+        lines = processor.run(markdown_input)
         self.assertEqual(lines, expected)
 
     def test_serial_code(self) -> None:
@@ -102,7 +102,7 @@ class FencedBlockPreprocessorTest(TestCase):
         processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore[assignment] # mypy doesn't allow monkey-patching functions
         processor.placeholder = lambda s: '**' + s.strip('\n') + '**'  # type: ignore[assignment] # https://github.com/python/mypy/issues/708
 
-        markdown = [
+        markdown_input = [
             '``` .py',
             'hello()',
             '```',
@@ -138,7 +138,7 @@ class FencedBlockPreprocessorTest(TestCase):
             '',
             '',
         ]
-        lines = processor.run(markdown)
+        lines = processor.run(markdown_input)
         self.assertEqual(lines, expected)
 
     def test_nested_code(self) -> None:
@@ -148,7 +148,7 @@ class FencedBlockPreprocessorTest(TestCase):
         processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore[assignment] # mypy doesn't allow monkey-patching functions
         processor.placeholder = lambda s: '**' + s.strip('\n') + '**'  # type: ignore[assignment] # https://github.com/python/mypy/issues/708
 
-        markdown = [
+        markdown_input = [
             '~~~ quote',
             'hi',
             '``` .py',
@@ -166,7 +166,7 @@ class FencedBlockPreprocessorTest(TestCase):
             '',
             '',
         ]
-        lines = processor.run(markdown)
+        lines = processor.run(markdown_input)
         self.assertEqual(lines, expected)
 
 def bugdown_convert(content: str) -> str:
@@ -2120,7 +2120,7 @@ class BugdownErrorTests(ZulipTestCase):
         processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore[assignment] # mypy doesn't allow monkey-patching functions
         processor.placeholder = lambda s: '**' + s.strip('\n') + '**'  # type: ignore[assignment] # https://github.com/python/mypy/issues/708
 
-        markdown = [
+        markdown_input = [
             '``` curl',
             'curl {{ api_url }}/v1/register',
             '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY',
@@ -2129,7 +2129,7 @@ class BugdownErrorTests(ZulipTestCase):
         ]
 
         with self.assertRaises(MarkdownRenderingException):
-            processor.run(markdown)
+            processor.run(markdown_input)
 
     def test_curl_code_block_without_validation(self) -> None:
         processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
@@ -2138,7 +2138,7 @@ class BugdownErrorTests(ZulipTestCase):
         processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore[assignment] # mypy doesn't allow monkey-patching functions
         processor.placeholder = lambda s: '**' + s.strip('\n') + '**'  # type: ignore[assignment] # https://github.com/python/mypy/issues/708
 
-        markdown = [
+        markdown_input = [
             '``` curl',
             'curl {{ api_url }}/v1/register',
             '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY',
@@ -2154,7 +2154,7 @@ class BugdownErrorTests(ZulipTestCase):
             '',
         ]
 
-        result = processor.run(markdown)
+        result = processor.run(markdown_input)
         self.assertEqual(result, expected)
 
 class BugdownAvatarTestCase(ZulipTestCase):
