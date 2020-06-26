@@ -2107,7 +2107,7 @@ class BugdownErrorTests(ZulipTestCase):
         msg = 'mock rendered message\n' * MAX_MESSAGE_LENGTH
 
         with mock.patch('zerver.lib.markdown.timeout', return_value=msg), \
-                mock.patch('zerver.lib.markdown.bugdown_logger'):
+                mock.patch('zerver.lib.markdown.markdown_logger'):
             with self.assertRaises(MarkdownRenderingException):
                 bugdown_convert(msg)
 
