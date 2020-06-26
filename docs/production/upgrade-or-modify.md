@@ -7,6 +7,7 @@ This page explains how to upgrade, patch, or modify Zulip, including:
 - [Troubleshooting and rollback](#troubleshooting-and-rollback)
 - [Preserving local changes to configuration files](#preserving-local-changes-to-configuration-files)
 - [Upgrading the operating system](#upgrading-the-operating-system)
+- [Upgrading PostgreSQL](#upgrading-postgresql)
 - [Modifying Zulip](#modifying-zulip)
 - [Applying changes from master](#applying-changes-from-master)
 
@@ -346,6 +347,43 @@ working correctly.
 That last command will finish by restarting your Zulip server; you
 should now be able to navigate to its URL and confirm everything is
 working correctly.
+
+## Upgrading PostgreSQL
+
+Starting with Zulip 3.0, we use the latest available version of
+PostgreSQL at installation time (currently version 12).  Upgrades to
+the version of PostgreSQL are no longer linked to upgrades of the
+distribution; that is, you may opt to upgrade to PostgreSQL 12 while
+running Ubuntu 18.04 Bionic.
+
+To upgrade the version of PostgreSQL on the Zulip server:
+
+1. Upgrade your server to the latest Zulip release (at least 3.0).
+
+2. Stop the server and take a backup:
+
+    ```
+    sudo -i # Or otherwise get a root shell
+    supervisorctl stop all
+    /home/zulip/deployments/current/manage.py backup --output=/home/zulip/postgresql-upgrade.backup.tar.gz
+    ```
+
+3. As root, run the database upgrade tool:
+
+    ```
+    /home/zulip/deployments/current/scripts/setup/upgrade-postgres
+    ```
+
+   During this step, it is normal to see output containing:
+   ```
+   ERROR:  could not open stop-word file "/usr/share/postgresql/12/tsearch_data/zulip_english.stop": No such file or directory
+   ERROR:  text search dictionary "zulip.english_us_hunspell" does not exist
+   ```
+
+That last command will finish by restarting your Zulip server; you
+should now be able to navigate to its URL and confirm everything is
+working correctly.
+
 
 ## Modifying Zulip
 
