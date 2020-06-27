@@ -84,7 +84,7 @@ def always_want(msg_type: str) -> bool:
 # Fetch initial data.  When event_types is not specified, clients want
 # all event types.  Whenever you add new code to this function, you
 # should also add corresponding events for changes in the data
-# structures and new code to apply_events (and add a test in EventsRegisterTest).
+# structures and new code to apply_events (and add a test in test_events.py).
 def fetch_initial_state_data(user_profile: UserProfile,
                              event_types: Optional[Iterable[str]],
                              queue_id: str, client_gravatar: bool,
