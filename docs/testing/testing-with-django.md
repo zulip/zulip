@@ -398,7 +398,7 @@ below some threshold.
 The Zulip back end has a mechanism where it will fetch initial data
 for a client from the database, and then it will subsequently apply
 some queued up events to that data to the data structure before notifying
-the client.  The `EventsRegisterTest.do_test()` helper helps tests
+the client.  The `BaseAction.do_test()` helper helps tests
 verify that the application of those events via apply_events() produces
 the same data structure as performing an action that generates said event.
 
