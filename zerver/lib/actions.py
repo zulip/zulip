@@ -49,7 +49,6 @@ from confirmation.models import (
     generate_key,
 )
 from zerver.decorator import statsd_increment
-from zerver.lib import markdown as bugdown
 from zerver.lib import retention as retention
 from zerver.lib.addressee import Addressee
 from zerver.lib.alert_words import (
@@ -96,6 +95,7 @@ from zerver.lib.export import get_realm_exports_serialized
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.i18n import get_language_name
+from zerver.lib.markdown import MentionData, topic_links
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import (
     MessageDict,
@@ -1044,7 +1044,7 @@ def render_incoming_message(message: Message,
                             content: str,
                             user_ids: Set[int],
                             realm: Realm,
-                            mention_data: Optional[bugdown.MentionData]=None,
+                            mention_data: Optional[MentionData]=None,
                             email_gateway: bool=False) -> str:
     realm_alert_words_automaton = get_alert_word_automaton(realm)
     try:
@@ -1166,7 +1166,7 @@ def get_recipient_info(recipient: Recipient,
     message_to_user_id_set = set(message_to_user_ids)
 
     user_ids = set(message_to_user_id_set)
-    # Important note: Because we haven't rendered bugdown yet, we
+    # Important note: Because we haven't rendered markdown yet, we
     # don't yet know which of these possibly-mentioned users was
     # actually mentioned in the message (in other words, the
     # mention syntax might have been in a code block or otherwise
@@ -1240,7 +1240,7 @@ def get_recipient_info(recipient: Recipient,
     # mentioned in it, and so can't use get_ids_for.
     #
     # Further in the do_send_messages code path, once
-    # `mentioned_user_ids` has been computed via bugdown, we'll filter
+    # `mentioned_user_ids` has been computed via markdown, we'll filter
     # these data structures for just those users who are either a
     # direct recipient or were mentioned; for now, we're just making
     # sure we have the data we need for that without extra database
@@ -1386,7 +1386,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
         message['sender_queue_id'] = message.get('sender_queue_id', None)
         message['realm'] = message.get('realm', message['message'].sender.realm)
 
-        mention_data = bugdown.MentionData(
+        mention_data = MentionData(
             realm_id=message['realm'].id,
             content=message['message'].content,
         )
@@ -1645,7 +1645,7 @@ def create_user_messages(message: Message,
         ums_to_create.append(um)
 
     # These properties on the Message are set via
-    # render_markdown by code in the bugdown inline patterns
+    # render_markdown by code in the markdown inline patterns
     wildcard = message.mentions_wildcard
     ids_with_alert_words = message.user_ids_with_alert_words
 
@@ -4427,7 +4427,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
                       propagate_mode: str, send_notification_to_old_thread: bool,
                       send_notification_to_new_thread: bool, content: Optional[str],
                       rendered_content: Optional[str], prior_mention_user_ids: Set[int],
-                      mention_user_ids: Set[int], mention_data: Optional[bugdown.MentionData]=None) -> int:
+                      mention_user_ids: Set[int], mention_data: Optional[MentionData]=None) -> int:
     """
     The main function for message editing.  A message edit event can
     modify:
@@ -4499,7 +4499,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
         event['is_me_message'] = Message.is_status_message(content, rendered_content)
 
         # message.has_image and message.has_link will have been
-        # already updated by bugdown rendering in the caller.
+        # already updated by markdown rendering in the caller.
         message.has_attachment = check_attachment_reference_change(message)
 
         if message.is_stream_message():
@@ -4582,7 +4582,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
         # These fields have legacy field names.
         event[ORIG_TOPIC] = orig_topic_name
         event[TOPIC_NAME] = topic_name
-        event[TOPIC_LINKS] = bugdown.topic_links(message.sender.realm_id, topic_name)
+        event[TOPIC_LINKS] = topic_links(message.sender.realm_id, topic_name)
         edit_history_event[LEGACY_PREV_TOPIC] = orig_topic_name
 
     if propagate_mode in ["change_later", "change_all"]:
