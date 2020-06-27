@@ -10,7 +10,6 @@ from django.conf import settings
 from django.test import TestCase, override_settings
 
 from zerver.lib import markdown as bugdown
-from zerver.lib import mdiff
 from zerver.lib.actions import (
     do_add_alert_words,
     do_remove_realm_emoji,
@@ -21,6 +20,7 @@ from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.create_user import create_user
 from zerver.lib.emoji import get_emoji_url
 from zerver.lib.exceptions import MarkdownRenderingException
+from zerver.lib.mdiff import diff_strings
 from zerver.lib.mention import possible_mentions, possible_user_group_mentions
 from zerver.lib.message import render_markdown
 from zerver.lib.request import JsonableError
@@ -180,7 +180,7 @@ class BugdownMiscTest(ZulipTestCase):
         str1 = "<p>The quick brown fox jumps over the lazy dog.  Animal stories are fun, yeah</p>"
         str2 = "<p>The fast fox jumps over the lazy dogs and cats.  Animal stories are fun</p>"
         expected_diff = "\u001b[34m-\u001b[0m <p>The \u001b[33mquick brown\u001b[0m fox jumps over the lazy dog.  Animal stories are fun\u001b[31m, yeah\u001b[0m</p>\n\u001b[34m+\u001b[0m <p>The \u001b[33mfast\u001b[0m fox jumps over the lazy dog\u001b[32ms and cats\u001b[0m.  Animal stories are fun</p>\n"
-        self.assertEqual(mdiff.diff_strings(str1, str2), expected_diff)
+        self.assertEqual(diff_strings(str1, str2), expected_diff)
 
     def test_get_possible_mentions_info(self) -> None:
         realm = get_realm('zulip')
@@ -349,7 +349,7 @@ class BugdownTest(ZulipTestCase):
         if isinstance(first, str) and isinstance(second, str):
             if first != second:
                 raise AssertionError("Actual and expected outputs do not match; showing diff.\n" +
-                                     mdiff.diff_strings(first, second) + msg)
+                                     diff_strings(first, second) + msg)
         else:
             super().assertEqual(first, second)
 
