@@ -2699,6 +2699,35 @@ class RealmPropertyActionTest(BaseAction):
             with self.settings(SEND_DIGEST_EMAILS=True):
                 self.do_set_realm_property_test(prop)
 
+display_setting_schema = check_events_dict([
+    ('type', equals('update_display_settings')),
+    ('setting_name', check_string),
+    ('user', check_string),
+    ('setting', check_union([
+        check_bool,
+        check_int,
+        check_string,
+    ])),
+])
+
+language_schema_checker = check_events_dict([
+    ('type', equals('update_display_settings')),
+    ('language_name', check_string),
+    ('setting_name', equals('default_language')),
+    ('user', check_string),
+    ('setting', check_string),
+])
+
+timezone_schema_checker = check_events_dict([
+    ('type', equals('realm_user')),
+    ('op', equals('update')),
+    ('person', check_dict_only([
+        ('email', check_string),
+        ('user_id', check_int),
+        ('timezone', check_string),
+    ])),
+])
+
 class UserDisplayActionTest(BaseAction):
     def do_set_user_display_settings_test(self, setting_name: str) -> None:
         """Test updating each setting in UserProfile.property_types dict."""
@@ -2712,14 +2741,10 @@ class UserDisplayActionTest(BaseAction):
         )
 
         property_type = UserProfile.property_types[setting_name]
-        if property_type is bool:
-            validator: Validator[object] = check_bool
-        elif property_type is str:
-            validator = check_string
-        elif property_type is int:
-            validator = check_int
+        if setting_name == 'default_language':
+            schema_checker = language_schema_checker
         else:
-            raise AssertionError(f"Unexpected property type {property_type}")
+            schema_checker = display_setting_schema
 
         num_events = 1
         if setting_name == "timezone":
@@ -2741,33 +2766,10 @@ class UserDisplayActionTest(BaseAction):
                     value),
                 num_events=num_events)
 
-            schema_checker = check_events_dict([
-                ('type', equals('update_display_settings')),
-                ('setting_name', equals(setting_name)),
-                ('user', check_string),
-                ('setting', validator),
-            ])
-            language_schema_checker = check_events_dict([
-                ('type', equals('update_display_settings')),
-                ('language_name', check_string),
-                ('setting_name', equals(setting_name)),
-                ('user', check_string),
-                ('setting', validator),
-            ])
-            if setting_name == "default_language":
-                language_schema_checker('events[0]', events[0])
-            else:
-                schema_checker('events[0]', events[0])
+            schema_checker('events[0]', events[0])
+            self.assertEqual(events[0]['setting_name'], setting_name)
+            assert isinstance(events[0]['setting'], property_type)
 
-            timezone_schema_checker = check_events_dict([
-                ('type', equals('realm_user')),
-                ('op', equals('update')),
-                ('person', check_dict_only([
-                    ('email', check_string),
-                    ('user_id', check_int),
-                    ('timezone', check_string),
-                ])),
-            ])
             if setting_name == "timezone":
                 timezone_schema_checker('events[1]', events[1])
 
