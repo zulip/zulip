@@ -169,6 +169,7 @@ function render_user_info_popover(
     user,
     popover_element,
     is_sender_popover,
+    has_message_context,
     private_msg_class,
     template_class,
     popover_placement,
@@ -189,6 +190,7 @@ function render_user_info_popover(
     const args = {
         can_revoke_away,
         can_set_away,
+        has_message_context,
         is_active: people.is_active_user_for_popover(user.user_id),
         is_bot: user.is_bot,
         is_me,
@@ -206,6 +208,7 @@ function render_user_info_popover(
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
         status_text: user_status.get_status_text(user.user_id),
+        user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
     };
 
     if (user.is_bot) {
@@ -271,6 +274,7 @@ function show_user_info_popover_for_message(element, user, message) {
             user,
             elt,
             is_sender_popover,
+            true,
             "respond_personal_button",
             "message-info-popover",
             "right",
@@ -921,6 +925,7 @@ exports.register_click_handlers = function () {
             user,
             target,
             false,
+            false,
             "compose_private_message",
             "user_popover",
             popover_placement,
@@ -1104,6 +1109,14 @@ exports.register_click_handlers = function () {
             $(":focus").trigger("blur");
         }, 0);
 
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    new ClipboardJS(".copy_mention_syntax");
+
+    $("body").on("click", ".copy_mention_syntax", (e) => {
+        exports.hide_all();
         e.stopPropagation();
         e.preventDefault();
     });

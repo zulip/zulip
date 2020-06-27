@@ -43,9 +43,7 @@ set_global("stream_popover", {
 
 set_global("stream_data", {});
 
-function ClipboardJS(sel) {
-    assert.equal(sel, ".copy_link");
-}
+const ClipboardJS = noop;
 
 rewiremock.proxy(() => zrequire("popovers"), {
     clipboard: ClipboardJS,
@@ -176,7 +174,9 @@ run_test("sender_hover", (override) => {
                     is_active: true,
                     is_bot: undefined,
                     is_sender_popover: true,
+                    has_message_context: true,
                     status_text: "on the beach",
+                    user_mention_syntax: "@**Alice Smith**",
                 });
                 return "content-html";
 
