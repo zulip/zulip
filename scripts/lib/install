@@ -190,7 +190,7 @@ case ",$PUPPET_CLASSES," in
             # We're going to install Postgres from the postgres apt
             # repository; this may conflict with the existing postgres.
             OTHER_PG="$(dpkg --get-selections |
-                             grep '^postgresql-[1-9].*\binstall$' |
+                             grep -E '^postgresql-[0-9]+\s+install$' |
                              grep -v "^postgresql-$POSTGRES_VERSION\b" |
                              cut -f 1)" || true
             if [ -n "$OTHER_PG" ]; then
