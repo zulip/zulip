@@ -1,6 +1,7 @@
 import logging
 import sys
 from typing import Any, Callable
+from urllib.parse import SplitResult
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError, CommandParser
@@ -58,16 +59,16 @@ class Command(BaseCommand):
         import django
         from tornado import httpserver
 
-        try:
-            addr, port = addrport.split(':')
-        except ValueError:
-            addr, port = '', addrport
+        if addrport.isdigit():
+            addr, port = "", int(addrport)
+        else:
+            r = SplitResult("", addrport, "", "", "")
+            if r.port is None:
+                raise CommandError(f"{addrport!r} does not have a valid port number.")
+            addr, port = r.hostname or "", r.port
 
         if not addr:
             addr = '127.0.0.1'
-
-        if not port.isdigit():
-            raise CommandError(f"{port!r} is not a valid port number.")
 
         xheaders = options.get('xheaders', True)
         no_keep_alive = options.get('no_keep_alive', False)
@@ -89,13 +90,13 @@ class Command(BaseCommand):
             if settings.USING_RABBITMQ:
                 queue_client = get_queue_client()
                 # Process notifications received via RabbitMQ
-                queue_name = notify_tornado_queue_name(int(port))
+                queue_name = notify_tornado_queue_name(port)
                 queue_client.register_json_consumer(queue_name,
                                                     get_wrapped_process_notification(queue_name))
 
             try:
                 # Application is an instance of Django's standard wsgi handler.
-                application = create_tornado_application(int(port))
+                application = create_tornado_application(port)
                 if settings.AUTORELOAD:
                     zulip_autoreload_start()
 
@@ -103,11 +104,11 @@ class Command(BaseCommand):
                 http_server = httpserver.HTTPServer(application,
                                                     xheaders=xheaders,
                                                     no_keep_alive=no_keep_alive)
-                http_server.listen(int(port), address=addr)
+                http_server.listen(port, address=addr)
 
                 from zerver.tornado.ioloop_logging import logging_data
-                logging_data['port'] = port
-                setup_event_queue(int(port))
+                logging_data['port'] = str(port)
+                setup_event_queue(port)
                 add_client_gc_hook(missedmessage_hook)
                 setup_tornado_rabbitmq()
 
