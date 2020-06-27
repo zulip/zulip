@@ -50,6 +50,17 @@ if [ -z "$FORCE" ] && { [ -e "$KEYFILE" ] || [ -e "$CERTFILE" ]; }; then
 fi
 rm -f "$KEYFILE" "$CERTFILE"
 
+if [[ "$EXTERNAL_HOST" =~ ^(([0-9]+\.){3}[0-9]+)(:[0-9]+)?$ ]]; then
+    subjectAltName="IP:${BASH_REMATCH[1]}"  # IPv4 address
+elif [[ "$EXTERNAL_HOST" =~ ^\[([^][]*)\](:[0-9]+)?$ ]]; then
+    subjectAltName="IP:${BASH_REMATCH[1]}"  # IPv6 address
+elif [[ "$EXTERNAL_HOST" =~ ^([^:]+)(:[0-9]+)?$ ]]; then
+    subjectAltName="DNS:${BASH_REMATCH[1]}"
+else
+    echo "$0: invalid host $EXTERNAL_HOST" >&2
+    exit 1
+fi
+
 config="$(mktemp)" || exit 1
 trap 'rm -f "$config"' EXIT
 
@@ -72,7 +83,7 @@ commonName          = $EXTERNAL_HOST
 
 [ v3_req ]
 basicConstraints    = CA:FALSE
-subjectAltName      = DNS:$EXTERNAL_HOST
+subjectAltName      = $subjectAltName
 EOF
 
 if [ "$is_redhat" = true ]; then
