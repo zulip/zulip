@@ -2102,7 +2102,7 @@ _privacy_re = re.compile('\\w', flags=re.UNICODE)
 def privacy_clean_markdown(content: str) -> str:
     return repr(_privacy_re.sub('x', content))
 
-def log_bugdown_error(msg: str) -> None:
+def log_markdown_error(msg: str) -> None:
     """We use this unusual logging approach to log the markdown error, in
     order to prevent AdminNotifyHandler from sending the sanitized
     original markdown formatting into another Zulip message, which
