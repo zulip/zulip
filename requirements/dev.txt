@@ -417,8 +417,8 @@ isodate==0.6.0 \
     --hash=sha256:2e364a3d5759479cdb2d37cce6b9376ea504db2ff90252a2e5b7cc89cc9ff2d8 \
     --hash=sha256:aa4d33c06640f5352aca96e4b81afd8ab3b47337cc12089822d6f322ac772c81 \
     # via python3-saml
-https://github.com/timothycrosley/isort/archive/a4dea5fa72907ffefb21e40ef194f274c86f847a.zip#egg=isort==5.0.0+git \
-    --hash=sha256:36e3fb055e80837f73c74e9f1fcd8527819224b61820255aeb16647779912cb5 \
+https://github.com/timothycrosley/isort/archive/a26a58423b183217d0defdb6b67e5fd285be7186.zip#egg=isort==5.0.0+git \
+    --hash=sha256:3a634c45784c5ac73dc871efb0faf86320ab1f237f86f28ff55d8025e185016d \
     # via -r requirements/dev.in
 itemadapter==0.1.0 \
     --hash=sha256:52159b4f97d82aa2968000ee8371b2114af56a2f44e4cd9142580d46eea39020 \
