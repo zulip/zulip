@@ -1618,13 +1618,11 @@ div.focused_table {
         // elements take up the entirety of the white space.
         > :nth-last-child(2) {
             flex-grow: 1;
-        }
 
-        // We extend the clickable area for the search_closed icon over the
-        // 2nd last navbar element for better design (user convenience) this
-        // selector makes it so mousing over that element also gives the user
-        // a visual cue about the results of clicking the element
-        > :nth-last-child(2) {
+            // We extend the clickable area for the search_closed icon over the
+            // 2nd last navbar element for better design (user convenience) this
+            // selector makes it so mousing over that element also gives the user
+            // a visual cue about the results of clicking the element
             cursor: pointer;
             &:hover + .search_closed {
                 color: hsl(0, 0%, 0%);
