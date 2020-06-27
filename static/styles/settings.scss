@@ -1953,7 +1953,13 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 }
 
 .dropdown-title {
-    margin-bottom: 3px;
+    margin: 0 auto;
+    display: inline-block;
+    vertical-align: -webkit-baseline-middle;
+}
+
+.dropdown {
+    height: 30px;
 }
 
 .invited-as-admin {
