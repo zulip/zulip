@@ -15,6 +15,7 @@ from django.utils.translation import ugettext as _
 
 from zerver.decorator import statsd_increment
 from zerver.lib.avatar import absolute_avatar_url
+from zerver.lib.encryption import encrypt_data
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message, bulk_access_messages_expect_usermessage, huddle_users
 from zerver.lib.remote_server import send_json_to_push_bouncer, send_to_push_bouncer
@@ -101,6 +102,14 @@ def modernize_apns_payload(data: Dict[str, Any]) -> Dict[str, Any]:
         return data
 
 APNS_MAX_RETRIES = 3
+
+# EncryptedData is a list of tuples containing PushDeviceToken
+# and encrypted payload specific to the device.
+EncryptedData = List[Tuple[PushDeviceToken, Dict[str, Any]]]
+
+def send_apple_encrypted_push_notification(user_id: int, encrypted_data: EncryptedData, remote: bool=False) -> None:
+    for device, payload in encrypted_data:
+        send_apple_push_notification(user_id, [device], payload, remote=False)
 
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
@@ -251,6 +260,11 @@ def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
         ).format(orjson.dumps(options).decode()))
 
     return priority  # when this grows a second option, can make it a tuple
+
+def send_android_encrypted_push_notification(encrypted_data: EncryptedData,
+                                             options: Dict[str, Any], remote: bool=False) -> None:
+    for device, payload in encrypted_data:
+        send_android_push_notification([device], payload, options, remote)
 
 @statsd_increment("android_push_notification")
 def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, Any],
@@ -758,6 +772,31 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
         flags=F('flags').bitand(
             ~UserMessage.flags.active_mobile_push_notification))
 
+def encrypt_payload(payload: Dict[str, Any], key: str) -> Dict[str, Any]:
+    encrypted_data, nonce = encrypt_data(key, orjson.dumps(payload))
+    encrypted_payload = {}
+    encrypted_payload['encrypted_data'] = encrypted_data
+    encrypted_payload['nonce'] = nonce
+    return encrypted_payload
+
+def separate_devices(devices: List[PushDeviceToken]) -> Tuple[List[PushDeviceToken], List[PushDeviceToken]]:
+    # We can send all the unencrypted notices to the third-party
+    # API with all the user's devices in a single request, but
+    # encrypted ones need to be one-per-device. That's why we
+    # have this structure.
+    if not settings.PUSH_NOTIFICATION_ENCRYPTION:
+        return [], devices
+
+    encrypted = []
+    non_encrypted = []
+    for device in devices:
+        if bool(device.notification_encryption_key):
+            encrypted.append(device)
+        else:
+            non_encrypted.append(device)
+
+    return encrypted, non_encrypted
+
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:
     """
@@ -815,6 +854,22 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     gcm_payload, gcm_options = get_message_payload_gcm(user_profile, message)
     logger.info("Sending push notifications to mobile clients for user %s", user_profile_id)
 
+    android_devices = list(PushDeviceToken.objects.filter(user=user_profile,
+                                                          kind=PushDeviceToken.GCM))
+
+    apple_devices = list(PushDeviceToken.objects.filter(user=user_profile,
+                                                        kind=PushDeviceToken.APNS))
+
+    encrypted_android_devices, unencrypted_android_devices = separate_devices(android_devices)
+
+    encrypted_apple_devices, unencrypted_apple_devices = separate_devices(apple_devices)
+
+    encrypted_gcm_data = [(device, encrypt_payload(gcm_payload, device.notification_encryption_key))  # type: ignore[arg-type] # encrypted device's key is never null
+                          for device in encrypted_android_devices]
+
+    encrypted_apns_data = [(device, encrypt_payload(apns_payload, device.notification_encryption_key))  # type: ignore[arg-type] # encrypted device's key is never null
+                           for device in encrypted_apple_devices]
+
     if uses_notification_bouncer():
         send_notifications_to_bouncer(user_profile_id,
                                       apns_payload,
@@ -822,12 +877,10 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
                                       gcm_options)
         return
 
-    android_devices = list(PushDeviceToken.objects.filter(user=user_profile,
-                                                          kind=PushDeviceToken.GCM))
+    send_apple_push_notification(user_profile.id, unencrypted_apple_devices, apns_payload)
 
-    apple_devices = list(PushDeviceToken.objects.filter(user=user_profile,
-                                                        kind=PushDeviceToken.APNS))
+    send_android_push_notification(unencrypted_android_devices, gcm_payload, gcm_options)
 
-    send_apple_push_notification(user_profile.id, apple_devices, apns_payload)
+    send_apple_encrypted_push_notification(user_profile.id, encrypted_apns_data)
 
-    send_android_push_notification(android_devices, gcm_payload, gcm_options)
+    send_android_encrypted_push_notification(encrypted_gcm_data, gcm_options)
