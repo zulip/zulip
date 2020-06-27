@@ -235,7 +235,7 @@ The `BaseAction` tests in `test_events` will print a diff
 between the "hybrid state" and the "normal state" obtained from
 calling `fetch_initial_state_data` after the changes.  Those tests
 also inspect the events generated to ensure they have the expected
-format and `do_test` has the `state_change_expected` and `num_events`
+format.  Also, `verify_action` has the `state_change_expected` and `num_events`
 arguments that configure how many events that it asserts were
 generated and whether it expects the state after applying the events
 to differ what what it was before (which help catch common classes of
