@@ -1,33 +1,36 @@
+import os
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
+
+from scripts.lib.zulip_tools import deport
+
+from .config import DEVELOPMENT, PRODUCTION, get_secret
 
 if TYPE_CHECKING:
     from django_auth_ldap.config import LDAPSearch
     from typing_extensions import TypedDict
-
-from .config import DEVELOPMENT, PRODUCTION, get_secret
 
 if PRODUCTION:
     from .prod_settings import EXTERNAL_HOST, ZULIP_ADMINISTRATOR
 else:
     from .dev_settings import EXTERNAL_HOST, ZULIP_ADMINISTRATOR
 
-import os
-
 DEBUG = DEVELOPMENT
+
+EXTERNAL_HOST_WITHOUT_PORT = deport(EXTERNAL_HOST)
 
 # These settings are intended for the server admin to set.  We document them in
 # prod_settings_template.py, and in the initial /etc/zulip/settings.py on a new
 # install of the Zulip server.
 
-# Extra HTTP "Host" values to allow (standard ones added in settings.py)
+# Extra HTTP "Host" values to allow (standard ones added in computed_settings.py)
 ALLOWED_HOSTS: List[str] = []
 
 # Basic email settings
-NOREPLY_EMAIL_ADDRESS = "noreply@" + EXTERNAL_HOST.split(":")[0]
+NOREPLY_EMAIL_ADDRESS = "noreply@" + EXTERNAL_HOST_WITHOUT_PORT
 ADD_TOKENS_TO_NOREPLY_ADDRESS = True
-TOKENIZED_NOREPLY_EMAIL_ADDRESS = "noreply-{token}@" + EXTERNAL_HOST.split(":")[0]
+TOKENIZED_NOREPLY_EMAIL_ADDRESS = "noreply-{token}@" + EXTERNAL_HOST_WITHOUT_PORT
 PHYSICAL_ADDRESS = ''
-FAKE_EMAIL_DOMAIN = EXTERNAL_HOST.split(":")[0]
+FAKE_EMAIL_DOMAIN = EXTERNAL_HOST_WITHOUT_PORT
 
 # SMTP settings
 EMAIL_HOST: Optional[str] = None

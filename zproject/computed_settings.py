@@ -33,6 +33,7 @@ from .configured_settings import (
     ERROR_REPORTING,
     EVENT_LOGS_ENABLED,
     EXTERNAL_HOST,
+    EXTERNAL_HOST_WITHOUT_PORT,
     EXTERNAL_URI_SCHEME,
     EXTRA_INSTALLED_APPS,
     GOOGLE_OAUTH2_CLIENT_ID,
@@ -159,8 +160,7 @@ USE_X_FORWARDED_HOST = True
 # Extend ALLOWED_HOSTS with localhost (needed to RPC to Tornado),
 ALLOWED_HOSTS += ['127.0.0.1', 'localhost']
 # ... with hosts corresponding to EXTERNAL_HOST,
-ALLOWED_HOSTS += [EXTERNAL_HOST.split(":")[0],
-                  '.' + EXTERNAL_HOST.split(":")[0]]
+ALLOWED_HOSTS += [EXTERNAL_HOST_WITHOUT_PORT, "." + EXTERNAL_HOST_WITHOUT_PORT]
 # ... and with the hosts in REALM_HOSTS.
 ALLOWED_HOSTS += REALM_HOSTS.values()
 

@@ -2,6 +2,8 @@ import os
 import pwd
 from typing import Optional, Set, Tuple
 
+from six.moves.urllib.parse import SplitResult
+
 ZULIP_ADMINISTRATOR = "desdemona+admin@zulip.com"
 
 # We want LOCAL_UPLOADS_DIR to be an absolute path so that code can
@@ -37,6 +39,12 @@ else:
         'zulip': EXTERNAL_HOST,
     }
 
+# TODO: Replace with scripts.lib.zulip_tools.deport when this no longer needs to
+# be Python 2 compatible for zthumbor.
+r = SplitResult("", EXTERNAL_HOST, "", "", "")
+assert r.hostname is not None
+EXTERNAL_HOST_WITHOUT_PORT = "[" + r.hostname + "]" if ":" in r.hostname else r.hostname
+
 ALLOWED_HOSTS = ['*']
 
 # Uncomment extra backends if you want to test with them.  Note that
@@ -53,7 +61,7 @@ AUTHENTICATION_BACKENDS = (
 )  # type: Tuple[str, ...]
 
 EXTERNAL_URI_SCHEME = "http://"
-EMAIL_GATEWAY_PATTERN = "%s@" + EXTERNAL_HOST.split(':')[0]
+EMAIL_GATEWAY_PATTERN = "%s@" + EXTERNAL_HOST_WITHOUT_PORT
 NOTIFICATION_BOT = "notification-bot@zulip.com"
 ERROR_BOT = "error-bot@zulip.com"
 EMAIL_GATEWAY_BOT = "emailgateway@zulip.com"

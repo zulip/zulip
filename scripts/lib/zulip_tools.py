@@ -17,6 +17,7 @@ import tempfile
 import time
 import uuid
 from typing import Any, Dict, List, Sequence, Set
+from urllib.parse import SplitResult
 
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
 LOCK_DIR = os.path.join(DEPLOYMENTS_DIR, "lock")
@@ -514,6 +515,13 @@ def get_or_create_dev_uuid_var_path(path: str) -> str:
 
 def is_vagrant_env_host(path: str) -> bool:
     return '.vagrant' in os.listdir(path)
+
+def deport(netloc: str) -> str:
+    """Remove the port from a hostname:port string.  Brackets on a literal
+    IPv6 address are included."""
+    r = SplitResult("", netloc, "", "", "")
+    assert r.hostname is not None
+    return "[" + r.hostname + "]" if ":" in r.hostname else r.hostname
 
 if __name__ == '__main__':
     cmd = sys.argv[1]
