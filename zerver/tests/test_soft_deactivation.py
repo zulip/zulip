@@ -60,7 +60,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
             self.example_user('desdemona'),
         ]
         client, _ = Client.objects.get_or_create(name='website')
-        query = '/json/users/me/pointer'
+        query = 'some/random/endpoint'
         last_visit = timezone_now()
         count = 150
         for user_profile in UserProfile.objects.all():
@@ -167,7 +167,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
             self.subscribe(user, stream_name)
 
         client, _ = Client.objects.get_or_create(name='website')
-        query = '/json/users/me/pointer'
+        query = 'some/random/endpoint'
         last_visit = timezone_now()
         count = 150
         for user_profile in users:

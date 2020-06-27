@@ -27,7 +27,7 @@ class ActivityTest(ZulipTestCase):
     def test_activity(self, unused_mock: mock.Mock) -> None:
         self.login('hamlet')
         client, _ = Client.objects.get_or_create(name='website')
-        query = '/json/users/me/pointer'
+        query = '/some/random/endpoint'
         last_visit = timezone_now()
         count = 150
         for activity_user_profile in UserProfile.objects.all():
