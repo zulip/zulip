@@ -1559,82 +1559,6 @@ class NormalActionsTest(BaseAction):
                 lambda: do_change_user_role(self.user_profile, role))
             schema_checker('events[0]', events[0])
 
-    def do_set_user_display_settings_test(self, setting_name: str) -> None:
-        """Test updating each setting in UserProfile.property_types dict."""
-
-        test_changes: Dict[str, Any] = dict(
-            emojiset = ['twitter'],
-            default_language = ['es', 'de', 'en'],
-            timezone = ['US/Mountain', 'US/Samoa', 'Pacific/Galapogos', ''],
-            demote_inactive_streams = [2, 3, 1],
-            color_scheme = [2, 3, 1]
-        )
-
-        property_type = UserProfile.property_types[setting_name]
-        if property_type is bool:
-            validator: Validator[object] = check_bool
-        elif property_type is str:
-            validator = check_string
-        elif property_type is int:
-            validator = check_int
-        else:
-            raise AssertionError(f"Unexpected property type {property_type}")
-
-        num_events = 1
-        if setting_name == "timezone":
-            num_events = 2
-        values = test_changes.get(setting_name)
-        if property_type is bool:
-            if getattr(self.user_profile, setting_name) is False:
-                values = [True, False, True]
-            else:
-                values = [False, True, False]
-        if values is None:
-            raise AssertionError(f'No test created for {setting_name}')
-
-        for value in values:
-            events = self.verify_action(
-                lambda: do_set_user_display_setting(
-                    self.user_profile,
-                    setting_name,
-                    value),
-                num_events=num_events)
-
-            schema_checker = check_events_dict([
-                ('type', equals('update_display_settings')),
-                ('setting_name', equals(setting_name)),
-                ('user', check_string),
-                ('setting', validator),
-            ])
-            language_schema_checker = check_events_dict([
-                ('type', equals('update_display_settings')),
-                ('language_name', check_string),
-                ('setting_name', equals(setting_name)),
-                ('user', check_string),
-                ('setting', validator),
-            ])
-            if setting_name == "default_language":
-                language_schema_checker('events[0]', events[0])
-            else:
-                schema_checker('events[0]', events[0])
-
-            timezone_schema_checker = check_events_dict([
-                ('type', equals('realm_user')),
-                ('op', equals('update')),
-                ('person', check_dict_only([
-                    ('email', check_string),
-                    ('user_id', check_int),
-                    ('timezone', check_string),
-                ])),
-            ])
-            if setting_name == "timezone":
-                timezone_schema_checker('events[1]', events[1])
-
-    @slow("Actually runs several full-stack fetching tests")
-    def test_set_user_display_settings(self) -> None:
-        for prop in UserProfile.property_types:
-            self.do_set_user_display_settings_test(prop)
-
     @slow("Actually runs several full-stack fetching tests")
     def test_change_notification_settings(self) -> None:
         for notification_setting, v in self.user_profile.notification_setting_types.items():
@@ -2774,3 +2698,80 @@ class RealmPropertyActionTest(BaseAction):
         for prop in Realm.property_types:
             with self.settings(SEND_DIGEST_EMAILS=True):
                 self.do_set_realm_property_test(prop)
+
+class UserDisplayActionTest(BaseAction):
+    def do_set_user_display_settings_test(self, setting_name: str) -> None:
+        """Test updating each setting in UserProfile.property_types dict."""
+
+        test_changes: Dict[str, Any] = dict(
+            emojiset = ['twitter'],
+            default_language = ['es', 'de', 'en'],
+            timezone = ['US/Mountain', 'US/Samoa', 'Pacific/Galapogos', ''],
+            demote_inactive_streams = [2, 3, 1],
+            color_scheme = [2, 3, 1]
+        )
+
+        property_type = UserProfile.property_types[setting_name]
+        if property_type is bool:
+            validator: Validator[object] = check_bool
+        elif property_type is str:
+            validator = check_string
+        elif property_type is int:
+            validator = check_int
+        else:
+            raise AssertionError(f"Unexpected property type {property_type}")
+
+        num_events = 1
+        if setting_name == "timezone":
+            num_events = 2
+        values = test_changes.get(setting_name)
+        if property_type is bool:
+            if getattr(self.user_profile, setting_name) is False:
+                values = [True, False, True]
+            else:
+                values = [False, True, False]
+        if values is None:
+            raise AssertionError(f'No test created for {setting_name}')
+
+        for value in values:
+            events = self.verify_action(
+                lambda: do_set_user_display_setting(
+                    self.user_profile,
+                    setting_name,
+                    value),
+                num_events=num_events)
+
+            schema_checker = check_events_dict([
+                ('type', equals('update_display_settings')),
+                ('setting_name', equals(setting_name)),
+                ('user', check_string),
+                ('setting', validator),
+            ])
+            language_schema_checker = check_events_dict([
+                ('type', equals('update_display_settings')),
+                ('language_name', check_string),
+                ('setting_name', equals(setting_name)),
+                ('user', check_string),
+                ('setting', validator),
+            ])
+            if setting_name == "default_language":
+                language_schema_checker('events[0]', events[0])
+            else:
+                schema_checker('events[0]', events[0])
+
+            timezone_schema_checker = check_events_dict([
+                ('type', equals('realm_user')),
+                ('op', equals('update')),
+                ('person', check_dict_only([
+                    ('email', check_string),
+                    ('user_id', check_int),
+                    ('timezone', check_string),
+                ])),
+            ])
+            if setting_name == "timezone":
+                timezone_schema_checker('events[1]', events[1])
+
+    @slow("Actually runs several full-stack fetching tests")
+    def test_set_user_display_settings(self) -> None:
+        for prop in UserProfile.property_types:
+            self.do_set_user_display_settings_test(prop)
