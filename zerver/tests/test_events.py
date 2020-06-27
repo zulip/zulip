@@ -1330,65 +1330,6 @@ class NormalActionsTest(BaseAction):
         schema_checker('events[0]', events[0])
         avatar_schema_checker('events[1]', events[1])
 
-    def do_set_realm_property_test(self, name: str) -> None:
-        bool_tests: List[bool] = [True, False, True]
-        test_values: Dict[str, Any] = dict(
-            default_language=['es', 'de', 'en'],
-            description=['Realm description', 'New description'],
-            digest_weekday=[0, 1, 2],
-            message_retention_days=[10, 20],
-            name=['Zulip', 'New Name'],
-            waiting_period_threshold=[10, 20],
-            create_stream_policy=[3, 2, 1],
-            invite_to_stream_policy=[3, 2, 1],
-            private_message_policy=[2, 1],
-            user_group_edit_policy=[1, 2],
-            email_address_visibility=[Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS],
-            bot_creation_policy=[Realm.BOT_CREATION_EVERYONE],
-            video_chat_provider=[
-                Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['id'],
-            ],
-            default_code_block_language=['python', 'javascript'],
-        )
-
-        vals = test_values.get(name)
-        property_type = Realm.property_types[name]
-        if property_type is bool:
-            validator: Validator[object] = check_bool
-            vals = bool_tests
-        elif property_type is str:
-            validator = check_string
-        elif property_type == (str, type(None)):
-            validator = check_string
-        elif property_type is int:
-            validator = check_int
-        elif property_type == (int, type(None)):
-            validator = check_int
-        else:
-            raise AssertionError(f"Unexpected property type {property_type}")
-        schema_checker = check_events_dict([
-            ('type', equals('realm')),
-            ('op', equals('update')),
-            ('property', equals(name)),
-            ('value', validator),
-        ])
-
-        if vals is None:
-            raise AssertionError(f'No test created for {name}')
-        do_set_realm_property(self.user_profile.realm, name, vals[0])
-        for val in vals[1:]:
-            state_change_expected = True
-            events = self.verify_action(
-                lambda: do_set_realm_property(self.user_profile.realm, name, val),
-                state_change_expected=state_change_expected)
-            schema_checker('events[0]', events[0])
-
-    @slow("Actually runs several full-stack fetching tests")
-    def test_change_realm_property(self) -> None:
-        for prop in Realm.property_types:
-            with self.settings(SEND_DIGEST_EMAILS=True):
-                self.do_set_realm_property_test(prop)
-
     @slow("Runs a large matrix of tests")
     def test_change_realm_authentication_methods(self) -> None:
         schema_checker = check_events_dict([
@@ -2764,3 +2705,63 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(
             lambda: do_set_zoom_token(self.user_profile, None))
         schema_checker('events[0]', events[0])
+
+class RealmPropertyActionTest(BaseAction):
+    def do_set_realm_property_test(self, name: str) -> None:
+        bool_tests: List[bool] = [True, False, True]
+        test_values: Dict[str, Any] = dict(
+            default_language=['es', 'de', 'en'],
+            description=['Realm description', 'New description'],
+            digest_weekday=[0, 1, 2],
+            message_retention_days=[10, 20],
+            name=['Zulip', 'New Name'],
+            waiting_period_threshold=[10, 20],
+            create_stream_policy=[3, 2, 1],
+            invite_to_stream_policy=[3, 2, 1],
+            private_message_policy=[2, 1],
+            user_group_edit_policy=[1, 2],
+            email_address_visibility=[Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS],
+            bot_creation_policy=[Realm.BOT_CREATION_EVERYONE],
+            video_chat_provider=[
+                Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['id'],
+            ],
+            default_code_block_language=['python', 'javascript'],
+        )
+
+        vals = test_values.get(name)
+        property_type = Realm.property_types[name]
+        if property_type is bool:
+            validator: Validator[object] = check_bool
+            vals = bool_tests
+        elif property_type is str:
+            validator = check_string
+        elif property_type == (str, type(None)):
+            validator = check_string
+        elif property_type is int:
+            validator = check_int
+        elif property_type == (int, type(None)):
+            validator = check_int
+        else:
+            raise AssertionError(f"Unexpected property type {property_type}")
+        schema_checker = check_events_dict([
+            ('type', equals('realm')),
+            ('op', equals('update')),
+            ('property', equals(name)),
+            ('value', validator),
+        ])
+
+        if vals is None:
+            raise AssertionError(f'No test created for {name}')
+        do_set_realm_property(self.user_profile.realm, name, vals[0])
+        for val in vals[1:]:
+            state_change_expected = True
+            events = self.verify_action(
+                lambda: do_set_realm_property(self.user_profile.realm, name, val),
+                state_change_expected=state_change_expected)
+            schema_checker('events[0]', events[0])
+
+    @slow("Actually runs several full-stack fetching tests")
+    def test_change_realm_property(self) -> None:
+        for prop in Realm.property_types:
+            with self.settings(SEND_DIGEST_EMAILS=True):
+                self.do_set_realm_property_test(prop)
