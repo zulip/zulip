@@ -96,7 +96,7 @@ from zerver.lib.export import get_realm_exports_serialized
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.i18n import get_language_name
-from zerver.lib.markdown import version as bugdown_version
+from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import (
     MessageDict,
     access_message,
@@ -1430,7 +1430,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
             email_gateway=email_gateway,
         )
         message['message'].rendered_content = rendered_content
-        message['message'].rendered_content_version = bugdown_version
+        message['message'].rendered_content_version = markdown_version
         links_for_embed |= message['message'].links_for_preview
 
         # Add members of the mentioned user groups into `mentions_user_ids`.
@@ -4396,7 +4396,7 @@ def do_update_embedded_data(user_profile: UserProfile,
         update_user_message_flags(message, ums)
         message.content = content
         message.rendered_content = rendered_content
-        message.rendered_content_version = bugdown_version
+        message.rendered_content_version = markdown_version
         event["content"] = content
         event["rendered_content"] = rendered_content
 
@@ -4492,7 +4492,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
         edit_history_event["prev_rendered_content_version"] = message.rendered_content_version
         message.content = content
         message.rendered_content = rendered_content
-        message.rendered_content_version = bugdown_version
+        message.rendered_content_version = markdown_version
         event["content"] = content
         event["rendered_content"] = rendered_content
         event['prev_rendered_content_version'] = message.rendered_content_version
