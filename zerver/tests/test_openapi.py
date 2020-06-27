@@ -484,14 +484,25 @@ do not match the types declared in the implementation of {function.__name__}.\n"
         Otherwise, we print out the exact differences for convenient debugging and raise an
         AssertionError. """
         openapi_params: Set[Tuple[str, Union[type, Tuple[type, object]]]] = set()
+        json_params: Dict[str, Union[type, Tuple[type, object]]] = dict()
         for element in openapi_parameters:
             name: str = element["name"]
             schema = {}
             if "content" in element:
+                # The only content-type we use in our API is application/json.
+                assert "schema" in element["content"]["application/json"]
+                # If content_type is application/json, then the
+                # parameter needs to be handled specially, as REQ can
+                # either return the application/json as a string or it
+                # can either decode it and return the required
+                # elements. For example `to` array in /messages: POST
+                # is processed by REQ as a string and then its type is
+                # checked in the view code.
+                #
+                # Meanwhile `profile_data` in /users/{user_id}: GET is
+                # taken as array of objects. So treat them seperately.
                 schema = element["content"]["application/json"]["schema"]
-                # If content_type is application/json then the
-                # data type is essentially string.
-                openapi_params.add((name, VARMAP["string"]))
+                json_params[name] = schema_type(schema)
                 continue
             else:
                 schema = element["schema"]
@@ -529,8 +540,28 @@ do not match the types declared in the implementation of {function.__name__}.\n"
 
                 vtype = self.get_standardized_argument_type(function.__annotations__[vname])
                 vname = defval.post_var_name  # type: ignore[attr-defined] # See zerver/lib/request.py
+                if vname in json_params:
+                    # Here we have two cases.  If the the REQ type is
+                    # string then there is no point in comparing as
+                    # JSON can always be returned as string.  Ideally,
+                    # we wouldn't use REQ for a JSON object without a
+                    # validator in these cases, but it does happen.
+                    #
+                    # If the REQ type is not string then, insert the
+                    # REQ and OPENAPI data types of the variable in
+                    # the respective sets so that they can be dealt
+                    # with later.  In either case remove the variable
+                    # from `json_params`.
+                    if vtype == str:
+                        json_params.pop(vname, None)
+                        continue
+                    else:
+                        openapi_params.add((vname, json_params[vname]))
+                        json_params.pop(vname, None)
                 function_params.add((vname, vtype))
 
+        # After the above operations `json_params` should be empty.
+        assert(len(json_params) == 0)
         diff = openapi_params - function_params
         if diff:  # nocoverage
             self.render_openapi_type_exception(function, openapi_params, function_params, diff)
@@ -763,11 +794,15 @@ class TestCurlExampleGeneration(ZulipTestCase):
                             "name": "param1",
                             "in": "query",
                             "description": "An object",
-                            "schema": {
-                                "type": "object",
-                            },
-                            "example": {
-                                "key": "value",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object"
+                                    },
+                                    "example": {
+                                        "key": "value",
+                                    }
+                                }
                             },
                             "required": True,
                         },
@@ -798,13 +833,17 @@ class TestCurlExampleGeneration(ZulipTestCase):
                             "name": "param2",
                             "in": "query",
                             "description": "An object",
-                            "schema": {
-                                "type": "object",
-                            },
-                            "example": {
-                                "key": "value",
-                            },
                             "required": True,
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object"
+                                    },
+                                    "example": {
+                                        "key": "value",
+                                    }
+                                }
+                            },
                         },
                     ],
                 },

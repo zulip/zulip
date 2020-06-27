@@ -531,12 +531,14 @@ paths:
         description: |
           The narrow where you want to fetch the messages from. See how to
           [construct a narrow](/api/construct-narrow).
-        schema:
-          type: array
-          items:
-            type: object
-          default: []
-        example: [{"operand": "Denmark", "operator": "stream"}]
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+              default: []
+            example: [{"operand": "Denmark", "operator": "stream"}]
       - $ref: '#/components/parameters/ClientGravatar'
       - name: apply_markdown
         in: query
@@ -1069,11 +1071,13 @@ paths:
         in: query
         description: |
           An array containing the IDs of the target messages.
-        schema:
-          type: array
-          items:
-            type: integer
-        example: [4, 8, 15]
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+            example: [4, 8, 15]
         required: true
       - name: op
         in: query
@@ -1233,21 +1237,25 @@ paths:
       - name: msg_ids
         in: query
         description: List of IDs for the messages to check.
-        schema:
-          type: array
-          items:
-            type: integer
-        example: [31, 32]
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+            example: [31, 32]
         required: true
       - name: narrow
         in: query
         description: A structure defining the narrow to check against. See how to
           [construct a narrow](/api/construct-narrow).
-        schema:
-          type: array
-          items:
-            type: object
-        example: [{'operator': 'has', 'operand': 'link'}]
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+            example: [{'operator': 'has', 'operand': 'link'}]
         required: true
       responses:
         '200':
@@ -1677,21 +1685,22 @@ paths:
         in: query
         description: |
           A dictionary containing the to be updated custom profile field data for the user.
-        schema:
-          type: array
-          items:
-           type: object
-
-        example: [
-                    {
-                        "id": 4,
-                        "value": "vim"
-                    },
-                    {
-                        "id": 5,
-                        "value": "1909-04-05"
-                    },
-                  ]
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+               type: object
+            example: [
+                        {
+                            "id": 4,
+                            "value": "vim"
+                        },
+                        {
+                            "id": 5,
+                            "value": "1909-04-05"
+                        },
+                      ]
         required: false
 
       responses:
@@ -2408,16 +2417,18 @@ paths:
       - name: subscriptions
         in: query
         description: |
-          "A list of dictionaries containing the the key `name` and value
+          A list of dictionaries containing the the key `name` and value
           specifying the name of the stream to subscribe. If the stream does not
           exist a new stream is created. The description of the stream created can
           be specified by setting the dictionary key `description` with an
           appropriate value.
-        schema:
-          type: array
-          items:
-            type: object
-        example: [{"name": "Verona", "description": "Italian City"}]
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+            example: [{"name": "Verona", "description": "Italian City"}]
         required: true
       - $ref: '#/components/parameters/Principals'
       - name: authorization_errors_fatal
@@ -2528,11 +2539,13 @@ paths:
           in: query
           description: |
             A list of stream names to unsubscribe from.
-          schema:
-            type: array
-            items:
-              type: string
-          example: ['Verona', 'Denmark']
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+              example: ['Verona', 'Denmark']
           required: false
         - name: add
           in: query
@@ -2540,28 +2553,30 @@ paths:
             A list of objects describing which streams to subscribe to, optionally
             including per-user subscription parameters (e.g. color) and if the
             stream is to be created, its description.
-          schema:
-            type: array
-            items:
-              type: object
-              properties:
-                name:
-                  type: string
-                color:
-                  type: string
-                description:
-                  type: string
-          example:
-            [
-              {
-                "name": "Verona"
-              },
-              {
-                "name": "Denmark",
-                "color": "#e79ab5",
-                "description": "A Scandinavian country",
-              }
-            ]
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    color:
+                      type: string
+                    description:
+                      type: string
+              example:
+                [
+                  {
+                    "name": "Verona"
+                  },
+                  {
+                    "name": "Denmark",
+                    "color": "#e79ab5",
+                    "description": "A Scandinavian country",
+                  }
+                ]
           required: false
       responses:
         '200':
@@ -2643,11 +2658,13 @@ paths:
         description: |
           A list of stream names to unsubscribe from. This parameter is called
           `streams` in our Python API.
-        schema:
-          type: array
-          items:
-            type: string
-        example: ['Verona', 'Denmark']
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+            example: ['Verona', 'Denmark']
         required: true
       - $ref: '#/components/parameters/Principals'
       responses:
@@ -2908,11 +2925,13 @@ paths:
           each subscription. Each object represents a subscription, and must have
           a `stream_id` key that identifies the stream, as well as the `property`
           being modified and its new `value`.
-        schema:
-          type: array
-          items:
-            type: object
-        example: [{"stream_id": 1, "property": "pin_to_top", "value": true}, {"stream_id": 3, "property": "color", "value": '#f00f00'}]
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+            example: [{"stream_id": 1, "property": "pin_to_top", "value": true}, {"stream_id": 3, "property": "color", "value": '#f00f00'}]
         required: true
       responses:
         '200':
@@ -3148,7 +3167,6 @@ paths:
           default: false
         example: true
       - $ref: '#/components/parameters/Event_types'
-        example: ['message']
       - name: all_public_streams
         in: query
         description: |
@@ -3190,12 +3208,14 @@ paths:
              to optimize network performance.  This is an important optimization
              in organizations with 10,000s of users.
              New in Zulip 3.0 (feature level 18).
-        schema:
-          type: object
-        example:
-          {
-              "notification_settings_null": true
-          }
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              {
+                  "notification_settings_null": true
+              }
       - name: fetch_event_types
         in: query
         description: |
@@ -3203,11 +3223,13 @@ paths:
           `fetch_event_types` are used to fetch initial data. If
           `fetch_event_types` is not provided, `event_types` is used and if
           `event_types` is not provided, this parameter defaults to `None`.
-        schema:
-          type: array
-          items:
-            type: string
-        example: ['message']
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+            example: ['message']
       - $ref: '#/components/parameters/Narrow'
       responses:
         '200':
@@ -4071,11 +4093,13 @@ paths:
           **Changes**: Before Zulip 2.0, this parameter accepted only a JSON-encoded
           list of email addresses.  Support for the email address-based format was
           removed in Zulip 3.0 (feature level 11).
-        schema:
-          type: array
-          items:
-            type: integer
-        example: [9, 10]
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+            example: [9, 10]
         required: true
       responses:
         '200':
@@ -4115,11 +4139,13 @@ paths:
         description: |
           An array containing the user IDs of the initial members for the
           new user group.
-        schema:
-          type: array
-          items:
-            type: integer
-        example: [1, 2, 3, 4]
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+            example: [1, 2, 3, 4]
         required: true
       responses:
         '200':
@@ -4299,7 +4325,6 @@ paths:
       parameters:
       - $ref: '#/components/parameters/Narrow'
       - $ref: '#/components/parameters/Event_types'
-        example: ['message']
       security:
       - basicAuth: []
       responses:
@@ -5004,10 +5029,13 @@ components:
         your client in your client code.  For most applications, one
         is only interested in messages, so one specifies:
         `event_types=['message']`
-      schema:
-        type: array
-        items:
-          type: string
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: string
+          example: ['message']
       required: false
     Narrow:
       name: narrow
@@ -5019,14 +5047,16 @@ components:
         would specify `narrow=[['stream', 'Denmark']]`.  Another
         example is `narrow=[['is', 'private']]` for private messages.
         Default is `[]`.
-      schema:
-        type: array
-        items:
-          type: array
-          items:
-            type: string
-        default: []
-      example: [['stream', 'Denmark']]
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: array
+              items:
+                type: string
+            default: []
+          example: [['stream', 'Denmark']]
       required: false
     GroupId:
       name: group_id
@@ -5212,13 +5242,15 @@ components:
         not provided, then the requesting user/bot is subscribed.
 
         **Changes**: The integer format is new in Zulip 3.0 (Feature level 9).
-      schema:
-        type: array
-        items:
-          oneOf:
-            - type: string
-            - type: integer
-      example: ['ZOE@zulip.com']
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              oneOf:
+                - type: string
+                - type: integer
+          example: ['ZOE@zulip.com']
     ReactionType:
       name: reaction_type
       in: query

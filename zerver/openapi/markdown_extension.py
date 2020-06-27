@@ -203,6 +203,8 @@ value for the {param_name} parameter. Without this we cannot automatically gener
 cURL example."""
             raise ValueError(msg)
         ordered_ex_val_str = json.dumps(example_value, sort_keys=True)
+        # We currently don't have any non-JSON encoded arrays.
+        assert(jsonify)
         if curl_argument:
             return f"    --data-urlencode {param_name}='{ordered_ex_val_str}'"
         return ordered_ex_val_str  # nocoverage
