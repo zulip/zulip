@@ -207,8 +207,9 @@ def get_push_commits_body(payload: Dict[str, Any]) -> str:
     )
 
 def get_public_body(payload: Dict[str, Any]) -> str:
-    return "{} made [the repository]({}) public.".format(
+    return "{} made the repository [{}]({}) public.".format(
         get_sender_name(payload),
+        get_repository_full_name(payload),
         payload['repository']['html_url'],
     )
 
@@ -224,20 +225,23 @@ def get_wiki_pages_body(payload: Dict[str, Any]) -> str:
     return f"{get_sender_name(payload)}:\n{wiki_info.rstrip()}"
 
 def get_watch_body(payload: Dict[str, Any]) -> str:
-    return "{} starred [the repository]({}).".format(
+    return "{} starred the repository [{}]({}).".format(
         get_sender_name(payload),
+        get_repository_full_name(payload),
         payload['repository']['html_url'],
     )
 
 def get_repository_body(payload: Dict[str, Any]) -> str:
-    return "{} {} [the repository]({}).".format(
+    return "{} {} the repository [{}]({}).".format(
         get_sender_name(payload),
         payload.get('action'),
+        get_repository_full_name(payload),
         payload['repository']['html_url'],
     )
 
 def get_add_team_body(payload: Dict[str, Any]) -> str:
-    return "[The repository]({}) was added to team {}.".format(
+    return "The repository [{}]({}) was added to team {}.".format(
+        get_repository_full_name(payload),
         payload['repository']['html_url'],
         payload['team']['name'],
     )
@@ -407,10 +411,12 @@ Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}
     return template.format(**kwargs)
 
 def get_star_body(payload: Dict[str, Any]) -> str:
-    template = "{user} {action} the repository."
+    template = "{user} {action} the repository [{repo}]({url})."
     return template.format(
         user=payload['sender']['login'],
         action='starred' if payload['action'] == 'created' else 'unstarred',
+        repo=get_repository_full_name(payload),
+        url=payload['repository']['html_url'],
     )
 
 def get_ping_body(payload: Dict[str, Any]) -> str:
@@ -418,6 +424,9 @@ def get_ping_body(payload: Dict[str, Any]) -> str:
 
 def get_repository_name(payload: Dict[str, Any]) -> str:
     return payload['repository']['name']
+
+def get_repository_full_name(payload: Dict[str, Any]) -> str:
+    return payload['repository']['full_name']
 
 def get_organization_name(payload: Dict[str, Any]) -> str:
     return payload['organization']['login']

@@ -21,7 +21,7 @@ class GithubWebhookTest(WebhookTestCase):
         self.send_and_test_stream_message('ping', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message)
 
     def test_star_event(self) -> None:
-        expected_message = "Codertocat starred the repository."
+        expected_message = "Codertocat starred the repository [Codertocat/Hello-World](https://github.com/Codertocat/Hello-World)."
         expected_topic = "Hello-World"
         self.send_and_test_stream_message('star', expected_topic, expected_message)
 
@@ -182,7 +182,7 @@ class GithubWebhookTest(WebhookTestCase):
         self.send_and_test_stream_message('pull_request__merged', self.EXPECTED_TOPIC_PR_EVENTS, expected_message)
 
     def test_public_msg(self) -> None:
-        expected_message = "baxterthehacker made [the repository](https://github.com/baxterthehacker/public-repo) public."
+        expected_message = "baxterthehacker made the repository [baxterthehacker/public-repo](https://github.com/baxterthehacker/public-repo) public."
         self.send_and_test_stream_message('public', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message)
 
     def test_wiki_pages_msg(self) -> None:
@@ -190,15 +190,15 @@ class GithubWebhookTest(WebhookTestCase):
         self.send_and_test_stream_message('gollum__wiki_pages', self.EXPECTED_TOPIC_WIKI_EVENTS, expected_message)
 
     def test_watch_msg(self) -> None:
-        expected_message = "baxterthehacker starred [the repository](https://github.com/baxterthehacker/public-repo)."
+        expected_message = "baxterthehacker starred the repository [baxterthehacker/public-repo](https://github.com/baxterthehacker/public-repo)."
         self.send_and_test_stream_message('watch__repository', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message)
 
     def test_repository_msg(self) -> None:
-        expected_message = "baxterthehacker created [the repository](https://github.com/baxterandthehackers/public-repo)."
+        expected_message = "baxterthehacker created the repository [baxterandthehackers/public-repo](https://github.com/baxterandthehackers/public-repo)."
         self.send_and_test_stream_message('repository', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message)
 
     def test_team_add_msg(self) -> None:
-        expected_message = "[The repository](https://github.com/baxterandthehackers/public-repo) was added to team github."
+        expected_message = "The repository [baxterandthehackers/public-repo](https://github.com/baxterandthehackers/public-repo) was added to team github."
         self.send_and_test_stream_message('team_add', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message)
 
     def test_release_msg(self) -> None:
