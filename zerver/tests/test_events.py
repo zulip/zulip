@@ -142,6 +142,13 @@ from zerver.tornado.event_queue import (
     clear_client_event_queues_for_testing,
 )
 
+
+def check_events_dict(required_keys: List[Tuple[str, Validator[object]]]) -> Validator[Dict[str, object]]:
+    required_keys.append(('id', check_int))
+    keys = [key[0] for key in required_keys]
+    assert len(keys) == len(set(keys))
+    return check_dict_only(required_keys)
+
 # These fields are used for "stream" events, and are included in the
 # larger "subscription" events that also contain personal settings.
 basic_stream_fields = [
@@ -167,7 +174,7 @@ class EventsRegisterTest(ZulipTestCase):
         return self.create_test_bot(email, self.user_profile, **extras)
 
     def realm_bot_schema(self, field_name: str, check: Validator[object]) -> Validator[Dict[str, object]]:
-        return self.check_events_dict([
+        return check_events_dict([
             ('type', equals('realm_bot')),
             ('op', equals('update')),
             ('bot', check_dict_only([
@@ -304,13 +311,6 @@ class EventsRegisterTest(ZulipTestCase):
             sys.stdout.flush()
             raise AssertionError('Mismatching states')
 
-    def check_events_dict(self, required_keys: List[Tuple[str, Validator[object]]]) -> Validator[Dict[str, object]]:
-        required_keys.append(('id', check_int))
-        # Raise AssertionError if `required_keys` contains duplicate items.
-        keys = [key[0] for key in required_keys]
-        self.assertEqual(len(keys), len(set(keys)), 'Duplicate items found in required_keys.')
-        return check_dict_only(required_keys)
-
     def test_mentioned_send_message_events(self) -> None:
         user = self.example_user('hamlet')
 
@@ -355,7 +355,7 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_stream_send_message_events(self) -> None:
         def get_checker(check_gravatar: Validator[Optional[str]]) -> Validator[Dict[str, object]]:
-            schema_checker = self.check_events_dict([
+            schema_checker = check_events_dict([
                 ('type', equals('message')),
                 ('flags', check_list(None)),
                 ('message', check_dict_only([
@@ -398,7 +398,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker('events[0]', events[0])
 
         # Verify message editing
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('update_message')),
             ('flags', check_list(None)),
             ('content', check_string),
@@ -448,7 +448,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker('events[0]', events[0])
 
         # Verify do_update_embedded_data
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('update_message')),
             ('flags', check_list(None)),
             ('content', check_string),
@@ -467,7 +467,7 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_update_message_flags(self) -> None:
         # Test message flag update events
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('all', check_bool),
             ('type', equals('update_message_flags')),
             ('flag', check_string),
@@ -486,7 +486,7 @@ class EventsRegisterTest(ZulipTestCase):
             state_change_expected=True,
         )
         schema_checker('events[0]', events[0])
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('all', check_bool),
             ('type', equals('update_message_flags')),
             ('flag', check_string),
@@ -529,7 +529,7 @@ class EventsRegisterTest(ZulipTestCase):
         )
 
     def test_add_reaction_legacy(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('reaction')),
             ('op', equals('add')),
             ('message_id', check_int),
@@ -554,7 +554,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker('events[0]', events[0])
 
     def test_remove_reaction_legacy(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('reaction')),
             ('op', equals('remove')),
             ('message_id', check_int),
@@ -580,7 +580,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker('events[0]', events[0])
 
     def test_add_reaction(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('reaction')),
             ('op', equals('add')),
             ('message_id', check_int),
@@ -605,7 +605,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker('events[0]', events[0])
 
     def test_add_submessage(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('submessage')),
             ('message_id', check_int),
             ('submessage_id', check_int),
@@ -633,7 +633,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker('events[0]', events[0])
 
     def test_remove_reaction(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('reaction')),
             ('op', equals('remove')),
             ('message_id', check_int),
@@ -659,7 +659,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker('events[0]', events[0])
 
     def test_invite_user_event(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('invites_changed')),
         ])
 
@@ -674,7 +674,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker('events[0]', events[0])
 
     def test_create_multiuse_invite_event(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('invites_changed')),
         ])
 
@@ -690,7 +690,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker('events[0]', events[0])
 
     def test_revoke_user_invite_event(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('invites_changed')),
         ])
 
@@ -707,7 +707,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker('events[0]', events[0])
 
     def test_revoke_multiuse_invite_event(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('invites_changed')),
         ])
 
@@ -727,7 +727,7 @@ class EventsRegisterTest(ZulipTestCase):
     def test_invitation_accept_invite_event(self) -> None:
         reset_emails_in_zulip_realm()
 
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('invites_changed')),
         ])
 
@@ -749,7 +749,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker('events[4]', events[4])
 
     def test_typing_events(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('typing')),
             ('op', equals('start')),
             ('sender', check_dict_only([
@@ -769,7 +769,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker('events[0]', events[0])
 
     def test_custom_profile_fields_events(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('custom_profile_fields')),
             ('op', equals('add')),
             ('fields', check_list(check_dict_only([
@@ -803,7 +803,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker('events[0]', events[0])
 
     def test_custom_profile_field_data_events(self) -> None:
-        schema_checker_basic = self.check_events_dict([
+        schema_checker_basic = check_events_dict([
             ('type', equals('realm_user')),
             ('op', equals('update')),
             ('person', check_dict_only([
@@ -815,7 +815,7 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
 
-        schema_checker_with_rendered_value = self.check_events_dict([
+        schema_checker_with_rendered_value = check_events_dict([
             ('type', equals('realm_user')),
             ('op', equals('update')),
             ('person', check_dict_only([
@@ -868,18 +868,18 @@ class EventsRegisterTest(ZulipTestCase):
             self.user_profile, get_client("website"),
             timezone_now(), UserPresence.ACTIVE),
             slim_presence=False)
-        schema_checker = self.check_events_dict(fields + [email_field])
+        schema_checker = check_events_dict(fields + [email_field])
         schema_checker('events[0]', events[0])
 
         events = self.do_test(lambda: do_update_user_presence(
             self.example_user('cordelia'), get_client("website"),
             timezone_now(), UserPresence.ACTIVE),
             slim_presence=True)
-        schema_checker = self.check_events_dict(fields)
+        schema_checker = check_events_dict(fields)
         schema_checker('events[0]', events[0])
 
     def test_presence_events_multiple_clients(self) -> None:
-        schema_checker_android = self.check_events_dict([
+        schema_checker_android = check_events_dict([
             ('type', equals('presence')),
             ('email', check_string),
             ('user_id', check_int),
@@ -903,7 +903,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker_android('events[0]', events[0])
 
     def test_pointer_events(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('pointer')),
             ('pointer', check_int),
         ])
@@ -911,7 +911,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker('events[0]', events[0])
 
     def test_register_events(self) -> None:
-        realm_user_add_checker = self.check_events_dict([
+        realm_user_add_checker = check_events_dict([
             ('type', equals('realm_user')),
             ('op', equals('add')),
             ('person', check_dict_only([
@@ -938,7 +938,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.assertEqual(new_user_profile.delivery_email, "test1@zulip.com")
 
     def test_register_events_email_address_visibility(self) -> None:
-        realm_user_add_checker = self.check_events_dict([
+        realm_user_add_checker = check_events_dict([
             ('type', equals('realm_user')),
             ('op', equals('add')),
             ('person', check_dict_only([
@@ -968,7 +968,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.assertEqual(new_user_profile.email, f"user{new_user_profile.id}@zulip.testserver")
 
     def test_alert_words_events(self) -> None:
-        alert_words_checker = self.check_events_dict([
+        alert_words_checker = check_events_dict([
             ('type', equals('alert_words')),
             ('alert_words', check_list(check_string)),
         ])
@@ -980,7 +980,7 @@ class EventsRegisterTest(ZulipTestCase):
         alert_words_checker('events[0]', events[0])
 
     def test_away_events(self) -> None:
-        checker = self.check_events_dict([
+        checker = check_events_dict([
             ('type', equals('user_status')),
             ('user_id', check_int),
             ('away', check_bool),
@@ -1001,7 +1001,7 @@ class EventsRegisterTest(ZulipTestCase):
         checker('events[0]', events[0])
 
     def test_user_group_events(self) -> None:
-        user_group_add_checker = self.check_events_dict([
+        user_group_add_checker = check_events_dict([
             ('type', equals('user_group')),
             ('op', equals('add')),
             ('group', check_dict_only([
@@ -1018,7 +1018,7 @@ class EventsRegisterTest(ZulipTestCase):
         user_group_add_checker('events[0]', events[0])
 
         # Test name update
-        user_group_update_checker = self.check_events_dict([
+        user_group_update_checker = check_events_dict([
             ('type', equals('user_group')),
             ('op', equals('update')),
             ('group_id', check_int),
@@ -1031,7 +1031,7 @@ class EventsRegisterTest(ZulipTestCase):
         user_group_update_checker('events[0]', events[0])
 
         # Test description update
-        user_group_update_checker = self.check_events_dict([
+        user_group_update_checker = check_events_dict([
             ('type', equals('user_group')),
             ('op', equals('update')),
             ('group_id', check_int),
@@ -1044,7 +1044,7 @@ class EventsRegisterTest(ZulipTestCase):
         user_group_update_checker('events[0]', events[0])
 
         # Test add members
-        user_group_add_member_checker = self.check_events_dict([
+        user_group_add_member_checker = check_events_dict([
             ('type', equals('user_group')),
             ('op', equals('add_members')),
             ('group_id', check_int),
@@ -1055,7 +1055,7 @@ class EventsRegisterTest(ZulipTestCase):
         user_group_add_member_checker('events[0]', events[0])
 
         # Test remove members
-        user_group_remove_member_checker = self.check_events_dict([
+        user_group_remove_member_checker = check_events_dict([
             ('type', equals('user_group')),
             ('op', equals('remove_members')),
             ('group_id', check_int),
@@ -1066,7 +1066,7 @@ class EventsRegisterTest(ZulipTestCase):
         user_group_remove_member_checker('events[0]', events[0])
 
         # Test delete event
-        user_group_remove_checker = self.check_events_dict([
+        user_group_remove_checker = check_events_dict([
             ('type', equals('user_group')),
             ('op', equals('remove')),
             ('group_id', check_int),
@@ -1075,7 +1075,7 @@ class EventsRegisterTest(ZulipTestCase):
         user_group_remove_checker('events[0]', events[0])
 
     def test_default_stream_groups_events(self) -> None:
-        default_stream_groups_checker = self.check_events_dict([
+        default_stream_groups_checker = check_events_dict([
             ('type', equals('default_stream_groups')),
             ('default_stream_groups', check_list(check_dict_only([
                 ('name', check_string),
@@ -1130,7 +1130,7 @@ class EventsRegisterTest(ZulipTestCase):
                      state_change_expected = False, num_events=0)
 
     def test_default_streams_events(self) -> None:
-        default_streams_checker = self.check_events_dict([
+        default_streams_checker = check_events_dict([
             ('type', equals('default_streams')),
             ('default_streams', check_list(check_dict_only(basic_stream_fields))),
         ])
@@ -1150,7 +1150,7 @@ class EventsRegisterTest(ZulipTestCase):
                      state_change_expected = False, num_events=0)
 
     def test_muted_topics_events(self) -> None:
-        muted_topics_checker = self.check_events_dict([
+        muted_topics_checker = check_events_dict([
             ('type', equals('muted_topics')),
             ('muted_topics', check_list(check_tuple([
                 check_string,  # stream name
@@ -1169,7 +1169,7 @@ class EventsRegisterTest(ZulipTestCase):
         muted_topics_checker('events[0]', events[0])
 
     def test_change_avatar_fields(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('realm_user')),
             ('op', equals('update')),
             ('person', check_dict_only([
@@ -1185,7 +1185,7 @@ class EventsRegisterTest(ZulipTestCase):
         )
         schema_checker('events[0]', events[0])
 
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('realm_user')),
             ('op', equals('update')),
             ('person', check_dict_only([
@@ -1202,7 +1202,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker('events[0]', events[0])
 
     def test_change_full_name(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('realm_user')),
             ('op', equals('update')),
             ('person', check_dict_only([
@@ -1214,7 +1214,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker('events[0]', events[0])
 
     def test_change_user_delivery_email_email_address_visibilty_admins(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('realm_user')),
             ('op', equals('update')),
             ('person', check_dict_only([
@@ -1222,7 +1222,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('user_id', check_int),
             ])),
         ])
-        avatar_schema_checker = self.check_events_dict([
+        avatar_schema_checker = check_events_dict([
             ('type', equals('realm_user')),
             ('op', equals('update')),
             ('person', check_dict_only([
@@ -1280,7 +1280,7 @@ class EventsRegisterTest(ZulipTestCase):
             validator = check_int
         else:
             raise AssertionError(f"Unexpected property type {property_type}")
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('realm')),
             ('op', equals('update')),
             ('property', equals(name)),
@@ -1305,7 +1305,7 @@ class EventsRegisterTest(ZulipTestCase):
 
     @slow("Runs a large matrix of tests")
     def test_change_realm_authentication_methods(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('realm')),
             ('op', equals('update_dict')),
             ('property', equals('default')),
@@ -1348,7 +1348,7 @@ class EventsRegisterTest(ZulipTestCase):
             schema_checker('events[0]', events[0])
 
     def test_change_pin_stream(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('subscription')),
             ('op', equals('update')),
             ('property', equals('pin_to_top')),
@@ -1366,7 +1366,7 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_change_stream_notification_settings(self) -> None:
         for setting_name in ['email_notifications']:
-            schema_checker = self.check_events_dict([
+            schema_checker = check_events_dict([
                 ('type', equals('subscription')),
                 ('op', equals('update')),
                 ('property', equals(setting_name)),
@@ -1392,7 +1392,7 @@ class EventsRegisterTest(ZulipTestCase):
 
     @slow("Runs a matrix of 6 queries to the /home view")
     def test_change_realm_message_edit_settings(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('realm')),
             ('op', equals('update_dict')),
             ('property', equals('default')),
@@ -1414,7 +1414,7 @@ class EventsRegisterTest(ZulipTestCase):
             schema_checker('events[0]', events[0])
 
     def test_change_realm_notifications_stream(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('realm')),
             ('op', equals('update')),
             ('property', equals('notifications_stream_id')),
@@ -1431,7 +1431,7 @@ class EventsRegisterTest(ZulipTestCase):
             schema_checker('events[0]', events[0])
 
     def test_change_realm_signup_notifications_stream(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('realm')),
             ('op', equals('update')),
             ('property', equals('signup_notifications_stream_id')),
@@ -1455,7 +1455,7 @@ class EventsRegisterTest(ZulipTestCase):
         # for email being passed into this next function.
         self.user_profile.refresh_from_db()
 
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('realm_user')),
             ('op', equals('update')),
             ('person', check_dict_only([
@@ -1477,7 +1477,7 @@ class EventsRegisterTest(ZulipTestCase):
         # for email being passed into this next function.
         self.user_profile.refresh_from_db()
 
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('realm_user')),
             ('op', equals('update')),
             ('person', check_dict_only([
@@ -1499,7 +1499,7 @@ class EventsRegisterTest(ZulipTestCase):
         # for email being passed into this next function.
         self.user_profile.refresh_from_db()
 
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('realm_user')),
             ('op', equals('update')),
             ('person', check_dict_only([
@@ -1550,13 +1550,13 @@ class EventsRegisterTest(ZulipTestCase):
             events = self.do_test(lambda: do_set_user_display_setting(
                 self.user_profile, setting_name, value), num_events=num_events)
 
-            schema_checker = self.check_events_dict([
+            schema_checker = check_events_dict([
                 ('type', equals('update_display_settings')),
                 ('setting_name', equals(setting_name)),
                 ('user', check_string),
                 ('setting', validator),
             ])
-            language_schema_checker = self.check_events_dict([
+            language_schema_checker = check_events_dict([
                 ('type', equals('update_display_settings')),
                 ('language_name', check_string),
                 ('setting_name', equals(setting_name)),
@@ -1568,7 +1568,7 @@ class EventsRegisterTest(ZulipTestCase):
             else:
                 schema_checker('events[0]', events[0])
 
-            timezone_schema_checker = self.check_events_dict([
+            timezone_schema_checker = check_events_dict([
                 ('type', equals('realm_user')),
                 ('op', equals('update')),
                 ('person', check_dict_only([
@@ -1592,7 +1592,7 @@ class EventsRegisterTest(ZulipTestCase):
                 # These settings are tested in their own tests.
                 continue
 
-            schema_checker = self.check_events_dict([
+            schema_checker = check_events_dict([
                 ('type', equals('update_global_notifications')),
                 ('notification_name', equals(notification_setting)),
                 ('user', check_string),
@@ -1615,7 +1615,7 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_change_notification_sound(self) -> None:
         notification_setting = "notification_sound"
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('update_global_notifications')),
             ('notification_name', equals(notification_setting)),
             ('user', check_string),
@@ -1628,7 +1628,7 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_change_desktop_icon_count_display(self) -> None:
         notification_setting = "desktop_icon_count_display"
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('update_global_notifications')),
             ('notification_name', equals(notification_setting)),
             ('user', check_string),
@@ -1639,7 +1639,7 @@ class EventsRegisterTest(ZulipTestCase):
             self.user_profile, notification_setting, 2, log=False))
         schema_checker('events[0]', events[0])
 
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('update_global_notifications')),
             ('notification_name', equals(notification_setting)),
             ('user', check_string),
@@ -1657,7 +1657,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.assertEqual(state_data['realm_plan_type'], Realm.SELF_HOSTED)
         self.assertEqual(state_data['zulip_plan_is_not_limited'], True)
 
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('realm')),
             ('op', equals('update')),
             ('property', equals('plan_type')),
@@ -1696,7 +1696,7 @@ class EventsRegisterTest(ZulipTestCase):
                 assert v['id'] == k
                 check_realm_emoji_fields(f'{var_name}[{k}]', v)
 
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('realm_emoji')),
             ('op', equals('update')),
             ('realm_emoji', realm_emoji_checker),
@@ -1716,7 +1716,7 @@ class EventsRegisterTest(ZulipTestCase):
         regex = "#(?P<id>[123])"
         url = "https://realm.com/my_realm_filter/%(id)s"
 
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('realm_filters')),
             ('realm_filters', check_list(check_tuple([
                 check_string,
@@ -1731,7 +1731,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker('events[0]', events[0])
 
     def test_realm_domain_events(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('realm_domains')),
             ('op', equals('add')),
             ('realm_domain', check_dict_only([
@@ -1743,7 +1743,7 @@ class EventsRegisterTest(ZulipTestCase):
             self.user_profile.realm, 'zulip.org', False))
         schema_checker('events[0]', events[0])
 
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('realm_domains')),
             ('op', equals('change')),
             ('realm_domain', check_dict_only([
@@ -1756,7 +1756,7 @@ class EventsRegisterTest(ZulipTestCase):
         events = self.do_test(lambda: do_change_realm_domain(test_domain, True))
         schema_checker('events[0]', events[0])
 
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('realm_domains')),
             ('op', equals('remove')),
             ('domain', equals('zulip.org')),
@@ -1786,7 +1786,7 @@ class EventsRegisterTest(ZulipTestCase):
                     ('service_name', check_string),
                     ('config_data', ad_hoc_config_data_schema),
                 ]), length=1)
-            return self.check_events_dict([
+            return check_events_dict([
                 ('type', equals('realm_bot')),
                 ('op', equals('add')),
                 ('bot', check_dict_only([
@@ -1848,7 +1848,7 @@ class EventsRegisterTest(ZulipTestCase):
     def test_change_realm_icon_source(self) -> None:
         action = lambda: do_change_icon_source(self.user_profile.realm, Realm.ICON_UPLOADED)
         events = self.do_test(action, state_change_expected=True)
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('realm')),
             ('op', equals('update_dict')),
             ('property', equals('icon')),
@@ -1862,7 +1862,7 @@ class EventsRegisterTest(ZulipTestCase):
     def test_change_realm_day_mode_logo_source(self) -> None:
         action = lambda: do_change_logo_source(self.user_profile.realm, Realm.LOGO_UPLOADED, False)
         events = self.do_test(action, state_change_expected=True)
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('realm')),
             ('op', equals('update_dict')),
             ('property', equals('logo')),
@@ -1876,7 +1876,7 @@ class EventsRegisterTest(ZulipTestCase):
     def test_change_realm_night_mode_logo_source(self) -> None:
         action = lambda: do_change_logo_source(self.user_profile.realm, Realm.LOGO_UPLOADED, True)
         events = self.do_test(action, state_change_expected=True)
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('realm')),
             ('op', equals('update_dict')),
             ('property', equals('night_logo')),
@@ -1918,7 +1918,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.realm_bot_schema('default_events_register_stream', equals(None))('events[0]', events[0])
 
     def test_change_bot_owner(self) -> None:
-        change_bot_owner_checker_user = self.check_events_dict([
+        change_bot_owner_checker_user = check_events_dict([
             ('type', equals('realm_user')),
             ('op', equals('update')),
             ('person', check_dict_only([
@@ -1927,7 +1927,7 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
 
-        change_bot_owner_checker_bot = self.check_events_dict([
+        change_bot_owner_checker_bot = check_events_dict([
             ('type', equals('realm_bot')),
             ('op', equals('update')),
             ('bot', check_dict_only([
@@ -1943,7 +1943,7 @@ class EventsRegisterTest(ZulipTestCase):
         change_bot_owner_checker_bot('events[0]', events[0])
         change_bot_owner_checker_user('events[1]', events[1])
 
-        change_bot_owner_checker_bot = self.check_events_dict([
+        change_bot_owner_checker_bot = check_events_dict([
             ('type', equals('realm_bot')),
             ('op', equals('delete')),
             ('bot', check_dict_only([
@@ -1958,7 +1958,7 @@ class EventsRegisterTest(ZulipTestCase):
         change_bot_owner_checker_bot('events[0]', events[0])
         change_bot_owner_checker_user('events[1]', events[1])
 
-        change_bot_owner_checker_bot = self.check_events_dict([
+        change_bot_owner_checker_bot = check_events_dict([
             ('type', equals('realm_bot')),
             ('op', equals('add')),
             ('bot', check_dict_only([
@@ -1985,7 +1985,7 @@ class EventsRegisterTest(ZulipTestCase):
         change_bot_owner_checker_user('events[1]', events[1])
 
     def test_do_update_outgoing_webhook_service(self) -> None:
-        update_outgoing_webhook_service_checker = self.check_events_dict([
+        update_outgoing_webhook_service_checker = check_events_dict([
             ('type', equals('realm_bot')),
             ('op', equals('update')),
             ('bot', check_dict_only([
@@ -2009,7 +2009,7 @@ class EventsRegisterTest(ZulipTestCase):
         update_outgoing_webhook_service_checker('events[0]', events[0])
 
     def test_do_deactivate_user(self) -> None:
-        bot_deactivate_checker = self.check_events_dict([
+        bot_deactivate_checker = check_events_dict([
             ('type', equals('realm_bot')),
             ('op', equals('remove')),
             ('bot', check_dict_only([
@@ -2023,7 +2023,7 @@ class EventsRegisterTest(ZulipTestCase):
         bot_deactivate_checker('events[1]', events[1])
 
     def test_do_reactivate_user(self) -> None:
-        bot_reactivate_checker = self.check_events_dict([
+        bot_reactivate_checker = check_events_dict([
             ('type', equals('realm_bot')),
             ('op', equals('add')),
             ('bot', check_dict_only([
@@ -2054,7 +2054,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.user_profile.tutorial_status = UserProfile.TUTORIAL_WAITING
         self.user_profile.save(update_fields=['tutorial_status'])
 
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('hotspots')),
             ('hotspots', check_list(check_dict_only([
                 ('name', check_string),
@@ -2074,7 +2074,7 @@ class EventsRegisterTest(ZulipTestCase):
         notification = notification.format(user_id=self.user_profile.id)
         action = lambda: do_rename_stream(stream, new_name, self.user_profile)
         events = self.do_test(action, num_events=3)
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('stream')),
             ('op', equals('update')),
             ('property', equals('email_address')),
@@ -2083,7 +2083,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('name', equals('old_name')),
         ])
         schema_checker('events[0]', events[0])
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('stream')),
             ('op', equals('update')),
             ('property', equals('name')),
@@ -2092,7 +2092,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('stream_id', check_int),
         ])
         schema_checker('events[1]', events[1])
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('flags', check_list(check_string)),
             ('type', equals('message')),
             ('message', check_dict_only([
@@ -2126,7 +2126,7 @@ class EventsRegisterTest(ZulipTestCase):
         action = lambda: do_deactivate_stream(stream)
         events = self.do_test(action)
 
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('stream')),
             ('op', equals('delete')),
             ('streams', check_list(check_dict_only(basic_stream_fields))),
@@ -2136,7 +2136,7 @@ class EventsRegisterTest(ZulipTestCase):
     def test_subscribe_other_user_never_subscribed(self) -> None:
         action = lambda: self.subscribe(self.example_user("othello"), "test_stream")
         events = self.do_test(action, num_events=2)
-        peer_add_schema_checker = self.check_events_dict([
+        peer_add_schema_checker = check_events_dict([
             ('type', equals('subscription')),
             ('op', equals('peer_add')),
             ('user_id', check_int),
@@ -2172,17 +2172,17 @@ class EventsRegisterTest(ZulipTestCase):
         subscription_schema_checker = check_list(
             check_dict_only(subscription_fields),
         )
-        stream_create_schema_checker = self.check_events_dict([
+        stream_create_schema_checker = check_events_dict([
             ('type', equals('stream')),
             ('op', equals('create')),
             ('streams', check_list(check_dict_only(basic_stream_fields))),
         ])
-        add_schema_checker = self.check_events_dict([
+        add_schema_checker = check_events_dict([
             ('type', equals('subscription')),
             ('op', equals('add')),
             ('subscriptions', subscription_schema_checker),
         ])
-        remove_schema_checker = self.check_events_dict([
+        remove_schema_checker = check_events_dict([
             ('type', equals('subscription')),
             ('op', equals('remove')),
             ('subscriptions', check_list(
@@ -2192,19 +2192,19 @@ class EventsRegisterTest(ZulipTestCase):
                 ]),
             )),
         ])
-        peer_add_schema_checker = self.check_events_dict([
+        peer_add_schema_checker = check_events_dict([
             ('type', equals('subscription')),
             ('op', equals('peer_add')),
             ('user_id', check_int),
             ('stream_id', check_int),
         ])
-        peer_remove_schema_checker = self.check_events_dict([
+        peer_remove_schema_checker = check_events_dict([
             ('type', equals('subscription')),
             ('op', equals('peer_remove')),
             ('user_id', check_int),
             ('stream_id', check_int),
         ])
-        stream_update_schema_checker = self.check_events_dict([
+        stream_update_schema_checker = check_events_dict([
             ('type', equals('stream')),
             ('op', equals('update')),
             ('property', equals('description')),
@@ -2213,7 +2213,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('stream_id', check_int),
             ('name', check_string),
         ])
-        stream_update_invite_only_schema_checker = self.check_events_dict([
+        stream_update_invite_only_schema_checker = check_events_dict([
             ('type', equals('stream')),
             ('op', equals('update')),
             ('property', equals('invite_only')),
@@ -2222,7 +2222,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('value', check_bool),
             ('history_public_to_subscribers', check_bool),
         ])
-        stream_update_stream_post_policy_schema_checker = self.check_events_dict([
+        stream_update_stream_post_policy_schema_checker = check_events_dict([
             ('type', equals('stream')),
             ('op', equals('update')),
             ('property', equals('stream_post_policy')),
@@ -2230,7 +2230,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('name', check_string),
             ('value', check_int_in(Stream.STREAM_POST_POLICY_TYPES)),
         ])
-        stream_update_message_retention_days_schema_checker = self.check_events_dict([
+        stream_update_message_retention_days_schema_checker = check_events_dict([
             ('type', equals('stream')),
             ('op', equals('update')),
             ('property', equals('message_retention_days')),
@@ -2315,7 +2315,7 @@ class EventsRegisterTest(ZulipTestCase):
         add_schema_checker('events[1]', events[1])
 
     def test_do_delete_message_stream(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('delete_message')),
             ('message_ids', check_list(check_int, 2)),
             ('message_type', equals("stream")),
@@ -2340,7 +2340,7 @@ class EventsRegisterTest(ZulipTestCase):
         Test for legacy method of deleting messages which
         sends an event per message to delete to the client.
         """
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('delete_message')),
             ('message_id', check_int),
             ('message_type', equals("stream")),
@@ -2362,7 +2362,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker('events[0]', events[0])
 
     def test_do_delete_message_personal(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('delete_message')),
             ('message_ids', check_list(check_int, 1)),
             ('sender_id', check_int),
@@ -2382,7 +2382,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker('events[0]', events[0])
 
     def test_do_delete_message_personal_legacy(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('delete_message')),
             ('message_id', check_int),
             ('sender_id', check_int),
@@ -2416,7 +2416,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.assertEqual(result['max_message_id'], -1)
 
     def test_add_attachment(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('attachment')),
             ('op', equals('add')),
             ('attachment', check_dict_only([
@@ -2458,7 +2458,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.assertEqual(entry.is_claimed(), False)
 
         # Now we send an actual message using this attachment.
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('attachment')),
             ('op', equals('update')),
             ('attachment', check_dict_only([
@@ -2484,7 +2484,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker('events[0]', events[0])
 
         # Now remove the attachment
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('attachment')),
             ('op', equals('remove')),
             ('attachment', check_dict_only([
@@ -2499,7 +2499,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker('events[0]', events[0])
 
     def test_notify_realm_export(self) -> None:
-        pending_schema_checker = self.check_events_dict([
+        pending_schema_checker = check_events_dict([
             ('type', equals('realm_export')),
             ('exports', check_list(check_dict_only([
                 ('id', check_int),
@@ -2512,7 +2512,7 @@ class EventsRegisterTest(ZulipTestCase):
             ]))),
         ])
 
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('realm_export')),
             ('exports', check_list(check_dict_only([
                 ('id', check_int),
@@ -2542,7 +2542,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker('events[2]', events[2])
 
         # Now we check the deletion of the export.
-        deletion_schema_checker = self.check_events_dict([
+        deletion_schema_checker = check_events_dict([
             ('type', equals('realm_export')),
             ('exports', check_list(check_dict_only([
                 ('id', check_int),
@@ -2563,7 +2563,7 @@ class EventsRegisterTest(ZulipTestCase):
         deletion_schema_checker('events[0]', events[0])
 
     def test_notify_realm_export_on_failure(self) -> None:
-        pending_schema_checker = self.check_events_dict([
+        pending_schema_checker = check_events_dict([
             ('type', equals('realm_export')),
             ('exports', check_list(check_dict_only([
                 ('id', check_int),
@@ -2576,7 +2576,7 @@ class EventsRegisterTest(ZulipTestCase):
             ]))),
         ])
 
-        failed_schema_checker = self.check_events_dict([
+        failed_schema_checker = check_events_dict([
             ('type', equals('realm_export')),
             ('exports', check_list(check_dict_only([
                 ('id', check_int),
@@ -2604,7 +2604,7 @@ class EventsRegisterTest(ZulipTestCase):
         failed_schema_checker('events[1]', events[1])
 
     def test_has_zoom_token(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('has_zoom_token')),
             ('value', equals(True)),
         ])
@@ -2613,7 +2613,7 @@ class EventsRegisterTest(ZulipTestCase):
         )
         schema_checker('events[0]', events[0])
 
-        schema_checker = self.check_events_dict([
+        schema_checker = check_events_dict([
             ('type', equals('has_zoom_token')),
             ('value', equals(False)),
         ])
