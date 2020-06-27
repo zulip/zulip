@@ -12,7 +12,7 @@ if os.path.exists(zulip_git_version_file):
 LATEST_MAJOR_VERSION = "2.1"
 LATEST_RELEASE_VERSION = "2.1.7"
 LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.org/2019/12/13/zulip-2-1-released/"
-LATEST_DESKTOP_VERSION = "5.2.0"
+LATEST_DESKTOP_VERSION = "5.3.0"
 
 # Versions of the desktop app below DESKTOP_MINIMUM_VERSION will be
 # prevented from connecting to the Zulip server.  Versions above
