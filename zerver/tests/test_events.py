@@ -165,23 +165,10 @@ basic_stream_fields = [
     ('stream_post_policy', check_int),
 ]
 
-class EventsRegisterTest(ZulipTestCase):
+class BaseAction(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user('hamlet')
-
-    def create_bot(self, email: str, **extras: Any) -> Optional[UserProfile]:
-        return self.create_test_bot(email, self.user_profile, **extras)
-
-    def realm_bot_schema(self, field_name: str, check: Validator[object]) -> Validator[Dict[str, object]]:
-        return check_events_dict([
-            ('type', equals('realm_bot')),
-            ('op', equals('update')),
-            ('bot', check_dict_only([
-                ('user_id', check_int),
-                (field_name, check),
-            ])),
-        ])
 
     def do_test(self, action: Callable[[], object], event_types: Optional[List[str]]=None,
                 include_subscribers: bool=True, state_change_expected: bool=True,
@@ -310,6 +297,20 @@ class EventsRegisterTest(ZulipTestCase):
 
             sys.stdout.flush()
             raise AssertionError('Mismatching states')
+
+class NormalActionsTest(BaseAction):
+    def create_bot(self, email: str, **extras: Any) -> Optional[UserProfile]:
+        return self.create_test_bot(email, self.user_profile, **extras)
+
+    def realm_bot_schema(self, field_name: str, check: Validator[object]) -> Validator[Dict[str, object]]:
+        return check_events_dict([
+            ('type', equals('realm_bot')),
+            ('op', equals('update')),
+            ('bot', check_dict_only([
+                ('user_id', check_int),
+                (field_name, check),
+            ])),
+        ])
 
     def test_mentioned_send_message_events(self) -> None:
         user = self.example_user('hamlet')
