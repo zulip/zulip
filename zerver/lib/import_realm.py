@@ -15,7 +15,6 @@ from psycopg2.extras import execute_values
 from psycopg2.sql import SQL, Identifier
 
 from analytics.models import RealmCount, StreamCount, UserCount
-from zerver.lib import markdown as bugdown
 from zerver.lib.actions import (
     UserMessageLite,
     bulk_insert_ums,
@@ -25,7 +24,8 @@ from zerver.lib.actions import (
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.bulk_create import bulk_create_users, bulk_set_users_or_streams_recipient_fields
 from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, TableName
-from zerver.lib.markdown import version as bugdown_version
+from zerver.lib.markdown import convert as markdown_convert
+from zerver.lib.markdown import version as markdown_version
 from zerver.lib.parallel import run_parallel
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import render_stream_description
@@ -316,7 +316,7 @@ def fix_message_rendered_content(realm: Realm,
             # words" type feature, and notifications aren't important anyway.
             realm_alert_words_automaton = None
 
-            rendered_content = bugdown.convert(
+            rendered_content = markdown_convert(
                 content=content,
                 realm_alert_words_automaton=realm_alert_words_automaton,
                 message_realm=realm,
@@ -325,12 +325,12 @@ def fix_message_rendered_content(realm: Realm,
             )
 
             message['rendered_content'] = rendered_content
-            message['rendered_content_version'] = bugdown_version
+            message['rendered_content_version'] = markdown_version
         except Exception:
             # This generally happens with two possible causes:
             # * rendering markdown throwing an uncaught exception
             # * rendering markdown failing with the exception being
-            #   caught in bugdown (which then returns None, causing the the
+            #   caught in markdown (which then returns None, causing the the
             #   rendered_content assert above to fire).
             logging.warning("Error in markdown rendering for message ID %s; continuing", message['id'])
 
