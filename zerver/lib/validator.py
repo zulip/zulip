@@ -192,6 +192,8 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator[ResultT]]]=[],
                *,
                value_validator: Optional[Validator[ResultT]]=None,
                _allow_only_listed_keys: bool=False) -> Validator[Dict[str, ResultT]]:
+    sig = ','.join(sorted([k for k, v in required_keys]))
+    open('foo.txt', 'a').write(sig+'\n')
     def f(var_name: str, val: object) -> Dict[str, ResultT]:
         if not isinstance(val, dict):
             raise ValidationError(_('{var_name} is not a dict').format(var_name=var_name))
