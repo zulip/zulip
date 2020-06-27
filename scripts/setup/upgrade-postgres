@@ -24,16 +24,16 @@ if pg_lsclusters -h | grep -qE "^$UPGRADE_TO\s+main\b"; then
 fi
 
 # Work around `systemctl stop postgresql` being asynchronous, since
-# the pg_upsgrdecluster command fails if it is still running
+# the pg_upgradecluster command fails if it is still running
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=759725
-systemctl stop postgresql "postgresql@*"
+pg_ctlcluster "$UPGRADE_FROM" main stop
 pg_upgradecluster "$UPGRADE_FROM" main
 
 crudini --set /etc/zulip/zulip.conf postgresql version "$UPGRADE_TO"
 touch "/usr/share/postgresql/$UPGRADE_TO/pgroonga_setup.sql.applied"
 "$ZULIP_PATH"/scripts/zulip-puppet-apply -f
 
-systemctl restart memcached
+service memcached restart
 
 pg_dropcluster "$UPGRADE_FROM" main
 apt remove -y "postgresql-$UPGRADE_FROM"
