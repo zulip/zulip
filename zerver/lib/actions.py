@@ -4149,7 +4149,9 @@ def do_mark_stream_messages_as_read(user_profile: UserProfile,
                               None, event_time, increment=min(1, count))
     return count
 
-def do_update_mobile_push_notification(message: Message, prior_mention_user_ids: Set[int]) -> None:
+def do_update_mobile_push_notification(message: Message,
+                                       prior_mention_user_ids: Set[int],
+                                       stream_push_user_ids: Set[int]) -> None:
     # Called during the message edit code path to remove mobile push
     # notifications for users who are no longer mentioned following
     # the edit.  See #15428 for details.
@@ -4158,15 +4160,10 @@ def do_update_mobile_push_notification(message: Message, prior_mention_user_ids:
     # in a sent notification if a message was edited to mention a
     # group rather than a user (or vise versa), though it is likely
     # not worth the effort to do such a change.
-    #
-    # This implementation is subtly incorrect, in that it will remove
-    # the push notification for a user who was mentioned (and then the
-    # mention removed) in a stream that they have configured to
-    # receive push notifications by default.  That is likely worth fixing.
     if not message.is_stream_message():
         return
 
-    remove_notify_users = prior_mention_user_ids - message.mentions_user_ids
+    remove_notify_users = prior_mention_user_ids - message.mentions_user_ids - stream_push_user_ids
     do_clear_mobile_push_notifications_for_ids(list(remove_notify_users), [message.id])
 
 def do_clear_mobile_push_notifications_for_ids(user_profile_ids: List[int],
@@ -4535,7 +4532,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
         else:
             event['wildcard_mention_user_ids'] = []
 
-        do_update_mobile_push_notification(message, prior_mention_user_ids)
+        do_update_mobile_push_notification(message, prior_mention_user_ids, info['stream_push_user_ids'])
 
     if topic_name is not None or new_stream is not None:
         orig_topic_name = message.topic_name()
