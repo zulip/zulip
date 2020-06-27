@@ -1,5 +1,6 @@
 import json
 import os
+from urllib.parse import urlsplit
 
 from django.conf import settings
 
@@ -14,7 +15,9 @@ def get_tornado_port(realm: Realm) -> int:
     if settings.TORNADO_SERVER is None:
         return 9993
     if settings.TORNADO_PROCESSES == 1:
-        return int(settings.TORNADO_SERVER.split(":")[-1])
+        r = urlsplit(settings.TORNADO_SERVER)
+        assert r.port is not None
+        return r.port
     return shard_map.get(realm.host, 9800)
 
 def get_tornado_uri(realm: Realm) -> str:
