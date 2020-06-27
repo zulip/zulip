@@ -115,6 +115,7 @@ from zerver.lib.validator import (
     check_none_or,
     check_string,
     check_tuple,
+    check_union,
     check_url,
     equals,
 )
@@ -2706,6 +2707,17 @@ class NormalActionsTest(BaseAction):
             lambda: do_set_zoom_token(self.user_profile, None))
         schema_checker('events[0]', events[0])
 
+property_schema_checker = check_events_dict([
+    ('type', equals('realm')),
+    ('op', equals('update')),
+    ('property', check_string),
+    ('value', check_union([
+        check_bool,
+        check_int,
+        check_string,
+    ])),
+])
+
 class RealmPropertyActionTest(BaseAction):
     def do_set_realm_property_test(self, name: str) -> None:
         bool_tests: List[bool] = [True, False, True]
@@ -2731,34 +2743,31 @@ class RealmPropertyActionTest(BaseAction):
         vals = test_values.get(name)
         property_type = Realm.property_types[name]
         if property_type is bool:
-            validator: Validator[object] = check_bool
             vals = bool_tests
-        elif property_type is str:
-            validator = check_string
-        elif property_type == (str, type(None)):
-            validator = check_string
-        elif property_type is int:
-            validator = check_int
-        elif property_type == (int, type(None)):
-            validator = check_int
-        else:
-            raise AssertionError(f"Unexpected property type {property_type}")
-        schema_checker = check_events_dict([
-            ('type', equals('realm')),
-            ('op', equals('update')),
-            ('property', equals(name)),
-            ('value', validator),
-        ])
 
         if vals is None:
             raise AssertionError(f'No test created for {name}')
+
         do_set_realm_property(self.user_profile.realm, name, vals[0])
         for val in vals[1:]:
             state_change_expected = True
             events = self.verify_action(
                 lambda: do_set_realm_property(self.user_profile.realm, name, val),
                 state_change_expected=state_change_expected)
-            schema_checker('events[0]', events[0])
+
+            property_schema_checker('events[0]', events[0])
+
+            self.assertEqual(events[0]['property'], name)
+
+            value = events[0]['value']
+            if property_type == (str, type(None)):
+                assert isinstance(value, str)
+            elif property_type == (int, type(None)):
+                assert isinstance(value, int)
+            elif property_type in (bool, int, str):
+                assert isinstance(value, property_type)
+            else:
+                raise AssertionError(f"Unexpected property type {property_type}")
 
     @slow("Actually runs several full-stack fetching tests")
     def test_change_realm_property(self) -> None:
