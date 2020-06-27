@@ -112,7 +112,7 @@ function render_attachments_ui() {
 
 function format_attachment_data(new_attachments) {
     for (const attachment of new_attachments) {
-        const time = new XDate(attachment.create_time);
+        const time = new XDate(attachment.create_time * 1000);
         attachment.create_time_str = timerender.render_now(time).time_str;
         attachment.size_str = exports.bytes_to_size(attachment.size);
     }

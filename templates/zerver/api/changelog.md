@@ -10,6 +10,12 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 31**
+
+* [`GET /attachments`](/api/get-attachments): The
+  `date_sent` and `create_time` store the UNIX timestamp instead
+  of UNIX timestamp multiplied by 1000 which they stored earlier.
+
 **Feature Level 30**
 
 * [`GET users/me/subscriptions`](/api/get-subscriptions), [`GET
