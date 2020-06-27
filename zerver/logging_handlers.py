@@ -5,6 +5,7 @@ import platform
 import subprocess
 import traceback
 from typing import Any, Dict, Optional
+from urllib.parse import SplitResult
 
 from django.conf import settings
 from django.http import HttpRequest
@@ -60,7 +61,7 @@ def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
         report['data'] = {}
 
     try:
-        report['host'] = request.get_host().split(':')[0]
+        report['host'] = SplitResult("", request.get_host(), "", "", "").hostname
     except Exception:
         # request.get_host() will throw a DisallowedHost
         # exception if the host is invalid
