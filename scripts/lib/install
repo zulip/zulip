@@ -404,7 +404,6 @@ fi
 
 "$ZULIP_PATH"/scripts/zulip-puppet-apply -f
 
-# These server restarting bits should be moveable into puppet-land, ideally
 if [ "$package_system" = apt ]; then
     apt-get -y upgrade
 elif [ "$package_system" = yum ]; then
