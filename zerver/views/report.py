@@ -2,6 +2,7 @@
 import logging
 import subprocess
 from typing import Any, Dict, Mapping, Optional
+from urllib.parse import SplitResult
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
@@ -127,7 +128,7 @@ def report_error(request: HttpRequest, user_profile: UserProfile, message: str=R
     queue_json_publish('error_reports', dict(
         type = "browser",
         report = dict(
-            host = request.get_host().split(":")[0],
+            host = SplitResult("", request.get_host(), "", "", "").hostname,
             ip_address = remote_ip,
             user_email = email,
             user_full_name = full_name,
