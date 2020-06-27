@@ -430,7 +430,6 @@ EOF
             exit 1
         )
     fi
-    service nginx restart
 fi
 
 if has_class "zulip::rabbit"; then
