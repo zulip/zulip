@@ -7,7 +7,15 @@ Right now it's only intended to be used by test code.
 '''
 from typing import Dict, Sequence, Tuple
 
-from zerver.lib.validator import Validator, check_dict_only, check_int
+from zerver.lib.validator import (
+    Validator,
+    check_bool,
+    check_dict_only,
+    check_int,
+    check_string,
+    check_union,
+    equals,
+)
 
 
 def check_events_dict(
@@ -35,3 +43,14 @@ def check_events_dict(
         required_keys=list(required_keys) + [('id', check_int)],
         optional_keys=optional_keys,
     )
+
+realm_update_schema = check_events_dict([
+    ('type', equals('realm')),
+    ('op', equals('update')),
+    ('property', check_string),
+    ('value', check_union([
+        check_bool,
+        check_int,
+        check_string,
+    ])),
+])
