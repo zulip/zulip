@@ -1612,6 +1612,10 @@ div.focused_table {
             text-overflow: ellipsis;
         }
 
+        // The very last element in the navbar is the search icon, the second
+        // last element is either the narrow description (for stream narrows) or
+        // the "title" (for other narrows). The flex-grow property ensures these
+        // elements take up the entirety of the white space.
         > :nth-last-child(2) {
             flex-grow: 1;
         }
