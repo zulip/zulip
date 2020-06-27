@@ -46,7 +46,10 @@ def patch_openapi_example_values(entry: str, params: List[Dict[str, Any]],
     for param in params:
         param_name = param["name"]
         if param_name in realm_example_values:
-            param["example"] = realm_example_values[param_name]
+            if 'content' in param:
+                param['content']['application/json']['example'] = realm_example_values[param_name]
+            else:
+                param["example"] = realm_example_values[param_name]
 
     if request_body is not None:
         properties = request_body["content"]["multipart/form-data"]["schema"]["properties"]
