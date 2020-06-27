@@ -20,6 +20,7 @@ from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.create_user import create_user
 from zerver.lib.emoji import get_emoji_url
 from zerver.lib.exceptions import MarkdownRenderingException
+from zerver.lib.markdown.fenced_code import FencedBlockPreprocessor
 from zerver.lib.mdiff import diff_strings
 from zerver.lib.mention import possible_mentions, possible_user_group_mentions
 from zerver.lib.message import render_markdown
@@ -50,7 +51,7 @@ from zerver.models import (
 
 class FencedBlockPreprocessorTest(TestCase):
     def test_simple_quoting(self) -> None:
-        processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
+        processor = FencedBlockPreprocessor(None)
         markdown_input = [
             '~~~ quote',
             'hi',
@@ -70,7 +71,7 @@ class FencedBlockPreprocessorTest(TestCase):
         self.assertEqual(lines, expected)
 
     def test_serial_quoting(self) -> None:
-        processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
+        processor = FencedBlockPreprocessor(None)
         markdown_input = [
             '~~~ quote',
             'hi',
@@ -96,7 +97,7 @@ class FencedBlockPreprocessorTest(TestCase):
         self.assertEqual(lines, expected)
 
     def test_serial_code(self) -> None:
-        processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
+        processor = FencedBlockPreprocessor(None)
 
         # Simulate code formatting.
         processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore[assignment] # mypy doesn't allow monkey-patching functions
@@ -142,7 +143,7 @@ class FencedBlockPreprocessorTest(TestCase):
         self.assertEqual(lines, expected)
 
     def test_nested_code(self) -> None:
-        processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
+        processor = FencedBlockPreprocessor(None)
 
         # Simulate code formatting.
         processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore[assignment] # mypy doesn't allow monkey-patching functions
@@ -2113,7 +2114,7 @@ class BugdownErrorTests(ZulipTestCase):
                 bugdown_convert(msg)
 
     def test_curl_code_block_validation(self) -> None:
-        processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
+        processor = FencedBlockPreprocessor(None)
         processor.run_content_validators = True
 
         # Simulate code formatting.
@@ -2132,7 +2133,7 @@ class BugdownErrorTests(ZulipTestCase):
             processor.run(markdown_input)
 
     def test_curl_code_block_without_validation(self) -> None:
-        processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
+        processor = FencedBlockPreprocessor(None)
 
         # Simulate code formatting.
         processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore[assignment] # mypy doesn't allow monkey-patching functions
