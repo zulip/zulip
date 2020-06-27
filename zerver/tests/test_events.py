@@ -91,7 +91,11 @@ from zerver.lib.actions import (
     remove_members_from_user_group,
     try_update_realm_custom_profile_field,
 )
-from zerver.lib.event_schema import check_events_dict, realm_update_schema
+from zerver.lib.event_schema import (
+    check_events_dict,
+    realm_update_schema,
+    update_display_settings_schema,
+)
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
 from zerver.lib.markdown import MentionData
 from zerver.lib.message import render_markdown
@@ -2501,6 +2505,16 @@ class RealmPropertyActionTest(BaseAction):
             with self.settings(SEND_DIGEST_EMAILS=True):
                 self.do_set_realm_property_test(prop)
 
+timezone_schema = check_events_dict([
+    ('type', equals('realm_user')),
+    ('op', equals('update')),
+    ('person', check_dict_only([
+        ('email', check_string),
+        ('user_id', check_int),
+        ('timezone', check_string),
+    ])),
+])
+
 class UserDisplayActionTest(BaseAction):
     def do_set_user_display_settings_test(self, setting_name: str) -> None:
         """Test updating each setting in UserProfile.property_types dict."""
@@ -2514,14 +2528,6 @@ class UserDisplayActionTest(BaseAction):
         )
 
         property_type = UserProfile.property_types[setting_name]
-        if property_type is bool:
-            validator: Validator[object] = check_bool
-        elif property_type is str:
-            validator = check_string
-        elif property_type is int:
-            validator = check_int
-        else:
-            raise AssertionError(f"Unexpected property type {property_type}")
 
         num_events = 1
         if setting_name == "timezone":
@@ -2543,35 +2549,17 @@ class UserDisplayActionTest(BaseAction):
                     value),
                 num_events=num_events)
 
-            schema_checker = check_events_dict([
-                ('type', equals('update_display_settings')),
-                ('setting_name', equals(setting_name)),
-                ('user', check_string),
-                ('setting', validator),
-            ])
-            language_schema_checker = check_events_dict([
-                ('type', equals('update_display_settings')),
-                ('language_name', check_string),
-                ('setting_name', equals(setting_name)),
-                ('user', check_string),
-                ('setting', validator),
-            ])
-            if setting_name == "default_language":
-                language_schema_checker('events[0]', events[0])
-            else:
-                schema_checker('events[0]', events[0])
+            event = events[0]
+            update_display_settings_schema('events[0]', event)
+            self.assertEqual(event['setting_name'], setting_name)
+            assert isinstance(event['setting'], property_type)
+            self.assertEqual(
+                'language_name' in event,
+                setting_name == 'default_language'
+            )
 
-            timezone_schema_checker = check_events_dict([
-                ('type', equals('realm_user')),
-                ('op', equals('update')),
-                ('person', check_dict_only([
-                    ('email', check_string),
-                    ('user_id', check_int),
-                    ('timezone', check_string),
-                ])),
-            ])
             if setting_name == "timezone":
-                timezone_schema_checker('events[1]', events[1])
+                timezone_schema('events[1]', events[1])
 
     @slow("Actually runs several full-stack fetching tests")
     def test_set_user_display_settings(self) -> None:

@@ -54,3 +54,19 @@ realm_update_schema = check_events_dict([
         check_string,
     ])),
 ])
+
+update_display_settings_schema = check_events_dict(
+    required_keys=[
+        ('type', equals('update_display_settings')),
+        ('setting_name', check_string),
+        ('user', check_string),
+        ('setting', check_union([
+            check_bool,
+            check_int,
+            check_string,
+        ])),
+    ],
+    optional_keys=[
+        ('language_name', check_string),
+    ],
+)
