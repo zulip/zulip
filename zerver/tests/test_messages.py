@@ -16,7 +16,6 @@ from django.utils.timezone import now as timezone_now
 from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
 from zerver.decorator import JsonableError
-from zerver.lib import markdown as bugdown
 from zerver.lib.actions import (
     check_message,
     check_send_stream_message,
@@ -50,6 +49,8 @@ from zerver.lib.actions import (
 from zerver.lib.addressee import Addressee
 from zerver.lib.cache import cache_delete, get_stream_cache_key, to_dict_cache_key_id
 from zerver.lib.create_user import create_user_profile
+from zerver.lib.markdown import MentionData
+from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import (
     MessageDict,
     bulk_access_messages,
@@ -1383,7 +1384,7 @@ class MessageDictTest(ZulipTestCase):
                     recipient=recipient,
                     content=f'whatever {i}',
                     rendered_content='DOES NOT MATTER',
-                    rendered_content_version=bugdown.version,
+                    rendered_content_version=markdown_version,
                     date_sent=timezone_now(),
                     sending_client=sending_client,
                     last_edit_time=timezone_now(),
@@ -1445,9 +1446,9 @@ class MessageDictTest(ZulipTestCase):
         self.assertEqual(dct['rendered_content'], expected_content)
         message = Message.objects.get(id=message.id)
         self.assertEqual(message.rendered_content, expected_content)
-        self.assertEqual(message.rendered_content_version, bugdown.version)
+        self.assertEqual(message.rendered_content_version, markdown_version)
 
-    @mock.patch("zerver.lib.message.bugdown.convert")
+    @mock.patch("zerver.lib.message.markdown_convert")
     def test_applying_markdown_invalid_format(self, convert_mock: Any) -> None:
         # pretend the converter returned an invalid message without raising an exception
         convert_mock.return_value = None
@@ -4218,7 +4219,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
             self.assertEqual(attachment.is_claimed(), claimed)
 
         # This message should claim attachments 1 only because attachment 2
-        # is not being parsed as a link by Bugdown.
+        # is not being parsed as a link by Markdown.
         body = ("Some files here ...[zulip.txt]({})" +
                 "{}.... Some more...." +
                 "{}").format(dummy_urls[0], dummy_urls[1], dummy_urls[1])
@@ -4227,7 +4228,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
         assert_attachment_claimed(dummy_path_ids[1], False)
 
         # This message tries to claim the third attachment but fails because
-        # Bugdown would not set has_attachments = True here.
+        # Markdown would not set has_attachments = True here.
         body = f"Link in code: `{dummy_urls[2]}`"
         self.send_stream_message(user_profile, "Denmark", body, "test")
         assert_attachment_claimed(dummy_path_ids[2], False)
@@ -4265,7 +4266,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
         hamlet = self.example_user('hamlet')
         realm_id = hamlet.realm.id
         rendered_content = render_markdown(msg, content)
-        mention_data = bugdown.MentionData(realm_id, content)
+        mention_data = MentionData(realm_id, content)
         do_update_message(hamlet, msg, None, None, "change_one", False, False, content,
                           rendered_content, set(), set(), mention_data=mention_data)
 

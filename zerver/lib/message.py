@@ -13,7 +13,6 @@ from psycopg2.sql import SQL
 from typing_extensions import TypedDict
 
 from analytics.lib.counts import COUNT_STATS, RealmCount
-from zerver.lib import markdown as bugdown
 from zerver.lib.avatar import get_avatar_field
 from zerver.lib.cache import (
     cache_with_key,
@@ -26,6 +25,10 @@ from zerver.lib.display_recipient import (
     UserDisplayRecipient,
     bulk_fetch_display_recipients,
 )
+from zerver.lib.markdown import MentionData
+from zerver.lib.markdown import convert as markdown_convert
+from zerver.lib.markdown import topic_links
+from zerver.lib.markdown import version as markdown_version
 from zerver.lib.request import JsonableError
 from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -165,7 +168,7 @@ def message_to_dict_json(message: Message, realm_id: Optional[int]=None) -> byte
 def save_message_rendered_content(message: Message, content: str) -> str:
     rendered_content = render_markdown(message, content, realm=message.get_realm())
     message.rendered_content = rendered_content
-    message.rendered_content_version = bugdown.version
+    message.rendered_content_version = markdown_version
     message.save_rendered_content()
     return rendered_content
 
@@ -389,24 +392,24 @@ class MessageDict:
         # Render topic_links with the stream's realm instead of the
         # sender's realm; this is important for messages sent by
         # cross-realm bots like NOTIFICATION_BOT.
-        obj[TOPIC_LINKS] = bugdown.topic_links(rendering_realm_id, topic_name)
+        obj[TOPIC_LINKS] = topic_links(rendering_realm_id, topic_name)
 
         if last_edit_time is not None:
             obj['last_edit_timestamp'] = datetime_to_timestamp(last_edit_time)
             assert edit_history is not None
             obj['edit_history'] = ujson.loads(edit_history)
 
-        if Message.need_to_render_content(rendered_content, rendered_content_version, bugdown.version):
+        if Message.need_to_render_content(rendered_content, rendered_content_version, markdown_version):
             # We really shouldn't be rendering objects in this method, but there is
-            # a scenario where we upgrade the version of bugdown and fail to run
+            # a scenario where we upgrade the version of markdown and fail to run
             # management commands to re-render historical messages, and then we
             # need to have side effects.  This method is optimized to not need full
-            # blown ORM objects, but the bugdown renderer is unfortunately highly
+            # blown ORM objects, but the markdown renderer is unfortunately highly
             # coupled to Message, and we also need to persist the new rendered content.
             # If we don't have a message object passed in, we get one here.  The cost
             # of going to the DB here should be overshadowed by the cost of rendering
             # and updating the row.
-            # TODO: see #1379 to eliminate bugdown dependencies
+            # TODO: see #1379 to eliminate markdown dependencies
             message = Message.objects.select_related().get(id=message_id)
 
             assert message is not None  # Hint for mypy.
@@ -658,7 +661,7 @@ def render_markdown(message: Message,
                     content: str,
                     realm: Optional[Realm]=None,
                     realm_alert_words_automaton: Optional[ahocorasick.Automaton]=None,
-                    mention_data: Optional[bugdown.MentionData]=None,
+                    mention_data: Optional[MentionData]=None,
                     email_gateway: bool=False) -> str:
     '''
     This is basically just a wrapper for do_render_markdown.
@@ -690,9 +693,9 @@ def do_render_markdown(message: Message,
                        sent_by_bot: bool,
                        translate_emoticons: bool,
                        realm_alert_words_automaton: Optional[ahocorasick.Automaton]=None,
-                       mention_data: Optional[bugdown.MentionData]=None,
+                       mention_data: Optional[MentionData]=None,
                        email_gateway: bool=False) -> str:
-    """Return HTML for given markdown. Bugdown may add properties to the
+    """Return HTML for given markdown. Markdown may add properties to the
     message object such as `mentions_user_ids`, `mentions_user_group_ids`, and
     `mentions_wildcard`.  These are only on this Django object and are not
     saved in the database.
@@ -705,8 +708,8 @@ def do_render_markdown(message: Message,
     message.links_for_preview = set()
     message.user_ids_with_alert_words = set()
 
-    # DO MAIN WORK HERE -- call bugdown to convert
-    rendered_content = bugdown.convert(
+    # DO MAIN WORK HERE -- call markdown to convert
+    rendered_content = markdown_convert(
         content,
         realm_alert_words_automaton=realm_alert_words_automaton,
         message=message,
