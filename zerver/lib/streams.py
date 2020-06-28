@@ -4,7 +4,7 @@ from django.conf import settings
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext as _
 
-from zerver.lib.markdown import convert as bugdown_convert
+from zerver.lib.markdown import convert as markdown_convert
 from zerver.lib.request import JsonableError
 from zerver.models import (
     DefaultStreamGroup,
@@ -45,7 +45,7 @@ def get_default_value_for_history_public_to_subscribers(
     return history_public_to_subscribers
 
 def render_stream_description(text: str) -> str:
-    return bugdown_convert(text, no_previews=True)
+    return markdown_convert(text, no_previews=True)
 
 def send_stream_creation_event(stream: Stream, user_ids: List[int]) -> None:
     event = dict(type="stream", op="create",
