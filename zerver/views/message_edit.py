@@ -8,7 +8,6 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import REQ, has_request_variables
-from zerver.lib import markdown as bugdown
 from zerver.lib.actions import (
     do_delete_messages,
     do_update_message,
@@ -17,6 +16,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.html_diff import highlight_html_differences
+from zerver.lib.markdown import MentionData
 from zerver.lib.message import access_message, truncate_body
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.response import json_error, json_success
@@ -159,14 +159,14 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     links_for_embed: Set[str] = set()
     prior_mention_user_ids: Set[int] = set()
     mention_user_ids: Set[int] = set()
-    mention_data: Optional[bugdown.MentionData] = None
+    mention_data: Optional[MentionData] = None
     if content is not None:
         content = content.strip()
         if content == "":
             content = "(deleted)"
         content = truncate_body(content)
 
-        mention_data = bugdown.MentionData(
+        mention_data = MentionData(
             realm_id=user_profile.realm.id,
             content=content,
         )
