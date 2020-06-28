@@ -819,7 +819,7 @@ class ZulipTestCase(TestCase):
     def simulated_markdown_failure(self) -> Iterator[None]:
         '''
         This raises a failure inside of the try/except block of
-        bugdown.__init__.do_convert.
+        markdown.__init__.do_convert.
         '''
         with \
                 self.settings(ERROR_BOT=None), \
