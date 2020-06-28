@@ -1792,10 +1792,10 @@ class Message(AbstractMessage):
     @staticmethod
     def need_to_render_content(rendered_content: Optional[str],
                                rendered_content_version: Optional[int],
-                               bugdown_version: int) -> bool:
+                               markdown_version: int) -> bool:
         return (rendered_content is None or
                 rendered_content_version is None or
-                rendered_content_version < bugdown_version)
+                rendered_content_version < markdown_version)
 
     def to_log_dict(self) -> Dict[str, Any]:
         return dict(
