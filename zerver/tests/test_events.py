@@ -92,8 +92,18 @@ from zerver.lib.actions import (
     try_update_realm_custom_profile_field,
 )
 from zerver.lib.event_schema import (
+    basic_stream_fields,
     check_events_dict,
     realm_update_schema,
+    stream_create_schema,
+    stream_update_description_schema,
+    stream_update_invite_only_schema,
+    stream_update_message_retention_days_schema,
+    stream_update_stream_post_policy_schema,
+    subscription_add_schema,
+    subscription_peer_add_schema,
+    subscription_peer_remove_schema,
+    subscription_remove_schema,
     update_display_settings_schema,
 )
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
@@ -146,21 +156,6 @@ from zerver.tornado.event_queue import (
     clear_client_event_queues_for_testing,
 )
 
-# These fields are used for "stream" events, and are included in the
-# larger "subscription" events that also contain personal settings.
-basic_stream_fields = [
-    ('description', check_string),
-    ('first_message_id', check_none_or(check_int)),
-    ('history_public_to_subscribers', check_bool),
-    ('invite_only', check_bool),
-    ('is_announcement_only', check_bool),
-    ('is_web_public', check_bool),
-    ('message_retention_days', equals(None)),
-    ('name', check_string),
-    ('rendered_description', check_string),
-    ('stream_id', check_int),
-    ('stream_post_policy', check_int),
-]
 
 class BaseAction(ZulipTestCase):
     def setUp(self) -> None:
@@ -2133,13 +2128,13 @@ class NormalActionsTest(BaseAction):
     def test_subscribe_other_user_never_subscribed(self) -> None:
         action = lambda: self.subscribe(self.example_user("othello"), "test_stream")
         events = self.verify_action(action, num_events=2)
-        peer_add_schema_checker = check_events_dict([
+        subscription_peer_add_schema = check_events_dict([
             ('type', equals('subscription')),
             ('op', equals('peer_add')),
             ('user_id', check_int),
             ('stream_id', check_int),
         ])
-        peer_add_schema_checker('events[1]', events[1])
+        subscription_peer_add_schema('events[1]', events[1])
 
     def test_do_delete_message_stream(self) -> None:
         schema_checker = check_events_dict([
@@ -2576,91 +2571,13 @@ class SubscribeActionTest(BaseAction):
         self.do_test_subscribe_events(include_subscribers=False)
 
     def do_test_subscribe_events(self, include_subscribers: bool) -> None:
-        subscription_fields = basic_stream_fields + [
-            ('audible_notifications', check_none_or(check_bool)),
-            ('color', check_string),
-            ('desktop_notifications', check_none_or(check_bool)),
-            ('email_address', check_string),
-            ('email_notifications', check_none_or(check_bool)),
-            ('in_home_view', check_bool),
-            ('is_muted', check_bool),
-            ('pin_to_top', check_bool),
-            ('push_notifications', check_none_or(check_bool)),
-            ('stream_weekly_traffic', check_none_or(check_int)),
-            ('wildcard_mentions_notify', check_none_or(check_bool)),
-        ]
-
-        if include_subscribers:
-            subscription_fields.append(('subscribers', check_list(check_int)))
-        subscription_schema_checker = check_list(
-            check_dict_only(subscription_fields),
-        )
-        stream_create_schema_checker = check_events_dict([
-            ('type', equals('stream')),
-            ('op', equals('create')),
-            ('streams', check_list(check_dict_only(basic_stream_fields))),
-        ])
-        add_schema_checker = check_events_dict([
-            ('type', equals('subscription')),
-            ('op', equals('add')),
-            ('subscriptions', subscription_schema_checker),
-        ])
-        remove_schema_checker = check_events_dict([
-            ('type', equals('subscription')),
-            ('op', equals('remove')),
-            ('subscriptions', check_list(
-                check_dict_only([
-                    ('name', equals('test_stream')),
-                    ('stream_id', check_int),
-                ]),
-            )),
-        ])
-        peer_add_schema_checker = check_events_dict([
-            ('type', equals('subscription')),
-            ('op', equals('peer_add')),
-            ('user_id', check_int),
-            ('stream_id', check_int),
-        ])
-        peer_remove_schema_checker = check_events_dict([
-            ('type', equals('subscription')),
-            ('op', equals('peer_remove')),
-            ('user_id', check_int),
-            ('stream_id', check_int),
-        ])
-        stream_update_schema_checker = check_events_dict([
-            ('type', equals('stream')),
-            ('op', equals('update')),
-            ('property', equals('description')),
-            ('value', check_string),
-            ('rendered_description', check_string),
-            ('stream_id', check_int),
-            ('name', check_string),
-        ])
-        stream_update_invite_only_schema_checker = check_events_dict([
-            ('type', equals('stream')),
-            ('op', equals('update')),
-            ('property', equals('invite_only')),
-            ('stream_id', check_int),
-            ('name', check_string),
-            ('value', check_bool),
-            ('history_public_to_subscribers', check_bool),
-        ])
-        stream_update_stream_post_policy_schema_checker = check_events_dict([
-            ('type', equals('stream')),
-            ('op', equals('update')),
-            ('property', equals('stream_post_policy')),
-            ('stream_id', check_int),
-            ('name', check_string),
-            ('value', check_int_in(Stream.STREAM_POST_POLICY_TYPES)),
-        ])
-        stream_update_message_retention_days_schema_checker = check_events_dict([
-            ('type', equals('stream')),
-            ('op', equals('update')),
-            ('property', equals('message_retention_days')),
-            ('stream_id', check_int),
-            ('name', check_string),
-            ('value', check_none_or(check_int))
-        ])
+        def check_add_event(events: List[Dict[str, Any]], i: int) -> None:
+            subscription_add_schema(f'events[{i}]', events[i])
+            for sub in events[i]['subscriptions']:
+                self.assertEqual(
+                    include_subscribers,
+                    'subscribers' in sub,
+                )
 
         # Subscribe to a totally new stream, so it's just Hamlet on it
         action: Callable[[], object] = lambda: self.subscribe(self.example_user("hamlet"), "test_stream")
@@ -2668,7 +2585,7 @@ class SubscribeActionTest(BaseAction):
             action,
             event_types=["subscription", "realm_user"],
             include_subscribers=include_subscribers)
-        add_schema_checker('events[0]', events[0])
+        check_add_event(events, 0)
 
         # Add another user to that totally new stream
         action = lambda: self.subscribe(self.example_user("othello"), "test_stream")
@@ -2676,7 +2593,7 @@ class SubscribeActionTest(BaseAction):
             action,
             include_subscribers=include_subscribers,
             state_change_expected=include_subscribers)
-        peer_add_schema_checker('events[0]', events[0])
+        subscription_peer_add_schema('events[0]', events[0])
 
         stream = get_stream("test_stream", self.user_profile.realm)
 
@@ -2689,7 +2606,7 @@ class SubscribeActionTest(BaseAction):
             action,
             include_subscribers=include_subscribers,
             state_change_expected=include_subscribers)
-        peer_remove_schema_checker('events[0]', events[0])
+        subscription_peer_remove_schema('events[0]', events[0])
 
         # Now remove the second user, to test the 'vacate' event flow
         action = lambda: bulk_remove_subscriptions(
@@ -2700,7 +2617,7 @@ class SubscribeActionTest(BaseAction):
             action,
             include_subscribers=include_subscribers,
             num_events=3)
-        remove_schema_checker('events[0]', events[0])
+        subscription_remove_schema('events[0]', events[0])
 
         # Now resubscribe a user, to make sure that works on a vacated stream
         action = lambda: self.subscribe(self.example_user("hamlet"), "test_stream")
@@ -2708,33 +2625,33 @@ class SubscribeActionTest(BaseAction):
             action,
             include_subscribers=include_subscribers,
             num_events=2)
-        add_schema_checker('events[1]', events[1])
+        check_add_event(events, 1)
 
         action = lambda: do_change_stream_description(stream, 'new description')
         events = self.verify_action(
             action,
             include_subscribers=include_subscribers)
-        stream_update_schema_checker('events[0]', events[0])
+        stream_update_description_schema('events[0]', events[0])
 
         # Update stream privacy
         action = lambda: do_change_stream_invite_only(stream, True, history_public_to_subscribers=True)
         events = self.verify_action(
             action,
             include_subscribers=include_subscribers)
-        stream_update_invite_only_schema_checker('events[0]', events[0])
+        stream_update_invite_only_schema('events[0]', events[0])
 
         # Update stream stream_post_policy property
         action = lambda: do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_ADMINS)
         events = self.verify_action(
             action,
             include_subscribers=include_subscribers, num_events=2)
-        stream_update_stream_post_policy_schema_checker('events[0]', events[0])
+        stream_update_stream_post_policy_schema('events[0]', events[0])
 
         action = lambda: do_change_stream_message_retention_days(stream, -1)
         events = self.verify_action(
             action,
             include_subscribers=include_subscribers, num_events=1)
-        stream_update_message_retention_days_schema_checker('events[0]', events[0])
+        stream_update_message_retention_days_schema('events[0]', events[0])
 
         # Subscribe to a totally new invite-only stream, so it's just Hamlet on it
         stream = self.make_stream("private", self.user_profile.realm, invite_only=True)
@@ -2744,5 +2661,5 @@ class SubscribeActionTest(BaseAction):
             action,
             include_subscribers=include_subscribers,
             num_events=2)
-        stream_create_schema_checker('events[0]', events[0])
-        add_schema_checker('events[1]', events[1])
+        stream_create_schema('events[0]', events[0])
+        check_add_event(events, 1)
