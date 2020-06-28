@@ -2598,6 +2598,76 @@ class UserDisplayActionTest(BaseAction):
         for prop in UserProfile.property_types:
             self.do_set_user_display_settings_test(prop)
 
+stream_create_schema_checker = check_events_dict([
+    ('type', equals('stream')),
+    ('op', equals('create')),
+    ('streams', check_list(check_dict_only(basic_stream_fields))),
+])
+
+remove_schema_checker = check_events_dict([
+    ('type', equals('subscription')),
+    ('op', equals('remove')),
+    ('subscriptions', check_list(
+        check_dict_only([
+            ('name', equals('test_stream')),
+            ('stream_id', check_int),
+        ]),
+    )),
+])
+
+peer_add_schema_checker = check_events_dict([
+    ('type', equals('subscription')),
+    ('op', equals('peer_add')),
+    ('user_id', check_int),
+    ('stream_id', check_int),
+])
+
+peer_remove_schema_checker = check_events_dict([
+    ('type', equals('subscription')),
+    ('op', equals('peer_remove')),
+    ('user_id', check_int),
+    ('stream_id', check_int),
+])
+
+stream_update_schema_checker = check_events_dict([
+    ('type', equals('stream')),
+    ('op', equals('update')),
+    ('property', equals('description')),
+    ('value', check_string),
+    ('rendered_description', check_string),
+    ('stream_id', check_int),
+    ('name', check_string),
+])
+
+stream_update_invite_only_schema_checker = check_events_dict([
+    ('type', equals('stream')),
+    ('op', equals('update')),
+    ('property', equals('invite_only')),
+    ('stream_id', check_int),
+    ('name', check_string),
+    ('value', check_bool),
+    ('history_public_to_subscribers', check_bool),
+])
+
+stream_update_stream_post_policy_schema_checker = check_events_dict([
+    ('type', equals('stream')),
+    ('op', equals('update')),
+    ('property', equals('stream_post_policy')),
+    ('stream_id', check_int),
+    ('name', check_string),
+    ('value', check_int_in(Stream.STREAM_POST_POLICY_TYPES)),
+])
+
+stream_update_message_retention_days_schema_checker = check_events_dict([
+    ('type', equals('stream')),
+    ('op', equals('update')),
+    ('property', equals('message_retention_days')),
+    ('stream_id', check_int),
+    ('name', check_string),
+    ('value', check_none_or(check_int))
+])
+
+
 class SubscribeActionTest(BaseAction):
     @slow("Actually several tests combined together")
     def test_subscribe_events(self) -> None:
@@ -2616,7 +2686,7 @@ class SubscribeActionTest(BaseAction):
             ('email_notifications', check_none_or(check_bool)),
             ('in_home_view', check_bool),
             ('is_muted', check_bool),
-            ('pn_to_top', check_bool),
+            ('pin_to_top', check_bool),
             ('push_notifications', check_none_or(check_bool)),
             ('stream_weekly_traffic', check_none_or(check_int)),
             ('wildcard_mentions_notify', check_none_or(check_bool)),
@@ -2627,71 +2697,11 @@ class SubscribeActionTest(BaseAction):
         subscription_schema_checker = check_list(
             check_dict_only(subscription_fields),
         )
-        stream_create_schema_checker = check_events_dict([
-            ('type', equals('stream')),
-            ('op', equals('create')),
-            ('streams', check_list(check_dict_only(basic_stream_fields))),
-        ])
+
         add_schema_checker = check_events_dict([
             ('type', equals('subscription')),
             ('op', equals('add')),
             ('subscriptions', subscription_schema_checker),
-        ])
-        remove_schema_checker = check_events_dict([
-            ('type', equals('subscription')),
-            ('op', equals('remove')),
-            ('subscriptions', check_list(
-                check_dict_only([
-                    ('name', equals('test_stream')),
-                    ('stream_id', check_int),
-                ]),
-            )),
-        ])
-        peer_add_schema_checker = check_events_dict([
-            ('type', equals('subscription')),
-            ('op', equals('peer_add')),
-            ('user_id', check_int),
-            ('stream_id', check_int),
-        ])
-        peer_remove_schema_checker = check_events_dict([
-            ('type', equals('subscription')),
-            ('op', equals('peer_remove')),
-            ('user_id', check_int),
-            ('stream_id', check_int),
-        ])
-        stream_update_schema_checker = check_events_dict([
-            ('type', equals('stream')),
-            ('op', equals('update')),
-            ('property', equals('description')),
-            ('value', check_string),
-            ('rendered_description', check_string),
-            ('stream_id', check_int),
-            ('name', check_string),
-        ])
-        stream_update_invite_only_schema_checker = check_events_dict([
-            ('type', equals('stream')),
-            ('op', equals('update')),
-            ('property', equals('invite_only')),
-            ('stream_id', check_int),
-            ('name', check_string),
-            ('value', check_bool),
-            ('history_public_to_subscribers', check_bool),
-        ])
-        stream_update_stream_post_policy_schema_checker = check_events_dict([
-            ('type', equals('stream')),
-            ('op', equals('update')),
-            ('property', equals('stream_post_policy')),
-            ('stream_id', check_int),
-            ('name', check_string),
-            ('value', check_int_in(Stream.STREAM_POST_POLICY_TYPES)),
-        ])
-        stream_update_message_retention_days_schema_checker = check_events_dict([
-            ('type', equals('stream')),
-            ('op', equals('update')),
-            ('property', equals('message_retention_days')),
-            ('stream_id', check_int),
-            ('name', check_string),
-            ('value', check_none_or(check_int))
         ])
 
         # Subscribe to a totally new stream, so it's just Hamlet on it
