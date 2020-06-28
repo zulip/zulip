@@ -38,8 +38,10 @@ exports.update_custom_emoji_ui = function () {
     });
     $('#emoji-settings').find('.emoji-settings-tip-container').html(rendered_tip);
     if (page_params.realm_add_emoji_by_admins_only && !page_params.is_admin) {
+        $('.add-emoji-text').hide();
         $('.admin-emoji-form').hide();
     } else {
+        $('.add-emoji-text').show();
         $('.admin-emoji-form').show();
     }
 

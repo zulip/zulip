@@ -2,7 +2,9 @@
     <div class="emoji-settings-tip-container">
         {{> emoji_settings_tip}}
     </div>
-    <p>{{#tr this}}Add extra emoji for members of the __realm_name__ organization.{{/tr}}</p>
+    <p class="add-emoji-text {{#unless can_add_emojis}}hide{{/unless}}">
+        {{#tr this}}Add extra emoji for members of the __realm_name__ organization.{{/tr}}
+    </p>
     <form class="form-horizontal admin-emoji-form {{#unless can_add_emojis}}hide{{/unless}}">
         <div class="add-new-emoji-box grey-box">
             <div class="new-emoji-form">
