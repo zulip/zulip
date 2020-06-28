@@ -86,12 +86,12 @@ class AdminNotifyHandler(logging.Handler):
         # message in exception handler (that's the stuff of which
         # recursive exception loops are made).
         #
-        # We initialize is_bugdown_rendering_exception to `True` to
+        # We initialize is_markdown_rendering_exception to `True` to
         # prevent the infinite loop of zulip messages by ERROR_BOT if
         # the outer try block here throws an exception before we have
         # a chance to check the exception for whether it comes from
-        # bugdown.
-        is_bugdown_rendering_exception = True
+        # markdown.
+        is_markdown_rendering_exception = True
 
         try:
             report['node'] = platform.node()
@@ -105,7 +105,7 @@ class AdminNotifyHandler(logging.Handler):
             if record.exc_info:
                 stack_trace = ''.join(traceback.format_exception(*record.exc_info))
                 message = str(record.exc_info[1])
-                is_bugdown_rendering_exception = record.msg.startswith('Exception in Markdown parser')
+                is_markdown_rendering_exception = record.msg.startswith('Exception in Markdown parser')
             else:
                 stack_trace = 'No stack trace available'
                 message = record.getMessage()
@@ -114,7 +114,7 @@ class AdminNotifyHandler(logging.Handler):
                     # seem to result in super-long messages
                     stack_trace = message
                     message = message.split('\n')[0]
-                is_bugdown_rendering_exception = False
+                is_markdown_rendering_exception = False
             report['stack_trace'] = stack_trace
             report['message'] = message
 
@@ -143,7 +143,7 @@ class AdminNotifyHandler(logging.Handler):
                 # On staging, process the report directly so it can happen inside this
                 # try/except to prevent looping
                 from zerver.lib.error_notify import notify_server_error
-                notify_server_error(report, is_bugdown_rendering_exception)
+                notify_server_error(report, is_markdown_rendering_exception)
             else:
                 queue_json_publish('error_reports', dict(
                     type = "server",
