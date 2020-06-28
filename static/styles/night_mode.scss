@@ -252,22 +252,22 @@ on a dark background, and don't change the dark labels dark either. */
         border-color: hsla(0, 0%, 0%, 0.6);
     }
 
-    #tab_bar #tab_list .sub_count {
+    #tab_bar .sub_count {
         &::before,
         &::after {
             color: hsla(0, 0%, 100%, 0.5);
         }
     }
 
-    #tab_bar #tab_list span:nth-last-child(2):hover + .search_closed {
+    #tab_bar span:nth-last-child(2):hover + .search_closed {
         color: hsl(0, 0%, 100%);
     }
 
-    #tab_bar #tab_list .stream {
+    #tab_bar .stream {
         color: hsl(236, 33%, 90%);
     }
-    #tab_bar #tab_list .sub_count,
-    #tab_bar #tab_list .narrow_description {
+    #tab_bar .sub_count,
+    #tab_bar .narrow_description {
         color: hsla(0, 0%, 90%, 1);
     }
 

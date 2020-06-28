@@ -1,22 +1,20 @@
-<span id="tab_list">
-    {{#if stream_settings_link}}
-        <a class="stream" href="{{stream_settings_link}}">
-            {{> navbar_icon_and_title }}
-        </a>
-        <a class="sub_count no-style" data-toggle="tooltip" title="{{sub_count_tooltip_text}}" href="{{stream_settings_link}}">
-            <i class="fa fa-user-o"></i>{{formatted_sub_count}}
-        </a>
-        <span class="narrow_description rendered_markdown" data-toggle="tooltip">
-        {{#if rendered_narrow_description}}
-            {{rendered_markdown rendered_narrow_description}}
-        {{else}}
-            {{t "(no description)"}}
-        {{/if}}
-        </span>
+{{#if stream_settings_link}}
+<a class="stream" href="{{stream_settings_link}}">
+    {{> navbar_icon_and_title }}
+</a>
+<a class="sub_count no-style" data-toggle="tooltip" title="{{sub_count_tooltip_text}}" href="{{stream_settings_link}}">
+    <i class="fa fa-user-o"></i>{{formatted_sub_count}}
+</a>
+<span class="narrow_description rendered_markdown" data-toggle="tooltip">
+    {{#if rendered_narrow_description}}
+    {{rendered_markdown rendered_narrow_description}}
     {{else}}
-        <span>
-            {{> navbar_icon_and_title }}
-        </span>
+    {{t "(no description)"}}
     {{/if}}
-    <span class="search_icon search_closed" ><i class="fa fa-search" aria-hidden="true"></i></span>
 </span>
+{{else}}
+<span>
+    {{> navbar_icon_and_title }}
+</span>
+{{/if}}
+<span class="search_icon search_closed" ><i class="fa fa-search" aria-hidden="true"></i></span>

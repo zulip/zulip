@@ -50,7 +50,7 @@ function make_tab_data(filter) {
 exports.colorize_tab_bar = function () {
     const filter = narrow_state.filter();
     if (filter === undefined || !filter._sub) {return;}
-    $("#tab_list .stream > .fa").css('color', filter._sub.color);
+    $("#tab_bar .stream > .fa").css('color', filter._sub.color);
 };
 
 function append_and_display_title_area(tab_bar_data) {
@@ -76,7 +76,7 @@ function bind_title_area_handlers() {
         e.stopPropagation();
     });
 
-    $("#tab_list span:nth-last-child(2)").on("click", (e) => {
+    $("#tab_bar span:nth-last-child(2)").on("click", (e) => {
         if (document.getSelection().type === "Range") {
             // Allow copy/paste to work normally without interference.
             return;
@@ -175,14 +175,14 @@ exports.maybe_rerender_title_area_for_stream = function (modified_sub) {
 exports.open_search_bar_and_close_narrow_description = function () {
     exports.reset_searchbox_text();
     $(".navbar-search").addClass("expanded");
-    $("#tab_list").addClass("hidden");
+    $("#tab_bar").addClass("hidden");
 };
 
 exports.close_search_bar_and_open_narrow_description = function () {
     const filter = narrow_state.filter();
     if (!(filter && !filter.is_common_narrow())) {
         $(".navbar-search").removeClass("expanded");
-        $("#tab_list").removeClass("hidden");
+        $("#tab_bar").removeClass("hidden");
     }
 };
 

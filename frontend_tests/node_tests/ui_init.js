@@ -186,7 +186,7 @@ const count_stub = $.create('count');
 count_stub.set_find_results('.value', value_stub);
 $(".top_left_starred_messages").set_find_results('.count', count_stub);
 
-$("#tab_list .stream").length = 0;
+$("#tab_bar .stream").length = 0;
 
 // set find results doesn't work here since we call .empty() in the code.
 $tab_bar.find = () => false;
