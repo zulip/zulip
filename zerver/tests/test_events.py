@@ -2540,33 +2540,43 @@ class SubscribeActionTest(BaseAction):
         stream_create_schema_checker('events[0]', events[0])
         check_add_event(events, 1)
 
+realm_bot_update_schema = check_events_dict([
+    ('type', equals('realm_bot')),
+    ('op', equals('update')),
+    ('bot', check_dict_only(
+        required_keys=[
+            ('user_id', check_int),
+        ],
+        optional_keys=[
+            ('full_name', check_string),
+            ('api_key', check_string),
+            ('avatar_url', check_string),
+            ('default_all_public_streams', check_bool),
+            ('default_sending_stream', check_none_or(check_string)),
+            ('default_events_register_stream', check_none_or(check_string)),
+            ('owner_id', check_int),
+            ('services', check_list(check_dict_only([
+                ('base_url', check_url),
+                ('interface', check_int),
+                ('token', check_string),
+            ]))),
+        ],
+    )),
+])
+
 class BotActionTest(BaseAction):
     def create_bot(self, email: str, **extras: Any) -> Optional[UserProfile]:
         return self.create_test_bot(email, self.user_profile, **extras)
 
-    def realm_bot_schema(self, field_name: str, check: Validator[object]) -> Validator[Dict[str, object]]:
-        return check_events_dict([
-            ('type', equals('realm_bot')),
-            ('op', equals('update')),
-            ('bot', check_dict_only([
-                ('user_id', check_int),
-                (field_name, check),
-            ])),
-        ])
+    def check_update_fields(self,
+                            field_name: str,
+                            events: List[Dict[str, Any]],
+                            i: int) -> None:
+        event = events[i]
+        realm_bot_update_schema(f'events[{i}]', event)
+        self.assertEqual(set(event['bot'].keys()), {'user_id', field_name})
 
     def test_do_update_outgoing_webhook_service(self) -> None:
-        update_outgoing_webhook_service_checker = check_events_dict([
-            ('type', equals('realm_bot')),
-            ('op', equals('update')),
-            ('bot', check_dict_only([
-                ('user_id', check_int),
-                ('services', check_list(check_dict_only([
-                    ('base_url', check_url),
-                    ('interface', check_int),
-                    ('token', check_string),
-                ]))),
-            ])),
-        ])
         self.user_profile = self.example_user('iago')
         bot = self.create_test_bot('test', self.user_profile,
                                    full_name='Test Bot',
@@ -2576,32 +2586,32 @@ class BotActionTest(BaseAction):
                                    )
         action = lambda: do_update_outgoing_webhook_service(bot, 2, 'http://hostname.domain2.com')
         events = self.verify_action(action)
-        update_outgoing_webhook_service_checker('events[0]', events[0])
+        self.check_update_fields('services', events, 0)
 
     def test_change_bot_full_name(self) -> None:
         bot = self.create_bot('test')
         action = lambda: do_change_full_name(bot, 'New Bot Name', self.user_profile)
         events = self.verify_action(action, num_events=2)
-        self.realm_bot_schema('full_name', check_string)('events[1]', events[1])
+        self.check_update_fields('full_name', events, 1)
 
     def test_regenerate_bot_api_key(self) -> None:
         bot = self.create_bot('test')
         action = lambda: do_regenerate_api_key(bot, self.user_profile)
         events = self.verify_action(action)
-        self.realm_bot_schema('api_key', check_string)('events[0]', events[0])
+        self.check_update_fields('api_key', events, 0)
 
     def test_change_bot_avatar_source(self) -> None:
         bot = self.create_bot('test')
         action = lambda: do_change_avatar_fields(bot, bot.AVATAR_FROM_USER)
         events = self.verify_action(action, num_events=2)
-        self.realm_bot_schema('avatar_url', check_string)('events[0]', events[0])
+        self.check_update_fields('avatar_url', events, 0)
         self.assertEqual(events[1]['type'], 'realm_user')
 
     def test_change_bot_default_all_public_streams(self) -> None:
         bot = self.create_bot('test')
         action = lambda: do_change_default_all_public_streams(bot, True)
         events = self.verify_action(action)
-        self.realm_bot_schema('default_all_public_streams', check_bool)('events[0]', events[0])
+        self.check_update_fields('default_all_public_streams', events, 0)
 
     def test_change_bot_default_sending_stream(self) -> None:
         bot = self.create_bot('test')
@@ -2609,11 +2619,12 @@ class BotActionTest(BaseAction):
 
         action = lambda: do_change_default_sending_stream(bot, stream)
         events = self.verify_action(action)
-        self.realm_bot_schema('default_sending_stream', check_string)('events[0]', events[0])
+        self.check_update_fields('default_sending_stream', events, 0)
+        self.assertEqual(events[0]['bot']['default_sending_stream'], 'Rome')
 
         action = lambda: do_change_default_sending_stream(bot, None)
         events = self.verify_action(action)
-        self.realm_bot_schema('default_sending_stream', equals(None))('events[0]', events[0])
+        self.assertEqual(events[0]['bot']['default_sending_stream'], None)
 
     def test_change_bot_default_events_register_stream(self) -> None:
         bot = self.create_bot('test')
@@ -2621,11 +2632,13 @@ class BotActionTest(BaseAction):
 
         action = lambda: do_change_default_events_register_stream(bot, stream)
         events = self.verify_action(action)
-        self.realm_bot_schema('default_events_register_stream', check_string)('events[0]', events[0])
+        self.check_update_fields('default_events_register_stream', events, 0)
+        self.assertEqual(events[0]['bot']['default_events_register_stream'], 'Rome')
 
         action = lambda: do_change_default_events_register_stream(bot, None)
         events = self.verify_action(action)
-        self.realm_bot_schema('default_events_register_stream', equals(None))('events[0]', events[0])
+        self.check_update_fields('default_events_register_stream', events, 0)
+        self.assertEqual(events[0]['bot']['default_events_register_stream'], None)
 
     def test_create_bot(self) -> None:
         # We use a strict check here, because this test
@@ -2699,20 +2712,12 @@ class BotActionTest(BaseAction):
             ])),
         ])
 
-        change_bot_owner_checker_bot = check_events_dict([
-            ('type', equals('realm_bot')),
-            ('op', equals('update')),
-            ('bot', check_dict_only([
-                ('user_id', check_int),
-                ('owner_id', check_int),
-            ])),
-        ])
         self.user_profile = self.example_user('iago')
         owner = self.example_user('hamlet')
         bot = self.create_bot('test')
         action = lambda: do_change_bot_owner(bot, owner, self.user_profile)
         events = self.verify_action(action, num_events=2)
-        change_bot_owner_checker_bot('events[0]', events[0])
+        self.check_update_fields('owner_id', events, 0)
         change_bot_owner_checker_user('events[1]', events[1])
 
         change_bot_owner_checker_bot = check_events_dict([
