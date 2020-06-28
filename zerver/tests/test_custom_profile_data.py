@@ -10,7 +10,7 @@ from zerver.lib.actions import (
     try_reorder_realm_custom_profile_fields,
 )
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
-from zerver.lib.markdown import convert as bugdown_convert
+from zerver.lib.markdown import convert as markdown_convert
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
 from zerver.models import (
@@ -536,7 +536,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         expected_rendered_value: Dict[Union[int, float, str, None], Union[str, None]] = {}
         for f in data:
             if f['field'].is_renderable():
-                expected_rendered_value[f['id']] = bugdown_convert(f['value'])
+                expected_rendered_value[f['id']] = markdown_convert(f['value'])
             else:
                 expected_rendered_value[f['id']] = None
 
