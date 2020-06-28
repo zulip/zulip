@@ -747,13 +747,13 @@
       "text_content": "!gravatar(username@example.com)"
     },
     {
-      "name": "timestamp_bugdown_only",
+      "name": "timestamp_backend_markdown_only",
       "input": "!time(Jun 5th 2017, 10:30PM)",
       "expected_output": "<p><time datetime=\"2017-06-05T22:30:00Z\">Jun 5th 2017, 10:30PM</time></p>",
       "marked_expected_output": "<p><span class=\"timestamp-error\">Invalid time format: Jun 5th 2017, 10:30PM</span></p>"
     },
     {
-      "name": "timestamp_bugdown_and_marked",
+      "name": "timestamp_backend_markdown_and_marked",
       "input": "!time(31 Dec 2017)",
       "expected_output": "<p><time datetime=\"2017-12-31T00:00:00Z\">31 Dec 2017</time></p>"
     },
