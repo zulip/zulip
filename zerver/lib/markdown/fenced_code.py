@@ -355,7 +355,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
             self.handlers[-1].done()
 
         # This fiddly handling of new lines at the end of our output was done to make
-        # existing tests pass.  Bugdown is just kind of funny when it comes to new lines,
+        # existing tests pass. Markdown is just kind of funny when it comes to new lines,
         # but we could probably remove this hack.
         if len(output) > 2 and output[-2] != '':
             output.append('')

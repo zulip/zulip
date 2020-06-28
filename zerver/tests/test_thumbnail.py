@@ -173,7 +173,7 @@ class ThumbnailTest(ZulipTestCase):
 
         # Test full size image.
         # We remove the forward slash infront of the `/user_uploads/` to match
-        # bugdown behaviour.
+        # markdown behaviour.
         quoted_uri = urllib.parse.quote(uri[1:], safe='')
         result = self.client_get(f"/thumbnail?url={quoted_uri}&size=full")
         self.assertEqual(result.status_code, 302, result)
@@ -197,7 +197,7 @@ class ThumbnailTest(ZulipTestCase):
         uri = json["uri"]
 
         # We remove the forward slash infront of the `/user_uploads/` to match
-        # bugdown behaviour.
+        # markdown behaviour.
         quoted_uri = urllib.parse.quote(uri[1:], safe='')
         result = self.client_get(f"/thumbnail?url={quoted_uri}&size=full")
         self.assertEqual(result.status_code, 302, result)
