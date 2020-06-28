@@ -91,17 +91,6 @@ run_test('unloaded', () => {
     settings_org.populate_auth_methods();
 });
 
-function simulate_tip_box() {
-    const non_editables = $.create('auth-methods-not-edit-stub');
-    $('.organization-box').set_find_results(
-        '.settings-section:not(.can-edit)',
-        non_editables
-    );
-
-    non_editables.not = function () { return this; };
-    non_editables.prepend = noop;
-}
-
 function simulate_realm_domains_table() {
     $('#realm_domains_table tbody').set_find_results(
         'tr',
@@ -764,7 +753,6 @@ run_test('set_up', () => {
             name: "Big Blue Button",
         },
     };
-    simulate_tip_box();
 
     $('#id_realm_video_chat_provider').change = set_callback('realm_video_chat_provider');
     $("#id_realm_org_join_restrictions").change = set_callback('change_org_join_restrictions');

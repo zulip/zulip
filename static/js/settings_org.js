@@ -1,7 +1,6 @@
 const settings_config = require("./settings_config");
 const render_settings_admin_auth_methods_list = require('../templates/settings/admin_auth_methods_list.hbs');
 const render_settings_admin_realm_domains_list = require("../templates/settings/admin_realm_domains_list.hbs");
-const render_settings_organization_settings_tip = require("../templates/settings/organization_settings_tip.hbs");
 const pygments_data = require("../generated/pygments_data.json");
 
 const meta = {
@@ -311,18 +310,6 @@ exports.populate_auth_methods = function (auth_methods) {
     auth_methods_table.html(rendered_auth_method_rows);
 };
 
-function insert_tip_box() {
-    if (page_params.is_admin) {
-        return;
-    }
-    const tip_box = render_settings_organization_settings_tip({is_admin: page_params.is_admin});
-    $(".organization-box").find(".settings-section:not(.can-edit)")
-        .not("#emoji-settings")
-        .not("#user-groups-admin")
-        .not("#organization-auth-settings")
-        .prepend(tip_box);
-}
-
 function update_dependent_subsettings(property_name) {
     if (simple_dropdown_properties.includes(property_name)) {
         set_property_dropdown_value(property_name);
@@ -614,7 +601,6 @@ exports.build_page = function () {
 
     // Populate authentication methods table
     exports.populate_auth_methods(page_params.realm_authentication_methods);
-    insert_tip_box();
 
     simple_dropdown_properties.forEach(set_property_dropdown_value);
 

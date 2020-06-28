@@ -1,6 +1,7 @@
 const settings_config = require("./settings_config");
 const settings_data = require("./settings_data");
 const render_admin_tab = require('../templates/admin_tab.hbs');
+const render_settings_organization_settings_tip = require("../templates/settings/organization_settings_tip.hbs");
 
 const admin_settings_label = {
     // Organization settings
@@ -23,6 +24,18 @@ const admin_settings_label = {
     realm_email_changes_disabled: i18n.t("Prevent users from changing their email address"),
     realm_avatar_changes_disabled: i18n.t("Prevent users from changing their avatar"),
 };
+
+function insert_tip_box() {
+    if (page_params.is_admin) {
+        return;
+    }
+    const tip_box = render_settings_organization_settings_tip({is_admin: page_params.is_admin});
+    $(".organization-box").find(".settings-section:not(.can-edit)")
+        .not("#emoji-settings")
+        .not("#user-groups-admin")
+        .not("#organization-auth-settings")
+        .prepend(tip_box);
+}
 
 exports.build_page = function () {
     const options = {
@@ -101,6 +114,8 @@ exports.build_page = function () {
     $("#settings_content .alert").removeClass("show");
 
     settings_bots.update_bot_settings_tip();
+    insert_tip_box();
+
     $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);
     $("#id_realm_email_address_visibility").val(page_params.realm_email_address_visibility);
 
