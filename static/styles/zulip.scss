@@ -1411,6 +1411,7 @@ div.focused_table {
     vertical-align: top;
     border-radius: 4px;
     overflow: hidden;
+    background-color: hsl(0, 0%, 90%);
 
     &.guest-avatar::after {
         outline: 2px solid hsl(0, 0%, 100%);
