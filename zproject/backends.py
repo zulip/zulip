@@ -1180,21 +1180,17 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
     user_profile = common_get_active_user(validated_email, realm, return_data)
 
     full_name = kwargs['details'].get('fullname')
-    first_name = kwargs['details'].get('first_name', '')
-    last_name = kwargs['details'].get('last_name', '')
-    if full_name is None:
-        if not first_name and not last_name:
-            # We need custom code here for any social auth backends
-            # that don't provide name details feature.
-            if (backend.name == 'apple'):
-                # Apple authentication provides the user's name only
-                # the very first time a user tries to login.  So if
-                # the user aborts login or otherwise is doing this the
-                # second time, we won't have any name data.  We handle
-                # this by setting full_name to be the empty string.
-                full_name = ""
-            else:
-                raise AssertionError("Social auth backend doesn't provide name")
+    first_name = kwargs['details'].get('first_name')
+    last_name = kwargs['details'].get('last_name')
+    if all(name is None for name in [full_name, first_name, last_name]) and backend.name != "apple":
+        # Apple authentication provides the user's name only the very first time a user tries to login.
+        # So if the user aborts login or otherwise is doing this the second time,
+        # we won't have any name data. So, this case is handled with the code below
+        # setting full name to empty string.
+
+        # We need custom code here for any social auth backends
+        # that don't provide name details feature.
+        raise AssertionError("Social auth backend doesn't provide name")
 
     if full_name:
         return_data["full_name"] = full_name
