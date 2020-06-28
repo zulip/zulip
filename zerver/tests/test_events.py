@@ -165,6 +165,26 @@ basic_stream_fields = [
     ('stream_post_policy', check_int),
 ]
 
+realm_user_add_checker = check_events_dict([
+    ('type', equals('realm_user')),
+    ('op', equals('add')),
+    ('person', check_dict_only([
+        ('user_id', check_int),
+        ('email', check_string),
+        ('avatar_url', check_none_or(check_string)),
+        ('avatar_version', check_int),
+        ('full_name', check_string),
+        ('is_admin', check_bool),
+        ('is_owner', check_bool),
+        ('is_bot', check_bool),
+        ('is_guest', check_bool),
+        ('is_active', check_bool),
+        ('profile_data', check_dict_only([])),
+        ('timezone', check_string),
+        ('date_joined', check_string),
+    ])),
+])
+
 class BaseAction(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
@@ -926,26 +946,6 @@ class NormalActionsTest(BaseAction):
         schema_checker_android('events[0]', events[0])
 
     def test_register_events(self) -> None:
-        realm_user_add_checker = check_events_dict([
-            ('type', equals('realm_user')),
-            ('op', equals('add')),
-            ('person', check_dict_only([
-                ('user_id', check_int),
-                ('email', check_string),
-                ('avatar_url', check_none_or(check_string)),
-                ('avatar_version', check_int),
-                ('full_name', check_string),
-                ('is_admin', check_bool),
-                ('is_owner', check_bool),
-                ('is_bot', check_bool),
-                ('is_guest', check_bool),
-                ('is_active', check_bool),
-                ('profile_data', check_dict_only([])),
-                ('timezone', check_string),
-                ('date_joined', check_string),
-            ])),
-        ])
-
         events = self.verify_action(
             lambda: self.register("test1@zulip.com", "test1"))
         self.assert_length(events, 1)
@@ -954,26 +954,6 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(new_user_profile.delivery_email, "test1@zulip.com")
 
     def test_register_events_email_address_visibility(self) -> None:
-        realm_user_add_checker = check_events_dict([
-            ('type', equals('realm_user')),
-            ('op', equals('add')),
-            ('person', check_dict_only([
-                ('user_id', check_int),
-                ('email', check_string),
-                ('avatar_url', check_none_or(check_string)),
-                ('avatar_version', check_int),
-                ('full_name', check_string),
-                ('is_active', check_bool),
-                ('is_admin', check_bool),
-                ('is_owner', check_bool),
-                ('is_bot', check_bool),
-                ('is_guest', check_bool),
-                ('profile_data', check_dict_only([])),
-                ('timezone', check_string),
-                ('date_joined', check_string),
-            ])),
-        ])
-
         do_set_realm_property(self.user_profile.realm, "email_address_visibility",
                               Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
 
