@@ -2667,6 +2667,32 @@ stream_update_message_retention_days_schema_checker = check_events_dict([
     ('value', check_none_or(check_int))
 ])
 
+subscription_fields = basic_stream_fields + [
+    ('audible_notifications', check_none_or(check_bool)),
+    ('color', check_string),
+    ('desktop_notifications', check_none_or(check_bool)),
+    ('email_address', check_string),
+    ('email_notifications', check_none_or(check_bool)),
+    ('in_home_view', check_bool),
+    ('is_muted', check_bool),
+    ('pin_to_top', check_bool),
+    ('push_notifications', check_none_or(check_bool)),
+    ('stream_weekly_traffic', check_none_or(check_int)),
+    ('wildcard_mentions_notify', check_none_or(check_bool)),
+]
+
+subscription_add_schema_checker = check_events_dict([
+    ('type', equals('subscription')),
+    ('op', equals('add')),
+    ('subscriptions', check_list(
+        check_dict_only(
+            required_keys=subscription_fields,
+            optional_keys=[
+                ('subscribers', check_list(check_int)),
+            ],
+        ),
+    )),
+])
 
 class SubscribeActionTest(BaseAction):
     @slow("Actually several tests combined together")
@@ -2678,31 +2704,13 @@ class SubscribeActionTest(BaseAction):
         self.do_test_subscribe_events(include_subscribers=False)
 
     def do_test_subscribe_events(self, include_subscribers: bool) -> None:
-        subscription_fields = basic_stream_fields + [
-            ('audible_notifications', check_none_or(check_bool)),
-            ('color', check_string),
-            ('desktop_notifications', check_none_or(check_bool)),
-            ('email_address', check_string),
-            ('email_notifications', check_none_or(check_bool)),
-            ('in_home_view', check_bool),
-            ('is_muted', check_bool),
-            ('pin_to_top', check_bool),
-            ('push_notifications', check_none_or(check_bool)),
-            ('stream_weekly_traffic', check_none_or(check_int)),
-            ('wildcard_mentions_notify', check_none_or(check_bool)),
-        ]
-
-        if include_subscribers:
-            subscription_fields.append(('subscribers', check_list(check_int)))
-        subscription_schema_checker = check_list(
-            check_dict_only(subscription_fields),
-        )
-
-        add_schema_checker = check_events_dict([
-            ('type', equals('subscription')),
-            ('op', equals('add')),
-            ('subscriptions', subscription_schema_checker),
-        ])
+        def check_add_event(events: List[Dict[str, Any]], i: int) -> None:
+            subscription_add_schema_checker(f'events[{i}]', events[i])
+            for sub in events[i]['subscriptions']:
+                self.assertEqual(
+                    include_subscribers,
+                    'subscribers' in sub,
+                )
 
         # Subscribe to a totally new stream, so it's just Hamlet on it
         action: Callable[[], object] = lambda: self.subscribe(self.example_user("hamlet"), "test_stream")
@@ -2710,7 +2718,7 @@ class SubscribeActionTest(BaseAction):
             action,
             event_types=["subscription", "realm_user"],
             include_subscribers=include_subscribers)
-        add_schema_checker('events[0]', events[0])
+        check_add_event(events, 0)
 
         # Add another user to that totally new stream
         action = lambda: self.subscribe(self.example_user("othello"), "test_stream")
@@ -2750,7 +2758,7 @@ class SubscribeActionTest(BaseAction):
             action,
             include_subscribers=include_subscribers,
             num_events=2)
-        add_schema_checker('events[1]', events[1])
+        check_add_event(events, 1)
 
         action = lambda: do_change_stream_description(stream, 'new description')
         events = self.verify_action(
@@ -2787,4 +2795,4 @@ class SubscribeActionTest(BaseAction):
             include_subscribers=include_subscribers,
             num_events=2)
         stream_create_schema_checker('events[0]', events[0])
-        add_schema_checker('events[1]', events[1])
+        check_add_event(events, 1)
