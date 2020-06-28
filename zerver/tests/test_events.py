@@ -4,7 +4,7 @@ import copy
 import sys
 import time
 from io import StringIO
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 from unittest import mock
 
 import ujson
@@ -2722,7 +2722,39 @@ class BotActionTest(BaseAction):
         events = self.verify_action(action, num_events=2)
         bot_reactivate_checker('events[1]', events[1])
 
+'''
+The following schema is a pretty weak check that the
+event is well-typed.  In the actual code, as well
+as the tests below, we use the following dict to
+perform further type checks:
+
+    user_profile.notification_setting_types
+
+We can improve this, but my main goal here is to
+extract out the basic schema.
+'''
+update_global_notifications_schema_checker = check_events_dict([
+    ('type', equals('update_global_notifications')),
+    ('notification_name', check_string),
+    ('user', check_string),
+    ('setting', check_union([
+        check_bool,
+        check_int,
+        check_string,
+    ])),
+])
+
 class NotificationActionTest(BaseAction):
+    def check_event(self,
+                    notification_name: str,
+                    events: List[Dict[str, Any]],
+                    i: int,
+                    setting: Union[bool, int, str]) -> None:
+        event = events[i]
+        update_global_notifications_schema_checker(f'events[{i}]', event)
+        self.assertEqual(notification_name, event['notification_name'])
+        self.assertEqual(setting, event['setting'])
+
     @slow("Actually runs several full-stack fetching tests")
     def test_change_notification_settings(self) -> None:
         for notification_setting, v in self.user_profile.notification_setting_types.items():
@@ -2730,12 +2762,6 @@ class NotificationActionTest(BaseAction):
                 # These settings are tested in their own tests.
                 continue
 
-            schema_checker = check_events_dict([
-                ('type', equals('update_global_notifications')),
-                ('notification_name', equals(notification_setting)),
-                ('user', check_string),
-                ('setting', check_bool),
-            ])
             do_change_notification_settings(self.user_profile, notification_setting, False)
 
             for setting_value in [True, False]:
@@ -2745,7 +2771,7 @@ class NotificationActionTest(BaseAction):
                         notification_setting,
                         setting_value,
                         log=False))
-                schema_checker('events[0]', events[0])
+                self.check_event(notification_setting, events, 0, setting_value)
 
                 # Also test with notification_settings_null=True
                 events = self.verify_action(
@@ -2753,16 +2779,10 @@ class NotificationActionTest(BaseAction):
                         self.user_profile, notification_setting, setting_value, log=False),
                     notification_settings_null=True,
                     state_change_expected=False)
-                schema_checker('events[0]', events[0])
+                self.check_event(notification_setting, events, 0, setting_value)
 
     def test_change_notification_sound(self) -> None:
         notification_setting = "notification_sound"
-        schema_checker = check_events_dict([
-            ('type', equals('update_global_notifications')),
-            ('notification_name', equals(notification_setting)),
-            ('user', check_string),
-            ('setting', equals("ding")),
-        ])
 
         events = self.verify_action(
             lambda: do_change_notification_settings(
@@ -2770,36 +2790,16 @@ class NotificationActionTest(BaseAction):
                 notification_setting,
                 'ding',
                 log=False))
-        schema_checker('events[0]', events[0])
+        self.check_event(notification_setting, events, 0, 'ding')
 
     def test_change_desktop_icon_count_display(self) -> None:
         notification_setting = "desktop_icon_count_display"
-        schema_checker = check_events_dict([
-            ('type', equals('update_global_notifications')),
-            ('notification_name', equals(notification_setting)),
-            ('user', check_string),
-            ('setting', equals(2)),
-        ])
 
-        events = self.verify_action(
-            lambda: do_change_notification_settings(
-                self.user_profile,
-                notification_setting,
-                2,
-                log=False))
-        schema_checker('events[0]', events[0])
-
-        schema_checker = check_events_dict([
-            ('type', equals('update_global_notifications')),
-            ('notification_name', equals(notification_setting)),
-            ('user', check_string),
-            ('setting', equals(1)),
-        ])
-
-        events = self.verify_action(
-            lambda: do_change_notification_settings(
-                self.user_profile,
-                notification_setting,
-                1,
-                log=False))
-        schema_checker('events[0]', events[0])
+        for val in [2, 3, 1]:
+            events = self.verify_action(
+                lambda: do_change_notification_settings(
+                    self.user_profile,
+                    notification_setting,
+                    val,
+                    log=False))
+            self.check_event(notification_setting, events, 0, val)
