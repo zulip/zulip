@@ -30,7 +30,7 @@ function insert_tip_box() {
         return;
     }
     const tip_box = render_settings_organization_settings_tip({is_admin: page_params.is_admin});
-    $(".organization-box").find(".settings-section:not(.can-edit)")
+    $(".organization-box").find(".settings-section")
         .not("#emoji-settings")
         .not("#user-groups-admin")
         .not("#organization-auth-settings")
