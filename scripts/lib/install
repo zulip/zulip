@@ -489,10 +489,6 @@ if [ "$has_appserver" = 0 ]; then
     fi
 fi
 
-if [ -e "/var/run/supervisor.sock" ]; then
-    chown zulip:zulip /var/run/supervisor.sock
-fi
-
 if [ -n "$NO_INIT_DB" ]; then
     set +x
     cat <<EOF

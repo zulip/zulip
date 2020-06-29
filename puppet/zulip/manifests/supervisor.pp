@@ -29,6 +29,10 @@ class zulip::supervisor {
       hasrestart => true,
       restart    => '/bin/true'
     }
+    exec { 'supervisor-restart':
+      refreshonly => true,
+      command     => '/bin/true',
+    }
   } else {
     service { $supervisor_service:
       ensure     => running,
@@ -49,6 +53,9 @@ class zulip::supervisor {
       # your config file parses without doing anything, but it's
       # really confusing).
       #
+      # If restarting supervisor itself is necessary, see
+      # Exec['supervisor-restart']
+      #
       # Also, to handle the case that supervisord wasn't running at
       # all, we check if it is not running and if so, start it.
       #
@@ -59,6 +66,10 @@ class zulip::supervisor {
       restart    => "bash -c 'if pgrep -f supervisor[d] >/dev/null; then supervisorctl reread && supervisorctl update; else ${zulip::common::supervisor_start}; fi'"
       # lint:endignore
     }
+    exec { 'supervisor-restart':
+      refreshonly => true,
+      command     => $zulip::common::supervisor_reload,
+    }
   }
 
   file { $zulip::common::supervisor_conf_file:
@@ -68,6 +79,6 @@ class zulip::supervisor {
     group   => 'root',
     mode    => '0644',
     source  => 'puppet:///modules/zulip/supervisor/supervisord.conf',
-    notify  => Service[$supervisor_service],
+    notify  => Exec['supervisor-restart'],
   }
 }
