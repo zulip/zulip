@@ -1,5 +1,5 @@
 /**
- * bugdown_assert.js
+ * markdown_assert.js
  *
  * Used to determine whether two Markdown HTML strings are semantically
  * equivalent. Differs from the naive string-comparison approach in that
