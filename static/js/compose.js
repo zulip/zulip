@@ -818,7 +818,7 @@ exports.render_and_show_preview = function (preview_spinner, preview_content_box
             loading.make_indicator(spinner);
         } else {
             // For messages that don't appear to contain
-            // bugdown-specific syntax not present in our
+            // zulip markdown-specific syntax not present in our
             // marked.js frontend processor, we render using the
             // frontend markdown processor message (but still
             // render server-side to ensure the preview is
