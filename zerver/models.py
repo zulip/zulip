@@ -2744,6 +2744,7 @@ class AbstractRealmAuditLog(models.Model):
     CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN = 503
 
     STREAM_CREATED = 601
+    STREAM_DEACTIVATED = 602
 
     event_type: int = models.PositiveSmallIntegerField()
 

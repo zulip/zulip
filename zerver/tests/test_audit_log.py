@@ -18,6 +18,7 @@ from zerver.lib.actions import (
     do_change_user_role,
     do_create_user,
     do_deactivate_realm,
+    do_deactivate_stream,
     do_deactivate_user,
     do_reactivate_realm,
     do_reactivate_user,
@@ -222,3 +223,15 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(RealmAuditLog.objects.filter(realm=realm, event_type=RealmAuditLog.STREAM_CREATED,
                                                       event_time__gte=now, acting_user=user,
                                                       modified_stream=stream).count(), 1)
+
+    def test_deactivate_stream(self) -> None:
+        now = timezone_now()
+        realm = get_realm('zulip')
+        user = self.example_user('hamlet')
+        stream_name = 'test'
+        stream = self.make_stream(stream_name, realm)
+        do_deactivate_stream(stream, acting_user=user)
+        self.assertEqual(RealmAuditLog.objects.filter(realm=realm, event_type=RealmAuditLog.STREAM_DEACTIVATED,
+                                                      event_time__gte=now, acting_user=user,
+                                                      modified_stream=stream).count(), 1)
+        self.assertEqual(stream.deactivated, True)

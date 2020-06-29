@@ -892,7 +892,7 @@ def do_deactivate_user(user_profile: UserProfile,
         for profile in bot_profiles:
             do_deactivate_user(profile, acting_user=acting_user, _cascade=False)
 
-def do_deactivate_stream(stream: Stream, log: bool=True) -> None:
+def do_deactivate_stream(stream: Stream, log: bool=True, acting_user: Optional[UserProfile]=None) -> None:
 
     # Get the affected user ids *before* we deactivate everybody.
     affected_user_ids = can_access_stream_user_ids(stream)
@@ -939,6 +939,11 @@ def do_deactivate_stream(stream: Stream, log: bool=True) -> None:
     event = dict(type="stream", op="delete",
                  streams=[stream_dict])
     send_event(stream.realm, event, affected_user_ids)
+
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(realm=stream.realm, acting_user=acting_user,
+                                 modified_stream=stream, event_type=RealmAuditLog.STREAM_DEACTIVATED,
+                                 event_time=event_time)
 
 def send_user_email_update_event(user_profile: UserProfile) -> None:
     payload = dict(user_id=user_profile.id,
@@ -3113,7 +3118,7 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
     if new_vacant_private_streams:
         # Deactivate any newly-vacant private streams
         for stream in new_vacant_private_streams:
-            do_deactivate_stream(stream)
+            do_deactivate_stream(stream, acting_user=acting_user)
 
     return (
         [(sub.user_profile, stream) for (sub, stream) in subs_to_deactivate],

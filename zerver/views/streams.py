@@ -137,7 +137,7 @@ def deactivate_stream_backend(request: HttpRequest,
                               user_profile: UserProfile,
                               stream_id: int) -> HttpResponse:
     stream = access_stream_for_delete_or_update(user_profile, stream_id)
-    do_deactivate_stream(stream)
+    do_deactivate_stream(stream, acting_user=user_profile)
     return json_success()
 
 @require_realm_admin
