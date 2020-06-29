@@ -191,9 +191,9 @@ markdown.initialize(
     markdown_config.get_helpers()
 );
 
-const bugdown_data = global.read_fixture_data('markdown_test_cases.json');
+const markdown_data = global.read_fixture_data('markdown_test_cases.json');
 
-run_test('bugdown_detection', () => {
+run_test('markdown_detection', () => {
     const no_markup = [
         "This is a plaintext message",
         "This is a plaintext: message",
@@ -242,7 +242,7 @@ run_test('bugdown_detection', () => {
 });
 
 run_test('marked_shared', () => {
-    const tests = bugdown_data.regular_tests;
+    const tests = markdown_data.regular_tests;
 
     tests.forEach(function (test) {
 
