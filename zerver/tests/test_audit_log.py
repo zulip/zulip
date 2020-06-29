@@ -42,21 +42,21 @@ class TestRealmAuditLog(ZulipTestCase):
     def test_user_activation(self) -> None:
         realm = get_realm('zulip')
         now = timezone_now()
-        user = do_create_user('email', 'password', realm, 'full_name', 'short_name')
-        do_deactivate_user(user)
-        do_activate_user(user)
-        do_deactivate_user(user)
-        do_reactivate_user(user)
+        user = do_create_user('email', 'password', realm, 'full_name', 'short_name', acting_user=None)
+        do_deactivate_user(user, acting_user=user)
+        do_activate_user(user, acting_user=user)
+        do_deactivate_user(user, acting_user=user)
+        do_reactivate_user(user, acting_user=user)
         self.assertEqual(RealmAuditLog.objects.filter(event_time__gte=now).count(), 5)
         event_types = list(RealmAuditLog.objects.filter(
-            realm=realm, acting_user=None, modified_user=user, modified_stream=None,
+            realm=realm, acting_user=user, modified_user=user, modified_stream=None,
             event_time__gte=now, event_time__lte=now+timedelta(minutes=60))
             .order_by('event_time').values_list('event_type', flat=True))
         self.assertEqual(event_types, [RealmAuditLog.USER_CREATED, RealmAuditLog.USER_DEACTIVATED,
                                        RealmAuditLog.USER_ACTIVATED, RealmAuditLog.USER_DEACTIVATED,
                                        RealmAuditLog.USER_REACTIVATED])
         for event in RealmAuditLog.objects.filter(
-                realm=realm, acting_user=None, modified_user=user, modified_stream=None,
+                realm=realm, acting_user=user, modified_user=user, modified_stream=None,
                 event_time__gte=now, event_time__lte=now+timedelta(minutes=60)):
             extra_data = ujson.loads(event.extra_data)
             self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])

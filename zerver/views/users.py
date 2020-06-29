@@ -388,7 +388,8 @@ def add_bot_backend(
                                  avatar_source=avatar_source,
                                  default_sending_stream=default_sending_stream,
                                  default_events_register_stream=default_events_register_stream,
-                                 default_all_public_streams=default_all_public_streams)
+                                 default_all_public_streams=default_all_public_streams,
+                                 acting_user=user_profile)
     if len(request.FILES) == 1:
         user_file = list(request.FILES.values())[0]
         upload_avatar_image(user_file, user_profile, bot_profile)
@@ -517,7 +518,7 @@ def create_user_backend(request: HttpRequest, user_profile: UserProfile,
     if not check_password_strength(password):
         return json_error(PASSWORD_TOO_WEAK_ERROR)
 
-    do_create_user(email, password, realm, full_name, short_name)
+    do_create_user(email, password, realm, full_name, short_name, acting_user=user_profile)
     return json_success()
 
 def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:

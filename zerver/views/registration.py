@@ -366,7 +366,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
 
         if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
             user_profile = existing_user_profile
-            do_activate_user(user_profile)
+            do_activate_user(user_profile, acting_user=user_profile)
             do_change_password(user_profile, password)
             do_change_full_name(user_profile, full_name, user_profile)
             do_set_user_display_setting(user_profile, 'timezone', timezone)
@@ -382,7 +382,8 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                                           newsletter_data={"IP": request.META['REMOTE_ADDR']},
                                           default_stream_groups=default_stream_groups,
                                           source_profile=source_profile,
-                                          realm_creation=realm_creation)
+                                          realm_creation=realm_creation,
+                                          acting_user=None)
 
         if realm_creation:
             bulk_add_subscriptions([realm.signup_notifications_stream], [user_profile])

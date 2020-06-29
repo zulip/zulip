@@ -581,7 +581,8 @@ def do_create_user(email: str, password: Optional[str], realm: Realm, full_name:
                    newsletter_data: Optional[Dict[str, str]]=None,
                    default_stream_groups: Sequence[DefaultStreamGroup]=[],
                    source_profile: Optional[UserProfile]=None,
-                   realm_creation: bool=False) -> UserProfile:
+                   realm_creation: bool=False,
+                   acting_user: Optional[UserProfile]=None) -> UserProfile:
 
     user_profile = create_user(email=email, password=password, realm=realm,
                                full_name=full_name, short_name=short_name,
@@ -593,8 +594,10 @@ def do_create_user(email: str, password: Optional[str], realm: Realm, full_name:
                                source_profile=source_profile)
 
     event_time = user_profile.date_joined
+    if not acting_user:
+        acting_user = user_profile
     RealmAuditLog.objects.create(
-        realm=user_profile.realm, modified_user=user_profile,
+        realm=user_profile.realm, acting_user=acting_user, modified_user=user_profile,
         event_type=RealmAuditLog.USER_CREATED, event_time=event_time,
         extra_data=ujson.dumps({
             RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
@@ -614,7 +617,7 @@ def do_create_user(email: str, password: Optional[str], realm: Realm, full_name:
                                realm_creation=realm_creation)
     return user_profile
 
-def do_activate_user(user_profile: UserProfile) -> None:
+def do_activate_user(user_profile: UserProfile, acting_user: Optional[UserProfile]=None) -> None:
     user_profile.is_active = True
     user_profile.is_mirror_dummy = False
     user_profile.set_unusable_password()
@@ -625,7 +628,7 @@ def do_activate_user(user_profile: UserProfile) -> None:
 
     event_time = user_profile.date_joined
     RealmAuditLog.objects.create(
-        realm=user_profile.realm, modified_user=user_profile,
+        realm=user_profile.realm, modified_user=user_profile, acting_user=acting_user,
         event_type=RealmAuditLog.USER_ACTIVATED, event_time=event_time,
         extra_data=ujson.dumps({
             RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
