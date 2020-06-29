@@ -2383,6 +2383,49 @@ class SubscribeActionTest(BaseAction):
         stream_create_schema_checker('events[0]', events[0])
         check_add_event(events, 1)
 
+check_bot_services_outgoing = check_dict_only([
+    ('base_url', check_url),
+    ('interface', check_int),
+    ('token', check_string),
+])
+
+# We use a strict check here, because our tests
+# don't specifically focus on seeing how
+# flexible we can make the types be for config_data.
+ad_hoc_config_data_schema = equals(dict(foo='bar'))
+
+check_bot_services_embedded = check_dict_only([
+    ('service_name', check_string),
+    ('config_data', ad_hoc_config_data_schema),
+])
+
+realm_bot_add_schema = check_events_dict([
+    ('type', equals('realm_bot')),
+    ('op', equals('add')),
+    ('bot', check_dict_only([
+        ('user_id', check_int),
+        ('api_key', check_string),
+        ('avatar_url', check_string),
+        ('bot_type', check_int),
+        ('default_all_public_streams', check_bool),
+        ('default_events_register_stream', check_none_or(check_string)),
+        ('default_sending_stream', check_none_or(check_string)),
+        ('email', check_string),
+        ('full_name', check_string),
+        ('is_active', check_bool),
+        ('owner_id', check_int),
+
+        # Note that regular bots just get an empty list of services,
+        # so the sub_validator for check_list won't matter for them.
+        ('services', check_list(
+            check_union([
+                check_bot_services_outgoing,
+                check_bot_services_embedded,
+            ]),
+        )),
+    ])),
+])
+
 realm_bot_update_schema = check_events_dict([
     ('type', equals('realm_bot')),
     ('op', equals('update')),
@@ -2484,48 +2527,31 @@ class BotActionTest(BaseAction):
         self.assertEqual(events[0]['bot']['default_events_register_stream'], None)
 
     def test_create_bot(self) -> None:
-        # We use a strict check here, because this test
-        # isn't specifically focused on seeing how
-        # flexible we can make the types be for config_data.
-        ad_hoc_config_data_schema = equals(dict(foo='bar'))
+        def check_realm_bot_add(bot_type: str,
+                                events: List[Dict[str, Any]],
+                                i: int) -> None:
+            event = events[i]
+            realm_bot_add_schema(f'events[{i}]', event)
 
-        def get_bot_created_checker(bot_type: str) -> Validator[object]:
+            services_field = f"events[{i}]['bot']['services']"
+            services = event['bot']['services']
+
             if bot_type == "GENERIC_BOT":
-                # Generic bots don't really understand the concept of
-                # "services", so we just enforce that we get an empty list.
-                check_services: Validator[List[object]] = equals([])
+                equals([])(
+                    services_field, services
+                )
             elif bot_type == "OUTGOING_WEBHOOK_BOT":
-                check_services = check_list(check_dict_only([
-                    ('base_url', check_url),
-                    ('interface', check_int),
-                    ('token', check_string),
-                ]), length=1)
+                check_list(check_bot_services_outgoing, length=1)(
+                    services_field, services
+                )
             elif bot_type == "EMBEDDED_BOT":
-                check_services = check_list(check_dict_only([
-                    ('service_name', check_string),
-                    ('config_data', ad_hoc_config_data_schema),
-                ]), length=1)
-            return check_events_dict([
-                ('type', equals('realm_bot')),
-                ('op', equals('add')),
-                ('bot', check_dict_only([
-                    ('email', check_string),
-                    ('user_id', check_int),
-                    ('bot_type', check_int),
-                    ('full_name', check_string),
-                    ('is_active', check_bool),
-                    ('api_key', check_string),
-                    ('default_sending_stream', check_none_or(check_string)),
-                    ('default_events_register_stream', check_none_or(check_string)),
-                    ('default_all_public_streams', check_bool),
-                    ('avatar_url', check_string),
-                    ('owner_id', check_int),
-                    ('services', check_services),
-                ])),
-            ])
+                check_list(check_bot_services_embedded, length=1)(
+                    services_field, services
+                )
+
         action = lambda: self.create_bot('test')
         events = self.verify_action(action, num_events=2)
-        get_bot_created_checker(bot_type="GENERIC_BOT")('events[1]', events[1])
+        check_realm_bot_add('GENERIC_BOT', events, 1)
 
         action = lambda: self.create_bot('test_outgoing_webhook',
                                          full_name='Outgoing Webhook Bot',
@@ -2533,9 +2559,7 @@ class BotActionTest(BaseAction):
                                          interface_type=Service.GENERIC,
                                          bot_type=UserProfile.OUTGOING_WEBHOOK_BOT)
         events = self.verify_action(action, num_events=2)
-        # The third event is the second call of notify_created_bot, which contains additional
-        # data for services (in contrast to the first call).
-        get_bot_created_checker(bot_type="OUTGOING_WEBHOOK_BOT")('events[1]', events[1])
+        check_realm_bot_add('OUTGOING_WEBHOOK_BOT', events, 1)
 
         action = lambda: self.create_bot('test_embedded',
                                          full_name='Embedded Bot',
@@ -2543,7 +2567,7 @@ class BotActionTest(BaseAction):
                                          config_data=ujson.dumps({'foo': 'bar'}),
                                          bot_type=UserProfile.EMBEDDED_BOT)
         events = self.verify_action(action, num_events=2)
-        get_bot_created_checker(bot_type="EMBEDDED_BOT")('events[1]', events[1])
+        check_realm_bot_add('EMBEDDED_BOT', events, 1)
 
     def test_change_bot_owner(self) -> None:
         self.user_profile = self.example_user('iago')
