@@ -545,7 +545,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             content_type = magic.from_buffer(copy.deepcopy(io).read()[0:1024], mime=True)
             if content_type.startswith("image/"):
                 upload_avatar_image(io, user, user, content_type=content_type)
-                do_change_avatar_fields(user, UserProfile.AVATAR_FROM_USER)
+                do_change_avatar_fields(user, UserProfile.AVATAR_FROM_USER, acting_user=None)
                 # Update avatar hash.
                 user.avatar_hash = user_avatar_content_hash(ldap_avatar)
                 user.save(update_fields=["avatar_hash"])

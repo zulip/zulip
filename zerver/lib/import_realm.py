@@ -751,7 +751,7 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
                         user_profile.id,
                     )
                     # Delete the record of the avatar to avoid 404s.
-                    do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR)
+                    do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
             return 0
 
         if processes == 1:

@@ -1308,7 +1308,7 @@ class NormalActionsTest(BaseAction):
             ])),
         ])
         events = self.verify_action(
-            lambda: do_change_avatar_fields(self.user_profile, UserProfile.AVATAR_FROM_USER),
+            lambda: do_change_avatar_fields(self.user_profile, UserProfile.AVATAR_FROM_USER, acting_user=self.user_profile),
         )
         schema_checker('events[0]', events[0])
 
@@ -1324,7 +1324,7 @@ class NormalActionsTest(BaseAction):
             ])),
         ])
         events = self.verify_action(
-            lambda: do_change_avatar_fields(self.user_profile, UserProfile.AVATAR_FROM_GRAVATAR),
+            lambda: do_change_avatar_fields(self.user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=self.user_profile),
         )
         schema_checker('events[0]', events[0])
 
@@ -1883,7 +1883,7 @@ class NormalActionsTest(BaseAction):
 
     def test_change_bot_avatar_source(self) -> None:
         bot = self.create_bot('test')
-        action = lambda: do_change_avatar_fields(bot, bot.AVATAR_FROM_USER)
+        action = lambda: do_change_avatar_fields(bot, bot.AVATAR_FROM_USER, acting_user=self.user_profile)
         events = self.verify_action(action, num_events=2)
         self.realm_bot_schema('avatar_url', check_string)('events[0]', events[0])
         self.assertEqual(events[1]['type'], 'realm_user')

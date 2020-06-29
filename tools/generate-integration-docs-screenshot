@@ -79,7 +79,7 @@ def create_integration_bot(integration: WebhookIntegration, bot_name: Optional[s
             if os.path.isfile(bot_avatar_path):
                 with open(bot_avatar_path, "rb") as f:
                     upload_avatar_image(f, owner, bot)
-                    do_change_avatar_fields(bot, UserProfile.AVATAR_FROM_USER)
+                    do_change_avatar_fields(bot, UserProfile.AVATAR_FROM_USER, acting_user=owner)
 
     return bot
 

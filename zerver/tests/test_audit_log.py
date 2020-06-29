@@ -115,8 +115,9 @@ class TestRealmAuditLog(ZulipTestCase):
         now = timezone_now()
         user = self.example_user('hamlet')
         avatar_source = 'G'
-        do_change_avatar_fields(user, avatar_source)
+        do_change_avatar_fields(user, avatar_source, acting_user=user)
         self.assertEqual(RealmAuditLog.objects.filter(event_type=RealmAuditLog.USER_AVATAR_SOURCE_CHANGED,
+                                                      modified_user=user, acting_user=user,
                                                       event_time__gte=now).count(), 1)
         self.assertEqual(avatar_source, user.avatar_source)
 

@@ -1105,7 +1105,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         self.assertTrue(os.path.isfile(avatar_original_path_id))
         self.assertTrue(os.path.isfile(avatar_medium_path_id))
 
-        zerver.lib.actions.do_delete_avatar_image(user)
+        zerver.lib.actions.do_delete_avatar_image(user, acting_user=user)
 
         self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
         self.assertFalse(os.path.isfile(avatar_path_id))
@@ -1770,7 +1770,7 @@ class S3Test(ZulipTestCase):
         self.assertIsNotNone(bucket.Object(avatar_original_image_path_id))
         self.assertIsNotNone(bucket.Object(avatar_medium_path_id))
 
-        zerver.lib.actions.do_delete_avatar_image(user)
+        zerver.lib.actions.do_delete_avatar_image(user, acting_user=user)
 
         self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 

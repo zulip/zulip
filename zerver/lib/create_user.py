@@ -40,7 +40,7 @@ def copy_user_settings(source_profile: UserProfile, target_profile: UserProfile)
     if source_profile.avatar_source == UserProfile.AVATAR_FROM_USER:
         from zerver.lib.actions import do_change_avatar_fields
         do_change_avatar_fields(target_profile, UserProfile.AVATAR_FROM_USER,
-                                skip_notify=True)
+                                skip_notify=True, acting_user=target_profile)
         copy_avatar(source_profile, target_profile)
 
     copy_hotpots(source_profile, target_profile)

@@ -38,7 +38,7 @@ From image editing program:
 
     def set_avatar(self, user: UserProfile, filename: str) -> None:
         upload_avatar_image(open(filename, 'rb'), user, user)
-        do_change_avatar_fields(user, UserProfile.AVATAR_FROM_USER)
+        do_change_avatar_fields(user, UserProfile.AVATAR_FROM_USER, acting_user=None)
 
     def add_message_formatting_conversation(self) -> None:
         realm = get_realm('zulip')

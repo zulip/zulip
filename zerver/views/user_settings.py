@@ -247,7 +247,7 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
             settings.MAX_AVATAR_FILE_SIZE,
         ))
     upload_avatar_image(user_file, user_profile, user_profile)
-    do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_USER)
+    do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_USER, acting_user=user_profile)
     user_avatar_url = avatar_url(user_profile)
 
     json_result = dict(
@@ -259,7 +259,7 @@ def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> Ht
     if avatar_changes_disabled(user_profile.realm) and not user_profile.is_realm_admin:
         return json_error(AVATAR_CHANGES_DISABLED_ERROR)
 
-    do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR)
+    do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=user_profile)
     gravatar_url = avatar_url(user_profile)
 
     json_result = dict(

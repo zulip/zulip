@@ -826,7 +826,7 @@ def do_scrub_realm(realm: Realm, acting_user: Optional[UserProfile]=None) -> Non
     users = UserProfile.objects.filter(realm=realm)
     for user in users:
         do_delete_messages_by_sender(user)
-        do_delete_avatar_image(user)
+        do_delete_avatar_image(user, acting_user=acting_user)
         user.full_name = f"Scrubbed {generate_key()[:15]}"
         scrubbed_email = f"scrubbed-{generate_key()[:15]}@{realm.host}"
         user.email = scrubbed_email
@@ -3330,7 +3330,7 @@ def notify_avatar_url_change(user_profile: UserProfile) -> None:
                active_user_ids(user_profile.realm_id))
 
 def do_change_avatar_fields(user_profile: UserProfile, avatar_source: str,
-                            skip_notify: bool=False) -> None:
+                            skip_notify: bool=False, acting_user: Optional[UserProfile]=None) -> None:
     user_profile.avatar_source = avatar_source
     user_profile.avatar_version += 1
     user_profile.save(update_fields=["avatar_source", "avatar_version"])
@@ -3338,13 +3338,13 @@ def do_change_avatar_fields(user_profile: UserProfile, avatar_source: str,
     RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
                                  event_type=RealmAuditLog.USER_AVATAR_SOURCE_CHANGED,
                                  extra_data={'avatar_source': avatar_source},
-                                 event_time=event_time)
+                                 event_time=event_time, acting_user=acting_user)
 
     if not skip_notify:
         notify_avatar_url_change(user_profile)
 
-def do_delete_avatar_image(user: UserProfile) -> None:
-    do_change_avatar_fields(user, UserProfile.AVATAR_FROM_GRAVATAR)
+def do_delete_avatar_image(user: UserProfile, acting_user: Optional[UserProfile]=None) -> None:
+    do_change_avatar_fields(user, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=acting_user)
     delete_avatar_image(user)
 
 def do_change_icon_source(realm: Realm, icon_source: str, log: bool=True) -> None:
