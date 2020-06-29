@@ -106,6 +106,26 @@
         <p>We also have
             <a href="https://zulip.readthedocs.io/en/latest/development/authentication.html">documentation on testing LDAP, Google &amp; GitHub authentication</a> in the development environment.
         </p>
+        <h2>Connecting to the local PostgreSQL database</h2>
+        <ul>
+            <li><code>./manage.py dbshell</code>: Connect to
+              PostgreSQL database via your terminal.</li>
+            <li><code>provision</code> creates a <code>~/.pgpass</code> file,
+              so <code>psql -U zulip -h localhost</code> works too.</li>
+            <li>
+                <p>
+                    To connect using a graphical PostgreSQL client
+                    like <a href="https://www.pgadmin.org/">pgAdmin</a>,
+                    use the following credentials:
+                </p>
+                <ul>
+                    <li>Host: 127.0.0.1 (don't use localhost)</li>
+                    <li>Maintenance database: zulip</li>
+                    <li>Username: zulip</li>
+                    <li>password: stored as <code>local_database_password</code> in <code>zulip/zerver/dev-secrets.conf</code></li>
+                </ul>
+            </li>
+        </ul>
     </div>
 </div>
 
