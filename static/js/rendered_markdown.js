@@ -146,7 +146,7 @@ exports.update_elements = (content) => {
         }
 
         // Moment throws a large deprecation warning when it has to fallback
-        // to the Date() constructor. We needn't worry here and can let bugdown
+        // to the Date() constructor. We needn't worry here and can let markdown
         // handle any dates that moment misses.
         moment.suppressDeprecationWarnings = true;
         const timestamp = moment(time_str);
