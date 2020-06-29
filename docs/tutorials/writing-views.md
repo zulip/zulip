@@ -266,7 +266,7 @@ def update_realm(
 ):
     realm = user_profile.realm
     # ...
-            do_set_realm_property(realm, k, v)
+            do_set_realm_property(realm, k, v, acting_user=user_profile)
     # ...
 ```
 

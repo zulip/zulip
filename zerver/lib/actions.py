@@ -667,9 +667,10 @@ def active_humans_in_realm(realm: Realm) -> Sequence[UserProfile]:
     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
 
 
-def do_set_realm_property(realm: Realm, name: str, value: Any) -> None:
-    """Takes in a realm object, the name of an attribute to update, and the
-    value to update.
+def do_set_realm_property(realm: Realm, name: str, value: Any,
+                          acting_user: Optional[UserProfile] = None) -> None:
+    """Takes in a realm object, the name of an attribute to update, the
+       value to update and and the user who initiated the update.
     """
     property_type = Realm.property_types[name]
     assert isinstance(value, property_type), (
@@ -686,6 +687,14 @@ def do_set_realm_property(realm: Realm, name: str, value: Any) -> None:
         value=value,
     )
     send_event(realm, event, active_user_ids(realm.id))
+
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED, event_time=event_time,
+        acting_user=acting_user, extra_data=ujson.dumps({
+            RealmAuditLog.OLD_VALUE: {'property': name, 'value': old_value},
+            RealmAuditLog.NEW_VALUE: {'property': name, 'value': value}
+        }))
 
     if name == "email_address_visibility":
         if Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE not in [old_value, value]:
@@ -5461,7 +5470,7 @@ def do_change_realm_domain(realm_domain: RealmDomain, allow_subdomains: bool) ->
                                    allow_subdomains=realm_domain.allow_subdomains))
     send_event(realm_domain.realm, event, active_user_ids(realm_domain.realm_id))
 
-def do_remove_realm_domain(realm_domain: RealmDomain) -> None:
+def do_remove_realm_domain(realm_domain: RealmDomain, acting_user: Optional[UserProfile]=None) -> None:
     realm = realm_domain.realm
     domain = realm_domain.domain
     realm_domain.delete()
@@ -5470,7 +5479,7 @@ def do_remove_realm_domain(realm_domain: RealmDomain) -> None:
         # longer restricted to domain, because the feature doesn't do
         # anything if there are no domains, and this is probably less
         # confusing than the alternative.
-        do_set_realm_property(realm, 'emails_restricted_to_domains', False)
+        do_set_realm_property(realm, 'emails_restricted_to_domains', False, acting_user=acting_user)
     event = dict(type="realm_domains", op="remove", domain=domain)
     send_event(realm, event, active_user_ids(realm.id))
 

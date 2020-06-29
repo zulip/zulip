@@ -126,7 +126,7 @@ def update_realm(
 
     for k, v in list(req_vars.items()):
         if v is not None and getattr(realm, k) != v:
-            do_set_realm_property(realm, k, v)
+            do_set_realm_property(realm, k, v, acting_user=user_profile)
             if isinstance(v, str):
                 data[k] = 'updated'
             else:

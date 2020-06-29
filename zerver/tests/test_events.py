@@ -2542,12 +2542,25 @@ class RealmPropertyActionTest(BaseAction):
 
         if vals is None:
             raise AssertionError(f'No test created for {name}')
-        do_set_realm_property(self.user_profile.realm, name, vals[0])
-        for val in vals[1:]:
+        now = timezone_now()
+        do_set_realm_property(self.user_profile.realm, name, vals[0], acting_user=self.user_profile)
+        self.assertEqual(RealmAuditLog.objects.filter(realm=self.user_profile.realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                                                      event_time__gte=now, acting_user=self.user_profile).count(), 1)
+        for count, val in enumerate(vals[1:]):
+            now = timezone_now()
             state_change_expected = True
             events = self.verify_action(
-                lambda: do_set_realm_property(self.user_profile.realm, name, val),
+                lambda: do_set_realm_property(self.user_profile.realm, name, val, acting_user=self.user_profile),
                 state_change_expected=state_change_expected)
+
+            old_value = vals[count]
+            self.assertEqual(RealmAuditLog.objects.filter(
+                realm=self.user_profile.realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_time__gte=now, acting_user=self.user_profile,
+                extra_data=ujson.dumps({
+                    RealmAuditLog.OLD_VALUE: {'property': name, 'value': old_value},
+                    RealmAuditLog.NEW_VALUE: {'property': name, 'value': val}
+                })).count(), 1)
             schema_checker('events[0]', events[0])
 
     def test_change_realm_property(self) -> None:

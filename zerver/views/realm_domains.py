@@ -48,7 +48,7 @@ def delete_realm_domain(request: HttpRequest, user_profile: UserProfile,
                         domain: str) -> HttpResponse:
     try:
         realm_domain = RealmDomain.objects.get(realm=user_profile.realm, domain=domain)
-        do_remove_realm_domain(realm_domain)
+        do_remove_realm_domain(realm_domain, acting_user=user_profile)
     except RealmDomain.DoesNotExist:
         return json_error(_('No entry found for domain {domain}.').format(domain=domain))
     return json_success()
