@@ -387,7 +387,7 @@ function get_special_filter_suggestions(last, operators, suggestions) {
         suggestions = suggestions.map((suggestion) => ({
             search_string: '-' + suggestion.search_string,
             description: i18n.t('exclude __description__',
-                                {description: suggestion.description}),
+                                {description: suggestion.negated_description}),
             invalid: suggestion.invalid,
         }));
     }
@@ -425,6 +425,7 @@ function get_streams_filter_suggestions(last, operators) {
         {
             search_string: 'streams:public',
             description: i18n.t('all public streams in organization'),
+            negated_description: 'all public streams in organization',
             invalid: [
                 {operator: "is", operand: "private"},
                 {operator: "stream"},
@@ -442,6 +443,7 @@ function get_is_filter_suggestions(last, operators) {
         {
             search_string: 'is:private',
             description: i18n.t('private messages'),
+            negated_description: 'private messages',
             invalid: [
                 {operator: "is", operand: "private"},
                 {operator: "stream"},
@@ -452,6 +454,7 @@ function get_is_filter_suggestions(last, operators) {
         {
             search_string: 'is:starred',
             description: i18n.t('starred messages'),
+            negated_description: 'starred messages',
             invalid: [
                 {operator: 'is', operand: 'starred'},
             ],
@@ -459,6 +462,7 @@ function get_is_filter_suggestions(last, operators) {
         {
             search_string: 'is:mentioned',
             description: i18n.t('@-mentions'),
+            negated_description: '@-mentions',
             invalid: [
                 {operator: 'is', operand: 'mentioned'},
             ],
@@ -466,6 +470,7 @@ function get_is_filter_suggestions(last, operators) {
         {
             search_string: 'is:alerted',
             description: i18n.t('alerted messages'),
+            negated_description: 'alerted messages',
             invalid: [
                 {operator: 'is', operand: 'alerted'},
             ],
@@ -473,6 +478,7 @@ function get_is_filter_suggestions(last, operators) {
         {
             search_string: 'is:unread',
             description: i18n.t('unread messages'),
+            negated_description: 'unread messages',
             invalid: [
                 {operator: 'is', operand: 'unread'},
             ],
@@ -486,8 +492,7 @@ function get_has_filter_suggestions(last, operators) {
         {
             search_string: 'has:link',
             description: i18n.t('messages with one or more link'),
-            // Probably a better way to handle negation is to just have a
-            // translated version here for it.
+            negated_description: 'messages with one or more link',
             invalid: [
                 {operator: 'has', operand: 'link'},
             ],
@@ -495,6 +500,7 @@ function get_has_filter_suggestions(last, operators) {
         {
             search_string: 'has:image',
             description: i18n.t('messages with one or more image'),
+            negated_description: 'messages with one or more image',
             invalid: [
                 {operator: 'has', operand: 'image'},
             ],
@@ -502,6 +508,7 @@ function get_has_filter_suggestions(last, operators) {
         {
             search_string: 'has:attachment',
             description: i18n.t('messages with one or more attachment'),
+            negated_description: 'messages with one or more attachment',
             invalid: [
                 {operator: 'has', operand: 'attachment'},
             ],

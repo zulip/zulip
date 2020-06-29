@@ -450,9 +450,9 @@ run_test("has_suggestions", () => {
     suggestions = get_suggestions("", query);
     expected = ["-h", "-has:link", "-has:image", "-has:attachment"];
     assert.deepEqual(suggestions.strings, expected);
-    assert.equal(describe('-has:link'), 'Translated: exclude translated: messages with one or more link');
-    assert.equal(describe('-has:image'), 'Translated: exclude translated: messages with one or more image');
-    assert.equal(describe('-has:attachment'), 'Translated: exclude translated: messages with one or more attachment');
+    assert.equal(describe('-has:link'), 'Translated: exclude messages with one or more link');
+    assert.equal(describe('-has:image'), 'Translated: exclude messages with one or more image');
+    assert.equal(describe('-has:attachment'), 'Translated: exclude messages with one or more attachment');
 
     // operand suggestions follow.
 
@@ -522,11 +522,11 @@ run_test("check_is_suggestions", () => {
     expected = ["-i", "-is:private", "-is:starred", "-is:mentioned", "-is:alerted", "-is:unread"];
     assert.deepEqual(suggestions.strings, expected);
 
-    assert.equal(describe('-is:private'), 'Translated: exclude translated: private messages');
-    assert.equal(describe('-is:starred'), 'Translated: exclude translated: starred messages');
-    assert.equal(describe('-is:mentioned'), 'Translated: exclude translated: @-mentions');
-    assert.equal(describe('-is:alerted'), 'Translated: exclude translated: alerted messages');
-    assert.equal(describe('-is:unread'), 'Translated: exclude translated: unread messages');
+    assert.equal(describe('-is:private'), 'Translated: exclude private messages');
+    assert.equal(describe('-is:starred'), 'Translated: exclude starred messages');
+    assert.equal(describe('-is:mentioned'), 'Translated: exclude @-mentions');
+    assert.equal(describe('-is:alerted'), 'Translated: exclude alerted messages');
+    assert.equal(describe('-is:unread'), 'Translated: exclude unread messages');
 
     query = "";
     suggestions = get_suggestions("", query);
