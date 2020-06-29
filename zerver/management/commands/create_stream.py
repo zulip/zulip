@@ -21,4 +21,4 @@ the command."""
         assert realm is not None  # Should be ensured by parser
 
         stream_name = options['stream_name']
-        create_stream_if_needed(realm, stream_name)
+        create_stream_if_needed(realm, stream_name, acting_user=None)

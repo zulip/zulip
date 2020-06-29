@@ -1909,10 +1909,12 @@ def check_send_typing_notification(sender: UserProfile,
 def ensure_stream(realm: Realm,
                   stream_name: str,
                   invite_only: bool=False,
-                  stream_description: str="") -> Stream:
+                  stream_description: str="",
+                  acting_user: Optional[UserProfile]=None) -> Stream:
     return create_stream_if_needed(realm, stream_name,
                                    invite_only=invite_only,
-                                   stream_description=stream_description)[0]
+                                   stream_description=stream_description,
+                                   acting_user=acting_user)[0]
 
 def get_recipient_from_user_profiles(recipient_profiles: Sequence[UserProfile],
                                      forwarded_mirror_message: bool,
@@ -2404,7 +2406,7 @@ def _internal_prep_message(realm: Realm,
     if addressee.is_stream():
         stream_name = addressee.stream_name()
         if stream_name is not None:
-            ensure_stream(realm, stream_name)
+            ensure_stream(realm, stream_name, acting_user=sender)
 
     try:
         return check_message(sender, get_client("Internal"), addressee,
@@ -3675,7 +3677,7 @@ def do_create_realm(string_id: str, name: str,
     # Create stream once Realm object has been saved
     notifications_stream = ensure_stream(
         realm, Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
-        stream_description="Everyone is added to this stream by default. Welcome! :octopus:")
+        stream_description="Everyone is added to this stream by default. Welcome! :octopus:", acting_user=None)
     realm.notifications_stream = notifications_stream
 
     # With the current initial streams situation, the only public
@@ -3684,7 +3686,7 @@ def do_create_realm(string_id: str, name: str,
 
     signup_notifications_stream = ensure_stream(
         realm, Realm.INITIAL_PRIVATE_STREAM_NAME, invite_only=True,
-        stream_description="A private stream for core team members.")
+        stream_description="A private stream for core team members.", acting_user=None)
     realm.signup_notifications_stream = signup_notifications_stream
 
     realm.save(update_fields=['notifications_stream', 'signup_notifications_stream'])

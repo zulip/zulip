@@ -42,7 +42,7 @@ From image editing program:
 
     def add_message_formatting_conversation(self) -> None:
         realm = get_realm('zulip')
-        stream = ensure_stream(realm, 'zulip features')
+        stream = ensure_stream(realm, 'zulip features', acting_user=None)
 
         UserProfile.objects.filter(email__contains='stage').delete()
         starr = do_create_user('1@stage.example.com', 'password', realm, 'Ada Starr', '', acting_user=None)

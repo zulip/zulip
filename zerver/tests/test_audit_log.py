@@ -24,6 +24,7 @@ from zerver.lib.actions import (
     do_regenerate_api_key,
     get_streams_traffic,
 )
+from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import RealmAuditLog, UserProfile, get_client, get_realm
 
@@ -212,3 +213,12 @@ class TestRealmAuditLog(ZulipTestCase):
         log_entry = RealmAuditLog.objects.get(realm=realm, event_type=RealmAuditLog.REALM_REACTIVATED)
         extra_data = ujson.loads(log_entry.extra_data)
         self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
+
+    def test_create_stream_if_needed(self) -> None:
+        now = timezone_now()
+        realm = get_realm('zulip')
+        user = self.example_user('hamlet')
+        stream = create_stream_if_needed(realm, "test", invite_only=False, stream_description="Test Description", acting_user=user)[0]
+        self.assertEqual(RealmAuditLog.objects.filter(realm=realm, event_type=RealmAuditLog.STREAM_CREATED,
+                                                      event_time__gte=now, acting_user=user,
+                                                      modified_stream=stream).count(), 1)

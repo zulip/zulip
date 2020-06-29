@@ -2,6 +2,7 @@ from typing import Any, Iterable, List, Mapping, Optional, Set, Tuple, Union
 
 from django.conf import settings
 from django.db.models.query import QuerySet
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 
 from zerver.lib.markdown import markdown_convert
@@ -9,6 +10,7 @@ from zerver.lib.request import JsonableError
 from zerver.models import (
     DefaultStreamGroup,
     Realm,
+    RealmAuditLog,
     Recipient,
     Stream,
     Subscription,
@@ -59,7 +61,8 @@ def create_stream_if_needed(realm: Realm,
                             stream_post_policy: int=Stream.STREAM_POST_POLICY_EVERYONE,
                             history_public_to_subscribers: Optional[bool]=None,
                             stream_description: str="",
-                            message_retention_days: Optional[int]=None) -> Tuple[Stream, bool]:
+                            message_retention_days: Optional[int]=None,
+                            acting_user: Optional[UserProfile]=None) -> Tuple[Stream, bool]:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
         realm, invite_only, history_public_to_subscribers)
 
@@ -90,10 +93,16 @@ def create_stream_if_needed(realm: Realm,
             realm_admin_ids = [user.id for user in
                                stream.realm.get_admin_users_and_bots()]
             send_stream_creation_event(stream, realm_admin_ids)
+
+        event_time = timezone_now()
+        RealmAuditLog.objects.create(realm=realm, acting_user=acting_user,
+                                     modified_stream=stream, event_type=RealmAuditLog.STREAM_CREATED,
+                                     event_time=event_time)
     return stream, created
 
 def create_streams_if_needed(realm: Realm,
-                             stream_dicts: List[Mapping[str, Any]]) -> Tuple[List[Stream], List[Stream]]:
+                             stream_dicts: List[Mapping[str, Any]],
+                             acting_user: Optional[UserProfile]=None) -> Tuple[List[Stream], List[Stream]]:
     """Note that stream_dict["name"] is assumed to already be stripped of
     whitespace"""
     added_streams: List[Stream] = []
@@ -106,7 +115,8 @@ def create_streams_if_needed(realm: Realm,
             stream_post_policy=stream_dict.get("stream_post_policy", Stream.STREAM_POST_POLICY_EVERYONE),
             history_public_to_subscribers=stream_dict.get("history_public_to_subscribers"),
             stream_description=stream_dict.get("description", ""),
-            message_retention_days=stream_dict.get("message_retention_days", None)
+            message_retention_days=stream_dict.get("message_retention_days", None),
+            acting_user=acting_user
         )
 
         if created:
@@ -460,7 +470,8 @@ def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
         # paranoid approach, since often on Zulip two people will discuss
         # creating a new stream, and both people eagerly do it.)
         created_streams, dup_streams = create_streams_if_needed(realm=user_profile.realm,
-                                                                stream_dicts=missing_stream_dicts)
+                                                                stream_dicts=missing_stream_dicts,
+                                                                acting_user=user_profile)
         existing_streams += dup_streams
 
     return existing_streams, created_streams

@@ -2743,6 +2743,8 @@ class AbstractRealmAuditLog(models.Model):
     CUSTOMER_PLAN_CREATED = 502
     CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN = 503
 
+    STREAM_CREATED = 601
+
     event_type: int = models.PositiveSmallIntegerField()
 
     # event_types synced from on-prem installations to Zulip Cloud when

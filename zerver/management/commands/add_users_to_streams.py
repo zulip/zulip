@@ -29,7 +29,7 @@ class Command(ZulipBaseCommand):
 
         for stream_name in set(stream_names):
             for user_profile in user_profiles:
-                stream = ensure_stream(realm, stream_name)
+                stream = ensure_stream(realm, stream_name, acting_user=None)
                 _ignore, already_subscribed = bulk_add_subscriptions([stream], [user_profile])
                 was_there_already = user_profile.id in {tup[0].id for tup in already_subscribed}
                 print("{} {} to {}".format(

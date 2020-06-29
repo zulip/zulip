@@ -34,7 +34,7 @@ class Command(ZulipBaseCommand):
         if options["streams"]:
             stream_names = {stream.strip() for stream in options["streams"].split(",")}
             for stream_name in set(stream_names):
-                stream = ensure_stream(realm, stream_name)
+                stream = ensure_stream(realm, stream_name, acting_user=None)
                 streams.append(stream)
 
         referred_by = self.get_user(options['referred_by'], realm)
