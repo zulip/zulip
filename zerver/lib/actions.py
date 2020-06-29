@@ -4566,14 +4566,20 @@ def do_update_message(user_profile: UserProfile, message: Message,
 
         new_stream_sub_ids = [user.user_profile_id for user in subs_to_new_stream]
 
-        # Get guest users who aren't subscribed to the new_stream.
-        guest_subs_losing_access = [
+        # Get users who aren't subscribed to the new_stream.
+        subs_losing_usermessages  = [
             sub for sub in subscribers
+            if sub.user_profile_id not in new_stream_sub_ids
+        ]
+        # Users who can longer access the message without some action
+        # from admins.
+        # TODO: Extend for case when new stream is private.
+        subs_losing_access = [
+            sub for sub in subs_losing_usermessages
             if sub.user_profile.is_guest
-            and sub.user_profile_id not in new_stream_sub_ids
         ]
         ums = ums.exclude(user_profile_id__in=[
-            sub.user_profile_id for sub in guest_subs_losing_access])
+            sub.user_profile_id for sub in subs_losing_usermessages])
 
     if topic_name is not None:
         topic_name = truncate_topic(topic_name)
@@ -4600,12 +4606,12 @@ def do_update_message(user_profile: UserProfile, message: Message,
             assert stream_being_edited is not None
 
             message_ids = [msg.id for msg in changed_messages]
-            # Delete UserMessage objects from guest users who will no
+            # Delete UserMessage objects for users who will no
             # longer have access to these messages.  Note: This could be
             # very expensive, since it's N guest users x M messages.
             UserMessage.objects.filter(
                 user_profile_id__in=[sub.user_profile_id for sub in
-                                     guest_subs_losing_access],
+                                     subs_losing_usermessages],
                 message_id__in=message_ids,
             ).delete()
 
@@ -4616,7 +4622,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
                 'stream_id': stream_being_edited.id,
                 'topic': orig_topic_name,
             }
-            delete_event_notify_user_ids = [sub.user_profile_id for sub in guest_subs_losing_access]
+            delete_event_notify_user_ids = [sub.user_profile_id for sub in subs_losing_access]
             send_event(user_profile.realm, delete_event, delete_event_notify_user_ids)
 
     if message.edit_history is not None:
@@ -4665,9 +4671,8 @@ def do_update_message(user_profile: UserProfile, message: Message,
             subscribers = subscribers.exclude(user_profile_id__in=[um.user_profile_id for um in ums])
 
             if new_stream is not None:
-                assert guest_subs_losing_access is not None
-                # Exclude guest users who are not subscribed to the new stream from receing this event.
-                subscribers = subscribers.exclude(user_profile_id__in=[sub.user_profile_id for sub in guest_subs_losing_access])
+                assert subs_losing_access is not None
+                subscribers = subscribers.exclude(user_profile_id__in=[sub.user_profile_id for sub in subs_losing_access])
 
             # All users that are subscribed to the stream must be notified when a message is edited
             subscribers_ids = [user.user_profile_id for user in subscribers]
