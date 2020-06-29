@@ -318,7 +318,7 @@ def setup_old_emoji_farm(cache_path: str,
             pass
 
 def generate_map_files(cache_path: str, emoji_catalog: Dict[str, List[str]]) -> None:
-    # This function generates the data file consumed by webapp, mobile apps, bugdown etc.
+    # This function generates the data file consumed by webapp, mobile apps, markdown etc.
     names = emoji_names_for_picker(EMOJI_NAME_MAPS)
     codepoint_to_name = generate_codepoint_to_name_map(EMOJI_NAME_MAPS)
     name_to_codepoint = generate_name_to_codepoint_map(EMOJI_NAME_MAPS)
