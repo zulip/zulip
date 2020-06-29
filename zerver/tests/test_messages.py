@@ -3572,11 +3572,15 @@ class EditMessageTest(ZulipTestCase):
             "iago", "test move stream", "new stream", "test")
 
         guest_user = self.example_user('polonius')
+        non_guest_user = self.example_user('hamlet')
         self.subscribe(guest_user, old_stream.name)
+        self.subscribe(non_guest_user, old_stream.name)
+
         msg_id_to_test_acesss = self.send_stream_message(user_profile, old_stream.name,
                                                          topic_name='test', content="fourth")
 
         self.assertEqual(has_message_access(guest_user, Message.objects.get(id=msg_id_to_test_acesss), None), True)
+        self.assertEqual(has_message_access(non_guest_user, Message.objects.get(id=msg_id_to_test_acesss), None), True)
 
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
@@ -3587,6 +3591,11 @@ class EditMessageTest(ZulipTestCase):
         self.assert_json_success(result)
 
         self.assertEqual(has_message_access(guest_user, Message.objects.get(id=msg_id_to_test_acesss), None), False)
+        self.assertEqual(has_message_access(non_guest_user, Message.objects.get(id=msg_id_to_test_acesss), None), True)
+        self.assertEqual(UserMessage.objects.filter(
+            user_profile_id=non_guest_user.id,
+            message_id=msg_id_to_test_acesss,
+        ).count(), 0)
         self.assertEqual(has_message_access(self.example_user('iago'), Message.objects.get(id=msg_id_to_test_acesss), None), True)
 
     def test_no_notify_move_message_to_stream(self) -> None:
