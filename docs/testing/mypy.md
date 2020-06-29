@@ -193,7 +193,7 @@ have untracked files in your Zulip checkout safely).  So if you get a
 the existing codebase:
 
 ```
-mypy | zerver/models.py:1234: note: Import of 'zerver.lib.bugdown_wrappers' ignored
+mypy | zerver/models.py:1234: note: Import of 'zerver.lib.markdown_wrappers' ignored
 mypy | zerver/models.py:1234: note: (Using --follow-imports=error, module not passed on command line)
 ```
 
