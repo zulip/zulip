@@ -40,7 +40,7 @@ EMOTICON_CONVERSIONS = {
     '(:': ':slight_smile:',
     ':(': ':frown:',
     '<3': ':heart:',
-    ':|': ':expressionless:',
+    ':|': ':neutral:',
     ':/': ':confused:',
     ';)': ':wink:',
     ':D': ':grinning:',
