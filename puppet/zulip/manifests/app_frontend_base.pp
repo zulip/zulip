@@ -8,12 +8,12 @@ class zulip::app_frontend_base {
   include zulip::tornado_sharding
 
   if $::osfamily == 'debian' {
-    $web_packages = [
-      # This is not necessary on CentOS because $postgresql package already includes the client
-      # Needed to access our database
-      "postgresql-client-${zulip::base::postgres_version}",
-    ]
-    zulip::safepackage { $web_packages: ensure => 'installed' }
+    # Upgrade and other tooling wants to be able to get a database
+    # shell.  This is not necessary on CentOS because the postgresql
+    # package already includes the client.  This may get us a more
+    # recent client than the database server is configured to be,
+    # ($zulip::base::postgres_version), but they're compatible.
+    zulip::safepackage { 'postgresql-client': ensure => 'installed' }
   }
   # For Slack import
   zulip::safepackage { 'unzip': ensure => 'installed' }
