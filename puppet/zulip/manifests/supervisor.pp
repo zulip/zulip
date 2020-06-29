@@ -48,19 +48,22 @@ class zulip::supervisor {
       ],
       hasstatus  => true,
       status     => 'supervisorctl status',
-      # The "restart" option in the init script does not work.  We could
-      # tell Puppet to fall back to stop/start, which does work, but the
-      # better option is to tell supervisord to reread its config via
-      # supervisorctl and then to "update".  You need to do both --
-      # after a "reread", supervisor won't actually take actual based on
-      # the changed configuration until you do an "update" (I assume
-      # this is so you can check if your config file parses without
-      # doing anything, but it's really confusing)
+      # Restarting the whole supervisorctl on every update to its
+      # configuration files has the unfortunate side-effect of
+      # restarting all of the services it controls; this results in an
+      # unduly large disruption.  The better option is to tell
+      # supervisord to reread its config via supervisorctl and then to
+      # "update".  You need to do both -- after a "reread", supervisor
+      # won't actually take action based on the changed configuration
+      # until you do an "update" (I assume this is so you can check if
+      # your config file parses without doing anything, but it's
+      # really confusing).
       #
-      # Also, to handle the case that supervisord wasn't running at all,
-      # we check if it is not running and if so, start it.
+      # Also, to handle the case that supervisord wasn't running at
+      # all, we check if it is not running and if so, start it.
       #
-      # We use supervisor[d] as the pattern so the bash/grep commands don't match.
+      # We use supervisor[d] as the pattern so the bash/grep commands
+      # don't match.
       hasrestart => true,
       # lint:ignore:140chars
       restart    => "bash -c 'if pgrep -f supervisor[d] >/dev/null; then supervisorctl reread && supervisorctl update; else ${supervisor_start}; fi'"
