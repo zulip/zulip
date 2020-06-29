@@ -1,7 +1,7 @@
 # This manifest installs Zulip's Nagios plugins intended to be on
 # localhost on a Nagios server.
 #
-# Depends on zulip::base to have installed `nagios-plugins-basic`.
+# Depends on zulip::base to have installed `monitoring-plugins-basic`.
 class zulip::nagios {
   include zulip::common
   file { "${zulip::common::nagios_plugins_dir}/zulip_nagios_server":

@@ -59,7 +59,7 @@ class zulip_ops::zmirror {
   }
 
   file { '/usr/lib/nagios/plugins/zulip_zephyr_mirror':
-    require => Package[nagios-plugins-basic],
+    require => Package[$zulip::common::nagios_plugins],
     recurse => true,
     purge   => true,
     owner   => 'root',
