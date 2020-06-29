@@ -50,7 +50,7 @@ ONLY perform this on customer request from an authorized person.
                     if options['permission'] == "api_super_user":
                         do_change_is_api_super_user(user, True)
                     elif options['permission'] == "administer":
-                        do_change_user_role(user, UserProfile.ROLE_REALM_ADMINISTRATOR)
+                        do_change_user_role(user, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
                     print("Done!")
                 else:
                     print("Would have granted {} {} rights for {}".format(
@@ -62,7 +62,7 @@ ONLY perform this on customer request from an authorized person.
                     if options['permission'] == "api_super_user":
                         do_change_is_api_super_user(user, False)
                     elif options['permission'] == "administer":
-                        do_change_user_role(user, UserProfile.ROLE_MEMBER)
+                        do_change_user_role(user, UserProfile.ROLE_MEMBER, acting_user=None)
                     print("Done!")
                 else:
                     print("Would have removed {}'s {} rights on {}".format(email, options['permission'],

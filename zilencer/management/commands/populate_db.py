@@ -301,12 +301,12 @@ class Command(BaseCommand):
             create_users(zulip_realm, names, tos_version=settings.TOS_VERSION)
 
             iago = get_user_by_delivery_email("iago@zulip.com", zulip_realm)
-            do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR)
+            do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
             iago.is_staff = True
             iago.save(update_fields=['is_staff'])
 
             desdemona = get_user_by_delivery_email("desdemona@zulip.com", zulip_realm)
-            do_change_user_role(desdemona, UserProfile.ROLE_REALM_OWNER)
+            do_change_user_role(desdemona, UserProfile.ROLE_REALM_OWNER, acting_user=None)
 
             guest_user = get_user_by_delivery_email("polonius@zulip.com", zulip_realm)
             guest_user.role = UserProfile.ROLE_GUEST

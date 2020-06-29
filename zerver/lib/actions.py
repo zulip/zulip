@@ -3484,12 +3484,12 @@ def do_change_default_all_public_streams(user_profile: UserProfile, value: bool,
                                  )),
                    bot_owner_user_ids(user_profile))
 
-def do_change_user_role(user_profile: UserProfile, value: int) -> None:
+def do_change_user_role(user_profile: UserProfile, value: int, acting_user: Optional[UserProfile]=None) -> None:
     old_value = user_profile.role
     user_profile.role = value
     user_profile.save(update_fields=["role"])
     RealmAuditLog.objects.create(
-        realm=user_profile.realm, modified_user=user_profile,
+        realm=user_profile.realm, modified_user=user_profile, acting_user=acting_user,
         event_type=RealmAuditLog.USER_ROLE_CHANGED, event_time=timezone_now(),
         extra_data=ujson.dumps({
             RealmAuditLog.OLD_VALUE: old_value,

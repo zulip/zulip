@@ -64,7 +64,7 @@ class Command(BaseCommand):
             shylock = create_user('shylock@analytics.ds', 'Shylock', realm,
                                   full_name='Shylock', short_name='shylock',
                                   role=UserProfile.ROLE_REALM_ADMINISTRATOR)
-        do_change_user_role(shylock, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(shylock, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         stream = Stream.objects.create(
             name='all', realm=realm, date_created=installation_time)
         recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)

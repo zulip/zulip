@@ -66,17 +66,18 @@ class TestRealmAuditLog(ZulipTestCase):
         realm = get_realm('zulip')
         now = timezone_now()
         user_profile = self.example_user("hamlet")
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
-        do_change_user_role(user_profile, UserProfile.ROLE_GUEST)
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER)
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
+        acting_user = self.example_user('iago')
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=acting_user)
+        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=acting_user)
+        do_change_user_role(user_profile, UserProfile.ROLE_GUEST, acting_user=acting_user)
+        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=acting_user)
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=acting_user)
+        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=acting_user)
         old_values_seen = set()
         new_values_seen = set()
         for event in RealmAuditLog.objects.filter(
                 event_type=RealmAuditLog.USER_ROLE_CHANGED,
-                realm=realm, modified_user=user_profile,
+                realm=realm, modified_user=user_profile, acting_user=acting_user,
                 event_time__gte=now, event_time__lte=now+timedelta(minutes=60)):
             extra_data = ujson.loads(event.extra_data)
             self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
