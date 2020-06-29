@@ -31,31 +31,8 @@ a queue for you.
 {tab|js}
 
 More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
-```js
-const zulip = require('zulip-js');
 
-// Pass the path to your zuliprc file here.
-const config = {
-    zuliprc: 'zuliprc',
-};
-
-zulip(config).then((client) => {
-    // Register queue to receive messages for user
-    const queueParams = {
-        event_types: ['message']
-    };
-    client.queues.register(queueParams).then((res) => {
-        // Retrieve events from a queue
-        // Blocking until there is an event (or the request times out)
-        const eventParams = {
-            queue_id: res.queue_id,
-            last_event_id: -1,
-            dont_block: false,
-        };
-        client.events.retrieve(eventParams).then(console.log);
-    });
-});
-```
+{generate_code_example(javascript)|/events:get|example}
 
 {tab|curl}
 
