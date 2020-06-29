@@ -1153,7 +1153,7 @@ def support(request: HttpRequest) -> HttpResponse:
                 context["message"] = f"{realm.name} is no longer pending sponsorship."
         elif request.POST.get("scrub_realm", None) is not None:
             if request.POST.get("scrub_realm") == "scrub_realm":
-                do_scrub_realm(realm)
+                do_scrub_realm(realm, acting_user=request.user)
                 context["message"] = f"{realm.name} scrubbed."
 
     query = request.GET.get("q", None)

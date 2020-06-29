@@ -822,7 +822,7 @@ def do_change_realm_subdomain(realm: Realm, new_subdomain: str) -> None:
     realm.string_id = new_subdomain
     realm.save(update_fields=["string_id"])
 
-def do_scrub_realm(realm: Realm) -> None:
+def do_scrub_realm(realm: Realm, acting_user: Optional[UserProfile]=None) -> None:
     users = UserProfile.objects.filter(realm=realm)
     for user in users:
         do_delete_messages_by_sender(user)
@@ -837,6 +837,7 @@ def do_scrub_realm(realm: Realm) -> None:
     Attachment.objects.filter(realm=realm).delete()
 
     RealmAuditLog.objects.create(realm=realm, event_time=timezone_now(),
+                                 acting_user=acting_user,
                                  event_type=RealmAuditLog.REALM_SCRUBBED)
 
 def do_deactivate_user(user_profile: UserProfile,

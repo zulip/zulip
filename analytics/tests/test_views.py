@@ -639,7 +639,7 @@ class TestSupportEndpoint(ZulipTestCase):
 
         with mock.patch("analytics.views.do_scrub_realm") as m:
             result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}", "scrub_realm": "scrub_realm"})
-            m.assert_called_once_with(lear_realm)
+            m.assert_called_once_with(lear_realm, acting_user=self.example_user("iago"))
             self.assert_in_success_response(["Lear &amp; Co. scrubbed"], result)
 
         with mock.patch("analytics.views.do_scrub_realm") as m:
