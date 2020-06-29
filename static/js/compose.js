@@ -817,13 +817,14 @@ exports.render_and_show_preview = function (preview_spinner, preview_content_box
             const spinner = preview_spinner.expectOne();
             loading.make_indicator(spinner);
         } else {
-            // For messages that don't appear to contain
-            // bugdown-specific syntax not present in our
-            // marked.js frontend processor, we render using the
-            // frontend markdown processor message (but still
-            // render server-side to ensure the preview is
-            // accurate; if the `markdown.contains_backend_only_syntax` logic is
-            // incorrect wrong, users will see a brief flicker).
+            // For messages that don't appear to contain syntax that
+            // is only supported by our backend markdown processor, we
+            // render using the frontend markdown processor (but still
+            // render server-side to ensure the preview is accurate;
+            // if the `markdown.contains_backend_only_syntax` logic is
+            // wrong, users will see a brief flicker of the locally
+            // echoed frontend rendering before receiving the
+            // authoritative backend rendering from the server).
             const message_obj = {
                 raw_content: content,
             };
