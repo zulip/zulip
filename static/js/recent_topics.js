@@ -222,16 +222,14 @@ exports.topic_in_search_results = function (keyword, stream, topic) {
     // Escape speacial characters from input.
     // https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
     keyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    // split the search text around whitespace(s).
-    // eg: "Denamark recent" -> ["Denamrk", "recent"]
-    const search_keywords = $.trim(keyword).split(/\s+/);
-    // turn the search keywords into word boundary groups
-    // eg: ["Denamrk", "recent"] -> "^(?=.*(?:^|\s)Denmark(?:^|\s))(?=.*(?:^|\s)Recent).*$"
-    // https://stackoverflow.com/questions/10590098/javascript-regexp-word-boundaries-unicode-characters
-    const val = '^(?=.*(?:^|\\s)' + search_keywords.join('(?:^|\\s))(?=.*(?:^|\\s)') + ').*$';
-    const reg = RegExp(val, 'i'); // i for ignorecase
-    const text = (stream + " " + topic).replace(/\s+/g, ' ');
-    return reg.test(text);
+    const text = (stream + ' ' + topic).toLowerCase().replace(/\s+/g, ' ');
+    const search_words = keyword.toLowerCase().replace(/\s+/g, ' ').split(' ');
+    return search_words.every(word => {
+        if (text.search(word) !== -1) {
+            return true;
+        }
+        return false;
+    });
 };
 
 function filters_should_hide_topic(topic_data) {
