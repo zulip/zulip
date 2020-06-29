@@ -52,6 +52,7 @@ const ExamplesHandler = function () {
         await generate_validation_data(client, examples.remove_subscriptions);
         await generate_validation_data(client, examples.update_message_flags);
         await generate_validation_data(client, examples.update_message);
+        await generate_validation_data(client, examples.get_events);
 
         console.log(JSON.stringify(response_data));
         return;
@@ -321,6 +322,34 @@ add_example('update_message', '/messages/{message_id}:patch', 200, async (client
     };
 
     return await client.messages.update(params);
+    // {code_example|end}
+});
+
+add_example('get_events', '/events:get', 200, async (client) => {
+    // Register queue to receive messages for user.
+    const queueParams = {
+        event_types: ['message'],
+    };
+    const res = await client.queues.register(queueParams);
+    const queue_id = res.queue_id;
+    // For setup, we send a message to ensure there are events in the
+    // queue; this lets the automated tests complete quickly.
+    const params = {
+        to: 'social',
+        type: 'stream',
+        topic: 'Castle',
+        content: 'I come not, friends, to steal away your hearts.',
+    };
+    client.messages.send(params);
+
+    // {code_example|start}
+    // Retrieve events from a queue with given "queue_id"
+    const eventParams = {
+        queue_id: queue_id,
+        last_event_id: -1,
+    };
+
+    return await client.events.retrieve(eventParams);
     // {code_example|end}
 });
 

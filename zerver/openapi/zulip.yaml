@@ -158,8 +158,13 @@ paths:
                       items:
                         type: object
                         additionalProperties: false
+                    queue_id:
+                      type: string
+                      description: |
+                        The ID of the registered queue.
                 - example:
                     {
+                        "queue_id": "1375801870:2942",
                         "events": [
                             {
                                 "id": 0,
