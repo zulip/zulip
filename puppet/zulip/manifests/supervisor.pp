@@ -1,10 +1,6 @@
 class zulip::supervisor {
   package { 'supervisor': ensure => 'installed' }
 
-  $supervisord_conf = $::osfamily ? {
-    'debian' => '/etc/supervisor/supervisord.conf',
-    'redhat' => '/etc/supervisord.conf',
-  }
   # Command to start supervisor
   $supervisor_start = $::osfamily ? {
     'debian' => '/etc/init.d/supervisor start',
@@ -71,7 +67,7 @@ class zulip::supervisor {
     }
   }
 
-  file { $supervisord_conf:
+  file { $zulip::common::supervisor_conf_file:
     ensure  => file,
     require => Package[supervisor],
     owner   => 'root',
