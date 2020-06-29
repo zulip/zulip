@@ -20,7 +20,7 @@ class zulip_ops::prod_app_frontend {
   }
 
   file { '/usr/lib/nagios/plugins/zulip_zephyr_mirror':
-    require => Package[nagios-plugins-basic],
+    require => Package[$zulip::common::nagios_plugins],
     recurse => true,
     purge   => true,
     owner   => 'root',

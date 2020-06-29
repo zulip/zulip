@@ -29,8 +29,8 @@ class zulip::base {
         'moreutils',
         # Used in scripts
         'netcat',
-        # Nagios plugins; needed to ensure $zulip::common::nagios_plugins exists
-        'nagios-plugins-basic',
+        # Nagios monitoring plugins
+        $zulip::common::nagios_plugins,
         # Required for using HTTPS in apt repositories.
         'apt-transport-https',
         # Needed for the cron jobs installed by puppet
