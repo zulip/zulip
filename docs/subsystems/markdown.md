@@ -1,10 +1,10 @@
 # Markdown implementation
 
-Zulip has a special flavor of Markdown, currently called 'bugdown'
-after Zulip's original name of "humbug". End users are using Bugdown
-within the client, not original Markdown.
+Zulip has a special flavor of Markdown, previously called 'bugdown'
+after Zulip's original name of "humbug". Bugdown word is replaced by markdown now.
+End users are using Zulip flavor markdown within the client, not original Markdown.
 
-Zulip has two implementations of Bugdown.  The backend implementation
+Zulip has two implementations of Markdown. The backend implementation
 at `zerver/lib/markdown/` is based on
 [Python-Markdown](https://pypi.python.org/pypi/Markdown) and is used to
 authoritatively render messages to HTML (and implements
@@ -140,7 +140,7 @@ At a backend code level, these are controlled by the `message_realm`
 object and other arguments passed into `do_convert` (`sent_by_bot`,
 `translate_emoticons`, `mention_data`, etc.).  Because
 `python-markdown` doesn't support directly passing arguments into the
-markdown processor, Bugdown attaches these data to the Markdown
+markdown processor, Zulip's Markdown attaches these data to the Markdown
 processor object via e.g. `_md_engine.zulip_db_data`, and then
 individual markdown rules can access the data from there.
 
