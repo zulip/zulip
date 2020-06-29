@@ -15,7 +15,7 @@ let helpers;
 const realm_filter_map = new Map();
 let realm_filter_list = [];
 
-// Regexes that match some of our common bugdown markup
+// Regexes that match some of our common backend markdown markup
 const backend_only_markdown_re = [
     // Inline image previews, check for contiguous chars ending in image suffix
     // To keep the below regexes simple, split them out for the end-of-message case
@@ -68,7 +68,7 @@ exports.translate_emoticons_to_names = (text) => {
 };
 
 exports.contains_backend_only_syntax = function (content) {
-    // Try to guess whether or not a message has bugdown in it
+    // Try to guess whether or not a message has backend markdown in it
     // If it doesn't, we can immediately render it client-side
     const markedup = backend_only_markdown_re.find(re => re.test(content));
 
@@ -292,8 +292,8 @@ function handleTimestamp(time) {
     let timeobject;
     if (isNaN(time)) {
         // Moment throws a large deprecation warning when it has to fallback
-        // to the Date() constructor. We needn't worry here and can let bugdown
-        // handle any dates that moment misses.
+        // to the Date() constructor. We needn't worry here and can let backend
+        // markdown handle any dates that moment misses.
         moment.suppressDeprecationWarnings = true;
         timeobject = moment(time); // not a Unix timestamp
     } else {
@@ -460,7 +460,7 @@ exports.initialize = function (realm_filters, helper_config) {
     const old_link = r.link;
     r.link = (href, title, text) => old_link.call(r, href, title, text.trim() ? text : href);
 
-    // Put a newline after a <br> in the generated HTML to match bugdown
+    // Put a newline after a <br> in the generated HTML to match markdown
     r.br = function () {
         return '<br>\n';
     };
