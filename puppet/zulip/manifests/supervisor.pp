@@ -1,8 +1,5 @@
 class zulip::supervisor {
-  $supervisor_packages = [# Needed to run supervisor
-                          'supervisor',
-                          ]
-  package { $supervisor_packages: ensure => 'installed' }
+  package { 'supervisor': ensure => 'installed' }
 
   $supervisord_conf = $::osfamily ? {
     'debian' => '/etc/supervisor/supervisord.conf',
