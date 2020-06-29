@@ -12,16 +12,11 @@ class zulip::app_frontend_base {
       # This is not necessary on CentOS because $postgresql package already includes the client
       # Needed to access our database
       "postgresql-client-${zulip::base::postgres_version}",
-      # Needed for Slack import
-      'unzip',
     ]
-  } else {
-      $web_packages = [
-        # Needed for Slack import
-        'unzip',
-      ]
+    zulip::safepackage { $web_packages: ensure => 'installed' }
   }
-  zulip::safepackage { $web_packages: ensure => 'installed' }
+  # For Slack import
+  zulip::safepackage { 'unzip': ensure => 'installed' }
 
   file { '/etc/nginx/zulip-include/app':
     require => Package[$zulip::common::nginx],
