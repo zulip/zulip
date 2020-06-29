@@ -1903,7 +1903,7 @@ class NormalActionsTest(BaseAction):
         schema_checker('events[0]', events[0])
 
     def test_change_realm_day_mode_logo_source(self) -> None:
-        action = lambda: do_change_logo_source(self.user_profile.realm, Realm.LOGO_UPLOADED, False)
+        action = lambda: do_change_logo_source(self.user_profile.realm, Realm.LOGO_UPLOADED, False, acting_user=self.user_profile)
         events = self.verify_action(action, state_change_expected=True)
         schema_checker = check_events_dict([
             ('type', equals('realm')),
@@ -1917,7 +1917,7 @@ class NormalActionsTest(BaseAction):
         schema_checker('events[0]', events[0])
 
     def test_change_realm_night_mode_logo_source(self) -> None:
-        action = lambda: do_change_logo_source(self.user_profile.realm, Realm.LOGO_UPLOADED, True)
+        action = lambda: do_change_logo_source(self.user_profile.realm, Realm.LOGO_UPLOADED, True, acting_user=self.user_profile)
         events = self.verify_action(action, state_change_expected=True)
         schema_checker = check_events_dict([
             ('type', equals('realm')),

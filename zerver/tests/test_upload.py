@@ -1382,18 +1382,20 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         self.assert_json_error(result, 'Available on Zulip Standard. Upgrade to access.')
 
     def test_get_default_logo(self) -> None:
-        self.login('hamlet')
-        realm = get_realm('zulip')
-        do_change_logo_source(realm, Realm.LOGO_DEFAULT, self.night)
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        realm = user_profile.realm
+        do_change_logo_source(realm, Realm.LOGO_DEFAULT, self.night, acting_user=user_profile)
         response = self.client_get("/json/realm/logo", {'night': ujson.dumps(self.night)})
         redirect_url = response['Location']
         is_night_str = str(self.night).lower()
         self.assertEqual(redirect_url, f"/static/images/logo/zulip-org-logo.png?version=0&night={is_night_str}")
 
-    def test_get_uploaded_logo(self) -> None:
-        self.login('hamlet')
-        realm = get_realm('zulip')
-        do_change_logo_source(realm, Realm.LOGO_UPLOADED, self.night)
+    def test_get_realm_logo(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        realm = user_profile.realm
+        do_change_logo_source(realm, Realm.LOGO_UPLOADED, self.night, acting_user=user_profile)
         response = self.client_get("/json/realm/logo", {'night': ujson.dumps(self.night)})
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(get_realm_logo_url(realm, self.night) +
@@ -1454,10 +1456,10 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         """
         A DELETE request to /json/realm/logo should delete the realm logo and return gravatar URL
         """
-
-        self.login('iago')
-        realm = get_realm('zulip')
-        do_change_logo_source(realm, Realm.LOGO_UPLOADED, self.night)
+        user_profile = self.example_user("iago")
+        self.login_user(user_profile)
+        realm = user_profile.realm
+        do_change_logo_source(realm, Realm.LOGO_UPLOADED, self.night, acting_user=user_profile)
         result = self.client_delete("/json/realm/logo", {'night': ujson.dumps(self.night)})
         self.assert_json_success(result)
         realm = get_realm('zulip')

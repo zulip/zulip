@@ -28,7 +28,7 @@ def upload_logo(request: HttpRequest, user_profile: UserProfile,
             settings.MAX_LOGO_FILE_SIZE,
         ))
     upload_logo_image(logo_file, user_profile, night)
-    do_change_logo_source(user_profile.realm, user_profile.realm.LOGO_UPLOADED, night)
+    do_change_logo_source(user_profile.realm, user_profile.realm.LOGO_UPLOADED, night, acting_user=user_profile)
     return json_success()
 
 @require_realm_admin
@@ -38,7 +38,7 @@ def delete_logo_backend(request: HttpRequest, user_profile: UserProfile,
     # We don't actually delete the logo because it might still
     # be needed if the URL was cached and it is rewrited
     # in any case after next update.
-    do_change_logo_source(user_profile.realm, user_profile.realm.LOGO_DEFAULT, night)
+    do_change_logo_source(user_profile.realm, user_profile.realm.LOGO_DEFAULT, night, acting_user=user_profile)
     return json_success()
 
 @has_request_variables

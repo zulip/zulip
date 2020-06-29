@@ -283,10 +283,10 @@ class ImportExportTest(ZulipTestCase):
 
         with get_test_image_file('img.png') as img_file:
             upload.upload_backend.upload_realm_logo_image(img_file, user_profile, night=False)
-            do_change_logo_source(realm, Realm.LOGO_UPLOADED, False)
+            do_change_logo_source(realm, Realm.LOGO_UPLOADED, False, acting_user=user_profile)
         with get_test_image_file('img.png') as img_file:
             upload.upload_backend.upload_realm_logo_image(img_file, user_profile, night=True)
-            do_change_logo_source(realm, Realm.LOGO_UPLOADED, True)
+            do_change_logo_source(realm, Realm.LOGO_UPLOADED, True, acting_user=user_profile)
 
         test_image = get_test_image_file('img.png').read()
         message.sender.avatar_source = 'U'

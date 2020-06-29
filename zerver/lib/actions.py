@@ -3365,7 +3365,7 @@ def do_change_icon_source(realm: Realm, icon_source: str, log: bool=True) -> Non
                               icon_url=realm_icon_url(realm))),
                active_user_ids(realm.id))
 
-def do_change_logo_source(realm: Realm, logo_source: str, night: bool) -> None:
+def do_change_logo_source(realm: Realm, logo_source: str, night: bool, acting_user: Optional[UserProfile]=None) -> None:
     if not night:
         realm.logo_source = logo_source
         realm.logo_version += 1
@@ -3377,7 +3377,8 @@ def do_change_logo_source(realm: Realm, logo_source: str, night: bool) -> None:
         realm.save(update_fields=["night_logo_source", "night_logo_version"])
 
     RealmAuditLog.objects.create(event_type=RealmAuditLog.REALM_LOGO_CHANGED,
-                                 realm=realm, event_time=timezone_now())
+                                 realm=realm, event_time=timezone_now(),
+                                 acting_user=acting_user)
 
     event = dict(type='realm',
                  op='update_dict',
