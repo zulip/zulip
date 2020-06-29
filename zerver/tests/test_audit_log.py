@@ -184,17 +184,19 @@ class TestRealmAuditLog(ZulipTestCase):
         now = timezone_now()
         user = [self.example_user('hamlet')]
         stream = [self.make_stream('test_stream')]
-
-        bulk_add_subscriptions(stream, user)
+        acting_user = self.example_user('iago')
+        bulk_add_subscriptions(stream, user, acting_user=acting_user)
         subscription_creation_logs = RealmAuditLog.objects.filter(event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
-                                                                  event_time__gte=now)
+                                                                  event_time__gte=now, acting_user=acting_user, modified_user=user[0],
+                                                                  modified_stream=stream[0])
         self.assertEqual(subscription_creation_logs.count(), 1)
         self.assertEqual(subscription_creation_logs[0].modified_stream.id, stream[0].id)
         self.assertEqual(subscription_creation_logs[0].modified_user, user[0])
 
-        bulk_remove_subscriptions(user, stream, get_client("website"))
+        bulk_remove_subscriptions(user, stream, get_client("website"), acting_user=acting_user)
         subscription_deactivation_logs = RealmAuditLog.objects.filter(event_type=RealmAuditLog.SUBSCRIPTION_DEACTIVATED,
-                                                                      event_time__gte=now)
+                                                                      event_time__gte=now, acting_user=acting_user, modified_user=user[0],
+                                                                      modified_stream=stream[0])
         self.assertEqual(subscription_deactivation_logs.count(), 1)
         self.assertEqual(subscription_deactivation_logs[0].modified_stream.id, stream[0].id)
         self.assertEqual(subscription_deactivation_logs[0].modified_user, user[0])

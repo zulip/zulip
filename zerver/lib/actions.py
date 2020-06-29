@@ -3043,6 +3043,7 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
     all_subscription_logs: (List[RealmAuditLog]) = []
     for (sub, stream) in subs_to_deactivate:
         all_subscription_logs.append(RealmAuditLog(realm=sub.user_profile.realm,
+                                                   acting_user=acting_user,
                                                    modified_user=sub.user_profile,
                                                    modified_stream=stream,
                                                    event_last_message_id=event_last_message_id,
