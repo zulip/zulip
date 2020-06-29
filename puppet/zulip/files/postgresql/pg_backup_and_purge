@@ -56,7 +56,7 @@ backups: Dict[datetime, str] = {}
 lines = run(['env-wal-g', 'backup-list']).split("\n")
 for line in lines[1:]:
     if line:
-        backup_name, date_str, _, _ = line.split()
+        backup_name, date_str, _ = line.split()
         backups[dateutil.parser.parse(date_str)] = backup_name
 
 one_month_ago = now - timedelta(days=30)
