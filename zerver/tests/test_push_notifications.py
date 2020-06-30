@@ -30,6 +30,7 @@ from zerver.lib.encryption import decrypt_data, generate_encryption_key
 from zerver.lib.push_notifications import (
     DeviceToken,
     absolute_avatar_url,
+    add_push_device_token,
     b64_to_hex,
     datetime_to_timestamp,
     encrypt_payload,
@@ -77,6 +78,7 @@ from zerver.models import (
     receives_online_notifications,
     receives_stream_notifications,
 )
+from zerver.views.push_notifications import device_registration_response
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import (
@@ -2318,3 +2320,25 @@ class PushBouncerSignupTest(ZulipTestCase):
         )
         result = self.client_post("/api/v1/remotes/server/register", request)
         self.assert_json_error(result, f"Zulip server auth failure: key does not match role {zulip_org_id}")
+
+class TestDeviceRegistrationResponse(ZulipTestCase):
+    def test_device_registration_response(self) -> None:
+        hamlet = self.example_user('hamlet')
+        token = 'bbbb'
+        device = add_push_device_token(hamlet, token,
+                                       PushDeviceToken.APNS,
+                                       ios_app_id='apple-1',
+                                       encrypt_notifications=True)
+
+        response = device_registration_response(device)
+        data = orjson.loads(response.content)
+        self.assertEqual(data['result'], 'success')
+        # Key should not be included because PUSH_NOTIFICATION_ENCRYPTION
+        # is initially set to False.
+        self.assertNotIn('encryption_key', data)
+
+        with self.settings(PUSH_NOTIFICATION_ENCRYPTION=True):
+            response = device_registration_response(device)
+            data = orjson.loads(response.content)
+            self.assertEqual(data['result'], 'success')
+            self.assertIn('encryption_key', data)
