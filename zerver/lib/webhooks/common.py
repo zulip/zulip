@@ -145,7 +145,7 @@ def get_fixture_http_headers(integration_name: str,
         # TODO: We may want to migrate to a more explicit registration
         # strategy for this behavior rather than a try/except import.
         view_module = importlib.import_module(view_module_name)
-        fixture_to_headers = view_module.fixture_to_headers  # type: ignore[attr-defined] # we do extra exception handling in case it does not exist below.
+        fixture_to_headers = getattr(view_module, "fixture_to_headers")
     except (ImportError, AttributeError):
         return {}
     return fixture_to_headers(fixture_name)
