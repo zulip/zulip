@@ -39,6 +39,11 @@ const HOTSPOT_LOCATIONS = new Map([
         offset_x: 0,
         offset_y: 0,
     }],
+    ["intro_drafts", {
+        element: '.new_message_button .drafts-link',
+        offset_x: 0,
+        offset_y: 0,
+    }],
 ]);
 
 // popover illustration url(s)

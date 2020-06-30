@@ -33,6 +33,11 @@ ALL_HOTSPOTS: Dict[str, Dict[str, str]] = {
         'description': _('Click here to start a new conversation. Pick a topic '
                          '(2-3 words is best), and give it a go!'),
     },
+    'intro_drafts': {
+        'title': _('Drafts'),
+        'description': _('Any unsent message is automatically saved as a draft. '
+                         'Click on the drafts button to access them at anytime.'),
+    },
 }
 
 def get_next_hotspots(user: UserProfile) -> List[Dict[str, object]]:
@@ -53,7 +58,8 @@ def get_next_hotspots(user: UserProfile) -> List[Dict[str, object]]:
         return []
 
     seen_hotspots = frozenset(UserHotspot.objects.filter(user=user).values_list('hotspot', flat=True))
-    for hotspot in ['intro_reply', 'intro_streams', 'intro_topics', 'intro_gear', 'intro_compose']:
+    for hotspot in ['intro_reply', 'intro_streams', 'intro_topics', 'intro_gear',
+                    'intro_compose', 'intro_drafts']:
         if hotspot not in seen_hotspots:
             return [{
                 'name': hotspot,
