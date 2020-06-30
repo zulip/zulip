@@ -2205,26 +2205,27 @@ def send_pm_if_empty_stream(stream: Optional[Stream],
         return
 
     arg_dict = {
-        "bot_identity": sender.delivery_email,
+        "bot_identity": f"`{sender.delivery_email}`",
         "stream_id": stream_id,
-        "stream_name": stream_name,
+        "stream_name": f"#**{stream_name}**",
+        "new_stream_link": "#streams/new",
     }
     if sender.bot_owner is not None:
         with override_language(sender.bot_owner.default_language):
             if stream is None:
                 if stream_id is not None:
-                    content = _("Your bot `{bot_identity}` tried to send a message to stream ID "
+                    content = _("Your bot {bot_identity} tried to send a message to stream ID "
                                 "{stream_id}, but there is no stream with that ID.").format(**arg_dict)
                 else:
                     assert(stream_name is not None)
-                    content = _("Your bot `{bot_identity}` tried to send a message to stream "
-                                "#**{stream_name}**, but that stream does not exist. "
-                                "Click [here](#streams/new) to create it.").format(**arg_dict)
+                    content = _("Your bot {bot_identity} tried to send a message to stream "
+                                "{stream_name}, but that stream does not exist. "
+                                "Click [here]({new_stream_link}) to create it.").format(**arg_dict)
             else:
                 if num_subscribers_for_stream_id(stream.id) > 0:
                     return
-                content = _("Your bot `{bot_identity}` tried to send a message to "
-                            "stream #**{stream_name}**. The stream exists but "
+                content = _("Your bot {bot_identity} tried to send a message to "
+                            "stream {stream_name}. The stream exists but "
                             "does not have any subscribers.").format(**arg_dict)
 
         send_rate_limited_pm_notification_to_bot_owner(sender, realm, content)
