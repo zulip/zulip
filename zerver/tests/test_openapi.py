@@ -528,9 +528,9 @@ do not match the types declared in the implementation of {function.__name__}.\n"
         # the API-level argument types.  The main case where this
         # happens is when a `converter` is used that changes the types
         # of its parameters.
-        for vname, defval in inspect.signature(function).parameters.items():
+        for pname, defval in inspect.signature(function).parameters.items():
             defval = defval.default
-            if defval.__class__ is _REQ:
+            if isinstance(defval, _REQ):
                 # TODO: The below inference logic in cases where
                 # there's a converter function declared is incorrect.
                 # Theoretically, we could restructure the converter
@@ -538,8 +538,9 @@ do not match the types declared in the implementation of {function.__name__}.\n"
                 # excepts to be passed to make validation here
                 # possible.
 
-                vtype = self.get_standardized_argument_type(function.__annotations__[vname])
-                vname = defval.post_var_name  # type: ignore[attr-defined] # See zerver/lib/request.py
+                vtype = self.get_standardized_argument_type(function.__annotations__[pname])
+                vname = defval.post_var_name
+                assert vname is not None
                 if vname in json_params:
                     # Here we have two cases.  If the the REQ type is
                     # string then there is no point in comparing as
