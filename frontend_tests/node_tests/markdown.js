@@ -467,7 +467,7 @@ run_test("marked", () => {
         {
             input: ":)",
             expected:
-                '<p><span aria-label="slight smile" class="emoji emoji-1f642" role="img" title="slight smile">:slight_smile:</span></p>',
+                '<p><span aria-label="smile" class="emoji emoji-1f642" role="img" title="smile">:smile:</span></p>',
             translate_emoticons: true,
         },
         // Test HTML Escape in Custom Zulip Rules
@@ -708,7 +708,7 @@ run_test("katex_throws_unexpected_exceptions", () => {
 run_test("translate_emoticons_to_names", () => {
     // Simple test
     const test_text = "Testing :)";
-    const expected = "Testing :slight_smile:";
+    const expected = "Testing :smile:";
     const result = markdown.translate_emoticons_to_names(test_text);
     assert.equal(expected, result);
 

@@ -58,8 +58,8 @@ people.add_active_user(cali);
 const message = {
     id: 1001,
     reactions: [
-        {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "263a"},
-        {emoji_name: "smile", user_id: 6, reaction_type: "unicode_emoji", emoji_code: "263a"},
+        {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f642"},
+        {emoji_name: "smile", user_id: 6, reaction_type: "unicode_emoji", emoji_code: "1f642"},
         {emoji_name: "frown", user_id: 7, reaction_type: "unicode_emoji", emoji_code: "1f641"},
         {
             emoji_name: "inactive_realm_emoji",
@@ -126,7 +126,7 @@ run_test("basics", () => {
     blueslip.expect("warn", "Unknown user_id 8888 in reaction for message 1001");
     blueslip.expect("warn", "Unknown user_id 9999 in reaction for message 1001");
     const result = reactions.get_message_reactions(message);
-    assert(reactions.current_user_has_reacted_to_emoji(message, "unicode_emoji,263a"));
+    assert(reactions.current_user_has_reacted_to_emoji(message, "unicode_emoji,1f642"));
     assert(!reactions.current_user_has_reacted_to_emoji(message, "bogus"));
 
     result.sort((a, b) => a.count - b.count);
@@ -159,8 +159,8 @@ run_test("basics", () => {
         {
             emoji_name: "smile",
             reaction_type: "unicode_emoji",
-            emoji_code: "263a",
-            local_id: "unicode_emoji,263a",
+            emoji_code: "1f642",
+            local_id: "unicode_emoji,1f642",
             count: 2,
             user_ids: [5, 6],
             label: "You (click to remove) and Bob van Roberts reacted with :smile:",
@@ -188,7 +188,7 @@ run_test("sending", () => {
         assert.deepEqual(args.data, {
             reaction_type: "unicode_emoji",
             emoji_name: "smile",
-            emoji_code: "263a",
+            emoji_code: "1f642",
         });
         // args.success() does nothing; just make sure it doesn't crash
         args.success();
@@ -277,7 +277,7 @@ run_test("get_reaction_section", () => {
 
 run_test("emoji_reaction_title", () => {
     const message_id = 1001;
-    const local_id = "unicode_emoji,263a";
+    const local_id = "unicode_emoji,1f642";
 
     assert.equal(
         reactions.get_reaction_title_data(message_id, local_id),
@@ -685,11 +685,11 @@ run_test("process_reaction_click", () => {
     expected_reaction_info = {
         reaction_type: "unicode_emoji",
         emoji_name: "smile",
-        emoji_code: "263a",
+        emoji_code: "1f642",
     };
     global.with_stub((stub) => {
         global.channel.del = stub.f;
-        reactions.process_reaction_click(message_id, "unicode_emoji,263a");
+        reactions.process_reaction_click(message_id, "unicode_emoji,1f642");
         const args = stub.get_args("args").args;
         assert.equal(args.url, "/json/messages/1001/reactions");
         assert.deepEqual(args.data, expected_reaction_info);
@@ -730,12 +730,15 @@ run_test("duplicates", () => {
     const dup_reaction_message = {
         id: 1001,
         reactions: [
-            {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "263a"},
-            {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "263a"},
+            {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f642"},
+            {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f642"},
         ],
     };
 
-    blueslip.expect("error", "server sent duplicate reactions for user 5 (key=unicode_emoji,263a)");
+    blueslip.expect(
+        "error",
+        "server sent duplicate reactions for user 5 (key=unicode_emoji,1f642)",
+    );
     reactions.set_clean_reactions(dup_reaction_message);
 });
 

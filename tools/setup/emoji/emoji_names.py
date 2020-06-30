@@ -16,11 +16,11 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f602': {'canonical_name': 'joy', 'aliases': ['tears', 'laughter_tears']},
     '1f923': {'canonical_name': 'rolling_on_the_floor_laughing', 'aliases': ['rofl']},
     # not sure how the glyphs match relaxed, but both iamcal and gemoji have it
-    '263a': {'canonical_name': 'smile', 'aliases': ['relaxed']},
+    '263a': {'canonical_name': 'smiling_face', 'aliases': ['relaxed']},
     '1f60a': {'canonical_name': 'blush', 'aliases': []},
     # halo comes from gemoji/unicode
     '1f607': {'canonical_name': 'innocent', 'aliases': ['halo']},
-    '1f642': {'canonical_name': 'slight_smile', 'aliases': []},
+    '1f642': {'canonical_name': 'smile', 'aliases': []},
     '1f643': {'canonical_name': 'upside_down', 'aliases': ['oops']},
     '1f609': {'canonical_name': 'wink', 'aliases': []},
     '1f60c': {'canonical_name': 'relieved', 'aliases': []},
