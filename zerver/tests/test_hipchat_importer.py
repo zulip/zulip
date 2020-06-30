@@ -12,7 +12,7 @@ class HipChatImporter(ZulipTestCase):
         user_handler = UserHandler()
 
         user_id_mapper = IdMapper()
-        user_id_mapper.has = lambda key: True  # type: ignore[assignment] # it's just a stub
+        self.assertEqual(user_id_mapper.get(1), 1)
 
         # Simulate a "normal" user first.
         user_with_id = dict(
