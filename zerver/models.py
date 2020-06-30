@@ -2941,10 +2941,10 @@ class Service(models.Model):
         return self._interfaces[self.interface]
 
 
-def get_bot_services(user_profile_id: str) -> List[Service]:
+def get_bot_services(user_profile_id: int) -> List[Service]:
     return list(Service.objects.filter(user_profile__id=user_profile_id))
 
-def get_service_profile(user_profile_id: str, service_name: str) -> Service:
+def get_service_profile(user_profile_id: int, service_name: str) -> Service:
     return Service.objects.get(user_profile__id=user_profile_id, name=service_name)
 
 

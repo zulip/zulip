@@ -5782,7 +5782,7 @@ def do_update_bot_config_data(bot_profile: UserProfile,
                     ),
                bot_owner_user_ids(bot_profile))
 
-def get_service_dicts_for_bot(user_profile_id: str) -> List[Dict[str, Any]]:
+def get_service_dicts_for_bot(user_profile_id: int) -> List[Dict[str, Any]]:
     user_profile = get_user_profile_by_id(user_profile_id)
     services = get_bot_services(user_profile_id)
     service_dicts: List[Dict[str, Any]] = []
