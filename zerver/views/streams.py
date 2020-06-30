@@ -535,15 +535,15 @@ def add_subscriptions_backend(
         if notifications_stream is not None:
             with override_language(notifications_stream.realm.default_language):
                 if len(created_streams) > 1:
-                    content = _("@_**%(user_name)s|%(user_id)d** created the following streams: %(stream_str)s.")
+                    content = _("{user_name} created the following streams: {stream_str}.")
                 else:
-                    content = _("@_**%(user_name)s|%(user_id)d** created a new stream %(stream_str)s.")
+                    content = _("{user_name} created a new stream {stream_str}.")
                 topic = _('new streams')
 
-            content = content % {
-                'user_name': user_profile.full_name,
-                'user_id': user_profile.id,
-                'stream_str': ", ".join(f'#**{s.name}**' for s in created_streams)}
+            content = content.format(
+                user_name=f"@_**{user_profile.full_name}|{user_profile.id}**",
+                stream_str=", ".join(f'#**{s.name}**' for s in created_streams)
+            )
 
             sender = get_system_bot(settings.NOTIFICATION_BOT)
 
@@ -567,9 +567,8 @@ def add_subscriptions_backend(
                         sender=sender,
                         stream=stream,
                         topic=Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
-                        content=_('Stream created by @_**{user_name}|{user_id}**.').format(
-                            user_name=user_profile.full_name,
-                            user_id=user_profile.id,
+                        content=_('Stream created by {user_name}.').format(
+                            user_name=f"@_**{user_profile.full_name}|{user_profile.id}**",
                         ),
                     ),
                 )
