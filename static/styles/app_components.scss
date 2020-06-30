@@ -55,7 +55,7 @@
         background-color: hsl(0, 0%, 100%);
         color: inherit;
         outline: none;
-        border: 1px solid hsl(0, 0%, 80%);
+        border: 1px solid hsl(0, 0%, 90%);
         border-radius: 2px;
 
         box-shadow: none;
@@ -103,7 +103,7 @@
 
         &:hover,
         &:focus {
-            border-color: hsl(0, 0%, 60%);
+            border-color: hsl(0, 0%, 75%);
         }
 
         &:active {
@@ -150,7 +150,9 @@
 
             &:hover,
             &:focus {
-                border-color: hsl(2, 46%, 68%);
+                color: hsl(357, 64%, 65%);
+                background-color: hsl(357, 64%, 95%);
+                border-color: hsl(2, 46%, 70%);
             }
 
             &:active {

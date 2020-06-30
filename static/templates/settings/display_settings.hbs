@@ -21,10 +21,10 @@
             <h3 class="inline-block">{{t "Display settings" }}</h3>
             <div class="alert-notification" id="display-settings-status"></div>
 
-            <div class="input-group">
+            <div class="input-group dropdown">
                 <label for="color_scheme" class="dropdown-title">{{t "Color scheme" }}
                 </label>
-                <select name="color_scheme" id="color_scheme">
+                <select name="color_scheme" class="float-right" id="color_scheme">
                     {{> dropdown_options_widget option_values=color_scheme_values}}
                 </select>
             </div>
@@ -37,11 +37,11 @@
               render_only=(lookup ../display_settings.render_only this)}}
             {{/each}}
 
-            <div class="input-group">
+            <div class="input-group dropdown">
                 <label for="demote_inactive_streams" class="dropdown-title">{{t "Demote inactive streams" }}
                     {{> ../help_link_widget link="/help/manage-inactive-streams" }}
                 </label>
-                <select name="demote_inactive_streams" id="demote_inactive_streams">
+                <select name="demote_inactive_streams" class="float-right" id="demote_inactive_streams">
                     {{> dropdown_options_widget option_values=demote_inactive_streams_values}}
                 </select>
             </div>
@@ -51,18 +51,18 @@
             <h3 class="inline-block">{{t "Time settings" }}</h3>
             <div class="alert-notification" id="time-settings-status"></div>
 
-            <div class="input-group">
+            <div class="input-group dropdown">
                 <label for="twenty_four_hour_time" class="dropdown-title">{{ settings_label.twenty_four_hour_time }}</label>
-                <select name="twenty_four_hour_time" id="twenty_four_hour_time">
+                <select name="twenty_four_hour_time" class="float-right" id="twenty_four_hour_time">
                     {{#each twenty_four_hour_time_values}}
                     <option value='{{ this.value }}'>{{ this.description }}</option>
                     {{/each}}
                 </select>
             </div>
 
-            <div class="input-group">
+            <div class="input-group dropdown">
                 <label for="timezone" class="dropdown-title">{{t "Time zone" }}</label>
-                <select name="timezone" id="user_timezone">
+                <select name="timezone" class="float-right" id="user_timezone">
                     {{#unless page_params.timezone}}
                     <option></option>
                     {{/unless}}

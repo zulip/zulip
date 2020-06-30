@@ -448,7 +448,7 @@ td .button {
 
 .button,
 .input-group {
-    margin: 0 0 20px 0;
+    margin: 0 0 10px 0;
 }
 
 .input-group {
@@ -1258,6 +1258,7 @@ input[type=checkbox] {
         position: absolute;
         display: none;
         cursor: pointer;
+        border-radius: 5px;
     }
 
     .settings-page-delete-button {
@@ -1564,7 +1565,6 @@ input[type=checkbox] {
         height: 100%;
         overflow-y: auto;
         border-top-left-radius: 4px;
-        border-right: 1px solid hsl(0, 0%, 93%);
 
         .header {
             height: auto;
@@ -1589,20 +1589,27 @@ input[type=checkbox] {
             outline: none;
             cursor: pointer;
             transition: all 0.2s ease;
-            border-bottom: 1px solid hsl(0, 0%, 93%);
+            margin: 5px;
+            border-radius: 5px;
 
             &:last-of-type .text {
                 border-bottom: none;
             }
 
             &.border-top {
-                border-top: 1px solid hsl(0, 0%, 93%);
                 border-bottom: none;
             }
 
             &.active {
-                background-color: hsl(0, 0%, 93%);
-                border-bottom: 1px solid transparent;
+                background-color: hsl(0, 0%, 92%);
+
+                &:hover {
+                    background-color: hsl(0, 0%, 92%);
+                }
+            }
+
+            &:hover {
+                background-color: hsl(0, 0%, 95%);
             }
 
             .text,
@@ -1711,11 +1718,18 @@ input[type=checkbox] {
         width: auto;
     }
 
+    .custom_user_field_value {
+        box-sizing: border-box;
+        height: inherit;
+        width: 100% !important;
+    }
+
     .custom_user_field {
         padding-bottom: 20px;
 
         textarea {
-            width: 320px;
+            width: 100%;
+            min-width: 320px;
             height: 80px;
         }
 
@@ -1791,10 +1805,11 @@ input[type=checkbox] {
 }
 
 .modal {
-    box-shadow: 0px 0px 75px hsla(0, 0%, 0%, 0.5);
-    outline: 10000px solid hsla(0, 0%, 0%, 0.3);
+    box-shadow:
+        0px 0px 100px 10000px hsla(0, 0%, 0%, 0.3),
+        0px 0px 50px 10px hsla(0, 0%, 0%, 0.5);
     border: none;
-    border-radius: 0px;
+    border-radius: 5x;
 
     &.fade {
         /* Ensure the modal is entirely off-screen while we fade the background */
@@ -1942,7 +1957,13 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 }
 
 .dropdown-title {
-    margin-bottom: 3px;
+    margin: 0 auto;
+    display: inline-block;
+    vertical-align: -webkit-baseline-middle;
+}
+
+.dropdown {
+    height: 30px;
 }
 
 .invited-as-admin {
@@ -1986,7 +2007,6 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 .custom_user_field .pill-container {
     padding: 2px 6px;
     min-height: 24px;
-    max-width: 206px;
     background-color: hsl(0, 0%, 100%);
 
     &:focus-within {
