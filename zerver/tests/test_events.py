@@ -4,7 +4,7 @@ import copy
 import sys
 import time
 from io import StringIO
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple
 from unittest import mock
 
 import ujson
@@ -140,11 +140,31 @@ from zerver.tornado.event_queue import (
 )
 
 
-def check_events_dict(required_keys: List[Tuple[str, Validator[object]]]) -> Validator[Dict[str, object]]:
-    required_keys.append(('id', check_int))
-    keys = [key[0] for key in required_keys]
+def check_events_dict(
+    required_keys: Sequence[Tuple[str, Validator[object]]],
+    optional_keys: Sequence[Tuple[str, Validator[object]]]=[]
+) -> Validator[Dict[str, object]]:
+    '''
+    This is just a tiny wrapper on check_dict, but it provides
+    some minor benefits:
+
+        - mark clearly that the schema is for a Zulip event
+        - make sure there's a type field
+        - add id field automatically
+        - sanity check that we have no duplicate keys (we
+          should just make check_dict do that, eventually)
+
+    '''
+    rkeys = [key[0] for key in required_keys]
+    okeys = [key[0] for key in optional_keys]
+    keys = rkeys + okeys
     assert len(keys) == len(set(keys))
-    return check_dict_only(required_keys)
+    assert 'type' in rkeys
+    assert 'id' not in keys
+    return check_dict_only(
+        required_keys=list(required_keys) + [('id', check_int)],
+        optional_keys=optional_keys,
+    )
 
 # These fields are used for "stream" events, and are included in the
 # larger "subscription" events that also contain personal settings.
