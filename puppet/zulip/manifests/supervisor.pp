@@ -1,12 +1,6 @@
 class zulip::supervisor {
   package { 'supervisor': ensure => 'installed' }
 
-  # Command to start supervisor
-  $supervisor_start = $::osfamily ? {
-    'debian' => '/etc/init.d/supervisor start',
-    'redhat' => 'systemctl start supervisord',
-  }
-
   if $::osfamily == 'redhat' {
     file { $zulip::common::supervisor_conf_dir:
       ensure => 'directory',
