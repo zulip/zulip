@@ -53,7 +53,7 @@ from zerver.models import (
     get_stream,
 )
 from zerver.tornado import event_queue
-from zerver.tornado.handlers import allocate_handler_id
+from zerver.tornado.handlers import AsyncDjangoHandler, allocate_handler_id
 from zerver.worker import queue_processors
 from zproject.backends import ExternalAuthDataDict, ExternalAuthResult
 
@@ -85,10 +85,8 @@ def stub_event_queue_user_events(event_queue_return: Any, user_events_return: An
 
 @contextmanager
 def simulated_queue_client(client: Callable[..., Any]) -> Iterator[None]:
-    real_SimpleQueueClient = queue_processors.SimpleQueueClient
-    queue_processors.SimpleQueueClient = client  # type: ignore[assignment, misc] # https://github.com/JukkaL/mypy/issues/1152
-    yield
-    queue_processors.SimpleQueueClient = real_SimpleQueueClient  # type: ignore[misc] # https://github.com/JukkaL/mypy/issues/1152
+    with mock.patch.object(queue_processors, 'SimpleQueueClient', client):
+        yield
 
 @contextmanager
 def tornado_redirected_to_list(lst: List[Mapping[str, Any]]) -> Iterator[None]:
@@ -173,23 +171,16 @@ def queries_captured(include_savepoints: bool=False) -> Generator[
                     'time': f"{duration:.3f}",
                 })
 
-    old_execute = TimeTrackingCursor.execute
-    old_executemany = TimeTrackingCursor.executemany
-
     def cursor_execute(self: TimeTrackingCursor, sql: Query,
                        params: Optional[Params]=None) -> None:
         return wrapper_execute(self, super(TimeTrackingCursor, self).execute, sql, params)
-    TimeTrackingCursor.execute = cursor_execute  # type: ignore[assignment] # https://github.com/JukkaL/mypy/issues/1167
 
     def cursor_executemany(self: TimeTrackingCursor, sql: Query,
                            params: Iterable[Params]) -> None:
         return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params)  # nocoverage -- doesn't actually get used in tests
-    TimeTrackingCursor.executemany = cursor_executemany  # type: ignore[assignment] # https://github.com/JukkaL/mypy/issues/1167
 
-    yield queries
-
-    TimeTrackingCursor.execute = old_execute  # type: ignore[assignment] # https://github.com/JukkaL/mypy/issues/1167
-    TimeTrackingCursor.executemany = old_executemany  # type: ignore[assignment] # https://github.com/JukkaL/mypy/issues/1167
+    with mock.patch.multiple(TimeTrackingCursor, execute=cursor_execute, executemany=cursor_executemany):
+        yield queries
 
 @contextmanager
 def stdout_suppressed() -> Iterator[IO[str]]:
@@ -260,9 +251,9 @@ def get_user_messages(user_profile: UserProfile) -> List[Message]:
         order_by('message')
     return [um.message for um in query]
 
-class DummyHandler:
+class DummyHandler(AsyncDjangoHandler):
     def __init__(self) -> None:
-        allocate_handler_id(self)  # type: ignore[arg-type] # this is a testing mock
+        allocate_handler_id(self)
 
 class POSTRequestMock:
     method = "POST"
