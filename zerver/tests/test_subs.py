@@ -2645,7 +2645,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(msg.recipient.type, msg.recipient.STREAM)
         self.assertEqual(msg.topic_name(), 'stream events')
         self.assertEqual(msg.sender.email, settings.NOTIFICATION_BOT)
-        self.assertIn('Stream created by @_**', msg.content)
+        self.assertIn(f"Stream created by @_**{self.test_user.full_name}|{self.test_user.id}**", msg.content)
 
     def test_multi_user_subscription(self) -> None:
         user1 = self.example_user("cordelia")
