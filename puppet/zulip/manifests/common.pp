@@ -8,6 +8,7 @@ class zulip::common {
       $supervisor_conf_dir = '/etc/supervisor/conf.d'
       $supervisor_conf_file = '/etc/supervisor/supervisord.conf'
       $supervisor_service = 'supervisor'
+      $supervisor_start = '/etc/init.d/supervisor start'
     }
     'redhat': {
       $nagios_plugins = 'nagios-plugins'
@@ -16,6 +17,7 @@ class zulip::common {
       $supervisor_conf_dir = '/etc/supervisord.d/conf.d'
       $supervisor_conf_file = '/etc/supervisord.conf'
       $supervisor_service = 'supervisord'
+      $supervisor_start = 'systemctl start supervisord'
     }
     default: {
       fail('osfamily not supported')
