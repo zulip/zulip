@@ -1,17 +1,23 @@
 import logging
 from datetime import timedelta
 from importlib import import_module
-from typing import Any, List, Mapping, Optional
+from typing import Any, List, Mapping, Optional, Type, cast
 
 from django.conf import settings
 from django.contrib.auth import SESSION_KEY, get_user_model
+from django.contrib.sessions.backends.base import SessionBase
 from django.contrib.sessions.models import Session
 from django.utils.timezone import now as timezone_now
+from typing_extensions import Protocol
 
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.models import Realm, UserProfile, get_user_profile_by_id
 
-session_engine = import_module(settings.SESSION_ENGINE)
+
+class SessionEngine(Protocol):
+    SessionStore: Type[SessionBase]
+
+session_engine = cast(SessionEngine, import_module(settings.SESSION_ENGINE))
 
 def get_session_dict_user(session_dict: Mapping[str, int]) -> Optional[int]:
     # Compare django.contrib.auth._get_user_session_key
@@ -28,7 +34,7 @@ def user_sessions(user_profile: UserProfile) -> List[Session]:
             if get_session_user(s) == user_profile.id]
 
 def delete_session(session: Session) -> None:
-    session_engine.SessionStore(session.session_key).delete()  # type: ignore[attr-defined] # import_module
+    session_engine.SessionStore(session.session_key).delete()
 
 def delete_user_sessions(user_profile: UserProfile) -> None:
     for session in Session.objects.all():

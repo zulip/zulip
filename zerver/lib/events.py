@@ -1,13 +1,10 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
 import copy
-from importlib import import_module
 from typing import Any, Callable, Dict, Iterable, Optional, Sequence, Set
 
 from django.conf import settings
 from django.utils.translation import ugettext as _
-
-session_engine = import_module(settings.SESSION_ENGINE)
 
 from version import API_FEATURE_LEVEL, ZULIP_VERSION
 from zerver.lib.actions import (
