@@ -4,7 +4,7 @@ import copy
 import sys
 import time
 from io import StringIO
-from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 from unittest import mock
 
 import ujson
@@ -89,6 +89,7 @@ from zerver.lib.actions import (
     remove_members_from_user_group,
     try_update_realm_custom_profile_field,
 )
+from zerver.lib.event_schema import check_events_dict
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
 from zerver.lib.markdown import MentionData
 from zerver.lib.message import render_markdown
@@ -138,33 +139,6 @@ from zerver.tornado.event_queue import (
     allocate_client_descriptor,
     clear_client_event_queues_for_testing,
 )
-
-
-def check_events_dict(
-    required_keys: Sequence[Tuple[str, Validator[object]]],
-    optional_keys: Sequence[Tuple[str, Validator[object]]]=[]
-) -> Validator[Dict[str, object]]:
-    '''
-    This is just a tiny wrapper on check_dict, but it provides
-    some minor benefits:
-
-        - mark clearly that the schema is for a Zulip event
-        - make sure there's a type field
-        - add id field automatically
-        - sanity check that we have no duplicate keys (we
-          should just make check_dict do that, eventually)
-
-    '''
-    rkeys = [key[0] for key in required_keys]
-    okeys = [key[0] for key in optional_keys]
-    keys = rkeys + okeys
-    assert len(keys) == len(set(keys))
-    assert 'type' in rkeys
-    assert 'id' not in keys
-    return check_dict_only(
-        required_keys=list(required_keys) + [('id', check_int)],
-        optional_keys=optional_keys,
-    )
 
 # These fields are used for "stream" events, and are included in the
 # larger "subscription" events that also contain personal settings.
