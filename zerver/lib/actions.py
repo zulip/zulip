@@ -3613,12 +3613,10 @@ def do_rename_stream(stream: Stream,
             sender,
             stream,
             Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
-            _('@_**{user_name}|{user_id}** renamed stream **{old_stream_name}** to '
-              '**{new_stream_name}**.').format(
-                user_name=user_profile.full_name,
-                user_id=user_profile.id,
-                old_stream_name=old_name,
-                new_stream_name=new_name,
+            _('{user_name} renamed stream {old_stream_name} to {new_stream_name}.').format(
+                user_name=f"@_**{user_profile.full_name}|{user_profile.id}**",
+                old_stream_name=f"**{old_name}**",
+                new_stream_name=f"**{new_name}**",
             ),
         )
     # Even though the token doesn't change, the web client needs to update the
