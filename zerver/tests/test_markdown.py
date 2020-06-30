@@ -65,6 +65,16 @@ from zerver.models import (
 )
 
 
+class SimulatedFencedBlockPreprocessor(FencedBlockPreprocessor):
+    # Simulate code formatting.
+
+    def format_code(self, lang: str, code: str) -> str:
+        return lang + ':' + code
+
+    def placeholder(self, s: str) -> str:
+        return '**' + s.strip('\n') + '**'
+
+
 class FencedBlockPreprocessorTest(TestCase):
     def test_simple_quoting(self) -> None:
         processor = FencedBlockPreprocessor(None)
@@ -113,11 +123,7 @@ class FencedBlockPreprocessorTest(TestCase):
         self.assertEqual(lines, expected)
 
     def test_serial_code(self) -> None:
-        processor = FencedBlockPreprocessor(None)
-
-        # Simulate code formatting.
-        processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore[assignment] # mypy doesn't allow monkey-patching functions
-        processor.placeholder = lambda s: '**' + s.strip('\n') + '**'  # type: ignore[assignment] # https://github.com/python/mypy/issues/708
+        processor = SimulatedFencedBlockPreprocessor(None)
 
         markdown_input = [
             '``` .py',
@@ -159,11 +165,7 @@ class FencedBlockPreprocessorTest(TestCase):
         self.assertEqual(lines, expected)
 
     def test_nested_code(self) -> None:
-        processor = FencedBlockPreprocessor(None)
-
-        # Simulate code formatting.
-        processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore[assignment] # mypy doesn't allow monkey-patching functions
-        processor.placeholder = lambda s: '**' + s.strip('\n') + '**'  # type: ignore[assignment] # https://github.com/python/mypy/issues/708
+        processor = SimulatedFencedBlockPreprocessor(None)
 
         markdown_input = [
             '~~~ quote',
@@ -2131,12 +2133,8 @@ class MarkdownErrorTests(ZulipTestCase):
                 markdown_convert(msg)
 
     def test_curl_code_block_validation(self) -> None:
-        processor = FencedBlockPreprocessor(None)
+        processor = SimulatedFencedBlockPreprocessor(None)
         processor.run_content_validators = True
-
-        # Simulate code formatting.
-        processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore[assignment] # mypy doesn't allow monkey-patching functions
-        processor.placeholder = lambda s: '**' + s.strip('\n') + '**'  # type: ignore[assignment] # https://github.com/python/mypy/issues/708
 
         markdown_input = [
             '``` curl',
@@ -2150,11 +2148,7 @@ class MarkdownErrorTests(ZulipTestCase):
             processor.run(markdown_input)
 
     def test_curl_code_block_without_validation(self) -> None:
-        processor = FencedBlockPreprocessor(None)
-
-        # Simulate code formatting.
-        processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore[assignment] # mypy doesn't allow monkey-patching functions
-        processor.placeholder = lambda s: '**' + s.strip('\n') + '**'  # type: ignore[assignment] # https://github.com/python/mypy/issues/708
+        processor = SimulatedFencedBlockPreprocessor(None)
 
         markdown_input = [
             '``` curl',
