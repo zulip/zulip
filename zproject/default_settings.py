@@ -285,13 +285,6 @@ APNS_SANDBOX = True
 APNS_TOPIC = 'org.zulip.Zulip'
 ZULIP_IOS_APP_ID = 'org.zulip.Zulip'
 
-# Max number of "remove notification" FCM/GCM messages to send separately
-# in one burst; the rest are batched.  Older clients ignore the batched
-# portion, so only receive this many removals.  Lower values mitigate
-# server congestion and client battery use.  To batch unconditionally,
-# set to 1.
-MAX_UNBATCHED_REMOVE_NOTIFICATIONS = 10
-
 # Limits related to the size of file uploads; last few in MB.
 DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024
 MAX_AVATAR_FILE_SIZE = 5

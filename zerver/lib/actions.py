@@ -4169,7 +4169,10 @@ def do_update_mobile_push_notification(message: Message,
 
 def do_clear_mobile_push_notifications_for_ids(user_profile_ids: List[int],
                                                message_ids: List[int]) -> None:
-    # This functions supports clearing notifications for several users
+    if len(message_ids) == 0:
+        return
+
+    # This function supports clearing notifications for several users
     # only for the message-edit use case where we'll have a single message_id.
     assert len(user_profile_ids) == 1 or len(message_ids) == 1
 
@@ -4180,28 +4183,16 @@ def do_clear_mobile_push_notifications_for_ids(user_profile_ids: List[int],
     ).extra(
         where=[UserMessage.where_active_push_notification()],
     ).values_list('user_profile_id', 'message_id'))
+
     for (user_id, message_id) in notifications_to_update:
         messages_by_user[user_id].append(message_id)
 
-    num_detached = settings.MAX_UNBATCHED_REMOVE_NOTIFICATIONS - 1
     for user_profile_id in user_profile_ids:
-        filtered_message_ids = messages_by_user[user_profile_id]
-        for message_id in filtered_message_ids[:num_detached]:
-            # Older clients (all clients older than 2019-02-13) will only
-            # see the first message ID in a given notification-message.
-            # To help them out, send a few of these separately.
-            queue_json_publish("missedmessage_mobile_notifications", {
-                "type": "remove",
-                "user_profile_id": user_profile_id,
-                "message_ids": [message_id],
-            })
-
-        if filtered_message_ids[num_detached:]:
-            queue_json_publish("missedmessage_mobile_notifications", {
-                "type": "remove",
-                "user_profile_id": user_profile_id,
-                "message_ids": filtered_message_ids[num_detached:],
-            })
+        queue_json_publish("missedmessage_mobile_notifications", {
+            "type": "remove",
+            "user_profile_id": user_profile_id,
+            "message_ids": messages_by_user[user_profile_id],
+        })
 
 def do_update_message_flags(user_profile: UserProfile,
                             client: Client,

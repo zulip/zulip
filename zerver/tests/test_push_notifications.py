@@ -1900,7 +1900,6 @@ class GCMSendTest(PushNotificationTest):
 class TestClearOnRead(ZulipTestCase):
     def test_mark_stream_as_read(self) -> None:
         n_msgs = 3
-        max_unbatched = 2
 
         hamlet = self.example_user("hamlet")
         hamlet.enable_stream_push_notifications = True
@@ -1919,14 +1918,11 @@ class TestClearOnRead(ZulipTestCase):
                 UserMessage.flags.active_mobile_push_notification))
 
         with mock.patch("zerver.lib.actions.queue_json_publish") as mock_publish:
-            with override_settings(MAX_UNBATCHED_REMOVE_NOTIFICATIONS=max_unbatched):
-                do_mark_stream_messages_as_read(hamlet, self.client, stream)
+            do_mark_stream_messages_as_read(hamlet, self.client, stream)
             queue_items = [c[0][1] for c in mock_publish.call_args_list]
             groups = [item['message_ids'] for item in queue_items]
 
-        self.assertEqual(len(groups), min(len(message_ids), max_unbatched))
-        for g in groups[:-1]:
-            self.assertEqual(len(g), 1)
+        self.assert_length(groups, 1)
         self.assertEqual(sum(len(g) for g in groups), len(message_ids))
         self.assertEqual({id for g in groups for id in g}, set(message_ids))
 
