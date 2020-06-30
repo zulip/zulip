@@ -19,7 +19,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 
 from zerver.lib.avatar import absolute_avatar_url
-from zerver.lib.encryption import bytes_to_b64, encrypt_data
+from zerver.lib.encryption import bytes_to_b64, encrypt_data, generate_encryption_key
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message, huddle_users
 from zerver.lib.outgoing_http import OutgoingSession
@@ -512,11 +512,19 @@ def send_notifications_to_bouncer(
 
 
 def add_push_device_token(
-    user_profile: UserProfile, token_str: str, kind: int, ios_app_id: Optional[str] = None
+    user_profile: UserProfile,
+    token_str: str,
+    kind: int,
+    ios_app_id: Optional[str] = None,
+    notification_encryption_enabled: bool = False,
 ) -> PushDeviceToken:
     logger.info(
         "Registering push device: %d %r %d %r", user_profile.id, token_str, kind, ios_app_id
     )
+
+    key = None
+    if notification_encryption_enabled:
+        key = generate_encryption_key()
 
     # Regardless of whether we're using the push notifications
     # bouncer, we want to store a PushDeviceToken record locally.
@@ -528,6 +536,7 @@ def add_push_device_token(
             token = PushDeviceToken.objects.create(
                 user_id=user_profile.id,
                 kind=kind,
+                notification_encryption_key=key,
                 token=token_str,
                 ios_app_id=ios_app_id,
                 # last_updated is to be renamed to date_created.

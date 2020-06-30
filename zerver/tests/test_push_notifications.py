@@ -36,6 +36,7 @@ from zerver.lib.push_notifications import (
     APNsContext,
     DeviceToken,
     UserPushIdentityCompat,
+    add_push_device_token,
     b64_to_hex,
     get_apns_badge_count,
     get_apns_badge_count_future,
@@ -1519,7 +1520,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             """Verify if a call to send push notification receives the expected
             arguments. When a key a provided, the data is assumed to be
             encrypted."""
-            user_identity, device, payload = call_mock[0]
+            user_identity, device, payload = call_mock[0][:3]
             self.assertEqual(user_identity.user_id, self.user_profile.id)
             self.assertCountEqual(device, expected_devices)
             if key is None:
@@ -3163,3 +3164,50 @@ class TestUserPushIdentityCompat(ZulipTestCase):
 
         # An integer can't be equal to an instance of the class.
         self.assertNotEqual(user_identity_a, 1)
+
+
+class TestDeviceRegistrationResponse(ZulipTestCase):
+    def test_device_registration_response(self) -> None:
+        hamlet = self.example_user("hamlet")
+        token = "bbbb"
+        add_push_device_token(
+            hamlet,
+            token,
+            PushDeviceToken.APNS,
+            ios_app_id="apple-1",
+            notification_encryption_enabled=True,
+        )
+
+        self.login("hamlet")
+        result = self.client_post(
+            "/json/users/me/apns_device_token",
+            info={
+                "token": "1111",
+            },
+        )
+        self.assert_json_success(result)
+        data = orjson.loads(result.content)
+        # Key should not be included because PUSH_NOTIFICATION_ENCRYPTION
+        # is initially set to False.
+        self.assertNotIn("encryption_key", data)
+
+        result = self.client_post(
+            "/json/users/me/apns_device_token",
+            info={
+                "token": "1112",
+                "notification_encryption_enabled": "true",
+            },
+        )
+        self.assert_json_error(result, "Notification encryption is disabled")
+
+        with self.settings(PUSH_NOTIFICATION_ENCRYPTION=True):
+            result = self.client_post(
+                "/json/users/me/apns_device_token",
+                info={
+                    "token": "1112",
+                    "notification_encryption_enabled": "true",
+                },
+            )
+            self.assert_json_success(result)
+            data = orjson.loads(result.content)
+            self.assertIn("encryption_key", data)
