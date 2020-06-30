@@ -1,7 +1,7 @@
 import importlib
 import json
 import os
-from typing import Any, Dict
+from typing import Any, Callable, Dict
 
 from django.utils.translation import ugettext as _
 
@@ -45,13 +45,13 @@ class StateHandler:
 
     def __init__(self, user_profile: UserProfile) -> None:
         self.user_profile = user_profile
-        self.marshal = lambda obj: json.dumps(obj)
-        self.demarshal = lambda obj: json.loads(obj)
+        self.marshal: Callable[[object], str] = lambda obj: json.dumps(obj)
+        self.demarshal: Callable[[str], object] = lambda obj: json.loads(obj)
 
-    def get(self, key: str) -> str:
+    def get(self, key: str) -> object:
         return self.demarshal(get_bot_storage(self.user_profile, key))
 
-    def put(self, key: str, value: str) -> None:
+    def put(self, key: str, value: object) -> None:
         set_bot_storage(self.user_profile, [(key, self.marshal(value))])
 
     def remove(self, key: str) -> None:

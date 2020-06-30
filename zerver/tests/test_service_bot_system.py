@@ -10,6 +10,7 @@ from zerver.lib.bot_config import ConfigError, load_bot_config_template, set_bot
 from zerver.lib.bot_lib import EmbeddedBotEmptyRecipientsList, EmbeddedBotHandler, StateHandler
 from zerver.lib.bot_storage import StateError
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.validator import check_string
 from zerver.models import Recipient, UserProfile, get_realm
 
 BOT_TYPE_TO_QUEUE_NAME = {
@@ -198,18 +199,8 @@ class TestServiceBotStateHandler(ZulipTestCase):
     def test_marshaling(self) -> None:
         storage = StateHandler(self.bot_profile)
         serializable_obj = {'foo': 'bar', 'baz': [42, 'cux']}
-        storage.put('some key', serializable_obj)  # type: ignore[arg-type] # Ignore for testing.
+        storage.put('some key', serializable_obj)
         self.assertEqual(storage.get('some key'), serializable_obj)
-
-    def test_invalid_calls(self) -> None:
-        storage = StateHandler(self.bot_profile)
-        storage.marshal = lambda obj: obj
-        storage.demarshal = lambda obj: obj
-        serializable_obj = {'foo': 'bar', 'baz': [42, 'cux']}
-        with self.assertRaisesMessage(StateError, "Value type is <class 'dict'>, but should be str."):
-            storage.put('some key', serializable_obj)  # type: ignore[arg-type] # We intend to test an invalid type.
-        with self.assertRaisesMessage(StateError, "Key type is <class 'dict'>, but should be str."):
-            storage.put(serializable_obj, 'some value')  # type: ignore[arg-type] # We intend to test an invalid type.
 
     # Reduce maximal storage size for faster test string construction.
     @override_settings(USER_STATE_SIZE_LIMIT=100)
@@ -218,7 +209,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
 
         # Disable marshaling for storing a string whose size is
         # equivalent to the size of the stored object.
-        storage.marshal = lambda obj: obj
+        storage.marshal = lambda obj: check_string("obj", obj)
         storage.demarshal = lambda obj: obj
 
         key = 'capacity-filling entry'
@@ -283,10 +274,10 @@ class TestServiceBotStateHandler(ZulipTestCase):
         self.assertEqual(result.json()['storage'], updated_dict)
 
         # Assert errors on invalid requests.
-        params = {
-            'keys': ["This is a list, but should be a serialized string."],  # type: ignore[dict-item] # Ignore 'incompatible type "str": "List[str]"; expected "str": "str"' for testing
+        invalid_params = {
+            'keys': ["This is a list, but should be a serialized string."],
         }
-        result = self.client_get('/json/bot_storage', params)
+        result = self.client_get('/json/bot_storage', invalid_params)
         self.assert_json_error(result, 'Argument "keys" is not valid JSON.')
 
         params = {
