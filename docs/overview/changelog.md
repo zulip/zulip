@@ -14,21 +14,29 @@ in bursts.
 - Redesigned the top navbar/search area to be much cleaner and show
   useful data like subscriber counts and stream descriptions in
   default views.
+- Added a new "Recent Topics" widget, which lets one browse recent
+  and ongoing conversations at a glance.  We expect this widget to
+  replace "All messages" as the default view in Zulip in the
+  next major release.
 - Redesigned "Notification settings" to have an intuitive table
   format and display any individual streams with non-default settings.
 - Added support for moving topics between streams.  This was by far
   Zulip's most-requested feature.
-- Added support for GitLab authentication.
+- Added automatic theme detection using prefers-color-scheme.
+- Added support for GitLab and Sign in with Apple authentication.
 - Added an organization setting controlling who can use private messages.
 - Added support for default stream groups, which allow organizations
   to offer options of sets of streams when new users sign up.
   Currently can only be managed via the Zulip API.
+- The Zulip server now sets badge counts for the iOS mobile app.
 - Quote-and-reply now generates a handy link to the quoted message.
 - Upgraded Django from 1.11.x to the latest LTS series, 2.2.x.
-- Added integrations for ErrBit, Grafana, and AlertManager.
+- Added integrations for ErrBit, Grafana, Thinkst Canary, and AlertManager.
 - Extended API documentation to have detailed data on most responses,
-  validated against the API's actual implementation.
-- Added support for programmable message retention policies.
+  validated against the API's actual implementation and against all
+  tests in our extensive automated test suite.
+- Added support for programmable message retention policies, both a
+  global/default policy and policies for specific streams.
 - Added a new incoming webhook API that accepts messages in the format
   used by Slack's incoming webhooks API.
 - Introduced the Zulip API Feature Level, a concept that will greatly
@@ -42,6 +50,14 @@ in bursts.
 
 - Logged in users will be logged out during this one-time upgrade to
   transition them to more secure session cookies.
+- This release switches Zulip to install Postgres 12 from the upstream
+  postgres repository by default, rather than using the default
+  Postgres version included with the operating system.  Existing Zulip
+  installations will continue to work with Postgres 10; this detail is
+  configured in `/etc/zulip/zulip.conf`.  We have no concrete plans to
+  start requiring Postgres 12, though we do expect it to improve
+  performance.  Installations that would like to upgrade can follow
+  [our new postgres upgrade guide][postgres upgrade].
 - This release contains dozens of database migrations, but we don't
   anticipate any of them being particularly expensive compared to
   those in past major releases.
@@ -52,8 +68,12 @@ in bursts.
 - Added a new Organization Owner permission above the previous
   Organization Administrator.  All existing organization
   administrators are automatically converted into organization owners.
-  In the future, certain administrative settings will only be editable
-  by Organization Owners.
+  Certain sensitive administrative settings are now only
+  editable by Organization Owners.
+- The changelog now has a section that makes it easy to find the
+  Upgrade notes for all releases one is upgrading across.
+
+[postgres-upgrade]: ..production/upgrade-or-modify.html#upgrading-postgresql
 
 #### Full feature changelog
 
@@ -75,6 +95,7 @@ in bursts.
   addresses from organization administrators in the Zulip UI.
 - Added new "Mention time" markdown feature to communicate about times
   in a timezone-aware fashion.
+- Added new "Spoiler" markdown feature to hide text until interaction.
 - Added a new API that allows the mobile/desktop/terminal apps to
   open uploaded files in an external browser that may not be logged in.
 - Added several database indexes that significantly improve
@@ -83,17 +104,32 @@ in bursts.
 - Added a user setting to disable sharing one's presence information
   with other users.
 - Added support for IdP-initiated SSO in the SAML authentication backend.
+- Added new "messages sent over time" graph on /stats.
+- Added support for restricting SAML authentication to only some Zulip
+  organizations.
+- Added `List-Id` header to outgoing emails for simpler client filtering.
+- Changed how avatar URLs are sent to clients to dramatically improve
+  network performance in organizations with 10,000s of user accounts.
+- Redesigned all of our avatar/image upload widgets to have a cleaner,
+  simpler interface.
 - Normal users can now see invitations they sent via organization settings.
 - Rewrote the Zoom video call integration.
 - Polished numerous subtle elements of Zulip's visual design.
+- Dramatically improved the scalability of Zulip's server-to-client
+  push system, improving throughput by a factor of ~4.
 - Improved handling of GitHub accounts with several email addresses.
 - Improved "Manage streams" UI to clearly identify personal settings
   and use pills for adding new subscribers.
-- Improved left sidebar popovers to clearly identify administrative actions.
 - Improved Sentry, Taiga, GitHub, GitLab, Semaphore, and many other integrations.
 - Improved "Muted topics" UI to show when a topic was muted.
+- Improved the UI for "Drafts" and "Message edit history" widgets.
+- Improved left sidebar popovers to clearly identify administrative actions.
+- Rewrote substantial parts of the Zulip installer to be more robust.
+- Replaced the chevron menu indicators in sidebars with vertical ellipses.
 - Removed the right sidebar "Group PMs" widget.  It's functionality is
   available in the left sidebar "Private messages" widget.
+- Removed the Google Hangouts integration, due to Google's support for
+  it being discontinued.
 - Removed a limitation on editing topics of messages more than a week old.
 - The Gitter data import tool now supports importing multiple Gitter
   rooms into a single Zulip organization.
@@ -118,8 +154,6 @@ in bursts.
 - Specifying `latex` or `text` as the language for a code block now
   does LaTeX syntax highlighting (`math` remains the recommended code
   block language to render LaTeX syntax into display math).
-- Optimized performance for get_events, improving Zulip's scalability
-  for connected clients per Tornado process by a factor of ~4.
 - Fixed performance problems when adding subscribers in organizations
   with thousands of streams.
 - Fixed performance issues with typeahead and presence in
@@ -128,12 +162,23 @@ in bursts.
   unconditionally.
 - Fixed inconsistencies in the APIs for fetching users and streams.
 - Fixed several subtle bugs with local echo in rare race conditions.
+- Fixed a subtle race that could result in semi-duplicate emoji reactions.
+- Fixed subtle click-handler bugs with the mobile web UI.
+- Improved defaults to avoid OOM kills on low RAM servers when running
+  expensive tools like `webpack` or Slack import.
+- Added loading indicators for scrolling downwards and fixed several
+  subtle bugs with the message feed discovered as a result.
 - Added a migration to fix invalid analytics data resulting from a
   missing unique constraint (and then add the constraint).
 - Dramatically simplified the process for adding a new authentication backend.
 - Added webhook support for AnsibleTower 9.x.y.
+- Essentially rewrote our API documentation using the OpenAPI format,
+  with extensive validation to ensure its accuracy as we modify the API.
 - Removed New User Bot and Feedback Bot.  Messages they had sent are
   migrated to have been sent by Notification Bot.
+- Removed the "pointer" message ID from Zulip, a legacy concept dating
+  to 2012 that predated tracking unread messages in Zulip and has
+  largely resulted in unexpected behavior for the last few years.
 - Reduced visual size of emoji in message bodies for a cleaner look.
 - Replaced file upload frontend with one supporting chunked upload.
   We expect this to enable uploading much larger files using Zulip in
@@ -147,8 +192,16 @@ in bursts.
 - Migrated settings for notifications streams to our standard UX model.
 - Various security hardening changes suggested by the PySA static analyzer.
 - Modernized the codebase to use many Python 3.6 and ES6 patterns.
+- Integrated isort, a tool which ensures that our Python codebase
+  has clean, sorted import statements.
+- Integrated PySA, a tool for detecting security bugs in Python
+  codebases using the type-checker.
+- Integrate semgrep, and migrated several regular expression based
+  linter rules to use its Python syntax-aware parser.
 - Added tooling to automatically generate all screenshots in
   integration docs.
+- Restructured the backend for Zulip's system administrator level
+  settings system to be more maintainable.
 - This release largely completes the SCSS refactoring of the codebase.
 - Replaced our CasperJS frontend integration test system with Puppeteer.
 - Extracted the typeahead and markdown libraries for reuse in the
