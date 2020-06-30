@@ -17,8 +17,8 @@ const emoticon_translations = (() => {
     like this:
 
     [
-        { regex: /(\:\))/g, replacement_text: ':slight_smile:' },
-        { regex: /(\(\:)/g, replacement_text: ':slight_smile:' },
+        { regex: /(\:\))/g, replacement_text: ':smile:' },
+        { regex: /(\(\:)/g, replacement_text: ':smile:' },
         { regex: /(\:\/)/g, replacement_text: ':confused:' },
         { regex: /(<3)/g, replacement_text: ':heart:' },
         { regex: /(\:\()/g, replacement_text: ':frown:' },

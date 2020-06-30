@@ -37,7 +37,7 @@ emoji picker, or hover over the emoji in a message.
 
 ### Use emoticons
 
-Use `:)` and `:/` instead of typing `:slight_smile:` and `:confused:`.
+Use `:)` and `:/` instead of typing `:smile:` and `:confused:`.
 
 {start_tabs}
 
