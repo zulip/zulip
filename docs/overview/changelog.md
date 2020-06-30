@@ -196,7 +196,7 @@ in bursts.
   has clean, sorted import statements.
 - Integrated PySA, a tool for detecting security bugs in Python
   codebases using the type-checker.
-- Integrate semgrep, and migrated several regular expression based
+- Integrated semgrep, and migrated several regular expression based
   linter rules to use its Python syntax-aware parser.
 - Added tooling to automatically generate all screenshots in
   integration docs.
