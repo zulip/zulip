@@ -163,6 +163,10 @@
 
 /* SCSS related to settings page realm icon upload widget only */
 #realm-icon-upload-widget {
+    width: 100px;
+    height: 100px;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
 
     .settings-page-delete-text {
         top: 40px;
