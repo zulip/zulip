@@ -181,14 +181,6 @@ class DecoratorTestCase(TestCase):
         result = get_total(request)
         self.assertEqual(result, 21)
 
-    def test_REQ_converter_and_validator_invalid(self) -> None:
-        with self.assertRaisesRegex(AssertionError, "converter and validator are mutually exclusive"):
-            @has_request_variables
-            def get_total(request: HttpRequest,
-                          numbers: Iterable[int]=REQ(validator=check_list(check_int),  # type: ignore[call-overload]  # The condition being tested is in fact an error.
-                                                     converter=lambda x: [])) -> int:
-                return sum(numbers)  # nocoverage -- isn't intended to be run
-
     def test_REQ_validator(self) -> None:
 
         @has_request_variables
@@ -258,15 +250,6 @@ class DecoratorTestCase(TestCase):
 
         request.body = '{"a": "b"}'
         self.assertEqual(get_payload(request), {'a': 'b'})
-
-        # Test we properly handle an invalid argument_type.
-        with self.assertRaises(Exception) as cm:
-            @has_request_variables
-            def test(request: HttpRequest,
-                     payload: Any=REQ(argument_type="invalid")) -> None:  # type: ignore[call-overload]  # The condition being tested is in fact an error.
-                # Any is ok; exception should occur in decorator:
-                pass  # nocoverage # this function isn't meant to be called
-            test(request)
 
     def test_api_key_only_webhook_view(self) -> None:
         @api_key_only_webhook_view('ClientName')

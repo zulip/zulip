@@ -123,12 +123,8 @@ class _REQ(Generic[ResultT]):
         self.documentation_pending = documentation_pending
         self.path_only = path_only
 
-        if converter and (validator or str_validator):
-            # Not user-facing, so shouldn't be tagged for translation
-            raise AssertionError('converter and validator are mutually exclusive')
-        if validator and str_validator:
-            # Not user-facing, so shouldn't be tagged for translation
-            raise AssertionError('validator and str_validator are mutually exclusive')
+        assert converter is None or (validator is None and str_validator is None), 'converter and validator are mutually exclusive'
+        assert validator is None or str_validator is None, 'validator and str_validator are mutually exclusive'
 
 # This factory function ensures that mypy can correctly analyze REQ.
 #
@@ -305,9 +301,9 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
                     raise InvalidJSONError(_("Malformed JSON"))
                 kwargs[func_var_name] = val
                 continue
-            elif param.argument_type is not None:
+            else:
                 # This is a view bug, not a user error, and thus should throw a 500.
-                raise Exception(_("Invalid argument type"))
+                assert param.argument_type is None, "Invalid argument type"
 
             post_var_names = [param.post_var_name]
             post_var_names += param.aliases
