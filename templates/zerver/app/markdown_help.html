@@ -92,14 +92,11 @@
                         <td class="rendered_markdown">Some inline <code>code</code></td>
                     </tr>
                     <tr>
-                    <td class="preserve_spaces">```
+                    <td class="preserve_spaces apply_markdown">```
 def zulip():
     print "Zulip"
 ```</td>
-                    <td class="rendered_markdown">
-                        <div class="codehilite"><pre>def zulip():
-    print "Zulip"</pre></div>
-                    </td>
+                    <td></td>
                     </tr>
                     <tr>
                     <td class="preserve_spaces">```python
@@ -123,26 +120,26 @@ def zulip():
 
                     </tr>
                     <tr>
-                    <td class="preserve_spaces">```quote
+                    <td class="preserve_spaces apply_markdown">```quote
 Quoted block
 ```</td>
-                    <td class="rendered_markdown"><blockquote><p>Quoted block</p></blockquote></td>
+                    <td></td>
                     </tr>
                     <tr>
                         <td class="preserve_spaces">```spoiler Always visible heading
 This text won't be visible until the user clicks.
 ```</td>
-                        <td class="rendered_markdown">
-                            <div class="spoiler-block">
-                                <div class="spoiler-header"><a class="spoiler-button"><span class="spoiler-arrow"></span></a>
-                                    <p>Always visible heading</p>
-                                </div>
-
-                                <div class="spoiler-content">
-                                    <p>This text won't be visible until the user clicks.</p>
-                                </div>
+                    <td class="rendered_markdown">
+                        <div class="spoiler-block">
+                            <div class="spoiler-header"><a class="spoiler-button"><span class="spoiler-arrow"></span></a>
+                                <p>Always visible heading</p>
                             </div>
-                        </td>
+
+                            <div class="spoiler-content">
+                                <p>This text won't be visible until the user clicks.</p>
+                            </div>
+                        </div>
+                    </td>
                     </tr>
                     <tr>
                         <td>Some inline math $$ e^{i \pi } + 1 = 0 $$</td>
@@ -151,12 +148,10 @@ This text won't be visible until the user clicks.
                         </td>
                     </tr>
                     <tr>
-                        <td class="preserve_spaces">```math
+                        <td class="preserve_spaces apply_markdown">```math
 \int_{0}^{1} f(x) dx
 ```</td>
-                        <td>
-                            <span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msubsup><mo>∫</mo><mn>0</mn><mn>1</mn></msubsup><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mi>d</mi><mi>x</mi></mrow><annotation encoding="application/x-tex">\int_{0}^{1} f(x) dx</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height: 1.56401em;"></span><span class="strut bottom" style="height: 2.47596em; vertical-align: -0.91195em;"></span><span class="base"><span class="mop"><span class="mop op-symbol large-op" style="margin-right: 0.44445em; position: relative; top: -0.001125em;">∫</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 1.56401em;"><span class="" style="top: -1.78805em; margin-left: -0.44445em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathrm mtight">0</span></span></span></span><span class="" style="top: -3.8129em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathrm mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.91195em;"></span></span></span></span></span><span class="mord mathit" style="margin-right: 0.10764em;">f</span><span class="mopen">(</span><span class="mord mathit">x</span><span class="mclose">)</span><span class="mord mathit">d</span><span class="mord mathit">x</span></span></span></span></span>
-                        </td>
+                        <td></td>
                     </tr>
                     <tr>
                         <td class="rendered_markdown" colspan="2">{% trans %}You can also make <a target="_blank" rel="noopener noreferrer"

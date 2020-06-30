@@ -1,8 +1,11 @@
+const markdown_help = require('./markdown_help');
+
 // Make it explicit that our toggler is undefined until
 // set_up_toggler is called.
 exports.toggler = undefined;
 
 exports.set_up_toggler = function () {
+    markdown_help.render_markdown();
     const opts = {
         selected: 0,
         child_wants_focus: true,

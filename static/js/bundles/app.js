@@ -199,6 +199,7 @@ import "../search_pill.js";
 import "../search_pill_widget.js";
 import "../stream_ui_updates.js";
 import "../spoilers.js";
+import "../markdown_help.js";
 
 // Import Styles
 
