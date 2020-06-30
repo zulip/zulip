@@ -391,14 +391,14 @@ def you_were_just_subscribed_message(acting_user: UserProfile,
     subscriptions = sorted(list(stream_names))
     if len(subscriptions) == 1:
         with override_language(recipient_user.default_language):
-            return _("@**{full_name}** subscribed you to the stream #**{stream_name}**.").format(
-                full_name=acting_user.full_name,
-                stream_name=subscriptions[0],
+            return _("{user_full_name} subscribed you to the stream {stream_name}.").format(
+                user_full_name=f"@**{acting_user.full_name}**",
+                stream_name=f"#**{subscriptions[0]}**",
             )
 
     with override_language(recipient_user.default_language):
-        message = _("@**{full_name}** subscribed you to the following streams:").format(
-            full_name=acting_user.full_name,
+        message = _("{user_full_name} subscribed you to the following streams:").format(
+            user_full_name=f"@**{acting_user.full_name}**",
         )
     message += "\n\n"
     for stream_name in subscriptions:
