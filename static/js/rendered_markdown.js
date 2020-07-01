@@ -170,7 +170,7 @@ exports.update_elements = (content) => {
         }
 
         // Add the expand/collapse button to spoiler blocks
-        const toggle_button_html = '<a class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></a>';
+        const toggle_button_html = '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
         $(this).prepend(toggle_button_html);
     });
 

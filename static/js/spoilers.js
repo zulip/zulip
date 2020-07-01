@@ -40,11 +40,15 @@ exports.initialize = function () {
         const spoiler_content = $(this).siblings(".spoiler-content");
         const target = $(e.target);
 
-        // Spoiler headers can contain markdown, including links. We follow the link
-        // and don't expand the spoiler if a link has been clicked (unless it's the dropdown arrow)
-        // This can be accomplished by just breaking from this function before preventing default
-        // or toggling the state of the spoiler block.
-        if (target.is('a') && !target.hasClass('.spoiler-button')) {
+        // Spoiler headers can contain markdown, including links.  We
+        // return so that clicking such links will be be processed by
+        // the browser rather than opening the header.
+        if (target.is('a')) {
+            return;
+        }
+
+        // Allow selecting text inside a spoiler header.
+        if (document.getSelection().type === "Range") {
             return;
         }
 

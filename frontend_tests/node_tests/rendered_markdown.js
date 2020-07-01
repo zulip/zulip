@@ -207,7 +207,7 @@ run_test('spoiler-header', () => {
 
     // Test that button gets appened to a spoiler header
     const label = 'My Spoiler Header';
-    const toggle_button_html = '<a class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></a>';
+    const toggle_button_html = '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
     $header.html(label);
     rm.update_elements($content);
     assert.equal(toggle_button_html + label, $header.html());
@@ -220,7 +220,7 @@ run_test('spoiler-header-empty-fill', () => {
     $content.set_find_results('div.spoiler-header', $array([$header]));
 
     // Test that an empty header gets the default text applied (through i18n filter)
-    const toggle_button_html = '<a class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></a>';
+    const toggle_button_html = '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
     $header.html('');
     rm.update_elements($content);
     assert.equal(toggle_button_html + '<p>translated: Spoiler</p>', $header.html());
