@@ -42,7 +42,6 @@ from zerver.lib.mention import possible_mentions, possible_user_group_mentions
 from zerver.lib.message import render_markdown
 from zerver.lib.request import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_runner import slow
 from zerver.lib.tex import render_tex
 from zerver.lib.user_groups import create_user_group
 from zerver.models import (
@@ -389,7 +388,6 @@ class MarkdownTest(ZulipTestCase):
             is_ignored = test.get('ignore', False)
             self.assertFalse(is_ignored, message)
 
-    @slow("Aggregate of runs dozens of individual markdown tests")
     def test_markdown_fixtures(self) -> None:
         format_tests, linkify_tests = self.load_markdown_tests()
         valid_keys = {"name", "input", "expected_output",

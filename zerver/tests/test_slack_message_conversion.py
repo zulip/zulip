@@ -9,7 +9,6 @@ from zerver.data_import.slack_message_conversion import (
 )
 from zerver.lib import mdiff
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_runner import slow
 
 
 class SlackMessageConversion(ZulipTestCase):
@@ -31,7 +30,6 @@ class SlackMessageConversion(ZulipTestCase):
 
         return test_fixtures
 
-    @slow("Aggregate of runs of individual slack message conversion tests")
     def test_message_conversion_fixtures(self) -> None:
         format_tests = self.load_slack_message_conversion_tests()
         valid_keys = {'name', "input", "conversion_output"}

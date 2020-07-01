@@ -2,7 +2,6 @@ import os
 import random
 import shutil
 import sys
-import time
 import unittest
 from functools import partial
 from multiprocessing.sharedctypes import Synchronized
@@ -49,75 +48,14 @@ _worker_id = 0  # Used to identify the worker process.
 
 ReturnT = TypeVar('ReturnT')  # Constrain return type to match
 
-def slow(slowness_reason: str) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]:
-    '''
-    This is a decorate that annotates a test as being "known
-    to be slow."  The decorator will set expected_run_time and slowness_reason
-    as attributes of the function.  Other code can use this annotation
-    as needed, e.g. to exclude these tests in "fast" mode.
-    '''
-    def decorator(f: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
-        setattr(f, 'slowness_reason', slowness_reason)
-        return f
-
-    return decorator
-
-def is_known_slow_test(test_method: Callable[..., ReturnT]) -> bool:
-    return hasattr(test_method, 'slowness_reason')
-
 def full_test_name(test: TestCase) -> str:
     test_module = test.__module__
     test_class = test.__class__.__name__
     test_method = test._testMethodName
     return f'{test_module}.{test_class}.{test_method}'
 
-def get_test_method(test: TestCase) -> Callable[[], None]:
-    return getattr(test, test._testMethodName)
-
-# Each tuple is delay, test_name, slowness_reason
-TEST_TIMINGS: List[Tuple[float, str, str]] = []
-
-
-def report_slow_tests() -> None:
-    timings = sorted(TEST_TIMINGS, reverse=True)
-    print('SLOWNESS REPORT')
-    print(' delay test')
-    print(' ----  ----')
-    for delay, test_name, slowness_reason in timings[:15]:
-        if not slowness_reason:
-            slowness_reason = 'UNKNOWN WHY SLOW, please investigate'
-        print(f' {delay:0.3f} {test_name}\n       {slowness_reason}\n')
-
-    print('...')
-    for delay, test_name, slowness_reason in timings[100:]:
-        if slowness_reason:
-            print(f' {delay:.3f} {test_name} is not that slow')
-            print('      consider removing @slow decorator')
-            print(f'      This may no longer be true: {slowness_reason}')
-
-def enforce_timely_test_completion(test_method: Callable[..., ReturnT], test_name: str,
-                                   delay: float, result: unittest.TestResult) -> None:
-    if hasattr(test_method, 'slowness_reason'):
-        max_delay = 2.0  # seconds
-    else:
-        max_delay = 0.4  # seconds
-
-    assert isinstance(result, (TextTestResult, RemoteTestResult))
-
-    if delay > max_delay:
-        msg = f'** Test is TOO slow: {test_name} ({delay:.3f} s)\n'
-        result.addInfo(test_method, msg)
-
-def fast_tests_only() -> bool:
-    return "FAST_TESTS_ONLY" in os.environ
-
 def run_test(test: TestCase, result: TestResult) -> bool:
     failed = False
-    test_method = get_test_method(test)
-
-    if fast_tests_only() and is_known_slow_test(test_method):
-        return failed
-
     test_name = full_test_name(test)
 
     bounce_key_prefix_for_testing(test_name)
@@ -129,14 +67,7 @@ def run_test(test: TestCase, result: TestResult) -> bool:
         result.addError(test, sys.exc_info())
         return True
 
-    start_time = time.time()
-
     test(result)  # unittest will handle skipping, error, failure and success.
-
-    delay = time.time() - start_time
-    enforce_timely_test_completion(test_method, test_name, delay, result)
-    slowness_reason = getattr(test_method, 'slowness_reason', '')
-    TEST_TIMINGS.append((delay, test_name, slowness_reason))
 
     test._post_teardown()
     return failed

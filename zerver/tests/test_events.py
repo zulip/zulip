@@ -102,7 +102,6 @@ from zerver.lib.test_helpers import (
     reset_emails_in_zulip_realm,
     stdout_suppressed,
 )
-from zerver.lib.test_runner import slow
 from zerver.lib.topic import ORIG_TOPIC, TOPIC_LINKS, TOPIC_NAME
 from zerver.lib.validator import (
     Validator,
@@ -1330,7 +1329,6 @@ class NormalActionsTest(BaseAction):
         schema_checker('events[0]', events[0])
         avatar_schema_checker('events[1]', events[1])
 
-    @slow("Runs a large matrix of tests")
     def test_change_realm_authentication_methods(self) -> None:
         schema_checker = check_events_dict([
             ('type', equals('realm')),
@@ -1432,7 +1430,6 @@ class NormalActionsTest(BaseAction):
                     value))
             schema_checker('events[0]', events[0])
 
-    @slow("Runs a matrix of 6 queries to the /home view")
     def test_change_realm_message_edit_settings(self) -> None:
         schema_checker = check_events_dict([
             ('type', equals('realm')),
@@ -1558,7 +1555,6 @@ class NormalActionsTest(BaseAction):
                 lambda: do_change_user_role(self.user_profile, role))
             schema_checker('events[0]', events[0])
 
-    @slow("Actually runs several full-stack fetching tests")
     def test_change_notification_settings(self) -> None:
         for notification_setting, v in self.user_profile.notification_setting_types.items():
             if notification_setting in ["notification_sound", "desktop_icon_count_display"]:
@@ -2504,7 +2500,6 @@ class RealmPropertyActionTest(BaseAction):
                 state_change_expected=state_change_expected)
             schema_checker('events[0]', events[0])
 
-    @slow("Actually runs several full-stack fetching tests")
     def test_change_realm_property(self) -> None:
         for prop in Realm.property_types:
             with self.settings(SEND_DIGEST_EMAILS=True):
@@ -2582,17 +2577,14 @@ class UserDisplayActionTest(BaseAction):
             if setting_name == "timezone":
                 timezone_schema_checker('events[1]', events[1])
 
-    @slow("Actually runs several full-stack fetching tests")
     def test_set_user_display_settings(self) -> None:
         for prop in UserProfile.property_types:
             self.do_set_user_display_settings_test(prop)
 
 class SubscribeActionTest(BaseAction):
-    @slow("Actually several tests combined together")
     def test_subscribe_events(self) -> None:
         self.do_test_subscribe_events(include_subscribers=True)
 
-    @slow("Actually several tests combined together")
     def test_subscribe_events_no_include_subscribers(self) -> None:
         self.do_test_subscribe_events(include_subscribers=False)
 

@@ -81,7 +81,6 @@ from zerver.lib.test_helpers import (
     queries_captured,
     reset_emails_in_zulip_realm,
 )
-from zerver.lib.test_runner import slow
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.lib.timezone import get_timezone
 from zerver.lib.topic import DB_TOPIC_NAME, LEGACY_PREV_TOPIC, TOPIC_LINKS, TOPIC_NAME
@@ -364,7 +363,6 @@ class TestCrossRealmPMs(ZulipTestCase):
         self.register(email, 'test', subdomain=subdomain)
         return get_user(email, get_realm(subdomain))
 
-    @slow("Sends a large number of messages")
     @override_settings(CROSS_REALM_BOT_EMAILS=['notification-bot@zulip.com',
                                                'welcome-bot@zulip.com',
                                                'support@3.example.com'])
@@ -806,7 +804,6 @@ class PersonalMessagesTest(ZulipTestCase):
                 f'<UserMessage: recip / {user_profile.email} ([])>',
             )
 
-    @slow("checks several profiles")
     def test_personal_to_self(self) -> None:
         """
         If you send a personal to yourself, only you see it.
@@ -1366,7 +1363,6 @@ class MessageDictTest(ZulipTestCase):
 
             self.assertEqual(send_message_payload, fetch_payload)
 
-    @slow('builds lots of messages')
     def test_bulk_message_fetching(self) -> None:
         sender = self.example_user('othello')
         receiver = self.example_user('hamlet')

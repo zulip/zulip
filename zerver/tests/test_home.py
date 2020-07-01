@@ -16,7 +16,6 @@ from zerver.lib.events import add_realm_logo_fields
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_user_messages, queries_captured
-from zerver.lib.test_runner import slow
 from zerver.lib.users import compute_show_invites_and_add_streams
 from zerver.models import (
     DefaultStream,
@@ -320,7 +319,6 @@ class HomeTest(ZulipTestCase):
                 self.assert_length(cache_mock.call_args_list, 6)
             self.assert_length(queries, 40)
 
-    @slow("Creates and subscribes 10 users in a loop.  Should use bulk queries.")
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user('hamlet')
         other_user = self.example_user('cordelia')
@@ -510,7 +508,6 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(result)
         self.assertEqual(page_params['realm_signup_notifications_stream_id'], get_stream('Denmark', realm).id)
 
-    @slow('creating users and loading home page')
     def test_people(self) -> None:
         hamlet = self.example_user('hamlet')
         realm = get_realm('zulip')
@@ -891,7 +888,6 @@ class HomeTest(ZulipTestCase):
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertEqual(idle_user_msg_list[-1].content, message)
 
-    @slow("Loads home page data several times testing different cases")
     def test_multiple_user_soft_deactivations(self) -> None:
         long_term_idle_user = self.example_user('hamlet')
         # We are sending this message to ensure that long_term_idle_user has

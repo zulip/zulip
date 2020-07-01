@@ -7,7 +7,6 @@ import ujson
 from django.test import Client, TestCase
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_runner import slow
 from zerver.models import Stream
 from zproject import urls
 
@@ -25,7 +24,6 @@ class PublicURLTest(ZulipTestCase):
             self.assertEqual(response.status_code, expected_status,
                              msg=f"Expected {expected_status}, received {response.status_code} for {method} to {url}")
 
-    @slow("Tests dozens of endpoints, including all of our /help/ documents")
     def test_public_urls(self) -> None:
         """
         Test which views are accessible when not logged in.

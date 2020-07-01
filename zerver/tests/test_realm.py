@@ -22,7 +22,6 @@ from zerver.lib.send_email import send_future_email
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_emails_in_zulip_realm, tornado_redirected_to_list
-from zerver.lib.test_runner import slow
 from zerver.models import (
     Attachment,
     CustomProfileField,
@@ -738,7 +737,6 @@ class RealmAPITest(ZulipTestCase):
             realm = self.update_with_api(name, vals[0])
             self.assertEqual(getattr(realm, name), vals[0])
 
-    @slow("Tests a dozen properties in a loop")
     def test_update_realm_properties(self) -> None:
         for prop in Realm.property_types:
             with self.subTest(property=prop):

@@ -24,7 +24,6 @@ from zerver.lib.import_realm import do_import_realm, get_incoming_message_ids
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import create_s3_buckets, get_test_image_file, use_s3_backend
-from zerver.lib.test_runner import slow
 from zerver.lib.topic_mutes import add_topic_mute
 from zerver.lib.upload import (
     claim_attachment,
@@ -70,7 +69,6 @@ class QueryUtilTest(ZulipTestCase):
             for _ in range(5):
                 self.send_personal_message(user, self.example_user('othello'))
 
-    @slow('creates lots of data')
     def test_query_chunker(self) -> None:
         self._create_messages()
 

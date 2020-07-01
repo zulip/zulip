@@ -11,7 +11,6 @@ from django.test import TestCase, override_settings
 from zerver.lib.integrations import INTEGRATIONS
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
-from zerver.lib.test_runner import slow
 from zerver.lib.utils import split_by
 from zerver.models import Realm, get_realm
 from zerver.views.documentation import add_api_uri_context
@@ -89,7 +88,6 @@ class DocPageTest(ZulipTestCase):
             if not doc_html_str:
                 self.assert_in_success_response(['<meta name="robots" content="noindex,nofollow">'], result)
 
-    @slow("Tests dozens of endpoints")
     def test_api_doc_endpoints(self) -> None:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         api_docs_dir = os.path.join(current_dir, '..', '..', 'templates/zerver/api/')
@@ -105,7 +103,6 @@ class DocPageTest(ZulipTestCase):
             endpoint = f'/api/{os.path.splitext(f)[0]}'
             self._test(endpoint, '', doc_html_str=True)
 
-    @slow("Tests dozens of endpoints, including generating lots of emails")
     def test_doc_endpoints(self) -> None:
         self._test('/api/', 'The Zulip API')
         self._test('/api/api-keys', 'be careful with it')
@@ -167,7 +164,6 @@ class DocPageTest(ZulipTestCase):
         self._test(url, title, doc_html_str=True)
         self._test(url, description, doc_html_str=True)
 
-    @slow("Tests dozens of endpoints, including all our integrations docs")
     def test_integration_doc_endpoints(self) -> None:
         self._test('/integrations/',
                    'native integrations.',

@@ -64,7 +64,6 @@ from zerver.lib.test_helpers import (
     reset_emails_in_zulip_realm,
     tornado_redirected_to_list,
 )
-from zerver.lib.test_runner import slow
 from zerver.models import (
     DefaultStream,
     DefaultStreamGroup,
@@ -3688,7 +3687,6 @@ class InviteOnlyStreamTest(ZulipTestCase):
             if sub['name'] == "Saxony":
                 self.assertEqual(sub['invite_only'], True, "Saxony was not properly marked private")
 
-    @slow("lots of queries")
     def test_inviteonly(self) -> None:
         # Creating an invite-only stream is allowed
         hamlet = self.example_user('hamlet')
@@ -3786,7 +3784,6 @@ class GetSubscribersTest(ZulipTestCase):
         stream_name = gather_subscriptions(self.user_profile)[0][0]['name']
         self.make_successful_subscriber_request(stream_name)
 
-    @slow("common_subscribe_to_streams is slow")
     def test_gather_subscriptions(self) -> None:
         """
         gather_subscriptions returns correct results with only 3 queries
@@ -3855,7 +3852,6 @@ class GetSubscribersTest(ZulipTestCase):
             self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
         self.assert_length(queries, 6)
 
-    @slow("common_subscribe_to_streams is slow")
     def test_never_subscribed_streams(self) -> None:
         """
         Check never_subscribed streams are fetched correctly and not include invite_only streams.

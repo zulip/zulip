@@ -241,10 +241,6 @@ def main() -> None:
                         action="store_true",
                         default=False,
                         help="Show detailed output")
-    parser.add_argument('--report-slow-tests', dest='report_slow_tests',
-                        action="store_true",
-                        default=False,
-                        help="Show which tests are slowest.")
     parser.add_argument('--reverse', dest='reverse',
                         action="store_true",
                         default=False,
@@ -457,13 +453,6 @@ def main() -> None:
             print("Note: If you are using vagrant for development environment you will need to do:")
             print("1.) `vagrant ssh -- -L 8080:127.0.0.1:8080`")
             print(f"2.) `snakeviz -s {shlex.quote(stats_file.name)}`")
-
-    if options.report_slow_tests:
-        from zerver.lib.test_runner import report_slow_tests
-
-        # We do this even with failures, since slowness can be
-        # an important clue as to why tests fail.
-        report_slow_tests()
 
     # Ideally, we'd check for any leaked test databases here;
     # but that needs some hackery with database names.

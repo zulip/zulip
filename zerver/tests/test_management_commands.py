@@ -16,7 +16,6 @@ from zerver.lib.actions import do_add_reaction, do_create_user
 from zerver.lib.management import CommandError, ZulipBaseCommand, check_config
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, stdout_suppressed
-from zerver.lib.test_runner import slow
 from zerver.models import (
     Message,
     Reaction,
@@ -188,7 +187,6 @@ class TestCommandsCanStart(TestCase):
             if command != '__init__'
         ]
 
-    @slow("Aggregate of runs dozens of individual --help tests")
     def test_management_commands_show_help(self) -> None:
         with stdout_suppressed():
             for command in self.commands:
