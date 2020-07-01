@@ -9,9 +9,9 @@ aliases:
     run:
       name: create cache directories
       command: |
-          dirs=(/srv/zulip-{npm,venv,emoji}-cache)
-          sudo mkdir -p "${dirs[@]}"
-          sudo chown -R circleci "${dirs[@]}"
+        dirs=(/srv/zulip-{npm,venv,emoji}-cache)
+        sudo mkdir -p "${dirs[@]}"
+        sudo chown -R circleci "${dirs[@]}"
 
   - &restore_cache_package_json
     restore_cache:
@@ -32,24 +32,24 @@ aliases:
     run:
       name: install dependencies
       command: |
-          sudo apt-get update
-          # Install moreutils so we can use `ts` and `mispipe` in the following.
-          sudo apt-get install -y moreutils
+        sudo apt-get update
+        # Install moreutils so we can use `ts` and `mispipe` in the following.
+        sudo apt-get install -y moreutils
 
-          # CircleCI sets the following in Git config at clone time:
-          #   url.ssh://git@github.com.insteadOf https://github.com
-          # This breaks the Git clones in the NVM `install.sh` we run
-          # in `install-node`.
-          # TODO: figure out why that breaks, and whether we want it.
-          #   (Is it an optimization?)
-          rm -f /home/circleci/.gitconfig
+        # CircleCI sets the following in Git config at clone time:
+        #   url.ssh://git@github.com.insteadOf https://github.com
+        # This breaks the Git clones in the NVM `install.sh` we run
+        # in `install-node`.
+        # TODO: figure out why that breaks, and whether we want it.
+        #   (Is it an optimization?)
+        rm -f /home/circleci/.gitconfig
 
-          # This is the main setup job for the test suite
-          mispipe "tools/ci/setup-backend --skip-dev-db-build" ts
+        # This is the main setup job for the test suite
+        mispipe "tools/ci/setup-backend --skip-dev-db-build" ts
 
-          # Cleaning caches is mostly unnecessary in Circle, because
-          # most builds don't get to write to the cache.
-          # mispipe "scripts/lib/clean-unused-caches --verbose --threshold 0 2>&1" ts
+        # Cleaning caches is mostly unnecessary in Circle, because
+        # most builds don't get to write to the cache.
+        # mispipe "scripts/lib/clean-unused-caches --verbose --threshold 0 2>&1" ts
 
   - &save_cache_package_json
     save_cache:
@@ -73,96 +73,96 @@ aliases:
     run:
       name: do Bionic hack
       command: |
-          # Temporary hack till `sudo service redis-server start` gets fixes in Bionic. See
-          # https://chat.zulip.org/#narrow/stream/3-backend/topic/Ubuntu.20bionic.20CircleCI
-          sudo sed -i '/^bind/s/bind.*/bind 0.0.0.0/' /etc/redis/redis.conf
+        # Temporary hack till `sudo service redis-server start` gets fixes in Bionic. See
+        # https://chat.zulip.org/#narrow/stream/3-backend/topic/Ubuntu.20bionic.20CircleCI
+        sudo sed -i '/^bind/s/bind.*/bind 0.0.0.0/' /etc/redis/redis.conf
 
   - &run_backend_tests
     run:
       name: run backend tests
       command: |
-          . /srv/zulip-py3-venv/bin/activate
-          mispipe "./tools/ci/backend 2>&1" ts
+        . /srv/zulip-py3-venv/bin/activate
+        mispipe "./tools/ci/backend 2>&1" ts
 
   - &run_frontend_tests
     run:
       name: run frontend tests
       command: |
-          . /srv/zulip-py3-venv/bin/activate
-          mispipe "./tools/ci/frontend 2>&1" ts
+        . /srv/zulip-py3-venv/bin/activate
+        mispipe "./tools/ci/frontend 2>&1" ts
 
   - &upload_coverage_report
     run:
       name: upload coverage report
       command: |
-          # codecov requires `.coverage` file to be stored in pwd for
-          # uploading coverage results.
-          mv /home/circleci/zulip/var/.coverage /home/circleci/zulip/.coverage
+        # codecov requires `.coverage` file to be stored in pwd for
+        # uploading coverage results.
+        mv /home/circleci/zulip/var/.coverage /home/circleci/zulip/.coverage
 
-          . /srv/zulip-py3-venv/bin/activate
-          # TODO: Check that the next release of codecov doesn't
-          # throw find error.
-          # codecov==2.0.16 introduced a bug which uses "find"
-          # for locating files which is buggy on some platforms.
-          # It was fixed via https://github.com/codecov/codecov-python/pull/217
-          # and should get automatically fixed here once it's released.
-          # We cannot pin the version here because we need the latest version for uploading files.
-          # see https://community.codecov.io/t/http-400-while-uploading-to-s3-with-python-codecov-from-travis/1428/7
-          pip install codecov && codecov \
-            || echo "Error in uploading coverage reports to codecov.io."
+        . /srv/zulip-py3-venv/bin/activate
+        # TODO: Check that the next release of codecov doesn't
+        # throw find error.
+        # codecov==2.0.16 introduced a bug which uses "find"
+        # for locating files which is buggy on some platforms.
+        # It was fixed via https://github.com/codecov/codecov-python/pull/217
+        # and should get automatically fixed here once it's released.
+        # We cannot pin the version here because we need the latest version for uploading files.
+        # see https://community.codecov.io/t/http-400-while-uploading-to-s3-with-python-codecov-from-travis/1428/7
+        pip install codecov && codecov \
+          || echo "Error in uploading coverage reports to codecov.io."
 
   - &build_production
     run:
       name: build production
       command: |
-          sudo apt-get update
-          # Install moreutils so we can use `ts` and `mispipe` in the following.
-          sudo apt-get install -y moreutils
+        sudo apt-get update
+        # Install moreutils so we can use `ts` and `mispipe` in the following.
+        sudo apt-get install -y moreutils
 
-          mispipe "./tools/ci/production-build 2>&1" ts
+        mispipe "./tools/ci/production-build 2>&1" ts
 
   - &production_extract_tarball
     run:
       name: production extract tarball
       command: |
-          sudo apt-get update
-          # Install moreutils so we can use `ts` and `mispipe` in the following.
-          sudo apt-get install -y moreutils
+        sudo apt-get update
+        # Install moreutils so we can use `ts` and `mispipe` in the following.
+        sudo apt-get install -y moreutils
 
-          mispipe "/tmp/production-extract-tarball 2>&1" ts
+        mispipe "/tmp/production-extract-tarball 2>&1" ts
 
   - &install_production
     run:
       name: install production
       command: |
-          sudo service rabbitmq-server restart
-          sudo mispipe "/tmp/production-install 2>&1" ts
+        sudo service rabbitmq-server restart
+        sudo mispipe "/tmp/production-install 2>&1" ts
 
   - &verify_production
     run:
       name: verify install
       command: |
-          sudo mispipe "/tmp/production-verify 2>&1" ts
+        sudo mispipe "/tmp/production-verify 2>&1" ts
 
   - &upgrade_postgresql
     run:
       name: upgrade postgresql
       command: |
-          sudo mispipe "/tmp/production-upgrade-pg 2>&1" ts
+        sudo mispipe "/tmp/production-upgrade-pg 2>&1" ts
 
   - &check_xenial_provision_error
     run:
       name: check tools/provision error message on xenial
       command: |
-          ! tools/provision > >(tee provision.out)
-          grep -Fqx 'CRITICAL:root:Unsupported platform: ubuntu 16.04' provision.out
+        ! tools/provision > >(tee provision.out)
+        grep -Fqx 'CRITICAL:root:Unsupported platform: ubuntu 16.04' provision.out
 
   - &check_xenial_upgrade_error
     run:
       name: check scripts/lib/upgrade-zulip-stage-2 error message on xenial
       command: |
-          ! sudo scripts/lib/upgrade-zulip-stage-2 2> >(tee upgrade.err >&2)
-          grep -Fq 'upgrade-zulip-stage-2: Unsupported platform: ubuntu 16.04' upgrade.err
+        ! sudo scripts/lib/upgrade-zulip-stage-2 2> >(tee upgrade.err >&2)
+        grep -Fq 'upgrade-zulip-stage-2: Unsupported platform: ubuntu 16.04' upgrade.err
 
   - &notify_failure_status
     run:
@@ -171,11 +171,11 @@ aliases:
       branches:
         only: master
       command: |
-          if [[ "$CIRCLE_REPOSITORY_URL" == "git@github.com:zulip/zulip.git" && "$ZULIP_BOT_KEY" != "" ]]; then
-            curl  -H "Content-Type: application/json" \
-            -X POST -i 'https://chat.zulip.org/api/v1/external/circleci?api_key='"$ZULIP_BOT_KEY"'&stream=automated%20testing&topic=master%20failing' \
-            -d '{"payload": { "branch": "'"$CIRCLE_BRANCH"'", "reponame": "'"$CIRCLE_PROJECT_REPONAME"'", "status": "failed", "build_url": "'"$CIRCLE_BUILD_URL"'", "username": "'"$CIRCLE_USERNAME"'"}}'
-          fi
+        if [[ "$CIRCLE_REPOSITORY_URL" == "git@github.com:zulip/zulip.git" && "$ZULIP_BOT_KEY" != "" ]]; then
+          curl  -H "Content-Type: application/json" \
+          -X POST -i 'https://chat.zulip.org/api/v1/external/circleci?api_key='"$ZULIP_BOT_KEY"'&stream=automated%20testing&topic=master%20failing' \
+          -d '{"payload": { "branch": "'"$CIRCLE_BRANCH"'", "reponame": "'"$CIRCLE_PROJECT_REPONAME"'", "status": "failed", "build_url": "'"$CIRCLE_BUILD_URL"'", "username": "'"$CIRCLE_USERNAME"'"}}'
+        fi
 
 jobs:
   "bionic-backend-frontend":
@@ -203,8 +203,8 @@ jobs:
       - run:
           name: test locked requirements
           command: |
-              . /srv/zulip-py3-venv/bin/activate
-              mispipe "./tools/test-locked-requirements 2>&1" ts
+            . /srv/zulip-py3-venv/bin/activate
+            mispipe "./tools/test-locked-requirements 2>&1" ts
 
       - *run_frontend_tests
         # We only need to upload coverage reports on whichever platform
@@ -227,31 +227,30 @@ jobs:
           path: ./var/xunit-test-results/casper/
       - *notify_failure_status
 
-
   "focal-backend":
-      docker:
-        # This is built from tools/ci/images/focal/Dockerfile.
-        # Focal ships with Python 3.8.2.
-        - image: arpit551/circleci:focal-python-test
+    docker:
+      # This is built from tools/ci/images/focal/Dockerfile.
+      # Focal ships with Python 3.8.2.
+      - image: arpit551/circleci:focal-python-test
 
-      working_directory: ~/zulip
+    working_directory: ~/zulip
 
-      steps:
-        - checkout
+    steps:
+      - checkout
 
-        - *create_cache_directories
-        - *restore_cache_package_json
-        - *restore_cache_requirements
-        - *restore_emoji_cache
-        - *install_dependencies
-        - *save_cache_package_json
-        - *save_cache_requirements
-        - *save_emoji_cache
-        - *run_backend_tests
-        - run:
-            name: Check development database build
-            command: mispipe "tools/ci/setup-backend" ts
-        - *notify_failure_status
+      - *create_cache_directories
+      - *restore_cache_package_json
+      - *restore_cache_requirements
+      - *restore_emoji_cache
+      - *install_dependencies
+      - *save_cache_package_json
+      - *save_cache_requirements
+      - *save_emoji_cache
+      - *run_backend_tests
+      - run:
+          name: Check development database build
+          command: mispipe "tools/ci/setup-backend" ts
+      - *notify_failure_status
 
   "xenial-legacy":
     docker:
@@ -351,9 +350,9 @@ jobs:
       - run:
           name: do memcached hack
           command: |
-              # Temporary hack till memcached upstream is updated in Focal.
-              # https://bugs.launchpad.net/ubuntu/+source/memcached/+bug/1878721
-              echo "export SASL_CONF_PATH=/etc/sasl2" | sudo tee - a /etc/default/memcached
+            # Temporary hack till memcached upstream is updated in Focal.
+            # https://bugs.launchpad.net/ubuntu/+source/memcached/+bug/1878721
+            echo "export SASL_CONF_PATH=/etc/sasl2" | sudo tee - a /etc/default/memcached
 
       - *production_extract_tarball
       - *restore_cache_package_json
