@@ -889,12 +889,14 @@ nav {
     color: hsla(0, 0%, 100%, 0.8);
 }
 
-.compare table thead th:last-of-type {
-    width: 120px;
-}
+.compare table thead th {
+    &:last-of-type {
+        width: 120px;
+    }
 
-.compare table thead th.uniform {
-    width: 20%;
+    &.uniform {
+        width: 20%;
+    }
 }
 
 .compare table td:not(:first-of-type),
