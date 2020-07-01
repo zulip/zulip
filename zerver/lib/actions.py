@@ -4675,12 +4675,13 @@ def do_update_message(user_profile: UserProfile, message: Message,
                 # is not an option.
                 # Don't send this event to guest subs who are not subscrbied to the old stream but
                 # are subscribed to the new stream
-                old_stream_unsubed_guests = [
+                old_stream_unsubbed_guests = [
                     sub for sub in subs_to_new_stream
                     if sub.user_profile.is_guest
                     and sub.user_profile_id not in subscriber_ids
                 ]
-                subscribers = subscribers.exclude(user_profile_id__in=[sub.user_profile_id for sub in old_stream_unsubed_guests])
+                subscribers = subscribers.exclude(user_profile_id__in=[
+                    sub.user_profile_id for sub in old_stream_unsubbed_guests])
                 subscriber_ids = [user.user_profile_id for user in subscribers]
 
             users_to_be_notified += list(map(subscriber_info, subscriber_ids))
