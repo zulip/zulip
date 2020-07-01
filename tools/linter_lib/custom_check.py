@@ -715,7 +715,8 @@ markdown_rules = RuleList(
 
 help_markdown_rules = RuleList(
     langs=['md'],
-    rules=markdown_rules.rules + [
+    rules=[
+        *markdown_rules.rules,
         {'pattern': '[a-z][.][A-Z]',
          'description': "Likely missing space after end of sentence",
          'include_only': {'templates/zerver/help/'},

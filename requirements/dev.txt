@@ -1205,8 +1205,8 @@ zope.interface==5.1.0 \
     --hash=sha256:f68bf937f113b88c866d090fea0bc52a098695173fc613b055a17ff0cf9683b6 \
     --hash=sha256:fb55c182a3f7b84c1a2d6de5fa7b1a05d4660d866b91dbf8d74549c57a1499e8 \
     # via scrapy, twisted
-https://github.com/zulip/zulint/archive/e5010a7bbfa8614fd01b25542ffb2f94c0766759.zip#egg=zulint==0.0.1 \
-    --hash=sha256:fe9c8ed8a533c348d18c7a185a1884034b17623d3f2e0dafa028ebeaf6ff0c97 \
+https://github.com/zulip/zulint/archive/87ecebe3c7315ceef2236ccdf89b345dec22042e.zip#egg=zulint==0.0.1 \
+    --hash=sha256:6d69b6324393ebcf0838463e60afd0160774684f26ccab2ebcbd59c6a0ebd37b \
     # via -r requirements/dev.in
 https://github.com/zulip/python-zulip-api/archive/0.7.0.zip/#egg=zulip==0.7.0_git&subdirectory=zulip \
     --hash=sha256:161e3f38a9d27bf76a30da3d3d81f5f1b71a8c2c8144e0c4a33cd15018606d9f \
