@@ -23,8 +23,6 @@ from scripts.lib.zulip_tools import (
     get_or_create_dev_uuid_var_path,
 )
 from zerver.lib import test_helpers
-from zerver.lib.cache import bounce_key_prefix_for_testing
-from zerver.lib.rate_limiter import bounce_redis_key_prefix_for_testing
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_helpers import append_instrumentation_data, write_instrumentation_reports
 
@@ -48,10 +46,6 @@ _worker_id = 0  # Used to identify the worker process.
 
 def run_test(test: TestCase, result: TestResult) -> bool:
     failed = False
-    test_name = test.id()
-
-    bounce_key_prefix_for_testing(test_name)
-    bounce_redis_key_prefix_for_testing(test_name)
 
     try:
         test._pre_setup()

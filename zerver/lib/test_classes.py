@@ -32,7 +32,9 @@ from zerver.lib.actions import (
     check_send_stream_message,
     gather_subscriptions,
 )
+from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.initial_password import initial_password
+from zerver.lib.rate_limiter import bounce_redis_key_prefix_for_testing
 from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
 from zerver.lib.streams import (
@@ -92,6 +94,10 @@ class ZulipTestCase(TestCase):
     def setUp(self) -> None:
         super().setUp()
         self.API_KEYS: Dict[str, str] = {}
+
+        test_name = self.id()
+        bounce_key_prefix_for_testing(test_name)
+        bounce_redis_key_prefix_for_testing(test_name)
 
     def tearDown(self) -> None:
         super().tearDown()
