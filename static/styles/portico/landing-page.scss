@@ -868,116 +868,116 @@ nav {
 .compare {
     background-color: hsl(163, 22%, 31%);
     color: hsl(0, 0%, 100%);
-}
 
-.compare .text-header .text-content h1 {
-    margin-top: 0px;
-}
-
-.compare .padded-content {
-    width: 900px;
-    margin: 0 auto;
-}
-
-.compare table {
-    width: 100%;
-    text-align: left;
-    border-collapse: collapse;
-
-    font-weight: 400;
-
-    color: hsla(0, 0%, 100%, 0.8);
-
-    thead th {
-        &:last-of-type {
-            width: 120px;
-        }
-
-        &.uniform {
-            width: 20%;
-        }
+    .text-header .text-content h1 {
+        margin-top: 0px;
     }
 
-    td:not(:first-of-type),
-    th:not(:first-of-type) {
-        text-align: center;
+    .padded-content {
+        width: 900px;
+        margin: 0 auto;
     }
-}
 
-.compare thead {
-    border-bottom: 3px solid hsla(0, 0%, 0%, 0.1);
+    table {
+        width: 100%;
+        text-align: left;
+        border-collapse: collapse;
 
-    th {
-        font-weight: 600;
-        padding: 15px 0px;
+        font-weight: 400;
 
-        color: hsl(0, 0%, 100%);
+        color: hsla(0, 0%, 100%, 0.8);
 
-        &.normal {
-            font-weight: normal;
-            color: inherit;
+        thead th {
+            &:last-of-type {
+                width: 120px;
+            }
+
+            &.uniform {
+                width: 20%;
+            }
         }
-    }
-}
 
-.compare tbody tr {
-    border-bottom: 1px solid hsla(360, 0%, 100%, 0.03);
-
-    td {
-        padding: 10px 0px;
-
-        &.no {
+        td:not(:first-of-type),
+        th:not(:first-of-type) {
             text-align: center;
         }
+    }
 
-        &.yes::before {
-            content: " ";
-            display: inline-block;
+    thead {
+        border-bottom: 3px solid hsla(0, 0%, 0%, 0.1);
 
-            width: 27px;
-            height: 27px;
-            background-image: url(/static/images/landing-page/checkmark.png);
-            background-size: 100% auto;
-        }
+        th {
+            font-weight: 600;
+            padding: 15px 0px;
 
-        &.no::before {
-            content: "\d7";
+            color: hsl(0, 0%, 100%);
 
-            position: relative;
-            display: inline-block;
-
-            top: 3px;
-
-            font-size: 2.5rem;
-            font-weight: 500;
-            line-height: 0.9;
-
-            opacity: 0.4;
-        }
-
-        a {
-            font-size: 0.9rem;
-            font-weight: 400;
-            text-transform: uppercase;
+            &.normal {
+                font-weight: normal;
+                color: inherit;
+            }
         }
     }
-}
 
-.compare p {
-    font-weight: 300;
-}
+    tbody tr {
+        border-bottom: 1px solid hsla(360, 0%, 100%, 0.03);
 
-.compare .terms {
-    margin-top: 30px;
-    font-weight: 400;
-    font-size: 0.7em;
+        td {
+            padding: 10px 0px;
 
-    line-height: 1.2;
+            &.no {
+                text-align: center;
+            }
 
-    color: hsla(0, 0%, 100%, 0.8);
+            &.yes::before {
+                content: " ";
+                display: inline-block;
 
-    a {
-        color: hsl(170, 47%, 73%);
+                width: 27px;
+                height: 27px;
+                background-image: url(/static/images/landing-page/checkmark.png);
+                background-size: 100% auto;
+            }
+
+            &.no::before {
+                content: "\d7";
+
+                position: relative;
+                display: inline-block;
+
+                top: 3px;
+
+                font-size: 2.5rem;
+                font-weight: 500;
+                line-height: 0.9;
+
+                opacity: 0.4;
+            }
+
+            a {
+                font-size: 0.9rem;
+                font-weight: 400;
+                text-transform: uppercase;
+            }
+        }
+    }
+
+    p {
+        font-weight: 300;
+    }
+
+    .terms {
+        margin-top: 30px;
+        font-weight: 400;
+        font-size: 0.7em;
+
+        line-height: 1.2;
+
+        color: hsla(0, 0%, 100%, 0.8);
+
+        a {
+            color: hsl(170, 47%, 73%);
+        }
     }
 }
 
