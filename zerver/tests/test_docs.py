@@ -6,7 +6,7 @@ from urllib.parse import urlsplit
 import ujson
 from django.conf import settings
 from django.http import HttpResponse
-from django.test import TestCase, override_settings
+from django.test import override_settings
 
 from zerver.lib.integrations import INTEGRATIONS
 from zerver.lib.test_classes import ZulipTestCase
@@ -263,7 +263,7 @@ class HelpTest(ZulipTestCase):
         self.assertIn('<strong>Manage streams</strong>', str(result.content))
         self.assertNotIn('/#streams', str(result.content))
 
-class IntegrationTest(TestCase):
+class IntegrationTest(ZulipTestCase):
     def test_check_if_every_integration_has_logo_that_exists(self) -> None:
         for integration in INTEGRATIONS.values():
             path = urlsplit(integration.logo_url).path

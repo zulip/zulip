@@ -1,13 +1,12 @@
 from typing import Any, Mapping, Sequence
 from unittest import mock
 
-from django.test import TestCase
-
 from zerver.lib.subdomains import get_subdomain
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Realm
 
 
-class SubdomainsTest(TestCase):
+class SubdomainsTest(ZulipTestCase):
     def test_get_subdomain(self) -> None:
 
         def request_mock(host: str) -> Any:

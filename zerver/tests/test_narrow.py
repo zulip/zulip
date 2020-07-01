@@ -4,7 +4,7 @@ from unittest import mock
 
 import ujson
 from django.db import connection
-from django.test import TestCase, override_settings
+from django.test import override_settings
 from sqlalchemy.sql import and_, column, select, table
 from sqlalchemy.sql.elements import ClauseElement
 
@@ -440,7 +440,7 @@ class NarrowBuilderTest(ZulipTestCase):
     def _build_query(self, term: Dict[str, Any]) -> Query:
         return self.builder.add_term(self.raw_query, term)
 
-class NarrowLibraryTest(TestCase):
+class NarrowLibraryTest(ZulipTestCase):
     def test_build_narrow_filter(self) -> None:
         fixtures_path = os.path.join(os.path.dirname(__file__),
                                      'fixtures/narrow.json')

@@ -56,7 +56,7 @@ from zerver.lib.remote_server import (
 )
 from zerver.lib.request import JsonableError
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
-from zerver.lib.test_classes import TestCase, ZulipTestCase
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
     Message,
     PushDeviceToken,
@@ -1733,7 +1733,7 @@ class TestPushApi(BouncerTestCase):
         self.assertEqual(RemotePushDeviceToken.objects.all().count(), 0)
         self.assertEqual(PushDeviceToken.objects.all().count(), 0)
 
-class GCMParseOptionsTest(TestCase):
+class GCMParseOptionsTest(ZulipTestCase):
     def test_invalid_option(self) -> None:
         with self.assertRaises(JsonableError):
             parse_gcm_options({"invalid": True}, {})

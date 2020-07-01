@@ -12,7 +12,7 @@ from django.contrib.auth.views import INTERNAL_RESET_URL_TOKEN
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
-from django.test import TestCase, override_settings
+from django.test import override_settings
 from django.urls import reverse
 from django.utils.timezone import now as timezone_now
 
@@ -1955,7 +1955,7 @@ class InvitationsTestCase(InviteUserBase):
         self.assertIsNotNone(user)
         self.assertEqual(user.delivery_email, email)
 
-class InviteeEmailsParserTests(TestCase):
+class InviteeEmailsParserTests(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.email1 = "email1@zulip.com"

@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, call, patch
 
 from django.conf import settings
 from django.core.management import call_command
-from django.test import TestCase, override_settings
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import RealmCreationKey, generate_realm_creation_url
@@ -176,7 +176,7 @@ class TestZulipBaseCommand(ZulipTestCase):
                                               is_bot=False)
         self.assertEqual(user_profiles, expected_user_profiles)
 
-class TestCommandsCanStart(TestCase):
+class TestCommandsCanStart(ZulipTestCase):
 
     def setUp(self) -> None:
         super().setUp()
@@ -197,7 +197,7 @@ class TestCommandsCanStart(TestCase):
         # we need to reset it here.  See #3685 for details.
         settings.RUNNING_INSIDE_TORNADO = False
 
-class TestSendWebhookFixtureMessage(TestCase):
+class TestSendWebhookFixtureMessage(ZulipTestCase):
     COMMAND_NAME = 'send_webhook_fixture_message'
 
     def setUp(self) -> None:

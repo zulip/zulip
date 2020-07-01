@@ -9,7 +9,6 @@ import ujson
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
-from django.test import TestCase
 
 from zerver.decorator import (
     api_key_only_webhook_view,
@@ -79,7 +78,7 @@ from zerver.lib.webhooks.common import UnexpectedWebhookEventType
 from zerver.models import Realm, UserProfile, get_realm, get_user
 
 
-class DecoratorTestCase(TestCase):
+class DecoratorTestCase(ZulipTestCase):
     def test_get_client_name(self) -> None:
         req = HostRequestMock()
         self.assertEqual(get_client_name(req), 'Unspecified')
@@ -602,7 +601,7 @@ body:
         self.assert_json_error(result, "Missing authorization header for basic auth",
                                status_code=401)
 
-class RateLimitTestCase(TestCase):
+class RateLimitTestCase(ZulipTestCase):
     def errors_disallowed(self) -> Any:
         # Due to what is probably a hack in rate_limit(),
         # some tests will give a false positive (or succeed
@@ -704,7 +703,7 @@ class RateLimitTestCase(TestCase):
 
         self.assertTrue(rate_limit_mock.called)
 
-class ValidatorTestCase(TestCase):
+class ValidatorTestCase(ZulipTestCase):
     def test_check_string(self) -> None:
         x: Any = "hello"
         check_string('x', x)
@@ -1387,7 +1386,7 @@ class TestValidateApiKey(ZulipTestCase):
         profile.is_active = value
         profile.save()
 
-class TestInternalNotifyView(TestCase):
+class TestInternalNotifyView(ZulipTestCase):
     BORING_RESULT = 'boring'
 
     class Request:
