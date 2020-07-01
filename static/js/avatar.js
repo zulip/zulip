@@ -58,7 +58,7 @@ exports.build_user_avatar_widget = function (upload_function) {
         channel.del({
             url: '/json/users/me/avatar',
             success: function () {
-                $("#user_avatar_delete_button").hide();
+                $("#user-avatar-upload-widget .settings-page-delete-button").hide();
                 $("#user-avatar-source").show();
                 // Need to clear input because of a small edge case
                 // where you try to upload the same image you just deleted.
