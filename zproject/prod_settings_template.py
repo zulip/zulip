@@ -85,7 +85,7 @@ EXTERNAL_HOST = 'zulip.example.com'
 # The noreply address to be used as the sender for certain generated
 # emails.  Messages sent to this address could contain sensitive user
 # data and should not be delivered anywhere.  The default is
-# e.g. noreply-{random_token}@zulip.example.com (if EXTERNAL_HOST is
+# e.g. noreply-{token}@zulip.example.com (if EXTERNAL_HOST is
 # zulip.example.com).  There are potential security issues if you set
 # ADD_TOKENS_TO_NOREPLY_ADDRESS=False to remove the token; see
 # https://zulip.readthedocs.io/en/latest/production/email.html for details.
