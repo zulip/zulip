@@ -16,15 +16,6 @@ exports.initialize = function () {
 
     // MESSAGE CLICKING
 
-    function is_clickable_message_element(target) {
-        return target.is("a") || target.is("img.message_inline_image") || target.is("img.twitter-avatar") ||
-            target.is("div.message_length_controller") || target.is("textarea") || target.is("input") ||
-            target.is("i.edit_content_button") ||
-            // For spoilers, allow clicking either the header or elements within it
-            target.is(".spoiler-header") || target.parents(".spoiler-header").length > 0 ||
-            target.is(".highlight") && target.parent().is("a");
-    }
-
     function initialize_long_tap() {
         const MS_DELAY = 750;
         const meta = {
@@ -77,6 +68,47 @@ exports.initialize = function () {
         initialize_long_tap();
     }
 
+    function is_clickable_message_element(target) {
+        // This function defines all the elements within a message
+        // body that have UI behavior other than starting a reply.
+        if (target.is("a")) {
+            return true;
+        }
+
+        // Forms for message editing contain input elements
+        if (target.is("textarea") || target.is("input")) {
+            return true;
+        }
+
+        // Widget for adjusting the height of a message.
+        if (target.is("div.message_length_controller")) {
+            return true;
+        }
+
+        // Inline image and twitter previews.
+        if (target.is("img.message_inline_image") || target.is("img.twitter-avatar")) {
+            return true;
+        }
+
+        // UI elements for triggering message editing or viewing edit history.
+        if (target.is("i.edit_content_button") || target.is(".message_edit_notice")) {
+            return true;
+        }
+
+        // For spoilers, allow clicking either the header or elements within it
+        if (target.is(".spoiler-header") || target.parents(".spoiler-header").length > 0) {
+            return true;
+        }
+
+        // Arguably this should just be the second condition, but this
+        // case is for when possible for a link is split by search highlight syntax.
+        if (target.is(".highlight") && target.parent().is("a")) {
+            return true;
+        }
+
+        return false;
+    }
+
     const select_message_function = function (e) {
         if (is_clickable_message_element($(e.target))) {
             // If this click came from a hyperlink, don't trigger the
@@ -88,10 +120,6 @@ exports.initialize = function () {
             // Shift-click, because those are (apparently) implemented
             // by adding an event listener on link clicks, and
             // stopPropagation prevents them from being called.
-            return;
-        }
-
-        if ($(e.target).is(".message_edit_notice")) {
             return;
         }
 
