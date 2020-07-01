@@ -464,7 +464,6 @@ class SkipRateLimitingTest(ZulipTestCase):
 
         request = HostRequestMock(host="zulip.testserver")
         request.method = 'POST'
-        request.is_authenticated = True  # type: ignore[attr-defined] # HostRequestMock doesn't have is_authenticated
         request.user = self.example_user("hamlet")
 
         with mock.patch('zerver.decorator.rate_limit') as rate_limit_mock:
