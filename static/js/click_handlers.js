@@ -71,7 +71,9 @@ exports.initialize = function () {
     function is_clickable_message_element(target) {
         // This function defines all the elements within a message
         // body that have UI behavior other than starting a reply.
-        if (target.is("a")) {
+
+        // Links should be handled by the browser.
+        if (target.closest('a').length > 0) {
             return true;
         }
 
@@ -97,12 +99,6 @@ exports.initialize = function () {
 
         // For spoilers, allow clicking either the header or elements within it
         if (target.is(".spoiler-header") || target.parents(".spoiler-header").length > 0) {
-            return true;
-        }
-
-        // Arguably this should just be the second condition, but this
-        // case is for when possible for a link is split by search highlight syntax.
-        if (target.is(".highlight") && target.parent().is("a")) {
             return true;
         }
 

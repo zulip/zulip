@@ -43,7 +43,7 @@ exports.initialize = function () {
         // Spoiler headers can contain markdown, including links.  We
         // return so that clicking such links will be be processed by
         // the browser rather than opening the header.
-        if (target.is('a')) {
+        if (target.closest('a').length > 0) {
             return;
         }
 
