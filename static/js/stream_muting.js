@@ -1,7 +1,7 @@
 exports.update_is_muted = function (sub, value) {
     sub.is_muted = value;
 
-    setTimeout(function () {
+    setTimeout(() => {
         let msg_offset;
         let saved_ypos;
         // Save our current scroll position

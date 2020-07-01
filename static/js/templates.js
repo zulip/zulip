@@ -12,9 +12,7 @@ const util = require("./util");
 // Furthermore, waiting for DOM ready would introduce race conditions with
 // other DOM-ready callbacks that attempt to render templates.
 
-Handlebars.registerHelper('plural', function (condition, one, other) {
-    return condition === 1 ? one : other;
-});
+Handlebars.registerHelper('plural', (condition, one, other) => condition === 1 ? one : other);
 
 Handlebars.registerHelper({
     eq: function (a, b) { return a === b; },
@@ -54,7 +52,7 @@ Handlebars.registerHelper({
 // Jinja2 templating engine, so we don't consider this important.
 const t_cache = new Map();
 
-Handlebars.registerHelper('t', function (i18n_key) {
+Handlebars.registerHelper('t', (i18n_key) => {
     // Marks a string for translation.
     // Example usage:
     //     {{t "some English text"}}
@@ -69,7 +67,7 @@ Handlebars.registerHelper('t', function (i18n_key) {
     return safe_result;
 });
 
-Handlebars.registerHelper('tr', function (context, options) {
+Handlebars.registerHelper('tr', (context, options) => {
     // Marks a block for translation.
     // Example usage 1:
     //     {{#tr context}}

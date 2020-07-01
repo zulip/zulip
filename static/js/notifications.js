@@ -63,7 +63,7 @@ function get_audio_file_path(audio_element, audio_file_without_extension) {
 }
 
 exports.initialize = function () {
-    $(window).focus(function () {
+    $(window).focus(() => {
         window_has_focus = true;
 
         for (const notice_mem_entry of notice_memory.values()) {
@@ -75,7 +75,7 @@ exports.initialize = function () {
         // counts.
         unread_ops.process_visible();
 
-    }).blur(function () {
+    }).blur(() => {
         window_has_focus = false;
     });
 
@@ -250,7 +250,7 @@ if (window.electron_bridge !== undefined) {
     if (window.electron_bridge.set_send_notification_reply_message_supported !== undefined) {
         window.electron_bridge.set_send_notification_reply_message_supported(true);
     }
-    window.electron_bridge.on_event('send_notification_reply_message', function (message_id, reply) {
+    window.electron_bridge.on_event('send_notification_reply_message', (message_id, reply) => {
         const message = message_store.get(message_id);
         const data = {
             type: message.type,
@@ -658,7 +658,7 @@ exports.notify_local_mixes = function (messages, need_user_to_scroll) {
             if (need_user_to_scroll) {
                 reason = i18n.t("Sent! Scroll down to view your message.");
                 exports.notify_above_composebox(reason, "", null, "");
-                setTimeout(function () {
+                setTimeout(() => {
                     $('#out-of-view-notification').hide();
                 }, 3000);
             }
@@ -716,20 +716,20 @@ exports.reify_message_id = function (opts) {
 };
 
 exports.register_click_handlers = function () {
-    $('#out-of-view-notification').on('click', '.compose_notification_narrow_by_topic', function (e) {
+    $('#out-of-view-notification').on('click', '.compose_notification_narrow_by_topic', (e) => {
         const message_id = $(e.currentTarget).data('message-id');
         narrow.by_topic(message_id, {trigger: 'compose_notification'});
         e.stopPropagation();
         e.preventDefault();
     });
-    $('#out-of-view-notification').on('click', '.compose_notification_scroll_to_message', function (e) {
+    $('#out-of-view-notification').on('click', '.compose_notification_scroll_to_message', (e) => {
         const message_id = $(e.currentTarget).data('message-id');
         current_msg_list.select_id(message_id);
         navigate.scroll_to_selected();
         e.stopPropagation();
         e.preventDefault();
     });
-    $('#out-of-view-notification').on('click', '.out-of-view-notification-close', function (e) {
+    $('#out-of-view-notification').on('click', '.out-of-view-notification-close', (e) => {
         exports.clear_compose_notifications();
         e.stopPropagation();
         e.preventDefault();

@@ -4,7 +4,7 @@ set_global('page_params', {
     is_guest: false,
 });
 
-set_global('$', function () {
+set_global('$', () => {
 });
 
 set_global('document', null);
@@ -948,7 +948,7 @@ run_test('filter inactives', () => {
     stream_data.initialize(params);
     assert(!stream_data.is_filtering_inactives());
 
-    _.times(30, function (i) {
+    _.times(30, (i) => {
         const name = 'random' + i.toString();
         const stream_id = 100 + i;
 

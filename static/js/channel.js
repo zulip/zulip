@@ -77,7 +77,7 @@ function call(args, idempotent) {
         if (!data && idempotent) {
             // If idempotent, retry
             blueslip.log("Retrying idempotent" + args);
-            setTimeout(function () {
+            setTimeout(() => {
                 const jqXHR = $.ajax(args);
                 add_pending_request(jqXHR);
             }, 0);

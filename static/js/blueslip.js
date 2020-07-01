@@ -200,7 +200,7 @@ exports.exception_msg = function blueslip_exception_msg(ex) {
     return message;
 };
 
-$(window).on('error', function (event) {
+$(window).on('error', (event) => {
     const ex = event.originalEvent.error;
     if (!ex || ex instanceof BlueslipError) {
         return;

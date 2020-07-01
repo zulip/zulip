@@ -50,10 +50,8 @@ function sort_groups(query) {
     return stream_sort.sort_groups(streams, query);
 }
 
-with_overrides(function (override) {
-    override('stream_data.is_active', function (sub) {
-        return sub.name !== "pneumonia";
-    });
+with_overrides((override) => {
+    override('stream_data.is_active', (sub) => sub.name !== "pneumonia");
 
     // Test sorting into categories/alphabetized
     let sorted = sort_groups("");

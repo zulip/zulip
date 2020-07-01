@@ -380,7 +380,7 @@ function edit_message(row, raw_content) {
         // Do this right away, rather than waiting for the timer to do its first update,
         // since otherwise there is a noticeable lag
         message_edit_countdown_timer.text(timer_text(seconds_left));
-        const countdown_timer = setInterval(function () {
+        const countdown_timer = setInterval(() => {
             seconds_left -= 1;
             if (seconds_left <= 0) {
                 clearInterval(countdown_timer);
@@ -437,11 +437,11 @@ function edit_message(row, raw_content) {
     }
 
     if (!message.locally_echoed) {
-        message_edit_topic.keyup(function () {
+        message_edit_topic.keyup(() => {
             set_propagate_selector_display();
         });
 
-        message_edit_stream.on('change', function () {
+        message_edit_stream.on('change', () => {
             set_propagate_selector_display();
         });
     }
@@ -781,7 +781,7 @@ exports.edit_last_sent_message = function () {
 
     // Finally do the real work!
     compose_actions.cancel();
-    exports.start(msg_row, function () {
+    exports.start(msg_row, () => {
         $('#message_edit_content').focus();
     });
 };
@@ -807,7 +807,7 @@ exports.delete_message = function (msg_id) {
     } else {
         hide_delete_btn_show_spinner(false);
     }
-    $('#do_delete_message_button').off().on('click', function (e) {
+    $('#do_delete_message_button').off().on('click', (e) => {
         e.stopPropagation();
         e.preventDefault();
         currently_deleting_messages.push(msg_id);

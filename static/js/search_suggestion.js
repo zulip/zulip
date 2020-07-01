@@ -143,7 +143,7 @@ function get_group_suggestions(last, operators) {
     const parts = all_but_last_part.split(',').concat(people.my_current_email());
 
     const person_matcher = people.build_person_matcher(last_part);
-    let persons = people.filter_all_persons(function (person) {
+    let persons = people.filter_all_persons((person) => {
         if (parts.includes(person.email)) {
             return false;
         }

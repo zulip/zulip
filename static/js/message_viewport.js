@@ -419,14 +419,14 @@ exports.initialize = function () {
     jwindow = $(window);
     exports.message_pane = $(".app");
     // This handler must be placed before all resize handlers in our application
-    jwindow.resize(function () {
+    jwindow.resize(() => {
         dimensions.height.reset();
         dimensions.width.reset();
         top_of_feed.reset();
         bottom_of_feed.reset();
     });
 
-    $(document).on('compose_started compose_canceled compose_finished', function () {
+    $(document).on('compose_started compose_canceled compose_finished', () => {
         bottom_of_feed.reset();
     });
 };

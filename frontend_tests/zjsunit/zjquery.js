@@ -305,7 +305,7 @@ exports.make_new_elem = function (selector, opts) {
         },
         removeClass: function (class_names) {
             class_names = class_names.split(' ');
-            class_names.forEach(function (class_name) {
+            class_names.forEach((class_name) => {
                 classes.delete(class_name);
             });
             return self;

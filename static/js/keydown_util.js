@@ -11,7 +11,7 @@ const keys = {
 };
 
 exports.handle = function (opts) {
-    opts.elem.keydown(function (e) {
+    opts.elem.keydown((e) => {
         const key = e.which || e.keyCode;
 
         if (e.altKey || e.ctrlKey || e.shiftKey) {

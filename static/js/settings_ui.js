@@ -40,7 +40,7 @@ exports.do_settings_change = function (request_method, url, data, status_element
         url: url,
         data: data,
         success: function (reponse_data) {
-            setTimeout(function () {
+            setTimeout(() => {
                 ui_report.success(success_msg, spinner, remove_after);
                 exports.display_checkmark(spinner);
             }, appear_after);

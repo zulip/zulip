@@ -139,9 +139,9 @@ exports.reify_message_id_if_available = function (opts) {
 
 function get_sorted_topics() {
     // Sort all recent topics by last message time.
-    return new Map(Array.from(topics.entries()).sort(function (a, b) {
-        return  b[1].last_msg_id -  a[1].last_msg_id;
-    }));
+    return new Map(
+        Array.from(topics.entries()).sort((a, b) => b[1].last_msg_id - a[1].last_msg_id)
+    );
 }
 
 exports.get = function () {
@@ -390,9 +390,7 @@ exports.complete_rerender = function () {
     // Show topics list
     const container = $('.recent_topics_table table tbody');
     container.empty();
-    const mapped_topic_values = Array.from(exports.get().values()).map(function (value) {
-        return value;
-    });
+    const mapped_topic_values = Array.from(exports.get().values()).map((value) => value);
 
     topics_widget = list_render.create(container, mapped_topic_values, {
         name: "recent_topics_table",

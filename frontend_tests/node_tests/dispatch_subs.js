@@ -32,7 +32,7 @@ test('add', (override) => {
         name: sub.name,
     });
 
-    global.with_stub(function (subscription_stub) {
+    global.with_stub((subscription_stub) => {
         override('stream_events.mark_subscribed', subscription_stub.f);
         dispatch(event);
         const args = subscription_stub.get_args('sub', 'subscribers');
@@ -77,7 +77,7 @@ test('remove', (override) => {
 
     stream_data.add_sub(sub);
 
-    global.with_stub(function (stub) {
+    global.with_stub((stub) => {
         override('stream_events.mark_unsubscribed', stub.f);
         dispatch(event);
         const args = stub.get_args('sub');
@@ -87,7 +87,7 @@ test('remove', (override) => {
 
 test('update', (override) => {
     const event = event_fixtures.subscription__update;
-    global.with_stub(function (stub) {
+    global.with_stub((stub) => {
         override('stream_events.update_property', stub.f);
         dispatch(event);
         const args = stub.get_args('stream_id', 'property', 'value');
@@ -100,7 +100,7 @@ test('update', (override) => {
 test('add error handling', (override) => {
     // test blueslip errors/warns
     const event = event_fixtures.subscription__add;
-    global.with_stub(function (stub) {
+    global.with_stub((stub) => {
         override('blueslip.error', stub.f);
         dispatch(event);
         assert.deepEqual(stub.get_args('param').param, 'Subscribing to unknown stream with ID 42');

@@ -144,7 +144,7 @@ exports.watch_manual_resize = function (element) {
         document.body.addEventListener("mouseup", body_handler);
 
         return [box_handler, body_handler];
-    }(function (height) {
+    }((height) => {
         // This callback disables autosize on the textarea.  It
         // will be re-enabled when this component is next opened.
         autosize.destroy($(element))

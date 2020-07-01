@@ -32,7 +32,7 @@ exports.initialize = function () {
                 return;
             }
             current_msg_list.select_id(id);
-            setTimeout(function () {
+            setTimeout(() => {
                 // The algorithm to trigger long tap is that first, we check
                 // whether the message is still touched after MS_DELAY ms and
                 // the user isn't scrolling the messages(see other touch event
@@ -45,18 +45,18 @@ exports.initialize = function () {
                         $(this).trigger("longtap");
                     }
                 }
-            }.bind(this), MS_DELAY);
+            }, MS_DELAY);
         });
 
-        $("#main_div").on("touchend", ".messagebox", function () {
+        $("#main_div").on("touchend", ".messagebox", () => {
             meta.touchdown = false;
         });
 
-        $("#main_div").on("touchmove", ".messagebox", function () {
+        $("#main_div").on("touchmove", ".messagebox", () => {
             meta.invalid = true;
         });
 
-        $("#main_div").on("contextmenu", ".messagebox", function (e) {
+        $("#main_div").on("contextmenu", ".messagebox", (e) => {
             e.preventDefault();
         });
     }
@@ -178,19 +178,19 @@ exports.initialize = function () {
         $(".tooltip").remove();
     });
 
-    $('body').on('mouseenter', '.message_edit_notice', function (e) {
+    $('body').on('mouseenter', '.message_edit_notice', (e) => {
         if (page_params.realm_allow_edit_history) {
             $(e.currentTarget).addClass("message_edit_notice_hover");
         }
     });
 
-    $('body').on('mouseleave', '.message_edit_notice', function (e) {
+    $('body').on('mouseleave', '.message_edit_notice', (e) => {
         if (page_params.realm_allow_edit_history) {
             $(e.currentTarget).removeClass("message_edit_notice_hover");
         }
     });
 
-    $('body').on('click', '.message_edit_notice', function (e) {
+    $('body').on('click', '.message_edit_notice', (e) => {
         popovers.hide_all();
         const message_id = rows.id($(e.currentTarget).closest(".message_row"));
         const row = current_msg_list.get_row(message_id);
@@ -207,7 +207,7 @@ exports.initialize = function () {
 
     // TOOLTIP FOR MESSAGE REACTIONS
 
-    $('#main_div').on('mouseenter', '.message_reaction', function (e) {
+    $('#main_div').on('mouseenter', '.message_reaction', (e) => {
         e.stopPropagation();
         const elem = $(e.currentTarget);
         const local_id = elem.attr('data-reaction-id');
@@ -226,14 +226,14 @@ exports.initialize = function () {
         $(".tooltip-arrow").remove();
     });
 
-    $('#main_div').on('mouseleave', '.message_reaction', function (e) {
+    $('#main_div').on('mouseleave', '.message_reaction', (e) => {
         e.stopPropagation();
         $(e.currentTarget).tooltip('destroy');
     });
 
     // DESTROY PERSISTING TOOLTIPS ON HOVER
 
-    $("body").on('mouseenter', '.tooltip', function (e) {
+    $("body").on('mouseenter', '.tooltip', (e) => {
         e.stopPropagation();
         $(e.currentTarget).remove();
     });
@@ -252,7 +252,7 @@ exports.initialize = function () {
 
     // USER STATUS MODAL
 
-    $(".user-status-value").on("click", function (e) {
+    $(".user-status-value").on("click", (e) => {
         e.stopPropagation();
         const user_status_value = $(e.currentTarget).attr("data-user-status-value");
         $("input.user_status").val(user_status_value);
@@ -373,7 +373,7 @@ exports.initialize = function () {
 
     // MUTING
 
-    $('body').on('click', '.on_hover_topic_mute', function (e) {
+    $('body').on('click', '.on_hover_topic_mute', (e) => {
         e.stopPropagation();
         const stream_id = parseInt($(e.currentTarget).attr('data-stream-id'), 10);
         const topic = $(e.currentTarget).attr('data-topic-name');
@@ -382,7 +382,7 @@ exports.initialize = function () {
 
     $('body').on('keydown', '.on_hover_topic_mute', convert_enter_to_click);
 
-    $('body').on('click', '.on_hover_topic_unmute', function (e) {
+    $('body').on('click', '.on_hover_topic_unmute', (e) => {
         e.stopPropagation();
         const stream_id = parseInt($(e.currentTarget).attr('data-stream-id'), 10);
         const topic = $(e.currentTarget).attr('data-topic-name');
@@ -393,12 +393,12 @@ exports.initialize = function () {
 
     // RECENT TOPICS
 
-    $('body').on('click', '#recent_topics_search', function (e) {
+    $('body').on('click', '#recent_topics_search', (e) => {
         e.stopPropagation();
         recent_topics.change_focused_element(e, 'click');
     });
 
-    $('body').on('click', '.on_hover_topic_read', function (e) {
+    $('body').on('click', '.on_hover_topic_read', (e) => {
         e.stopPropagation();
         const stream_id = parseInt($(e.currentTarget).attr('data-stream-id'), 10);
         const topic = $(e.currentTarget).attr('data-topic-name');
@@ -407,19 +407,19 @@ exports.initialize = function () {
 
     $('body').on('keydown', '.on_hover_topic_read', convert_enter_to_click);
 
-    $('body').on('click', '.btn-recent-filters', function (e) {
+    $('body').on('click', '.btn-recent-filters', (e) => {
         e.stopPropagation();
         recent_topics.set_filter(e.currentTarget.dataset.filter);
         recent_topics.update_filters_view();
     });
 
     // Search for all table rows (this combines stream & topic names)
-    $('body').on('keyup', '#recent_topics_search', _.debounce(function () {
+    $('body').on('keyup', '#recent_topics_search', _.debounce(() => {
         recent_topics.update_filters_view();
     // Wait for user to go idle before initiating search.
     }, 300));
 
-    $('body').on('click', '#recent_topics_search_clear', function (e) {
+    $('body').on('click', '#recent_topics_search_clear', (e) => {
         e.stopPropagation();
         $('#recent_topics_search').val("");
         recent_topics.update_filters_view();
@@ -459,7 +459,7 @@ exports.initialize = function () {
 
     // SIDEBARS
 
-    $("#userlist-toggle-button").on("click", function (e) {
+    $("#userlist-toggle-button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -470,7 +470,7 @@ exports.initialize = function () {
         }
     });
 
-    $("#streamlist-toggle-button").on("click", function (e) {
+    $("#streamlist-toggle-button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -481,7 +481,7 @@ exports.initialize = function () {
         }
     });
 
-    $('#user_presences').expectOne().on('click', '.selectable_sidebar_block', function (e) {
+    $('#user_presences').expectOne().on('click', '.selectable_sidebar_block', (e) => {
         const li = $(e.target).parents('li');
 
         activity.narrow_for_user({li: li});
@@ -508,7 +508,7 @@ exports.initialize = function () {
     }
 
     // BUDDY LIST TOOLTIPS
-    $('#user_presences').on('mouseenter', '.user-presence-link, .user_sidebar_entry .user_circle, .user_sidebar_entry .selectable_sidebar_block', function (e) {
+    $('#user_presences').on('mouseenter', '.user-presence-link, .user_sidebar_entry .user_circle, .user_sidebar_entry .selectable_sidebar_block', (e) => {
         e.stopPropagation();
         const elem = $(e.currentTarget).closest(".user_sidebar_entry").find(".user-presence-link");
         const user_id_string = elem.attr('data-user-id');
@@ -516,14 +516,14 @@ exports.initialize = function () {
         do_render_buddy_list_tooltip(elem, title_data);
     });
 
-    $('#user_presences').on('mouseleave click', '.user-presence-link, .user_sidebar_entry .user_circle, .user_sidebar_entry .selectable_sidebar_block', function (e) {
+    $('#user_presences').on('mouseleave click', '.user-presence-link, .user_sidebar_entry .user_circle, .user_sidebar_entry .selectable_sidebar_block', (e) => {
         e.stopPropagation();
         const elem = $(e.currentTarget).closest(".user_sidebar_entry").find(".user-presence-link");
         $(elem).tooltip('destroy');
     });
 
     // PM LIST TOOLTIPS
-    $("body").on('mouseenter', '#pm_user_status', function (e) {
+    $("body").on('mouseenter', '#pm_user_status', (e) => {
         $(".tooltip").remove();
         e.stopPropagation();
         const elem = $(e.currentTarget);
@@ -535,14 +535,14 @@ exports.initialize = function () {
         do_render_buddy_list_tooltip(elem, title_data);
     });
 
-    $("body").on('mouseleave', '#pm_user_status', function (e) {
+    $("body").on('mouseleave', '#pm_user_status', (e) => {
         e.stopPropagation();
         $(e.currentTarget).tooltip('destroy');
     });
 
     // HOME
 
-    $(document).on('click', ".top_left_all_messages", function (e) {
+    $(document).on('click', ".top_left_all_messages", (e) => {
         ui_util.change_tab_to('#home');
         narrow.deactivate();
         search.update_button_visibility();
@@ -552,7 +552,7 @@ exports.initialize = function () {
         e.preventDefault();
     });
 
-    $(".brand").on('click', function (e) {
+    $(".brand").on('click', (e) => {
         if (overlays.is_active()) {
             overlays.close_active();
         } else {
@@ -577,11 +577,11 @@ exports.initialize = function () {
     stream_popover.register_click_handlers();
     notifications.register_click_handlers();
 
-    $('body').on('click', '.logout_button', function () {
+    $('body').on('click', '.logout_button', () => {
         $('#logout_form').submit();
     });
 
-    $('.restart_get_events_button').click(function () {
+    $('.restart_get_events_button').click(() => {
         server_events.restart_get_events({dont_block: true});
     });
 
@@ -589,12 +589,12 @@ exports.initialize = function () {
     $("body").on("click", ".alert-box > div .exit", function () {
         const $alert = $(this).closest(".alert-box > div");
         $alert.addClass("fade-out");
-        setTimeout(function () {
+        setTimeout(() => {
             $alert.removeClass("fade-out show");
         }, 300);
     });
 
-    $("#settings_page").on("click", ".collapse-settings-btn", function () {
+    $("#settings_page").on("click", ".collapse-settings-btn", () => {
         settings_toggle.toggle_org_setting_collapse();
     });
 
@@ -607,40 +607,40 @@ exports.initialize = function () {
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
     $('#compose-send-status .compose-send-status-close').click(
-        function () { $('#compose-send-status').stop(true).fadeOut(500); }
+        () => { $('#compose-send-status').stop(true).fadeOut(500); }
     );
     $('#nonexistent_stream_reply_error .compose-send-status-close').click(
-        function () { $('#nonexistent_stream_reply_error').stop(true).fadeOut(500); }
+        () => { $('#nonexistent_stream_reply_error').stop(true).fadeOut(500); }
     );
 
 
-    $('.compose_stream_button').click(function () {
+    $('.compose_stream_button').click(() => {
         popovers.hide_mobile_message_buttons_popover();
         compose_actions.start('stream', {trigger: 'new topic button'});
     });
-    $('.compose_private_button').click(function () {
+    $('.compose_private_button').click(() => {
         popovers.hide_mobile_message_buttons_popover();
         compose_actions.start('private');
     });
 
-    $('body').on('click', '.compose_mobile_stream_button', function () {
+    $('body').on('click', '.compose_mobile_stream_button', () => {
         popovers.hide_mobile_message_buttons_popover();
         compose_actions.start('stream', {trigger: 'new topic button'});
     });
-    $('body').on('click', '.compose_mobile_private_button', function () {
+    $('body').on('click', '.compose_mobile_private_button', () => {
         popovers.hide_mobile_message_buttons_popover();
         compose_actions.start('private');
     });
 
-    $('.compose_reply_button').click(function () {
+    $('.compose_reply_button').click(() => {
         compose_actions.respond_to_message({trigger: 'reply button'});
     });
 
-    $('.empty_feed_compose_stream').click(function (e) {
+    $('.empty_feed_compose_stream').click((e) => {
         compose_actions.start('stream', {trigger: 'empty feed message'});
         e.preventDefault();
     });
-    $('.empty_feed_compose_private').click(function (e) {
+    $('.empty_feed_compose_private').click((e) => {
         compose_actions.start('private', {trigger: 'empty feed message'});
         e.preventDefault();
     });
@@ -677,23 +677,23 @@ exports.initialize = function () {
     $("#compose_buttons").click(handle_compose_click);
     $(".compose-content").click(handle_compose_click);
 
-    $("#compose_close").click(function () {
+    $("#compose_close").click(() => {
         compose_actions.cancel();
     });
 
-    $("#streams_inline_cog").click(function (e) {
+    $("#streams_inline_cog").click((e) => {
         e.stopPropagation();
         hashchange.go_to_location('streams/subscribed');
     });
 
-    $("#streams_filter_icon").click(function (e) {
+    $("#streams_filter_icon").click((e) => {
         e.stopPropagation();
         stream_list.toggle_filter_displayed(e);
     });
 
     // WEBATHENA
 
-    $('body').on('click', '.webathena_login', function (e) {
+    $('body').on('click', '.webathena_login', (e) => {
         $("#zephyr-mirror-error").removeClass("show");
         const principal = ["zephyr", "zephyr"];
         WinChan.open({
@@ -703,7 +703,7 @@ exports.initialize = function () {
                 realm: "ATHENA.MIT.EDU",
                 principal: principal,
             },
-        }, function (err, r) {
+        }, (err, r) => {
             if (err) {
                 blueslip.warn(err);
                 return;
@@ -731,9 +731,7 @@ exports.initialize = function () {
     // End Webathena code
 
     // disable the draggability for left-sidebar components
-    $('#stream_filters, #global_filters').on('dragstart', function () {
-        return false;
-    });
+    $('#stream_filters, #global_filters').on('dragstart', () => false);
 
     (function () {
         const map = {
@@ -760,9 +758,7 @@ exports.initialize = function () {
             }
         });
 
-        $(document).on("drop", ".editable-section", function () {
-            return false;
-        });
+        $(document).on("drop", ".editable-section", () => false);
 
         $(document).on("input", ".editable-section", function () {
             // if there are any child nodes, inclusive of <br> which means you
@@ -863,7 +859,7 @@ exports.initialize = function () {
         $('#hotspot_' + hotspot_name + '_icon').remove();
     });
 
-    $('body').on('click', '.hotspot-button', function (e) {
+    $('body').on('click', '.hotspot-button', (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -872,14 +868,14 @@ exports.initialize = function () {
     });
 
     // stop propagation
-    $('body').on('click', '.hotspot.overlay .hotspot-popover', function (e) {
+    $('body').on('click', '.hotspot.overlay .hotspot-popover', (e) => {
         e.stopPropagation();
     });
 
 
     // MAIN CLICK HANDLER
 
-    $(document).on('click', function (e) {
+    $(document).on('click', (e) => {
         if (e.button !== 0 || $(e.target).is(".drag")) {
             // Firefox emits right click events on the document, but not on
             // the child nodes, so the #compose stopPropagation doesn't get a
@@ -925,11 +921,11 @@ exports.initialize = function () {
     // Workaround for Bootstrap issue #5900, which basically makes dropdowns
     // unclickable on mobile devices.
     // https://github.com/twitter/bootstrap/issues/5900
-    $('a.dropdown-toggle, .dropdown-menu a').on('touchstart', function (e) {
+    $('a.dropdown-toggle, .dropdown-menu a').on('touchstart', (e) => {
         e.stopPropagation();
     });
 
-    $(".settings-header.mobile .fa-chevron-left").on("click", function () {
+    $(".settings-header.mobile .fa-chevron-left").on("click", () => {
         settings_panel_menu.mobile_deactivate_section();
     });
 };

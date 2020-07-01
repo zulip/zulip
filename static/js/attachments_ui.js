@@ -115,9 +115,7 @@ exports.update_attachments = function (event) {
         return;
     }
     if (event.op === 'remove' || event.op === 'update') {
-        attachments = attachments.filter(function (a) {
-            return a.id !== event.attachment.id;
-        });
+        attachments = attachments.filter((a) => a.id !== event.attachment.id);
     }
     if (event.op === 'add' || event.op === 'update') {
         format_attachment_data([event.attachment]);
@@ -135,7 +133,7 @@ exports.set_up_attachments = function () {
     const status = $('#delete-upload-status');
     loading.make_indicator($('#attachments_loading_indicator'), {text: 'Loading...'});
 
-    $('#uploaded_files_table').on('click', '.remove-attachment', function (e) {
+    $('#uploaded_files_table').on('click', '.remove-attachment', (e) => {
         delete_attachments($(e.target).closest(".uploaded_file_row").attr('data-attachment-id'));
     });
 

@@ -35,7 +35,7 @@ exports.set_up = function () {
 
     $(".emojiset_choice[value=" + page_params.emojiset + "]").prop("checked", true);
 
-    $("#default_language_modal [data-dismiss]").click(function () {
+    $("#default_language_modal [data-dismiss]").click(() => {
         overlays.close_modal('#default_language_modal');
     });
 
@@ -56,7 +56,7 @@ exports.set_up = function () {
         });
     }
 
-    $("#default_language_modal .language").click(function (e) {
+    $("#default_language_modal .language").click((e) => {
         e.preventDefault();
         e.stopPropagation();
         overlays.close_modal('#default_language_modal');
@@ -73,7 +73,7 @@ exports.set_up = function () {
 
     });
 
-    $('#default_language').on('click', function (e) {
+    $('#default_language').on('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
         overlays.open_modal('#default_language_modal');
@@ -89,7 +89,7 @@ exports.set_up = function () {
         change_display_setting(data, '#display-settings-status');
     });
 
-    $('body').on('click', '.reload_link', function () {
+    $('body').on('click', '.reload_link', () => {
         window.location.reload();
     });
 

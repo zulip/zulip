@@ -68,7 +68,7 @@ run_test('create_sidebar_row', () => {
         devel_count.set_find_results('.value', devel_value);
         devel_count.set_parent(sidebar_row);
 
-        global.stub_templates(function (template_name, data) {
+        global.stub_templates((template_name, data) => {
             assert.equal(template_name, 'stream_sidebar_row');
             assert.equal(data.uri, '#narrow/stream/100-devel');
             return '<devel sidebar row>';
@@ -87,7 +87,7 @@ run_test('create_sidebar_row', () => {
         social_count.set_find_results('.value', social_value);
         social_count.set_parent(sidebar_row);
 
-        global.stub_templates(function (template_name, data) {
+        global.stub_templates((template_name, data) => {
             assert.equal(template_name, 'stream_sidebar_row');
             assert.equal(data.uri, '#narrow/stream/200-social');
             return '<social sidebar row>';
@@ -133,7 +133,7 @@ run_test('create_sidebar_row', () => {
 
     social.invite_only = true;
     social.color = '#222222';
-    global.stub_templates(function (template_name, data) {
+    global.stub_templates((template_name, data) => {
         assert.equal(template_name, 'stream_privacy');
         assert.equal(data.invite_only, true);
         assert.equal(data.dark_background, 'dark_background');
@@ -747,7 +747,7 @@ run_test('create_initial_sidebar_rows', () => {
 
     stream_list.update_count_in_dom = noop;
 
-    global.stub_templates(function (template_name, data) {
+    global.stub_templates((template_name, data) => {
         assert.equal(template_name, 'stream_sidebar_row');
         return '<div>stub-html-' + data.name;
     });

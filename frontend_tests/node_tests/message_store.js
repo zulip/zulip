@@ -279,7 +279,7 @@ run_test('message_id_change', () => {
         new_id: 402,
     };
 
-    global.with_stub(function (stub) {
+    global.with_stub((stub) => {
         home_msg_list.change_message_id = stub.f;
         message_store.reify_message_id(opts);
         const msg_id = stub.get_args('old', 'new');
@@ -288,7 +288,7 @@ run_test('message_id_change', () => {
     });
 
     home_msg_list.view = {};
-    global.with_stub(function (stub) {
+    global.with_stub((stub) => {
         home_msg_list.view.change_message_id = stub.f;
         message_store.reify_message_id(opts);
         const msg_id = stub.get_args('old', 'new');

@@ -3,11 +3,11 @@ function collapse_spoiler(spoiler) {
 
     // Set height to rendered height on next frame, then to zero on following
     // frame to allow CSS transition animation to work
-    requestAnimationFrame(function () {
+    requestAnimationFrame(() => {
         spoiler.height(spoiler_height + 'px');
         spoiler.removeClass("spoiler-content-open");
 
-        requestAnimationFrame(function () {
+        requestAnimationFrame(() => {
             spoiler.height("0px");
         });
     });
@@ -25,7 +25,7 @@ function expand_spoiler(spoiler) {
     // will trigger on the frame after this class change.
     spoiler.addClass("spoiler-content-open");
 
-    spoiler.on('transitionend', function () {
+    spoiler.on('transitionend', () => {
         spoiler.off('transitionend');
         // When the CSS transition is over, reset the height to auto
         // This keeps things working if, e.g., the viewport is resized

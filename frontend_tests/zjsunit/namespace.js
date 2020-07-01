@@ -45,7 +45,7 @@ exports.clear_zulip_refs = function () {
 };
 
 exports.restore = function () {
-    requires.forEach(function (fn) {
+    requires.forEach((fn) => {
         delete require.cache[require.resolve(fn)];
     });
     Object.assign(global, old_globals);
@@ -57,14 +57,12 @@ exports.restore = function () {
 };
 
 exports.stub_out_jquery = function () {
-    set_global('$', function () {
-        return {
-            on: function () {},
-            trigger: function () {},
-            hide: function () {},
-            removeClass: function () {},
-        };
-    });
+    set_global('$', () => ({
+        on: function () {},
+        trigger: function () {},
+        hide: function () {},
+        removeClass: function () {},
+    }));
     $.fn = {};
     $.now = function () {};
 };
@@ -86,7 +84,7 @@ exports.with_overrides = function (test_function) {
 
         global[module][func_name] = f;
 
-        clobber_callbacks.push(function () {
+        clobber_callbacks.push(() => {
             // If you get a failure from this, you probably just
             // need to have your test do its own overrides and
             // not cherry-pick off of the prior test's setup.

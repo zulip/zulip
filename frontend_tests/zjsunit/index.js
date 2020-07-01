@@ -104,7 +104,7 @@ global.run_test = (label, f) => {
 };
 
 try {
-    files.forEach(function (file) {
+    files.forEach((file) => {
         set_global('location', {
             hash: '#',
         });

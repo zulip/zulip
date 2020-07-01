@@ -30,9 +30,7 @@ function get_users_typing_for_narrow() {
         if (!narrow_user_ids_string) {
             return [];
         }
-        const narrow_user_ids = narrow_user_ids_string.split(',').map(function (user_id_string) {
-            return parseInt(user_id_string, 10);
-        });
+        const narrow_user_ids = narrow_user_ids_string.split(',').map((user_id_string) => parseInt(user_id_string, 10));
         const group = narrow_user_ids.concat([page_params.user_id]);
         return typing_data.get_group_typists(group);
     }
@@ -52,9 +50,7 @@ exports.render_notifications_for_narrow = function () {
 };
 
 exports.hide_notification = function (event) {
-    const recipients = event.recipients.map(function (user) {
-        return user.user_id;
-    });
+    const recipients = event.recipients.map((user) => user.user_id);
     recipients.sort();
 
     typing_data.clear_inbound_timer(recipients);
@@ -67,9 +63,7 @@ exports.hide_notification = function (event) {
 };
 
 exports.display_notification = function (event) {
-    const recipients = event.recipients.map(function (user) {
-        return user.user_id;
-    });
+    const recipients = event.recipients.map((user) => user.user_id);
     recipients.sort();
 
     const sender_id = event.sender.user_id;
@@ -82,7 +76,7 @@ exports.display_notification = function (event) {
     typing_data.kickstart_inbound_timer(
         recipients,
         TYPING_STARTED_EXPIRY_PERIOD,
-        function () {
+        () => {
             exports.hide_notification(event);
         }
     );

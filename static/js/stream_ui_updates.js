@@ -31,12 +31,12 @@ exports.initialize_disable_btn_hint_popover = function (btn_wrapper, popover_btn
         animation: false,
     });
 
-    btn_wrapper.on('mouseover', function (e) {
+    btn_wrapper.on('mouseover', (e) => {
         popover_btn.popover('show');
         e.stopPropagation();
     });
 
-    btn_wrapper.on('mouseout', function (e) {
+    btn_wrapper.on('mouseout', (e) => {
         popover_btn.popover('hide');
         e.stopPropagation();
     });

@@ -52,7 +52,7 @@ exports.build_user_avatar_widget = function (upload_function) {
         $("#user-avatar-source").hide();
     }
 
-    $("#user-avatar-upload-widget .settings-page-delete-button").on('click keydown', function (e) {
+    $("#user-avatar-upload-widget .settings-page-delete-button").on('click keydown', (e) => {
         e.preventDefault();
         e.stopPropagation();
         channel.del({

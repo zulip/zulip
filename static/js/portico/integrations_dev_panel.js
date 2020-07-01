@@ -24,7 +24,7 @@ const clear_handlers = {
 function clear_elements(elements) {
     // Supports strings (a selector to clear) or calling a function
     // (for more complex logic).
-    elements.forEach(function (element_name) {
+    elements.forEach((element_name) => {
         const handler = clear_handlers[element_name];
         if (typeof handler === "string") {
             const element_object = $(handler)[0];
@@ -88,7 +88,7 @@ function set_results(response) {
     const responses = response.responses;
 
     let data = "Results:\n\n";
-    responses.forEach(function (response) {
+    responses.forEach((response) => {
         if (response.fixture_name !== undefined) {
             data += "Fixture:            " + response.fixture_name;
             data += "\nStatus Code:    "  + response.status_code;
@@ -128,7 +128,7 @@ function load_fixture_options(integration_name) {
     const fixtures_options_dropdown = $("#fixture_name")[0];
     const fixtures_names = Object.keys(loaded_fixtures.get(integration_name)).sort();
 
-    fixtures_names.forEach(function (fixture_name) {
+    fixtures_names.forEach((fixture_name) => {
         const new_dropdown_option = document.createElement("option");
         new_dropdown_option.value = fixture_name;
         new_dropdown_option.innerHTML = fixture_name;
@@ -295,7 +295,7 @@ function send_all_fixture_messages() {
 }
 
 // Initialization
-$(function () {
+$(() => {
     clear_elements(["stream_name", "topic_name", "URL", "bot_name", "integration_name",
                     "fixture_name", "custom_http_headers", "fixture_body", "results_notice",
                     "results"]);
@@ -323,12 +323,12 @@ $(function () {
         return;
     });
 
-    $('#send_fixture_button').click(function () {
+    $('#send_fixture_button').click(() => {
         send_webhook_fixture_message();
         return;
     });
 
-    $('#send_all_fixtures_button').click(function () {
+    $('#send_all_fixtures_button').click(() => {
         clear_elements(["results_notice"]);
         send_all_fixture_messages();
         return;

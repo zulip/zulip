@@ -10,7 +10,7 @@ exports.initialize = () => {
         },
     });
 
-    $('#add-card-button').on('click', function (e) {
+    $('#add-card-button').on('click', (e) => {
         const license_management = $('input[type=radio][name=license_management]:checked').val();
         if (helpers.is_valid_input($("#" + license_management + "_license_count")) === false) {
             return;
@@ -28,7 +28,7 @@ exports.initialize = () => {
         e.preventDefault();
     });
 
-    $("#invoice-button").on("click", function (e) {
+    $("#invoice-button").on("click", (e) => {
         if (helpers.is_valid_input($("#invoiced_licenses")) === false) {
             return;
         }
@@ -36,7 +36,7 @@ exports.initialize = () => {
         helpers.create_ajax_request("/json/billing/upgrade", "invoice", undefined, ["licenses"]);
     });
 
-    $("#sponsorship-button").on("click", function (e) {
+    $("#sponsorship-button").on("click", (e) => {
         e.preventDefault();
         helpers.create_ajax_request("/json/billing/sponsorship", "sponsorship", undefined, undefined, "/");
     });
@@ -69,6 +69,6 @@ exports.initialize = () => {
 
 window.upgrade = exports;
 
-$(function () {
+$(() => {
     exports.initialize();
 });

@@ -58,7 +58,7 @@ exports.initialize = function () {
         notify_server_stop: notify_server_stop,
     };
 
-    $(document).on('input', '#compose-textarea', function () {
+    $(document).on('input', '#compose-textarea', () => {
         // If our previous state was no typing notification, send a
         // start-typing notice immediately.
         const new_recipient =
@@ -68,7 +68,7 @@ exports.initialize = function () {
 
     // We send a stop-typing notification immediately when compose is
     // closed/cancelled
-    $(document).on('compose_canceled.zulip compose_finished.zulip', function () {
+    $(document).on('compose_canceled.zulip compose_finished.zulip', () => {
         typing_status.update(worker, null);
     });
 };

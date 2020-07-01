@@ -153,13 +153,13 @@ function scroll_finish() {
 }
 
 exports.initialize = function () {
-    message_viewport.message_pane.scroll(_.throttle(function () {
+    message_viewport.message_pane.scroll(_.throttle(() => {
         unread_ops.process_visible();
         scroll_finish();
     }, 50));
 
     // Scroll handler that marks messages as read when you scroll past them.
-    $(document).on('message_selected.zulip', function (event) {
+    $(document).on('message_selected.zulip', (event) => {
         if (event.id === -1) {
             return;
         }

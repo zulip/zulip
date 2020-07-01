@@ -248,7 +248,7 @@ exports.zoom_in = function () {
 };
 
 exports.initialize = function () {
-    $('#stream_filters').on('click', '.topic-box', function (e) {
+    $('#stream_filters').on('click', '.topic-box', (e) => {
         if (e.metaKey || e.ctrlKey) {
             return;
         }

@@ -281,7 +281,7 @@ exports.go_to_location = function (hash) {
 };
 
 exports.initialize = function () {
-    $(window).on('hashchange', function (e) {
+    $(window).on('hashchange', (e) => {
         hashchanged(false, e.originalEvent);
     });
     hashchanged(true);

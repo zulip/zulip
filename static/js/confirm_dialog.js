@@ -62,12 +62,12 @@ exports.launch = function (conf) {
     yes_button.html(conf.html_yes_button);
 
     // Set up handlers.
-    yes_button.on('click', function () {
+    yes_button.on('click', () => {
         overlays.close_modal('#confirm_dialog_modal');
         conf.on_click();
     });
 
-    confirm_dialog.on('hide', function () {
+    confirm_dialog.on('hide', () => {
         confirm_dialog.remove();
     });
 

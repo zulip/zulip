@@ -73,7 +73,7 @@ function submit_invitation_form() {
                 const invitee_emails_errored = [];
                 const error_list = [];
                 let is_invitee_deactivated = false;
-                arr.errors.forEach(function (value) {
+                arr.errors.forEach((value) => {
                     const [email, error_message, deactivated] = value;
                     error_list.push(`${email}: ${error_message}`);
                     if (deactivated) {
@@ -161,17 +161,17 @@ exports.launch = function () {
 };
 
 exports.initialize = function () {
-    $(document).on('click', '.invite_check_all_button', function (e) {
+    $(document).on('click', '.invite_check_all_button', (e) => {
         $('#streams_to_add :checkbox').prop('checked', true);
         e.preventDefault();
     });
 
-    $(document).on('click', '.invite_uncheck_all_button', function (e) {
+    $(document).on('click', '.invite_uncheck_all_button', (e) => {
         $('#streams_to_add :checkbox').prop('checked', false);
         e.preventDefault();
     });
 
-    $("#submit-invitation").on("click", function () {
+    $("#submit-invitation").on("click", () => {
         const is_generate_invite_link = $('#generate_multiuse_invite_radio').prop('checked');
         if (is_generate_invite_link) {
             generate_multiuse_invite();
@@ -180,7 +180,7 @@ exports.initialize = function () {
         }
     });
 
-    $("#generate_multiuse_invite_button").on("click", function () {
+    $("#generate_multiuse_invite_button").on("click", () => {
         $("#generate_multiuse_invite_radio").prop("checked", true);
         $("#multiuse_radio_section").show();
         $("#invite-method-choice").hide();
@@ -190,7 +190,7 @@ exports.initialize = function () {
         reset_error_messages();
     });
 
-    $('#invite-user').on('change', '#generate_multiuse_invite_radio', function () {
+    $('#invite-user').on('change', '#generate_multiuse_invite_radio', () => {
         $('#invitee_emails').prop('disabled', false);
         $('#submit-invitation').text(i18n.t('Invite'));
         $('#submit-invitation').data('loading-text', i18n.t('Inviting...'));

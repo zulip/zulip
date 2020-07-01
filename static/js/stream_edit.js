@@ -49,9 +49,7 @@ exports.is_sub_settings_active = function (sub) {
 };
 
 exports.get_users_from_subscribers = function (subscribers) {
-    return subscribers.map(function (user_id) {
-        return people.get_by_user_id(user_id);
-    });
+    return subscribers.map((user_id) => people.get_by_user_id(user_id));
 };
 
 exports.get_retention_policy_text_for_subscription_type = function (sub) {
@@ -326,7 +324,7 @@ function show_subscription_settings(sub_row) {
 
     user_pill.set_up_typeahead_on_pills(sub_settings.find('.input'),
                                         exports.pill_widget,
-                                        function () {},
+                                        () => {},
                                         get_users_for_subscriber_typeahead);
 }
 
@@ -591,7 +589,7 @@ exports.delete_stream = function (stream_id, alert_element, stream_row) {
 };
 
 exports.initialize = function () {
-    $("#main_div").on("click", ".stream_sub_unsub_button", function (e) {
+    $("#main_div").on("click", ".stream_sub_unsub_button", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -603,7 +601,7 @@ exports.initialize = function () {
         subs.sub_or_unsub(sub);
     });
 
-    $("#subscriptions_table").on("click", ".change-stream-privacy", function (e) {
+    $("#subscriptions_table").on("click", ".change-stream-privacy", (e) => {
         const stream_id = get_stream_id(e.target);
         const stream = stream_data.get_sub_by_id(stream_id);
         const template_data = {
@@ -638,7 +636,7 @@ exports.initialize = function () {
     $("#subscriptions_table").on('click', '#change-stream-privacy-button',
                                  change_stream_privacy);
 
-    $("#subscriptions_table").on('click', '.close-privacy-modal', function (e) {
+    $("#subscriptions_table").on('click', '.close-privacy-modal', (e) => {
         // Re-enable background mouse events when we close the modal
         // via the "x" in the corner.  (The other modal-close code
         // paths call `overlays.close_modal`, rather than using
@@ -661,19 +659,19 @@ exports.initialize = function () {
     $("#subscriptions_table").on("click", ".sub_setting_checkbox",
                                  exports.stream_setting_clicked);
 
-    $("#subscriptions_table").on("keyup", ".subscriber_list_add form", function (e) {
+    $("#subscriptions_table").on("keyup", ".subscriber_list_add form", (e) => {
         if (e.which === 13) {
             e.preventDefault();
             submit_add_subscriber_form(e);
         }
     });
 
-    $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
+    $("#subscriptions_table").on("submit", ".subscriber_list_add form", (e) => {
         e.preventDefault();
         submit_add_subscriber_form(e);
     });
 
-    $("#subscriptions_table").on("submit", ".subscriber_list_remove form", function (e) {
+    $("#subscriptions_table").on("submit", ".subscriber_list_remove form", (e) => {
         e.preventDefault();
 
         const list_entry = $(e.target).closest("tr");
@@ -711,7 +709,7 @@ exports.initialize = function () {
 
     // This handler isn't part of the normal edit interface; it's the convenient
     // checkmark in the subscriber list.
-    $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {
+    $("#subscriptions_table").on("click", ".sub_unsub_button", (e) => {
         const sub = get_sub_for_target(e.target);
         // Makes sure we take the correct stream_row.
         const stream_row = $("#subscriptions_table div.stream-row[data-stream-id='" + sub.stream_id + "']");
@@ -726,7 +724,7 @@ exports.initialize = function () {
         e.stopPropagation();
     });
 
-    $("#subscriptions_table").on("click", ".deactivate", function (e) {
+    $("#subscriptions_table").on("click", ".deactivate", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -745,7 +743,7 @@ exports.initialize = function () {
         overlays.open_modal('#deactivation_stream_modal');
     });
 
-    $("#subscriptions_table").on("click", "#do_deactivate_stream_button", function (e) {
+    $("#subscriptions_table").on("click", "#do_deactivate_stream_button", (e) => {
         const stream_id = $(e.target).data("stream-id");
         overlays.close_modal('#deactivation_stream_modal');
         $("#deactivation_stream_modal").remove();
@@ -757,7 +755,7 @@ exports.initialize = function () {
         exports.delete_stream(stream_id, $(".stream_change_property_info"), row);
     });
 
-    $("#subscriptions_table").on("hide.bs.modal", "#deactivation_stream_modal", function () {
+    $("#subscriptions_table").on("hide.bs.modal", "#deactivation_stream_modal", () => {
         $("#deactivation_stream_modal").remove();
     });
 
@@ -767,7 +765,7 @@ exports.initialize = function () {
         }
     });
 
-    $("#subscriptions_table").on("change", ".stream_message_retention_setting", function (e) {
+    $("#subscriptions_table").on("change", ".stream_message_retention_setting", (e) => {
         const dropdown_value = e.target.value;
         change_stream_message_retention_days_block_display_property(dropdown_value);
     });

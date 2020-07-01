@@ -123,7 +123,7 @@ run_test('basics', () => {
     assert(reactions.current_user_has_reacted_to_emoji(message, 'unicode_emoji,263a'));
     assert(!reactions.current_user_has_reacted_to_emoji(message, 'bogus'));
 
-    result.sort(function (a, b) { return a.count - b.count; });
+    result.sort((a, b) => a.count - b.count);
 
     const expected_result = [
         {
@@ -174,7 +174,7 @@ run_test('sending', () => {
     reactions.remove_reaction = function () {};
     reactions.add_reaction = function () {};
 
-    global.with_stub(function (stub) {
+    global.with_stub((stub) => {
         global.channel.del = stub.f;
         reactions.toggle_emoji_reaction(message_id, emoji_name);
         const args = stub.get_args('args').args;
@@ -194,7 +194,7 @@ run_test('sending', () => {
         args.error();
     });
     emoji_name = 'alien'; // not set yet
-    global.with_stub(function (stub) {
+    global.with_stub((stub) => {
         global.channel.post = stub.f;
         reactions.toggle_emoji_reaction(message_id, emoji_name);
         const args = stub.get_args('args').args;
@@ -207,7 +207,7 @@ run_test('sending', () => {
     });
 
     emoji_name = 'inactive_realm_emoji';
-    global.with_stub(function (stub) {
+    global.with_stub((stub) => {
         // Test removing a deactivated realm emoji. An user can interact with a
         // deactivated realm emoji only by clicking on a reaction, hence, only
         // `process_reaction_click()` codepath supports deleting/adding a deactivated
@@ -224,7 +224,7 @@ run_test('sending', () => {
     });
 
     emoji_name = 'zulip'; // Test adding zulip emoji.
-    global.with_stub(function (stub) {
+    global.with_stub((stub) => {
         global.channel.post = stub.f;
         reactions.toggle_emoji_reaction(message_id, emoji_name);
         const args = stub.get_args('args').args;
@@ -298,7 +298,7 @@ run_test('add_and_remove_reaction', () => {
     };
 
     let template_called;
-    global.stub_templates(function (template_name, data) {
+    global.stub_templates((template_name, data) => {
         template_called = true;
         assert.equal(template_name, 'message_reaction');
         assert.equal(data.class, 'message_reaction reacted');
@@ -386,7 +386,7 @@ run_test('add_and_remove_reaction', () => {
     };
 
     template_called = false;
-    global.stub_templates(function (template_name, data) {
+    global.stub_templates((template_name, data) => {
         assert.equal(data.class, 'message_reaction');
         assert(data.is_realm_emoji);
         template_called = true;
@@ -674,7 +674,7 @@ run_test('process_reaction_click', () => {
         emoji_name: 'smile',
         emoji_code: '263a',
     };
-    global.with_stub(function (stub) {
+    global.with_stub((stub) => {
         global.channel.del = stub.f;
         reactions.process_reaction_click(message_id, 'unicode_emoji,263a');
         const args = stub.get_args('args').args;

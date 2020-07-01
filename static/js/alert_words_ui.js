@@ -76,17 +76,17 @@ exports.set_up_alert_words = function () {
 
     exports.render_alert_words_ui();
 
-    $('#create_alert_word_form').on('click', '#create_alert_word_button', function () {
+    $('#create_alert_word_form').on('click', '#create_alert_word_button', () => {
         const word = $('#create_alert_word_name').val();
         add_alert_word(word);
     });
 
-    $('#alert_words_list').on('click', '.remove-alert-word', function (event) {
+    $('#alert_words_list').on('click', '.remove-alert-word', (event) => {
         const word = $(event.currentTarget).parents('li').find('.value').text();
         remove_alert_word(word);
     });
 
-    $('#create_alert_word_form').on('keypress', '#create_alert_word_name', function (event) {
+    $('#create_alert_word_form').on('keypress', '#create_alert_word_name', (event) => {
         const key = event.which;
         // Handle enter (13) as "add".
         if (key === 13) {
@@ -97,7 +97,7 @@ exports.set_up_alert_words = function () {
         }
     });
 
-    $('#alert-word-settings').on('click', '.close-alert-word-status', function (event) {
+    $('#alert-word-settings').on('click', '.close-alert-word-status', (event) => {
         event.preventDefault();
         const alert = $(event.currentTarget).parents('.alert');
         alert.hide();

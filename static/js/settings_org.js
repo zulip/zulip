@@ -398,7 +398,7 @@ exports.change_save_button_state = function ($element, state) {
             $element.removeClass('hide').addClass('.show').fadeIn(300);
             return;
         }
-        setTimeout(function () {
+        setTimeout(() => {
             $element.fadeOut(300);
         }, fadeout_delay);
     }
@@ -611,7 +611,7 @@ exports.build_page = function () {
     set_message_content_in_email_notifications_visiblity();
     set_digest_emails_weekday_visibility();
 
-    $('.admin-realm-form').on('change input', 'input, select, textarea', function (e) {
+    $('.admin-realm-form').on('change input', 'input, select, textarea', (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -633,7 +633,7 @@ exports.build_page = function () {
         exports.save_discard_widget_status_handler(subsection);
     });
 
-    $('.organization').on('click', '.subsection-header .subsection-changes-discard .button', function (e) {
+    $('.organization').on('click', '.subsection-header .subsection-changes-discard .button', (e) => {
         e.preventDefault();
         e.stopPropagation();
         get_subsection_property_elements(e.target).forEach(discard_property_element_changes);
@@ -785,7 +785,7 @@ exports.build_page = function () {
         return data;
     }
 
-    $(".organization").on("click", ".subsection-header .subsection-changes-save .button", function (e) {
+    $(".organization").on("click", ".subsection-header .subsection-changes-save .button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const save_button = $(e.currentTarget);
@@ -800,7 +800,7 @@ exports.build_page = function () {
         exports.save_organization_settings(data, save_button);
     });
 
-    $(".org-subsection-parent").on("keydown", "input", function (e) {
+    $(".org-subsection-parent").on("keydown", "input", (e) => {
         e.stopPropagation();
         if (e.keyCode === 13) {
             e.preventDefault();
@@ -808,19 +808,19 @@ exports.build_page = function () {
         }
     });
 
-    $("#id_realm_msg_edit_limit_setting").change(function (e) {
+    $("#id_realm_msg_edit_limit_setting").change((e) => {
         const msg_edit_limit_dropdown_value = e.target.value;
         change_element_block_display_property('id_realm_message_content_edit_limit_minutes',
                                               msg_edit_limit_dropdown_value === 'custom_limit');
     });
 
-    $("#id_realm_msg_delete_limit_setting").change(function (e) {
+    $("#id_realm_msg_delete_limit_setting").change((e) => {
         const msg_delete_limit_dropdown_value = e.target.value;
         change_element_block_display_property('id_realm_message_content_delete_limit_minutes',
                                               msg_delete_limit_dropdown_value === 'custom_limit');
     });
 
-    $("#id_realm_message_retention_setting").change(function (e) {
+    $("#id_realm_message_retention_setting").change((e) => {
         const message_retention_setting_dropdown_value = e.target.value;
         change_element_block_display_property('id_realm_message_retention_days',
                                               message_retention_setting_dropdown_value === 'retain_for_period');
@@ -832,7 +832,7 @@ exports.build_page = function () {
                                               waiting_period_threshold === 'custom_days');
     });
 
-    $("#id_realm_org_join_restrictions").change(function (e) {
+    $("#id_realm_org_join_restrictions").change((e) => {
         const org_join_restrictions = e.target.value;
         const node = $("#allowed_domains_label").parent();
         if (org_join_restrictions === 'only_selected_domain') {
@@ -845,7 +845,7 @@ exports.build_page = function () {
         }
     });
 
-    $("#id_realm_org_join_restrictions").click(function (e) {
+    $("#id_realm_org_join_restrictions").click((e) => {
         // This prevents the disappearance of modal when there are
         // no allowed domains otherwise it gets closed due to
         // the click event handler attached to `#settings_overlay_container`
@@ -853,7 +853,7 @@ exports.build_page = function () {
     });
 
     function fade_status_element(elem) {
-        setTimeout(function () {
+        setTimeout(() => {
             elem.fadeOut(500);
         }, 1000);
     }
@@ -876,7 +876,7 @@ exports.build_page = function () {
         });
     });
 
-    $("#submit-add-realm-domain").click(function () {
+    $("#submit-add-realm-domain").click(() => {
         const realm_domains_info = $(".realm_domains_info");
         const widget = $("#add-realm-domain-widget");
         const domain = widget.find(".new-realm-domain").val();
@@ -995,7 +995,7 @@ exports.build_page = function () {
     }
 
 
-    $('#deactivate_realm_button').on('click', function (e) {
+    $('#deactivate_realm_button').on('click', (e) => {
         if (!overlays.is_modal_open()) {
             e.preventDefault();
             e.stopPropagation();
@@ -1003,7 +1003,7 @@ exports.build_page = function () {
         }
     });
 
-    $('#do_deactivate_realm_button').on('click', function () {
+    $('#do_deactivate_realm_button').on('click', () => {
         if (overlays.is_modal_open()) {
             overlays.close_modal('#deactivate-realm-modal');
         }

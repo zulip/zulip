@@ -3,9 +3,7 @@ import { detect_user_os } from './tabbed-instructions.js';
 import render_tabs from './team.js';
 
 export function path_parts() {
-    return window.location.pathname.split('/').filter(function (chunk) {
-        return chunk !== '';
-    });
+    return window.location.pathname.split('/').filter((chunk) => chunk !== '');
 }
 
 const hello_events = function () {
@@ -78,7 +76,7 @@ const apps_events = function () {
         let result;
         const parts = path_parts();
 
-        Object.keys(info).forEach(function (version) {
+        Object.keys(info).forEach((version) => {
             if (parts.includes(version)) {
                 result = version;
             }
@@ -123,14 +121,14 @@ const apps_events = function () {
         $download_from_apple_app_store.toggle(version === "ios");
     };
 
-    $(window).on('popstate', function () {
+    $(window).on('popstate', () => {
         version = get_version_from_path();
         update_page();
         $("body").animate({ scrollTop: 0 }, 200);
         google_analytics.config({page_path: window.location.pathname});
     });
 
-    $(".apps a .icon").click(function (e) {
+    $(".apps a .icon").click((e) => {
         const next_version = $(e.target).closest('a')
             .attr('href')
             .replace('/apps/', '');
@@ -158,7 +156,7 @@ const events = function () {
 
     $("[data-on-page='" + location + "']").addClass("active");
 
-    $("body").click(function (e) {
+    $("body").click((e) => {
         const $e = $(e.target);
 
         if ($e.is("nav ul .exit")) {
@@ -170,7 +168,7 @@ const events = function () {
         }
     });
 
-    $(".hamburger").click(function (e) {
+    $(".hamburger").click((e) => {
         $("nav ul").addClass("show");
         e.stopPropagation();
     });
@@ -229,7 +227,7 @@ if (document.readyState === "complete") {
     $(load);
 }
 
-$(function () {
+$(() => {
     if (window.location.pathname === '/team/') {
         render_tabs();
     }
@@ -239,6 +237,6 @@ $(function () {
 // According to https://developer.mozilla.org/en-US/docs/DOM/window.onunload
 // Using this event handler in your page prevents Firefox from caching the
 // page in the in-memory bfcache (backward/forward cache).
-$(window).on('unload', function () {
+$(window).on('unload', () => {
     $(window).unbind('unload');
 });

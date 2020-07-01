@@ -286,7 +286,7 @@ exports.check_for_unsuspend = function () {
 setInterval(exports.check_for_unsuspend, 5000);
 
 exports.initialize = function () {
-    $(document).on('unsuspend', function () {
+    $(document).on('unsuspend', () => {
         // Immediately poll for new events on unsuspend
         blueslip.log("Restarting get_events due to unsuspend");
         get_events_failures = 0;
@@ -310,7 +310,7 @@ exports.cleanup_event_queue = function cleanup_event_queue() {
     });
 };
 
-window.addEventListener("beforeunload", function () {
+window.addEventListener("beforeunload", () => {
     exports.cleanup_event_queue();
 });
 

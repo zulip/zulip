@@ -207,7 +207,7 @@ run_test('paste to input', () => {
     ]);
 
     let entered = false;
-    widget.createPillonPaste(function () {
+    widget.createPillonPaste(() => {
         entered = true;
     });
 
@@ -385,11 +385,11 @@ run_test('insert_remove', () => {
     let created;
     let removed;
 
-    widget.onPillCreate(function () {
+    widget.onPillCreate(() => {
         created = true;
     });
 
-    widget.onPillRemove(function () {
+    widget.onPillRemove(() => {
         removed = true;
     });
 

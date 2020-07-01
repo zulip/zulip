@@ -240,31 +240,25 @@ exports.sort_people_for_relevance = function (objs, current_stream_name, current
         current_stream = stream_data.get_sub(current_stream_name);
     }
     if (!current_stream) {
-        objs.sort(function (person_a, person_b) {
-            return exports.compare_people_for_relevance(
-                person_a,
-                person_b,
-                exports.compare_by_pms
-            );
-        });
+        objs.sort((person_a, person_b) => exports.compare_people_for_relevance(
+            person_a,
+            person_b,
+            exports.compare_by_pms
+        ));
     } else {
         const stream_id = current_stream.stream_id;
 
-        objs.sort(function (person_a, person_b) {
-            return exports.compare_people_for_relevance(
-                person_a,
-                person_b,
-                function (user_a, user_b) {
-                    return recent_senders.compare_by_recency(
-                        user_a,
-                        user_b,
-                        stream_id,
-                        current_topic
-                    );
-                },
-                current_stream.name
-            );
-        });
+        objs.sort((person_a, person_b) => exports.compare_people_for_relevance(
+            person_a,
+            person_b,
+            (user_a, user_b) => recent_senders.compare_by_recency(
+                user_a,
+                user_b,
+                stream_id,
+                current_topic
+            ),
+            current_stream.name
+        ));
     }
 
     return objs;

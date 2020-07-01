@@ -14,7 +14,7 @@ exports.message = function (response, status_box, cls, remove_after) {
     status_box.removeClass(common.status_classes).addClass(cls)
         .html(response).stop(true).fadeTo(0, 1);
     if (remove_after) {
-        setTimeout(function () {
+        setTimeout(() => {
             status_box.fadeTo(200, 0);
         }, remove_after);
     }
@@ -59,7 +59,7 @@ exports.generic_row_button_error = function (xhr, btn) {
 
 exports.hide_error = function ($target) {
     $target.addClass("fade-out");
-    setTimeout(function () {
+    setTimeout(() => {
         $target.removeClass("show fade-out");
     }, 300);
 };

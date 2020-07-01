@@ -2,9 +2,7 @@ zrequire('people');
 set_global('message_store', {});
 set_global('page_params', {});
 set_global('settings_data', {});
-set_global('md5', function (s) {
-    return 'md5-' + s;
-});
+set_global('md5', (s) => 'md5-' + s);
 
 const settings_config = zrequire('settings_config');
 const visibility = settings_config.email_address_visibility_values;
@@ -401,7 +399,7 @@ run_test('user_timezone', () => {
     assert.deepEqual(people.get_user_time_preferences(me.user_id), expected_pref);
 
     const actual_moment = zrequire('actual_moment', 'moment-timezone');
-    set_global('moment', function () { return actual_moment('20130208T080910'); });
+    set_global('moment', () => actual_moment('20130208T080910'));
 
     global.page_params.twenty_four_hour_time = true;
     assert.equal(people.get_user_time(me.user_id), '0:09');
@@ -1097,7 +1095,7 @@ run_test('is_valid_full_name_and_user_id', () => {
     assert(people.is_valid_full_name_and_user_id(me.full_name, me.user_id));
 });
 
-run_test('emails_strings_to_user_ids_array', function () {
+run_test('emails_strings_to_user_ids_array', () => {
     people.add_active_user(steven);
     people.add_active_user(maria);
 
@@ -1109,7 +1107,7 @@ run_test('emails_strings_to_user_ids_array', function () {
     assert.equal(user_ids, undefined);
 });
 
-run_test('get_visible_email', function () {
+run_test('get_visible_email', () => {
     people.add_active_user(steven);
     people.add_active_user(maria);
 
@@ -1120,7 +1118,7 @@ run_test('get_visible_email', function () {
     assert.equal(email, maria.email);
 });
 
-run_test('get_active_message_people', function () {
+run_test('get_active_message_people', () => {
     message_store.user_ids = () => [
         steven.user_id,
         maria.user_id,

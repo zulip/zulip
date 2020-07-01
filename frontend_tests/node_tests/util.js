@@ -101,7 +101,7 @@ run_test('robust_uri_decode', () => {
     assert.equal(util.robust_uri_decode('xxx%3Ayyy'), 'xxx:yyy');
     assert.equal(util.robust_uri_decode('xxx%3'), 'xxx');
 
-    set_global('decodeURIComponent', function () { throw 'foo'; });
+    set_global('decodeURIComponent', () => { throw 'foo'; });
     try {
         util.robust_uri_decode('%E0%A4%A');
     } catch (e) {
@@ -151,7 +151,7 @@ run_test('random_int', () => {
     const min = 0;
     const max = 100;
 
-    _.times(500, function () {
+    _.times(500, () => {
         const val = util.random_int(min, max);
         assert(min <= val);
         assert(val <= max);

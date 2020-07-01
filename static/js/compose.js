@@ -259,7 +259,7 @@ exports.compose_error = compose_error;
 function nonexistent_stream_reply_error() {
     $("#nonexistent_stream_reply_error").show();
     $("#compose-reply-error-msg").html("There are no messages to reply to yet.");
-    setTimeout(function () {
+    setTimeout(() => {
         $("#nonexistent_stream_reply_error").hide();
     }, 5000);
 }
@@ -936,14 +936,14 @@ exports.initialize = function () {
     $("#below-compose-content .video_link").toggle(exports.compute_show_video_chat_button());
     $('#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient').on('keyup', update_fade);
     $('#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient').on('change', update_fade);
-    $('#compose-textarea').on('keydown', function (event) {
+    $('#compose-textarea').on('keydown', (event) => {
         exports.handle_keydown(event, $("#compose-textarea").expectOne());
     });
-    $('#compose-textarea').on('keyup', function (event) {
+    $('#compose-textarea').on('keyup', (event) => {
         exports.handle_keyup(event, $("#compose-textarea").expectOne());
     });
 
-    $("#compose form").on("submit", function (e) {
+    $("#compose form").on("submit", (e) => {
         e.preventDefault();
         exports.finish();
     });
@@ -952,7 +952,7 @@ exports.initialize = function () {
 
     upload.feature_check($("#compose #attach_files"));
 
-    $("#compose-all-everyone").on('click', '.compose-all-everyone-confirm', function (event) {
+    $("#compose-all-everyone").on('click', '.compose-all-everyone-confirm', (event) => {
         event.preventDefault();
 
         $(event.target).parents('.compose-all-everyone').remove();
@@ -961,7 +961,7 @@ exports.initialize = function () {
         exports.finish();
     });
 
-    $("#compose-announce").on('click', '.compose-announce-confirm', function (event) {
+    $("#compose-announce").on('click', '.compose-announce-confirm', (event) => {
         event.preventDefault();
 
         $(event.target).parents('.compose-announce').remove();
@@ -970,7 +970,7 @@ exports.initialize = function () {
         exports.finish();
     });
 
-    $("#compose-send-status").on('click', '.sub_unsub_button', function (event) {
+    $("#compose-send-status").on('click', '.sub_unsub_button', (event) => {
         event.preventDefault();
 
         const stream_name = $('#stream_message_recipient_stream').val();
@@ -982,13 +982,13 @@ exports.initialize = function () {
         $("#compose-send-status").hide();
     });
 
-    $("#compose-send-status").on('click', '#compose_not_subscribed_close', function (event) {
+    $("#compose-send-status").on('click', '#compose_not_subscribed_close', (event) => {
         event.preventDefault();
 
         $("#compose-send-status").hide();
     });
 
-    $("#compose_invite_users").on('click', '.compose_invite_link', function (event) {
+    $("#compose_invite_users").on('click', '.compose_invite_link', (event) => {
         event.preventDefault();
 
         const invite_row = $(event.target).parents('.compose_invite_user');
@@ -1030,7 +1030,7 @@ exports.initialize = function () {
         stream_edit.invite_user_to_stream([user_id], sub, success, xhr_failure);
     });
 
-    $("#compose_invite_users").on('click', '.compose_invite_close', function (event) {
+    $("#compose_invite_users").on('click', '.compose_invite_close', (event) => {
         const invite_row = $(event.target).parents('.compose_invite_user');
         const all_invites = $("#compose_invite_users");
 
@@ -1041,7 +1041,7 @@ exports.initialize = function () {
         }
     });
 
-    $("#compose_private_stream_alert").on('click', '.compose_private_stream_alert_close', function (event) {
+    $("#compose_private_stream_alert").on('click', '.compose_private_stream_alert_close', (event) => {
         const stream_alert_row = $(event.target).parents('.compose_private_stream_alert');
         const stream_alert = $("#compose_private_stream_alert");
 
@@ -1055,12 +1055,12 @@ exports.initialize = function () {
     // Click event binding for "Attach files" button
     // Triggers a click on a hidden file input field
 
-    $("#compose").on("click", "#attach_files", function (e) {
+    $("#compose").on("click", "#attach_files", (e) => {
         e.preventDefault();
         $("#compose #file_input").trigger("click");
     });
 
-    $('body').on('click', '.video_link', function (e) {
+    $('body').on('click', '.video_link', (e) => {
         e.preventDefault();
 
         let target_textarea;
@@ -1138,7 +1138,7 @@ exports.initialize = function () {
         }
     });
 
-    $("#compose").on("click", "#markdown_preview", function (e) {
+    $("#compose").on("click", "#markdown_preview", (e) => {
         e.preventDefault();
         const content = $("#compose-textarea").val();
         $("#compose-textarea").hide();
@@ -1149,7 +1149,7 @@ exports.initialize = function () {
         exports.render_and_show_preview($("#markdown_preview_spinner"), $("#preview_content"), content);
     });
 
-    $("#compose").on("click", "#undo_markdown_preview", function (e) {
+    $("#compose").on("click", "#undo_markdown_preview", (e) => {
         e.preventDefault();
         exports.clear_preview_area();
     });
@@ -1158,7 +1158,7 @@ exports.initialize = function () {
         mode: "compose",
     });
 
-    $("#compose-textarea").focus(function () {
+    $("#compose-textarea").focus(() => {
         const opts = {
             message_type: compose_state.get_message_type(),
             stream: $('#stream_message_recipient_stream').val(),

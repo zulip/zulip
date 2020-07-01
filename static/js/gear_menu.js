@@ -86,12 +86,12 @@ exports.update_org_settings_menu_item = function () {
 exports.initialize = function () {
     exports.update_org_settings_menu_item();
 
-    $('#gear-menu a[data-toggle="tab"]').on('show', function (e) {
+    $('#gear-menu a[data-toggle="tab"]').on('show', (e) => {
         // Save the position of our old tab away, before we switch
         const old_tab = $(e.relatedTarget).attr('href');
         scroll_positions.set(old_tab, message_viewport.scrollTop());
     });
-    $('#gear-menu a[data-toggle="tab"]').on('shown', function (e) {
+    $('#gear-menu a[data-toggle="tab"]').on('shown', (e) => {
         const target_tab = $(e.target).attr('href');
         // Hide all our error messages when switching tabs
         $('.alert').removeClass("show");

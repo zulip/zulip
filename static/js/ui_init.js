@@ -52,7 +52,7 @@ exports.initialize_kitchen_sink_stuff = function () {
     //      the code here can probably be moved to more
     //      specific-purpose modules like message_viewport.js.
 
-    const throttled_mousewheelhandler = _.throttle(function (e, delta) {
+    const throttled_mousewheelhandler = _.throttle((e, delta) => {
         // Most of the mouse wheel's work will be handled by the
         // scroll handler, but when we're at the top or bottom of the
         // page, the pointer may still need to move.
@@ -70,7 +70,7 @@ exports.initialize_kitchen_sink_stuff = function () {
         message_viewport.set_last_movement_direction(delta);
     }, 50);
 
-    message_viewport.message_pane.on('wheel', function (e) {
+    message_viewport.message_pane.on('wheel', (e) => {
         const delta = e.originalEvent.deltaY;
         if (!overlays.is_active()) {
             // In the message view, we use a throttled mousewheel handler.
@@ -104,7 +104,7 @@ exports.initialize_kitchen_sink_stuff = function () {
     });
 
     // Ignore wheel events in the compose area which weren't already handled above.
-    $('#compose').on('wheel', function (e) {
+    $('#compose').on('wheel', (e) => {
         e.stopPropagation();
         e.preventDefault();
     });
@@ -133,7 +133,7 @@ exports.initialize_kitchen_sink_stuff = function () {
         message_hover(row);
     });
 
-    $("#main_div").on("mouseleave", ".message_table .message_row", function () {
+    $("#main_div").on("mouseleave", ".message_table .message_row", () => {
         message_unhover();
     });
 
@@ -190,15 +190,15 @@ exports.initialize_kitchen_sink_stuff = function () {
         ui_util.decorate_stream_bar(this.value, $("#stream-message .message_header_stream"), true);
     });
 
-    $(window).on('blur', function () {
+    $(window).on('blur', () => {
         $(document.body).addClass('window_blurred');
     });
 
-    $(window).on('focus', function () {
+    $(window).on('focus', () => {
         $(document.body).removeClass('window_blurred');
     });
 
-    $(document).on('message_selected.zulip', function (event) {
+    $(document).on('message_selected.zulip', (event) => {
         if (current_msg_list !== event.msg_list) {
             return;
         }
@@ -242,7 +242,7 @@ exports.initialize_kitchen_sink_stuff = function () {
         }
     });
 
-    $("#main_div").on("mouseenter", ".message_time", function (e) {
+    $("#main_div").on("mouseenter", ".message_time", (e) => {
         const time_elem = $(e.target);
         const row = time_elem.closest(".message_row");
         const message = current_msg_list.get(rows.id(row));
@@ -488,7 +488,7 @@ exports.initialize_everything = function () {
     user_status_ui.initialize();
 };
 
-$(function () {
+$(() => {
     const finish = blueslip.start_timing('initialize_everything');
     exports.initialize_everything();
     finish();

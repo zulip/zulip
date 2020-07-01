@@ -51,9 +51,7 @@ exports.get_user_ids_string = function () {
 exports.get_emails = function () {
     // return something like "alice@example.com,bob@example.com"
     const user_ids = exports.get_user_ids();
-    const emails = user_ids.map(function (id) {
-        return people.get_by_user_id(id).email;
-    }).join(",");
+    const emails = user_ids.map((id) => people.get_by_user_id(id).email).join(",");
     return emails;
 };
 

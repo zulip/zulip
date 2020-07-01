@@ -248,7 +248,7 @@ run_test('retry', () => {
         },
 
         check_ajax_options: function (options) {
-            global.patch_builtin('setTimeout', function (f, delay) {
+            global.patch_builtin('setTimeout', (f, delay) => {
                 assert.equal(delay, 0);
                 f();
             });
@@ -276,7 +276,7 @@ run_test('too_many_pending', () => {
     blueslip.expect('warn',
                     'The length of pending_requests is over 50. ' +
                     'Most likely they are not being correctly removed.');
-    _.times(50, function () {
+    _.times(50, () => {
         channel.post({});
     });
 });

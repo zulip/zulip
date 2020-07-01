@@ -139,9 +139,7 @@ exports.is_known_user_id = function (user_id) {
 };
 
 function sort_numerically(user_ids) {
-    user_ids.sort(function (a, b) {
-        return a - b;
-    });
+    user_ids.sort((a, b) => a - b);
 
     return user_ids;
 }
@@ -847,9 +845,9 @@ exports.get_message_people = function () {
 
 exports.get_active_message_people = function () {
     const message_people = exports.get_message_people();
-    const active_message_people = message_people.filter(function (item) {
-        return active_user_dict.has(item.user_id);
-    });
+    const active_message_people = message_people.filter((item) =>
+        active_user_dict.has(item.user_id)
+    );
     return active_message_people;
 };
 

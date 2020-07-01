@@ -16,9 +16,7 @@ exports.process_loaded_messages = function (messages) {
 
 exports.get_huddles = function () {
     let huddles = Array.from(huddle_timestamps.keys());
-    huddles = _.sortBy(huddles, function (huddle) {
-        return huddle_timestamps.get(huddle);
-    });
+    huddles = _.sortBy(huddles, (huddle) => huddle_timestamps.get(huddle));
     return huddles.reverse();
 };
 

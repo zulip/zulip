@@ -56,7 +56,7 @@ function copy_email_handler(e) {
     email_el.addClass('email_copied');
     email_textnode.nodeValue = i18n.t('Email copied');
 
-    setTimeout(function () {
+    setTimeout(() => {
         email_el.removeClass('email_copied');
         email_textnode.nodeValue = copy_icon.attr('data-clipboard-text');
     }, 1500);
@@ -306,8 +306,8 @@ exports.show_user_profile = function (user) {
     const dateFormat = moment.localeData().longDateFormat('LL');
     const field_types = page_params.custom_profile_field_types;
     const profile_data = page_params.custom_profile_fields
-        .map(function (f) {return get_custom_profile_field_data(user, f, field_types, dateFormat);})
-        .filter(function (f) {return f.name !== undefined;});
+        .map((f) => get_custom_profile_field_data(user, f, field_types, dateFormat))
+        .filter((f) => f.name !== undefined);
 
     const args = {
         full_name: user.full_name,
@@ -346,26 +346,18 @@ function get_user_info_popover_items() {
 
 function fetch_group_members(member_ids) {
     return member_ids
-        .map(function (m) {
-            return people.get_by_user_id(m);
-        })
-        .filter(function (m) {
-            return m !== undefined;
-        })
-        .map(function (p) {
-            return Object.assign({}, p, {
-                user_circle_class: buddy_data.get_user_circle_class(p.user_id),
-                is_active: people.is_active_user_for_popover(p.user_id),
-                user_last_seen_time_status: buddy_data.user_last_seen_time_status(p.user_id),
-            });
-        });
+        .map((m) => people.get_by_user_id(m))
+        .filter((m) => m !== undefined)
+        .map((p) => Object.assign({}, p, {
+            user_circle_class: buddy_data.get_user_circle_class(p.user_id),
+            is_active: people.is_active_user_for_popover(p.user_id),
+            user_last_seen_time_status: buddy_data.user_last_seen_time_status(p.user_id),
+        }));
 }
 
 function sort_group_members(members) {
     return members
-        .sort(function (a, b) {
-            return a.full_name.localeCompare(b.full_name);
-        });
+        .sort((a, b) => a.full_name.localeCompare(b.full_name));
 }
 
 // exporting these functions for testing purposes
@@ -762,7 +754,7 @@ exports.register_click_handlers = function () {
     });
 
 
-    $('body').on('click', '.info_popover_actions .narrow_to_private_messages', function (e) {
+    $('body').on('click', '.info_popover_actions .narrow_to_private_messages', (e) => {
         const user_id = elem_to_user_id($(e.target).parents('ul'));
         const email = people.get_by_user_id(user_id).email;
         exports.hide_message_info_popover();
@@ -771,7 +763,7 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    $('body').on('click', '.info_popover_actions .narrow_to_messages_sent', function (e) {
+    $('body').on('click', '.info_popover_actions .narrow_to_messages_sent', (e) => {
         const user_id = elem_to_user_id($(e.target).parents('ul'));
         const email = people.get_by_user_id(user_id).email;
         exports.hide_message_info_popover();
@@ -780,7 +772,7 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    $('body').on('click', '.user_popover .mention_user', function (e) {
+    $('body').on('click', '.user_popover .mention_user', (e) => {
         if (!compose_state.composing()) {
             compose_actions.start('stream', {trigger: 'sidebar user actions'});
         }
@@ -794,7 +786,7 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    $('body').on('click', '.message-info-popover .mention_user', function (e) {
+    $('body').on('click', '.message-info-popover .mention_user', (e) => {
         if (!compose_state.composing()) {
             compose_actions.respond_to_message({trigger: 'user sidebar popover'});
         }
@@ -807,7 +799,7 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    $('body').on('click', '.info_popover_actions .view_user_profile', function (e) {
+    $('body').on('click', '.info_popover_actions .view_user_profile', (e) => {
         const user_id = elem_to_user_id($(e.target).parents('ul'));
         const user = people.get_by_user_id(user_id);
         exports.show_user_profile(user);
@@ -815,7 +807,7 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    $('body').on('click', '.info_popover_actions .clear_status', function (e) {
+    $('body').on('click', '.info_popover_actions .clear_status', (e) => {
         e.preventDefault();
         const me = elem_to_user_id($(e.target).parents('ul'));
         user_status.server_update({
@@ -827,13 +819,13 @@ exports.register_click_handlers = function () {
         });
     });
 
-    $('body').on('click', '.bot-owner-name', function (e) {
+    $('body').on('click', '.bot-owner-name', (e) => {
         const user_id = parseInt($(e.target).attr('data-bot-owner-id'), 10);
         const user = people.get_by_user_id(user_id);
         exports.show_user_profile(user);
     });
 
-    $('body').on('click', '#user-profile-modal #name #edit-button', function () {
+    $('body').on('click', '#user-profile-modal #name #edit-button', () => {
         exports.hide_user_profile();
     });
 
@@ -843,21 +835,21 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    $('body').on('click', '.set_away_status', function (e) {
+    $('body').on('click', '.set_away_status', (e) => {
         exports.hide_all();
         user_status.server_set_away();
         e.stopPropagation();
         e.preventDefault();
     });
 
-    $('body').on('click', '.revoke_away_status', function (e) {
+    $('body').on('click', '.revoke_away_status', (e) => {
         exports.hide_all();
         user_status.server_revoke_away();
         e.stopPropagation();
         e.preventDefault();
     });
 
-    $('body').on('click', '.update_status_text', function (e) {
+    $('body').on('click', '.update_status_text', (e) => {
         exports.hide_all();
 
         user_status_ui.open_overlay();
@@ -909,7 +901,7 @@ exports.register_click_handlers = function () {
         }
     });
 
-    $('body').on('click', '.respond_button', function (e) {
+    $('body').on('click', '.respond_button', (e) => {
         // Arguably, we should fetch the message ID to respond to from
         // e.target, but that should always be the current selected
         // message in the current message list (and
@@ -921,14 +913,14 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    $('body').on('click', '.reminder_button', function (e) {
+    $('body').on('click', '.reminder_button', (e) => {
         const message_id = $(e.currentTarget).data('message-id');
         exports.render_actions_remind_popover($(".selected_message .actions_hover")[0], message_id);
         e.stopPropagation();
         e.preventDefault();
     });
 
-    $('body').on('click', '.remind.custom', function (e) {
+    $('body').on('click', '.remind.custom', (e) => {
         $(e.currentTarget)[0]._flatpickr.toggle();
         e.stopPropagation();
         e.preventDefault();
@@ -942,42 +934,42 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     }
 
-    $('body').on('click', '.remind.in_20m', function (e) {
+    $('body').on('click', '.remind.in_20m', (e) => {
         const datestr = moment().add(20, 'm').format();
         reminder_click_handler(datestr, e);
     });
 
-    $('body').on('click', '.remind.in_1h', function (e) {
+    $('body').on('click', '.remind.in_1h', (e) => {
         const datestr = moment().add(1, 'h').format();
         reminder_click_handler(datestr, e);
     });
 
-    $('body').on('click', '.remind.in_3h', function (e) {
+    $('body').on('click', '.remind.in_3h', (e) => {
         const datestr = moment().add(3, 'h').format();
         reminder_click_handler(datestr, e);
     });
 
-    $('body').on('click', '.remind.tomo', function (e) {
+    $('body').on('click', '.remind.tomo', (e) => {
         const datestr = moment().add(1, 'd').hour(9).minute(0).seconds(0).format();
         reminder_click_handler(datestr, e);
     });
 
-    $('body').on('click', '.remind.nxtw', function (e) {
+    $('body').on('click', '.remind.nxtw', (e) => {
         const datestr = moment().add(1, 'w').day('monday').hour(9).minute(0).seconds(0).format();
         reminder_click_handler(datestr, e);
     });
 
-    $('body').on('click', '.flatpickr-calendar', function (e) {
+    $('body').on('click', '.flatpickr-calendar', (e) => {
         e.stopPropagation();
         e.preventDefault();
     });
 
-    $('body').on('click', '.flatpickr-confirm', function (e) {
+    $('body').on('click', '.flatpickr-confirm', (e) => {
         const datestr = $(".remind.custom")[0].value;
         reminder_click_handler(datestr, e);
     });
 
-    $('body').on('click', '.respond_personal_button, .compose_private_message', function (e) {
+    $('body').on('click', '.respond_personal_button, .compose_private_message', (e) => {
         const user_id = elem_to_user_id($(e.target).parents('ul'));
         const email = people.get_by_user_id(user_id).email;
         compose_actions.start('private', {
@@ -987,7 +979,7 @@ exports.register_click_handlers = function () {
         e.stopPropagation();
         e.preventDefault();
     });
-    $('body').on('click', '.popover_toggle_collapse', function (e) {
+    $('body').on('click', '.popover_toggle_collapse', (e) => {
         const message_id = $(e.currentTarget).data('message-id');
         const row = current_msg_list.get_row(message_id);
         const message = current_msg_list.get(rows.id(row));
@@ -1005,7 +997,7 @@ exports.register_click_handlers = function () {
         e.stopPropagation();
         e.preventDefault();
     });
-    $('body').on('click', '.popover_edit_message', function (e) {
+    $('body').on('click', '.popover_edit_message', (e) => {
         const message_id = $(e.currentTarget).data('message-id');
         const row = current_msg_list.get_row(message_id);
         exports.hide_actions_popover();
@@ -1013,7 +1005,7 @@ exports.register_click_handlers = function () {
         e.stopPropagation();
         e.preventDefault();
     });
-    $('body').on('click', '.view_edit_history', function (e) {
+    $('body').on('click', '.view_edit_history', (e) => {
         const message_id = $(e.currentTarget).data('message-id');
         const row = current_msg_list.get_row(message_id);
         const message = current_msg_list.get(rows.id(row));
@@ -1026,7 +1018,7 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    $('body').on('click', '.popover_mute_topic', function (e) {
+    $('body').on('click', '.popover_mute_topic', (e) => {
         const stream_id = parseInt($(e.currentTarget).attr('data-msg-stream-id'), 10);
         const topic = $(e.currentTarget).attr('data-msg-topic');
 
@@ -1036,7 +1028,7 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    $('body').on('click', '.popover_unmute_topic', function (e) {
+    $('body').on('click', '.popover_unmute_topic', (e) => {
         const stream_id = parseInt($(e.currentTarget).attr('data-msg-stream-id'), 10);
         const topic = $(e.currentTarget).attr('data-msg-topic');
 
@@ -1046,7 +1038,7 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    $('body').on('click', '.delete_message', function (e) {
+    $('body').on('click', '.delete_message', (e) => {
         const message_id = $(e.currentTarget).data('message-id');
         exports.hide_actions_popover();
         message_edit.delete_message(message_id);
@@ -1065,7 +1057,7 @@ exports.register_click_handlers = function () {
             .css("display", "block")
             .delay(1000).fadeOut(300);
 
-        setTimeout(function () {
+        setTimeout(() => {
             // The Cliboard library works by focusing to a hidden textarea.
             // We unfocus this so keyboard shortcuts, etc., will work again.
             $(":focus").blur();
@@ -1078,7 +1070,7 @@ exports.register_click_handlers = function () {
     (function () {
         let last_scroll = 0;
 
-        $('.app').on('scroll', function () {
+        $('.app').on('scroll', () => {
             if (suppress_scroll_hide) {
                 suppress_scroll_hide = false;
                 return;
@@ -1125,7 +1117,7 @@ exports.hide_all_except_sidebars = function () {
     exports.hide_user_profile();
 
     // look through all the popovers that have been added and removed.
-    list_of_popovers.forEach(function ($o) {
+    list_of_popovers.forEach(($o) => {
         if (!document.body.contains($o.$element[0]) && $o.$tip) {
             $o.$tip.remove();
         }

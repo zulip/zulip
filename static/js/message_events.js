@@ -45,7 +45,7 @@ function maybe_add_narrowed_messages(messages, msg_list) {
         },
         error: function () {
             // We might want to be more clever here
-            setTimeout(function () {
+            setTimeout(() => {
                 if (msg_list === current_msg_list) {
                     // Don't actually try again if we unnarrowed
                     // while waiting

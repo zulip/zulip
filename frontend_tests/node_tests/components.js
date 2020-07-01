@@ -108,7 +108,7 @@ run_test('basics', () => {
         return self;
     }());
 
-    set_global('$', function (sel) {
+    set_global('$', (sel) => {
         if (sel.stub) {
             // The component often redundantly re-wraps objects.
             return sel;

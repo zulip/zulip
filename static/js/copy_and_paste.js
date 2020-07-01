@@ -108,7 +108,7 @@ function select_div(div, selection) {
 }
 
 function remove_div(div, ranges, selection) {
-    window.setTimeout(function () {
+    window.setTimeout(() => {
         selection = window.getSelection();
         selection.removeAllRanges();
 
@@ -210,9 +210,7 @@ exports.analyze_selection = function (selection) {
         ranges.push(range);
 
         startc = $(range.startContainer);
-        start_data = find_boundary_tr($(startc.parents('.selectable_row, .message_header')[0]), function (row) {
-            return row.next();
-        });
+        start_data = find_boundary_tr($(startc.parents('.selectable_row, .message_header')[0]), (row) => row.next());
         if (start_data === undefined) {
             // Skip any selection sections that don't intersect a message.
             continue;
@@ -237,9 +235,7 @@ exports.analyze_selection = function (selection) {
         } else {
             initial_end_tr = $(endc.parents('.selectable_row')[0]);
         }
-        end_data = find_boundary_tr(initial_end_tr, function (row) {
-            return row.prev();
-        });
+        end_data = find_boundary_tr(initial_end_tr, (row) => row.prev());
 
         if (end_data === undefined) {
             // Skip any selection sections that don't intersect a message.

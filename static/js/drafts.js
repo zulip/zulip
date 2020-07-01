@@ -318,9 +318,9 @@ exports.launch = function () {
 
         const unsorted_raw_drafts = Object.values(data);
 
-        const sorted_raw_drafts = unsorted_raw_drafts.sort(function (draft_a, draft_b) {
-            return draft_b.updatedAt - draft_a.updatedAt;
-        });
+        const sorted_raw_drafts = unsorted_raw_drafts.sort(
+            (draft_a, draft_b) => draft_b.updatedAt - draft_a.updatedAt
+        );
 
         const sorted_formatted_drafts = sorted_raw_drafts.map(exports.format_draft).filter(Boolean);
 
@@ -514,7 +514,7 @@ exports.set_initial_element = function (drafts) {
 };
 
 exports.initialize = function () {
-    window.addEventListener("beforeunload", function () {
+    window.addEventListener("beforeunload", () => {
         exports.update_draft();
     });
 
@@ -522,7 +522,7 @@ exports.initialize = function () {
 
     $("#compose-textarea").focusout(exports.update_draft);
 
-    $('body').on('focus', '.draft-info-box', function (e) {
+    $('body').on('focus', '.draft-info-box', (e) => {
         activate_element(e.target);
     });
 };

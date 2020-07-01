@@ -123,9 +123,7 @@ function buddy_list_create() {
 
     self.get_items = function () {
         const obj = self.container.find(self.item_sel);
-        return obj.map(function (i, elem) {
-            return $(elem);
-        });
+        return obj.map((i, elem) => $(elem));
     };
 
     self.first_key = function () {
@@ -317,7 +315,7 @@ function buddy_list_create() {
         // sure everything's in place.
         const scroll_container = ui.get_scroll_element($(self.scroll_container_sel));
 
-        scroll_container.scroll(function () {
+        scroll_container.scroll(() => {
             self.fill_screen_with_content();
         });
     };

@@ -309,8 +309,8 @@ exports.create_handlers_for_users = function (container) {
     container.on('change', '#user-checkboxes input', update_announce_stream_state);
 
     // 'Check all' and 'Uncheck all' visible users
-    container.on('click', '.subs_set_all_users', function (e) {
-        $('#user-checkboxes .checkbox').each(function (idx, li) {
+    container.on('click', '.subs_set_all_users', (e) => {
+        $('#user-checkboxes .checkbox').each((idx, li) => {
             if  (li.style.display !== "none") {
                 $(li.firstElementChild).prop('checked', true);
             }
@@ -319,8 +319,8 @@ exports.create_handlers_for_users = function (container) {
         update_announce_stream_state();
     });
 
-    container.on('click', '.subs_unset_all_users', function (e) {
-        $('#user-checkboxes .checkbox').each(function (idx, li) {
+    container.on('click', '.subs_unset_all_users', (e) => {
+        $('#user-checkboxes .checkbox').each((idx, li) => {
             if (li.style.display !== "none") {
                 // The first checkbox is the one for ourself; this is the code path for:
                 // `stream_subscription_error.cant_create_stream_without_susbscribing`
@@ -334,14 +334,14 @@ exports.create_handlers_for_users = function (container) {
         update_announce_stream_state();
     });
 
-    container.on('click', '#copy-from-stream-expand-collapse', function (e) {
+    container.on('click', '#copy-from-stream-expand-collapse', (e) => {
         $('#stream-checkboxes').toggle();
         $("#copy-from-stream-expand-collapse .toggle").toggleClass('fa-caret-right fa-caret-down');
         e.preventDefault();
     });
 
     // Search People or Streams
-    container.on('input', '.add-user-list-filter', function (e) {
+    container.on('input', '.add-user-list-filter', (e) => {
         const user_list = $(".add-user-list-filter");
         if (user_list === 0) {
             return;
@@ -386,7 +386,7 @@ exports.set_up_handlers = function () {
 
     container.on('change', '#make-invite-only input', update_announce_stream_state);
 
-    container.on("submit", "#stream_creation_form", function (e) {
+    container.on("submit", "#stream_creation_form", (e) => {
         e.preventDefault();
         clear_error_display();
 
@@ -418,23 +418,23 @@ exports.set_up_handlers = function () {
         }
     });
 
-    container.on("click", ".close-invites-warning-modal", function () {
+    container.on("click", ".close-invites-warning-modal", () => {
         $("#invites-warning-overlay").remove();
     });
 
-    container.on("click", ".confirm-invites-warning-modal", function () {
+    container.on("click", ".confirm-invites-warning-modal", () => {
         create_stream();
         $("#invites-warning-overlay").remove();
     });
 
-    container.on("input", "#create_stream_name", function () {
+    container.on("input", "#create_stream_name", () => {
         const stream_name = $.trim($("#create_stream_name").val());
 
         // This is an inexpensive check.
         stream_name_error.pre_validate(stream_name);
     });
 
-    container.on("mouseover", "#announce-stream-docs", function (e) {
+    container.on("mouseover", "#announce-stream-docs", (e) => {
         const announce_stream_docs = $("#announce-stream-docs");
         announce_stream_docs.popover({
             placement: "right",
@@ -448,14 +448,14 @@ exports.set_up_handlers = function () {
         announce_stream_docs.data('popover').tip().find('.popover-content').css('margin', '9px 14px');
         e.stopPropagation();
     });
-    container.on("mouseout", "#announce-stream-docs", function (e) {
+    container.on("mouseout", "#announce-stream-docs", (e) => {
         $("#announce-stream-docs").popover('hide');
         e.stopPropagation();
     });
 
     // Do not allow the user to enter newline characters while typing out the
     // stream's description during it's creation.
-    container.on("keydown", "#create_stream_description", function (e) {
+    container.on("keydown", "#create_stream_description", (e) => {
         if ((e.keyCode || e.which) === 13) {
             e.preventDefault();
         }

@@ -1,10 +1,10 @@
-$(function () {
-    $('.portico-header li.logout').on('click', function () {
+$(() => {
+    $('.portico-header li.logout').on('click', () => {
         $('#logout_form').submit();
         return false;
     });
 
-    $("body").click(function (e) {
+    $("body").click((e) => {
         const $this = $(e.target);
 
         if ($this.closest(".dropdown .dropdown-pill").length > 0 && !$(".dropdown").hasClass("show")) {

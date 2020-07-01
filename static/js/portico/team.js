@@ -11,7 +11,7 @@ const loaded_repos = [];
 
 function contrib_total_commits(contrib) {
     let commits = 0;
-    repos.concat(hidden_repos).forEach(function (repo) {
+    repos.concat(hidden_repos).forEach((repo) => {
         commits += contrib[repo] || 0;
     });
     return commits;
@@ -32,17 +32,15 @@ export default function render_tabs() {
         .value()[0].server;
 
     const total_tab_html = _.chain(contributors_list)
-        .map(function (c) {
-            return {
-                name: c.name,
-                avatar: c.avatar,
-                commits: contrib_total_commits(c),
-            };
-        })
+        .map((c) => ({
+            name: c.name,
+            avatar: c.avatar,
+            commits: contrib_total_commits(c),
+        }))
         .sortBy('commits')
         .reverse()
-        .filter(function (c) { return c.commits >= least_server_commits; })
-        .map(function (c) { return template(c); })
+        .filter((c) => c.commits >= least_server_commits)
+        .map((c) => template(c))
         .value()
         .join('');
 
@@ -52,19 +50,17 @@ export default function render_tabs() {
         // Set as the loading template for now, and load when clicked.
         $('#tab-' + repo).html($('#loading-template').html());
 
-        $('#' + repo).click(function () {
+        $('#' + repo).click(() => {
             if (!loaded_repos.includes(repo)) {
                 const html = _.chain(contributors_list)
                     .filter(repo)
                     .sortBy(repo)
                     .reverse()
-                    .map(function (c) {
-                        return template({
-                            name: c.name,
-                            avatar: c.avatar,
-                            commits: c[repo],
-                        });
-                    })
+                    .map((c) => template({
+                        name: c.name,
+                        avatar: c.avatar,
+                        commits: c[repo],
+                    }))
                     .value()
                     .join('');
 

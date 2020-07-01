@@ -65,7 +65,7 @@ exports.activate = function (opts) {
         const html = render_widgets_zform_choices(data);
         const elem = $(html);
 
-        elem.find('button').on('click', function (e) {
+        elem.find('button').on('click', (e) => {
             e.stopPropagation();
 
             // Grab our index from the markup.

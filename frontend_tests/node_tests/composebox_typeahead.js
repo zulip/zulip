@@ -14,9 +14,7 @@ zrequire('composebox_typeahead');
 zrequire('recent_senders');
 zrequire('settings_org');
 const settings_config = zrequire('settings_config');
-set_global('md5', function (s) {
-    return 'md5-' + s;
-});
+set_global('md5', (s) => 'md5-' + s);
 
 // To be eliminated in next commit:
 stream_data.update_calculated_fields = () => {};
@@ -320,7 +318,7 @@ run_test('content_typeahead_selected', () => {
         },
     });
     let set_timeout_called = false;
-    global.patch_builtin('setTimeout', function (f, time) {
+    global.patch_builtin('setTimeout', (f, time) => {
         f();
         assert.equal(time, 0);
         set_timeout_called = true;

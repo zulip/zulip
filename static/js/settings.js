@@ -1,8 +1,8 @@
 const settings_config = require("./settings_config");
 const render_settings_tab = require('../templates/settings_tab.hbs');
 
-$("body").ready(function () {
-    $("#settings_overlay_container").click(function (e) {
+$("body").ready(() => {
+    $("#settings_overlay_container").click((e) => {
         if (!overlays.is_modal_open()) {
             return;
         }

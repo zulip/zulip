@@ -1,7 +1,5 @@
 exports.get_search_terms = function (input) {
-    const search_terms = input.toLowerCase().split(",").map(function (s) {
-        return s.trim();
-    });
+    const search_terms = input.toLowerCase().split(",").map((s) => s.trim());
     return search_terms;
 };
 

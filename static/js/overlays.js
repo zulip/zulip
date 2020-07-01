@@ -221,7 +221,7 @@ exports.open_settings = function () {
 };
 
 exports.initialize = function () {
-    $("body").on("click", ".overlay, .overlay .exit", function (e) {
+    $("body").on("click", ".overlay, .overlay .exit", (e) => {
         let $target = $(e.target);
 
         // if the target is not the .overlay element, search up the node tree

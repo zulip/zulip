@@ -54,9 +54,7 @@ exports.get_user_group_from_name = function (name) {
 };
 
 exports.get_realm_user_groups = function () {
-    return Array.from(user_group_by_id_dict.values()).sort(function (a, b) {
-        return a.id - b.id;
-    });
+    return Array.from(user_group_by_id_dict.values()).sort((a, b) => a.id - b.id);
 };
 
 exports.is_member_of = function (user_group_id, user_id) {

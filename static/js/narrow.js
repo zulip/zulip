@@ -334,7 +334,7 @@ exports.activate = function (raw_operators, opts) {
     tab_bar.initialize();
 
     msg_list.initial_core_time = new Date();
-    setTimeout(function () {
+    setTimeout(() => {
         resize.resize_stream_filters_container();
         msg_list.initial_free_time = new Date();
         maybe_report_narrow_time(msg_list);
@@ -840,7 +840,7 @@ exports.deactivate = function () {
     handle_post_narrow_deactivate_processes();
 
     unnarrow_times.initial_core_time = new Date();
-    setTimeout(function () {
+    setTimeout(() => {
         resize.resize_stream_filters_container();
         unnarrow_times.initial_free_time = new Date();
         report_unnarrow_time();

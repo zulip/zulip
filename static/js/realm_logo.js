@@ -29,7 +29,7 @@ exports.build_realm_logo_widget = function (upload_function, is_night) {
     }
 
     const data = {night: JSON.stringify(is_night)};
-    delete_button_elem.on('click', function (e) {
+    delete_button_elem.on('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
         channel.del({

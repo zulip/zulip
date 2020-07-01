@@ -109,7 +109,7 @@ function get_messages_success(data, opts) {
     if (!data) {
         // The server occasionally returns no data during a
         // restart.  Ignore those responses and try again
-        setTimeout(function () {
+        setTimeout(() => {
             exports.load_messages(opts);
         }, 0);
         return;
@@ -239,7 +239,7 @@ exports.load_messages = function (opts) {
 
             // We might want to be more clever here
             $('#connection-error').addClass("show");
-            setTimeout(function () {
+            setTimeout(() => {
                 exports.load_messages(opts);
             }, consts.error_retry_time);
         },

@@ -128,7 +128,7 @@ exports.on_load_success = function (invites_data, initialize_event_handlers) {
     if (!initialize_event_handlers) {
         return;
     }
-    $(".admin_invites_table").on("click", ".revoke", function (e) {
+    $(".admin_invites_table").on("click", ".revoke", (e) => {
         // This click event must not get propagated to parent container otherwise the modal
         // will not show up because of a call to `close_active_modal` in `settings.js`.
         e.preventDefault();
@@ -149,7 +149,7 @@ exports.on_load_success = function (invites_data, initialize_event_handlers) {
         $("#do_revoke_invite_button").click(do_revoke_invite);
     });
 
-    $(".admin_invites_table").on("click", ".resend", function (e) {
+    $(".admin_invites_table").on("click", ".resend", (e) => {
         // This click event must not get propagated to parent container otherwise the modal
         // will not show up because of a call to `close_active_modal` in `settings.js`.
         e.preventDefault();
@@ -165,7 +165,7 @@ exports.on_load_success = function (invites_data, initialize_event_handlers) {
         $("#resend_invite_modal").modal("show");
     });
 
-    $("#do_resend_invite_button").click(function () {
+    $("#do_resend_invite_button").click(() => {
         const modal_invite_id = $("#resend_invite_modal #do_resend_invite_button").attr("data-invite-id");
         const resend_button = meta.current_resend_invite_user_modal_row.find("button.resend");
 
