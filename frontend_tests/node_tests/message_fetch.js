@@ -5,7 +5,10 @@ zrequire('message_fetch');
 
 const noop = () => {};
 
-set_global('MessageListView', function () { return {}; });
+function MessageListView() {
+    return {};
+}
+set_global('MessageListView', MessageListView);
 
 zrequire('FetchStatus', 'js/fetch_status');
 zrequire('Filter', 'js/filter');

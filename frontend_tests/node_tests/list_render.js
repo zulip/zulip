@@ -6,9 +6,10 @@ zrequire('list_render');
 // that are either jQuery, Element, or just raw HTML
 // strings.  We initially test with raw strings.
 set_global('jQuery', 'stub');
-set_global('Element', function () {
+function Element() {
     return { };
-});
+}
+set_global('Element', Element);
 
 // We only need very simple jQuery wrappers for when the
 // "real" code wraps html or sets up click handlers.

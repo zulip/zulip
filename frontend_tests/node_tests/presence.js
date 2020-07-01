@@ -7,7 +7,10 @@ set_global('server_events', {});
 set_global('reload_state', {
     is_in_progress: return_false,
 });
-set_global('XDate', function (ms) { return {seconds: ms}; });
+function XDate(ms) {
+    return {seconds: ms};
+}
+set_global('XDate', XDate);
 
 const OFFLINE_THRESHOLD_SECS = 140;
 

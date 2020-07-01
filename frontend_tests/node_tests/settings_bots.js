@@ -24,9 +24,10 @@ zrequire('bot_data');
 zrequire('settings_bots');
 zrequire('people');
 
-set_global('ClipboardJS', function (sel) {
+function ClipboardJS(sel) {
     assert.equal(sel, '#copy_zuliprc');
-});
+}
+set_global('ClipboardJS', ClipboardJS);
 
 bot_data.initialize(bot_data_params);
 
