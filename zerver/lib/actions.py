@@ -4186,11 +4186,11 @@ def do_clear_mobile_push_notifications_for_ids(user_profile_ids: List[int],
     for (user_id, message_id) in notifications_to_update:
         messages_by_user[user_id].append(message_id)
 
-    for user_profile_id in user_profile_ids:
+    for (user_profile_id, event_message_ids) in messages_by_user.items():
         queue_json_publish("missedmessage_mobile_notifications", {
             "type": "remove",
             "user_profile_id": user_profile_id,
-            "message_ids": messages_by_user[user_profile_id],
+            "message_ids": event_message_ids,
         })
 
 def do_update_message_flags(user_profile: UserProfile,
