@@ -1,12 +1,10 @@
 import os
 import random
 import shutil
-import sys
-import unittest
 from functools import partial
 from multiprocessing.sharedctypes import Synchronized
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, Union
-from unittest import loader, runner
+from unittest import TestLoader, TestSuite, runner
 from unittest.result import TestResult
 
 from django.conf import settings
@@ -43,20 +41,6 @@ TEST_RUN_DIR = get_or_create_dev_uuid_var_path(
     os.path.join('test-backend', f'run_{get_database_id()}'))
 
 _worker_id = 0  # Used to identify the worker process.
-
-def run_test(test: TestCase, result: TestResult) -> bool:
-    failed = False
-
-    try:
-        test._pre_setup()
-    except Exception:
-        result.addError(test, sys.exc_info())
-        return True
-
-    test(result)  # unittest will handle skipping, error, failure and success.
-
-    test._post_teardown()
-    return failed
 
 class TextTestResult(runner.TextTestResult):
     """
@@ -120,7 +104,7 @@ def process_instrumented_calls(func: Callable[[Dict[str, Any]], None]) -> None:
     for call in test_helpers.INSTRUMENTED_CALLS:
         func(call)
 
-SerializedSubsuite = Tuple[Type['TestSuite'], List[str]]
+SerializedSubsuite = Tuple[Type[TestSuite], List[str]]
 SubsuiteArgs = Tuple[Type['RemoteTestRunner'], int, SerializedSubsuite, bool]
 
 def run_subsuite(args: SubsuiteArgs) -> Tuple[int, Any]:
@@ -229,47 +213,6 @@ def init_worker(counter: Synchronized) -> None:
     if not found:
         print("*** Upload directory not found.")
 
-class TestSuite(unittest.TestSuite):
-    def run(self, result: TestResult, debug: bool=False) -> TestResult:
-        """
-        This function mostly contains the code from
-        unittest.TestSuite.run. The need to override this function
-        occurred because we use run_test to run the testcase.
-        """
-        topLevel = False
-        if getattr(result, '_testRunEntered', False) is False:
-            result._testRunEntered = topLevel = True  # type: ignore[attr-defined]
-
-        for test in self:
-            # but this is correct. Taken from unittest.
-            if result.shouldStop:
-                break
-
-            if isinstance(test, TestSuite):
-                test.run(result, debug=debug)
-            else:
-                self._tearDownPreviousClass(test, result)  # type: ignore[attr-defined]
-                self._handleModuleFixture(test, result)  # type: ignore[attr-defined]
-                self._handleClassSetUp(test, result)  # type: ignore[attr-defined]
-                result._previousTestClass = test.__class__  # type: ignore[attr-defined]
-                if (getattr(test.__class__, '_classSetupFailed', False) or
-                        getattr(result, '_moduleSetUpFailed', False)):
-                    continue
-
-                failed = run_test(test, result)
-                if failed or result.shouldStop:
-                    result.shouldStop = True
-                    break
-
-        if topLevel:
-            self._tearDownPreviousClass(None, result)  # type: ignore[attr-defined]
-            self._handleModuleTearDown(result)  # type: ignore[attr-defined]
-            result._testRunEntered = False  # type: ignore[attr-defined]
-        return result
-
-class TestLoader(loader.TestLoader):
-    suiteClass = TestSuite
-
 class ParallelTestSuite(django_runner.ParallelTestSuite):
     run_subsuite = run_subsuite
     init_worker = init_worker
@@ -309,8 +252,6 @@ def initialize_worker_path(worker_id: int) -> None:
     settings.SENDFILE_ROOT = os.path.join(settings.LOCAL_UPLOADS_DIR, "files")
 
 class Runner(DiscoverRunner):
-    test_suite = TestSuite
-    test_loader = TestLoader()
     parallel_test_suite = ParallelTestSuite
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -476,7 +417,7 @@ def get_test_names(suite: Union[TestSuite, ParallelTestSuite]) -> List[str]:
     else:
         return [t.id() for t in get_tests_from_suite(suite)]
 
-def get_tests_from_suite(suite: unittest.TestSuite) -> TestCase:
+def get_tests_from_suite(suite: TestSuite) -> TestCase:
     for test in suite:
         if isinstance(test, TestSuite):
             yield from get_tests_from_suite(test)
