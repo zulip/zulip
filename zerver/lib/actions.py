@@ -4665,7 +4665,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
                 subscribers = subscribers.exclude(user_profile_id__in=delete_event_notify_user_ids)
 
             # All users that are subscribed to the stream must be notified when a message is edited
-            subscribers_ids = [user.user_profile_id for user in subscribers]
+            subscriber_ids = [user.user_profile_id for user in subscribers]
 
             if new_stream is not None:
                 # TODO: Guest users don't see the new moved topic unless breadcrumb message for
@@ -4678,12 +4678,12 @@ def do_update_message(user_profile: UserProfile, message: Message,
                 old_stream_unsubed_guests = [
                     sub for sub in subs_to_new_stream
                     if sub.user_profile.is_guest
-                    and sub.user_profile_id not in subscribers_ids
+                    and sub.user_profile_id not in subscriber_ids
                 ]
                 subscribers = subscribers.exclude(user_profile_id__in=[sub.user_profile_id for sub in old_stream_unsubed_guests])
-                subscribers_ids = [user.user_profile_id for user in subscribers]
+                subscriber_ids = [user.user_profile_id for user in subscribers]
 
-            users_to_be_notified += list(map(subscriber_info, subscribers_ids))
+            users_to_be_notified += list(map(subscriber_info, subscriber_ids))
 
     send_event(user_profile.realm, event, users_to_be_notified)
 
@@ -4730,8 +4730,8 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
         subscribers = get_active_subscriptions_for_stream_id(stream_id)
         # We exclude long-term idle users, since they by definition have no active clients.
         subscribers = subscribers.exclude(user_profile__long_term_idle=True)
-        subscribers_ids = [user.user_profile_id for user in subscribers]
-        users_to_notify = list(map(subscriber_info, subscribers_ids))
+        subscriber_ids = [user.user_profile_id for user in subscribers]
+        users_to_notify = list(map(subscriber_info, subscriber_ids))
         archiving_chunk_size = retention.STREAM_MESSAGE_BATCH_SIZE
 
     move_messages_to_archive(message_ids, realm=realm, chunk_size=archiving_chunk_size)
