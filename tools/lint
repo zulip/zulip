@@ -89,9 +89,9 @@ def run() -> None:
     linter_config.external_linter('gitlint', ['tools/commit-message-lint'],
                                   description="Checks commit messages for common formatting errors."
                                   "(config: .gitlint)")
-    linter_config.external_linter('isort', ['tools/run-isort'], ['py'],
+    linter_config.external_linter('isort', ['isort'], ['py'],
                                   description="Sorts Python import statements",
-                                  fix_arg='--fix')
+                                  check_arg=['--check-only', '--diff'])
 
     semgrep_command = ["semgrep", "--config=./tools/semgrep.yml", "--error",
                        # This option is dangerous in the context of running
