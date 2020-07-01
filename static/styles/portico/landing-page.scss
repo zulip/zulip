@@ -913,11 +913,11 @@ nav {
     padding: 15px 0px;
 
     color: hsl(0, 0%, 100%);
-}
 
-.compare thead th.normal {
-    font-weight: normal;
-    color: inherit;
+    &.normal {
+        font-weight: normal;
+        color: inherit;
+    }
 }
 
 .compare tbody tr {
