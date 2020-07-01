@@ -4562,8 +4562,11 @@ def do_update_message(user_profile: UserProfile, message: Message,
             if sub.user_profile_id not in new_stream_sub_ids
         ]
         # Users who can longer access the message without some action
-        # from admins.
-        # TODO: Extend for case when new stream is private.
+        # from administrators.
+        #
+        # TODO: Extend this list to also contain users losing access
+        # due to the messages moving to a private stream they are not
+        # subscribed to.
         subs_losing_access = [
             sub for sub in subs_losing_usermessages
             if sub.user_profile.is_guest
@@ -4654,27 +4657,35 @@ def do_update_message(user_profile: UserProfile, message: Message,
     if stream_being_edited is not None:
         if stream_being_edited.is_history_public_to_subscribers:
             subscribers = get_active_subscriptions_for_stream_id(stream_id)
-            # We exclude long-term idle users, since they by definition have no active clients.
+            # We exclude long-term idle users, since they by
+            # definition have no active clients.
             subscribers = subscribers.exclude(user_profile__long_term_idle=True)
-            # Remove duplicates by excluding the id of users already in users_to_be_notified list.
-            # This is the case where a user both has a UserMessage row and is a current Subscriber
+            # Remove duplicates by excluding the id of users already
+            # in users_to_be_notified list.  This is the case where a
+            # user both has a UserMessage row and is a current
+            # Subscriber
             subscribers = subscribers.exclude(user_profile_id__in=[um.user_profile_id for um in ums])
 
             if new_stream is not None:
                 assert delete_event_notify_user_ids is not None
                 subscribers = subscribers.exclude(user_profile_id__in=delete_event_notify_user_ids)
 
-            # All users that are subscribed to the stream must be notified when a message is edited
+            # All users that are subscribed to the stream must be
+            # notified when a message is edited
             subscriber_ids = [user.user_profile_id for user in subscribers]
 
             if new_stream is not None:
-                # TODO: Guest users don't see the new moved topic unless breadcrumb message for
-                # new stream is enabled. Excluding these users from receiving this event helps
-                # us avoid a error trackeback for our clients. We should figure out a way to
-                # inform the guest users of this new topic if sending a 'message' event for these messages
-                # is not an option.
-                # Don't send this event to guest subs who are not subscrbied to the old stream but
-                # are subscribed to the new stream
+                # TODO: Guest users don't see the new moved topic
+                # unless breadcrumb message for new stream is
+                # enabled. Excluding these users from receiving this
+                # event helps us avoid a error trackeback for our
+                # clients. We should figure out a way to inform the
+                # guest users of this new topic if sending a 'message'
+                # event for these messages is not an option.
+                #
+                # Don't send this event to guest subs who are not
+                # subscribers of the old stream but are subscribed to
+                # the new stream; clients will be confused.
                 old_stream_unsubbed_guests = [
                     sub for sub in subs_to_new_stream
                     if sub.user_profile.is_guest
