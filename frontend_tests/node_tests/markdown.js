@@ -44,9 +44,10 @@ set_global('page_params', {
     translate_emoticons: false,
 });
 
-set_global('Image', function () {
+function Image() {
     return {};
-});
+}
+set_global('Image', Image);
 emoji.initialize();
 
 const doc = "";

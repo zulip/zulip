@@ -42,9 +42,10 @@ set_global('stream_popover', {
 
 set_global('stream_data', {});
 
-set_global('ClipboardJS', function (sel) {
+function ClipboardJS(sel) {
     assert.equal(sel, '.copy_link');
-});
+}
+set_global('ClipboardJS', ClipboardJS);
 
 const alice = {
     email: 'alice@example.com',
@@ -95,9 +96,7 @@ function make_image_stubber() {
         return image;
     }
 
-    set_global('Image', function () {
-        return stub_image();
-    });
+    set_global('Image', stub_image);
 
     return {
         get: (i) => images[i],
