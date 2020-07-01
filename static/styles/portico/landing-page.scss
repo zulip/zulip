@@ -887,21 +887,21 @@ nav {
     font-weight: 400;
 
     color: hsla(0, 0%, 100%, 0.8);
-}
 
-.compare table thead th {
-    &:last-of-type {
-        width: 120px;
+    thead th {
+        &:last-of-type {
+            width: 120px;
+        }
+
+        &.uniform {
+            width: 20%;
+        }
     }
 
-    &.uniform {
-        width: 20%;
+    td:not(:first-of-type),
+    th:not(:first-of-type) {
+        text-align: center;
     }
-}
-
-.compare table td:not(:first-of-type),
-.compare table th:not(:first-of-type) {
-    text-align: center;
 }
 
 .compare thead {
