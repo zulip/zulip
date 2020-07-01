@@ -20,7 +20,7 @@ function make_person_highlighter(query) {
 
 function match_criteria(operators, criteria) {
     const filter = new Filter(operators);
-    return criteria.some(cr => {
+    return criteria.some((cr) => {
         if (Object.prototype.hasOwnProperty.call(cr, 'operand')) {
             return filter.has_operand(cr.operator, cr.operand);
         }
@@ -48,7 +48,7 @@ function format_as_suggestion(terms) {
 }
 
 function compare_by_huddle(huddle) {
-    huddle = huddle.slice(0, -1).map(person => {
+    huddle = huddle.slice(0, -1).map((person) => {
         person = people.get_by_email(person);
         return person && person.user_id;
     });
@@ -91,14 +91,14 @@ function get_stream_suggestions(last, operators) {
     const query = last.operand;
     let streams = stream_data.subscribed_streams();
 
-    streams = streams.filter(stream => stream_matches_query(stream, query));
+    streams = streams.filter((stream) => stream_matches_query(stream, query));
 
     streams = typeahead_helper.sorter(query, streams);
 
     const regex = typeahead_helper.build_highlight_regex(query);
     const hilite = typeahead_helper.highlight_with_escaping_and_regex;
 
-    const objs = streams.map(stream => {
+    const objs = streams.map((stream) => {
         const prefix = 'stream';
         const highlighted_stream = hilite(regex, stream);
         const verb = last.negated ? 'exclude ' : '';
@@ -159,7 +159,7 @@ function get_group_suggestions(last, operators) {
 
     const highlight_person = make_person_highlighter(last_part);
 
-    const suggestions = persons.map(person => {
+    const suggestions = persons.map((person) => {
         const term = {
             operator: 'pm-with',
             operand: all_but_last_part + ',' + person.email,
@@ -239,7 +239,7 @@ function get_person_suggestions(people_getter, last, operators, autocomplete_ope
 
     const highlight_person = make_person_highlighter(query);
 
-    const objs = persons.map(person => {
+    const objs = persons.map((person) => {
         const name = highlight_person(person);
         const description = prefix + ' ' + name;
         const terms = [{
@@ -340,7 +340,7 @@ function get_topic_suggestions(last, operators) {
     topics = topics.slice(0, 300);
 
     if (guess !== '') {
-        topics = topics.filter(topic => common.phrase_match(guess, topic));
+        topics = topics.filter((topic) => common.phrase_match(guess, topic));
     }
 
     topics = topics.slice(0, 10);
@@ -351,7 +351,7 @@ function get_topic_suggestions(last, operators) {
     // care about case.
     topics.sort();
 
-    return topics.map(topic => {
+    return topics.map((topic) => {
         const topic_term = {operator: 'topic', operand: topic, negated: negated};
         const operators = suggest_operators.concat([topic_term]);
         return format_as_suggestion(operators);
@@ -382,7 +382,7 @@ function get_special_filter_suggestions(last, operators, suggestions) {
     // Negating suggestions on is_search_operand_negated is required for
     // suggesting negated operators.
     if (last.negated || is_search_operand_negated) {
-        suggestions = suggestions.map(suggestion => ({
+        suggestions = suggestions.map((suggestion) => ({
             search_string: '-' + suggestion.search_string,
             description: 'exclude ' + suggestion.description,
             invalid: suggestion.invalid,
@@ -390,7 +390,7 @@ function get_special_filter_suggestions(last, operators, suggestions) {
     }
 
     const last_string = Filter.unparse([last]).toLowerCase();
-    suggestions = suggestions.filter(s => {
+    suggestions = suggestions.filter((s) => {
         if (match_criteria(operators, s.invalid)) {
             return false;
         }
@@ -565,9 +565,9 @@ function get_operator_suggestions(last) {
     }
 
     let choices = ['stream', 'topic', 'pm-with', 'sender', 'near', 'from', 'group-pm-with'];
-    choices = choices.filter(choice => common.phrase_match(last_operand, choice));
+    choices = choices.filter((choice) => common.phrase_match(last_operand, choice));
 
-    return choices.map(choice => {
+    return choices.map((choice) => {
         const op = [{operator: choice, operand: '', negated: negated}];
         return format_as_suggestion(op);
     });
@@ -743,7 +743,7 @@ exports.finalize_search_result = function (result) {
         lookup_table.set(obj.search_string, obj);
     }
 
-    const strings = result.map(obj => obj.search_string);
+    const strings = result.map((obj) => obj.search_string);
     return {
         strings: strings,
         lookup_table: lookup_table,

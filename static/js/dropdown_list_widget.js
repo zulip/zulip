@@ -30,7 +30,7 @@ const DropdownListWidget = function (opts) {
         }
 
         // Happy path
-        const item = opts.data.find(x => x.value === value.toString());
+        const item = opts.data.find((x) => x.value === value.toString());
         const text = opts.render_text(item.name);
         elem.text(text);
         elem.removeClass('text-warning');

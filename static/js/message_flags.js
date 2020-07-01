@@ -16,8 +16,8 @@ exports.send_read = (function () {
     let start;
     function server_request() {
         // Wait for server IDs before sending flags
-        const real_msgs = queue.filter(msg => !msg.locally_echoed);
-        const real_msg_ids = real_msgs.map(msg => msg.id);
+        const real_msgs = queue.filter((msg) => !msg.locally_echoed);
+        const real_msg_ids = real_msgs.map((msg) => msg.id);
 
         if (real_msg_ids.length === 0) {
             setTimeout(start, 100);
@@ -46,7 +46,7 @@ exports.send_read = (function () {
             return;
         }
 
-        queue = queue.filter(message => !data.messages.includes(message.id));
+        queue = queue.filter((message) => !data.messages.includes(message.id));
 
         if (queue.length > 0) {
             start();

@@ -523,9 +523,9 @@ exports.make_zjquery = function (opts) {
 
     zjquery.state = function () {
         // useful for debugging
-        let res = Array.from(elems.values(), v => v.debug());
+        let res = Array.from(elems.values(), (v) => v.debug());
 
-        res = res.map(v => [v.selector, v.value, v.shown]);
+        res = res.map((v) => [v.selector, v.value, v.shown]);
 
         res.sort();
 

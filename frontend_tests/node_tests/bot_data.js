@@ -137,7 +137,7 @@ run_test('test_basics', () => {
         bot_data.add({...test_bot, user_id: 45, email: 'bot2@zulip.com', owner_id: me.user_id, is_active: true});
         bot_data.add({...test_bot, user_id: 46, email: 'bot3@zulip.com', owner_id: fred.user_id, is_active: true});
 
-        const editable_bots = bot_data.get_editable().map(bot => bot.email);
+        const editable_bots = bot_data.get_editable().map((bot) => bot.email);
         assert.deepEqual(['bot1@zulip.com', 'bot2@zulip.com'], editable_bots);
     }());
 

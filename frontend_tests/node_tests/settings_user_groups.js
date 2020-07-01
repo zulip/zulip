@@ -210,7 +210,7 @@ run_test('populate_user_groups', () => {
 
         (function test_source() {
             const result = config.source.call(fake_context, iago);
-            const emails = result.map(user => user.email).sort();
+            const emails = result.map((user) => user.email).sort();
             assert.deepEqual(emails, [alice.email, bob.email]);
         }());
 

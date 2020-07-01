@@ -221,7 +221,7 @@ exports.setup_upload = function (config) {
 
     uppy.on('complete', () => {
         let uploads_in_progress = false;
-        uppy.getFiles().forEach(file => {
+        uppy.getFiles().forEach((file) => {
             if (file.progress.uploadComplete) {
                 // The uploaded files should be removed since uppy don't allow files in the store
                 // to be re-uploaded again.

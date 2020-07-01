@@ -5,7 +5,7 @@ const messages = [];
 
 set_global('message_util', {
     get_messages_in_topic: (stream_id, topic) => {
-        return messages.filter(x => {
+        return messages.filter((x) => {
             return x.stream_id === stream_id &&
                    x.topic.toLowerCase() === topic.toLowerCase();
         });

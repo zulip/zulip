@@ -52,7 +52,7 @@ stream_data.add_sub(stream);
 
 const $array = (array) => {
     const each = (func) => {
-        array.forEach(e => {
+        array.forEach((e) => {
             func.call(e);
         });
     };

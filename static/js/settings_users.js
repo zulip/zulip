@@ -458,7 +458,7 @@ function open_bot_form(person) {
     const owner_id = bot_data.get(person.user_id).owner_id;
 
     const user_ids = people.get_active_human_ids();
-    const users_list = user_ids.map(user_id => ({
+    const users_list = user_ids.map((user_id) => ({
         name: people.get_full_name(user_id),
         value: user_id.toString(),
     }));

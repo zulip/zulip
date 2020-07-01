@@ -41,7 +41,7 @@ exports.make_zblueslip = function () {
         for (const name of names) {
             for (const obj of lib.test_logs[name]) {
                 const message = obj.message;
-                const i = lib.test_data[name].findIndex(x => x.message === message);
+                const i = lib.test_data[name].findIndex((x) => x.message === message);
                 if (i === -1) {
                     // Only throw this for message types we want to explicitly track.
                     // For example, we do not want to throw here for debug messages.
@@ -99,7 +99,7 @@ exports.make_zblueslip = function () {
                 }
             }
             lib.test_logs[name].push({message, more_info, stack});
-            const matched_error_message = lib.test_data[name].find(x => x.message === message);
+            const matched_error_message = lib.test_data[name].find((x) => x.message === message);
             const exact_match_fail = !matched_error_message;
             if (exact_match_fail) {
                 const error = Error(`Invalid ${name} message: "${message}".`);

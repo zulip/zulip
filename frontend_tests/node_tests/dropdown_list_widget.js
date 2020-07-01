@@ -24,7 +24,7 @@ run_test('basic_functions', () => {
     let updated_value;
     const opts = {
         widget_name: 'my_setting',
-        data: ['one', 'two', 'three'].map(x => ({name: x, value: x})),
+        data: ['one', 'two', 'three'].map((x) => ({name: x, value: x})),
         value: 'one',
         on_update: (val) => { updated_value = val; },
         default_text: i18n.t("not set"),
@@ -55,7 +55,7 @@ run_test('basic_functions', () => {
 run_test('no_default_value', () => {
     const opts = {
         widget_name: 'my_setting',
-        data: ['one', 'two', 'three'].map(x => ({name: x, value: x})),
+        data: ['one', 'two', 'three'].map((x) => ({name: x, value: x})),
         default_text: i18n.t("not set"),
         render_text: (text) => `rendered: ${text}`,
         null_value: 'null-value',

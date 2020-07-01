@@ -35,7 +35,7 @@ people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
 function contains_sub(subs, sub) {
-    return subs.some(s => s.name === sub.name);
+    return subs.some((s) => s.name === sub.name);
 }
 
 run_test('basics', () => {
@@ -921,7 +921,7 @@ run_test('initialize', () => {
     initialize();
     assert(!stream_data.is_filtering_inactives());
 
-    const stream_names = stream_data.get_streams_for_admin().map(elem => elem.name);
+    const stream_names = stream_data.get_streams_for_admin().map((elem) => elem.name);
     assert(stream_names.includes('subscriptions'));
     assert(stream_names.includes('unsubscribed'));
     assert(stream_names.includes('never_subscribed'));

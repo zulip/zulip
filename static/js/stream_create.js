@@ -126,7 +126,7 @@ function update_announce_stream_state() {
 }
 
 function get_principals() {
-    return Array.from($("#stream_creation_form input:checkbox[name=user]:checked"), elem => {
+    return Array.from($("#stream_creation_form input:checkbox[name=user]:checked"), (elem) => {
         const label = $(elem).closest(".add-user-label");
         return parseInt(label.attr("data-user-id"), 10);
     });

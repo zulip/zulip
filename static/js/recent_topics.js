@@ -224,7 +224,7 @@ exports.topic_in_search_results = function (keyword, stream, topic) {
     keyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const text = (stream + ' ' + topic).toLowerCase().replace(/\s+/g, ' ');
     const search_words = keyword.toLowerCase().replace(/\s+/g, ' ').split(' ');
-    return search_words.every(word => {
+    return search_words.every((word) => {
         if (text.search(word) !== -1) {
             return true;
         }

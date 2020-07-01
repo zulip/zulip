@@ -72,7 +72,7 @@ emoji.emojis_by_name = new Map();
 
 util.is_mobile = () => false;
 global.stub_templates(() => 'some-html');
-ui.get_scroll_element = element => element;
+ui.get_scroll_element = (element) => element;
 
 zrequire('alert_words');
 zrequire('hash_util');

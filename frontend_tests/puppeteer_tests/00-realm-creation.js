@@ -14,7 +14,7 @@ async function realm_creation_tests(page) {
     await page.type('#email', email);
     await Promise.all([
         page.waitForNavigation(),
-        page.$eval('#send_confirm', form => form.submit()),
+        page.$eval('#send_confirm', (form) => form.submit()),
     ]);
 
     // Make sure onfirmation email is sent.
@@ -53,9 +53,9 @@ async function realm_creation_tests(page) {
     };
     // For some reason, page.click() does not work this for particular checkbox
     // so use page.$eval here to call the .click method in the browser.
-    await page.$eval('#realm_in_root_domain', el => el.click());
+    await page.$eval('#realm_in_root_domain', (el) => el.click());
     await common.fill_form(page, '#registration', params);
-    await page.$eval('#registration', form => form.submit());
+    await page.$eval('#registration', (form) => form.submit());
 
     // Check if realm is created and user is logged in by checking if
     // element of id `lightbox_overlay` exists.

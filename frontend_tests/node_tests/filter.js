@@ -35,7 +35,7 @@ people.add_active_user(steve);
 people.initialize_current_user(me.user_id);
 
 function assert_same_operators(result, terms) {
-    terms = terms.map(term => {
+    terms = terms.map((term) => {
         // If negated flag is undefined, we explicitly
         // set it to false.
         let negated = term.negated;
@@ -571,7 +571,7 @@ run_test('canonicalizations', () => {
 });
 
 function get_predicate(operators) {
-    operators = operators.map(op => ({
+    operators = operators.map((op) => ({
         operator: op[0],
         operand: op[1],
     }));
@@ -1558,7 +1558,7 @@ run_test('navbar_helpers', () => {
         },
     ];
 
-    test_cases.forEach(test_case => {
+    test_cases.forEach((test_case) => {
         test_helpers(test_case);
     });
 
@@ -1579,7 +1579,7 @@ run_test('navbar_helpers', () => {
         },
     ];
 
-    redirect_edge_cases.forEach(test_case => {
+    redirect_edge_cases.forEach((test_case) => {
         test_redirect_url_with_search(test_case);
     });
 

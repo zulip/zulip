@@ -184,7 +184,7 @@ exports.per_stream_history = function (stream_id) {
             return b.message_id - a.message_id;
         });
 
-        const names = recents.map(obj => obj.pretty_name);
+        const names = recents.map((obj) => obj.pretty_name);
 
         return names;
     };

@@ -271,7 +271,7 @@ function edit_message(row, raw_content) {
     const show_edit_stream = message.is_stream && page_params.is_admin;
     // current message's stream has been already been added and selected in handlebar
     const available_streams = show_edit_stream ? stream_data.subscribed_subs()
-        .filter(s => s.stream_id !== message.stream_id) : null;
+        .filter((s) => s.stream_id !== message.stream_id) : null;
 
     const form = $(render_message_edit_form({
         is_stream: message.type === 'stream',
@@ -817,13 +817,13 @@ exports.delete_message = function (msg_id) {
             success: function () {
                 $('#delete_message_modal').modal("hide");
                 currently_deleting_messages = currently_deleting_messages.filter(
-                    id => id !== msg_id
+                    (id) => id !== msg_id
                 );
                 hide_delete_btn_show_spinner(false);
             },
             error: function (xhr) {
                 currently_deleting_messages = currently_deleting_messages.filter(
-                    id => id !== msg_id
+                    (id) => id !== msg_id
                 );
                 hide_delete_btn_show_spinner(false);
                 ui_report.error(i18n.t("Error deleting message"), xhr,

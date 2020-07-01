@@ -131,7 +131,7 @@ function handle_operators_supporting_id_based_api(data) {
     }
 
     data.narrow = JSON.parse(data.narrow);
-    data.narrow = data.narrow.map(filter => {
+    data.narrow = data.narrow.map((filter) => {
         if (operators_supporting_ids.includes(filter.operator)) {
             filter.operand = people.emails_strings_to_user_ids_array(filter.operand);
         }

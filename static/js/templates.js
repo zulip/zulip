@@ -85,13 +85,13 @@ Handlebars.registerHelper('tr', function (context, options) {
     //     1. `context` is very important. It can be `this` or an
     //        object or key of the current context.
     //     2. Use `__` instead of `{{` and `}}` to declare expressions
-    const result = i18n.t(options.fn(context).trim().split("\n").map(s => s.trim()).join(" "), context);
+    const result = i18n.t(options.fn(context).trim().split("\n").map((s) => s.trim()).join(" "), context);
     return new Handlebars.SafeString(result);
 });
 
 Handlebars.registerHelper(
     "rendered_markdown",
-    content => new Handlebars.SafeString(util.clean_user_content_links(content))
+    (content) => new Handlebars.SafeString(util.clean_user_content_links(content))
 );
 
 window.templates = exports;

@@ -198,7 +198,7 @@ exports.populate_user_groups = function () {
                                               except_class);
             if ($(event.relatedTarget).closest('#user-groups #' + data.id).length) {
                 return blur_exceptions.some(
-                    class_name => $(event.relatedTarget).closest(class_name).length
+                    (class_name) => $(event.relatedTarget).closest(class_name).length
                 );
             }
             return false;

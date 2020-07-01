@@ -103,7 +103,7 @@ exports.toggle = function (opts) {
         maybe_go_right: maybe_go_right,
 
         disable_tab: function (name) {
-            const value = opts.values.find(o => o.key === name);
+            const value = opts.values.find((o) => o.key === name);
 
             const idx = opts.values.indexOf(value);
             meta.$ind_tab.eq(idx).addClass('disabled');
@@ -121,7 +121,7 @@ exports.toggle = function (opts) {
         // go through the process of finding the correct tab for a given name,
         // and when found, select that one and provide the proper callback.
         goto: function (name) {
-            const value = opts.values.find(o => o.label === name || o.key === name);
+            const value = opts.values.find((o) => o.label === name || o.key === name);
 
             const idx = opts.values.indexOf(value);
 
