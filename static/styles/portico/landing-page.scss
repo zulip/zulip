@@ -1006,22 +1006,22 @@ nav {
     max-width: 700px;
     font-size: 1.2em;
     color: hsl(223, 6%, 25%);
+
+    .question {
+        font-weight: 600;
+        color: hsl(222, 20%, 40%);
+        font-size: 1.1em;
+    }
+
+    .answer {
+        margin: 20px 0px 0px 0px;
+        font-weight: 400;
+    }
 }
 
 /* the last faq in the box shouldn't have an extra 50px of margin. */
 .faqs .faq-box div:last-of-type {
     margin-bottom: 10px;
-}
-
-.faqs .faq .question {
-    font-weight: 600;
-    color: hsl(222, 20%, 40%);
-    font-size: 1.1em;
-}
-
-.faqs .faq .answer {
-    margin: 20px 0px 0px 0px;
-    font-weight: 400;
 }
 
 .screen .line {
