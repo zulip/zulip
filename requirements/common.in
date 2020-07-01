@@ -189,3 +189,6 @@ zxcvbn
 # Needed for sending HTTP requests
 requests[security]
 requests-oauthlib
+
+# For OpenAPI schema validation.
+openapi-core

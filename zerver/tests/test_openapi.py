@@ -21,10 +21,10 @@ from unittest.mock import MagicMock, patch
 
 import yaml
 from django.http import HttpResponse
+from jsonschema.exceptions import ValidationError
 
 from zerver.lib.request import _REQ, arguments_map
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.openapi import openapi as openapi
 from zerver.openapi.markdown_extension import (
     generate_curl_example,
     parse_language_and_options,
@@ -41,6 +41,7 @@ from zerver.openapi.openapi import (
     openapi_spec,
     to_python_type,
     validate_against_openapi_schema,
+    validate_schema,
 )
 
 TEST_ENDPOINT = '/messages/{message_id}'
@@ -98,9 +99,9 @@ class OpenAPIToolsTest(ZulipTestCase):
         assert(expected_item in actual)
 
     def test_validate_against_openapi_schema(self) -> None:
-        with self.assertRaises(SchemaError,
-                               msg=('Extraneous key "foo" in '
-                                    'the response\'scontent')):
+        with self.assertRaises(ValidationError,
+                               msg=("Additional properties are not" +
+                                    " allowed ('foo' was unexpected)")):
             bad_content: Dict[str, object] = {
                 'msg': '',
                 'result': 'success',
@@ -111,10 +112,8 @@ class OpenAPIToolsTest(ZulipTestCase):
                                             TEST_METHOD,
                                             TEST_RESPONSE_SUCCESS)
 
-        with self.assertRaises(SchemaError,
-                               msg=("Expected type <class 'str'> for key "
-                                    "\"msg\", but actually got "
-                                    "<class 'int'>")):
+        with self.assertRaises(ValidationError,
+                               msg=("42 is not of type string")):
             bad_content = {
                 'msg': 42,
                 'result': 'success',
@@ -124,7 +123,7 @@ class OpenAPIToolsTest(ZulipTestCase):
                                             TEST_METHOD,
                                             TEST_RESPONSE_SUCCESS)
 
-        with self.assertRaises(SchemaError,
+        with self.assertRaises(ValidationError,
                                msg='Expected to find the "msg" required key'):
             bad_content = {
                 'result': 'success',
@@ -145,26 +144,6 @@ class OpenAPIToolsTest(ZulipTestCase):
                                         TEST_RESPONSE_SUCCESS)
 
         # Overwrite the exception list with a mocked one
-        exclude_properties = openapi.EXCLUDE_PROPERTIES
-        openapi.EXCLUDE_PROPERTIES = {
-            TEST_ENDPOINT: {
-                TEST_METHOD: {
-                    TEST_RESPONSE_SUCCESS: ['foo'],
-                },
-            },
-        }
-        try:
-            good_content = {
-                'msg': '',
-                'result': 'success',
-                'foo': 'bar',
-            }
-            validate_against_openapi_schema(good_content,
-                                            TEST_ENDPOINT,
-                                            TEST_METHOD,
-                                            TEST_RESPONSE_SUCCESS)
-        finally:
-            openapi.EXCLUDE_PROPERTIES = exclude_properties
         test_dict: Dict[str, Any] = {}
 
         # Check that validate_against_openapi_schema correctly
@@ -181,14 +160,14 @@ class OpenAPIToolsTest(ZulipTestCase):
             validate_against_openapi_schema((test_dict['test1']['responses']['200']['content']
                                             ['application/json']['example']),
                                             'testing', 'test1', '200')
-            with self.assertRaises(SchemaError, msg = 'Extraneous key "str4" in response\'s content'):
+            with self.assertRaises(ValidationError, msg = 'Extraneous key "str4" in response\'s content'):
                 validate_against_openapi_schema((test_dict['test2']['responses']['200']
                                                 ['content']['application/json']['example']),
                                                 'testing', 'test2', '200')
             with self.assertRaises(SchemaError, msg = 'Opaque object "obj"'):
-                validate_against_openapi_schema((test_dict['test3']['responses']['200']
-                                                ['content']['application/json']['example']),
-                                                'testing', 'test3', '200')
+                # Checks for opaque objects
+                validate_schema((test_dict['test3']['responses']['200']
+                                ['content']['application/json']['schema']))
         finally:
             openapi_spec.spec()['paths'].pop('testing', None)
 
@@ -1032,7 +1011,13 @@ class TestCurlExampleGeneration(ZulipTestCase):
 
 class OpenAPIAttributesTest(ZulipTestCase):
     def test_attributes(self) -> None:
-        EXCLUDE = ["/real-time"]
+        """
+        Checks:
+        * All endpoints have `operationId` and `tag` attributes.
+        * All example responses match their schema.
+        * That no opaque object exists.
+        """
+        EXCLUDE = ["/real-time", "/register", "/events"]
         VALID_TAGS = ["users", "server_and_organizations", "authentication",
                       "real_time_events", "streams", "messages", "users",
                       "webhooks"]
@@ -1052,10 +1037,12 @@ class OpenAPIAttributesTest(ZulipTestCase):
                     if 'oneOf' in response_schema:
                         cnt = 0
                         for entry in response_schema['oneOf']:
+                            validate_schema(entry)
                             assert(validate_against_openapi_schema(entry['example'], path,
                                                                    method, response + '_' + str(cnt)))
                             cnt += 1
                         continue
+                    validate_schema(response_schema)
                     assert(validate_against_openapi_schema(response_schema['example'], path,
                                                            method, response))
 
