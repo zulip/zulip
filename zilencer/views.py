@@ -1,6 +1,6 @@
 import datetime
 import logging
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
@@ -15,7 +15,11 @@ from analytics.lib.counts import COUNT_STATS
 from zerver.decorator import InvalidZulipServerKeyError, require_post
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
+    EncryptedData,
+    EncryptedPayload,
+    send_android_encrypted_push_notification,
     send_android_push_notification,
+    send_apple_encrypted_push_notification,
     send_apple_push_notification,
 )
 from zerver.lib.request import REQ, has_request_variables
@@ -54,6 +58,20 @@ def validate_bouncer_token_request(entity: Union[UserProfile, RemoteZulipServer]
     server = validate_entity(entity)
     validate_token(token, kind)
     return server
+
+def prepare_encrypted_data(devices: List[RemotePushDeviceToken],
+                           payload: EncryptedPayload) -> Tuple[EncryptedData, EncryptedData]:
+    device_map = {d.token: d for d in devices}
+    encrypted_android_data = []
+    encrypted_apple_data = []
+    for token, data in payload:
+        if token in device_map:
+            if device_map[token].kind == RemotePushDeviceToken.GCM:
+                encrypted_android_data.append((device_map[token], data))
+            else:
+                encrypted_apple_data.append((device_map[token], data))
+
+    return encrypted_android_data, encrypted_apple_data
 
 @csrf_exempt
 @require_post
@@ -102,6 +120,7 @@ def register_remote_server(
 def register_remote_push_device(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
                                 user_id: int=REQ(validator=check_int), token: str=REQ(),
                                 token_kind: int=REQ(validator=check_int),
+                                encrypt_notifications: bool=REQ(default=False, validator=check_bool),
                                 ios_app_id: Optional[str]=None) -> HttpResponse:
     server = validate_bouncer_token_request(entity, token, token_kind)
 
@@ -112,6 +131,7 @@ def register_remote_push_device(request: HttpRequest, entity: Union[UserProfile,
                 server=server,
                 kind=token_kind,
                 token=token,
+                encrypt_notifications=encrypt_notifications,
                 ios_app_id=ios_app_id,
                 # last_updated is to be renamed to date_created.
                 last_updated=timezone.now())
@@ -153,6 +173,7 @@ def remote_server_notify_push(request: HttpRequest, entity: Union[UserProfile, R
     gcm_payload = payload['gcm_payload']
     apns_payload = payload['apns_payload']
     gcm_options = payload.get('gcm_options', {})
+    encrypted_payloads = payload['encrypted_payloads']
 
     android_devices = list(RemotePushDeviceToken.objects.filter(
         user_id=user_id,
@@ -166,9 +187,18 @@ def remote_server_notify_push(request: HttpRequest, entity: Union[UserProfile, R
         server=server,
     ))
 
-    send_android_push_notification(android_devices, gcm_payload, gcm_options, remote=True)
+    encrypted_android_data, encrypted_apple_data = prepare_encrypted_data(android_devices + apple_devices,
+                                                                          encrypted_payloads)
 
-    send_apple_push_notification(user_id, apple_devices, apns_payload, remote=True)
+    unencrypted_android_devices = [d for d in android_devices if not d.encrypt_notifications]
+    send_android_push_notification(unencrypted_android_devices, gcm_payload, gcm_options, remote=True)
+
+    unencrypted_apple_devices = [d for d in apple_devices if not d.encrypt_notifications]
+    send_apple_push_notification(user_id, unencrypted_apple_devices, apns_payload, remote=True)
+
+    send_android_encrypted_push_notification(encrypted_android_data, gcm_options, remote=True)
+
+    send_apple_encrypted_push_notification(user_id, encrypted_apple_data, remote=True)
 
     return json_success()
 

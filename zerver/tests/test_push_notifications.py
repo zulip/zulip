@@ -362,13 +362,17 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
             tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id, token=token,
                                                                server=server))
+            push_device_tokens = list(PushDeviceToken.objects.filter(user_id=user.id,
+                                                                     token=token))
             self.assertEqual(len(tokens), 1)
+            self.assertEqual(len(push_device_tokens), 1)
             self.assertEqual(tokens[0].token, token)
 
         # User should have tokens for both devices now.
         tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id,
                                                            server=server))
         self.assertEqual(len(tokens), 2)
+        self.assertEqual(PushDeviceToken.objects.filter(user_id=user.id).count(), 2)
 
         # Remove tokens
         for endpoint, token, kind in endpoints:
@@ -378,7 +382,10 @@ class PushBouncerNotificationTest(BouncerTestCase):
             self.assert_json_success(result)
             tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id, token=token,
                                                                server=server))
+            push_device_token_count = PushDeviceToken.objects.filter(
+                user_id=user.id, token=token).count()
             self.assertEqual(len(tokens), 0)
+            self.assertEqual(push_device_token_count, 0)
 
         # Re-add copies of those tokens
         for endpoint, token, kind in endpoints:
@@ -720,11 +727,28 @@ class HandlePushNotificationTest(PushNotificationTest):
             message=message,
         )
 
+        # Add an encryption-enabled device to local and remote server.
+        PushDeviceToken.objects.create(
+            kind=PushDeviceToken.GCM,
+            token=hex_to_b64('eeee'),
+            user=self.user_profile,
+            notification_encryption_key=generate_encryption_key()
+        )
+
+        RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.GCM,
+            token=hex_to_b64('eeee'),
+            user_id=self.user_profile.id,
+            encrypt_notifications=True,
+            server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
+        )
+
         missed_message = {
             'message_id': message.id,
             'trigger': 'private_message',
         }
-        with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=''), \
+        with self.settings(PUSH_NOTIFICATION_BOUNCER_URL='',
+                           PUSH_NOTIFICATION_ENCRYPTION=True), \
                 mock.patch('zerver.lib.remote_server.requests.request',
                            side_effect=self.bounce_request), \
                 mock.patch('zerver.lib.push_notifications.gcm_client') as mock_gcm, \
@@ -741,8 +765,10 @@ class HandlePushNotificationTest(PushNotificationTest):
                 for device in RemotePushDeviceToken.objects.filter(
                     kind=PushDeviceToken.GCM)
             ]
-            mock_gcm.json_request.return_value = {
-                'success': {gcm_devices[0][2]: message.id}}
+            mock_gcm.json_request.side_effect = [
+                {'success': {gcm_devices[0][2]: message.id}},
+                {'success': {gcm_devices[1][2]: message.id}},
+            ]
             mock_apns.get_notification_result.return_value = 'Success'
             handle_push_notification(self.user_profile.id, missed_message)
             for _, _, token in apns_devices:
@@ -918,23 +944,44 @@ class HandlePushNotificationTest(PushNotificationTest):
             message=message,
         )
 
+        token = hex_to_b64(u'aaaa')
+        PushDeviceToken.objects.create(
+            kind=PushDeviceToken.GCM,
+            token=token,
+            user=user_profile,
+        )
+
+        token = hex_to_b64(u'eeee')
+        PushDeviceToken.objects.create(
+            kind=PushDeviceToken.GCM,
+            token=token,
+            user=user_profile,
+            notification_encryption_key=generate_encryption_key()
+        )
+
         missed_message = {
             'message_id': message.id,
             'trigger': 'private_message',
         }
-        with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=True), \
+        with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=True,
+                           PUSH_NOTIFICATION_ENCRYPTION=True), \
                 mock.patch('zerver.lib.push_notifications.get_message_payload_apns',
                            return_value={'apns': True}), \
                 mock.patch('zerver.lib.push_notifications.get_message_payload_gcm',
                            return_value=({'gcm': True}, {})), \
+                mock.patch('zerver.lib.push_notifications.encrypt_payload',
+                           return_value={'encrypted': True}), \
                 mock.patch('zerver.lib.push_notifications'
                            '.send_notifications_to_bouncer') as mock_send:
             handle_push_notification(user_profile.id, missed_message)
-            mock_send.assert_called_with(user_profile.id,
-                                         {'apns': True},
-                                         {'gcm': True},
-                                         {},
-                                         )
+            mock_send.assert_any_call(user_profile.id,
+                                      {'apns': True},
+                                      {'gcm': True},
+                                      {},
+                                      [(token, {'encrypted': True})]
+                                      )
+
+            self.assertEqual(mock_send.call_count, 1)
 
     def test_non_bouncer_push(self) -> None:
         self.setup_apns_tokens()
@@ -1732,6 +1779,7 @@ class TestSendNotificationsToBouncer(ZulipTestCase):
             'apns_payload': {'apns': True},
             'gcm_payload': {'gcm': True},
             'gcm_options': {},
+            'encrypted_payloads': None,
         }
         mock_send.assert_called_with('POST',
                                      'push/notify',

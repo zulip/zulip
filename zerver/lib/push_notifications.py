@@ -358,15 +358,19 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
 def uses_notification_bouncer() -> bool:
     return settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
 
+EncryptedPayload = List[Tuple[str, Dict[str, Any]]]
+
 def send_notifications_to_bouncer(user_profile_id: int,
                                   apns_payload: Dict[str, Any],
                                   gcm_payload: Dict[str, Any],
-                                  gcm_options: Dict[str, Any]) -> None:
+                                  gcm_options: Dict[str, Any],
+                                  encrypted_payloads: Optional[EncryptedPayload]=None) -> None:
     post_data = {
         'user_id': user_profile_id,
         'apns_payload': apns_payload,
         'gcm_payload': gcm_payload,
         'gcm_options': gcm_options,
+        'encrypted_payloads': encrypted_payloads,
     }
     # Calls zilencer.views.remote_server_notify_push
     send_json_to_push_bouncer('POST', 'push/notify', post_data)
@@ -423,6 +427,7 @@ def add_push_device_token(user_profile: UserProfile,
             'user_id': user_profile.id,
             'token': token_str,
             'token_kind': kind,
+            'encrypt_notifications': orjson.dumps(encrypt_notifications).decode('utf-8'),
         }
 
         if kind == PushDeviceToken.APNS:
@@ -876,11 +881,14 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     encrypted_apns_data = [(device, encrypt_payload(apns_payload, device.notification_encryption_key))  # type: ignore[arg-type] # encrypted device's key is never null
                            for device in encrypted_apple_devices]
 
+    encrypted_payloads = [(device.token, content) for device, content in encrypted_gcm_data + encrypted_apns_data]
+
     if uses_notification_bouncer():
         send_notifications_to_bouncer(user_profile_id,
                                       apns_payload,
                                       gcm_payload,
-                                      gcm_options)
+                                      gcm_options,
+                                      encrypted_payloads)
         return
 
     send_apple_push_notification(user_profile.id, unencrypted_apple_devices, apns_payload)
