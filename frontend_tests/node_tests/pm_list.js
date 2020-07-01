@@ -10,9 +10,7 @@ set_global('stream_popover', {
 set_global('unread', {});
 set_global('unread_ui', {});
 set_global('vdom', {
-    render: () => {
-        return 'fake-dom-for-pm-list';
-    },
+    render: () => 'fake-dom-for-pm-list',
 });
 set_global('pm_list_dom', {});
 
@@ -196,14 +194,12 @@ run_test('get_active_user_ids_string', () => {
         undefined);
 
     function set_filter_result(emails) {
-        narrow_state.filter = () => {
-            return {
-                operands: (operand) => {
-                    assert.equal(operand, 'pm-with');
-                    return emails;
-                },
-            };
-        };
+        narrow_state.filter = () => ({
+            operands: (operand) => {
+                assert.equal(operand, 'pm-with');
+                return emails;
+            },
+        });
     }
 
     set_filter_result([]);
@@ -224,14 +220,12 @@ run_test('is_all_privates', () => {
         pm_list.is_all_privates(),
         false);
 
-    narrow_state.filter = () => {
-        return {
-            operands: (operand) => {
-                assert.equal(operand, 'is');
-                return ['private', 'starred'];
-            },
-        };
-    };
+    narrow_state.filter = () => ({
+        operands: (operand) => {
+            assert.equal(operand, 'is');
+            return ['private', 'starred'];
+        },
+    });
 
     assert.equal(
         pm_list.is_all_privates(),
@@ -240,9 +234,7 @@ run_test('is_all_privates', () => {
 
 function with_fake_list(f) {
     const orig = pm_list._build_private_messages_list;
-    pm_list._build_private_messages_list = () => {
-        return 'PM_LIST_CONTENTS';
-    };
+    pm_list._build_private_messages_list = () => 'PM_LIST_CONTENTS';
     f();
     pm_list._build_private_messages_list = orig;
 }

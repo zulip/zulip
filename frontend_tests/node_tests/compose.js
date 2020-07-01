@@ -1706,7 +1706,7 @@ run_test('nonexistent_stream_reply_error', () => {
 });
 
 run_test('narrow_button_titles', () => {
-    util.is_mobile = () => { return false; };
+    util.is_mobile = () => false;
 
     compose.update_closed_compose_buttons_for_private();
     assert.equal($("#left_bar_compose_stream_button_big").text(), i18n.t("New stream message"));

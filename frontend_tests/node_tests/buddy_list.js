@@ -183,9 +183,7 @@ run_test('find_li w/force_render', () => {
     assert.equal(li, stub_li);
     assert(shown);
 
-    buddy_list.get_li_from_key = () => {
-        return {length: 0};
-    };
+    buddy_list.get_li_from_key = () => ({length: 0});
 
     const undefined_li = buddy_list.find_li({
         key: 'not-there',

@@ -75,9 +75,7 @@ exports.make_zblueslip = function () {
         }
     };
 
-    lib.get_test_logs = (name) => {
-        return lib.test_logs[name];
-    };
+    lib.get_test_logs = (name) => lib.test_logs[name];
 
     // Create logging functions
     for (const name of names) {
@@ -113,13 +111,9 @@ exports.make_zblueslip = function () {
         return ex.message;
     };
 
-    lib.start_timing = () => {
-        return () => {};
-    };
+    lib.start_timing = () => () => {};
 
-    lib.preview_node = (node) => {
-        return 'node:' + node;
-    };
+    lib.preview_node = (node) => 'node:' + node;
 
     return lib;
 };

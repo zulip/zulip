@@ -9,9 +9,7 @@ run_test('basics', () => {
         bar: schema.check_string,
     };
 
-    const check_rec = (val) => {
-        return schema.check_record('my_rec', val, fields);
-    };
+    const check_rec = (val) => schema.check_record('my_rec', val, fields);
 
     assert.equal(
         check_rec({foo: 'apple', bar: 'banana'}),
@@ -38,9 +36,7 @@ run_test('basics', () => {
         'in my_rec bar is not a string'
     );
 
-    const check_array = (val) => {
-        return schema.check_array('lst', val, schema.check_string);
-    };
+    const check_array = (val) => schema.check_array('lst', val, schema.check_string);
 
     assert.equal(
         check_array(['foo', 'bar']),

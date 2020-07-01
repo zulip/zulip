@@ -852,9 +852,7 @@ run_test('get_people_for_search_bar', () => {
 
     assert.equal(big_results.length, 20);
 
-    message_store.user_ids = () => {
-        return [1001, 1002, 1003, 1004, 1005, 1006];
-    };
+    message_store.user_ids = () => [1001, 1002, 1003, 1004, 1005, 1006];
 
     const small_results = people.get_people_for_search_bar('Jones');
 
@@ -1123,13 +1121,11 @@ run_test('get_visible_email', function () {
 });
 
 run_test('get_active_message_people', function () {
-    message_store.user_ids = () => {
-        return [
-            steven.user_id,
-            maria.user_id,
-            alice1.user_id,
-        ];
-    };
+    message_store.user_ids = () => [
+        steven.user_id,
+        maria.user_id,
+        alice1.user_id,
+    ];
 
     people.add_active_user(steven);
     people.add_active_user(maria);

@@ -8,46 +8,36 @@ set_global('hashchange', {
     exit_overlay: noop,
 });
 set_global('stream_data', {
-    get_sub_by_id: () => {
-        return {
-            color: "",
-            invite_only: false,
-            is_web_public: true,
-        };
-    },
-    is_muted: () => {
+    get_sub_by_id: () => ({
+        color: "",
+        invite_only: false,
+        is_web_public: true,
+    }),
+    is_muted: () =>
         // We only test via muted topics for now.
         // TODO: Make muted streams and test them.
-        return false;
-    },
+        false
+    ,
 });
 set_global('overlays', {
     open_overlay: (opts) => {
         overlays.close_callback = opts.on_close;
     },
-    recent_topics_open: () => {
-        return true;
-    },
+    recent_topics_open: () => true,
 });
 set_global('people', {
     is_my_user_id: function (id) {
         return id === 1;
     },
-    sender_info_with_small_avatar_urls_for_sender_ids: (ids) => {
-        return ids;
-    },
+    sender_info_with_small_avatar_urls_for_sender_ids: (ids) => ids,
 });
 set_global('XDate', zrequire('XDate', 'xdate'));
 set_global('timerender', {
-    last_seen_status_from_date: () => {
-        return "Just now";
-    },
-    get_full_datetime: () => {
-        return {
-            date: "date",
-            time: "time",
-        };
-    },
+    last_seen_status_from_date: () => "Just now",
+    get_full_datetime: () => ({
+        date: "date",
+        time: "time",
+    }),
 });
 set_global('unread', {
     unread_topic_counter: {
@@ -61,15 +51,11 @@ set_global('unread', {
     },
 });
 set_global('hash_util', {
-    by_stream_uri: () => {
-        return "https://www.example.com";
-    },
-    by_stream_topic_uri: () => {
-        return "https://www.example.com";
-    },
+    by_stream_uri: () => "https://www.example.com",
+    by_stream_topic_uri: () => "https://www.example.com",
 });
 set_global('recent_senders', {
-    get_topic_recent_senders: () => { return [1, 2]; },
+    get_topic_recent_senders: () => [1, 2],
 });
 set_global('list_render', {
     modifier: noop,
@@ -93,9 +79,7 @@ set_global('list_render', {
         return list_render;
     },
     hard_redraw: noop,
-    render_item: (item) => {
-        return list_render.modifier(item);
-    },
+    render_item: (item) => list_render.modifier(item),
 });
 
 // Custom Data
@@ -142,9 +126,7 @@ set_global('message_list', {
     },
 });
 set_global('message_store', {
-    get: (msg_id) => {
-        return messages[msg_id - 1];
-    },
+    get: (msg_id) => messages[msg_id - 1],
 });
 
 let id = 0;

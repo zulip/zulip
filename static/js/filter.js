@@ -665,9 +665,7 @@ Filter.prototype = {
     },
 
     _fix_redundant_is_private: function (terms) {
-        const is_pm_with = (term) => {
-            return Filter.term_type(term) === 'pm-with';
-        };
+        const is_pm_with = (term) => Filter.term_type(term) === 'pm-with';
 
         if (!terms.some(is_pm_with)) {
             return terms;

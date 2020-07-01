@@ -102,13 +102,9 @@ run_test('attribute updates', () => {
 });
 
 function make_child(i, name) {
-    const render = () => {
-        return '<li>' + name + '</li>';
-    };
+    const render = () => '<li>' + name + '</li>';
 
-    const eq = (other) => {
-        return name === other.name;
-    };
+    const eq = (other) => name === other.name;
 
     return {
         key: i,
@@ -207,22 +203,18 @@ run_test('partial updates', () => {
 
     let patched_html;
 
-    find = () => {
-        return {
-            children: () => {
+    find = () => ({
+        children: () => ({
+            eq: (i) => {
+                assert.equal(i, 0);
                 return {
-                    eq: (i) => {
-                        assert.equal(i, 0);
-                        return {
-                            replaceWith: (html) => {
-                                patched_html = html;
-                            },
-                        };
+                    replaceWith: (html) => {
+                        patched_html = html;
                     },
                 };
             },
-        };
-    };
+        }),
+    });
 
     const new_nodes = make_children([1, 2, 3]);
     new_nodes[0] = make_child(1, 'modified1');

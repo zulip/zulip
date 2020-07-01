@@ -63,11 +63,9 @@ const me = {
 };
 
 const target = $.create('click target');
-target.offset = () => {
-    return {
-        top: 10,
-    };
-};
+target.offset = () => ({
+    top: 10,
+});
 
 const e = {
     stopPropagation: noop,
@@ -87,14 +85,12 @@ function make_image_stubber() {
 
     function stub_image() {
         const image = {};
-        image.to_$ = () => {
-            return {
-                on: (name, f) => {
-                    assert.equal(name, "load");
-                    image.load_f = f;
-                },
-            };
-        };
+        image.to_$ = () => ({
+            on: (name, f) => {
+                assert.equal(name, "load");
+                image.load_f = f;
+            },
+        });
         images.push(image);
         return image;
     }

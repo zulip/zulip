@@ -718,9 +718,7 @@ run_test('refresh_pin', () => {
     const li_stub = $.create('li stub');
     li_stub.length = 0;
 
-    global.stub_templates(() => {
-        return {to_$: () => li_stub};
-    });
+    global.stub_templates(() => ({to_$: () => li_stub}));
 
     stream_list.update_count_in_dom = noop;
     $('#stream_filters').append = noop;

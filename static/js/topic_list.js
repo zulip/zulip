@@ -55,13 +55,9 @@ exports.zoom_out = function () {
 };
 
 exports.keyed_topic_li = (convo) => {
-    const render = () => {
-        return render_topic_list_item(convo);
-    };
+    const render = () => render_topic_list_item(convo);
 
-    const eq = (other) => {
-        return _.isEqual(convo, other.convo);
-    };
+    const eq = (other) => _.isEqual(convo, other.convo);
 
     const key = 't:' + convo.topic_name;
 
@@ -74,16 +70,12 @@ exports.keyed_topic_li = (convo) => {
 };
 
 exports.more_li = (more_topics_unreads) => {
-    const render = () => {
-        return render_more_topics({
-            more_topics_unreads: more_topics_unreads,
-        });
-    };
+    const render = () => render_more_topics({
+        more_topics_unreads: more_topics_unreads,
+    });
 
-    const eq = (other) => {
-        return other.more_items &&
+    const eq = (other) => other.more_items &&
             more_topics_unreads === other.more_topics_unreads;
-    };
 
     const key = 'more';
 
@@ -97,13 +89,9 @@ exports.more_li = (more_topics_unreads) => {
 };
 
 exports.spinner_li = () => {
-    const render = () => {
-        return render_more_topics_spinner();
-    };
+    const render = () => render_more_topics_spinner();
 
-    const eq = (other) => {
-        return other.spinner;
-    };
+    const eq = (other) => other.spinner;
 
     const key = 'more';
 

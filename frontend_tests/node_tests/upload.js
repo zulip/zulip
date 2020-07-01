@@ -436,23 +436,17 @@ run_test('uppy_events', () => {
             on: (event_name, callback) => {
                 callbacks[event_name] = callback;
             },
-            getFiles: () => {
-                return [...files];
-            },
+            getFiles: () => [...files],
             removeFile: (file_id) => {
-                files = files.filter((file) => {
-                    return file.id !== file_id;
-                });
+                files = files.filter((file) => file.id !== file_id);
             },
-            getState: () => {
-                return {
-                    info: {
-                        type: state.type,
-                        details: state.details,
-                        message: state.message,
-                    },
-                };
-            },
+            getState: () => ({
+                info: {
+                    type: state.type,
+                    details: state.details,
+                    message: state.message,
+                },
+            }),
         };
     }
     uppy_stub.Plugin = plugin_stub;

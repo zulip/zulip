@@ -16,12 +16,10 @@ exports.eq_array = (a, b, eq) => {
     return a.every((item, i) => eq(item, b[i]));
 };
 
-exports.ul = (opts) => {
-    return {
-        tag_name: 'ul',
-        opts: opts,
-    };
-};
+exports.ul = (opts) => ({
+    tag_name: 'ul',
+    opts: opts,
+});
 
 exports.render_tag = (tag) => {
     /*

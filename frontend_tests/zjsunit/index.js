@@ -17,9 +17,7 @@ const _ = global._;
 
 // Create a helper function to avoid sneaky delays in tests.
 function immediate(f) {
-    return () => {
-        return f();
-    };
+    return () => f();
 }
 
 // Find the files we need to run.

@@ -45,9 +45,7 @@ exports.get_filtered_items = (value, list, opts) => {
         return opts.filter.filterer(list, value);
     }
 
-    const predicate = (item) => {
-        return opts.filter.predicate(item, value);
-    };
+    const predicate = (item) => opts.filter.predicate(item, value);
 
     if (get_item) {
         const result = [];
@@ -65,32 +63,28 @@ exports.get_filtered_items = (value, list, opts) => {
     return list.filter(predicate);
 };
 
-exports.alphabetic_sort = (prop) => {
-    return function (a, b) {
-        // The conversion to uppercase helps make the sorting case insensitive.
-        const str1 = a[prop].toUpperCase();
-        const str2 = b[prop].toUpperCase();
+exports.alphabetic_sort = (prop) => function (a, b) {
+    // The conversion to uppercase helps make the sorting case insensitive.
+    const str1 = a[prop].toUpperCase();
+    const str2 = b[prop].toUpperCase();
 
-        if (str1 === str2) {
-            return 0;
-        } else if (str1 > str2) {
-            return 1;
-        }
+    if (str1 === str2) {
+        return 0;
+    } else if (str1 > str2) {
+        return 1;
+    }
 
-        return -1;
-    };
+    return -1;
 };
 
-exports.numeric_sort = (prop) => {
-    return function (a, b) {
-        if (parseFloat(a[prop]) > parseFloat(b[prop])) {
-            return 1;
-        } else if (parseFloat(a[prop]) === parseFloat(b[prop])) {
-            return 0;
-        }
+exports.numeric_sort = (prop) => function (a, b) {
+    if (parseFloat(a[prop]) > parseFloat(b[prop])) {
+        return 1;
+    } else if (parseFloat(a[prop]) === parseFloat(b[prop])) {
+        return 0;
+    }
 
-        return -1;
-    };
+    return -1;
 };
 
 exports.valid_filter_opts = (opts) => {

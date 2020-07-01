@@ -150,16 +150,14 @@ run_test('basics', () => {
 
     const row = {
         length: 1,
-        offset: () => { return {top: 25}; },
+        offset: () => ({top: 25}),
     };
 
-    current_msg_list.selected_id = () => { return -1; };
-    current_msg_list.get_row = () => { return row; };
+    current_msg_list.selected_id = () => -1;
+    current_msg_list.get_row = () => row;
 
     message_list.all = {
-        all_messages: () => {
-            return messages;
-        },
+        all_messages: () => messages,
         get: (msg_id) => {
             assert.equal(msg_id, selected_id);
             return selected_message;
@@ -170,12 +168,8 @@ run_test('basics', () => {
             },
         },
         empty: () => false,
-        first: () => {
-            return {id: 900};
-        },
-        last: () => {
-            return {id: 1100};
-        },
+        first: () => ({id: 900}),
+        last: () => ({id: 1100}),
     };
 
     let cont;
@@ -214,9 +208,9 @@ run_test('basics', () => {
         'tab_bar.initialize',
     ]);
 
-    current_msg_list.selected_id = () => { return -1; };
-    current_msg_list.get_row = () => { return row; };
-    util.sorted_ids = () => { return []; };
+    current_msg_list.selected_id = () => -1;
+    current_msg_list.get_row = () => row;
+    util.sorted_ids = () => [];
 
     narrow.activate([{ operator: 'is', operand: 'private' }], {
         then_select_id: selected_id,

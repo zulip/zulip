@@ -198,9 +198,7 @@ run_test('filtering', () => {
     const opts = {
         filter: {
             element: search_input,
-            predicate: (item, value) => {
-                return item.includes(value);
-            },
+            predicate: (item, value) => item.includes(value),
         },
         modifier: (item) => div(item),
     };
@@ -294,9 +292,7 @@ function sort_button(opts) {
         addClass: (cls) => {
             classList.add(cls);
         },
-        hasClass: (cls) => {
-            return classList.has(cls);
-        },
+        hasClass: (cls) => classList.has(cls),
         removeClass: (cls) => {
             classList.delete(cls);
         },
@@ -332,11 +328,7 @@ run_test('wire up filter element', () => {
 
     const opts = {
         filter: {
-            filterer: (list, value) => {
-                return list.filter((item) => {
-                    return item.toLowerCase().includes(value);
-                });
-            },
+            filterer: (list, value) => list.filter((item) => item.toLowerCase().includes(value)),
             element: filter_element,
         },
         modifier: (s) => '(' + s + ')',
@@ -372,9 +364,7 @@ run_test('sorting', () => {
     const opts = {
         name: 'sorting-list',
         parent_container: sort_container,
-        modifier: (item) => {
-            return div(item.name) + div(item.salary);
-        },
+        modifier: (item) => div(item.name) + div(item.salary),
         filter: {
             predicate: () => true,
         },
@@ -698,9 +688,7 @@ run_test('opts.get_item', () => {
         ['one', 'two', 'three', 'four']
     );
 
-    const predicate = (item, value) => {
-        return item.startsWith(value);
-    };
+    const predicate = (item, value) => item.startsWith(value);
 
     const predicate_opts = {
         get_item: (n) => items[n],
@@ -719,11 +707,7 @@ run_test('opts.get_item', () => {
     const filterer_opts = {
         get_item: (n) => items[n],
         filter: {
-            filterer: (items, value) => {
-                return items.filter((item) => {
-                    return predicate(item, value);
-                });
-            },
+            filterer: (items, value) => items.filter((item) => predicate(item, value)),
         },
     };
 
@@ -821,9 +805,7 @@ run_test('render item', () => {
     let rendering_item = false;
     const widget_3 = list_render.create(container, list, {
         name: 'replace-list',
-        modifier: (item) => {
-            return rendering_item ? undefined : `${item}\n`;
-        },
+        modifier: (item) => rendering_item ? undefined : `${item}\n`,
         get_item: get_item,
         html_selector: (item) => `tr[data-item='${item}']`,
     });

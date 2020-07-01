@@ -442,13 +442,9 @@ exports.get_pm_people = function (query) {
 exports.get_person_suggestions = function (query, opts) {
     query = typeahead.clean_query_lowercase(query);
 
-    const person_matcher = (item) => {
-        return exports.query_matches_person(query, item);
-    };
+    const person_matcher = (item) => exports.query_matches_person(query, item);
 
-    const group_matcher = (item) => {
-        return query_matches_name_description(query, item);
-    };
+    const group_matcher = (item) => query_matches_name_description(query, item);
 
     function filter_persons(all_persons) {
         let persons;

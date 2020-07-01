@@ -88,17 +88,11 @@ run_test("initialize", () => {
         assert.equal(schedule, "monthly");
     };
 
-    $('input[type=radio][name=license_management]:checked').val = () => {
-        return document.querySelector("input[type=radio][name=license_management]:checked").value;
-    };
+    $('input[type=radio][name=license_management]:checked').val = () => document.querySelector("input[type=radio][name=license_management]:checked").value;
 
-    $('input[type=radio][name=schedule]:checked').val = () => {
-        return document.querySelector("input[type=radio][name=schedule]:checked").value;
-    };
+    $('input[type=radio][name=schedule]:checked').val = () => document.querySelector("input[type=radio][name=schedule]:checked").value;
 
-    $("#autopay-form").data = (key) => {
-        return document.querySelector("#autopay-form").getAttribute("data-" + key);
-    };
+    $("#autopay-form").data = (key) => document.querySelector("#autopay-form").getAttribute("data-" + key);
 
     jquery_init();
 
@@ -110,16 +104,12 @@ run_test("initialize", () => {
     const invoice_click_handler = $('#invoice-button').get_on_handler('click');
     const request_sponsorship_click_handler = $('#sponsorship-button').get_on_handler('click');
 
-    helpers.is_valid_input = () => {
-        return true;
-    };
+    helpers.is_valid_input = () => true;
 
     add_card_click_handler(e);
     invoice_click_handler(e);
 
-    helpers.is_valid_input = () => {
-        return false;
-    };
+    helpers.is_valid_input = () => false;
     add_card_click_handler(e);
     invoice_click_handler(e);
 

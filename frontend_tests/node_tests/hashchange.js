@@ -152,9 +152,7 @@ function test_helper() {
         assert_events: (expected_events) => {
             assert.deepEqual(expected_events, events);
         },
-        get_narrow_terms: () => {
-            return narrow_terms;
-        },
+        get_narrow_terms: () => narrow_terms,
     };
 }
 

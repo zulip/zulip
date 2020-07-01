@@ -13,11 +13,9 @@ set_global('ui_util', {
     place_caret_at_end: noop,
 });
 
-set_global('getSelection', () => {
-    return {
-        anchorOffset: 0,
-    };
-});
+set_global('getSelection', () => ({
+    anchorOffset: 0,
+}));
 
 let id_seq = 0;
 run_test('set_up_ids', () => {
@@ -240,20 +238,16 @@ run_test('arrows on pills', () => {
     let next_focused = false;
 
     const pill_stub = {
-        prev: () => {
-            return {
-                focus: () => {
-                    prev_focused = true;
-                },
-            };
-        },
-        next: () => {
-            return {
-                focus: () => {
-                    next_focused = true;
-                },
-            };
-        },
+        prev: () => ({
+            focus: () => {
+                prev_focused = true;
+            },
+        }),
+        next: () => ({
+            focus: () => {
+                next_focused = true;
+            },
+        }),
     };
 
     container.set_find_results('.pill:focus', pill_stub);
@@ -282,13 +276,11 @@ run_test('left arrow on input', () => {
     let last_pill_focused = false;
 
     container.set_find_results('.pill', {
-        last: () => {
-            return {
-                focus: () => {
-                    last_pill_focused = true;
-                },
-            };
-        },
+        last: () => ({
+            focus: () => {
+                last_pill_focused = true;
+            },
+        }),
     });
 
     key_handler({
@@ -498,14 +490,12 @@ run_test('exit button on pill', () => {
     };
 
     const exit_button_stub = {
-        to_$: () => {
-            return {
-                closest: (sel) => {
-                    assert.equal(sel, '.pill');
-                    return curr_pill_stub;
-                },
-            };
-        },
+        to_$: () => ({
+            closest: (sel) => {
+                assert.equal(sel, '.pill');
+                return curr_pill_stub;
+            },
+        }),
     };
 
     const e = {
@@ -538,14 +528,12 @@ run_test('misc things', () => {
     let shake_class_removed = false;
 
     const input_stub = {
-        to_$: () => {
-            return {
-                removeClass: (cls) => {
-                    assert.equal(cls, 'shake');
-                    shake_class_removed = true;
-                },
-            };
-        },
+        to_$: () => ({
+            removeClass: (cls) => {
+                assert.equal(cls, 'shake');
+                shake_class_removed = true;
+            },
+        }),
     };
 
     animation_end_handler.call(input_stub);

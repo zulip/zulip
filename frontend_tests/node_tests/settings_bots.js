@@ -116,9 +116,7 @@ function set_up() {
 
     $('#config_inputbox').children = () => {
         const mock_children = {
-            hide: () => {
-                return;
-            },
+            hide: () => {},
         };
         return mock_children;
     };

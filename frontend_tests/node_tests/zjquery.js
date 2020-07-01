@@ -212,8 +212,8 @@ run_test('extensions', () => {
     // using direct syntax:
 
     const rect = $.create('rectangle');
-    rect.width = () => { return 5; };
-    rect.height = () => { return 7; };
+    rect.width = () => 5;
+    rect.height = () => 7;
 
     assert.equal(rect.width(), 5);
     assert.equal(rect.height(), 7);

@@ -18,9 +18,7 @@ const with_overrides = global.with_overrides; // make lint happy
 
 function accept_all_filter() {
     const filter = {
-        predicate: () => {
-            return () => true;
-        },
+        predicate: () => () => true,
     };
 
     return filter;
