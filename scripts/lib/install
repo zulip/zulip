@@ -362,6 +362,8 @@ EOF
                  --classfile=/var/lib/puppet/classes.txt \
                  >/dev/null
 
+    # We only need the postgres version setting on database hosts; but
+    # we don't know if this is a database host until we have the catalog summary.
     if ! has_class "zulip::postgres_common" || [ "$package_system" != apt ]; then
         crudini --del /etc/zulip/zulip.conf postgresql
     fi
