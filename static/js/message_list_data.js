@@ -43,7 +43,7 @@ MessageListData.prototype = {
         if (this._selected_id === -1) {
             return;
         }
-        const ids = this._items.map(message => message.id);
+        const ids = this._items.map((message) => message.id);
 
         const i = ids.indexOf(this._selected_id);
         if (i === -1) {
@@ -158,7 +158,7 @@ MessageListData.prototype = {
     valid_non_duplicated_messages: function (messages) {
         const predicate = this._get_predicate();
         const self = this;
-        return messages.filter(msg => self.get(msg.id) === undefined && predicate(msg));
+        return messages.filter((msg) => self.get(msg.id) === undefined && predicate(msg));
     },
 
     filter_incoming: function (messages) {
@@ -168,7 +168,7 @@ MessageListData.prototype = {
 
     unmuted_messages: function (messages) {
         return messages.filter(
-            message =>
+            (message) =>
                 !muting.is_topic_muted(message.stream_id, message.topic) ||
                 message.mentioned
         );
@@ -182,7 +182,7 @@ MessageListData.prototype = {
     },
 
     first_unread_message_id: function () {
-        const first_unread = this._items.find(message => unread.message_unread(message));
+        const first_unread = this._items.find((message) => unread.message_unread(message));
 
         if (first_unread) {
             return first_unread.id;
@@ -231,7 +231,7 @@ MessageListData.prototype = {
         // bottom_messages regardless
         if (self.selected_id() === -1 && self.empty()) {
             const narrow_messages = self.filter_incoming(messages);
-            bottom_messages = narrow_messages.filter(msg => !self.get(msg.id));
+            bottom_messages = narrow_messages.filter((msg) => !self.get(msg.id));
         } else {
             // Filter out duplicates that are already in self, and all messages
             // that fail our filter predicate
@@ -342,10 +342,10 @@ MessageListData.prototype = {
             msg_ids_to_remove.add(message.id);
         }
 
-        this._items = this._items.filter(message => !msg_ids_to_remove.has(message.id));
+        this._items = this._items.filter((message) => !msg_ids_to_remove.has(message.id));
         if (this.muting_enabled) {
             this._all_items = this._all_items.filter(
-                message => !msg_ids_to_remove.has(message.id)
+                (message) => !msg_ids_to_remove.has(message.id)
             );
         }
     },

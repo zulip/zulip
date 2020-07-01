@@ -7,7 +7,7 @@ zrequire('narrow_state');
 set_global('page_params', {});
 
 function set_filter(operators) {
-    operators = operators.map(op => ({
+    operators = operators.map((op) => ({
         operator: op[0],
         operand: op[1],
     }));

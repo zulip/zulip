@@ -219,11 +219,11 @@ exports.create = function (opts) {
         },
 
         getByID: function (id) {
-            return store.pills.find(pill => pill.id === id);
+            return store.pills.find((pill) => pill.id === id);
         },
 
         items: function () {
-            return store.pills.map(pill => pill.item);
+            return store.pills.map((pill) => pill.item);
         },
 
         createPillonPaste: function () {

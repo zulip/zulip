@@ -390,7 +390,7 @@ run_test('narrowing', () => {
     scroll_util.scroll_element_into_container = noop;
 
     set_global('ui', {
-        get_scroll_element: element => element,
+        get_scroll_element: (element) => element,
     });
 
     assert(!$('<devel sidebar row html>').hasClass('active-filter'));

@@ -323,7 +323,7 @@ Filter.parse = function (str) {
    might need to support multiple operators of the same type.
 */
 Filter.unparse = function (operators) {
-    const parts = operators.map(elem => {
+    const parts = operators.map((elem) => {
 
         if (elem.operator === 'search') {
             // Search terms are the catch-all case.
@@ -357,7 +357,7 @@ Filter.prototype = {
     public_operators: function () {
         const safe_to_return = this._operators.filter(
             // Filter out the embedded narrow (if any).
-            value =>
+            (value) =>
                 !(
                     page_params.narrow_stream !== undefined &&
                     value.operator === "stream" &&
@@ -376,18 +376,18 @@ Filter.prototype = {
 
     has_negated_operand: function (operator, operand) {
         return this._operators.some(
-            elem => elem.negated && (elem.operator === operator && elem.operand === operand)
+            (elem) => elem.negated && (elem.operator === operator && elem.operand === operand)
         );
     },
 
     has_operand: function (operator, operand) {
         return this._operators.some(
-            elem => !elem.negated && (elem.operator === operator && elem.operand === operand)
+            (elem) => !elem.negated && (elem.operator === operator && elem.operand === operand)
         );
     },
 
     has_operator: function (operator) {
-        return this._operators.some(elem => {
+        return this._operators.some((elem) => {
             if (elem.negated && !['search', 'has'].includes(elem.operator)) {
                 return false;
             }
@@ -591,7 +591,7 @@ Filter.prototype = {
                 return i18n.t('Private messages');
             case 'pm-with': {
                 const emails = this.operands('pm-with')[0].split(',');
-                const names = emails.map(email => {
+                const names = emails.map((email) => {
                     if (!people.get_by_email(email)) {
                         return email;
                     }
@@ -673,15 +673,15 @@ Filter.prototype = {
             return terms;
         }
 
-        return terms.filter(term => Filter.term_type(term) !== 'is-private');
+        return terms.filter((term) => Filter.term_type(term) !== 'is-private');
     },
 
     _canonicalize_operators: function (operators_mixed_case) {
-        return operators_mixed_case.map(tuple => Filter.canonicalize_term(tuple));
+        return operators_mixed_case.map((tuple) => Filter.canonicalize_term(tuple));
     },
 
     filter_with_new_params: function (params) {
-        const terms = this._operators.map(term => {
+        const terms = this._operators.map((term) => {
             const new_term = { ...term };
             if (new_term.operator === params.operator && !new_term.negated) {
                 new_term.operand = params.operand;
@@ -729,7 +729,7 @@ Filter.prototype = {
     first_valid_id_from: function (msg_ids) {
         const predicate = this.predicate();
 
-        const first_id = msg_ids.find(msg_id => {
+        const first_id = msg_ids.find((msg_id) => {
             const message = message_store.get(msg_id);
 
             if (message === undefined) {
@@ -771,7 +771,7 @@ Filter.prototype = {
         // build JavaScript code in a string and then eval() it.
 
         return function (message) {
-            return operators.every(term => {
+            return operators.every((term) => {
                 let ok = message_matches_search_term(message, term.operator, term.operand);
                 if (term.negated) {
                     ok = !ok;
@@ -910,7 +910,7 @@ function describe_unescaped(operators) {
         }
     }
 
-    const more_parts = operators.map(elem => {
+    const more_parts = operators.map((elem) => {
         const operand = elem.operand;
         const canonicalized_operator = Filter.canonicalize_operator(elem.operator);
         if (canonicalized_operator === 'is') {

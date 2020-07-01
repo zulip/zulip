@@ -68,7 +68,7 @@ exports.is_pm_recipient = function (user_id, message) {
 };
 
 exports.extract_pm_recipients = function (recipients) {
-    return recipients.split(/\s*[,;]\s*/).filter(recipient => recipient.trim() !== "");
+    return recipients.split(/\s*[,;]\s*/).filter((recipient) => recipient.trim() !== "");
 };
 
 exports.same_recipient = function util_same_recipient(a, b) {
@@ -102,9 +102,9 @@ exports.normalize_recipients = function (recipients) {
     // Converts a string listing emails of message recipients
     // into a canonical formatting: emails sorted ASCIIbetically
     // with exactly one comma and no spaces between each.
-    recipients = recipients.split(',').map(s => s.trim());
-    recipients = recipients.map(s => s.toLowerCase());
-    recipients = recipients.filter(s => s.length > 0);
+    recipients = recipients.split(',').map((s) => s.trim());
+    recipients = recipients.map((s) => s.toLowerCase());
+    recipients = recipients.filter((s) => s.length > 0);
     recipients.sort();
     return recipients.join(',');
 };

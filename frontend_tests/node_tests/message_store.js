@@ -65,7 +65,7 @@ people.initialize_current_user(me.user_id);
 
 function convert_recipients(people) {
     // Display_recipient uses `id` for user_ids.
-    return people.map(p => ({
+    return people.map((p) => ({
         email: p.email,
         id: p.user_id,
         full_name: p.full_name,

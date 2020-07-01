@@ -114,7 +114,7 @@ const emojis_by_name = new Map(Object.entries({
     heart: emoji_heart,
     headphones: emoji_headphones,
 }));
-const emoji_list = Array.from(emojis_by_name.values(), emoji_dict => {
+const emoji_list = Array.from(emojis_by_name.values(), (emoji_dict) => {
     if (emoji_dict.is_realm_emoji === true) {
         return {
             emoji_name: emoji_dict.name,
@@ -518,7 +518,7 @@ run_test('content_typeahead_selected', () => {
 });
 
 function sorted_names_from(subs) {
-    return subs.map(sub => sub.name).sort();
+    return subs.map((sub) => sub.name).sort();
 }
 
 run_test('initialize', () => {
@@ -1320,7 +1320,7 @@ run_test('begins_typeahead', () => {
     assert_typeahead_equals("```test", "ing", false);
     assert_typeahead_equals("~~~test", "ing", false);
     const terminal_symbols = ',.;?!()[] "\'\n\t';
-    terminal_symbols.split().forEach(symbol => {
+    terminal_symbols.split().forEach((symbol) => {
         assert_stream_list("#test", symbol);
         assert_typeahead_equals("@test", symbol, all_mentions);
         assert_typeahead_equals(":test", symbol, emoji_list);

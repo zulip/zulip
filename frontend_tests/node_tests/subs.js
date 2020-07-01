@@ -1,8 +1,8 @@
 global.stub_out_jquery();
 
 set_global('ui', {
-    get_content_element: element => element,
-    get_scroll_element: element => element,
+    get_content_element: (element) => element,
+    get_scroll_element: (element) => element,
 });
 zrequire('stream_data');
 zrequire('search_util');

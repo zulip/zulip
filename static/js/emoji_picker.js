@@ -103,7 +103,7 @@ function show_emoji_catalog() {
 
 exports.generate_emoji_picker_data = function (realm_emojis) {
     const catalog = new Map();
-    catalog.set("Custom", Array.from(realm_emojis.keys(), realm_emoji_name =>
+    catalog.set("Custom", Array.from(realm_emojis.keys(), (realm_emoji_name) =>
         emoji.emojis_by_name.get(realm_emoji_name)
     ));
 
@@ -133,8 +133,8 @@ exports.generate_emoji_picker_data = function (realm_emojis) {
     }
     catalog.set("Popular", popular);
 
-    const categories = get_all_emoji_categories().filter(category => catalog.has(category.name));
-    exports.complete_emoji_catalog = categories.map(category => ({
+    const categories = get_all_emoji_categories().filter((category) => catalog.has(category.name));
+    exports.complete_emoji_catalog = categories.map((category) => ({
         name: category.name,
         icon: category.icon,
         emojis: catalog.get(category.name),
@@ -148,7 +148,7 @@ const generate_emoji_picker_content = function (id) {
         emojis_used = reactions.get_emojis_used_by_user_for_message_id(id);
     }
     for (const emoji_dict of emoji.emojis_by_name.values()) {
-        emoji_dict.has_reacted = emoji_dict.aliases.some(alias => emojis_used.includes(alias));
+        emoji_dict.has_reacted = emoji_dict.aliases.some((alias) => emojis_used.includes(alias));
     }
 
     return render_emoji_popover_content({
@@ -212,7 +212,7 @@ function filter_emojis() {
 
             for (const emoji_dict of emojis) {
                 for (const alias of emoji_dict.aliases) {
-                    const match = search_terms.every(search_term => alias.includes(search_term));
+                    const match = search_terms.every((search_term) => alias.includes(search_term));
                     if (match) {
                         search_results.push({ ...emoji_dict, name: alias });
                         break;  // We only need the first matching alias per emoji.

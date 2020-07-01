@@ -169,7 +169,7 @@ run_test('merge_message_groups', () => {
     }
 
     function extract_message_ids(lst) {
-        return lst.map(item => item.msg.id);
+        return lst.map((item) => item.msg.id);
     }
 
     function assert_message_list_equal(list1, list2) {
@@ -546,7 +546,7 @@ run_test('render_windows', () => {
     let messages;
 
     function reset_list(opts) {
-        messages = _.range(opts.count).map(i => ({
+        messages = _.range(opts.count).map((i) => ({
             id: i,
         }));
         list.selected_idx = function () { return 0; };

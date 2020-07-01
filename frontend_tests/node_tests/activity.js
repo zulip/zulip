@@ -18,7 +18,7 @@ const _document = {
 const _channel = {};
 
 const _ui = {
-    get_content_element: element => element,
+    get_content_element: (element) => element,
 };
 
 const _keydown_util = {
@@ -686,7 +686,7 @@ run_test('initialize', () => {
             func();
         },
     });
-    $(window).focus = func => func();
+    $(window).focus = (func) => func();
     $(window).idle = () => {};
 
     channel.post = function (payload) {

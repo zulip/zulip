@@ -151,7 +151,7 @@ exports.activate = function (raw_operators, opts) {
     message_scroll.hide_top_of_narrow_notices();
     message_scroll.hide_indicators();
 
-    blueslip.debug("Narrowed", {operators: operators.map(e => e.operator),
+    blueslip.debug("Narrowed", {operators: operators.map((e) => e.operator),
                                 trigger: opts ? opts.trigger : undefined,
                                 previous_id: current_msg_list.selected_id()});
 
@@ -725,7 +725,7 @@ exports.to_compose_target = function () {
     if (compose_state.get_message_type() === 'private') {
         const recipient_string = compose_state.private_message_recipient();
         const emails = util.extract_pm_recipients(recipient_string);
-        const invalid = emails.filter(email => !people.is_valid_email_for_compose(email));
+        const invalid = emails.filter((email) => !people.is_valid_email_for_compose(email));
         // If there are no recipients or any recipient is
         // invalid, narrow to all PMs.
         if (emails.length === 0 || invalid.length > 0) {

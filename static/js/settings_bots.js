@@ -64,7 +64,7 @@ function is_local_part(value, element) {
 }
 
 exports.type_id_to_string = function (type_id) {
-    return page_params.bot_types.find(bot_type => bot_type.type_id === type_id).name;
+    return page_params.bot_types.find((bot_type) => bot_type.type_id === type_id).name;
 };
 
 exports.render_bots = function () {
@@ -392,7 +392,7 @@ exports.set_up = function () {
         const bot_id = parseInt(li.find('.bot_info').attr('data-user-id'), 10);
         const bot = bot_data.get(bot_id);
         const user_ids = people.get_active_human_ids();
-        const users_list = user_ids.map(user_id => ({
+        const users_list = user_ids.map((user_id) => ({
             name: people.get_full_name(user_id),
             value: user_id.toString(),
         }));

@@ -193,7 +193,7 @@ exports.next_topic = function (streams, get_topics, has_unread_messages, curr_st
 exports.get_next_topic = function (curr_stream, curr_topic) {
     let my_streams = stream_sort.get_streams();
 
-    my_streams = my_streams.filter(stream_name => {
+    my_streams = my_streams.filter((stream_name) => {
         if (!stream_data.is_stream_muted_by_name(stream_name)) {
             return true;
         }
@@ -208,7 +208,7 @@ exports.get_next_topic = function (curr_stream, curr_topic) {
     function get_unmuted_topics(stream_name) {
         const stream_id = stream_data.get_stream_id(stream_name);
         let topics = stream_topic_history.get_recent_topic_names(stream_id);
-        topics = topics.filter(topic => !muting.is_topic_muted(stream_id, topic));
+        topics = topics.filter((topic) => !muting.is_topic_muted(stream_id, topic));
         return topics;
     }
 

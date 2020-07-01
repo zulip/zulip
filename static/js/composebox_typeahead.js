@@ -381,7 +381,7 @@ function should_show_custom_query(query, items) {
     if (!query) {
         return false;
     }
-    const matched = items.some(elem => elem.toLowerCase() === query.toLowerCase());
+    const matched = items.some((elem) => elem.toLowerCase() === query.toLowerCase());
     return !matched;
 }
 
@@ -590,7 +590,7 @@ exports.get_sorted_filtered_items = function (query) {
 exports.filter_and_sort_candidates = function (completing, candidates, token) {
     const matcher = exports.compose_content_matcher(completing, token);
 
-    const small_results = candidates.filter(item => matcher(item));
+    const small_results = candidates.filter((item) => matcher(item));
 
     const sorted_results = exports.sort_results(completing, small_results, token);
 

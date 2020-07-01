@@ -7,7 +7,7 @@ const templates_path = path.resolve(__dirname, "../../static/templates");
 
 exports.make_handlebars = () => Handlebars.create();
 
-exports.stub_templates = stub => {
+exports.stub_templates = (stub) => {
     window.template_stub = stub;
 };
 

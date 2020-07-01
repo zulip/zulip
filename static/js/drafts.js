@@ -245,7 +245,7 @@ exports.format_draft = function (draft) {
         };
     } else {
         const emails = util.extract_pm_recipients(draft.private_message_recipient);
-        const recipients = emails.map(email => {
+        const recipients = emails.map((email) => {
             email = email.trim();
             const person = people.get_by_email(email);
             if (person !== undefined) {

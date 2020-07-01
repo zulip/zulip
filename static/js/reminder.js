@@ -46,7 +46,7 @@ exports.schedule_message = function (request) {
     const message = raw_message.slice(1).join('\n');
 
     const deferred_message_type = deferred_message_types.filter(
-        props => command_line.match(props.test) !== null
+        (props) => command_line.match(props.test) !== null
     )[0];
     const command = command_line.match(deferred_message_type.test)[0];
 

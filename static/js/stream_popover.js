@@ -273,7 +273,7 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
     // likely will make it possible to move messages to/from private
     // streams in the future.
     const available_streams = stream_data.subscribed_subs()
-        .filter(s => s.stream_id !== current_stream_id);
+        .filter((s) => s.stream_id !== current_stream_id);
     const current_stream_name = stream_data.maybe_get_stream_name(current_stream_id);
     const args = {
         available_streams, topic_name, current_stream_id, current_stream_name,

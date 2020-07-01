@@ -75,7 +75,7 @@ function query_matches_string(query, source_str, split_char) {
 // account, there might be 2 attrs: their full name and their email.
 // * split_char is the separator for this syntax (e.g. ' ').
 export function query_matches_source_attrs(query, source, match_attrs, split_char) {
-    return match_attrs.some(attr => {
+    return match_attrs.some((attr) => {
         const source_str = source[attr].toLowerCase();
         return query_matches_string(query, source_str, split_char);
     });
@@ -151,7 +151,7 @@ export function sort_emojis(objs, query) {
 
     function decent_match(name) {
         const pieces = name.toLowerCase().split('_');
-        return pieces.some(piece => piece.startsWith(lowerQuery));
+        return pieces.some((piece) => piece.startsWith(lowerQuery));
     }
 
     const popular_set = new Set(popular_emojis);
@@ -162,7 +162,7 @@ export function sort_emojis(objs, query) {
     }
 
     const popular_emoji_matches = objs.filter(is_popular);
-    const others = objs.filter(obj => !is_popular(obj));
+    const others = objs.filter((obj) => !is_popular(obj));
 
     const triage_results = triage(
         query,

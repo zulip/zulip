@@ -423,7 +423,7 @@ exports.get_invalid_recipient_emails = function () {
     const private_recipients = util.extract_pm_recipients(
         compose_state.private_message_recipient());
     const invalid_recipients = private_recipients.filter(
-        email => !people.is_valid_email_for_compose(email)
+        (email) => !people.is_valid_email_for_compose(email)
     );
 
     return invalid_recipients;
@@ -916,7 +916,7 @@ exports.warn_if_mentioning_unsubscribed_user = function (mentioned) {
         const error_area = $("#compose_invite_users");
         const existing_invites_area = $('#compose_invite_users .compose_invite_user');
 
-        const existing_invites = Array.from($(existing_invites_area), user_row => {
+        const existing_invites = Array.from($(existing_invites_area), (user_row) => {
             return parseInt($(user_row).data('user-id'), 10);
         });
 

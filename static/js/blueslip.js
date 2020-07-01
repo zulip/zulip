@@ -37,7 +37,7 @@ Logger.prototype = (function () {
                 pad(now.getUTCSeconds(), 2) + '.' +
                 pad(now.getUTCMilliseconds(), 3) + ' UTC';
 
-            const str_args = args.map(x => typeof x === "object" ? JSON.stringify(x) : x);
+            const str_args = args.map((x) => typeof x === "object" ? JSON.stringify(x) : x);
 
             const log_entry = date_str + " " + name.toUpperCase() +
                 ': ' + str_args.join("");

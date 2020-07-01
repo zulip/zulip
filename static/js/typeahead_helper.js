@@ -8,7 +8,7 @@ const settings_data = require("./settings_data");
 // For example, "a,,b, " => ["a", "b"]
 exports.get_cleaned_pm_recipients = function (query_string) {
     let recipients = util.extract_pm_recipients(query_string);
-    recipients = recipients.filter(elem => elem.match(/\S/));
+    recipients = recipients.filter((elem) => elem.match(/\S/));
     return recipients;
 };
 

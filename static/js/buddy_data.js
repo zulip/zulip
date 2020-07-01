@@ -116,12 +116,12 @@ function filter_user_ids(user_filter_text, user_ids) {
         return user_ids;
     }
 
-    user_ids = user_ids.filter(user_id => !people.is_my_user_id(user_id));
+    user_ids = user_ids.filter((user_id) => !people.is_my_user_id(user_id));
 
     let search_terms = user_filter_text.toLowerCase().split(/[|,]+/);
-    search_terms = search_terms.map(s => s.trim());
+    search_terms = search_terms.map((s) => s.trim());
 
-    const persons = user_ids.map(user_id => people.get_by_user_id(user_id));
+    const persons = user_ids.map((user_id) => people.get_by_user_id(user_id));
 
     const user_id_dict = people.filter_people_by_search_terms(persons, search_terms);
     return Array.from(user_id_dict.keys());
@@ -306,7 +306,7 @@ function get_user_id_list(user_filter_text) {
         user_ids = presence.get_user_ids();
     }
 
-    user_ids = user_ids.filter(user_id => {
+    user_ids = user_ids.filter((user_id) => {
         const person = people.get_by_user_id(user_id);
 
         if (!person) {
@@ -334,7 +334,7 @@ exports.get_items_for_users = function (user_ids) {
 };
 
 exports.huddle_fraction_present = function (huddle) {
-    const user_ids = huddle.split(',').map(s => parseInt(s, 10));
+    const user_ids = huddle.split(',').map((s) => parseInt(s, 10));
 
     let num_present = 0;
 

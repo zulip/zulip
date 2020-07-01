@@ -43,7 +43,7 @@ exports.maybe_disable_widgets = function () {
 };
 
 exports.get_sorted_options_list = function (option_values_object) {
-    const options_list = Object.keys(option_values_object).map(key => ({
+    const options_list = Object.keys(option_values_object).map((key) => ({
         ...option_values_object[key],
         key: key,
     }));
@@ -264,7 +264,7 @@ exports.populate_realm_domains = function (realm_domains) {
     }
 
     const domains_list = realm_domains.map(
-        realm_domain => realm_domain.allow_subdomains ? "*." + realm_domain.domain : realm_domain.domain
+        (realm_domain) => realm_domain.allow_subdomains ? "*." + realm_domain.domain : realm_domain.domain
     );
     let domains = domains_list.join(', ');
     if (domains.length === 0) {
@@ -547,7 +547,7 @@ exports.signup_notifications_stream_widget = null;
 exports.init_dropdown_widgets = () => {
     const streams = stream_data.get_streams_for_settings_page();
     const notification_stream_options = {
-        data: streams.map(x => {
+        data: streams.map((x) => {
             const item = {
                 name: x.name,
                 value: x.stream_id.toString(),
@@ -575,7 +575,7 @@ exports.init_dropdown_widgets = () => {
                       notification_stream_options));
     exports.default_code_language_widget = dropdown_list_widget({
         widget_name: 'realm_default_code_block_language',
-        data: Object.keys(pygments_data.langs).map(x => {
+        data: Object.keys(pygments_data.langs).map((x) => {
             return {
                 name: x,
                 value: x,

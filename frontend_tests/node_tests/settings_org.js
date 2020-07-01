@@ -200,7 +200,7 @@ function test_submit_settings_form(submit_form) {
         realm_create_stream_policy: settings_config.create_stream_policy_values.by_members.code,
     });
 
-    global.patch_builtin('setTimeout', func => func());
+    global.patch_builtin('setTimeout', (func) => func());
     const ev = {
         preventDefault: noop,
         stopPropagation: noop,
@@ -1016,7 +1016,7 @@ run_test('misc', () => {
                              'realm_default_code_block_language'];
     const dropdown_list_parent = $.create(`<list parent>`);
     dropdown_list_parent.set_find_results('.dropdown_list_reset_button:not([disabled])', $.create('<disable button>'));
-    widget_settings.forEach(name => {
+    widget_settings.forEach((name) => {
         const elem = $.create(`#${name}_widget #${name}_name`);
         elem.closest = () => {
             return dropdown_list_parent;

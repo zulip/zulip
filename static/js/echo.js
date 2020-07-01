@@ -52,7 +52,7 @@ exports.build_display_recipient = function (message) {
     const emails = util.extract_pm_recipients(message.private_message_recipient);
 
     let sender_in_display_recipients = false;
-    const display_recipient = emails.map(email => {
+    const display_recipient = emails.map((email) => {
         email = email.trim();
         const person = people.get_by_email(email);
         if (person === undefined) {

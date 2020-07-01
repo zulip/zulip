@@ -447,7 +447,7 @@ exports.toggle_actions_popover = function (element, id) {
 
         const should_display_edit_history_option =
             message.edit_history &&
-            message.edit_history.some(entry => entry.prev_content !== undefined ||
+            message.edit_history.some((entry) => entry.prev_content !== undefined ||
             util.get_edit_event_prev_topic(entry) !== undefined) &&
             page_params.realm_allow_edit_history;
 

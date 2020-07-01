@@ -167,7 +167,7 @@ exports.is_subscriber_subset = function (sub1, sub2) {
     if (sub1.subscribers && sub2.subscribers) {
         const sub2_set = sub2.subscribers;
 
-        return Array.from(sub1.subscribers.keys()).every(key => sub2_set.has(key));
+        return Array.from(sub1.subscribers.keys()).every((key) => sub2_set.has(key));
     }
 
     return false;
@@ -287,9 +287,10 @@ exports.delete_sub = function (stream_id) {
 exports.get_non_default_stream_names = function () {
     let subs = Array.from(stream_info.values());
     subs = subs.filter(
-        sub => !exports.is_default_stream_id(sub.stream_id) && (sub.subscribed || !sub.invite_only)
+        (sub) =>
+            !exports.is_default_stream_id(sub.stream_id) && (sub.subscribed || !sub.invite_only)
     );
-    const names = subs.map(sub => sub.name);
+    const names = subs.map((sub) => sub.name);
     return names;
 };
 
@@ -310,7 +311,7 @@ exports.get_updated_unsorted_subs = function () {
 
     // We don't display unsubscribed streams to guest users.
     if (page_params.is_guest) {
-        all_subs = all_subs.filter(sub => sub.subscribed);
+        all_subs = all_subs.filter((sub) => sub.subscribed);
     }
 
     return all_subs;
@@ -329,7 +330,7 @@ exports.unsubscribed_subs = function () {
 };
 
 exports.subscribed_streams = function () {
-    return exports.subscribed_subs().map(sub => sub.name);
+    return exports.subscribed_subs().map((sub) => sub.name);
 };
 
 exports.get_invite_stream_data = function () {
@@ -361,7 +362,7 @@ exports.get_invite_stream_data = function () {
 };
 
 exports.get_colors = function () {
-    return exports.subscribed_subs().map(sub => sub.color);
+    return exports.subscribed_subs().map((sub) => sub.color);
 };
 
 exports.update_subscribers_count = function (sub) {
@@ -478,12 +479,12 @@ exports.update_calculated_fields = function (sub) {
 };
 
 exports.all_subscribed_streams_are_in_home_view = function () {
-    return exports.subscribed_subs().every(sub => !sub.is_muted);
+    return exports.subscribed_subs().every((sub) => !sub.is_muted);
 };
 
 exports.home_view_stream_names = function () {
-    const home_view_subs = exports.subscribed_subs().filter(sub => !sub.is_muted);
-    return home_view_subs.map(sub => sub.name);
+    const home_view_subs = exports.subscribed_subs().filter((sub) => !sub.is_muted);
+    return home_view_subs.map((sub) => sub.name);
 };
 
 exports.canonicalized_name = function (stream_name) {

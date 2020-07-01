@@ -105,7 +105,7 @@ class CommonUtils {
         // is parsed but before DOMContentLoaded event is fired.
         await Promise.all([
             page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
-            page.$eval('#login_form', form => form.submit()),
+            page.$eval('#login_form', (form) => form.submit()),
         ]);
     }
 
@@ -224,7 +224,7 @@ class CommonUtils {
 
         // confirm if compose box is empty.
         const compose_box_element = await page.$("#compose-textarea");
-        const compose_box_content = await page.evaluate(element => element.textContent,
+        const compose_box_content = await page.evaluate((element) => element.textContent,
                                                         compose_box_element);
         assert.equal(compose_box_content, '', 'Compose box not empty after message sent');
 

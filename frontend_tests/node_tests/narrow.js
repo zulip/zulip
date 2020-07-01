@@ -17,7 +17,7 @@ set_global('resize', {
 zrequire('narrow');
 
 function set_filter(operators) {
-    operators = operators.map(op => ({
+    operators = operators.map((op) => ({
         operator: op[0],
         operand: op[1],
     }));

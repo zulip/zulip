@@ -17,7 +17,7 @@ set_global('ui_util', {
 set_global('narrow', {});
 set_global('Filter', {});
 
-global.patch_builtin('setTimeout', func => func());
+global.patch_builtin('setTimeout', (func) => func());
 
 run_test('update_button_visibility', () => {
     const search_query = $('#search_query');

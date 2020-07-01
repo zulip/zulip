@@ -8,7 +8,7 @@ exports.create_item_from_email = function (email, current_items) {
 
     if (!user) {
         if (page_params.realm_is_zephyr_mirror_realm) {
-            const existing_emails = current_items.map(item => item.email);
+            const existing_emails = current_items.map((item) => item.email);
 
             if (existing_emails.includes(email)) {
                 return;
@@ -27,7 +27,7 @@ exports.create_item_from_email = function (email, current_items) {
         return;
     }
 
-    const existing_ids = current_items.map(item => item.user_id);
+    const existing_ids = current_items.map((item) => item.user_id);
 
     if (existing_ids.includes(user.user_id)) {
         return;
@@ -67,7 +67,7 @@ exports.append_person = function (opts) {
 
 exports.get_user_ids = function (pill_widget) {
     const items = pill_widget.items();
-    let user_ids = items.map(item => item.user_id);
+    let user_ids = items.map((item) => item.user_id);
     user_ids = user_ids.filter(Boolean); // be defensive about undefined users
 
     return user_ids;
@@ -81,7 +81,7 @@ exports.has_unconverted_data = function (pill_widget) {
     }
 
     const items = pill_widget.items();
-    const has_unknown_items = items.some(item => item.user_id === undefined);
+    const has_unknown_items = items.some((item) => item.user_id === undefined);
 
     return has_unknown_items;
 };
@@ -93,7 +93,7 @@ exports.typeahead_source = function (pill_widget) {
 
 exports.filter_taken_users = function (items, pill_widget) {
     const taken_user_ids = exports.get_user_ids(pill_widget);
-    items = items.filter(item => !taken_user_ids.includes(item.user_id));
+    items = items.filter((item) => !taken_user_ids.includes(item.user_id));
     return items;
 };
 

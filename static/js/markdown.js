@@ -71,12 +71,12 @@ exports.contains_backend_only_syntax = function (content) {
     // Try to guess whether or not a message contains syntax that only the
     // backend markdown processor can correctly handle.
     // If it doesn't, we can immediately render it client-side for local echo.
-    const markedup = backend_only_markdown_re.find(re => re.test(content));
+    const markedup = backend_only_markdown_re.find((re) => re.test(content));
 
     // If a realm filter doesn't start with some specified characters
     // then don't render it locally. It is workaround for the fact that
     // javascript regex doesn't support lookbehind.
-    const false_filter_match = realm_filter_list.find(re => {
+    const false_filter_match = realm_filter_list.find((re) => {
         const pattern = /(?:[^\s'"\(,:<])/.source + re[0].source + /(?![\w])/.source;
         const regex = new RegExp(pattern);
         return regex.test(content);
@@ -455,7 +455,7 @@ exports.initialize = function (realm_filters, helper_config) {
 
     // No <code> around our code blocks instead a codehilite <div> and disable
     // class-specific highlighting.
-    r.code = code => fenced_code.wrap_code(code) + '\n\n';
+    r.code = (code) => fenced_code.wrap_code(code) + '\n\n';
 
     // Prohibit empty links for some reason.
     const old_link = r.link;

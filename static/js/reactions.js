@@ -347,7 +347,7 @@ exports.remove_reaction = function (event) {
         return;
     }
 
-    r.user_ids = r.user_ids.filter(id => id !== user_id);
+    r.user_ids = r.user_ids.filter((id) => id !== user_id);
     if (r.user_ids.length > 0) {
         exports.update_user_fields(r);
     } else {
