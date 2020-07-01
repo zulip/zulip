@@ -96,6 +96,7 @@
     "jsdom": "^16.1.0",
     "nyc": "^15.0.0",
     "phantomjs-prebuilt": "^2.1.16",
+    "prettier": "^2.0.5",
     "puppeteer": "^3.0.0",
     "source-map": "^0.6.1",
     "stylelint": "^13.0.0",
