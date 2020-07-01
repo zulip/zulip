@@ -906,17 +906,17 @@ nav {
 
 .compare thead {
     border-bottom: 3px solid hsla(0, 0%, 0%, 0.1);
-}
 
-.compare thead th {
-    font-weight: 600;
-    padding: 15px 0px;
+    th {
+        font-weight: 600;
+        padding: 15px 0px;
 
-    color: hsl(0, 0%, 100%);
+        color: hsl(0, 0%, 100%);
 
-    &.normal {
-        font-weight: normal;
-        color: inherit;
+        &.normal {
+            font-weight: normal;
+            color: inherit;
+        }
     }
 }
 
