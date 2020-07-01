@@ -34,6 +34,15 @@ EXCLUDE_PROPERTIES = {
     },
 }
 
+# Set of documented endpoints that doesn't have a documented response or have an
+# incomplete documented response.
+EXCLUDE_DOCUMENTED_ENDPOINTS = {
+    # This endpoint has a lot of keys and the response is not fully documented
+    # because it will change soon. In this case, it's easier to just not validate
+    # the response, than write all the undocumented keys on EXCLUDE_PROPERTIES.
+    "/realm:patch",
+}
+
 # A list of endpoint-methods such that the endpoint
 # has documentation but not with this particular method.
 EXCLUDE_ENDPOINTS = ["/realm/emoji/{emoji_name}:delete"]
@@ -213,12 +222,18 @@ def validate_against_openapi_schema(content: Dict[str, Any], endpoint: str,
     if endpoint + ':' + method in EXCLUDE_ENDPOINTS:
         return False
 
+    # We shouldn't validate a method's response that doesn't have a documented
+    # response or have a mostly undocumented response.
+    if endpoint + ':' + method in EXCLUDE_DOCUMENTED_ENDPOINTS:
+        return True
+
     # Check if the response matches its code
     if response.startswith('2') and (content.get('result', 'success').lower() != 'success'):
         raise SchemaError("Response is not 200 but is validating against 200 schema")
     # In a single response schema we do not have two keys with the same name.
     # Hence exclusion list is declared globally
     exclusion_list = (EXCLUDE_PROPERTIES.get(endpoint, {}).get(method.lower(), {}).get(response, []))
+
     # Code is not declared but appears in various 400 responses. If common, it can be added
     # to 400 response schema
     if response.startswith('4'):
@@ -270,6 +285,7 @@ def validate_object(content: Dict[str, Any], schema: Dict[str, Any], exclusion_l
         array_schema: Optional[Dict[str, Any]] = None
         if key in exclusion_list:
             continue
+
         # Check that the key is defined in the schema
         if key not in schema['properties']:
             raise SchemaError('Extraneous key "{}" in the response\'s '

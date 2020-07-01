@@ -50,6 +50,7 @@
 
 #### Server & organizations
 
+* [Update organization](/api/update-realm)
 * [Get server settings](/api/get-server-settings)
 * [Get linkifiers](/api/get-linkifiers)
 * [Add a linkifier](/api/add-linkifier)

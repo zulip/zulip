@@ -13,6 +13,7 @@ from zerver.openapi.openapi import get_openapi_description, get_openapi_fixture,
 
 MACRO_REGEXP = re.compile(
     r'\{generate_code_example(\(\s*(.+?)\s*\))*\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+)\s*\))?\}')
+USER_TYPE_REGEX = re.compile(r'\{use_(\w*)client}')
 PYTHON_EXAMPLE_REGEX = re.compile(r'\# \{code_example\|\s*(.+?)\s*\}')
 JS_EXAMPLE_REGEX = re.compile(r'\/\/ \{code_example\|\s*(.+?)\s*\}')
 MACRO_REGEXP_DESC = re.compile(r'\{generate_api_description(\(\s*(.+?)\s*\))}')
@@ -360,8 +361,15 @@ class APICodeExamplesPreprocessor(Preprocessor):
             for line in lines:
                 loc = lines.index(line)
                 match = MACRO_REGEXP.search(line)
+                if USER_TYPE_REGEX.search(line):
+                    line_split = USER_TYPE_REGEX.split(line, maxsplit=0)
+                    preceding = line_split[0]
+                    following = line_split[-1]
+                    text = [preceding] + [following]
+                    lines = lines[:loc] + text + lines[loc+1:]
+                    break
 
-                if match:
+                elif match:
                     language, options = parse_language_and_options(match.group(2))
                     function = match.group(3)
                     key = match.group(4)
