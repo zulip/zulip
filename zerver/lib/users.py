@@ -179,8 +179,14 @@ def bulk_get_users(emails: List[str], realm: Optional[Realm],
         lambda email: 'bulk_get_users:' + user_profile_cache_key_id(email, realm_id),
         fetch_users_by_email,
         [email.lower() for email in emails],
+        extractor=lambda obj: obj,
+        setter=lambda obj: obj,
         id_fetcher=user_to_email,
+        cache_transformer=lambda obj: obj,
     )
+
+def get_user_id(user: UserProfile) -> int:
+    return user.id
 
 def user_ids_to_users(user_ids: Sequence[int], realm: Realm) -> List[UserProfile]:
     # TODO: Consider adding a flag to control whether deactivated
@@ -193,6 +199,10 @@ def user_ids_to_users(user_ids: Sequence[int], realm: Realm) -> List[UserProfile
         cache_key_function=user_profile_by_id_cache_key,
         query_function=fetch_users_by_id,
         object_ids=user_ids,
+        extractor=lambda obj: obj,
+        setter=lambda obj: obj,
+        id_fetcher=get_user_id,
+        cache_transformer=lambda obj: obj,
     )
 
     found_user_ids = user_profiles_by_id.keys()

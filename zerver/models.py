@@ -1653,10 +1653,15 @@ def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]
     def stream_to_lower_name(stream: Stream) -> str:
         return stream.name.lower()
 
-    return generic_bulk_cached_fetch(stream_name_to_cache_key,
-                                     fetch_streams_by_name,
-                                     [stream_name.lower() for stream_name in stream_names],
-                                     id_fetcher=stream_to_lower_name)
+    return generic_bulk_cached_fetch(
+        stream_name_to_cache_key,
+        fetch_streams_by_name,
+        [stream_name.lower() for stream_name in stream_names],
+        extractor=lambda obj: obj,
+        setter=lambda obj: obj,
+        id_fetcher=stream_to_lower_name,
+        cache_transformer=lambda obj: obj,
+    )
 
 def get_huddle_recipient(user_profile_ids: Set[int]) -> Recipient:
 

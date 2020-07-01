@@ -272,6 +272,9 @@ class BotCacheKeyTest(ZulipTestCase):
         user_profile2 = get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT)
         self.assertEqual(user_profile2.is_api_super_user, flipped_setting)
 
+def get_user_email(user: UserProfile) -> str:
+    return user.email  # nocoverage
+
 class GenericBulkCachedFetchTest(ZulipTestCase):
     def test_query_function_called_only_if_needed(self) -> None:
         # Get the user cached:
@@ -289,16 +292,24 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
             cache_key_function=user_profile_by_email_cache_key,
             query_function=query_function,
             object_ids=[self.example_email("hamlet")],
+            setter=lambda obj: obj,
+            extractor=lambda obj: obj,
+            id_fetcher=get_user_email,
+            cache_transformer=lambda obj: obj,
         )
         self.assertEqual(result, {hamlet.delivery_email: hamlet})
 
         flush_cache(Mock())
         # With the cache flushed, the query_function should get called:
         with self.assertRaises(CustomException):
-            generic_bulk_cached_fetch(
+            result = generic_bulk_cached_fetch(
                 cache_key_function=user_profile_by_email_cache_key,
                 query_function=query_function,
                 object_ids=[self.example_email("hamlet")],
+                setter=lambda obj: obj,
+                extractor=lambda obj: obj,
+                id_fetcher=get_user_email,
+                cache_transformer=lambda obj: obj,
             )
 
     def test_empty_object_ids_list(self) -> None:
@@ -317,5 +328,9 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
             cache_key_function=cache_key_function,
             query_function=query_function,
             object_ids=[],
+            setter=lambda obj: obj,
+            extractor=lambda obj: obj,
+            id_fetcher=get_user_email,
+            cache_transformer=lambda obj: obj,
         )
         self.assertEqual(result, {})

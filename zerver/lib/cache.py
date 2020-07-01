@@ -348,23 +348,10 @@ CacheItemT = TypeVar('CacheItemT')
 # serializable objects, will be the object; if encoded, bytes.
 CompressedItemT = TypeVar('CompressedItemT')
 
-def default_extractor(obj: CompressedItemT) -> ItemT:
-    return obj  # type: ignore[return-value] # Need a type assert that ItemT=CompressedItemT
-
-def default_setter(obj: ItemT) -> CompressedItemT:
-    return obj  # type: ignore[return-value] # Need a type assert that ItemT=CompressedItemT
-
-def default_id_fetcher(obj: ItemT) -> ObjKT:
-    return obj.id  # type: ignore[attr-defined] # Need ItemT/CompressedItemT typevars to be a Django protocol
-
-def default_cache_transformer(obj: ItemT) -> CacheItemT:
-    return obj  # type: ignore[return-value] # Need a type assert that ItemT=CacheItemT
-
 # Required Arguments are as follows:
 # * object_ids: The list of object ids to look up
 # * cache_key_function: object_id => cache key
 # * query_function: [object_ids] => [objects from database]
-# Optional keyword arguments:
 # * setter: Function to call before storing items to cache (e.g. compression)
 # * extractor: Function to call on items returned from cache
 #   (e.g. decompression).  Should be the inverse of the setter
@@ -378,10 +365,11 @@ def generic_bulk_cached_fetch(
         cache_key_function: Callable[[ObjKT], str],
         query_function: Callable[[List[ObjKT]], Iterable[ItemT]],
         object_ids: Sequence[ObjKT],
-        extractor: Callable[[CompressedItemT], CacheItemT] = default_extractor,
-        setter: Callable[[CacheItemT], CompressedItemT] = default_setter,
-        id_fetcher: Callable[[ItemT], ObjKT] = default_id_fetcher,
-        cache_transformer: Callable[[ItemT], CacheItemT] = default_cache_transformer,
+        *,
+        extractor: Callable[[CompressedItemT], CacheItemT],
+        setter: Callable[[CacheItemT], CompressedItemT],
+        id_fetcher: Callable[[ItemT], ObjKT],
+        cache_transformer: Callable[[ItemT], CacheItemT],
 ) -> Dict[ObjKT, CacheItemT]:
     if len(object_ids) == 0:
         # Nothing to fetch.
