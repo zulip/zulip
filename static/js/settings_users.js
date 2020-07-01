@@ -512,7 +512,7 @@ function confirm_deactivation(row, user_id, status_field) {
 }
 
 function handle_deactivation(tbody, status_field) {
-    tbody.on("click", ".deactivate", function (e) {
+    tbody.on("click", ".deactivate", (e) => {
         // This click event must not get propagated to parent container otherwise the modal
         // will not show up because of a call to `close_active_modal` in `settings.js`.
         e.preventDefault();
@@ -525,7 +525,7 @@ function handle_deactivation(tbody, status_field) {
 }
 
 function handle_bot_deactivation(tbody, status_field) {
-    tbody.on("click", ".deactivate", function (e) {
+    tbody.on("click", ".deactivate", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -548,7 +548,7 @@ function handle_bot_deactivation(tbody, status_field) {
 }
 
 function handle_reactivation(tbody, status_field) {
-    tbody.on("click", ".reactivate", function (e) {
+    tbody.on("click", ".reactivate", (e) => {
         e.preventDefault();
         e.stopPropagation();
         // Go up the tree until we find the user row, then grab the email element
@@ -572,7 +572,7 @@ function handle_reactivation(tbody, status_field) {
 }
 
 function handle_bot_owner_profile(tbody) {
-    tbody.on('click', '.user_row .view_user_profile', function (e) {
+    tbody.on('click', '.user_row .view_user_profile', (e) => {
         const owner_id = parseInt($(e.target).attr('data-owner-id'), 10);
         const owner = people.get_by_user_id(owner_id);
         popovers.show_user_profile(owner);
@@ -582,7 +582,7 @@ function handle_bot_owner_profile(tbody) {
 }
 
 function handle_human_form(tbody, status_field) {
-    tbody.on("click", ".open-user-form", function (e) {
+    tbody.on("click", ".open-user-form", (e) => {
         e.stopPropagation();
         e.preventDefault();
         const user_id = parseInt($(e.currentTarget).attr("data-user-id"), 10);
@@ -596,7 +596,7 @@ function handle_human_form(tbody, status_field) {
         const modal = ret.modal;
         const fields_user_pills = ret.fields_user_pills;
 
-        modal.find('.submit_human_change').on("click", function (e) {
+        modal.find('.submit_human_change').on("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
 
@@ -618,7 +618,7 @@ function handle_human_form(tbody, status_field) {
 }
 
 function handle_bot_form(tbody, status_field) {
-    tbody.on("click", ".open-user-form", function (e) {
+    tbody.on("click", ".open-user-form", (e) => {
         e.stopPropagation();
         e.preventDefault();
         const user_id = parseInt($(e.currentTarget).attr("data-user-id"), 10);
@@ -630,7 +630,7 @@ function handle_bot_form(tbody, status_field) {
 
         const {modal, owner_widget} = open_bot_form(bot);
 
-        modal.find('.submit_bot_change').on("click", function (e) {
+        modal.find('.submit_bot_change').on("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
 

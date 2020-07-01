@@ -72,7 +72,7 @@ const loading = {
 const markdownSB = new SimpleBar($(".markdown")[0]);
 
 const fetch_page = function (path, callback) {
-    $.get(path, function (res) {
+    $.get(path, (res) => {
         const $html = $(res).find(".markdown .content");
 
         callback($html.html().trim());
@@ -87,7 +87,7 @@ const update_page = function (html_map, path) {
         scrollToHash(markdownSB);
     } else {
         loading.name = path;
-        fetch_page(path, function (res) {
+        fetch_page(path, (res) => {
             html_map.set(path, res);
             $(".markdown .content").html(res);
             loading.name = null;
@@ -99,7 +99,7 @@ const update_page = function (html_map, path) {
 
 new SimpleBar($(".sidebar")[0]);
 
-$(".sidebar.slide h2").click(function (e) {
+$(".sidebar.slide h2").click((e) => {
     const $next = $(e.target).next();
 
     if ($next.is("ul")) {
@@ -146,11 +146,11 @@ $(document).on('click', '.markdown .content h1, .markdown .content h2, .markdown
     scrollToHash(markdownSB);
 });
 
-$(".hamburger").click(function () {
+$(".hamburger").click(() => {
     $(".sidebar").toggleClass("show");
 });
 
-$(".markdown").click(function () {
+$(".markdown").click(() => {
     if ($(".sidebar.show").length) {
         $(".sidebar.show").toggleClass("show");
     }
@@ -162,7 +162,7 @@ render_code_sections();
 // to the right place.
 scrollToHash(markdownSB);
 
-window.addEventListener("popstate", function () {
+window.addEventListener("popstate", () => {
     const path = window.location.pathname;
     update_page(html_map, path);
 });

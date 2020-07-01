@@ -69,7 +69,7 @@ function fade_messages() {
     }
 
     // Defer updating all message groups so that the compose box can open sooner
-    setTimeout(function (expected_msg_list, expected_recipient) {
+    setTimeout((expected_msg_list, expected_recipient) => {
         const all_groups = rows.get_table(current_msg_list.table_name).find(".recipient_row");
 
         if (current_msg_list !== expected_msg_list ||

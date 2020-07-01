@@ -70,13 +70,13 @@ function append_and_display_title_area(tab_bar_data) {
 }
 
 function bind_title_area_handlers() {
-    $(".search_closed").on("click", function (e) {
+    $(".search_closed").on("click", (e) => {
         search.initiate_search();
         e.preventDefault();
         e.stopPropagation();
     });
 
-    $("#tab_list span:nth-last-child(2)").on("click", function (e) {
+    $("#tab_list span:nth-last-child(2)").on("click", (e) => {
         if (document.getSelection().type === "Range") {
             // Allow copy/paste to work normally without interference.
             return;
@@ -95,13 +95,13 @@ function bind_title_area_handlers() {
 
     // make sure that hover plays nicely with whether search is being
     // opened or not.
-    $(".narrow_description > a").hover(function () {
+    $(".narrow_description > a").hover(() => {
         if (night_mode_color) {
             $(".search_closed").css("color", night_mode_color);
         } else {
             $(".search_closed").css("color", color);
         }
-    }, function () {
+    }, () => {
         $(".search_closed").css("color", "");
     });
 }
@@ -150,7 +150,7 @@ exports.initialize = function () {
     exports.render_title_area();
 
     // register searchbar click handler
-    $('#search_exit').on("click", function (e) {
+    $('#search_exit').on("click", (e) => {
         tab_bar.exit_search();
         e.preventDefault();
         e.stopPropagation();

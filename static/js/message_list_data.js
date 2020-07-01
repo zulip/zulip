@@ -282,7 +282,7 @@ MessageListData.prototype = {
         let viewable_messages;
         if (this.muting_enabled) {
             this._all_items = messages.concat(this._all_items);
-            this._all_items.sort(function (a, b) {return a.id - b.id;});
+            this._all_items.sort((a, b) => a.id - b.id);
 
             viewable_messages = this.unmuted_messages(messages);
             this._items = viewable_messages.concat(this._items);
@@ -292,7 +292,7 @@ MessageListData.prototype = {
             this._items = messages.concat(this._items);
         }
 
-        this._items.sort(function (a, b) {return a.id - b.id;});
+        this._items.sort((a, b) => a.id - b.id);
         this._add_to_hash(messages);
         return viewable_messages;
     },
@@ -371,7 +371,7 @@ MessageListData.prototype = {
             if (self._is_localonly_id(msg.id)) {
                 // First non-local message before this one
                 const effective = self._next_nonlocal_message(self._items, a_idx,
-                                                              function (idx) { return idx - 1; });
+                                                              (idx) => idx - 1);
                 if (effective) {
                     // Turn the 10.02 in [11, 10.02, 12] into 11.02
                     const decimal = parseFloat((msg.id % 1).toFixed(0.02));
@@ -472,7 +472,7 @@ MessageListData.prototype = {
 
     _add_to_hash: function (messages) {
         const self = this;
-        messages.forEach(function (elem) {
+        messages.forEach((elem) => {
             const id = parseFloat(elem.id);
             if (isNaN(id)) {
                 blueslip.fatal("Bad message id");
@@ -525,7 +525,7 @@ MessageListData.prototype = {
 
         // If this message is now out of order, re-order and re-render
         const self = this;
-        setTimeout(function () {
+        setTimeout(() => {
             const current_message = self._hash.get(new_id);
             const index = self._items.indexOf(current_message);
 
@@ -537,9 +537,9 @@ MessageListData.prototype = {
             }
 
             const next = self._next_nonlocal_message(self._items, index,
-                                                     function (idx) { return idx + 1; });
+                                                     (idx) => idx + 1);
             const prev = self._next_nonlocal_message(self._items, index,
-                                                     function (idx) { return idx - 1; });
+                                                     (idx) => idx - 1);
 
             if (next !== undefined && current_message.id > next.id ||
                 prev !== undefined && current_message.id < prev.id) {

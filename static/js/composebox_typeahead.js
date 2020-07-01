@@ -257,12 +257,12 @@ function select_on_focus(field_id) {
     // conditions in Chrome so we need to protect against infinite
     // recursion.
     let in_handler = false;
-    $("#" + field_id).focus(function () {
+    $("#" + field_id).focus(() => {
         if (in_handler) {
             return;
         }
         in_handler = true;
-        $("#" + field_id).select().one('mouseup', function (e) {
+        $("#" + field_id).select().one('mouseup', (e) => {
             e.preventDefault();
         });
         in_handler = false;
@@ -907,7 +907,7 @@ exports.content_typeahead_selected = function (item, event) {
 
     // Keep the cursor after the newly inserted text, as Bootstrap will call textbox.change() to
     // overwrite the text in the textbox.
-    setTimeout(function () {
+    setTimeout(() => {
         textbox.caret(beginning.length, beginning.length);
         // Also, trigger autosize to check if compose box needs to be resized.
         compose_ui.autosize_textarea();
@@ -954,7 +954,7 @@ exports.sort_results = function (completing, matches, token) {
         // topic_jump doesn't actually have a typeahead popover, so we return quickly here.
         return matches;
     case 'topic_list':
-        return typeahead_helper.sorter(token, matches, function (x) {return x;});
+        return typeahead_helper.sorter(token, matches, (x) => x);
     }
 };
 
@@ -1044,7 +1044,7 @@ exports.initialize = function () {
     $("form#send_message_form").keydown(handle_keydown);
     $("form#send_message_form").keyup(handle_keyup);
 
-    $("#enter_sends").click(function () {
+    $("#enter_sends").click(() => {
         const send_button = $("#compose-send-button");
         page_params.enter_sends = $("#enter_sends").is(":checked");
         if (page_params.enter_sends) {
@@ -1097,7 +1097,7 @@ exports.initialize = function () {
             return typeahead_helper.render_typeahead_item({ primary: item });
         },
         sorter: function (items) {
-            const sorted = typeahead_helper.sorter(this.query, items, function (x) {return x;});
+            const sorted = typeahead_helper.sorter(this.query, items, (x) => x);
             if (sorted.length > 0 && !sorted.includes(this.query)) {
                 sorted.unshift(this.query);
             }

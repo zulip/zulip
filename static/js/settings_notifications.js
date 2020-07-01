@@ -109,14 +109,14 @@ exports.set_up = function () {
         );
     });
 
-    $("#play_notification_sound").click(function () {
+    $("#play_notification_sound").click(() => {
         $("#notifications-area").find("audio")[0].play();
     });
 
     const notification_sound_dropdown = $("#notification_sound");
     notification_sound_dropdown.val(page_params.notification_sound);
 
-    $("#enable_sounds, #enable_stream_audible_notifications").change(function () {
+    $("#enable_sounds, #enable_stream_audible_notifications").change(() => {
         if ($("#enable_stream_audible_notifications").prop("checked") || $("#enable_sounds").prop("checked")) {
             notification_sound_dropdown.prop("disabled", false);
             notification_sound_dropdown.parent().removeClass("control-label-disabled");

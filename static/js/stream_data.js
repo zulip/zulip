@@ -106,9 +106,7 @@ exports.stream_post_policy_values = {
 };
 
 exports.clear_subscriptions = function () {
-    stream_info = new BinaryDict(function (sub) {
-        return sub.subscribed;
-    });
+    stream_info = new BinaryDict((sub) => sub.subscribed);
     subs_by_stream_id = new Map();
 };
 
@@ -615,7 +613,7 @@ exports.all_topics_in_cache = function (sub) {
 exports.set_realm_default_streams = function (realm_default_streams) {
     default_stream_ids.clear();
 
-    realm_default_streams.forEach(function (stream) {
+    realm_default_streams.forEach((stream) => {
         default_stream_ids.add(stream.stream_id);
     });
 };
@@ -949,7 +947,7 @@ exports.initialize = function (params) {
     color_data.claim_colors(subscriptions);
 
     function populate_subscriptions(subs, subscribed, previously_subscribed) {
-        subs.forEach(function (sub) {
+        subs.forEach((sub) => {
             sub.subscribed = subscribed;
             sub.previously_subscribed = previously_subscribed;
 

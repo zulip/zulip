@@ -187,16 +187,14 @@ exports.create = function (opts) {
 
         insertManyPills: function (pills) {
             if (typeof pills === "string") {
-                pills = pills.split(/,/g).map(function (pill) {
-                    return pill.trim();
-                });
+                pills = pills.split(/,/g).map((pill) => pill.trim());
             }
 
             // this is an array to push all the errored values to, so it's drafts
             // of pills for the user to fix.
             const drafts = [];
 
-            pills.forEach(function (pill) {
+            pills.forEach((pill) => {
                 // if this returns `false`, it erroed and we should push it to
                 // the draft pills.
                 if (funcs.appendPill(pill) === false) {
@@ -235,7 +233,7 @@ exports.create = function (opts) {
     };
 
     (function events() {
-        store.$parent.on("keydown", ".input", function (e) {
+        store.$parent.on("keydown", ".input", (e) => {
             const char = e.keyCode || e.charCode;
 
             if (char === KEY.ENTER) {
@@ -300,7 +298,7 @@ exports.create = function (opts) {
 
         // handle events while hovering on ".pill" elements.
         // the three primary events are next, previous, and delete.
-        store.$parent.on("keydown", ".pill", function (e) {
+        store.$parent.on("keydown", ".pill", (e) => {
             const char = e.keyCode || e.charCode;
 
             const $pill = store.$parent.find(".pill:focus");
@@ -328,7 +326,7 @@ exports.create = function (opts) {
 
         // replace formatted input with plaintext to allow for sane copy-paste
         // actions.
-        store.$parent.on("paste", ".input", function (e) {
+        store.$parent.on("paste", ".input", (e) => {
             e.preventDefault();
 
             // get text representation of clipboard
@@ -360,7 +358,7 @@ exports.create = function (opts) {
             }
         });
 
-        store.$parent.on("copy", ".pill", function (e) {
+        store.$parent.on("copy", ".pill", (e) => {
             const id = store.$parent.find(":focus").data("id");
             const data = funcs.getByID(id);
             e.originalEvent.clipboardData.setData("text/plain", store.get_text_from_item(data.item));

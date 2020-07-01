@@ -33,7 +33,7 @@ const _page_params = {
 const _realm_icon = {};
 const _channel = {};
 
-global.stub_templates(function (name, data) {
+global.stub_templates((name, data) => {
     if (name === 'settings/admin_realm_domains_list') {
         assert(data.realm_domain.domain);
         return 'stub-domains-list';

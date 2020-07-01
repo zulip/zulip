@@ -71,7 +71,7 @@ function set_up_handlers() {
     meta.handlers_set = true;
 
     // if the user mouses over the notification, don't hide it.
-    meta.$container.mouseenter(function () {
+    meta.$container.mouseenter(() => {
         if (!meta.opened) {
             return;
         }
@@ -80,7 +80,7 @@ function set_up_handlers() {
     });
 
     // once the user's mouse leaves the notification, restart the countdown.
-    meta.$container.mouseleave(function () {
+    meta.$container.mouseleave(() => {
         if (!meta.opened) {
             return;
         }
@@ -91,11 +91,11 @@ function set_up_handlers() {
         meta.hide_me_time = Math.max(meta.hide_me_time, new Date().getTime() + 2000);
     });
 
-    meta.$container.on('click', '.exit-me', function () {
+    meta.$container.on('click', '.exit-me', () => {
         animate.fadeOut();
     });
 
-    meta.$container.on('click', '.feedback_undo', function () {
+    meta.$container.on('click', '.feedback_undo', () => {
         if (meta.undo) {
             meta.undo();
         }

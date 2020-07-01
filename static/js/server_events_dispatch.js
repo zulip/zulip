@@ -437,7 +437,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         }
         if (event.setting_name === 'color_scheme') {
             $("body").fadeOut(300);
-            setTimeout(function () {
+            setTimeout(() => {
                 if (event.setting === settings_config.color_scheme_values.night.code) {
                     night_mode.enable();
                     realm_logo.rerender();

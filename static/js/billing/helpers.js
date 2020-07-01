@@ -22,7 +22,7 @@ exports.create_ajax_request = function (url, form_name, stripe_token = null, num
         data.stripe_token = JSON.stringify(stripe_token.id);
     }
 
-    form.serializeArray().forEach(function (item) {
+    form.serializeArray().forEach((item) => {
         if (numeric_inputs.includes(item.name)) {
             data[item.name] = item.value;
         } else {

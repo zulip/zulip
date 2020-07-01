@@ -180,9 +180,7 @@ exports.per_stream_history = function (stream_id) {
 
         const recents = my_recents.concat(missing_topics);
 
-        recents.sort(function (a, b) {
-            return b.message_id - a.message_id;
-        });
+        recents.sort((a, b) => b.message_id - a.message_id);
 
         const names = recents.map((obj) => obj.pretty_name);
 

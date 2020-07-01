@@ -233,11 +233,11 @@ run_test('markdown_detection', () => {
         "youtube url https://www.youtube.com/watch?v=HHZ8iqswiCw&feature=youtu.be&a",
     ];
 
-    no_markup.forEach(function (content) {
+    no_markup.forEach((content) => {
         assert.equal(markdown.contains_backend_only_syntax(content), false);
     });
 
-    markup.forEach(function (content) {
+    markup.forEach((content) => {
         assert.equal(markdown.contains_backend_only_syntax(content), true);
     });
 });
@@ -245,7 +245,7 @@ run_test('markdown_detection', () => {
 run_test('marked_shared', () => {
     const tests = markdown_data.regular_tests;
 
-    tests.forEach(function (test) {
+    tests.forEach((test) => {
 
         // Ignore tests if specified
         if (test.ignore === true) {
@@ -423,7 +423,7 @@ run_test('marked', () => {
     // isn't present in emoji_codes.codepoint_to_name.
     delete emoji_codes.codepoint_to_name['1f6b2'];
 
-    test_cases.forEach(function (test_case) {
+    test_cases.forEach((test_case) => {
         // Disable emoji conversion by default.
         page_params.translate_emoticons = test_case.translate_emoticons || false;
 
@@ -563,7 +563,7 @@ run_test('backend_only_realm_filters', () => {
         'Here is the PR-#123.',
         'Function abc() was introduced in (PR)#123.',
     ];
-    backend_only_realm_filters.forEach(function (content) {
+    backend_only_realm_filters.forEach((content) => {
         assert.equal(markdown.contains_backend_only_syntax(content), true);
     });
 });

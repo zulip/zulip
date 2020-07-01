@@ -11,7 +11,7 @@ exports.build_realm_icon_widget = function (upload_function) {
     } else {
         $("#realm-icon-upload-widget .settings-page-delete-button").show();
     }
-    $("#realm-icon-upload-widget .settings-page-delete-button").on('click', function (e) {
+    $("#realm-icon-upload-widget .settings-page-delete-button").on('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
         channel.del({

@@ -1,7 +1,5 @@
 zrequire('people');
-set_global('md5', function (s) {
-    return 'md5-' + s;
-});
+set_global('md5', (s) => 'md5-' + s);
 zrequire('user_pill');
 
 set_global('page_params', {

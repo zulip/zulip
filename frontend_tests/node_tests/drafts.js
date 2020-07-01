@@ -119,7 +119,7 @@ run_test('draft_model', () => {
 
     localStorage.clear();
     (function test_addDraft() {
-        stub_timestamp(1, function () {
+        stub_timestamp(1, () => {
             const expected = { ...draft_1 };
             expected.updatedAt = 1;
             const id = draft_model.addDraft({ ...draft_1 });
@@ -130,7 +130,7 @@ run_test('draft_model', () => {
 
     localStorage.clear();
     (function test_editDraft() {
-        stub_timestamp(2, function () {
+        stub_timestamp(2, () => {
             ls.set("drafts", { id1: draft_1 });
             const expected = { ...draft_2 };
             expected.updatedAt = 2;
@@ -313,7 +313,7 @@ run_test('format_drafts', () => {
         return stub_render_now(time, new XDate(1549958107000));
     };
 
-    global.stub_templates(function (template_name, data) {
+    global.stub_templates((template_name, data) => {
         assert.equal(template_name, 'draft_table_body');
         // Tests formatting and sorting of drafts
         assert.deepEqual(data.drafts, expected);

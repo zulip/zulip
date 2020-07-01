@@ -41,8 +41,8 @@ exports.process_message = function (message) {
         const regex = new RegExp('(' + before_punctuation + ')' +
                                '(' + clean + ')' +
                                '(' + after_punctuation + ')', 'ig');
-        message.content = message.content.replace(regex, function (match, before, word,
-                                                                   after, offset, content) {
+        message.content = message.content.replace(regex, (match, before, word,
+                                                          after, offset, content) => {
             // Logic for ensuring that we don't muck up rendered HTML.
             const pre_match = content.substring(0, offset);
             // We want to find the position of the `<` and `>` only in the

@@ -176,7 +176,7 @@ exports.apply_markdown = function (message) {
         silencedMentionHandler: function (quote) {
             // Silence quoted mentions.
             const user_mention_re = /<span.*user-mention.*data-user-id="(\d+|\*)"[^>]*>@/gm;
-            quote = quote.replace(user_mention_re, function (match) {
+            quote = quote.replace(user_mention_re, (match) => {
                 match = match.replace(/"user-mention"/g, '"user-mention silent"');
                 match = match.replace(/>@/g, '>');
                 return match;
@@ -502,9 +502,7 @@ exports.initialize = function (realm_filters, helper_config) {
 
     // Tell our fenced code preprocessor how to insert arbitrary
     // HTML into the output. This generated HTML is safe to not escape
-    fenced_code.set_stash_func(function (html) {
-        return marked.stashHtml(html, true);
-    });
+    fenced_code.set_stash_func((html) => marked.stashHtml(html, true));
 
     marked.setOptions({
         gfm: true,

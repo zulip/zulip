@@ -104,14 +104,14 @@ exports.upload_files = function (uppy, config, files) {
     exports.get_item("send_button", config).attr("disabled", "");
     exports.get_item("send_status", config).addClass("alert-info").removeClass("alert-error").show();
     exports.get_item("send_status_message", config).html($("<p>").text(i18n.t("Uploading…")));
-    exports.get_item("send_status_close_button", config).one('click', function () {
+    exports.get_item("send_status_close_button", config).one('click', () => {
         uppy.getFiles().forEach((file) => {
             compose_ui.replace_syntax(exports.get_translated_status(file), "", exports.get_item("textarea", config));
         });
         compose_ui.autosize_textarea();
         uppy.cancelAll();
         exports.get_item("textarea", config).focus();
-        setTimeout(function () {
+        setTimeout(() => {
             exports.hide_upload_status(config);
         }, 500);
     });
@@ -236,7 +236,7 @@ exports.setup_upload = function (config) {
 
         const has_errors = exports.get_item("send_status", config).hasClass("alert-error");
         if (!uploads_in_progress && !has_errors) {
-            setTimeout(function () {
+            setTimeout(() => {
                 exports.hide_upload_status(config);
             }, 500);
         }

@@ -11,7 +11,7 @@ exports.initialize = function () {
         },
     });
 
-    $('#update-card-button').on('click', function (e) {
+    $('#update-card-button').on('click', (e) => {
         const email = $("#payment-method").data("email");
         card_change_handler.open({
             name: 'Zulip',
@@ -25,7 +25,7 @@ exports.initialize = function () {
         e.preventDefault();
     });
 
-    $("#change-plan-status").on('click', function (e) {
+    $("#change-plan-status").on('click', (e) => {
         helpers.create_ajax_request("/json/billing/plan/change", "planchange", undefined, ["status"]);
         e.preventDefault();
     });
@@ -33,6 +33,6 @@ exports.initialize = function () {
 
 window.billing = exports;
 
-$(function () {
+$(() => {
     exports.initialize();
 });

@@ -312,7 +312,7 @@ exports.set_up = function () {
         },
     });
 
-    $("#create_bot_type").on("change", function () {
+    $("#create_bot_type").on("change", () => {
         const bot_type = $('#create_bot_type :selected').val();
         // For "generic bot" or "incoming webhook" both these fields need not be displayed.
         $('#service_name_list').hide();
@@ -333,20 +333,20 @@ exports.set_up = function () {
         }
     });
 
-    $("#select_service_name").on("change", function () {
+    $("#select_service_name").on("change", () => {
         $('#config_inputbox').children().hide();
         const selected_bot = $('#select_service_name :selected').val();
         $("[name*='" + selected_bot + "']").show();
     });
 
-    $("#active_bots_list").on("click", "button.delete_bot", function (e) {
+    $("#active_bots_list").on("click", "button.delete_bot", (e) => {
         const bot_id = parseInt($(e.currentTarget).attr('data-user-id'), 10);
 
         channel.del({
             url: '/json/bots/' + encodeURIComponent(bot_id),
             success: function () {
                 const row = $(e.currentTarget).closest("li");
-                row.hide('slow', function () { row.remove(); });
+                row.hide('slow', () => { row.remove(); });
             },
             error: function (xhr) {
                 exports.bot_error(bot_id, xhr);
@@ -354,7 +354,7 @@ exports.set_up = function () {
         });
     });
 
-    $("#inactive_bots_list").on("click", "button.reactivate_bot", function (e) {
+    $("#inactive_bots_list").on("click", "button.reactivate_bot", (e) => {
         const user_id = parseInt($(e.currentTarget).attr('data-user-id'), 10);
 
         channel.post({
@@ -365,7 +365,7 @@ exports.set_up = function () {
         });
     });
 
-    $("#active_bots_list").on("click", "button.regenerate_bot_api_key", function (e) {
+    $("#active_bots_list").on("click", "button.regenerate_bot_api_key", (e) => {
         const bot_id = parseInt($(e.currentTarget).attr('data-user-id'), 10);
         channel.post({
             url: '/json/bots/' + encodeURIComponent(bot_id) + '/api_key/regenerate',
@@ -384,7 +384,7 @@ exports.set_up = function () {
 
     let image_version = 0;
 
-    $("#active_bots_list").on("click", "button.open_edit_bot_form", function (e) {
+    $("#active_bots_list").on("click", "button.open_edit_bot_form", (e) => {
         e.preventDefault();
         e.stopPropagation();
         overlays.open_modal('#edit_bot_modal');
@@ -515,19 +515,19 @@ exports.set_up = function () {
         },
     });
 
-    $("#bots_lists_navbar .add-a-new-bot-tab").click(function (e) {
+    $("#bots_lists_navbar .add-a-new-bot-tab").click((e) => {
         e.preventDefault();
         e.stopPropagation();
         focus_tab.add_a_new_bot_tab();
     });
 
-    $("#bots_lists_navbar .active-bots-tab").click(function (e) {
+    $("#bots_lists_navbar .active-bots-tab").click((e) => {
         e.preventDefault();
         e.stopPropagation();
         focus_tab.active_bots_tab();
     });
 
-    $("#bots_lists_navbar .inactive-bots-tab").click(function (e) {
+    $("#bots_lists_navbar .inactive-bots-tab").click((e) => {
         e.preventDefault();
         e.stopPropagation();
         focus_tab.inactive_bots_tab();

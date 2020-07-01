@@ -33,7 +33,7 @@ exports.with_stub = function (f) {
 };
 
 (function test_ourselves() {
-    exports.with_stub(function (stub) {
+    exports.with_stub((stub) => {
         stub.f('blue', 42);
         const args = stub.get_args('color', 'n');
         assert.equal(args.color, 'blue');

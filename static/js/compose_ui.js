@@ -63,13 +63,13 @@ exports.replace_syntax = function (old_syntax, new_syntax, textarea) {
         textarea = $('#compose-textarea');
     }
 
-    textarea.val(textarea.val().replace(old_syntax, function () {
+    textarea.val(textarea.val().replace(old_syntax, () =>
         // We need this anonymous function to avoid JavaScript's
         // replace() function treating `$`s in new_syntax as special syntax.  See
         // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#Description
         // for details.
-        return new_syntax;
-    }));
+        new_syntax
+    ));
 };
 
 exports.compute_placeholder_text = function (opts) {

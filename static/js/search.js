@@ -120,7 +120,7 @@ exports.initialize = function () {
         on_escape: tab_bar.exit_search,
     });
 
-    searchbox_form.on('compositionend', function () {
+    searchbox_form.on('compositionend', () => {
         // Set `is_using_input_method` to true if enter is pressed to exit
         // the input tool popover and get the text in the search bar. Then
         // we suppress searching triggered by this enter key by checking
@@ -129,7 +129,7 @@ exports.initialize = function () {
         exports.is_using_input_method = true;
     });
 
-    searchbox_form.keydown(function (e) {
+    searchbox_form.keydown((e) => {
         exports.update_button_visibility();
         const code = e.which;
         if (code === 13 && search_query_box.is(":focus")) {
@@ -138,7 +138,7 @@ exports.initialize = function () {
             // to be done will be handled in the keyup.
             return false;
         }
-    }).keyup(function (e) {
+    }).keyup((e) => {
         if (exports.is_using_input_method) {
             exports.is_using_input_method = false;
             return;
@@ -164,7 +164,7 @@ exports.initialize = function () {
     // more work to re-order everything and make them private.
 
     search_query_box.on('focus', exports.focus_search);
-    search_query_box.on('blur', function (e) {
+    search_query_box.on('blur', (e) => {
         // The search query box is a visual cue as to
         // whether search or narrowing is active.  If
         // the user blurs the search box, then we should
@@ -192,7 +192,7 @@ exports.initialize = function () {
                 return;
             }
         }
-        setTimeout(function () {
+        setTimeout(() => {
             exports.update_button_visibility();
             tab_bar.close_search_bar_and_open_narrow_description();
             searchbox.css({"box-shadow": "unset"});

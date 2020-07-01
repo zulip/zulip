@@ -135,7 +135,7 @@ run_test('sender_hover', () => {
         return {};
     };
 
-    global.stub_templates(function (fn, opts) {
+    global.stub_templates((fn, opts) => {
         switch (fn) {
         case 'no_arrow_popover':
             assert.deepEqual(opts, {
@@ -229,7 +229,7 @@ run_test('actions_popover', () => {
         };
     };
 
-    global.stub_templates(function (fn, opts) {
+    global.stub_templates((fn, opts) => {
         // TODO: Test all the properties of the popover
         switch (fn) {
         case 'actions_popover_content':

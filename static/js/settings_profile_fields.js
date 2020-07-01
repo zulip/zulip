@@ -280,12 +280,12 @@ function open_edit_form(e) {
         set_up_external_account_field_edit_form(profile_field, field_data.url_pattern);
     }
 
-    profile_field.form.find('.reset').on("click", function () {
+    profile_field.form.find('.reset').on("click", () => {
         profile_field.form.hide();
         profile_field.row.show();
     });
 
-    profile_field.form.find('.submit').on("click", function () {
+    profile_field.form.find('.submit').on("click", () => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -306,7 +306,7 @@ function open_edit_form(e) {
 
     profile_field.form.find(".edit_profile_field_choices_container").on("input", ".choice-row input", add_choice_row);
     profile_field.form.find(".edit_profile_field_choices_container").on("click", "button.delete-choice", delete_choice_row);
-    $(".profile_field_external_accounts_edit select").on('change', function (e) {
+    $(".profile_field_external_accounts_edit select").on('change', (e) => {
         const field_id = parseInt($(e.target).closest('.profile-field-form').attr('data-profile-field-id'), 10);
         const field_form = get_profile_field_info(field_id);
         set_up_external_account_field_edit_form(field_form, "");
@@ -402,7 +402,7 @@ function set_up_choices_field() {
         $("#profile_field_choices_row").hide();
     }
 
-    $('#profile_field_type').on('change', function (e) {
+    $('#profile_field_type').on('change', (e) => {
         const selected_field_id = parseInt($(e.target).val(), 10);
         if (selected_field_id === field_types.CHOICE.id) {
             $("#profile_field_choices_row").show();
@@ -416,11 +416,11 @@ function set_up_choices_field() {
 }
 
 function set_up_external_account_field() {
-    $('#profile_field_type').on('change', function () {
+    $('#profile_field_type').on('change', () => {
         set_up_create_field_form();
     });
 
-    $("#profile_field_external_accounts_type").on("change", function () {
+    $("#profile_field_external_accounts_type").on("change", () => {
         set_up_create_field_form();
     });
 }

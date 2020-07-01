@@ -18,7 +18,7 @@ exports.toggle = function (opts) {
             // classes need to be added for correct alignment or other purposes
             _component.addClass(opts.html_class);
         }
-        opts.values.forEach(function (value, i) {
+        opts.values.forEach((value, i) => {
             // create a tab with a tab-id so they don't have to be referenced
             // by text value which can be inconsistent.
             const tab = $("<div class='ind-tab' data-tab-key='" + value.key + "' data-tab-id='" + i + "' tabindex='0'>" + value.label + "</div>");

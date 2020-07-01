@@ -47,14 +47,14 @@ exports.clear_topics = function () {
 };
 
 exports.initialize = function () {
-    $('#stream_filters').on('click', '.show-more-topics', function (e) {
+    $('#stream_filters').on('click', '.show-more-topics', (e) => {
         zoom_in();
 
         e.preventDefault();
         e.stopPropagation();
     });
 
-    $('.show-all-streams').on('click', function (e) {
+    $('.show-all-streams').on('click', (e) => {
         exports.zoom_out();
 
         e.preventDefault();

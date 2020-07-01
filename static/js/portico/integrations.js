@@ -10,7 +10,7 @@ const INTEGRATIONS = new Map();
 const CATEGORIES = new Map();
 
 function load_data() {
-    $('.integration-lozenge').toArray().forEach(function (integration) {
+    $('.integration-lozenge').toArray().forEach((integration) => {
         const name = $(integration).data('name');
         const display_name = $(integration).find('.integration-name').text().trim();
 
@@ -19,7 +19,7 @@ function load_data() {
         }
     });
 
-    $('.integration-category').toArray().forEach(function (category) {
+    $('.integration-category').toArray().forEach((category) => {
         const name = $(category).data('category');
         const display_name = $(category).text().trim();
 
@@ -39,7 +39,7 @@ let state = Object.assign({}, INITIAL_STATE);
 
 
 function adjust_font_sizing() {
-    $('.integration-lozenge').toArray().forEach(function (integration) {
+    $('.integration-lozenge').toArray().forEach((integration) => {
         const $integration_name = $(integration).find('.integration-name');
         const $integration_category = $(integration).find('.integration-category');
 
@@ -97,11 +97,11 @@ function update_categories() {
     adjust_font_sizing();
 }
 
-const update_integrations = _.debounce(function () {
+const update_integrations = _.debounce(() => {
     const max_scrollY = window.scrollY;
 
     const integrations = $('.integration-lozenges').children().toArray();
-    integrations.forEach(function (integration) {
+    integrations.forEach((integration) => {
         const $integration = $(integration).find('.integration-lozenge');
         const $integration_category = $integration.find('.integration-category');
 
@@ -140,14 +140,12 @@ function hide_catalog_show_integration() {
     const categories = $('.integration-' + state.integration).data('categories')
         .slice(1, -1)
         .split(',')
-        .map(function (category) {
-            return category.trim().slice(1, -1);
-        });
+        .map((category) => category.trim().slice(1, -1));
 
     function show_integration(doc) {
         $('#integration-instructions-group .name').text(INTEGRATIONS.get(state.integration));
         $('#integration-instructions-group .categories .integration-category').remove();
-        categories.forEach(function (category) {
+        categories.forEach((category) => {
             let link;
             for (const [name, display_name] of CATEGORIES) {
                 if (display_name === category) {
@@ -323,7 +321,7 @@ function toggle_categories_dropdown() {
 }
 
 function integration_events() {
-    $('#integration-search input[type="text"]').keypress(function (e) {
+    $('#integration-search input[type="text"]').keypress((e) => {
         const integrations = $('.integration-lozenges').children().toArray();
         if (e.which === 13 && e.target.value !== '') {
             for (let i = 0; i < integrations.length; i += 1) {
@@ -337,24 +335,24 @@ function integration_events() {
         }
     });
 
-    $('.integration-categories-dropdown .dropdown-toggle').click(function () {
+    $('.integration-categories-dropdown .dropdown-toggle').click(() => {
         toggle_categories_dropdown();
     });
 
-    $('.integration-instruction-block').on('click', 'a .integration-category', function (e) {
+    $('.integration-instruction-block').on('click', 'a .integration-category', (e) => {
         const category = $(e.target).data('category');
         dispatch('SHOW_CATEGORY', { category: category });
         return false;
     });
 
-    $('.integrations a .integration-category').on('click', function (e) {
+    $('.integrations a .integration-category').on('click', (e) => {
         const category = $(e.target).data('category');
         dispatch('CHANGE_CATEGORY', { category: category });
         toggle_categories_dropdown();
         return false;
     });
 
-    $('.integrations a .integration-lozenge').on('click', function (e) {
+    $('.integrations a .integration-lozenge').on('click', (e) => {
         if (!$(e.target).closest('.integration-lozenge').hasClass('integration-create-your-own')) {
             const integration = $(e.target).closest('.integration-lozenge').data('name');
             dispatch('SHOW_INTEGRATION', { integration: integration });
@@ -362,7 +360,7 @@ function integration_events() {
         }
     });
 
-    $('a#integration-list-link span, a#integration-list-link i').on('click', function () {
+    $('a#integration-list-link span, a#integration-list-link i').on('click', () => {
         dispatch('HIDE_INTEGRATION');
         return false;
     });
@@ -371,11 +369,11 @@ function integration_events() {
     // the input event.
     $(".integrations .searchbar input[type='text']")
         .focus()
-        .on('input', function (e) {
+        .on('input', (e) => {
             dispatch('UPDATE_QUERY', { query: e.target.value.toLowerCase() });
         });
 
-    $(window).scroll(function () {
+    $(window).scroll(() => {
         if (document.body.scrollTop > 330) {
             $('.integration-categories-sidebar').addClass('sticky');
         } else {
@@ -383,11 +381,11 @@ function integration_events() {
         }
     });
 
-    $(window).on('resize', function () {
+    $(window).on('resize', () => {
         adjust_font_sizing();
     });
 
-    $(window).on('popstate', function () {
+    $(window).on('popstate', () => {
         if (window.location.pathname.startsWith('/integrations')) {
             dispatch('LOAD_PATH');
         } else {
@@ -397,7 +395,7 @@ function integration_events() {
 }
 
 // init
-$(function () {
+$(() => {
     integration_events();
     load_data();
     dispatch('LOAD_PATH');

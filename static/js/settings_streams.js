@@ -98,7 +98,7 @@ exports.build_page = function () {
 
     exports.update_default_streams_table();
 
-    $('.create_default_stream').keypress(function (e) {
+    $('.create_default_stream').keypress((e) => {
         if (e.which === 13) {
             e.preventDefault();
             e.stopPropagation();
@@ -119,7 +119,7 @@ exports.build_page = function () {
         },
     });
 
-    $(".default-stream-form").on("click", "#do_submit_stream", function (e) {
+    $(".default-stream-form").on("click", "#do_submit_stream", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const default_stream_input = $(".create_default_stream");

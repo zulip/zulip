@@ -223,9 +223,7 @@ exports.sorted_ids = function (ids) {
     // This mapping makes sure we are using ints, and
     // it also makes sure we don't mutate the list.
     let id_list = ids.map(to_int);
-    id_list.sort(function (a, b) {
-        return a - b;
-    });
+    id_list.sort((a, b) => a - b);
     id_list = _.uniq(id_list, true);
 
     return id_list;

@@ -118,6 +118,7 @@
         "space-unary-ops": "error",
         "no-whitespace-before-property": "error",
         "one-var": [ "error", "never" ],
+        "prefer-arrow-callback": "error",
         "prefer-const": [ "error",
             {
                 "ignoreReadBeforeAssign": true
@@ -366,7 +367,9 @@
                 "frontend_tests/casper_lib/*.js"
             ],
             "rules": {
-                "no-var": "off" // PhantomJS doesn’t support let, const
+                // Don’t require ES features that PhantomJS doesn’t support
+                "no-var": "off",
+                "prefer-arrow-callback": "off"
             }
         },
         {

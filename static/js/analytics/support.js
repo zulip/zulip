@@ -1,4 +1,4 @@
-$(function () {
+$(() => {
     $("body").on("click", ".scrub-realm-button", function (e) {
         e.preventDefault();
         const string_id = $(this).data("string-id");

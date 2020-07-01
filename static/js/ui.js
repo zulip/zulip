@@ -93,7 +93,7 @@ exports.update_starred_view = function (message_id, new_value) {
 
     // Avoid a full re-render, but update the star in each message
     // table in which it is visible.
-    update_message_in_all_views(message_id, function update_row(row) {
+    update_message_in_all_views(message_id, (row) => {
         const elt = row.find(".star");
         if (starred) {
             elt.addClass("fa-star").removeClass("fa-star-o").removeClass("empty-star");
@@ -107,7 +107,7 @@ exports.update_starred_view = function (message_id, new_value) {
 
 exports.show_message_failed = function (message_id, failed_msg) {
     // Failed to send message, so display inline retry/cancel
-    update_message_in_all_views(message_id, function update_row(row) {
+    update_message_in_all_views(message_id, (row) => {
         const failed_div = row.find('.message_failed');
         failed_div.toggleClass('notvisible', false);
         failed_div.find('.failed_text').attr('title', failed_msg);
@@ -132,7 +132,7 @@ exports.remove_messages = function (message_ids) {
 
 exports.show_failed_message_success = function (message_id) {
     // Previously failed message succeeded
-    update_message_in_all_views(message_id, function update_row(row) {
+    update_message_in_all_views(message_id, (row) => {
         row.find('.message_failed').toggleClass('notvisible', true);
     });
 };

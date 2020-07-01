@@ -1,7 +1,7 @@
-$(function () {
+$(() => {
     // This code will be executed when the user visits /emails in
     // development mode and email_log.html is rendered.
-    $('#toggle').change(function () {
+    $('#toggle').change(() => {
         if ($('.email-text').css('display') === 'none') {
             $(".email-text").each(function () {
                 $(this).css("display", "block");
@@ -25,7 +25,7 @@ $(function () {
             $("#forward_address_sections").hide();
         }
     });
-    $("#save_smptp_details").on("click", function () {
+    $("#save_smptp_details").on("click", () => {
         const address = $('input[name=forward]:checked').val() === "enabled" ? $("#address").val() : "";
         const csrf_token = $('input[name="csrfmiddlewaretoken"]').attr('value');
         const data = {forward_address: address, csrfmiddlewaretoken: csrf_token};
@@ -35,7 +35,7 @@ $(function () {
             data: data,
             success: function () {
                 $("#smtp_form_status").show();
-                setTimeout(function () {
+                setTimeout(() => {
                     $("#smtp_form_status").hide();
                 }, 3000);
             },

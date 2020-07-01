@@ -6,7 +6,7 @@ if (module.hot) {
 exports.status_classes = 'alert-error alert-success alert-info alert-warning';
 
 exports.autofocus = function (selector) {
-    $(function () {
+    $(() => {
         $(selector).focus();
     });
 };

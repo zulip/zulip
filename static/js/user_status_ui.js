@@ -78,11 +78,11 @@ exports.clear_message = function () {
 };
 
 exports.initialize = function () {
-    $('body').on('click', '.user_status_overlay .set_user_status', function () {
+    $('body').on('click', '.user_status_overlay .set_user_status', () => {
         exports.submit_new_status();
     });
 
-    $('body').on('keypress', '.user_status_overlay .user_status', function (event) {
+    $('body').on('keypress', '.user_status_overlay .user_status', (event) => {
         if (event.key === 'Enter') {
             event.preventDefault();
 
@@ -90,12 +90,12 @@ exports.initialize = function () {
         }
     });
 
-    $('body').on('keyup', '.user_status_overlay input.user_status', function () {
+    $('body').on('keyup', '.user_status_overlay input.user_status', () => {
         exports.update_button();
         exports.toggle_clear_message_button();
     });
 
-    $('#clear_status_message_button').on('click', function () {
+    $('#clear_status_message_button').on('click', () => {
         exports.clear_message();
         exports.update_button();
     });

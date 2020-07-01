@@ -202,7 +202,7 @@ function mark_client_active() {
 }
 
 exports.initialize = function () {
-    $("html").on("mousemove", function () {
+    $("html").on("mousemove", () => {
         exports.new_user_input = true;
     });
 

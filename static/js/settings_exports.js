@@ -85,7 +85,7 @@ exports.populate_exports_table = function (exports) {
 exports.set_up = function () {
     meta.loaded = true;
 
-    $("#export-data").on('click', function (e) {
+    $("#export-data").on('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
         const export_status = $('#export_status');

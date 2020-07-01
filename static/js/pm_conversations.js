@@ -53,9 +53,7 @@ exports.recent = (function () {
             conversation.max_message_id = message_id;
         }
 
-        recent_private_messages.sort(function (a, b) {
-            return b.max_message_id - a.max_message_id;
-        });
+        recent_private_messages.sort((a, b) => b.max_message_id - a.max_message_id);
     };
 
     self.get = function () {

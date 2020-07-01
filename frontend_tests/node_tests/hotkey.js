@@ -59,8 +59,8 @@ function return_true() { return true; }
 function return_false() { return false; }
 
 function stubbing(func_name_to_stub, test_function) {
-    global.with_overrides(function (override) {
-        global.with_stub(function (stub) {
+    global.with_overrides((override) => {
+        global.with_stub((stub) => {
             override(func_name_to_stub, stub.f);
             test_function(stub);
         });
@@ -165,7 +165,7 @@ run_test('basic_chars', () => {
     }
 
     function assert_mapping(c, func_name, shiftKey) {
-        stubbing(func_name, function () {
+        stubbing(func_name, () => {
             assert(process(c, shiftKey));
         });
     }
@@ -370,7 +370,7 @@ run_test('motion_keys', () => {
     }
 
     function assert_mapping(key_name, func_name, shiftKey, ctrlKey) {
-        stubbing(func_name, function () {
+        stubbing(func_name, () => {
             assert(process(key_name, shiftKey, ctrlKey));
         });
     }

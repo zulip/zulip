@@ -142,7 +142,7 @@ run_test('validate_stream_message_address_info', () => {
 
     sub.subscribed = false;
     stream_data.add_sub(sub);
-    global.stub_templates(function (template_name) {
+    global.stub_templates((template_name) => {
         assert.equal(template_name, 'compose_not_subscribed');
         return 'compose_not_subscribed_stub';
     });
@@ -204,7 +204,7 @@ run_test('validate', () => {
         $("#zephyr-mirror-error").is = noop;
         $("#private_message_recipient").select(noop);
 
-        global.stub_templates(function (fn) {
+        global.stub_templates((fn) => {
             assert.equal(fn, 'input_pill');
             return '<div>pill-html</div>';
         });
@@ -325,7 +325,7 @@ run_test('validate_stream_message', () => {
         assert.equal(stream_name, 'social');
         return 16;
     };
-    global.stub_templates(function (template_name, data) {
+    global.stub_templates((template_name, data) => {
         assert.equal(template_name, 'compose_all_everyone');
         assert.equal(data.count, 16);
         return 'compose_all_everyone_stub';
@@ -601,7 +601,7 @@ run_test('send_message', () => {
         return stub_state;
     }
 
-    global.patch_builtin('setTimeout', function (func) {
+    global.patch_builtin('setTimeout', (func) => {
         func();
     });
     global.server_events = {
@@ -868,7 +868,7 @@ run_test('warn_if_private_stream_is_linked', () => {
     const checks = [
         (function () {
             let called;
-            global.stub_templates(function (template_name, context) {
+            global.stub_templates((template_name, context) => {
                 called = true;
                 assert.equal(template_name, 'compose_private_stream_alert');
                 assert.equal(context.stream_name, 'Denmark');
@@ -1144,7 +1144,7 @@ run_test('warn_if_mentioning_unsubscribed_user', () => {
 
         (function () {
             let called;
-            global.stub_templates(function (template_name, context) {
+            global.stub_templates((template_name, context) => {
                 called = true;
                 assert.equal(template_name, 'compose_invite_users');
                 assert.equal(context.user_id, 34);

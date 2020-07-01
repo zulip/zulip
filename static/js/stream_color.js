@@ -124,7 +124,7 @@ exports.initialize = function () {
 // already saved on the server, etc.
 //
 // This gets called on every message, so cache the results.
-exports.get_color_class = _.memoize(function (color) {
+exports.get_color_class = _.memoize((color) => {
     let match;
     let i;
     const channel = [0, 0, 0];

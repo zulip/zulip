@@ -634,7 +634,7 @@ exports.process_hotkey = function (e, hotkey) {
         compose_actions.start('private', {trigger: "compose_hotkey"});
         return true;
     case 'narrow_private':
-        return do_narrow_action(function (target, opts) {
+        return do_narrow_action((target, opts) => {
             narrow.by('is', 'private', opts);
         });
     case 'query_streams':
@@ -792,7 +792,7 @@ exports.process_keydown = function (e) {
     return exports.process_hotkey(e, hotkey);
 };
 
-$(document).keydown(function (e) {
+$(document).keydown((e) => {
     if (exports.process_keydown(e)) {
         e.preventDefault();
     }
@@ -806,7 +806,7 @@ exports.process_keypress = function (e) {
     return exports.process_hotkey(e, hotkey);
 };
 
-$(document).keypress(function (e) {
+$(document).keypress((e) => {
     if (exports.process_keypress(e)) {
         e.preventDefault();
     }

@@ -606,12 +606,12 @@ exports.setup_page = function (callback) {
         exports.actually_filter_streams();
         stream_create.set_up_handlers();
 
-        $("#stream_filter input[type='text']").on("input", function () {
+        $("#stream_filter input[type='text']").on("input", () => {
             // Debounce filtering in case a user is typing quickly
             filter_streams();
         });
 
-        $("#clear_search_stream_name").on("click", function () {
+        $("#clear_search_stream_name").on("click", () => {
             $("#stream_filter input[type='text']").val("");
             filter_streams();
         });
@@ -637,7 +637,7 @@ exports.switch_to_stream_row = function (stream_id) {
     scroll_util.scroll_element_into_container(stream_row, stream_row.parent());
 
     // It's dubious that we need this timeout any more.
-    setTimeout(function () {
+    setTimeout(() => {
         if (stream_id === exports.get_active_data().id) {
             stream_row.click();
         }
@@ -684,7 +684,7 @@ exports.change_state = function (section) {
 };
 
 exports.launch = function (section) {
-    exports.setup_page(function () {
+    exports.setup_page(() => {
         overlays.open_overlay({
             name: 'subscriptions',
             overlay: $("#subscription_overlay"),
@@ -889,12 +889,12 @@ exports.sub_or_unsub = function (sub, stream_row) {
 
 
 exports.initialize = function () {
-    $("#subscriptions_table").on("click", ".create_stream_button", function (e) {
+    $("#subscriptions_table").on("click", ".create_stream_button", (e) => {
         e.preventDefault();
         exports.open_create_stream();
     });
 
-    $(".subscriptions").on("click", "[data-dismiss]", function (e) {
+    $(".subscriptions").on("click", "[data-dismiss]", (e) => {
         e.preventDefault();
         // we want to make sure that the click is not just a simulated
         // click; this fixes an issue where hitting "enter" would
@@ -904,9 +904,9 @@ exports.initialize = function () {
         }
     });
 
-    $("body").on("mouseover", ".subscribed-button", function (e) {
+    $("body").on("mouseover", ".subscribed-button", (e) => {
         $(e.target).addClass("btn-danger").text(i18n.t("Unsubscribe"));
-    }).on("mouseout", ".subscribed-button", function (e) {
+    }).on("mouseout", ".subscribed-button", (e) => {
         $(e.target).removeClass("btn-danger").text(i18n.t("Subscribed"));
     });
 
@@ -914,12 +914,12 @@ exports.initialize = function () {
         selectText(this);
     });
 
-    $("#subscriptions_table").on("click", ".stream-row, .create_stream_button", function () {
+    $("#subscriptions_table").on("click", ".stream-row, .create_stream_button", () => {
         $(".right").addClass("show");
         $(".subscriptions-header").addClass("slide-left");
     });
 
-    $("#subscriptions_table").on("click", ".fa-chevron-left", function () {
+    $("#subscriptions_table").on("click", ".fa-chevron-left", () => {
         $(".right").removeClass("show");
         $(".subscriptions-header").removeClass("slide-left");
     });
@@ -927,7 +927,7 @@ exports.initialize = function () {
     (function defocus_sub_settings() {
         const sel = ".search-container, .streams-list, .subscriptions-header";
 
-        $("#subscriptions_table").on("click", sel, function (e) {
+        $("#subscriptions_table").on("click", sel, (e) => {
             if ($(e.target).is(sel)) {
                 stream_edit.open_edit_panel_empty();
             }

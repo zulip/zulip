@@ -1,14 +1,10 @@
-$(function () {
+$(() => {
     // NB: this file is included on multiple pages.  In each context,
     // some of the jQuery selectors below will return empty lists.
 
     const password_field = $('#id_password, #id_new_password1');
     if (password_field.length > 0) {
-        $.validator.addMethod('password_strength', function (value) {
-            return common.password_quality(value, undefined, password_field);
-        }, function () {
-            return common.password_warning(password_field.val(), password_field);
-        });
+        $.validator.addMethod('password_strength', (value) => common.password_quality(value, undefined, password_field), () => common.password_warning(password_field.val(), password_field));
         // Reset the state of the password strength bar if the page
         // was just reloaded due to a validation failure on the backend.
         common.password_quality(password_field.val(), $('#pw_strength .bar'), password_field);
@@ -76,7 +72,7 @@ $(function () {
     // Code in this block will be executed when the /accounts/send_confirm
     // endpoint is visited i.e. accounts_send_confirm.html is rendered.
     if ($("[data-page-id='accounts-send-confirm']").length > 0) {
-        $("#resend_email_link").click(function () {
+        $("#resend_email_link").click(() => {
             $('.resend_confirm').submit();
         });
     }
@@ -155,7 +151,7 @@ $(function () {
 
     function check_subdomain_avilable(subdomain) {
         const url = "/json/realm/subdomain/" + subdomain;
-        $.get(url, function (response) {
+        $.get(url, (response) => {
             if (response.msg !== "available") {
                 $("#id_team_subdomain_error_client").html(response.msg);
                 $("#id_team_subdomain_error_client").show();
@@ -182,12 +178,12 @@ $(function () {
     update_full_name_section();
 
     let timer;
-    $('#id_team_subdomain').on("keydown", function () {
+    $('#id_team_subdomain').on("keydown", () => {
         $('.team_subdomain_error_server').text('').css('display', 'none');
         $("#id_team_subdomain_error_client").css('display', 'none');
         clearTimeout(timer);
     });
-    $('#id_team_subdomain').on("keyup", function () {
+    $('#id_team_subdomain').on("keyup", () => {
         clearTimeout(timer);
         timer = setTimeout(check_subdomain_avilable, 250, $('#id_team_subdomain').val());
     });

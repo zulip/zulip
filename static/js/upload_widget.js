@@ -53,12 +53,12 @@ exports.build_widget = function (
 
 
 
-    clear_button.on('click', function (e) {
+    clear_button.on('click', (e) => {
         clear();
         e.preventDefault();
     });
 
-    upload_button.on('drop', function (e) {
+    upload_button.on('drop', (e) => {
         const files = e.dataTransfer.files;
         if (files === null || files === undefined || files.length === 0) {
             return false;
@@ -69,7 +69,7 @@ exports.build_widget = function (
     });
 
     get_file_input().attr('accept', supported_types.toString());
-    get_file_input().on('change', function (e) {
+    get_file_input().on('change', (e) => {
         if (e.target.files.length === 0) {
             input_error.hide();
         } else if (e.target.files.length === 1) {
@@ -92,7 +92,7 @@ exports.build_widget = function (
         }
     });
 
-    upload_button.on('click', function (e) {
+    upload_button.on('click', (e) => {
         get_file_input().trigger('click');
         e.preventDefault();
     });
@@ -140,7 +140,7 @@ exports.build_direct_upload_widget = function (
         control.val('');
     }
 
-    upload_button.on('drop', function (e) {
+    upload_button.on('drop', (e) => {
         const files = e.dataTransfer.files;
         if (files === null || files === undefined || files.length === 0) {
             return false;
@@ -151,7 +151,7 @@ exports.build_direct_upload_widget = function (
     });
 
     get_file_input().attr('accept', supported_types.toString());
-    get_file_input().on('change', function (e) {
+    get_file_input().on('change', (e) => {
         if (e.target.files.length === 0) {
             input_error.hide();
         } else if (e.target.files.length === 1) {
@@ -174,7 +174,7 @@ exports.build_direct_upload_widget = function (
         }
     });
 
-    upload_button.on('click', function (e) {
+    upload_button.on('click', (e) => {
         get_file_input().trigger('click');
         e.preventDefault();
     });

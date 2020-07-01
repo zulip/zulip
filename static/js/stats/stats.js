@@ -9,7 +9,7 @@ let last_full_update = Infinity;
 // TODO: should take a dict of arrays and do it for all keys
 function partial_sums(array) {
     let accumulator = 0;
-    return array.map(function (o) {
+    return array.map((o) => {
         accumulator += o;
         return accumulator;
     });
@@ -71,13 +71,13 @@ function update_last_full_update(end_times) {
     $('#id_last_full_update').closest('.last-update').show();
 }
 
-$(function tooltips() {
+$(() => {
     $('span[data-toggle="tooltip"]').tooltip({
         animation: false,
         placement: 'top',
         trigger: 'manual',
     });
-    $('#id_last_update_question_sign').hover(function () {
+    $('#id_last_update_question_sign').hover(() => {
         $('span.last_update_tooltip').tooltip('toggle');
     });
     // Add configuration for any additional tooltips here.
@@ -91,9 +91,7 @@ function populate_messages_sent_over_time(data) {
 
     // Helper functions
     function make_traces(dates, values, type, date_formatter) {
-        const text = dates.map(function (date) {
-            return date_formatter(date);
-        });
+        const text = dates.map((date) => date_formatter(date));
         const common = { x: dates, type: type, hoverinfo: 'none', text: text };
         return {
             human: { // 5062a0
@@ -147,12 +145,12 @@ function populate_messages_sent_over_time(data) {
         {count: 6, label: i18n.t('Last 6 months'), step: 'month'});
 
     function add_hover_handler() {
-        document.getElementById('id_messages_sent_over_time').on('plotly_hover', function (data) {
+        document.getElementById('id_messages_sent_over_time').on('plotly_hover', (data) => {
             $("#hoverinfo").show();
             document.getElementById('hover_date').innerText =
                 data.points[0].data.text[data.points[0].pointNumber];
             const values = [null, null, null];
-            data.points.forEach(function (trace) {
+            data.points.forEach((trace) => {
                 values[trace.curveNumber] = trace.y;
             });
             const hover_text_ids = ['hover_me', 'hover_human', 'hover_bot'];
@@ -170,10 +168,10 @@ function populate_messages_sent_over_time(data) {
         });
     }
 
-    const start_dates = data.end_times.map(function (timestamp) {
+    const start_dates = data.end_times.map((timestamp) =>
         // data.end_times are the ends of hour long intervals.
-        return new Date(timestamp * 1000 - 60 * 60 * 1000);
-    });
+        new Date(timestamp * 1000 - 60 * 60 * 1000)
+    );
 
     function aggregate_data(aggregation) {
         let start;
@@ -240,9 +238,7 @@ function populate_messages_sent_over_time(data) {
     const last_week_is_partial = info.last_value_is_partial;
     const weekly_traces = make_traces(info.dates, info.values, 'bar', date_formatter);
 
-    const dates = data.end_times.map(function (timestamp) {
-        return new Date(timestamp * 1000);
-    });
+    const dates = data.end_times.map((timestamp) => new Date(timestamp * 1000));
     values = {human: partial_sums(data.everyone.human), bot: partial_sums(data.everyone.bot),
               me: partial_sums(data.user.human)};
     date_formatter = function (date) {
@@ -313,7 +309,7 @@ function populate_messages_sent_over_time(data) {
 }
 
 function round_to_percentages(values, total) {
-    return values.map(function (x) {
+    return values.map((x) => {
         if (x === total) {
             return '100%';
         }
@@ -349,7 +345,7 @@ function compute_summary_chart_data(time_series_data, num_steps, labels_) {
     }
     const labels = labels_.slice();
     const values = [];
-    labels.forEach(function (label) {
+    labels.forEach((label) => {
         if (data.has(label)) {
             values.push(data.get(label));
             data.delete(label);
@@ -363,7 +359,7 @@ function compute_summary_chart_data(time_series_data, num_steps, labels_) {
             values[labels.length - 1] += sum;
         }
     }
-    const total = values.reduce(function (a, b) { return a + b; }, 0);
+    const total = values.reduce((a, b) => a + b, 0);
     return {
         values: values,
         labels: labels,
@@ -393,9 +389,9 @@ function populate_messages_sent_by_client(data) {
             value: everyone_month.labels[i] === "Other" ? -1 : everyone_month.values[i],
         });
     }
-    label_values.sort(function (a, b) { return b.value - a.value; });
+    label_values.sort((a, b) => b.value - a.value);
     const labels = [];
-    label_values.forEach(function (item) { labels.push(item.label); });
+    label_values.forEach((item) => { labels.push(item.label); });
 
     function make_plot_data(time_series_data, num_steps) {
         const plot_data = compute_summary_chart_data(time_series_data, num_steps, labels);
@@ -547,7 +543,7 @@ function populate_messages_sent_by_message_type(data) {
                 rotation: -90,
                 sort: false,
                 textinfo: "text",
-                text: plot_data.labels.map(function () { return ''; }),
+                text: plot_data.labels.map(() => ''),
                 hoverinfo: "label+value",
                 pull: 0.05,
                 marker: {
@@ -649,13 +645,9 @@ function populate_number_of_users(data) {
         font: font_14pt,
     };
 
-    const end_dates = data.end_times.map(function (timestamp) {
-        return new Date(timestamp * 1000);
-    });
+    const end_dates = data.end_times.map((timestamp) => new Date(timestamp * 1000));
 
-    const text = end_dates.map(function (date) {
-        return format_date(date, false);
-    });
+    const text = end_dates.map((date) => format_date(date, false));
 
     function make_traces(values, type) {
         return {
@@ -670,12 +662,12 @@ function populate_number_of_users(data) {
     }
 
     function add_hover_handler() {
-        document.getElementById('id_number_of_users').on('plotly_hover', function (data) {
+        document.getElementById('id_number_of_users').on('plotly_hover', (data) => {
             $("#users_hover_info").show();
             document.getElementById('users_hover_date').innerText =
                 data.points[0].data.text[data.points[0].pointNumber];
             const values = [null, null, null];
-            data.points.forEach(function (trace) {
+            data.points.forEach((trace) => {
                 values[trace.curveNumber] = trace.y;
             });
             const hover_value_ids = [
@@ -733,9 +725,7 @@ function populate_messages_read_over_time(data) {
 
     // Helper functions
     function make_traces(dates, values, type, date_formatter) {
-        const text = dates.map(function (date) {
-            return date_formatter(date);
-        });
+        const text = dates.map((date) => date_formatter(date));
         const common = { x: dates, type: type, hoverinfo: 'none', text: text };
         return {
             everyone: {
@@ -785,12 +775,12 @@ function populate_messages_read_over_time(data) {
         {count: 6, label: i18n.t('Last 6 months'), step: 'month'});
 
     function add_hover_handler() {
-        document.getElementById('id_messages_read_over_time').on('plotly_hover', function (data) {
+        document.getElementById('id_messages_read_over_time').on('plotly_hover', (data) => {
             $("#read_hover_info").show();
             document.getElementById('read_hover_date').innerText =
                 data.points[0].data.text[data.points[0].pointNumber];
             const values = [null, null];
-            data.points.forEach(function (trace) {
+            data.points.forEach((trace) => {
                 values[trace.curveNumber] = trace.y;
             });
             const read_hover_text_ids = ['read_hover_me', 'read_hover_everyone'];
@@ -808,10 +798,10 @@ function populate_messages_read_over_time(data) {
         });
     }
 
-    const start_dates = data.end_times.map(function (timestamp) {
+    const start_dates = data.end_times.map((timestamp) =>
         // data.end_times are the ends of hour long intervals.
-        return new Date(timestamp * 1000 - 60 * 60 * 1000);
-    });
+        new Date(timestamp * 1000 - 60 * 60 * 1000)
+    );
 
     function aggregate_data(aggregation) {
         let start;
@@ -874,9 +864,7 @@ function populate_messages_read_over_time(data) {
     const last_week_is_partial = info.last_value_is_partial;
     const weekly_traces = make_traces(info.dates, info.values, 'bar', date_formatter);
 
-    const dates = data.end_times.map(function (timestamp) {
-        return new Date(timestamp * 1000);
-    });
+    const dates = data.end_times.map((timestamp) => new Date(timestamp * 1000));
     values = {everyone: partial_sums(data.everyone.read),
               me: partial_sums(data.user.read)};
     date_formatter = function (date) {

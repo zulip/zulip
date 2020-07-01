@@ -126,7 +126,7 @@ run_test('populate_user_groups', () => {
 
     let templates_render_called = false;
     const fake_rendered_temp = $.create('fake_admin_user_group_list_template_rendered');
-    global.stub_templates(function (template, args) {
+    global.stub_templates((template, args) => {
         assert.equal(template, 'admin_user_group_list');
         assert.equal(args.user_group.id, 1);
         assert.equal(args.user_group.name, 'Mobile');
@@ -326,7 +326,7 @@ run_test('populate_user_groups', () => {
     }
 
     pills.onPillRemove = function (handler) {
-        global.patch_builtin('setTimeout', function (func) {
+        global.patch_builtin('setTimeout', (func) => {
             func();
         });
         realm_user_group.members = new Set([2, 31]);
@@ -364,9 +364,7 @@ run_test('with_external_user', () => {
         return noop;
     };
 
-    global.stub_templates(function () {
-        return noop;
-    });
+    global.stub_templates(() => noop);
 
     people.get_by_user_id = function () {
         return noop;
@@ -791,7 +789,7 @@ run_test('on_events', () => {
             assert.equal(opts.data.description, 'translated: All mobile members');
             api_endpoint_called = true;
             (function test_post_success() {
-                global.patch_builtin('setTimeout', function (func) {
+                global.patch_builtin('setTimeout', (func) => {
                     func();
                 });
                 opts.success();

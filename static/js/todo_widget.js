@@ -133,7 +133,7 @@ exports.activate = function (opts) {
         const html = render_widgets_todo_widget();
         elem.html(html);
 
-        elem.find("button.add-task").on('click', function (e) {
+        elem.find("button.add-task").on('click', (e) => {
             e.stopPropagation();
             elem.find(".widget-error").text('');
             const task = elem.find("input.add-task").val().trim();
@@ -163,7 +163,7 @@ exports.activate = function (opts) {
         elem.find('ul.todo-widget').html(html);
         elem.find(".widget-error").text('');
 
-        elem.find("button.task").on('click', function (e) {
+        elem.find("button.task").on('click', (e) => {
             e.stopPropagation();
             const key = $(e.target).attr('data-key');
 

@@ -117,14 +117,14 @@ function scroll_finish() {
     scroll_timer = setTimeout(floating_recipient_bar.update, 100);
 }
 
-$(function () {
+$(() => {
     $.fn.safeOuterHeight = function (...args) {
         return this.outerHeight(...args) || 0;
     };
     $.fn.safeOuterWidth = function (...args) {
         return this.outerWidth(...args) || 0;
     };
-    $('.app').scroll(_.throttle(function () {
+    $('.app').scroll(_.throttle(() => {
         scroll_finish();
     }, 50));
     exports.initialize();

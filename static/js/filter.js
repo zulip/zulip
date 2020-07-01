@@ -369,8 +369,8 @@ Filter.prototype = {
 
     operands: function (operator) {
         return _.chain(this._operators)
-            .filter(function (elem) { return !elem.negated && elem.operator === operator; })
-            .map(function (elem) { return elem.operand; })
+            .filter((elem) => !elem.negated && elem.operator === operator)
+            .map((elem) => elem.operand)
             .value();
     },
 

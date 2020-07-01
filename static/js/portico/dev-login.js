@@ -1,4 +1,4 @@
-$(function () {
+$(() => {
     // This code will be executed when the user visits /login and
     // dev_login.html is rendered.
     if ($("[data-page-id='dev-login']").length > 0) {

@@ -128,7 +128,7 @@ exports.activate = function (opts) {
         const html = render_widgets_tictactoe_widget(widget_data);
         elem.html(html);
 
-        elem.find("button.tictactoe-square").on('click', function (e) {
+        elem.find("button.tictactoe-square").on('click', (e) => {
             e.stopPropagation();
             const str_idx = $(e.target).attr('data-idx');
             const idx = parseInt(str_idx, 10);

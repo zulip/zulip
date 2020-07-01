@@ -4,7 +4,7 @@ const events = {
 };
 
 window.onload = function () {
-    document.body.addEventListener("mouseup", function (e) {
+    document.body.addEventListener("mouseup", (e) => {
         events.documentMouseup = events.documentMouseup.filter(function (event) {
             // go through automatic cleanup when running events.
             if (!document.body.contains(event.canvas)) {
@@ -17,7 +17,7 @@ window.onload = function () {
     });
 
     window.addEventListener("resize", function (e) {
-        events.windowResize = events.windowResize.filter(function (event) {
+        events.windowResize = events.windowResize.filter((event) => {
             if (!document.body.contains(event.canvas)) {
                 return false;
             }
@@ -25,7 +25,7 @@ window.onload = function () {
             event.callback.call(this, e);
 
             return true;
-        }.bind(this));
+        });
     });
 };
 
@@ -76,7 +76,7 @@ const funcs = {
         // actually an element that can scroll. The wheel event will
         // detect the *gesture* of scrolling over an element, without actually
         // worrying about scrollable content.
-        canvas.addEventListener("wheel", function (e) {
+        canvas.addEventListener("wheel", (e) => {
             e.preventDefault();
 
             // this is to reverse scrolling directions for the image.
@@ -111,12 +111,12 @@ const funcs = {
 
         // the only valid mousedown events should originate inside of the
         // canvas.
-        canvas.addEventListener("mousedown", function () {
+        canvas.addEventListener("mousedown", () => {
             mousedown = true;
         });
 
         // on mousemove, actually run the pan events.
-        canvas.addEventListener("mousemove", function (e) {
+        canvas.addEventListener("mousemove", (e) => {
             // to pan, there must be mousedown and mousemove, check if valid.
             if (mousedown === true) {
                 polyfillMouseMovement(e);
@@ -145,7 +145,7 @@ const funcs = {
         // that the LightboxCanvas instance created in lightbox.js can be
         // accessed from hotkey.js. Major code refactoring is required in lightbox.js
         // to implement these keyboard shortcuts in hotkey.js
-        document.addEventListener('keydown', function (e) {
+        document.addEventListener('keydown', (e) => {
             if (!overlays.lightbox_open()) {
                 return;
             }
@@ -165,7 +165,7 @@ const funcs = {
 
         // make sure that when the mousedown is lifted on <canvas>to prevent
         // panning events.
-        canvas.addEventListener("mouseup", function () {
+        canvas.addEventListener("mouseup", () => {
             mousedown = false;
             // reset this to be empty so that the values will `NaN` on first
             // mousemove and default to a change of (0, 0).
