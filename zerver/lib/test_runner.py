@@ -5,7 +5,7 @@ import sys
 import unittest
 from functools import partial
 from multiprocessing.sharedctypes import Synchronized
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, Union
 from unittest import loader, runner
 from unittest.result import TestResult
 
@@ -45,8 +45,6 @@ TEST_RUN_DIR = get_or_create_dev_uuid_var_path(
     os.path.join('test-backend', f'run_{get_database_id()}'))
 
 _worker_id = 0  # Used to identify the worker process.
-
-ReturnT = TypeVar('ReturnT')  # Constrain return type to match
 
 def full_test_name(test: TestCase) -> str:
     test_module = test.__module__
