@@ -8,6 +8,7 @@ from zerver.lib.cache import (
     MEMCACHED_MAX_KEY_LENGTH,
     InvalidCacheKeyException,
     NotFoundInCache,
+    bulk_cached_fetch,
     cache_delete,
     cache_delete_many,
     cache_get,
@@ -15,7 +16,6 @@ from zerver.lib.cache import (
     cache_set,
     cache_set_many,
     cache_with_key,
-    generic_bulk_cached_fetch,
     get_cache_with_key,
     safe_cache_get_many,
     safe_cache_set_many,
@@ -272,6 +272,9 @@ class BotCacheKeyTest(ZulipTestCase):
         user_profile2 = get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT)
         self.assertEqual(user_profile2.is_api_super_user, flipped_setting)
 
+def get_user_email(user: UserProfile) -> str:
+    return user.email  # nocoverage
+
 class GenericBulkCachedFetchTest(ZulipTestCase):
     def test_query_function_called_only_if_needed(self) -> None:
         # Get the user cached:
@@ -285,20 +288,22 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
 
         # query_function shouldn't be called, because the only requested object
         # is already cached:
-        result: Dict[str, UserProfile] = generic_bulk_cached_fetch(
+        result: Dict[str, UserProfile] = bulk_cached_fetch(
             cache_key_function=user_profile_by_email_cache_key,
             query_function=query_function,
             object_ids=[self.example_email("hamlet")],
+            id_fetcher=get_user_email,
         )
         self.assertEqual(result, {hamlet.delivery_email: hamlet})
 
         flush_cache(Mock())
         # With the cache flushed, the query_function should get called:
         with self.assertRaises(CustomException):
-            generic_bulk_cached_fetch(
+            result = bulk_cached_fetch(
                 cache_key_function=user_profile_by_email_cache_key,
                 query_function=query_function,
                 object_ids=[self.example_email("hamlet")],
+                id_fetcher=get_user_email,
             )
 
     def test_empty_object_ids_list(self) -> None:
@@ -313,9 +318,10 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
 
         # query_function and cache_key_function shouldn't be called, because
         # objects_ids is empty, so there's nothing to do.
-        result: Dict[str, UserProfile] = generic_bulk_cached_fetch(
+        result: Dict[str, UserProfile] = bulk_cached_fetch(
             cache_key_function=cache_key_function,
             query_function=query_function,
             object_ids=[],
+            id_fetcher=get_user_email,
         )
         self.assertEqual(result, {})

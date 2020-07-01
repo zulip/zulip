@@ -348,23 +348,10 @@ CacheItemT = TypeVar('CacheItemT')
 # serializable objects, will be the object; if encoded, bytes.
 CompressedItemT = TypeVar('CompressedItemT')
 
-def default_extractor(obj: CompressedItemT) -> ItemT:
-    return obj  # type: ignore[return-value] # Need a type assert that ItemT=CompressedItemT
-
-def default_setter(obj: ItemT) -> CompressedItemT:
-    return obj  # type: ignore[return-value] # Need a type assert that ItemT=CompressedItemT
-
-def default_id_fetcher(obj: ItemT) -> ObjKT:
-    return obj.id  # type: ignore[attr-defined] # Need ItemT/CompressedItemT typevars to be a Django protocol
-
-def default_cache_transformer(obj: ItemT) -> CacheItemT:
-    return obj  # type: ignore[return-value] # Need a type assert that ItemT=CacheItemT
-
 # Required Arguments are as follows:
 # * object_ids: The list of object ids to look up
 # * cache_key_function: object_id => cache key
 # * query_function: [object_ids] => [objects from database]
-# Optional keyword arguments:
 # * setter: Function to call before storing items to cache (e.g. compression)
 # * extractor: Function to call on items returned from cache
 #   (e.g. decompression).  Should be the inverse of the setter
@@ -378,10 +365,11 @@ def generic_bulk_cached_fetch(
         cache_key_function: Callable[[ObjKT], str],
         query_function: Callable[[List[ObjKT]], Iterable[ItemT]],
         object_ids: Sequence[ObjKT],
-        extractor: Callable[[CompressedItemT], CacheItemT] = default_extractor,
-        setter: Callable[[CacheItemT], CompressedItemT] = default_setter,
-        id_fetcher: Callable[[ItemT], ObjKT] = default_id_fetcher,
-        cache_transformer: Callable[[ItemT], CacheItemT] = default_cache_transformer,
+        *,
+        extractor: Callable[[CompressedItemT], CacheItemT],
+        setter: Callable[[CacheItemT], CompressedItemT],
+        id_fetcher: Callable[[ItemT], ObjKT],
+        cache_transformer: Callable[[ItemT], CacheItemT],
 ) -> Dict[ObjKT, CacheItemT]:
     if len(object_ids) == 0:
         # Nothing to fetch.
@@ -417,6 +405,39 @@ def generic_bulk_cached_fetch(
         safe_cache_set_many(items_for_remote_cache)
     return {object_id: cached_objects[cache_keys[object_id]] for object_id in object_ids
             if cache_keys[object_id] in cached_objects}
+
+def transformed_bulk_cached_fetch(
+    cache_key_function: Callable[[ObjKT], str],
+    query_function: Callable[[List[ObjKT]], Iterable[ItemT]],
+    object_ids: Sequence[ObjKT],
+    *,
+    id_fetcher: Callable[[ItemT], ObjKT],
+    cache_transformer: Callable[[ItemT], CacheItemT],
+) -> Dict[ObjKT, CacheItemT]:
+    return generic_bulk_cached_fetch(
+        cache_key_function,
+        query_function,
+        object_ids,
+        extractor=lambda obj: obj,
+        setter=lambda obj: obj,
+        id_fetcher=id_fetcher,
+        cache_transformer=cache_transformer,
+    )
+
+def bulk_cached_fetch(
+    cache_key_function: Callable[[ObjKT], str],
+    query_function: Callable[[List[ObjKT]], Iterable[ItemT]],
+    object_ids: Sequence[ObjKT],
+    *,
+    id_fetcher: Callable[[ItemT], ObjKT],
+) -> Dict[ObjKT, ItemT]:
+    return transformed_bulk_cached_fetch(
+        cache_key_function,
+        query_function,
+        object_ids,
+        id_fetcher=id_fetcher,
+        cache_transformer=lambda obj: obj,
+    )
 
 def preview_url_cache_key(url: str) -> str:
     return f"preview_url:{make_safe_digest(url)}"

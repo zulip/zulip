@@ -43,6 +43,7 @@ from zerver.lib.cache import (
     bot_dict_fields,
     bot_dicts_in_realm_cache_key,
     bot_profile_cache_key,
+    bulk_cached_fetch,
     cache_delete,
     cache_set,
     cache_with_key,
@@ -52,7 +53,6 @@ from zerver.lib.cache import (
     flush_submessage,
     flush_used_upload_space_cache,
     flush_user_profile,
-    generic_bulk_cached_fetch,
     get_realm_used_upload_space_cache_key,
     get_stream_cache_key,
     realm_alert_words_automaton_cache_key,
@@ -1653,10 +1653,12 @@ def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]
     def stream_to_lower_name(stream: Stream) -> str:
         return stream.name.lower()
 
-    return generic_bulk_cached_fetch(stream_name_to_cache_key,
-                                     fetch_streams_by_name,
-                                     [stream_name.lower() for stream_name in stream_names],
-                                     id_fetcher=stream_to_lower_name)
+    return bulk_cached_fetch(
+        stream_name_to_cache_key,
+        fetch_streams_by_name,
+        [stream_name.lower() for stream_name in stream_names],
+        id_fetcher=stream_to_lower_name,
+    )
 
 def get_huddle_recipient(user_profile_ids: Set[int]) -> Recipient:
 

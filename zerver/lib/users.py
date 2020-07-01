@@ -12,7 +12,7 @@ from zulip_bots.custom_exceptions import ConfigValidationError
 
 from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.cache import (
-    generic_bulk_cached_fetch,
+    bulk_cached_fetch,
     realm_user_dict_fields,
     user_profile_by_id_cache_key,
     user_profile_cache_key_id,
@@ -173,7 +173,7 @@ def bulk_get_users(emails: List[str], realm: Optional[Realm],
     def user_to_email(user_profile: UserProfile) -> str:
         return user_profile.email.lower()
 
-    return generic_bulk_cached_fetch(
+    return bulk_cached_fetch(
         # Use a separate cache key to protect us from conflicts with
         # the get_user cache.
         lambda email: 'bulk_get_users:' + user_profile_cache_key_id(email, realm_id),
@@ -182,6 +182,9 @@ def bulk_get_users(emails: List[str], realm: Optional[Realm],
         id_fetcher=user_to_email,
     )
 
+def get_user_id(user: UserProfile) -> int:
+    return user.id
+
 def user_ids_to_users(user_ids: Sequence[int], realm: Realm) -> List[UserProfile]:
     # TODO: Consider adding a flag to control whether deactivated
     # users should be included.
@@ -189,10 +192,11 @@ def user_ids_to_users(user_ids: Sequence[int], realm: Realm) -> List[UserProfile
     def fetch_users_by_id(user_ids: List[int]) -> List[UserProfile]:
         return list(UserProfile.objects.filter(id__in=user_ids).select_related())
 
-    user_profiles_by_id: Dict[int, UserProfile] = generic_bulk_cached_fetch(
+    user_profiles_by_id: Dict[int, UserProfile] = bulk_cached_fetch(
         cache_key_function=user_profile_by_id_cache_key,
         query_function=fetch_users_by_id,
         object_ids=user_ids,
+        id_fetcher=get_user_id,
     )
 
     found_user_ids = user_profiles_by_id.keys()
