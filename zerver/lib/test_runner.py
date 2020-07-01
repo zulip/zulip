@@ -46,15 +46,9 @@ TEST_RUN_DIR = get_or_create_dev_uuid_var_path(
 
 _worker_id = 0  # Used to identify the worker process.
 
-def full_test_name(test: TestCase) -> str:
-    test_module = test.__module__
-    test_class = test.__class__.__name__
-    test_method = test._testMethodName
-    return f'{test_module}.{test_class}.{test_method}'
-
 def run_test(test: TestCase, result: TestResult) -> bool:
     failed = False
-    test_name = full_test_name(test)
+    test_name = test.id()
 
     bounce_key_prefix_for_testing(test_name)
     bounce_redis_key_prefix_for_testing(test_name)
@@ -89,7 +83,7 @@ class TextTestResult(runner.TextTestResult):
 
     def startTest(self, test: TestCase) -> None:
         TestResult.startTest(self, test)
-        self.stream.writeln(f"Running {full_test_name(test)}")  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
+        self.stream.writeln(f"Running {test.id()}")  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
         self.stream.flush()
 
     def addSuccess(self, *args: Any, **kwargs: Any) -> None:
@@ -97,18 +91,18 @@ class TextTestResult(runner.TextTestResult):
 
     def addError(self, *args: Any, **kwargs: Any) -> None:
         TestResult.addError(self, *args, **kwargs)
-        test_name = full_test_name(args[0])
+        test_name = args[0].id()
         self.failed_tests.append(test_name)
 
     def addFailure(self, *args: Any, **kwargs: Any) -> None:
         TestResult.addFailure(self, *args, **kwargs)
-        test_name = full_test_name(args[0])
+        test_name = args[0].id()
         self.failed_tests.append(test_name)
 
     def addSkip(self, test: TestCase, reason: str) -> None:
         TestResult.addSkip(self, test, reason)
         self.stream.writeln("** Skipping {}: {}".format(  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
-            full_test_name(test),
+            test.id(),
             reason))
         self.stream.flush()
 
@@ -486,7 +480,7 @@ def get_test_names(suite: Union[TestSuite, ParallelTestSuite]) -> List[str]:
         assert isinstance(suite.subsuites, SubSuiteList)
         return [name for subsuite in suite.subsuites for name in subsuite[1]]
     else:
-        return [full_test_name(t) for t in get_tests_from_suite(suite)]
+        return [t.id() for t in get_tests_from_suite(suite)]
 
 def get_tests_from_suite(suite: unittest.TestSuite) -> TestCase:
     for test in suite:
