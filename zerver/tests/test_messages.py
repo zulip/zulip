@@ -10,7 +10,7 @@ from django.conf import settings
 from django.db import IntegrityError
 from django.db.models import Q
 from django.http import HttpResponse
-from django.test import TestCase, override_settings
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from analytics.lib.counts import COUNT_STATS
@@ -642,7 +642,7 @@ class InternalPrepTest(ZulipTestCase):
         # wasn't automatically created.
         Stream.objects.get(name=stream_name, realm_id=realm.id)
 
-class ExtractTest(TestCase):
+class ExtractTest(ZulipTestCase):
     def test_extract_stream_indicator(self) -> None:
         self.assertEqual(
             extract_stream_indicator('development'),

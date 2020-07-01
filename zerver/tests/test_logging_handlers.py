@@ -8,7 +8,6 @@ from unittest.mock import MagicMock, patch
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest
-from django.test import TestCase
 from django.utils.log import AdminEmailHandler
 
 from zerver.lib.test_classes import ZulipTestCase
@@ -189,7 +188,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertIn("message", report)
         self.assertIn("stack_trace", report)
 
-class LoggingConfigTest(TestCase):
+class LoggingConfigTest(ZulipTestCase):
     @staticmethod
     def all_loggers() -> Iterator[logging.Logger]:
         # There is no documented API for enumerating the loggers; but the
@@ -207,7 +206,7 @@ class LoggingConfigTest(TestCase):
             for handler in logger.handlers:
                 assert not isinstance(handler, AdminEmailHandler)
 
-class ErrorFiltersTest(TestCase):
+class ErrorFiltersTest(ZulipTestCase):
     def test_clean_data_from_query_parameters(self) -> None:
         from zerver.filters import clean_data_from_query_parameters
         self.assertEqual(clean_data_from_query_parameters("api_key=abcdz&stream=1"),

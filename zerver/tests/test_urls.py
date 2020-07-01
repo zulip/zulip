@@ -4,7 +4,7 @@ from typing import List, Optional
 
 import django.urls.resolvers
 import ujson
-from django.test import Client, TestCase
+from django.test import Client
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Stream
@@ -97,7 +97,7 @@ class PublicURLTest(ZulipTestCase):
             self.assertEqual('success', data['result'])
             self.assertEqual('ABCD', data['google_client_id'])
 
-class URLResolutionTest(TestCase):
+class URLResolutionTest(ZulipTestCase):
     def get_callback_string(self, pattern: django.urls.resolvers.URLPattern) -> Optional[str]:
         callback_str = hasattr(pattern, 'lookup_str') and 'lookup_str'
         callback_str = callback_str or '_callback_str'
@@ -128,7 +128,7 @@ class URLResolutionTest(TestCase):
                 (module_name, base_view) = callback_str.rsplit(".", 1)
                 self.check_function_exists(module_name, base_view)
 
-class ErrorPageTest(TestCase):
+class ErrorPageTest(ZulipTestCase):
     def test_bogus_http_host(self) -> None:
         # This tests that we've successfully worked around a certain bug in
         # Django's exception handling.  The enforce_csrf_checks=True,

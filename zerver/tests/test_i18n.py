@@ -6,7 +6,6 @@ import ujson
 from django.conf import settings
 from django.core import mail
 from django.http import HttpResponse
-from django.test import TestCase
 from django.utils import translation
 
 from zerver.lib.email_notifications import enqueue_welcome_emails
@@ -139,7 +138,7 @@ class JsonTranslationTestCase(ZulipTestCase):
                                         status_code=400)
 
 
-class FrontendRegexTestCase(TestCase):
+class FrontendRegexTestCase(ZulipTestCase):
     def test_regexes(self) -> None:
         command = makemessages.Command()
 

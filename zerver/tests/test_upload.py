@@ -12,7 +12,6 @@ from unittest.mock import patch
 import botocore.exceptions
 import ujson
 from django.conf import settings
-from django.test import TestCase
 from django.utils.timezone import now as timezone_now
 from django_sendfile.utils import _get_sendfile
 from PIL import Image
@@ -1880,7 +1879,7 @@ class S3Test(ZulipTestCase):
         path_id = urllib.parse.urlparse(uri).path
         self.assertEqual(delete_export_tarball(path_id), path_id)
 
-class SanitizeNameTests(TestCase):
+class SanitizeNameTests(ZulipTestCase):
     def test_file_name(self) -> None:
         self.assertEqual(sanitize_name('test.txt'), 'test.txt')
         self.assertEqual(sanitize_name('.hidden'), '.hidden')
@@ -1927,7 +1926,7 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(None, cache_get(get_realm_used_upload_space_cache_key(self.realm)))
         self.assertEqual(len(data2), self.realm.currently_used_upload_space_bytes())
 
-class ExifRotateTests(TestCase):
+class ExifRotateTests(ZulipTestCase):
     def test_image_do_not_rotate(self) -> None:
         # Image does not have _getexif method.
         img_data = get_test_image_file('img.png').read()

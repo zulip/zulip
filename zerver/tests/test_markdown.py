@@ -7,7 +7,7 @@ from unittest import mock
 
 import ujson
 from django.conf import settings
-from django.test import TestCase, override_settings
+from django.test import override_settings
 
 from zerver.lib.actions import (
     do_add_alert_words,
@@ -74,7 +74,7 @@ class SimulatedFencedBlockPreprocessor(FencedBlockPreprocessor):
         return '**' + s.strip('\n') + '**'
 
 
-class FencedBlockPreprocessorTest(TestCase):
+class FencedBlockPreprocessorTest(ZulipTestCase):
     def test_simple_quoting(self) -> None:
         processor = FencedBlockPreprocessor(None)
         markdown_input = [
