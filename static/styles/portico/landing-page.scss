@@ -985,43 +985,43 @@ nav {
 .faqs {
     position: relative;
     background-color: hsl(0, 0%, 98%);
-}
 
-.faqs .padded-content {
-    position: relative;
-    z-index: 1;
-}
-
-.faqs header {
-    max-width: 700px;
-    margin: 0 auto;
-
-    h1 span {
-        vertical-align: top;
-    }
-}
-
-.faqs .faq {
-    margin: 50px auto;
-    max-width: 700px;
-    font-size: 1.2em;
-    color: hsl(223, 6%, 25%);
-
-    .question {
-        font-weight: 600;
-        color: hsl(222, 20%, 40%);
-        font-size: 1.1em;
+    .padded-content {
+        position: relative;
+        z-index: 1;
     }
 
-    .answer {
-        margin: 20px 0px 0px 0px;
-        font-weight: 400;
-    }
-}
+    header {
+        max-width: 700px;
+        margin: 0 auto;
 
-/* the last faq in the box shouldn't have an extra 50px of margin. */
-.faqs .faq-box div:last-of-type {
-    margin-bottom: 10px;
+        h1 span {
+            vertical-align: top;
+        }
+    }
+
+    .faq {
+        margin: 50px auto;
+        max-width: 700px;
+        font-size: 1.2em;
+        color: hsl(223, 6%, 25%);
+
+        .question {
+            font-weight: 600;
+            color: hsl(222, 20%, 40%);
+            font-size: 1.1em;
+        }
+
+        .answer {
+            margin: 20px 0px 0px 0px;
+            font-weight: 400;
+        }
+    }
+
+    /* the last faq in the box shouldn't have an extra 50px of margin. */
+    .faq-box div:last-of-type {
+        margin-bottom: 10px;
+    }
 }
 
 .screen .line {
