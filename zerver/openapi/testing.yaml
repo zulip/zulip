@@ -4,6 +4,7 @@ test1:
        content:
          application/json:
            schema:
+             additionalProperties: false
              properties:
                top_array:
                  type: array
@@ -50,6 +51,7 @@ test2:
        content:
          application/json:
            schema:
+             additionalProperties: false
              properties:
                top_array:
                  type: array
@@ -63,6 +65,7 @@ test2:
                            items:
                              type: string
                          - type: object
+                           additionalProperties: false
                            properties:
                              str3:
                                type: string
@@ -97,6 +100,7 @@ test3:
        content:
          application/json:
            schema:
+             additionalProperties: false
              properties:
                top_array:
                  type: array

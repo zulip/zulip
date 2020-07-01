@@ -4,39 +4,18 @@ import os
 import re
 from typing import Any, Dict, List, Optional, Set
 
+from openapi_schema_validator import OAS30Validator
+
 OPENAPI_SPEC_PATH = os.path.abspath(os.path.join(
     os.path.dirname(__file__),
     '../openapi/zulip.yaml'))
 
-# A list of exceptions we allow when running validate_against_openapi_schema.
-# The validator will ignore these keys when they appear in the "content"
-# passed.
-EXCLUDE_PROPERTIES = {
-    '/events': {
-        'get': {
-            # Array with opaque object
-            '200': ['events']
-        }
-    },
-    '/register': {
-        'post': {
-            '200': ['max_message_id', 'realm_emoji'],
-        },
-    },
-    '/settings/notifications': {
-        'patch': {
-            # Some responses contain undocumented keys
-            '200': ['notification_sound', 'enable_login_emails',
-                    'enable_stream_desktop_notifications', 'wildcard_mentions_notify',
-                    'pm_content_in_desktop_notifications', 'desktop_icon_count_display',
-                    'realm_name_in_notifications', 'presence_enabled'],
-        },
-    },
-}
-
 # A list of endpoint-methods such that the endpoint
 # has documentation but not with this particular method.
-EXCLUDE_ENDPOINTS = ["/realm/emoji/{emoji_name}:delete"]
+EXCLUDE_UNDOCUMENTED_ENDPOINTS = {"/realm/emoji/{emoji_name}:delete"}
+# Consists of endpoints with some documentation remaining.
+# These are skipped but return true as the validator cannot exclude objects
+EXCLUDE_DOCUMENTED_ENDPOINTS = {"/events:get", "/register:post", "/settings/notifications:patch"}
 class OpenAPISpec():
     def __init__(self, path: str) -> None:
         self.path = path
@@ -200,6 +179,10 @@ def validate_against_openapi_schema(content: Dict[str, Any], endpoint: str,
     """Compare a "content" dict with the defined schema for a specific method
     in an endpoint. Return true if validated and false if skipped.
     """
+
+    # This first set of checks are primarily training wheels that we
+    # hope to eliminate over time as we improve our API documentation.
+
     # No 500 responses have been documented, so skip them
     if response.startswith('5'):
         return False
@@ -210,121 +193,74 @@ def validate_against_openapi_schema(content: Dict[str, Any], endpoint: str,
             return False
         endpoint = match
     # Excluded endpoint/methods
-    if endpoint + ':' + method in EXCLUDE_ENDPOINTS:
+    if endpoint + ':' + method in EXCLUDE_UNDOCUMENTED_ENDPOINTS:
         return False
-
+    # Return true for endpoints with only response documentation remaining
+    if endpoint + ':' + method in EXCLUDE_DOCUMENTED_ENDPOINTS:
+        return True
     # Check if the response matches its code
     if response.startswith('2') and (content.get('result', 'success').lower() != 'success'):
         raise SchemaError("Response is not 200 but is validating against 200 schema")
-    # In a single response schema we do not have two keys with the same name.
-    # Hence exclusion list is declared globally
-    exclusion_list = (EXCLUDE_PROPERTIES.get(endpoint, {}).get(method.lower(), {}).get(response, []))
-    # Code is not declared but appears in various 400 responses. If common, it can be added
-    # to 400 response schema
+    # Code is not declared but appears in various 400 responses. If
+    # common, it can be added to 400 response schema
     if response.startswith('4'):
-        exclusion_list.append('code')
-        # This return statement should ideally be not here. But since we have not defined 400
-        # responses for various paths this has been added as all 400 have the same schema.
-        # When all 400 response have been defined this should be removed.
+        # This return statement should ideally be not here. But since
+        # we have not defined 400 responses for various paths this has
+        # been added as all 400 have the same schema.  When all 400
+        # response have been defined this should be removed.
         return True
+
+    # The actual work of validating that the response matches the
+    # schema is done via the third-party OAS30Validator.
     schema = get_schema(endpoint, method, response)
-    validate_object(content, schema, exclusion_list)
+    validator = OAS30Validator(schema)
+    validator.validate(content)
     return True
 
-def validate_array(content: List[Any], schema: Dict[str, Any], exclusion_list: List[str]) -> None:
-    valid_types: List[type] = []
-    object_schema: Optional[Dict[str, Any]] = None
-    array_schema: Optional[Dict[str, Any]] = None
+def validate_schema_array(schema: Dict[str, Any]) -> None:
+    """
+    Helper function for validate_schema
+    """
     if 'oneOf' in schema['items']:
         for oneof_schema in schema['items']['oneOf']:
             if oneof_schema['type'] == 'array':
-                array_schema = oneof_schema
+                validate_schema_array(oneof_schema)
             elif oneof_schema['type'] == 'object':
-                object_schema = oneof_schema
-            valid_types.append(to_python_type(oneof_schema['type']))
+                validate_schema(oneof_schema)
     else:
-        valid_types.append(to_python_type(schema['items']['type']))
         if schema['items']['type'] == 'array':
-            array_schema = schema['items']
+            validate_schema_array(schema['items'])
         elif schema['items']['type'] == 'object':
-            object_schema = schema['items']
+            validate_schema(schema['items'])
 
-    for item in content:
-        if type(item) not in valid_types:
-            raise SchemaError('Wrong data type in array')
-        # We can directly check for objects and arrays as
-        # there are no mixed arrays consisting of objects
-        # and arrays.
-        if type(item) == dict:
-            assert object_schema is not None
-            if 'properties' not in object_schema:
-                raise SchemaError('Opaque object in array')
-            validate_object(item, object_schema, exclusion_list)
-        if type(item) == list:
-            assert(array_schema is not None)
-            validate_array(item, array_schema, exclusion_list)
+def validate_schema(schema: Dict[str, Any]) -> None:
+    """Check if opaque objects are present in the OpenAPI spec; this is an
+    important part of our policy for ensuring every detail of Zulip's
+    API responses is correct.
 
-def validate_object(content: Dict[str, Any], schema: Dict[str, Any], exclusion_list: List[str]) -> None:
-    for key, value in content.items():
-        object_schema: Optional[Dict[str, Any]] = None
-        array_schema: Optional[Dict[str, Any]] = None
-        if key in exclusion_list:
-            continue
-        # Check that the key is defined in the schema
-        if key not in schema['properties']:
-            raise SchemaError('Extraneous key "{}" in the response\'s '
-                              'content'.format(key))
-        # Check that the types match
-        expected_type: List[type] = []
+    This is done by checking for the presence of the
+    `additionalProperties` attribute for all objects (dictionaries).
+    """
+    if 'additionalProperties' not in schema:
+        raise SchemaError('additionalProperties needs to be defined for objects to make' +
+                          'sure they have no additional properties left to be documented.')
+    for key in schema.get('properties', dict()):
         if 'oneOf' in schema['properties'][key]:
             for types in schema['properties'][key]['oneOf']:
-                expected_type.append(to_python_type(types['type']))
                 if types['type'] == 'object':
-                    object_schema = types
+                    validate_schema(types)
                 elif types['type'] == 'array':
-                    array_schema = types
+                    validate_schema_array(types)
         else:
-            expected_type.append(to_python_type(schema['properties'][key]['type']))
             if schema['properties'][key]['type'] == 'object':
-                object_schema = schema['properties'][key]
+                validate_schema(schema['properties'][key])
             elif schema['properties'][key]['type'] == 'array':
-                array_schema = schema['properties'][key]
-
-        actual_type = type(value)
-        # We have only define nullable property if it is nullable
-        if value is None and 'nullable' in schema['properties'][key]:
-            continue
-        if actual_type not in expected_type:
-            raise SchemaError('Expected type {} for key "{}", but actually '
-                              'got {}'.format(expected_type, key, actual_type))
-        if actual_type == list:
-            assert array_schema is not None
-            validate_array(value, array_schema, exclusion_list)
-        if actual_type == dict:
-            assert object_schema is not None
-            if 'properties' in object_schema:
-                validate_object(value, object_schema, exclusion_list)
-                continue
-        if 'additionalProperties' in schema['properties'][key]:
-            for child_keys in value:
-                if type(value[child_keys]) == list:
-                    validate_array(value[child_keys],
-                                   schema['properties'][key]['additionalProperties'], exclusion_list)
-                    continue
-                validate_object(value[child_keys],
-                                schema['properties'][key]['additionalProperties'], exclusion_list)
-            continue
-        # If the object is not opaque then continue statements
-        # will be executed above and this will be skipped
-        if actual_type == dict:
-            raise SchemaError(f'Opaque object "{key}"')
-    # Check that at least all the required keys are present
-    if 'required' in schema:
-        for req_key in schema['required']:
-            if req_key in exclusion_list:
-                continue
-            if req_key not in content.keys():
-                raise SchemaError(f'Expected to find the "{req_key}" required key')
+                validate_schema_array(schema['properties'][key])
+    if schema['additionalProperties']:
+        if schema['additionalProperties']['type'] == 'array':
+            validate_schema_array(schema['additionalProperties'])
+        elif schema['additionalProperties']['type'] == 'object':
+            validate_schema(schema['additionalProperties'])
 
 def to_python_type(py_type: str) -> type:
     """Transform an OpenAPI-like type to a Python one.
