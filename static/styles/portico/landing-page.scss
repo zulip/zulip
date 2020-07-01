@@ -922,44 +922,44 @@ nav {
 
 .compare tbody tr {
     border-bottom: 1px solid hsla(360, 0%, 100%, 0.03);
-}
 
-.compare tbody tr td {
-    padding: 10px 0px;
+    td {
+        padding: 10px 0px;
 
-    &.no {
-        text-align: center;
-    }
+        &.no {
+            text-align: center;
+        }
 
-    &.yes::before {
-        content: " ";
-        display: inline-block;
+        &.yes::before {
+            content: " ";
+            display: inline-block;
 
-        width: 27px;
-        height: 27px;
-        background-image: url(/static/images/landing-page/checkmark.png);
-        background-size: 100% auto;
-    }
+            width: 27px;
+            height: 27px;
+            background-image: url(/static/images/landing-page/checkmark.png);
+            background-size: 100% auto;
+        }
 
-    &.no::before {
-        content: "\d7";
+        &.no::before {
+            content: "\d7";
 
-        position: relative;
-        display: inline-block;
+            position: relative;
+            display: inline-block;
 
-        top: 3px;
+            top: 3px;
 
-        font-size: 2.5rem;
-        font-weight: 500;
-        line-height: 0.9;
+            font-size: 2.5rem;
+            font-weight: 500;
+            line-height: 0.9;
 
-        opacity: 0.4;
-    }
+            opacity: 0.4;
+        }
 
-    a {
-        font-size: 0.9rem;
-        font-weight: 400;
-        text-transform: uppercase;
+        a {
+            font-size: 0.9rem;
+            font-weight: 400;
+            text-transform: uppercase;
+        }
     }
 }
 
