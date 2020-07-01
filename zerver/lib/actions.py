@@ -4661,8 +4661,8 @@ def do_update_message(user_profile: UserProfile, message: Message,
             subscribers = subscribers.exclude(user_profile_id__in=[um.user_profile_id for um in ums])
 
             if new_stream is not None:
-                assert subs_losing_access is not None
-                subscribers = subscribers.exclude(user_profile_id__in=[sub.user_profile_id for sub in subs_losing_access])
+                assert delete_event_notify_user_ids is not None
+                subscribers = subscribers.exclude(user_profile_id__in=delete_event_notify_user_ids)
 
             # All users that are subscribed to the stream must be notified when a message is edited
             subscribers_ids = [user.user_profile_id for user in subscribers]
