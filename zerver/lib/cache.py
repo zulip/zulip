@@ -406,6 +406,39 @@ def generic_bulk_cached_fetch(
     return {object_id: cached_objects[cache_keys[object_id]] for object_id in object_ids
             if cache_keys[object_id] in cached_objects}
 
+def transformed_bulk_cached_fetch(
+    cache_key_function: Callable[[ObjKT], str],
+    query_function: Callable[[List[ObjKT]], Iterable[ItemT]],
+    object_ids: Sequence[ObjKT],
+    *,
+    id_fetcher: Callable[[ItemT], ObjKT],
+    cache_transformer: Callable[[ItemT], CacheItemT],
+) -> Dict[ObjKT, CacheItemT]:
+    return generic_bulk_cached_fetch(
+        cache_key_function,
+        query_function,
+        object_ids,
+        extractor=lambda obj: obj,
+        setter=lambda obj: obj,
+        id_fetcher=id_fetcher,
+        cache_transformer=cache_transformer,
+    )
+
+def bulk_cached_fetch(
+    cache_key_function: Callable[[ObjKT], str],
+    query_function: Callable[[List[ObjKT]], Iterable[ItemT]],
+    object_ids: Sequence[ObjKT],
+    *,
+    id_fetcher: Callable[[ItemT], ObjKT],
+) -> Dict[ObjKT, ItemT]:
+    return transformed_bulk_cached_fetch(
+        cache_key_function,
+        query_function,
+        object_ids,
+        id_fetcher=id_fetcher,
+        cache_transformer=lambda obj: obj,
+    )
+
 def preview_url_cache_key(url: str) -> str:
     return f"preview_url:{make_safe_digest(url)}"
 
