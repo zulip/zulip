@@ -57,9 +57,7 @@ const _realm_logo = {
 };
 
 const _list_render = {
-    create: () => {
-        return { init: noop };
-    },
+    create: () => ({ init: noop }),
 };
 
 set_global('channel', _channel);
@@ -221,25 +219,19 @@ function test_submit_settings_form(submit_form) {
     let stubs = createSaveButtons(subsection);
     let save_button = stubs.save_button;
     save_button.attr('id', `org-submit-${subsection}`);
-    save_button.replace = () => {
-        return `${subsection}`;
-    };
+    save_button.replace = () => `${subsection}`;
 
     $("#id_realm_waiting_period_threshold").val(10);
 
     const invite_to_stream_policy_elem = $("#id_realm_invite_to_stream_policy");
     invite_to_stream_policy_elem.val('1');
     invite_to_stream_policy_elem.attr("id", 'id_realm_invite_to_stream_policy');
-    invite_to_stream_policy_elem.data = () => {
-        return "number";
-    };
+    invite_to_stream_policy_elem.data = () => "number";
 
     const create_stream_policy_elem = $("#id_realm_create_stream_policy");
     create_stream_policy_elem.val('2');
     create_stream_policy_elem.attr("id", 'id_realm_create_stream_policy');
-    create_stream_policy_elem.data = () => {
-        return "number";
-    };
+    create_stream_policy_elem.data = () => "number";
 
     const add_emoji_by_admins_only_elem = $("#id_realm_add_emoji_by_admins_only");
     add_emoji_by_admins_only_elem.val("by_anyone");
@@ -248,15 +240,11 @@ function test_submit_settings_form(submit_form) {
     const bot_creation_policy_elem = $("#id_realm_bot_creation_policy");
     bot_creation_policy_elem.val("1");
     bot_creation_policy_elem.attr('id', 'id_realm_bot_creation_policy');
-    bot_creation_policy_elem.data = () => {
-        return "number";
-    };
+    bot_creation_policy_elem.data = () => "number";
     const email_address_visibility_elem = $("#id_realm_email_address_visibility");
     email_address_visibility_elem.val("1");
     email_address_visibility_elem.attr('id', 'id_realm_email_address_visibility');
-    email_address_visibility_elem.data = () => {
-        return "number";
-    };
+    email_address_visibility_elem.data = () => "number";
 
     let subsection_elem = $(`#org-${subsection}`);
     subsection_elem.closest = () => subsection_elem;
@@ -290,15 +278,11 @@ function test_submit_settings_form(submit_form) {
     const realm_default_language_elem = $("#id_realm_default_language");
     realm_default_language_elem.val("en");
     realm_default_language_elem.attr('id', 'id_realm_default_language');
-    realm_default_language_elem.data = () => {
-        return "string";
-    };
+    realm_default_language_elem.data = () => "string";
     const realm_default_twenty_four_hour_time_elem = $("#id_realm_default_twenty_four_hour_time");
     realm_default_twenty_four_hour_time_elem.val('true');
     realm_default_twenty_four_hour_time_elem.attr('id', 'id_realm_default_twenty_four_hour_time');
-    realm_default_twenty_four_hour_time_elem.data = () => {
-        return "boolean";
-    };
+    realm_default_twenty_four_hour_time_elem.data = () => "boolean";
 
     subsection_elem = $(`#org-${subsection}`);
     subsection_elem.closest = () => subsection_elem;
@@ -732,10 +716,8 @@ function test_discard_changes_button(discard_changes) {
 run_test('set_up', () => {
     const callbacks = {};
 
-    const set_callback = (name) => {
-        return (f) => {
-            callbacks[name] = f;
-        };
+    const set_callback = (name) => (f) => {
+        callbacks[name] = f;
     };
 
     const verify_realm_domains = simulate_realm_domains_table();
@@ -784,12 +766,10 @@ run_test('set_up', () => {
     };
 
     const dropdown_list_widget_backup = dropdown_list_widget;
-    window.dropdown_list_widget = () => {
-        return {
-            render: noop,
-            update: noop,
-        };
-    };
+    window.dropdown_list_widget = () => ({
+        render: noop,
+        update: noop,
+    });
     $("#id_realm_message_content_edit_limit_minutes").set_parent($.create('<stub edit limit parent>'));
     $("#id_realm_message_content_delete_limit_minutes").set_parent($.create('<stub delete limit parent>'));
     $("#id_realm_message_retention_days").set_parent($.create('<stub retention period parent>'));
@@ -1018,9 +998,7 @@ run_test('misc', () => {
     dropdown_list_parent.set_find_results('.dropdown_list_reset_button:not([disabled])', $.create('<disable button>'));
     widget_settings.forEach((name) => {
         const elem = $.create(`#${name}_widget #${name}_name`);
-        elem.closest = () => {
-            return dropdown_list_parent;
-        };
+        elem.closest = () => dropdown_list_parent;
     });
 
     // We do not define any settings we need in page_params yet, but we don't need to for this test.

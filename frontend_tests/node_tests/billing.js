@@ -62,9 +62,7 @@ run_test("initialize", () => {
         };
     };
 
-    $("#payment-method").data = (key) => {
-        return document.querySelector("#payment-method").getAttribute("data-" + key);
-    };
+    $("#payment-method").data = (key) => document.querySelector("#payment-method").getAttribute("data-" + key);
 
     jquery_init();
 

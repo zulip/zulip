@@ -92,9 +92,7 @@ run_test('is_complete_for_stream_id', () => {
                 has_found_newest: () => true,
             },
         },
-        first: () => {
-            return {id: 5};
-        },
+        first: () => ({id: 5}),
     };
 
     assert.equal(
@@ -102,9 +100,7 @@ run_test('is_complete_for_stream_id', () => {
         true);
 
     // Now simulate a more recent message id.
-    message_list.all.first = () => {
-        return {id: sub.first_message_id + 1};
-    };
+    message_list.all.first = () => ({id: sub.first_message_id + 1});
 
     // Note that we'll return `true` here due to
     // fetched_stream_ids having the stream_id now.

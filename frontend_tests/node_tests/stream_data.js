@@ -1075,7 +1075,7 @@ run_test('all_topics_in_cache', () => {
 
     message_list.all.data.add_messages(messages);
     assert.equal(stream_data.all_topics_in_cache(sub), false);
-    message_list.all.data.fetch_status.has_found_newest = () => {return true;};
+    message_list.all.data.fetch_status.has_found_newest = () => true;
     assert.equal(stream_data.all_topics_in_cache(sub), true);
 
     sub.first_message_id = 0;

@@ -73,22 +73,18 @@ run_test('scroll_element_into_container', () => {
 
     const elem1 = {
         innerHeight: () => 25,
-        position: () => {
-            return {
-                top: 0,
-            };
-        },
+        position: () => ({
+            top: 0,
+        }),
     };
     scroll_util.scroll_element_into_container(elem1, container);
     assert.equal(container.scrollTop(), 3);
 
     const elem2 = {
         innerHeight: () => 15,
-        position: () => {
-            return {
-                top: 250,
-            };
-        },
+        position: () => ({
+            top: 250,
+        }),
     };
     scroll_util.scroll_element_into_container(elem2, container);
     assert.equal(container.scrollTop(), 250 - 100 + 3 + 15);

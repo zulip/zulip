@@ -558,7 +558,7 @@ exports.init_dropdown_widgets = () => {
             exports.save_discard_widget_status_handler($(`#org-notifications`));
         },
         default_text: i18n.t("Disabled"),
-        render_text: (x) => {return `#${x}`;},
+        render_text: (x) => `#${x}`,
         null_value: -1,
     };
     exports.notifications_stream_widget = dropdown_list_widget(
@@ -575,12 +575,10 @@ exports.init_dropdown_widgets = () => {
                       notification_stream_options));
     exports.default_code_language_widget = dropdown_list_widget({
         widget_name: 'realm_default_code_block_language',
-        data: Object.keys(pygments_data.langs).map((x) => {
-            return {
-                name: x,
-                value: x,
-            };
-        }),
+        data: Object.keys(pygments_data.langs).map((x) => ({
+            name: x,
+            value: x,
+        })),
         value: page_params.realm_default_code_block_language,
         on_update: () => {
             exports.save_discard_widget_status_handler($(`#org-other-settings`));

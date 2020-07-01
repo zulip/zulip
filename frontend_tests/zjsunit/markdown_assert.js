@@ -165,12 +165,10 @@ class MarkdownComparer {
 
 function returnComparer() {
     if (!_markdownComparerInstance) {
-        _markdownComparerInstance = new MarkdownComparer((actual, expected) => {
-            return [
-                "Actual and expected output do not match.  Showing diff",
-                mdiff.diff_strings(actual, expected),
-            ].join('\n');
-        });
+        _markdownComparerInstance = new MarkdownComparer((actual, expected) => [
+            "Actual and expected output do not match.  Showing diff",
+            mdiff.diff_strings(actual, expected),
+        ].join('\n'));
     }
     return _markdownComparerInstance;
 }

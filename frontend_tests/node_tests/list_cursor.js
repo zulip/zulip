@@ -59,9 +59,7 @@ run_test('single item list', () => {
 
     cursor.adjust_scroll = () => {};
 
-    conf.list.find_li = () => {
-        return li_stub;
-    };
+    conf.list.find_li = () => li_stub;
 
     cursor.go_to(valid_key);
 

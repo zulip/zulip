@@ -102,9 +102,7 @@ run_test('create_ajax_request', () => {
     };
 
 
-    $("#autopay-form").serializeArray = () => {
-        return jquery("#autopay-form").serializeArray();
-    };
+    $("#autopay-form").serializeArray = () => jquery("#autopay-form").serializeArray();
 
     $.post = ({url, data, success, error}) => {
         assert.equal(state.form_input_section_hide, 1);

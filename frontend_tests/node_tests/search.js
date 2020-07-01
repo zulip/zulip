@@ -155,9 +155,7 @@ run_test('initialize', () => {
                     assert.deepEqual(raw_operators, operators);
                     assert.deepEqual(options, {trigger: 'search'});
                 };
-                search_pill.get_search_string_for_current_filter = () => {
-                    return search_box_val;
-                };
+                search_pill.get_search_string_for_current_filter = () => search_box_val;
             };
 
             operators = [{
@@ -230,9 +228,7 @@ run_test('initialize', () => {
                 assert.deepEqual(raw_operators, operators);
                 assert.deepEqual(options, {trigger: 'search'});
             };
-            search_pill.get_search_string_for_current_filter = () => {
-                return search_box_val;
-            };
+            search_pill.get_search_string_for_current_filter = () => search_box_val;
         };
 
         operators = [{
@@ -277,9 +273,7 @@ run_test('initialize', () => {
     };
 
     const search_pill_stub = $.create('.pill');
-    search_pill_stub.closest = () => {
-        return { data: noop };
-    };
+    search_pill_stub.closest = () => ({ data: noop });
     const stub_event = {
         relatedTarget: search_pill_stub,
     };
