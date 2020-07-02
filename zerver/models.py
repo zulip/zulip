@@ -377,7 +377,7 @@ class Realm(models.Model):
             'id': 4
         }
 
-    video_chat_provider = models.PositiveSmallIntegerField(default=VIDEO_CHAT_PROVIDERS['jitsi_meet']['id'])
+    video_chat_provider: int = models.PositiveSmallIntegerField(default=VIDEO_CHAT_PROVIDERS['jitsi_meet']['id'])
 
     default_code_block_language: Optional[str] = models.TextField(null=True, default=None)
 
@@ -614,7 +614,7 @@ class RealmDomain(models.Model):
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
     # should always be stored lowercase
     domain: str = models.CharField(max_length=80, db_index=True)
-    allow_subdomains = models.BooleanField(default=False)
+    allow_subdomains: bool = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ("realm", "domain")
@@ -1020,7 +1020,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         COLOR_SCHEME_NIGHT,
         COLOR_SCHEME_LIGHT
     ]
-    color_scheme = models.PositiveSmallIntegerField(default=COLOR_SCHEME_AUTOMATIC)
+    color_scheme: int = models.PositiveSmallIntegerField(default=COLOR_SCHEME_AUTOMATIC)
 
     # UI setting controlling Zulip's behavior of demoting in the sort
     # order and graying out streams with no recent traffic.  The
@@ -1034,7 +1034,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         DEMOTE_STREAMS_ALWAYS,
         DEMOTE_STREAMS_NEVER,
     ]
-    demote_inactive_streams = models.PositiveSmallIntegerField(default=DEMOTE_STREAMS_AUTOMATIC)
+    demote_inactive_streams: int = models.PositiveSmallIntegerField(default=DEMOTE_STREAMS_AUTOMATIC)
 
     # A timezone name from the `tzdata` database, as found in pytz.all_timezones.
     #
@@ -1297,17 +1297,17 @@ class PasswordTooWeakError(Exception):
     pass
 
 class UserGroup(models.Model):
-    name = models.CharField(max_length=100)
-    members = models.ManyToManyField(UserProfile, through='UserGroupMembership')
-    realm = models.ForeignKey(Realm, on_delete=CASCADE)
+    name: str = models.CharField(max_length=100)
+    members: Manager = models.ManyToManyField(UserProfile, through='UserGroupMembership')
+    realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
     description: str = models.TextField(default='')
 
     class Meta:
         unique_together = (('realm', 'name'),)
 
 class UserGroupMembership(models.Model):
-    user_group = models.ForeignKey(UserGroup, on_delete=CASCADE)
-    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
+    user_group: UserGroup = models.ForeignKey(UserGroup, on_delete=CASCADE)
+    user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
 
     class Meta:
         unique_together = (('user_group', 'user_profile'),)
@@ -1353,14 +1353,14 @@ class PreregistrationUser(models.Model):
     # If the pre-registration process provides a suggested full name for this user,
     # store it here to use it to prepopulate the Full Name field in the registration form:
     full_name: Optional[str] = models.CharField(max_length=UserProfile.MAX_NAME_LENGTH, null=True)
-    full_name_validated = models.BooleanField(default=False)
+    full_name_validated: bool = models.BooleanField(default=False)
     referred_by: Optional[UserProfile] = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE)
     streams: Manager = models.ManyToManyField('Stream')
     invited_at: datetime.datetime = models.DateTimeField(auto_now=True)
-    realm_creation = models.BooleanField(default=False)
+    realm_creation: bool = models.BooleanField(default=False)
     # Indicates whether the user needs a password.  Users who were
     # created via SSO style auth (e.g. GitHub/Google) generally do not.
-    password_required = models.BooleanField(default=True)
+    password_required: bool = models.BooleanField(default=True)
 
     # status: whether an object has been confirmed.
     #   if confirmed, set to confirmation.settings.STATUS_ACTIVE
@@ -1390,7 +1390,7 @@ def filter_to_valid_prereg_users(query: QuerySet) -> QuerySet:
         invited_at__gte=lowest_datetime)
 
 class MultiuseInvite(models.Model):
-    referred_by = models.ForeignKey(UserProfile, on_delete=CASCADE)  # Optional[UserProfile]
+    referred_by: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # Optional[UserProfile]
     streams: Manager = models.ManyToManyField('Stream')
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
     invited_as: int = models.PositiveSmallIntegerField(default=PreregistrationUser.INVITE_AS['MEMBER'])
@@ -1566,14 +1566,14 @@ post_save.connect(flush_stream, sender=Stream)
 post_delete.connect(flush_stream, sender=Stream)
 
 class MutedTopic(models.Model):
-    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
-    stream = models.ForeignKey(Stream, on_delete=CASCADE)
-    recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
-    topic_name = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH)
+    user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
+    stream: Stream = models.ForeignKey(Stream, on_delete=CASCADE)
+    recipient: Recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
+    topic_name: str = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH)
     # The default value for date_muted is a few weeks before tracking
     # of when topics were muted was first introduced.  It's designed
     # to be obviously incorrect so that users can tell it's backfilled data.
-    date_muted = models.DateTimeField(default=datetime.datetime(2020, 1, 1, 0, 0, tzinfo=datetime.timezone.utc))
+    date_muted: datetime.datetime = models.DateTimeField(default=datetime.datetime(2020, 1, 1, 0, 0, tzinfo=datetime.timezone.utc))
 
     class Meta:
         unique_together = ('user_profile', 'stream', 'topic_name')
@@ -1862,8 +1862,8 @@ class AbstractSubMessage(models.Model):
     # generic in purpose.
 
     sender: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
-    msg_type = models.TextField()
-    content = models.TextField()
+    msg_type: str = models.TextField()
+    content: str = models.TextField()
 
     class Meta:
         abstract = True
