@@ -738,22 +738,35 @@ def do_set_realm_authentication_methods(realm: Realm,
 def do_set_realm_message_editing(realm: Realm,
                                  allow_message_editing: bool,
                                  message_content_edit_limit_seconds: int,
-                                 allow_community_topic_editing: bool) -> None:
+                                 allow_community_topic_editing: bool,
+                                 acting_user: Optional[UserProfile]=None) -> None:
+    old_values = dict(allow_message_editing=realm.allow_message_editing,
+                      message_content_edit_limit_seconds=realm.message_content_edit_limit_seconds,
+                      allow_community_topic_editing=realm.allow_community_topic_editing)
+
     realm.allow_message_editing = allow_message_editing
     realm.message_content_edit_limit_seconds = message_content_edit_limit_seconds
     realm.allow_community_topic_editing = allow_community_topic_editing
-    realm.save(update_fields=['allow_message_editing',
-                              'allow_community_topic_editing',
-                              'message_content_edit_limit_seconds',
-                              ],
-               )
+
+    event_time = timezone_now()
+    updated_properties = dict(allow_message_editing=allow_message_editing,
+                              message_content_edit_limit_seconds=message_content_edit_limit_seconds,
+                              allow_community_topic_editing=allow_community_topic_editing)
+
+    for updated_property, updated_value in updated_properties.items():
+        RealmAuditLog.objects.create(
+            realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED, event_time=event_time,
+            acting_user=acting_user, extra_data=ujson.dumps({
+                RealmAuditLog.OLD_VALUE: {'property': updated_property, 'value': old_values[updated_property]},
+                RealmAuditLog.NEW_VALUE: {'property': updated_property, 'value': updated_value}
+            }))
+
+    realm.save(update_fields=list(updated_properties.keys()))
     event = dict(
         type="realm",
         op="update_dict",
         property="default",
-        data=dict(allow_message_editing=allow_message_editing,
-                  message_content_edit_limit_seconds=message_content_edit_limit_seconds,
-                  allow_community_topic_editing=allow_community_topic_editing),
+        data=updated_properties,
     )
     send_event(realm, event, active_user_ids(realm.id))
 

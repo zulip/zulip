@@ -24,6 +24,7 @@ from zerver.lib.actions import (
     do_reactivate_user,
     do_regenerate_api_key,
     do_set_realm_authentication_methods,
+    do_set_realm_message_editing,
     get_last_message_id,
     get_streams_traffic,
 )
@@ -264,3 +265,29 @@ class TestRealmAuditLog(ZulipTestCase):
         Message.objects.all().delete()
 
         self.assertEqual(get_last_message_id(), -1)
+
+    def test_set_realm_message_editing(self) -> None:
+        now = timezone_now()
+        realm = get_realm('zulip')
+        user = self.example_user('hamlet')
+        old_values_expected = [{'property': 'allow_message_editing', 'value': realm.allow_message_editing},
+                               {'property': 'message_content_edit_limit_seconds', 'value': realm.message_content_edit_limit_seconds},
+                               {'property': 'allow_community_topic_editing', 'value': realm.allow_community_topic_editing}]
+
+        do_set_realm_message_editing(realm, True, 1000, False, acting_user=user)
+        realm_audit_logs = RealmAuditLog.objects.filter(realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                                                        event_time__gte=now, acting_user=user)
+        self.assertEqual(realm_audit_logs.count(), 3)
+
+        new_values_expected = [{'property': 'allow_message_editing', 'value': True},
+                               {'property': 'message_content_edit_limit_seconds', 'value': 1000},
+                               {'property': 'allow_community_topic_editing', 'value': False}]
+        new_values_seen = []
+        old_values_seen = []
+        for realm_audit_log in realm_audit_logs:
+            extra_data = ujson.loads(realm_audit_log.extra_data)
+            new_values_seen.append(extra_data[RealmAuditLog.NEW_VALUE])
+            old_values_seen.append(extra_data[RealmAuditLog.OLD_VALUE])
+
+        self.assertEqual(new_values_seen, new_values_expected)
+        self.assertEqual(old_values_seen, old_values_expected)
