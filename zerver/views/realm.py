@@ -137,7 +137,7 @@ def update_realm(
     # framework because of its bitfield.
     if authentication_methods is not None and (realm.authentication_methods_dict() !=
                                                authentication_methods):
-        do_set_realm_authentication_methods(realm, authentication_methods)
+        do_set_realm_authentication_methods(realm, authentication_methods, acting_user=user_profile)
         data['authentication_methods'] = authentication_methods
     # The message_editing settings are coupled to each other, and thus don't fit
     # into the do_set_realm_property framework.

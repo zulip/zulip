@@ -23,6 +23,7 @@ from zerver.lib.actions import (
     do_reactivate_realm,
     do_reactivate_user,
     do_regenerate_api_key,
+    do_set_realm_authentication_methods,
     get_streams_traffic,
 )
 from zerver.lib.streams import create_stream_if_needed
@@ -235,3 +236,19 @@ class TestRealmAuditLog(ZulipTestCase):
                                                       event_time__gte=now, acting_user=user,
                                                       modified_stream=stream).count(), 1)
         self.assertEqual(stream.deactivated, True)
+
+    def test_set_realm_authentication_methods(self) -> None:
+        now = timezone_now()
+        realm = get_realm('zulip')
+        user = self.example_user('hamlet')
+        expected_old_value = {'property': 'authentication_methods', 'value': realm.authentication_methods_dict()}
+        auth_method_dict = {'Google': False, 'Email': False, 'GitHub': False, 'Apple': False, 'Dev': True, 'SAML': True, 'GitLab': False}
+
+        do_set_realm_authentication_methods(realm, auth_method_dict, acting_user=user)
+        realm_audit_logs = RealmAuditLog.objects.filter(realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                                                        event_time__gte=now, acting_user=user)
+        self.assertEqual(realm_audit_logs.count(), 1)
+        extra_data = ujson.loads(realm_audit_logs[0].extra_data)
+        expected_new_value = {'property': 'authentication_methods', 'value': auth_method_dict}
+        self.assertEqual(extra_data[RealmAuditLog.OLD_VALUE], expected_old_value)
+        self.assertEqual(extra_data[RealmAuditLog.NEW_VALUE], expected_new_value)
