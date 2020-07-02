@@ -64,7 +64,7 @@ The "info:" items use our info overlay system
 in static/js/info_overlay.js.  They are dispatched
 using a click handler in static/js/click_handlers.js.
 The click handler uses "[data-overlay-trigger]" as
-the selector and then calls info_overlay.show.
+the selector and then calls hash_change.go_to_location.
 
 */
 

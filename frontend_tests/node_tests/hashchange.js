@@ -208,31 +208,19 @@ run_test("hash_interactions", () => {
 
     helper.clear_events();
     $(window).trigger($.Event("hashchange", {}));
-    helper.assert_events([
-        "overlays.close_for_hash_change",
-        "message_viewport.stop_auto_scrolling",
-        "info: keyboard-shortcuts",
-    ]);
+    helper.assert_events(["overlays.close_for_hash_change", "info: keyboard-shortcuts"]);
 
     window.location.hash = "#message-formatting/whatever";
 
     helper.clear_events();
     $(window).trigger($.Event("hashchange", {}));
-    helper.assert_events([
-        "overlays.close_for_hash_change",
-        "message_viewport.stop_auto_scrolling",
-        "info: message-formatting",
-    ]);
+    helper.assert_events(["overlays.close_for_hash_change", "info: message-formatting"]);
 
     window.location.hash = "#search-operators/whatever";
 
     helper.clear_events();
     $(window).trigger($.Event("hashchange", {}));
-    helper.assert_events([
-        "overlays.close_for_hash_change",
-        "message_viewport.stop_auto_scrolling",
-        "info: search-operators",
-    ]);
+    helper.assert_events(["overlays.close_for_hash_change", "info: search-operators"]);
 
     window.location.hash = "#drafts";
 

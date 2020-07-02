@@ -673,7 +673,7 @@ exports.initialize = function () {
 
     $("body").on("click", "[data-overlay-trigger]", function () {
         const target = $(this).attr("data-overlay-trigger");
-        info_overlay.show(target);
+        hashchange.go_to_location(target);
     });
 
     function handle_compose_click(e) {

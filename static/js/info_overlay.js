@@ -57,7 +57,7 @@ exports.show = function (target) {
             name: "informationalOverlays",
             overlay,
             on_close() {
-                hashchange.changehash("");
+                hashchange.exit_overlay();
             },
         });
     }

@@ -653,7 +653,7 @@ exports.process_hotkey = function (e, hotkey) {
             gear_menu.open();
             return true;
         case "show_shortcuts": // Show keyboard shortcuts page
-            info_overlay.maybe_show_keyboard_shortcuts();
+            hashchange.go_to_location("keyboard-shortcuts");
             return true;
         case "stream_cycle_backward":
             narrow.stream_cycle_backward();

@@ -262,7 +262,7 @@ run_test("basic_chars", () => {
     test_normal_typing();
     overlays.is_active = return_false;
 
-    assert_mapping("?", "info_overlay.maybe_show_keyboard_shortcuts");
+    assert_mapping("?", "hashchange.go_to_location");
     assert_mapping("/", "search.initiate_search");
     assert_mapping("w", "activity.initiate_search");
     assert_mapping("q", "stream_list.initiate_search");
