@@ -196,7 +196,7 @@ run_test("basic_chars", () => {
 
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
-    assert_unmapped("abfhlmoyz");
+    assert_unmapped("abfmoyz");
     assert_unmapped("BEFHILNOQTUWXYZ");
 
     // We have to skip some checks due to the way the code is
@@ -236,6 +236,7 @@ run_test("basic_chars", () => {
                     is_active,
                     settings_open,
                     info_overlay_open,
+                    recent_topics_open: return_false,
                 });
                 test_normal_typing();
             }

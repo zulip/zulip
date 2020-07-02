@@ -96,9 +96,11 @@ const keypress_mappings = {
     100: {name: "open_drafts", message_view_only: true}, // 'd'
     101: {name: "edit_message", message_view_only: true}, // 'e'
     103: {name: "gear_menu", message_view_only: true}, // 'g'
+    104: {name: "vim_left", message_view_only: true}, // 'h'
     105: {name: "message_actions", message_view_only: true}, // 'i'
     106: {name: "vim_down", message_view_only: true}, // 'j'
     107: {name: "vim_up", message_view_only: true}, // 'k'
+    108: {name: "vim_right", message_view_only: true}, // 'l'
     110: {name: "n_key", message_view_only: false}, // 'n'
     112: {name: "p_key", message_view_only: false}, // 'p'
     113: {name: "query_streams", message_view_only: true}, // 'q'
@@ -427,6 +429,10 @@ exports.process_hotkey = function (e, hotkey) {
         case "down_arrow":
         case "left_arrow":
         case "right_arrow":
+        case "vim_up":
+        case "vim_down":
+        case "vim_left":
+        case "vim_right":
         case "tab":
         case "shift_tab":
             if (overlays.recent_topics_open()) {

@@ -464,12 +464,6 @@ exports.change_focused_element = function (e, input_key) {
     // returning true will cause the caller to do
     // preventDefault/stopPropagation; false will let the browser
     // handle the key.
-    if (input_key === "tab") {
-        input_key = "right_arrow";
-    } else if (input_key === "shift_tab") {
-        input_key = "left_arrow";
-    }
-
     const $elem = $(e.target);
 
     if ($("#recent_topics_table").find(":focus").length === 0) {
@@ -493,11 +487,22 @@ exports.change_focused_element = function (e, input_key) {
         }
 
         switch (input_key) {
+            case "vim_left":
+            case "vim_right":
+            case "vim_down":
+            case "vim_up":
+                return false;
+            case "shift_tab":
+                current_focus_elem = filter_buttons().last();
+                break;
             case "left_arrow":
                 if (start !== 0 || is_selected) {
                     return false;
                 }
                 current_focus_elem = filter_buttons().last();
+                break;
+            case "tab":
+                current_focus_elem = filter_buttons().first();
                 break;
             case "right_arrow":
                 if (end !== text_length || is_selected) {
@@ -520,6 +525,8 @@ exports.change_focused_element = function (e, input_key) {
         }
     } else if ($elem.hasClass("btn-recent-filters")) {
         switch (input_key) {
+            case "shift_tab":
+            case "vim_left":
             case "left_arrow":
                 if (filter_buttons().first()[0] === $elem[0]) {
                     current_focus_elem = $("#recent_topics_search");
@@ -527,6 +534,8 @@ exports.change_focused_element = function (e, input_key) {
                     current_focus_elem = $elem.prev();
                 }
                 break;
+            case "tab":
+            case "vim_right":
             case "right_arrow":
                 if (filter_buttons().last()[0] === $elem[0]) {
                     current_focus_elem = $("#recent_topics_search");
@@ -534,6 +543,7 @@ exports.change_focused_element = function (e, input_key) {
                     current_focus_elem = $elem.next();
                 }
                 break;
+            case "vim_down":
             case "down_arrow":
                 set_table_focus(row_focus, col_focus);
                 return true;
@@ -543,21 +553,27 @@ exports.change_focused_element = function (e, input_key) {
         // wraparound.  Going off the top or the bottom takes one
         // to the navigation at the top (see set_table_focus).
         switch (input_key) {
+            case "shift_tab":
+            case "vim_left":
             case "left_arrow":
                 col_focus -= 1;
                 if (col_focus < 0) {
                     col_focus = MAX_SELECTABLE_COLS - 1;
                 }
                 break;
+            case "tab":
+            case "vim_right":
             case "right_arrow":
                 col_focus += 1;
                 if (col_focus >= MAX_SELECTABLE_COLS) {
                     col_focus = 0;
                 }
                 break;
+            case "vim_down":
             case "down_arrow":
                 row_focus += 1;
                 break;
+            case "vim_up":
             case "up_arrow":
                 row_focus -= 1;
         }
