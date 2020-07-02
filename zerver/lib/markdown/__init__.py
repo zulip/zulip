@@ -1631,7 +1631,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
 
             id_syntax_match = re.match(r'.+\|(?P<user_id>\d+)$', name)
             if id_syntax_match:
-                id = id_syntax_match.group("user_id")
+                id = int(id_syntax_match.group("user_id"))
                 user = db_data['mention_data'].get_user_by_id(id)
             else:
                 user = db_data['mention_data'].get_user_by_name(name)
@@ -2201,8 +2201,8 @@ class MentionData:
         # get_user_by_id where possible.
         return self.full_name_info.get(name.lower(), None)
 
-    def get_user_by_id(self, id: str) -> Optional[FullNameInfo]:
-        return self.user_id_info.get(int(id), None)
+    def get_user_by_id(self, id: int) -> Optional[FullNameInfo]:
+        return self.user_id_info.get(id, None)
 
     def get_user_ids(self) -> Set[int]:
         """
