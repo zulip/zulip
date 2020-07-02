@@ -1,3 +1,5 @@
+/* eslint-disable arrow-body-style */
+
 const ExamplesHandler = function () {
     const config = {
         username: process.env.ZULIP_USERNAME,
