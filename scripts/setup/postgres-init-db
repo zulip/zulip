@@ -33,8 +33,9 @@ if [ -e "/var/run/supervisor.sock" ]; then
 fi
 
 # Drop any open connections to any old database.
+# Send the script via stdin in case the postgres user lacks permission to read it.
 su -s /usr/bin/env - -- "$POSTGRES_USER" \
-   "$(dirname "$0")/terminate-psql-sessions" zulip zulip_base
+    bash -s - zulip zulip_base < "$(dirname "$0")/terminate-psql-sessions"
 
 (
     cd /  # Make sure the current working directory is readable by postgres
