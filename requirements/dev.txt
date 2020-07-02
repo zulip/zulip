@@ -126,7 +126,7 @@ cchardet==2.1.6 \
 certifi==2020.6.20 \
     --hash=sha256:5930595817496dd21bb8dc35dad090f1c2cd0adfaf21204bf6732ca5d8ee34d3 \
     --hash=sha256:8fc0819f1f30ba15bdb34cceffb9ef04d99f420f68eb75d901e9560b8749fc41 \
-    # via requests
+    # via requests, sentry-sdk
 cffi==1.14.0 \
     --hash=sha256:001bf3242a1bb04d985d63e138230802c6c8d4db3668fb545fb5005ddf5bb5ff \
     --hash=sha256:00789914be39dffba161cfc5be31b55775de5ba2235fe49aa28c148236c4e06b \
@@ -914,6 +914,10 @@ scrapy==2.2.0 \
     --hash=sha256:8ce036a113ef9bc575a65b463994244e4298145f70bcdcf40b8847a2f528a1fb \
     --hash=sha256:e6b724ef3d522bbce93bede7af18d1603b57cefcf589337b0f4c5b15ea0a5f29 \
     # via -r requirements/dev.in
+sentry-sdk==0.15.1 \
+    --hash=sha256:06825c15a78934e78941ea25910db71314c891608a46492fc32c15902c6b2119 \
+    --hash=sha256:3ac0c430761b3cb7682ce612151d829f8644bb3830d4e530c75b02ceb745ff49 \
+    # via -r requirements/common.in
 service-identity==18.1.0 \
     --hash=sha256:001c0707759cb3de7e49c078a7c0c9cd12594161d3bf06b9c254fdcb1a60dc36 \
     --hash=sha256:0858a54aabc5b459d1aafa8a518ed2081a285087f349fe3e55197989232e2e2d \
@@ -1121,7 +1125,7 @@ https://github.com/zulip/ultrajson/archive/70ac02becc3e11174cd5072650f885b30daab
 urllib3==1.25.9 \
     --hash=sha256:3018294ebefce6572a474f0604c2021e33b3fd8006ecd11d62107a5d2a963527 \
     --hash=sha256:88206b0eb87e6d677d424843ac5209e3fb9d0190d0ee169599165ec25e9d9115 \
-    # via botocore, requests
+    # via botocore, requests, sentry-sdk
 uwsgi==2.0.19.1 \
     --hash=sha256:faa85e053c0b1be4d5585b0858d3a511d2cd10201802e8676060fd0a109e5869 \
     # via -r requirements/prod.in
