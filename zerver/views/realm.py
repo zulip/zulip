@@ -154,7 +154,8 @@ def update_realm(
             allow_community_topic_editing = realm.allow_community_topic_editing
         do_set_realm_message_editing(realm, allow_message_editing,
                                      message_content_edit_limit_seconds,
-                                     allow_community_topic_editing)
+                                     allow_community_topic_editing,
+                                     acting_user=user_profile)
         data['allow_message_editing'] = allow_message_editing
         data['message_content_edit_limit_seconds'] = message_content_edit_limit_seconds
         data['allow_community_topic_editing'] = allow_community_topic_editing
