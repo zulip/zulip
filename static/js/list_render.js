@@ -39,7 +39,7 @@ exports.get_filtered_items = (value, list, opts) => {
         if (get_item) {
             return opts.filter.filterer(
                 list.map(get_item),
-                value
+                value,
             );
         }
         return opts.filter.filterer(list, value);
@@ -159,12 +159,12 @@ exports.create = function ($container, list, opts) {
         meta.filtered_list = exports.get_filtered_items(
             meta.filter_value,
             meta.list,
-            opts
+            opts,
         );
 
         if (meta.sorting_function) {
             meta.filtered_list.sort(
-                meta.sorting_function
+                meta.sorting_function,
             );
         }
 

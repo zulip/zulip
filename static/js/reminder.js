@@ -46,7 +46,7 @@ exports.schedule_message = function (request) {
     const message = raw_message.slice(1).join('\n');
 
     const deferred_message_type = deferred_message_types.filter(
-        (props) => command_line.match(props.test) !== null
+        (props) => command_line.match(props.test) !== null,
     )[0];
     const command = command_line.match(deferred_message_type.test)[0];
 
@@ -67,7 +67,7 @@ exports.schedule_message = function (request) {
     }
 
     request = patch_request_for_scheduling(
-        request, message, deliver_at, deferred_message_type.delivery_type
+        request, message, deliver_at, deferred_message_type.delivery_type,
     );
 
     const success = function (data) {
@@ -143,7 +143,7 @@ exports.do_set_reminder_for_message = function (message_id, timestamp) {
 
     reminder_message = patch_request_for_scheduling(
         reminder_message, reminder_msg_content, timestamp,
-        deferred_message_types.reminders.delivery_type
+        deferred_message_types.reminders.delivery_type,
     );
     transmit.send_message(reminder_message, success, error);
 };

@@ -35,7 +35,7 @@ run_test('get_emoji_matcher', () => {
         const matcher = typeahead.get_emoji_matcher(query);
         assert.deepEqual(
             emojis.filter(matcher),
-            expected
+            expected,
         );
     }
 
@@ -67,7 +67,7 @@ run_test('triage', () => {
         {
             matches: [alice, Alicia],
             rest: [steve, Stephanie],
-        }
+        },
     );
 
     assert.deepEqual(
@@ -75,7 +75,7 @@ run_test('triage', () => {
         {
             matches: [Alicia, alice],
             rest: [steve, Stephanie],
-        }
+        },
     );
 
     assert.deepEqual(
@@ -83,7 +83,7 @@ run_test('triage', () => {
         {
             matches: [Stephanie, steve],
             rest: [alice, Alicia],
-        }
+        },
     );
 
     assert.deepEqual(
@@ -91,7 +91,7 @@ run_test('triage', () => {
         {
             matches: [],
             rest: [alice, Alicia, steve, Stephanie],
-        }
+        },
     );
 });
 
@@ -119,7 +119,7 @@ run_test('sort_emojis th', () => {
             thermometer,
             thumbs_down,
             mother_nature,
-        ]
+        ],
     );
 });
 
@@ -143,7 +143,7 @@ run_test('sort_emojis sm', () => {
             slight_smile,
             small_airplane,
             big_smile,
-        ]
+        ],
     );
 });
 

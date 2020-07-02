@@ -1026,7 +1026,7 @@ MessageListView.prototype = {
             // Since we don't have a way to get a message group from
             // the containing message container, we just do a search
             // to find it.
-            (message_group) => message_group.message_group_id === message_group_id
+            (message_group) => message_group.message_group_id === message_group_id,
         );
     },
 
@@ -1100,7 +1100,7 @@ MessageListView.prototype = {
         let message_containers = messages.map((message) => self.message_containers.get(message.id));
         // We may not have the message_container if the stream or topic was muted
         message_containers = message_containers.filter(
-            (message_container) => message_container !== undefined
+            (message_container) => message_container !== undefined,
         );
 
         const message_groups = [];

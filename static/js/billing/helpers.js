@@ -71,7 +71,7 @@ exports.format_money = function (cents) {
 
 exports.update_charged_amount = function (prices, schedule) {
     $("#charged_amount").text(
-        exports.format_money(page_params.seat_count * prices[schedule])
+        exports.format_money(page_params.seat_count * prices[schedule]),
     );
 };
 

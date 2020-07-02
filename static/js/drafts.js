@@ -175,7 +175,7 @@ exports.restore_draft = function (draft_id) {
                     {operator: "stream", operand: compose_args.stream},
                     {operator: "topic", operand: compose_args.topic},
                 ],
-                {trigger: "restore draft"}
+                {trigger: "restore draft"},
             );
         }
     } else {
@@ -184,7 +184,7 @@ exports.restore_draft = function (draft_id) {
                 [
                     {operator: "pm-with", operand: compose_args.private_message_recipient},
                 ],
-                {trigger: "restore draft"}
+                {trigger: "restore draft"},
             );
         }
     }
@@ -319,7 +319,7 @@ exports.launch = function () {
         const unsorted_raw_drafts = Object.values(data);
 
         const sorted_raw_drafts = unsorted_raw_drafts.sort(
-            (draft_a, draft_b) => draft_b.updatedAt - draft_a.updatedAt
+            (draft_a, draft_b) => draft_b.updatedAt - draft_a.updatedAt,
         );
 
         const sorted_formatted_drafts = sorted_raw_drafts.map(exports.format_draft).filter(Boolean);

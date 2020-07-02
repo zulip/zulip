@@ -92,7 +92,7 @@ run_test('unloaded', () => {
 function simulate_realm_domains_table() {
     $('#realm_domains_table tbody').set_find_results(
         'tr',
-        $.create('realm-tr-stub')
+        $.create('realm-tr-stub'),
     );
 
     let appended;
@@ -111,12 +111,12 @@ function test_realms_domain_modal(add_realm_domain) {
 
     $('#add-realm-domain-widget').set_find_results(
         '.new-realm-domain',
-        $.create('new-realm-domain-stub')
+        $.create('new-realm-domain-stub'),
     );
 
     $('#add-realm-domain-widget').set_find_results(
         '.new-realm-domain-allow-subdomains',
-        $.create('new-realm-domain-allow-subdomains-stub')
+        $.create('new-realm-domain-allow-subdomains-stub'),
     );
 
     let posted;
@@ -147,23 +147,23 @@ function createSaveButtons(subsection) {
     const stub_discard_button = $(`#org-discard-${subsection}`);
     const stub_save_button_text = $('.icon-button-text');
     stub_save_button_header.set_find_results(
-        '.subsection-failed-status p', $('<failed status element>')
+        '.subsection-failed-status p', $('<failed status element>'),
     );
     stub_save_button.closest = () => stub_save_button_header;
     save_button_controls.set_find_results(
-        '.save-button', stub_save_button
+        '.save-button', stub_save_button,
     );
     stub_save_button.set_find_results(
-        '.icon-button-text', stub_save_button_text
+        '.icon-button-text', stub_save_button_text,
     );
     stub_save_button_header.set_find_results(
-        '.save-button-controls', save_button_controls
+        '.save-button-controls', save_button_controls,
     );
     stub_save_button_header.set_find_results(
-        '.subsection-changes-discard .button', $(`#org-discard-${subsection}`)
+        '.subsection-changes-discard .button', $(`#org-discard-${subsection}`),
     );
     save_button_controls.set_find_results(
-        '.discard-button', stub_discard_button
+        '.discard-button', stub_discard_button,
     );
     const props  = {};
     props.hidden = false;
@@ -429,21 +429,21 @@ function test_extract_property_name() {
     $('#id_realm_allow_message_editing').attr('id', 'id_realm_allow_message_editing');
     assert.equal(
         settings_org.extract_property_name($('#id_realm_allow_message_editing')),
-        'realm_allow_message_editing'
+        'realm_allow_message_editing',
     );
 
     $('#id_realm_message_content_edit_limit_minutes_label').attr(
         'id', 'id_realm_message_content_edit_limit_minutes_label');
     assert.equal(
         settings_org.extract_property_name($('#id_realm_message_content_edit_limit_minutes_label')),
-        'realm_message_content_edit_limit_minutes_label'
+        'realm_message_content_edit_limit_minutes_label',
     );
 
     $('#id-realm-allow-message-deleting').attr(
         'id', 'id-realm-allow-message-deleting');
     assert.equal(
         settings_org.extract_property_name($('#id-realm-allow-message-deleting')),
-        'realm_allow_message_deleting'
+        'realm_allow_message_deleting',
     );
 }
 

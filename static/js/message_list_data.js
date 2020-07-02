@@ -170,7 +170,7 @@ MessageListData.prototype = {
         return messages.filter(
             (message) =>
                 !muting.is_topic_muted(message.stream_id, message.topic) ||
-                message.mentioned
+                message.mentioned,
         );
     },
 
@@ -345,7 +345,7 @@ MessageListData.prototype = {
         this._items = this._items.filter((message) => !msg_ids_to_remove.has(message.id));
         if (this.muting_enabled) {
             this._all_items = this._all_items.filter(
-                (message) => !msg_ids_to_remove.has(message.id)
+                (message) => !msg_ids_to_remove.has(message.id),
             );
         }
     },

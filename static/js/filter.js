@@ -362,7 +362,7 @@ Filter.prototype = {
                     page_params.narrow_stream !== undefined &&
                     value.operator === "stream" &&
                     value.operand.toLowerCase() === page_params.narrow_stream.toLowerCase()
-                )
+                ),
         );
         return safe_to_return;
     },
@@ -376,13 +376,13 @@ Filter.prototype = {
 
     has_negated_operand: function (operator, operand) {
         return this._operators.some(
-            (elem) => elem.negated && (elem.operator === operator && elem.operand === operand)
+            (elem) => elem.negated && (elem.operator === operator && elem.operand === operand),
         );
     },
 
     has_operand: function (operator, operand) {
         return this._operators.some(
-            (elem) => !elem.negated && (elem.operator === operator && elem.operand === operand)
+            (elem) => !elem.negated && (elem.operator === operator && elem.operand === operand),
         );
     },
 
@@ -750,7 +750,7 @@ Filter.prototype = {
                 term.operand = people.update_email_in_reply_to(
                     term.operand,
                     user_id,
-                    new_email
+                    new_email,
                 );
             }
         }

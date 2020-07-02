@@ -234,7 +234,7 @@ run_test('basics', () => {
 
     assert.equal(
         people.get_actual_name_from_user_id(32),
-        full_name
+        full_name,
     );
 
     assert(people.is_valid_full_name_and_user_id(full_name, 32));
@@ -266,7 +266,7 @@ run_test('basics', () => {
 
     assert.equal(
         people.get_bot_owner_user(bot_botson).full_name,
-        'Isaac Newton'
+        'Isaac Newton',
     );
 
     // Add our cross-realm bot.  It won't add to our human
@@ -276,7 +276,7 @@ run_test('basics', () => {
     assert.equal(people.get_active_human_count(), 1);
     assert.equal(
         people.get_by_email(welcome_bot.email).full_name,
-        'Welcome Bot'
+        'Welcome Bot',
     );
 
     // get_realm_users() will include our active bot,
@@ -286,7 +286,7 @@ run_test('basics', () => {
         [
             me.user_id,
             bot_botson.user_id,
-        ]
+        ],
     );
 
     // The bot doesn't add to our human count.
@@ -590,14 +590,14 @@ run_test('concat_huddle', () => {
 
     assert.equal(
         people.concat_huddle(user_ids, 304),
-        '301,302,303,304'
+        '301,302,303,304',
     );
 
     // IMPORTANT: we always want to sort
     // ids numerically to create huddle strings.
     assert.equal(
         people.concat_huddle(user_ids, 99),
-        '99,301,302,303'
+        '99,301,302,303',
     );
 });
 
@@ -670,7 +670,7 @@ run_test('message_methods', () => {
         sender_id: maria.user_id,
     };
     assert.equal(people.small_avatar_url(message),
-                 'https://secure.gravatar.com/avatar/md5-athens@example.com?d=identicon&s=50'
+                 'https://secure.gravatar.com/avatar/md5-athens@example.com?d=identicon&s=50',
     );
 
     blueslip.expect('error', 'Unknown user_id in get_by_user_id: 9999999');
@@ -680,14 +680,14 @@ run_test('message_methods', () => {
         sender_id: 9999999,
     };
     assert.equal(people.small_avatar_url(message),
-                 'https://secure.gravatar.com/avatar/md5-foo@example.com?d=identicon&s=50'
+                 'https://secure.gravatar.com/avatar/md5-foo@example.com?d=identicon&s=50',
     );
 
     message = {
         sender_id: ashton.user_id,
     };
     assert.equal(people.small_avatar_url(message),
-                 `/avatar/${ashton.user_id}&s=50`
+                 `/avatar/${ashton.user_id}&s=50`,
     );
 
     message = {
@@ -911,17 +911,17 @@ run_test('update_email_in_reply_to', () => {
     let reply_to = '    charles@example.com,   athens@example.com';
     assert.equal(
         people.update_email_in_reply_to(reply_to, 9999, 'whatever'),
-        reply_to
+        reply_to,
     );
     assert.equal(
         people.update_email_in_reply_to(reply_to, maria.user_id, 'maria@example.com'),
-        'charles@example.com,maria@example.com'
+        'charles@example.com,maria@example.com',
     );
 
     reply_to = '    charles@example.com,   athens@example.com, unknown@example.com';
     assert.equal(
         people.update_email_in_reply_to(reply_to, 9999, 'whatever'),
-        reply_to
+        reply_to,
     );
 });
 
@@ -934,7 +934,7 @@ run_test('track_duplicate_full_names', () => {
     assert(!people.is_duplicate_full_name('Stephen King'));
     assert.equal(
         people.get_user_id_from_name('Stephen King'),
-        stephen1.user_id
+        stephen1.user_id,
     );
 
     // Now duplicate the Stephen King name.
@@ -945,7 +945,7 @@ run_test('track_duplicate_full_names', () => {
     // other codepaths for disambiguation.
     assert.equal(
         people.get_user_id_from_name('Stephen King'),
-        undefined
+        undefined,
     );
 
     assert(people.is_duplicate_full_name('Stephen King'));

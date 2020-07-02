@@ -105,7 +105,7 @@ IterationProfiler.prototype = {
         if (diff > 1) {
             this.sections.set(
                 "_rest_of_iteration",
-                (this.sections.get("_rest_of_iteration") || 0) + diff
+                (this.sections.get("_rest_of_iteration") || 0) + diff,
             );
         }
         this.last_time = now;

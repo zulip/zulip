@@ -27,7 +27,7 @@ function apply_color(input_string, changes) {
         if (formatter.has(change.tag)) {
             processed_string += input_string.slice(previous_index, change.beginning_index);
             processed_string += formatter.get(change.tag)(
-                input_string.slice(change.beginning_index, change.ending_index)
+                input_string.slice(change.beginning_index, change.ending_index),
             );
             previous_index = change.ending_index;
         }
@@ -134,7 +134,7 @@ if (require.main === module) {
             " string_0" +
             " string_1" +
             "\n" +
-            "Where string_0 and string_1 are the strings to be diffed"
+            "Where string_0 and string_1 are the strings to be diffed",
         );
     }
 

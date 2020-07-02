@@ -109,7 +109,7 @@ run_test('changing_topics', () => {
     assert.deepEqual(unread.get_unread_message_ids([15, 16]), [15, 16]);
     assert.deepEqual(
         unread.get_unread_messages([message, other_message]),
-        [message, other_message]
+        [message, other_message],
     );
 
     count = unread.num_unread_for_topic(stream_id, 'Lunch');
@@ -563,7 +563,7 @@ run_test('mention updates', () => {
         unread.update_message_for_mention(message);
         assert.equal(
             unread.unread_mentions_counter.has(message.id),
-            counted
+            counted,
         );
     }
 

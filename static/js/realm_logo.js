@@ -43,7 +43,7 @@ exports.build_realm_logo_widget = function (upload_function, is_night) {
         file_input_error_elem.expectOne(),
         upload_button_elem.expectOne(),
         upload_function,
-        page_params.max_logo_file_size
+        page_params.max_logo_file_size,
     );
 };
 

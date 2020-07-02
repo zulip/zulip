@@ -220,7 +220,7 @@ exports.get_title_data = function (user_ids_string, is_group) {
         if (bot_owner) {
             const bot_owner_name = i18n.t(
                 'Owner: __name__',
-                {name: bot_owner.full_name}
+                {name: bot_owner.full_name},
             );
 
             return {

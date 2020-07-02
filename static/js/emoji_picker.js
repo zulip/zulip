@@ -104,7 +104,7 @@ function show_emoji_catalog() {
 exports.generate_emoji_picker_data = function (realm_emojis) {
     const catalog = new Map();
     catalog.set("Custom", Array.from(realm_emojis.keys(), (realm_emoji_name) =>
-        emoji.emojis_by_name.get(realm_emoji_name)
+        emoji.emojis_by_name.get(realm_emoji_name),
     ));
 
     for (const [category, codepoints] of Object.entries(emoji_codes.emoji_catalog)) {
@@ -730,7 +730,7 @@ exports.register_click_handlers = function () {
             $emoji_map,
             emoji_coordinates.section,
             emoji_coordinates.index,
-            true
+            true,
         );
     });
 };

@@ -244,7 +244,7 @@ class CommonUtils {
             await this.send_message(
                 page,
                 msg.stream !== undefined ? 'stream' : 'private',
-                msg
+                msg,
             );
         }
     }

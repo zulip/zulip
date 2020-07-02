@@ -53,6 +53,6 @@ require.extensions[".hbs"] = (module, filename) => {
         out.code +
             "\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," +
             Buffer.from(out.map.toString()).toString("base64"),
-        filename
+        filename,
     );
 };

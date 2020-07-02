@@ -16,7 +16,7 @@ run_test('basics', () => {
     assert.equal(
         html,
         '<ul class="foo" title="cats &amp; &lt;&quot;dogs&quot;&gt;">\n\n' +
-        '</ul>'
+        '</ul>',
     );
 });
 
@@ -40,7 +40,7 @@ run_test('attribute escaping', () => {
     assert.equal(
         html,
         '<ul class="&quot;&gt;something evil&lt;div class=&quot;" ' +
-        'title="apples &amp; oranges">\n\n</ul>'
+        'title="apples &amp; oranges">\n\n</ul>',
     );
 });
 
@@ -61,7 +61,7 @@ run_test('attribute updates', () => {
     assert.equal(
         html,
         '<ul class="same" color="blue" id="101">\n\n' +
-        '</ul>'
+        '</ul>',
     );
 
     let updated;
@@ -144,7 +144,7 @@ run_test('children', () => {
         '<li>foo1</li>\n' +
         '<li>foo2</li>\n' +
         '<li>foo3</li>\n' +
-        '</ul>'
+        '</ul>',
     );
 
     // Force a complete redraw.
@@ -164,7 +164,7 @@ run_test('children', () => {
         '<ul class="main">\n' +
         '<li>foo4</li>\n' +
         '<li>foo5</li>\n' +
-        '</ul>'
+        '</ul>',
     );
 });
 
@@ -194,7 +194,7 @@ run_test('partial updates', () => {
         '<li>foo1</li>\n' +
         '<li>foo2</li>\n' +
         '<li>foo3</li>\n' +
-        '</ul>'
+        '</ul>',
     );
 
     replace_content = () => {

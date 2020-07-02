@@ -130,7 +130,7 @@ exports.build_emoji_upload_widget = function () {
         clear_button,
         upload_button,
         preview_text,
-        preview_image
+        preview_image,
     );
 };
 

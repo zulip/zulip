@@ -222,7 +222,7 @@ exports.get_next_topic = function (curr_stream, curr_topic) {
         get_unmuted_topics,
         has_unread_messages,
         curr_stream,
-        curr_topic
+        curr_topic,
     );
 };
 

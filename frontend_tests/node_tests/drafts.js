@@ -93,7 +93,7 @@ const short_msg = {
 run_test('legacy', () => {
     assert.deepEqual(
         drafts.restore_message(legacy_draft),
-        compose_args_for_legacy_draft
+        compose_args_for_legacy_draft,
     );
 });
 

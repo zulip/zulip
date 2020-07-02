@@ -262,12 +262,12 @@ const other_notification_settings = desktop_notification_settings.concat(
     mobile_notification_settings,
     email_notification_settings,
     presence_notification_settings,
-    ["notification_sound"]
+    ["notification_sound"],
 );
 
 exports.all_notification_settings = other_notification_settings.concat(
     pm_mention_notification_settings,
-    exports.stream_notification_settings
+    exports.stream_notification_settings,
 );
 
 exports.all_notifications = () => ({

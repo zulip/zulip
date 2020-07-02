@@ -28,8 +28,8 @@ if (window.electron_bridge && window.electron_bridge.new_notification) {
             Object.assign(
                 this,
                 window.electron_bridge.new_notification(title, options, (type, eventInit) =>
-                    this.dispatchEvent(new Event(type, eventInit))
-                )
+                    this.dispatchEvent(new Event(type, eventInit)),
+                ),
             );
         }
 

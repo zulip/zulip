@@ -264,7 +264,7 @@ exports.populate_realm_domains = function (realm_domains) {
     }
 
     const domains_list = realm_domains.map(
-        (realm_domain) => realm_domain.allow_subdomains ? "*." + realm_domain.domain : realm_domain.domain
+        (realm_domain) => realm_domain.allow_subdomains ? "*." + realm_domain.domain : realm_domain.domain,
     );
     let domains = domains_list.join(', ');
     if (domains.length === 0) {
@@ -279,7 +279,7 @@ exports.populate_realm_domains = function (realm_domains) {
         realm_domains_table_body.append(
             render_settings_admin_realm_domains_list({
                 realm_domain: realm_domain,
-            })
+            }),
         );
     }
 };
@@ -680,7 +680,7 @@ exports.build_page = function () {
                 data.allow_message_editing = true;
                 data.message_content_edit_limit_seconds =
                     settings_config.msg_edit_limit_dropdown_values.get(
-                        edit_limit_setting_value
+                        edit_limit_setting_value,
                     ).seconds;
             }
             const delete_limit_setting_value = $("#id_realm_msg_delete_limit_setting").val();
@@ -694,7 +694,7 @@ exports.build_page = function () {
                 data.allow_message_deleting = true;
                 data.message_content_delete_limit_seconds =
                     settings_config.msg_delete_limit_dropdown_values.get(
-                        delete_limit_setting_value
+                        delete_limit_setting_value,
                     ).seconds;
             }
         } else if (subsection === 'notifications') {
@@ -1011,7 +1011,7 @@ exports.build_page = function () {
             url: '/json/realm/deactivate',
             error: function (xhr) {
                 ui_report.error(
-                    i18n.t("Failed"), xhr, $('#admin-realm-deactivation-status').expectOne()
+                    i18n.t("Failed"), xhr, $('#admin-realm-deactivation-status').expectOne(),
                 );
             },
         });

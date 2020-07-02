@@ -89,7 +89,7 @@ Handlebars.registerHelper('tr', (context, options) => {
 
 Handlebars.registerHelper(
     "rendered_markdown",
-    (content) => new Handlebars.SafeString(util.clean_user_content_links(content))
+    (content) => new Handlebars.SafeString(util.clean_user_content_links(content)),
 );
 
 window.templates = exports;

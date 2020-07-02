@@ -243,7 +243,7 @@ exports.sort_people_for_relevance = function (objs, current_stream_name, current
         objs.sort((person_a, person_b) => exports.compare_people_for_relevance(
             person_a,
             person_b,
-            exports.compare_by_pms
+            exports.compare_by_pms,
         ));
     } else {
         const stream_id = current_stream.stream_id;
@@ -255,9 +255,9 @@ exports.sort_people_for_relevance = function (objs, current_stream_name, current
                 user_a,
                 user_b,
                 stream_id,
-                current_topic
+                current_topic,
             ),
-            current_stream.name
+            current_stream.name,
         ));
     }
 
@@ -296,7 +296,7 @@ exports.sort_recipients = function (
     current_stream,
     current_topic,
     groups,
-    max_num_items
+    max_num_items,
 ) {
     if (!groups) {
         groups = [];

@@ -55,7 +55,7 @@ exports.toggle = function (opts) {
         if (opts.callback) {
             opts.callback(
                 opts.values[idx].label,
-                opts.values[idx].key
+                opts.values[idx].key,
             );
         }
 

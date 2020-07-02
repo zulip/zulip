@@ -189,7 +189,7 @@ run_test('fenced_block_defaults', () => {
 
 markdown.initialize(
     page_params.realm_filters,
-    markdown_config.get_helpers()
+    markdown_config.get_helpers(),
 );
 
 const markdown_data = global.read_fixture_data('markdown_test_cases.json');

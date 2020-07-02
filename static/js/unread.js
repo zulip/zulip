@@ -404,13 +404,13 @@ exports.update_unread_topics = function (msg, event) {
     }
 
     exports.unread_topic_counter.delete(
-        msg.id
+        msg.id,
     );
 
     exports.unread_topic_counter.add(
         new_stream_id || msg.stream_id,
         new_topic || msg.topic,
-        msg.id
+        msg.id,
     );
 };
 
@@ -430,7 +430,7 @@ exports.process_loaded_messages = function (messages) {
             exports.unread_topic_counter.add(
                 message.stream_id,
                 message.topic,
-                message.id
+                message.id,
             );
         }
 

@@ -108,19 +108,19 @@ run_test('update_count_in_dom', () => {
     make_elem(
         $(".top_left_mentions"),
         '<mentioned-count>',
-        '<mentioned-value>'
+        '<mentioned-value>',
     );
 
     make_elem(
         $(".top_left_all_messages"),
         '<home-count>',
-        '<home-value>'
+        '<home-value>',
     );
 
     make_elem(
         $(".top_left_starred_messages"),
         '<starred-count>',
-        '<starred-value>'
+        '<starred-value>',
     );
 
     top_left_corner.update_dom_with_unread_counts(counts);

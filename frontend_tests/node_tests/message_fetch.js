@@ -327,7 +327,7 @@ run_test('loading_newer', () => {
                 {
                     name: "Error",
                     message: "There are no message available to frontfill.",
-                }
+                },
             );
         } else {
             message_fetch.maybe_load_newer_messages({

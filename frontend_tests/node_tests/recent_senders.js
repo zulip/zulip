@@ -145,10 +145,10 @@ run_test('process_message_for_senders', () => {
 
     // Test topic change
     assert.equal(
-        rs.get_topic_recent_senders(stream3, topic3).toString(), '3'
+        rs.get_topic_recent_senders(stream3, topic3).toString(), '3',
     );
     assert.equal(
-        rs.get_topic_recent_senders(stream3, topic2).toString(), '2,3'
+        rs.get_topic_recent_senders(stream3, topic2).toString(), '2,3',
     );
 
     // message7's topic was changed by user
@@ -156,36 +156,36 @@ run_test('process_message_for_senders', () => {
 
     rs.process_topic_edit(stream3, topic2, topic3);
     assert.equal(
-        rs.get_topic_recent_senders(stream3, topic3).toString(), '2,3'
+        rs.get_topic_recent_senders(stream3, topic3).toString(), '2,3',
     );
     assert.equal(
-        rs.get_topic_recent_senders(stream3, topic2).toString(), '3'
+        rs.get_topic_recent_senders(stream3, topic2).toString(), '3',
     );
 
     // Test stream change
     assert.equal(
-        rs.get_topic_recent_senders(stream3, topic3).toString(), '2,3'
+        rs.get_topic_recent_senders(stream3, topic3).toString(), '2,3',
     );
     assert.equal(
-        rs.get_topic_recent_senders(stream4, topic3).toString(), ''
+        rs.get_topic_recent_senders(stream4, topic3).toString(), '',
     );
     // stream of topic3 was changed to stream4.
     messages[6].stream_id = stream4; // message7's topic is topic3
     messages[7].stream_id = stream4;
     rs.process_topic_edit(stream3, topic3, topic3, stream4);
     assert.equal(
-        rs.get_topic_recent_senders(stream3, topic3).toString(), ''
+        rs.get_topic_recent_senders(stream3, topic3).toString(), '',
     );
     assert.equal(
-        rs.get_topic_recent_senders(stream4, topic3).toString(), '2,3'
+        rs.get_topic_recent_senders(stream4, topic3).toString(), '2,3',
     );
 
     // Test stream & topic change
     assert.equal(
-        rs.get_topic_recent_senders(stream4, topic3).toString(), '2,3'
+        rs.get_topic_recent_senders(stream4, topic3).toString(), '2,3',
     );
     assert.equal(
-        rs.get_topic_recent_senders(stream5, topic4).toString(), ''
+        rs.get_topic_recent_senders(stream5, topic4).toString(), '',
     );
     // stream of topic3 was changed to stream5 and topic was changed to topic4.
     messages[6].stream_id = stream5;
@@ -194,9 +194,9 @@ run_test('process_message_for_senders', () => {
     messages[7].topic = topic4;
     rs.process_topic_edit(stream4, topic3, topic4, stream5);
     assert.equal(
-        rs.get_topic_recent_senders(stream4, topic3).toString(), ''
+        rs.get_topic_recent_senders(stream4, topic3).toString(), '',
     );
     assert.equal(
-        rs.get_topic_recent_senders(stream5, topic4).toString(), '2,3'
+        rs.get_topic_recent_senders(stream5, topic4).toString(), '2,3',
     );
 });

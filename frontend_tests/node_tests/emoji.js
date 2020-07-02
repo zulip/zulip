@@ -15,7 +15,7 @@ run_test('build_emoji_upload_widget', () => {
         file_name_field,
         input_error,
         clear_button,
-        upload_button
+        upload_button,
     ) {
         assert.deepEqual(get_file_input(), $('#emoji_file_input'));
         assert.deepEqual(file_name_field, $('#emoji-file-name'));

@@ -4,23 +4,23 @@ run_test("clean_path", () => {
     // Local file
     assert.strictEqual(
         blueslip_stacktrace.clean_path("webpack:///static/js/upload.js"),
-        "/static/js/upload.js"
+        "/static/js/upload.js",
     );
 
     // Third party library (jQuery)
     assert.strictEqual(
         blueslip_stacktrace.clean_path(
-            "webpack:///.-npm-cache/de76fb6f582a29b053274f9048b6158091351048/node_modules/jquery/dist/jquery.js"
+            "webpack:///.-npm-cache/de76fb6f582a29b053274f9048b6158091351048/node_modules/jquery/dist/jquery.js",
         ),
-        "jquery/dist/jquery.js"
+        "jquery/dist/jquery.js",
     );
 
     // Third party library (underscore)
     assert.strictEqual(
         blueslip_stacktrace.clean_path(
-            "webpack:///.-npm-cache/de76fb6f582a29b053274f9048b…58091351048/node_modules/underscore/underscore.js"
+            "webpack:///.-npm-cache/de76fb6f582a29b053274f9048b…58091351048/node_modules/underscore/underscore.js",
         ),
-        "underscore/underscore.js"
+        "underscore/underscore.js",
     );
 });
 
@@ -33,7 +33,7 @@ run_test("clean_function_name", () => {
         {
             scope: "Object../static/js/upload.js.exports.",
             name: "options",
-        }
+        },
     );
 
     // Third party library (jQuery)
@@ -45,12 +45,12 @@ run_test("clean_function_name", () => {
     // Third party library (underscore)
     assert.deepEqual(
         blueslip_stacktrace.clean_function_name(
-            "Function.../zulip-npm-cache/de76fb6f582a29b053274f…es/underscore/underscore.js?3817._.each._.forEach"
+            "Function.../zulip-npm-cache/de76fb6f582a29b053274f…es/underscore/underscore.js?3817._.each._.forEach",
         ),
         {
             scope:
                 "Function.../zulip-npm-cache/de76fb6f582a29b053274f…es/underscore/underscore.js?3817._.each._.",
             name: "forEach",
-        }
+        },
     );
 });

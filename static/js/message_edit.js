@@ -817,13 +817,13 @@ exports.delete_message = function (msg_id) {
             success: function () {
                 $('#delete_message_modal').modal("hide");
                 currently_deleting_messages = currently_deleting_messages.filter(
-                    (id) => id !== msg_id
+                    (id) => id !== msg_id,
                 );
                 hide_delete_btn_show_spinner(false);
             },
             error: function (xhr) {
                 currently_deleting_messages = currently_deleting_messages.filter(
-                    (id) => id !== msg_id
+                    (id) => id !== msg_id,
                 );
                 hide_delete_btn_show_spinner(false);
                 ui_report.error(i18n.t("Error deleting message"), xhr,

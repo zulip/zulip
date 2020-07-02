@@ -16,14 +16,14 @@ async function decrypt_manual() {
                 document.querySelector("#submit").disabled = tokenElement.value === "";
                 try {
                     const data = new Uint8Array(
-                        tokenElement.value.match(/../g).map((b) => parseInt(b, 16))
+                        tokenElement.value.match(/../g).map((b) => parseInt(b, 16)),
                     );
                     const iv = data.slice(0, 12);
                     const ciphertext = data.slice(12);
                     const plaintext = await crypto.subtle.decrypt(
                         { name: "AES-GCM", iv },
                         key,
-                        ciphertext
+                        ciphertext,
                     );
                     resolve(new TextDecoder().decode(plaintext));
                 } catch {
@@ -50,7 +50,7 @@ async function decrypt_manual() {
         (window.location.search ? window.location.search + "&" : "?") +
             "desktop_flow_otp=" +
             encodeURIComponent(keyHex),
-        "_blank"
+        "_blank",
     );
 
     const token = await pasted;

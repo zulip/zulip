@@ -140,7 +140,7 @@ exports.reify_message_id_if_available = function (opts) {
 function get_sorted_topics() {
     // Sort all recent topics by last message time.
     return new Map(
-        Array.from(topics.entries()).sort((a, b) => b[1].last_msg_id - a[1].last_msg_id)
+        Array.from(topics.entries()).sort((a, b) => b[1].last_msg_id - a[1].last_msg_id),
     );
 }
 

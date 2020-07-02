@@ -1233,7 +1233,7 @@ run_test('on_events', () => {
         const helper = setup_parents_and_mock_remove(
             'compose-all-everyone',
             'compose-all-everyone',
-            '.compose-all-everyone'
+            '.compose-all-everyone',
         );
 
         $("#compose-all-everyone").show();
@@ -1277,7 +1277,7 @@ run_test('on_events', () => {
         const helper = setup_parents_and_mock_remove(
             'compose_invite_users',
             'compose_invite_link',
-            '.compose_invite_user'
+            '.compose_invite_user',
         );
 
         // !sub will result false here and we check the failure code path.
@@ -1322,7 +1322,7 @@ run_test('on_events', () => {
         const helper = setup_parents_and_mock_remove(
             'compose_invite_users_close',
             'compose_invite_close',
-            '.compose_invite_user'
+            '.compose_invite_user',
         );
 
         let all_invite_children_called = false;
@@ -1355,7 +1355,7 @@ run_test('on_events', () => {
         const helper = setup_parents_and_mock_remove(
             'compose-send-status',
             'sub_unsub_button',
-            '.compose_not_subscribed'
+            '.compose_not_subscribed',
         );
 
         handler(helper.event);
@@ -1378,7 +1378,7 @@ run_test('on_events', () => {
         const helper = setup_parents_and_mock_remove(
             'compose_user_not_subscribed_close',
             'compose_not_subscribed_close',
-            '.compose_not_subscribed'
+            '.compose_not_subscribed',
         );
 
         $("#compose-send-status").show();
