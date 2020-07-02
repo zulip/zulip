@@ -128,7 +128,7 @@ const ui_init = rewiremock.proxy(
         "../../static/js/emojisets": {
             initialize: () => {},
         },
-    }
+    },
 );
 
 set_global('$', global.make_zjquery());

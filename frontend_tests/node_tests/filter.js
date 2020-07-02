@@ -1276,26 +1276,26 @@ run_test('term_type', () => {
 
     assert_term_sort(
         ['topic', 'stream', 'sender'],
-        ['stream', 'topic', 'sender']
+        ['stream', 'topic', 'sender'],
     );
 
     assert_term_sort(
         ['has-link', 'near', 'is-unread', 'pm-with'],
-        ['pm-with', 'near', 'is-unread', 'has-link']
+        ['pm-with', 'near', 'is-unread', 'has-link'],
     );
 
     assert_term_sort(
         ['bogus', 'stream', 'topic'],
-        ['stream', 'topic', 'bogus']
+        ['stream', 'topic', 'bogus'],
     );
     assert_term_sort(
         ['stream', 'topic', 'stream'],
-        ['stream', 'stream', 'topic']
+        ['stream', 'stream', 'topic'],
     );
 
     assert_term_sort(
         ['search', 'streams-public'],
-        ['streams-public', 'search']
+        ['streams-public', 'search'],
     );
 
     const terms = [
@@ -1398,7 +1398,7 @@ run_test('navbar_helpers', () => {
         const filter = new Filter(test_case.operator);
         assert.equal(
             filter.generate_redirect_url(),
-            test_case.redirect_url_with_search
+            test_case.redirect_url_with_search,
         );
     }
 
@@ -1600,7 +1600,7 @@ run_test('navbar_helpers', () => {
     let filter = new Filter(complex_operators_test_case.operator);
     assert.equal(
         filter.generate_redirect_url(),
-        complex_operators_test_case.redirect_url
+        complex_operators_test_case.redirect_url,
     );
     assert.equal(filter.is_common_narrow(), false);
 
@@ -1627,7 +1627,7 @@ run_test('navbar_helpers', () => {
     filter = new Filter(default_redirect.operator);
     assert.equal(
         filter.generate_redirect_url(),
-        default_redirect.redirect_url
+        default_redirect.redirect_url,
     );
 });
 

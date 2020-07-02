@@ -105,7 +105,7 @@ exports.set_up = function () {
 
     $("#send_test_notification").click(() => {
         notifications.send_test_notification(
-            i18n.t("This is what a Zulip notification looks like.")
+            i18n.t("This is what a Zulip notification looks like."),
         );
     });
 

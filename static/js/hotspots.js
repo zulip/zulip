@@ -96,7 +96,7 @@ function place_popover(hotspot) {
             $(hotspot.location.element),
             popover_height,
             popover_width,
-            false
+            false,
         );
 
     switch (orientation) {
@@ -151,7 +151,7 @@ function place_popover(hotspot) {
     default:
         blueslip.error(
             'Invalid popover placement value for hotspot \'' +
-                hotspot.name + '\''
+                hotspot.name + '\'',
         );
         break;
     }
@@ -237,7 +237,7 @@ exports.close_hotspot_icon = function (elem) {
 function close_read_hotspots(new_hotspots) {
     const unwanted_hotspots = _.difference(
         Array.from(HOTSPOT_LOCATIONS.keys()),
-        new_hotspots.map((hotspot) => hotspot.name)
+        new_hotspots.map((hotspot) => hotspot.name),
     );
 
     for (const hotspot_name of unwanted_hotspots) {

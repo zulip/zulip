@@ -65,68 +65,68 @@ run_test('hash_util', () => {
 run_test('test_get_hash_category', () => {
     assert.deepEqual(
         hash_util.get_hash_category('streams/subscribed'),
-        'streams'
+        'streams',
     );
     assert.deepEqual(
         hash_util.get_hash_category('#settings/display-settings'),
-        'settings'
+        'settings',
     );
     assert.deepEqual(
         hash_util.get_hash_category('#drafts'),
-        'drafts'
+        'drafts',
     );
     assert.deepEqual(
         hash_util.get_hash_category('invites'),
-        'invites'
+        'invites',
     );
 });
 
 run_test('test_get_hash_section', () => {
     assert.equal(
         hash_util.get_hash_section('streams/subscribed'),
-        'subscribed'
+        'subscribed',
     );
     assert.equal(
         hash_util.get_hash_section('#settings/your-account'),
-        'your-account'
+        'your-account',
     );
 
     assert.equal(
         hash_util.get_hash_section('settings/10/general/'),
-        '10'
+        '10',
     );
 
     assert.equal(
         hash_util.get_hash_section('#drafts'),
-        ''
+        '',
     );
     assert.equal(
         hash_util.get_hash_section(''),
-        ''
+        '',
     );
 });
 
 run_test('test_parse_narrow', () => {
     assert.deepEqual(
         hash_util.parse_narrow(['narrow', 'stream', '99-frontend']),
-        [{negated: false, operator: 'stream', operand: 'frontend'}]
+        [{negated: false, operator: 'stream', operand: 'frontend'}],
     );
 
     assert.deepEqual(
         hash_util.parse_narrow(['narrow', '-stream', '99-frontend']),
-        [{negated: true, operator: 'stream', operand: 'frontend'}]
+        [{negated: true, operator: 'stream', operand: 'frontend'}],
     );
 
     assert.equal(
         hash_util.parse_narrow(['narrow', 'BOGUS']),
-        undefined
+        undefined,
     );
 
     // For nonexistent streams, we get the full slug.
     // We possibly should remove the prefix and fix this test.
     assert.deepEqual(
         hash_util.parse_narrow(['narrow', 'stream', '42-bogus']),
-        [{negated: false, operator: 'stream', operand: '42-bogus'}]
+        [{negated: false, operator: 'stream', operand: '42-bogus'}],
     );
 });
 

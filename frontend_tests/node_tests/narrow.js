@@ -74,7 +74,7 @@ run_test('show_empty_narrow_message', () => {
     assert($('#empty_narrow_message').visible());
     assert.equal(
         $('#left_bar_compose_reply_button_big').attr('title'),
-        'translated: There are no messages to reply to.'
+        'translated: There are no messages to reply to.',
     );
 
     // for non-existent or private stream

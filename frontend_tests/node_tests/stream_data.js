@@ -203,7 +203,7 @@ run_test('subscribers', () => {
             fred.user_id,
             not_fred.user_id,
             george.user_id,
-        ]
+        ],
     );
 
     stream_data.set_subscribers(sub, [me.user_id, fred.user_id, george.user_id]);
@@ -217,7 +217,7 @@ run_test('subscribers', () => {
         potential_subscriber_ids(),
         [
             not_fred.user_id,
-        ]
+        ],
     );
 
     stream_data.set_subscribers(sub, []);
@@ -572,7 +572,7 @@ run_test('default_stream_names', () => {
         [
             announce.stream_id,
             general.stream_id,
-        ]
+        ],
     );
 });
 
@@ -842,7 +842,7 @@ run_test('remove_default_stream', () => {
 run_test('canonicalized_name', () => {
     assert.deepStrictEqual(
         stream_data.canonicalized_name('Stream_Bar'),
-        "stream_bar"
+        "stream_bar",
     );
 });
 
@@ -1004,7 +1004,7 @@ run_test('is_subscriber_subset', () => {
     for (const row of matrix) {
         assert.equal(
             stream_data.is_subscriber_subset(row[0], row[1]),
-            row[2]
+            row[2],
         );
     }
 });

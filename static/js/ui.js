@@ -141,7 +141,7 @@ exports.get_hotkey_deprecation_notice = function (originalHotkey, replacementHot
     return i18n.t(
         'We\'ve replaced the "__originalHotkey__" hotkey with "__replacementHotkey__" '
             + 'to make this common shortcut easier to trigger.',
-        { originalHotkey: originalHotkey, replacementHotkey: replacementHotkey }
+        { originalHotkey: originalHotkey, replacementHotkey: replacementHotkey },
     );
 };
 

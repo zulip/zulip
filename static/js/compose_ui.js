@@ -68,7 +68,7 @@ exports.replace_syntax = function (old_syntax, new_syntax, textarea) {
         // replace() function treating `$`s in new_syntax as special syntax.  See
         // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#Description
         // for details.
-        new_syntax
+        new_syntax,
     ));
 };
 

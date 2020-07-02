@@ -48,7 +48,7 @@ export function start_or_extend_idle_timer(worker) {
     }
     state.idle_timer = setTimeout(
         on_idle_timeout,
-        TYPING_STOPPED_WAIT_PERIOD
+        TYPING_STOPPED_WAIT_PERIOD,
     );
 }
 

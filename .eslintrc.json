@@ -22,15 +22,7 @@
         "arrow-spacing": [ "error", { "before": true, "after": true } ],
         "block-scoped-var": "error",
         "brace-style": [ "error", "1tbs", { "allowSingleLine": true } ],
-        "comma-dangle": [ "error",
-            {
-                "arrays": "always-multiline",
-                "objects": "always-multiline",
-                "imports": "always-multiline",
-                "exports": "always-multiline",
-                "functions": "never"
-            }
-        ],
+        "comma-dangle": [ "error", "always-multiline" ],
         "comma-spacing": [ "error",
             {
                 "before": false,
@@ -368,6 +360,16 @@
             ],
             "rules": {
                 // Don’t require ES features that PhantomJS doesn’t support
+                "comma-dangle": [
+                    "error",
+                    {
+                        "arrays": "always-multiline",
+                        "objects": "always-multiline",
+                        "imports": "always-multiline",
+                        "exports": "always-multiline",
+                        "functions": "never"
+                    }
+                ],
                 "no-var": "off",
                 "prefer-arrow-callback": "off"
             }

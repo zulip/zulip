@@ -631,7 +631,7 @@ run_test('remove last user', () => {
     function assert_names(names) {
         assert.deepEqual(
             reactions.get_message_reactions(message).map((r) => r.emoji_name),
-            names
+            names,
         );
     }
 

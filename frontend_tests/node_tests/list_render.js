@@ -164,7 +164,7 @@ run_test('scrolling', () => {
 
     assert.deepEqual(
         container.appended_data.html(),
-        items.slice(0, 80).join('')
+        items.slice(0, 80).join(''),
     );
 
     // Set up our fake geometry so it forces a scroll action.
@@ -177,7 +177,7 @@ run_test('scrolling', () => {
     scroll_container.call_scroll();
     assert.deepEqual(
         container.appended_data.html(),
-        items.slice(80, 100).join('')
+        items.slice(80, 100).join(''),
     );
 });
 
@@ -339,7 +339,7 @@ run_test('wire up filter element', () => {
     filter_element.f.apply({value: 'se'});
     assert.equal(
         container.appended_data.html(),
-        '(JESSE)(moses)(Sean)'
+        '(JESSE)(moses)(Sean)',
     );
 });
 
@@ -505,7 +505,7 @@ run_test('custom sort', () => {
 
     assert.deepEqual(
         container.appended_data.html(),
-        '(6, 7)(1, 43)(4, 11)'
+        '(6, 7)(1, 43)(4, 11)',
     );
 
     const widget = list_render.get('custom-sort-list');
@@ -513,7 +513,7 @@ run_test('custom sort', () => {
     widget.sort('x_value');
     assert.deepEqual(
         container.appended_data.html(),
-        '(1, 43)(4, 11)(6, 7)'
+        '(1, 43)(4, 11)(6, 7)',
     );
 
     // We can sort without registering the function, too.
@@ -524,7 +524,7 @@ run_test('custom sort', () => {
     widget.sort(sort_by_y);
     assert.deepEqual(
         container.appended_data.html(),
-        '(6, 7)(4, 11)(1, 43)'
+        '(6, 7)(4, 11)(1, 43)',
     );
 });
 
@@ -654,7 +654,7 @@ run_test('replace_list_data w/filter update', () => {
 
     assert.deepEqual(
         container.appended_data.html(),
-        '(2)(4)'
+        '(2)(4)',
     );
 
     const widget = list_render.get('replace-list');
@@ -664,7 +664,7 @@ run_test('replace_list_data w/filter update', () => {
 
     assert.deepEqual(
         container.appended_data.html(),
-        '(6)(8)'
+        '(6)(8)',
     );
 });
 
@@ -684,9 +684,9 @@ run_test('opts.get_item', () => {
 
     assert.deepEqual(
         list_render.get_filtered_items(
-            'whatever', list, boring_opts
+            'whatever', list, boring_opts,
         ),
-        ['one', 'two', 'three', 'four']
+        ['one', 'two', 'three', 'four'],
     );
 
     const predicate = (item, value) => item.startsWith(value);
@@ -700,9 +700,9 @@ run_test('opts.get_item', () => {
 
     assert.deepEqual(
         list_render.get_filtered_items(
-            't', list, predicate_opts
+            't', list, predicate_opts,
         ),
-        ['two', 'three']
+        ['two', 'three'],
     );
 
     const filterer_opts = {
@@ -714,9 +714,9 @@ run_test('opts.get_item', () => {
 
     assert.deepEqual(
         list_render.get_filtered_items(
-            't', list, filterer_opts
+            't', list, filterer_opts,
         ),
-        ['two', 'three']
+        ['two', 'three'],
     );
 });
 

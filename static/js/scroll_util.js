@@ -35,14 +35,14 @@ exports.scroll_delta = function (opts) {
     if (elem_top < 0) {
         delta = Math.max(
             elem_top,
-            elem_bottom - container_height
+            elem_bottom - container_height,
         );
         delta = Math.min(0, delta);
     } else {
         if (elem_bottom > container_height) {
             delta = Math.min(
                 elem_top,
-                elem_bottom - container_height
+                elem_bottom - container_height,
             );
             delta = Math.max(0, delta);
         }

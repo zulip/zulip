@@ -23,7 +23,7 @@ exports.build_widget = function (
     upload_button, // jQuery button to open file dialog
     preview_text = null,
     preview_image = null,
-    max_file_upload_size
+    max_file_upload_size,
 ) {
     // default value of max uploaded file size
     max_file_upload_size = max_file_upload_size || default_max_file_size;
@@ -119,7 +119,7 @@ exports.build_direct_upload_widget = function (
     input_error, // jQuery object for error text
     upload_button, // jQuery button to open file dialog
     upload_function,
-    max_file_upload_size
+    max_file_upload_size,
 ) {
     // default value of max uploaded file size
     max_file_upload_size = max_file_upload_size || default_max_file_size;

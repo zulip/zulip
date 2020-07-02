@@ -91,7 +91,7 @@ function update_categories() {
 
     $('.integration-lozenges').animate(
         { opacity: 1 },
-        { duration: 400 }
+        { duration: 400 },
     );
 
     adjust_font_sizing();
@@ -174,11 +174,11 @@ function hide_catalog_show_integration() {
 
         $("html, body").animate(
             { scrollTop: 0 },
-            { duration: 200 }
+            { duration: 200 },
         );
         $('#integration-instructions-group').animate(
             { opacity: 1 },
-            { duration: 300 }
+            { duration: 300 },
         );
 
         adjust_font_sizing();
@@ -207,7 +207,7 @@ function hide_integration_show_catalog() {
     function show_catalog() {
         $("html, body").animate(
             { scrollTop: 0 },
-            { duration: 200 }
+            { duration: 200 },
         );
 
         $(".integration-categories-dropdown").css('display', '');

@@ -100,7 +100,7 @@ function get_events_success(events) {
                 messages.forEach(message_store.set_message_booleans);
 
                 const sent_by_this_client = messages.some((msg) =>
-                    sent_messages.messages.has(msg.local_id)
+                    sent_messages.messages.has(msg.local_id),
                 );
                 // If some message in this batch of events was sent by this
                 // client, almost every time, this message will be the only one

@@ -126,7 +126,7 @@ exports.update = (replace_content, find, new_dom, old_dom) => {
     const same_structure = exports.eq_array(
         new_opts.keyed_nodes,
         old_opts.keyed_nodes,
-        (a, b) => a.key === b.key
+        (a, b) => a.key === b.key,
     );
 
     if (!same_structure) {
@@ -161,7 +161,7 @@ exports.update = (replace_content, find, new_dom, old_dom) => {
     exports.update_attrs(
         find(),
         new_opts.attrs,
-        old_opts.attrs
+        old_opts.attrs,
     );
 };
 

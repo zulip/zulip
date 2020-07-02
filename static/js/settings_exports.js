@@ -33,13 +33,13 @@ exports.populate_exports_table = function (exports) {
 
             if (failed_timestamp !== null) {
                 failed_timestamp = timerender.last_seen_status_from_date(
-                    new XDate(failed_timestamp * 1000)
+                    new XDate(failed_timestamp * 1000),
                 );
             }
 
             if (deleted_timestamp !== null) {
                 deleted_timestamp = timerender.last_seen_status_from_date(
-                    new XDate(deleted_timestamp * 1000)
+                    new XDate(deleted_timestamp * 1000),
                 );
             }
 
@@ -49,7 +49,7 @@ exports.populate_exports_table = function (exports) {
                     acting_user: people.get_full_name(data.acting_user_id),
                     // Convert seconds -> milliseconds
                     event_time: timerender.last_seen_status_from_date(
-                        new XDate(data.export_time * 1000)
+                        new XDate(data.export_time * 1000),
                     ),
                     url: data.export_url,
                     time_failed: failed_timestamp,

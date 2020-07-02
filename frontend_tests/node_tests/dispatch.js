@@ -140,7 +140,7 @@ with_overrides((override) => {
 
     assert.deepEqual(
         alert_words.get_word_list(),
-        ['fire', 'lunch']
+        ['fire', 'lunch'],
     );
     assert(alert_words.has_alert_word('fire'));
     assert(alert_words.has_alert_word('lunch'));

@@ -59,7 +59,7 @@ class MarkdownComparer {
             return false;
         }
         return _.zip(node1.content.childNodes, node2.content.childNodes).every(([child1, child2]) =>
-            child1.isEqualNode(child2)
+            child1.isEqualNode(child2),
         );
     }
 
@@ -138,7 +138,7 @@ class MarkdownComparer {
             throw new assert.AssertionError({
                 message: message + this._output_formatter(
                     comparison_results.html.actual,
-                    comparison_results.html.expected
+                    comparison_results.html.expected,
                 ),
             });
         }

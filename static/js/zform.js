@@ -15,7 +15,7 @@ exports.validate_extra_data = function (data) {
                 return schema.check_array(
                     field_name,
                     val,
-                    check_choice_item
+                    check_choice_item,
                 );
             }
 

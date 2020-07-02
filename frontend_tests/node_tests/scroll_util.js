@@ -102,7 +102,7 @@ run_test('get_list_scrolling_container error', () => {
     blueslip.expect(
         'error',
         "Please wrap lists in an element with " +
-        "'max-height' attribute."
+        "'max-height' attribute.",
     );
 
     scroll_util.get_list_scrolling_container(body);

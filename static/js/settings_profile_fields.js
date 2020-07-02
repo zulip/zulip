@@ -244,7 +244,7 @@ function set_up_choices_field_edit_form(profile_field, field_data) {
         choice_list.append(
             render_settings_profile_field_choice({
                 text: choice.text,
-            })
+            }),
         );
     }
 
@@ -369,7 +369,7 @@ exports.do_populate_profile_fields = function (profile_fields_data) {
                 },
                 can_modify: page_params.is_admin,
                 realm_default_external_accounts: page_params.realm_default_external_accounts,
-            })
+            }),
         );
     }
 

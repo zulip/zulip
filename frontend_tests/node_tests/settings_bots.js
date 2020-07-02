@@ -36,7 +36,7 @@ run_test('generate_zuliprc_uri', () => {
     const expected = "data:application/octet-stream;charset=utf-8," + encodeURIComponent(
         "[api]\nemail=error-bot@zulip.org\n" +
         "key=QadL788EkiottHmukyhHgePUFHREiu8b\n" +
-        "site=https://chat.example.com\n"
+        "site=https://chat.example.com\n",
     );
 
     assert.equal(uri, expected);

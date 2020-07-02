@@ -594,7 +594,7 @@ exports.register_topic_handlers = function () {
             num_after: 0,
             narrow: JSON.stringify(
                 [{operator: "stream", operand: current_stream_id},
-                 {operator: "topic", operand: old_topic_name}]
+                 {operator: "topic", operand: old_topic_name}],
             ),
         };
 

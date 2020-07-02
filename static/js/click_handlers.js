@@ -607,10 +607,10 @@ exports.initialize = function () {
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
     $('#compose-send-status .compose-send-status-close').click(
-        () => { $('#compose-send-status').stop(true).fadeOut(500); }
+        () => { $('#compose-send-status').stop(true).fadeOut(500); },
     );
     $('#nonexistent_stream_reply_error .compose-send-status-close').click(
-        () => { $('#nonexistent_stream_reply_error').stop(true).fadeOut(500); }
+        () => { $('#nonexistent_stream_reply_error').stop(true).fadeOut(500); },
     );
 
 

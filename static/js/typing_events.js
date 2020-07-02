@@ -78,7 +78,7 @@ exports.display_notification = function (event) {
         TYPING_STARTED_EXPIRY_PERIOD,
         () => {
             exports.hide_notification(event);
-        }
+        },
     );
 };
 window.typing_events = exports;

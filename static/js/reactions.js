@@ -53,7 +53,7 @@ function update_ui_and_send_reaction_ajax(message_id, reaction_info) {
     const local_id = exports.get_local_reaction_id(reaction_info);
     const has_reacted = exports.current_user_has_reacted_to_emoji(
         message,
-        local_id
+        local_id,
     );
     const operation = has_reacted ? 'remove' : 'add';
     const reaction = create_reaction(message_id, reaction_info);

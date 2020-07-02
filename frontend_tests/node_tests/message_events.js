@@ -77,7 +77,7 @@ run_test('update_messages', () => {
 
     assert.deepEqual(
         stream_topic_history.get_recent_topic_names(denmark.stream_id),
-        ['lunch']
+        ['lunch'],
     );
 
     unread.update_message_for_mention(original_message);

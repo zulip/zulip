@@ -25,7 +25,7 @@ let next_id = 0;
 function assertSameEmails(lst1, lst2) {
     assert.deepEqual(
         lst1.map((r) => r.email),
-        lst2.map((r) => r.email)
+        lst2.map((r) => r.email),
     );
 }
 
@@ -207,7 +207,7 @@ function get_typeahead_result(query, current_stream, current_topic) {
         people.get_realm_users(),
         query,
         current_stream,
-        current_topic
+        current_topic,
     );
     return result.map((person) => person.email);
 }
@@ -322,7 +322,7 @@ run_test('sort_recipients all mention', () => {
         test_objs,
         'a',
         'Linux',
-        'Linux Topic'
+        'Linux Topic',
     );
 
     assertSameEmails(results, [
@@ -431,7 +431,7 @@ run_test('sort broadcast mentions', () => {
 
     assert.deepEqual(
         results.map((r) => r.email),
-        ['all', 'everyone', 'stream']
+        ['all', 'everyone', 'stream'],
     );
 
     // Reverse the list to test actual sorting
@@ -452,7 +452,7 @@ run_test('sort broadcast mentions', () => {
          'everyone',
          'stream',
          a_user.email,
-         zman.email]
+         zman.email],
     );
 });
 

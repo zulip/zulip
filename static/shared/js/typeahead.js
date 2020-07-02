@@ -167,7 +167,7 @@ export function sort_emojis(objs, query) {
     const triage_results = triage(
         query,
         others,
-        (x) => x.emoji_name
+        (x) => x.emoji_name,
     );
 
     return [

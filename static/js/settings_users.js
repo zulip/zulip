@@ -24,7 +24,7 @@ function sort_email(a, b) {
     const email_b = settings_data.email_for_user_settings(b) || '';
     return compare_a_b(
         email_a.toLowerCase(),
-        email_b.toLowerCase()
+        email_b.toLowerCase(),
     );
 }
 
@@ -52,14 +52,14 @@ function sort_bot_owner(a, b) {
 
     return compare_a_b(
         owner_name(a),
-        owner_name(b)
+        owner_name(b),
     );
 }
 
 function sort_last_active(a, b) {
     return compare_a_b(
         presence.last_active_date(a.user_id) || 0,
-        presence.last_active_date(b.user_id) || 0
+        presence.last_active_date(b.user_id) || 0,
     );
 }
 
@@ -401,7 +401,7 @@ function open_human_form(person) {
         element,
         user_id,
         true,
-        false
+        false,
     );
 
     return {

@@ -423,7 +423,7 @@ exports.get_invalid_recipient_emails = function () {
     const private_recipients = util.extract_pm_recipients(
         compose_state.private_message_recipient());
     const invalid_recipients = private_recipients.filter(
-        (email) => !people.is_valid_email_for_compose(email)
+        (email) => !people.is_valid_email_for_compose(email),
     );
 
     return invalid_recipients;
@@ -1118,7 +1118,7 @@ exports.initialize = function () {
                         window.location.host +
                         "/calls/zoom/register",
                     "_blank",
-                    "width=800,height=500,noopener,noreferrer"
+                    "width=800,height=500,noopener,noreferrer",
                 );
             }
         } else if (

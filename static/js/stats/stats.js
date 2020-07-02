@@ -170,7 +170,7 @@ function populate_messages_sent_over_time(data) {
 
     const start_dates = data.end_times.map((timestamp) =>
         // data.end_times are the ends of hour long intervals.
-        new Date(timestamp * 1000 - 60 * 60 * 1000)
+        new Date(timestamp * 1000 - 60 * 60 * 1000),
     );
 
     function aggregate_data(aggregation) {
@@ -322,8 +322,8 @@ function round_to_percentages(values, total) {
             6, // this is the max precision (two #, 4 decimal points; 99.9999%).
             Math.max(
                 2, // the minimum amount of precision (40% or 6.0%).
-                Math.floor(-Math.log10(100 - unrounded)) + 3
-            )
+                Math.floor(-Math.log10(100 - unrounded)) + 3,
+            ),
         );
 
         return unrounded.toPrecision(precision) + '%';
@@ -528,7 +528,7 @@ function populate_messages_sent_by_message_type(data) {
         const plot_data = compute_summary_chart_data(
             time_series_data,
             num_steps,
-            data.display_order
+            data.display_order,
         );
         const labels = [];
         for (let i = 0; i < plot_data.labels.length; i += 1) {
@@ -800,7 +800,7 @@ function populate_messages_read_over_time(data) {
 
     const start_dates = data.end_times.map((timestamp) =>
         // data.end_times are the ends of hour long intervals.
-        new Date(timestamp * 1000 - 60 * 60 * 1000)
+        new Date(timestamp * 1000 - 60 * 60 * 1000),
     );
 
     function aggregate_data(aggregation) {
@@ -949,25 +949,25 @@ function get_chart_data(data, callback) {
 
 get_chart_data(
     {chart_name: 'messages_sent_over_time', min_length: '10'},
-    populate_messages_sent_over_time
+    populate_messages_sent_over_time,
 );
 
 get_chart_data(
     {chart_name: 'messages_sent_by_client', min_length: '10'},
-    populate_messages_sent_by_client
+    populate_messages_sent_by_client,
 );
 
 get_chart_data(
     {chart_name: 'messages_sent_by_message_type', min_length: '10'},
-    populate_messages_sent_by_message_type
+    populate_messages_sent_by_message_type,
 );
 
 get_chart_data(
     {chart_name: 'number_of_humans', min_length: '10'},
-    populate_number_of_users
+    populate_number_of_users,
 );
 
 get_chart_data(
     {chart_name: 'messages_read_over_time', min_length: '10'},
-    populate_messages_read_over_time
+    populate_messages_read_over_time,
 );

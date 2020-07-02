@@ -17,7 +17,7 @@ exports.build_bot_create_widget = function () {
         file_name_field,
         input_error,
         clear_button,
-        upload_button
+        upload_button,
     );
 };
 
@@ -36,7 +36,7 @@ exports.build_bot_edit_widget = function (target) {
         file_name_field,
         input_error,
         clear_button,
-        upload_button
+        upload_button,
     );
 };
 
@@ -74,7 +74,7 @@ exports.build_user_avatar_widget = function (upload_function) {
             $("#user-avatar-upload-widget .image_file_input_error").expectOne(),
             $("#user-avatar-upload-widget .image_upload_button").expectOne(),
             upload_function,
-            page_params.max_avatar_file_size_mib
+            page_params.max_avatar_file_size_mib,
         );
     }
 };

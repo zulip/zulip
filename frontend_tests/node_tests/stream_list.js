@@ -625,7 +625,7 @@ run_test('update_count_in_dom', () => {
     const stream_li = make_elem(
         $('<stream li>'),
         '<stream-count>',
-        '<stream-value>'
+        '<stream-value>',
     );
 
     $('<stream li>').length = 0;

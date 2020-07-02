@@ -496,7 +496,7 @@ exports.get_person_suggestions = function (query, opts) {
     const cutoff_length = exports.max_num_items;
 
     const filtered_message_persons = filter_persons(
-        people.get_active_message_people()
+        people.get_active_message_people(),
     );
 
     let filtered_persons;
@@ -505,7 +505,7 @@ exports.get_person_suggestions = function (query, opts) {
         filtered_persons = filtered_message_persons;
     } else {
         filtered_persons = filter_persons(
-            people.get_realm_users()
+            people.get_realm_users(),
         );
     }
 
@@ -515,7 +515,7 @@ exports.get_person_suggestions = function (query, opts) {
         opts.stream,
         opts.topic,
         filtered_groups,
-        exports.max_num_items
+        exports.max_num_items,
     );
 };
 

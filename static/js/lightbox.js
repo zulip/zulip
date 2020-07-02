@@ -70,7 +70,7 @@ function display_video(payload) {
         // Use data: to load the player in a unique origin for security.
         source = "data:text/html," + window.encodeURIComponent(
             "<!DOCTYPE html><style>iframe{position:absolute;left:0;top:0;width:100%;height:100%;box-sizing:border-box}</style>" +
-                payload.source
+                payload.source,
         );
     }
 

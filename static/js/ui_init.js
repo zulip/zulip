@@ -224,7 +224,7 @@ exports.initialize_kitchen_sink_stuff = function () {
                     selected_id_from_idx: messages[event.msg_list.selected_idx()].id,
                     msg_list_sorted: _.isEqual(
                         messages.map((message) => message.id),
-                        _.chain(current_msg_list.all_messages()).pluck('id').clone().value().sort()
+                        _.chain(current_msg_list.all_messages()).pluck('id').clone().value().sort(),
                     ),
                     found_in_dom: row_from_dom.length,
                 });
@@ -386,41 +386,41 @@ exports.initialize_everything = function () {
     }
 
     const alert_words_params = pop_fields(
-        'alert_words'
+        'alert_words',
     );
 
     const bot_params = pop_fields(
-        'realm_bots'
+        'realm_bots',
     );
 
     const people_params = pop_fields(
         'realm_users',
         'realm_non_active_users',
-        'cross_realm_bots'
+        'cross_realm_bots',
     );
 
     const pm_conversations_params = pop_fields(
-        'recent_private_conversations'
+        'recent_private_conversations',
     );
 
     const presence_params = pop_fields(
         'presences',
-        'initial_servertime'
+        'initial_servertime',
     );
 
     const stream_data_params = pop_fields(
         'subscriptions',
         'unsubscribed',
         'never_subscribed',
-        'realm_default_streams'
+        'realm_default_streams',
     );
 
     const user_groups_params = pop_fields(
-        'realm_user_groups'
+        'realm_user_groups',
     );
 
     const user_status_params = pop_fields(
-        'user_status'
+        'user_status',
     );
 
     alert_words.initialize(alert_words_params);
@@ -459,7 +459,7 @@ exports.initialize_everything = function () {
     emoji.initialize();
     markdown.initialize(
         page_params.realm_filters,
-        markdown_config.get_helpers()
+        markdown_config.get_helpers(),
     );
     compose.initialize();
     composebox_typeahead.initialize(); // Must happen after compose.initialize()

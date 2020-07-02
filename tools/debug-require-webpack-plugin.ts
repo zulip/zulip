@@ -47,10 +47,10 @@ export default class DebugRequirePlugin {
                         __dirname,
                         "./debug-require.js",
                         {},
-                        (err?: Error, result?: string) => err ? reject(err) : resolve(result)
-                    )
+                        (err?: Error, result?: string) => err ? reject(err) : resolve(result),
+                    ),
                 );
-            }
+            },
         );
 
         compiler.hooks.compilation.tap("DebugRequirePlugin", (compilation: any) => {
@@ -72,7 +72,7 @@ export default class DebugRequirePlugin {
                             }
                             return false;
                         },
-                        () => true
+                        () => true,
                     );
 
                     if (debugRequireId === undefined) {
@@ -84,10 +84,10 @@ export default class DebugRequirePlugin {
                     return Template.asString([
                         source,
                         `${requireFn}(${JSON.stringify(
-                            debugRequireId
+                            debugRequireId,
                         )}).initialize(${JSON.stringify(Object.fromEntries(ids), null, "\t")});`,
                     ]);
-                }
+                },
             );
         });
     }

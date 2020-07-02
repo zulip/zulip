@@ -162,7 +162,7 @@ exports.setup_upload = function (config) {
                     timedOut: i18n.t('Upload stalled for %{seconds} seconds, aborting.'),
                 },
             },
-        }
+        },
     );
 
     uppy.use(ProgressBar, {

@@ -287,7 +287,7 @@ run_test('topics_seen_for', () => {
 
     assert.deepEqual(
         ct.topics_seen_for('Denmark'),
-        ['With Twisted Metal', 'acceptance', 'civil fears']
+        ['With Twisted Metal', 'acceptance', 'civil fears'],
     );
 
     // Test when the stream doesn't exist (there are no topics)
@@ -711,7 +711,7 @@ run_test('initialize', () => {
                 people,
                 query,
                 compose_state.stream_name(),
-                compose_state.topic()
+                compose_state.topic(),
             );
         }
 
@@ -819,7 +819,7 @@ run_test('initialize', () => {
         let actual_value = options.source.call(fake_this, 'test #s');
         assert.deepEqual(
             sorted_names_from(actual_value),
-            ['Denmark', 'Sweden', 'The Netherlands']
+            ['Denmark', 'Sweden', 'The Netherlands'],
         );
         assert(caret_called);
 
@@ -1133,7 +1133,7 @@ run_test('begins_typeahead', () => {
             return [input, rest];
         };
         const values = ct.get_candidates.call(
-            begin_typehead_this, input
+            begin_typehead_this, input,
         );
         return values;
     }
@@ -1158,7 +1158,7 @@ run_test('begins_typeahead', () => {
         const values = get_values(input, rest);
         assert.deepEqual(
             sorted_names_from(values),
-            ['Denmark', 'Sweden', 'The Netherlands']
+            ['Denmark', 'Sweden', 'The Netherlands'],
         );
     }
 

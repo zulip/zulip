@@ -435,7 +435,7 @@ exports.maybe_add_local_messages = function (opts) {
         // need to look at unread here.
         id_info.final_select_id = min_defined(
             id_info.target_id,
-            unread_info.msg_id
+            unread_info.msg_id,
         );
 
         if (!load_local_messages(msg_data)) {
@@ -601,7 +601,7 @@ exports.narrow_to_next_topic = function () {
 
     const next_narrow = topic_generator.get_next_topic(
         curr_info.stream,
-        curr_info.topic
+        curr_info.topic,
     );
 
     if (!next_narrow) {

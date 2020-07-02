@@ -75,7 +75,7 @@ run_test('get_item', () => {
         {
             name: "Error",
             message: "Missing config",
-        }
+        },
     );
     assert.throws(
         () => {
@@ -84,7 +84,7 @@ run_test('get_item', () => {
         {
             name: "Error",
             message: "Missing row in config",
-        }
+        },
     );
     assert.throws(
         () => {
@@ -93,7 +93,7 @@ run_test('get_item', () => {
         {
             name: "Error",
             message: "Invalid upload mode!",
-        }
+        },
     );
     assert.throws(
         () => {
@@ -102,7 +102,7 @@ run_test('get_item', () => {
         {
             name: "Error",
             message: 'Invalid key name for mode "compose"',
-        }
+        },
     );
     assert.throws(
         () => {
@@ -111,7 +111,7 @@ run_test('get_item', () => {
         {
             name: "Error",
             message: 'Invalid key name for mode "edit"',
-        }
+        },
     );
 });
 

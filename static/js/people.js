@@ -63,7 +63,7 @@ exports.get_by_email = function (email) {
     if (person.email.toLowerCase() !== email.toLowerCase()) {
         blueslip.warn(
             'Obsolete email passed to get_by_email: ' + email +
-            ' new email = ' + person.email
+            ' new email = ' + person.email,
         );
     }
 
@@ -849,7 +849,7 @@ exports.get_message_people = function () {
         semantics
     */
     const message_people = message_store.user_ids().map(
-        (user_id) => people_by_user_id_dict.get(user_id)
+        (user_id) => people_by_user_id_dict.get(user_id),
     ).filter(Boolean);
 
     return message_people;
@@ -858,7 +858,7 @@ exports.get_message_people = function () {
 exports.get_active_message_people = function () {
     const message_people = exports.get_message_people();
     const active_message_people = message_people.filter((item) =>
-        active_user_dict.has(item.user_id)
+        active_user_dict.has(item.user_id),
     );
     return active_message_people;
 };
