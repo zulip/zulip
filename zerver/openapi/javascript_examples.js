@@ -1,3 +1,9 @@
+/* eslint-disable arrow-body-style */
+/*
+  This file makes use of functional comments in a way that makes the
+  code confusing with the arrow-body-style lint rule applied.
+*/
+
 const ExamplesHandler = function () {
     const config = {
         username: process.env.ZULIP_USERNAME,
