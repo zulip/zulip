@@ -331,7 +331,7 @@ has_class() {
 # files to exists; https://tickets.puppetlabs.com/browse/PUP-3907
 #
 # The home directory here should match what's declared in base.pp.
-useradd -m zulip --home-dir /home/zulip
+id -u zulip &>/dev/null || useradd -m zulip --home-dir /home/zulip
 if [ -n "$NO_OVERWRITE_SETTINGS" ] && [ -e "/etc/zulip/zulip.conf" ]; then
     "$ZULIP_PATH"/scripts/zulip-puppet-apply --force --noop \
                  --write-catalog-summary \
