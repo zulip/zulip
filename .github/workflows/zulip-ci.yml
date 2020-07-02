@@ -7,14 +7,29 @@ defaults:
     shell: bash
 
 jobs:
-  bionic_backend_frontend:
-    name: Ubuntu 18.04 Bionic (Python 3.6, backend + frontend)
-    runs-on: ubuntu-latest
+  focal_bionic:
+    strategy:
+      matrix:
+        include:
+          # This docker image was created by a generated Dockerfile at:
+          #   tools/ci/images/bionic/Dockerfile
+          # Bionic ships with Python 3.6.
+          - docker_image: mepriyank/actions:bionic
+            name: Ubuntu 18.04 Bionic (Python 3.6, backend + frontend)
+            os: bionic
+            is_bionic: true
 
-    # This docker image was created by a generated Dockerfile at:
-    #   tools/ci/images/bionic/Dockerfile
-    # Bionic ships with Python 3.6.
-    container: mepriyank/actions:bionic
+          # This docker image was created by a generated Dockerfile at:
+          #   tools/ci/images/focal/Dockerfile
+          # Focal ships with Python 3.8.2.
+          - docker_image: mepriyank/actions:focal
+            name: Ubuntu 20.04 Focal (Python 3.8, backend)
+            os: focal
+            is_focal: true
+
+    runs-on: ubuntu-latest
+    name: ${{ matrix.name }}
+    container: ${{ matrix.docker_image }}
     env:
       # GitHub Actions sets HOME to /github/home which causes
       # problem later in provison and frontend test that runs
@@ -27,8 +42,10 @@ jobs:
     steps:
       # Upgrade git before using checkout actions because it downloads
       # the code using Rest API if git version is less than v2.18,
-      # which will cause errors in tests and provision.
+      # which will cause errors in tests and provision. This is only
+      # required for bionic.
       - name: Upgrade git for bionic
+        if: ${{ matrix.is_bionic }}
         run: |
           sudo apt-get install -y software-properties-common
           sudo add-apt-repository ppa:git-core/ppa -y
@@ -63,24 +80,25 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /srv/zulip-npm-cache
-          key: v1-yarn-deps-${{ github.job }}-${{ hashFiles('package.json') }}-${{ hashFiles('yarn.lock') }}
-          restore-keys: v1-yarn-deps-${{ github.job }}
+          key: v1-yarn-deps-${{ matrix.os }}-${{ hashFiles('package.json') }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: v1-yarn-deps-${{ matrix.os }}
 
       - name: Restore python cache
         uses: actions/cache@v2
         with:
           path: /srv/zulip-venv-cache
-          key: v1-venv-${{ github.job }}-${{ hashFiles('requirements/thumbor-dev.txt') }}-${{ hashFiles('requirements/dev.txt') }}
-          restore-keys: v1-venv-${{ github.job }}
+          key: v1-venv-${{ matrix.os }}-${{ hashFiles('requirements/thumbor-dev.txt') }}-${{ hashFiles('requirements/dev.txt') }}
+          restore-keys: v1-venv-${{ matrix.os }}
 
       - name: Restore emoji cache
         uses: actions/cache@v2
         with:
           path: /srv/zulip-emoji-cache
-          key: v1-emoji-${{ github.job }}-${{ hashFiles('tools/setup/emoji/emoji_map.json') }}-${{ hashFiles('tools/setup/emoji/build_emoji') }}-${{ hashFiles('tools/setup/emoji/emoji_setup_utils.py') }}-${{ hashFiles('tools/setup/emoji/emoji_names.py') }}-${{ hashFiles('package.json') }}
-          restore-keys: v1-emoji-${{ github.job }}
+          key: v1-emoji-${{ matrix.os }}-${{ hashFiles('tools/setup/emoji/emoji_map.json') }}-${{ hashFiles('tools/setup/emoji/build_emoji') }}-${{ hashFiles('tools/setup/emoji/emoji_setup_utils.py') }}-${{ hashFiles('tools/setup/emoji/emoji_names.py') }}-${{ hashFiles('package.json') }}
+          restore-keys: v1-emoji-${{ matrix.os }}
 
       - name: Do Bionic hack
+        if: ${{ matrix.is_bionic }}
         run: |
           # Temporary hack till `sudo service redis-server start` gets fixes in Bionic. See
           # https://chat.zulip.org/#narrow/stream/3-backend/topic/Ubuntu.20bionic.20CircleCI
@@ -106,16 +124,19 @@ jobs:
           mispipe "./tools/ci/backend 2>&1" ts
 
       - name: Run frontend tests
+        if: ${{ matrix.is_bionic }}
         run: |
           . /srv/zulip-py3-venv/bin/activate
           mispipe "./tools/ci/frontend 2>&1" ts
 
       - name: Test locked requirements
+        if: ${{ matrix.is_bionic }}
         run: |
           . /srv/zulip-py3-venv/bin/activate && \
           mispipe "./tools/test-locked-requirements 2>&1" ts
 
       - name: Upload coverage reports
+        if: ${{ matrix.is_bionic }}
         run: |
           # Codcov requires `.coverage` file to be stored in the
           # current working directory.
@@ -133,6 +154,7 @@ jobs:
           pip install codecov && codecov || echo "Error in uploading coverage reports to codecov.io."
 
       - name: Store puppeteer artifacts
+        if: ${{ matrix.is_bionic }}
         uses: actions/upload-artifact@v2
         with:
           name: puppeteer
@@ -146,95 +168,16 @@ jobs:
         run: mv /tmp/zulip-test-event-log/ ./var/
 
       - name: Store test reports
+        if: ${{ matrix.is_bionic }}
         uses: actions/upload-artifact@v2
         with:
           name: test-reports
           path: ./var/zulip-test-event-log/
-    # TODO: We need to port the notify_failure step from CircleCI
-    # config, however, it might be the case that GitHub Notifications
-    # make this unnesscary. More details on settings to configure it:
-    # https://help.github.com/en/github/managing-subscriptions-and-notifications-on-github/configuring-notifications#github-actions-notification-options
-
-  focal_backend:
-    name: Ubuntu 20.04 Focal (Python 3.8, backend)
-    runs-on: ubuntu-latest
-
-    # This docker image was created by a generated Dockerfile at:
-    #   tools/ci/images/focal/Dockerfile
-    # Focal ships with Python 3.8.2.
-    container: mepriyank/actions:focal
-    env:
-      # GitHub Actions sets HOME to /github/home which causes
-      # problem later in provison and frontend test that runs
-      # tools/setup/postgrest-init-dev-db because of .pgpass.
-      # psql expects .pgpass to be at /home/github/.pgpass and
-      # setting home to `/home/github/` ensures it written there.
-      HOME: /home/github/
-
-    steps:
-      - name: Add required permissions
-        run: |
-          # The checkout actions doesn't clone to ~/zulip or allow
-          # us to use the path option to clone outside the current
-          # /__w/zulip/zulip directory. Since this directory is owned
-          # by root we need to change it's ownership to allow the
-          # github user to clone the code here.
-          # Note: /__w/ is a docker volume mounted to $GITHUB_WORKSPACE
-          # which is /home/runner/work/.
-          sudo chown -R github .
-
-          # This is the GitHub Actions specific cache directory the
-          # the current github user must be able to access for the
-          # cache action to work. It is owned by root currently.
-          sudo chmod -R 0777 /__w/_temp/
-
-      - uses: actions/checkout@v2
-
-      - name: Create cache directories
-        run: |
-          dirs=(/srv/zulip-{npm,venv,emoji}-cache)
-          sudo mkdir -p "${dirs[@]}"
-          sudo chown -R github "${dirs[@]}"
-
-      - name: Restore node_modules cache
-        uses: actions/cache@v2
-        with:
-          path: /srv/zulip-npm-cache
-          key: v1-yarn-deps-${{ github.job }}-${{ hashFiles('package.json') }}-${{ hashFiles('yarn.lock') }}
-          restore-keys: v1-yarn-deps-${{ github.job }}
-
-      - name: Restore python cache
-        uses: actions/cache@v2
-        with:
-          path: /srv/zulip-venv-cache
-          key: v1-venv-${{ github.job }}-${{ hashFiles('requirements/thumbor-dev.txt') }}-${{ hashFiles('requirements/dev.txt') }}
-          restore-keys: v1-venv-${{ github.job }}
-
-      - name: Restore emoji cache
-        uses: actions/cache@v2
-        with:
-          path: /srv/zulip-emoji-cache
-          key: v1-emoji-${{ github.job }}-${{ hashFiles('tools/setup/emoji/emoji_map.json') }}-${{ hashFiles('tools/setup/emoji/build_emoji') }}-${{ hashFiles('tools/setup/emoji/emoji_setup_utils.py') }}-${{ hashFiles('tools/setup/emoji/emoji_names.py') }}-${{ hashFiles('package.json') }}
-          restore-keys: v1-emoji-${{ github.job }}
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-
-          # Install moreutils so we can use `ts` and `mispipe` in the following.
-          sudo apt-get install -y moreutils
-
-          # This is the main setup job for the test suite
-          mispipe "tools/ci/setup-backend --skip-dev-db-build" ts
-
-          # Cleaning caches is mostly unnecessary in GitHub Actions,
-          # because most builds don't get to write to the cache.
-          # mispipe "scripts/lib/clean-unused-caches --verbose --threshold 0 2>&1" ts
-
-      - name: Run backend tests
-        run: |
-          . /srv/zulip-py3-venv/bin/activate && \
-          mispipe "./tools/ci/backend 2>&1" ts
 
       - name: Check development database build
+        if: ${{ matrix.is_focal }}
         run: mispipe "tools/ci/setup-backend" ts
+      # TODO: We need to port the notify_failure step from CircleCI
+      # config, however, it might be the case that GitHub Notifications
+      # make this unnesscary. More details on settings to configure it:
+      # https://help.github.com/en/github/managing-subscriptions-and-notifications-on-github/configuring-notifications#github-actions-notification-options
