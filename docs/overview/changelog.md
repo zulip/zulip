@@ -2,10 +2,14 @@
 
 All notable changes to the Zulip server are documented in this file.
 
-### 3.0 -- Unreleased
+## Unreleased
 
 This section lists notable unreleased changes; it is generally updated
 in bursts.
+
+### 3.0-rc1 -- July 1, 2020
+
+We expect this to become the 3.0 final release in early July.
 
 #### Highlights
 
