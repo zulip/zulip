@@ -106,30 +106,6 @@ a.no-underline:hover {
     }
 }
 
-/* -- flex forms -- */
-.flex-row {
-    display: flex;
-
-    * {
-        box-sizing: border-box;
-    }
-
-    input[type=text],
-    input[type=password] {
-        height: auto;
-        width: 100%;
-    }
-
-    &.normal {
-        width: 500px;
-    }
-
-    .field {
-        margin: 10px;
-        width: 100%;
-    }
-}
-
 i.zulip-icon.bot {
     color: hsl(180, 5%, 74%);
     vertical-align: top;
