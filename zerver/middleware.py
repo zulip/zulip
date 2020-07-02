@@ -2,10 +2,11 @@ import cProfile
 import logging
 import time
 import traceback
-from typing import Any, AnyStr, Dict, Iterable, List, MutableMapping, Optional
+from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, Optional, Union
 
 from django.conf import settings
 from django.core.exceptions import DisallowedHost
+from django.core.handlers.wsgi import WSGIRequest
 from django.db import connection
 from django.http import HttpRequest, HttpResponse, StreamingHttpResponse
 from django.middleware.common import CommonMiddleware
@@ -13,6 +14,8 @@ from django.shortcuts import render
 from django.utils.deprecation import MiddlewareMixin
 from django.utils.translation import ugettext as _
 from django.views.csrf import csrf_failure as html_csrf_failure
+from sentry_sdk import capture_exception
+from sentry_sdk.integrations.logging import ignore_logger
 
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
 from zerver.lib.db import reset_queries
@@ -294,11 +297,17 @@ class LogRequests(MiddlewareMixin):
         return response
 
 class JsonErrorHandler(MiddlewareMixin):
+    def __init__(self, get_response: Callable[[Any, WSGIRequest], Union[HttpResponse, BaseException]]) -> None:
+        super().__init__(get_response)
+        ignore_logger("zerver.middleware.json_error_handler")
+
     def process_exception(self, request: HttpRequest, exception: Exception) -> Optional[HttpResponse]:
         if isinstance(exception, JsonableError):
             return json_response_from_error(exception)
         if request.error_format == "JSON":
-            logging.error(traceback.format_exc(), extra=dict(request=request))
+            capture_exception(exception)
+            logger = logging.getLogger("zerver.middleware.json_error_handler")
+            logger.error(traceback.format_exc(), extra=dict(request=request))
             return json_error(_("Internal server error"), status=500)
         return None
 
