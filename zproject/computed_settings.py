@@ -46,6 +46,7 @@ from .configured_settings import (
     REMOTE_POSTGRES_PORT,
     REMOTE_POSTGRES_SSLMODE,
     SENDFILE_BACKEND,
+    SENTRY_DSN,
     SOCIAL_AUTH_APPLE_SERVICES_ID,
     SOCIAL_AUTH_GITHUB_KEY,
     SOCIAL_AUTH_GITHUB_ORG_NAME,
@@ -1123,3 +1124,7 @@ CROSS_REALM_BOT_EMAILS = {
 THUMBOR_KEY = get_secret('thumbor_key')
 
 TWO_FACTOR_PATCH_ADMIN = False
+
+if SENTRY_DSN:
+    from .sentry import setup_sentry
+    setup_sentry(SENTRY_DSN)
