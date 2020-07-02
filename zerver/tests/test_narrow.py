@@ -2674,7 +2674,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         # If nothing relevant is muted, then exclude_muting_conditions()
         # should return an empty list.
-        narrow = [
+        narrow: List[Dict[str, object]] = [
             dict(operator='stream', operand='Scotland'),
         ]
         muting_conditions = exclude_muting_conditions(user_profile, narrow)

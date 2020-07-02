@@ -890,7 +890,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login('hamlet')
         othello = self.example_user('othello')
 
-        bot_info = {
+        bot_info: Dict[str, object] = {
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
         }
@@ -983,7 +983,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.create_bot()
         self.assert_num_bots_equal(1)
 
-        bot_info = {
+        bot_info: Dict[str, object] = {
             'full_name': 'Another Bot of Hamlet',
             'short_name': 'hamelbot',
         }
