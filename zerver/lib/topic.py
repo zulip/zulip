@@ -116,7 +116,7 @@ def update_messages_for_topic_edit(message: Message,
 
     messages = Message.objects.filter(propagate_query).select_related()
 
-    update_fields = {}
+    update_fields: Dict[str, object] = {}
 
     # Evaluate the query before running the update
     messages_list = list(messages)
