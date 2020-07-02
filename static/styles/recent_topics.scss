@@ -120,13 +120,19 @@
             justify-content: flex-start;
         }
 
-        #recent_topics_search {
+        .search_group {
+            display: flex;
+            flex-grow: 1;
             margin: 0 0 10px 0px;
+        }
+
+        #recent_topics_search {
             flex-grow: 1;
         }
 
-        #recent_topics_search_clear {
-            margin-top: -10px !important;
+        .clear_search_button {
+            // Overrides app_components.scss property.
+            padding-top: 6px !important;
         }
 
         .btn-recent-filters {

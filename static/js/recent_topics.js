@@ -434,6 +434,10 @@ exports.launch = function () {
     exports.complete_rerender();
 };
 
+function filter_buttons() {
+    return $('#recent_filters_group').children();
+}
+
 exports.change_focused_element = function (e, input_key) {
     // Called from hotkeys.js; like all logic in that module,
     // returning true will cause the caller to do
@@ -472,13 +476,13 @@ exports.change_focused_element = function (e, input_key) {
             if (start !== 0 || is_selected) {
                 return false;
             }
-            current_focus_elem = $elem.prev().children().last();
+            current_focus_elem = filter_buttons().last();
             break;
         case 'right_arrow':
             if (end !== text_length || is_selected) {
                 return false;
             }
-            current_focus_elem = $elem.prev().children().first();
+            current_focus_elem = filter_buttons().first();
             break;
         case 'down_arrow':
             set_table_focus(row_focus, col_focus);
@@ -496,14 +500,14 @@ exports.change_focused_element = function (e, input_key) {
     } else if ($elem.hasClass('btn-recent-filters')) {
         switch (input_key) {
         case 'left_arrow':
-            if ($elem.parent().children().first()[0] === $elem[0]) {
+            if (filter_buttons().first()[0] === $elem[0]) {
                 current_focus_elem = $("#recent_topics_search");
             } else {
                 current_focus_elem = $elem.prev();
             }
             break;
         case 'right_arrow':
-            if ($elem.parent().children().last()[0] === $elem[0]) {
+            if (filter_buttons().last()[0] === $elem[0]) {
                 current_focus_elem = $("#recent_topics_search");
             } else {
                 current_focus_elem = $elem.next();
