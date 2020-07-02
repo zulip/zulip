@@ -2872,9 +2872,11 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
                             set(occupied_streams_after) - set(occupied_streams_before)
                             if not stream.invite_only]
     if new_occupied_streams and not from_stream_creation:
-        event = dict(type="stream", op="occupy",
-                     streams=[stream.to_dict()
-                              for stream in new_occupied_streams])
+        event: Dict[str, object] = dict(
+            type="stream",
+            op="occupy",
+            streams=[stream.to_dict() for stream in new_occupied_streams],
+        )
         send_event(realm, event, active_user_ids(realm.id))
 
     # Notify all existing users on streams that users have joined

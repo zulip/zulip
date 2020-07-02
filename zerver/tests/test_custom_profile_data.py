@@ -596,7 +596,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertIsNone(value)
         self.assertIsNone(rendered_value)
 
-        update_dict = {
+        update_dict: Dict[str, Union[int, str, List[int]]] = {
             "id": quote.id,
             "value": "***beware*** of jealousy...",
         }

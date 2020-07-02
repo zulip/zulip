@@ -1150,7 +1150,7 @@ class StreamAdminTest(ZulipTestCase):
         self.make_stream(stream_name, invite_only=invite_only)
 
         # Set up the principal to be unsubscribed.
-        principals = []
+        principals: List[Union[str, int]] = []
         for user in target_users:
             if using_legacy_emails:
                 principals.append(user.email)
