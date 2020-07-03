@@ -342,6 +342,29 @@ class AuthBackendTest(ZulipTestCase):
                 )
             )
 
+    def test_email_auth_backend_password_hasher_change(self) -> None:
+        user_profile = self.example_user("hamlet")
+        password = "a_password_of_22_chars"
+
+        with self.settings(PASSWORD_HASHERS=("django.contrib.auth.hashers.PBKDF2PasswordHasher",)):
+            user_profile.set_password(password)
+            user_profile.save()
+
+        with self.settings(
+            PASSWORD_HASHERS=(
+                "django.contrib.auth.hashers.Argon2PasswordHasher",
+                "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+            ),
+            PASSWORD_MIN_LENGTH=30,
+        ), self.assertRaises(JsonableError) as m:
+            EmailAuthBackend().authenticate(
+                request=mock.MagicMock(),
+                username=self.example_email("hamlet"),
+                password=password,
+                realm=get_realm("zulip"),
+            )
+        self.assertEqual(str(m.exception), "You need to reset your password.")
+
     def test_login_preview(self) -> None:
         # Test preview=true displays organization login page
         # instead of redirecting to app
