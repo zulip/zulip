@@ -265,10 +265,6 @@ def billing_home(request: HttpRequest) -> HttpResponse:
             if new_plan is not None:  # nocoverage
                 plan = new_plan
             assert(plan is not None)  # for mypy
-            plan_name = {
-                CustomerPlan.STANDARD: 'Zulip Standard',
-                CustomerPlan.PLUS: 'Zulip Plus',
-            }[plan.tier]
             free_trial = plan.status == CustomerPlan.FREE_TRIAL
             downgrade_at_end_of_cycle = plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
             switch_to_annual_at_end_of_cycle = plan.status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE
@@ -285,7 +281,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
                 payment_method = 'Billed by invoice'
 
             context.update({
-                'plan_name': plan_name,
+                'plan_name': plan.name,
                 'has_active_plan': True,
                 'free_trial': free_trial,
                 'downgrade_at_end_of_cycle': downgrade_at_end_of_cycle,
