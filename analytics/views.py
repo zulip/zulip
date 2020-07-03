@@ -72,8 +72,11 @@ from zerver.views.invite import get_invitee_emails_set
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import (
         attach_discount_to_realm,
+        get_current_plan_by_realm,
         get_customer_by_realm,
         get_discount_for_realm,
+        get_latest_seat_count,
+        make_end_of_cycle_updates_if_needed,
         update_sponsorship_status,
     )
 
@@ -1181,6 +1184,17 @@ def support(request: HttpRequest) -> HttpResponse:
 
         for realm in realms:
             realm.customer = get_customer_by_realm(realm)
+
+            current_plan = get_current_plan_by_realm(realm)
+            if current_plan is not None:
+                new_plan, last_ledger_entry = make_end_of_cycle_updates_if_needed(current_plan, timezone_now())
+                if last_ledger_entry is not None:
+                    if new_plan is not None:
+                        realm.current_plan = new_plan
+                    else:
+                        realm.current_plan = current_plan
+                    realm.current_plan.licenses = last_ledger_entry.licenses
+                    realm.current_plan.licenses_used = get_latest_seat_count(realm)
 
         context["realms"] = realms
 

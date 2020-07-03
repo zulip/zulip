@@ -47,6 +47,23 @@
     <input type="number" name="discount" value="{{ get_discount_for_realm(realm) }}" required>
     <button type="submit" class="button rounded small support-submit-button">Update</button>
 </form>
+{% if realm.current_plan %}
+<div class="current-plan-details">
+    <h3>📅 Current plan</h3>
+    <b>Name</b>: {{ realm.current_plan.name }}<br>
+    <b>Status</b>: {{realm.current_plan.get_plan_status_as_text()}}<br>
+    <b>Billing schedule</b>: {% if realm.current_plan.billing_schedule == realm.current_plan.ANNUAL %}Annual{% else %}Monthly{% endif %}<br>
+    <b>Licenses</b>: {{ realm.current_plan.licenses_used }}/{{ realm.current_plan.licenses }} ({% if realm.current_plan.automanage_licenses %}Automatic{% else %}Manual{% endif %})<br>
+    {% if realm.current_plan.price_per_license %}
+    <b>Price per license</b>: ${{ realm.current_plan.price_per_license/100 }}<br>
+    {% else %}
+    <b>Fixed price</b>: ${{ realm.current_plan.fixed_price/100 }}<br>
+    {% endif %}
+    <b>Payment method</b>: {% if realm.current_plan.charge_automatically %}Card{% else %}Send invoice{% endif %}<br>
+    <b>Next invoice date</b>: {{ realm.current_plan.next_invoice_date.strftime('%d %B %Y') }}<br>
+</div>
+{% endif %}
+
 <form method="POST" class="scrub-realm-form">
     {{ csrf_input }}
     <input type="hidden" name="realm_id" value="{{ realm.id }}" />

@@ -74,6 +74,14 @@ class CustomerPlan(models.Model):
             CustomerPlan.ENTERPRISE: 'Zulip Enterprise',
         }[self.tier]
 
+    def get_plan_status_as_text(self) -> str:
+        return {
+            self.ACTIVE: "Active",
+            self.DOWNGRADE_AT_END_OF_CYCLE: "Scheduled for downgrade at end of cycle",
+            self.FREE_TRIAL: "Free trial",
+            self.ENDED: "Ended",
+            self.NEVER_STARTED: "Never started"
+        }[self.status]
 
 def get_current_plan_by_customer(customer: Customer) -> Optional[CustomerPlan]:
     return CustomerPlan.objects.filter(
