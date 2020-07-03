@@ -12,7 +12,7 @@ set_global('location', {
 });
 
 const hamlet = {
-    user_id: 1,
+    user_id: 15,
     email: 'hamlet@example.com',
     full_name: 'Hamlet',
 };
@@ -49,7 +49,7 @@ run_test('hash_util', () => {
     let operator = 'sender';
     let operand = hamlet.email;
 
-    encode_decode_operand(operator, operand, '1-hamlet');
+    encode_decode_operand(operator, operand, '15-hamlet');
 
     operator = 'stream';
     operand = 'frontend';
@@ -161,7 +161,7 @@ run_test('test_by_conversation_and_time_uri', () => {
     };
 
     assert.equal(hash_util.by_conversation_and_time_uri(message),
-                 'https://example.com/#narrow/pm-with/1-pm/near/43');
+                 'https://example.com/#narrow/pm-with/15-pm/near/43');
 });
 
 run_test('test_search_public_streams_notice_url', () => {
@@ -181,5 +181,5 @@ run_test('test_search_public_streams_notice_url', () => {
 
     set_uri("#narrow/sender/15");
     assert.equal(hash_util.search_public_streams_notice_url(),
-                 "#narrow/streams/public/sender/15");
+                 "#narrow/streams/public/sender/15-hamlet");
 });

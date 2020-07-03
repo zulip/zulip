@@ -547,7 +547,19 @@ exports.emails_to_slug = function (emails_string) {
 };
 
 exports.slug_to_emails = function (slug) {
-    const m = /^([\d,]+)-/.exec(slug);
+    /*
+        It's not super important to be flexible about
+        PM-related slugs, since you would rarely post
+        them to the web, but we we do want to support
+        reasonable variations:
+
+            99-alice@example.com
+            99
+
+        Our canonical version is 99-alice@example.com,
+        and we only care about the "99" prefix.
+    */
+    const m = /^([\d,]+)(-.*)?/.exec(slug);
     if (m) {
         let user_ids_string = m[1];
         user_ids_string = exports.exclude_me_from_string(user_ids_string);

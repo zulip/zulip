@@ -560,6 +560,9 @@ run_test('multi_user_methods', () => {
     let emails_string = people.user_ids_string_to_emails_string('402,401');
     assert.equal(emails_string, 'emp401@example.com,emp402@example.com');
 
+    emails_string = people.slug_to_emails('402,401');
+    assert.equal(emails_string, 'emp401@example.com,emp402@example.com');
+
     emails_string = people.slug_to_emails('402,401-group');
     assert.equal(emails_string, 'emp401@example.com,emp402@example.com');
 
