@@ -167,6 +167,11 @@ function get_subscriber_list(sub_row) {
     return $('.subscription_settings[data-stream-id="' + stream_id_str + '"] .subscriber-list');
 }
 
+function get_subscriber_list_container(sub_row) {
+    const stream_id_str = sub_row.data("stream-id");
+    return $('.subscription_settings[data-stream-id="' + stream_id_str + '"] .subscriber_list_container');
+}
+
 exports.update_stream_name = function (sub, new_name) {
     const sub_settings = exports.settings_for_sub(sub);
     sub_settings.find(".email-address").text(sub.email_address);
@@ -268,6 +273,29 @@ exports.sort_but_pin_current_user_on_top = function (users) {
     }
 };
 
+function render_subscribers_list(stream_id, list, users) {
+    list_render.create(list, users, {
+        name: "stream_subscribers/" + stream_id,
+        modifier: function (item) {
+            return format_member_list_elem(item);
+        },
+        filter: {
+            element: $("[data-stream-id='" + stream_id + "'] .search"),
+            predicate: function (item, value) {
+                const person = item;
+
+                if (person) {
+                    if (person.email.toLocaleLowerCase().includes(value) &&
+                        settings_data.show_email()) {
+                        return true;
+                    }
+                    return person.full_name.toLowerCase().includes(value);
+                }
+            },
+        },
+    });
+}
+
 function show_subscription_settings(sub_row) {
     const stream_id = sub_row.data("stream-id");
     const sub = stream_data.get_sub_by_id(stream_id);
@@ -298,31 +326,15 @@ function show_subscription_settings(sub_row) {
     const users = exports.get_users_from_subscribers(sub.subscribers);
     exports.sort_but_pin_current_user_on_top(users);
 
+    const list_container = get_subscriber_list_container(sub_settings);
+    list_container.ready(() => {
+        render_subscribers_list(stream_id, list, users);
+    });
+
     function get_users_for_subscriber_typeahead() {
         const potential_subscribers = stream_data.potential_subscribers(sub);
         return user_pill.filter_taken_users(potential_subscribers, exports.pill_widget);
     }
-
-    list_render.create(list, users, {
-        name: "stream_subscribers/" + stream_id,
-        modifier: function (item) {
-            return format_member_list_elem(item);
-        },
-        filter: {
-            element: $("[data-stream-id='" + stream_id + "'] .search"),
-            predicate: function (item, value) {
-                const person = item;
-
-                if (person) {
-                    if (person.email.toLocaleLowerCase().includes(value) &&
-                        settings_data.show_email()) {
-                        return true;
-                    }
-                    return person.full_name.toLowerCase().includes(value);
-                }
-            },
-        },
-    });
 
     user_pill.set_up_typeahead_on_pills(sub_settings.find('.input'),
                                         exports.pill_widget,
