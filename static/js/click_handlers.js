@@ -161,7 +161,7 @@ exports.initialize = function () {
         });
     }
 
-    $("#main_div").on("click", ".star", function (e) {
+    $("#main_div").on("click", ".message_star", function (e) {
         e.stopPropagation();
         popovers.hide_all();
 

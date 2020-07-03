@@ -95,10 +95,13 @@ exports.update_starred_view = function (message_id, new_value) {
     // table in which it is visible.
     update_message_in_all_views(message_id, (row) => {
         const elt = row.find(".star");
+        const message_star = row.find(".message_star");
         if (starred) {
-            elt.addClass("fa-star").removeClass("fa-star-o").removeClass("empty-star");
+            elt.addClass("fa-star").removeClass("fa-star-o");
+            message_star.removeClass("empty-star");
         } else {
-            elt.removeClass("fa-star").addClass("fa-star-o").addClass("empty-star");
+            elt.removeClass("fa-star").addClass("fa-star-o");
+            message_star.addClass("empty-star");
         }
         const title_state = starred ? i18n.t("Unstar") : i18n.t("Star");
         elt.attr("title", i18n.t("__starred_status__ this message", {starred_status: title_state}));
