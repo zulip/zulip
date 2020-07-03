@@ -762,6 +762,9 @@ function handle_post_narrow_deactivate_processes() {
 }
 
 exports.deactivate = function () {
+    // NOTE: Never call this function independently,
+    // always use hashchange.go_to_location("") to
+    // activate All message narrow.
     /*
       Switches current_msg_list from narrowed_msg_list to
       home_msg_list ("All messages"), ending the current narrow.  This

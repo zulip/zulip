@@ -264,7 +264,7 @@ exports.process_escape_key = function (e) {
         return true;
     }
 
-    narrow.deactivate();
+    hashchange.go_to_location("");
     return true;
 };
 

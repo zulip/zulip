@@ -52,6 +52,10 @@ function activate_home_tab() {
     ui_util.change_tab_to("#home");
     narrow.deactivate();
     floating_recipient_bar.update();
+    search.update_button_visibility();
+    // We need to maybe scroll to the selected message
+    // once we have the proper viewport set up
+    setTimeout(navigate.maybe_scroll_to_selected, 0);
 }
 
 const state = {

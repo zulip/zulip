@@ -10,7 +10,11 @@ zrequire("people");
 zrequire("hash_util");
 zrequire("hashchange");
 zrequire("stream_data");
+zrequire("navigate");
 
+set_global("search", {
+    update_button_visibility: () => {},
+});
 set_global("document", "document-stub");
 set_global("history", {});
 

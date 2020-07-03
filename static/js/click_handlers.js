@@ -569,16 +569,6 @@ exports.initialize = function () {
 
     // HOME
 
-    $(document).on("click", ".top_left_all_messages", (e) => {
-        ui_util.change_tab_to("#home");
-        narrow.deactivate();
-        search.update_button_visibility();
-        // We need to maybe scroll to the selected message
-        // once we have the proper viewport set up
-        setTimeout(navigate.maybe_scroll_to_selected, 0);
-        e.preventDefault();
-    });
-
     $(".brand").on("click", (e) => {
         if (overlays.is_active()) {
             overlays.close_active();
