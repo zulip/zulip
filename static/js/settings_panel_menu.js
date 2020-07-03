@@ -93,7 +93,7 @@ exports.make_menu = function (opts) {
         const settings_section_hash = '#' + hash_prefix + section;
         hashchange.update_browser_history(settings_section_hash);
 
-        $(".settings-section, .settings-wrapper").removeClass("show");
+        $(".settings-section").removeClass("show");
 
         settings_sections.load_settings_section(section);
 
@@ -111,7 +111,7 @@ exports.make_menu = function (opts) {
     self.get_panel = function () {
         const section = curr_li.data('section');
         const sel = "[data-name='" + section + "']";
-        const panel = $(".settings-section" + sel + ", .settings-wrapper" + sel);
+        const panel = $(".settings-section" + sel);
         return panel;
     };
 
