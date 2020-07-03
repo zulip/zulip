@@ -56,6 +56,7 @@
 * [Remove a linkifier](/api/remove-linkifier)
 * [Get all custom emoji](/api/get-custom-emoji)
 * [Upload custom emoji](/api/upload-custom-emoji)
+* [Get all custom profile fields](/api/get-custom-profile-fields)
 
 #### Real-time events
 
