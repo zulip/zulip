@@ -23,7 +23,8 @@
     </div>
 
     {{#unless msg/locally_echoed}}
-    <div class="star fa {{#if msg/starred}}fa-star{{else}}fa-star-o{{/if}} {{#if msg/starred}}{{else}}empty-star{{/if}}" title="{{#tr this.msg}}__starred_status__ this message{{/tr}} (*)">
+    <div class="star_container {{#if msg/starred}}{{else}}empty-star{{/if}}">
+        <i class="star fa {{#if msg/starred}}fa-star{{else}}fa-star-o{{/if}}" title="{{#tr this.msg}}__starred_status__ this message{{/tr}} (*)"></i>
     </div>
     {{/unless}}
 

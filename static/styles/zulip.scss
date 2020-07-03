@@ -720,23 +720,26 @@ td.pointer {
             animation: rotate 1s infinite linear;
         }
     }
+
+    .star_container {
+        display: inline-block;
+
+        &:not(.empty-star) {
+            color: hsl(106, 77%, 29%);
+
+            // Opacity/visibility as though the message is hovered.
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+    }
 }
 
 .star {
-    display: inline-block;
     font-size: 14px;
 
     &:hover {
         cursor: pointer;
         color: hsl(153, 80%, 25%);
-    }
-
-    &:not(.empty-star) {
-        color: hsl(106, 77%, 29%);
-
-        // Opacity/visibility as though the message is hovered.
-        opacity: 1 !important;
-        visibility: visible !important;
     }
 }
 
