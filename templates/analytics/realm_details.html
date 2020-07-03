@@ -65,6 +65,7 @@
 {% endif %}
 
 <form method="POST" class="scrub-realm-form">
+    <h3>❌ Scrub realm</h3>
     {{ csrf_input }}
     <input type="hidden" name="realm_id" value="{{ realm.id }}" />
     <input type="hidden" name="scrub_realm" value="scrub_realm" />
