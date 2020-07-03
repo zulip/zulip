@@ -275,6 +275,17 @@ def get_realm_filters(client: Client) -> None:
 
     validate_against_openapi_schema(result, '/realm/filters', 'get', '200')
 
+@openapi_test_function("/realm/profile_fields:get")
+def get_realm_profile_fields(client: Client) -> None:
+    # {code_example|start}
+    # Fetch all the custom profile fields in the user's organization.
+    result = client.call_endpoint(
+        url='/realm/profile_fields',
+        method='GET',
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/realm/profile_fields', 'get', '200')
+
 @openapi_test_function("/realm/filters:post")
 def add_realm_filter(client: Client) -> None:
 
@@ -1234,6 +1245,7 @@ def test_server_organizations(client: Client) -> None:
     remove_realm_filter(client)
     get_realm_emoji(client)
     upload_custom_emoji(client)
+    get_realm_profile_fields(client)
 
 def test_errors(client: Client) -> None:
     test_missing_request_argument(client)
