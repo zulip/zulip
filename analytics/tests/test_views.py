@@ -10,7 +10,8 @@ from analytics.lib.counts import COUNT_STATS, CountStat
 from analytics.lib.time_utils import time_range
 from analytics.models import FillState, RealmCount, UserCount, last_successful_fill
 from analytics.views import rewrite_client_arrays, sort_by_totals, sort_client_labels
-from corporate.models import get_customer_by_realm
+from corporate.lib.stripe import add_months
+from corporate.models import Customer, CustomerPlan, LicenseLedger, get_customer_by_realm
 from zerver.lib.actions import do_create_multiuse_invite_link, do_send_realm_reactivation_email
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_emails_in_zulip_realm
@@ -443,7 +444,15 @@ class TestSupportEndpoint(ZulipTestCase):
                                              '<option value="active" selected>Active</option>',
                                              '<option value="deactivated" >Deactivated</option>',
                                              'scrub-realm-button">',
-                                             'data-string-id="lear"'], result)
+                                             'data-string-id="lear"',
+                                             '<b>Name</b>: Zulip Standard',
+                                             '<b>Status</b>: Active',
+                                             '<b>Billing schedule</b>: Annual',
+                                             '<b>Licenses</b>: 2/10 (Manual)',
+                                             '<b>Price per license</b>: $80.0',
+                                             '<b>Payment method</b>: Send invoice',
+                                             '<b>Next invoice date</b>: 02 January 2017',
+                                             ], result)
 
         def check_preregistration_user_query_result(result: HttpResponse, email: str, invite: bool=False) -> None:
             self.assert_in_success_response(['<span class="label">preregistration user</span>\n',
@@ -485,6 +494,14 @@ class TestSupportEndpoint(ZulipTestCase):
         self.assertEqual(result["Location"], "/login/")
 
         self.login('iago')
+
+        customer = Customer.objects.create(realm=get_realm("lear"), stripe_customer_id='cus_123')
+        now = datetime(2016, 1, 2, tzinfo=timezone.utc)
+        plan = CustomerPlan.objects.create(customer=customer, billing_cycle_anchor=now,
+                                           billing_schedule=CustomerPlan.ANNUAL, tier=CustomerPlan.STANDARD,
+                                           price_per_license=8000, next_invoice_date=add_months(now, 12))
+        LicenseLedger.objects.create(licenses=10, licenses_at_next_renewal=10, event_time=timezone_now(),
+                                     is_renewal=True, plan=plan)
 
         result = self.client_get("/activity/support")
         self.assert_in_success_response(['<input type="text" name="q" class="input-xxlarge search-query"'], result)
