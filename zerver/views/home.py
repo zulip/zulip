@@ -274,14 +274,14 @@ def home_real(request: HttpRequest) -> HttpResponse:
         # In narrow_stream context, initial pointer is just latest message
         recipient = narrow_stream.recipient
         try:
-            initial_pointer = Message.objects.filter(recipient=recipient).order_by('id').reverse()[0].id
+            max_message_id = Message.objects.filter(recipient=recipient).order_by('id').reverse()[0].id
         except IndexError:
-            initial_pointer = -1
+            max_message_id = -1
         page_params["narrow_stream"] = narrow_stream.name
         if narrow_topic is not None:
             page_params["narrow_topic"] = narrow_topic
         page_params["narrow"] = [dict(operator=term[0], operand=term[1]) for term in narrow]
-        page_params["max_message_id"] = initial_pointer
+        page_params["max_message_id"] = max_message_id
         page_params["enable_desktop_notifications"] = False
 
     statsd.incr('views.home')
