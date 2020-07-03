@@ -88,7 +88,6 @@ def build_user_profile(avatar_source: str,
                        realm_id: int,
                        short_name: str,
                        timezone: Optional[str]) -> ZerverFieldsT:
-    pointer = -1
     obj = UserProfile(
         avatar_source=avatar_source,
         date_joined=date_joined,
@@ -99,7 +98,6 @@ def build_user_profile(avatar_source: str,
         is_mirror_dummy=is_mirror_dummy,
         is_active=is_active,
         role=role,
-        pointer=pointer,
         realm_id=realm_id,
         short_name=short_name,
         timezone=timezone,

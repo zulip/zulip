@@ -94,7 +94,6 @@ def build_userprofile(timestamp: Any, domain_name: str,
                 email=email,
                 delivery_email=email,
                 avatar_source='U',
-                pointer=-1,
                 date_joined=timestamp,
                 last_login=timestamp)
             userprofile_dict = model_to_dict(userprofile)

@@ -1045,30 +1045,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
     update_model_ids(Reaction, data, 'reaction')
     bulk_import_model(data, Reaction)
 
-    for user_profile in UserProfile.objects.filter(is_bot=False, realm=realm):
-        # Since we now unconditionally renumbers message IDs, we need
-        # to reset the user's pointer to what will be a valid value.
-        #
-        # For zulip->zulip imports, we could do something clever, but
-        # it should always be safe to reset to first unread message.
-        #
-        # Longer-term, the plan is to eliminate pointer as a concept.
-        first_unread_message = UserMessage.objects.filter(user_profile=user_profile).extra(
-            where=[UserMessage.where_unread()],
-        ).order_by("message_id").first()
-        if first_unread_message is not None:
-            user_profile.pointer = first_unread_message.message_id
-        else:
-            last_message = UserMessage.objects.filter(
-                user_profile=user_profile).order_by("message_id").last()
-            if last_message is not None:
-                user_profile.pointer = last_message.message_id
-            else:
-                # -1 is the guard value for new user accounts with no messages.
-                user_profile.pointer = -1
-
-        user_profile.save(update_fields=["pointer"])
-
     # Similarly, we need to recalculate the first_message_id for stream objects.
     for stream in Stream.objects.filter(realm=realm):
         recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)

@@ -1154,8 +1154,8 @@ class StripeTest(StripeTestCase):
     def test_get_latest_seat_count(self) -> None:
         realm = get_realm("zulip")
         initial_count = get_latest_seat_count(realm)
-        user1 = UserProfile.objects.create(realm=realm, email='user1@zulip.com', pointer=-1)
-        user2 = UserProfile.objects.create(realm=realm, email='user2@zulip.com', pointer=-1)
+        user1 = UserProfile.objects.create(realm=realm, email='user1@zulip.com')
+        user2 = UserProfile.objects.create(realm=realm, email='user2@zulip.com')
         self.assertEqual(get_latest_seat_count(realm), initial_count + 2)
 
         # Test that bots aren't counted
@@ -1169,17 +1169,17 @@ class StripeTest(StripeTestCase):
 
         # Test guests
         # Adding a guest to a realm with a lot of members shouldn't change anything
-        UserProfile.objects.create(realm=realm, email='user3@zulip.com', pointer=-1, role=UserProfile.ROLE_GUEST)
+        UserProfile.objects.create(realm=realm, email='user3@zulip.com', role=UserProfile.ROLE_GUEST)
         self.assertEqual(get_latest_seat_count(realm), initial_count)
         # Test 1 member and 5 guests
         realm = Realm.objects.create(string_id='second', name='second')
-        UserProfile.objects.create(realm=realm, email='member@second.com', pointer=-1)
+        UserProfile.objects.create(realm=realm, email='member@second.com')
         for i in range(5):
             UserProfile.objects.create(realm=realm, email=f'guest{i}@second.com',
-                                       pointer=-1, role=UserProfile.ROLE_GUEST)
+                                       role=UserProfile.ROLE_GUEST)
         self.assertEqual(get_latest_seat_count(realm), 1)
         # Test 1 member and 6 guests
-        UserProfile.objects.create(realm=realm, email='guest5@second.com', pointer=-1,
+        UserProfile.objects.create(realm=realm, email='guest5@second.com',
                                    role=UserProfile.ROLE_GUEST)
         self.assertEqual(get_latest_seat_count(realm), 2)
 
