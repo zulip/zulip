@@ -218,9 +218,11 @@ instructions for other supported platforms.
 
     ```
     sudo -i # Or otherwise get a root shell
-    do-release-upgrade
+    do-release-upgrade -d
     ```
-
+    The -d switch is necessary to upgrade from Ubuntu 18.04 LTS as
+    upgrades have not yet been enabled and will only be enabled after
+    the first point release of 20.04 LTS.
     When `do-release-upgrade` asks you how to upgrade configuration
     files for services that Zulip manages like `redis`, `postgres`,
     `nginx`, and `memcached`, the best choice is `N` to keep the
