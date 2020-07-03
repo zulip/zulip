@@ -103,6 +103,12 @@ run_test('basics', () => {
     assert(stream_data.is_default_stream_id(denmark.stream_id));
     assert(!stream_data.is_default_stream_id(social.stream_id));
     assert(!stream_data.is_default_stream_id(999999));
+
+    assert.equal(stream_data.slug_to_name('2-social'), 'social');
+    assert.equal(stream_data.slug_to_name('2-whatever'), 'social');
+    assert.equal(stream_data.slug_to_name('2'), 'social');
+
+    assert.equal(stream_data.slug_to_name('25-or-6-to-4'), '25-or-6-to-4');
 });
 
 run_test('renames', () => {

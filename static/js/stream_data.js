@@ -258,7 +258,35 @@ exports.name_to_slug = function (name) {
 };
 
 exports.slug_to_name = function (slug) {
-    const m = /^([\d]+)-/.exec(slug);
+    /*
+    Modern stream slugs look like this, where 42
+    is a stream id:
+
+        42
+        42-stream-name
+
+    We have legacy slugs that are just the name
+    of the stream:
+
+        stream-name
+
+    And it's plausible that old stream slugs will have
+    be based on stream names that collide with modern
+    slugs:
+
+        4-horseman
+        411
+        2016-election
+
+    If there is any ambiguity about whether a stream slug
+    is old or modern, we prefer modern, as long as the integer
+    prefix matches a real stream id.  Eventually we will
+    stop supporting the legacy slugs, which only matter now
+    because people have linked to Zulip threads in things like
+    GitHub conversations.  We migrated to modern slugs in
+    early 2018.
+    */
+    const m = /^([\d]+)(-.*)?/.exec(slug);
     if (m) {
         const stream_id = parseInt(m[1], 10);
         const sub = subs_by_stream_id.get(stream_id);
@@ -270,6 +298,10 @@ exports.slug_to_name = function (slug) {
         // link to a stream like 4-horsemen
     }
 
+    /*
+    We are dealing with a pre-2018 slug that doesn't have the
+    stream id as a prefix.
+    */
     return slug;
 };
 
