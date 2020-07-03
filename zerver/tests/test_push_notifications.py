@@ -826,6 +826,44 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_check.assert_not_called()
             mock_logging_error.assert_not_called()
 
+        # Test push notification removal on deleting a message.
+        with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=True), \
+                mock.patch('zerver.lib.push_notifications'
+                           '.send_notifications_to_bouncer') as mock_send:
+            sender_profile = self.example_user('iago')
+            msg_id = self.send_personal_message(sender_profile, user_profile)
+            mock_send.assert_called_once()
+
+            message = Message.objects.get(id=msg_id)
+            do_delete_messages(user_profile.realm, [message])
+            mock_send.assert_called_with(
+                user_profile.id,
+                {
+                    'badge': 0,
+                    'custom': {
+                        'zulip': {
+                            'server': 'testserver',
+                            'realm_id': user_profile.realm.id,
+                            'realm_uri': 'http://zulip.testserver',
+                            'user_id': user_profile.id,
+                            'event': 'remove',
+                            'zulip_message_ids': str(msg_id),
+                        }
+                    }
+                },
+                {
+                    'server': 'testserver',
+                    'realm_id': user_profile.realm.id,
+                    'realm_uri': 'http://zulip.testserver',
+                    'user_id': user_profile.id,
+                    'event': 'remove',
+                    'zulip_message_ids': str(msg_id),
+                    'zulip_message_id': msg_id,
+                },
+                {
+                    'priority': 'normal',
+                })
+
     def test_missing_message(self) -> None:
         """Simulates the race where message is missing when handling push notifications"""
         user_profile = self.example_user('hamlet')

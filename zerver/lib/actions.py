@@ -4727,11 +4727,13 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
     sample_message = messages[0]
     message_type = "stream"
     users_to_notify = []
+    remove_push_notification_users = []
     if not sample_message.is_stream_message():
         assert len(messages) == 1
         message_type = "private"
         ums = UserMessage.objects.filter(message_id__in=message_ids)
         users_to_notify = [um.user_profile_id for um in ums]
+        remove_push_notification_users = users_to_notify
         # TODO: We should plan to remove `sender_id` here.
         event['recipient_id'] = sample_message.recipient_id
         event['sender_id'] = sample_message.sender_id
@@ -4745,8 +4747,12 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
         # We exclude long-term idle users, since they by definition have no active clients.
         subscribers = subscribers.exclude(user_profile__long_term_idle=True)
         subscriber_ids = [user.user_profile_id for user in subscribers]
+        remove_push_notification_users = subscriber_ids
         users_to_notify = list(map(subscriber_info, subscriber_ids))
         archiving_chunk_size = retention.STREAM_MESSAGE_BATCH_SIZE
+
+    for user_id in remove_push_notification_users:
+        do_clear_mobile_push_notifications_for_ids([user_id], message_ids)
 
     move_messages_to_archive(message_ids, realm=realm, chunk_size=archiving_chunk_size)
 
