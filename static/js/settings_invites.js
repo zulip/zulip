@@ -53,19 +53,22 @@ function populate_invites(invites_data) {
             item.disable_buttons =
                 item.invited_as === settings_config.user_role_values.owner.code &&
                 !page_params.is_owner;
-            item.referrer_email = people.get_by_user_id(item.invited_by_user_id).email;
+            item.referrer_name = people.get_by_user_id(item.invited_by_user_id).full_name;
             return render_admin_invites_list({invite: item});
         },
         filter: {
             element: invites_table.closest(".settings-section").find(".search"),
             predicate(item, value) {
-                const referrer_email = people.get_by_user_id(item.invited_by_user_id).email;
+                const referrer = people.get_by_user_id(item.invited_by_user_id);
+                const referrer_email = referrer.email;
+                const referrer_name = referrer.full_name;
+                const referrer_name_matched = referrer_name.toLowerCase().includes(value);
                 const referrer_email_matched = referrer_email.toLowerCase().includes(value);
                 if (item.is_multiuse) {
-                    return referrer_email_matched;
+                    return referrer_name_matched || referrer_email_matched;
                 }
                 const invitee_email_matched = item.email.toLowerCase().includes(value);
-                return referrer_email_matched || invitee_email_matched;
+                return referrer_email_matched || referrer_name_matched || invitee_email_matched;
             },
         },
         parent_container: $("#admin-invites-list").expectOne(),
