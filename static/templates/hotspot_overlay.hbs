@@ -2,13 +2,16 @@
     <div class="hotspot-popover">
         <div class="hotspot-popover-top">
             <h1 class="hotspot-title">{{title}}</h1>
+            <i class="hotspot-skip hotspot-cross fa fa-times" aria-hidden="true" data-toggle="tooltip" title="{{t 'Skip tour' }}"></i>
         </div>
         <div class="hotspot-popover-content">
             <p class="hotspot-description">{{description}}</p>
         </div>
         <div class="hotspot-popover-bottom">
             <img class="hotspot-img" alt=_("hotspot illustration") src="{{img}}">
-            <button class="hotspot-confirm">{{t 'Got it!' }}</button>
+            <div class="button-container">
+                <button class="hotspot-confirm">{{t 'Next' }}</button>
+            </div>
         </div>
     </div>
 </div>
