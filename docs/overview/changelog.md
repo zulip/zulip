@@ -183,6 +183,7 @@ We expect this to become the 3.0 final release in early July.
 - Removed the "pointer" message ID from Zulip, a legacy concept dating
   to 2012 that predated tracking unread messages in Zulip and has
   largely resulted in unexpected behavior for the last few years.
+  (We also removed the relevant database field.)
 - Reduced visual size of emoji in message bodies for a cleaner look.
 - Replaced file upload frontend with one supporting chunked upload.
   We expect this to enable uploading much larger files using Zulip in
