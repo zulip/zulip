@@ -13,7 +13,9 @@
     </td>
     {{#if is_admin}}
     <td>
-        <span class="referred_by">{{referrer_email}}</span>
+        <span class="referred_by">
+            <a data-user-id="{{invited_by_user_id}}" href="#" class="view_user_profile">{{referrer_name}}</a>
+        </span>
     </td>
     {{/if}}
     <td>
