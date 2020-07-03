@@ -17,7 +17,7 @@ from django.utils.translation import ugettext as _
 from zerver.decorator import statsd_increment
 from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.message import access_message, bulk_access_messages_expect_usermessage, huddle_users
+from zerver.lib.message import access_message, huddle_users
 from zerver.lib.remote_server import send_json_to_push_bouncer, send_to_push_bouncer
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
@@ -704,7 +704,6 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
     message from the notification.
     """
     user_profile = get_user_profile_by_id(user_profile_id)
-    message_ids = bulk_access_messages_expect_usermessage(user_profile_id, message_ids)
     gcm_payload, gcm_options = get_remove_payload_gcm(user_profile, message_ids)
     apns_payload = get_remove_payload_apns(user_profile, message_ids)
 

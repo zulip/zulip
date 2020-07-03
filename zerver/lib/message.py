@@ -637,26 +637,6 @@ def bulk_access_messages(user_profile: UserProfile, messages: Sequence[Message])
             filtered_messages.append(message)
     return filtered_messages
 
-def bulk_access_messages_expect_usermessage(
-        user_profile_id: int, message_ids: Sequence[int]) -> List[int]:
-    '''
-    Like bulk_access_messages, but faster and potentially stricter.
-
-    Returns a subset of `message_ids` containing only messages the
-    user can access.  Makes O(1) database queries.
-
-    Use this function only when the user is expected to have a
-    UserMessage row for every message in `message_ids`.  If a
-    UserMessage row is missing, the message will be omitted even if
-    the user has access (e.g. because it went to a public stream.)
-
-    See also: `access_message`, `bulk_access_messages`.
-    '''
-    return UserMessage.objects.filter(
-        user_profile_id=user_profile_id,
-        message_id__in=message_ids,
-    ).values_list('message_id', flat=True)
-
 def render_markdown(message: Message,
                     content: str,
                     realm: Optional[Realm]=None,
