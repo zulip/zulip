@@ -1106,6 +1106,8 @@ elif not EMAIL_HOST:
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
+EMAIL_TIMEOUT = 15
+
 EMAIL_HOST_PASSWORD = get_secret('email_password')
 EMAIL_GATEWAY_PASSWORD = get_secret('email_gateway_password')
 AUTH_LDAP_BIND_PASSWORD = get_secret('auth_ldap_bind_password', '')
