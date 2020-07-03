@@ -218,8 +218,12 @@ instructions for other supported platforms.
 
     ```
     sudo -i # Or otherwise get a root shell
-    do-release-upgrade
+    do-release-upgrade -d
     ```
+
+    The `-d` option to `do-release-upgrade` is required because Ubuntu
+    20.04 is new; it will stop being necessary once the first point
+    release update of Ubuntu 20.04 LTS is released.
 
     When `do-release-upgrade` asks you how to upgrade configuration
     files for services that Zulip manages like `redis`, `postgres`,
