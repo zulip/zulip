@@ -123,9 +123,8 @@ def capture_event(event_info: EventInfo) -> Iterator[None]:
     event_info.populate(m.call_args_list)
 
 @contextmanager
-def simulated_empty_cache() -> Generator[
-        List[Tuple[str, Union[str, List[str]], str]], None, None]:
-    cache_queries: List[Tuple[str, Union[str, List[str]], str]] = []
+def simulated_empty_cache() -> Iterator[List[Tuple[str, Union[str, List[str]], Optional[str]]]]:
+    cache_queries: List[Tuple[str, Union[str, List[str]], Optional[str]]] = []
 
     def my_cache_get(key: str, cache_name: Optional[str]=None) -> Optional[Dict[str, Any]]:
         cache_queries.append(('get', key, cache_name))
@@ -202,6 +201,7 @@ def get_test_image_file(filename: str) -> IO[Any]:
 
 def avatar_disk_path(user_profile: UserProfile, medium: bool=False, original: bool=False) -> str:
     avatar_url_path = avatar_url(user_profile, medium)
+    assert avatar_url_path is not None
     avatar_disk_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars",
                                     avatar_url_path.split("/")[-2],
                                     avatar_url_path.split("/")[-1].split("?")[0])
@@ -218,7 +218,10 @@ def find_key_by_email(address: str) -> Optional[str]:
     key_regex = re.compile("accounts/do_confirm/([a-z0-9]{24})>")
     for message in reversed(outbox):
         if address in message.to:
-            return key_regex.search(message.body).groups()[0]
+            match = key_regex.search(message.body)
+            assert match is not None
+            [key] = match.groups()
+            return key
     return None  # nocoverage -- in theory a test might want this case, but none do
 
 def message_stream_count(user_profile: UserProfile) -> int:
@@ -279,7 +282,7 @@ class HostRequestMock:
     """A mock request object where get_host() works.  Useful for testing
     routes that use Zulip's subdomains feature"""
 
-    def __init__(self, user_profile: UserProfile=None, host: str=settings.EXTERNAL_HOST) -> None:
+    def __init__(self, user_profile: Optional[UserProfile]=None, host: str=settings.EXTERNAL_HOST) -> None:
         self.host = host
         self.GET: Dict[str, Any] = {}
         self.POST: Dict[str, Any] = {}
