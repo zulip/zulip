@@ -251,6 +251,7 @@ class PasswordResetTest(ZulipTestCase):
         user = self.example_user("hamlet")
         email = user.delivery_email
         old_password = initial_password(email)
+        assert old_password is not None
 
         self.login_user(user)
 
@@ -535,7 +536,7 @@ class LoginTest(ZulipTestCase):
 
     def test_login_bad_password(self) -> None:
         user = self.example_user("hamlet")
-        password = "wrongpassword"
+        password: Optional[str] = "wrongpassword"
         result = self.login_with_return(user.delivery_email, password=password)
         self.assert_in_success_response([user.delivery_email], result)
         self.assert_logged_in_user_id(None)
@@ -1989,7 +1990,7 @@ class MultiuseInviteTest(ZulipTestCase):
         self.realm.invite_required = True
         self.realm.save()
 
-    def generate_multiuse_invite_link(self, streams: List[Stream]=None,
+    def generate_multiuse_invite_link(self, streams: Optional[List[Stream]]=None,
                                       date_sent: Optional[datetime.datetime]=None) -> str:
         invite = MultiuseInvite(realm=self.realm, referred_by=self.example_user("iago"))
         invite.save()
@@ -3190,9 +3191,9 @@ class UserSignUpTest(InviteUserBase):
         from django.core.mail import outbox
         for message in reversed(outbox):
             if email in message.to:
-                confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + r"(\S+)>")
-                confirmation_url = confirmation_link_pattern.search(
-                    message.body).groups()[0]
+                match = re.search(settings.EXTERNAL_HOST + r"(\S+)>", message.body)
+                assert match is not None
+                [confirmation_url] = match.groups()
                 break
         else:
             raise AssertionError("Couldn't find a confirmation email.")
@@ -3258,9 +3259,9 @@ class UserSignUpTest(InviteUserBase):
         from django.core.mail import outbox
         for message in reversed(outbox):
             if email in message.to:
-                confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + r"(\S+)>")
-                confirmation_url = confirmation_link_pattern.search(
-                    message.body).groups()[0]
+                match = re.search(settings.EXTERNAL_HOST + r"(\S+)>", message.body)
+                assert match is not None
+                [confirmation_url] = match.groups()
                 break
         else:
             raise AssertionError("Couldn't find a confirmation email.")
@@ -3827,9 +3828,9 @@ class UserSignUpTest(InviteUserBase):
         from django.core.mail import outbox
         for message in reversed(outbox):
             if email in message.to:
-                confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + r"(\S+)>")
-                confirmation_url = confirmation_link_pattern.search(
-                    message.body).groups()[0]
+                match = re.search(settings.EXTERNAL_HOST + r"(\S+)>", message.body)
+                assert match is not None
+                [confirmation_url] = match.groups()
                 break
         else:
             raise AssertionError("Couldn't find a confirmation email.")
@@ -3882,9 +3883,9 @@ class UserSignUpTest(InviteUserBase):
         from django.core.mail import outbox
         for message in reversed(outbox):
             if email in message.to:
-                confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + r"(\S+)>")
-                confirmation_url = confirmation_link_pattern.search(
-                    message.body).groups()[0]
+                match = re.search(settings.EXTERNAL_HOST + r"(\S+)>", message.body)
+                assert match is not None
+                [confirmation_url] = match.groups()
                 break
         else:
             raise AssertionError("Couldn't find a confirmation email.")
@@ -3978,6 +3979,7 @@ class DeactivateUserTest(ZulipTestCase):
         user = self.example_user('hamlet')
         self.assertFalse(user.is_active)
         password = initial_password(email)
+        assert password is not None
         self.assert_login_failure(email, password=password)
 
     def test_do_not_deactivate_final_owner(self) -> None:
