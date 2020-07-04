@@ -151,8 +151,10 @@ def retry_send_email_failures(
             func(worker, data)
         except (smtplib.SMTPServerDisconnected, socket.gaierror, socket.timeout,
                 EmailNotDeliveredException) as e:
+            error_class_name = e.__class__.__name__
+
             def on_failure(event: Dict[str, Any]) -> None:
-                logging.exception("Event %r failed due to exception %s", event, e.__class__.__name__)
+                logging.exception("Event %r failed due to exception %s", event, error_class_name)
 
             retry_event(worker.queue_name, data, on_failure)
 
