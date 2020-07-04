@@ -10,6 +10,7 @@ function Element() {
     return { };
 }
 set_global('Element', Element);
+set_global('ui', {});
 
 // We only need very simple jQuery wrappers for when the
 // "real" code wraps html or sets up click handlers.
@@ -151,6 +152,12 @@ run_test('scrolling', () => {
 
     const items = [];
 
+    let get_scroll_element_called = false;
+    ui.get_scroll_element = (element) => {
+        get_scroll_element_called = true;
+        return element;
+    };
+
     for (let i = 0; i < 200; i += 1) {
         items.push('item ' + i);
     }
@@ -166,11 +173,29 @@ run_test('scrolling', () => {
         container.appended_data.html(),
         items.slice(0, 80).join(''),
     );
+    assert.equal(get_scroll_element_called, false);
 
     // Set up our fake geometry so it forces a scroll action.
     scroll_container.scrollTop = 180;
     scroll_container.clientHeight = 100;
     scroll_container.scrollHeight = 260;
+
+    // Scrolling gets the next two elements from the list into
+    // our widget.
+    scroll_container.call_scroll();
+    assert.deepEqual(
+        container.appended_data.html(),
+        items.slice(80, 100).join(''),
+    );
+
+    opts.simplebar_container = scroll_container;
+    list_render.create(container, items, opts);
+
+    assert.deepEqual(
+        container.appended_data.html(),
+        items.slice(0, 80).join(''),
+    );
+    assert.equal(get_scroll_element_called, true);
 
     // Scrolling gets the next two elements from the list into
     // our widget.
