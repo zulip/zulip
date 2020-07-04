@@ -1,30 +1,3 @@
-exports.get_list_scrolling_container = function (container) {
-    /*
-        This is used for list widgets that don't
-        have SimpleBar (in contrast to, say,
-        ui.get_scroll_element().
-    */
-
-    let nearestScrollingContainer = container;
-
-    while (nearestScrollingContainer.length) {
-        if (nearestScrollingContainer.is("body, html")) {
-            blueslip.error(
-                "Please wrap lists in an element with " +
-                "'max-height' attribute.");
-            break;
-        }
-
-        if (nearestScrollingContainer.css("max-height") !== "none") {
-            break;
-        }
-
-        nearestScrollingContainer = nearestScrollingContainer.parent();
-    }
-
-    return nearestScrollingContainer;
-};
-
 exports.scroll_delta = function (opts) {
     const elem_top = opts.elem_top;
     const container_height = opts.container_height;

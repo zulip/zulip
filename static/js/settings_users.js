@@ -271,6 +271,7 @@ section.bots.create_table = () => {
             email: sort_bot_email,
             bot_owner: sort_bot_owner,
         },
+        simplebar_container: $('#admin-bot-list .progressive-table-wrapper'),
     });
 
     loading.destroy_indicator($('#admin_page_bots_loading_indicator'));
@@ -298,6 +299,7 @@ section.active.create_table = (active_users) => {
             last_active: sort_last_active,
             role: sort_role,
         },
+        simplebar_container: $('#admin-user-list .progressive-table-wrapper'),
     });
 
     loading.destroy_indicator($('#admin_page_users_loading_indicator'));
@@ -324,6 +326,7 @@ section.deactivated.create_table = (deactivated_users) => {
             email: sort_email,
             role: sort_role,
         },
+        simplebar_container: $('#admin-deactivated-users-list .progressive-table-wrapper'),
     });
 
     loading.destroy_indicator($('#admin_page_deactivated_users_loading_indicator'));

@@ -320,6 +320,7 @@ function show_subscription_settings(sub_row) {
                 }
             },
         },
+        simplebar_container: $('.subscriber_list_container'),
     });
 
     user_pill.set_up_typeahead_on_pills(sub_settings.find('.input'),

@@ -89,21 +89,3 @@ run_test('scroll_element_into_container', () => {
     scroll_util.scroll_element_into_container(elem2, container);
     assert.equal(container.scrollTop(), 250 - 100 + 3 + 15);
 });
-
-run_test('get_list_scrolling_container error', () => {
-    const body = {
-        length: 1,
-        is: (sel) => {
-            assert.equal(sel, 'body, html');
-            return true;
-        },
-    };
-
-    blueslip.expect(
-        'error',
-        "Please wrap lists in an element with " +
-        "'max-height' attribute.",
-    );
-
-    scroll_util.get_list_scrolling_container(body);
-});

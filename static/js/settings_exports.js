@@ -72,6 +72,7 @@ exports.populate_exports_table = function (exports) {
         sort_fields: {
             user: sort_user,
         },
+        simplebar_container: $('#data-exports .progressive-table-wrapper'),
     });
 
     const spinner = $('.export_row .export_url_spinner');

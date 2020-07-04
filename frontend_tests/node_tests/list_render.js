@@ -1,4 +1,3 @@
-zrequire('scroll_util');
 zrequire('list_render');
 
 // We need these stubs to get by instanceof checks.
@@ -10,6 +9,7 @@ function Element() {
     return { };
 }
 set_global('Element', Element);
+set_global('ui', {});
 
 // We only need very simple jQuery wrappers for when the
 // "real" code wraps html or sets up click handlers.
@@ -54,14 +54,8 @@ function make_container() {
     return container;
 }
 
-function make_scroll_container(container) {
+function make_scroll_container() {
     const scroll_container = {};
-    scroll_container.is = () => false;
-    scroll_container.length = () => 1;
-    scroll_container.css = (prop) => {
-        assert.equal(prop, 'max-height');
-        return 100;
-    };
 
     scroll_container.cleared = false;
 
@@ -78,8 +72,6 @@ function make_scroll_container(container) {
         assert.equal(ev, 'scroll.list_widget_container');
         scroll_container.cleared = true;
     };
-
-    container.parent = () => scroll_container;
 
     return scroll_container;
 }
@@ -147,9 +139,15 @@ function div(item) {
 
 run_test('scrolling', () => {
     const container = make_container();
-    const scroll_container = make_scroll_container(container);
+    const scroll_container = make_scroll_container();
 
     const items = [];
+
+    let get_scroll_element_called = false;
+    ui.get_scroll_element = (element) => {
+        get_scroll_element_called = true;
+        return element;
+    };
 
     for (let i = 0; i < 200; i += 1) {
         items.push('item ' + i);
@@ -157,6 +155,7 @@ run_test('scrolling', () => {
 
     const opts = {
         modifier: (item) => item,
+        simplebar_container: scroll_container,
     };
 
     container.html = (html) => { assert.equal(html, ''); };
@@ -166,6 +165,7 @@ run_test('scrolling', () => {
         container.appended_data.html(),
         items.slice(0, 80).join(''),
     );
+    assert.equal(get_scroll_element_called, true);
 
     // Set up our fake geometry so it forces a scroll action.
     scroll_container.scrollTop = 180;
@@ -183,7 +183,7 @@ run_test('scrolling', () => {
 
 run_test('filtering', () => {
     const container = make_container();
-    make_scroll_container(container);
+    const scroll_container = make_scroll_container();
 
     const search_input = make_search_input();
 
@@ -202,6 +202,7 @@ run_test('filtering', () => {
             predicate: (item, value) => item.includes(value),
         },
         modifier: (item) => div(item),
+        simplebar_container: scroll_container,
     };
 
     container.html = (html) => { assert.equal(html, ''); };
@@ -246,12 +247,13 @@ run_test('filtering', () => {
 
 run_test('no filtering', () => {
     const container = make_container();
-    make_scroll_container(container);
+    const scroll_container = make_scroll_container();
     container.html = () => {};
 
     // Opts does not require a filter key.
     const opts = {
         modifier: (item) => div(item),
+        simplebar_container: scroll_container,
     };
     const widget = list_render.create(container, ['apple', 'banana'], opts);
     widget.render();
@@ -321,7 +323,7 @@ run_test('wire up filter element', () => {
     ];
 
     const container = make_container();
-    make_scroll_container(container);
+    const scroll_container = make_scroll_container();
     const filter_element = make_filter_element();
 
     // We don't care about what gets drawn initially.
@@ -333,6 +335,7 @@ run_test('wire up filter element', () => {
             element: filter_element,
         },
         modifier: (s) => '(' + s + ')',
+        simplebar_container: scroll_container,
     };
 
     list_render.create(container, lst, opts);
@@ -345,7 +348,7 @@ run_test('wire up filter element', () => {
 
 run_test('sorting', () => {
     const container = make_container();
-    make_scroll_container(container);
+    const scroll_container = make_scroll_container();
     const sort_container = make_sort_container();
 
     let cleared;
@@ -369,6 +372,7 @@ run_test('sorting', () => {
         filter: {
             predicate: () => true,
         },
+        simplebar_container: scroll_container,
     };
 
     function html_for(people) {
@@ -476,7 +480,7 @@ run_test('sorting', () => {
 
 run_test('custom sort', () => {
     const container = make_container();
-    make_scroll_container(container);
+    const scroll_container = make_scroll_container();
     container.html = () => {};
 
     const n42 = {x: 6, y: 7};
@@ -501,6 +505,7 @@ run_test('custom sort', () => {
             x_value: sort_by_x,
         },
         init_sort: sort_by_product,
+        simplebar_container: scroll_container,
     });
 
     assert.deepEqual(
@@ -530,7 +535,7 @@ run_test('custom sort', () => {
 
 run_test('clear_event_handlers', () => {
     const container = make_container();
-    const scroll_container = make_scroll_container(container);
+    const scroll_container = make_scroll_container();
     const sort_container = make_sort_container();
     const filter_element = make_filter_element();
 
@@ -546,6 +551,7 @@ run_test('clear_event_handlers', () => {
             element: filter_element,
             predicate: () => true,
         },
+        simplebar_container: scroll_container,
     };
 
     // Create it the first time.
@@ -565,15 +571,22 @@ run_test('errors', () => {
     // We don't care about actual data for this test.
     const list = 'stub';
     const container = make_container();
-    make_scroll_container(container);
+    const scroll_container = make_scroll_container();
 
     blueslip.expect('error', 'Need opts to create widget.');
     list_render.create(container, list);
     blueslip.reset();
 
+    blueslip.expect('error', 'simplebar_container is missing.');
+    list_render.create(container, list, {
+        modifier: 'hello world',
+    });
+    blueslip.reset();
+
     blueslip.expect('error', 'get_item should be a function');
     list_render.create(container, list, {
         get_item: 'not a function',
+        simplebar_container: scroll_container,
     });
     blueslip.reset();
 
@@ -582,6 +595,7 @@ run_test('errors', () => {
         filter: {
             predicate: 'wrong type',
         },
+        simplebar_container: scroll_container,
     });
     blueslip.reset();
 
@@ -591,6 +605,7 @@ run_test('errors', () => {
             filterer: () => true,
             predicate: () => true,
         },
+        simplebar_container: scroll_container,
     });
     blueslip.reset();
 
@@ -598,6 +613,7 @@ run_test('errors', () => {
     list_render.create(container, list, {
         filter: {
         },
+        simplebar_container: scroll_container,
     });
     blueslip.reset();
 
@@ -605,6 +621,7 @@ run_test('errors', () => {
     blueslip.expect('error', 'List item is not a string: 999');
     list_render.create(container, list, {
         modifier: () => 999,
+        simplebar_container: scroll_container,
     });
     blueslip.reset();
 });
@@ -633,7 +650,7 @@ run_test('sort helpers', () => {
 
 run_test('replace_list_data w/filter update', () => {
     const container = make_container();
-    make_scroll_container(container);
+    const scroll_container = make_scroll_container();
     container.html = () => {};
 
     const list = [1, 2, 3, 4];
@@ -648,6 +665,7 @@ run_test('replace_list_data w/filter update', () => {
                 num_updates += 1;
             },
         },
+        simplebar_container: scroll_container,
     });
 
     assert.equal(num_updates, 0);
@@ -722,7 +740,7 @@ run_test('opts.get_item', () => {
 
 run_test('render item', () => {
     const container = make_container();
-    const scroll_container =  make_scroll_container(container);
+    const scroll_container =  make_scroll_container();
     const INITIAL_RENDER_COUNT = 80; // Keep this in sync with the actual code.
     container.html = () => {};
     let called = false;
@@ -758,6 +776,7 @@ run_test('render item', () => {
         modifier: (item) => `<tr data-item=${item.value}>${item.text}</tr>\n`,
         get_item: get_item,
         html_selector: (item) => `tr[data-item='${item}']`,
+        simplebar_container: scroll_container,
     });
     const item = INITIAL_RENDER_COUNT - 1;
 
@@ -786,6 +805,7 @@ run_test('render item', () => {
         modifier: (item) => `<tr data-item=${item.value}>${item.text}</tr>\n`,
         get_item: get_item,
         html_selector: 'hello world',
+        simplebar_container: scroll_container,
     });
     blueslip.reset();
 
@@ -797,6 +817,7 @@ run_test('render item', () => {
             get_item_called = true;
             return item;
         },
+        simplebar_container: scroll_container,
     });
     get_item_called = false;
     widget_2.render_item(item);
@@ -809,6 +830,7 @@ run_test('render item', () => {
         modifier: (item) => rendering_item ? undefined : `${item}\n`,
         get_item: get_item,
         html_selector: (item) => `tr[data-item='${item}']`,
+        simplebar_container: scroll_container,
     });
     // Once we have initially rendered the widget, change the
     // behavior of the modifier function.
