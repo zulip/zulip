@@ -276,6 +276,7 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
         realm = get_realm('zulip')
+        assert realm.notifications_stream is not None
         self.assertEqual(realm.notifications_stream.id, new_notif_stream_id)
 
         invalid_notif_stream_id = 1234
@@ -283,6 +284,7 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Invalid stream id')
         realm = get_realm('zulip')
+        assert realm.notifications_stream is not None
         self.assertNotEqual(realm.notifications_stream.id, invalid_notif_stream_id)
 
     def test_get_default_notifications_stream(self) -> None:
@@ -292,6 +294,7 @@ class RealmTest(ZulipTestCase):
         realm.save(update_fields=["notifications_stream"])
 
         notifications_stream = realm.get_notifications_stream()
+        assert notifications_stream is not None
         self.assertEqual(notifications_stream.id, verona.id)
         do_deactivate_stream(notifications_stream)
         self.assertIsNone(realm.get_notifications_stream())
@@ -313,6 +316,7 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
         realm = get_realm('zulip')
+        assert realm.signup_notifications_stream is not None
         self.assertEqual(realm.signup_notifications_stream.id, new_signup_notifications_stream_id)
 
         invalid_signup_notifications_stream_id = 1234
@@ -320,6 +324,7 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Invalid stream id')
         realm = get_realm('zulip')
+        assert realm.signup_notifications_stream is not None
         self.assertNotEqual(realm.signup_notifications_stream.id, invalid_signup_notifications_stream_id)
 
     def test_get_default_signup_notifications_stream(self) -> None:
@@ -329,6 +334,7 @@ class RealmTest(ZulipTestCase):
         realm.save(update_fields=["signup_notifications_stream"])
 
         signup_notifications_stream = realm.get_signup_notifications_stream()
+        assert signup_notifications_stream is not None
         self.assertEqual(signup_notifications_stream, verona)
         do_deactivate_stream(signup_notifications_stream)
         self.assertIsNone(realm.get_signup_notifications_stream())
