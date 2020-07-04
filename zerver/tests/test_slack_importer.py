@@ -1,7 +1,7 @@
 import logging
 import os
 import shutil
-from typing import Any, Dict, Iterator, List, Set, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
 from unittest import mock
 from unittest.mock import ANY, call
 
@@ -50,11 +50,11 @@ def remove_folder(path: str) -> None:
         shutil.rmtree(path)
 
 class MockResponse:
-    def __init__(self, json_data: Dict[str, Any], status_code: int) -> None:
+    def __init__(self, json_data: Optional[Dict[str, Any]], status_code: int) -> None:
         self.json_data = json_data
         self.status_code = status_code
 
-    def json(self) -> Dict[str, Any]:
+    def json(self) -> Optional[Dict[str, Any]]:
         return self.json_data
 
 # This method will be used by the mock to replace requests.get
