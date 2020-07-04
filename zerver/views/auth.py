@@ -61,6 +61,7 @@ from zerver.models import (
 from zerver.signals import email_on_new_login
 from zproject.backends import (
     AUTH_BACKEND_NAME_MAP,
+    AppleAuthBackend,
     ExternalAuthDataDict,
     ExternalAuthResult,
     SAMLAuthBackend,
@@ -516,8 +517,13 @@ def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[s
             return redirect_to_config_error("saml")
         extra_url_params = {'idp': extra_arg}
 
+    if backend == "apple":
+        result = AppleAuthBackend.check_config()
+        if result is not None:
+            return result
+
     # TODO: Add AzureAD also.
-    if backend in ["github", "google", "gitlab", "apple"]:
+    if backend in ["github", "google", "gitlab"]:
         key_setting = "SOCIAL_AUTH_" + backend.upper() + "_KEY"
         secret_setting = "SOCIAL_AUTH_" + backend.upper() + "_SECRET"
         if not (getattr(settings, key_setting) and getattr(settings, secret_setting)):

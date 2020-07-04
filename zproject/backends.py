@@ -1552,6 +1552,19 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
 
     SCOPE_SEPARATOR = "%20"  # https://github.com/python-social-auth/social-core/issues/470
 
+    @classmethod
+    def check_config(cls) -> Optional[HttpResponse]:
+        obligatory_apple_settings_list = [
+            settings.SOCIAL_AUTH_APPLE_TEAM,
+            settings.SOCIAL_AUTH_APPLE_SERVICES_ID,
+            settings.SOCIAL_AUTH_APPLE_KEY,
+            settings.SOCIAL_AUTH_APPLE_SECRET,
+        ]
+        if any(not setting for setting in obligatory_apple_settings_list):
+            return redirect_to_config_error("apple")
+
+        return None
+
     def is_native_flow(self) -> bool:
         return self.strategy.request_data().get('native_flow', False)
 
