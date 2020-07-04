@@ -750,7 +750,7 @@ def do_set_realm_message_deleting(realm: Realm,
     )
     send_event(realm, event, active_user_ids(realm.id))
 
-def do_set_realm_notifications_stream(realm: Realm, stream: Stream, stream_id: int) -> None:
+def do_set_realm_notifications_stream(realm: Realm, stream: Optional[Stream], stream_id: int) -> None:
     realm.notifications_stream = stream
     realm.save(update_fields=['notifications_stream'])
     event = dict(
@@ -761,7 +761,7 @@ def do_set_realm_notifications_stream(realm: Realm, stream: Stream, stream_id: i
     )
     send_event(realm, event, active_user_ids(realm.id))
 
-def do_set_realm_signup_notifications_stream(realm: Realm, stream: Stream,
+def do_set_realm_signup_notifications_stream(realm: Realm, stream: Optional[Stream],
                                              stream_id: int) -> None:
     realm.signup_notifications_stream = stream
     realm.save(update_fields=['signup_notifications_stream'])
