@@ -264,7 +264,11 @@ exports.create = function ($container, list, opts) {
     };
 
     widget.set_up_event_handlers = function () {
-        meta.scroll_container = scroll_util.get_list_scrolling_container($container);
+        if (opts.simplebar_container) {
+            meta.scroll_container = ui.get_scroll_element(opts.simplebar_container);
+        } else {
+            meta.scroll_container = scroll_util.get_list_scrolling_container($container);
+        }
 
         // on scroll of the nearest scrolling container, if it hits the bottom
         // of the container then fetch a new block of items and render them.
