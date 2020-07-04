@@ -42,6 +42,7 @@ exports.build_default_stream_table = function () {
         },
         parent_container: $("#admin-default-streams-list").expectOne(),
         init_sort: ['alphabetic', 'name'],
+        simplebar_container: $('#admin-default-streams-list .progressive-table-wrapper'),
     });
 
     loading.destroy_indicator($('#admin_page_default_streams_loading_indicator'));

@@ -106,6 +106,7 @@ exports.populate_emoji = function (emoji_data) {
             author_full_name: sort_author_full_name,
         },
         init_sort: ['alphabetic', 'name'],
+        simplebar_container: $('#emoji-settings .progressive-table-wrapper'),
     });
 
     loading.destroy_indicator($('#admin_page_emoji_loading_indicator'));

@@ -88,6 +88,7 @@ exports.set_up_muted_topics_ui = function () {
             },
         },
         parent_container: $('#muted-topic-settings'),
+        simplebar_container: $('#muted-topic-settings .progressive-table-wrapper'),
     });
 };
 

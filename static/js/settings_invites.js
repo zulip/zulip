@@ -68,6 +68,7 @@ function populate_invites(invites_data) {
         sort_fields: {
             invitee: sort_invitee,
         },
+        simplebar_container: $('#admin-invites-list .progressive-table-wrapper'),
     });
 
     loading.destroy_indicator($('#admin_page_invites_loading_indicator'));
