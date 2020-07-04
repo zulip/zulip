@@ -40,8 +40,6 @@ def timeout_error(http_method: Any, final_url: Any, data: Any, **request_kwargs:
 def connection_error(http_method: Any, final_url: Any, data: Any, **request_kwargs: Any) -> Any:
     raise requests.exceptions.ConnectionError()
 
-service_handler = GenericOutgoingWebhookService(None, None, None)
-
 class DoRestCallTests(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
@@ -62,17 +60,18 @@ class DoRestCallTests(ZulipTestCase):
             'service_name': ''}
 
         self.bot_user = self.example_user('outgoing_webhook_bot')
+        self.service_handler = GenericOutgoingWebhookService("token", self.bot_user, "service")
         logging.disable(logging.WARNING)
 
     @mock.patch('zerver.lib.outgoing_webhook.send_response_message')
     def test_successful_request(self, mock_send: mock.Mock) -> None:
         response = ResponseMock(200, dict(content='whatever'))
         with mock.patch('requests.request', return_value=response):
-            do_rest_call('', None, self.mock_event, service_handler)
+            do_rest_call('', None, self.mock_event, self.service_handler)
             self.assertTrue(mock_send.called)
 
         for service_class in [GenericOutgoingWebhookService, SlackOutgoingWebhookService]:
-            handler = service_class(None, None, None)
+            handler = service_class("token", self.bot_user, "service")
             with mock.patch('requests.request', return_value=response):
                 do_rest_call('', None, self.mock_event, handler)
                 self.assertTrue(mock_send.called)
@@ -82,7 +81,7 @@ class DoRestCallTests(ZulipTestCase):
 
         self.mock_event['failed_tries'] = 3
         with mock.patch('requests.request', return_value=response):
-            do_rest_call('',  None, self.mock_event, service_handler)
+            do_rest_call('',  None, self.mock_event, self.service_handler)
             bot_owner_notification = self.get_last_message()
             self.assertEqual(bot_owner_notification.content,
                              '''[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) triggered an outgoing webhook.
@@ -94,17 +93,18 @@ The webhook got a response with status code *500*.''')
     def test_fail_request(self, mock_fail_with_message: mock.Mock) -> None:
         response = ResponseMock(400)
         with mock.patch('requests.request', return_value=response):
-            do_rest_call('', None, self.mock_event, service_handler)
+            do_rest_call('', None, self.mock_event, self.service_handler)
             bot_owner_notification = self.get_last_message()
             self.assertTrue(mock_fail_with_message.called)
             self.assertEqual(bot_owner_notification.content,
                              '''[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) triggered an outgoing webhook.
 The webhook got a response with status code *400*.''')
+            assert self.bot_user.bot_owner is not None
             self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
 
     def test_headers(self) -> None:
         with mock.patch('requests.request') as mock_request:
-            do_rest_call('', 'payload-stub', self.mock_event, service_handler)
+            do_rest_call('', 'payload-stub', self.mock_event, self.service_handler)
             kwargs = mock_request.call_args[1]
             self.assertEqual(kwargs['data'], 'payload-stub')
 
@@ -119,10 +119,11 @@ The webhook got a response with status code *400*.''')
         def helper(side_effect: Any, error_text: str) -> None:
             with mock.patch('logging.info'):
                 with mock.patch('requests.request', side_effect=side_effect):
-                    do_rest_call('', None, self.mock_event, service_handler)
+                    do_rest_call('', None, self.mock_event, self.service_handler)
                     bot_owner_notification = self.get_last_message()
                     self.assertIn(error_text, bot_owner_notification.content)
                     self.assertIn('triggered', bot_owner_notification.content)
+                    assert self.bot_user.bot_owner is not None
                     self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
 
         helper(side_effect=timeout_error, error_text='A timeout occurred.')
@@ -133,7 +134,7 @@ The webhook got a response with status code *400*.''')
     @mock.patch('zerver.lib.outgoing_webhook.fail_with_message')
     def test_request_exception(self, mock_fail_with_message: mock.Mock,
                                mock_requests_request: mock.Mock, mock_logger: mock.Mock) -> None:
-        do_rest_call('', None, self.mock_event, service_handler)
+        do_rest_call('', None, self.mock_event, self.service_handler)
         bot_owner_notification = self.get_last_message()
         self.assertTrue(mock_fail_with_message.called)
         self.assertEqual(bot_owner_notification.content,
@@ -142,6 +143,7 @@ When trying to send a request to the webhook service, an exception of type Reque
 ```
 I'm a generic exception :(
 ```''')
+        assert self.bot_user.bot_owner is not None
         self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
 
 class TestOutgoingWebhookMessaging(ZulipTestCase):
