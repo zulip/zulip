@@ -565,7 +565,7 @@ body:
 
     def test_authenticated_rest_api_view_with_non_webhook_view(self) -> None:
         @authenticated_rest_api_view()
-        def non_webhook_view_raises_exception(request: HttpRequest, user_profile: UserProfile=None) -> None:
+        def non_webhook_view_raises_exception(request: HttpRequest, user_profile: UserProfile) -> None:
             raise Exception("raised by a non-webhook view")
 
         request = HostRequestMock()
@@ -1813,7 +1813,7 @@ class TestUserAgentParsing(ZulipTestCase):
         for line in open(user_agents_path).readlines():
             line = line.strip()
             match = re.match('^(?P<count>[0-9]+) "(?P<user_agent>.*)"$', line)
-            self.assertIsNotNone(match)
+            assert match is not None
             groupdict = match.groupdict()
             count = groupdict["count"]
             user_agent = groupdict["user_agent"]
