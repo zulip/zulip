@@ -286,6 +286,23 @@ def get_realm_profile_fields(client: Client) -> None:
     # {code_example|end}
     validate_against_openapi_schema(result, '/realm/profile_fields', 'get', '200')
 
+@openapi_test_function("/realm/profile_fields:patch")
+def reorder_realm_profile_fields(client: Client) -> None:
+    # {code_example|start}
+    # Reorder the custom profile fields in the user's organization.
+    order = [8, 7, 6, 5, 4, 3, 2, 1]
+    request = {
+        'order': json.dumps(order)
+    }
+
+    result = client.call_endpoint(
+        url='/realm/profile_fields',
+        method='PATCH',
+        request=request
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/realm/profile_fields', 'patch', '200')
+
 @openapi_test_function("/realm/filters:post")
 def add_realm_filter(client: Client) -> None:
 
@@ -1246,6 +1263,7 @@ def test_server_organizations(client: Client) -> None:
     get_realm_emoji(client)
     upload_custom_emoji(client)
     get_realm_profile_fields(client)
+    reorder_realm_profile_fields(client)
 
 def test_errors(client: Client) -> None:
     test_missing_request_argument(client)
