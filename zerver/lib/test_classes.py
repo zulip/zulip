@@ -341,8 +341,7 @@ class ZulipTestCase(TestCase):
     def create_test_bot(self, short_name: str,
                         user_profile: UserProfile,
                         full_name: str='Foo Bot',
-                        assert_json_error_msg: str=None,
-                        **extras: Any) -> Optional[UserProfile]:
+                        **extras: Any) -> UserProfile:
         self.login_user(user_profile)
         bot_info = {
             'short_name': short_name,
@@ -350,14 +349,27 @@ class ZulipTestCase(TestCase):
         }
         bot_info.update(extras)
         result = self.client_post("/json/bots", bot_info)
-        if assert_json_error_msg is not None:
-            self.assert_json_error(result, assert_json_error_msg)
-            return None
-        else:
-            self.assert_json_success(result)
-            bot_email = f'{short_name}-bot@zulip.testserver'
-            bot_profile = get_user(bot_email, user_profile.realm)
-            return bot_profile
+        self.assert_json_success(result)
+        bot_email = f'{short_name}-bot@zulip.testserver'
+        bot_profile = get_user(bot_email, user_profile.realm)
+        return bot_profile
+
+    def fail_to_create_test_bot(
+        self, short_name: str,
+        user_profile: UserProfile,
+        full_name: str='Foo Bot',
+        *,
+        assert_json_error_msg: str,
+        **extras: Any,
+    ) -> None:
+        self.login_user(user_profile)
+        bot_info = {
+            'short_name': short_name,
+            'full_name': full_name,
+        }
+        bot_info.update(extras)
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_error(result, assert_json_error_msg)
 
     def login_with_return(self, email: str, password: Optional[str]=None,
                           **kwargs: Any) -> HttpResponse:
