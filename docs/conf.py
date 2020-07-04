@@ -306,11 +306,12 @@ source_suffix = {
 
 # Temporary workaround to remove multiple build warnings caused by upstream bug.
 # See https://github.com/zulip/zulip/issues/13263 for details.
+from commonmark.node import Node
 from recommonmark.parser import CommonMarkParser
 
 
 class CustomCommonMarkParser(CommonMarkParser):
-    def visit_document(self, node):
+    def visit_document(self, node: Node) -> None:
         pass
 
 def setup(app: Any) -> None:
