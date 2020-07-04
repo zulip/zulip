@@ -65,7 +65,7 @@ whitespace_rules: List["Rule"] = [
      },
     {'pattern': '\t',
      'strip': '\n',
-     'exclude': {'tools/ci/success-http-headers-bionic.txt', 'tools/ci/success-http-headers-focal.txt'},
+     'exclude': {'tools/ci/success-http-headers.template.txt'},
      'description': 'Fix tab-based whitespace'},
 ]
 comma_whitespace_rule: List["Rule"] = [

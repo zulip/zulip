@@ -5,11 +5,6 @@
 set -e
 set -x
 
-if [ -f /etc/os-release ]; then
-    os_info="$(. /etc/os-release; printf '%s\n' "$VERSION_CODENAME")"
-    { read -r os_version_codename || true; } <<< "$os_info"
-fi
-
 cat >>/etc/zulip/settings.py <<EOF
 # CircleCI override settings above
 AUTHENTICATION_BACKENDS = ( 'zproject.backends.EmailAuthBackend', )
@@ -43,13 +38,15 @@ echo; echo "Now testing that the newly installed server's homepage loads"; echo
 wget https://localhost -O /tmp/index.html --no-check-certificate -S 2> /tmp/wget-output || true # || true so we see errors.log if this 500s
 grep -vi '\(Vary\|Content-Language\|expires\|issued by\|modified\|saved\|[.][.][.]\|Date\|[-][-]\)' /tmp/wget-output > /tmp/http-headers-processed
 
+nginx_version="$(nginx -v 2>&1 | awk '{print $3, $4}')"
+
 # Simplify the diff by getting replacing 4-5 digit length numbers with <Length>.
 sed -i 's|Length: [0-9]\+\( [(][0-9]\+[.][0-9]K[)]\)\?|Length: <Length>|' /tmp/http-headers-processed
-sed -i 's|Length: [0-9]\+\( [(][0-9]\+[.][0-9]K[)]\)\?|Length: <Length>|' /tmp/success-http-headers-"$os_version_codename".txt
-if ! diff -ur /tmp/http-headers-processed /tmp/success-http-headers-"$os_version_codename".txt; then
+sed -i -e 's|Length: [0-9]\+\( [(][0-9]\+[.][0-9]K[)]\)\?|Length: <Length>|' -e "s|{nginx_version_string}|$nginx_version|g"  /tmp/success-http-headers.template.txt
+if ! diff -ur /tmp/http-headers-processed /tmp/success-http-headers.template.txt; then
     set +x
     echo
-    echo "FAILURE: The HTTP Headers returned from loading the homepage on the server do not match the contents of tools/ci/success-http-headers.txt.  Typically, this means that the server threw a 500 when trying to load the homepage."
+    echo "FAILURE: The HTTP Headers returned from loading the homepage on the server do not match the contents of tools/ci/success-http-headers.template.txt.  Typically, this means that the server threw a 500 when trying to load the homepage."
     echo "Displaying the contents of the server's error log:"
     echo
     cat /var/log/zulip/errors.log

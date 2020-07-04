@@ -299,8 +299,7 @@ jobs:
           # Must be relative path from root
           paths:
             - zulip-server-test.tar.gz
-            - success-http-headers-bionic.txt
-            - success-http-headers-focal.txt
+            - success-http-headers.template.txt
             - production-install
             - production-verify
             - production-upgrade-pg
