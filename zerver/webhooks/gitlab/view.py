@@ -153,7 +153,7 @@ def get_objects_assignee(payload: Dict[str, Any]) -> Optional[str]:
     else:
         assignee_object = payload.get('assignees')
         if assignee_object:
-            for assignee in payload.get('assignees'):
+            for assignee in assignee_object:
                 return assignee['name']
 
     return None
@@ -185,7 +185,7 @@ def get_commented_merge_request_event_body(payload: Dict[str, Any],
         payload['merge_request'].get('iid'),
         message=comment['note'],
         type='MR',
-        title=payload.get('merge_request').get('title') if include_title else None,
+        title=payload['merge_request'].get('title') if include_title else None,
     )
 
 def get_commented_issue_event_body(payload: Dict[str, Any],
@@ -204,7 +204,7 @@ def get_commented_issue_event_body(payload: Dict[str, Any],
         payload['issue'].get('iid'),
         message=comment['note'],
         type='Issue',
-        title=payload.get('issue').get('title') if include_title else None,
+        title=payload['issue'].get('title') if include_title else None,
     )
 
 def get_commented_snippet_event_body(payload: Dict[str, Any],
@@ -223,7 +223,7 @@ def get_commented_snippet_event_body(payload: Dict[str, Any],
         payload['snippet'].get('id'),
         message=comment['note'],
         type='Snippet',
-        title=payload.get('snippet').get('title') if include_title else None,
+        title=payload['snippet'].get('title') if include_title else None,
     )
 
 def get_wiki_page_event_body(payload: Dict[str, Any], action: str) -> str:
