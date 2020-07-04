@@ -384,9 +384,14 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: hsla(199, 33%, 46%, 0.2);
     }
 
-    .top_left_row:hover,
-    .bottom_left_row:hover,
-    #stream_filters li.highlighted_stream,
+    :not(.active-sub-filter) {
+        &.top_left_row:hover,
+        &.bottom_left_row:hover,
+        &#stream_filters li.highlighted_stream {
+            background-color: hsla(136, 25%, 73%, 0.2);
+        }
+    }
+
     #user_presences li:hover,
     #user_presences li.highlighted_user {
         background-color: hsla(136, 25%, 73%, 0.2);
