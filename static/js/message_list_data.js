@@ -502,8 +502,6 @@ MessageListData.prototype = {
 
     change_message_id: function (old_id, new_id, opts) {
         // Update our local cache that uses the old id to the new id
-        function message_sort_func(a, b) {return a.id - b.id;}
-
         if (this._hash.has(old_id)) {
             const msg = this._hash.get(old_id);
             this._hash.delete(old_id);
@@ -523,35 +521,40 @@ MessageListData.prototype = {
             this._selected_id = new_id;
         }
 
+        setTimeout(() => {
+            this.reorder_messages(new_id, opts);
+        }, 0);
+    },
+
+    reorder_messages: function (new_id, opts) {
+        function message_sort_func(a, b) {return a.id - b.id;}
         // If this message is now out of order, re-order and re-render
         const self = this;
-        setTimeout(() => {
-            const current_message = self._hash.get(new_id);
-            const index = self._items.indexOf(current_message);
+        const current_message = self._hash.get(new_id);
+        const index = self._items.indexOf(current_message);
 
-            if (index === -1) {
-                if (!self.muting_enabled && opts.is_current_list()) {
-                    blueslip.error("Trying to re-order message but can't find message with new_id in _items!");
-                }
-                return;
+        if (index === -1) {
+            if (!self.muting_enabled && opts.is_current_list()) {
+                blueslip.error("Trying to re-order message but can't find message with new_id in _items!");
+            }
+            return;
+        }
+
+        const next = self._next_nonlocal_message(self._items, index,
+                                                 (idx) => idx + 1);
+        const prev = self._next_nonlocal_message(self._items, index,
+                                                 (idx) => idx - 1);
+
+        if (next !== undefined && current_message.id > next.id ||
+            prev !== undefined && current_message.id < prev.id) {
+            blueslip.debug("Changed message ID from server caused out-of-order list, reordering");
+            self._items.sort(message_sort_func);
+            if (self.muting_enabled) {
+                self._all_items.sort(message_sort_func);
             }
 
-            const next = self._next_nonlocal_message(self._items, index,
-                                                     (idx) => idx + 1);
-            const prev = self._next_nonlocal_message(self._items, index,
-                                                     (idx) => idx - 1);
-
-            if (next !== undefined && current_message.id > next.id ||
-                prev !== undefined && current_message.id < prev.id) {
-                blueslip.debug("Changed message ID from server caused out-of-order list, reordering");
-                self._items.sort(message_sort_func);
-                if (self.muting_enabled) {
-                    self._all_items.sort(message_sort_func);
-                }
-
-                opts.re_render();
-            }
-        }, 0);
+            opts.re_render();
+        }
     },
 
     get_last_message_sent_by_me: function () {
