@@ -2104,7 +2104,7 @@ class TestPushNotificationsContent(ZulipTestCase):
         fixtures = [
             {
                 'name': 'realm_emoji',
-                'rendered_content': f'<p>Testing <img alt=":green_tick:" class="emoji" src="/user_avatars/{realm.id}/emoji/green_tick.png" title="green tick"> realm emoji.</p>',
+                'rendered_content': f'<p>Testing <img alt=":green_tick:" class="emoji message-emoji" src="/user_avatars/{realm.id}/emoji/green_tick.png" title="green tick"> realm emoji.</p>',
                 'expected_output': 'Testing :green_tick: realm emoji.',
             },
             {

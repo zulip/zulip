@@ -238,6 +238,26 @@ exports.initialize = function () {
         $(e.currentTarget).tooltip("destroy");
     });
 
+    // TOOLTIP FOR EMOJIS IN MESSAGES
+    $("#main_div").on("mouseenter", ".message-emoji", (e) => {
+        e.stopPropagation();
+        const elem = $(e.currentTarget);
+        const title = elem.attr("title");
+
+        elem.tooltip({
+            title,
+            trigger: "hover",
+            placement: "bottom",
+            animation: false,
+        });
+        elem.tooltip("show");
+    });
+
+    $("#main_div").on("mouseleave", ".message-emoji", (e) => {
+        e.stopPropagation();
+        $(e.currentTarget).tooltip("destroy");
+    });
+
     // DESTROY PERSISTING TOOLTIPS ON HOVER
 
     $("body").on("mouseenter", ".tooltip", (e) => {

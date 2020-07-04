@@ -482,7 +482,7 @@ html_rules: List["Rule"] = whitespace_rules + prose_style_rules + [
     {'pattern': r'title="[^{\:]',
      'exclude_line': {
          ('templates/zerver/app/markdown_help.html',
-             '<td class="rendered_markdown"><img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/heart.png" title=":heart:" /></td>'),
+             '<td class="rendered_markdown"><img alt=":heart:" class="emoji message-emoji" src="/static/generated/emoji/images/emoji/heart.png" title=":heart:" /></td>'),
      },
      'exclude': {"templates/zerver/emails", "templates/analytics/realm_details.html", "templates/analytics/support.html"},
      'description': "`title` value should be translatable."},

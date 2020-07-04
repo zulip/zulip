@@ -376,17 +376,17 @@ run_test("marked", () => {
         {
             input: "mmm...:burrito:s",
             expected:
-                '<p>mmm...<img alt=":burrito:" class="emoji" src="/static/generated/emoji/images/emoji/burrito.png" title="burrito">s</p>',
+                '<p>mmm...<img alt=":burrito:" class="emoji message-emoji" src="/static/generated/emoji/images/emoji/burrito.png" title="burrito">s</p>',
         },
         {
             input: "This is an :poop: message",
             expected:
-                '<p>This is an <span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span> message</p>',
+                '<p>This is an <span aria-label="poop" class="emoji message-emoji emoji-1f4a9" role="img" title="poop">:poop:</span> message</p>',
         },
         {
             input: "\ud83d\udca9",
             expected:
-                '<p><span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span></p>',
+                '<p><span aria-label="poop" class="emoji message-emoji emoji-1f4a9" role="img" title="poop">:poop:</span></p>',
         },
         {
             input: "Silent mention: @_**Cordelia Lear**",
@@ -470,7 +470,7 @@ run_test("marked", () => {
         {
             input: ":)",
             expected:
-                '<p><span aria-label="smile" class="emoji emoji-1f642" role="img" title="smile">:smile:</span></p>',
+                '<p><span aria-label="smile" class="emoji message-emoji emoji-1f642" role="img" title="smile">:smile:</span></p>',
             translate_emoticons: true,
         },
         // Test HTML Escape in Custom Zulip Rules
@@ -749,7 +749,7 @@ run_test("missing unicode emojis", () => {
     markdown.apply_markdown(message);
     assert.equal(
         message.content,
-        '<p><span aria-label="bike" class="emoji emoji-1f6b2" role="img" title="bike">:bike:</span></p>',
+        '<p><span aria-label="bike" class="emoji message-emoji emoji-1f6b2" role="img" title="bike">:bike:</span></p>',
     );
 
     // Now simulate that we don't know any emoji names.
