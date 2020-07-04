@@ -863,7 +863,7 @@ class PostProcessTest(ZulipTestCase):
         )
 
         # left-sided query anchored to the right
-        anchor = None
+        anchor = LARGER_THAN_MAX_MESSAGE_ID
         verify(
             in_ids=[900, 1000],
             num_before=2, num_after=0,
