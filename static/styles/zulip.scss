@@ -594,7 +594,7 @@ td.pointer {
     }
 
     .message_controls {
-        top: -3px;
+        top: -6px;
     }
 
     .message_top_line {
@@ -674,7 +674,7 @@ td.pointer {
 .message_controls {
     display: inline-block;
     position: absolute;
-    top: 1px;
+    top: -1px;
     right: -56px;
     z-index: 1;
 
@@ -687,7 +687,13 @@ td.pointer {
         opacity: 0;
         visibility: hidden;
         transition: all 0.2s ease;
-        padding: 0px 1px;
+        width: 20px;
+        height: 22px;
+        text-align: center;
+
+        > i {
+            vertical-align: middle;
+        }
     }
 
     > .reaction_button {
@@ -2766,7 +2772,7 @@ select.inline_select_topic_edit {
     }
 
     .message_controls {
-        width: 56px;
+        width: 66px;
         right: 40px;
         top: 0px;
     }
