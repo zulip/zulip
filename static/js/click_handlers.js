@@ -269,7 +269,7 @@ exports.initialize = function () {
 
     $("body").on("click", ".notification", function () {
         const payload = $(this).data("narrow");
-        ui_util.change_tab_to("#home");
+        ui_util.change_tab_to("#message_feed_container");
         narrow.activate(payload.raw_operators, payload.opts_notif);
     });
 
@@ -452,7 +452,7 @@ exports.initialize = function () {
         return nearest.id;
     }
 
-    $("#home").on("click", ".narrows_by_recipient", function (e) {
+    $("#message_feed_container").on("click", ".narrows_by_recipient", function (e) {
         if (e.metaKey || e.ctrlKey) {
             return;
         }
@@ -461,7 +461,7 @@ exports.initialize = function () {
         narrow.by_recipient(row_id, {trigger: "message header"});
     });
 
-    $("#home").on("click", ".narrows_by_topic", function (e) {
+    $("#message_feed_container").on("click", ".narrows_by_topic", function (e) {
         if (e.metaKey || e.ctrlKey) {
             return;
         }

@@ -112,7 +112,7 @@ exports.complete_starting_tasks = function (msg_type, opts) {
     // makes testing a bit easier.
 
     exports.maybe_scroll_up_selected_message();
-    ui_util.change_tab_to("#home");
+    ui_util.change_tab_to("#message_feed_container");
     compose_fade.start_compose(msg_type);
     ui_util.decorate_stream_bar(opts.stream, $("#stream-message .message_header_stream"), true);
     $(document).trigger($.Event("compose_started.zulip", opts));

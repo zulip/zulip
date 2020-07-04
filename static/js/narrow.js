@@ -261,7 +261,7 @@ exports.activate = function (raw_operators, opts) {
     $("#zfilt").addClass("focused_table");
     $("#zhome").removeClass("focused_table");
 
-    ui_util.change_tab_to("#home");
+    ui_util.change_tab_to("#message_feed_container");
     message_list.set_narrowed(msg_list);
     current_msg_list = message_list.narrowed;
 

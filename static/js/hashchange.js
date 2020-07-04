@@ -49,7 +49,7 @@ exports.save_narrow = function (operators) {
 };
 
 function activate_home_tab() {
-    ui_util.change_tab_to("#home");
+    ui_util.change_tab_to("#message_feed_container");
     narrow.deactivate();
     floating_recipient_bar.update();
     search.update_button_visibility();
@@ -92,7 +92,7 @@ function do_hashchange_normal(from_reload) {
     const hash = window.location.hash.split("/");
     switch (hash[0]) {
         case "#narrow": {
-            ui_util.change_tab_to("#home");
+            ui_util.change_tab_to("#message_feed_container");
             const operators = hash_util.parse_narrow(hash);
             if (operators === undefined) {
                 // If the narrow URL didn't parse, clear

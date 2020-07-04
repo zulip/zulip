@@ -159,7 +159,7 @@ run_test("hash_interactions", () => {
     helper.assert_events([
         "overlays.close_for_hash_change",
         "message_viewport.stop_auto_scrolling",
-        "change_tab_to #home",
+        "change_tab_to #message_feed_container",
         "narrow.deactivate",
         "floating_recipient_bar.update",
     ]);
@@ -169,7 +169,7 @@ run_test("hash_interactions", () => {
     helper.assert_events([
         "overlays.close_for_hash_change",
         "message_viewport.stop_auto_scrolling",
-        "change_tab_to #home",
+        "change_tab_to #message_feed_container",
         "narrow.deactivate",
         "floating_recipient_bar.update",
     ]);
@@ -181,7 +181,7 @@ run_test("hash_interactions", () => {
     helper.assert_events([
         "overlays.close_for_hash_change",
         "message_viewport.stop_auto_scrolling",
-        "change_tab_to #home",
+        "change_tab_to #message_feed_container",
         "narrow.activate",
         "floating_recipient_bar.update",
     ]);
@@ -195,7 +195,7 @@ run_test("hash_interactions", () => {
     helper.assert_events([
         "overlays.close_for_hash_change",
         "message_viewport.stop_auto_scrolling",
-        "change_tab_to #home",
+        "change_tab_to #message_feed_container",
         "narrow.activate",
         "floating_recipient_bar.update",
     ]);

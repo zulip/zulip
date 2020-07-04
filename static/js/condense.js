@@ -234,7 +234,7 @@ exports.condense_and_collapse = function (elems) {
 };
 
 exports.initialize = function () {
-    $("#home").on("click", ".message_expander", function (e) {
+    $("#message_feed_container").on("click", ".message_expander", function (e) {
         // Expanding a message can mean either uncollapsing or
         // uncondensing it.
         const row = $(this).closest(".message_row");
@@ -254,7 +254,7 @@ exports.initialize = function () {
         e.preventDefault();
     });
 
-    $("#home").on("click", ".message_condenser", function (e) {
+    $("#message_feed_container").on("click", ".message_condenser", function (e) {
         const row = $(this).closest(".message_row");
         current_msg_list.get(rows.id(row)).condensed = true;
         condense_row(row);

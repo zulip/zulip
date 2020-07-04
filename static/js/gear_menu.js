@@ -98,7 +98,7 @@ exports.initialize = function () {
 
         // Set the URL bar title to show the sub-page you're currently on.
         let browser_url = target_tab;
-        if (browser_url === "#home") {
+        if (browser_url === "#message_feed_container") {
             browser_url = "";
         }
         hashchange.changehash(browser_url);
@@ -106,7 +106,7 @@ exports.initialize = function () {
         // After we show the new tab, restore its old scroll position
         // (we apparently have to do this after setting the hash,
         // because otherwise that action may scroll us somewhere.)
-        if (target_tab === "#home") {
+        if (target_tab === "#message_feed_container") {
             if (scroll_positions.has(target_tab)) {
                 message_viewport.scrollTop(scroll_positions.get(target_tab));
             } else {
