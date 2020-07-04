@@ -2,7 +2,7 @@ import datetime
 import time
 from collections import namedtuple
 from operator import itemgetter
-from typing import Any, Dict, List, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 from unittest import mock
 
 import ujson
@@ -599,15 +599,9 @@ class InternalPrepTest(ZulipTestCase):
             sender=sender,
             recipient_user=recipient_user,
             content=content)
+        assert result is not None
         message = result['message']
         self.assertIn('message was too long', message.content)
-
-        with self.assertRaises(RuntimeError):
-            internal_prep_private_message(
-                realm=None,  # should cause error
-                sender=sender,
-                recipient_user=recipient_user,
-                content=content)
 
         # Simulate sending a message to somebody not in the
         # realm of the sender.
@@ -1597,7 +1591,7 @@ class SewMessageAndReactionTest(ZulipTestCase):
 
 class MessagePOSTTest(ZulipTestCase):
 
-    def _send_and_verify_message(self, user: UserProfile, stream_name: str, error_msg: str=None) -> None:
+    def _send_and_verify_message(self, user: UserProfile, stream_name: str, error_msg: Optional[str]=None) -> None:
         if error_msg is None:
             msg_id = self.send_stream_message(user, stream_name)
             result = self.api_get(user, '/json/messages/' + str(msg_id))
@@ -2397,6 +2391,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.assert_json_error_contains(result, 'Not authorized to send')
 
         # We subscribe the bot owner! (aka cordelia)
+        assert bot.bot_owner is not None
         self.subscribe(bot.bot_owner, stream_name)
 
         result = self.api_post(bot, "/api/v1/messages", payload)

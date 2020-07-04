@@ -2392,9 +2392,6 @@ def _internal_prep_message(realm: Realm,
     if len(content) > MAX_MESSAGE_LENGTH:
         content = content[0:3900] + "\n\n[message was too long and has been truncated]"
 
-    if realm is None:
-        raise RuntimeError("None is not a valid realm for internal_prep_message!")
-
     # If we have a stream name, and the stream doesn't exist, we
     # create it here (though this code path should probably be removed
     # eventually, moving that responsibility to the caller).  If
