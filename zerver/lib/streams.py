@@ -4,7 +4,7 @@ from django.conf import settings
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext as _
 
-from zerver.lib.markdown import convert as markdown_convert
+from zerver.lib.markdown import markdown_convert
 from zerver.lib.request import JsonableError
 from zerver.models import (
     DefaultStreamGroup,

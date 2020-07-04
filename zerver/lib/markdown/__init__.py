@@ -2405,15 +2405,15 @@ def markdown_stats_finish() -> None:
     markdown_total_requests += 1
     markdown_total_time += (time.time() - markdown_time_start)
 
-def convert(content: str,
-            realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
-            message: Optional[Message]=None,
-            message_realm: Optional[Realm]=None,
-            sent_by_bot: bool=False,
-            translate_emoticons: bool=False,
-            mention_data: Optional[MentionData]=None,
-            email_gateway: bool=False,
-            no_previews: bool=False) -> str:
+def markdown_convert(content: str,
+                     realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
+                     message: Optional[Message]=None,
+                     message_realm: Optional[Realm]=None,
+                     sent_by_bot: bool=False,
+                     translate_emoticons: bool=False,
+                     mention_data: Optional[MentionData]=None,
+                     email_gateway: bool=False,
+                     no_previews: bool=False) -> str:
     markdown_stats_start()
     ret = do_convert(content, realm_alert_words_automaton,
                      message, message_realm, sent_by_bot,
