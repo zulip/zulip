@@ -594,7 +594,7 @@ td.pointer {
     }
 
     .message_controls {
-        top: -3px;
+        top: -5px;
     }
 
     .message_top_line {
@@ -674,8 +674,10 @@ td.pointer {
 .message_controls {
     display: inline-block;
     position: absolute;
-    top: 1px;
+    top: -1px;
     right: -56px;
+    width: 54px;
+    height: 22px;
     z-index: 1;
 
     // This is a bit tricky; we need to reserve space for the message
@@ -687,7 +689,12 @@ td.pointer {
         opacity: 0;
         visibility: hidden;
         transition: all 0.2s ease;
-        padding: 0px 1px;
+        width: 16px;
+        text-align: center;
+
+        > i {
+            vertical-align: middle;
+        }
     }
 
     > .reaction_button {
@@ -2761,17 +2768,15 @@ select.inline_select_topic_edit {
         left: -3px;
     }
 
+    /* In mobile views we place it just to the right of the time element */
     .message_controls {
-        width: 56px;
         right: 40px;
-        top: 0px;
     }
 
     .include-sender .message_controls {
         background: none !important;
         padding: none !important;
         border: none !important;
-        top: -3px;
     }
 
     .message_time {
