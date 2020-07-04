@@ -319,6 +319,7 @@ class AuthBackendTest(ZulipTestCase):
         result = self.client_get('/login/?preview=true')
         self.assertEqual(result.status_code, 200)
         self.assert_in_response(realm.description, result)
+        assert realm.name is not None
         self.assert_in_response(realm.name, result)
         self.assert_in_response("Log in to Zulip", result)
 
@@ -1501,6 +1502,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         relay_state = urllib.parse.parse_qs(parsed_url.query)['RelayState'][0]
         # Make sure params are getting encoded into RelayState:
         data = SAMLAuthBackend.get_data_from_redis(ujson.loads(relay_state)['state_token'])
+        assert data is not None
         if next:
             self.assertEqual(data['next'], next)
         if is_signup:
@@ -2220,7 +2222,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         """
 
         if not skip_id_token:
-            id_token = self.generate_id_token(account_data_dict, settings.SOCIAL_AUTH_APPLE_BUNDLE_ID)
+            id_token: Optional[str] = self.generate_id_token(account_data_dict, settings.SOCIAL_AUTH_APPLE_BUNDLE_ID)
         else:
             id_token = None
 
@@ -3061,8 +3063,6 @@ class GoogleAuthBackendTest(SocialAuthBase):
 
     def test_log_into_subdomain_when_email_is_none(self) -> None:
         data: ExternalAuthDataDict = {
-            'full_name': None,
-            'email': None,
             'subdomain': 'zulip',
             'is_signup': False,
             'redirect_to': '',
