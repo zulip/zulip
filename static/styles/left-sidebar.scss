@@ -163,11 +163,13 @@ li.show-more-topics {
     max-height: 200px;
 }
 
-.top_left_row:hover,
-.bottom_left_row:hover,
-#stream_filters li.highlighted_stream {
-    background-color: hsla(120, 12.3%, 71.4%, 0.38);
-    border-radius: 4px;
+:not(.active-sub-filter) {
+    &.top_left_row:hover,
+    &.bottom_left_row:hover,
+    &#stream_filters li.highlighted_stream {
+        background-color: hsla(120, 12.3%, 71.4%, 0.38);
+        border-radius: 4px;
+    }
 }
 
 #add-stream-link {
