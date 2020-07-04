@@ -410,6 +410,7 @@ exports.complete_rerender = function () {
             topic_sort: topic_sort,
         },
         html_selector: get_topic_row,
+        simplebar_container: $('#recent_topics_table .table_fix_head'),
     });
     revive_current_focus();
 };

@@ -96,6 +96,7 @@ function render_attachments_ui() {
         sort_fields: {
             mentioned_in: sort_mentioned_in,
         },
+        simplebar_container: $('#attachments-settings .progressive-table-wrapper'),
     });
 
     ui.reset_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));

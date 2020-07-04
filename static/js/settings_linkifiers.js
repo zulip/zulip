@@ -65,6 +65,7 @@ exports.populate_filters = function (filters_data) {
             pattern: sort_pattern,
             url: sort_url,
         },
+        simplebar_container: $('#filter-settings .progressive-table-wrapper'),
     });
 
     loading.destroy_indicator($('#admin_page_filters_loading_indicator'));

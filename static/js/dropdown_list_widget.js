@@ -78,6 +78,7 @@ const DropdownListWidget = function (opts) {
                     return item.name.toLowerCase().includes(value);
                 },
             },
+            simplebar_container: $(`#${opts.container_id} .dropdown-list-wrapper`),
         });
         $(`#${opts.container_id} .dropdown-search`).click((e) => {
             e.stopPropagation();

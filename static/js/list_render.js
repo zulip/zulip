@@ -17,6 +17,10 @@ exports.validate_opts = (opts) => {
         blueslip.error('html_selector should be a function.');
         return false;
     }
+    if (!opts.simplebar_container) {
+        blueslip.error('simplebar_container is missing.');
+        return false;
+    }
     return true;
 };
 
@@ -264,7 +268,7 @@ exports.create = function ($container, list, opts) {
     };
 
     widget.set_up_event_handlers = function () {
-        meta.scroll_container = scroll_util.get_list_scrolling_container($container);
+        meta.scroll_container = ui.get_scroll_element(opts.simplebar_container);
 
         // on scroll of the nearest scrolling container, if it hits the bottom
         // of the container then fetch a new block of items and render them.
