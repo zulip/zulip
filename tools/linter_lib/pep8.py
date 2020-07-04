@@ -7,6 +7,10 @@ def check_pep8(files: List[str]) -> bool:
     ignored_rules = [
         # Each of these rules are ignored for the explained reason.
 
+        # "whitespace before ':'"
+        # Black disagrees with this.
+        'E203',
+
         # "multiple spaces before operator"
         # There are several typos here, but also several instances that are
         # being used for alignment in dict keys/values using the `dict`
