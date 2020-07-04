@@ -40,18 +40,6 @@ jobs:
       HOME: /home/github/
 
     steps:
-      # Upgrade git before using checkout actions because it downloads
-      # the code using Rest API if git version is less than v2.18,
-      # which will cause errors in tests and provision. This is only
-      # required for bionic.
-      - name: Upgrade git for bionic
-        if: ${{ matrix.is_bionic }}
-        run: |
-          sudo apt-get install -y software-properties-common
-          sudo add-apt-repository ppa:git-core/ppa -y
-          sudo apt-get update
-          sudo apt-get install -y git
-
       - name: Add required permissions
         run: |
           # The checkout actions doesn't clone to ~/zulip or allow

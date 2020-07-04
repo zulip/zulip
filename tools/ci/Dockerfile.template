@@ -96,6 +96,18 @@ RUN apt-get update \
     libxml2-dev libxslt1-dev libpq-dev moreutils \
     {extra_packages}
 
+# Upgrade git if it is less than v2.18 because GitHub Actions'
+# checkout installs source code using Rest API as an optimization
+# if the version is less than v2.18, which causes failure in provision
+# and tests because of the lack of git being initialized.
+RUN export git_version=$(git --version | cut -d ' ' -f3 | cut -d 'v' -f2) && \
+    if dpkg --compare-versions $git_version lt 2.18; then \
+      sudo apt-get install -y software-properties-common && \
+      sudo add-apt-repository ppa:git-core/ppa -y && \
+      sudo apt-get update && \
+      sudo apt-get install -y git; \
+    fi
+
 ARG USERNAME=github
 RUN groupadd --gid 3434 $USERNAME \
   && useradd --uid 3434 --gid $USERNAME --shell /bin/bash --create-home $USERNAME \
