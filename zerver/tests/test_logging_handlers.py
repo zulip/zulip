@@ -2,7 +2,7 @@ import logging
 import sys
 from functools import wraps
 from types import TracebackType
-from typing import Callable, Dict, Iterator, NoReturn, Optional, Tuple, Type, cast
+from typing import Callable, Dict, Iterator, NoReturn, Optional, Tuple, Type, Union, cast
 from unittest.mock import MagicMock, patch
 
 from django.conf import settings
@@ -15,7 +15,7 @@ from zerver.lib.types import ViewFuncT
 from zerver.logging_handlers import AdminNotifyHandler, HasRequest
 
 captured_request: Optional[HttpRequest] = None
-captured_exc_info: Tuple[Optional[Type[BaseException]], Optional[BaseException], Optional[TracebackType]] = None
+captured_exc_info: Optional[Union[Tuple[Type[BaseException], BaseException, TracebackType], Tuple[None, None, None]]] = None
 def capture_and_throw(domain: Optional[str]=None) -> Callable[[ViewFuncT], ViewFuncT]:
     def wrapper(view_func: ViewFuncT) -> ViewFuncT:
         @wraps(view_func)
