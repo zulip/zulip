@@ -100,10 +100,6 @@ li.show-more-topics {
         }
     }
 
-    li.active-sub-filter:hover {
-        background-color: hsl(120, 11%, 82%);
-    }
-
     .count {
         margin-right: 15px;
     }
@@ -170,7 +166,7 @@ li.show-more-topics {
 .top_left_row:hover,
 .bottom_left_row:hover,
 #stream_filters li.highlighted_stream {
-    background-color: hsl(93, 18%, 82%);
+    background-color: hsla(120, 12.3%, 71.4%, 0.38);
     border-radius: 4px;
 }
 
