@@ -24,11 +24,11 @@ from zerver.lib.markdown import (
     MentionData,
     clear_state_for_testing,
     content_has_emoji_syntax,
-    convert,
     fetch_tweet_data,
     get_possible_mentions_info,
     get_tweet_id,
     image_preview_enabled,
+    markdown_convert,
     maybe_update_markdown_engines,
     possible_avatar_emails,
     possible_linked_stream_names,
@@ -187,8 +187,8 @@ class FencedBlockPreprocessorTest(ZulipTestCase):
         lines = processor.run(markdown_input)
         self.assertEqual(lines, expected)
 
-def markdown_convert(content: str) -> str:
-    return convert(
+def markdown_convert_wrapper(content: str) -> str:
+    return markdown_convert(
         content=content,
         message_realm=get_realm('zulip'),
     )
@@ -410,7 +410,7 @@ class MarkdownTest(ZulipTestCase):
                     msg = Message(sender=user_profile, sending_client=get_client("test"))
                     converted = render_markdown(msg, test['input'])
                 else:
-                    converted = markdown_convert(test['input'])
+                    converted = markdown_convert_wrapper(test['input'])
 
                 self.assertEqual(converted, test['expected_output'])
 
@@ -430,66 +430,66 @@ class MarkdownTest(ZulipTestCase):
                     match = replaced(reference, url, phrase=inline_url)
                 except TypeError:
                     match = reference
-                converted = markdown_convert(inline_url)
+                converted = markdown_convert_wrapper(inline_url)
                 self.assertEqual(match, converted)
 
     def test_inline_file(self) -> None:
         msg = 'Check out this file file:///Volumes/myserver/Users/Shared/pi.py'
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertEqual(converted, '<p>Check out this file <a href="file:///Volumes/myserver/Users/Shared/pi.py">file:///Volumes/myserver/Users/Shared/pi.py</a></p>')
 
         clear_state_for_testing()
         with self.settings(ENABLE_FILE_LINKS=False):
             realm = Realm.objects.create(string_id='file_links_test')
             maybe_update_markdown_engines(realm.id, False)
-            converted = convert(msg, message_realm=realm)
+            converted = markdown_convert(msg, message_realm=realm)
             self.assertEqual(converted, '<p>Check out this file file:///Volumes/myserver/Users/Shared/pi.py</p>')
 
     def test_inline_bitcoin(self) -> None:
         msg = 'To bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa or not to bitcoin'
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertEqual(converted, '<p>To <a href="bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa">bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</a> or not to bitcoin</p>')
 
     def test_inline_youtube(self) -> None:
         msg = 'Check out the debate: http://www.youtube.com/watch?v=hx1mjT73xYE'
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
 
         self.assertEqual(converted, '<p>Check out the debate: <a href="http://www.youtube.com/watch?v=hx1mjT73xYE">http://www.youtube.com/watch?v=hx1mjT73xYE</a></p>\n<div class="youtube-video message_inline_image"><a data-id="hx1mjT73xYE" href="http://www.youtube.com/watch?v=hx1mjT73xYE"><img src="https://i.ytimg.com/vi/hx1mjT73xYE/default.jpg"></a></div>')
 
         msg = 'http://www.youtube.com/watch?v=hx1mjT73xYE'
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
 
         self.assertEqual(converted, '<p><a href="http://www.youtube.com/watch?v=hx1mjT73xYE">http://www.youtube.com/watch?v=hx1mjT73xYE</a></p>\n<div class="youtube-video message_inline_image"><a data-id="hx1mjT73xYE" href="http://www.youtube.com/watch?v=hx1mjT73xYE"><img src="https://i.ytimg.com/vi/hx1mjT73xYE/default.jpg"></a></div>')
 
         msg = 'https://youtu.be/hx1mjT73xYE'
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
 
         self.assertEqual(converted, '<p><a href="https://youtu.be/hx1mjT73xYE">https://youtu.be/hx1mjT73xYE</a></p>\n<div class="youtube-video message_inline_image"><a data-id="hx1mjT73xYE" href="https://youtu.be/hx1mjT73xYE"><img src="https://i.ytimg.com/vi/hx1mjT73xYE/default.jpg"></a></div>')
 
         msg = 'https://www.youtube.com/playlist?list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo'
-        not_converted = markdown_convert(msg)
+        not_converted = markdown_convert_wrapper(msg)
 
         self.assertEqual(not_converted, '<p><a href="https://www.youtube.com/playlist?list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo">https://www.youtube.com/playlist?list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo</a></p>')
 
         msg = 'https://www.youtube.com/playlist?v=O5nskjZ_GoI&list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo'
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
 
         self.assertEqual(converted, '<p><a href="https://www.youtube.com/playlist?v=O5nskjZ_GoI&amp;list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo">https://www.youtube.com/playlist?v=O5nskjZ_GoI&amp;list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo</a></p>\n<div class="youtube-video message_inline_image"><a data-id="O5nskjZ_GoI" href="https://www.youtube.com/playlist?v=O5nskjZ_GoI&amp;list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo"><img src="https://i.ytimg.com/vi/O5nskjZ_GoI/default.jpg"></a></div>')
 
         msg = 'http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw'
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
 
         self.assertEqual(converted, '<p><a href="http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw">http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw</a></p>\n<div class="youtube-video message_inline_image"><a data-id="nOJgD4fcZhI" href="http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw"><img src="https://i.ytimg.com/vi/nOJgD4fcZhI/default.jpg"></a></div>')
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=False)
     def test_inline_vimeo(self) -> None:
         msg = 'Check out the debate: https://vimeo.com/246979354'
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
 
         self.assertEqual(converted, '<p>Check out the debate: <a href="https://vimeo.com/246979354">https://vimeo.com/246979354</a></p>')
 
         msg = 'https://vimeo.com/246979354'
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
 
         self.assertEqual(converted, '<p><a href="https://vimeo.com/246979354">https://vimeo.com/246979354</a></p>')
 
@@ -500,37 +500,37 @@ class MarkdownTest(ZulipTestCase):
         msg = msg.format(realm_id=realm.id)
         thumbnail_img = '<img data-src-fullsize="/thumbnail?url=user_uploads%2F{realm_id}%2F50%2Fw2G6ok9kr8AMCQCTNAUOFMln%2FIMG_0677.JPG&amp;size=full" src="/thumbnail?url=user_uploads%2F{realm_id}%2F50%2Fw2G6ok9kr8AMCQCTNAUOFMln%2FIMG_0677.JPG&amp;size=thumbnail"><'
         thumbnail_img = thumbnail_img.format(realm_id=realm.id)
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertIn(thumbnail_img, converted)
 
         msg = 'https://www.google.com/images/srpr/logo4w.png'
         thumbnail_img = '<img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail">'
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertIn(thumbnail_img, converted)
 
         msg = 'www.google.com/images/srpr/logo4w.png'
         thumbnail_img = '<img data-src-fullsize="/thumbnail?url=http%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full" src="/thumbnail?url=http%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail">'
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertIn(thumbnail_img, converted)
 
         msg = 'https://www.google.com/images/srpr/logo4w.png'
         thumbnail_img = '<div class="message_inline_image"><a href="https://www.google.com/images/srpr/logo4w.png"><img src="https://www.google.com/images/srpr/logo4w.png"></a></div>'
         with self.settings(THUMBNAIL_IMAGES=False):
-            converted = markdown_convert(msg)
+            converted = markdown_convert_wrapper(msg)
         self.assertIn(thumbnail_img, converted)
 
         # Any url which is not an external link and doesn't start with
         # /user_uploads/ is not thumbnailed
         msg = '[foobar](/static/images/cute/turtle.png)'
         thumbnail_img = '<div class="message_inline_image"><a href="/static/images/cute/turtle.png" title="foobar"><img src="/static/images/cute/turtle.png"></a></div>'
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertIn(thumbnail_img, converted)
 
         msg = '[foobar](/user_avatars/{realm_id}/emoji/images/50.png)'
         msg = msg.format(realm_id=realm.id)
         thumbnail_img = '<div class="message_inline_image"><a href="/user_avatars/{realm_id}/emoji/images/50.png" title="foobar"><img src="/user_avatars/{realm_id}/emoji/images/50.png"></a></div>'
         thumbnail_img = thumbnail_img.format(realm_id=realm.id)
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertIn(thumbnail_img, converted)
 
     @override_settings(INLINE_IMAGE_PREVIEW=True)
@@ -676,14 +676,14 @@ class MarkdownTest(ZulipTestCase):
         msg = 'Look at how hilarious our old office was: https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG'
         image_info = {'image': 'https://photos-4.dropbox.com/t/2/AABIre1oReJgPYuc_53iv0IHq1vUzRaDg2rrCfTpiWMccQ/12/129/jpeg/1024x1024/2/_/0/4/IMG_0923.JPG/CIEBIAEgAiAHKAIoBw/ymdijjcg67hv2ta/AABz2uuED1ox3vpWWvMpBxu6a/IMG_0923.JPG', 'desc': 'Shared with Dropbox', 'title': 'IMG_0923.JPG'}
         with mock.patch('zerver.lib.markdown.fetch_open_graph_image', return_value=image_info):
-            converted = markdown_convert(msg)
+            converted = markdown_convert_wrapper(msg)
 
         self.assertEqual(converted, '<p>Look at how hilarious our old office was: <a href="https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG">https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG" title="IMG_0923.JPG"><img src="https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG?dl=1"></a></div>')
 
         msg = 'Look at my hilarious drawing folder: https://www.dropbox.com/sh/cm39k9e04z7fhim/AAAII5NK-9daee3FcF41anEua?dl='
         image_info = {'image': 'https://cf.dropboxstatic.com/static/images/icons128/folder_dropbox.png', 'desc': 'Shared with Dropbox', 'title': 'Saves'}
         with mock.patch('zerver.lib.markdown.fetch_open_graph_image', return_value=image_info):
-            converted = markdown_convert(msg)
+            converted = markdown_convert_wrapper(msg)
 
         self.assertEqual(converted, '<p>Look at my hilarious drawing folder: <a href="https://www.dropbox.com/sh/cm39k9e04z7fhim/AAAII5NK-9daee3FcF41anEua?dl=">https://www.dropbox.com/sh/cm39k9e04z7fhim/AAAII5NK-9daee3FcF41anEua?dl=</a></p>\n<div class="message_inline_ref"><a href="https://www.dropbox.com/sh/cm39k9e04z7fhim/AAAII5NK-9daee3FcF41anEua?dl=" title="Saves"><img src="https://cf.dropboxstatic.com/static/images/icons128/folder_dropbox.png"></a><div><div class="message_inline_image_title">Saves</div><desc class="message_inline_image_desc"></desc></div></div>')
 
@@ -692,7 +692,7 @@ class MarkdownTest(ZulipTestCase):
         msg = 'https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5'
         image_info = {'image': 'https://photos-6.dropbox.com/t/2/AAAlawaeD61TyNewO5vVi-DGf2ZeuayfyHFdNTNzpGq-QA/12/271544745/jpeg/1024x1024/2/_/0/5/baby-piglet.jpg/CKnjvYEBIAIgBygCKAc/tditp9nitko60n5/AADX03VAIrQlTl28CtujDcMla/0', 'desc': 'Shared with Dropbox', 'title': '1 photo'}
         with mock.patch('zerver.lib.markdown.fetch_open_graph_image', return_value=image_info):
-            converted = markdown_convert(msg)
+            converted = markdown_convert_wrapper(msg)
 
         self.assertEqual(converted, '<p><a href="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5">https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5" title="1 photo"><img src="https://photos-6.dropbox.com/t/2/AAAlawaeD61TyNewO5vVi-DGf2ZeuayfyHFdNTNzpGq-QA/12/271544745/jpeg/1024x1024/2/_/0/5/baby-piglet.jpg/CKnjvYEBIAIgBygCKAc/tditp9nitko60n5/AADX03VAIrQlTl28CtujDcMla/0"></a></div>')
 
@@ -700,7 +700,7 @@ class MarkdownTest(ZulipTestCase):
         # Make sure we're not overzealous in our conversion:
         msg = 'Look at the new dropbox logo: https://www.dropbox.com/static/images/home_logo.png'
         with mock.patch('zerver.lib.markdown.fetch_open_graph_image', return_value=None):
-            converted = markdown_convert(msg)
+            converted = markdown_convert_wrapper(msg)
 
         self.assertEqual(converted, '<p>Look at the new dropbox logo: <a href="https://www.dropbox.com/static/images/home_logo.png">https://www.dropbox.com/static/images/home_logo.png</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/static/images/home_logo.png"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fwww.dropbox.com%2Fstatic%2Fimages%2Fhome_logo.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fwww.dropbox.com%2Fstatic%2Fimages%2Fhome_logo.png&amp;size=thumbnail"></a></div>')
 
@@ -708,18 +708,18 @@ class MarkdownTest(ZulipTestCase):
         # Don't fail on bad dropbox links
         msg = "https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM"
         with mock.patch('zerver.lib.markdown.fetch_open_graph_image', return_value=None):
-            converted = markdown_convert(msg)
+            converted = markdown_convert_wrapper(msg)
         self.assertEqual(converted, '<p><a href="https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM">https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM</a></p>')
 
     def test_inline_github_preview(self) -> None:
         # Test photo album previews
         msg = 'Test: https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png'
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
 
         self.assertEqual(converted, '<p>Test: <a href="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png">https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png</a></p>\n<div class="message_inline_image"><a href="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fraw.githubusercontent.com%2Fzulip%2Fzulip%2Fmaster%2Fstatic%2Fimages%2Flogo%2Fzulip-icon-128x128.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fraw.githubusercontent.com%2Fzulip%2Fzulip%2Fmaster%2Fstatic%2Fimages%2Flogo%2Fzulip-icon-128x128.png&amp;size=thumbnail"></a></div>')
 
         msg = 'Test: https://developer.github.com/assets/images/hero-circuit-bg.png'
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
 
         self.assertEqual(converted, '<p>Test: <a href="https://developer.github.com/assets/images/hero-circuit-bg.png">https://developer.github.com/assets/images/hero-circuit-bg.png</a></p>\n<div class="message_inline_image"><a href="https://developer.github.com/assets/images/hero-circuit-bg.png"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fdeveloper.github.com%2Fassets%2Fimages%2Fhero-circuit-bg.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fdeveloper.github.com%2Fassets%2Fimages%2Fhero-circuit-bg.png&amp;size=thumbnail"></a></div>')
 
@@ -770,41 +770,41 @@ class MarkdownTest(ZulipTestCase):
                     '</div>')
 
         msg = 'http://www.twitter.com'
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertEqual(converted, '<p>{}</p>'.format(make_link('http://www.twitter.com')))
 
         msg = 'http://www.twitter.com/wdaher/'
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertEqual(converted, '<p>{}</p>'.format(make_link('http://www.twitter.com/wdaher/')))
 
         msg = 'http://www.twitter.com/wdaher/status/3'
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertEqual(converted, '<p>{}</p>'.format(make_link('http://www.twitter.com/wdaher/status/3')))
 
         # id too long
         msg = 'http://www.twitter.com/wdaher/status/2879779692873154569'
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertEqual(converted, '<p>{}</p>'.format(make_link('http://www.twitter.com/wdaher/status/2879779692873154569')))
 
         # id too large (i.e. tweet doesn't exist)
         msg = 'http://www.twitter.com/wdaher/status/999999999999999999'
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertEqual(converted, '<p>{}</p>'.format(make_link('http://www.twitter.com/wdaher/status/999999999999999999')))
 
         msg = 'http://www.twitter.com/wdaher/status/287977969287315456'
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertEqual(converted, '<p>{}</p>\n{}'.format(
             make_link('http://www.twitter.com/wdaher/status/287977969287315456'),
             make_inline_twitter_preview('http://www.twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
 
         msg = 'https://www.twitter.com/wdaher/status/287977969287315456'
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertEqual(converted, '<p>{}</p>\n{}'.format(
             make_link('https://www.twitter.com/wdaher/status/287977969287315456'),
             make_inline_twitter_preview('https://www.twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
 
         msg = 'http://twitter.com/wdaher/status/287977969287315456'
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertEqual(converted, '<p>{}</p>\n{}'.format(
             make_link('http://twitter.com/wdaher/status/287977969287315456'),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
@@ -814,7 +814,7 @@ class MarkdownTest(ZulipTestCase):
                'http://twitter.com/wdaher/status/287977969287315457 '
                'http://twitter.com/wdaher/status/287977969287315457 '
                'http://twitter.com/wdaher/status/287977969287315457')
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertEqual(converted, '<p>{} {} {} {}</p>\n{}{}'.format(
             make_link('http://twitter.com/wdaher/status/287977969287315456'),
             make_link('http://twitter.com/wdaher/status/287977969287315457'),
@@ -828,7 +828,7 @@ class MarkdownTest(ZulipTestCase):
                'http://twitter.com/wdaher/status/287977969287315457 '
                'https://twitter.com/wdaher/status/287977969287315456 '
                'http://twitter.com/wdaher/status/287977969287315460')
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertEqual(converted, '<p>{} {} {} {}</p>\n{}{}{}'.format(
             make_link('http://twitter.com/wdaher/status/287977969287315456'),
             make_link('http://twitter.com/wdaher/status/287977969287315457'),
@@ -841,7 +841,7 @@ class MarkdownTest(ZulipTestCase):
         # Tweet has a mention in a URL, only the URL is linked
         msg = 'http://twitter.com/wdaher/status/287977969287315458'
 
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertEqual(converted, '<p>{}</p>\n{}'.format(
             make_link('http://twitter.com/wdaher/status/287977969287315458'),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315458', mention_in_link_tweet_html)))
@@ -849,7 +849,7 @@ class MarkdownTest(ZulipTestCase):
         # Tweet with an image
         msg = 'http://twitter.com/wdaher/status/287977969287315459'
 
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertEqual(converted, '<p>{}</p>\n{}'.format(
             make_link('http://twitter.com/wdaher/status/287977969287315459'),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315459',
@@ -861,7 +861,7 @@ class MarkdownTest(ZulipTestCase):
                                          '</div>'))))
 
         msg = 'http://twitter.com/wdaher/status/287977969287315460'
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertEqual(converted, '<p>{}</p>\n{}'.format(
             make_link('http://twitter.com/wdaher/status/287977969287315460'),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315460', emoji_in_tweet_html)))
@@ -889,7 +889,7 @@ class MarkdownTest(ZulipTestCase):
 
         # Needs to mock an actual message because that's how markdown obtains the realm
         msg = Message(sender=self.example_user('hamlet'))
-        converted = convert(":green_tick:", message_realm=realm, message=msg)
+        converted = markdown_convert(":green_tick:", message_realm=realm, message=msg)
         realm_emoji = RealmEmoji.objects.filter(realm=realm,
                                                 name='green_tick',
                                                 deactivated=False).get()
@@ -897,7 +897,7 @@ class MarkdownTest(ZulipTestCase):
 
         # Deactivate realm emoji.
         do_remove_realm_emoji(realm, 'green_tick')
-        converted = convert(":green_tick:", message_realm=realm, message=msg)
+        converted = markdown_convert(":green_tick:", message_realm=realm, message=msg)
         self.assertEqual(converted, '<p>:green_tick:</p>')
 
     def test_deactivated_realm_emoji(self) -> None:
@@ -906,16 +906,16 @@ class MarkdownTest(ZulipTestCase):
         do_remove_realm_emoji(realm, 'green_tick')
 
         msg = Message(sender=self.example_user('hamlet'))
-        converted = convert(":green_tick:", message_realm=realm, message=msg)
+        converted = markdown_convert(":green_tick:", message_realm=realm, message=msg)
         self.assertEqual(converted, '<p>:green_tick:</p>')
 
     def test_unicode_emoji(self) -> None:
         msg = '\u2615'  # ☕
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertEqual(converted, '<p><span aria-label=\"coffee\" class="emoji emoji-2615" role=\"img\" title="coffee">:coffee:</span></p>')
 
         msg = '\u2615\u2615'  # ☕☕
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertEqual(converted, '<p><span aria-label=\"coffee\" class="emoji emoji-2615" role=\"img\" title="coffee">:coffee:</span><span aria-label=\"coffee\" class="emoji emoji-2615" role=\"img\" title="coffee">:coffee:</span></p>')
 
     def test_no_translate_emoticons_if_off(self) -> None:
@@ -930,10 +930,10 @@ class MarkdownTest(ZulipTestCase):
 
     def test_same_markup(self) -> None:
         msg = '\u2615'  # ☕
-        unicode_converted = markdown_convert(msg)
+        unicode_converted = markdown_convert_wrapper(msg)
 
         msg = ':coffee:'  # ☕☕
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertEqual(converted, unicode_converted)
 
     def test_links_in_topic_name(self) -> None:
@@ -978,7 +978,7 @@ class MarkdownTest(ZulipTestCase):
         flush_per_request_caches()
 
         content = "We should fix #224 and #115, but not issue#124 or #1124z or [trac #15](https://trac.example.com/ticket/16) today."
-        converted = convert(content, message_realm=realm, message=msg)
+        converted = markdown_convert(content, message_realm=realm, message=msg)
         converted_topic = topic_links(realm.id, msg.topic_name())
 
         self.assertEqual(converted, '<p>We should fix <a href="https://trac.example.com/ticket/224">#224</a> and <a href="https://trac.example.com/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.example.com/ticket/16">trac #15</a> today.</p>')
@@ -993,12 +993,12 @@ class MarkdownTest(ZulipTestCase):
         msg = Message(sender=self.example_user('hamlet'))
 
         content = '#ZUL-123 was fixed and code was deployed to production, also #zul-321 was deployed to staging'
-        converted = convert(content, message_realm=realm, message=msg)
+        converted = markdown_convert(content, message_realm=realm, message=msg)
 
         self.assertEqual(converted, '<p><a href="https://trac.example.com/ticket/ZUL-123">#ZUL-123</a> was fixed and code was deployed to production, also <a href="https://trac.example.com/ticket/zul-321">#zul-321</a> was deployed to staging</p>')
 
         def assert_conversion(content: str, should_have_converted: bool=True) -> None:
-            converted = convert(content, message_realm=realm, message=msg)
+            converted = markdown_convert(content, message_realm=realm, message=msg)
             converted_topic = topic_links(realm.id, content)
             if should_have_converted:
                 self.assertTrue('https://trac.example.com' in converted)
@@ -1336,33 +1336,33 @@ class MarkdownTest(ZulipTestCase):
         text = "```{}\nconsole.log('Hello World');\n```\n"
 
         # Render without default language
-        msg_with_js = markdown_convert(text.format('js'))
-        msg_with_python = markdown_convert(text.format('python'))
-        msg_without_language = markdown_convert(text.format(''))
-        msg_with_quote = markdown_convert(text.format('quote'))
-        msg_with_math = markdown_convert(text.format('math'))
+        msg_with_js = markdown_convert_wrapper(text.format('js'))
+        msg_with_python = markdown_convert_wrapper(text.format('python'))
+        msg_without_language = markdown_convert_wrapper(text.format(''))
+        msg_with_quote = markdown_convert_wrapper(text.format('quote'))
+        msg_with_math = markdown_convert_wrapper(text.format('math'))
 
         # Render with default=javascript
         do_set_realm_property(realm, 'default_code_block_language', 'javascript')
-        msg_without_language_default_js = markdown_convert(text.format(''))
-        msg_with_python_default_js = markdown_convert(text.format('python'))
+        msg_without_language_default_js = markdown_convert_wrapper(text.format(''))
+        msg_with_python_default_js = markdown_convert_wrapper(text.format('python'))
 
         # Render with default=python
         do_set_realm_property(realm, 'default_code_block_language', 'python')
-        msg_without_language_default_py = markdown_convert(text.format(''))
-        msg_with_none_default_py = markdown_convert(text.format('none'))
+        msg_without_language_default_py = markdown_convert_wrapper(text.format(''))
+        msg_with_none_default_py = markdown_convert_wrapper(text.format('none'))
 
         # Render with default=quote
         do_set_realm_property(realm, 'default_code_block_language', 'quote')
-        msg_without_language_default_quote = markdown_convert(text.format(''))
+        msg_without_language_default_quote = markdown_convert_wrapper(text.format(''))
 
         # Render with default=math
         do_set_realm_property(realm, 'default_code_block_language', 'math')
-        msg_without_language_default_math = markdown_convert(text.format(''))
+        msg_without_language_default_math = markdown_convert_wrapper(text.format(''))
 
         # Render without default language
         do_set_realm_property(realm, 'default_code_block_language', None)
-        msg_without_language_final = markdown_convert(text.format(''))
+        msg_without_language_final = markdown_convert_wrapper(text.format(''))
 
         self.assertTrue(msg_with_js == msg_without_language_default_js)
         self.assertTrue(msg_with_python == msg_with_python_default_js == msg_without_language_default_py)
@@ -1373,12 +1373,12 @@ class MarkdownTest(ZulipTestCase):
         # Test checking inside nested quotes
         nested_text = "````quote\n\n{}\n\n{}````".format(text.format('js'), text.format(''))
         do_set_realm_property(realm, 'default_code_block_language', 'javascript')
-        rendered = markdown_convert(nested_text)
+        rendered = markdown_convert_wrapper(nested_text)
         with_language, without_language = re.findall(r'<pre>(.*?)$', rendered, re.MULTILINE)
         self.assertTrue(with_language == without_language)
 
         do_set_realm_property(realm, 'default_code_block_language', None)
-        rendered = markdown_convert(nested_text)
+        rendered = markdown_convert_wrapper(nested_text)
         with_language, without_language = re.findall(r'<pre>(.*?)$', rendered, re.MULTILINE)
         self.assertFalse(with_language == without_language)
 
@@ -1920,7 +1920,7 @@ class MarkdownTest(ZulipTestCase):
 
     def test_image_preview_title(self) -> None:
         msg = '[My favorite image](https://example.com/testimage.png)'
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertEqual(
             converted,
             '<p>'
@@ -1942,19 +1942,19 @@ class MarkdownTest(ZulipTestCase):
         client = get_client("zephyr_mirror")
         message = Message(sending_client=client,
                           sender=self.mit_user("sipbtest"))
-        converted = convert(msg, message_realm=realm, message=message)
+        converted = markdown_convert(msg, message_realm=realm, message=message)
         self.assertEqual(
             converted,
             "<p>**test**</p>",
         )
         msg = "* test"
-        converted = convert(msg, message_realm=realm, message=message)
+        converted = markdown_convert(msg, message_realm=realm, message=message)
         self.assertEqual(
             converted,
             "<p>* test</p>",
         )
         msg = "https://lists.debian.org/debian-ctte/2014/02/msg00173.html"
-        converted = convert(msg, message_realm=realm, message=message)
+        converted = markdown_convert(msg, message_realm=realm, message=message)
         self.assertEqual(
             converted,
             '<p><a href="https://lists.debian.org/debian-ctte/2014/02/msg00173.html">https://lists.debian.org/debian-ctte/2014/02/msg00173.html</a></p>',
@@ -1971,7 +1971,7 @@ class MarkdownTest(ZulipTestCase):
     def test_disabled_code_block_processor(self) -> None:
         msg = "Hello,\n\n" +  \
               "    I am writing this message to test something. I am writing this message to test something."
-        converted = markdown_convert(msg)
+        converted = markdown_convert_wrapper(msg)
         expected_output = '<p>Hello,</p>\n' +   \
                           '<div class="codehilite"><pre><span></span><code>I am writing this message to test something. I am writing this message to test something.\n' +     \
                           '</code></pre></div>'
@@ -1979,7 +1979,7 @@ class MarkdownTest(ZulipTestCase):
 
         realm = Realm.objects.create(string_id='code_block_processor_test')
         maybe_update_markdown_engines(realm.id, True)
-        converted = convert(msg, message_realm=realm, email_gateway=True)
+        converted = markdown_convert(msg, message_realm=realm, email_gateway=True)
         expected_output = '<p>Hello,</p>\n' +     \
                           '<p>I am writing this message to test something. I am writing this message to test something.</p>'
         self.assertEqual(converted, expected_output)
@@ -1991,7 +1991,7 @@ class MarkdownTest(ZulipTestCase):
         msg = "http://example.com/#settings/"
 
         self.assertEqual(
-            convert(msg, message_realm=realm, message=message),
+            markdown_convert(msg, message_realm=realm, message=message),
             '<p><a href="http://example.com/#settings/">http://example.com/#settings/</a></p>',
         )
 
@@ -2002,7 +2002,7 @@ class MarkdownTest(ZulipTestCase):
         msg = "http://zulip.testserver/#narrow/stream/999-hello"
 
         self.assertEqual(
-            convert(msg, message_realm=realm, message=message),
+            markdown_convert(msg, message_realm=realm, message=message),
             '<p><a href="#narrow/stream/999-hello">http://zulip.testserver/#narrow/stream/999-hello</a></p>',
         )
 
@@ -2013,7 +2013,7 @@ class MarkdownTest(ZulipTestCase):
         msg = "http://zulip.testserver/#streams/all"
 
         self.assertEqual(
-            convert(msg, message_realm=realm, message=message),
+            markdown_convert(msg, message_realm=realm, message=message),
             '<p><a href="#streams/all">http://zulip.testserver/#streams/all</a></p>',
         )
 
@@ -2024,7 +2024,7 @@ class MarkdownTest(ZulipTestCase):
         msg = "[hello](http://zulip.testserver/#narrow/stream/999-hello)"
 
         self.assertEqual(
-            convert(msg, message_realm=realm, message=message),
+            markdown_convert(msg, message_realm=realm, message=message),
             '<p><a href="#narrow/stream/999-hello">hello</a></p>',
         )
 
@@ -2076,7 +2076,7 @@ class MarkdownTest(ZulipTestCase):
             <div class="codehilite"><pre><span></span><code>&amp;copy;
             </code></pre></div>"""
 
-        converted = markdown_convert(dedent(msg))
+        converted = markdown_convert_wrapper(dedent(msg))
         self.assertEqual(converted, dedent(expected_output))
 
 class MarkdownApiTests(ZulipTestCase):
@@ -2109,7 +2109,7 @@ class MarkdownErrorTests(ZulipTestCase):
     def test_markdown_error_handling(self) -> None:
         with self.simulated_markdown_failure():
             with self.assertRaises(MarkdownRenderingException):
-                markdown_convert('')
+                markdown_convert_wrapper('')
 
     def test_send_message_errors(self) -> None:
 
@@ -2128,7 +2128,7 @@ class MarkdownErrorTests(ZulipTestCase):
         with mock.patch('zerver.lib.markdown.timeout', return_value=msg), \
                 mock.patch('zerver.lib.markdown.markdown_logger'):
             with self.assertRaises(MarkdownRenderingException):
-                markdown_convert(msg)
+                markdown_convert_wrapper(msg)
 
     def test_curl_code_block_validation(self) -> None:
         processor = SimulatedFencedBlockPreprocessor(None)
@@ -2186,7 +2186,7 @@ class MarkdownAvatarTestCase(ZulipTestCase):
 
         user_profile = self.example_user('hamlet')
         msg = f'!avatar({user_profile.email})'
-        converted = convert(msg, message=message)
+        converted = markdown_convert(msg, message=message)
         values = {'email': user_profile.email, 'id': user_profile.id}
         self.assertEqual(
             converted,
@@ -2198,7 +2198,7 @@ class MarkdownAvatarTestCase(ZulipTestCase):
 
         email = 'fakeuser@example.com'
         msg = f'!avatar({email})'
-        converted = convert(msg, message=message)
+        converted = markdown_convert(msg, message=message)
         self.assertEqual(
             converted,
             '<p><img alt="{0}" class="message_body_gravatar" src="/avatar/{0}?s=30" title="{0}"></p>'.format(email))

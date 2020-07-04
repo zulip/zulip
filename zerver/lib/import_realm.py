@@ -24,7 +24,7 @@ from zerver.lib.actions import (
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.bulk_create import bulk_create_users, bulk_set_users_or_streams_recipient_fields
 from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, TableName
-from zerver.lib.markdown import convert as markdown_convert
+from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.parallel import run_parallel
 from zerver.lib.server_initialization import create_internal_realm, server_initialized

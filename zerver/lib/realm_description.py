@@ -4,7 +4,7 @@ from zerver.lib.cache import (
     realm_text_description_cache_key,
 )
 from zerver.lib.html_to_text import html_to_text
-from zerver.lib.markdown import convert as markdown_convert
+from zerver.lib.markdown import markdown_convert
 from zerver.models import Realm
 
 
