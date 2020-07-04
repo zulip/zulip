@@ -1,4 +1,4 @@
-from typing import Any, Callable, Mapping, Union
+from typing import Any, Mapping, Union
 from unittest import mock
 
 import ujson
@@ -37,6 +37,7 @@ class TestServiceBotBasics(ZulipTestCase):
         assert(not sender.is_bot)
 
         outgoing_bot = self._get_outgoing_bot()
+        assert outgoing_bot.bot_type is not None
 
         event_dict = get_service_bot_events(
             sender=sender,
@@ -61,6 +62,7 @@ class TestServiceBotBasics(ZulipTestCase):
         assert(not sender.is_bot)
 
         outgoing_bot = self._get_outgoing_bot()
+        assert outgoing_bot.bot_type is not None
 
         # If outgoing_bot is not in mentioned_user_ids,
         # we will skip over it.  This tests an anomaly
@@ -84,6 +86,7 @@ class TestServiceBotBasics(ZulipTestCase):
         assert(not sender.is_bot)
 
         outgoing_bot = self._get_outgoing_bot()
+        assert outgoing_bot.bot_type is not None
 
         cordelia = self.example_user('cordelia')
 
@@ -118,6 +121,7 @@ class TestServiceBotBasics(ZulipTestCase):
         assert(not sender.is_bot)
 
         outgoing_bot = self._get_outgoing_bot()
+        assert outgoing_bot.bot_type is not None
 
         event_dict = get_service_bot_events(
             sender=sender,
@@ -415,9 +419,10 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             trigger = 'mention'
             message_type = Recipient._type_names[Recipient.STREAM]
 
-            def check_values_passed(queue_name: Any,
-                                    trigger_event: Union[Mapping[Any, Any], Any],
-                                    x: Callable[[Any], None]=None) -> None:
+            def check_values_passed(
+                queue_name: Any,
+                trigger_event: Union[Mapping[Any, Any], Any],
+            ) -> None:
                 self.assertEqual(queue_name, expected_queue_name)
                 self.assertEqual(trigger_event["message"]["content"], content)
                 self.assertEqual(trigger_event["message"]["display_recipient"], recipient)
@@ -460,9 +465,10 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             sender = self.user_profile
             recipient = self.bot_profile
 
-            def check_values_passed(queue_name: Any,
-                                    trigger_event: Union[Mapping[Any, Any], Any],
-                                    x: Callable[[Any], None]=None) -> None:
+            def check_values_passed(
+                queue_name: Any,
+                trigger_event: Union[Mapping[Any, Any], Any],
+            ) -> None:
                 self.assertEqual(queue_name, expected_queue_name)
                 self.assertEqual(trigger_event["user_profile_id"], self.bot_profile.id)
                 self.assertEqual(trigger_event["trigger"], "private_message")
@@ -502,9 +508,10 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             recipients = [self.bot_profile, self.second_bot_profile]
             profile_ids = [self.bot_profile.id, self.second_bot_profile.id]
 
-            def check_values_passed(queue_name: Any,
-                                    trigger_event: Union[Mapping[Any, Any], Any],
-                                    x: Callable[[Any], None]=None) -> None:
+            def check_values_passed(
+                queue_name: Any,
+                trigger_event: Union[Mapping[Any, Any], Any],
+            ) -> None:
                 self.assertEqual(queue_name, expected_queue_name)
                 self.assertIn(trigger_event["user_profile_id"], profile_ids)
                 profile_ids.remove(trigger_event["user_profile_id"])

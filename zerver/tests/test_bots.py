@@ -1484,13 +1484,15 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
     def test_create_embedded_bot_with_disabled_embedded_bots(self, **extras: Any) -> None:
         with self.settings(EMBEDDED_BOTS_ENABLED=False):
-            self.create_test_bot(short_name='embeddedservicebot',
-                                 user_profile=self.example_user("hamlet"),
-                                 bot_type=UserProfile.EMBEDDED_BOT,
-                                 service_name='followup',
-                                 config_data=ujson.dumps({'key': 'value'}),
-                                 assert_json_error_msg='Embedded bots are not enabled.',
-                                 **extras)
+            self.fail_to_create_test_bot(
+                short_name='embeddedservicebot',
+                user_profile=self.example_user("hamlet"),
+                bot_type=UserProfile.EMBEDDED_BOT,
+                service_name='followup',
+                config_data=ujson.dumps({'key': 'value'}),
+                assert_json_error_msg='Embedded bots are not enabled.',
+                **extras,
+            )
 
     def test_create_embedded_bot(self, **extras: Any) -> None:
         bot_config_info = {'key': 'value'}
@@ -1512,20 +1514,24 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(service.user_profile, bot)
 
     def test_create_embedded_bot_with_incorrect_service_name(self, **extras: Any) -> None:
-        self.create_test_bot(short_name='embeddedservicebot',
-                             user_profile=self.example_user("hamlet"),
-                             bot_type=UserProfile.EMBEDDED_BOT,
-                             service_name='not_existing_service',
-                             assert_json_error_msg='Invalid embedded bot name.',
-                             **extras)
+        self.fail_to_create_test_bot(
+            short_name='embeddedservicebot',
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name='not_existing_service',
+            assert_json_error_msg='Invalid embedded bot name.',
+            **extras,
+        )
 
     def test_create_embedded_bot_with_invalid_config_value(self, **extras: Any) -> None:
-        self.create_test_bot(short_name='embeddedservicebot',
-                             user_profile=self.example_user("hamlet"),
-                             service_name='followup',
-                             config_data=ujson.dumps({'invalid': ['config', 'value']}),
-                             assert_json_error_msg='config_data contains a value that is not a string',
-                             **extras)
+        self.fail_to_create_test_bot(
+            short_name='embeddedservicebot',
+            user_profile=self.example_user("hamlet"),
+            service_name='followup',
+            config_data=ujson.dumps({'invalid': ['config', 'value']}),
+            assert_json_error_msg='config_data contains a value that is not a string',
+            **extras,
+        )
 
         # Test to create embedded bot with an incorrect config value
         incorrect_bot_config_info = {'key': 'incorrect key'}
