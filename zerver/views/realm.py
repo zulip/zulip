@@ -133,6 +133,7 @@ def update_realm(
         message_retention_days = parse_message_retention_days(
             message_retention_days_raw, Realm.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
+    message_retention_days  # used by locals() below
 
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.
