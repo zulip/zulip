@@ -4,6 +4,8 @@ from typing import Any, Dict, List, Tuple
 from unittest import mock
 
 import ujson
+from django.db import IntegrityError
+from django.http import HttpResponse
 
 from zerver.lib.actions import (
     do_set_realm_property,
@@ -1092,3 +1094,112 @@ class EditMessageTest(ZulipTestCase):
 
         messages = get_topic_messages(user_profile, new_stream, "test")
         self.assertEqual(len(messages), 0)
+
+
+class DeleteMessageTest(ZulipTestCase):
+    def test_delete_message_invalid_request_format(self) -> None:
+        self.login('iago')
+        hamlet = self.example_user('hamlet')
+        msg_id = self.send_stream_message(hamlet, "Scotland")
+        result = self.client_delete(f'/json/messages/{msg_id + 1}',
+                                    {'message_id': msg_id})
+        self.assert_json_error(result, "Invalid message(s)")
+        result = self.client_delete(f'/json/messages/{msg_id}')
+        self.assert_json_success(result)
+
+    def test_delete_message_by_user(self) -> None:
+        def set_message_deleting_params(allow_message_deleting: bool,
+                                        message_content_delete_limit_seconds: int) -> None:
+            self.login('iago')
+            result = self.client_patch("/json/realm", {
+                'allow_message_deleting': ujson.dumps(allow_message_deleting),
+                'message_content_delete_limit_seconds': message_content_delete_limit_seconds,
+            })
+            self.assert_json_success(result)
+
+        def test_delete_message_by_admin(msg_id: int) -> HttpResponse:
+            self.login('iago')
+            result = self.client_delete(f'/json/messages/{msg_id}')
+            return result
+
+        def test_delete_message_by_owner(msg_id: int) -> HttpResponse:
+            self.login('hamlet')
+            result = self.client_delete(f'/json/messages/{msg_id}')
+            return result
+
+        def test_delete_message_by_other_user(msg_id: int) -> HttpResponse:
+            self.login('cordelia')
+            result = self.client_delete(f'/json/messages/{msg_id}')
+            return result
+
+        # Test if message deleting is not allowed(default).
+        set_message_deleting_params(False, 0)
+        hamlet = self.example_user('hamlet')
+        self.login_user(hamlet)
+        msg_id = self.send_stream_message(hamlet, "Scotland")
+
+        result = test_delete_message_by_owner(msg_id=msg_id)
+        self.assert_json_error(result, "You don't have permission to delete this message")
+
+        result = test_delete_message_by_other_user(msg_id=msg_id)
+        self.assert_json_error(result, "You don't have permission to delete this message")
+
+        result = test_delete_message_by_admin(msg_id=msg_id)
+        self.assert_json_success(result)
+
+        # Test if message deleting is allowed.
+        # Test if time limit is zero(no limit).
+        set_message_deleting_params(True, 0)
+        msg_id = self.send_stream_message(hamlet, "Scotland")
+        message = Message.objects.get(id=msg_id)
+        message.date_sent = message.date_sent - datetime.timedelta(seconds=600)
+        message.save()
+
+        result = test_delete_message_by_other_user(msg_id=msg_id)
+        self.assert_json_error(result, "You don't have permission to delete this message")
+
+        result = test_delete_message_by_owner(msg_id=msg_id)
+        self.assert_json_success(result)
+
+        # Test if time limit is non-zero.
+        set_message_deleting_params(True, 240)
+        msg_id_1 = self.send_stream_message(hamlet, "Scotland")
+        message = Message.objects.get(id=msg_id_1)
+        message.date_sent = message.date_sent - datetime.timedelta(seconds=120)
+        message.save()
+
+        msg_id_2 = self.send_stream_message(hamlet, "Scotland")
+        message = Message.objects.get(id=msg_id_2)
+        message.date_sent = message.date_sent - datetime.timedelta(seconds=360)
+        message.save()
+
+        result = test_delete_message_by_other_user(msg_id=msg_id_1)
+        self.assert_json_error(result, "You don't have permission to delete this message")
+
+        result = test_delete_message_by_owner(msg_id=msg_id_1)
+        self.assert_json_success(result)
+        result = test_delete_message_by_owner(msg_id=msg_id_2)
+        self.assert_json_error(result, "The time limit for deleting this message has passed")
+
+        # No limit for admin.
+        result = test_delete_message_by_admin(msg_id=msg_id_2)
+        self.assert_json_success(result)
+
+        # Test multiple delete requests with no latency issues
+        msg_id = self.send_stream_message(hamlet, "Scotland")
+        result = test_delete_message_by_owner(msg_id=msg_id)
+        self.assert_json_success(result)
+        result = test_delete_message_by_owner(msg_id=msg_id)
+        self.assert_json_error(result, "Invalid message(s)")
+
+        # Test handling of 500 error caused by multiple delete requests due to latency.
+        # see issue #11219.
+        with mock.patch("zerver.views.message_edit.do_delete_messages") as m, \
+                mock.patch("zerver.views.message_edit.validate_can_delete_message", return_value=None), \
+                mock.patch("zerver.views.message_edit.access_message", return_value=(None, None)):
+            m.side_effect = IntegrityError()
+            result = test_delete_message_by_owner(msg_id=msg_id)
+            self.assert_json_error(result, "Message already deleted")
+            m.side_effect = Message.DoesNotExist()
+            result = test_delete_message_by_owner(msg_id=msg_id)
+            self.assert_json_error(result, "Message already deleted")
