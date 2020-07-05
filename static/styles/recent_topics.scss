@@ -200,6 +200,23 @@
             line-height: 24px;
         }
 
+        tr {
+            background-color: hsl(100, 11%, 96%);
+
+            &:hover {
+                background-color: hsl(210, 100%, 97%);
+            }
+        }
+
+        .unread_topic {
+            background-color: hsl(0, 0%, 100%);
+        }
+
+        .last_msg_time {
+            float: left;
+            margin-right: 5px;
+        }
+
         thead th {
             background-color: hsl(0, 0%, 100%);
             color: inherit;
