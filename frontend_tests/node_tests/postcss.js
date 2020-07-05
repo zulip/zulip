@@ -77,3 +77,40 @@ run_test('Import dark theme for flatpickr', async () => {
 
     await assert_conversion(dedent(input), dedent(expected), ctx);
 });
+
+run_test('Leave non-night-mode css alone', async () => {
+    // We only apply this rule to specific files; manually set the name;
+    ctx.file = {
+        basename: 'pygments.scss',
+    };
+
+    const input = `
+        a {
+            color: light;
+        }
+
+        body.night-mode {
+            a {
+                color: dark;
+            }
+        }`;
+
+    // The final CSS has some weird indentation, we don't care about it.
+    // We shouldn't touch the `color: light` block.
+    const expected = `
+        a {
+            color: light;
+        }
+
+        body.night-mode a {
+                color: dark;
+            }
+
+        @media (prefers-color-scheme: dark) {
+            body.color-scheme-automatic a {
+                color: dark;
+            }
+        }`;
+
+    await assert_conversion(dedent(input), dedent(expected), ctx);
+});

@@ -13,6 +13,7 @@ const maybe_append_prefered_color_scheme = (file, opts) => {
     // If a file contains night-mode specific CSS, add it here:
     const night_mode_files = [
         'night_mode.scss',
+        'pygments.scss',
     ];
 
     const data = `
