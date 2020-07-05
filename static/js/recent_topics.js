@@ -282,7 +282,7 @@ exports.filters_should_hide_topic = function (topic_data) {
 };
 
 exports.inplace_rerender = function (topic_key) {
-    if (!overlays.recent_topics_open()) {
+    if (!exports.is_visible()) {
         return false;
     }
     if (!topics.has(topic_key)) {
@@ -392,7 +392,7 @@ function topic_sort(a, b) {
 }
 
 exports.complete_rerender = function () {
-    if (!overlays.recent_topics_open()) {
+    if (!exports.is_visible()) {
         return;
     }
     // Prepare header
@@ -406,7 +406,7 @@ exports.complete_rerender = function () {
     show_selected_filters();
 
     // Show topics list
-    const container = $(".recent_topics_table table tbody");
+    const container = $("#recent_topics_table table tbody");
     container.empty();
     const mapped_topic_values = Array.from(exports.get().values()).map((value) => value);
 
@@ -433,20 +433,63 @@ exports.complete_rerender = function () {
     revive_current_focus();
 };
 
-exports.launch = function () {
-    overlays.open_overlay({
-        name: "recent_topics",
-        overlay: $("#recent_topics_overlay"),
-        on_close() {
-            hashchange.exit_overlay();
-        },
-    });
+exports.is_visible = function () {
+    return $("#recent_topics_view").is(":visible");
+};
+
+exports.show = function () {
+    // Hide selected elements in the left sidebar.
+    top_left_corner.narrow_to_recent_topics();
+    stream_list.handle_narrow_deactivated();
+
+    // Hide "middle-column" which has html for rendering
+    // a messages narrow. We hide it and show recent topics.
+    $("#message_feed_container").hide();
+    $("#recent_topics_view").show();
+
+    // Save text in compose box if open.
+    drafts.update_draft();
+    // Close the compose box, this removes
+    // any arbitrary bug for compose box in recent topics.
+    // This is required since, Recent Topics is the only view
+    // with no compose box.
+    compose_actions.cancel();
+
+    narrow.narrow_title = "Recent topics (beta)";
+    narrow_state.set_current_filter(undefined);
+    notifications.redraw_title();
+    message_view_header.render_title_area();
+
     exports.complete_rerender();
 };
 
 function filter_buttons() {
     return $("#recent_filters_group").children();
 }
+
+exports.hide = function () {
+    $("#message_feed_container").show();
+    $("#recent_topics_view").hide();
+    // On firefox (and flaky on other browsers), focus
+    // remains on search box even after it is hidden. We
+    // forcefully blur it so that focus returns to the visible
+    // focused element.
+    $("#recent_topics_search").blur();
+
+    // This solves a bug with message_view_header
+    // being broken sometimes when we narrow
+    // to a filter and back to recent topics
+    // before it completely re-rerenders.
+    message_view_header.render_title_area();
+
+    // Fixes misaligned message_view and hidden
+    // floating_recipient_bar.
+    panels.resize_app();
+
+    // This makes sure user lands on the selected message
+    // and not always at the top of the narrow.
+    navigate.plan_scroll_to_selected();
+};
 
 exports.change_focused_element = function (e, input_key) {
     // Called from hotkeys.js; like all logic in that module,

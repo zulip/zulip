@@ -1,63 +1,21 @@
 .recent_topics_container {
-    position: relative;
-    height: 95%;
-    width: 70%;
-    max-width: 1200px;
-    max-height: 1000px;
     padding: 0;
     border-radius: 4px;
     background-color: hsl(0, 0%, 100%);
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    max-height: 100vh;
 
-    @media (max-width: 1130px) {
-        max-width: 90%;
-    }
-
-    @media (max-width: 700px) {
-        height: 95%;
-        max-width: none;
-        width: 90%;
-    }
-
-    .recent_topics_header {
-        padding-top: 4px;
-        padding-bottom: 8px;
-        text-align: center;
-        border-bottom: 1px solid hsl(0, 0%, 87%);
-
-        h1 {
-            margin: 0;
-            font-size: 1.1em;
-            text-transform: uppercase;
-        }
-
-        .exit {
-            font-weight: 400;
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            color: hsl(0, 0%, 67%);
-            cursor: pointer;
-
-            .exit-sign {
-                position: relative;
-                top: 3px;
-                margin-left: 3px;
-                font-size: 1.5rem;
-                font-weight: 600;
-                cursor: pointer;
-            }
-        }
-    }
-
-    .recent_topics_table {
-        margin: 0;
-        padding: 15px;
+    #recent_topics_table {
+        max-width: 100%;
+        padding-top: 12px;
         overflow: hidden !important;
         display: flex;
         flex-direction: column;
+        border: 1px solid hsl(0, 0%, 88%);
+        border-radius: 10px 10px 0 0;
+        margin-top: 50px;
 
         td {
             vertical-align: middle;
@@ -104,13 +62,17 @@
         .table_fix_head {
             padding: 10px;
             padding-top: 0 !important;
-            overflow-y: auto;
             max-height: 89%;
         }
 
         .table_fix_head table {
             /* To keep border properties to the thead th. */
             border-collapse: separate;
+        }
+
+        .table_fix_head {
+            max-height: 80vh;
+            padding-top: 0px !important;
         }
 
         #recent_topics_filter_buttons {
@@ -133,6 +95,10 @@
         .clear_search_button {
             /* Overrides app_components.css property. */
             padding-top: 6px !important;
+        }
+
+        #recent_topics_search_clear {
+            margin-top: -10px !important;
         }
 
         .btn-recent-filters {
@@ -226,7 +192,7 @@
         }
 
         tr {
-            background-color: hsl(0, 0%, 100%);
+            background-color: hsl(100, 11%, 96%);
 
             &:hover {
                 background-color: hsl(210, 100%, 97%);
@@ -249,7 +215,7 @@
             border-bottom: 1px solid hsla(0, 0%, 0%, 0.2) !important;
             position: sticky;
             top: 0;
-            z-index: 1000;
+            z-index: 1;
 
             &.active::after,
             &[data-sort]:hover::after {
@@ -302,4 +268,9 @@
             }
         }
     }
+}
+
+#recent_topics_view {
+    display: none;
+    position: relative;
 }

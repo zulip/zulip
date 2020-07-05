@@ -418,6 +418,7 @@ run_test("insert_message", (override) => {
     override("pm_list.update_private_messages", noop);
 
     const helper = test_helper();
+    set_global((recent_topics.is_visible = () => false));
 
     const new_message = {
         sender_id: isaac.user_id,

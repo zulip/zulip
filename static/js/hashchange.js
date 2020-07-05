@@ -34,10 +34,19 @@ function set_hash(hash) {
     }
 }
 
+function maybe_hide_recent_topics() {
+    if (recent_topics.is_visible()) {
+        recent_topics.hide();
+        return true;
+    }
+    return false;
+}
+
 exports.changehash = function (newhash) {
     if (changing_hash) {
         return;
     }
+    maybe_hide_recent_topics();
     message_viewport.stop_auto_scrolling();
     set_hash(newhash);
 };
@@ -51,8 +60,9 @@ exports.save_narrow = function (operators) {
 };
 
 function activate_home_tab() {
+    const coming_from_recent_topics = maybe_hide_recent_topics();
     ui_util.change_tab_to("#message_feed_container");
-    narrow.deactivate();
+    narrow.deactivate(coming_from_recent_topics);
     floating_recipient_bar.update();
     search.update_button_visibility();
     // We need to maybe scroll to the selected message
@@ -74,7 +84,6 @@ function is_overlay_hash(hash) {
         "settings",
         "organization",
         "invite",
-        "recent_topics",
         "keyboard-shortcuts",
         "message-formatting",
         "search-operators",
@@ -94,6 +103,7 @@ function do_hashchange_normal(from_reload) {
     const hash = window.location.hash.split("/");
     switch (hash[0]) {
         case "#narrow": {
+            maybe_hide_recent_topics();
             ui_util.change_tab_to("#message_feed_container");
             const operators = hash_util.parse_narrow(hash);
             if (operators === undefined) {
@@ -126,12 +136,14 @@ function do_hashchange_normal(from_reload) {
         case "#keyboard-shortcuts":
         case "#message-formatting":
         case "#search-operators":
+        case "#recent_topics":
+            recent_topics.show();
+            break;
         case "#drafts":
         case "#invite":
         case "#streams":
         case "#organization":
         case "#settings":
-        case "#recent_topics":
             blueslip.error("overlay logic skipped for: " + hash);
             break;
     }
@@ -222,10 +234,6 @@ function do_hashchange_overlay(old_hash) {
         return;
     }
 
-    if (base === "recent_topics") {
-        recent_topics.launch();
-        return;
-    }
     if (base === "keyboard-shortcuts") {
         info_overlay.show("keyboard-shortcuts");
         return;

@@ -69,6 +69,9 @@ set_global("current_msg_list", {
         return 101;
     },
 });
+set_global("recent_topics", {
+    is_visible: () => false,
+});
 
 function return_true() {
     return true;
@@ -246,7 +249,6 @@ run_test("basic_chars", () => {
                     is_active,
                     settings_open,
                     info_overlay_open,
-                    recent_topics_open: return_false,
                 });
                 test_normal_typing();
             }
@@ -259,7 +261,6 @@ run_test("basic_chars", () => {
     overlays.streams_open = return_false;
     overlays.lightbox_open = return_false;
     overlays.drafts_open = return_false;
-    overlays.recent_topics = return_false;
 
     page_params.can_create_streams = true;
     overlays.streams_open = return_true;
@@ -293,15 +294,6 @@ run_test("basic_chars", () => {
     test_normal_typing();
     overlays.is_active = return_false;
     assert_mapping("d", "drafts.launch");
-
-    // Test opening and closing of recent topics
-    overlays.is_active = return_true;
-    overlays.recent_topics_open = return_true;
-    assert_mapping("t", "overlays.close_overlay");
-    overlays.recent_topics_open = return_false;
-    test_normal_typing();
-    overlays.is_active = return_false;
-    assert_mapping("t", "hashchange.go_to_location");
 
     // Next, test keys that only work on a selected message.
     const message_view_only_keys = "@+>RjJkKsSuvi:GM";

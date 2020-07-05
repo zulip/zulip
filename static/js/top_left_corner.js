@@ -34,15 +34,16 @@ exports.update_dom_with_unread_counts = function (counts) {
     unread_ui.animate_mention_changes(mentioned_li, counts.mentioned_message_count);
 };
 
-function deselect_top_left_corner_items() {
-    function remove(elem) {
-        elem.removeClass("active-filter active-sub-filter");
-    }
+function remove(elem) {
+    elem.removeClass("active-filter active-sub-filter");
+}
 
+function deselect_top_left_corner_items() {
     remove($(".top_left_all_messages"));
     remove($(".top_left_private_messages"));
     remove($(".top_left_starred_messages"));
     remove($(".top_left_mentions"));
+    remove($(".top_left_recent_topics"));
 }
 
 function should_expand_pm_list(filter) {
@@ -107,6 +108,15 @@ exports.handle_narrow_deactivated = function () {
 
     const filter_li = $(".top_left_all_messages");
     filter_li.addClass("active-filter");
+};
+
+exports.narrow_to_recent_topics = function () {
+    remove($(".top_left_all_messages"));
+    remove($(".top_left_private_messages"));
+    remove($(".top_left_starred_messages"));
+    remove($(".top_left_mentions"));
+    $(".top_left_recent_topics").addClass("active-filter");
+    pm_list.close();
 };
 
 window.top_left_corner = exports;

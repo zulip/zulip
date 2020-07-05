@@ -472,7 +472,11 @@ exports.process_hotkey = function (e, hotkey) {
         case "vim_right":
         case "tab":
         case "shift_tab":
-            if (overlays.recent_topics_open()) {
+            if (
+                window.location.hash === "#recent_topics" &&
+                !popovers.any_active() &&
+                !overlays.is_active()
+            ) {
                 return recent_topics.change_focused_element(e, event_name);
             }
     }
@@ -516,10 +520,6 @@ exports.process_hotkey = function (e, hotkey) {
         }
         if (event_name === "open_drafts" && overlays.drafts_open()) {
             overlays.close_overlay("drafts");
-            return true;
-        }
-        if (event_name === "open_recent_topics" && overlays.recent_topics_open()) {
-            overlays.close_overlay("recent_topics");
             return true;
         }
         return false;
@@ -702,12 +702,6 @@ exports.process_hotkey = function (e, hotkey) {
 
     // Shortcuts that don't require a message
     switch (event_name) {
-        case "compose": // 'c': compose
-            compose_actions.start("stream", {trigger: "compose_hotkey"});
-            return true;
-        case "compose_private_message":
-            compose_actions.start("private", {trigger: "compose_hotkey"});
-            return true;
         case "narrow_private":
             return do_narrow_action((target, opts) => {
                 narrow.by("is", "private", opts);
@@ -740,6 +734,26 @@ exports.process_hotkey = function (e, hotkey) {
         case "p_key":
             narrow.narrow_to_next_pm_string();
             return true;
+        case "open_recent_topics":
+            hashchange.go_to_location("#");
+            return true;
+    }
+
+    // We don't want hotkeys below this to work when recent topics is
+    // open. These involve compose box hotkeys and hotkeys that can only
+    // be done performed on a message.
+    if (recent_topics.is_visible()) {
+        return true;
+    }
+
+    // Compose box hotkeys
+    switch (event_name) {
+        case "compose": // 'c': compose
+            compose_actions.start("stream", {trigger: "compose_hotkey"});
+            return true;
+        case "compose_private_message":
+            compose_actions.start("private", {trigger: "compose_hotkey"});
+            return true;
         case "open_drafts":
             drafts.launch();
             return true;
@@ -756,9 +770,6 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         case "copy_with_c":
             copy_and_paste.copy_handler();
-            return true;
-        case "open_recent_topics":
-            hashchange.go_to_location("recent_topics");
             return true;
     }
 
