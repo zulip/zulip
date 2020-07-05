@@ -18,10 +18,12 @@ const hash_util = zrequire("hash_util");
 const hashchange = zrequire("hashchange");
 const stream_data = zrequire("stream_data");
 zrequire("navigate");
+zrequire("recent_topics");
 
 set_global("search", {
     update_button_visibility: () => {},
 });
+set_global((recent_topics.is_visible = () => false));
 set_global("document", "document-stub");
 const history = set_global("history", {});
 

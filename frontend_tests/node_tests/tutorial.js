@@ -437,9 +437,9 @@ const message_events = zrequire("message_events");
 
 run_test("insert_message", (override) => {
     override(pm_list, "update_private_messages", noop);
-    override(overlays, "recent_topics_open", () => false);
 
     const helper = test_helper();
+    set_global((recent_topics.is_visible = () => false));
 
     const new_message = {
         sender_id: isaac.user_id,
@@ -635,7 +635,6 @@ run_test("unread_ops", (override) => {
 
     // Let the real code skip over details related to active overlays.
     override(overlays, "is_active", () => false);
-    override(overlays, "recent_topics_open", () => false);
 
     // First, test for a message list that cannot read messages.  Here
     // we use with_field to limit the scope of our stub function.

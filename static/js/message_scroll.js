@@ -85,6 +85,10 @@ exports.update_top_of_narrow_notices = function (msg_list) {
 
     if (msg_list.data.fetch_status.has_found_oldest() && current_msg_list !== home_msg_list) {
         const filter = narrow_state.filter();
+        if (filter === undefined && recent_topics.is_visible()) {
+            // user moved away from the narrow / filter to recent topics.
+            return;
+        }
         // Potentially display the notice that lets users know
         // that not all messages were searched.  One could
         // imagine including `filter.is_search()` in these

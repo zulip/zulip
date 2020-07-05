@@ -15,6 +15,12 @@ function get_formatted_sub_count(sub_count) {
 
 function make_message_view_header(filter) {
     const message_view_header = {};
+    if (recent_topics.is_visible()) {
+        return {
+            title: i18n.t("Recent topics (beta)"),
+            icon: "clock-o",
+        };
+    }
     if (filter === undefined) {
         return {
             title: i18n.t("All messages"),

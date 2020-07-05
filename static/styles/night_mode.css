@@ -435,6 +435,10 @@ on a dark background, and don't change the dark labels dark either. */
         }
     }
 
+    .recent_topics_container {
+        background-color: hsl(212, 28%, 18%) !important;
+    }
+
     #recent_topics_table tr {
         background-color: hsl(212, 28%, 18%);
 
@@ -444,23 +448,27 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     #recent_topics_table .unread_topic {
-        background-color: hsl(211, 28%, 16%);
+        background-color: hsla(212, 30%, 22%, 0.6);
     }
 
     .btn-recent-selected,
-    .recent_topics_table thead th {
+    #recent_topics_table thead th {
         background-color: hsl(0, 0%, 0%) !important;
         &:hover {
             background-color: hsl(211, 29%, 14%) !important;
         }
     }
 
-    .recent_topics_table td a {
+    #recent_topics_table td a {
         color: hsl(206, 89%, 74%);
         text-decoration: none;
         &:hover {
             color: hsl(208, 64%, 52%);
         }
+    }
+
+    #recent_topics_table {
+        border: 1px solid hsla(0, 0%, 0%, 0.6);
     }
 
     thead,
