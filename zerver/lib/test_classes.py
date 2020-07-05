@@ -484,8 +484,12 @@ class ZulipTestCase(TestCase):
             payload['realm_in_root_domain'] = realm_in_root_domain
         return self.client_post('/accounts/register/', payload, **kwargs)
 
-    def get_confirmation_url_from_outbox(self, email_address: str, *,
-                                         url_pattern: str=None) -> str:
+    def get_confirmation_url_from_outbox(
+        self,
+        email_address: str,
+        *,
+        url_pattern: Optional[str]=None,
+    ) -> str:
         from django.core.mail import outbox
         if url_pattern is None:
             # This is a bit of a crude heuristic, but good enough for most tests.
@@ -495,7 +499,10 @@ class ZulipTestCase(TestCase):
                 addr == email_address or addr.endswith(f" <{email_address}>")
                 for addr in message.to
             ):
-                return re.search(url_pattern, message.body).groups()[0]
+                match = re.search(url_pattern, message.body)
+                assert match is not None
+                [confirmation_url] = match.groups()
+                return confirmation_url
         else:
             raise AssertionError("Couldn't find a confirmation email.")
 
@@ -943,7 +950,7 @@ class WebhookTestCase(ZulipTestCase):
     """
     STREAM_NAME: Optional[str] = None
     TEST_USER_EMAIL = 'webhook-bot@zulip.com'
-    URL_TEMPLATE: Optional[str] = None
+    URL_TEMPLATE: str
     FIXTURE_DIR_NAME: Optional[str] = None
 
     @property
@@ -964,9 +971,10 @@ class WebhookTestCase(ZulipTestCase):
         payload = self.get_body(fixture_name)
         if content_type is not None:
             kwargs['content_type'] = content_type
-        headers = get_fixture_http_headers(self.FIXTURE_DIR_NAME, fixture_name)
-        headers = standardize_headers(headers)
-        kwargs.update(headers)
+        if self.FIXTURE_DIR_NAME is not None:
+            headers = get_fixture_http_headers(self.FIXTURE_DIR_NAME, fixture_name)
+            headers = standardize_headers(headers)
+            kwargs.update(headers)
         msg = self.send_json_payload(self.test_user, self.url, payload,
                                      self.STREAM_NAME, **kwargs)
         self.do_test_topic(msg, expected_topic)
@@ -974,15 +982,21 @@ class WebhookTestCase(ZulipTestCase):
 
         return msg
 
-    def send_and_test_private_message(self, fixture_name: str, expected_topic: str=None,
-                                      expected_message: str=None, content_type: Optional[str]="application/json",
-                                      **kwargs: Any) -> Message:
+    def send_and_test_private_message(
+        self,
+        fixture_name: str,
+        expected_topic: Optional[str] = None,
+        expected_message: Optional[str] = None,
+        content_type: Optional[str] = "application/json",
+        **kwargs: Any,
+    ) -> Message:
         payload = self.get_body(fixture_name)
         if content_type is not None:
             kwargs['content_type'] = content_type
-        headers = get_fixture_http_headers(self.FIXTURE_DIR_NAME, fixture_name)
-        headers = standardize_headers(headers)
-        kwargs.update(headers)
+        if self.FIXTURE_DIR_NAME is not None:
+            headers = get_fixture_http_headers(self.FIXTURE_DIR_NAME, fixture_name)
+            headers = standardize_headers(headers)
+            kwargs.update(headers)
         # The sender profile shouldn't be passed any further in kwargs, so we pop it.
         sender = kwargs.pop('sender', self.test_user)
         msg = self.send_json_payload(sender, self.url, payload,
@@ -1017,6 +1031,7 @@ class WebhookTestCase(ZulipTestCase):
     def get_body(self, fixture_name: str) -> Union[str, Dict[str, str]]:
         """Can be implemented either as returning a dictionary containing the
         post parameters or as string containing the body of the request."""
+        assert self.FIXTURE_DIR_NAME is not None
         return ujson.dumps(ujson.loads(self.webhook_fixture_data(self.FIXTURE_DIR_NAME, fixture_name)))
 
     def do_test_topic(self, msg: Message, expected_topic: Optional[str]) -> None:
