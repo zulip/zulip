@@ -7,6 +7,7 @@ const noop = function () {};
 set_global('Filter', noop);
 global.stub_out_jquery();
 set_global('document', null);
+set_global('current_msg_list', {});
 
 zrequire('FetchStatus', 'js/fetch_status');
 zrequire('muting');

@@ -521,9 +521,7 @@ MessageListData.prototype = {
             this._selected_id = new_id;
         }
 
-        setTimeout(() => {
-            this.reorder_messages(new_id, opts);
-        }, 0);
+        this.reorder_messages(new_id, opts);
     },
 
     reorder_messages: function (new_id, opts) {
@@ -553,7 +551,12 @@ MessageListData.prototype = {
                 self._all_items.sort(message_sort_func);
             }
 
-            opts.re_render();
+            // The data updates above need to happen synchronously,
+            // but the rerendering can be deferred.  It's unclear
+            // whether this deferral is necessary; it was present in
+            // the original 2013 local echo implementation but we
+            // don't have records for why we added it then.
+            setTimeout(opts.re_render, 0);
         }
     },
 
