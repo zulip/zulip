@@ -229,6 +229,10 @@
             }
         }
 
+        .unread_topic {
+            background-color: hsl(0, 0%, 100%);
+        }
+
         .last_msg_time {
             float: left;
             margin-right: 5px;

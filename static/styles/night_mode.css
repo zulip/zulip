@@ -443,6 +443,10 @@ on a dark background, and don't change the dark labels dark either. */
         }
     }
 
+    #recent_topics_table .unread_topic {
+        background-color: hsl(211, 28%, 16%);
+    }
+
     .btn-recent-selected,
     .recent_topics_table thead th {
         background-color: hsl(0, 0%, 0%) !important;
