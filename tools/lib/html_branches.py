@@ -53,7 +53,7 @@ class HtmlTreeBranch:
 
 
 class Node:
-    def __init__(self, token: Token, parent: "Optional[Node]") -> None:
+    def __init__(self, token: Optional[Token], parent: "Optional[Node]") -> None:
         # FIXME parent parameter is not used!
         self.token = token
         self.children: List[Node] = []
@@ -133,6 +133,7 @@ def html_branches(text: str, fn: Optional[str] = None) -> List[HtmlTreeBranch]:
     branches: List[HtmlTreeBranch] = []
 
     def walk(node: Node, tag_info_list: Sequence[TagInfo] = []) -> None:
+        assert node.token is not None
         info = get_tag_info(node.token)
         tag_info_list = [*tag_info_list, info]
 
