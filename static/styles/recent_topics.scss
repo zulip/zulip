@@ -146,7 +146,6 @@
         .recent_topic_unread_count {
             background-color: hsl(105, 2%, 50%) !important;
             color: hsl(0, 0%, 100%);
-            float: right;
             height: 16px;
             line-height: 16px;
             font-size: 12px;
@@ -156,6 +155,26 @@
             background-color: hsl(0, 0%, 89%);
             padding: 0 4px;
             margin-right: 10px;
+            align-self: center;
+        }
+
+        .flex_container {
+            display: flex;
+            align-items: center;
+        }
+
+        .flex_container .left_part {
+            flex-wrap: wrap;
+        }
+
+        .flex_container .right_part {
+            margin-left: auto;
+            display: inline-flex;
+        }
+
+        .recent_topic_actions {
+            display: flex;
+            flex-flow: row nowrap;
         }
 
         .recent_avatars {
