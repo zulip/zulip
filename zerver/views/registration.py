@@ -426,7 +426,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                  'require_ldap_password': require_ldap_password,
                  'password_auth_enabled': password_auth_enabled(realm),
                  'root_domain_available': is_root_domain_available(),
-                 'default_stream_groups': get_default_stream_groups(realm),
+                 'default_stream_groups': [] if realm is None else get_default_stream_groups(realm),
                  'accounts': get_accounts_for_email(email),
                  'MAX_REALM_NAME_LENGTH': str(Realm.MAX_REALM_NAME_LENGTH),
                  'MAX_NAME_LENGTH': str(UserProfile.MAX_NAME_LENGTH),
