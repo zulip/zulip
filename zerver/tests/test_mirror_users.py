@@ -1,8 +1,12 @@
 from collections import namedtuple
-from typing import List
+from typing import Any, List
 from unittest import mock
 
-from zerver.lib.actions import get_client
+from django.db import IntegrityError
+from django.utils.timezone import now as timezone_now
+
+from zerver.lib.actions import create_mirror_user_if_needed, get_client
+from zerver.lib.create_user import create_user_profile
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_emails_in_zulip_realm
 from zerver.models import UserProfile, get_realm, get_user
@@ -154,3 +158,35 @@ class MirroredMessageUsersTest(ZulipTestCase):
 
         bob = get_user(self.nonreg_email('bob'), sender.realm)
         self.assertTrue(bob.is_mirror_dummy)
+
+    def test_create_mirror_user_despite_race(self) -> None:
+        realm = get_realm('zulip')
+
+        email = 'fred@example.com'
+
+        email_to_full_name = lambda email: 'fred'
+
+        def create_user(**kwargs: Any) -> UserProfile:
+            self.assertEqual(kwargs['full_name'], 'fred')
+            self.assertEqual(kwargs['email'], email)
+            self.assertEqual(kwargs['active'], False)
+            self.assertEqual(kwargs['is_mirror_dummy'], True)
+            # We create an actual user here to simulate a race.
+            # We use the minimal, un-mocked function.
+            kwargs['bot_type'] = None
+            kwargs['bot_owner'] = None
+            kwargs['tos_version'] = None
+            kwargs['timezone'] = timezone_now()
+            create_user_profile(**kwargs).save()
+            raise IntegrityError()
+
+        with mock.patch('zerver.lib.actions.create_user',
+                        side_effect=create_user) as m:
+            mirror_fred_user = create_mirror_user_if_needed(
+                realm,
+                email,
+                email_to_full_name,
+            )
+
+        self.assertEqual(mirror_fred_user.delivery_email, email)
+        m.assert_called()
