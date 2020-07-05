@@ -4,6 +4,8 @@ from typing import Any, Optional, Set
 from unittest import mock
 
 import ujson
+from django.conf import settings
+from django.db.models import Q
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
@@ -35,6 +37,8 @@ from zerver.models import (
     MAX_MESSAGE_LENGTH,
     MAX_TOPIC_NAME_LENGTH,
     Message,
+    Realm,
+    Recipient,
     ScheduledMessage,
     Stream,
     Subscription,
@@ -1380,3 +1384,99 @@ class StreamMessagesTest(ZulipTestCase):
         self.assertEqual(set(recent_conversation['user_ids']), {user.id for user in users if
                                                                 user != users[1]})
         self.assertEqual(recent_conversation['max_message_id'], message2_id)
+
+class PersonalMessageSendTest(ZulipTestCase):
+    def test_personal_to_self(self) -> None:
+        """
+        If you send a personal to yourself, only you see it.
+        """
+        old_user_profiles = list(UserProfile.objects.all())
+        test_email = self.nonreg_email('test1')
+        self.register(test_email, "test1")
+
+        old_messages = []
+        for user_profile in old_user_profiles:
+            old_messages.append(message_stream_count(user_profile))
+
+        user_profile = self.nonreg_user('test1')
+        self.send_personal_message(user_profile, user_profile)
+
+        new_messages = []
+        for user_profile in old_user_profiles:
+            new_messages.append(message_stream_count(user_profile))
+
+        self.assertEqual(old_messages, new_messages)
+
+        user_profile = self.nonreg_user('test1')
+        recipient = Recipient.objects.get(type_id=user_profile.id, type=Recipient.PERSONAL)
+        self.assertEqual(most_recent_message(user_profile).recipient, recipient)
+
+    def assert_personal(self, sender: UserProfile, receiver: UserProfile, content: str="testcontent") -> None:
+        """
+        Send a private message from `sender_email` to `receiver_email` and check
+        that only those two parties actually received the message.
+        """
+        sender_messages = message_stream_count(sender)
+        receiver_messages = message_stream_count(receiver)
+
+        other_user_profiles = UserProfile.objects.filter(~Q(id=sender.id) &
+                                                         ~Q(id=receiver.id))
+        old_other_messages = []
+        for user_profile in other_user_profiles:
+            old_other_messages.append(message_stream_count(user_profile))
+
+        self.send_personal_message(sender, receiver, content)
+
+        # Users outside the conversation don't get the message.
+        new_other_messages = []
+        for user_profile in other_user_profiles:
+            new_other_messages.append(message_stream_count(user_profile))
+
+        self.assertEqual(old_other_messages, new_other_messages)
+
+        # The personal message is in the streams of both the sender and receiver.
+        self.assertEqual(message_stream_count(sender),
+                         sender_messages + 1)
+        self.assertEqual(message_stream_count(receiver),
+                         receiver_messages + 1)
+
+        recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
+        self.assertEqual(most_recent_message(sender).recipient, recipient)
+        self.assertEqual(most_recent_message(receiver).recipient, recipient)
+
+    def test_personal(self) -> None:
+        """
+        If you send a personal, only you and the recipient see it.
+        """
+        self.login('hamlet')
+        self.assert_personal(
+            sender=self.example_user("hamlet"),
+            receiver=self.example_user("othello"),
+        )
+
+    def test_private_message_policy(self) -> None:
+        """
+        Tests that PRIVATE_MESSAGE_POLICY_DISABLED works correctly.
+        """
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        do_set_realm_property(user_profile.realm, "private_message_policy",
+                              Realm.PRIVATE_MESSAGE_POLICY_DISABLED)
+        with self.assertRaises(JsonableError):
+            self.send_personal_message(user_profile, self.example_user("cordelia"))
+
+        bot_profile = self.create_test_bot("testbot", user_profile)
+        self.send_personal_message(user_profile, get_system_bot(settings.NOTIFICATION_BOT))
+        self.send_personal_message(user_profile, bot_profile)
+        self.send_personal_message(bot_profile, user_profile)
+
+    def test_non_ascii_personal(self) -> None:
+        """
+        Sending a PM containing non-ASCII characters succeeds.
+        """
+        self.login('hamlet')
+        self.assert_personal(
+            sender=self.example_user("hamlet"),
+            receiver=self.example_user("othello"),
+            content="hümbüǵ",
+        )
