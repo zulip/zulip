@@ -136,6 +136,7 @@ def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
         # TODO obviously this should be made to actually use the async
 
         def attempt_send() -> Optional[str]:
+            assert client is not None
             try:
                 stream_id = client.send_notification_async(
                     device.token, payload, topic=settings.APNS_TOPIC,
@@ -638,6 +639,7 @@ def get_message_payload_apns(user_profile: UserProfile, message: Message) -> Dic
         'message_ids': [message.id],
     })
 
+    assert message.rendered_content is not None
     content, _ = truncate_content(get_mobile_push_content(message.rendered_content))
     apns_data = {
         'alert': {
@@ -656,6 +658,7 @@ def get_message_payload_gcm(
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     '''A `message` payload + options, for Android via GCM/FCM.'''
     data = get_message_payload(user_profile, message)
+    assert message.rendered_content is not None
     content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
     data.update({
         'event': 'message',
