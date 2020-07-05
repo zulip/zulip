@@ -3,19 +3,16 @@ from typing import Any, Optional
 from unittest import mock
 
 import ujson
-from django.db import IntegrityError
 from django.utils.timezone import now as timezone_now
 
 from zerver.decorator import JsonableError
 from zerver.lib.actions import (
-    create_mirror_user_if_needed,
     do_change_stream_post_policy,
     do_create_user,
     do_deactivate_user,
     do_set_realm_property,
     internal_send_stream_message,
 )
-from zerver.lib.create_user import create_user_profile
 from zerver.lib.message import get_recent_private_conversations
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_emails_in_zulip_realm
@@ -862,38 +859,6 @@ class MessagePOSTTest(ZulipTestCase):
         self.assertEqual(message.content, "Test message")
         self.assertEqual(message.sender, notification_bot)
         self.assertEqual(message.recipient.type_id, stream.id)
-
-    def test_create_mirror_user_despite_race(self) -> None:
-        realm = get_realm('zulip')
-
-        email = 'fred@example.com'
-
-        email_to_full_name = lambda email: 'fred'
-
-        def create_user(**kwargs: Any) -> UserProfile:
-            self.assertEqual(kwargs['full_name'], 'fred')
-            self.assertEqual(kwargs['email'], email)
-            self.assertEqual(kwargs['active'], False)
-            self.assertEqual(kwargs['is_mirror_dummy'], True)
-            # We create an actual user here to simulate a race.
-            # We use the minimal, un-mocked function.
-            kwargs['bot_type'] = None
-            kwargs['bot_owner'] = None
-            kwargs['tos_version'] = None
-            kwargs['timezone'] = timezone_now()
-            create_user_profile(**kwargs).save()
-            raise IntegrityError()
-
-        with mock.patch('zerver.lib.actions.create_user',
-                        side_effect=create_user) as m:
-            mirror_fred_user = create_mirror_user_if_needed(
-                realm,
-                email,
-                email_to_full_name,
-            )
-
-        self.assertEqual(mirror_fred_user.delivery_email, email)
-        m.assert_called()
 
     def test_guest_user(self) -> None:
         sender = self.example_user('polonius')
