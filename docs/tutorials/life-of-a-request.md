@@ -86,15 +86,13 @@ Note the `zh-hans` prefix--that url pattern gets added by `i18n_patterns`.
 
 ## API endpoints use [REST](https://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm)
 
-Our example is a REST API endpoint. It's a PUT to `/users`.
+Our example is a REST API endpoint. It's a POST to `/users`.
 
 With the exception of incoming webhooks (which we do not usually control the
 format of), legacy endpoints, and logged-out endpoints, Zulip uses REST
 for its API. This means that we use:
 
-* POST for creating something new where we don't have a unique
-  ID. Also used as a catch-all if no other verb is appropriate.
-* PUT for creating something for which we have a unique ID.
+* POST for creating/updating something where. Also used as a catch-all if no other verb is appropriate.
 * DELETE for deleting something
 * PATCH for updating or editing attributes of something.
 * GET to get something (read-only)
@@ -102,7 +100,7 @@ for its API. This means that we use:
   useful to check a link without downloading a potentially large link
 * OPTIONS (handled automatically, see more below)
 
-Of these, PUT, DELETE, HEAD, OPTIONS, and GET are *idempotent*, which
+Of these, DELETE, HEAD, OPTIONS, and GET are *idempotent*, which
 means that we can send the request multiple times and get the same
 state on the server. You might get a different response after the first
 request, as we like to give our clients an error so they know that no
@@ -117,18 +115,6 @@ This [cookbook](http://restcookbook.com/) and
 [tutorial](https://www.restapitutorial.com/) can be helpful if you are
 new to REST web applications.
 
-### PUT is only for creating new things
-
-If you're used to using PUT to update or modify resources, you might
-find our convention a little strange.
-
-We use PUT to create resources with unique identifiers, POST to create
-resources without unique identifiers (like sending a message with the
-same content multiple times), and PATCH to modify resources.
-
-In our example, `create_user_backend` uses PUT, because there's a unique
-identifier, the user's email.
-
 ### OPTIONS
 
 The OPTIONS method will yield the allowed methods.
@@ -142,7 +128,7 @@ We can see this reflected in [zproject/urls.py](https://github.com/zulip/zulip/b
 
     path('users', 'zerver.lib.rest.rest_dispatch',
         {'GET': 'zerver.views.users.get_members_backend',
-         'PUT': 'zerver.views.users.create_user_backend'}),
+         'POST': 'zerver.views.users.create_user_backend'}),
 
 In this way, the API is partially self-documenting.
 
@@ -177,12 +163,12 @@ In our example,
 
 ```
 {'GET': 'zerver.views.users.get_members_backend',
- 'PUT': 'zerver.views.users.create_user_backend'}
+ 'POST': 'zerver.views.users.create_user_backend'}
 ```
 
 is supplied as an argument to `rest_dispatch`, along with the
 [HTTPRequest](https://docs.djangoproject.com/en/1.8/ref/request-response/).
-The request has the HTTP verb `PUT`, which `rest_dispatch` can use to
+The request has the HTTP verb `POST`, which `rest_dispatch` can use to
 find the correct view to show:
 `zerver.views.users.create_user_backend`.
 
