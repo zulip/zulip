@@ -106,6 +106,7 @@ from zerver.lib.topic import ORIG_TOPIC, TOPIC_LINKS, TOPIC_NAME
 from zerver.lib.validator import (
     Validator,
     check_bool,
+    check_dict,
     check_dict_only,
     check_float,
     check_int,
@@ -303,7 +304,7 @@ class BaseAction(ZulipTestCase):
             raise AssertionError('Mismatching states')
 
 class NormalActionsTest(BaseAction):
-    def create_bot(self, email: str, **extras: Any) -> Optional[UserProfile]:
+    def create_bot(self, email: str, **extras: Any) -> UserProfile:
         return self.create_test_bot(email, self.user_profile, **extras)
 
     def realm_bot_schema(self, field_name: str, check: Validator[object]) -> Validator[Dict[str, object]]:
@@ -362,7 +363,7 @@ class NormalActionsTest(BaseAction):
         def get_checker(check_gravatar: Validator[Optional[str]]) -> Validator[Dict[str, object]]:
             schema_checker = check_events_dict([
                 ('type', equals('message')),
-                ('flags', check_list(None)),
+                ('flags', check_list(check_string)),
                 ('message', check_dict_only([
                     ('avatar_url', check_gravatar),
                     ('client', check_string),
@@ -371,7 +372,7 @@ class NormalActionsTest(BaseAction):
                     ('display_recipient', check_string),
                     ('id', check_int),
                     ('is_me_message', check_bool),
-                    ('reactions', check_list(None)),
+                    ('reactions', check_list(check_dict([]))),
                     ('recipient_id', check_int),
                     ('sender_realm_str', check_string),
                     ('sender_email', check_string),
@@ -380,8 +381,8 @@ class NormalActionsTest(BaseAction):
                     ('sender_short_name', check_string),
                     ('stream_id', check_int),
                     (TOPIC_NAME, check_string),
-                    (TOPIC_LINKS, check_list(None)),
-                    ('submessages', check_list(None)),
+                    (TOPIC_LINKS, check_list(check_string)),
+                    ('submessages', check_list(check_dict([]))),
                     ('timestamp', check_int),
                     ('type', check_string),
                 ])),
@@ -405,7 +406,7 @@ class NormalActionsTest(BaseAction):
         # Verify message editing
         schema_checker = check_events_dict([
             ('type', equals('update_message')),
-            ('flags', check_list(None)),
+            ('flags', check_list(check_string)),
             ('content', check_string),
             ('edit_timestamp', check_int),
             ('message_id', check_int),
@@ -426,7 +427,7 @@ class NormalActionsTest(BaseAction):
             ('stream_id', check_int),
             ('stream_name', check_string),
             (TOPIC_NAME, check_string),
-            (TOPIC_LINKS, check_list(None)),
+            (TOPIC_LINKS, check_list(check_string)),
             ('user_id', check_int),
             ('is_me_message', check_bool),
         ])
@@ -464,7 +465,7 @@ class NormalActionsTest(BaseAction):
         # Verify do_update_embedded_data
         schema_checker = check_events_dict([
             ('type', equals('update_message')),
-            ('flags', check_list(None)),
+            ('flags', check_list(check_string)),
             ('content', check_string),
             ('message_id', check_int),
             ('message_ids', check_list(check_int)),
@@ -2104,10 +2105,10 @@ class NormalActionsTest(BaseAction):
                 ('sender_full_name', equals('Notification Bot')),
                 ('is_me_message', equals(False)),
                 ('type', equals('stream')),
-                ('submessages', check_list(check_string)),
-                (TOPIC_LINKS, check_list(check_url)),
+                ('submessages', check_list(check_dict([]))),
+                (TOPIC_LINKS, check_list(check_string)),
                 ('avatar_url', check_none_or(check_url)),
-                ('reactions', check_list(None)),
+                ('reactions', check_list(check_dict([]))),
                 ('client', equals('Internal')),
                 (TOPIC_NAME, equals('stream events')),
                 ('recipient_id', check_int),
@@ -2261,9 +2262,10 @@ class NormalActionsTest(BaseAction):
         self.login('hamlet')
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
-        data = {'uri': None}
+        uri = None
 
         def do_upload() -> None:
+            nonlocal uri
             result = self.client_post("/json/user_uploads", {'file': fp})
 
             self.assert_json_success(result)
@@ -2271,7 +2273,6 @@ class NormalActionsTest(BaseAction):
             uri = result.json()["uri"]
             base = '/user_uploads/'
             self.assertEqual(base, uri[:len(base)])
-            data['uri'] = uri
 
         events = self.verify_action(
             lambda: do_upload(),
@@ -2302,7 +2303,8 @@ class NormalActionsTest(BaseAction):
 
         hamlet = self.example_user("hamlet")
         self.subscribe(hamlet, "Denmark")
-        body = f"First message ...[zulip.txt](http://{hamlet.realm.host}" + data['uri'] + ")"
+        assert uri is not None
+        body = f"First message ...[zulip.txt](http://{hamlet.realm.host}" + uri + ")"
         events = self.verify_action(
             lambda: self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test"),
             num_events=2)
@@ -2589,7 +2591,8 @@ class SubscribeActionTest(BaseAction):
         self.do_test_subscribe_events(include_subscribers=False)
 
     def do_test_subscribe_events(self, include_subscribers: bool) -> None:
-        subscription_fields = basic_stream_fields + [
+        subscription_fields: List[Tuple[str, Validator[object]]] = [
+            *basic_stream_fields,
             ('audible_notifications', check_none_or(check_bool)),
             ('color', check_string),
             ('desktop_notifications', check_none_or(check_bool)),
