@@ -51,6 +51,7 @@
     "postcss-extend-rule": "^3.0.0",
     "postcss-loader": "^3.0.0",
     "postcss-nested": "^4.1.2",
+    "postcss-raw-append": "^1.0.0",
     "postcss-scss": "^2.0.0",
     "postcss-simple-vars": "^5.0.2",
     "postcss-wrap": "^0.0.4",
