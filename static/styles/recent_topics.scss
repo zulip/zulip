@@ -280,5 +280,20 @@
         thead .last_msg_time_header {
             white-space: nowrap;
         }
+
+        @media (max-width: 750px) {
+            // Hide participants and last message time
+            // on smaller screens. This ennsures user always
+            // has a nice UI experience.
+            .recent_topic_users,
+            .recent_topic_timestamp,
+            thead .participants_header,
+            thead .last_msg_time_header {
+                display: none;
+            }
+            table td {
+                line-height: 2em;
+            }
+        }
     }
 }
