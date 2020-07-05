@@ -256,5 +256,10 @@
                 }
             }
         }
+
+        .recent_topic_stream,
+        thead .last_msg_time_header {
+            white-space: nowrap;
+        }
     }
 }
