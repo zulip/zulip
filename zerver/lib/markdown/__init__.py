@@ -342,7 +342,7 @@ def walk_tree_with_family(root: Element,
             if result is not None:
                 if currElementPair.parent is not None:
                     grandparent_element = currElementPair.parent
-                    grandparent = grandparent_element.value
+                    grandparent: Optional[Element] = grandparent_element.value
                 else:
                     grandparent = None
                 family = ElementFamily(
@@ -517,6 +517,7 @@ class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
         found_imgs = walk_tree(root, lambda e: e if e.tag == "img" else None)
         for img in found_imgs:
             url = img.get("src")
+            assert url is not None
             if urllib.parse.urlsplit(url).scheme != "http":
                 # Don't rewrite images on our own site (e.g. emoji).
                 continue
@@ -689,7 +690,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 return True
         return False
 
-    def corrected_image_source(self, url: str) -> str:
+    def corrected_image_source(self, url: str) -> Optional[str]:
         # This function adjusts any urls from linx.li and
         # wikipedia.org to point to the actual image url.  It's
         # structurally very similar to dropbox_image, and possibly
@@ -984,7 +985,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
     def get_url_data(self, e: Element) -> Optional[Tuple[str, Optional[str]]]:
         if e.tag == "a":
-            return (e.get("href"), e.text)
+            url = e.get("href")
+            assert url is not None
+            return (url, e.text)
         return None
 
     def handle_image_inlining(
@@ -1008,6 +1011,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 parent.remove(ahref_element)
 
         elif parent.tag == 'p':
+            assert grandparent is not None
             parent_index = None
             for index, uncle in enumerate(grandparent):
                 if uncle is parent:
@@ -1788,6 +1792,7 @@ class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
 class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
     def zulip_specific_link_changes(self, el: Element) -> Union[None, Element]:
         href = el.get('href')
+        assert href is not None
 
         # Sanitize url or don't parse link. See linkify_tests in markdown_test_cases for banned syntax.
         href = sanitize_url(self.unescape(href.strip()))
@@ -1802,7 +1807,7 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         el.set("href", href)
 
         # Show link href if title is empty
-        if not el.text.strip():
+        if not el.text or not el.text.strip():
             el.text = href
 
         # Prevent realm_filters from running on the content of a Markdown link, breaking up the link.
