@@ -143,7 +143,7 @@ AVAILABLE_OUTGOING_WEBHOOK_INTERFACES: Dict[str, Any] = {
 }
 
 def get_service_interface_class(interface: str) -> Any:
-    if interface is None or interface not in AVAILABLE_OUTGOING_WEBHOOK_INTERFACES:
+    if interface not in AVAILABLE_OUTGOING_WEBHOOK_INTERFACES:
         return AVAILABLE_OUTGOING_WEBHOOK_INTERFACES[GENERIC_INTERFACE]
     else:
         return AVAILABLE_OUTGOING_WEBHOOK_INTERFACES[interface]
@@ -172,7 +172,7 @@ def send_response_message(bot_id: int, message_info: Dict[str, Any], response_da
     message_type = message_info['type']
     display_recipient = message_info['display_recipient']
     try:
-        topic_name = get_topic_from_message_info(message_info)
+        topic_name: Optional[str] = get_topic_from_message_info(message_info)
     except KeyError:
         topic_name = None
 
@@ -228,6 +228,7 @@ def notify_bot_owner(event: Dict[str, Any],
     message_url = get_message_url(event)
     bot_id = event['user_profile_id']
     bot_owner = get_user_profile_by_id(bot_id).bot_owner
+    assert bot_owner is not None
 
     notification_message = f"[A message]({message_url}) triggered an outgoing webhook."
     if failure_message:
