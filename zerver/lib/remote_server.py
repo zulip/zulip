@@ -21,10 +21,12 @@ class PushNotificationBouncerException(Exception):
 class PushNotificationBouncerRetryLaterError(JsonableError):
     http_status_code = 502
 
-def send_to_push_bouncer(method: str,
-                         endpoint: str,
-                         post_data: Union[str, Dict[str, Any]],
-                         extra_headers: Mapping[str, Any] = {}) -> Dict[str, Any]:
+def send_to_push_bouncer(
+    method: str,
+    endpoint: str,
+    post_data: Union[str, Mapping[str, Union[str, bytes]]],
+    extra_headers: Mapping[str, str] = {},
+) -> Dict[str, object]:
     """While it does actually send the notice, this function has a lot of
     code and comments around error handling for the push notifications
     bouncer.  There are several classes of failures, each with its own
@@ -93,7 +95,7 @@ def send_to_push_bouncer(method: str,
     # If we don't throw an exception, it's a successful bounce!
     return ujson.loads(res.content)
 
-def send_json_to_push_bouncer(method: str, endpoint: str, post_data: Dict[str, Any]) -> None:
+def send_json_to_push_bouncer(method: str, endpoint: str, post_data: Mapping[str, object]) -> None:
     send_to_push_bouncer(
         method,
         endpoint,

@@ -1569,13 +1569,13 @@ class TestSendToPushBouncer(ZulipTestCase):
     @mock.patch('logging.warning')
     def test_500_error(self, mock_request: mock.MagicMock, mock_warning: mock.MagicMock) -> None:
         with self.assertRaises(PushNotificationBouncerRetryLaterError):
-            result, failed = send_to_push_bouncer('register', 'register', {'data': True})
+            result, failed = send_to_push_bouncer('register', 'register', {'data': 'true'})
         mock_warning.assert_called_once()
 
     @mock.patch('requests.request', return_value=Result(status=400))
     def test_400_error(self, mock_request: mock.MagicMock) -> None:
         with self.assertRaises(JsonableError) as exc:
-            send_to_push_bouncer('register', 'register', {'msg': True})
+            send_to_push_bouncer('register', 'register', {'msg': 'true'})
         self.assertEqual(exc.exception.msg, 'error')
 
     def test_400_error_invalid_server_key(self) -> None:
@@ -1587,7 +1587,7 @@ class TestSendToPushBouncer(ZulipTestCase):
                         return_value=Result(status=400,
                                             content=ujson.dumps(error_obj.to_json()))):
             with self.assertRaises(PushNotificationBouncerException) as exc:
-                send_to_push_bouncer('register', 'register', {'msg': True})
+                send_to_push_bouncer('register', 'register', {'msg': 'true'})
         self.assertEqual(str(exc.exception),
                          'Push notifications bouncer error: '
                          'Zulip server auth failure: testRole is not registered')
@@ -1595,14 +1595,14 @@ class TestSendToPushBouncer(ZulipTestCase):
     @mock.patch('requests.request', return_value=Result(status=400, content='/'))
     def test_400_error_when_content_is_not_serializable(self, mock_request: mock.MagicMock) -> None:
         with self.assertRaises(ValueError) as exc:
-            send_to_push_bouncer('register', 'register', {'msg': True})
+            send_to_push_bouncer('register', 'register', {'msg': 'true'})
         self.assertEqual(str(exc.exception),
                          'Expected object or value')
 
     @mock.patch('requests.request', return_value=Result(status=300, content='/'))
     def test_300_error(self, mock_request: mock.MagicMock) -> None:
         with self.assertRaises(PushNotificationBouncerException) as exc:
-            send_to_push_bouncer('register', 'register', {'msg': True})
+            send_to_push_bouncer('register', 'register', {'msg': 'true'})
         self.assertEqual(str(exc.exception),
                          'Push notification bouncer returned unexpected status code 300')
 
