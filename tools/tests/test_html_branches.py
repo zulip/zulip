@@ -49,24 +49,31 @@ class TestHtmlBranches(unittest.TestCase):
 
         tree = html_tag_tree(html)
 
+        assert tree.children[0].token is not None
         self.assertEqual(tree.children[0].token.kind, 'html_start')
         self.assertEqual(tree.children[0].token.tag, 'html')
 
+        assert tree.children[0].children[0].token is not None
         self.assertEqual(tree.children[0].children[0].token.kind, 'html_start')
         self.assertEqual(tree.children[0].children[0].token.tag, 'head')
 
+        assert tree.children[0].children[0].children[0].token is not None
         self.assertEqual(tree.children[0].children[0].children[0].token.kind, 'html_start')
         self.assertEqual(tree.children[0].children[0].children[0].token.tag, 'title')
 
+        assert tree.children[0].children[1].token is not None
         self.assertEqual(tree.children[0].children[1].token.kind, 'html_start')
         self.assertEqual(tree.children[0].children[1].token.tag, 'body')
 
+        assert tree.children[0].children[1].children[0].token is not None
         self.assertEqual(tree.children[0].children[1].children[0].token.kind, 'html_start')
         self.assertEqual(tree.children[0].children[1].children[0].token.tag, 'p')
 
+        assert tree.children[0].children[1].children[0].children[0].token is not None
         self.assertEqual(tree.children[0].children[1].children[0].children[0].token.kind, 'html_singleton')
         self.assertEqual(tree.children[0].children[1].children[0].children[0].token.tag, 'br')
 
+        assert tree.children[0].children[1].children[1].token is not None
         self.assertEqual(tree.children[0].children[1].children[1].token.kind, 'html_start')
         self.assertEqual(tree.children[0].children[1].children[1].token.tag, 'p')
 
