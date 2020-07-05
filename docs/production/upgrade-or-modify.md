@@ -239,12 +239,13 @@ instructions for other supported platforms.
 
 5. Finally, we need to reinstall the current version of Zulip, which
    among other things will recompile Zulip's Python module
-   dependencies for your new version of Python:
+   dependencies for your new version of Python, and fix any
+   Full-Text Search indexes that may have been corrupted by the PostgreSQL upgrade:
 
     ```
     rm -rf /srv/zulip-venv-cache/*
     /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
-        /home/zulip/deployments/current/ --ignore-static-assets
+        /home/zulip/deployments/current/ --ignore-static-assets --audit-fts-indexes
     ```
 
 That last command will finish by restarting your Zulip server; you
@@ -378,7 +379,13 @@ To upgrade the version of PostgreSQL on the Zulip server:
     /home/zulip/deployments/current/scripts/setup/upgrade-postgres
     ```
 
-That last command will finish by restarting your Zulip server; you
+4. Finally, run a command that will fix any Full-Text Search indexes that may have been
+   corrupted by the PostgreSQL upgrade:
+   ```
+   su zulip -c '/home/zulip/deployments/current/manage.py audit_fts_indexes'
+   ```
+
+`upgrade-postgres` will have finished by restarting your Zulip server; you
 should now be able to navigate to its URL and confirm everything is
 working correctly.
 
