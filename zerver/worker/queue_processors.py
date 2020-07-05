@@ -161,12 +161,12 @@ def retry_send_email_failures(
     return wrapper
 
 class QueueProcessingWorker(ABC):
-    queue_name: str = None
+    queue_name: str
     CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM = 50
 
     def __init__(self) -> None:
-        self.q: SimpleQueueClient = None
-        if self.queue_name is None:
+        self.q: Optional[SimpleQueueClient] = None
+        if not hasattr(self, "queue_name"):
             raise WorkerDeclarationException("Queue worker declared without queue_name")
 
         self.initialize_statistics()
@@ -268,11 +268,13 @@ class QueueProcessingWorker(ABC):
         self.q = SimpleQueueClient()
 
     def start(self) -> None:
+        assert self.q is not None
         self.initialize_statistics()
         self.q.register_json_consumer(self.queue_name, self.consume_wrapper)
         self.q.start_consuming()
 
     def stop(self) -> None:  # nocoverage
+        assert self.q is not None
         self.q.stop_consuming()
 
 class LoopQueueProcessingWorker(QueueProcessingWorker):
@@ -280,6 +282,7 @@ class LoopQueueProcessingWorker(QueueProcessingWorker):
     sleep_only_if_empty = True
 
     def start(self) -> None:  # nocoverage
+        assert self.q is not None
         self.initialize_statistics()
         while True:
             events = self.q.json_drain_queue(self.queue_name)
