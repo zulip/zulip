@@ -73,7 +73,7 @@ on how the REST API handles our user creation example.
 ## Views serving HTML are internationalized by server path
 
 If we look in
-[zproject/urls.py](../../zproject/urls.py),
+[zproject/urls.py](https://github.com/zulip/zulip/blob/master/zproject/urls.py),
 we can see something called `i18n_urls`. These urls show up in the
 address bar of the browser, and serve HTML.
 
@@ -124,7 +124,7 @@ This request:
 yields a response with this HTTP header:
 `Allow: PUT, GET`
 
-We can see this reflected in [zproject/urls.py](../../zproject/urls.py):
+We can see this reflected in [zproject/urls.py](https://github.com/zulip/zulip/blob/master/zproject/urls.py):
 
     path('users', 'zerver.lib.rest.rest_dispatch',
         {'GET': 'zerver.views.users.get_members_backend',
@@ -138,7 +138,7 @@ The endpoints from the legacy JSON API are written without REST in
 mind. They are used extensively by the web client, and use POST.
 
 You can see them in
-[zproject/legacy_urls.py](../../zproject/legacy_urls.py).
+[zproject/legacy_urls.py](https://github.com/zulip/zulip/blob/master/zproject/legacy_urls.py).
 
 ### Incoming webhook integrations may not be RESTful
 
