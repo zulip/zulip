@@ -521,9 +521,7 @@ MessageListData.prototype = {
             this._selected_id = new_id;
         }
 
-        setTimeout(() => {
-            this.reorder_messages(new_id, opts);
-        }, 0);
+        this.reorder_messages(new_id, opts);
     },
 
     reorder_messages: function (new_id, opts) {
@@ -553,7 +551,7 @@ MessageListData.prototype = {
                 self._all_items.sort(message_sort_func);
             }
 
-            opts.re_render();
+            setTimeout(opts.re_render, 0);
         }
     },
 
