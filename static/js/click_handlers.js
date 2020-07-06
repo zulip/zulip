@@ -170,8 +170,7 @@ exports.initialize = function () {
         message_flags.toggle_starred_and_update_server(message);
     });
 
-    $("#main_div").on("click", ".message_reaction", function (e) {
-        e.stopPropagation();
+    $("#main_div").on("click", ".message_reaction", function () {
         const local_id = $(this).attr('data-reaction-id');
         const message_id = rows.get_message_id(this);
         reactions.process_reaction_click(message_id, local_id);

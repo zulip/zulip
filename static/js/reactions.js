@@ -113,10 +113,6 @@ exports.toggle_emoji_reaction = function (message_id, emoji_name) {
     }
 
     update_ui_and_send_reaction_ajax(message_id, reaction_info);
-
-    // The next line isn't always necessary, but it is harmless/quick
-    // when no popovers are there.
-    emoji_picker.hide_emoji_popover();
 };
 
 exports.process_reaction_click = function (message_id, local_id) {
