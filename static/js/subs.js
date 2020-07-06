@@ -630,11 +630,12 @@ exports.setup_page = function (callback) {
 
 exports.switch_to_stream_row = function (stream_id) {
     const stream_row = exports.row_for_stream_id(stream_id);
+    const container = $(".streams-list");
 
     exports.get_active_data().row.removeClass("active");
     stream_row.addClass("active");
 
-    scroll_util.scroll_element_into_container(stream_row, stream_row.parent());
+    scroll_util.scroll_element_into_container(stream_row, container);
 
     // It's dubious that we need this timeout any more.
     setTimeout(() => {
