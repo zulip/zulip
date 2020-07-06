@@ -92,4 +92,6 @@ Handlebars.registerHelper(
     (content) => new Handlebars.SafeString(util.clean_user_content_links(content)),
 );
 
+Handlebars.registerHelper('numberFormat', (number) => number.toLocaleString());
+
 window.templates = exports;
