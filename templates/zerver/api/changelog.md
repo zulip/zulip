@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 3.0
 
+**Feature level 24**
+
+* The `!avatar()` and `!gravatar()` markdown syntax, which was never
+  documented and rarely used, was removed.
+
 **Feature level 23**
 
 * `GET/PUT/POST /users/me/pointer`: Eliminated.  We eliminated

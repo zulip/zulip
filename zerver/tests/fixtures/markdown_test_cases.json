@@ -723,30 +723,6 @@
       "text_content": "gonna take a break for a bit--all yours if you want to play around too. what I did:\n\ninstall cmake\ngit clone zulip desktop\nrun cmake-gui .. in c:\\zulip\\zulip-desktop\\msvcbuild\nhit configure\/generate until it generated the msvc project (had to make a fix to some cmake files)\nopened vs2013 \ntried to build\n"
     },
     {
-      "name": "avatar",
-      "input": "!avatar(username@example.com)",
-      "expected_output": "<p><img alt=\"username@example.com\" class=\"message_body_gravatar\" src=\"/avatar/username@example.com?s=30\" title=\"username@example.com\"></p>",
-      "text_content": "username@example.com"
-    },
-    {
-      "name": "gravatar",
-      "input": "!gravatar(username@example.com)",
-      "expected_output": "<p><img alt=\"username@example.com\" class=\"message_body_gravatar\" src=\"/avatar/username@example.com?s=30\" title=\"username@example.com\"></p>",
-      "text_content": "username@example.com"
-    },
-    {
-      "name": "avatar_escaped",
-      "input": "`!avatar(username@example.com)`",
-      "expected_output": "<p><code>!avatar(username@example.com)</code></p>",
-      "text_content": "!avatar(username@example.com)"
-    },
-    {
-      "name": "gravatar_escaped",
-      "input": "`!gravatar(username@example.com)`",
-      "expected_output": "<p><code>!gravatar(username@example.com)</code></p>",
-      "text_content": "!gravatar(username@example.com)"
-    },
-    {
       "name": "timestamp_backend_markdown_only",
       "input": "<time:Jun 5th 2017, 10:30PM>",
       "expected_output": "<p><time datetime=\"2017-06-05T22:30:00Z\">Jun 5th 2017, 10:30PM</time></p>",

@@ -109,7 +109,7 @@ below are for a webhook named `MyWebHook`.
 
 * Consider using our Zulip markup to make the output from your
   integration especially attractive or useful (e.g.  emoji, markdown
-  emphasis, @-mentions, or `!avatar(email)`).
+  emphasis or @-mentions).
 
 * Use topics effectively to ensure sequential messages about the same
   thing are threaded together; this makes for much better consumption

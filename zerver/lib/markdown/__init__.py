@@ -103,8 +103,6 @@ version = 1
 _T = TypeVar('_T')
 ElementStringNone = Union[Element, Optional[str]]
 
-AVATAR_REGEX = r'!avatar\((?P<email>[^)]*)\)'
-GRAVATAR_REGEX = r'!gravatar\((?P<email>[^)]*)\)'
 EMOJI_REGEX = r'(?P<syntax>:[\w\-\+]+:)'
 
 def verbose_compile(pattern: str) -> Any:
@@ -1198,35 +1196,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     if title:
                         found_url.family.child.text = title
 
-class Avatar(markdown.inlinepatterns.Pattern):
-    def handleMatch(self, match: Match[str]) -> Optional[Element]:
-        img = Element('img')
-        email_address = match.group('email')
-        email = email_address.strip().lower()
-        profile_id = None
-
-        db_data = self.md.zulip_db_data
-        if db_data is not None:
-            user_dict = db_data['email_info'].get(email)
-            if user_dict is not None:
-                profile_id = user_dict['id']
-
-        img.set('class', 'message_body_gravatar')
-        img.set('src', f'/avatar/{profile_id or email}?s=30')
-        img.set('title', email)
-        img.set('alt', email)
-        return img
-
-def possible_avatar_emails(content: str) -> Set[str]:
-    emails = set()
-    for REGEX in [AVATAR_REGEX, GRAVATAR_REGEX]:
-        matches = re.findall(REGEX, content)
-        for email in matches:
-            if email:
-                emails.add(email)
-
-    return emails
-
 class Timestamp(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
         time_input_string = match.group('time')
@@ -1940,10 +1909,7 @@ class Markdown(markdown.Markdown):
         reg.register(Tex(r'\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B'), 'tex', 90)
         reg.register(StreamTopicPattern(get_compiled_stream_topic_link_regex(), self), 'topic', 87)
         reg.register(StreamPattern(get_compiled_stream_link_regex(), self), 'stream', 85)
-        reg.register(Avatar(AVATAR_REGEX, self), 'avatar', 80)
         reg.register(Timestamp(r'<time:(?P<time>[^>]*?)>'), 'timestamp', 75)
-        # Note that !gravatar syntax should be deprecated long term.
-        reg.register(Avatar(GRAVATAR_REGEX, self), 'gravatar', 70)
         reg.register(UserGroupMentionPattern(mention.user_group_mentions, self), 'usergroupmention', 65)
         reg.register(LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, self), 'link', 60)
         reg.register(AutoLink(get_web_link_regex(), self), 'autolink', 55)
@@ -2106,30 +2072,6 @@ def maybe_update_markdown_engines(realm_filters_key: Optional[int], email_gatewa
 _privacy_re = re.compile('\\w', flags=re.UNICODE)
 def privacy_clean_markdown(content: str) -> str:
     return repr(_privacy_re.sub('x', content))
-
-def get_email_info(realm_id: int, emails: Set[str]) -> Dict[str, FullNameInfo]:
-    if not emails:
-        return dict()
-
-    q_list = {
-        Q(email__iexact=email.strip().lower())
-        for email in emails
-    }
-
-    rows = UserProfile.objects.filter(
-        realm_id=realm_id,
-    ).filter(
-        functools.reduce(lambda a, b: a | b, q_list),
-    ).values(
-        'id',
-        'email',
-    )
-
-    dct = {
-        row['email'].strip().lower(): row
-        for row in rows
-    }
-    return dct
 
 def get_possible_mentions_info(realm_id: int, mention_texts: Set[str]) -> List[FullNameInfo]:
     if not mention_texts:
@@ -2318,16 +2260,13 @@ def do_convert(content: str,
     if message_realm is not None:
 
         # Here we fetch the data structures needed to render
-        # mentions/avatars/stream mentions from the database, but only
+        # mentions/stream mentions from the database, but only
         # if there is syntax in the message that might use them, since
         # the fetches are somewhat expensive and these types of syntax
         # are uncommon enough that it's a useful optimization.
 
         if mention_data is None:
             mention_data = MentionData(message_realm.id, content)
-
-        emails = possible_avatar_emails(content)
-        email_info = get_email_info(message_realm.id, emails)
 
         stream_names = possible_linked_stream_names(content)
         stream_name_info = get_stream_name_info(message_realm, stream_names)
@@ -2339,7 +2278,6 @@ def do_convert(content: str,
 
         _md_engine.zulip_db_data = {
             'realm_alert_words_automaton': realm_alert_words_automaton,
-            'email_info': email_info,
             'mention_data': mention_data,
             'active_realm_emoji': active_realm_emoji,
             'realm_uri': message_realm.uri,
