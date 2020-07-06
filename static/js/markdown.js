@@ -305,7 +305,12 @@ function handleTimestamp(time) {
     const escaped_time = _.escape(time);
     if (timeobject === null || !timeobject.isValid()) {
         // Unsupported time format: rerender accordingly.
-        return `<span class="timestamp-error">Invalid time format: ${escaped_time}</span>`;
+
+        // We do not show an error on these formats in local echo because
+        // there is a chance that the server would interpret it successfully
+        // and if it does, the jumping from the error message to a rendered
+        // timestamp doesn't look good.
+        return `<span>${escaped_time}</span>`;
     }
 
     // Use html5 <time> tag for valid timestamps.
