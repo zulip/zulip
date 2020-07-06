@@ -904,12 +904,6 @@ exports.initialize = function () {
         }
     });
 
-    $("body").on("mouseover", ".subscribed-button", (e) => {
-        $(e.target).addClass("btn-danger").text(i18n.t("Unsubscribe"));
-    }).on("mouseout", ".subscribed-button", (e) => {
-        $(e.target).removeClass("btn-danger").text(i18n.t("Subscribed"));
-    });
-
     $("#subscriptions_table").on("click", ".email-address", function () {
         selectText(this);
     });
