@@ -479,6 +479,54 @@ class NormalActionsTest(BaseAction):
         )
         schema_checker('events[0]', events[0])
 
+        # Verify move topic to different stream.
+        schema_checker = check_events_dict([
+            ('type', equals('update_message')),
+            ('flags', check_list(None)),
+            ('edit_timestamp', check_int),
+            ('message_id', check_int),
+            ('message_ids', check_list(check_int)),
+            (ORIG_TOPIC, check_string),
+            ('propagate_mode', check_string),
+            ('stream_id', check_int),
+            ('new_stream_id', check_int),
+            ('stream_name', check_string),
+            (TOPIC_NAME, check_string),
+            (TOPIC_LINKS, check_list(None)),
+            ('user_id', check_int),
+        ])
+
+        # Send 2 messages in "test" topic.
+        self.send_stream_message(self.user_profile, "Verona")
+        message_id = self.send_stream_message(self.user_profile, "Verona")
+        message = Message.objects.get(id=message_id)
+        topic = 'new_topic'
+        stream = get_stream("Denmark", self.user_profile.realm)
+        propagate_mode = 'change_all'
+        prior_mention_user_ids = set()
+
+        events = self.verify_action(
+            lambda: do_update_message(
+                self.user_profile,
+                message,
+                stream,
+                topic,
+                propagate_mode,
+                True,
+                True,
+                None,
+                None,
+                set(),
+                set(),
+                None),
+            state_change_expected=True,
+            # There are 3 events generated for this action
+            # * update_message: For updating existing messages
+            # * 2 new message events: Breadcrumb messages in the new and old topics.
+            num_events=3,
+        )
+        schema_checker('events[0]', events[0])
+
     def test_update_message_flags(self) -> None:
         # Test message flag update events
         schema_checker = check_events_dict([
