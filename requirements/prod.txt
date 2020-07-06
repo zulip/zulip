@@ -661,7 +661,7 @@ s3transfer==0.3.3 \
 six==1.15.0 \
     --hash=sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259 \
     --hash=sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced \
-    # via -r requirements/common.in, argon2-cffi, cryptography, django-bitfield, hypchat, isodate, jsonschema, libthumbor, openapi-core, openapi-schema-validator, openapi-spec-validator, pyopenssl, python-dateutil, qrcode, social-auth-app-django, social-auth-core, talon, traitlets, twilio, zulip
+    # via argon2-cffi, cryptography, django-bitfield, hypchat, isodate, jsonschema, libthumbor, openapi-core, openapi-schema-validator, openapi-spec-validator, pyopenssl, python-dateutil, qrcode, social-auth-app-django, social-auth-core, talon, traitlets, twilio, zulip
 social-auth-app-django==4.0.0 \
     --hash=sha256:2c69e57df0b30c9c1823519c5f1992cbe4f3f98fdc7d95c840e091a752708840 \
     --hash=sha256:567ad0e028311541d7dfed51d3bf2c60440a6fd236d5d4d06c5a618b3d6c57c5 \

@@ -337,8 +337,7 @@ python_rules = RuleList(
                      'scripts/lib/zulip_tools.py',
                      'tools/lib/provision.py',
                      'zproject/dev_settings.py',
-                     'zproject/prod_settings_template.py',
-                     'zthumbor'},
+                     'zproject/prod_settings_template.py'},
          'description': 'Comment-style variable type annotation. Use Python 3.6 style annotations instead.',
          'good_lines': ['a: List[int] = []'],
          'bad_lines': ['a = []  # type: List[int]']},
@@ -370,8 +369,6 @@ python_rules = RuleList(
              'tools/lib',
              # TODO: Update our migrations from Text->str.
              'zerver/migrations/',
-             # thumbor is (currently) python2 only
-             'zthumbor/',
          },
          'description': "Now that we're a Python 3 only codebase, we don't need to use typing.Text. Please use str instead.",
          },

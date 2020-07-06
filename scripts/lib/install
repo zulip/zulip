@@ -275,7 +275,7 @@ fi
 if [ "$package_system" = apt ]; then
     if ! apt-get install -y \
          puppet git curl wget jq \
-         python3 python3-six crudini \
+         python3 crudini \
          "${ADDITIONAL_PACKAGES[@]}"; then
         set +x
         echo -e '\033[0;31m' >&2
@@ -287,7 +287,7 @@ if [ "$package_system" = apt ]; then
 elif [ "$package_system" = yum ]; then
     if ! yum install -y \
          puppet git curl wget jq \
-         python3 python3-six crudini \
+         python3 crudini \
          "${ADDITIONAL_PACKAGES[@]}"; then
         set +x
         echo -e '\033[0;31m' >&2

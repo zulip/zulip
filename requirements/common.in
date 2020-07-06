@@ -93,9 +93,6 @@ pytz
 # Needed for redis
 redis
 
-# Needed for Python 2+3 compatibility
-six
-
 # Needed to parse source maps for error reporting
 sourcemap
 

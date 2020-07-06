@@ -911,7 +911,7 @@ sh==1.12.14 \
 six==1.15.0 \
     --hash=sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259 \
     --hash=sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced \
-    # via -r requirements/common.in, argon2-cffi, automat, aws-sam-translator, cfn-lint, cryptography, django-bitfield, docker, ecdsa, hypchat, isodate, jsonschema, junit-xml, libthumbor, moto, openapi-core, openapi-schema-validator, openapi-spec-validator, packaging, parsel, pip-tools, protego, pyopenssl, python-dateutil, python-debian, python-jose, qrcode, responses, social-auth-app-django, social-auth-core, talon, traitlets, twilio, w3lib, websocket-client, zulip
+    # via argon2-cffi, automat, aws-sam-translator, cfn-lint, cryptography, django-bitfield, docker, ecdsa, hypchat, isodate, jsonschema, junit-xml, libthumbor, moto, openapi-core, openapi-schema-validator, openapi-spec-validator, packaging, parsel, pip-tools, protego, pyopenssl, python-dateutil, python-debian, python-jose, qrcode, responses, social-auth-app-django, social-auth-core, talon, traitlets, twilio, w3lib, websocket-client, zulip
 snakeviz==2.1.0 \
     --hash=sha256:8ce375b18ae4a749516d7e6c6fbbf8be6177c53974f53534d8eadb646cd279b1 \
     --hash=sha256:92ad876fb6a201a7e23a6b85ea96d9643a51e285667c253a8653643804f7cb68 \
