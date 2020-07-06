@@ -774,7 +774,7 @@ const show_flatpickr = (element, callback, default_timestamp) => {
         mode: 'single',
         enableTime: true,
         clickOpens: false,
-        defaultDate: default_timestamp || moment().format(),
+        defaultDate: default_timestamp,
         plugins: [new confirmDatePlugin({})], // eslint-disable-line new-cap, no-undef
         positionElement: element,
         dateFormat: 'Z',
@@ -885,18 +885,10 @@ exports.content_typeahead_selected = function (item, event) {
         beginning = beginning.substring(0, start) + item + '** ';
     } else if (this.completing === 'time_jump') {
         let timestring = beginning.substring(beginning.lastIndexOf('<time:'));
-        let default_timestamp;
         if (timestring.startsWith('<time:') && timestring.endsWith('>')) {
             timestring = timestring.substring(6, timestring.length - 1);
-            moment.suppressDeprecationWarnings = true;
-            try {
-                // If there's already a time in the compose box here,
-                // we use it to initialize the flatpickr instance.
-                default_timestamp = moment(timestring).toDate();
-            } catch {
-                // Otherwise, default to showing the current time.
-            }
         }
+        const timestamp = timerender.get_timestamp_for_flatpickr(timestring);
 
         const on_timestamp_selection = (val) => {
             const datestr = val;
@@ -908,7 +900,7 @@ exports.content_typeahead_selected = function (item, event) {
             textbox.caret(beginning.length, beginning.length);
             compose_ui.autosize_textarea();
         };
-        show_flatpickr(this.$element[0], on_timestamp_selection, default_timestamp);
+        show_flatpickr(this.$element[0], on_timestamp_selection, timestamp);
         return beginning + rest;
     }
 

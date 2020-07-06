@@ -226,6 +226,23 @@ exports.get_full_time = function (timestamp) {
     return new XDate(timestamp * 1000).toISOString();
 };
 
+exports.get_timestamp_for_flatpickr = (timestring) => {
+    let timestamp;
+    moment.suppressDeprecationWarnings = true;
+    try {
+        // If there's already a valid time in the compose box,
+        // we use it to initialize the flatpickr instance.
+        timestamp = moment(timestring);
+    } finally {
+        // Otherwise, default to showing the current time.
+        if (!timestamp || !timestamp.isValid()) {
+            timestamp = moment();
+        }
+    }
+    moment.suppressDeprecationWarnings = false;
+    return timestamp.toDate();
+};
+
 exports.stringify_time = function (time) {
     if (page_params.twenty_four_hour_time) {
         return time.toString('HH:mm');
