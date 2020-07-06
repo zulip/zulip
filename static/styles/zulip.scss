@@ -871,17 +871,18 @@ td.pointer {
 
 .stream_topic {
     display: inline-block;
-    padding: 3px 3px 2px 12px;
-    margin-left: -5px;
+    padding: 3px 3px 2px 9px;
     height: 17px;
     line-height: 17px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.recipient_bar_controls {
+    flex-grow: 1;
 }
 
 .recipient_row_date {
-    position: absolute;
-    right: 0;
-    top: 0;
-
     color: hsl(0, 0%, 53%);
     font-size: 12px;
     font-weight: 600;
@@ -1016,6 +1017,8 @@ td.pointer {
 }
 
 .message-header-contents {
+    display: flex;
+    align-items: center;
     border-right: 1px solid hsl(0, 0%, 88%);
     background-color: hsl(0, 0%, 88%);
 }
