@@ -10,6 +10,7 @@ from unittest import mock
 from unittest.mock import patch
 
 import botocore.exceptions
+import responses
 import ujson
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
@@ -26,7 +27,7 @@ from zerver.lib.actions import (
     internal_send_private_message,
 )
 from zerver.lib.avatar import avatar_url, get_avatar_field
-from zerver.lib.avatar_hash import user_avatar_path
+from zerver.lib.avatar_hash import user_avatar_content_hash, user_avatar_path
 from zerver.lib.cache import cache_get, get_realm_used_upload_space_cache_key
 from zerver.lib.create_user import copy_user_settings
 from zerver.lib.initial_password import initial_password
@@ -54,6 +55,7 @@ from zerver.lib.upload import (
     resize_avatar,
     resize_emoji,
     sanitize_name,
+    upload_avatar_image_from_url,
     upload_emoji_image,
     upload_export_tarball,
     upload_message_file,
@@ -847,6 +849,25 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         )
 
         self.assertEqual(url, None)
+
+    def test_upload_avatar_image_from_url(self) -> None:
+        user_profile = self.example_user('hamlet')
+
+        with responses.RequestsMock(assert_all_requests_are_fired=True) as requests_mock:
+            mocked_user_avatar_url = 'https://github.com/user/mock_avatar_url/image.jpeg'
+            mocked_social_avatar = io.BytesIO(open('zerver/tests/images/img.png', 'rb').read())
+
+            requests_mock.add(
+                method='GET',
+                url=mocked_user_avatar_url,
+                status=200,
+                content_type='binary',
+                body=mocked_social_avatar.getvalue()
+            )
+
+            uploaded_avatar_hash = upload_avatar_image_from_url(mocked_user_avatar_url, user_profile)
+            mocked_social_avatar_hash = user_avatar_content_hash(mocked_social_avatar.getvalue())
+            self.assertEqual(uploaded_avatar_hash, mocked_social_avatar_hash)
 
     def test_avatar_url(self) -> None:
         """Verifies URL schemes for avatars and realm icons."""
