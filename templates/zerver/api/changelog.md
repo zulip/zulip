@@ -10,6 +10,12 @@ below features are supported.
 
 ## Changes in Zulip 3.0
 
+**Feature level 24**
+
+* `!avatar()` and `!gravatar()`: Eliminated. We eliminated these
+  legacy custom additions to our markdown. This affects any webhooks
+  or bots that use this syntax when sending a Zulip message.
+
 **Feature level 23**
 
 * `GET/PUT/POST /users/me/pointer`: Eliminated.  We eliminated
