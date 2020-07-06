@@ -27,10 +27,25 @@ fi
 # the pg_upgradecluster command fails if it is still running
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=759725
 pg_ctlcluster "$UPGRADE_FROM" main stop
+
+(
+    # Two-stage application of puppet; we apply the bare-bones
+    # postgresql configuration first, so that FTS will be configured
+    # prior to the pg_upgradecluster.
+    TEMP_CONF_DIR=$(mktemp -d)
+    cp /etc/zulip/zulip.conf "$TEMP_CONF_DIR"
+    ZULIP_CONF="${TEMP_CONF_DIR}/zulip.conf"
+    crudini --set "$ZULIP_CONF" postgresql version "$UPGRADE_TO"
+    crudini --set "$ZULIP_CONF" machine puppet_classes zulip::base,zulip::postgres_appdb_base
+    touch "/usr/share/postgresql/$UPGRADE_TO/pgroonga_setup.sql.applied"
+
+    "$ZULIP_PATH"/scripts/zulip-puppet-apply -f --config "$ZULIP_CONF"
+    rm -rf "$TEMP_CONF_DIR"
+)
+
 pg_upgradecluster "$UPGRADE_FROM" main
 
 crudini --set /etc/zulip/zulip.conf postgresql version "$UPGRADE_TO"
-touch "/usr/share/postgresql/$UPGRADE_TO/pgroonga_setup.sql.applied"
 "$ZULIP_PATH"/scripts/zulip-puppet-apply -f
 
 service memcached restart

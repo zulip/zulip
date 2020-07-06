@@ -378,12 +378,6 @@ To upgrade the version of PostgreSQL on the Zulip server:
     /home/zulip/deployments/current/scripts/setup/upgrade-postgres
     ```
 
-   During this step, it is normal to see output containing:
-   ```
-   ERROR:  could not open stop-word file "/usr/share/postgresql/12/tsearch_data/zulip_english.stop": No such file or directory
-   ERROR:  text search dictionary "zulip.english_us_hunspell" does not exist
-   ```
-
 That last command will finish by restarting your Zulip server; you
 should now be able to navigate to its URL and confirm everything is
 working correctly.
