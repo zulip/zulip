@@ -20,7 +20,12 @@ from zerver.lib.actions import (
     do_set_realm_property,
     extract_private_recipients,
     extract_stream_indicator,
+    internal_prep_private_message,
+    internal_prep_stream_message_by_name,
+    internal_send_huddle_message,
+    internal_send_private_message,
     internal_send_stream_message,
+    internal_send_stream_message_by_name,
 )
 from zerver.lib.cache import cache_delete, get_stream_cache_key
 from zerver.lib.message import MessageDict, get_raw_unread_data, get_recent_private_conversations
@@ -1585,3 +1590,124 @@ class ExtractTest(ZulipTestCase):
         mixed = ujson.dumps([3, 4, 'eeshan@example.com'])
         with self.assertRaisesRegex(JsonableError, 'Recipient lists may contain emails or user IDs, but not both.'):
             extract_private_recipients(mixed)
+
+class InternalPrepTest(ZulipTestCase):
+
+    def test_returns_for_internal_sends(self) -> None:
+        # For our internal_send_* functions we return
+        # if the prep stages fail.  This is mostly defensive
+        # code, since we are generally creating the messages
+        # ourselves, but we want to make sure that the functions
+        # won't actually explode if we give them bad content.
+        bad_content = ''
+        realm = get_realm('zulip')
+        cordelia = self.example_user('cordelia')
+        hamlet = self.example_user('hamlet')
+        othello = self.example_user('othello')
+        stream = get_stream('Verona', realm)
+
+        with mock.patch('logging.exception') as m:
+            internal_send_private_message(
+                realm=realm,
+                sender=cordelia,
+                recipient_user=hamlet,
+                content=bad_content,
+            )
+
+        m.assert_called_once_with(
+            "Error queueing internal message by %s: %s",
+            "cordelia@zulip.com",
+            "Message must not be empty",
+        )
+
+        with mock.patch('logging.exception') as m:
+            internal_send_huddle_message(
+                realm=realm,
+                sender=cordelia,
+                emails=[hamlet.email, othello.email],
+                content=bad_content,
+            )
+
+        m.assert_called_once_with(
+            "Error queueing internal message by %s: %s",
+            "cordelia@zulip.com",
+            "Message must not be empty",
+        )
+
+        with mock.patch('logging.exception') as m:
+            internal_send_stream_message(
+                realm=realm,
+                sender=cordelia,
+                topic='whatever',
+                content=bad_content,
+                stream=stream,
+            )
+
+        m.assert_called_once_with(
+            "Error queueing internal message by %s: %s",
+            "cordelia@zulip.com",
+            "Message must not be empty",
+        )
+
+        with mock.patch('logging.exception') as m:
+            internal_send_stream_message_by_name(
+                realm=realm,
+                sender=cordelia,
+                stream_name=stream.name,
+                topic='whatever',
+                content=bad_content,
+            )
+
+        m.assert_called_once_with(
+            "Error queueing internal message by %s: %s",
+            "cordelia@zulip.com",
+            "Message must not be empty",
+        )
+
+    def test_error_handling(self) -> None:
+        realm = get_realm('zulip')
+        sender = self.example_user('cordelia')
+        recipient_user = self.example_user('hamlet')
+        content = 'x' * 15000
+
+        result = internal_prep_private_message(
+            realm=realm,
+            sender=sender,
+            recipient_user=recipient_user,
+            content=content)
+        assert result is not None
+        message = result['message']
+        self.assertIn('message was too long', message.content)
+
+        # Simulate sending a message to somebody not in the
+        # realm of the sender.
+        recipient_user = self.mit_user('starnine')
+        with mock.patch('logging.exception') as logging_mock:
+            result = internal_prep_private_message(
+                realm=realm,
+                sender=sender,
+                recipient_user=recipient_user,
+                content=content)
+        logging_mock.assert_called_once_with(
+            "Error queueing internal message by %s: %s",
+            "cordelia@zulip.com",
+            "You can't send private messages outside of your organization.",
+        )
+
+    def test_ensure_stream_gets_called(self) -> None:
+        realm = get_realm('zulip')
+        sender = self.example_user('cordelia')
+        stream_name = 'test_stream'
+        topic = 'whatever'
+        content = 'hello'
+
+        internal_prep_stream_message_by_name(
+            realm=realm,
+            sender=sender,
+            stream_name=stream_name,
+            topic=topic,
+            content=content)
+
+        # This would throw an error if the stream
+        # wasn't automatically created.
+        Stream.objects.get(name=stream_name, realm_id=realm.id)
