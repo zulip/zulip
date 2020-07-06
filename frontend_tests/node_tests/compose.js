@@ -137,8 +137,6 @@ run_test('validate_stream_message_address_info', () => {
     assert(compose.validate_stream_message_address_info('social'));
 
     $('#stream_message_recipient_stream').select(noop);
-    assert(!compose.validate_stream_message_address_info('foobar'));
-    assert.equal($('#compose-error-msg').html(), "translated: <p>The stream <b>foobar</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
 
     sub.subscribed = false;
     stream_data.add_sub(sub);
@@ -321,8 +319,8 @@ run_test('validate_stream_message', () => {
     assert(!$("#compose-all-everyone").visible());
     assert(!$("#compose-send-status").visible());
 
-    stream_data.get_subscriber_count = function (stream_name) {
-        assert.equal(stream_name, 'social');
+    stream_data.get_subscriber_count = function (stream_id) {
+        assert.equal(stream_id, 101);
         return 16;
     };
     global.stub_templates((template_name, data) => {
@@ -346,7 +344,7 @@ run_test('test_validate_stream_message_post_policy', () => {
     // This test is in continuation with test_validate but it has been separated out
     // for better readability. Their relative position of execution should not be changed.
     // Although the position with respect to test_validate_stream_message does not matter
-    // as `get_stream_post_policy` is reset at the end.
+    // as different stream is used for this test.
     page_params.is_admin = false;
     const sub = {
         stream_id: 102,
@@ -354,19 +352,16 @@ run_test('test_validate_stream_message_post_policy', () => {
         subscribed: true,
         stream_post_policy: stream_data.stream_post_policy_values.admins.code,
     };
-    stream_data.get_stream_post_policy = function () {
-        return 2;
-    };
+
     compose_state.topic('subject102');
+    compose_state.stream_name('stream102');
     stream_data.add_sub(sub);
     assert(!compose.validate());
     assert.equal($('#compose-error-msg').html(), i18n.t("Only organization admins are allowed to post to this stream."));
 
-    // reset `get_stream_post_policy` so that any tests occurung after this
+    // reset compose_state.stream_name to 'social' again so that any tests occurung after this
     // do not reproduce this error.
-    stream_data.get_stream_post_policy = function () {
-        return stream_data.stream_post_policy_values.everyone.code;
-    };
+    compose_state.stream_name('social');
 });
 
 run_test('markdown_rtl', () => {

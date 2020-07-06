@@ -437,8 +437,8 @@ exports.update_stream_email_address = function (sub, email) {
     sub.email_address = email;
 };
 
-exports.get_subscriber_count = function (stream_name) {
-    const sub = exports.get_sub_by_name(stream_name);
+exports.get_subscriber_count = function (stream_id) {
+    const sub = exports.get_sub_by_id(stream_id);
     if (sub === undefined) {
         blueslip.warn('We got a get_subscriber_count count call for a non-existent stream.');
         return;
@@ -567,14 +567,6 @@ exports.get_invite_only = function (stream_name) {
         return false;
     }
     return sub.invite_only;
-};
-
-exports.get_stream_post_policy = function (stream_name) {
-    const sub = exports.get_sub(stream_name);
-    if (sub === undefined) {
-        return false;
-    }
-    return sub.stream_post_policy;
 };
 
 exports.all_topics_in_cache = function (sub) {
