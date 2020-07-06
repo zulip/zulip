@@ -621,7 +621,8 @@ urls += [
     path('thumbnail', rest_dispatch,
          {'GET': ('zerver.views.thumbnail.backend_serve_thumbnail',
                   {'override_api_url_scheme'})}),
-    # Avatars have the same constraint due to `!avatar` syntax.
+    # Avatars have the same constraint because they are used by our
+    # compose typeaheads and other places.
     re_path(r'^avatar/(?P<email_or_id>[\S]+)/(?P<medium>[\S]+)?$',
             rest_dispatch,
             {'GET': ('zerver.views.users.avatar',

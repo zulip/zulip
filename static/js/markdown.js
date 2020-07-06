@@ -283,12 +283,6 @@ function handleEmoji(emoji_name) {
     return alt_text;
 }
 
-function handleAvatar(email) {
-    return '<img alt="' + email + '"' +
-           ' class="message_body_gravatar" src="/avatar/' + email + '?s=30"' +
-           ' title="' + email + '">';
-}
-
 function handleTimestamp(time) {
     let timeobject;
     if (isNaN(time)) {
@@ -519,7 +513,6 @@ exports.initialize = function (realm_filters, helper_config) {
         smartypants: false,
         zulip: true,
         emojiHandler: handleEmoji,
-        avatarHandler: handleAvatar,
         unicodeEmojiHandler: handleUnicodeEmoji,
         streamHandler: handleStream,
         streamTopicHandler: handleStreamTopic,

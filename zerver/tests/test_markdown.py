@@ -30,7 +30,6 @@ from zerver.lib.markdown import (
     image_preview_enabled,
     markdown_convert,
     maybe_update_markdown_engines,
-    possible_avatar_emails,
     possible_linked_stream_names,
     topic_links,
     url_embed_preview_enabled,
@@ -2166,39 +2165,3 @@ class MarkdownErrorTests(ZulipTestCase):
 
         result = processor.run(markdown_input)
         self.assertEqual(result, expected)
-
-class MarkdownAvatarTestCase(ZulipTestCase):
-    def test_possible_avatar_emails(self) -> None:
-        content = '''
-            hello !avatar(foo@example.com) my email is ignore@ignore.com
-            !gravatar(bar@yo.tv)
-
-            smushing!avatar(hamlet@example.org) is allowed
-        '''
-        self.assertEqual(
-            possible_avatar_emails(content),
-            {'foo@example.com', 'bar@yo.tv', 'hamlet@example.org'},
-        )
-
-    def test_avatar_with_id(self) -> None:
-        sender_user_profile = self.example_user('othello')
-        message = Message(sender=sender_user_profile, sending_client=get_client("test"))
-
-        user_profile = self.example_user('hamlet')
-        msg = f'!avatar({user_profile.email})'
-        converted = markdown_convert(msg, message=message)
-        values = {'email': user_profile.email, 'id': user_profile.id}
-        self.assertEqual(
-            converted,
-            '<p><img alt="{email}" class="message_body_gravatar" src="/avatar/{id}?s=30" title="{email}"></p>'.format(**values))
-
-    def test_avatar_of_unregistered_user(self) -> None:
-        sender_user_profile = self.example_user('othello')
-        message = Message(sender=sender_user_profile, sending_client=get_client("test"))
-
-        email = 'fakeuser@example.com'
-        msg = f'!avatar({email})'
-        converted = markdown_convert(msg, message=message)
-        self.assertEqual(
-            converted,
-            '<p><img alt="{0}" class="message_body_gravatar" src="/avatar/{0}?s=30" title="{0}"></p>'.format(email))

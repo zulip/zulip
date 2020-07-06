@@ -214,8 +214,6 @@ run_test('markdown_detection', () => {
         "User Mention @**leo with some name**",
         "Group Mention @*hamletcharacters*",
         "Stream #**Verona**",
-        "This contains !gravatar(leo@zulip.com)",
-        "And an avatar !avatar(leo@zulip.com) is here",
     ];
 
     const markup = [
@@ -353,10 +351,6 @@ run_test('marked', () => {
          expected: '<p>A pattern written as #1234is not a realm filter.</p>'},
         {input: 'This is a realm filter with ZGROUP_123:45 groups',
          expected: '<p>This is a realm filter with <a href="https://zone_45.zulip.net/ticket/123" title="https://zone_45.zulip.net/ticket/123">ZGROUP_123:45</a> groups</p>'},
-        {input: 'This is an !avatar(cordelia@zulip.com) of Cordelia Lear',
-         expected: '<p>This is an <img alt="cordelia@zulip.com" class="message_body_gravatar" src="/avatar/cordelia@zulip.com?s=30" title="cordelia@zulip.com"> of Cordelia Lear</p>'},
-        {input: 'This is a !gravatar(cordelia@zulip.com) of Cordelia Lear',
-         expected: '<p>This is a <img alt="cordelia@zulip.com" class="message_body_gravatar" src="/avatar/cordelia@zulip.com?s=30" title="cordelia@zulip.com"> of Cordelia Lear</p>'},
         {input: 'Test *italic*',
          expected: '<p>Test <em>italic</em></p>'},
         {input: 'T\n#**Denmark**',
@@ -396,8 +390,6 @@ run_test('marked', () => {
          expected: '<p>@**&lt;h1&gt;The Rogue One&lt;/h1&gt;**</p>'},
         {input: '#**<h1>The Rogue One</h1>**',
          expected: '<p>#**&lt;h1&gt;The Rogue One&lt;/h1&gt;**</p>'},
-        {input: '!avatar(<h1>The Rogue One</h1>)',
-         expected: '<p><img alt="&lt;h1&gt;The Rogue One&lt;/h1&gt;" class="message_body_gravatar" src="/avatar/&lt;h1&gt;The Rogue One&lt;/h1&gt;?s=30" title="&lt;h1&gt;The Rogue One&lt;/h1&gt;"></p>'},
         {input: ':<h1>The Rogue One</h1>:',
          expected: '<p>:&lt;h1&gt;The Rogue One&lt;/h1&gt;:</p>'},
         {input: '@**O\'Connell**',
