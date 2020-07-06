@@ -14,10 +14,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 parser = argparse.ArgumentParser(description="Run puppet")
 parser.add_argument('--force', '-f', action="store_true",
                     help="Do not prompt with proposed changes")
+parser.add_argument('--config', action="store",
+                    default="/etc/zulip/zulip.conf",
+                    help="Alternate zulip.conf path")
 args, extra_args = parser.parse_known_args()
 
 config = configparser.RawConfigParser()
-config.read("/etc/zulip/zulip.conf")
+config.read(args.config)
 
 distro_info = parse_os_release()
 puppet_config = """
@@ -35,6 +38,7 @@ puppet_cmd += extra_args
 
 # Set the scripts path to be a factor so it can be used by puppet code
 puppet_env = os.environ.copy()
+puppet_env["FACTER_zulip_conf_path"] = args.config
 puppet_env["FACTER_zulip_scripts_path"] = scripts_path
 
 # This is to suppress puppet warnings with ruby 2.7.
