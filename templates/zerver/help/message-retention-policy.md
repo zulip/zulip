@@ -24,6 +24,35 @@ Cloud Standard and Zulip Cloud Plus [plans](https://zulip.com/plans),
 as well as for the hundreds of communities with sponsored Cloud
 Standard hosting.
 
+### Configure message retention policy for organization
+
+{start_tabs}
+
+{settings_tab|organization-settings}
+
+4. Under **Message retention**, configure **Message retention period**.
+
+{!save-changes.md!}
+
+{end_tabs}
+
+### Configure message retention policy for individual streams
+
+{start_tabs}
+
+{relative|stream|all}
+
+1. Select a stream.
+
+1. On the right, click **[Change]** next to the description of the stream
+   permissions.
+
+1. Under **Message retention for stream**, configure **Message retention period**.
+
+{!save-changes.md!}
+
+{end_tabs}
+
 ## Important details
 
 * Retention policies are processed in a daily job; so changes in the
