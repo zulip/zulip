@@ -244,6 +244,7 @@ function toggle_reaction(emoji_name) {
     }
 
     reactions.toggle_emoji_reaction(message_id, emoji_name);
+    exports.hide_emoji_popover();
 }
 
 function maybe_select_emoji(e) {
