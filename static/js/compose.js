@@ -463,7 +463,6 @@ function check_unsubscribed_stream_for_send(stream_name, autosubscribe) {
 
 function validate_stream_message_mentions(stream_id) {
     const stream_count = stream_data.get_subscriber_count(stream_id) || 0;
-    wildcard_mention = util.find_wildcard_mentions(compose_state.message_content());
 
     // check if wildcard_mention has any mention and henceforth execute the warning message.
     if (wildcard_mention !== null && stream_count > exports.all_everyone_warn_threshold) {
@@ -594,6 +593,11 @@ function validate_stream_message() {
     if (!validate_stream_message_post_policy(sub)) {
         return false;
     }
+
+    /* Note: This is a global and thus accessible in the functions
+       below; it's important that we update this state here before
+       proceeding with further validation. */
+    wildcard_mention = util.find_wildcard_mentions(compose_state.message_content());
 
     // If both `@all` is mentioned and it's in `#announce`, just validate
     // for `@all`. Users shouldn't have to hit "yes" more than once.
