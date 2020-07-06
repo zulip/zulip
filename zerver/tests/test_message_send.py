@@ -18,6 +18,8 @@ from zerver.lib.actions import (
     do_deactivate_user,
     do_send_messages,
     do_set_realm_property,
+    extract_private_recipients,
+    extract_stream_indicator,
     internal_send_stream_message,
 )
 from zerver.lib.cache import cache_delete, get_stream_cache_key
@@ -1480,3 +1482,106 @@ class PersonalMessageSendTest(ZulipTestCase):
             receiver=self.example_user("othello"),
             content="hümbüǵ",
         )
+
+
+class ExtractTest(ZulipTestCase):
+    def test_extract_stream_indicator(self) -> None:
+        self.assertEqual(
+            extract_stream_indicator('development'),
+            "development",
+        )
+        self.assertEqual(
+            extract_stream_indicator('commas,are,fine'),
+            "commas,are,fine",
+        )
+        self.assertEqual(
+            extract_stream_indicator('"Who hasn\'t done this?"'),
+            "Who hasn't done this?",
+        )
+        self.assertEqual(
+            extract_stream_indicator("999"),
+            999,
+        )
+
+        # For legacy reasons it's plausible that users will
+        # put a single stream into an array and then encode it
+        # as JSON.  We can probably eliminate this support
+        # by mid 2020 at the latest.
+        self.assertEqual(
+            extract_stream_indicator('["social"]'),
+            'social',
+        )
+
+        self.assertEqual(
+            extract_stream_indicator("[123]"),
+            123,
+        )
+
+        with self.assertRaisesRegex(JsonableError, 'Invalid data type for stream'):
+            extract_stream_indicator('{}')
+
+        with self.assertRaisesRegex(JsonableError, 'Invalid data type for stream'):
+            extract_stream_indicator('[{}]')
+
+        with self.assertRaisesRegex(JsonableError, 'Expected exactly one stream'):
+            extract_stream_indicator('[1,2,"general"]')
+
+    def test_extract_private_recipients_emails(self) -> None:
+
+        # JSON list w/dups, empties, and trailing whitespace
+        s = ujson.dumps([' alice@zulip.com ', ' bob@zulip.com ', '   ', 'bob@zulip.com'])
+        # sorted() gets confused by extract_private_recipients' return type
+        # For testing, ignorance here is better than manual casting
+        result = sorted(extract_private_recipients(s))
+        self.assertEqual(result, ['alice@zulip.com', 'bob@zulip.com'])
+
+        # simple string with one name
+        s = 'alice@zulip.com    '
+        self.assertEqual(extract_private_recipients(s), ['alice@zulip.com'])
+
+        # JSON-encoded string
+        s = '"alice@zulip.com"'
+        self.assertEqual(extract_private_recipients(s), ['alice@zulip.com'])
+
+        # bare comma-delimited string
+        s = 'bob@zulip.com, alice@zulip.com'
+        result = sorted(extract_private_recipients(s))
+        self.assertEqual(result, ['alice@zulip.com', 'bob@zulip.com'])
+
+        # JSON-encoded, comma-delimited string
+        s = '"bob@zulip.com,alice@zulip.com"'
+        result = sorted(extract_private_recipients(s))
+        self.assertEqual(result, ['alice@zulip.com', 'bob@zulip.com'])
+
+        # Invalid data
+        s = ujson.dumps(dict(color='red'))
+        with self.assertRaisesRegex(JsonableError, 'Invalid data type for recipients'):
+            extract_private_recipients(s)
+
+        s = ujson.dumps([{}])
+        with self.assertRaisesRegex(JsonableError, 'Invalid data type for recipients'):
+            extract_private_recipients(s)
+
+        # Empty list
+        self.assertEqual(extract_private_recipients('[]'), [])
+
+        # Heterogeneous lists are not supported
+        mixed = ujson.dumps(['eeshan@example.com', 3, 4])
+        with self.assertRaisesRegex(JsonableError, 'Recipient lists may contain emails or user IDs, but not both.'):
+            extract_private_recipients(mixed)
+
+    def test_extract_recipient_ids(self) -> None:
+        # JSON list w/dups
+        s = ujson.dumps([3, 3, 12])
+        result = sorted(extract_private_recipients(s))
+        self.assertEqual(result, [3, 12])
+
+        # Invalid data
+        ids = ujson.dumps(dict(recipient=12))
+        with self.assertRaisesRegex(JsonableError, 'Invalid data type for recipients'):
+            extract_private_recipients(ids)
+
+        # Heterogeneous lists are not supported
+        mixed = ujson.dumps([3, 4, 'eeshan@example.com'])
+        with self.assertRaisesRegex(JsonableError, 'Recipient lists may contain emails or user IDs, but not both.'):
+            extract_private_recipients(mixed)
