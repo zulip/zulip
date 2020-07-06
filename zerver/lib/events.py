@@ -672,6 +672,13 @@ def apply_event(state: Dict[str, Any],
         # We don't return messages in /register, so we don't need to
         # do anything for content updates, but we may need to update
         # the unread_msgs data if the topic of an unread message changed.
+        if 'new_stream_id' in event:
+            stream_dict = state['raw_unread_msgs']['stream_dict']
+            stream_id = event['new_stream_id']
+            for message_id in event['message_ids']:
+                if message_id in stream_dict:
+                    stream_dict[message_id]['stream_id'] = stream_id
+
         if TOPIC_NAME in event:
             stream_dict = state['raw_unread_msgs']['stream_dict']
             topic = event[TOPIC_NAME]
