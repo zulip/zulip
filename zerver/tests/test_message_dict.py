@@ -6,10 +6,11 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.cache import cache_delete, to_dict_cache_key_id
 from zerver.lib.markdown import version as markdown_version
-from zerver.lib.message import MessageDict
+from zerver.lib.message import MessageDict, messages_for_ids
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import make_client, queries_captured
 from zerver.lib.topic import TOPIC_LINKS
+from zerver.lib.types import UserDisplayRecipient
 from zerver.models import (
     Message,
     Reaction,
@@ -17,7 +18,9 @@ from zerver.models import (
     Recipient,
     UserProfile,
     flush_per_request_caches,
+    get_display_recipient,
     get_realm,
+    get_stream,
 )
 
 
@@ -329,3 +332,157 @@ class MessageDictTest(ZulipTestCase):
 
         self.assert_json_error(
             result, "Invalid anchor")
+
+class MessageHydrationTest(ZulipTestCase):
+    def test_hydrate_stream_recipient_info(self) -> None:
+        realm = get_realm('zulip')
+        cordelia = self.example_user('cordelia')
+
+        stream_id = get_stream('Verona', realm).id
+
+        obj = dict(
+            recipient_type=Recipient.STREAM,
+            recipient_type_id=stream_id,
+            sender_is_mirror_dummy=False,
+            sender_email=cordelia.email,
+            sender_full_name=cordelia.full_name,
+            sender_short_name=cordelia.short_name,
+            sender_id=cordelia.id,
+        )
+
+        MessageDict.hydrate_recipient_info(obj, 'Verona')
+
+        self.assertEqual(obj['display_recipient'], 'Verona')
+        self.assertEqual(obj['type'], 'stream')
+
+    def test_hydrate_pm_recipient_info(self) -> None:
+        cordelia = self.example_user('cordelia')
+        display_recipient: List[UserDisplayRecipient] = [
+            dict(
+                email='aaron@example.com',
+                full_name='Aaron Smith',
+                short_name='Aaron',
+                id=999,
+                is_mirror_dummy=False,
+            ),
+        ]
+
+        obj = dict(
+            recipient_type=Recipient.PERSONAL,
+            recipient_type_id=None,
+            sender_is_mirror_dummy=False,
+            sender_email=cordelia.email,
+            sender_full_name=cordelia.full_name,
+            sender_short_name=cordelia.short_name,
+            sender_id=cordelia.id,
+        )
+
+        MessageDict.hydrate_recipient_info(obj, display_recipient)
+
+        self.assertEqual(
+            obj['display_recipient'],
+            [
+                dict(
+                    email='aaron@example.com',
+                    full_name='Aaron Smith',
+                    short_name='Aaron',
+                    id=999,
+                    is_mirror_dummy=False,
+                ),
+                dict(
+                    email=cordelia.email,
+                    full_name=cordelia.full_name,
+                    id=cordelia.id,
+                    short_name=cordelia.short_name,
+                    is_mirror_dummy=False,
+                ),
+            ],
+        )
+        self.assertEqual(obj['type'], 'private')
+
+    def test_messages_for_ids(self) -> None:
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+
+        stream_name = 'test stream'
+        self.subscribe(cordelia, stream_name)
+
+        old_message_id = self.send_stream_message(cordelia, stream_name, content='foo')
+
+        self.subscribe(hamlet, stream_name)
+
+        content = 'hello @**King Hamlet**'
+        new_message_id = self.send_stream_message(cordelia, stream_name, content=content)
+
+        user_message_flags = {
+            old_message_id: ['read', 'historical'],
+            new_message_id: ['mentioned'],
+        }
+
+        messages = messages_for_ids(
+            message_ids=[old_message_id, new_message_id],
+            user_message_flags=user_message_flags,
+            search_fields={},
+            apply_markdown=True,
+            client_gravatar=True,
+            allow_edit_history=False,
+        )
+
+        self.assertEqual(len(messages), 2)
+
+        for message in messages:
+            if message['id'] == old_message_id:
+                old_message = message
+            elif message['id'] == new_message_id:
+                new_message = message
+
+        self.assertEqual(old_message['content'], '<p>foo</p>')
+        self.assertEqual(old_message['flags'], ['read', 'historical'])
+
+        self.assertIn('class="user-mention"', new_message['content'])
+        self.assertEqual(new_message['flags'], ['mentioned'])
+
+    def test_display_recipient_up_to_date(self) -> None:
+        """
+        This is a test for a bug where due to caching of message_dicts,
+        after updating a user's information, fetching those cached messages
+        via messages_for_ids would return message_dicts with display_recipient
+        still having the old information. The returned message_dicts should have
+        up-to-date display_recipients and we check for that here.
+        """
+
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+        message_id = self.send_personal_message(hamlet, cordelia, 'test')
+
+        cordelia_recipient = cordelia.recipient
+        # Cause the display_recipient to get cached:
+        get_display_recipient(cordelia_recipient)
+
+        # Change cordelia's email:
+        cordelia_new_email = 'new-cordelia@zulip.com'
+        cordelia.email = cordelia_new_email
+        cordelia.save()
+
+        # Local display_recipient cache needs to be flushed.
+        # flush_per_request_caches() is called after every request,
+        # so it makes sense to run it here.
+        flush_per_request_caches()
+
+        messages = messages_for_ids(
+            message_ids=[message_id],
+            user_message_flags={message_id: ['read']},
+            search_fields={},
+            apply_markdown=True,
+            client_gravatar=True,
+            allow_edit_history=False,
+        )
+        message = messages[0]
+
+        # Find which display_recipient in the list is cordelia:
+        for display_recipient in message['display_recipient']:
+            if display_recipient['short_name'] == 'cordelia':
+                cordelia_display_recipient = display_recipient
+
+        # Make sure the email is up-to-date.
+        self.assertEqual(cordelia_display_recipient['email'], cordelia_new_email)
