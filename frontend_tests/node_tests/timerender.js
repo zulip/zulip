@@ -2,6 +2,7 @@ set_global('$', global.make_zjquery());
 set_global('page_params', {
     twenty_four_hour_time: true,
 });
+set_global('moment', require('moment-timezone'));
 set_global('XDate', zrequire('XDate', 'xdate'));
 zrequire('timerender');
 
@@ -128,6 +129,16 @@ run_test('get_full_time', () => {
     const expected = '2017-05-18T07:12:53Z'; // ISO 8601 date format
     const actual = timerender.get_full_time(timestamp);
     assert.equal(expected, actual);
+});
+
+run_test('get_timestamp_for_flatpickr', () => {
+    const unix_timestamp = 1495091573000; // 5/18/2017 7:12:53 AM (UTC+0)
+    const iso_timestamp = '2017-05-18T07:12:53Z'; // ISO 8601 date format
+    const func = timerender.get_timestamp_for_flatpickr;
+    // Invalid timestamps should show current time.
+    assert.equal(func("random str").valueOf(), moment().valueOf());
+    // Valid ISO timestamps should return Date objects.
+    assert.equal(func(iso_timestamp).valueOf(), moment(unix_timestamp).valueOf());
 });
 
 run_test('absolute_time_12_hour', () => {
