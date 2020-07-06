@@ -1941,7 +1941,7 @@ class Markdown(markdown.Markdown):
         reg.register(StreamTopicPattern(get_compiled_stream_topic_link_regex(), self), 'topic', 87)
         reg.register(StreamPattern(get_compiled_stream_link_regex(), self), 'stream', 85)
         reg.register(Avatar(AVATAR_REGEX, self), 'avatar', 80)
-        reg.register(Timestamp(r'!time\((?P<time>[^)]*)\)'), 'timestamp', 75)
+        reg.register(Timestamp(r'<time:(?P<time>[^>]*?)>'), 'timestamp', 75)
         # Note that !gravatar syntax should be deprecated long term.
         reg.register(Avatar(GRAVATAR_REGEX, self), 'gravatar', 70)
         reg.register(UserGroupMentionPattern(mention.user_group_mentions, self), 'usergroupmention', 65)

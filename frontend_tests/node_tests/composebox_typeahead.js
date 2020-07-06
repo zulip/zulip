@@ -1302,14 +1302,14 @@ run_test('begins_typeahead', () => {
     assert_typeahead_equals("#**Sweden>totally new topic", sweden_topics_to_show);
 
     // time_jump
-    assert_typeahead_equals("!tim", false);
-    assert_typeahead_equals("!timerandom", false);
-    assert_typeahead_equals("!time", ['translated: Mention a timezone-aware time']);
-    assert_typeahead_equals("!time(", ['translated: Mention a timezone-aware time']);
-    assert_typeahead_equals("!time(something", ['translated: Mention a timezone-aware time']);
-    assert_typeahead_equals("!time(something", ") ", ['translated: Mention a timezone-aware time']);
-    assert_typeahead_equals("!time(something)", false);
-    assert_typeahead_equals("!time(something) ", false); // Already completed the mention
+    assert_typeahead_equals("<tim", false);
+    assert_typeahead_equals("<timerandom", false);
+    assert_typeahead_equals("<time", ['translated: Mention a timezone-aware time']);
+    assert_typeahead_equals("<time:", ['translated: Mention a timezone-aware time']);
+    assert_typeahead_equals("<time:something", ['translated: Mention a timezone-aware time']);
+    assert_typeahead_equals("<time:something", "> ", ['translated: Mention a timezone-aware time']);
+    assert_typeahead_equals("<time:something>", ['translated: Mention a timezone-aware time']);
+    assert_typeahead_equals("<time:something> ", false); // Already completed the mention
 
     // Following tests place the cursor before the second string
     assert_typeahead_equals("#test", "ing", false);
@@ -1317,7 +1317,7 @@ run_test('begins_typeahead', () => {
     assert_typeahead_equals(":test", "ing", false);
     assert_typeahead_equals("```test", "ing", false);
     assert_typeahead_equals("~~~test", "ing", false);
-    const terminal_symbols = ',.;?!()[] "\'\n\t';
+    const terminal_symbols = ',.;?!()[]> "\'\n\t';
     terminal_symbols.split().forEach((symbol) => {
         assert_stream_list("#test", symbol);
         assert_typeahead_equals("@test", symbol, all_mentions);

@@ -331,7 +331,7 @@ exports.tokenize_compose_str = function (s) {
         }
     }
 
-    const timestamp_index = s.indexOf('!time');
+    const timestamp_index = s.indexOf('<time');
     if (timestamp_index >= 0) {
         return s.slice(timestamp_index);
     }
@@ -607,7 +607,7 @@ exports.get_candidates = function (query) {
     // already-completed object.
 
     // We will likely want to extend this list to be more i18n-friendly.
-    const terminal_symbols = ',.;?!()[] "\'\n\t';
+    const terminal_symbols = ',.;?!()[]> "\'\n\t';
     if (rest !== '' && !terminal_symbols.includes(rest[0])) {
         return false;
     }
@@ -736,11 +736,10 @@ exports.get_candidates = function (query) {
         }
     }
     if (this.options.completions.timestamp) {
-        const time_jump_regex = /!time(\(([^\)]*?))?$/;
+        const time_jump_regex = /<time(\:([^>]*?)>?)?$/;
         if (time_jump_regex.test(split[0])) {
             this.completing = 'time_jump';
             return [i18n.t('Mention a timezone-aware time')];
-
         }
     }
     return false;
@@ -885,9 +884,9 @@ exports.content_typeahead_selected = function (item, event) {
         const start = beginning.length - this.token.length;
         beginning = beginning.substring(0, start) + item + '** ';
     } else if (this.completing === 'time_jump') {
-        let timestring = beginning.substring(beginning.lastIndexOf('!time'));
+        let timestring = beginning.substring(beginning.lastIndexOf('<time:'));
         let default_timestamp;
-        if (timestring.startsWith('!time(') && timestring.endsWith(')')) {
+        if (timestring.startsWith('<time:') && timestring.endsWith('>')) {
             timestring = timestring.substring(6, timestring.length - 1);
             moment.suppressDeprecationWarnings = true;
             try {
@@ -901,8 +900,8 @@ exports.content_typeahead_selected = function (item, event) {
 
         const on_timestamp_selection = (val) => {
             const datestr = val;
-            beginning = beginning.substring(0, beginning.lastIndexOf('!time')) +  `!time(${datestr}) `;
-            if (rest.startsWith(')')) {
+            beginning = beginning.substring(0, beginning.lastIndexOf('<time')) +  `<time:${datestr}> `;
+            if (rest.startsWith('>')) {
                 rest = rest.slice(1);
             }
             textbox.val(beginning + rest);
