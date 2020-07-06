@@ -124,6 +124,7 @@
 .emoji-info-popover {
     padding: 0;
     height: 370px;
+    user-select: none;
 
     .popover-content {
         padding: 0;
