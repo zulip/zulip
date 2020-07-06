@@ -553,7 +553,7 @@ inline.zulip = merge({}, inline.breaks, {
   avatar: /^!avatar\(([^)]+)\)/,
   gravatar: /^!gravatar\(([^)]+)\)/,
   tex: /^(\$\$([^\n_$](\\\$|[^\n$])*)\$\$(?!\$))\B/,
-  timestamp: /^!time\(([^)]+)\)/,
+  timestamp: /^<time:([^>]+)>/,
   realm_filters: [],
   text: replace(inline.breaks.text)
     ('|', '|(\ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f]|' +
@@ -689,6 +689,13 @@ InlineLexer.prototype.output = function(src) {
       text = escape(cap[1]);
       href = text;
       out += this.renderer.link(href, null, text);
+      continue;
+    }
+
+    // timestamp
+    if (cap = this.rules.timestamp.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.timestamp(cap[1]);
       continue;
     }
 
@@ -828,13 +835,6 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
-    // timestamp
-    if (cap = this.rules.timestamp.exec(src)) {
-      src = src.substring(cap[0].length);
-      out += this.timestamp(cap[1]);
-      continue;
-    }
-
     // tex
     if (cap = this.rules.tex.exec(src)) {
       src = src.substring(cap[0].length);
@@ -911,7 +911,7 @@ InlineLexer.prototype.userGravatar = function (email) {
 
 InlineLexer.prototype.timestamp = function (time) {
   if (typeof this.options.timestampHandler !== 'function')
-    return '!time(' + time + ')';
+    return '&lt;time:' + time + '&gt;';
   return this.options.timestampHandler(time);
 };
 
