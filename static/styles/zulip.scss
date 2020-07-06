@@ -1350,9 +1350,9 @@ div.focused_table {
 
 .topic_move_breadcrumb_messages,
 .message_edit_breadcrumb_messages {
-    display: inline-block;
     margin: 0 5px 5px 0 !important;
     align-self: center;
+    width: 100%;
 
     label.checkbox {
         margin-right: 0 !important;
