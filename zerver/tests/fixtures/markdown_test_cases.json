@@ -750,7 +750,7 @@
       "name": "timestamp_backend_markdown_only",
       "input": "<time:Jun 5th 2017, 10:30PM>",
       "expected_output": "<p><time datetime=\"2017-06-05T22:30:00Z\">Jun 5th 2017, 10:30PM</time></p>",
-      "marked_expected_output": "<p><span class=\"timestamp-error\">Invalid time format: Jun 5th 2017, 10:30PM</span></p>"
+      "marked_expected_output": "<p><span>Jun 5th 2017, 10:30PM</span></p>"
     },
     {
       "name": "timestamp_backend_markdown_and_marked",
@@ -760,18 +760,20 @@
     {
       "name": "timestamp_invalid_input",
       "input": "<time:<alert(1)>>",
-      "expected_output": "<p><span class=\"timestamp-error\">Invalid time format: &lt;alert(1)</span>&gt;</p>"
+      "expected_output": "<p><span class=\"timestamp-error\">Invalid time format: &lt;alert(1)</span>&gt;</p>",
+      "marked_expected_output": "<p><span>&lt;alert(1)</span>&gt;</p>"
     },
     {
       "name": "timestamp_timezone",
       "input": "<time:31 Dec 2017 5:30 am IST>",
       "expected_output": "<p><time datetime=\"2017-12-31T00:00:00Z\">31 Dec 2017 5:30 am IST</time></p>",
-      "marked_expected_output": "<p><span class=\"timestamp-error\">Invalid time format: 31 Dec 2017 5:30 am IST</span></p>"
+      "marked_expected_output": "<p><span>31 Dec 2017 5:30 am IST</span></p>"
     },
     {
       "name": "timestamp_incorrect",
       "input": "<time:**hello world**>",
-      "expected_output": "<p><span class=\"timestamp-error\">Invalid time format: **hello world**</span></p>"
+      "expected_output": "<p><span class=\"timestamp-error\">Invalid time format: **hello world**</span></p>",
+      "marked_expected_output": "<p><span>**hello world**</span></p>"
     },
     {
       "name": "timestamp_unix",
