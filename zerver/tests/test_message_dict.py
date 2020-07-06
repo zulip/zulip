@@ -1,5 +1,5 @@
 import time
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 from unittest import mock
 
 from django.utils.timezone import now as timezone_now
@@ -10,12 +10,13 @@ from zerver.lib.message import MessageDict, messages_for_ids
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import make_client, queries_captured
 from zerver.lib.topic import TOPIC_LINKS
-from zerver.lib.types import UserDisplayRecipient
+from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
 from zerver.models import (
     Message,
     Reaction,
     RealmFilter,
     Recipient,
+    Stream,
     UserProfile,
     flush_per_request_caches,
     get_display_recipient,
@@ -486,3 +487,112 @@ class MessageHydrationTest(ZulipTestCase):
 
         # Make sure the email is up-to-date.
         self.assertEqual(cordelia_display_recipient['email'], cordelia_new_email)
+
+class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
+    def _verify_display_recipient(self, display_recipient: DisplayRecipientT,
+                                  expected_recipient_objects: Union[Stream, List[UserProfile]]) -> None:
+        if isinstance(expected_recipient_objects, Stream):
+            self.assertEqual(display_recipient, expected_recipient_objects.name)
+
+        else:
+            for user_profile in expected_recipient_objects:
+                recipient_dict: UserDisplayRecipient = {
+                    'email': user_profile.email,
+                    'full_name': user_profile.full_name,
+                    'short_name': user_profile.short_name,
+                    'id': user_profile.id,
+                    'is_mirror_dummy': user_profile.is_mirror_dummy,
+                }
+                self.assertTrue(recipient_dict in display_recipient)
+
+    def test_display_recipient_personal(self) -> None:
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+        othello = self.example_user('othello')
+        message_ids = [
+            self.send_personal_message(hamlet, cordelia, 'test'),
+            self.send_personal_message(cordelia, othello, 'test'),
+        ]
+
+        messages = messages_for_ids(
+            message_ids=message_ids,
+            user_message_flags={message_id: ['read'] for message_id in message_ids},
+            search_fields={},
+            apply_markdown=True,
+            client_gravatar=True,
+            allow_edit_history=False,
+        )
+
+        self._verify_display_recipient(messages[0]['display_recipient'], [hamlet, cordelia])
+        self._verify_display_recipient(messages[1]['display_recipient'], [cordelia, othello])
+
+    def test_display_recipient_stream(self) -> None:
+        cordelia = self.example_user('cordelia')
+        message_ids = [
+            self.send_stream_message(cordelia, "Verona", content='test'),
+            self.send_stream_message(cordelia, "Denmark", content='test'),
+        ]
+
+        messages = messages_for_ids(
+            message_ids=message_ids,
+            user_message_flags={message_id: ['read'] for message_id in message_ids},
+            search_fields={},
+            apply_markdown=True,
+            client_gravatar=True,
+            allow_edit_history=False,
+        )
+
+        self._verify_display_recipient(messages[0]['display_recipient'], get_stream("Verona", cordelia.realm))
+        self._verify_display_recipient(messages[1]['display_recipient'], get_stream("Denmark", cordelia.realm))
+
+    def test_display_recipient_huddle(self) -> None:
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+        othello = self.example_user('othello')
+        iago = self.example_user('iago')
+        message_ids = [
+            self.send_huddle_message(hamlet, [cordelia, othello], 'test'),
+            self.send_huddle_message(cordelia, [hamlet, othello, iago], 'test'),
+        ]
+
+        messages = messages_for_ids(
+            message_ids=message_ids,
+            user_message_flags={message_id: ['read'] for message_id in message_ids},
+            search_fields={},
+            apply_markdown=True,
+            client_gravatar=True,
+            allow_edit_history=False,
+        )
+
+        self._verify_display_recipient(messages[0]['display_recipient'], [hamlet, cordelia, othello])
+        self._verify_display_recipient(messages[1]['display_recipient'], [hamlet, cordelia, othello, iago])
+
+    def test_display_recipient_various_types(self) -> None:
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+        othello = self.example_user('othello')
+        iago = self.example_user('iago')
+        message_ids = [
+            self.send_huddle_message(hamlet, [cordelia, othello], 'test'),
+            self.send_stream_message(cordelia, "Verona", content='test'),
+            self.send_personal_message(hamlet, cordelia, 'test'),
+            self.send_stream_message(cordelia, "Denmark", content='test'),
+            self.send_huddle_message(cordelia, [hamlet, othello, iago], 'test'),
+            self.send_personal_message(cordelia, othello, 'test'),
+        ]
+
+        messages = messages_for_ids(
+            message_ids=message_ids,
+            user_message_flags={message_id: ['read'] for message_id in message_ids},
+            search_fields={},
+            apply_markdown=True,
+            client_gravatar=True,
+            allow_edit_history=False,
+        )
+
+        self._verify_display_recipient(messages[0]['display_recipient'], [hamlet, cordelia, othello])
+        self._verify_display_recipient(messages[1]['display_recipient'], get_stream("Verona", hamlet.realm))
+        self._verify_display_recipient(messages[2]['display_recipient'], [hamlet, cordelia])
+        self._verify_display_recipient(messages[3]['display_recipient'], get_stream("Denmark", hamlet.realm))
+        self._verify_display_recipient(messages[4]['display_recipient'], [hamlet, cordelia, othello, iago])
+        self._verify_display_recipient(messages[5]['display_recipient'], [cordelia, othello])
