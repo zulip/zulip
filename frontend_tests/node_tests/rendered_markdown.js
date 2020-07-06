@@ -165,6 +165,7 @@ run_test('timestamp', () => {
     const $timestamp_invalid = $.create('timestamp(invalid)');
     $timestamp_invalid.attr('datetime', 'invalid');
     $content.set_find_results('time', $array([$timestamp, $timestamp_invalid]));
+    blueslip.expect('error', 'Moment could not parse datetime supplied by backend: invalid');
 
     // Initial asserts
     assert.equal($timestamp.text(), 'never-been-set');
@@ -175,7 +176,7 @@ run_test('timestamp', () => {
     // Final asserts
     assert.equal($timestamp.text(), 'Thu, Jan 1 1970, 12:00 AM');
     assert.equal($timestamp.attr('title'), "This time is in your timezone. Original text was 'never-been-set'.");
-    assert.equal($timestamp_invalid.text(), 'translated: Could not parse timestamp.');
+    assert.equal($timestamp_invalid.text(), 'never-been-set');
 });
 
 run_test('timestamp-error', () => {

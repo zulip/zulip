@@ -158,7 +158,8 @@ exports.update_elements = (content) => {
             $(this).text(rendered_time.text);
             $(this).attr('title', rendered_time.title);
         } else {
-            $(this).text(i18n.t('Could not parse timestamp.'));
+            // This shouldn't happen. If it does, we're very interested in debugging it.
+            blueslip.error(`Moment could not parse datetime supplied by backend: ${time_str}`);
         }
     });
 
