@@ -151,7 +151,7 @@ def server_processes() -> List[List[str]]:
         ['env', 'PGHOST=127.0.0.1',  # Force password authentication using .pgpass
          './puppet/zulip/files/postgresql/process_fts_updates', '--quiet'],
         ['./manage.py', 'deliver_scheduled_messages'],
-        ['/srv/zulip-thumbor-venv/bin/thumbor', '-c', './zthumbor/thumbor.conf',
+        ['/srv/zulip-thumbor-venv/bin/thumbor', '-c', './zthumbor/thumbor_settings.py',
          '-p', f'{thumbor_port}'],
     ]
 
