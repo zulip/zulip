@@ -69,6 +69,7 @@ const get_content_element = () => {
     $content.set_find_results('a.stream', $array([]));
     $content.set_find_results('a.stream-topic', $array([]));
     $content.set_find_results('time', $array([]));
+    $content.set_find_results('span.timestamp-error', $array([]));
     $content.set_find_results('.emoji', $array([]));
     $content.set_find_results('div.spoiler-header', $array([]));
     return $content;
@@ -175,6 +176,22 @@ run_test('timestamp', () => {
     assert.equal($timestamp.text(), 'Thu, Jan 1 1970, 12:00 AM');
     assert.equal($timestamp.attr('title'), "This time is in your timezone. Original text was 'never-been-set'.");
     assert.equal($timestamp_invalid.text(), 'translated: Could not parse timestamp.');
+});
+
+run_test('timestamp-error', () => {
+    // Setup
+    const $content = get_content_element();
+    const $timestamp_error = $.create('timestamp-error');
+    $timestamp_error.text('Invalid time format: the-time-format');
+    $content.set_find_results('span.timestamp-error', $array([$timestamp_error]));
+
+    // Initial assert
+    assert.equal($timestamp_error.text(), 'Invalid time format: the-time-format');
+
+    rm.update_elements($content);
+
+    // Final assert
+    assert.equal($timestamp_error.text(), 'translated: Invalid time format: the-time-format');
 });
 
 run_test('emoji', () => {

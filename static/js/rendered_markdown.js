@@ -162,6 +162,12 @@ exports.update_elements = (content) => {
         }
     });
 
+    content.find('span.timestamp-error').each(function () {
+        const time_str = $(this).text().replace('Invalid time format: ', '');
+        const text = i18n.t('Invalid time format: __timestamp__', { timestamp: time_str });
+        $(this).text(text);
+    });
+
     content.find('div.spoiler-header').each(function () {
         // If a spoiler block has no header content, it should have a default header
         // We do this client side to allow for i18n by the client
