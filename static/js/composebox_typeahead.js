@@ -768,6 +768,37 @@ exports.content_highlighter = function (item) {
     }
 };
 
+const show_flatpickr = (element, callback, default_timestamp) => {
+    const flatpickr_input = $("<input id='#timestamp_flatpickr'>");
+
+    const instance = flatpickr_input.flatpickr({
+        mode: 'single',
+        enableTime: true,
+        clickOpens: false,
+        defaultDate: default_timestamp || moment().format(),
+        plugins: [new confirmDatePlugin({})], // eslint-disable-line new-cap, no-undef
+        positionElement: element,
+        dateFormat: 'Z',
+        formatDate: (date) => {
+            const dt = moment(date);
+            return dt.local().format();
+        },
+    });
+    const container = $($(instance.innerContainer).parent());
+    container.on('click', '.flatpickr-calendar', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    container.on('click', '.flatpickr-confirm', () => {
+        callback(flatpickr_input.val());
+        instance.close();
+        instance.destroy();
+    });
+    instance.open();
+    container.find('.flatpickr-monthDropdown-months').focus();
+};
+
 exports.content_typeahead_selected = function (item, event) {
     const pieces = exports.split_at_cursor(this.query, this.$element);
     let beginning = pieces[0];
@@ -854,42 +885,22 @@ exports.content_typeahead_selected = function (item, event) {
         const start = beginning.length - this.token.length;
         beginning = beginning.substring(0, start) + item + '** ';
     } else if (this.completing === 'time_jump') {
-        const flatpickr_input = $("<input id='#timestamp_flatpickr'>");
-        let timeobject;
         let timestring = beginning.substring(beginning.lastIndexOf('!time'));
+        let default_timestamp;
         if (timestring.startsWith('!time(') && timestring.endsWith(')')) {
             timestring = timestring.substring(6, timestring.length - 1);
             moment.suppressDeprecationWarnings = true;
             try {
                 // If there's already a time in the compose box here,
                 // we use it to initialize the flatpickr instance.
-                timeobject = moment(timestring).toDate();
+                default_timestamp = moment(timestring).toDate();
             } catch {
                 // Otherwise, default to showing the current time.
             }
         }
 
-        const instance = flatpickr_input.flatpickr({
-            mode: 'single',
-            enableTime: true,
-            clickOpens: false,
-            defaultDate: timeobject || moment().format(),
-            plugins: [new confirmDatePlugin({})], // eslint-disable-line new-cap, no-undef
-            positionElement: this.$element[0],
-            dateFormat: 'Z',
-            formatDate: (date) => {
-                const dt = moment(date);
-                return dt.local().format();
-            },
-        });
-        const container = $($(instance.innerContainer).parent());
-        container.on('click', '.flatpickr-calendar', (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-        });
-
-        container.on('click', '.flatpickr-confirm', () => {
-            const datestr = flatpickr_input.val();
+        const on_timestamp_selection = (val) => {
+            const datestr = val;
             beginning = beginning.substring(0, beginning.lastIndexOf('!time')) +  `!time(${datestr}) `;
             if (rest.startsWith(')')) {
                 rest = rest.slice(1);
@@ -897,11 +908,8 @@ exports.content_typeahead_selected = function (item, event) {
             textbox.val(beginning + rest);
             textbox.caret(beginning.length, beginning.length);
             compose_ui.autosize_textarea();
-            instance.close();
-            instance.destroy();
-        });
-        instance.open();
-        container.find('.flatpickr-monthDropdown-months').focus();
+        };
+        show_flatpickr(this.$element[0], on_timestamp_selection, default_timestamp);
         return beginning + rest;
     }
 
