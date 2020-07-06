@@ -21,7 +21,6 @@ VENV_DEPENDENCIES = [
     "python3-dev",          # Needed to install typed-ast dependency of mypy
     "python3-pip",
     "virtualenv",
-    "python3-six",
     "libxml2-dev",          # Used for installing talon and python-xmlsec
     "libxslt1-dev",         # Used for installing talon
     "libpq-dev",            # Needed by psycopg2
@@ -60,13 +59,11 @@ COMMON_YUM_VENV_DEPENDENCIES = [
 
 REDHAT_VENV_DEPENDENCIES = COMMON_YUM_VENV_DEPENDENCIES + [
     "python36-devel",
-    "python36-six",
     "python-virtualenv",
 ]
 
 FEDORA_VENV_DEPENDENCIES = COMMON_YUM_VENV_DEPENDENCIES + [
     "python3-pip",
-    "python3-six",
     "virtualenv",  # see https://unix.stackexchange.com/questions/27877/install-virtualenv-on-fedora-16
 ]
 

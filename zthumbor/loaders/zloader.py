@@ -1,10 +1,9 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/thumbnailing.html
-from __future__ import absolute_import
 
 import base64
 import logging
+import urllib.parse
 
-from six.moves import urllib
 from tc_aws.loaders import s3_loader
 from thumbor.context import Context
 from thumbor.loaders import LoaderResult, file_loader, https_loader

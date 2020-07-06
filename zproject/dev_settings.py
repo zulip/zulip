@@ -2,7 +2,7 @@ import os
 import pwd
 from typing import Optional, Set, Tuple
 
-from six.moves.urllib.parse import SplitResult
+from scripts.lib.zulip_tools import deport
 
 ZULIP_ADMINISTRATOR = "desdemona+admin@zulip.com"
 
@@ -39,11 +39,7 @@ else:
         'zulip': EXTERNAL_HOST,
     }
 
-# TODO: Replace with scripts.lib.zulip_tools.deport when this no longer needs to
-# be Python 2 compatible for zthumbor.
-r = SplitResult("", EXTERNAL_HOST, "", "", "")
-assert r.hostname is not None
-EXTERNAL_HOST_WITHOUT_PORT = "[" + r.hostname + "]" if ":" in r.hostname else r.hostname
+EXTERNAL_HOST_WITHOUT_PORT = deport(EXTERNAL_HOST)
 
 ALLOWED_HOSTS = ['*']
 
