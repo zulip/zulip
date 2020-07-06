@@ -87,10 +87,6 @@
         }
     }
 
-    .compose_checkbox_label {
-        display: inline-block;
-    }
-
     .pm_recipient {
         margin-left: 5px;
         margin-right: 20px;
@@ -366,7 +362,7 @@ input.recipient_box {
 
     .compose_checkbox_label {
         color: hsl(0, 0%, 67%);
-        margin-right: 2px;
+        margin: 4px;
     }
 
     #compose-send-button {
