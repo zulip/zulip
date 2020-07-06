@@ -483,7 +483,7 @@ class NormalActionsTest(BaseAction):
         # Verify move topic to different stream.
         schema_checker = check_events_dict([
             ('type', equals('update_message')),
-            ('flags', check_list(None)),
+            ('flags', check_list(check_string)),
             ('edit_timestamp', check_int),
             ('message_id', check_int),
             ('message_ids', check_list(check_int)),
@@ -493,7 +493,7 @@ class NormalActionsTest(BaseAction):
             ('new_stream_id', check_int),
             ('stream_name', check_string),
             (TOPIC_NAME, check_string),
-            (TOPIC_LINKS, check_list(None)),
+            (TOPIC_LINKS, check_list(check_string)),
             ('user_id', check_int),
         ])
 
