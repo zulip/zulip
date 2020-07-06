@@ -27,6 +27,10 @@ const keydown_shift_mappings = {
     // these can be triggered by shift + key only
     9: {name: 'shift_tab', message_view_only: false}, // tab
     32: {name: 'shift_spacebar', message_view_only: true},  // space bar
+    37: {name: 'left_arrow', message_view_only: false}, // left arrow
+    39: {name: 'right_arrow', message_view_only: false}, // right arrow
+    38: {name: 'up_arrow', message_view_only: false}, // up arrow
+    40: {name: 'down_arrow', message_view_only: false}, // down arrow
 };
 
 const keydown_unshift_mappings = {
