@@ -377,7 +377,7 @@ class EmailAuthBackend(ZulipAuthMixin):
     @rate_limit_auth
     def authenticate(
         self,
-        request: Optional[HttpRequest] = None,
+        request: HttpRequest,
         *,
         username: str,
         password: str,
