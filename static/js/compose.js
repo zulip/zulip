@@ -32,8 +32,8 @@ function make_uploads_relative(content) {
     return content.replace(exports.uploads_re, "]($1)");
 }
 
-function show_all_everyone_warnings() {
-    const stream_count = stream_data.get_subscriber_count(compose_state.stream_name()) || 0;
+function show_all_everyone_warnings(stream_id) {
+    const stream_count = stream_data.get_subscriber_count(stream_id) || 0;
 
     const all_everyone_template = render_compose_all_everyone({count: stream_count,
                                                                mention: wildcard_mention});
@@ -79,8 +79,8 @@ function show_sending_indicator(whats_happening) {
     $("#sending-indicator").show();
 }
 
-function show_announce_warnings() {
-    const stream_count = stream_data.get_subscriber_count(compose_state.stream_name()) || 0;
+function show_announce_warnings(stream_id) {
+    const stream_count = stream_data.get_subscriber_count(stream_id) || 0;
 
     const announce_template = render_compose_announce({count: stream_count});
     const error_area_announce = $("#compose-announce");
@@ -430,11 +430,7 @@ exports.get_invalid_recipient_emails = function () {
 };
 
 function check_unsubscribed_stream_for_send(stream_name, autosubscribe) {
-    const stream_obj = stream_data.get_sub(stream_name);
     let result;
-    if (!stream_obj) {
-        return "does-not-exist";
-    }
     if (!autosubscribe) {
         return "not-subscribed";
     }
@@ -465,8 +461,8 @@ function check_unsubscribed_stream_for_send(stream_name, autosubscribe) {
     return result;
 }
 
-function validate_stream_message_mentions(stream_name) {
-    const stream_count = stream_data.get_subscriber_count(stream_name) || 0;
+function validate_stream_message_mentions(stream_id) {
+    const stream_count = stream_data.get_subscriber_count(stream_id) || 0;
     wildcard_mention = util.find_wildcard_mentions(compose_state.message_content());
 
     // check if wildcard_mention has any mention and henceforth execute the warning message.
@@ -474,7 +470,7 @@ function validate_stream_message_mentions(stream_name) {
         if (user_acknowledged_all_everyone === undefined ||
             user_acknowledged_all_everyone === false) {
             // user has not seen a warning message yet if undefined
-            show_all_everyone_warnings();
+            show_all_everyone_warnings(stream_id);
 
             $("#compose-send-button").prop('disabled', false);
             $("#sending-indicator").hide();
@@ -490,15 +486,15 @@ function validate_stream_message_mentions(stream_name) {
     return true;
 }
 
-function validate_stream_message_announce(stream_name) {
-    const stream_count = stream_data.get_subscriber_count(stream_name) || 0;
+function validate_stream_message_announce(sub) {
+    const stream_count = stream_data.get_subscriber_count(sub.stream_id) || 0;
 
-    if (stream_name === "announce" &&
+    if (sub.name === "announce" &&
         stream_count > exports.announce_warn_threshold) {
         if (user_acknowledged_announce === undefined ||
             user_acknowledged_announce === false) {
             // user has not seen a warning message yet if undefined
-            show_announce_warnings();
+            show_announce_warnings(sub.stream_id);
 
             $("#compose-send-button").prop('disabled', false);
             $("#sending-indicator").hide();
@@ -513,13 +509,13 @@ function validate_stream_message_announce(stream_name) {
     return true;
 }
 
-function validate_stream_message_post_policy(stream_name) {
+function validate_stream_message_post_policy(sub) {
     if (page_params.is_admin) {
         return true;
     }
 
     const stream_post_permission_type = stream_data.stream_post_policy_values;
-    const stream_post_policy = stream_data.get_stream_post_policy(stream_name);
+    const stream_post_policy = sub.stream_post_policy;
 
     if (stream_post_policy === stream_post_permission_type.admins.code) {
         compose_error(i18n.t("Only organization admins are allowed to post to this stream."));
@@ -590,7 +586,12 @@ function validate_stream_message() {
         }
     }
 
-    if (!validate_stream_message_post_policy(stream_name)) {
+    const sub = stream_data.get_sub(stream_name);
+    if (!sub) {
+        return exports.validation_error("does-not-exist", stream_name);
+    }
+
+    if (!validate_stream_message_post_policy(sub)) {
         return false;
     }
 
@@ -598,14 +599,14 @@ function validate_stream_message() {
     // for `@all`. Users shouldn't have to hit "yes" more than once.
     if (wildcard_mention !== null && stream_name === "announce") {
         if (!exports.validate_stream_message_address_info(stream_name) ||
-            !validate_stream_message_mentions(stream_name)) {
+            !validate_stream_message_mentions(sub.stream_id)) {
             return false;
         }
     // If either criteria isn't met, just do the normal validation.
     } else {
         if (!exports.validate_stream_message_address_info(stream_name) ||
-            !validate_stream_message_mentions(stream_name) ||
-            !validate_stream_message_announce(stream_name)) {
+            !validate_stream_message_mentions(sub.stream_id) ||
+            !validate_stream_message_announce(sub)) {
             return false;
         }
     }

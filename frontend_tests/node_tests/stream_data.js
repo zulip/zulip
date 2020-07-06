@@ -83,8 +83,6 @@ run_test('basics', () => {
 
     assert(stream_data.get_invite_only('social'));
     assert(!stream_data.get_invite_only('unknown'));
-    assert(stream_data.get_stream_post_policy('social'));
-    assert(!stream_data.get_stream_post_policy('unknown'));
 
     assert.equal(stream_data.get_color('social'), 'red');
     assert.equal(stream_data.get_color('unknown'), global.stream_color.default_color);
@@ -608,10 +606,10 @@ run_test('get_subscriber_count', () => {
     stream_data.clear_subscriptions();
 
     blueslip.expect('warn', 'We got a get_subscriber_count count call for a non-existent stream.');
-    assert.equal(stream_data.get_subscriber_count('India'), undefined);
+    assert.equal(stream_data.get_subscriber_count(india.stream_id), undefined);
 
     stream_data.add_sub(india);
-    assert.equal(stream_data.get_subscriber_count('India'), 0);
+    assert.equal(stream_data.get_subscriber_count(india.stream_id), 0);
 
     const fred = {
         email: 'fred@zulip.com',
@@ -620,7 +618,7 @@ run_test('get_subscriber_count', () => {
     };
     people.add_active_user(fred);
     stream_data.add_subscriber(india.stream_id, 102);
-    assert.equal(stream_data.get_subscriber_count('India'), 1);
+    assert.equal(stream_data.get_subscriber_count(india.stream_id), 1);
     const george = {
         email: 'george@zulip.com',
         full_name: 'George',
@@ -628,11 +626,11 @@ run_test('get_subscriber_count', () => {
     };
     people.add_active_user(george);
     stream_data.add_subscriber(india.stream_id, 103);
-    assert.equal(stream_data.get_subscriber_count('India'), 2);
+    assert.equal(stream_data.get_subscriber_count(india.stream_id), 2);
 
     const sub = stream_data.get_sub_by_name('India');
     delete sub.subscribers;
-    assert.deepStrictEqual(stream_data.get_subscriber_count('India'), 0);
+    assert.deepStrictEqual(stream_data.get_subscriber_count(india.stream_id), 0);
 });
 
 run_test('notifications', () => {
