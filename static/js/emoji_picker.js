@@ -235,7 +235,7 @@ function filter_emojis() {
     }
 }
 
-function toggle_reaction(emoji_name) {
+function toggle_reaction(emoji_name, event) {
     const message_id = current_msg_list.selected_id();
     const message = message_store.get(message_id);
     if (!message) {
@@ -243,8 +243,13 @@ function toggle_reaction(emoji_name) {
         return;
     }
 
-    reactions.toggle_emoji_reaction(message_id, emoji_name);
-    exports.hide_emoji_popover();
+    reactions.toggle_emoji_reaction(message_id, emoji_name, event);
+
+    if (event === undefined || !event.shiftKey) {
+        exports.hide_emoji_popover();
+    }
+
+    $(event.target).closest('.reaction').toggleClass('reacted');
 }
 
 function is_composition(emoji) {
@@ -259,13 +264,13 @@ function maybe_select_emoji(e) {
             if (is_composition(first_emoji)) {
                 first_emoji.click();
             } else {
-                toggle_reaction(first_emoji.attr("data-emoji-name"));
+                toggle_reaction(first_emoji.attr("data-emoji-name"), e);
             }
         }
     }
 }
 
-function toggle_selected_emoji() {
+function toggle_selected_emoji(e) {
     // Toggle the currently selected emoji.
     const selected_emoji = get_selected_emoji();
 
@@ -275,7 +280,7 @@ function toggle_selected_emoji() {
 
     const emoji_name = $(selected_emoji).attr("data-emoji-name");
 
-    toggle_reaction(emoji_name);
+    toggle_reaction(emoji_name, e);
 }
 
 function round_off_to_previous_multiple(number_to_round, multiple) {
@@ -399,7 +404,7 @@ exports.navigate = function (event_name, e) {
         if (is_composition(e.target)) {
             e.target.click();
         } else {
-            toggle_selected_emoji();
+            toggle_selected_emoji(e);
         }
         return true;
     }
@@ -634,13 +639,13 @@ exports.toggle_emoji_popover = function (element, id) {
 
 exports.register_click_handlers = function () {
 
-    $(document).on('click', '.emoji-popover-emoji.reaction', function () {
+    $(document).on('click', '.emoji-popover-emoji.reaction', function (e) {
         // When an emoji is clicked in the popover,
         // if the user has reacted to this message with this emoji
         // the reaction is removed
         // otherwise, the reaction is added
         const emoji_name = $(this).attr("data-emoji-name");
-        toggle_reaction(emoji_name);
+        toggle_reaction(emoji_name, e);
     });
 
     $(document).on('click', '.emoji-popover-emoji.composition', function (e) {

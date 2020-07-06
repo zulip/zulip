@@ -26,6 +26,9 @@ underneath the message.
 If someone has already added a reaction, you can just click or tap on it to
 second the reaction.
 
+If you'd like to add multiple reactions without closing the emoji
+picker, you can hold the `Shift` key while making selections.
+
 ## See who reacted to a message
 
 Hover over an emoji reaction on a message to see who reacted with that emoji.
