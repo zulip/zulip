@@ -4,18 +4,11 @@ from unittest import mock
 
 from django.utils.timezone import now as timezone_now
 
-from analytics.lib.counts import COUNT_STATS
-from analytics.models import RealmCount
 from zerver.lib.actions import (
     gather_subscriptions_helper,
     get_active_presence_idle_user_ids,
     get_client,
     get_last_message_id,
-)
-from zerver.lib.message import (
-    get_first_visible_message_id,
-    maybe_update_first_visible_message_id,
-    update_first_visible_message_id,
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -180,64 +173,6 @@ class LogDictTest(ZulipTestCase):
         self.assertEqual(dct['sending_client'], 'test suite')
         self.assertEqual(dct[DB_TOPIC_NAME], 'Copenhagen')
         self.assertEqual(dct['type'], 'stream')
-
-class MessageVisibilityTest(ZulipTestCase):
-    def test_update_first_visible_message_id(self) -> None:
-        Message.objects.all().delete()
-        message_ids = [self.send_stream_message(self.example_user("othello"), "Scotland") for i in range(15)]
-
-        # If message_visibility_limit is None update_first_visible_message_id
-        # should set first_visible_message_id to 0
-        realm = get_realm("zulip")
-        realm.message_visibility_limit = None
-        # Setting to a random value other than 0 as the default value of
-        # first_visible_message_id is 0
-        realm.first_visible_message_id = 5
-        realm.save()
-        update_first_visible_message_id(realm)
-        self.assertEqual(get_first_visible_message_id(realm), 0)
-
-        realm.message_visibility_limit = 10
-        realm.save()
-        expected_message_id = message_ids[5]
-        update_first_visible_message_id(realm)
-        self.assertEqual(get_first_visible_message_id(realm), expected_message_id)
-
-        # If the message_visibility_limit is greater than number of messages
-        # get_first_visible_message_id should return 0
-        realm.message_visibility_limit = 50
-        realm.save()
-        update_first_visible_message_id(realm)
-        self.assertEqual(get_first_visible_message_id(realm), 0)
-
-    def test_maybe_update_first_visible_message_id(self) -> None:
-        realm = get_realm("zulip")
-        lookback_hours = 30
-
-        realm.message_visibility_limit = None
-        realm.save()
-
-        end_time = timezone_now() - datetime.timedelta(hours=lookback_hours - 5)
-        stat = COUNT_STATS['messages_sent:is_bot:hour']
-
-        RealmCount.objects.create(realm=realm, property=stat.property,
-                                  end_time=end_time, value=5)
-        with mock.patch("zerver.lib.message.update_first_visible_message_id") as m:
-            maybe_update_first_visible_message_id(realm, lookback_hours)
-        m.assert_not_called()
-
-        realm.message_visibility_limit = 10
-        realm.save()
-        RealmCount.objects.all().delete()
-        with mock.patch("zerver.lib.message.update_first_visible_message_id") as m:
-            maybe_update_first_visible_message_id(realm, lookback_hours)
-        m.assert_not_called()
-
-        RealmCount.objects.create(realm=realm, property=stat.property,
-                                  end_time=end_time, value=5)
-        with mock.patch("zerver.lib.message.update_first_visible_message_id") as m:
-            maybe_update_first_visible_message_id(realm, lookback_hours)
-        m.assert_called_once_with(realm)
 
 class TestBulkGetHuddleUserIds(ZulipTestCase):
     def test_bulk_get_huddle_user_ids(self) -> None:
