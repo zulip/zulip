@@ -121,6 +121,17 @@ class CommonUtils {
         }
     }
 
+    async get_text_from_selector(page, selector) {
+        return await page.evaluate((selector) => $(selector).text().trim(), selector);
+    }
+
+    async get_stream_id(page, stream_name) {
+        return await page.evaluate(
+            (stream_name) => stream_data.get_stream_id(stream_name),
+            stream_name,
+        );
+    }
+
     async get_user_id_from_name(page, name) {
         if (this.fullname[name] !== undefined) {
             name = this.fullname[name];
