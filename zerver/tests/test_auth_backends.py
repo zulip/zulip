@@ -2337,10 +2337,9 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
             id_token=self.generate_id_token(account_data_dict, audience='com.different.app'),
         )
 
-        with self.apple_jwk_url_mock(), mock.patch('logging.info') as mock_info:
+        with self.apple_jwk_url_mock(),  self.assertLogs(level='INFO') as m:
             result = self.client_get(url, **headers)
-            mock_info.assert_called_once_with('/complete/apple/: %s',
-                                              'Authentication failed: Token validation failed')
+        self.assertEqual(m.output, ["INFO:root:/complete/apple/: {}".format("Authentication failed: Token validation failed")])
         return result
 
     def test_social_auth_desktop_success(self) -> None:
@@ -2977,9 +2976,9 @@ class GoogleAuthBackendTest(SocialAuthBase):
             'is_signup': False,
             'redirect_to': '',
         }
-        with mock.patch("logging.warning") as mock_warn:
+        with self.assertLogs(level='WARNING') as m:
             result = self.get_log_into_subdomain(data, force_token='nonsense')
-            mock_warn.assert_called_once_with("log_into_subdomain: Malformed token given: %s", "nonsense")
+        self.assertEqual(m.output, ["WARNING:root:log_into_subdomain: Malformed token given: {}".format("nonsense")])
         self.assertEqual(result.status_code, 400)
 
     def test_log_into_subdomain_when_token_not_found(self) -> None:
@@ -2990,12 +2989,12 @@ class GoogleAuthBackendTest(SocialAuthBase):
             'is_signup': False,
             'redirect_to': '',
         }
-        with mock.patch("logging.warning") as mock_warn:
+        with self.assertLogs(level='WARNING') as m:
             token = secrets.token_hex(ExternalAuthResult.LOGIN_TOKEN_LENGTH // 2)
             result = self.get_log_into_subdomain(data, force_token=token)
-            mock_warn.assert_called_once_with("log_into_subdomain: Invalid token given: %s", token)
         self.assertEqual(result.status_code, 400)
         self.assert_in_response("Invalid or expired login session.", result)
+        self.assertEqual(m.output, ["WARNING:root:log_into_subdomain: Invalid token given: {}".format(token)])
 
     def test_prevent_duplicate_signups(self) -> None:
         existing_user = self.example_user('hamlet')
@@ -3140,10 +3139,11 @@ class GoogleAuthBackendTest(SocialAuthBase):
             'redirect_to': '',
         }
 
-        with mock.patch('logging.warning') as mock_warn:
-            result = self.get_log_into_subdomain(data)
+        with self.assertLogs(level="WARNING") as m:
+            token = secrets.token_hex(ExternalAuthResult.LOGIN_TOKEN_LENGTH // 2)
+            result = self.get_log_into_subdomain(data, force_token=token)
             self.assertEqual(result.status_code, 400)
-            mock_warn.assert_called_once()
+        self.assertEqual(m.output, ["WARNING:root:log_into_subdomain: Invalid token given: {}".format(token)])
 
     def test_user_cannot_log_into_wrong_subdomain(self) -> None:
         data: ExternalAuthDataDict = {
@@ -4043,10 +4043,10 @@ class DjangoToLDAPUsernameTests(ZulipTestCase):
         self.assertEqual(self.backend.django_to_ldap_username("aaron@zulip.com"),
                          self.ldap_username("aaron"))
 
-        with mock.patch("zproject.backends.logging.warning") as mock_warn:
+        with self.assertLogs(level="WARNING") as m:
             with self.assertRaises(ZulipLDAPExceptionNoMatchingLDAPUser):
                 self.backend.django_to_ldap_username("shared_email@zulip.com")
-            mock_warn.assert_called_with("Multiple users with email %s found in LDAP.", "shared_email@zulip.com")
+        self.assertEqual(m.output, ["WARNING:root:Multiple users with email {} found in LDAP.".format("shared_email@zulip.com")])
 
         # Test on a weird case of a user whose uid is an email and his actual "mail"
         # attribute is a different email address:
@@ -4689,11 +4689,9 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         self.change_ldap_user_attr('hamlet', 'jpegPhoto', b'00' + test_image_data)
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
                                                     'avatar': 'jpegPhoto'}):
-            with mock.patch('logging.warning') as mock_warning:
+            with self.assertLogs(level="WARNING") as m:
                 self.perform_ldap_sync(self.example_user('hamlet'))
-                mock_warning.assert_called_once_with(
-                    'Could not parse %s field for user %s', 'jpegPhoto', hamlet.id,
-                )
+            self.assertEqual(m.output, ["WARNING:root:Could not parse {} field for user {}".format("jpegPhoto", hamlet.id)])
 
     def test_deactivate_non_matching_users(self) -> None:
         with self.settings(LDAP_APPEND_DOMAIN='zulip.com',
