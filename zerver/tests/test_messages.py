@@ -6,17 +6,12 @@ from django.utils.timezone import now as timezone_now
 
 from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
-from zerver.decorator import JsonableError
 from zerver.lib.actions import (
-    check_message,
-    do_create_user,
     gather_subscriptions_helper,
     get_active_presence_idle_user_ids,
     get_client,
     get_last_message_id,
-    send_rate_limited_pm_notification_to_bot_owner,
 )
-from zerver.lib.addressee import Addressee
 from zerver.lib.message import (
     get_first_visible_message_id,
     maybe_update_first_visible_message_id,
@@ -24,7 +19,6 @@ from zerver.lib.message import (
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
-    make_client,
     message_stream_count,
     most_recent_message,
     most_recent_usermessage,
@@ -186,92 +180,6 @@ class LogDictTest(ZulipTestCase):
         self.assertEqual(dct['sending_client'], 'test suite')
         self.assertEqual(dct[DB_TOPIC_NAME], 'Copenhagen')
         self.assertEqual(dct['type'], 'stream')
-
-class CheckMessageTest(ZulipTestCase):
-    def test_basic_check_message_call(self) -> None:
-        sender = self.example_user('othello')
-        client = make_client(name="test suite")
-        stream_name = 'España y Francia'
-        self.make_stream(stream_name)
-        topic_name = 'issue'
-        message_content = 'whatever'
-        addressee = Addressee.for_stream_name(stream_name, topic_name)
-        ret = check_message(sender, client, addressee, message_content)
-        self.assertEqual(ret['message'].sender.id, sender.id)
-
-    def test_bot_pm_feature(self) -> None:
-        """We send a PM to a bot's owner if their bot sends a message to
-        an unsubscribed stream"""
-        parent = self.example_user('othello')
-        bot = do_create_user(
-            email='othello-bot@zulip.com',
-            password='',
-            realm=parent.realm,
-            full_name='',
-            short_name='',
-            bot_type=UserProfile.DEFAULT_BOT,
-            bot_owner=parent,
-        )
-        bot.last_reminder = None
-
-        sender = bot
-        client = make_client(name="test suite")
-        stream_name = 'Россия'
-        topic_name = 'issue'
-        addressee = Addressee.for_stream_name(stream_name, topic_name)
-        message_content = 'whatever'
-        old_count = message_stream_count(parent)
-
-        # Try sending to stream that doesn't exist sends a reminder to
-        # the sender
-        with self.assertRaises(JsonableError):
-            check_message(sender, client, addressee, message_content)
-
-        new_count = message_stream_count(parent)
-        self.assertEqual(new_count, old_count + 1)
-        self.assertIn("that stream does not exist.", most_recent_message(parent).content)
-
-        # Try sending to stream that exists with no subscribers soon
-        # after; due to rate-limiting, this should send nothing.
-        self.make_stream(stream_name)
-        ret = check_message(sender, client, addressee, message_content)
-        new_count = message_stream_count(parent)
-        self.assertEqual(new_count, old_count + 1)
-
-        # Try sending to stream that exists with no subscribers longer
-        # after; this should send an error to the bot owner that the
-        # stream doesn't exist
-        assert(sender.last_reminder is not None)
-        sender.last_reminder = sender.last_reminder - datetime.timedelta(hours=1)
-        sender.save(update_fields=["last_reminder"])
-        ret = check_message(sender, client, addressee, message_content)
-
-        new_count = message_stream_count(parent)
-        self.assertEqual(new_count, old_count + 2)
-        self.assertEqual(ret['message'].sender.email, 'othello-bot@zulip.com')
-        self.assertIn("does not have any subscribers", most_recent_message(parent).content)
-
-    def test_bot_pm_error_handling(self) -> None:
-        # This just test some defensive code.
-        cordelia = self.example_user('cordelia')
-        test_bot = self.create_test_bot(
-            short_name='test',
-            user_profile=cordelia,
-        )
-        content = 'whatever'
-        good_realm = test_bot.realm
-        wrong_realm = get_realm("zephyr")
-        wrong_sender = cordelia
-
-        send_rate_limited_pm_notification_to_bot_owner(test_bot, wrong_realm, content)
-        self.assertEqual(test_bot.last_reminder, None)
-
-        send_rate_limited_pm_notification_to_bot_owner(wrong_sender, good_realm, content)
-        self.assertEqual(test_bot.last_reminder, None)
-
-        test_bot.realm.deactivated = True
-        send_rate_limited_pm_notification_to_bot_owner(test_bot, good_realm, content)
-        self.assertEqual(test_bot.last_reminder, None)
 
 class MessageVisibilityTest(ZulipTestCase):
     def test_update_first_visible_message_id(self) -> None:
