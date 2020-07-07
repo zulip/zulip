@@ -6,7 +6,6 @@ import tippy from "tippy.js";
 import copy_to_clipboard_svg from "../../templates/copy_to_clipboard_svg.hbs";
 import * as common from "../common";
 
-import * as google_analytics from "./google-analytics";
 import {activate_correct_tab} from "./tabbed-instructions";
 
 function register_code_section($code_section) {
@@ -120,86 +119,9 @@ function render_code_sections() {
     });
 }
 
-function scrollToHash(simplebar) {
-    const hash = window.location.hash;
-    const scrollbar = simplebar.getScrollElement();
-    const $scroll_target = $(CSS.escape(hash));
-    if (hash !== "" && $scroll_target.length > 0) {
-        const position = $scroll_target.position().top - $(scrollbar.firstChild).position().top;
-        // Preserve a reference to the scroll target, so it is not lost (and the highlight
-        // along with it) when the page is updated via fetch
-        $scroll_target.addClass("scroll-target");
-        scrollbar.scrollTop = position;
-    } else {
-        scrollbar.scrollTop = 0;
-    }
-}
-
-const cache = new Map();
-const loading = {
-    name: null,
-};
-
-const markdownSB = new SimpleBar($(".markdown")[0]);
-
-const fetch_page = function (path, callback) {
-    $.get(path, (res) => {
-        const $html = $(res).find(".markdown .content");
-        const title = $(res).filter("title").text();
-
-        callback({html: $html.html().trim(), title});
-        render_code_sections();
-    });
-};
-
-const update_page = function (cache, path) {
-    if (cache.has(path)) {
-        $(".markdown .content").html(cache.get(path).html);
-        document.title = cache.get(path).title;
-        render_code_sections();
-        scrollToHash(markdownSB);
-    } else {
-        loading.name = path;
-        fetch_page(path, (article) => {
-            cache.set(path, article);
-            $(".markdown .content").html(article.html);
-            loading.name = null;
-            document.title = article.title;
-            scrollToHash(markdownSB);
-        });
-    }
-    google_analytics.config({page_path: path});
-};
-
+new SimpleBar($(".markdown")[0]);
 new SimpleBar($(".sidebar")[0]);
 
-$(".sidebar a").on("click", function (e) {
-    const path = $(this).attr("href");
-    const path_dir = path.split("/")[1];
-    const current_dir = window.location.pathname.split("/")[1];
-
-    // Do not block redirecting to external URLs
-    if (path_dir !== current_dir) {
-        return;
-    }
-
-    if (loading.name === path) {
-        return;
-    }
-
-    history.pushState({}, "", path);
-
-    update_page(cache, path);
-
-    $(".sidebar").removeClass("show");
-
-    e.preventDefault();
-});
-
-if (window.location.pathname === "/help/") {
-    // Expand the Guides user docs section in sidebar in the /help/ homepage.
-    $(".help .sidebar h2#guides + ul").show();
-}
 // Remove ID attributes from sidebar links so they don't conflict with index page anchor links
 $(".help .sidebar h1, .help .sidebar h2, .help .sidebar h3").removeAttr("id");
 
@@ -211,7 +133,6 @@ $(document).on(
     ".markdown .content h1, .markdown .content h2, .markdown .content h3",
     function () {
         window.location.hash = $(this).attr("id");
-        scrollToHash(markdownSB);
     },
 );
 
@@ -228,15 +149,6 @@ $(".markdown").on("click", () => {
 });
 
 render_code_sections();
-
-// Finally, make sure if we loaded a window with a hash, we scroll
-// to the right place.
-scrollToHash(markdownSB);
-
-window.addEventListener("popstate", () => {
-    const path = window.location.pathname;
-    update_page(cache, path);
-});
 
 $("body").addClass("noscroll");
 
