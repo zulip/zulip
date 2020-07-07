@@ -215,6 +215,19 @@ run_test("basics", () => {
     assert.equal(widget.value(), "translated: Keyboard shortcuts");
 
     callback_args = undefined;
+    widget.disable_tab("message-formatting");
+
+    keydown_f.call(tabs[focused_tab], RIGHT_KEY);
+    assert.equal(widget.value(), "translated: Search operators");
+
+    callback_args = undefined;
+
+    keydown_f.call(tabs[focused_tab], LEFT_KEY);
+    assert.equal(widget.value(), "translated: Keyboard shortcuts");
+
+    widget.enable_tab("message-formatting");
+
+    callback_args = undefined;
 
     click_f.call(tabs[1]);
     assert.equal(widget.value(), "translated: Message formatting");
