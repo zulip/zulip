@@ -45,7 +45,7 @@ ALLOWED_HOSTS = ['*']
 
 # Uncomment extra backends if you want to test with them.  Note that
 # for Google and GitHub auth you'll need to do some pre-setup.
-AUTHENTICATION_BACKENDS = (
+AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
     'zproject.backends.DevAuthBackend',
     'zproject.backends.EmailAuthBackend',
     'zproject.backends.GitHubAuthBackend',
@@ -54,7 +54,7 @@ AUTHENTICATION_BACKENDS = (
     # 'zproject.backends.AzureADAuthBackend',
     'zproject.backends.GitLabAuthBackend',
     'zproject.backends.AppleAuthBackend',
-)  # type: Tuple[str, ...]
+)
 
 EXTERNAL_URI_SCHEME = "http://"
 EMAIL_GATEWAY_PATTERN = "%s@" + EXTERNAL_HOST_WITHOUT_PORT
@@ -76,10 +76,10 @@ SAVE_FRONTEND_STACKTRACES = True
 EVENT_LOGS_ENABLED = True
 STAGING_ERROR_NOTIFICATIONS = True
 
-SYSTEM_ONLY_REALMS = set()  # type: Set[str]
+SYSTEM_ONLY_REALMS: Set[str] = set()
 USING_PGROONGA = True
 # Flush cache after migration.
-POST_MIGRATION_CACHE_FLUSHING = True  # type: bool
+POST_MIGRATION_CACHE_FLUSHING = True
 
 # Don't require anything about password strength in development
 PASSWORD_MIN_LENGTH = 0
@@ -98,7 +98,7 @@ TWO_FACTOR_SMS_GATEWAY = 'two_factor.gateways.fake.Fake'
 SENDFILE_BACKEND = 'django_sendfile.backends.development'
 
 # Set this True to send all hotspots in development
-ALWAYS_SEND_ALL_HOTSPOTS = False  # type: bool
+ALWAYS_SEND_ALL_HOTSPOTS = False
 
 # FAKE_LDAP_MODE supports using a fake LDAP database in the
 # development environment, without needing an LDAP server!
@@ -112,7 +112,7 @@ ALWAYS_SEND_ALL_HOTSPOTS = False  # type: bool
 #   (C) If LDAP usernames are completely unrelated to email addresses.
 #
 # Fake LDAP data has e.g. ("ldapuser1", "ldapuser1@zulip.com") for username/email.
-FAKE_LDAP_MODE = None  # type: Optional[str]
+FAKE_LDAP_MODE: Optional[str] = None
 # FAKE_LDAP_NUM_USERS = 8
 
 if FAKE_LDAP_MODE:
