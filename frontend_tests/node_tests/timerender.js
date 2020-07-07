@@ -135,10 +135,18 @@ run_test('get_timestamp_for_flatpickr', () => {
     const unix_timestamp = 1495091573000; // 5/18/2017 7:12:53 AM (UTC+0)
     const iso_timestamp = '2017-05-18T07:12:53Z'; // ISO 8601 date format
     const func = timerender.get_timestamp_for_flatpickr;
+    // Freeze time for testing.
+    const date_now = Date.now;
+    Date.now = () => new Date('2020-07-07T10:00:00Z').getTime();
+
     // Invalid timestamps should show current time.
     assert.equal(func("random str").valueOf(), moment().valueOf());
+
     // Valid ISO timestamps should return Date objects.
     assert.equal(func(iso_timestamp).valueOf(), moment(unix_timestamp).valueOf());
+
+    // Restore the Date object.
+    Date.now = date_now;
 });
 
 run_test('absolute_time_12_hour', () => {
