@@ -39,6 +39,7 @@ EMAIL_HOST: Optional[str] = None
 
 # LDAP auth
 AUTH_LDAP_SERVER_URI = ""
+LDAP_APPEND_DOMAIN: Optional[str] = None
 LDAP_EMAIL_ATTR: Optional[str] = None
 AUTH_LDAP_USERNAME_ATTR: Optional[str] = None
 AUTH_LDAP_REVERSE_EMAIL_SEARCH: Optional["LDAPSearch"] = None
