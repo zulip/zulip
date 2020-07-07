@@ -18,6 +18,7 @@ jobs:
             name: Ubuntu 18.04 Bionic (Python 3.6, backend + frontend)
             os: bionic
             is_bionic: true
+            include_frontend_tests: true
 
           # This docker image was created by a generated Dockerfile at:
           #   tools/ci/images/focal/Dockerfile
@@ -26,6 +27,7 @@ jobs:
             name: Ubuntu 20.04 Focal (Python 3.8, backend)
             os: focal
             is_focal: true
+            include_frontend_tests: false
 
     runs-on: ubuntu-latest
     name: ${{ matrix.name }}
@@ -107,7 +109,7 @@ jobs:
           mispipe "./tools/ci/backend 2>&1" ts
 
       - name: Run frontend tests
-        if: ${{ matrix.is_bionic }}
+        if: ${{ matrix.include_frontend_tests }}
         run: |
           . /srv/zulip-py3-venv/bin/activate
           mispipe "./tools/ci/frontend 2>&1" ts
@@ -119,7 +121,10 @@ jobs:
           mispipe "./tools/test-locked-requirements 2>&1" ts
 
       - name: Upload coverage reports
-        if: ${{ matrix.is_bionic }}
+
+        # Only upload coverage when both frontend and backend
+        # tests are ran.
+        if: ${{ matrix.include_frontend_tests }}
         run: |
           # Codcov requires `.coverage` file to be stored in the
           # current working directory.
@@ -137,7 +142,7 @@ jobs:
           pip install codecov && codecov || echo "Error in uploading coverage reports to codecov.io."
 
       - name: Store puppeteer artifacts
-        if: ${{ matrix.is_bionic }}
+        if: ${{ matrix.include_frontend_tests }}
         uses: actions/upload-artifact@v2
         with:
           name: puppeteer
