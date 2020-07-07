@@ -8,8 +8,14 @@ from django.test import override_settings
 from sqlalchemy.sql import and_, column, select, table
 from sqlalchemy.sql.elements import ClauseElement
 
-from zerver.lib.actions import do_deactivate_user, do_set_realm_property
-from zerver.lib.message import MessageDict
+from zerver.lib.actions import (
+    do_claim_attachments,
+    do_deactivate_user,
+    do_set_realm_property,
+    do_update_message,
+)
+from zerver.lib.markdown import MentionData
+from zerver.lib.message import MessageDict, render_markdown
 from zerver.lib.narrow import build_narrow_filter, is_web_public_compatible
 from zerver.lib.request import JsonableError
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
@@ -19,13 +25,16 @@ from zerver.lib.test_helpers import POSTRequestMock, get_user_messages, queries_
 from zerver.lib.topic import MATCH_TOPIC, TOPIC_NAME
 from zerver.lib.topic_mutes import set_topic_mutes
 from zerver.lib.types import DisplayRecipientT
+from zerver.lib.upload import create_attachment
 from zerver.models import (
+    Attachment,
     Message,
     Realm,
     Recipient,
     Stream,
     Subscription,
     UserMessage,
+    UserProfile,
     get_display_recipient,
     get_realm,
     get_stream,
@@ -2957,3 +2966,186 @@ WHERE user_profile_id = {hamlet_id} AND (content ILIKE '%jumping%' OR subject IL
             f'<p>How are you doing, <span class="user-mention" data-user-id="{othello.id}">'
             '@<span class="highlight">Othello</span>, the Moor of Venice</span>?</p>',
         )
+
+class MessageHasKeywordsTest(ZulipTestCase):
+    '''Test for keywords like has_link, has_image, has_attachment.'''
+
+    def setup_dummy_attachments(self, user_profile: UserProfile) -> List[str]:
+        sample_size = 10
+        realm_id = user_profile.realm_id
+        dummy_files = [
+            ('zulip.txt', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt', sample_size),
+            ('temp_file.py', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py', sample_size),
+            ('abc.py', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py', sample_size),
+        ]
+
+        for file_name, path_id, size in dummy_files:
+            create_attachment(file_name, path_id, user_profile, size)
+
+        # return path ids
+        return [x[1] for x in dummy_files]
+
+    def test_claim_attachment(self) -> None:
+        user_profile = self.example_user('hamlet')
+        dummy_path_ids = self.setup_dummy_attachments(user_profile)
+        dummy_urls = [f"http://zulip.testserver/user_uploads/{x}" for x in dummy_path_ids]
+
+        # Send message referring the attachment
+        self.subscribe(user_profile, "Denmark")
+
+        def assert_attachment_claimed(path_id: str, claimed: bool) -> None:
+            attachment = Attachment.objects.get(path_id=path_id)
+            self.assertEqual(attachment.is_claimed(), claimed)
+
+        # This message should claim attachments 1 only because attachment 2
+        # is not being parsed as a link by Markdown.
+        body = ("Some files here ...[zulip.txt]({})" +
+                "{}.... Some more...." +
+                "{}").format(dummy_urls[0], dummy_urls[1], dummy_urls[1])
+        self.send_stream_message(user_profile, "Denmark", body, "test")
+        assert_attachment_claimed(dummy_path_ids[0], True)
+        assert_attachment_claimed(dummy_path_ids[1], False)
+
+        # This message tries to claim the third attachment but fails because
+        # Markdown would not set has_attachments = True here.
+        body = f"Link in code: `{dummy_urls[2]}`"
+        self.send_stream_message(user_profile, "Denmark", body, "test")
+        assert_attachment_claimed(dummy_path_ids[2], False)
+
+        # Another scenario where we wouldn't parse the link.
+        body = f"Link to not parse: .{dummy_urls[2]}.`"
+        self.send_stream_message(user_profile, "Denmark", body, "test")
+        assert_attachment_claimed(dummy_path_ids[2], False)
+
+        # Finally, claim attachment 3.
+        body = f"Link: {dummy_urls[2]}"
+        self.send_stream_message(user_profile, "Denmark", body, "test")
+        assert_attachment_claimed(dummy_path_ids[2], True)
+        assert_attachment_claimed(dummy_path_ids[1], False)
+
+    def test_finds_all_links(self) -> None:
+        msg_ids = []
+        msg_contents = ["foo.org", "[bar](baz.gov)", "http://quux.ca"]
+        for msg_content in msg_contents:
+            msg_ids.append(self.send_stream_message(self.example_user('hamlet'),
+                                                    'Denmark', content=msg_content))
+        msgs = [Message.objects.get(id=id) for id in msg_ids]
+        self.assertTrue(all([msg.has_link for msg in msgs]))
+
+    def test_finds_only_links(self) -> None:
+        msg_ids = []
+        msg_contents = ["`example.org`", '``example.org```', '$$https://example.org$$', "foo"]
+        for msg_content in msg_contents:
+            msg_ids.append(self.send_stream_message(self.example_user('hamlet'),
+                                                    'Denmark', content=msg_content))
+        msgs = [Message.objects.get(id=id) for id in msg_ids]
+        self.assertFalse(all([msg.has_link for msg in msgs]))
+
+    def update_message(self, msg: Message, content: str) -> None:
+        hamlet = self.example_user('hamlet')
+        realm_id = hamlet.realm.id
+        rendered_content = render_markdown(msg, content)
+        mention_data = MentionData(realm_id, content)
+        do_update_message(hamlet, msg, None, None, "change_one", False, False, content,
+                          rendered_content, set(), set(), mention_data=mention_data)
+
+    def test_finds_link_after_edit(self) -> None:
+        hamlet = self.example_user('hamlet')
+        msg_id = self.send_stream_message(hamlet, 'Denmark', content='a')
+        msg = Message.objects.get(id=msg_id)
+
+        self.assertFalse(msg.has_link)
+        self.update_message(msg, 'a http://foo.com')
+        self.assertTrue(msg.has_link)
+        self.update_message(msg, 'a')
+        self.assertFalse(msg.has_link)
+        # Check in blockquotes work
+        self.update_message(msg, '> http://bar.com')
+        self.assertTrue(msg.has_link)
+        self.update_message(msg, 'a `http://foo.com`')
+        self.assertFalse(msg.has_link)
+
+    def test_has_image(self) -> None:
+        msg_ids = []
+        msg_contents = ["Link: foo.org",
+                        "Image: https://www.google.com/images/srpr/logo4w.png",
+                        "Image: https://www.google.com/images/srpr/logo4w.pdf",
+                        "[Google Link](https://www.google.com/images/srpr/logo4w.png)"]
+        for msg_content in msg_contents:
+            msg_ids.append(self.send_stream_message(self.example_user('hamlet'),
+                                                    'Denmark', content=msg_content))
+        msgs = [Message.objects.get(id=id) for id in msg_ids]
+        self.assertEqual([False, True, False, True], [msg.has_image for msg in msgs])
+
+        self.update_message(msgs[0], 'https://www.google.com/images/srpr/logo4w.png')
+        self.assertTrue(msgs[0].has_image)
+        self.update_message(msgs[0], 'No Image Again')
+        self.assertFalse(msgs[0].has_image)
+
+    def test_has_attachment(self) -> None:
+        hamlet = self.example_user('hamlet')
+        dummy_path_ids = self.setup_dummy_attachments(hamlet)
+        dummy_urls = [f"http://zulip.testserver/user_uploads/{x}" for x in dummy_path_ids]
+        self.subscribe(hamlet, "Denmark")
+
+        body = ("Files ...[zulip.txt]({}) {} {}").format(dummy_urls[0], dummy_urls[1], dummy_urls[2])
+
+        msg_id = self.send_stream_message(hamlet, "Denmark", body, "test")
+        msg = Message.objects.get(id=msg_id)
+        self.assertTrue(msg.has_attachment)
+        self.update_message(msg, 'No Attachments')
+        self.assertFalse(msg.has_attachment)
+        self.update_message(msg, body)
+        self.assertTrue(msg.has_attachment)
+        self.update_message(msg, f'Link in code: `{dummy_urls[1]}`')
+        self.assertFalse(msg.has_attachment)
+        # Test blockquotes
+        self.update_message(msg, f'> {dummy_urls[1]}')
+        self.assertTrue(msg.has_attachment)
+
+        # Additional test to check has_attachment is being set is due to the correct attachment.
+        self.update_message(msg, f'Outside: {dummy_urls[0]}. In code: `{dummy_urls[1]}`.')
+        self.assertTrue(msg.has_attachment)
+        self.assertTrue(msg.attachment_set.filter(path_id=dummy_path_ids[0]))
+        self.assertEqual(msg.attachment_set.count(), 1)
+
+        self.update_message(msg, f'Outside: {dummy_urls[1]}. In code: `{dummy_urls[0]}`.')
+        self.assertTrue(msg.has_attachment)
+        self.assertTrue(msg.attachment_set.filter(path_id=dummy_path_ids[1]))
+        self.assertEqual(msg.attachment_set.count(), 1)
+
+        self.update_message(msg, f'Both in code: `{dummy_urls[1]} {dummy_urls[0]}`.')
+        self.assertFalse(msg.has_attachment)
+        self.assertEqual(msg.attachment_set.count(), 0)
+
+    def test_potential_attachment_path_ids(self) -> None:
+        hamlet = self.example_user('hamlet')
+        self.subscribe(hamlet, "Denmark")
+        dummy_path_ids = self.setup_dummy_attachments(hamlet)
+
+        body = "Hello"
+        msg_id = self.send_stream_message(hamlet, "Denmark", body, "test")
+        msg = Message.objects.get(id=msg_id)
+
+        with mock.patch("zerver.lib.actions.do_claim_attachments",
+                        wraps=do_claim_attachments) as m:
+            self.update_message(msg, f'[link](http://{hamlet.realm.host}/user_uploads/{dummy_path_ids[0]})')
+            self.assertTrue(m.called)
+            m.reset_mock()
+
+            self.update_message(msg, f'[link](/user_uploads/{dummy_path_ids[1]})')
+            self.assertTrue(m.called)
+            m.reset_mock()
+
+            self.update_message(msg, f'[new text link](/user_uploads/{dummy_path_ids[1]})')
+            self.assertFalse(m.called)
+            m.reset_mock()
+
+            # It's not clear this is correct behavior
+            self.update_message(msg, f'[link](user_uploads/{dummy_path_ids[2]})')
+            self.assertFalse(m.called)
+            m.reset_mock()
+
+            self.update_message(msg, f'[link](https://github.com/user_uploads/{dummy_path_ids[0]})')
+            self.assertFalse(m.called)
+            m.reset_mock()
