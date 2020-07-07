@@ -1,10 +1,6 @@
 name: "Code Scanning"
 
-on:
-  push:
-  pull_request:
-  schedule:
-    - cron: '0 5 * * 1'
+on: [push, pull_request]
 
 jobs:
   CodeQL:
