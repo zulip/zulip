@@ -53,7 +53,6 @@ from zerver.models import (
     bulk_get_huddle_user_ids,
     get_huddle_user_ids,
     get_realm,
-    get_stream,
 )
 
 
@@ -67,61 +66,6 @@ class MiscMessageTest(ZulipTestCase):
         Message.objects.all().delete()
 
         self.assertEqual(get_last_message_id(), -1)
-
-class TestAddressee(ZulipTestCase):
-    def test_addressee_for_user_ids(self) -> None:
-        realm = get_realm('zulip')
-        user_ids = [self.example_user('cordelia').id,
-                    self.example_user('hamlet').id,
-                    self.example_user('othello').id]
-
-        result = Addressee.for_user_ids(user_ids=user_ids, realm=realm)
-        user_profiles = result.user_profiles()
-        result_user_ids = [user_profiles[0].id, user_profiles[1].id,
-                           user_profiles[2].id]
-
-        self.assertEqual(set(result_user_ids), set(user_ids))
-
-    def test_addressee_for_user_ids_nonexistent_id(self) -> None:
-        def assert_invalid_user_id() -> Any:
-            return self.assertRaisesRegex(
-                JsonableError,
-                'Invalid user ID ')
-
-        with assert_invalid_user_id():
-            Addressee.for_user_ids(user_ids=[779], realm=get_realm('zulip'))
-
-    def test_addressee_legacy_build_for_user_ids(self) -> None:
-        realm = get_realm('zulip')
-        self.login('hamlet')
-        user_ids = [self.example_user('cordelia').id,
-                    self.example_user('othello').id]
-
-        result = Addressee.legacy_build(
-            sender=self.example_user('hamlet'), message_type_name='private',
-            message_to=user_ids, topic_name='random_topic',
-            realm=realm,
-        )
-        user_profiles = result.user_profiles()
-        result_user_ids = [user_profiles[0].id, user_profiles[1].id]
-
-        self.assertEqual(set(result_user_ids), set(user_ids))
-
-    def test_addressee_legacy_build_for_stream_id(self) -> None:
-        realm = get_realm('zulip')
-        self.login('iago')
-        sender = self.example_user('iago')
-        self.subscribe(sender, "Denmark")
-        stream = get_stream('Denmark', realm)
-
-        result = Addressee.legacy_build(
-            sender=sender, message_type_name='stream',
-            message_to=[stream.id], topic_name='random_topic',
-            realm=realm,
-        )
-
-        stream_id = result.stream_id()
-        self.assertEqual(stream.id, stream_id)
 
 class PersonalMessagesTest(ZulipTestCase):
 
