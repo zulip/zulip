@@ -16,7 +16,6 @@ from zerver.lib.test_helpers import (
     most_recent_message,
     most_recent_usermessage,
 )
-from zerver.lib.topic import DB_TOPIC_NAME
 from zerver.lib.url_encoding import near_message_url
 from zerver.models import (
     Message,
@@ -147,32 +146,6 @@ class MissedMessageTest(ZulipTestCase):
 
         message_type = 'private'
         assert_missing([othello.id])
-
-class LogDictTest(ZulipTestCase):
-    def test_to_log_dict(self) -> None:
-        user = self.example_user('hamlet')
-        stream_name = 'Denmark'
-        topic_name = 'Copenhagen'
-        content = 'find me some good coffee shops'
-        message_id = self.send_stream_message(user, stream_name,
-                                              topic_name=topic_name,
-                                              content=content)
-        message = Message.objects.get(id=message_id)
-        dct = message.to_log_dict()
-
-        self.assertTrue('timestamp' in dct)
-
-        self.assertEqual(dct['content'], 'find me some good coffee shops')
-        self.assertEqual(dct['id'], message.id)
-        self.assertEqual(dct['recipient'], 'Denmark')
-        self.assertEqual(dct['sender_realm_str'], 'zulip')
-        self.assertEqual(dct['sender_email'], user.email)
-        self.assertEqual(dct['sender_full_name'], 'King Hamlet')
-        self.assertEqual(dct['sender_id'], user.id)
-        self.assertEqual(dct['sender_short_name'], 'hamlet')
-        self.assertEqual(dct['sending_client'], 'test suite')
-        self.assertEqual(dct[DB_TOPIC_NAME], 'Copenhagen')
-        self.assertEqual(dct['type'], 'stream')
 
 class TestBulkGetHuddleUserIds(ZulipTestCase):
     def test_bulk_get_huddle_user_ids(self) -> None:

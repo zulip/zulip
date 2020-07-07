@@ -1821,21 +1821,6 @@ class Message(AbstractMessage):
                 rendered_content_version is None or
                 rendered_content_version < markdown_version)
 
-    def to_log_dict(self) -> Dict[str, Any]:
-        return dict(
-            id                = self.id,
-            sender_id         = self.sender.id,
-            sender_email      = self.sender.email,
-            sender_realm_str  = self.sender.realm.string_id,
-            sender_full_name  = self.sender.full_name,
-            sender_short_name = self.sender.short_name,
-            sending_client    = self.sending_client.name,
-            type              = self.recipient.type_name(),
-            recipient         = get_display_recipient(self.recipient),
-            subject           = self.topic_name(),
-            content           = self.content,
-            timestamp         = datetime_to_timestamp(self.date_sent))
-
     def sent_by_human(self) -> bool:
         """Used to determine whether a message was sent by a full Zulip UI
         style client (and thus whether the message should be treated
