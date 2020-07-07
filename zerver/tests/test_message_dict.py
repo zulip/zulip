@@ -6,7 +6,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.cache import cache_delete, to_dict_cache_key_id
 from zerver.lib.markdown import version as markdown_version
-from zerver.lib.message import MessageDict, messages_for_ids
+from zerver.lib.message import MessageDict, messages_for_ids, sew_messages_and_reactions
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import make_client, queries_captured
 from zerver.lib.topic import TOPIC_LINKS
@@ -596,3 +596,43 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
         self._verify_display_recipient(messages[3]['display_recipient'], get_stream("Denmark", hamlet.realm))
         self._verify_display_recipient(messages[4]['display_recipient'], [hamlet, cordelia, othello, iago])
         self._verify_display_recipient(messages[5]['display_recipient'], [cordelia, othello])
+
+class SewMessageAndReactionTest(ZulipTestCase):
+    def test_sew_messages_and_reaction(self) -> None:
+        sender = self.example_user('othello')
+        receiver = self.example_user('hamlet')
+        pm_recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
+        stream_name = 'Çiğdem'
+        stream = self.make_stream(stream_name)
+        stream_recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+        sending_client = make_client(name="test suite")
+
+        needed_ids = []
+        for i in range(5):
+            for recipient in [pm_recipient, stream_recipient]:
+                message = Message(
+                    sender=sender,
+                    recipient=recipient,
+                    content=f'whatever {i}',
+                    date_sent=timezone_now(),
+                    sending_client=sending_client,
+                    last_edit_time=timezone_now(),
+                    edit_history='[]',
+                )
+                message.set_topic_name('whatever')
+                message.save()
+                needed_ids.append(message.id)
+                reaction = Reaction(user_profile=sender, message=message,
+                                    emoji_name='simple_smile')
+                reaction.save()
+
+        messages = Message.objects.filter(id__in=needed_ids).values(
+            *['id', 'content'])
+        reactions = Reaction.get_raw_db_rows(needed_ids)
+        tied_data = sew_messages_and_reactions(messages, reactions)
+        for data in tied_data:
+            self.assertEqual(len(data['reactions']), 1)
+            self.assertEqual(data['reactions'][0]['emoji_name'],
+                             'simple_smile')
+            self.assertTrue(data['id'])
+            self.assertTrue(data['content'])
