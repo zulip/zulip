@@ -48,7 +48,7 @@ RUN apt-get update \
 # Set the locale, together with the locale-related steps above.
 # It's not entirely clear why, but alternatives that don't work include
 #  * using `C.UTF-8` instead of `en_US.UTF-8`, here and above
-#    (causes mysterious failures in zerver.tests.test_narrow)
+#    (causes mysterious failures in zerver.tests.test_message_fetch)
 #  * skipping the /etc/default/locale step above (ditto)
 #  * skipping this ENV instruction (causes provision to fail,
 #    because Python tries to use the `ascii` codec)
