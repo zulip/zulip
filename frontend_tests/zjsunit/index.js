@@ -89,8 +89,11 @@ function short_tb(tb) {
 // Set up markdown comparison helper
 global.markdown_assert = require('./markdown_assert.js');
 
+let current_file_name;
+
 function run_one_module(file) {
     console.info('running tests for ' + file.name);
+    current_file_name = file.name;
     require(file.full_name);
 }
 
@@ -98,7 +101,14 @@ global.run_test = (label, f) => {
     if (files.length === 1) {
         console.info('        test: ' + label);
     }
-    f();
+    try {
+        f();
+    } catch (error) {
+        console.info('-'.repeat(50));
+        console.info(`test failed: ${current_file_name} > ${label}`);
+        console.info();
+        throw error;
+    }
     // defensively reset blueslip after each test.
     blueslip.reset();
 };
