@@ -4,7 +4,6 @@ from unittest import mock
 
 import ujson
 from django.http import HttpResponse
-from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from analytics.lib.counts import COUNT_STATS
@@ -20,7 +19,6 @@ from zerver.lib.actions import (
     get_active_presence_idle_user_ids,
     get_client,
     get_last_message_id,
-    internal_send_private_message,
     send_rate_limited_pm_notification_to_bot_owner,
 )
 from zerver.lib.addressee import Addressee
@@ -35,7 +33,6 @@ from zerver.lib.message import (
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
-    get_user_messages,
     make_client,
     message_stream_count,
     most_recent_message,
@@ -48,8 +45,6 @@ from zerver.models import (
     Attachment,
     Message,
     Reaction,
-    Realm,
-    RealmDomain,
     Recipient,
     Subscription,
     UserMessage,
@@ -59,8 +54,6 @@ from zerver.models import (
     get_huddle_user_ids,
     get_realm,
     get_stream,
-    get_system_bot,
-    get_user,
 )
 
 
@@ -74,114 +67,6 @@ class MiscMessageTest(ZulipTestCase):
         Message.objects.all().delete()
 
         self.assertEqual(get_last_message_id(), -1)
-
-class TestCrossRealmPMs(ZulipTestCase):
-    def make_realm(self, domain: str) -> Realm:
-        realm = Realm.objects.create(string_id=domain, invite_required=False)
-        RealmDomain.objects.create(realm=realm, domain=domain)
-        return realm
-
-    def create_user(self, email: str) -> UserProfile:
-        subdomain = email.split("@")[1]
-        self.register(email, 'test', subdomain=subdomain)
-        return get_user(email, get_realm(subdomain))
-
-    @override_settings(CROSS_REALM_BOT_EMAILS=['notification-bot@zulip.com',
-                                               'welcome-bot@zulip.com',
-                                               'support@3.example.com'])
-    def test_realm_scenarios(self) -> None:
-        self.make_realm('1.example.com')
-        r2 = self.make_realm('2.example.com')
-        self.make_realm('3.example.com')
-
-        def assert_message_received(to_user: UserProfile, from_user: UserProfile) -> None:
-            messages = get_user_messages(to_user)
-            self.assertEqual(messages[-1].sender.id, from_user.id)
-
-        def assert_invalid_user() -> Any:
-            return self.assertRaisesRegex(
-                JsonableError,
-                'Invalid user ID ')
-
-        user1_email = 'user1@1.example.com'
-        user1a_email = 'user1a@1.example.com'
-        user2_email = 'user2@2.example.com'
-        user3_email = 'user3@3.example.com'
-        notification_bot_email = 'notification-bot@zulip.com'
-        support_email = 'support@3.example.com'  # note: not zulip.com
-
-        user1 = self.create_user(user1_email)
-        user1a = self.create_user(user1a_email)
-        user2 = self.create_user(user2_email)
-        user3 = self.create_user(user3_email)
-        notification_bot = get_system_bot(notification_bot_email)
-        with self.settings(CROSS_REALM_BOT_EMAILS=['notification-bot@zulip.com', 'welcome-bot@zulip.com']):
-            # HACK: We should probably be creating this "bot" user another
-            # way, but since you can't register a user with a
-            # cross-realm email, we need to hide this for now.
-            support_bot = self.create_user(support_email)
-
-        # Users can PM themselves
-        self.send_personal_message(user1, user1)
-        assert_message_received(user1, user1)
-
-        # Users on the same realm can PM each other
-        self.send_personal_message(user1, user1a)
-        assert_message_received(user1a, user1)
-
-        # Cross-realm bots in the zulip.com realm can PM any realm
-        # (They need lower level APIs to do this.)
-        internal_send_private_message(
-            realm=r2,
-            sender=get_system_bot(notification_bot_email),
-            recipient_user=get_user(user2_email, r2),
-            content='bla',
-        )
-        assert_message_received(user2, notification_bot)
-
-        # All users can PM cross-realm bots in the zulip.com realm
-        self.send_personal_message(user1, notification_bot)
-        assert_message_received(notification_bot, user1)
-
-        # Users can PM cross-realm bots on non-zulip realms.
-        # (The support bot represents some theoretical bot that we may
-        # create in the future that does not have zulip.com as its realm.)
-        self.send_personal_message(user1,  support_bot)
-        assert_message_received(support_bot, user1)
-
-        # Allow sending PMs to two different cross-realm bots simultaneously.
-        # (We don't particularly need this feature, but since users can
-        # already individually send PMs to cross-realm bots, we shouldn't
-        # prevent them from sending multiple bots at once.  We may revisit
-        # this if it's a nuisance for huddles.)
-        self.send_huddle_message(user1, [notification_bot, support_bot])
-        assert_message_received(notification_bot, user1)
-        assert_message_received(support_bot, user1)
-
-        # Prevent old loophole where I could send PMs to other users as long
-        # as I copied a cross-realm bot from the same realm.
-        with assert_invalid_user():
-            self.send_huddle_message(user1, [user3, support_bot])
-
-        # Users on three different realms can't PM each other,
-        # even if one of the users is a cross-realm bot.
-        with assert_invalid_user():
-            self.send_huddle_message(user1, [user2, notification_bot])
-
-        with assert_invalid_user():
-            self.send_huddle_message(notification_bot, [user1, user2])
-
-        # Users on the different realms cannot PM each other
-        with assert_invalid_user():
-            self.send_personal_message(user1, user2)
-
-        # Users on non-zulip realms can't PM "ordinary" Zulip users
-        with assert_invalid_user():
-            self.send_personal_message(user1, self.example_user('hamlet'))
-
-        # Users on three different realms cannot PM each other
-        with assert_invalid_user():
-            self.send_huddle_message(user1, [user2, user3])
 
 class TestAddressee(ZulipTestCase):
     def test_addressee_for_user_ids(self) -> None:
