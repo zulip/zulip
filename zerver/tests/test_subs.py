@@ -4246,3 +4246,16 @@ class StreamTrafficTest(ZulipTestCase):
 
     def test_round_to_2_significant_digits(self) -> None:
         self.assertEqual(120, round_to_2_significant_digits(116))
+
+class NoRecipientIDsTest(ZulipTestCase):
+    def test_no_recipient_ids(self) -> None:
+        user_profile = self.example_user('cordelia')
+
+        Subscription.objects.filter(user_profile=user_profile, recipient__type=Recipient.STREAM).delete()
+        subs = gather_subscriptions_helper(user_profile)
+
+        # Checks that gather_subscriptions_helper will not return anything
+        # since there will not be any recipients, without crashing.
+        #
+        # This covers a rare corner case.
+        self.assertEqual(len(subs[0]), 0)

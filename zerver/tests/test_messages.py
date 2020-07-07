@@ -4,12 +4,7 @@ from unittest import mock
 
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import (
-    gather_subscriptions_helper,
-    get_active_presence_idle_user_ids,
-    get_client,
-    get_last_message_id,
-)
+from zerver.lib.actions import get_active_presence_idle_user_ids, get_client, get_last_message_id
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     message_stream_count,
@@ -20,7 +15,6 @@ from zerver.lib.url_encoding import near_message_url
 from zerver.models import (
     Message,
     Recipient,
-    Subscription,
     UserPresence,
     UserProfile,
     bulk_get_huddle_user_ids,
@@ -170,16 +164,3 @@ class TestBulkGetHuddleUserIds(ZulipTestCase):
 
     def test_bulk_get_huddle_user_ids_empty_list(self) -> None:
         self.assertEqual(bulk_get_huddle_user_ids([]), {})
-
-class NoRecipientIDsTest(ZulipTestCase):
-    def test_no_recipient_ids(self) -> None:
-        user_profile = self.example_user('cordelia')
-
-        Subscription.objects.filter(user_profile=user_profile, recipient__type=Recipient.STREAM).delete()
-        subs = gather_subscriptions_helper(user_profile)
-
-        # Checks that gather_subscriptions_helper will not return anything
-        # since there will not be any recipients, without crashing.
-        #
-        # This covers a rare corner case.
-        self.assertEqual(len(subs[0]), 0)
