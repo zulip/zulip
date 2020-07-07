@@ -28,7 +28,6 @@ from zerver.lib.message import (
     get_first_visible_message_id,
     maybe_update_first_visible_message_id,
     render_markdown,
-    sew_messages_and_reactions,
     update_first_visible_message_id,
 )
 from zerver.lib.test_classes import ZulipTestCase
@@ -44,7 +43,6 @@ from zerver.lib.url_encoding import near_message_url
 from zerver.models import (
     Attachment,
     Message,
-    Reaction,
     Recipient,
     Subscription,
     UserMessage,
@@ -126,46 +124,6 @@ class PersonalMessagesTest(ZulipTestCase):
                 str(user_message),
                 f'<UserMessage: recip / {user_profile.email} ([])>',
             )
-
-class SewMessageAndReactionTest(ZulipTestCase):
-    def test_sew_messages_and_reaction(self) -> None:
-        sender = self.example_user('othello')
-        receiver = self.example_user('hamlet')
-        pm_recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
-        stream_name = 'Çiğdem'
-        stream = self.make_stream(stream_name)
-        stream_recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
-        sending_client = make_client(name="test suite")
-
-        needed_ids = []
-        for i in range(5):
-            for recipient in [pm_recipient, stream_recipient]:
-                message = Message(
-                    sender=sender,
-                    recipient=recipient,
-                    content=f'whatever {i}',
-                    date_sent=timezone_now(),
-                    sending_client=sending_client,
-                    last_edit_time=timezone_now(),
-                    edit_history='[]',
-                )
-                message.set_topic_name('whatever')
-                message.save()
-                needed_ids.append(message.id)
-                reaction = Reaction(user_profile=sender, message=message,
-                                    emoji_name='simple_smile')
-                reaction.save()
-
-        messages = Message.objects.filter(id__in=needed_ids).values(
-            *['id', 'content'])
-        reactions = Reaction.get_raw_db_rows(needed_ids)
-        tied_data = sew_messages_and_reactions(messages, reactions)
-        for data in tied_data:
-            self.assertEqual(len(data['reactions']), 1)
-            self.assertEqual(data['reactions'][0]['emoji_name'],
-                             'simple_smile')
-            self.assertTrue(data['id'])
-            self.assertTrue(data['content'])
 
 class MessageAccessTests(ZulipTestCase):
     def test_update_invalid_flags(self) -> None:
