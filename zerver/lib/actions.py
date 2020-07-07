@@ -4614,6 +4614,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
         event[TOPIC_LINKS] = topic_links(message.sender.realm_id, topic_name)
         edit_history_event[LEGACY_PREV_TOPIC] = orig_topic_name
 
+    delete_event_notify_user_ids: List[int] = []
     if propagate_mode in ["change_later", "change_all"]:
         assert topic_name is not None or new_stream is not None
         messages_list = update_messages_for_topic_edit(
