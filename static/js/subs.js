@@ -768,7 +768,7 @@ exports.view_stream = function () {
 /* For the given stream_row, remove the tick and replace by a spinner. */
 function display_subscribe_toggle_spinner(stream_row) {
     /* Prevent sending multiple requests by removing the button class. */
-    $(stream_row).removeClass("sub_unsub_button");
+    $(stream_row).find('.check').removeClass("sub_unsub_button");
 
     /* Hide the tick. */
     const tick = $(stream_row).find("svg");
@@ -783,7 +783,7 @@ function display_subscribe_toggle_spinner(stream_row) {
 /* For the given stream_row, add the tick and delete the spinner. */
 function hide_subscribe_toggle_spinner(stream_row) {
     /* Re-enable the button to handle requests. */
-    $(stream_row).addClass("sub_unsub_button");
+    $(stream_row).find('.check').addClass("sub_unsub_button");
 
     /* Show the tick. */
     const tick = $(stream_row).find("svg");
