@@ -254,7 +254,7 @@ function is_composition(emoji) {
     return $(emoji).hasClass('composition');
 }
 
-function maybe_select_emoji(e) {
+function process_enter_while_filtering(e) {
     if (e.keyCode === 13) { // enter key
         e.preventDefault();
         const first_emoji = get_rendered_emoji(0, 0);
@@ -550,7 +550,7 @@ function register_popover_events(popover) {
     });
 
     $('.emoji-popover-filter').on('input', filter_emojis);
-    $('.emoji-popover-filter').keydown(maybe_select_emoji);
+    $('.emoji-popover-filter').keydown(process_enter_while_filtering);
     $('.emoji-popover').keypress(process_keypress);
     $('.emoji-popover').keydown((e) => {
         // Because of cross-browser issues we need to handle backspace
