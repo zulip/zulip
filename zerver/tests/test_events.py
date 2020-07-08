@@ -93,6 +93,8 @@ from zerver.lib.event_schema import (
     basic_stream_fields,
     check_events_dict,
     check_realm_bot_add,
+    check_realm_bot_delete,
+    check_realm_bot_remove,
     check_realm_bot_update,
     check_realm_update,
     check_stream_create,
@@ -1848,19 +1850,12 @@ class NormalActionsTest(BaseAction):
         check_realm_bot_update('events[0]', events[0], 'owner_id')
         change_bot_owner_checker_user('events[1]', events[1])
 
-        change_bot_owner_checker_bot = check_events_dict([
-            ('type', equals('realm_bot')),
-            ('op', equals('delete')),
-            ('bot', check_dict_only([
-                ('user_id', check_int),
-            ])),
-        ])
         self.user_profile = self.example_user('aaron')
         owner = self.example_user('hamlet')
         bot = self.create_bot('test1', full_name='Test1 Testerson')
         action = lambda: do_change_bot_owner(bot, owner, self.user_profile)
         events = self.verify_action(action, num_events=2)
-        change_bot_owner_checker_bot('events[0]', events[0])
+        check_realm_bot_delete('events[0]', events[0])
         change_bot_owner_checker_user('events[1]', events[1])
 
         previous_owner = self.example_user('aaron')
@@ -1884,18 +1879,10 @@ class NormalActionsTest(BaseAction):
         check_realm_bot_update('events[0]', events[0], 'services')
 
     def test_do_deactivate_user(self) -> None:
-        bot_deactivate_checker = check_events_dict([
-            ('type', equals('realm_bot')),
-            ('op', equals('remove')),
-            ('bot', check_dict_only([
-                ('full_name', check_string),
-                ('user_id', check_int),
-            ])),
-        ])
         bot = self.create_bot('test')
         action = lambda: do_deactivate_user(bot)
         events = self.verify_action(action, num_events=2)
-        bot_deactivate_checker('events[1]', events[1])
+        check_realm_bot_remove('events[1]', events[1])
 
     def test_do_reactivate_user(self) -> None:
         bot = self.create_bot('test')
