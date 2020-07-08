@@ -34,18 +34,6 @@ class PersonalMessagesTest(ZulipTestCase):
         )
         self.assertEqual(url, 'http://zulip.testserver/#narrow/pm-with/77,80-pm/near/555')
 
-    def test_is_private_flag_not_leaked(self) -> None:
-        """
-        Make sure `is_private` flag is not leaked to the API.
-        """
-        self.login('hamlet')
-        self.send_personal_message(self.example_user("hamlet"),
-                                   self.example_user("cordelia"),
-                                   "test")
-
-        for msg in self.get_messages():
-            self.assertNotIn('is_private', msg['flags'])
-
 class MissedMessageTest(ZulipTestCase):
     def test_presence_idle_user_ids(self) -> None:
         UserPresence.objects.all().delete()
