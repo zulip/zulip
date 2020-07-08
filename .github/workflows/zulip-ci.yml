@@ -9,6 +9,7 @@ defaults:
 jobs:
   focal_bionic:
     strategy:
+      fail-fast: false
       matrix:
         include:
           # This docker image was created by a generated Dockerfile at:
