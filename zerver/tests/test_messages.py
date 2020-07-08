@@ -5,34 +5,14 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import get_active_presence_idle_user_ids, get_client
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.url_encoding import near_message_url
 from zerver.models import (
     Message,
     UserPresence,
     UserProfile,
     bulk_get_huddle_user_ids,
     get_huddle_user_ids,
-    get_realm,
 )
 
-
-class PersonalMessagesTest(ZulipTestCase):
-
-    def test_near_pm_message_url(self) -> None:
-        realm = get_realm('zulip')
-        message = dict(
-            type='personal',
-            id=555,
-            display_recipient=[
-                dict(id=77),
-                dict(id=80),
-            ],
-        )
-        url = near_message_url(
-            realm=realm,
-            message=message,
-        )
-        self.assertEqual(url, 'http://zulip.testserver/#narrow/pm-with/77,80-pm/near/555')
 
 class MissedMessageTest(ZulipTestCase):
     def test_presence_idle_user_ids(self) -> None:

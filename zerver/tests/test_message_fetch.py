@@ -37,6 +37,7 @@ from zerver.lib.topic import MATCH_TOPIC, TOPIC_NAME
 from zerver.lib.topic_mutes import set_topic_mutes
 from zerver.lib.types import DisplayRecipientT
 from zerver.lib.upload import create_attachment
+from zerver.lib.url_encoding import near_message_url
 from zerver.models import (
     Attachment,
     Message,
@@ -3229,3 +3230,20 @@ class MiscMessageTest(ZulipTestCase):
         Message.objects.all().delete()
 
         self.assertEqual(get_last_message_id(), -1)
+
+class PersonalMessagesNearTest(ZulipTestCase):
+    def test_near_pm_message_url(self) -> None:
+        realm = get_realm('zulip')
+        message = dict(
+            type='personal',
+            id=555,
+            display_recipient=[
+                dict(id=77),
+                dict(id=80),
+            ],
+        )
+        url = near_message_url(
+            realm=realm,
+            message=message,
+        )
+        self.assertEqual(url, 'http://zulip.testserver/#narrow/pm-with/77,80-pm/near/555')
