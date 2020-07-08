@@ -96,6 +96,8 @@ from zerver.lib.event_schema import (
     check_stream_create,
     check_stream_update,
     check_subscription_add,
+    check_subscription_peer_add,
+    check_subscription_peer_remove,
     check_subscription_remove,
 )
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
@@ -2106,13 +2108,7 @@ class NormalActionsTest(BaseAction):
     def test_subscribe_other_user_never_subscribed(self) -> None:
         action = lambda: self.subscribe(self.example_user("othello"), "test_stream")
         events = self.verify_action(action, num_events=2)
-        peer_add_schema_checker = check_events_dict([
-            ('type', equals('subscription')),
-            ('op', equals('peer_add')),
-            ('user_id', check_int),
-            ('stream_id', check_int),
-        ])
-        peer_add_schema_checker('events[1]', events[1])
+        check_subscription_peer_add('events[1]', events[1])
 
     def test_do_delete_message_stream(self) -> None:
         schema_checker = check_events_dict([
@@ -2567,19 +2563,6 @@ class SubscribeActionTest(BaseAction):
         self.do_test_subscribe_events(include_subscribers=False)
 
     def do_test_subscribe_events(self, include_subscribers: bool) -> None:
-        peer_add_schema_checker = check_events_dict([
-            ('type', equals('subscription')),
-            ('op', equals('peer_add')),
-            ('user_id', check_int),
-            ('stream_id', check_int),
-        ])
-        peer_remove_schema_checker = check_events_dict([
-            ('type', equals('subscription')),
-            ('op', equals('peer_remove')),
-            ('user_id', check_int),
-            ('stream_id', check_int),
-        ])
-
         # Subscribe to a totally new stream, so it's just Hamlet on it
         action: Callable[[], object] = lambda: self.subscribe(self.example_user("hamlet"), "test_stream")
         events = self.verify_action(
@@ -2594,7 +2577,7 @@ class SubscribeActionTest(BaseAction):
             action,
             include_subscribers=include_subscribers,
             state_change_expected=include_subscribers)
-        peer_add_schema_checker('events[0]', events[0])
+        check_subscription_peer_add('events[0]', events[0])
 
         stream = get_stream("test_stream", self.user_profile.realm)
 
@@ -2607,7 +2590,7 @@ class SubscribeActionTest(BaseAction):
             action,
             include_subscribers=include_subscribers,
             state_change_expected=include_subscribers)
-        peer_remove_schema_checker('events[0]', events[0])
+        check_subscription_peer_remove('events[0]', events[0])
 
         # Now remove the second user, to test the 'vacate' event flow
         action = lambda: bulk_remove_subscriptions(
