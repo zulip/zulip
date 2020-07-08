@@ -116,12 +116,6 @@ function set_stream_message_retention_setting_dropdown(stream) {
     change_stream_message_retention_days_block_display_property(value);
 }
 
-function clear_edit_panel() {
-    $(".display-type #add_new_stream_title").hide();
-    $(".display-type #stream_settings_title, .right .settings").show();
-    $(".stream-row.active").removeClass("active");
-}
-
 function get_stream_id(target) {
     if (target.constructor !== jQuery) {
         target = $(target);
@@ -148,7 +142,7 @@ function get_sub_for_target(target) {
 exports.open_edit_panel_for_row = function (stream_row) {
     const sub = get_sub_for_target(stream_row);
 
-    clear_edit_panel();
+    $(".stream-row.active").removeClass("active");
     subs.show_subs_pane.settings();
     $(stream_row).addClass("active");
     setup_subscriptions_stream_hash(sub);
@@ -157,7 +151,7 @@ exports.open_edit_panel_for_row = function (stream_row) {
 
 exports.open_edit_panel_empty = function () {
     const tab_key = $(subs.get_active_data().tabs[0]).attr("data-tab-key");
-    clear_edit_panel();
+    $(".stream-row.active").removeClass("active");
     subs.show_subs_pane.nothing_selected();
     exports.setup_subscriptions_tab_hash(tab_key);
 };

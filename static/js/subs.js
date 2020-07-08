@@ -11,12 +11,16 @@ const util = require("./util");
 
 exports.show_subs_pane = {
     nothing_selected() {
-        $(".nothing-selected, #stream_settings_title").show();
-        $("#add_new_stream_title, .settings, #stream-creation").hide();
+        $(".stream-info-title, .settings, #stream-creation").hide();
+        $("#stream_settings_title, .nothing-selected").show();
     },
     settings() {
-        $(".settings, #stream_settings_title").show();
-        $("#add_new_stream_title, #stream-creation, .nothing-selected").hide();
+        $(".stream-info-title, .settings, #stream-creation").hide();
+        $("#stream_settings_title, .settings").show();
+    },
+    create_stream() {
+        $(".stream-info-title, .nothing-selected, .settings, #stream-creation").hide();
+        $("#add_new_stream_title, #stream-creation").show();
     },
 };
 

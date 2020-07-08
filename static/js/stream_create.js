@@ -235,13 +235,8 @@ function create_stream() {
 exports.new_stream_clicked = function (stream_name) {
     // this changes the tab switcher (settings/preview) which isn't necessary
     // to a add new stream title.
-    $(".display-type #add_new_stream_title").show();
-    $(".display-type #stream_settings_title").hide();
-
+    subs.show_subs_pane.create_stream();
     $(".stream-row.active").removeClass("active");
-
-    $("#stream_settings_title, .subscriptions-container .settings, .nothing-selected").hide();
-    $("#stream-creation, #add_new_stream_title").show();
 
     if (stream_name !== "") {
         $("#create_stream_name").val(stream_name);
