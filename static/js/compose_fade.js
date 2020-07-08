@@ -102,7 +102,7 @@ exports.would_receive_message = function (user_id) {
             return true;
         }
 
-        return stream_data.is_user_subscribed(focused_recipient.stream, user_id);
+        return stream_data.is_user_subscribed(focused_recipient.stream_id, user_id);
     }
 
     // PM, so check if the given email is in the recipients list.

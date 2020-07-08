@@ -746,7 +746,7 @@ exports.handle_keyup = function (event, textarea) {
     rtl.set_rtl_class_for_textarea(textarea);
 };
 
-exports.needs_subscribe_warning = function (user_id, stream_name) {
+exports.needs_subscribe_warning = function (user_id, stream_id) {
     // This returns true if all of these conditions are met:
     //  * the user is valid
     //  * the user is not already subscribed to the stream
@@ -772,7 +772,7 @@ exports.needs_subscribe_warning = function (user_id, stream_name) {
         return false;
     }
 
-    if (stream_data.is_user_subscribed(stream_name, user_id)) {
+    if (stream_data.is_user_subscribed(stream_id, user_id)) {
         // If our user is already subscribed
         return false;
     }
@@ -917,7 +917,7 @@ exports.warn_if_mentioning_unsubscribed_user = function (mentioned) {
         return;
     }
 
-    if (exports.needs_subscribe_warning(user_id, sub.name)) {
+    if (exports.needs_subscribe_warning(user_id, sub.stream_id)) {
         const error_area = $("#compose_invite_users");
         const existing_invites_area = $('#compose_invite_users .compose_invite_user');
 

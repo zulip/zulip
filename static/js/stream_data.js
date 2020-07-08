@@ -683,8 +683,8 @@ exports.remove_subscriber = function (stream_id, user_id) {
     return true;
 };
 
-exports.is_user_subscribed = function (stream_name, user_id) {
-    const sub = exports.get_sub(stream_name);
+exports.is_user_subscribed = function (stream_id, user_id) {
+    const sub = exports.get_sub_by_id(stream_id);
     if (typeof sub === 'undefined' || !sub.can_access_subscribers) {
         // If we don't know about the stream, or we ourselves cannot access subscriber list,
         // so we return undefined (treated as falsy if not explicitly handled).

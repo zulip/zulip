@@ -1138,9 +1138,10 @@ run_test('warn_if_mentioning_unsubscribed_user', () => {
     const checks = [
         (function () {
             let called;
-            compose.needs_subscribe_warning = function (user_id) {
+            compose.needs_subscribe_warning = function (user_id, stream_id) {
                 called = true;
                 assert.equal(user_id, 34);
+                assert.equal(stream_id, 111);
                 return true;
             };
             return function () { assert(called); };
