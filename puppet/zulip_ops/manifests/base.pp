@@ -1,6 +1,7 @@
 class zulip_ops::base {
   include zulip::base
   include zulip::apt_repository
+  include zulip_ops::munin_node
 
   $org_base_packages = [# Management for our systems
     'openssh-server',
@@ -9,9 +10,6 @@ class zulip_ops::base {
     'aptitude',
     # SSL Certificates
     'certbot',
-    # Monitoring
-    'munin-node',
-    'munin-plugins-extra' ,
     # Security
     'iptables-persistent',
     # For managing our current Debian packages
