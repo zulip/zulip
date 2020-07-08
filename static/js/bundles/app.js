@@ -174,7 +174,7 @@ import "../settings_user_groups.js";
 import "../settings_profile_fields.js";
 import "../settings.js";
 import "../admin.js";
-import "../tab_bar.js";
+import "../message_view_header.js";
 import "../bot_data.js";
 import "../reactions.js";
 import "../typing.js";

@@ -253,7 +253,7 @@
                 "StripeCheckout": false,
                 "submessage": false,
                 "subs": false,
-                "tab_bar": false,
+                "message_view_header": false,
                 "templates": false,
                 "tictactoe_widget": false,
                 "timerender": false,

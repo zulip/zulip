@@ -345,7 +345,7 @@ exports.activate = function (raw_operators, opts) {
     top_left_corner.handle_narrow_activated(current_filter);
     stream_list.handle_narrow_activated(current_filter);
     typing_events.render_notifications_for_narrow();
-    tab_bar.initialize();
+    message_view_header.initialize();
 
     msg_list.initial_core_time = new Date();
     setTimeout(() => {
@@ -754,7 +754,7 @@ function handle_post_narrow_deactivate_processes() {
     message_edit.handle_narrow_deactivated();
     widgetize.set_widgets_for_list();
     typing_events.render_notifications_for_narrow();
-    tab_bar.initialize();
+    message_view_header.initialize();
     exports.narrow_title = "home";
     notifications.redraw_title();
     message_scroll.hide_top_of_narrow_notices();

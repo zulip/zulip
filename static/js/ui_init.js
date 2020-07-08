@@ -432,7 +432,7 @@ exports.initialize_everything = function () {
     overlays.initialize();
     invite.initialize();
     timerender.initialize();
-    tab_bar.initialize();
+    message_view_header.initialize();
     server_events.initialize();
     user_status.initialize(user_status_params);
     compose_pm_pill.initialize();

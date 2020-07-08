@@ -240,7 +240,7 @@ exports.process_escape_key = function (e) {
                 $("#searchbox .pill").trigger("blur");
                 $("#searchbox #search_query").trigger("blur");
             } else {
-                tab_bar.exit_search();
+                message_view_header.exit_search();
             }
             return true;
         }

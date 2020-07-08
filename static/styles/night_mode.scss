@@ -12,7 +12,7 @@ body.night-mode {
 
     .app-main,
     .header-main,
-    #tab_bar_underpadding,
+    #message_view_header_underpadding,
     .floating_recipient .message-header-wrapper,
     .column-middle,
     #compose,
@@ -252,22 +252,22 @@ on a dark background, and don't change the dark labels dark either. */
         border-color: hsla(0, 0%, 0%, 0.6);
     }
 
-    #tab_bar .sub_count {
+    #message_view_header .sub_count {
         &::before,
         &::after {
             color: hsla(0, 0%, 100%, 0.5);
         }
     }
 
-    #tab_bar span:nth-last-child(2):hover + .search_closed {
+    #message_view_header span:nth-last-child(2):hover + .search_closed {
         color: hsl(0, 0%, 100%);
     }
 
-    #tab_bar .stream {
+    #message_view_header .stream {
         color: hsl(236, 33%, 90%);
     }
-    #tab_bar .sub_count,
-    #tab_bar .narrow_description {
+    #message_view_header .sub_count,
+    #message_view_header .narrow_description {
         color: hsla(0, 0%, 90%, 1);
     }
 
@@ -326,7 +326,7 @@ on a dark background, and don't change the dark labels dark either. */
     .clear_search_button:active,
     .clear_search_button[disabled]:hover,
     #user-groups .save-instructions,
-    #tab_bar .search_icon,
+    #message_view_header .search_icon,
     #searchbox_legacy .search_icon,
     #searchbox_legacy .search_button,
     #searchbox .search_icon,
@@ -342,7 +342,7 @@ on a dark background, and don't change the dark labels dark either. */
 
     #message_edit_tooltip:hover,
     .clear_search_button:hover,
-    #tab_bar .search_icon:hover,
+    #message_view_header .search_icon:hover,
     .search_icon_hover_highlight,
     #searchbox_legacy .search_icon:hover,
     #searchbox_legacy .search_button:hover,

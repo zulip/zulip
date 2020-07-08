@@ -149,7 +149,7 @@ declare let stream_sort: any;
 declare let stream_ui_updates: any;
 declare let submessage: any;
 declare let subs: any;
-declare let tab_bar: any;
+declare let message_view_header: any;
 declare let templates: any;
 declare let tictactoe_widget: any;
 declare let timerender: any;
