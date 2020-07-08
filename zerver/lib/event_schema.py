@@ -178,6 +178,40 @@ def check_realm_bot_add(var_name: str, event: Dict[str, Any],) -> None:
         raise AssertionError(f"Unknown bot_type: {bot_type}")
 
 
+_check_bot_for_delete = check_dict_only(
+    required_keys=[
+        # for legacy reasons we have a dict here
+        # with only one key
+        ("user_id", check_int),
+    ]
+)
+
+check_realm_bot_delete = check_events_dict(
+    required_keys=[
+        ("type", equals("realm_bot")),
+        ("op", equals("delete")),
+        ("bot", _check_bot_for_delete),
+    ]
+)
+
+_check_bot_for_remove = check_dict_only(
+    required_keys=[
+        # Why does remove have full_name but delete doesn't?
+        # Why do we have both a remove and a delete event
+        # for bots?  I don't know the answer as I write this.
+        ("full_name", check_string),
+        ("user_id", check_int),
+    ]
+)
+
+check_realm_bot_remove = check_events_dict(
+    required_keys=[
+        ("type", equals("realm_bot")),
+        ("op", equals("remove")),
+        ("bot", _check_bot_for_remove),
+    ]
+)
+
 _check_bot_for_update = check_dict_only(
     required_keys=[
         # force vertical
