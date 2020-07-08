@@ -70,4 +70,4 @@ fi
 
 HOME=$HOME rabbitmqctl list_channels name messages_uncommitted | \
 	grep -v "^Listing" | grep -v "done.$" | \
-    perl -nle'($q, $s) = split; $q =~ s/[.=-]/_/g; print("$q.value $s")'
+    perl -nle'($q, $s) = /^(.*)\s+(\d+)$/; $q =~ s/[.=-]/_/g; print("$q.value $s")'
