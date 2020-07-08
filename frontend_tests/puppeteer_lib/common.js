@@ -92,6 +92,10 @@ class CommonUtils {
                     }
                 });
             } else {
+                // clear any existing text in the input field before filling.
+                await page.$eval(name_selector, (el) => {
+                    el.value = "";
+                });
                 await page.type(name_selector, params[name]);
             }
         }
