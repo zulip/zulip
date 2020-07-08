@@ -16,6 +16,7 @@ from zerver.lib.validator import (
     check_none_or,
     check_string,
     check_union,
+    check_url,
     equals,
 )
 from zerver.models import Realm, Stream, UserProfile
@@ -97,6 +98,84 @@ check_optional_value = check_union(
         equals(None),
     ]
 )
+
+_check_bot_services_outgoing = check_dict_only(
+    required_keys=[
+        # force vertical
+        ("base_url", check_url),
+        ("interface", check_int),
+        ("token", check_string),
+    ]
+)
+
+# We use a strict check here, because our tests
+# don't specifically focus on seeing how
+# flexible we can make the types be for config_data.
+_ad_hoc_config_data_schema = equals(dict(foo="bar"))
+
+_check_bot_services_embedded = check_dict_only(
+    required_keys=[
+        # force vertical
+        ("service_name", check_string),
+        ("config_data", _ad_hoc_config_data_schema),
+    ]
+)
+
+# Note that regular bots just get an empty list of services,
+# so the sub_validator for check_list won't matter for them.
+_check_bot_services = check_list(
+    check_union(
+        [
+            # force vertical
+            _check_bot_services_outgoing,
+            _check_bot_services_embedded,
+        ]
+    ),
+)
+
+_check_bot = check_dict_only(
+    required_keys=[
+        ("user_id", check_int),
+        ("api_key", check_string),
+        ("avatar_url", check_string),
+        ("bot_type", check_int),
+        ("default_all_public_streams", check_bool),
+        ("default_events_register_stream", check_none_or(check_string)),
+        ("default_sending_stream", check_none_or(check_string)),
+        ("email", check_string),
+        ("full_name", check_string),
+        ("is_active", check_bool),
+        ("owner_id", check_int),
+        ("services", _check_bot_services),
+    ]
+)
+
+_check_realm_bot_add = check_events_dict(
+    required_keys=[
+        # force vertical
+        ("type", equals("realm_bot")),
+        ("op", equals("add")),
+        ("bot", _check_bot),
+    ]
+)
+
+
+def check_realm_bot_add(var_name: str, event: Dict[str, Any],) -> None:
+    _check_realm_bot_add(var_name, event)
+
+    bot_type = event["bot"]["bot_type"]
+
+    services_field = f"{var_name}['bot']['services']"
+    services = event["bot"]["services"]
+
+    if bot_type == UserProfile.DEFAULT_BOT:
+        equals([])(services_field, services)
+    elif bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
+        check_list(_check_bot_services_outgoing, length=1)(services_field, services)
+    elif bot_type == UserProfile.EMBEDDED_BOT:
+        check_list(_check_bot_services_embedded, length=1)(services_field, services)
+    else:
+        raise AssertionError(f"Unknown bot_type: {bot_type}")
 
 
 """
