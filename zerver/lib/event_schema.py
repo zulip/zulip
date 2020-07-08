@@ -230,3 +230,20 @@ def check_subscription_add(
             assert "subscribers" in sub.keys()
         else:
             assert "subscribers" not in sub.keys()
+
+
+_check_remove_sub = check_dict_only(
+    required_keys=[
+        # We should eventually just return stream_id here.
+        ("name", check_string),
+        ("stream_id", check_int),
+    ]
+)
+
+check_subscription_remove = check_events_dict(
+    required_keys=[
+        ("type", equals("subscription")),
+        ("op", equals("remove")),
+        ("subscriptions", check_list(_check_remove_sub)),
+    ]
+)
