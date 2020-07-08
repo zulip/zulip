@@ -31,13 +31,6 @@ class zulip_ops::nagios {
   $hosts_stats = split(zulipconf('nagios', 'hosts_stats', undef), ',')
   $hosts_fullstack = split(zulipconf('nagios', 'hosts_fullstack', undef), ',')
 
-  apache2site { 'nagios':
-    ensure  => present,
-    require => [File['/etc/apache2/sites-available/'],
-                Apache2mod['headers'], Apache2mod['ssl'],
-                ],
-  }
-
   file { '/etc/nagios3/':
     recurse => true,
     purge   => false,
@@ -47,6 +40,23 @@ class zulip_ops::nagios {
     mode    => '0644',
     source  => 'puppet:///modules/zulip_ops/nagios3/',
     notify  => Service['nagios3'],
+  }
+
+  file { '/etc/apache2/sites-available/nagios.conf':
+    purge   => false,
+    require => Package[apache2],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0640',
+    content => template('zulip_ops/nagios_apache_site.conf.template.erb'),
+  }
+  apache2site { 'nagios':
+    ensure  => present,
+    require => [
+      File['/etc/apache2/sites-available/nagios.conf'],
+      Apache2mod['headers'], Apache2mod['ssl'],
+    ],
+    notify  => Service['apache2'],
   }
 
   file { '/etc/nagios3/conf.d/contacts.cfg':
@@ -135,14 +145,5 @@ class zulip_ops::nagios {
     notify  => Service['nagios3'],
   }
 
-  file { '/etc/apache2/sites-available/nagios.conf':
-    recurse => true,
-    purge   => false,
-    require => Package[apache2],
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0640',
-    content => template('zulip_ops/nagios_apache_site.conf.template.erb'),
-  }
   # TODO: Install our API
 }
