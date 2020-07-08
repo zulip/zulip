@@ -96,6 +96,7 @@ from zerver.lib.event_schema import (
     check_stream_create,
     check_stream_update,
     check_subscription_add,
+    check_subscription_remove,
 )
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
 from zerver.lib.markdown import MentionData
@@ -2566,16 +2567,6 @@ class SubscribeActionTest(BaseAction):
         self.do_test_subscribe_events(include_subscribers=False)
 
     def do_test_subscribe_events(self, include_subscribers: bool) -> None:
-        remove_schema_checker = check_events_dict([
-            ('type', equals('subscription')),
-            ('op', equals('remove')),
-            ('subscriptions', check_list(
-                check_dict_only([
-                    ('name', equals('test_stream')),
-                    ('stream_id', check_int),
-                ]),
-            )),
-        ])
         peer_add_schema_checker = check_events_dict([
             ('type', equals('subscription')),
             ('op', equals('peer_add')),
@@ -2627,7 +2618,12 @@ class SubscribeActionTest(BaseAction):
             action,
             include_subscribers=include_subscribers,
             num_events=3)
-        remove_schema_checker('events[0]', events[0])
+        check_subscription_remove('events[0]', events[0])
+        self.assertEqual(len(events[0]['subscriptions']), 1)
+        self.assertEqual(
+            events[0]['subscriptions'][0]['name'],
+            'test_stream',
+        )
 
         # Now resubscribe a user, to make sure that works on a vacated stream
         action = lambda: self.subscribe(self.example_user("hamlet"), "test_stream")
