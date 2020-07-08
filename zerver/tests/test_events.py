@@ -94,6 +94,7 @@ from zerver.lib.event_schema import (
     check_events_dict,
     check_realm_update,
     check_stream_create,
+    check_stream_update,
 )
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
 from zerver.lib.markdown import MentionData
@@ -2053,24 +2054,13 @@ class NormalActionsTest(BaseAction):
         notification = notification.format(user_id=self.user_profile.id)
         action = lambda: do_rename_stream(stream, new_name, self.user_profile)
         events = self.verify_action(action, num_events=3)
-        schema_checker = check_events_dict([
-            ('type', equals('stream')),
-            ('op', equals('update')),
-            ('property', equals('email_address')),
-            ('value', check_string),
-            ('stream_id', check_int),
-            ('name', equals('old_name')),
-        ])
-        schema_checker('events[0]', events[0])
-        schema_checker = check_events_dict([
-            ('type', equals('stream')),
-            ('op', equals('update')),
-            ('property', equals('name')),
-            ('value', equals(new_name)),
-            ('name', equals('old_name')),
-            ('stream_id', check_int),
-        ])
-        schema_checker('events[1]', events[1])
+
+        check_stream_update('events[0]', events[0])
+        self.assertEqual(events[0]['name'], 'old_name')
+
+        check_stream_update('events[1]', events[1])
+        self.assertEqual(events[1]['name'], 'old_name')
+
         schema_checker = check_events_dict([
             ('flags', check_list(check_string)),
             ('type', equals('message')),
@@ -2622,40 +2612,6 @@ class SubscribeActionTest(BaseAction):
             ('user_id', check_int),
             ('stream_id', check_int),
         ])
-        stream_update_schema_checker = check_events_dict([
-            ('type', equals('stream')),
-            ('op', equals('update')),
-            ('property', equals('description')),
-            ('value', check_string),
-            ('rendered_description', check_string),
-            ('stream_id', check_int),
-            ('name', check_string),
-        ])
-        stream_update_invite_only_schema_checker = check_events_dict([
-            ('type', equals('stream')),
-            ('op', equals('update')),
-            ('property', equals('invite_only')),
-            ('stream_id', check_int),
-            ('name', check_string),
-            ('value', check_bool),
-            ('history_public_to_subscribers', check_bool),
-        ])
-        stream_update_stream_post_policy_schema_checker = check_events_dict([
-            ('type', equals('stream')),
-            ('op', equals('update')),
-            ('property', equals('stream_post_policy')),
-            ('stream_id', check_int),
-            ('name', check_string),
-            ('value', check_int_in(Stream.STREAM_POST_POLICY_TYPES)),
-        ])
-        stream_update_message_retention_days_schema_checker = check_events_dict([
-            ('type', equals('stream')),
-            ('op', equals('update')),
-            ('property', equals('message_retention_days')),
-            ('stream_id', check_int),
-            ('name', check_string),
-            ('value', check_none_or(check_int))
-        ])
 
         # Subscribe to a totally new stream, so it's just Hamlet on it
         action: Callable[[], object] = lambda: self.subscribe(self.example_user("hamlet"), "test_stream")
@@ -2709,27 +2665,27 @@ class SubscribeActionTest(BaseAction):
         events = self.verify_action(
             action,
             include_subscribers=include_subscribers)
-        stream_update_schema_checker('events[0]', events[0])
+        check_stream_update('events[0]', events[0])
 
         # Update stream privacy
         action = lambda: do_change_stream_invite_only(stream, True, history_public_to_subscribers=True)
         events = self.verify_action(
             action,
             include_subscribers=include_subscribers)
-        stream_update_invite_only_schema_checker('events[0]', events[0])
+        check_stream_update('events[0]', events[0])
 
         # Update stream stream_post_policy property
         action = lambda: do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_ADMINS)
         events = self.verify_action(
             action,
             include_subscribers=include_subscribers, num_events=2)
-        stream_update_stream_post_policy_schema_checker('events[0]', events[0])
+        check_stream_update('events[0]', events[0])
 
         action = lambda: do_change_stream_message_retention_days(stream, -1)
         events = self.verify_action(
             action,
             include_subscribers=include_subscribers, num_events=1)
-        stream_update_message_retention_days_schema_checker('events[0]', events[0])
+        check_stream_update('events[0]', events[0])
 
         # Subscribe to a totally new invite-only stream, so it's just Hamlet on it
         stream = self.make_stream("private", self.user_profile.realm, invite_only=True)
