@@ -569,7 +569,7 @@ exports.focus_first_popover_item = (items) => {
     items.eq(0).expectOne().trigger("focus");
 };
 
-function popover_items_handle_keyboard(key, items) {
+exports.popover_items_handle_keyboard = (key, items) => {
     if (!items) {
         return;
     }
@@ -587,7 +587,7 @@ function popover_items_handle_keyboard(key, items) {
         index -= 1;
     }
     items.eq(index).trigger("focus");
-}
+};
 
 function focus_first_action_popover_item() {
     // For now I recommend only calling this when the user opens the menu with a hotkey.
@@ -614,7 +614,7 @@ exports.open_message_menu = function (message) {
 
 exports.actions_menu_handle_keyboard = function (key) {
     const items = get_action_menu_menu_items();
-    popover_items_handle_keyboard(key, items);
+    exports.popover_items_handle_keyboard(key, items);
 };
 
 exports.actions_popped = function () {
@@ -692,7 +692,7 @@ function focus_user_info_popover_item() {
 
 exports.user_info_popover_handle_keyboard = function (key) {
     const items = get_user_info_popover_items();
-    popover_items_handle_keyboard(key, items);
+    exports.popover_items_handle_keyboard(key, items);
 };
 
 exports.show_sender_info = function () {
